@@ -74,7 +74,7 @@ const Color* Color_FromBytes(const uint8_t* bytes, size_t len) {
 }
 
 
-HSLColor Color_toHSL(const Color* color) {
+HSLColor RGBA_toHSL(const Color* color) {
     f64 r = color->r / 255.0;
     f64 g = color->g / 255.0;
     f64 b = color->b / 255.0;
@@ -126,7 +126,7 @@ f64 HUE_toRGB(f64 p, f64 q, f64 t) {
     return p;
 }
 
-Color HSL_toColor(const HSLColor* hsl) {
+Color HSL_toRGBA(const HSLColor* hsl) {
     f64 r = 0.0;
     f64 g = 0.0;
     f64 b = 0.0;
@@ -153,11 +153,11 @@ int main() {
     Color color[1] = { Color_From(255, 100, 50, 255) };
 
     // Convert it to HSL
-    HSLColor hsl[1] = { Color_toHSL(color) };
+    HSLColor hsl[1] = { RGBA_toHSL(color) };
     printf("HSL: (%f, %f, %f)\n", hsl->h, hsl->s, hsl->l);
 
     // Convert it back to RGB
-    Color rgb_color[1] = { HSL_toColor(hsl) };
+    Color rgb_color[1] = { HSL_toRGBA(hsl) };
     printf("RGB: (%u, %u, %u, %u)\n", rgb_color->r, rgb_color->g, rgb_color->b, rgb_color->a);
 
     return 0;
