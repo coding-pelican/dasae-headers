@@ -166,6 +166,39 @@ RGBA HSL_to_RGBA(HSL color) {
 }
 
 
+f64 sRGB_to_linear(f64 srgb) {
+    if (srgb <= 0.04045) {
+        return srgb / 12.92;
+    }
+    return pow((srgb + 0.055) / 1.055, 2.4);
+}
+
+f64 linear_to_sRGB(f64 linear) {
+    if (linear <= 0.0031308) {
+        return 12.92 * linear;
+    }
+    return 1.055 * pow(linear, 1 / 2.4) - 0.055;
+}
+
+RGBA HSL_to_sRGBA(HSL color) {
+    RGBA linear = HSL_to_RGBA(color);
+    return RGBA_fromRGB(
+        (u8)(linear_to_sRGB(linear.r / 255.0) * 255),
+        (u8)(linear_to_sRGB(linear.g / 255.0) * 255),
+        (u8)(linear_to_sRGB(linear.b / 255.0) * 255)
+    );
+}
+
+RGBA HSL_to_liner(HSL color) {
+    RGBA linear = HSL_to_RGBA(color);
+    return RGBA_fromRGB(
+        (u8)(sRGB_to_linear(linear.r / 255.0) * 255),
+        (u8)(sRGB_to_linear(linear.g / 255.0) * 255),
+        (u8)(sRGB_to_linear(linear.b / 255.0) * 255)
+    );
+}
+
+
 void TerminalCursor_ResetColor() {
     printf("\033[0m");
 }
@@ -262,14 +295,37 @@ void DrawPixel1x2Single(RGBA upper, RGBA lower) {
 void DrawPalette() {
     RGBA buffer[Screen_Width * Screen_Height] = { 0 };
 
-    f64 xScale = 360.0 / Screen_Width;
-    f64 yScale = 100.0 / Screen_Height;
+    const f64 xScale = 360.0 / Screen_Width;
+    const f64 yScale = 100.0 / Screen_Height;
+
     for (i32 y = 0; y < Screen_Height; ++y) {
         for (i32 x = 0; x < Screen_Width; ++x) {
             f64 h                        = (f64)x * xScale;
             f64 l                        = (f64)y * yScale;
             HSL hsl                      = HSL_from(h, 100.0, l);
             buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+        }
+    }
+
+    for (i32 y = 0; y < Screen_Height; y += 2) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            RGBA upper = buffer[x + y * Screen_Width];
+            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+            DrawPixel1x2Single(upper, lower);
+        }
+        printf("\n");
+    }
+
+    getch();
+
+    // TODO(dev-dasae): 교수님 도와주세요 이거 맞나요?
+
+    for (i32 y = 0; y < Screen_Height; ++y) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            f64 h                        = (f64)x * xScale;
+            f64 l                        = (f64)y * yScale;
+            HSL hsl                      = HSL_from(h, 100.0, l);
+            buffer[x + y * Screen_Width] = HSL_to_liner(hsl);
         }
     }
 
