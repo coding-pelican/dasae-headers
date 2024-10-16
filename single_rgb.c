@@ -1,17 +1,12 @@
+#include <assert.h>
+#include <conio.h>
 #include <corecrt.h>
+#include <locale.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <windows.h>
-
-// Function to enable ANSI escape sequence processing
-void EnableANSI() {
-    HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD  dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hOut, dwMode);
-}
 
 
 typedef uint8_t  u8;
@@ -54,16 +49,14 @@ const RGBA RGBA_Green = RGBA_fromRGB(0, 255, 0);
 const RGBA RGBA_Blue  = RGBA_fromRGB(0, 0, 255);
 
 
-const wchar* const UPPER_HALF_BLOCK = L"▀";
-
-static inline void TerminalCursor_ResetColor() {
-    wprintf(L"\033[0m");
+void TerminalCursor_ResetColor() {
+    printf("\033[0m");
 }
 
-static inline void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
-    wprintf(
-        L"\033[38;2;%d;%d;%dm" // foreground
-        L"\033[48;2;%d;%d;%dm", // background
+void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
+    printf(
+        "\033[38;2;%d;%d;%dm" // foreground
+        "\033[48;2;%d;%d;%dm", // background
         foreground.r,
         foreground.g,
         foreground.b,
@@ -73,30 +66,84 @@ static inline void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
     );
 }
 
-static inline void Terminal_Print(const wchar* character) {
-    wprintf(L"%ls", character);
+
+//  Set locale to UTF-8 and set console output to UTF-8
+void Terminal_EnsureLocaleUTF8() {
+    static const char* const LocaleName = ".UTF-8";
+
+    // Set locale to UTF-8
+    const char* const settedLocale = setlocale(LC_ALL, LocaleName);
+    if (!settedLocale) {
+        perror("Failed to set locale to UTF-8\n");
+        getch();
+        return exit(1);
+    }
+
+    // Set console output to UTF-8
+    const WINBOOL isSetted = SetConsoleOutputCP(CP_UTF8); // chcp 65001
+    if (!isSetted) {
+        perror("Failed to set console output to UTF-8\n");
+        getch();
+        return exit(1);
+    }
 }
 
-static inline void Terminal_Clear() {
-    wprintf(
-        L"\033[2J" // clear screen
-        L"\033[H" // move cursor to top left
+// Enable ANSI escape sequence processing
+void Terminal_EnableANSI() {
+    HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD  dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, dwMode);
+}
+
+// Print diagnostic information for debugging
+void Terminal_PrintDiagnosticInformation() {
+    printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
+    printf("Active code page: %d\n", GetACP());
+    printf("Output code page: %d\n", GetConsoleOutputCP());
+}
+
+// Clear the terminal screen and move the cursor to the top left
+void Terminal_Clear() {
+    printf(
+        "\033[2J" // clear screen
+        "\033[H" // move cursor to top left
     );
 }
 
-static inline void DrawPixel1x2Single(RGBA upper, RGBA lower) {
+void Terminal_Startup() {
+    Terminal_EnsureLocaleUTF8();
+    Terminal_EnableANSI();
+    Terminal_PrintDiagnosticInformation();
+    getch();
+    Terminal_Clear();
+}
+
+void Terminal_Shutdown() {
+    TerminalCursor_ResetColor();
+    Terminal_Clear();
+}
+
+void Terminal_Print(const wchar* const string) {
+    printf("%ls", string);
+}
+
+void DrawPixel1x2Single(RGBA upper, RGBA lower) {
+    static const wchar* const Terminal_UpperHalfBlock = L"▀";
+
     TerminalCursor_SetColor(upper, lower);
-    Terminal_Print(UPPER_HALF_BLOCK);
+    Terminal_Print(Terminal_UpperHalfBlock);
     TerminalCursor_ResetColor();
 }
 
 
 i32 main() {
-    EnableANSI();
-    Terminal_Clear();
-    (void)getchar();
+    Terminal_Startup();
+
     DrawPixel1x2Single(RGBA_Red, RGBA_Blue);
-    (void)getchar();
-    Terminal_Clear();
+    getch();
+
+    Terminal_Shutdown();
     return 0;
 }

@@ -2,7 +2,7 @@
 #include <windows.h>
 
 // Function to enable ANSI escape sequence processing
-void EnableANSI() {
+void Terminal_EnableANSI() {
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
@@ -18,7 +18,7 @@ void printRGB(int r, int g, int b, const char* text) {
 int main() {
     (void)getchar();
     // Enable ANSI escape sequence processing
-    EnableANSI();
+    Terminal_EnableANSI();
 
     // Print some colored text
     printRGB(255, 100, 0, "This is orange text\n");

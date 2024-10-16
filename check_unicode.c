@@ -16,9 +16,8 @@ void printRGB(int r, int g, int b, const char* text) {
 }
 
 int main() {
-    system("chcp 65001");
     // Set locale to UTF-8
-    setlocale(LC_ALL, ".UTF-8");
+    setlocale(LC_ALL, ".UTF-8"); // chcp 65001
 
     // Set console output to UTF-8
     SetConsoleOutputCP(CP_UTF8);
