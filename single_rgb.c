@@ -1,4 +1,4 @@
-// wt --size 160,50 -d . cmd /k .\single_rgb.exe
+// wt --size 80,25 -d . cmd /c .\single_rgb.exe
 
 #include <assert.h>
 #include <conio.h>
