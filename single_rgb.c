@@ -1,15 +1,57 @@
-// wt --size 80,25 -d . cmd /c .\single_rgb.exe
+// wt --size 80,25 -d . cmd /c .\single_rgb
 
 #include <assert.h>
-#include <conio.h>
-#include <corecrt.h>
 #include <locale.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <wchar.h>
-#include <windows.h>
+
+#ifdef _WIN32
+#  include <conio.h>
+#  include <corecrt.h>
+#  include <windows.h>
+#else
+#  include <fcntl.h>
+#  include <termios.h>
+#  include <unistd.h>
+
+// Check if a key has been pressed
+int kbhit() {
+    struct termios oldTermios = { 0 };
+    struct termios newTermios = { 0 };
+
+    tcgetattr(STDIN_FILENO, &oldTermios);
+    newTermios = oldTermios;
+    newTermios.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
+    int oldFlag = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldFlag | O_NONBLOCK);
+
+    int ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldTermios);
+    fcntl(STDIN_FILENO, F_SETFL, oldFlag);
+
+    if (ch != EOF) {
+        ungetc(ch, stdin);
+        return 1;
+    }
+
+    return 0;
+}
+
+// Get a single character from the keyboard without waiting for a newline
+int getch() { return getchar(); }
+#endif
+
+
+#define Terminal_Width  (80)
+#define Terminal_Height (25)
+#define Screen_Width    (Terminal_Width)
+#define Screen_Height   (Terminal_Height * 2)
 
 
 typedef uint8_t  u8;
@@ -119,7 +161,7 @@ HSL RGBA_to_HSL(RGBA color) {
 }
 
 // Helper function for HSL to RGB conversion
-static f64 hue_to_rgb(f64 p, f64 q, f64 t) {
+static f64 Hue_to_RGB(f64 p, f64 q, f64 t) {
     if (t < 0) {
         t += 1;
     }
@@ -153,9 +195,9 @@ RGBA HSL_to_RGBA(HSL color) {
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = hue_to_rgb(p, q, h + 1.0 / 3.0);
-        g     = hue_to_rgb(p, q, h);
-        b     = hue_to_rgb(p, q, h - 1.0 / 3.0);
+        r     = Hue_to_RGB(p, q, h + 1.0 / 3.0);
+        g     = Hue_to_RGB(p, q, h);
+        b     = Hue_to_RGB(p, q, h - 1.0 / 3.0);
     }
 
     return RGBA_fromRGB(
@@ -199,6 +241,111 @@ RGBA HSL_to_liner(HSL color) {
 }
 
 
+#define UNIT_TESTS
+#ifdef UNIT_TESTS
+// Helper function to compare floating point numbers
+bool f64_approx_equal(f64 a, f64 b, f64 epsilon) {
+    return fabs(a - b) < epsilon;
+}
+
+// Updated helper function to compare RGBA colors with tolerance
+bool RGBA_approx_equal(RGBA a, RGBA b, i32 tolerance) {
+    return abs(a.r - b.r) <= tolerance &&
+           abs(a.g - b.g) <= tolerance &&
+           abs(a.b - b.b) <= tolerance &&
+           abs(a.a - b.a) <= tolerance;
+}
+
+// Helper function to compare HSL colors
+bool HSL_approx_equal(HSL a, HSL b, f64 epsilon) {
+    return f64_approx_equal(a.h, b.h, epsilon) &&
+           f64_approx_equal(a.s, b.s, epsilon) &&
+           f64_approx_equal(a.l, b.l, epsilon);
+}
+
+
+void TEST_RGB_to_HSL() {
+    printf("Testing RGB to HSL conversion...\n");
+
+    // Test black
+    HSL black_hsl = RGBA_to_HSL(RGBA_Black);
+    assert(HSL_approx_equal(black_hsl, HSL_from(0, 0, 0), 0.01));
+
+    // Test white
+    HSL white_hsl = RGBA_to_HSL(RGBA_White);
+    assert(HSL_approx_equal(white_hsl, HSL_from(0, 0, 100), 0.01));
+
+    // Test red
+    HSL red_hsl = RGBA_to_HSL(RGBA_Red);
+    assert(HSL_approx_equal(red_hsl, HSL_from(0, 100, 50), 0.01));
+
+    // Test green
+    HSL green_hsl = RGBA_to_HSL(RGBA_Green);
+    assert(HSL_approx_equal(green_hsl, HSL_from(120, 100, 50), 0.01));
+
+    // Test blue
+    HSL blue_hsl = RGBA_to_HSL(RGBA_Blue);
+    assert(HSL_approx_equal(blue_hsl, HSL_from(240, 100, 50), 0.01));
+
+    printf("RGB to HSL conversion tests passed.\n");
+}
+
+void TEST_HSL_to_RGB() {
+    printf("Testing HSL to RGB conversion...\n");
+
+    // Test black
+    RGBA black_rgb = HSL_to_RGBA(HSL_from(0, 0, 0));
+    assert(RGBA_approx_equal(black_rgb, RGBA_Black, 1));
+
+    // Test white
+    RGBA white_rgb = HSL_to_RGBA(HSL_from(0, 0, 100));
+    assert(RGBA_approx_equal(white_rgb, RGBA_White, 1));
+
+    // Test red
+    RGBA red_rgb = HSL_to_RGBA(HSL_from(0, 100, 50));
+    assert(RGBA_approx_equal(red_rgb, RGBA_Red, 1));
+
+    // Test green
+    RGBA green_rgb = HSL_to_RGBA(HSL_from(120, 100, 50));
+    assert(RGBA_approx_equal(green_rgb, RGBA_Green, 1));
+
+    // Test blue
+    RGBA blue_rgb = HSL_to_RGBA(HSL_from(240, 100, 50));
+    assert(RGBA_approx_equal(blue_rgb, RGBA_Blue, 1));
+
+    printf("HSL to RGB conversion tests passed.\n");
+}
+
+void TEST_RoundtripConversion() {
+    printf("Testing roundtrip conversion...\n");
+
+    // Test a variety of colors
+    const RGBA colors[] = {
+        RGBA_fromRGB(128, 64, 32), // Brown
+        RGBA_fromRGB(255, 128, 0), // Orange
+        RGBA_fromRGB(0, 255, 255), // Cyan
+        RGBA_fromRGB(128, 0, 128), // Purple
+        RGBA_fromRGB(192, 192, 192), // Silver
+    };
+    const int colorsNum = sizeof(colors) / sizeof(colors[0]);
+
+    for (int i = 0; i < colorsNum; ++i) {
+        RGBA original  = colors[i];
+        HSL  hsl       = RGBA_to_HSL(original);
+        RGBA converted = HSL_to_RGBA(hsl);
+
+        if (!RGBA_approx_equal(original, converted, 1)) {
+            printf("Conversion failed for color: R:%d G:%d B:%d\n", original.r, original.g, original.b);
+            printf("Converted to: R:%d G:%d B:%d\n", converted.r, converted.g, converted.b);
+            assert(0); // Force test failure
+        }
+    }
+
+    printf("Roundtrip conversion tests passed.\n");
+}
+#endif
+
+
 void TerminalCursor_ResetColor() {
     printf("\033[0m");
 }
@@ -217,55 +364,82 @@ void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
 }
 
 
-//  Set locale to UTF-8 and set console output to UTF-8
+// Set locale to UTF-8
 void Terminal_EnsureLocaleUTF8() {
-    static const char* const LocaleName = ".UTF-8";
+    static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
+    static const int         localesNum = sizeof(locales) / sizeof(locales[0]);
 
-    // Set locale to UTF-8
-    const char* const settedLocale = setlocale(LC_ALL, LocaleName);
+    const char* settedLocale = NULL;
+
+    for (int i = 0; i < localesNum; ++i) {
+        settedLocale = setlocale(LC_ALL, locales[i]);
+        if (settedLocale) {
+            printf("Successfully set locale to: %s\n", settedLocale);
+            break;
+        }
+    }
+
     if (!settedLocale) {
-        perror("Failed to set locale to UTF-8\n");
-        getch();
-        return exit(1);
+        printf("Warning: Failed to set UTF-8 locale. Using system default.\n");
+        settedLocale = setlocale(LC_ALL, "");
+        if (!settedLocale) {
+            perror("Failed to set locale\n");
+            // Not exiting here, as the program might still work
+        }
     }
 
-    // Set console output to UTF-8
-    const WINBOOL isSetted = SetConsoleOutputCP(CP_UTF8); // chcp 65001
-    if (!isSetted) {
+#ifdef _WIN32
+    // Set console output to UTF-8 on Windows
+    if (!SetConsoleOutputCP(CP_UTF8)) {
         perror("Failed to set console output to UTF-8\n");
-        getch();
-        return exit(1);
+        // Not exiting here, as the program might still work
     }
+#endif
 }
+
 
 // Enable ANSI escape sequence processing
 void Terminal_EnableANSI() {
+#ifdef _WIN32
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
+#else
+    // Not needed for Linux as it supports ANSI escape sequences by default
+#endif
 }
 
 // Print diagnostic information for debugging
 void Terminal_PrintDiagnosticInformation() {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
+#ifdef _WIN32
     printf("Active code page: %d\n", GetACP());
     printf("Output code page: %d\n", GetConsoleOutputCP());
+#endif
 }
+
 
 // Clear the terminal screen and move the cursor to the top left
 void Terminal_Clear() {
-    printf(
-        "\033[2J" // clear screen
-        "\033[H" // move cursor to top left
-    );
+#ifdef _WIN32
+    system("cls"); // NOLINT
+#else
+    system("clear"); // NOLINT
+#endif
+    // printf(
+    //     "\033[2J" // clear screen
+    //     "\033[H" // move cursor to top left
+    // );
 }
 
-void Terminal_Startup() {
+void Terminal_Bootup() {
     Terminal_EnsureLocaleUTF8();
     Terminal_EnableANSI();
     Terminal_PrintDiagnosticInformation();
+    printf("Terminal setup complete.\n");
+    printf("Press any key to continue...\n");
     getch();
     Terminal_Clear();
 }
@@ -273,6 +447,10 @@ void Terminal_Startup() {
 void Terminal_Shutdown() {
     TerminalCursor_ResetColor();
     Terminal_Clear();
+}
+
+void Terminal_Put(const wchar character) {
+    printf("%lc", character);
 }
 
 void Terminal_Print(const wchar* const string) {
@@ -287,45 +465,76 @@ void DrawPixel1x2Single(RGBA upper, RGBA lower) {
     TerminalCursor_ResetColor();
 }
 
-#define Terminal_Width  (80)
-#define Terminal_Height (25)
-#define Screen_Width    (Terminal_Width)
-#define Screen_Height   (Terminal_Height * 2)
 
-void DrawPalette() {
+void DrawRGBChannelPalette() {
+    const f64 scalerByWidth = 255.0 / Screen_Width;
+
+    for (int i = 0; i < Screen_Width; ++i) {
+        const u8 scaled = (u8)scalerByWidth * i;
+        DrawPixel1x2Single(
+            RGBA_fromRGB(scaled, 0, 0),
+            RGBA_fromRGB(0, scaled, 0)
+        );
+    }
+    printf("\n");
+    for (int i = 0; i < Screen_Width; ++i) {
+        const u8 scaled = (u8)scalerByWidth * i;
+        DrawPixel1x2Single(
+            RGBA_fromRGB(0, 0, scaled),
+            RGBA_fromRGB(scaled, scaled, 0)
+        );
+    }
+    printf("\n");
+    for (int i = 0; i < Screen_Width; ++i) {
+        const u8 scaled = (u8)scalerByWidth * i;
+        DrawPixel1x2Single(
+            RGBA_fromRGB(scaled, 0, scaled),
+            RGBA_fromRGB(0, scaled, scaled)
+        );
+    }
+    printf("\n");
+    for (int i = 0; i < Screen_Width; ++i) {
+        const u8 scaled = (u8)scalerByWidth * i;
+        DrawPixel1x2Single(
+            RGBA_fromRGB(scaled, scaled, scaled),
+            RGBA_fromRGB(0, 0, 0)
+        );
+    }
+    printf("\n");
+}
+
+void DrawRGBAToHSLConvertedTest() {
+    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
+    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
+    printf("\n");
+    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
+    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
+    printf("\n");
+    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
+    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
+    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
+    printf("\n");
+}
+
+void DrawHSLGradientPalette() {
     RGBA buffer[Screen_Width * Screen_Height] = { 0 };
 
-    const f64 xScale = 360.0 / Screen_Width;
-    const f64 yScale = 100.0 / Screen_Height;
+    const f64 saturation = 100.0;
+
+    const f64 hueInterval       = 360.0 / Screen_Width;
+    const f64 lightnessInterval = 100.0 / Screen_Height;
 
     for (i32 y = 0; y < Screen_Height; ++y) {
         for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * xScale;
-            f64 l                        = (f64)y * yScale;
-            HSL hsl                      = HSL_from(h, 100.0, l);
+            f64 h                        = (f64)x * hueInterval;
+            f64 l                        = (f64)y * lightnessInterval;
+            HSL hsl                      = HSL_from(h, saturation, l);
             buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
-        }
-    }
-
-    for (i32 y = 0; y < Screen_Height; y += 2) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            RGBA upper = buffer[x + y * Screen_Width];
-            RGBA lower = buffer[x + (y + 1) * Screen_Width];
-            DrawPixel1x2Single(upper, lower);
-        }
-        printf("\n");
-    }
-
-    getch();
-
-    // TODO(dev-dasae): 교수님 도와주세요 이거 맞나요?
-
-    for (i32 y = 0; y < Screen_Height; ++y) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * xScale;
-            f64 l                        = (f64)y * yScale;
-            HSL hsl                      = HSL_from(h, 100.0, l);
-            buffer[x + y * Screen_Width] = HSL_to_liner(hsl);
         }
     }
 
@@ -341,71 +550,33 @@ void DrawPalette() {
 
 
 i32 main() {
-    Terminal_Startup();
+    Terminal_Bootup();
 
-    DrawPixel1x2Single(RGBA_Red, RGBA_Blue);
+#ifdef UNIT_TESTS
+    TEST_RGB_to_HSL();
+    TEST_HSL_to_RGB();
+    TEST_RoundtripConversion();
     getch();
-
     Terminal_Clear();
-    DrawPixel1x2Single(RGBA_White, RGBA_White);
-    DrawPixel1x2Single(RGBA_White, RGBA_White);
-    DrawPixel1x2Single(RGBA_White, RGBA_White);
-    DrawPixel1x2Single(RGBA_White, RGBA_White);
-    DrawPixel1x2Single(RGBA_White, RGBA_White);
-    getch();
+#endif
 
-    Terminal_Clear();
-    f64 xScale = 255.0 / Screen_Width;
-    for (int i = 0; i < Screen_Width; ++i) {
-        DrawPixel1x2Single(
-            RGBA_fromRGB(i * xScale, 0 * xScale, 0 * xScale),
-            RGBA_fromRGB(0 * xScale, i * xScale, 0 * xScale)
-        );
-    }
-    printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
-        DrawPixel1x2Single(
-            RGBA_fromRGB(0 * xScale, 0 * xScale, i * xScale),
-            RGBA_fromRGB(i * xScale, i * xScale, 0 * xScale)
-        );
-    }
-    printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
-        DrawPixel1x2Single(
-            RGBA_fromRGB(i * xScale, 0 * xScale, i * xScale),
-            RGBA_fromRGB(0 * xScale, i * xScale, i * xScale)
-        );
-    }
-    printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
-        DrawPixel1x2Single(
-            RGBA_fromRGB(i * xScale, i * xScale, i * xScale),
-            RGBA_fromRGB(0 * xScale, 0 * xScale, 0 * xScale)
-        );
-    }
-    printf("\n");
-    getch();
-
-    Terminal_Clear();
+    DrawPixel1x2Single(RGBA_Red, RGBA_Green);
+    DrawPixel1x2Single(RGBA_Blue, RGBA_White);
     DrawPixel1x2Single(RGBA_Red, RGBA_Red);
-    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
-    printf("\n");
     DrawPixel1x2Single(RGBA_Green, RGBA_Green);
-    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
-    printf("\n");
     DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
-    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
-    printf("\n");
     getch();
-
     Terminal_Clear();
-    DrawPalette();
+
+    DrawRGBChannelPalette();
+    getch();
+    Terminal_Clear();
+
+    DrawRGBAToHSLConvertedTest();
+    getch();
+    Terminal_Clear();
+
+    DrawHSLGradientPalette();
     getch();
 
     Terminal_Shutdown();
