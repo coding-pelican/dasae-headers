@@ -48,10 +48,30 @@ int getch() { return getchar(); }
 #endif
 
 
+#define PP_UnusedParam(_param) ((void)(_param))
+#define PP_IgnoreReturn(_func) (void)_func
+#define PtrT(_Type)            _Type*
+#define RefT(_Type)            _Type* const
+#define PP_Swap(_Type, _a, _b)   \
+    do {                         \
+        PtrT(_Type) __a = &(_a); \
+        PtrT(_Type) __b = &(_b); \
+        _Type __t       = *__a;  \
+        *__a            = *__b;  \
+        *__b            = __t;   \
+    } while (false)
+
+
 #define Terminal_Width  (80)
 #define Terminal_Height (25)
-#define Screen_Width    (Terminal_Width)
-#define Screen_Height   (Terminal_Height * 2)
+#define Terminal_Size   (Terminal_Width * Terminal_Height)
+
+#define Terminal_FontWidth  (6)
+#define Terminal_FontHeight (Terminal_FontWidth * 2)
+
+#define Screen_Width  (Terminal_Width)
+#define Screen_Height (Terminal_Height * 2)
+#define Screen_Size   (Screen_Width * Screen_Height)
 
 
 typedef uint8_t  u8;
@@ -351,9 +371,18 @@ void TerminalCursor_ResetColor() {
 }
 
 void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
+    // printf(
+    //     "\033[38;2;%d;%d;%dm" // foreground
+    //     "\033[48;2;%d;%d;%dm", // background
+    //     foreground.r,
+    //     foreground.g,
+    //     foreground.b,
+    //     background.r,
+    //     background.g,
+    //     background.b
+    // );
     printf(
-        "\033[38;2;%d;%d;%dm" // foreground
-        "\033[48;2;%d;%d;%dm", // background
+        "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm", // background
         foreground.r,
         foreground.g,
         foreground.b,
@@ -424,7 +453,16 @@ void Terminal_PrintDiagnosticInformation() {
 // Clear the terminal screen and move the cursor to the top left
 void Terminal_Clear() {
 #ifdef _WIN32
-    system("cls"); // NOLINT
+    // system("cls"); // NOLINT
+    HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD                      topLeft  = (COORD){ 0, 0 };
+    CONSOLE_SCREEN_BUFFER_INFO screen   = (CONSOLE_SCREEN_BUFFER_INFO){ 0 };
+    DWORD                      written  = 0;
+
+    GetConsoleScreenBufferInfo(hConsole, &screen);
+    FillConsoleOutputCharacterA(hConsole, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    FillConsoleOutputAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE, screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    SetConsoleCursorPosition(hConsole, topLeft);
 #else
     system("clear"); // NOLINT
 #endif
@@ -463,6 +501,21 @@ void DrawPixel1x2Single(RGBA upper, RGBA lower) {
     TerminalCursor_SetColor(upper, lower);
     Terminal_Print(Terminal_UpperHalfBlock);
     TerminalCursor_ResetColor();
+}
+
+void DrawPixel1x2SingleCharacter(RGBA upper, RGBA lower) {
+    static const wchar Terminal_UpperHalfBlock = L'▀';
+
+    TerminalCursor_SetColor(upper, lower);
+    Terminal_Put(Terminal_UpperHalfBlock);
+    TerminalCursor_ResetColor();
+}
+
+void DrawPixel1x2SingleCharacterDontResetColor(RGBA upper, RGBA lower) {
+    static const wchar Terminal_UpperHalfBlock = L'▀';
+
+    TerminalCursor_SetColor(upper, lower);
+    Terminal_Put(Terminal_UpperHalfBlock);
 }
 
 
@@ -544,12 +597,182 @@ void DrawHSLGradientPalette() {
             RGBA lower = buffer[x + (y + 1) * Screen_Width];
             DrawPixel1x2Single(upper, lower);
         }
-        printf("\n");
+    }
+}
+
+void DrawHSLGradientPaletteCharacter() {
+    RGBA buffer[Screen_Width * Screen_Height] = { 0 };
+
+    const f64 saturation = 100.0;
+
+    const f64 hueInterval       = 360.0 / Screen_Width;
+    const f64 lightnessInterval = 100.0 / Screen_Height;
+
+    for (i32 y = 0; y < Screen_Height; ++y) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            f64 h                        = (f64)x * hueInterval;
+            f64 l                        = (f64)y * lightnessInterval;
+            HSL hsl                      = HSL_from(h, saturation, l);
+            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+        }
+    }
+
+    for (i32 y = 0; y < Screen_Height; y += 2) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            RGBA upper = buffer[x + y * Screen_Width];
+            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+            DrawPixel1x2SingleCharacter(upper, lower);
+        }
+    }
+}
+
+void DrawHSLGradientPaletteCharacterDontResetColor() {
+    RGBA buffer[Screen_Width * Screen_Height] = { 0 };
+
+    const f64 saturation = 100.0;
+
+    const f64 hueInterval       = 360.0 / Screen_Width;
+    const f64 lightnessInterval = 100.0 / Screen_Height;
+
+    for (i32 y = 0; y < Screen_Height; ++y) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            f64 h                        = (f64)x * hueInterval;
+            f64 l                        = (f64)y * lightnessInterval;
+            HSL hsl                      = HSL_from(h, saturation, l);
+            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+        }
+    }
+
+    for (i32 y = 0; y < Screen_Height; y += 2) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            RGBA upper = buffer[x + y * Screen_Width];
+            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+            DrawPixel1x2SingleCharacterDontResetColor(upper, lower);
+        }
     }
 }
 
 
+#define Display_UnitPixel1x2Format              "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
+#define Display_UnitPixel1x2FormatMaxCase       "\033[38;2;255;255;255;48;2;255;255;255m▀"
+#define Display_UnitPixel1x2FormatMaxCaseLength (sizeof(Display_UnitPixel1x2FormatMaxCase) / sizeof(Display_UnitPixel1x2FormatMaxCase[0]))
+#define Display_BufferLength                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseLength)
+
+static char  Display_frontBuffer[Display_BufferLength] = { 0 };
+static char  Display_backBuffer[Display_BufferLength]  = { 0 };
+static char* Display_bufferCurrent                     = Display_frontBuffer;
+static usize Display_bufferCurrentSize                 = 0;
+static char* Display_bufferNext                        = Display_backBuffer;
+static usize Display_bufferNextSize                    = 0;
+
+void Display_Init() {
+#ifdef _WIN32
+    HANDLE     hConsoleOutput    = GetStdHandle(STD_OUTPUT_HANDLE);
+    SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
+
+    SetConsoleWindowInfo(hConsoleOutput, TRUE, &windowSizeInitial);
+
+    // void SetConsoleScreenBuffer()
+    COORD dwSize = (COORD){ (SHORT)Terminal_Width, (SHORT)Terminal_Height };
+    SetConsoleActiveScreenBuffer(hConsoleOutput);
+    SetConsoleScreenBufferSize(hConsoleOutput, dwSize);
+
+    // void SetConsoleFontSize()
+    CONSOLE_FONT_INFOEX fontInfo = (CONSOLE_FONT_INFOEX){ 0 };
+    fontInfo.cbSize              = sizeof(CONSOLE_FONT_INFOEX);
+    GetCurrentConsoleFontEx(hConsoleOutput, FALSE, &fontInfo);
+    fontInfo.dwFontSize.X = Terminal_FontWidth;
+    fontInfo.dwFontSize.Y = Terminal_FontHeight;
+    SetCurrentConsoleFontEx(hConsoleOutput, FALSE, &fontInfo);
+
+    // void SetConsoleWindowSize()
+    SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)Terminal_Width - 1, (SHORT)Terminal_Height - 1 };
+    SetConsoleWindowInfo(hConsoleOutput, TRUE, &windowSize);
+
+    // void DisableConsoleCursor()
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsoleOutput, &cursorInfo);
+    cursorInfo.bVisible = FALSE;
+    SetConsoleCursorInfo(hConsoleOutput, &cursorInfo);
+#endif
+}
+
+void Display_SetBuffer(const RGBA buffer[Screen_Width * Screen_Height]) {
+    i32 displayIndex = 0;
+    for (i32 y = 0; y < Screen_Height; y += 2) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            char       pixelCodes[Display_UnitPixel1x2FormatMaxCaseLength] = { 0 };
+            const RGBA upper                                               = buffer[x + y * Screen_Width];
+            const RGBA lower                                               = buffer[x + (y + 1) * Screen_Width];
+
+            const i32 printed = sprintf(
+                pixelCodes,
+                Display_UnitPixel1x2Format,
+                upper.r,
+                upper.g,
+                upper.b,
+                lower.r,
+                lower.g,
+                lower.b
+            );
+
+            memcpy(Display_bufferNext + displayIndex, pixelCodes, printed);
+            displayIndex += printed;
+
+            // for (i32 i = 0; i < printed; ++i) {
+            //     printf("%c", pixelCodes[i]);
+            // }
+            // printf("\033[38;2;255;255;255m");
+            // printf("=%d\n", printed);
+            // getch();
+        }
+    }
+    Display_bufferNext[displayIndex] = '\0';
+    Display_bufferNextSize           = displayIndex;
+}
+
+void Display_SwapBuffers() {
+    PP_Swap(char*, Display_bufferCurrent, Display_bufferNext);
+    PP_Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+}
+
+void Display_Render() {
+    Display_SwapBuffers();
+    Terminal_Clear();
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD  written  = 0;
+    WriteConsoleA(hConsole, Display_bufferCurrent, (DWORD)Display_bufferCurrentSize, &written, NULL);
+#else
+    if (!fwrite(Display_buffer, sizeof(Display_bufferCurrent[0]), Display_bufferCurrentSize, stdout)) {
+        assert(false);
+    }
+#endif
+    TerminalCursor_ResetColor();
+}
+
+void Display_HSLGradientPalette() {
+    RGBA buffer[Screen_Size] = { 0 };
+
+    const f64 saturation = 100.0;
+
+    const f64 hueInterval       = 360.0 / Screen_Width;
+    const f64 lightnessInterval = 100.0 / Screen_Height;
+
+    for (i32 y = 0; y < Screen_Height; ++y) {
+        for (i32 x = 0; x < Screen_Width; ++x) {
+            f64 h                        = (f64)x * hueInterval;
+            f64 l                        = (f64)y * lightnessInterval;
+            HSL hsl                      = HSL_from(h, saturation, l);
+            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+        }
+    }
+    Display_SetBuffer(buffer);
+}
+
+
 i32 main() {
+    Display_Init();
     Terminal_Bootup();
 
 #ifdef UNIT_TESTS
@@ -577,6 +800,25 @@ i32 main() {
     Terminal_Clear();
 
     DrawHSLGradientPalette();
+    getch();
+    Terminal_Clear();
+
+    DrawHSLGradientPaletteCharacter();
+    getch();
+    Terminal_Clear();
+
+    DrawHSLGradientPaletteCharacterDontResetColor();
+    getch();
+    Terminal_Clear();
+
+    Display_HSLGradientPalette();
+    Display_Render();
+    getch();
+    Display_HSLGradientPalette();
+    Display_Render();
+    getch();
+    Display_HSLGradientPalette();
+    Display_Render();
     getch();
 
     Terminal_Shutdown();
