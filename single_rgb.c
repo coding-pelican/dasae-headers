@@ -1,3 +1,26 @@
+/**
+ * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ *
+ * @file    single_rgb.c
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2024-10-16 (date of creation)
+ * @updated 2024-10-18 (date of last update)
+ * @version v0.1.1
+ * @ingroup test_terminal
+ * @prefix  NONE
+ *
+ * @brief   Source for rgb print testing the terminal
+ * @details Implements terminal color visualization tools:
+ * - RGB and HSL color space conversions
+ * - ASCII character-based color rendering
+ * - ANSI escape sequence color output
+ * - RGB channel palettes and HSL gradient displays
+ * - Efficient double-buffering for smooth rendering
+ * - Unit tests for color conversion accuracy
+ * - Cross-platform terminal setup and color support
+ */
+
+
 // wt --size 80,25 -d . cmd /c .\single_rgb
 
 #include <assert.h>
@@ -69,9 +92,9 @@ int getch() { return getchar(); }
 #define Terminal_FontWidth  (6)
 #define Terminal_FontHeight (Terminal_FontWidth * 2)
 
-#define Screen_Width  (Terminal_Width)
-#define Screen_Height (Terminal_Height * 2)
-#define Screen_Size   (Screen_Width * Screen_Height)
+#define Display_Width  (Terminal_Width)
+#define Display_Height (Terminal_Height * 2)
+#define Display_Size   (Display_Width * Display_Height)
 
 
 typedef uint8_t  u8;
@@ -520,9 +543,9 @@ void DrawPixel1x2SingleCharacterDontResetColor(RGBA upper, RGBA lower) {
 
 
 void DrawRGBChannelPalette() {
-    const f64 scalerByWidth = 255.0 / Screen_Width;
+    const f64 scalerByWidth = 255.0 / Display_Width;
 
-    for (int i = 0; i < Screen_Width; ++i) {
+    for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
             RGBA_fromRGB(scaled, 0, 0),
@@ -530,7 +553,7 @@ void DrawRGBChannelPalette() {
         );
     }
     printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
+    for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
             RGBA_fromRGB(0, 0, scaled),
@@ -538,7 +561,7 @@ void DrawRGBChannelPalette() {
         );
     }
     printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
+    for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
             RGBA_fromRGB(scaled, 0, scaled),
@@ -546,7 +569,7 @@ void DrawRGBChannelPalette() {
         );
     }
     printf("\n");
-    for (int i = 0; i < Screen_Width; ++i) {
+    for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
             RGBA_fromRGB(scaled, scaled, scaled),
@@ -575,95 +598,95 @@ void DrawRGBAToHSLConvertedTest() {
 }
 
 void DrawHSLGradientPalette() {
-    RGBA buffer[Screen_Width * Screen_Height] = { 0 };
+    RGBA buffer[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
-    const f64 hueInterval       = 360.0 / Screen_Width;
-    const f64 lightnessInterval = 100.0 / Screen_Height;
+    const f64 hueInterval       = 360.0 / Display_Width;
+    const f64 lightnessInterval = 100.0 / Display_Height;
 
-    for (i32 y = 0; y < Screen_Height; ++y) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * hueInterval;
-            f64 l                        = (f64)y * lightnessInterval;
-            HSL hsl                      = HSL_from(h, saturation, l);
-            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+    for (i32 y = 0; y < Display_Height; ++y) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            f64 h                         = (f64)x * hueInterval;
+            f64 l                         = (f64)y * lightnessInterval;
+            HSL hsl                       = HSL_from(h, saturation, l);
+            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
         }
     }
 
-    for (i32 y = 0; y < Screen_Height; y += 2) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            RGBA upper = buffer[x + y * Screen_Width];
-            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+    for (i32 y = 0; y < Display_Height; y += 2) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            RGBA upper = buffer[x + y * Display_Width];
+            RGBA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2Single(upper, lower);
         }
     }
 }
 
 void DrawHSLGradientPaletteCharacter() {
-    RGBA buffer[Screen_Width * Screen_Height] = { 0 };
+    RGBA buffer[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
-    const f64 hueInterval       = 360.0 / Screen_Width;
-    const f64 lightnessInterval = 100.0 / Screen_Height;
+    const f64 hueInterval       = 360.0 / Display_Width;
+    const f64 lightnessInterval = 100.0 / Display_Height;
 
-    for (i32 y = 0; y < Screen_Height; ++y) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * hueInterval;
-            f64 l                        = (f64)y * lightnessInterval;
-            HSL hsl                      = HSL_from(h, saturation, l);
-            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+    for (i32 y = 0; y < Display_Height; ++y) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            f64 h                         = (f64)x * hueInterval;
+            f64 l                         = (f64)y * lightnessInterval;
+            HSL hsl                       = HSL_from(h, saturation, l);
+            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
         }
     }
 
-    for (i32 y = 0; y < Screen_Height; y += 2) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            RGBA upper = buffer[x + y * Screen_Width];
-            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+    for (i32 y = 0; y < Display_Height; y += 2) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            RGBA upper = buffer[x + y * Display_Width];
+            RGBA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2SingleCharacter(upper, lower);
         }
     }
 }
 
 void DrawHSLGradientPaletteCharacterDontResetColor() {
-    RGBA buffer[Screen_Width * Screen_Height] = { 0 };
+    RGBA buffer[Display_Width * Display_Height] = { 0 };
 
     const f64 saturation = 100.0;
 
-    const f64 hueInterval       = 360.0 / Screen_Width;
-    const f64 lightnessInterval = 100.0 / Screen_Height;
+    const f64 hueInterval       = 360.0 / Display_Width;
+    const f64 lightnessInterval = 100.0 / Display_Height;
 
-    for (i32 y = 0; y < Screen_Height; ++y) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * hueInterval;
-            f64 l                        = (f64)y * lightnessInterval;
-            HSL hsl                      = HSL_from(h, saturation, l);
-            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+    for (i32 y = 0; y < Display_Height; ++y) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            f64 h                         = (f64)x * hueInterval;
+            f64 l                         = (f64)y * lightnessInterval;
+            HSL hsl                       = HSL_from(h, saturation, l);
+            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
         }
     }
 
-    for (i32 y = 0; y < Screen_Height; y += 2) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            RGBA upper = buffer[x + y * Screen_Width];
-            RGBA lower = buffer[x + (y + 1) * Screen_Width];
+    for (i32 y = 0; y < Display_Height; y += 2) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            RGBA upper = buffer[x + y * Display_Width];
+            RGBA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2SingleCharacterDontResetColor(upper, lower);
         }
     }
 }
 
 
-#define Display_UnitPixel1x2Format              "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
-#define Display_UnitPixel1x2FormatMaxCase       "\033[38;2;255;255;255;48;2;255;255;255m▀"
-#define Display_UnitPixel1x2FormatMaxCaseLength (sizeof(Display_UnitPixel1x2FormatMaxCase) / sizeof(Display_UnitPixel1x2FormatMaxCase[0]))
-#define Display_BufferLength                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseLength)
+#define Display_UnitPixel1x2Format            "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
+#define Display_UnitPixel1x2FormatMaxCase     "\033[38;2;255;255;255;48;2;255;255;255m▀"
+#define Display_UnitPixel1x2FormatMaxCaseSize (sizeof(Display_UnitPixel1x2FormatMaxCase) / sizeof(Display_UnitPixel1x2FormatMaxCase[0]))
+#define Display_BufferSize                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseSize)
 
-static char  Display_frontBuffer[Display_BufferLength] = { 0 };
-static char  Display_backBuffer[Display_BufferLength]  = { 0 };
-static char* Display_bufferCurrent                     = Display_frontBuffer;
-static usize Display_bufferCurrentSize                 = 0;
-static char* Display_bufferNext                        = Display_backBuffer;
-static usize Display_bufferNextSize                    = 0;
+static char  Display_frontBuffer[Display_BufferSize] = { 0 };
+static char  Display_backBuffer[Display_BufferSize]  = { 0 };
+static char* Display_bufferCurrent                   = Display_frontBuffer;
+static usize Display_bufferCurrentSize               = 0;
+static char* Display_bufferNext                      = Display_backBuffer;
+static usize Display_bufferNextSize                  = 0;
 
 void Display_Init() {
 #ifdef _WIN32
@@ -697,16 +720,28 @@ void Display_Init() {
 #endif
 }
 
-void Display_SetBuffer(const RGBA buffer[Screen_Width * Screen_Height]) {
-    i32 displayIndex = 0;
-    for (i32 y = 0; y < Screen_Height; y += 2) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            char       pixelCodes[Display_UnitPixel1x2FormatMaxCaseLength] = { 0 };
-            const RGBA upper                                               = buffer[x + y * Screen_Width];
-            const RGBA lower                                               = buffer[x + (y + 1) * Screen_Width];
+void Display_Clear() {
+    memset(Display_bufferCurrent, 0, Display_bufferCurrentSize);
+}
 
-            const i32 printed = sprintf(
-                pixelCodes,
+void Display_SwapBuffers() {
+    PP_Swap(char*, Display_bufferCurrent, Display_bufferNext);
+    PP_Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+}
+
+void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
+    Display_Clear();
+
+    i32 index = 0;
+    for (i32 y = 0; y < Display_Height; y += 2) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            char displayFormat[Display_UnitPixel1x2FormatMaxCaseSize] = { 0 };
+
+            const RGBA upper = colors[x + y * Display_Width];
+            const RGBA lower = colors[x + (y + 1) * Display_Width];
+
+            const i32 formattedSize = sprintf(
+                displayFormat,
                 Display_UnitPixel1x2Format,
                 upper.r,
                 upper.g,
@@ -716,28 +751,17 @@ void Display_SetBuffer(const RGBA buffer[Screen_Width * Screen_Height]) {
                 lower.b
             );
 
-            memcpy(Display_bufferNext + displayIndex, pixelCodes, printed);
-            displayIndex += printed;
-
-            // for (i32 i = 0; i < printed; ++i) {
-            //     printf("%c", pixelCodes[i]);
-            // }
-            // printf("\033[38;2;255;255;255m");
-            // printf("=%d\n", printed);
-            // getch();
+            memcpy(Display_bufferNext + index, displayFormat, formattedSize);
+            index += formattedSize;
         }
     }
-    Display_bufferNext[displayIndex] = '\0';
-    Display_bufferNextSize           = displayIndex;
-}
+    Display_bufferNext[index] = '\0';
+    Display_bufferNextSize    = index;
 
-void Display_SwapBuffers() {
-    PP_Swap(char*, Display_bufferCurrent, Display_bufferNext);
-    PP_Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+    Display_SwapBuffers();
 }
 
 void Display_Render() {
-    Display_SwapBuffers();
     Terminal_Clear();
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -751,23 +775,23 @@ void Display_Render() {
     TerminalCursor_ResetColor();
 }
 
-void Display_HSLGradientPalette() {
-    RGBA buffer[Screen_Size] = { 0 };
+void DrawHSLGradientPaletteToDisplay() {
+    RGBA colors[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
-    const f64 hueInterval       = 360.0 / Screen_Width;
-    const f64 lightnessInterval = 100.0 / Screen_Height;
+    const f64 hueInterval       = 360.0 / Display_Width;
+    const f64 lightnessInterval = 100.0 / Display_Height;
 
-    for (i32 y = 0; y < Screen_Height; ++y) {
-        for (i32 x = 0; x < Screen_Width; ++x) {
-            f64 h                        = (f64)x * hueInterval;
-            f64 l                        = (f64)y * lightnessInterval;
-            HSL hsl                      = HSL_from(h, saturation, l);
-            buffer[x + y * Screen_Width] = HSL_to_RGBA(hsl);
+    for (i32 y = 0; y < Display_Height; ++y) {
+        for (i32 x = 0; x < Display_Width; ++x) {
+            f64 h                         = (f64)x * hueInterval;
+            f64 l                         = (f64)y * lightnessInterval;
+            HSL hsl                       = HSL_from(h, saturation, l);
+            colors[x + y * Display_Width] = HSL_to_RGBA(hsl);
         }
     }
-    Display_SetBuffer(buffer);
+    Display_SetBufferFromColors(colors);
 }
 
 
@@ -811,13 +835,13 @@ i32 main() {
     getch();
     Terminal_Clear();
 
-    Display_HSLGradientPalette();
+    DrawHSLGradientPaletteToDisplay();
     Display_Render();
     getch();
-    Display_HSLGradientPalette();
+    DrawHSLGradientPaletteToDisplay();
     Display_Render();
     getch();
-    Display_HSLGradientPalette();
+    DrawHSLGradientPaletteToDisplay();
     Display_Render();
     getch();
 
