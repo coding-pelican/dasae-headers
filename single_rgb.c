@@ -43,19 +43,19 @@
 
 // Check if a key has been pressed
 int kbhit() {
-    struct termios oldTermios = { 0 };
-    struct termios newTermios = { 0 };
+    struct termios oldattr = { 0 };
+    struct termios newattr = { 0 };
 
-    tcgetattr(STDIN_FILENO, &oldTermios);
-    newTermios = oldTermios;
-    newTermios.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
+    tcgetattr(STDIN_FILENO, &oldattr);
+    newattr = oldattr;
+    newattr.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
     int oldFlag = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, oldFlag | O_NONBLOCK);
 
     int ch = getchar();
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldTermios);
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
     fcntl(STDIN_FILENO, F_SETFL, oldFlag);
 
     if (ch != EOF) {
@@ -67,7 +67,19 @@ int kbhit() {
 }
 
 // Get a single character from the keyboard without waiting for a newline
-int getch() { return getchar(); }
+int getch() {
+    struct termios oldattr = { 0 };
+    struct termios newattr = { 0 };
+
+    tcgetattr(STDIN_FILENO, &oldattr);
+    newattr = oldattr;
+    newattr.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
+    int ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+
+    return ch;
+}
 #endif
 
 
