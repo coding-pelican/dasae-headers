@@ -1,29 +1,39 @@
-// `clang test_terminal_launcher.c -o test_terminal_launcher -luser32`
-// `.\test_terminal_launcher test_terminal_renderer`
+// build `clang -x c launcher.c -o launcher -O3 -static -luser32`
+// run with `.\launcher <program_to_run:game_of_life> <width:160> <height:50>`
 
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define NOMINMAX
 #include <windows.h>
 
 
-static const char* Launcher_WindowTitle = "Test Terminal Launcher";
+static const char* const Launcher_WindowTitle = "Test Terminal Launcher";
 
-static const char* Terminal_WindowTitle  = NULL;
-static const int   Terminal_WindowWidth  = 80;
-static const int   Terminal_WindowHeight = 25;
+static const char* Terminal_windowTitle  = NULL;
+static int         Terminal_windowWidth  = 80;
+static int         Terminal_windowHeight = 25;
 
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        printf("Usage: %s <program_to_run>\n", argv[0]);
+        printf("[%s] Usage: %s <program_to_run> <width> <height>\n", Launcher_WindowTitle, argv[0]);
         return 1;
     }
-    Terminal_WindowTitle = argv[1];
-
+    Terminal_windowTitle = argv[1];
     assert(Launcher_WindowTitle);
-    assert(Terminal_WindowTitle);
+    assert(Terminal_windowTitle);
+    printf("[%s] Terminal: %s\n", Launcher_WindowTitle, Terminal_windowTitle);
+
+    if (2 < argc) {
+        Terminal_windowWidth  = atoi(argv[2]);
+        Terminal_windowHeight = atoi(argv[3]);
+    }
+    assert(0 < Terminal_windowWidth);
+    assert(0 < Terminal_windowHeight);
+    printf("[%s] Terminal size: %dx%d\n", Launcher_WindowTitle, Terminal_windowWidth, Terminal_windowHeight);
 
     STARTUPINFO         startupInfo = { 0 };
     PROCESS_INFORMATION processInfo = { 0 };
@@ -37,15 +47,17 @@ int main(int argc, const char* argv[]) {
     (void)snprintf(
         command,
         sizeof(command),
-        "wt --size %d,%d -d . cmd /k .\\%s",
-        Terminal_WindowWidth,
-        Terminal_WindowHeight,
-        Terminal_WindowTitle
+        "wt --size %d,%d -d . cmd /k .\\%s %d %d",
+        Terminal_windowWidth,
+        Terminal_windowHeight,
+        Terminal_windowTitle,
+        Terminal_windowWidth,
+        Terminal_windowHeight
     );
 
     // Create process
     if (!CreateProcessA(NULL, command, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
-        printf("CreateProcess failed (%d).\n", (int)GetLastError());
+        printf("[%s] CreateProcess failed (%d).\n", Launcher_WindowTitle, (int)GetLastError());
         return 1;
     }
 
@@ -56,6 +68,6 @@ int main(int argc, const char* argv[]) {
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
 
-    printf("Windows Terminal executed successfully.\n");
+    printf("[%s] Windows Terminal executed successfully.\n", Launcher_WindowTitle);
     return 0;
 }

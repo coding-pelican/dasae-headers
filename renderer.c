@@ -1,4 +1,7 @@
-// wt --size 80,25 -d . cmd /k .\test_terminal_renderer.exe
+// build `clang -x c renderer.c -o renderer -O3 -static`
+// run with `.\launcher renderer 80 25`
+
+
 #include <conio.h>
 #include <stdio.h>
 #include <wchar.h>

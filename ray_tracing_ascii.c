@@ -1,5 +1,5 @@
-// clang -x c ray_tracing_ascii.c -o ray_tracing_ascii -O3 -static
-// run with ./ray_tracing_ascii [width] [height]
+// build `clang -x c ray_tracing_ascii.c -o ray_tracing_ascii -O3 -static`
+// run with `./ray_tracing_ascii <width:100> <height:50>`
 
 
 #include <assert.h>
@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define NOMINMAX
 #include <windows.h>
 
 

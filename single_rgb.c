@@ -20,8 +20,10 @@
  * - Cross-platform terminal setup and color support
  */
 
+// build `clang -x c single_rgb.c -o single_rgb -O3 -static`
+// run with `.\launcher single_rgb 80 25`
+// or `wt --size 80,25 -d . cmd /c .\single_rgb`
 
-// wt --size 80,25 -d . cmd /c .\single_rgb
 
 #include <assert.h>
 #include <locale.h>
@@ -35,6 +37,7 @@
 #ifdef _WIN32
 #  include <conio.h>
 #  include <corecrt.h>
+#  define NOMINMAX
 #  include <windows.h>
 #else
 #  include <fcntl.h>
