@@ -148,8 +148,8 @@ f64 f64_wrap(f64 x, f64 low, f64 high) { return (high - low <= 0.0f) ? x : fmod(
 f64 f64_wrap01(f64 x) { return f64_wrap(x, 0.0f, 1.0f); }
 
 
-typedef struct RGBA RGBA;
-struct RGBA {
+typedef struct Color RGBA;
+struct Color {
     union {
         u8 rgba[4];
         struct {
@@ -173,8 +173,8 @@ const RGBA RGBA_Green = RGBA_fromRGB(0, 255, 0);
 const RGBA RGBA_Blue  = RGBA_fromRGB(0, 0, 255);
 
 
-typedef struct HSL HSL;
-struct HSL {
+typedef struct ColorHSL HSL;
+struct ColorHSL {
     union {
         f64 hsl[3];
         struct {

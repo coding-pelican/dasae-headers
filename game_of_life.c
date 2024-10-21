@@ -96,8 +96,8 @@ typedef float_t  f32;
 typedef double_t f64;
 
 
-typedef struct RGBA RGBA;
-struct RGBA {
+typedef struct Color RGBA;
+struct Color {
     union {
         u8 rgba[4];
         struct {
