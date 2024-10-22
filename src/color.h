@@ -39,9 +39,11 @@ struct Color {
         };
     };
 };
-#define Color(...)                ((Color){ __VA_ARGS__ })
-#define Color_from(...)           ((Color){ .rgba = { __VA_ARGS__ } })
-#define Color_fromRGB(_r, _g, _b) Color_from(_r, _g, _b, 255)
+#define Color_(...)                    ((Color){ __VA_ARGS__ })
+#define Color_fromRGBA(_r, _g, _b, _a) ((Color){ .rgba = { _r, _g, _b, _a } })
+#define Color_fromRGB(_r, _g, _b)      Color_fromRGBA(_r, _g, _b, 255)
+Color    Color_fromHSLA(ColorHSL color, u8 alpha);
+Color    Color_fromHSL(ColorHSL color);
 ColorHSL Color_toHSL(Color color);
 
 
@@ -66,8 +68,9 @@ struct ColorHSL {
         };
     };
 };
-#define ColorHSL(...)      ((ColorHSL){ __VA_ARGS__ })
+#define ColorHSL_(...)     ((ColorHSL){ __VA_ARGS__ })
 #define ColorHSL_from(...) ((ColorHSL){ .hsl = { __VA_ARGS__ } })
+ColorHSL   ColorHSL_fromRGBA(Color color);
 Color      ColorHSL_toRGBA(ColorHSL color, u8 alpha);
 Color      ColorHSL_toRGB(ColorHSL color);
 static f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t);
@@ -87,6 +90,14 @@ static f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t);
 
 #include "floats.h"
 
+Color Color_fromHSLA(ColorHSL color, u8 alpha) {
+    return ColorHSL_toRGBA(color, alpha);
+}
+
+Color Color_fromHSL(ColorHSL color) {
+    return ColorHSL_toRGBA(color, 255);
+}
+
 // RGB to HSL conversion
 ColorHSL Color_toHSL(Color color) {
     f64 r = color.r / 255.0;
@@ -97,8 +108,8 @@ ColorHSL Color_toHSL(Color color) {
     f64 min  = f64_min(f64_min(r, g), b);
     f64 diff = max - min;
 
-    f64 h = f64_Nan;
-    f64 s = f64_Nan;
+    f64 h = f64_nan;
+    f64 s = f64_nan;
     f64 l = (max + min) / 2.0;
 
     if (diff != 0.0) {
@@ -120,7 +131,7 @@ ColorHSL Color_toHSL(Color color) {
     );
 }
 
-const Color Color_transparent = Color_from(0, 0, 0, 0);
+const Color Color_transparent = Color_fromRGBA(0, 0, 0, 0);
 const Color Color_black       = Color_fromRGB(0, 0, 0);
 const Color Color_white       = Color_fromRGB(255, 255, 255);
 const Color Color_red         = Color_fromRGB(255, 0, 0);
@@ -129,6 +140,43 @@ const Color Color_blue        = Color_fromRGB(0, 0, 255);
 const Color Color_yellow      = Color_fromRGB(255, 255, 0);
 const Color Color_cyan        = Color_fromRGB(0, 255, 255);
 const Color Color_magenta     = Color_fromRGB(255, 0, 255);
+
+ColorHSL ColorHSL_fromRGBA(Color color) {
+    return Color_toHSL(color);
+}
+
+// HSL to RGBA conversion
+Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
+    f64 h = color.h / 360.0;
+    f64 s = color.s / 100.0;
+    f64 l = color.l / 100.0;
+
+    f64 r = f64_nan;
+    f64 g = f64_nan;
+    f64 b = f64_nan;
+
+    if (s == 0.0) {
+        r = g = b = l;
+    } else {
+        f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+        f64 p = 2.0 * l - q;
+        r     = ColorHSL__HueToRgb(p, q, h + 1.0 / 3.0);
+        g     = ColorHSL__HueToRgb(p, q, h);
+        b     = ColorHSL__HueToRgb(p, q, h - 1.0 / 3.0);
+    }
+
+    return Color_fromRGBA(
+        (u8)f64_clamp(r * 255.0, 0, 255.0),
+        (u8)f64_clamp(g * 255.0, 0, 255.0),
+        (u8)f64_clamp(b * 255.0, 0, 255.0),
+        alpha
+    );
+}
+
+// HSL to RGB conversion
+Color ColorHSL_toRGB(ColorHSL color) {
+    return ColorHSL_toRGBA(color, 255);
+}
 
 // Helper function for HSL to RGB conversion
 f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t) {
@@ -148,39 +196,6 @@ f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t) {
         return p + (q - p) * (2.0 / 3.0 - t) * 6.0;
     }
     return p;
-}
-
-// HSL to RGBA conversion
-Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
-    f64 h = color.h / 360.0;
-    f64 s = color.s / 100.0;
-    f64 l = color.l / 100.0;
-
-    f64 r = NAN;
-    f64 g = NAN;
-    f64 b = NAN;
-
-    if (s == 0.0) {
-        r = g = b = l;
-    } else {
-        f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
-        f64 p = 2.0 * l - q;
-        r     = ColorHSL__HueToRgb(p, q, h + 1.0 / 3.0);
-        g     = ColorHSL__HueToRgb(p, q, h);
-        b     = ColorHSL__HueToRgb(p, q, h - 1.0 / 3.0);
-    }
-
-    return Color_from(
-        (u8)f64_clamp(r * 255.0, 0, 255.0),
-        (u8)f64_clamp(g * 255.0, 0, 255.0),
-        (u8)f64_clamp(b * 255.0, 0, 255.0),
-        alpha
-    );
-}
-
-// HSL to RGB conversion
-Color ColorHSL_toRGB(ColorHSL color) {
-    return ColorHSL_toRGBA(color, 255);
 }
 
 #endif /* COLOR_IMPL */
