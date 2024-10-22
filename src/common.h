@@ -14,11 +14,11 @@
  */
 
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMON_INCLUDED
+#define COMMON_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif // defined(__cplusplus)
+#endif /* defined(__cplusplus) */
 
 
 #include "primitive_types.h"
@@ -39,5 +39,5 @@ extern "C" {
 
 #if defined(__cplusplus)
 }
-#endif // defined(__cplusplus)
-#endif // COMMON_H
+#endif /* defined(__cplusplus) */
+#endif /* COMMON_INCLUDED */

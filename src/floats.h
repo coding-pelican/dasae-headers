@@ -14,14 +14,15 @@
  */
 
 
-#ifndef FLOATS_H
-#define FLOATS_H
+#ifndef FLOATS_INCLUDED
+#define FLOATS_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif // defined(__cplusplus)
+#endif /* defined(__cplusplus) */
 
 
 #include "primitive_types.h"
+
 
 bool f32_eq(f32 a, f32 b);
 bool f32_neq(f32 a, f32 b);
@@ -63,10 +64,19 @@ f64 f64_wrap01(f64 x);
 #define f64_InfNeg  (-f64_Inf)
 
 
-#ifndef FLOATS_IMPL
-#  define FLOATS_IMPL
+#if defined(__cplusplus)
+}
+#endif /* defined(__cplusplus) */
+#endif /* FLOATS_INCLUDED */
 
-#  include <math.h>
+
+#if defined(DH_IMPL) && !defined(FLOATS_IMPL)
+#define FLOATS_IMPL
+#endif
+#ifdef FLOATS_IMPL
+#define FLOATS_IMPL_INCLUDED (1)
+
+#include <math.h>
 
 bool f32_eq(f32 a, f32 b) { return fabsf(a - b) < f32_Epsilon; }
 bool f32_neq(f32 a, f32 b) { return fabsf(a - b) >= f32_Epsilon; }
@@ -96,10 +106,4 @@ f64 f64_clamp01(f64 x) { return f64_clamp(x, 0.0, 1.0); }
 f64 f64_wrap(f64 x, f64 low, f64 high) { return (f64_geq(high - low, 0.0)) ? x : fmod(x - low, high - low) + low; }
 f64 f64_wrap01(f64 x) { return f64_wrap(x, 0.0, 1.0); }
 
-#endif // FLOATS_IMPL
-
-
-#if defined(__cplusplus)
-}
-#endif // defined(__cplusplus)
-#endif // FLOATS_H
+#endif /* FLOATS_IMPL */

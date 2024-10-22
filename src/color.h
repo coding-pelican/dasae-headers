@@ -14,11 +14,11 @@
  */
 
 
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef COLOR_INCLUDED
+#define COLOR_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif // defined(__cplusplus)
+#endif /* defined(__cplusplus) */
 
 
 #include "primitive_types.h"
@@ -39,14 +39,9 @@ struct Color {
         };
     };
 };
-#define Color(...) (       \
-    (Color){ __VA_ARGS__ } \
-)
-#define Color_from(...) (                  \
-    (Color){ { .rgba = { __VA_ARGS__ } } } \
-)
-#define Color_fromRGB(_r, _g, _b) \
-    Color_from(_r, _g, _b, 255)
+#define Color(...)                ((Color){ __VA_ARGS__ })
+#define Color_from(...)           ((Color){ .rgba = { __VA_ARGS__ } })
+#define Color_fromRGB(_r, _g, _b) Color_from(_r, _g, _b, 255)
 ColorHSL Color_toHSL(Color color);
 
 
@@ -61,7 +56,6 @@ extern const Color Color_Cyan;
 extern const Color Color_Magenta;
 
 
-
 struct ColorHSL {
     union {
         f64 hsl[3]; // HSL color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
@@ -72,20 +66,26 @@ struct ColorHSL {
         };
     };
 };
-#define ColorHSL(...) (       \
-    (ColorHSL){ __VA_ARGS__ } \
-)
-#define ColorHSL_from(...) (                 \
-    (ColorHSL){ { .hsl = { __VA_ARGS__ } } } \
-)
-Color ColorHSL_toRGBA(ColorHSL color, u8 alpha);
-Color ColorHSL_toRGB(ColorHSL color);
+#define ColorHSL(...)      ((ColorHSL){ __VA_ARGS__ })
+#define ColorHSL_from(...) ((ColorHSL){ .hsl = { __VA_ARGS__ } })
+Color      ColorHSL_toRGBA(ColorHSL color, u8 alpha);
+Color      ColorHSL_toRGB(ColorHSL color);
+static f64 ColorHSL__hue2rgb(f64 p, f64 q, f64 t);
 
 
-#ifndef COLOR_IMPL
-#  define COLOR_IMPL
+#if defined(__cplusplus)
+}
+#endif /* defined(__cplusplus) */
+#endif /* COLOR_INCLUDED */
 
-#  include "floats.h"
+
+#if defined(DH_IMPL) && !defined(COLOR_IMPL)
+#define COLOR_IMPL
+#endif
+#ifdef COLOR_IMPL
+#define COLOR_IMPL_INCLUDED (1)
+
+#include "floats.h"
 
 // RGB to HSL conversion
 ColorHSL Color_toHSL(Color color) {
@@ -131,7 +131,7 @@ const Color Color_Cyan        = Color_fromRGB(0, 255, 255);
 const Color Color_Magenta     = Color_fromRGB(255, 0, 255);
 
 // Helper function for HSL to RGB conversion
-static f64 ColorHSL_hue2rgb(f64 p, f64 q, f64 t) {
+f64 ColorHSL__hue2rgb(f64 p, f64 q, f64 t) {
     if (t < 0.0) {
         t += 1;
     }
@@ -165,9 +165,9 @@ Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = ColorHSL_hue2rgb(p, q, h + 1.0 / 3.0);
-        g     = ColorHSL_hue2rgb(p, q, h);
-        b     = ColorHSL_hue2rgb(p, q, h - 1.0 / 3.0);
+        r     = ColorHSL__hue2rgb(p, q, h + 1.0 / 3.0);
+        g     = ColorHSL__hue2rgb(p, q, h);
+        b     = ColorHSL__hue2rgb(p, q, h - 1.0 / 3.0);
     }
 
     return Color_from(
@@ -183,10 +183,4 @@ Color ColorHSL_toRGB(ColorHSL color) {
     return ColorHSL_toRGBA(color, 255);
 }
 
-#endif // COLOR_IMPL
-
-
-#if defined(__cplusplus)
-}
-#endif // defined(__cplusplus)
-#endif // COLOR_H
+#endif /* COLOR_IMPL */

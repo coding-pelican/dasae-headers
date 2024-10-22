@@ -14,11 +14,11 @@
  */
 
 
-#ifndef PRIMITIVE_TYPES_H
-#define PRIMITIVE_TYPES_H
+#ifndef PRIMITIVE_TYPES_INCLUDED
+#define PRIMITIVE_TYPES_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif // defined(__cplusplus)
+#endif /* defined(__cplusplus) */
 
 
 #include <stdbool.h>
@@ -67,5 +67,5 @@ typedef wchar_t wchar;
 
 #if defined(__cplusplus)
 }
-#endif // defined(__cplusplus)
-#endif // PRIMITIVE_TYPES_H
+#endif /* defined(__cplusplus) */
+#endif /* PRIMITIVE_TYPES_INCLUDED */
