@@ -4,6 +4,6 @@
 
 int main() {
     printf("Hello, world!\n");
-    printColorChannel();
+    PrintColorChannel();
     return 0;
 }

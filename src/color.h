@@ -45,15 +45,15 @@ struct Color {
 ColorHSL Color_toHSL(Color color);
 
 
-extern const Color Color_Transparent;
-extern const Color Color_Black;
-extern const Color Color_White;
-extern const Color Color_Red;
-extern const Color Color_Green;
-extern const Color Color_Blue;
-extern const Color Color_Yellow;
-extern const Color Color_Cyan;
-extern const Color Color_Magenta;
+extern const Color Color_transparent;
+extern const Color Color_black;
+extern const Color Color_white;
+extern const Color Color_red;
+extern const Color Color_green;
+extern const Color Color_blue;
+extern const Color Color_yellow;
+extern const Color Color_cyan;
+extern const Color Color_magenta;
 
 
 struct ColorHSL {
@@ -70,7 +70,7 @@ struct ColorHSL {
 #define ColorHSL_from(...) ((ColorHSL){ .hsl = { __VA_ARGS__ } })
 Color      ColorHSL_toRGBA(ColorHSL color, u8 alpha);
 Color      ColorHSL_toRGB(ColorHSL color);
-static f64 ColorHSL__hue2rgb(f64 p, f64 q, f64 t);
+static f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t);
 
 
 #if defined(__cplusplus)
@@ -120,18 +120,18 @@ ColorHSL Color_toHSL(Color color) {
     );
 }
 
-const Color Color_Transparent = Color_from(0, 0, 0, 0);
-const Color Color_Black       = Color_fromRGB(0, 0, 0);
-const Color Color_White       = Color_fromRGB(255, 255, 255);
-const Color Color_Red         = Color_fromRGB(255, 0, 0);
-const Color Color_Green       = Color_fromRGB(0, 255, 0);
-const Color Color_Blue        = Color_fromRGB(0, 0, 255);
-const Color Color_Yellow      = Color_fromRGB(255, 255, 0);
-const Color Color_Cyan        = Color_fromRGB(0, 255, 255);
-const Color Color_Magenta     = Color_fromRGB(255, 0, 255);
+const Color Color_transparent = Color_from(0, 0, 0, 0);
+const Color Color_black       = Color_fromRGB(0, 0, 0);
+const Color Color_white       = Color_fromRGB(255, 255, 255);
+const Color Color_red         = Color_fromRGB(255, 0, 0);
+const Color Color_green       = Color_fromRGB(0, 255, 0);
+const Color Color_blue        = Color_fromRGB(0, 0, 255);
+const Color Color_yellow      = Color_fromRGB(255, 255, 0);
+const Color Color_cyan        = Color_fromRGB(0, 255, 255);
+const Color Color_magenta     = Color_fromRGB(255, 0, 255);
 
 // Helper function for HSL to RGB conversion
-f64 ColorHSL__hue2rgb(f64 p, f64 q, f64 t) {
+f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t) {
     if (t < 0.0) {
         t += 1;
     }
@@ -165,9 +165,9 @@ Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = ColorHSL__hue2rgb(p, q, h + 1.0 / 3.0);
-        g     = ColorHSL__hue2rgb(p, q, h);
-        b     = ColorHSL__hue2rgb(p, q, h - 1.0 / 3.0);
+        r     = ColorHSL__HueToRgb(p, q, h + 1.0 / 3.0);
+        g     = ColorHSL__HueToRgb(p, q, h);
+        b     = ColorHSL__HueToRgb(p, q, h - 1.0 / 3.0);
     }
 
     return Color_from(

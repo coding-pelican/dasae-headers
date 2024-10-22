@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <locale.h>
 #include <math.h>
-#include <processenv.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 
-void printColorChannel() {
-    printf("Red: %d\n", Color_Red.r);
-    printf("Green: %d\n", Color_Red.g);
-    printf("Blue: %d\n", Color_Red.b);
+void PrintColorChannel() {
+    printf("Red: %d\n", Color_red.r);
+    printf("Green: %d\n", Color_red.g);
+    printf("Blue: %d\n", Color_red.b);
 }
