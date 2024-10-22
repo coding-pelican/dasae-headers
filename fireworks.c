@@ -71,7 +71,6 @@ void Particle_Update(RefT(Particle) self) {
 
     self->lifetime -= self->fading;
 }
-
 void Particle_Render(RefT(Particle) self) {
     Assert(self);
     if (Particle_IsDead(self)) { return; }
@@ -237,7 +236,7 @@ static bool Firework__DeadsAllEffect(RefT(Firework) self) {
     }
     return true;
 }
-bool Firework_isDead(RefT(Firework) self) {
+bool Firework_IsDead(RefT(Firework) self) {
     return self->rocket == nullptr && (self->effectCount == 0 || Firework__DeadsAllEffect(self));
 }
 

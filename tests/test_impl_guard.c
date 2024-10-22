@@ -1,6 +1,6 @@
 #define DH_IMPL
 #include "test_impl_guard.h"
-#include "color.h"
+#include "../src/color.h"
 #include <stdio.h>
 
 

@@ -1,4 +1,4 @@
-#include "assert.h"
+#include "../src/assert.h"
 
 
 int main() {

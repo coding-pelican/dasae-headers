@@ -70,25 +70,45 @@ extern "C" {
 
 
 /* Assert without additional message */
-#  define Assert(_Expression)                                                                                                                \
-      do {                                                                                                                                   \
-          if (!(_Expression)) {                                                                                                              \
-              (void)fprintf(stderr, "Assertion failed: %s\nFile: %s\nLine: %d\nFunction: %s\n", #_Expression, __FILE__, __LINE__, __func__); \
-              DEBUG_BREAK();                                                                                                                 \
-              abort();                                                                                                                       \
-          }                                                                                                                                  \
+#  define Assert(_Expression)                                                 \
+      do {                                                                    \
+          if (!(_Expression)) {                                               \
+              (void)fprintf(                                                  \
+                  stderr,                                                     \
+                  "Assertion failed: %s\nFile: %s\nLine: %d\nFunction: %s\n", \
+                  #_Expression,                                               \
+                  __FILE__,                                                   \
+                  __LINE__,                                                   \
+                  __func__                                                    \
+              );                                                              \
+              DEBUG_BREAK();                                                  \
+              abort();                                                        \
+          }                                                                   \
       } while (0)
 
 /* Assert with additional formatted message */
-#  define AssertMessage(_Expression, ...)                                                                  \
-      do {                                                                                                 \
-          if (!(_Expression)) {                                                                            \
-              (void)fprintf(stderr, "Assertion failed: %s\n", #_Expression);                               \
-              (void)fprintf(stderr, __VA_ARGS__);                                                          \
-              (void)fprintf(stderr, "\nFile: %s\nLine: %d\nFunction: %s\n", __FILE__, __LINE__, __func__); \
-              DEBUG_BREAK();                                                                               \
-              abort();                                                                                     \
-          }                                                                                                \
+#  define AssertMessage(_Expression, ...)                 \
+      do {                                                \
+          if (!(_Expression)) {                           \
+              (void)fprintf(                              \
+                  stderr,                                 \
+                  "Assertion failed: %s\n",               \
+                  #_Expression                            \
+              );                                          \
+              (void)fprintf(                              \
+                  stderr,                                 \
+                  __VA_ARGS__                             \
+              );                                          \
+              (void)fprintf(                              \
+                  stderr,                                 \
+                  "\nFile: %s\nLine: %d\nFunction: %s\n", \
+                  __FILE__,                               \
+                  __LINE__,                               \
+                  __func__                                \
+              );                                          \
+              DEBUG_BREAK();                              \
+              abort();                                    \
+          }                                               \
       } while (0)
 
 #endif /* NDEBUG */

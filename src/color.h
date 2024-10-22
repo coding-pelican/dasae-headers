@@ -93,11 +93,9 @@ static f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t);
 Color Color_fromHSLA(ColorHSL color, u8 alpha) {
     return ColorHSL_toRGBA(color, alpha);
 }
-
 Color Color_fromHSL(ColorHSL color) {
     return ColorHSL_toRGBA(color, 255);
 }
-
 // RGB to HSL conversion
 ColorHSL Color_toHSL(Color color) {
     f64 r = color.r / 255.0;
@@ -144,7 +142,6 @@ const Color Color_magenta     = Color_fromRGB(255, 0, 255);
 ColorHSL ColorHSL_fromRGBA(Color color) {
     return Color_toHSL(color);
 }
-
 // HSL to RGBA conversion
 Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
     f64 h = color.h / 360.0;
@@ -172,12 +169,10 @@ Color ColorHSL_toRGBA(ColorHSL color, u8 alpha) {
         alpha
     );
 }
-
 // HSL to RGB conversion
 Color ColorHSL_toRGB(ColorHSL color) {
     return ColorHSL_toRGBA(color, 255);
 }
-
 // Helper function for HSL to RGB conversion
 f64 ColorHSL__HueToRgb(f64 p, f64 q, f64 t) {
     if (t < 0.0) {
