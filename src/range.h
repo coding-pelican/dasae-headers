@@ -25,8 +25,6 @@ extern "C" {
 
 
 typedef struct Range Range;
-
-
 struct Range {
     usize start; // start index in array
     usize end; // end index in array
@@ -34,9 +32,9 @@ struct Range {
 #define Range_(...)               ((Range){ __VA_ARGS__ })
 #define Range_make_(_start, _end) Range_(.start = (_start), .end = (_end))
 Range Range_make(usize start, usize end);
-usize Range_Length(const RefT(Range) self);
-bool  Range_IsValid(const RefT(Range) self);
-bool  Range_Contains(const RefT(Range) self, usize index);
+usize Range_Length(const Ref(Range) self);
+bool  Range_IsValid(const Ref(Range) self);
+bool  Range_Contains(const Ref(Range) self, usize index);
 
 bool Range_eq(Range a, Range b);
 bool Range_ne(Range a, Range b);
@@ -46,41 +44,3 @@ bool Range_ne(Range a, Range b);
 }
 #endif /* defined(__cplusplus) */
 #endif /* RANGE_INCLUDED */
-
-
-#if defined(DH_IMPL) && !defined(RANGE_IMPL)
-#define RANGE_IMPL
-#endif
-#ifdef RANGE_IMPL
-#define RANGE_IMPL_INCLUDED (1)
-
-#include "assert.h"
-
-Range Range_make(usize start, usize end) {
-    Assert(start <= end);
-    return Range_(start, end);
-}
-
-// length == (end - start + 1)
-usize Range_Length(const RefT(Range) self) {
-    return self->end - self->start + 1;
-}
-
-bool Range_IsValid(const RefT(Range) self) {
-    return self->start <= self->end;
-}
-
-// index must be in range [start, end)
-bool Range_Contains(const RefT(Range) self, usize index) {
-    return self->start <= index && index < self->end;
-}
-
-bool Range_eq(Range a, Range b) {
-    return a.start == b.start && a.end == b.end;
-}
-
-bool Range_ne(Range a, Range b) {
-    return a.start != b.start || a.end != b.end;
-}
-
-#endif /* RANGE_IMPL */

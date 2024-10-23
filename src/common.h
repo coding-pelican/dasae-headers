@@ -24,13 +24,13 @@ extern "C" {
 #include "primitive_types.h"
 
 
-#define Swap(_Type, _a, _b)      \
-    do {                         \
-        PtrT(_Type) __a = &(_a); \
-        PtrT(_Type) __b = &(_b); \
-        _Type __t       = *__a;  \
-        *__a            = *__b;  \
-        *__b            = __t;   \
+#define Swap(_Type, _a, _b)     \
+    do {                        \
+        Ptr(_Type) __a = &(_a); \
+        Ptr(_Type) __b = &(_b); \
+        _Type __t      = *__a;  \
+        *__a           = *__b;  \
+        *__b           = __t;   \
     } while (false)
 
 #define UnusedValue(_param) ((void)(_param))

@@ -1,15 +1,42 @@
-#include "assert.h"
+#ifndef CANVAS_INCLUDED
+#define CANVAS_INCLUDED (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+
 #include "color.h"
-#include "common.h"
 #include "primitive_types.h"
-#include "range.h"
 
 
-typedef struct CanvasBuffer CanvasBuffer;
-typedef struct Canvas       Canvas;
+typedef struct Rect        Rect;
+typedef struct FrameBuffer FrameBuffer;
+typedef struct Canvas      Canvas;
 
 
-struct CanvasBuffer {
+struct Rect {
+    union {
+        i64 components[4];
+        struct {
+            i64 x;
+            i64 y;
+            i64 width;
+            i64 height;
+        };
+        struct {
+            i64 minX;
+            i64 minY;
+            i64 maxX;
+            i64 maxY;
+        };
+    };
+};
+#define Rect_(...)                                  ((Rect){ __VA_ARGS__ })
+#define Rect_Make(_x, _y, _width, _height)          (Rect_(.x = (_x), .y = (_y), .width = (_width), .height = (_height)))
+#define Rect_FromMinMax(_minX, _minY, _maxX, _maxY) (Rect_(.minX = (_minX), .minY = (_minY), .maxX = (_maxX), .maxY = (_maxY)))
+
+
+struct FrameBuffer {
     Color* data_;
     union {
         u32 dimensions_[2];
@@ -20,228 +47,64 @@ struct CanvasBuffer {
     };
     u32 size_;
 };
-CanvasBuffer  FrameBuffer_new(u32 width, u32 height);
-CanvasBuffer* FrameBuffer_withColor(RefT(CanvasBuffer) self, Color color);
-CanvasBuffer* FrameBuffer_withColorRange(RefT(CanvasBuffer) self, Color color, usize rangeBegin, usize rangeEnd);
-Color*        FrameBuffer_data(RefT(CanvasBuffer) self);
-u32           FrameBuffer_width(const RefT(CanvasBuffer) self);
-u32           FrameBuffer_height(const RefT(CanvasBuffer) self);
-u32           FrameBuffer_size(const RefT(CanvasBuffer) self);
-Color*        FrameBuffer_at(RefT(CanvasBuffer) self, usize x, usize y);
-Color*        FrameBuffer_GetRange(RefT(CanvasBuffer) self, usize rangeBegin, usize rangeEnd);
-void          FrameBuffer_SetRange(RefT(CanvasBuffer) self, Color color, usize rangeBegin, usize rangeEnd);
-void          FrameBuffer_SetRangeColors(RefT(CanvasBuffer) self, Color* colors, usize rangeBegin, usize rangeEnd);
-void          FrameBuffer_Clear(RefT(CanvasBuffer) self, Color color);
+FrameBuffer* new_FrameBuffer();
+FrameBuffer* FrameBuffer_Init(Ref(FrameBuffer) self, u32 width, u32 height);
+FrameBuffer* FrameBuffer_InitWithColor(Ref(FrameBuffer) self, Color color);
+FrameBuffer* FrameBuffer_InitWithColorRange(Ref(FrameBuffer) self, Color color, usize rangeStart, usize rangeEnd);
+void         FrameBuffer_Fini(Ref(FrameBuffer) self);
+void         delete_FrameBuffer(Ref(FrameBuffer*) buffer);
+
+const Color* FrameBuffer_ReadData(const Ref(FrameBuffer) self);
+Color*       FrameBuffer_AccessData(Ref(FrameBuffer) self);
+u32          FrameBuffer_Width(const Ref(FrameBuffer) self);
+u32          FrameBuffer_Height(const Ref(FrameBuffer) self);
+u32          FrameBuffer_Size(const Ref(FrameBuffer) self);
+const Color* FrameBuffer_ReadAt(const Ref(FrameBuffer) self, usize x, usize y);
+Color*       FrameBuffer_AccessAt(Ref(FrameBuffer) self, usize x, usize y);
+Color        FrameBuffer_Get(const Ref(FrameBuffer) self, usize x, usize y);
+void         FrameBuffer_Set(Ref(FrameBuffer) self, Color color, usize x, usize y);
+Color*       FrameBuffer_GetRange(const Ref(FrameBuffer) self, usize rangeStart, usize rangeEnd);
+void         FrameBuffer_SetRange(Ref(FrameBuffer) self, Color color, usize rangeStart, usize rangeEnd);
+void         FrameBuffer_SetRangeColors(Ref(FrameBuffer) self, Color* colors, usize rangeStart, usize rangeEnd);
+void         FrameBuffer_Clear(Ref(FrameBuffer) self, Color color);
 
 
 struct Canvas {
     union {
-        CanvasBuffer buffers_[2];
+        FrameBuffer buffers_[2];
         struct {
-            CanvasBuffer back_[1];
-            CanvasBuffer front_[1];
+            FrameBuffer back_[1];
+            FrameBuffer front_[1];
         };
     };
-    CanvasBuffer* current_;
-    CanvasBuffer* next_;
+    FrameBuffer* current_;
+    FrameBuffer* next_;
 };
-Canvas        Canvas_new(u32 width, u32 height);
-Canvas*       Canvas_withColor(RefT(Canvas) self, Color color);
-Canvas*       Canvas_withColorRange(RefT(Canvas) self, Color color, usize rangeBegin, usize rangeEnd);
-CanvasBuffer* Canvas_buffer(RefT(Canvas) self);
-Color*        Canvas_at(RefT(Canvas) self, usize x, usize y);
-Color*        Canvas_GetRange(RefT(Canvas) self, usize rangeBegin, usize rangeEnd);
-void          Canvas_SetRange(RefT(Canvas) self, usize rangeBegin, usize rangeEnd, Color color);
-void          Canvas_SetRangeColors(RefT(Canvas) self, usize rangeBegin, usize rangeEnd, Color* colors);
-void          Canvas_Clear(RefT(Canvas) self, Color color);
-void          Canvas_Swap(RefT(Canvas) self);
-void          Canvas_Draw(RefT(Canvas) self, u32 x, u32 y, Color color);
-void          Canvas_DrawPoint(RefT(Canvas) self, u32 x, u32 y, Color color);
+Canvas* new_Canvas();
+Canvas* Canvas_Init(Ref(Canvas) self, u32 width, u32 height);
+Canvas* Canvas_InitWithColor(Ref(Canvas) self, Color color);
+Canvas* Canvas_InitWithColorRange(Ref(Canvas) self, Color color, usize rangeStart, usize rangeEnd);
+void    Canvas_Fini(Ref(Canvas) self);
+void    delete_Canvas(Ref(Canvas*) canvas);
+
+const FrameBuffer* Canvas_ReadBuffer(const Ref(Canvas) self);
+FrameBuffer*       Canvas_AccessBuffer(Ref(Canvas) self);
+const Color*       Canvas_ReadAt(const Ref(Canvas) self, usize x, usize y);
+Color*             Canvas_AccessAt(Ref(Canvas) self, usize x, usize y);
+Color              Canvas_Get(const Ref(Canvas) self, usize x, usize y);
+void               Canvas_Set(Ref(Canvas) self, usize x, usize y, Color color);
+Color*             Canvas_GetRange(const Ref(Canvas) self, usize rangeStart, usize rangeEnd);
+void               Canvas_SetRange(Ref(Canvas) self, usize rangeStart, usize rangeEnd, Color color);
+void               Canvas_SetRangeColors(Ref(Canvas) self, usize rangeStart, usize rangeEnd, Color* colors);
+void               Canvas_Clear(Ref(Canvas) self, Color color);
+void               Canvas_Swap(Ref(Canvas) self);
+void               Canvas_Draw(Ref(Canvas) self, u32 x, u32 y, Color color);
+void               Canvas_DrawPoint(Ref(Canvas) self, u32 x, u32 y, Color color);
+void               Canvas_FillRect(Ref(Canvas) self, Rect rect, Color color);
+Rect               Canvas_NormalizeRect(Ref(Canvas) self, Rect rect);
 
 
-CanvasBuffer FrameBuffer_new(u32 width, u32 height) {
-    return (CanvasBuffer){
-        .data_       = (Color*)malloc((usize)width * (usize)height * sizeof(Color)),
-        .dimensions_ = { width, height },
-        .size_       = width * height
-    };
+#if defined(__cplusplus)
 }
-
-CanvasBuffer* FrameBuffer_withColor(RefT(CanvasBuffer) self, Color color) {
-    Assert(self);
-    for (usize i = 0; i < self->size_; ++i) {
-        self->data_[i] = color;
-    }
-    return self;
-}
-
-CanvasBuffer* FrameBuffer_withColorRange(RefT(CanvasBuffer) self, Color color, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= self->size_);
-    for (usize i = rangeBegin; i < rangeEnd; ++i) {
-        self->data_[i] = color;
-    }
-    return self;
-}
-
-Color* FrameBuffer_data(RefT(CanvasBuffer) self) {
-    Assert(self);
-    return self->data_;
-}
-
-u32 FrameBuffer_width(const RefT(CanvasBuffer) self) {
-    Assert(self);
-    return self->width_;
-}
-
-u32 FrameBuffer_height(const RefT(CanvasBuffer) self) {
-    Assert(self);
-    return self->height_;
-}
-
-u32 FrameBuffer_size(const RefT(CanvasBuffer) self) {
-    Assert(self);
-    return self->size_;
-}
-
-Color* FrameBuffer_at(RefT(CanvasBuffer) self, usize x, usize y) {
-    Assert(self);
-    Assert(0 <= x);
-    Assert(x < self->width_);
-    Assert(0 <= y);
-    Assert(y < self->height_);
-    return self->data_ + (y * self->width_) + x;
-}
-
-// TODO: Impl Slice and Range Type
-Color* FrameBuffer_GetRange(RefT(CanvasBuffer) self, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= self->size_);
-    return self->data_ + rangeBegin;
-}
-
-void FrameBuffer_SetRange(RefT(CanvasBuffer) self, Color color, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= self->size_);
-    for (usize i = rangeBegin; i < rangeEnd; ++i) {
-        self->data_[i] = color;
-    }
-}
-
-void FrameBuffer_SetRangeColors(RefT(CanvasBuffer) self, Color* colors, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= self->size_);
-    for (usize i = rangeBegin; i < rangeEnd; ++i) {
-        self->data_[i] = colors[i];
-    }
-}
-
-void FrameBuffer_Clear(RefT(CanvasBuffer) self, Color color) {
-    Assert(self);
-    for (usize i = 0; i < self->size_; ++i) {
-        self->data_[i] = color;
-    }
-}
-
-
-// TODO: Blitting functions
-Canvas Canvas_new(u32 width, u32 height) {
-    Canvas canvas = {
-        .buffers_ = {
-            FrameBuffer_new(width, height),
-            FrameBuffer_new(width, height) }
-    };
-    canvas.current_ = &canvas.back_[0];
-    canvas.next_    = &canvas.front_[0];
-    return canvas;
-}
-
-Canvas* Canvas_withColor(RefT(Canvas) self, Color color) {
-    Assert(self);
-    FrameBuffer_withColor(self->current_, color);
-    return self;
-}
-
-Canvas* Canvas_withColorRange(RefT(Canvas) self, Color color, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= FrameBuffer_size(self->current_));
-    FrameBuffer_withColorRange(self->current_, color, rangeBegin, rangeEnd);
-    return self;
-}
-
-CanvasBuffer* Canvas_buffer(RefT(Canvas) self) {
-    Assert(self);
-    return self->next_;
-}
-
-Color* Canvas_at(RefT(Canvas) self, usize x, usize y) {
-    Assert(self);
-    Assert(0 <= x);
-    Assert(x < FrameBuffer_width(Canvas_buffer(self)));
-    Assert(0 <= y);
-    Assert(y < FrameBuffer_height(Canvas_buffer(self)));
-    return FrameBuffer_at(Canvas_buffer(self), x, y);
-}
-
-// TODO: Impl Slice and Range Type
-Color* Canvas_GetRange(RefT(Canvas) self, usize rangeBegin, usize rangeEnd) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= FrameBuffer_size(Canvas_buffer(self)));
-    return FrameBuffer_GetRange(Canvas_buffer(self), rangeBegin, rangeEnd);
-}
-
-void Canvas_SetRange(RefT(Canvas) self, usize rangeBegin, usize rangeEnd, Color color) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= FrameBuffer_size(Canvas_buffer(self)));
-    FrameBuffer_SetRange(Canvas_buffer(self), color, rangeBegin, rangeEnd);
-}
-
-void Canvas_SetRangeColors(RefT(Canvas) self, usize rangeBegin, usize rangeEnd, Color* colors) {
-    Assert(self);
-    Assert(0 <= rangeBegin);
-    Assert(rangeBegin <= rangeEnd);
-    Assert(rangeEnd <= FrameBuffer_size(Canvas_buffer(self)));
-    FrameBuffer_SetRangeColors(Canvas_buffer(self), colors, rangeBegin, rangeEnd);
-}
-
-void Canvas_Clear(RefT(Canvas) self, Color color) {
-    Assert(self);
-    FrameBuffer_Clear(Canvas_buffer(self), color);
-}
-
-void Canvas_Swap(RefT(Canvas) self) {
-    Assert(self);
-    Swap(CanvasBuffer*, self->current_, self->next_);
-}
-
-void Canvas_Draw(RefT(Canvas) self, u32 x, u32 y, Color color) {
-    Assert(self);
-    Assert(0 <= x);
-    Assert(x < FrameBuffer_width(Canvas_buffer(self)));
-    Assert(0 <= y);
-    Assert(y < FrameBuffer_height(Canvas_buffer(self)));
-    FrameBuffer_at(Canvas_buffer(self), x, y)[0] = color;
-}
-
-void Canvas_DrawPoint(RefT(Canvas) self, u32 x, u32 y, Color color) {
-    Assert(self);
-    Assert(0 <= x);
-    Assert(x < FrameBuffer_width(Canvas_buffer(self)));
-    Assert(0 <= y);
-    Assert(y < FrameBuffer_height(Canvas_buffer(self)));
-    FrameBuffer_at(Canvas_buffer(self), x, y)[0] = color;
-}
+#endif /* defined(__cplusplus) */
+#endif /* CANVAS_INCLUDED */

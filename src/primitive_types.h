@@ -29,8 +29,8 @@ extern "C" {
 #endif // defined(_WIN32) || defined(_WIN64)
 
 
-#define PtrT(_Type) _Type*
-#define RefT(_Type) _Type* const
+#define Ptr(_Type) _Type*
+#define Ref(_Type) _Type* const
 
 #ifndef NULL
 #  define NULL ((void*)0)
