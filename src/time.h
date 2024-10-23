@@ -49,16 +49,16 @@ typedef SystemTimeUnix  SystemTime;
 #endif
 
 
-#define Time_nanosPerSec   ((u32)(1000u * 1000u * 1000u))
-#define Time_nanosPerMilli ((u32)(1000u * 1000u))
-#define Time_nanosPerMicro ((u32)(1000u))
-#define Time_millisPerSec  ((u32)(1000u))
-#define Time_microsPerSec  ((u32)(1000u * 1000u))
+static const u32 Time_nanosPerSec   = 1000u * 1000u * 1000u;
+static const u32 Time_nanosPerMilli = 1000u * 1000u;
+static const u32 Time_nanosPerMicro = 1000u;
+static const u32 Time_millisPerSec  = 1000u;
+static const u32 Time_microsPerSec  = 1000u * 1000u;
 
-#define Time_secsPerMinute ((u64)(60ull))
-#define Time_minsPerHour   ((u64)(60ull))
-#define Time_hoursPerDay   ((u64)(24ull))
-#define Time_daysPerWeek   ((u64)(7ull))
+static const u64 Time_secsPerMinute = 60ull;
+static const u64 Time_minsPerHour   = 60ull;
+static const u64 Time_hoursPerDay   = 24ull;
+static const u64 Time_daysPerWeek   = 7ull;
 
 
 struct Duration {
@@ -89,11 +89,11 @@ bool Duration_gt(Duration a, Duration b);
 bool Duration_ge(Duration a, Duration b);
 bool Duration_IsZero(Duration duration);
 
-#define Duration_zero        (Duration_fromNanos_(0))
-#define Duration_second      (Duration_fromSecs_(1))
-#define Duration_millisecond (Duration_fromMillis_(1))
-#define Duration_microsecond (Duration_fromMicros_(1))
-#define Duration_nanosecond  (Duration_fromNanos_(1))
+static const Duration Duration_zero        = Duration_fromNanos_(0);
+static const Duration Duration_second      = Duration_fromSecs_(1);
+static const Duration Duration_millisecond = Duration_fromMillis_(1);
+static const Duration Duration_microsecond = Duration_fromMicros_(1);
+static const Duration Duration_nanosecond  = Duration_fromNanos_(1);
 
 
 struct Instant {
@@ -127,7 +127,6 @@ static void          SystemTime__InitFrequency();
 #endif /* TIME_INCLUDED */
 
 
-#define TIME_IMPL
 #if defined(DH_IMPL) && !defined(TIME_IMPL)
 #define TIME_IMPL
 #endif

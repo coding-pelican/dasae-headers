@@ -104,6 +104,7 @@ void Particle_Render(RefT(Particle) self) {
     }
 } */
 
+
 typedef struct Firework Firework;
 struct Firework {
     Particle* rocket;
