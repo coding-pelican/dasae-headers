@@ -46,16 +46,15 @@ Color    Color_fromHSLA(ColorHSL color, u8 alpha);
 Color    Color_fromHSL(ColorHSL color);
 ColorHSL Color_toHSL(Color color);
 
-
-extern const Color Color_transparent;
-extern const Color Color_black;
-extern const Color Color_white;
-extern const Color Color_red;
-extern const Color Color_green;
-extern const Color Color_blue;
-extern const Color Color_yellow;
-extern const Color Color_cyan;
-extern const Color Color_magenta;
+#define Color_transparent (Color_fromRGBA(0, 0, 0, 0))
+#define Color_black       (Color_fromRGB(0, 0, 0))
+#define Color_white       (Color_fromRGB(255, 255, 255))
+#define Color_red         (Color_fromRGB(255, 0, 0))
+#define Color_green       (Color_fromRGB(0, 255, 0))
+#define Color_blue        (Color_fromRGB(0, 0, 255))
+#define Color_yellow      (Color_fromRGB(255, 255, 0))
+#define Color_cyan        (Color_fromRGB(0, 255, 255))
+#define Color_magenta     (Color_fromRGB(255, 0, 255))
 
 
 struct ColorHSL {
@@ -128,16 +127,6 @@ ColorHSL Color_toHSL(Color color) {
         l * 100.0
     );
 }
-
-const Color Color_transparent = Color_fromRGBA(0, 0, 0, 0);
-const Color Color_black       = Color_fromRGB(0, 0, 0);
-const Color Color_white       = Color_fromRGB(255, 255, 255);
-const Color Color_red         = Color_fromRGB(255, 0, 0);
-const Color Color_green       = Color_fromRGB(0, 255, 0);
-const Color Color_blue        = Color_fromRGB(0, 0, 255);
-const Color Color_yellow      = Color_fromRGB(255, 255, 0);
-const Color Color_cyan        = Color_fromRGB(0, 255, 255);
-const Color Color_magenta     = Color_fromRGB(255, 0, 255);
 
 ColorHSL ColorHSL_fromRGBA(Color color) {
     return Color_toHSL(color);
