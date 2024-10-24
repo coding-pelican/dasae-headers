@@ -33,38 +33,51 @@ extern "C" {
 #define Ref(_Type) _Type* const
 
 #ifndef NULL
-#  define NULL ((void*)0)
-#endif // NULL
-
-#ifndef null
-#  define null NULL
-#endif // null
+#  ifdef __cplusplus
+#    ifndef _WIN64 /* _WIN32 */
+#      define NULL (0)
+#    else /* _WIN64 */
+#      define NULL (0ll)
+#    endif
+#  else
+#    define NULL ((void*)0)
+#  endif
+#endif
 
 #ifndef nullptr
-#  define nullptr NULL
-#endif // nullptr
+#  ifndef __cplusplus
+#    define nullptr NULL
+#  endif
+#endif
+
+#ifndef null
+#  define null nullptr
+#endif
 
 
 typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
-typedef size_t   usize;
+// typedef __uint128_t u128;
+typedef size_t usize;
 
 typedef int8_t  i8;
 typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
+// typedef __int128_t i128;
 typedef ssize_t isize;
 
 typedef float  f32;
 typedef double f64;
+// typedef long double f128;
 
 #ifndef bool
 #  define bool  u8
 #  define true  (1)
 #  define false (0)
-#endif // bool
+#endif
 
 typedef wchar_t wchar;
 

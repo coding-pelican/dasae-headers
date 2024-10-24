@@ -77,7 +77,7 @@ Instant Instant_Now(void) {
 #if defined(_WIN32) || defined(_WIN64)
     SystemTime__initFrequency();
     QueryPerformanceCounter(&instant.time_);
-#else
+#else // UNIX
     clock_gettime(CLOCK_MONOTONIC, &instant.time_);
 #endif
     return instant;
@@ -94,7 +94,7 @@ Duration Instant_DurationSince(Instant start, Instant earlier) {
     u64 secs      = diff / SystemTime__s_performance_frequency.QuadPart;
     u64 remainder = diff % SystemTime__s_performance_frequency.QuadPart;
     u32 nanos     = (u32)((remainder * 1000000000) / SystemTime__s_performance_frequency.QuadPart);
-#else
+#else // UNIX
     u64 secs      = start.time_.tv_sec - earlier.time_.tv_sec;
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
@@ -109,7 +109,7 @@ Duration Instant_DurationSince(Instant start, Instant earlier) {
 bool Instant_eq(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart == b.time_.QuadPart;
-#else
+#else // UNIX
     return a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec == b.time_.tv_nsec;
 #endif
 }
@@ -117,7 +117,7 @@ bool Instant_eq(Instant a, Instant b) {
 bool Instant_ne(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart != b.time_.QuadPart;
-#else
+#else // UNIX
     return a.time_.tv_sec != b.time_.tv_sec || a.time_.tv_nsec != b.time_.tv_nsec;
 #endif
 }
@@ -125,7 +125,7 @@ bool Instant_ne(Instant a, Instant b) {
 bool Instant_lt(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart < b.time_.QuadPart;
-#else
+#else // UNIX
     return (a.time_.tv_sec < b.time_.tv_sec) ||
            (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec < b.time_.tv_nsec);
 #endif
@@ -134,7 +134,7 @@ bool Instant_lt(Instant a, Instant b) {
 bool Instant_le(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart <= b.time_.QuadPart;
-#else
+#else // UNIX
     return (a.time_.tv_sec < b.time_.tv_sec) ||
            (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec <= b.time_.tv_nsec);
 #endif
@@ -143,7 +143,7 @@ bool Instant_le(Instant a, Instant b) {
 bool Instant_gt(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart > b.time_.QuadPart;
-#else
+#else // UNIX
     return (a.time_.tv_sec > b.time_.tv_sec) ||
            (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec > b.time_.tv_nsec);
 #endif
@@ -152,7 +152,7 @@ bool Instant_gt(Instant a, Instant b) {
 bool Instant_ge(Instant a, Instant b) {
 #if defined(_WIN32) || defined(_WIN64)
     return a.time_.QuadPart >= b.time_.QuadPart;
-#else
+#else // UNIX
     return (a.time_.tv_sec > b.time_.tv_sec) ||
            (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec >= b.time_.tv_nsec);
 #endif
@@ -161,7 +161,7 @@ bool Instant_ge(Instant a, Instant b) {
 bool Instant_IsValid(Instant instant) {
 #if defined(_WIN32) || defined(_WIN64)
     return 0 < instant.time_.QuadPart;
-#else
+#else // UNIX
     return 0 < instant.time_.tv_sec;
 #endif
 }

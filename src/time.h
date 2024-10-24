@@ -31,7 +31,7 @@ extern "C" {
 #    define NOMINMAX
 #  endif
 #  include <windows.h>
-#else
+#else // UNIX
 #  include <sys/time.h>
 #  include <time.h>
 #endif

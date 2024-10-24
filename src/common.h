@@ -23,6 +23,8 @@ extern "C" {
 
 #include "primitive_types.h"
 
+#define UnusedValue(_param) ((void)(_param))
+#define IgnoreReturn(_func) (void)_func
 
 #define Swap(_Type, _a, _b)     \
     do {                        \
@@ -33,8 +35,19 @@ extern "C" {
         *__b           = __t;   \
     } while (false)
 
-#define UnusedValue(_param) ((void)(_param))
-#define IgnoreReturn(_func) (void)_func
+#define Min(_Type, _x, _y) (_Type##_lt((_x), (_y)) ? (_x) : (_y))
+#define Max(_Type, _x, _y) (_Type##_gt((_x), (_y)) ? (_x) : (_y))
+
+/* x in [low, high] */
+#define Clamp(_Type, _x, _low, _high) Max(_Type, _low, Min(_Type, _x, _high))
+/* x in [low, high] */
+#define Wrap(_Type, _x, _low, _high) (                                                                                     \
+    _Type##_ge(_low, _high)                                                                                                \
+        ? (_low)                                                                                                           \
+    : _Type##_lt(_x, _low)                                                                                                 \
+        ? _Type##_sub(_Type##_sub(_high, _Type##_mod(_Type##_sub(_Type##_sub(_low, _x), 1), _Type##_sub(_high, _low))), 1) \
+        : _Type##_add(_low, _Type##_mod(_Type##_sub(_x, _low), _Type##_sub(_high, _low)))                                  \
+)
 
 
 #if defined(__cplusplus)

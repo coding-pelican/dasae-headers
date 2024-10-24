@@ -1,4 +1,4 @@
-// build `clang -x c game_of_life.c -o game_of_life -O3 -static`
+// build `clang -xc game_of_life.c ../src/*.c -o game_of_life -O3 -static`
 // run with `.\launcher game_of_life 160 50`
 
 
@@ -96,8 +96,8 @@ typedef float_t  f32;
 typedef double_t f64;
 
 
-typedef struct Color RGBA;
-struct Color {
+typedef struct RGBA RGBA;
+struct RGBA {
     union {
         u8 rgba[4];
         struct {
@@ -187,13 +187,12 @@ void Terminal_EnableANSI() {
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
-    dwMode |= ENABLE_MOUSE_INPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
     SetConsoleMode(hOut, dwMode);
 #else
     // Not needed for Linux as it supports ANSI escape sequences by default
 #endif
 }
-
 // Print diagnostic information for debugging
 void Terminal_PrintDiagnosticInformation() {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
@@ -206,17 +205,15 @@ void Terminal_PrintDiagnosticInformation() {
 // Clear the terminal screen and move the cursor to the top left
 void Terminal_Clear() {
 #ifdef _WIN32
-    // Clear the scrollback buffer
-    // system("cls"); // NOLINT
-
     HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD                      topLeft  = { 0, 0 };
     CONSOLE_SCREEN_BUFFER_INFO screen   = { 0 };
     DWORD                      written  = { 0 };
 
     GetConsoleScreenBufferInfo(hConsole, &screen);
-    FillConsoleOutputCharacterA(hConsole, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
-    FillConsoleOutputAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE, screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    FillConsoleOutputCharacter(hConsole, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    FillConsoleOutputAttribute(hConsole, 0, screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    // FillConsoleOutputAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE, screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
     SetConsoleCursorPosition(hConsole, topLeft);
 #else
     // Clear screen and scrollback buffer
@@ -300,9 +297,13 @@ void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
         for (i32 x = 0; x < Display_Width; ++x) {
             char displayFormat[Display_UnitPixel1x2FormatMaxCaseSize] = { 0 };
 
+            // Ensure don't go out of bounds
+            if (Display_Height <= (y + 1)) { break; }
+
             const RGBA upper = colors[x + y * Display_Width];
             const RGBA lower = colors[x + (y + 1) * Display_Width];
 
+            // Construct ANSI escape sequence for 24-bit color
             const i32 formattedSize = sprintf(
                 displayFormat,
                 Display_UnitPixel1x2Format,
@@ -314,9 +315,12 @@ void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
                 lower.b
             );
 
-            memcpy(Display_bufferNext + index, displayFormat, formattedSize);
+            // Move the formatted string to the next buffer
+            memmove(Display_bufferNext + index, displayFormat, formattedSize);
             index += formattedSize;
         }
+        // Append newline at the end of each line
+        Display_bufferNext[index++] = '\n';
     }
     Display_bufferNext[--index] = '\0';
     Display_bufferNextSize      = index;
@@ -331,11 +335,9 @@ void Display_Render() {
     DWORD  written  = 0;
     WriteConsoleA(hConsole, Display_bufferCurrent, (DWORD)Display_bufferCurrentSize, &written, NULL);
 #else
-    if (!fwrite(Display_buffer, sizeof(Display_bufferCurrent[0]), Display_bufferCurrentSize, stdout)) {
-        assert(false);
-    }
+    fwrite(Display_buffer, sizeof(Display_bufferCurrent[0]), Display_bufferCurrentSize, stdout);
 #endif
-    TerminalCursor_ResetColor();
+    // TerminalCursor_ResetColor();
 }
 
 

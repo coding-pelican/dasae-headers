@@ -14,13 +14,12 @@ FrameBuffer* FrameBuffer_Init(Ref(FrameBuffer) self, u32 width, u32 height) {
     Assert(self);
     Assert(0 < width);
     Assert(0 < height);
-    FrameBuffer buffer = {
+    *self = (FrameBuffer){
         .data_   = (Color*)malloc((usize)width * (usize)height * sizeof(Color)),
         .width_  = width,
         .height_ = height,
         .size_   = width * height
     };
-    *self = buffer;
     Assert(self->data_);
     Assert(0 < self->size_);
     return self;
@@ -172,13 +171,8 @@ Canvas* Canvas_Init(Ref(Canvas) self, u32 width, u32 height) {
     Assert(self);
     Assert(0 < width);
     Assert(0 < height);
-    Canvas canvas = {
-        .back_    = { *new_FrameBuffer() },
-        .front_   = { *new_FrameBuffer() },
-        .current_ = &canvas.back_[0],
-        .next_    = &canvas.front_[1]
-    };
-    *self = canvas;
+    self->current_ = self->front_;
+    self->next_    = self->back_;
     FrameBuffer_Init(self->current_, width, height);
     FrameBuffer_Init(self->next_, width, height);
     return self;
@@ -324,8 +318,8 @@ void Canvas_FillRect(Ref(Canvas) self, Rect rect, Color color) {
     Assert(0 <= rect.x);
     Assert(rect.x < FrameBuffer_Width(Canvas_AccessBuffer(self)));
     Assert(0 <= rect.y);
-    AssertMessage(
-        rect.y < FrameBuffer_Height(Canvas_AccessBuffer(self)),
+    AssertFmt(
+        rect.y <= FrameBuffer_Height(Canvas_AccessBuffer(self)),
         "%lld <= %u (%lld %lld %lld %lld)",
         rect.y,
         FrameBuffer_Height(Canvas_AccessBuffer(self)),
@@ -337,7 +331,7 @@ void Canvas_FillRect(Ref(Canvas) self, Rect rect, Color color) {
     Assert(0 <= rect.width);
     Assert(rect.x + rect.width <= FrameBuffer_Width(Canvas_AccessBuffer(self)));
     Assert(0 <= rect.height);
-    AssertMessage(
+    AssertFmt(
         rect.y + rect.height <= FrameBuffer_Height(Canvas_AccessBuffer(self)),
         "%lld + %lld <= %u (%lld %lld %lld %lld)",
         rect.y,
@@ -359,8 +353,8 @@ Rect Canvas_NormalizeRect(Ref(Canvas) self, Rect rect) {
     Assert(self);
 
     // Clamp x and y to valid range
-    rect.x = i64_max(0, (i64_min(rect.x, FrameBuffer_Width(Canvas_AccessBuffer(self))) - 1));
-    rect.y = i64_max(0, (i64_min(rect.y, FrameBuffer_Height(Canvas_AccessBuffer(self)) - 1)));
+    rect.x = i64_max(0, i64_min(rect.x, FrameBuffer_Width(Canvas_ReadBuffer(self)) - 1));
+    rect.y = i64_max(0, i64_min(rect.y, FrameBuffer_Height(Canvas_ReadBuffer(self)) - 1));
 
     // Ensure width and height don't exceed buffer boundaries
     rect.width  = i64_min(rect.width, FrameBuffer_Width(Canvas_AccessBuffer(self)) - rect.x);

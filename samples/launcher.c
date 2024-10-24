@@ -1,18 +1,17 @@
-// build `clang -x c launcher.c -o launcher -O3 -static -luser32`
+// build `clang -xc launcher.c ../src/*.c -o launcher -O3 -static -luser32`
 // run with `.\launcher <program_to_run:game_of_life> <width:160> <height:50>`
 
 
-#include <assert.h>
+#include "../src/assert.h"
+#include "../src/primitive_types.h"
+#include "../src/terminal.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#define NOMINMAX
-#include <windows.h>
 
 
 static const char* const Launcher_WindowTitle = "Test Terminal Launcher";
 
-static const char* Terminal_windowTitle  = NULL;
+static const char* Terminal_windowTitle  = nullptr;
 static int         Terminal_windowWidth  = 80;
 static int         Terminal_windowHeight = 25;
 
@@ -23,16 +22,16 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     Terminal_windowTitle = argv[1];
-    assert(Launcher_WindowTitle);
-    assert(Terminal_windowTitle);
+    Assert(Launcher_WindowTitle);
+    Assert(Terminal_windowTitle);
     printf("[%s] Terminal: %s\n", Launcher_WindowTitle, Terminal_windowTitle);
 
     if (2 < argc) {
         Terminal_windowWidth  = atoi(argv[2]);
         Terminal_windowHeight = atoi(argv[3]);
     }
-    assert(0 < Terminal_windowWidth);
-    assert(0 < Terminal_windowHeight);
+    Assert(0 < Terminal_windowWidth);
+    Assert(0 < Terminal_windowHeight);
     printf("[%s] Terminal size: %dx%d\n", Launcher_WindowTitle, Terminal_windowWidth, Terminal_windowHeight);
 
     STARTUPINFO         startupInfo = { 0 };

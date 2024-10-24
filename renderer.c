@@ -1,4 +1,4 @@
-// build `clang -x c renderer.c -o renderer -O3 -static`
+// build `clang -xc renderer.c -o renderer -O3 -static`
 // run with `.\launcher renderer 80 25`
 
 
