@@ -36,6 +36,10 @@ extern "C" {
 #  define NULL ((void*)0)
 #endif // NULL
 
+#ifndef null
+#  define null NULL
+#endif // null
+
 #ifndef nullptr
 #  define nullptr NULL
 #endif // nullptr

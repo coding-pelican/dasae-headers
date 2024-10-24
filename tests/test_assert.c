@@ -14,7 +14,7 @@ int main() {
 
     // Test with a failing assertion with a message
     // This should print the assertion details, the custom message, and abort
-    AssertMessage(x != 5, "x was expected to be 10, but got %d", x);
+    AssertFmt(x != 5, "x was expected to be 10, but got %d", x);
     // AssertMessage(x != NULL, "x should never be NULL at this point!");
 
     return 0;

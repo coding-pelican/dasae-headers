@@ -8,11 +8,11 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
 
 
 #define DH_IMPL
-#include "assert.h"
-#include "canvas.h"
-#include "color.h"
-#include "common.h"
-#include "primitive_types.h"
+#include "../src/assert.h"
+#include "../src/canvas.h"
+#include "../src/color.h"
+#include "../src/common.h"
+#include "../src/primitive_types.h"
 #include <locale.h>
 #ifdef _WIN32
 #  include <conio.h>
