@@ -21,131 +21,132 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-/* Assert expression. */
-#define Assert(_Expression) Assert_(_Expression)
-/* Assert expression with formatted message. */
-#define AssertFmt(_Expression, _Format, ...) AssertFmt_(_Expression, _Format, __VA_ARGS__)
+/* assert expression. */
+#define assert(_expr) assert_(_expr)
+/* assert expression with formatted message. */
+#define assertFmt(_expr, _fmt, ...) assertFmt_(_expr, _fmt, __VA_ARGS__)
 
-/* Assert that expression is true. */
-#define AssertTrue(_Expression) AssertTrue_(_Expression)
-/* Assert that expression is false. */
-#define AssertFalse(_Expression) AssertFalse_(_Expression)
-/* Assert that two expressions are equal.  */
-#define AssertEqual(_Expression1, _Expression2) AssertEqual_(_Expression1, _Expression2)
-/* Assert that two expressions are not equal.  */
-#define AssertNotEqual(_Expression1, _Expression2) AssertNotEqual_(_Expression1, _Expression2)
-/* Assert that expressions is null.  */
-#define AssertNull(_Expression) AssertNull_(_Expression)
-/* Assert that expressions is not null.  */
-#define AssertNotNull(_Expression) AssertNotNull_(_Expression)
+/* assert that expression is true. */
+#define assertTrue(_expr) assertTrue_(_expr)
+/* assert that expression is false. */
+#define assertFalse(_expr) assertFalse_(_expr)
+/* assert that two expressions are equal.  */
+#define assertEq(_expr1, _expr2) assertEq_(_expr1, _expr2)
+/* assert that two expressions are not equal.  */
+#define assertNe(_expr1, _expr2) assertNe_(_expr1, _expr2)
+/* assert that expressions is null.  */
+#define assertNull(_expr) assertNull_(_expr)
+/* assert that expressions is not null.  */
+#define assertNotNull(_expr) assertNotNull_(_expr)
 
-/* Assert that expression is true with formatted message. */
-#define AssertTrueFmt(_Expression, _Format, ...) AssertTrueFmt_(_Expression, _Format, __VA_ARGS__)
-/* Assert that expression is false with formatted message. */
-#define AssertFalseFmt(_Expression, _Format, ...) AssertFalseFmt_(_Expression, _Format, __VA_ARGS__)
-/* Assert that two expressions are equal with formatted message. */
-#define AssertEqualFmt(_Expression1, _Expression2, _Format, ...) AssertEqualFmt_(_Expression1, _Expression2, _Format, __VA_ARGS__)
-/* Assert that two expressions are not equal with formatted message. */
-#define AssertNotEqualFmt(_Expression1, _Expression2, _Format, ...) AssertNotEqualFmt_(_Expression1, _Expression2, _Format, __VA_ARGS__)
-/* Assert that expressions is null with formatted message. */
-#define AssertNullFmt(_Expression, _Format, ...) AssertNullFmt_(_Expression, _Format, __VA_ARGS__)
-/* Assert that expressions is not null with formatted message. */
-#define AssertNotNullFmt(_Expression, _Format, ...) AssertNotNullFmt_(_Expression, _Format, __VA_ARGS__)
+/* assert that expression is true with formatted message. */
+#define assertTrueFmt(_expr, _fmt, ...) assertTrueFmt_(_expr, _fmt, __VA_ARGS__)
+/* assert that expression is false with formatted message. */
+#define assertFalseFmt(_expr, _fmt, ...) assertFalseFmt_(_expr, _fmt, __VA_ARGS__)
+/* assert that two expressions are equal with formatted message. */
+#define assertEqFmt(_expr1, _expr2, _fmt, ...) assertEqFmt_(_expr1, _expr2, _fmt, __VA_ARGS__)
+/* assert that two expressions are not equal with formatted message. */
+#define assertNeFmt(_expr1, _expr2, _fmt, ...) assertNeFmt_(_expr1, _expr2, _fmt, __VA_ARGS__)
+/* assert that expressions is null with formatted message. */
+#define assertNullFmt(_expr, _fmt, ...) assertNullFmt_(_expr, _fmt, __VA_ARGS__)
+/* assert that expressions is not null with formatted message. */
+#define assertNotNullFmt(_expr, _fmt, ...) assertNotNullFmt_(_expr, _fmt, __VA_ARGS__)
 
 
-#ifdef NDEBUG
+#ifndef NDEBUG
 
-#  include "common.h" /* For `UnusedValue()` */
-
-#  define Assert_(_Expression)                  UnusedValue(0)
-#  define AssertFmt_(_Expression, _Format, ...) UnusedValue(0)
-
-#  define AssertTrue_(_Expression)                    UnusedValue(0)
-#  define AssertFalse_(_Expression)                   UnusedValue(0)
-#  define AssertEqual_(_Expression1, _Expression2)    UnusedValue(0)
-#  define AssertNotEqual_(_Expression1, _Expression2) UnusedValue(0)
-#  define AssertNull_(_Expression)                    UnusedValue(0)
-#  define AssertNotNull_(_Expression)                 UnusedValue(0)
-
-#  define AssertTrueFmt_(_Expression, _Format, ...)                    UnusedValue(0)
-#  define AssertFalseFmt_(_Expression, _Format, ...)                   UnusedValue(0)
-#  define AssertEqualFmt_(_Expression1, _Expression2, _Format, ...)    UnusedValue(0)
-#  define AssertNotEqualFmt_(_Expression1, _Expression2, _Format, ...) UnusedValue(0)
-#  define AssertNullFmt_(_Expression, _Format, ...)                    UnusedValue(0)
-#  define AssertNotNullFmt_(_Expression, _Format, ...)                 UnusedValue(0)
-
-#else
-
-#  include <stdbool.h> /* For `bool`, `true`, `false` */
+#  include "common.h" /* For `ignore_return` */
+#  include "primitive_types.h"
 #  include <stdio.h> /* For `fprintf()`, `stderr` */
-#  include <stdlib.h> /* For `about()`, `NULL` */
+#  include <stdlib.h> /* For `about()` */
 
 #  if defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#    define DEBUG_BREAK() __debugbreak()
+#    define assert_debugBreak() __debugbreak()
 #  elif defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#    define DEBUG_BREAK() __builtin_trap()
+#    define assert_debugBreak() __builtin_trap()
 #  else
 /* Fallback using signal */
 #    include <signal.h>
-#    define DEBUG_BREAK() raise(SIGTRAP)
+#    define assert_debugBreak() raise(SIGTRAP)
 #  endif
 
-#  define Assert_(_Expression)                                                   \
+#  define assert_(_expr)                                                         \
       do {                                                                       \
-          if (!(_Expression)) {                                                  \
-              (void)fprintf(                                                     \
+          if (!(_expr)) {                                                        \
+              ignore_return fprintf(                                             \
                   stderr,                                                        \
                   "Assertion failed: %s, in function %s, at file %s, line %d\n", \
-                  #_Expression,                                                  \
+                  #_expr,                                                        \
                   __func__,                                                      \
                   __FILE__,                                                      \
                   __LINE__                                                       \
               );                                                                 \
-              DEBUG_BREAK();                                                     \
+              assert_debugBreak();                                               \
               abort();                                                           \
           }                                                                      \
       } while (false)
 
-#  define AssertFmt_(_Expression, _Format, ...)            \
+#  define assertFmt_(_expr, _fmt, ...)                     \
       do {                                                 \
-          if (!(_Expression)) {                            \
-              (void)fprintf(                               \
+          if (!(_expr)) {                                  \
+              ignore_return fprintf(                       \
                   stderr,                                  \
                   "Assertion failed: %s\n",                \
-                  #_Expression                             \
+                  #_expr                                   \
               );                                           \
-              (void)fprintf(                               \
+              ignore_return fprintf(                       \
                   stderr,                                  \
-                  _Format,                                 \
+                  _fmt,                                    \
                   __VA_ARGS__                              \
               );                                           \
-              (void)fprintf(                               \
+              ignore_return fprintf(                       \
                   stderr,                                  \
                   "in function %s, at file %s, line %d\n", \
                   __func__,                                \
                   __FILE__,                                \
                   __LINE__                                 \
               );                                           \
-              DEBUG_BREAK();                               \
+              assert_debugBreak();                         \
               abort();                                     \
           }                                                \
       } while (false)
 
-#  define AssertTrue_(_Expression)                    AssertFmt_((_Expression) == true, "%s is not true", #_Expression)
-#  define AssertFalse_(_Expression)                   AssertFmt_((_Expression) == false, "%s is not false", #_Expression)
-#  define AssertEqual_(_Expression1, _Expression2)    AssertFmt_((_Expression1) == (_Expression2), "%s is not equal to %s", #_Expression1, #_Expression2)
-#  define AssertNotEqual_(_Expression1, _Expression2) AssertFmt_((_Expression1) != (_Expression2), "%s is equal to %s", #_Expression1, #_Expression2)
-#  define AssertNull_(_Expression)                    AssertFmt_((_Expression) == NULL, "%s is not NULL", #_Expression)
-#  define AssertNotNull_(_Expression)                 AssertFmt_((_Expression) != NULL, "%s is NULL", #_Expression)
+#  define assertTrue_(_expr)        assertFmt_((_expr) == true, "%s is not true", #_expr)
+#  define assertFalse_(_expr)       assertFmt_((_expr) == false, "%s is not false", #_expr)
+#  define assertEq_(_expr1, _expr2) assertFmt_((_expr1) == (_expr2), "%s is not equal to %s", #_expr1, #_expr2)
+#  define assertNe_(_expr1, _expr2) assertFmt_((_expr1) != (_expr2), "%s is equal to %s", #_expr1, #_expr2)
+#  define assertNull_(_expr)        assertFmt_((_expr) == null, "%s is not null", #_expr)
+#  define assertNotNull_(_expr)     assertFmt_((_expr) != null, "%s is null", #_expr)
 
-#  define AssertTrueFmt_(_Expression, _Format, ...)                    AssertFmt_((_Expression) == true, _Format, __VA_ARGS__)
-#  define AssertFalseFmt_(_Expression, _Format, ...)                   AssertFmt_((_Expression) == false, _Format, __VA_ARGS__)
-#  define AssertEqualFmt_(_Expression1, _Expression2, _Format, ...)    AssertFmt_((_Expression1) == (_Expression2), _Format, __VA_ARGS__)
-#  define AssertNotEqualFmt_(_Expression1, _Expression2, _Format, ...) AssertFmt_((_Expression1) != (_Expression2), _Format, __VA_ARGS__)
-#  define AssertNullFmt_(_Expression, _Format, ...)                    AssertFmt_((_Expression) == NULL, _Format, __VA_ARGS__)
-#  define AssertNotNullFmt_(_Expression, _Format, ...)                 AssertFmt_((_Expression) != NULL, _Format, __VA_ARGS__)
+#  define assertTrueFmt_(_expr, _fmt, ...)        assertFmt_((_expr) == true, _fmt, __VA_ARGS__)
+#  define assertFalseFmt_(_expr, _fmt, ...)       assertFmt_((_expr) == false, _fmt, __VA_ARGS__)
+#  define assertEqFmt_(_expr1, _expr2, _fmt, ...) assertFmt_((_expr1) == (_expr2), _fmt, __VA_ARGS__)
+#  define assertNeFmt_(_expr1, _expr2, _fmt, ...) assertFmt_((_expr1) != (_expr2), _fmt, __VA_ARGS__)
+#  define assertNullFmt_(_expr, _fmt, ...)        assertFmt_((_expr) == null, _fmt, __VA_ARGS__)
+#  define assertNotNullFmt_(_expr, _fmt, ...)     assertFmt_((_expr) != null, _fmt, __VA_ARGS__)
+
+#else
+
+#  include "common.h" /* For `unused()` */
+
+#  define assert_(_expr)               unused(0)
+#  define assertFmt_(_expr, _fmt, ...) unused(0)
+
+#  define assertTrue_(_expr)        unused(0)
+#  define assertFalse_(_expr)       unused(0)
+#  define assertEq_(_expr1, _expr2) unused(0)
+#  define assertNe_(_expr1, _expr2) unused(0)
+#  define assertNull_(_expr)        unused(0)
+#  define assertNotNull_(_expr)     unused(0)
+
+#  define assertTrueFmt_(_expr, _fmt, ...)        unused(0)
+#  define assertFalseFmt_(_expr, _fmt, ...)       unused(0)
+#  define assertEqFmt_(_expr1, _expr2, _fmt, ...) unused(0)
+#  define assertNeFmt_(_expr1, _expr2, _fmt, ...) unused(0)
+#  define assertNullFmt_(_expr, _fmt, ...)        unused(0)
+#  define assertNotNullFmt_(_expr, _fmt, ...)     unused(0)
 
 #endif /* NDEBUG */
 

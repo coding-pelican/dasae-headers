@@ -1,12 +1,21 @@
 #include "floats.h"
 
 
-bool f32_eq(f32 a, f32 b) { return fabsf(a - b) < f32_epsilon; }
-bool f32_ne(f32 a, f32 b) { return fabsf(a - b) >= f32_epsilon; }
-bool f32_lt(f32 a, f32 b) { return (b - a) > f32_epsilon; }
-bool f32_le(f32 a, f32 b) { return (a - b) < f32_epsilon; }
-bool f32_gt(f32 a, f32 b) { return (a - b) > f32_epsilon; }
-bool f32_ge(f32 a, f32 b) { return (b - a) < f32_epsilon; }
+bool f32_eq(f32 x, f32 y) { return fabsf(x - y) < f32_eps; }
+bool f32_ne(f32 x, f32 y) { return fabsf(x - y) >= f32_eps; }
+bool f32_lt(f32 x, f32 y) { return (y - x) > f32_eps; }
+bool f32_le(f32 x, f32 y) { return (x - y) < f32_eps; }
+bool f32_gt(f32 x, f32 y) { return (x - y) > f32_eps; }
+bool f32_ge(f32 x, f32 y) { return (y - x) < f32_eps; }
+
+f32 f32_neg(f32 x) { return -x; }
+f32 f32_abs(f32 x) { return fabsf(x); }
+
+f32 f32_add(f32 x, f32 y) { return x + y; }
+f32 f32_sub(f32 x, f32 y) { return x - y; }
+f32 f32_mul(f32 x, f32 y) { return x * y; }
+f32 f32_div(f32 x, f32 y) { return x / y; }
+f32 f32_mod(f32 x, f32 y) { return fmodf(x, y); }
 
 f32 f32_min(f32 x, f32 y) { return f32_lt(x, y) ? x : y; }
 f32 f32_max(f32 x, f32 y) { return f32_gt(x, y) ? x : y; }
@@ -15,12 +24,21 @@ f32 f32_clamp01(f32 x) { return f32_clamp(x, 0.0f, 1.0f); }
 f32 f32_wrap(f32 x, f32 low, f32 high) { return (f32_le(high - low, 0.0f)) ? x : fmodf(x - low, high - low) + low; }
 f32 f32_wrap01(f32 x) { return f32_wrap(x, 0.0f, 1.0f); }
 
-bool f64_eq(f64 a, f64 b) { return fabs(a - b) < f64_epsilon; }
-bool f64_ne(f64 a, f64 b) { return fabs(a - b) >= f64_epsilon; }
-bool f64_lt(f64 a, f64 b) { return (b - a) > f64_epsilon; }
-bool f64_le(f64 a, f64 b) { return (a - b) < f64_epsilon; }
-bool f64_gt(f64 a, f64 b) { return (a - b) > f64_epsilon; }
-bool f64_ge(f64 a, f64 b) { return (b - a) < f64_epsilon; }
+bool f64_eq(f64 x, f64 y) { return fabs(x - y) < f64_eps; }
+bool f64_ne(f64 x, f64 y) { return fabs(x - y) >= f64_eps; }
+bool f64_lt(f64 x, f64 y) { return (y - x) > f64_eps; }
+bool f64_le(f64 x, f64 y) { return (x - y) < f64_eps; }
+bool f64_gt(f64 x, f64 y) { return (x - y) > f64_eps; }
+bool f64_ge(f64 x, f64 y) { return (y - x) < f64_eps; }
+
+f64 f64_neg(f64 x) { return -x; }
+f64 f64_abs(f64 x) { return fabs(x); }
+
+f64 f64_add(f64 x, f64 y) { return x + y; }
+f64 f64_sub(f64 x, f64 y) { return x - y; }
+f64 f64_mul(f64 x, f64 y) { return x * y; }
+f64 f64_div(f64 x, f64 y) { return x / y; }
+f64 f64_mod(f64 x, f64 y) { return fmod(x, y); }
 
 f64 f64_min(f64 x, f64 y) { return f64_lt(x, y) ? x : y; }
 f64 f64_max(f64 x, f64 y) { return f64_gt(x, y) ? x : y; }

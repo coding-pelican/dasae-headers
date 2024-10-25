@@ -15,10 +15,10 @@
 
 
 #define PP_UnusedParam(_param) ((void)(_param))
-#define PP_IgnoreReturn(_func) (void)_func
+#define PP_ignoreReturn(_func) (void)_func
 #define PtrT(_Type)            _Type*
 #define RefT(_Type)            _Type* const
-#define PP_Swap(_Type, _a, _b)   \
+#define PP_swap(_Type, _a, _b)   \
     do {                         \
         PtrT(_Type) __a = &(_a); \
         PtrT(_Type) __b = &(_b); \
@@ -99,7 +99,7 @@ bool Game_check_reflections(Game* self, Vec3* ray, Vec3* move);
 
 
 // Set locale to UTF-8
-void Terminal_EnsureLocaleUTF8() {
+void Terminal_ensureLocaleUTF8() {
     static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
     static const int         localesNum = sizeof(locales) / sizeof(locales[0]);
 
@@ -132,7 +132,7 @@ void Terminal_EnsureLocaleUTF8() {
 }
 
 // Enable ANSI escape sequence processing
-void Terminal_EnableANSI() {
+void Terminal_enableANSI() {
 #ifdef _WIN32
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
@@ -145,7 +145,7 @@ void Terminal_EnableANSI() {
 }
 
 // Print diagnostic information for debugging
-void Terminal_PrintDiagnosticInformation() {
+void Terminal_printDiagnosticInformation() {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
 #ifdef _WIN32
     printf("Active code page: %d\n", GetACP());
@@ -154,7 +154,7 @@ void Terminal_PrintDiagnosticInformation() {
 }
 
 // Clear the terminal screen and move the cursor to the top left
-void Terminal_Clear() {
+void Terminal_clear() {
 #ifdef _WIN32
     // system("cls"); // NOLINT
     HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -175,18 +175,18 @@ void Terminal_Clear() {
     // );
 }
 
-void Terminal_Bootup() {
-    Terminal_EnsureLocaleUTF8();
-    Terminal_EnableANSI();
-    Terminal_PrintDiagnosticInformation();
+void Terminal_bootup() {
+    Terminal_ensureLocaleUTF8();
+    Terminal_enableANSI();
+    Terminal_printDiagnosticInformation();
     printf("Terminal setup complete.\n");
     printf("Press any key to continue...\n");
     getch();
-    Terminal_Clear();
+    Terminal_clear();
 }
 
-void Terminal_Shutdown() {
-    Terminal_Clear();
+void Terminal_shutdown() {
+    Terminal_clear();
 }
 
 static CHAR_INFO  Display_clearBuffer[640 * 400] = { 0 };
@@ -203,7 +203,7 @@ static COORD      Display_windowSize         = (COORD){ 0, 0 };
 static COORD      Display_windowCoord        = (COORD){ 0, 0 };
 static SMALL_RECT Display_windowRect         = (SMALL_RECT){ 0, 0, 1, 1 };
 
-void Display_Init(int width, int height) {
+void Display_init(int width, int height) {
 #ifdef _WIN32
     Display_windowOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     Display_windowRect         = (SMALL_RECT){ 0, 0, 1, 1 };
@@ -243,15 +243,15 @@ void Display_Init(int width, int height) {
 #endif
 }
 
-void Display_Clear() {
+void Display_clear() {
     memcpy(Display_bufferCurrent, Display_clearBuffer, Display_bufferSize * sizeof(CHAR_INFO));
 }
 
-void Display_SwapBuffers() {
-    PP_Swap(CHAR_INFO*, Display_bufferCurrent, Display_bufferNext);
+void Display_swapBuffers() {
+    PP_swap(CHAR_INFO*, Display_bufferCurrent, Display_bufferNext);
 }
 
-void Display_Render() {
+void Display_render() {
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleOutputW(hConsole, Display_bufferCurrent, Display_windowSize, Display_windowCoord, &Display_windowRect);
@@ -283,10 +283,10 @@ int main(int argc, char* argv[]) {
     Ball d = { { 7.5f, 0, 8 }, 4 };
     Game_add_ball(&game, d);
 
-    Terminal_Bootup();
-    Display_Init(width, height);
+    Terminal_bootup();
+    Display_init(width, height);
     Game_start(&game);
-    Terminal_Shutdown();
+    Terminal_shutdown();
 
     return 0;
 }
@@ -399,7 +399,7 @@ void Game_add_ball(Game* self, Ball b) {
 }
 
 void Game_make_pic(Game* self) {
-    Display_Clear();
+    Display_clear();
 
     // rays through equidistant points on width*height rectangle with distance 1 from viewer
     Vec3 v1 = Direction_to_unit(&self->dir);
@@ -472,7 +472,7 @@ void Game_make_pic(Game* self) {
         }
     }
 
-    Display_SwapBuffers();
+    Display_swapBuffers();
 }
 
 void Game_start(Game* self) {
@@ -490,7 +490,7 @@ void Game_start(Game* self) {
                 }
             }
         }
-        Display_Render();
+        Display_render();
         Sleep(20);
     }
 }

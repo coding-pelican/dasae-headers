@@ -2,32 +2,38 @@
 #include "common.h"
 
 
-#define INT_CMP_FUNCTIONS_DEFINITION(_Type)              \
-    bool _Type##_eq(_Type x, _Type y) { return x == y; } \
-    bool _Type##_ne(_Type x, _Type y) { return x != y; } \
-    bool _Type##_lt(_Type x, _Type y) { return x < y; }  \
-    bool _Type##_le(_Type x, _Type y) { return x <= y; } \
-    bool _Type##_gt(_Type x, _Type y) { return x > y; }  \
-    bool _Type##_ge(_Type x, _Type y) { return x >= y; }
+#define INT_CMP_FUNCTIONS_DEFINITION(_T)        \
+    bool _T##_eq(_T x, _T y) { return x == y; } \
+    bool _T##_ne(_T x, _T y) { return x != y; } \
+    bool _T##_lt(_T x, _T y) { return x < y; }  \
+    bool _T##_le(_T x, _T y) { return x <= y; } \
+    bool _T##_gt(_T x, _T y) { return x > y; }  \
+    bool _T##_ge(_T x, _T y) { return x >= y; }
 
-#define INT_ARITH_FUNCTIONS_DEFINITION(_Type)             \
-    _Type _Type##_add(_Type x, _Type y) { return x + y; } \
-    _Type _Type##_sub(_Type x, _Type y) { return x - y; } \
-    _Type _Type##_mul(_Type x, _Type y) { return x * y; } \
-    _Type _Type##_div(_Type x, _Type y) { return x / y; } \
-    _Type _Type##_mod(_Type x, _Type y) { return x % y; }
+#define INT_UNARY_FUNCTIONS_DEFINITION(_T) \
+    _T _T##_neg(_T x) { return -x; }       \
+    _T _T##_abs(_T x) { return pp_abs_(_T, x); }
 
-#define INT_UTILS_FUNCTIONS_DEFINITION(_Type)                        \
-    _Type _Type##_min(_Type x, _Type y) { return Min(_Type, x, y); } \
-    _Type _Type##_max(_Type x, _Type y) { return Max(_Type, x, y); } \
-    _Type _Type##_clamp(_Type x, _Type low, _Type high) {            \
-        return Clamp(_Type, x, low, high);                           \
-    }                                                                \
-    _Type _Type##_wrap(_Type x, _Type low, _Type high) {             \
-        return Wrap(_Type, x, low, high);                            \
+#define INT_ARITH_FUNCTIONS_DEFINITION(_T)    \
+    _T _T##_add(_T x, _T y) { return x + y; } \
+    _T _T##_sub(_T x, _T y) { return x - y; } \
+    _T _T##_mul(_T x, _T y) { return x * y; } \
+    _T _T##_div(_T x, _T y) { return x / y; } \
+    _T _T##_mod(_T x, _T y) { return x % y; }
+
+#define INT_UTILS_FUNCTIONS_DEFINITION(_T)                \
+    _T _T##_min(_T x, _T y) { return pp_min_(_T, x, y); } \
+    _T _T##_max(_T x, _T y) { return pp_max_(_T, x, y); } \
+    _T _T##_clamp(_T x, _T low, _T high) {                \
+        return pp_clamp_(_T, x, low, high);               \
+    }                                                     \
+    _T _T##_wrap(_T x, _T low, _T high) {                 \
+        return pp_wrap_(_T, x, low, high);                \
     }
 
+
 INT_CMP_FUNCTIONS_DEFINITION(i8)
+INT_UNARY_FUNCTIONS_DEFINITION(i8)
 INT_ARITH_FUNCTIONS_DEFINITION(i8)
 INT_UTILS_FUNCTIONS_DEFINITION(i8)
 
@@ -66,3 +72,9 @@ INT_UTILS_FUNCTIONS_DEFINITION(isize)
 INT_CMP_FUNCTIONS_DEFINITION(usize)
 INT_ARITH_FUNCTIONS_DEFINITION(usize)
 INT_UTILS_FUNCTIONS_DEFINITION(usize)
+
+
+#undef INT_CMP_FUNCTIONS_DEFINITION
+#undef INT_UNARY_FUNCTIONS_DEFINITION
+#undef INT_ARITH_FUNCTIONS_DEFINITION
+#undef INT_UTILS_FUNCTIONS_DEFINITION

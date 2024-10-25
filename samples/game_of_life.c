@@ -64,11 +64,11 @@ int getch() {
 }
 #endif
 
-#define UnusedValue(_param) ((void)(_param))
-#define IgnoreReturn(_func) (void)_func
+#define unusedValue(_param) ((void)(_param))
+#define ignoreReturn(_func) (void)_func
 #define PtrT(_Type)         _Type*
 #define RefT(_Type)         _Type* const
-#define Swap(_Type, _a, _b)      \
+#define swap(_Type, _a, _b)      \
     do {                         \
         PtrT(_Type) __a = &(_a); \
         PtrT(_Type) __b = &(_b); \
@@ -132,11 +132,11 @@ const RGBA RGBA_Blue  = RGBA_fromRGB(0, 0, 255);
 #define Display_Height (Terminal_Height * 2)
 #define Display_Size   (Display_Width * Display_Height)
 
-void TerminalCursor_ResetColor() {
+void TerminalCursor_resetColor() {
     printf("\033[0m");
 }
 
-void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
+void TerminalCursor_setColor(RGBA foreground, RGBA background) {
     printf(
         "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm", // background
         foreground.r,
@@ -149,7 +149,7 @@ void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
 }
 
 // Set locale to UTF-8
-void Terminal_EnsureLocaleUTF8() {
+void Terminal_ensureLocaleUTF8() {
     static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
     static const int         localesNum = sizeof(locales) / sizeof(locales[0]);
 
@@ -182,7 +182,7 @@ void Terminal_EnsureLocaleUTF8() {
 }
 
 // Enable ANSI escape sequence processing
-void Terminal_EnableANSI() {
+void Terminal_enableANSI() {
 #ifdef _WIN32
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
@@ -194,7 +194,7 @@ void Terminal_EnableANSI() {
 #endif
 }
 // Print diagnostic information for debugging
-void Terminal_PrintDiagnosticInformation() {
+void Terminal_printDiagnosticInformation() {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
 #ifdef _WIN32
     printf("Active code page: %d\n", GetACP());
@@ -203,7 +203,7 @@ void Terminal_PrintDiagnosticInformation() {
 }
 
 // Clear the terminal screen and move the cursor to the top left
-void Terminal_Clear() {
+void Terminal_clear() {
 #ifdef _WIN32
     HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD                      topLeft  = { 0, 0 };
@@ -221,19 +221,19 @@ void Terminal_Clear() {
 #endif
 }
 
-void Terminal_Bootup() {
-    Terminal_EnsureLocaleUTF8();
-    Terminal_EnableANSI();
-    Terminal_PrintDiagnosticInformation();
+void Terminal_bootup() {
+    Terminal_ensureLocaleUTF8();
+    Terminal_enableANSI();
+    Terminal_printDiagnosticInformation();
     printf("Terminal setup complete.\n");
     printf("Press any key to continue...\n");
     getch();
-    Terminal_Clear();
+    Terminal_clear();
 }
 
-void Terminal_Shutdown() {
-    TerminalCursor_ResetColor();
-    Terminal_Clear();
+void Terminal_shutdown() {
+    TerminalCursor_resetColor();
+    Terminal_clear();
 }
 
 #define Display_UnitPixel1x2Format            "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
@@ -248,7 +248,7 @@ static usize Display_bufferCurrentSize               = 0;
 static char* Display_bufferNext                      = Display_backBuffer;
 static usize Display_bufferNextSize                  = 0;
 
-void Display_Init() {
+void Display_init() {
 #ifdef _WIN32
     HANDLE     hConsoleOutput    = GetStdHandle(STD_OUTPUT_HANDLE);
     SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
@@ -280,17 +280,17 @@ void Display_Init() {
 #endif
 }
 
-void Display_Clear() {
+void Display_clear() {
     memset(Display_bufferCurrent, 0, Display_bufferCurrentSize);
 }
 
-void Display_SwapBuffers() {
-    Swap(char*, Display_bufferCurrent, Display_bufferNext);
-    Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+void Display_swapBuffers() {
+    swap(char*, Display_bufferCurrent, Display_bufferNext);
+    swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
 }
 
-void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
-    Display_Clear();
+void Display_setBufferFromColors(const RGBA colors[Display_Size]) {
+    Display_clear();
 
     i32 index = 0;
     for (i32 y = 0; y < Display_Height; y += 2) {
@@ -325,11 +325,11 @@ void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
     Display_bufferNext[--index] = '\0';
     Display_bufferNextSize      = index;
 
-    Display_SwapBuffers();
+    Display_swapBuffers();
 }
 
-void Display_Render() {
-    Terminal_Clear();
+void Display_render() {
+    Terminal_clear();
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  written  = 0;
@@ -363,10 +363,10 @@ static void setCell(int x, int y, const char* str);
 
 
 int main(int argc, const char* argv[]) {
-    UnusedValue(argc);
-    UnusedValue(argv);
-    Terminal_Bootup();
-    Display_Init();
+    unusedValue(argc);
+    unusedValue(argv);
+    Terminal_bootup();
+    Display_init();
 
     GameOfLife_Init();
     bool isRunning = true;
@@ -376,12 +376,12 @@ int main(int argc, const char* argv[]) {
         }
 
         GameOfLife_Update();
-        Display_Render();
+        Display_render();
         Sleep(100);
     }
     GameOfLife_Fini();
 
-    Terminal_Shutdown();
+    Terminal_shutdown();
     return 0;
 }
 
@@ -456,7 +456,7 @@ void GameOfLife_Update() {
         }
     }
 
-    Display_SetBufferFromColors(colors);
+    Display_setBufferFromColors(colors);
 }
 
 void GameOfLife_Fini() {

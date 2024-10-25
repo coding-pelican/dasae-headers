@@ -22,16 +22,16 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     Terminal_windowTitle = argv[1];
-    Assert(Launcher_WindowTitle);
-    Assert(Terminal_windowTitle);
+    assert(Launcher_WindowTitle);
+    assert(Terminal_windowTitle);
     printf("[%s] Terminal: %s\n", Launcher_WindowTitle, Terminal_windowTitle);
 
     if (2 < argc) {
         Terminal_windowWidth  = atoi(argv[2]);
         Terminal_windowHeight = atoi(argv[3]);
     }
-    Assert(0 < Terminal_windowWidth);
-    Assert(0 < Terminal_windowHeight);
+    assert(0 < Terminal_windowWidth);
+    assert(0 < Terminal_windowHeight);
     printf("[%s] Terminal size: %dx%d\n", Launcher_WindowTitle, Terminal_windowWidth, Terminal_windowHeight);
 
     STARTUPINFO         startupInfo = { 0 };

@@ -29,8 +29,63 @@ extern "C" {
 #endif // defined(_WIN32) || defined(_WIN64)
 
 
-#define Ptr(_Type) _Type*
-#define Ref(_Type) _Type* const
+#define unused(_value) ((void)(_value))
+#define ignore_return  (void)
+
+
+#define as(_T, ...) ((_T)__VA_ARGS__)
+
+#define make(_T)          ((_T){ 0 })
+#define makeCleared(_T)   ((_T){ 0 })
+#define makeWith(_T, ...) ((_T){ __VA_ARGS__ })
+
+
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+// typedef __uint128_t u128;
+typedef uintptr_t usize;
+
+typedef int8_t  i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
+// typedef __int128_t i128;
+typedef intptr_t isize;
+
+typedef wchar_t wchar;
+
+typedef float  f32;
+typedef double f64;
+// typedef long double f80;
+// typedef __float128 f128;
+
+#ifndef bool
+#  define bool  u8
+#  define true  (1)
+#  define false (0)
+#endif
+
+#define divisible(_primitive_n, ...) ((__VA_ARGS__ == 0) ? 0 : ((_primitive_n) % (__VA_ARGS__) == 0))
+
+
+typedef void* type;
+
+// Dynamically-typed declarations
+#if defined(__GNUC__) || defined(__GNUG__)
+#  define var   __auto_type
+#  define local __auto_type
+#elif defined(__cplusplus) || (201710L < __STDC_VERSION__)
+#  define var   auto
+#  define local auto
+#else
+#  define var   no_var
+#  define local no_local
+#endif
+
+#define Ptr(_T) _T*
+#define Ref(_T) _T* const
 
 #ifndef NULL
 #  ifdef __cplusplus
@@ -54,32 +109,7 @@ extern "C" {
 #  define null nullptr
 #endif
 
-
-typedef uint8_t  u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-// typedef __uint128_t u128;
-typedef size_t usize;
-
-typedef int8_t  i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
-// typedef __int128_t i128;
-typedef ssize_t isize;
-
-typedef float  f32;
-typedef double f64;
-// typedef long double f128;
-
-#ifndef bool
-#  define bool  u8
-#  define true  (1)
-#  define false (0)
-#endif
-
-typedef wchar_t wchar;
+#define ensure(_x, ...) ((_x) ? (_x) : (__VA_ARGS__))
 
 
 #if defined(__cplusplus)

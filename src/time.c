@@ -1,79 +1,83 @@
 #include "time.h"
 #include "assert.h"
+#include "primitive_types.h"
 
 
-Duration Duration_make(u64 secs, u32 nanos) {
-    Duration duration = Duration_(secs, nanos);
-    if (duration.nanos >= 1000000000) {
-        duration.secs += duration.nanos / 1000000000;
-        duration.nanos %= 1000000000;
+Duration Duration_from(u64 secs, u32 nanos) {
+    Duration duration = Duration_(
+            .secs  = secs,
+            .nanos = nanos
+    );
+    if (Time_nanos_per_sec <= duration.nanos) {
+        duration.secs += duration.nanos / Time_nanos_per_sec;
+        duration.nanos %= Time_nanos_per_sec;
     }
     return duration;
 }
 
-Duration Duration_from_Secs(u64 secs) {
-    return Duration_make(secs, 0);
+Duration Duration_fromSecs(u64 secs) {
+    return comptime_Duration_fromSecs(secs);
 }
 
-Duration Duration_from_Millis(u64 millis) {
-    return Duration_make(millis / 1000, (u32)((millis % 1000) * 1000000));
+Duration Duration_fromMillis(u64 millis) {
+    return comptime_Duration_fromMillis(millis);
 }
 
-Duration Duration_from_Micros(u64 micros) {
-    return Duration_make(micros / 1000000, (u32)((micros % 1000000) * 1000));
+Duration Duration_fromMicros(u64 micros) {
+    return comptime_Duration_fromMicros(micros);
 }
 
-Duration Duration_from_Nanos(u64 nanos) {
-    return Duration_make(nanos / 1000000000, (u32)(nanos % 1000000000));
+Duration Duration_fromNanos(u64 nanos) {
+    return comptime_Duration_fromNanos(nanos);
 }
 
-Duration Duration_add(Duration a, Duration b) {
-    return Duration_make(a.secs + b.secs, a.nanos + b.nanos);
+Duration Duration_add(Duration lhs, Duration rhs) {
+    return Duration_(lhs.secs + rhs.secs, lhs.nanos + rhs.nanos);
 }
 
-Duration Duration_sub(Duration a, Duration b) {
-    if (a.nanos < b.nanos) {
-        Assert(0 < a.secs);
-        return Duration_make(a.secs - b.secs - 1, a.nanos + 1000000000 - b.nanos);
+Duration Duration_sub(Duration lhs, Duration rhs) {
+    if (lhs.nanos < rhs.nanos) {
+        assert(0 < lhs.secs);
+        return Duration_(lhs.secs - rhs.secs - 1, lhs.nanos + Time_nanos_per_sec - rhs.nanos);
     }
-    return Duration_make(a.secs - b.secs, a.nanos - b.nanos);
+    return Duration_(lhs.secs - rhs.secs, lhs.nanos - rhs.nanos);
 }
 
-Duration Duration_mul(Duration a, u64 scalar) {
-    u64 total_nanos = a.nanos * scalar;
-    return Duration_make(a.secs * scalar + total_nanos / 1000000000, (u32)(total_nanos % 1000000000));
+Duration Duration_mul(Duration d, u64 scalar) {
+    u64 total_nanos = d.nanos * scalar;
+    return Duration_(d.secs * scalar + total_nanos / Time_nanos_per_sec, as(u32, (total_nanos % Time_nanos_per_sec)));
 }
 
-bool Duration_eq(Duration a, Duration b) {
-    return a.secs == b.secs && a.nanos == b.nanos;
+bool Duration_eq(Duration lhs, Duration rhs) {
+    return lhs.secs == rhs.secs && lhs.nanos == rhs.nanos;
 }
 
-bool Duration_ne(Duration a, Duration b) {
-    return a.secs != b.secs || a.nanos != b.nanos;
+bool Duration_ne(Duration lhs, Duration rhs) {
+    return lhs.secs != rhs.secs || lhs.nanos != rhs.nanos;
 }
 
-bool Duration_lt(Duration a, Duration b) {
-    return a.secs < b.secs || (a.secs == b.secs && a.nanos < b.nanos);
+bool Duration_lt(Duration lhs, Duration rhs) {
+    return lhs.secs < rhs.secs || (lhs.secs == rhs.secs && lhs.nanos < rhs.nanos);
 }
 
-bool Duration_le(Duration a, Duration b) {
-    return a.secs < b.secs || (a.secs == b.secs && a.nanos <= b.nanos);
+bool Duration_le(Duration lhs, Duration rhs) {
+    return lhs.secs < rhs.secs || (lhs.secs == rhs.secs && lhs.nanos <= rhs.nanos);
 }
 
-bool Duration_gt(Duration a, Duration b) {
-    return a.secs > b.secs || (a.secs == b.secs && a.nanos > b.nanos);
+bool Duration_gt(Duration lhs, Duration rhs) {
+    return lhs.secs > rhs.secs || (lhs.secs == rhs.secs && lhs.nanos > rhs.nanos);
 }
 
-bool Duration_ge(Duration a, Duration b) {
-    return a.secs > b.secs || (a.secs == b.secs && a.nanos >= b.nanos);
+bool Duration_ge(Duration lhs, Duration rhs) {
+    return lhs.secs > rhs.secs || (lhs.secs == rhs.secs && lhs.nanos >= rhs.nanos);
 }
 
-bool Duration_IsZero(Duration duration) {
-    return duration.secs == 0 && duration.nanos == 0;
+bool Duration_isZero(Duration d) {
+    return d.secs == 0 && d.nanos == 0;
 }
 
-Instant Instant_Now(void) {
-    Instant instant = { 0 };
+Instant Instant_now() {
+    Instant instant = makeCleared(Instant);
 #if defined(_WIN32) || defined(_WIN64)
     SystemTime__initFrequency();
     QueryPerformanceCounter(&instant.time_);
@@ -83,86 +87,86 @@ Instant Instant_Now(void) {
     return instant;
 }
 
-Duration Instant_Elapsed(Instant start) {
-    return Instant_DurationSince(Instant_Now(), start);
+Duration Instant_elapsed(Instant start) {
+    return Instant_durationSince(Instant_now(), start);
 }
 
-Duration Instant_DurationSince(Instant start, Instant earlier) {
+Duration Instant_durationSince(Instant start, Instant earlier) {
 #if defined(_WIN32) || defined(_WIN64)
     SystemTime__initFrequency();
     u64 diff      = start.time_.QuadPart - earlier.time_.QuadPart;
     u64 secs      = diff / SystemTime__s_performance_frequency.QuadPart;
     u64 remainder = diff % SystemTime__s_performance_frequency.QuadPart;
-    u32 nanos     = (u32)((remainder * 1000000000) / SystemTime__s_performance_frequency.QuadPart);
+    u32 nanos     = as(u32, ((remainder * Time_nanos_per_sec) / SystemTime__s_performance_frequency.QuadPart));
 #else // UNIX
     u64 secs      = start.time_.tv_sec - earlier.time_.tv_sec;
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
         secs--;
-        nano_diff += 1000000000;
+        nano_diff += Time_nanos_per_sec;
     }
-    u32 nanos = (u32)nano_diff;
+    u32 nanos = as(u32, nano_diff);
 #endif
-    return Duration_make(secs, nanos);
+    return Duration_from(secs, nanos);
 }
 
-bool Instant_eq(Instant a, Instant b) {
+bool Instant_eq(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart == b.time_.QuadPart;
+    return lhs.time_.QuadPart == rhs.time_.QuadPart;
 #else // UNIX
-    return a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec == b.time_.tv_nsec;
-#endif
-}
-
-bool Instant_ne(Instant a, Instant b) {
-#if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart != b.time_.QuadPart;
-#else // UNIX
-    return a.time_.tv_sec != b.time_.tv_sec || a.time_.tv_nsec != b.time_.tv_nsec;
+    return lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec == rhs.time_.tv_nsec;
 #endif
 }
 
-bool Instant_lt(Instant a, Instant b) {
+bool Instant_ne(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart < b.time_.QuadPart;
+    return lhs.time_.QuadPart != rhs.time_.QuadPart;
 #else // UNIX
-    return (a.time_.tv_sec < b.time_.tv_sec) ||
-           (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec < b.time_.tv_nsec);
+    return lhs.time_.tv_sec != rhs.time_.tv_sec || lhs.time_.tv_nsec != rhs.time_.tv_nsec;
 #endif
 }
 
-bool Instant_le(Instant a, Instant b) {
+bool Instant_lt(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart <= b.time_.QuadPart;
+    return lhs.time_.QuadPart < rhs.time_.QuadPart;
 #else // UNIX
-    return (a.time_.tv_sec < b.time_.tv_sec) ||
-           (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec <= b.time_.tv_nsec);
+    return (lhs.time_.tv_sec < rhs.time_.tv_sec) ||
+           (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec < rhs.time_.tv_nsec);
 #endif
 }
 
-bool Instant_gt(Instant a, Instant b) {
+bool Instant_le(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart > b.time_.QuadPart;
+    return lhs.time_.QuadPart <= rhs.time_.QuadPart;
 #else // UNIX
-    return (a.time_.tv_sec > b.time_.tv_sec) ||
-           (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec > b.time_.tv_nsec);
+    return (lhs.time_.tv_sec < rhs.time_.tv_sec) ||
+           (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec <= rhs.time_.tv_nsec);
 #endif
 }
 
-bool Instant_ge(Instant a, Instant b) {
+bool Instant_gt(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return a.time_.QuadPart >= b.time_.QuadPart;
+    return lhs.time_.QuadPart > rhs.time_.QuadPart;
 #else // UNIX
-    return (a.time_.tv_sec > b.time_.tv_sec) ||
-           (a.time_.tv_sec == b.time_.tv_sec && a.time_.tv_nsec >= b.time_.tv_nsec);
+    return (lhs.time_.tv_sec > rhs.time_.tv_sec) ||
+           (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec > rhs.time_.tv_nsec);
 #endif
 }
 
-bool Instant_IsValid(Instant instant) {
+bool Instant_ge(Instant lhs, Instant rhs) {
 #if defined(_WIN32) || defined(_WIN64)
-    return 0 < instant.time_.QuadPart;
+    return lhs.time_.QuadPart >= rhs.time_.QuadPart;
 #else // UNIX
-    return 0 < instant.time_.tv_sec;
+    return (lhs.time_.tv_sec > rhs.time_.tv_sec) ||
+           (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec >= rhs.time_.tv_nsec);
+#endif
+}
+
+bool Instant_isValid(Instant i) {
+#if defined(_WIN32) || defined(_WIN64)
+    return 0 < i.time_.QuadPart;
+#else // UNIX
+    return 0 < i.time_.tv_sec;
 #endif
 }
 

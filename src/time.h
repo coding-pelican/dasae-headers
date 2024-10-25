@@ -49,68 +49,89 @@ typedef SystemTimeUnix  SystemTime;
 #endif
 
 
-static const u32 Time_nanosPerSec   = 1000u * 1000u * 1000u;
-static const u32 Time_nanosPerMilli = 1000u * 1000u;
-static const u32 Time_nanosPerMicro = 1000u;
-static const u32 Time_millisPerSec  = 1000u;
-static const u32 Time_microsPerSec  = 1000u * 1000u;
+static const u32 Time_nanos_per_sec   = 1000u * 1000u * 1000u;
+static const u32 Time_nanos_per_milli = 1000u * 1000u;
+static const u32 Time_nanos_per_micro = 1000u;
+static const u32 Time_millis_per_sec  = 1000u;
+static const u32 Time_micros_per_sec  = 1000u * 1000u;
 
-static const u64 Time_secsPerMinute = 60ull;
-static const u64 Time_minsPerHour   = 60ull;
-static const u64 Time_hoursPerDay   = 24ull;
-static const u64 Time_daysPerWeek   = 7ull;
+static const u64 Time_secs_per_minute = 60ull;
+static const u64 Time_mins_per_hour   = 60ull;
+static const u64 Time_hours_per_day   = 24ull;
+static const u64 Time_days_per_week   = 7ull;
 
 
 struct Duration {
     u64 secs;
     u32 nanos;
 };
-#define Duration_(...)                 ((Duration){ __VA_ARGS__ })
-#define Duration_make_(_secs, _nanos)  ((Duration){ .secs = (_secs), .nanos = (_nanos) })
-#define Duration_from_Secs_(_secs)     Duration_make_((_secs), 0)
-#define Duration_from_Millis_(_millis) Duration_make_((_millis) / 1000, ((_millis) % 1000) * 1000000)
-#define Duration_from_Micros_(_micros) Duration_make_((_micros) / 1000000, ((_micros) % 1000000) * 1000)
-#define Duration_from_Nanos_(_nanos)   Duration_make_((_nanos) / 1000000000, (_nanos) % 1000000000)
-Duration Duration_make(u64 secs, u32 nanos);
-Duration Duration_from_Secs(u64 secs);
-Duration Duration_from_Millis(u64 millis);
-Duration Duration_from_Micros(u64 micros);
-Duration Duration_from_Nanos(u64 nanos);
+#define Duration_(...) makeWith(Duration, __VA_ARGS__)
+Duration Duration_from(u64 secs, u32 nanos);
+Duration Duration_fromSecs(u64 secs);
+Duration Duration_fromMillis(u64 millis);
+Duration Duration_fromMicros(u64 micros);
+Duration Duration_fromNanos(u64 nanos);
 
-Duration Duration_add(Duration a, Duration b);
-Duration Duration_sub(Duration a, Duration b);
-Duration Duration_mul(Duration a, u64 scalar);
+Duration Duration_add(Duration lhs, Duration rhs);
+Duration Duration_sub(Duration lhs, Duration rhs);
+Duration Duration_mul(Duration d, u64 scalar);
 
-bool Duration_eq(Duration a, Duration b);
-bool Duration_ne(Duration a, Duration b);
-bool Duration_lt(Duration a, Duration b);
-bool Duration_le(Duration a, Duration b);
-bool Duration_gt(Duration a, Duration b);
-bool Duration_ge(Duration a, Duration b);
-bool Duration_IsZero(Duration duration);
+bool Duration_eq(Duration lhs, Duration rhs);
+bool Duration_ne(Duration lhs, Duration rhs);
+bool Duration_lt(Duration lhs, Duration rhs);
+bool Duration_le(Duration lhs, Duration rhs);
+bool Duration_gt(Duration lhs, Duration rhs);
+bool Duration_ge(Duration lhs, Duration rhs);
+bool Duration_isZero(Duration duration);
 
-static const Duration Duration_zero        = Duration_from_Nanos_(0);
-static const Duration Duration_second      = Duration_from_Secs_(1);
-static const Duration Duration_millisecond = Duration_from_Millis_(1);
-static const Duration Duration_microsecond = Duration_from_Micros_(1);
-static const Duration Duration_nanosecond  = Duration_from_Nanos_(1);
+#define comptime_Duration_from(_secs, _nanos) \
+    Duration_(                                \
+            .secs  = (_secs),                 \
+            .nanos = (_nanos)                 \
+    )
+#define comptime_Duration_fromSecs(_secs)        \
+    Duration_(                                   \
+            .secs  = (_secs) == 0 ? 0 : (_secs), \
+            .nanos = 0                           \
+    )
+#define comptime_Duration_fromMillis(_millis)                                                      \
+    Duration_(                                                                                     \
+            .secs  = (_millis) == 0 ? 0 : (_millis) / Time_millis_per_sec,                         \
+            .nanos = (_millis) == 0 ? 0 : ((_millis) % Time_millis_per_sec) * Time_nanos_per_milli \
+    )
+#define comptime_Duration_fromMicros(_micros)                                                      \
+    Duration_(                                                                                     \
+            .secs  = (_micros) == 0 ? 0 : (_micros) / Time_micros_per_sec,                         \
+            .nanos = (_micros) == 0 ? 0 : ((_micros) % Time_micros_per_sec) * Time_nanos_per_micro \
+    )
+#define comptime_Duration_fromNanos(_nanos)                             \
+    Duration_(                                                          \
+            .secs  = (_nanos) == 0 ? 0 : (_nanos) / Time_nanos_per_sec, \
+            .nanos = (_nanos) == 0 ? 0 : (_nanos) % Time_nanos_per_sec  \
+    )
+
+static const Duration Duration_zero        = comptime_Duration_fromNanos(0);
+static const Duration Duration_second      = comptime_Duration_fromSecs(1);
+static const Duration Duration_millisecond = comptime_Duration_fromMillis(1);
+static const Duration Duration_microsecond = comptime_Duration_fromMicros(1);
+static const Duration Duration_nanosecond  = comptime_Duration_fromNanos(1);
 
 
 struct Instant {
     SystemTime time_;
 };
-#define Instant_(...) ((Instant){ __VA_ARGS__ })
-Instant  Instant_Now();
-Duration Instant_Elapsed(Instant start);
-Duration Instant_DurationSince(Instant start, Instant earlier);
+#define Instant_(...) makeWith(Instant, __VA_ARGS__)
+Instant  Instant_now();
+Duration Instant_elapsed(Instant start);
+Duration Instant_durationSince(Instant start, Instant earlier);
 
-bool Instant_eq(Instant a, Instant b);
-bool Instant_ne(Instant a, Instant b);
-bool Instant_lt(Instant a, Instant b);
-bool Instant_le(Instant a, Instant b);
-bool Instant_gt(Instant a, Instant b);
-bool Instant_ge(Instant a, Instant b);
-bool Instant_IsValid(Instant instant);
+bool Instant_eq(Instant lhs, Instant rhs);
+bool Instant_ne(Instant lhs, Instant rhs);
+bool Instant_lt(Instant lhs, Instant rhs);
+bool Instant_le(Instant lhs, Instant rhs);
+bool Instant_gt(Instant lhs, Instant rhs);
+bool Instant_ge(Instant lhs, Instant rhs);
+bool Instant_isValid(Instant instant);
 
 
 #if defined(_WIN32) || defined(_WIN64)

@@ -233,27 +233,27 @@
 
 
 // /* Helper macros to count the number of arguments */
-// #define ASSERT__TYPE_BY_NARGS(_Expression, ...) MMP_EXPAND(ASSERT__TYPE_BY_NARGS_RETURN(__VA_ARGS__))
+// #define ASSERT__TYPE_BY_NARGS(expression, ...) MMP_EXPAND(ASSERT__TYPE_BY_NARGS_RETURN(__VA_ARGS__))
 // #define ASSERT__TYPE_BY_NARGS_RETURN(...)       MMP_IF(MMP_IS_EMPTY(__VA_ARGS__))(1, 2)
 
-// /* Select the correct Assert macro based on the number of arguments */
-// #define Assert(...) MMP_EXPAND(MMP_CONCAT MMP_BLOCK(Assert, ASSERT__TYPE_BY_NARGS(__VA_ARGS__))(__VA_ARGS__))
+// /* Select the correct assert macro based on the number of arguments */
+// #define assert(...) MMP_EXPAND(MMP_CONCAT MMP_BLOCK(assert, ASSERT__TYPE_BY_NARGS(__VA_ARGS__))(__VA_ARGS__))
 
-// /* Assert without additional message */
-// #define Assert1(_Expression)                                                                                                                 \
+// /* assert without additional message */
+// #define assert1(expression)                                                                                                                 \
 //       do {                                                                                                                                   \
-//           if (!(_Expression)) {                                                                                                              \
-//               (void)fprintf(stderr, "Assertion failed: %s\nFile: %s\nLine: %d\nFunction: %s\n", #_Expression, __FILE__, __LINE__, __func__); \
+//           if (!(expression)) {                                                                                                              \
+//               (void)fprintf(stderr, "assertion failed: %s\nFile: %s\nLine: %d\nFunction: %s\n", #expression, __FILE__, __LINE__, __func__); \
 //               DEBUG_BREAK();                                                                                                                 \
 //               abort();                                                                                                                       \
 //           }                                                                                                                                  \
 //       } while (0)
 
-// /* Assert with additional formatted message */
-// #define Assert2(_Expression, ...)                                                                          \
+// /* assert with additional formatted message */
+// #define assert2(expression, ...)                                                                          \
 //       do {                                                                                                 \
-//           if (!(_Expression)) {                                                                            \
-//               (void)fprintf(stderr, "Assertion failed: %s\n", #_Expression);                               \
+//           if (!(expression)) {                                                                            \
+//               (void)fprintf(stderr, "assertion failed: %s\n", #expression);                               \
 //               (void)fprintf(stderr, __VA_ARGS__);                                                          \
 //               (void)fprintf(stderr, "\nFile: %s\nLine: %d\nFunction: %s\n", __FILE__, __LINE__, __func__); \
 //               DEBUG_BREAK();                                                                               \
@@ -262,5 +262,5 @@
 //       } while (0)
 
 // void test() {
-//     Assert(1 == 1);
+//     assert(1 == 1);
 // }

@@ -29,15 +29,14 @@ struct Range {
     usize start; // start index in array
     usize end; // end index in array
 };
-#define Range_(...)               ((Range){ __VA_ARGS__ })
-#define Range_make_(_start, _end) Range_(.start = (_start), .end = (_end))
-Range Range_make(usize start, usize end);
-usize Range_Length(const Ref(Range) self);
-bool  Range_IsValid(const Ref(Range) self);
-bool  Range_Contains(const Ref(Range) self, usize index);
+#define Range_(...) makeWith(Range, __VA_ARGS__)
+Range Range_from(usize start, usize end);
+usize Range_length(Range r);
+bool  Range_isValid(Range r);
+bool  Range_contains(Range r, usize index);
 
-bool Range_eq(Range a, Range b);
-bool Range_ne(Range a, Range b);
+bool Range_eq(Range lhs, Range rhs);
+bool Range_ne(Range lhs, Range rhs);
 
 
 #if defined(__cplusplus)

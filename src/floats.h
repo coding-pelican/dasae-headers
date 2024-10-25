@@ -25,12 +25,21 @@ extern "C" {
 #include <math.h>
 
 
-bool f32_eq(f32 a, f32 b);
-bool f32_ne(f32 a, f32 b);
-bool f32_lt(f32 a, f32 b);
-bool f32_le(f32 a, f32 b);
-bool f32_gt(f32 a, f32 b);
-bool f32_ge(f32 a, f32 b);
+bool f32_eq(f32 x, f32 y);
+bool f32_ne(f32 x, f32 y);
+bool f32_lt(f32 x, f32 y);
+bool f32_le(f32 x, f32 y);
+bool f32_gt(f32 x, f32 y);
+bool f32_ge(f32 x, f32 y);
+
+f32 f32_neg(f32 x);
+f32 f32_abs(f32 x);
+
+f32 f32_add(f32 x, f32 y);
+f32 f32_sub(f32 x, f32 y);
+f32 f32_mul(f32 x, f32 y);
+f32 f32_div(f32 x, f32 y);
+f32 f32_mod(f32 x, f32 y);
 
 f32 f32_min(f32 x, f32 y);
 f32 f32_max(f32 x, f32 y);
@@ -39,17 +48,26 @@ f32 f32_clamp01(f32 x);
 f32 f32_wrap(f32 x, f32 low, f32 high);
 f32 f32_wrap01(f32 x);
 
-#define f32_epsilon (1e-6f)
-#define f32_nan     (NAN)
-#define f32_inf     (INFINITY)
+#define f32_eps (1e-6f)
+#define f32_nan (NAN)
+#define f32_inf (INFINITY)
 
 
-bool f64_eq(f64 a, f64 b);
-bool f64_ne(f64 a, f64 b);
-bool f64_lt(f64 a, f64 b);
-bool f64_le(f64 a, f64 b);
-bool f64_gt(f64 a, f64 b);
-bool f64_ge(f64 a, f64 b);
+bool f64_eq(f64 x, f64 y);
+bool f64_ne(f64 x, f64 y);
+bool f64_lt(f64 x, f64 y);
+bool f64_le(f64 x, f64 y);
+bool f64_gt(f64 x, f64 y);
+bool f64_ge(f64 x, f64 y);
+
+f64 f64_neg(f64 x);
+f64 f64_abs(f64 x);
+
+f64 f64_add(f64 x, f64 y);
+f64 f64_sub(f64 x, f64 y);
+f64 f64_mul(f64 x, f64 y);
+f64 f64_div(f64 x, f64 y);
+f64 f64_mod(f64 x, f64 y);
 
 f64 f64_min(f64 x, f64 y);
 f64 f64_max(f64 x, f64 y);
@@ -58,9 +76,9 @@ f64 f64_clamp01(f64 x);
 f64 f64_wrap(f64 x, f64 low, f64 high);
 f64 f64_wrap01(f64 x);
 
-#define f64_epsilon (1e-15)
-#define f64_nan     (NAN)
-#define f64_inf     (INFINITY)
+#define f64_eps (1e-15)
+#define f64_nan (NAN)
+#define f64_inf (INFINITY)
 
 
 #if defined(__cplusplus)

@@ -1,4 +1,4 @@
-// build `clang -xc fireworks.c ../src/*.c -o fireworks -O3 -static`
+// build `clang -xc fireworks.c ../src/*.c -o fireworks -DNDEBUG -O3 -static`
 // run with `.\launcher fireworks 160 50`
 
 /* use anyhow::Result;
@@ -14,14 +14,22 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
 #include "../src/canvas.h"
 #include "../src/color.h"
 #include "../src/common.h"
+#include "../src/mem.h"
 #include "../src/primitive_types.h"
 #include "../src/terminal.h"
 #include <locale.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
-f64 Rand_Random_f64() { return (f64)rand() / (f64)RAND_MAX; }
-u8  Rand_Random_u8() { return (u8)rand(); }
-u32 Rand_Random_u32() { return (u32)rand(); }
+f64 Rand_random_f64() { return (f64)rand() / (f64)RAND_MAX; }
+u8  Rand_random_u8() { return (u8)rand(); }
+u32 Rand_random_u32() { return (u32)rand(); }
+
+
+#define Firework_effects_max        (25)
+#define Firework_effects_per_rocket (25)
+#define Fireworks_max               (16)
 
 
 typedef struct Particle Particle;
@@ -34,42 +42,54 @@ struct Particle {
     Color color;
     u32   dimensions[2];
 };
-#define Particle_(...)                                 ((Particle){ __VA_ARGS__ })
-#define Particle_make(_x, _y, _width, _height, _color) (      \
-    Particle_(                                                \
-            .position     = { (f64)(_x), (f64)(_y) },         \
-            .speed        = { 0.0, 0.0 },                     \
-            .acceleration = { 0.0, 0.0 },                     \
-            .fading       = 0.0,                              \
-            .lifetime     = 1.0,                              \
-            .color        = (_color),                         \
-            .dimensions   = { (u32)(_width), (u32)(_height) } \
-    )                                                         \
+#define Particle_(...) makeWith(Particle, __VA_ARGS__)
+Particle* Particle_init(Ref(Particle) self, f64 x, f64 y, f64 width, f64 height, Color color) {
+    *self = Particle_(
+            .position     = { x, y },
+            .speed        = { 0.0, 0.0 },
+            .acceleration = { 0.0, 0.0 },
+            .fading       = 0.0,
+            .lifetime     = 1.0,
+            .color        = color,
+            .dimensions   = { width, height }
+    );
+    return self;
+}
+#define comptime_Particle_make(_x, _y, _width, _height, _color) ( \
+    Particle_(                                                    \
+            .position     = { (f64)(_x), (f64)(_y) },             \
+            .speed        = { 0.0, 0.0 },                         \
+            .acceleration = { 0.0, 0.0 },                         \
+            .fading       = 0.0,                                  \
+            .lifetime     = 1.0,                                  \
+            .color        = (_color),                             \
+            .dimensions   = { (u32)(_width), (u32)(_height) }     \
+    )                                                             \
 )
 Particle* Particle_withSpeed(Ref(Particle) self, f64 x, f64 y) {
-    Assert(self);
+    assertNotNull(self);
     self->speed[0] = x;
     self->speed[1] = y;
     return self;
 }
 Particle* Particle_withAcceleration(Ref(Particle) self, f64 x, f64 y) {
-    Assert(self);
+    assertNotNull(self);
     self->acceleration[0] = x;
     self->acceleration[1] = y;
     return self;
 }
 Particle* Particle_withFading(Ref(Particle) self, f64 fading) {
-    Assert(self);
+    assertNotNull(self);
     self->fading = fading;
     return self;
 }
-bool Particle_IsDead(const Ref(Particle) self) {
-    Assert(self);
+bool Particle_isDead(const Ref(Particle) self) {
+    assertNotNull(self);
     return self->lifetime <= 0.0;
 }
-void Particle_Update(Ref(Particle) self) {
-    Assert(self);
-    if (Particle_IsDead(self)) { return; }
+void Particle_update(Ref(Particle) self) {
+    assertNotNull(self);
+    if (Particle_isDead(self)) { return; }
 
     self->speed[0] += self->acceleration[0];
     self->speed[1] += self->acceleration[1];
@@ -79,21 +99,21 @@ void Particle_Update(Ref(Particle) self) {
 
     self->lifetime -= self->fading;
 }
-void Particle_Render(const Ref(Particle) self, Ref(Canvas) canvas) {
-    Assert(self);
-    if (Particle_IsDead(self)) { return; }
+void Particle_render(const Ref(Particle) self, Ref(Canvas) canvas) {
+    assertNotNull(self);
+    if (Particle_isDead(self)) { return; }
 
-    const Color renderColor = Color_from_RGB(
+    const Color renderColor = Color_fromOpaque(
         (u8)((f64)(self->color.r) * self->lifetime),
         (u8)((f64)(self->color.g) * self->lifetime),
         (u8)((f64)(self->color.b) * self->lifetime)
     );
 
-    Canvas_FillRect(
+    Canvas_fillRect(
         canvas,
-        Canvas_NormalizeRect(
+        Canvas_normalizeRect(
             canvas,
-            Rect_Make(
+            comptime_Rect_from(
                 (i64)self->position[0],
                 (i64)self->position[1],
                 (u32)self->dimensions[0],
@@ -136,22 +156,32 @@ void Particle_Render(const Ref(Particle) self, Ref(Canvas) canvas) {
 typedef struct Firework Firework;
 struct Firework {
     Particle* rocket;
-    Particle  effect[125];
-    i64       effectCount;
-    ColorHSL  effectBaseColor;
+    Particle  effect[Firework_effects_max];
+    i64       effect_count;
+    HSL       effect_base_color;
 };
-Firework Firework_new(i64 x, i64 y, Color effectBaseColor) {
-    Firework firework = {
-        .effectCount     = 0,
-        .effectBaseColor = ColorHSL_from_RGBA(effectBaseColor),
-    };
-    Particle* const rocket = (Particle*)malloc(sizeof(Particle));
-    rocket[0]              = Particle_make(x, y, 1, 3, Color_white);
-    firework.rocket        = rocket;
-    Particle_withSpeed(firework.rocket, 0.0, -2.0 - Rand_Random_f64() * -1.0);
+#define Firework_(...) makeWith(Firework, __VA_ARGS__)
+Firework* Firework_init(Ref(Firework) self, i64 x, i64 y, Color effect_base_color) {
+    *self = Firework_(
+            .effect_count      = 0,
+            .effect_base_color = Color_intoHSL(effect_base_color)
+    );
+    // Particle* const rocket = mem_createWith(
+    //     Particle,
+    //     .position   = { x, y },
+    //     .dimensions = { 1, 3 },
+    //     .color      = Color_white
+    // );
+    // Particle_withSpeed(rocket, 0.0, -2.0 - Rand_Random_f64() * -1.0);
+    // Particle_withAcceleration(rocket, 0.0, 0.02);
+    // firework.rocket = rocket;
+    Particle* const rocket = mem_create(Particle);
+    Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_white);
+    Particle_withSpeed(rocket, 0.0, -2.0 - Rand_random_f64() * -1.0);
+    Particle_withAcceleration(rocket, 0.0, 0.02);
+    self->rocket = rocket;
     // .with_speed(0.0, -2.0 - rand::random::<f64>() * -1.0)
-    Particle_withAcceleration(firework.rocket, 0.0, 0.02);
-    return firework;
+    return self;
 
     /*
     pub fn new (x : i64, y : i64, effect_base_color : Color)->Self {
@@ -170,40 +200,41 @@ Firework Firework_new(i64 x, i64 y, Color effectBaseColor) {
     }
     */
 }
-void Firework_Update(Ref(Firework) self) {
+void Firework_update(Ref(Firework) self) {
     if (self->rocket) {
-        Particle* const rocket = self->rocket;
-        Particle_Update(rocket);
+        Particle** rocket = &self->rocket;
+        Particle_update(rocket[0]);
 
-        if (-0.2 <= rocket->speed[1]) {
-            for (i64 i = 0; i < 25; ++i) {
-                if (125 <= self->effectCount) { break; }
+        if (-0.2 <= rocket[0]->speed[1]) {
+            for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
+                if (Firework_effects_max <= self->effect_count) { break; }
 
-                i64 const      x      = (i64)rocket->position[0];
-                i64 const      y      = (i64)rocket->position[1];
-                i64 const      width  = 1;
-                i64 const      height = 1;
-                ColorHSL const color  = ColorHSL_from(
-                    self->effectBaseColor.h,
-                    self->effectBaseColor.s + (Rand_Random_f64() - 0.5) * 20.0,
-                    self->effectBaseColor.l + (Rand_Random_f64() - 0.5) * 40.0,
+                i64 const x      = (i64)rocket[0]->position[0];
+                i64 const y      = (i64)rocket[0]->position[1];
+                i64 const width  = 1;
+                i64 const height = 1;
+                HSL const color  = HSL_from(
+                    self->effect_base_color.h,
+                    self->effect_base_color.s + (Rand_random_f64() - 0.5) * 20.0,
+                    self->effect_base_color.l + (Rand_random_f64() - 0.5) * 40.0
                 );
-                Particle particle[1] = { Particle_make(x, y, width, height, ColorHSL_to_RGB(color)) };
+                Particle particle[1] = { comptime_Particle_make(x, y, width, height, HSL_intoColorOpaque(color)) };
                 Particle_withSpeed(
                     particle,
-                    (Rand_Random_f64() - 0.5) * 1.0,
-                    (Rand_Random_f64() - 0.9) * 1.0
+                    (Rand_random_f64() - 0.5) * 1.0,
+                    (Rand_random_f64() - 0.9) * 1.0
                 );
                 Particle_withAcceleration(particle, 0.0, 0.02);
                 Particle_withFading(particle, 0.01);
-                self->effect[self->effectCount++] = particle[0];
+                self->effect[self->effect_count++] = particle[0];
             }
-            self->rocket = nullptr;
+            mem_destroy(rocket);
+            self->rocket = null;
         }
     }
 
-    for (Particle* particle = self->effect; particle < self->effect + self->effectCount; ++particle) {
-        Particle_Update(particle);
+    for (Particle* particle = self->effect; particle < self->effect + self->effect_count; ++particle) {
+        Particle_update(particle);
     }
 
     /* pub fn update(&mut self) {
@@ -252,39 +283,47 @@ void Firework_Update(Ref(Firework) self) {
         }
     } */
 }
-void Firework_Render(Ref(Firework) self, Ref(Canvas) canvas) {
+void Firework_render(const Ref(Firework) self, Ref(Canvas) canvas) {
     if (self->rocket) {
-        Particle_Render(self->rocket, canvas);
+        Particle_render(self->rocket, canvas);
     }
-    for (Particle* particle = self->effect; particle < self->effect + self->effectCount; ++particle) {
-        Particle_Render(particle, canvas);
+    for (const Particle* particle = self->effect; particle < self->effect + self->effect_count; ++particle) {
+        Particle_render(particle, canvas);
     }
 }
-static bool Firework__DeadsAllEffect(Ref(Firework) self) {
-    for (Particle* particle = self->effect; particle < self->effect + self->effectCount; ++particle) {
-        if (!Particle_IsDead(particle)) {
+static bool Firework__deadsAllEffect(const Ref(Firework) self) {
+    for (const Particle* particle = self->effect; particle < self->effect + self->effect_count; ++particle) {
+        if (!Particle_isDead(particle)) {
             return false;
         }
     }
     return true;
 }
-bool Firework_IsDead(Ref(Firework) self) {
-    return self->rocket == nullptr && (self->effectCount == 0 || Firework__DeadsAllEffect(self));
+bool Firework_isDead(const Ref(Firework) self) {
+    return self->rocket == null && (self->effect_count == 0 || Firework__deadsAllEffect(self));
 }
 
 typedef struct State State;
 struct State {
-    Firework fireworks[16];
+    Firework fireworks[Fireworks_max];
     i64      fireworksCount;
     u32      width;
     u32      height;
 };
-State State_new(u32 width, u32 height) {
-    State state          = { 0 };
-    state.fireworksCount = 0;
-    state.width          = width;
-    state.height         = height;
-    return state;
+#define State_(...) makeWith(State, __VA_ARGS__)
+State* State_init(State* self, u32 width, u32 height) {
+    *self = State_(
+            .fireworksCount = 0,
+            .width          = width,
+            .height         = height,
+    );
+    return self;
+}
+void State_fini(State* self) {
+    for (i64 i = 0; i < self->fireworksCount; ++i) {
+        if (!self->fireworks[i].rocket) { continue; }
+        mem_delete(&self->fireworks[i].rocket);
+    }
 }
 
 
@@ -299,11 +338,11 @@ State State_new(u32 width, u32 height) {
 #define Display_Height (Terminal_Height * 2)
 #define Display_Size   (Display_Width * Display_Height)
 
-void TerminalCursor_ResetColor() {
+void TerminalCursor_resetColor() {
     printf("\033[0m");
 }
 
-void TerminalCursor_SetColor(Color foreground, Color background) {
+void TerminalCursor_setColor(Color foreground, Color background) {
     printf(
         "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm", // background
         foreground.r,
@@ -316,7 +355,7 @@ void TerminalCursor_SetColor(Color foreground, Color background) {
 }
 
 // Set locale to UTF-8
-void Terminal_EnsureLocaleUTF8() {
+void Terminal_ensureLocaleUTF8() {
     static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
     static const int         localesNum = sizeof(locales) / sizeof(locales[0]);
 
@@ -349,7 +388,7 @@ void Terminal_EnsureLocaleUTF8() {
 }
 
 // Enable ANSI escape sequence processing
-void Terminal_EnableANSI() {
+void Terminal_enableANSI() {
 #ifdef _WIN32
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
@@ -362,7 +401,7 @@ void Terminal_EnableANSI() {
 }
 
 // Print diagnostic information for debugging
-void Terminal_PrintDiagnosticInformation() {
+void Terminal_printDiagnosticInformation() {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
 #ifdef _WIN32
     printf("Active code page: %d\n", GetACP());
@@ -371,7 +410,7 @@ void Terminal_PrintDiagnosticInformation() {
 }
 
 // Clear the terminal screen and move the cursor to the top left
-void Terminal_Clear() {
+void Terminal_clear() {
 #ifdef _WIN32
     HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD                      topLeft  = { 0, 0 };
@@ -389,19 +428,19 @@ void Terminal_Clear() {
 #endif
 }
 
-void Terminal_Bootup() {
-    Terminal_EnsureLocaleUTF8();
-    Terminal_EnableANSI();
-    Terminal_PrintDiagnosticInformation();
+void Terminal_bootup() {
+    Terminal_ensureLocaleUTF8();
+    Terminal_enableANSI();
+    Terminal_printDiagnosticInformation();
     printf("Terminal setup complete.\n");
     printf("Press any key to continue...\n");
     getch();
-    Terminal_Clear();
+    Terminal_clear();
 }
 
-void Terminal_Shutdown() {
-    TerminalCursor_ResetColor();
-    Terminal_Clear();
+void Terminal_shutdown() {
+    TerminalCursor_resetColor();
+    Terminal_clear();
 }
 
 #define Display_UnitPixel1x2Format            "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
@@ -416,7 +455,7 @@ static usize Display_bufferCurrentSize               = 0;
 static char* Display_bufferNext                      = Display_backBuffer;
 static usize Display_bufferNextSize                  = 0;
 
-void Display_Init() {
+void Display_init() {
 #ifdef _WIN32
     HANDLE     hConsoleOutput    = GetStdHandle(STD_OUTPUT_HANDLE);
     SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
@@ -448,17 +487,17 @@ void Display_Init() {
 #endif
 }
 
-void Display_Clear() {
+void Display_clear() {
     memset(Display_bufferCurrent, 0, Display_bufferCurrentSize);
 }
 
-void Display_SwapBuffers() {
-    Swap(char*, Display_bufferCurrent, Display_bufferNext);
-    Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+void Display_swapBuffers() {
+    pp_swap(char*, Display_bufferCurrent, Display_bufferNext);
+    pp_swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
 }
 
-void Display_SetBufferFromColors(const Color colors[Display_Size]) {
-    Display_Clear();
+void Display_setBufferFromColors(const Color colors[Display_Size]) {
+    Display_clear();
 
     usize index = 0;
     for (usize y = 0; y < Display_Height; y += 2) {
@@ -476,8 +515,8 @@ void Display_SetBufferFromColors(const Color colors[Display_Size]) {
                 const Color nextUpper = colors[x + runLength + y * Display_Width];
                 const Color nextLower = colors[x + runLength + (y + 1) * Display_Width];
 
-                if (memcmp(&upper, &nextUpper, sizeof(Color)) != 0 ||
-                    memcmp(&lower, &nextLower, sizeof(Color)) != 0) {
+                if (memcmp(&upper.rgba, &nextUpper.rgba, sizeof(Color)) != 0 ||
+                    memcmp(&lower.rgba, &nextLower.rgba, sizeof(Color)) != 0) {
                     break;
                 }
                 runLength++;
@@ -514,10 +553,10 @@ void Display_SetBufferFromColors(const Color colors[Display_Size]) {
     Display_bufferNext[--index] = '\0';
     Display_bufferNextSize      = index;
 
-    Display_SwapBuffers();
+    Display_swapBuffers();
 }
 
-void Display_Render() {
+void Display_render() {
     // Reset cursor position
     printf("\033[H");
 
@@ -530,6 +569,63 @@ void Display_Render() {
     fflush(stdout);
 #endif
 }
+
+
+int main() {
+    State state[1] = { makeCleared(State) };
+    State_init(state, Display_Width, Display_Height);
+    Canvas canvas[1] = { makeCleared(Canvas) };
+    Canvas_init(canvas, state->width, state->height);
+    Canvas_initWithColor(canvas, Color_black);
+
+    Display_init();
+    Terminal_bootup();
+    srand((u32)time(null)); // NOLINT
+
+    while (true) {
+        if (GetAsyncKeyState(VK_ESCAPE)) { break; }
+
+        // Add a new rocket with with 5% chance.
+        if (Rand_random_f64() < 0.05) {
+            if (state->fireworksCount < Fireworks_max) {
+                state->fireworks[state->fireworksCount++] = *Firework_init(
+                    &makeCleared(Firework),
+                    (i64)(Rand_random_u32() % state->width),
+                    state->height,
+                    Color_fromOpaque(
+                        Rand_random_u8(),
+                        Rand_random_u8(),
+                        Rand_random_u8()
+                    )
+                );
+            }
+        }
+
+        for (i64 i = 0; i < state->fireworksCount; ++i) {
+            Firework_update(&state->fireworks[i]);
+        }
+        // RENDER BEGIN
+        Canvas_clear(canvas, Color_black);
+        for (i64 i = 0; i < state->fireworksCount; ++i) {
+            Firework_render(&state->fireworks[i], canvas);
+        }
+        // Canvas_Render(canvas);
+        Display_setBufferFromColors(FrameBuffer_readData(Canvas_readBuffer(canvas)));
+        Display_render();
+        // RENDER END
+
+        Sleep(16);
+    }
+
+    State_fini(state);
+    Canvas_fini(canvas);
+    Terminal_shutdown();
+
+    return 0;
+}
+
+
+
 
 // void Display_Render() {
 //     write(STDOUT_FILENO, Display_bufferCurrent, Display_bufferCurrentSize);
@@ -605,55 +701,7 @@ void Display_Render() {
 // }
 
 
-int main() {
-    State   state  = State_new(Display_Width, Display_Height);
-    Canvas* canvas = Canvas_InitWithColor(
-        Canvas_Init(
-            new_Canvas(),
-            state.width,
-            state.height
-        ),
-        Color_black
-    );
-    Display_Init();
-    Terminal_Bootup();
 
-    while (true) {
-        // Add a new rocket with with 5% chance.
-        if (Rand_Random_f64() < 0.05) {
-            if (state.fireworksCount < 16) {
-                state.fireworks[state.fireworksCount++] = Firework_new(
-                    (i64)(Rand_Random_u32() % state.width),
-                    state.height,
-                    Color_from_RGB(
-                        Rand_Random_u8(),
-                        Rand_Random_u8(),
-                        Rand_Random_u8()
-                    )
-                );
-            }
-        }
-
-        for (i64 i = 0; i < state.fireworksCount; ++i) {
-            Firework_Update(&state.fireworks[i]);
-        }
-        // RENDER BEGIN
-        Canvas_Clear(canvas, Color_black);
-        for (i64 i = 0; i < state.fireworksCount; ++i) {
-            Firework_Render(&state.fireworks[i], canvas);
-        }
-        // Canvas_Render(canvas);
-        Display_SetBufferFromColors(FrameBuffer_ReadData(Canvas_ReadBuffer(canvas)));
-        Display_Render();
-        // RENDER END
-
-        Sleep(25);
-    }
-
-    Terminal_Shutdown();
-
-    return 0;
-}
 
 /* fn main() -> Result<()> {
     let(terminal_width, terminal_height) = terminal::size() ? ;

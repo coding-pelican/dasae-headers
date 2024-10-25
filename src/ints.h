@@ -15,6 +15,9 @@ bool i8_le(i8 x, i8 y);
 bool i8_gt(i8 x, i8 y);
 bool i8_ge(i8 x, i8 y);
 
+i8 i8_neg(i8 x);
+i8 i8_abs(i8 x);
+
 i8 i8_add(i8 x, i8 y);
 i8 i8_sub(i8 x, i8 y);
 i8 i8_mul(i8 x, i8 y);
@@ -26,8 +29,8 @@ i8 i8_max(i8 x, i8 y);
 i8 i8_clamp(i8 x, i8 low, i8 high);
 i8 i8_wrap(i8 x, i8 low, i8 high);
 
-#define i8_minLimit (INT8_MIN)
-#define i8_maxLimit (INT8_MAX)
+#define i8_limit_min (INT8_MIN)
+#define i8_limit_max (INT8_MAX)
 
 bool u8_eq(u8 x, u8 y);
 bool u8_ne(u8 x, u8 y);
@@ -47,7 +50,7 @@ u8 u8_max(u8 x, u8 y);
 u8 u8_clamp(u8 x, u8 low, u8 high);
 u8 u8_wrap(u8 x, u8 low, u8 high);
 
-#define u8_maxLimit (UINT8_MAX)
+#define u8_limit_max (UINT8_MAX)
 
 
 bool i16_eq(i16 x, i16 y);
@@ -56,6 +59,9 @@ bool i16_lt(i16 x, i16 y);
 bool i16_le(i16 x, i16 y);
 bool i16_gt(i16 x, i16 y);
 bool i16_ge(i16 x, i16 y);
+
+i16 i16_neg(i16 x);
+i16 i16_abs(i16 x);
 
 i16 i16_add(i16 x, i16 y);
 i16 i16_sub(i16 x, i16 y);
@@ -68,8 +74,8 @@ i16 i16_max(i16 x, i16 y);
 i16 i16_clamp(i16 x, i16 low, i16 high);
 i16 i16_wrap(i16 x, i16 low, i16 high);
 
-#define i16_minLimit (INT16_MIN)
-#define i16_maxLimit (INT16_MAX)
+#define i16_limit_min (INT16_MIN)
+#define i16_limit_max (INT16_MAX)
 
 bool u16_eq(u16 x, u16 y);
 bool u16_ne(u16 x, u16 y);
@@ -89,7 +95,7 @@ u16 u16_max(u16 x, u16 y);
 u16 u16_clamp(u16 x, u16 low, u16 high);
 u16 u16_wrap(u16 x, u16 low, u16 high);
 
-#define u16_maxLimit (UINT16_MAX)
+#define u16_limit_max (UINT16_MAX)
 
 
 bool i32_eq(i32 x, i32 y);
@@ -98,6 +104,9 @@ bool i32_lt(i32 x, i32 y);
 bool i32_le(i32 x, i32 y);
 bool i32_gt(i32 x, i32 y);
 bool i32_ge(i32 x, i32 y);
+
+i32 i32_neg(i32 x);
+i32 i32_abs(i32 x);
 
 i32 i32_add(i32 x, i32 y);
 i32 i32_sub(i32 x, i32 y);
@@ -110,8 +119,8 @@ i32 i32_max(i32 x, i32 y);
 i32 i32_clamp(i32 x, i32 low, i32 high);
 i32 i32_wrap(i32 x, i32 low, i32 high);
 
-#define i32_minLimit (INT32_MIN)
-#define i32_maxLimit (INT32_MAX)
+#define i32_limit_min (INT32_MIN)
+#define i32_limit_max (INT32_MAX)
 
 bool u32_eq(u32 x, u32 y);
 bool u32_ne(u32 x, u32 y);
@@ -131,7 +140,7 @@ u32 u32_max(u32 x, u32 y);
 u32 u32_clamp(u32 x, u32 low, u32 high);
 u32 u32_wrap(u32 x, u32 low, u32 high);
 
-#define u32_maxLimit (UINT32_MAX)
+#define u32_limit_max (UINT32_MAX)
 
 
 bool i64_eq(i64 x, i64 y);
@@ -140,6 +149,9 @@ bool i64_lt(i64 x, i64 y);
 bool i64_le(i64 x, i64 y);
 bool i64_gt(i64 x, i64 y);
 bool i64_ge(i64 x, i64 y);
+
+i64 i64_neg(i64 x);
+i64 i64_abs(i64 x);
 
 i64 i64_add(i64 x, i64 y);
 i64 i64_sub(i64 x, i64 y);
@@ -152,8 +164,8 @@ i64 i64_max(i64 x, i64 y);
 i64 i64_clamp(i64 x, i64 low, i64 high);
 i64 i64_wrap(i64 x, i64 low, i64 high);
 
-#define i64_minLimit (INT64_MIN)
-#define i64_maxLimit (INT64_MAX)
+#define i64_limit_min (INT64_MIN)
+#define i64_limit_max (INT64_MAX)
 
 bool u64_eq(u64 x, u64 y);
 bool u64_ne(u64 x, u64 y);
@@ -173,7 +185,7 @@ u64 u64_max(u64 x, u64 y);
 u64 u64_clamp(u64 x, u64 low, u64 high);
 u64 u64_wrap(u64 x, u64 low, u64 high);
 
-#define u64_maxLimit (UINT64_MAX)
+#define u64_limit_max (UINT64_MAX)
 
 
 bool isize_eq(isize x, isize y);
@@ -182,6 +194,9 @@ bool isize_lt(isize x, isize y);
 bool isize_le(isize x, isize y);
 bool isize_gt(isize x, isize y);
 bool isize_ge(isize x, isize y);
+
+isize isize_neg(isize x);
+isize isize_abs(isize x);
 
 isize isize_add(isize x, isize y);
 isize isize_sub(isize x, isize y);
@@ -194,8 +209,8 @@ isize isize_max(isize x, isize y);
 isize isize_clamp(isize x, isize low, isize high);
 isize isize_wrap(isize x, isize low, isize high);
 
-#define isize_minLimit (INTPTR_MIN)
-#define isize_maxLimit (INTPTR_MAX)
+#define isize_limit_min (INTPTR_MIN)
+#define isize_limit_max (INTPTR_MAX)
 
 bool usize_eq(usize x, usize y);
 bool usize_ne(usize x, usize y);
@@ -215,7 +230,7 @@ usize usize_max(usize x, usize y);
 usize usize_clamp(usize x, usize low, usize high);
 usize usize_wrap(usize x, usize low, usize high);
 
-#define usize_maxLimit (UINTPTR_MAX)
+#define usize_limit_max (UINTPTR_MAX)
 
 
 #if defined(__cplusplus)
