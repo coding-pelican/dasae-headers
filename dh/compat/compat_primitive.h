@@ -6,7 +6,7 @@
  * @date    2024-10-27 (date of creation)
  * @updated 2024-10-27 (date of last update)
  * @version v1.0.0
- * @ingroup compat
+ * @ingroup dasae-headers(dh)/compat
  * @prefix  prim
  *
  * @brief   Header of some software

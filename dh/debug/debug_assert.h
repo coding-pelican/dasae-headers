@@ -6,7 +6,7 @@
  * @date    2024-10-22 (date of creation)
  * @updated 2024-10-22 (date of last update)
  * @version v1.0.0
- * @ingroup debug
+ * @ingroup dasae-headers(dh)/debug
  * @prefix  debug
  *
  * @brief   Header of some software
