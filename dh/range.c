@@ -1,10 +1,10 @@
 #include "range.h"
-#include "assert.h"
+#include "debug/debug_assert.h"
 
 
 Range Range_from(usize start, usize end) {
-    assert(start <= end);
-    return Range_( .start = start, .end = end);
+    debug_assert(start <= end);
+    return Range_(.start = start, .end = end);
 }
 
 // length == (end - start + 1)

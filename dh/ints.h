@@ -5,7 +5,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "primitive_types.h"
+#include "types.h"
 
 
 bool i8_eq(i8 x, i8 y);

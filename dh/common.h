@@ -21,26 +21,15 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "primitive_types.h"
+#include "types.h"
 
 
-// NOLINTBEGIN
-#if defined(__clang_major__)
-#  define lambda(ret, name, ...) void* name = (void*)^ret(__VA_ARGS__)
-#elif defined(__GNUC__) || defined(__GNUG__)
-#  define lambda(ret, name, ...) ret name(__VA_ARGS__)
-#elif defined(__cplusplus)
-#  define lambda(ret, name, ...) auto name = [](__VA_ARGS__)
-#endif
-// NOLINTEND
-
-
-#define pp_eq(_T, _x, _y) (_T##_eq(_x, _y))
-#define pp_ne(_T, _x, _y) (_T##_ne(_x, _y))
-#define pp_lt(_T, _x, _y) (_T##_lt(_x, _y))
-#define pp_le(_T, _x, _y) (_T##_le(_x, _y))
-#define pp_gt(_T, _x, _y) (_T##_gt(_x, _y))
-#define pp_ge(_T, _x, _y) (_T##_ge(_x, _y))
+#define cmp_eq(_T, _x, _y) (_T##_eq(_x, _y))
+#define cmp_ne(_T, _x, _y) (_T##_ne(_x, _y))
+#define cmp_lt(_T, _x, _y) (_T##_lt(_x, _y))
+#define cmp_le(_T, _x, _y) (_T##_le(_x, _y))
+#define cmp_gt(_T, _x, _y) (_T##_gt(_x, _y))
+#define cmp_ge(_T, _x, _y) (_T##_ge(_x, _y))
 
 #define pp_neg(_T, _x) (_T##_neg(_x))
 #define pp_abs(_T, _x) (_T##_abs(_x))

@@ -41,12 +41,12 @@ Color Color_from(u8 r, u8 g, u8 b, u8 a) {
     return comptime_Color_from(r, g, b, a);
 }
 
-Color Color_fromOpaque(u8 r, u8 g, u8 b) {
-    return comptime_Color_fromOpaque(r, g, b);
-}
-
 Color Color_fromTransparent(u8 r, u8 g, u8 b) {
     return comptime_Color_fromTransparent(r, g, b);
+}
+
+Color Color_fromOpaque(u8 r, u8 g, u8 b) {
+    return comptime_Color_fromOpaque(r, g, b);
 }
 
 RGB RGB_fromHSL(HSL hsl) {
@@ -69,9 +69,9 @@ RGB RGB_fromHSL(HSL hsl) {
     }
 
     return RGB_from(
-        as(u8, f64_clamp(r * 255.0, 0, 255.0)),
-        as(u8, f64_clamp(g * 255.0, 0, 255.0)),
-        as(u8, f64_clamp(b * 255.0, 0, 255.0))
+        prim_as(u8, f64_clamp(r * CCH_max, 0, CCH_max)),
+        prim_as(u8, f64_clamp(g * CCH_max, 0, CCH_max)),
+        prim_as(u8, f64_clamp(b * CCH_max, 0, CCH_max))
     );
 }
 
@@ -87,10 +87,18 @@ RGB Color_intoRGB(Color color) {
     return RGB_fromColor(color);
 }
 
+RGB HSL_asRGB(HSL hsl) {
+    return RGB_fromHSL(hsl);
+}
+
+RGB Color_asRGB(Color color) {
+    return RGB_fromColor(color);
+}
+
 HSL HSL_fromRGB(RGB rgb) {
-    f64 r = rgb.r / 255.0;
-    f64 g = rgb.g / 255.0;
-    f64 b = rgb.b / 255.0;
+    f64 r = rgb.r / prim_as(f64, CCH_max);
+    f64 g = rgb.g / prim_as(f64, CCH_max);
+    f64 b = rgb.b / prim_as(f64, CCH_max);
 
     f64 max  = f64_max(f64_max(r, g), b);
     f64 min  = f64_min(f64_min(r, g), b);
@@ -131,50 +139,58 @@ HSL Color_intoHSL(Color color) {
     return HSL_fromColor(color);
 }
 
-Color Color_fromRGBWithAlpha(RGB rgb, u8 a) {
-    return Color_from(rgb.r, rgb.g, rgb.b, a);
+HSL RGB_asHSL(RGB rgb) {
+    return HSL_fromRGB(rgb);
 }
 
-Color Color_fromRGBOpaque(RGB rgb) {
-    return Color_fromRGBWithAlpha(rgb, 255);
+HSL Color_asHSL(Color color) {
+    return HSL_fromColor(color);
+}
+
+Color Color_fromRGB(RGB rgb, u8 a) {
+    return Color_from(rgb.r, rgb.g, rgb.b, a);
 }
 
 Color Color_fromRGBTransparent(RGB rgb) {
-    return Color_fromRGBWithAlpha(rgb, 0);
+    return Color_fromRGB(rgb, CCH_transparent);
 }
 
-Color RGB_intoColorWithAlpha(RGB rgb, u8 a) {
+Color Color_fromRGBOpaque(RGB rgb) {
+    return Color_fromRGB(rgb, CCH_opaque);
+}
+
+Color RGB_intoColor(RGB rgb, u8 a) {
     return Color_from(rgb.r, rgb.g, rgb.b, a);
 }
 
-Color RGB_intoColorOpaque(RGB rgb) {
-    return Color_fromRGBWithAlpha(rgb, 255);
-}
-
 Color RGB_intoColorTransparent(RGB rgb) {
-    return Color_fromRGBWithAlpha(rgb, 0);
+    return Color_fromRGB(rgb, CCH_transparent);
 }
 
-Color Color_fromHSLWithAlpha(HSL hsl, u8 a) {
-    return RGB_intoColorWithAlpha(HSL_intoRGB(hsl), a);
+Color RGB_intoColorOpaque(RGB rgb) {
+    return Color_fromRGB(rgb, CCH_opaque);
 }
 
-Color Color_fromHSLWithOpaque(HSL hsl) {
-    return Color_fromHSLWithAlpha(hsl, 255);
+Color Color_fromHSL(HSL hsl, u8 a) {
+    return RGB_intoColor(HSL_intoRGB(hsl), a);
 }
 
-Color Color_fromHSLWithTransparent(HSL hsl) {
-    return Color_fromHSLWithAlpha(hsl, 0);
+Color Color_fromHSLTransparent(HSL hsl) {
+    return Color_fromHSL(hsl, CCH_transparent);
 }
 
-Color HSL_intoColorWithAlpha(HSL hsl, u8 a) {
-    return Color_fromHSLWithAlpha(hsl, a);
+Color Color_fromHSLOpaque(HSL hsl) {
+    return Color_fromHSL(hsl, CCH_opaque);
 }
 
-Color HSL_intoColorOpaque(HSL hsl) {
-    return Color_fromHSLWithOpaque(hsl);
+Color HSL_intoColor(HSL hsl, u8 a) {
+    return Color_fromHSL(hsl, a);
 }
 
 Color HSL_intoColorTransparent(HSL hsl) {
-    return Color_fromHSLWithTransparent(hsl);
+    return Color_fromHSLTransparent(hsl);
+}
+
+Color HSL_intoColorOpaque(HSL hsl) {
+    return Color_fromHSLOpaque(hsl);
 }

@@ -1,5 +1,5 @@
-#include "assert.h"
-#include "primitive_types.h"
+#include "../debug/debug_assert.h"
+#include "../types.h"
 
 
 typedef struct Window Window;

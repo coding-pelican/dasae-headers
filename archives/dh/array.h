@@ -2,7 +2,7 @@
 #define ARRAY_INCLUDED (1)
 
 
-#include "primitive_types.h"
+#include "types.h"
 
 
 typedef struct Array Array;

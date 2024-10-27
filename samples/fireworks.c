@@ -10,21 +10,21 @@ use pixel_loop::input::{ CrosstermInputState, KeyboardKey, KeyboardState };
 use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
 
 
-#include "../src/assert.h"
-#include "../src/canvas.h"
-#include "../src/color.h"
-#include "../src/common.h"
-#include "../src/mem.h"
-#include "../src/primitive_types.h"
-#include "../src/terminal.h"
+#include "../dh/canvas.h"
+#include "../dh/color.h"
+#include "../dh/common.h"
+#include "../dh/debug/debug_assert.h"
+#include "../dh/mem.h"
+#include "../dh/terminal/terminal.h"
+#include "../dh/types.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 
-f64 Rand_random_f64() { return (f64)rand() / (f64)RAND_MAX; }
-u8  Rand_random_u8() { return (u8)rand(); }
-u32 Rand_random_u32() { return (u32)rand(); }
+f64 rand_random_f64() { return (f64)rand() / (f64)RAND_MAX; }
+u8  rand_random_u8() { return (u8)rand(); }
+u32 rand_random_u32() { return (u32)rand(); }
 
 
 #define Firework_effects_max        (25)
@@ -67,28 +67,28 @@ Particle* Particle_init(Ref(Particle) self, f64 x, f64 y, f64 width, f64 height,
     )                                                             \
 )
 Particle* Particle_withSpeed(Ref(Particle) self, f64 x, f64 y) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     self->speed[0] = x;
     self->speed[1] = y;
     return self;
 }
 Particle* Particle_withAcceleration(Ref(Particle) self, f64 x, f64 y) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     self->acceleration[0] = x;
     self->acceleration[1] = y;
     return self;
 }
 Particle* Particle_withFading(Ref(Particle) self, f64 fading) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     self->fading = fading;
     return self;
 }
 bool Particle_isDead(const Ref(Particle) self) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     return self->lifetime <= 0.0;
 }
 void Particle_update(Ref(Particle) self) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     if (Particle_isDead(self)) { return; }
 
     self->speed[0] += self->acceleration[0];
@@ -100,7 +100,7 @@ void Particle_update(Ref(Particle) self) {
     self->lifetime -= self->fading;
 }
 void Particle_render(const Ref(Particle) self, Ref(Canvas) canvas) {
-    assertNotNull(self);
+    debug_assertNotNull(self);
     if (Particle_isDead(self)) { return; }
 
     const Color renderColor = Color_fromOpaque(
@@ -168,19 +168,16 @@ Firework* Firework_init(Ref(Firework) self, i64 x, i64 y, Color effect_base_colo
     );
     // Particle* const rocket = mem_createWith(
     //     Particle,
-    //     .position   = { x, y },
+    //     .position   = { (f64)x, (f64)y },
     //     .dimensions = { 1, 3 },
+    //     .lifetime   = 1.0,
     //     .color      = Color_white
     // );
-    // Particle_withSpeed(rocket, 0.0, -2.0 - Rand_Random_f64() * -1.0);
-    // Particle_withAcceleration(rocket, 0.0, 0.02);
-    // firework.rocket = rocket;
     Particle* const rocket = mem_create(Particle);
     Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_white);
-    Particle_withSpeed(rocket, 0.0, -2.0 - Rand_random_f64() * -1.0);
+    Particle_withSpeed(rocket, 0.0, -2.0 - rand_random_f64() * -1.0);
     Particle_withAcceleration(rocket, 0.0, 0.02);
     self->rocket = rocket;
-    // .with_speed(0.0, -2.0 - rand::random::<f64>() * -1.0)
     return self;
 
     /*
@@ -215,14 +212,14 @@ void Firework_update(Ref(Firework) self) {
                 i64 const height = 1;
                 HSL const color  = HSL_from(
                     self->effect_base_color.h,
-                    self->effect_base_color.s + (Rand_random_f64() - 0.5) * 20.0,
-                    self->effect_base_color.l + (Rand_random_f64() - 0.5) * 40.0
+                    self->effect_base_color.s + (rand_random_f64() - 0.5) * 20.0,
+                    self->effect_base_color.l + (rand_random_f64() - 0.5) * 40.0
                 );
                 Particle particle[1] = { comptime_Particle_make(x, y, width, height, HSL_intoColorOpaque(color)) };
                 Particle_withSpeed(
                     particle,
-                    (Rand_random_f64() - 0.5) * 1.0,
-                    (Rand_random_f64() - 0.9) * 1.0
+                    (rand_random_f64() - 0.5) * 1.0,
+                    (rand_random_f64() - 0.9) * 1.0
                 );
                 Particle_withAcceleration(particle, 0.0, 0.02);
                 Particle_withFading(particle, 0.01);
@@ -586,16 +583,16 @@ int main() {
         if (GetAsyncKeyState(VK_ESCAPE)) { break; }
 
         // Add a new rocket with with 5% chance.
-        if (Rand_random_f64() < 0.05) {
+        if (rand_random_f64() < 0.05) {
             if (state->fireworksCount < Fireworks_max) {
                 state->fireworks[state->fireworksCount++] = *Firework_init(
                     &makeCleared(Firework),
-                    (i64)(Rand_random_u32() % state->width),
+                    (i64)(rand_random_u32() % state->width),
                     state->height,
                     Color_fromOpaque(
-                        Rand_random_u8(),
-                        Rand_random_u8(),
-                        Rand_random_u8()
+                        rand_random_u8(),
+                        rand_random_u8(),
+                        rand_random_u8()
                     )
                 );
             }

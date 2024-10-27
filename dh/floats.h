@@ -21,7 +21,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "primitive_types.h"
+#include "types.h"
 #include <math.h>
 
 

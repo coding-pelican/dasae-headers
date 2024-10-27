@@ -1,6 +1,5 @@
 #include "time.h"
-#include "assert.h"
-#include "primitive_types.h"
+#include "debug/debug_assert.h"
 
 
 Duration Duration_from(u64 secs, u32 nanos) {
@@ -37,7 +36,7 @@ Duration Duration_add(Duration lhs, Duration rhs) {
 
 Duration Duration_sub(Duration lhs, Duration rhs) {
     if (lhs.nanos < rhs.nanos) {
-        assert(0 < lhs.secs);
+        debug_assert(0 < lhs.secs);
         return Duration_(lhs.secs - rhs.secs - 1, lhs.nanos + Time_nanos_per_sec - rhs.nanos);
     }
     return Duration_(lhs.secs - rhs.secs, lhs.nanos - rhs.nanos);
@@ -45,7 +44,7 @@ Duration Duration_sub(Duration lhs, Duration rhs) {
 
 Duration Duration_mul(Duration d, u64 scalar) {
     u64 total_nanos = d.nanos * scalar;
-    return Duration_(d.secs * scalar + total_nanos / Time_nanos_per_sec, as(u32, (total_nanos % Time_nanos_per_sec)));
+    return Duration_(d.secs * scalar + total_nanos / Time_nanos_per_sec, prim_as(u32, (total_nanos % Time_nanos_per_sec)));
 }
 
 bool Duration_eq(Duration lhs, Duration rhs) {
@@ -97,7 +96,7 @@ Duration Instant_durationSince(Instant start, Instant earlier) {
     u64 diff      = start.time_.QuadPart - earlier.time_.QuadPart;
     u64 secs      = diff / SystemTime__s_performance_frequency.QuadPart;
     u64 remainder = diff % SystemTime__s_performance_frequency.QuadPart;
-    u32 nanos     = as(u32, ((remainder * Time_nanos_per_sec) / SystemTime__s_performance_frequency.QuadPart));
+    u32 nanos     = prim_as(u32, ((remainder * Time_nanos_per_sec) / SystemTime__s_performance_frequency.QuadPart));
 #else // UNIX
     u64 secs      = start.time_.tv_sec - earlier.time_.tv_sec;
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
@@ -105,7 +104,7 @@ Duration Instant_durationSince(Instant start, Instant earlier) {
         secs--;
         nano_diff += Time_nanos_per_sec;
     }
-    u32 nanos = as(u32, nano_diff);
+    u32 nanos = prim_as(u32, nano_diff);
 #endif
     return Duration_from(secs, nanos);
 }

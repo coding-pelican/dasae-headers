@@ -4,9 +4,9 @@
  * @file    time.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-23 (date of creation)
- * @updated 2024-10-23 (date of last update)
+ * @updated 2024-10-27 (date of last update)
  * @version v1.0.0
- * @ingroup SOME_GROUP
+ * @ingroup dasae-header(dh)
  * @prefix  NONE
  *
  * @brief   Source of some software
@@ -21,7 +21,9 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "primitive_types.h"
+#include "compat/compat_primitive.h"
+#include "types.h"
+
 
 #if defined(_WIN32) || defined(_WIN64)
 #  ifndef WIN32_LEAN_AND_MEAN

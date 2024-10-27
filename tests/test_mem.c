@@ -91,7 +91,7 @@ void TEST_mem_copy() {
     const char* source = "Hello";
     char*       dest   = (char*)mem_allocate(6);
 
-    mem_copy(dest, (type)source, 6);
+    mem_copy(dest, (anyopaque)source, 6);
     TEST_PrintResult("memcpy", strcmp(dest, source) == 0);
 
     mem_deallocate(&dest);
@@ -122,7 +122,7 @@ void TEST_mem_copyBlock() {
     *source     = 42;
 
     i32* dest = (i32*)mem_allocate(sizeof(i32));
-    mem_copyBlock(dest, source, sizeof(i32));
+    mem_copy(dest, source, sizeof(i32));
 
     TEST_PrintResult("copy value", *dest == 42);
 
@@ -134,8 +134,8 @@ void TEST_mem_copyBlock() {
 void TEST_mem_MultipleOperations() {
     TEST_PrintSection("multiple operations");
 
-    type ptrs[100];
-    i32  success = 1;
+    anyopaque ptrs[100];
+    i32       success = 1;
 
     // Allocate 100 blocks
     for (i32 i = 0; i < 100; ++i) {
@@ -204,7 +204,7 @@ void TEST_mem_new_delete() {
 }
 
 // Test memory leak detection
-void TEST_mem_DetectMemoryLeak() {
+void TEST_mem_MemoryLeakDetection() {
     TEST_PrintSection("memory leak detection");
 
     // Intentionally leak some memory
@@ -232,7 +232,7 @@ i32 main() {
     TEST_mem_new_delete();
 
     // Run memory leak TEST last
-    TEST_mem_DetectMemoryLeak();
+    TEST_mem_MemoryLeakDetection();
 
     printf("\nAll TESTs completed. Check above for results.\n");
     printf("An intentional memory leak was created - check the leak report below:\n\n");

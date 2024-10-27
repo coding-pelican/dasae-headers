@@ -21,7 +21,20 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "primitive_types.h"
+#include "types.h"
+
+
+enum EColorChannel {
+    CCH_red         = 0,
+    CCH_green       = 1,
+    CCH_blue        = 2,
+    CCH_alpha       = 3,
+    CCH_count       = 4,
+    CCH_min         = 0,
+    CCH_max         = 0xFF,
+    CCH_transparent = CCH_min,
+    CCH_opaque      = CCH_max,
+};
 
 
 typedef union RGB   RGB;
@@ -44,6 +57,8 @@ RGB RGB_fromHSL(HSL hsl);
 RGB HSL_intoRGB(HSL hsl);
 RGB RGB_fromColor(Color color);
 RGB Color_intoRGB(Color color);
+RGB HSL_asRGB(HSL hsl);
+RGB Color_asRGB(Color color);
 
 #define comptime_RGB_from(_r, _g, _b) \
     RGB_(.r = (_r), .g = (_g), .b = (_b))
@@ -65,6 +80,8 @@ HSL HSL_fromRGB(RGB rgb);
 HSL RGB_intoHSL(RGB rgb);
 HSL HSL_fromColor(Color color);
 HSL Color_intoHSL(Color color);
+HSL RGB_asHSL(RGB rgb);
+HSL Color_asHSL(Color color);
 
 #define comptime_HSL_from(_h, _s, _l) \
     HSL_(.h = (_h), .s = (_s), .l = (_l))
@@ -84,28 +101,28 @@ union Color {
 };
 #define Color_(...) makeWith(Color, __VA_ARGS__)
 Color Color_from(u8 r, u8 g, u8 b, u8 a);
-Color Color_fromOpaque(u8 r, u8 g, u8 b);
 Color Color_fromTransparent(u8 r, u8 g, u8 b);
+Color Color_fromOpaque(u8 r, u8 g, u8 b);
 
-Color Color_fromRGBWithAlpha(RGB rgb, u8 a);
-Color Color_fromRGBOpaque(RGB rgb);
+Color Color_fromRGB(RGB rgb, u8 a);
 Color Color_fromRGBTransparent(RGB rgb);
-Color RGB_intoColorWithAlpha(RGB rgb, u8 a);
-Color RGB_intoColorOpaque(RGB rgb);
+Color Color_fromRGBOpaque(RGB rgb);
+Color RGB_intoColor(RGB rgb, u8 a);
 Color RGB_intoColorTransparent(RGB rgb);
-Color Color_fromHSLWithAlpha(HSL hsl, u8 a);
-Color Color_fromHSLWithOpaque(HSL hsl);
-Color Color_fromHSLWithTransparent(HSL hsl);
-Color HSL_intoColorWithAlpha(HSL hsl, u8 a);
-Color HSL_intoColorOpaque(HSL hsl);
+Color RGB_intoColorOpaque(RGB rgb);
+Color Color_fromHSL(HSL hsl, u8 a);
+Color Color_fromHSLTransparent(HSL hsl);
+Color Color_fromHSLOpaque(HSL hsl);
+Color HSL_intoColor(HSL hsl, u8 a);
 Color HSL_intoColorTransparent(HSL hsl);
+Color HSL_intoColorOpaque(HSL hsl);
 
 #define comptime_Color_from(_r, _g, _b, _a) \
     Color_(.rgba = { _r, _g, _b, _a })
-#define comptime_Color_fromOpaque(_r, _g, _b) \
-    Color_(.rgba = { _r, _g, _b, 255 })
 #define comptime_Color_fromTransparent(_r, _g, _b) \
-    Color_(.rgba = { _r, _g, _b, 0 })
+    Color_(.rgba = { _r, _g, _b, CCH_min })
+#define comptime_Color_fromOpaque(_r, _g, _b) \
+    Color_(.rgba = { _r, _g, _b, CCH_max })
 
 static const Color Color_transparent = comptime_Color_from(0, 0, 0, 0);
 static const Color Color_black       = comptime_Color_fromOpaque(0, 0, 0);
