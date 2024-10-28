@@ -10,39 +10,39 @@ extern "C" {
 
 /* Null definition */
 #ifndef NULL
-#  ifdef __cplusplus
-#    ifndef _WIN64 /* _WIN32 */
-#      define NULL (0)
-#    else /* _WIN64 */
-#      define NULL (0ll)
-#    endif
-#  else
-#    define NULL ((void*)0)
-#  endif
+#ifdef __cplusplus
+#ifndef _WIN64 /* _WIN32 */
+#define NULL (0)
+#else /* _WIN64 */
+#define NULL (0ll)
+#endif
+#else
+#define NULL ((void*)0)
+#endif
 #endif /* NULL */
 
 
 /* Null pointer definition */
 #if defined(__cplusplus)
-#  ifdef OVERRIDE_CPP_NULL
-#    undef NULL
-#    undef nullptr
-#  endif
+#ifdef OVERRIDE_CPP_NULL
+#undef NULL
+#undef nullptr
+#endif
 #endif /* __cplusplus */
 
 #if defined(__cplusplus)
-#  if (__cplusplus >= 201103L)
+#if (__cplusplus >= 201103L)
 /* C++11 or later - nullptr is available */
-#    define null nullptr
-#  else
+#define null nullptr
+#else
 /* Pre-C++11 */
-#    define nullptr NULL
-#    define null    nullptr
-#  endif
+#define nullptr NULL
+#define null    nullptr
+#endif
 #else
 /* C */
-#  define nullptr NULL
-#  define null    nullptr
+#define nullptr NULL
+#define null    nullptr
 #endif
 
 

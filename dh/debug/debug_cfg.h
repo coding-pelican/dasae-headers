@@ -6,9 +6,9 @@ extern "C" {
 
 
 #if !defined(NDEBUG)
-#  define DEBUG_ENABLED (1)
+#define DEBUG_ENABLED (1)
 #else
-#  define DEBUG_ENABLED (0)
+#define DEBUG_ENABLED (0)
 #endif /* !defined(NDEBUG) */
 
 

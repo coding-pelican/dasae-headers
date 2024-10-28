@@ -9,34 +9,34 @@ extern "C" {
 
 #if defined(__cplusplus)
 /* In C++, lambdas are available since C++11 */
-#  if (__cplusplus >= 201103L)
+#if (__cplusplus >= 201103L)
 /* C++11 or later */
-#    define lambda(capture, params) [capture] params
-#  else
+#define lambda(capture, params) [capture] params
+#else
 /* Pre-C++11 */
 // #    error "C++11 or later is required for lambda support"
-#  endif
+#endif
 
 #elif defined(__GNUC__) && !defined(__clang__)
 /* GCC supports nested functions in C */
 /* Use GCC's nested functions to simulate lambdas */
-#  define lambda(params, body)                    \
-      ({                                          \
+#define lambda(params, body)                      \
+    ({                                            \
         __auto_type __lambda_function params body \
             __lambda_function;                    \
-      })
+    })
 
 #elif defined(__clang__) || defined(__clang_major__) && defined(__GNUC__)
 /* Clang in C mode */
 /* Clang does not support nested functions in C */
-#  if __has_extension(blocks)
+#if __has_extension(blocks)
 /* If Clang supports blocks, use them */
-#    define lambda(params, body) \
-        (^params body)
-#  else
+#define lambda(params, body) \
+    (^params body)
+#else
 /* Clang without blocks extension */
 // #    error "Lambdas are not supported in this compiler (Clang in C mode without blocks)"
-#  endif
+#endif
 
 #else
 /* Compiler does not support lambda-like constructs */
