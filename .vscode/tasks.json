@@ -1,0 +1,353 @@
+{
+  "version": "2.0.0",
+  "runner": "terminal",
+  "echoCommand": true,
+  "presentation": {
+    "reveal": "always"
+  },
+  "inputs": [
+    { // buildType
+      "id": "buildType",
+      "type": "pickString",
+      "description": "Select build type:",
+      "options": [
+        "debug",
+        "release"
+      ],
+      "default": "debug"
+    },
+    { // libraries
+      "id": "libraries",
+      "type": "promptString",
+      "description": "Enter libraries to link (space-separated):",
+      "default": ""
+    },
+    { // userArgs
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:"
+    }
+  ],
+  "tasks": [
+    { // backup settings
+      "label": "backup settings",
+      "type": "shell",
+      "windows": {
+        "command": "python ${workspaceFolder}\\.vscode\\backup_settings.py"
+      },
+      "linux": {
+        "command": "python ${workspaceFolder}/.vscode/backup_settings.py"
+      },
+    },
+    { // merge settings
+      "label": "merge settings",
+      "type": "shell",
+      "windows": {
+        "command": "python ${workspaceFolder}\\.vscode\\merge_settings.py ${fileDirname}"
+      },
+      "linux": {
+        "command": "python ${workspaceFolder}/.vscode/merge_settings.py ${fileDirname}"
+      }
+    },
+    { // restore settings on building
+      "label": "restore settings on building",
+      "type": "shell",
+      "windows": {
+        "command": "python ${workspaceFolder}\\.vscode\\restore_settings.py",
+      },
+      "linux": {
+        "command": "python ${workspaceFolder}/.vscode/restore_settings.py",
+      }
+    },
+    { // restore settings on built
+      "label": "restore settings on built",
+      "type": "shell",
+      "windows": {
+        "command": "python ${workspaceFolder}\\.vscode\\restore_settings.py",
+      },
+      "linux": {
+        "command": "python ${workspaceFolder}/.vscode/restore_settings.py",
+      }
+    },
+    { // on building
+      "label": "on building",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "restore settings on building",
+        "backup settings",
+        "merge settings"
+      ]
+    },
+    { // on built
+      "label": "on built",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "restore settings on built"
+      ]
+    },
+    { // build multi-file with clang
+      "label": "build multi-file with clang",
+      "type": "shell",
+      "windows": {
+        "command": "clang -xc ${config:tasks.c_args_base} -o ${fileDirname}\\${fileDirnameBasename}.exe ${config:tasks.c_args}",
+        "options": {
+          "cwd": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin"
+        }
+      },
+      "linux": {
+        "command": "clang -xc ${config:tasks.c_args_base} -o ${fileDirname}/${fileDirnameBasename} ${config:tasks.c_args}",
+        "options": {
+          "cwd": "/usr/bin"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build multi-file with clang++
+      "label": "build multi-file with clang++",
+      "type": "shell",
+      "windows": {
+        "command": "clang++ -xc++ ${config:tasks.cpp_args_base} -o ${fileDirname}\\${fileDirnameBasename}.exe ${config:tasks.cpp_args}",
+        "options": {
+          "cwd": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin"
+        }
+      },
+      "linux": {
+        "command": "clang++ -xc++ ${config:tasks.cpp_args_base} -o ${fileDirname}/${fileDirnameBasename} ${config:tasks.cpp_args}",
+        "options": {
+          "cwd": "/usr/bin"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // clang build active file for C
+      "label": "clang build active file for C",
+      "type": "shell",
+      "command": "clang",
+      "windows": {
+        "args": [
+          "-xc",
+          "${file}",
+          "-o",
+          "${fileDirname}\\${fileBasenameNoExtension}.exe",
+          "-std=c17",
+          "-fdiagnostics-color=always",
+          "-Wall",
+          "-Wextra",
+          "-g"
+        ],
+        "options": {
+          "cwd": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin"
+        },
+        "detail": "Compiler: C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin\\clang.exe"
+      },
+      "linux": {
+        "args": [
+          "-xc",
+          "${file}",
+          "-o",
+          "${fileDirname}/${fileBasenameNoExtension}",
+          "-std=c17",
+          "-fdiagnostics-color=always",
+          "-Wall",
+          "-Wextra",
+          "-g"
+        ],
+        "options": {
+          "cwd": "/usr/bin"
+        },
+        "detail": "Compiler: /usr/bin/clang"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    { // clang++ build active file for C++
+      "label": "clang++ build active file for C++",
+      "type": "shell",
+      "command": "clang++",
+      "windows": {
+        "args": [
+          "-xc++",
+          "${file}",
+          "-o",
+          "${fileDirname}\\${fileBasenameNoExtension}.exe",
+          "-std=c++20",
+          "-fdiagnostics-color=always",
+          "-Wall",
+          "-Wextra",
+          "-g"
+        ],
+        "options": {
+          "cwd": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin"
+        },
+        "detail": "Compiler: C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin\\clang++.exe"
+      },
+      "linux": {
+        "args": [
+          "-xc++",
+          "${file}",
+          "-o",
+          "${fileDirname}/${fileBasenameNoExtension}",
+          "-std=c++20",
+          "-fdiagnostics-color=always",
+          "-Wall",
+          "-Wextra",
+          "-g"
+        ],
+        "options": {
+          "cwd": "/usr/bin"
+        },
+        "detail": "Compiler: /usr/bin/clang++"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    { // clang build multi-file for C
+      "label": "clang build multi-file for C",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "on building",
+        "build multi-file with clang",
+        "on built"
+      ],
+      "windows": {
+        "detail": "Compiler: C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin\\clang.exe"
+      },
+      "linux": {
+        "detail": "Compiler: /usr/bin/clang"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    { // clang++ build multi-file for C++
+      "label": "clang++ build multi-file for C++",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "on building",
+        "build multi-file with clang++",
+        "on built"
+      ],
+      "windows": {
+        "detail": "Compiler: C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin\\clang++.exe"
+      },
+      "linux": {
+        "detail": "Compiler: /usr/bin/clang++"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    { // execute built active file
+      "label": "execute built active file",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C", // "Carry out the command specified by string and then terminate"
+          "${fileBasenameNoExtension} ${input:userArgs}"
+        ]
+      },
+      "linux": {
+        "command": "${fileBasenameNoExtension} ${input:userArgs}",
+        "args": []
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    { // execute and delete built active file
+      "label": "execute and delete built active file",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C", // "Carry out the command specified by string and then terminate"
+          "${fileBasenameNoExtension} ${input:userArgs} && del /f ${fileBasenameNoExtension}.exe"
+        ]
+      },
+      "linux": {
+        "command": "${fileBasenameNoExtension} ${input:userArgs}",
+        "args": [
+          "&& rm /f ${fileBasenameNoExtension}"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    { // execute built multi-file
+      "label": "execute built multi-file",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C", // "Carry out the command specified by string and then terminate"
+          "${fileDirnameBasename} ${input:userArgs}"
+        ]
+      },
+      "linux": {
+        "command": "${fileDirnameBasename} ${input:userArgs}",
+        "args": []
+      },
+      "options": {
+        "cwd": "${fileDirname}",
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    { // execute and delete built multi-file
+      "label": "execute and delete built multi-file",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C", // "Carry out the command specified by string and then terminate"
+          "${fileDirnameBasename} ${input:userArgs} && del /f ${fileDirnameBasename}.exe"
+        ]
+      },
+      "linux": {
+        "command": "${fileDirnameBasename} ${input:userArgs}",
+        "args": [
+          "&& rm /f ${fileDirnameBasename}"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}",
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    }
+  ]
+}

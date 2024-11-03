@@ -1,0 +1,124 @@
+## clang-format configurator v2 https://clang-format-configurator.site/
+## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossComments: true
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLoopsOnASingleLine: true
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Custom
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 0
+Cpp11BracedListStyle: false
+IndentWidth: 4
+InsertBraces: true
+InsertNewlineAtEOF: true
+MaxEmptyLinesToKeep: 5
+ObjCBlockIndentWidth: 4
+PointerAlignment: Left
+Standard: c++20
+TabWidth: 4
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+## Before 2024-10-28
+# ## clang-format configurator v2 https://clang-format-configurator.site/
+# ## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# ---
+# BasedOnStyle: LLVM
+# Standard: c++20
+
+# ColumnLimit: 0
+# # ColumnLimit: 119 ## codes
+# # ColumnLimit: 79  ## annotations
+# MaxEmptyLinesToKeep: 5
+
+# ## Indentation settings
+# TabWidth: 4
+# IndentWidth: 4
+# AccessModifierOffset: -4
+# # IndentPPDirectives: AfterHash
+# # PPIndentWidth: 2
+# ObjCBlockIndentWidth: 4
+
+# ## Alignment and breaking options
+# # AlignAfterOpenBracket: DontAlign
+# AlignAfterOpenBracket: BlockIndent
+# AlignOperands: AlignAfterOperator
+# AlignConsecutiveAssignments: true
+# AlignConsecutiveDeclarations: true
+# AlignTrailingComments: false
+# AlignConsecutiveMacros:
+#   Enabled: true
+# AlignEscapedNewlines: Left
+
+# AllowShortBlocksOnASingleLine: Always
+# AllowShortFunctionsOnASingleLine: All
+# AllowShortIfStatementsOnASingleLine: Always
+# AllowShortLoopsOnASingleLine: true
+
+# ## Allow all elements on separate lines
+# AllowAllArgumentsOnNextLine: true
+# AllowAllParametersOfDeclarationOnNextLine: true
+
+# ## Disable bin packing to ensure each parameter is on a new line
+# BinPackArguments: false
+# BinPackParameters: false
+
+# ## Break before braces and other style options
+# BreakBeforeBinaryOperators: None
+# BreakBeforeBraces: Custom
+# BraceWrapping:
+#   AfterFunction: false
+#   SplitEmptyFunction: false
+# BreakConstructorInitializers: BeforeComma
+# ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# Cpp11BracedListStyle: false
+
+# ## Insert braces and new lines
+# InsertBraces: true
+# InsertNewlineAtEOF: true
+# PointerAlignment: Left
+
+# ## Specific settings for function calls and declarations
+# BreakAfterJavaFieldAnnotations: false
+# ExperimentalAutoDetectBinPacking: false

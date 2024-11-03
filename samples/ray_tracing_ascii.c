@@ -276,11 +276,20 @@ int main(int argc, char* argv[]) {
     Game game = Game(.pos = start_pos, .dir = start_dir, .width = 2, .height = 2, .xres = width, .yres = height);
 
     // add some balls and start the "game"
-    Ball b = { { 5, 0, 2 }, 2 };
+    Ball b = {
+        { 5, 0, 2 },
+        2
+    };
     Game_add_ball(&game, b);
-    Ball c = { { 10, 0, 2 }, 2 };
+    Ball c = {
+        { 10, 0, 2 },
+        2
+    };
     Game_add_ball(&game, c);
-    Ball d = { { 7.5f, 0, 8 }, 4 };
+    Ball d = {
+        { 7.5f, 0, 8 },
+        4
+    };
     Game_add_ball(&game, d);
 
     Terminal_bootup();
@@ -426,7 +435,7 @@ void Game_make_pic(Game* self) {
             Vec3_normalize(&move);
             Vec3_scale(&move, RAYSTEP);
 
-            Vec3 ray = self->pos;
+            Vec3  ray                 = self->pos;
             // trace ray
             float dists_to_balls[32]  = { 0 };
             int   dists_to_balls_size = 0;

@@ -1,7 +1,6 @@
 // build `clang -xc game_of_life.c ../src/*.c -o game_of_life -O3 -static`
 // run with `.\launcher game_of_life 160 50`
 
-
 #include <assert.h>
 #include <locale.h>
 #include <math.h>
@@ -13,15 +12,15 @@
 #include <wchar.h>
 
 #ifdef _WIN32
-#  include <conio.h>
-#  include <corecrt.h>
-#  define NOMINMAX
-#  define WIN32_LEAN_AND_MEAN
-#  include <windows.h>
+#include <conio.h>
+#include <corecrt.h>
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #else
-#  include <fcntl.h>
-#  include <termios.h>
-#  include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
 
 // Check if a key has been pressed
 int kbhit() {
@@ -63,6 +62,7 @@ int getch() {
     return ch;
 }
 #endif
+
 
 #define unusedValue(_param) ((void)(_param))
 #define ignoreReturn(_func) (void)_func
@@ -354,9 +354,9 @@ void GameOfLife_Fini();
 
 static GameOfLife self[1] = {
     {
-        .states_     = NULL,
-        .nextStates_ = NULL,
-    }
+     .states_     = NULL,
+     .nextStates_ = NULL,
+     }
 };
 static int  getCell(int x, int y);
 static void setCell(int x, int y, const char* str);
@@ -437,9 +437,7 @@ void GameOfLife_Update() {
     for (int y = 1; y < height - 1; ++y) {
         for (int x = 1; x < width - 1; ++x) {
             // The secret of artificial life =================================================
-            int neighborsNum = (getCell(x - 1, y - 1) + getCell(x - 0, y - 1) + getCell(x + 1, y - 1)) +
-                               (getCell(x - 1, y + 0) + 0 + getCell(x + 1, y + 0)) +
-                               (getCell(x - 1, y + 1) + getCell(x + 0, y + 1) + getCell(x + 1, y + 1));
+            int neighborsNum = (getCell(x - 1, y - 1) + getCell(x - 0, y - 1) + getCell(x + 1, y - 1)) + (getCell(x - 1, y + 0) + 0 + getCell(x + 1, y + 0)) + (getCell(x - 1, y + 1) + getCell(x + 0, y + 1) + getCell(x + 1, y + 1));
 
             if (getCell(x, y) == 1) {
                 self->nextStates_[x + y * width] = neighborsNum == 2 || neighborsNum == 3;

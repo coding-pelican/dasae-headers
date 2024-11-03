@@ -1,0 +1,106 @@
+############ Global ############
+################################
+---
+Index:
+  Background: Skip
+  StandardLibrary: No
+InlayHints:
+  Enabled: Yes
+  TypeNameLimit: 24
+  DeducedTypes: Yes
+  ParameterNames: Yes
+  Designators: Yes
+  BlockEnd: No
+Hover:
+  ShowAKA: No
+Diagnostics:
+  # Suppress diagnostics for paths containing '/include/c++/' or '/include/c/', which are typically the locations of system headers.
+  Suppress:
+    - ".*include/c/.*"
+    - ".*include/c\\+\\+/.*"
+---
+# C Configs
+If:
+  PathMatch:
+    - .*\.c
+    - .*\.h
+CompileFlags:
+  Compiler: clang
+  Add: [-xc, -std=c17, -Wall, -Wextra, -Werror]
+---
+If:
+  PathMatch:
+    - .*\.h
+    - .*\.hh
+    - .*\.hxx
+    - .*\.hpp
+CompileFlags:
+  Add: [-Wno-unused-function, -Wno-unused-variable, -Wno-unused-const-variable]
+################################
+#### Compiler Command Order ####
+## -------------------------- ##
+###### Invocation Command ######
+# clang                        # command itself
+## -------------------------- ##
+######### Source Files #########
+# <source-file>                #
+## -------------------------- ##
+############ Output ############
+# -o <output-file>             # Specify output file name
+## -------------------------- ##
+########### General  ###########
+# -std=<standard>              # Specify the language standard (e.g., -std=c++17)
+# -time                        # Time individual commands
+# -v                           # Verbose mode
+# -###                         # Show commands without executing them
+## -------------------------- ##
+######## Options (Flag) ########
+######### Preprocessor #########
+# -D<macro>=<value>            # Define a macro
+# -U<macro>                    # Undefine a macro
+# -I<directory>                # Add directory to include search path
+# -include <file>              # Include a file before all others
+########## Diagnostic ##########
+# -fdiagnostics-color=always,  #
+# -Wall                        # Enable all common warnings
+# -Wextra                      # Enable additional warnings
+# -Wpedantic                   # Enable pedantic warning category.
+# -Werror                      # Treat detected warnings as errors.
+# -W<specific-warning>         # Enable/disable specific warnings
+########### Language ###########
+# -fno-exceptions              # Disable exceptions
+# -fno-rtti                    # Disable runtime type information
+####### Code  Generation #######
+# -march=<arch>                # Generate code for a specific architecture
+# -mtune=<arch>                # Optimize code for a specific architecture
+# -fPIC                        # Generate position-independent code
+######### Optimization #########
+# -O0                          # No optimization
+# -O1                          # Optimize for size
+# -O2                          # Moderate optimization
+# -O3                          # High optimization
+# -Os                          # Optimize for size
+# -Ofast                       # Enable aggressive optimizations
+##### Optimization Details #####
+# -O0                          # No optimization, fastest compilation, most debuggable code.
+# -O1                          # Somewhere between -O0 and -O2.
+# -O2                          # Moderate level of optimization enabling most optimizations.
+# -O3                          # Similar to -O2, with longer and larger optimizations for faster execution.
+# -Ofast                       # Enables all -O3 optimizations and additional aggressive optimizations, may violate standards.
+# -Os                          # Like -O2 with extra optimizations for reduced code size.
+# -Oz                          # Like -Os (and -O2), further reduces code size.
+# -Og                          # Similar to -O1, might disable some optimizations for improved debuggability in future versions.
+# -O                           # Equivalent to -O1.
+############ Debug  ############
+# -g,                          # Generate debug information.
+# -gline-tables-only,          # Generate only line table debug information for symbolicated backtraces without variable details.
+# -gmodules,                   # Generate debug information with external references to types from Clang modules
+# or precompiled headers. Faster compile times and smaller object files, not suit
+########### Linking  ###########
+# -L<directory>                # Add directory to library search path
+# -l<library>                  # Link with library
+# -shared                      # Create a shared library
+# -static                      # Create a static library
+########### Example  ###########
+# clang file1.c file2.c -o myprogram -xc -std=c11 -v -DDEBUG -I/usr/local/include -Wall -Wextra -O2 -march=native -L/usr/local/lib -lmylib
+################################

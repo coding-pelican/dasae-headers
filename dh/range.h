@@ -27,9 +27,8 @@ extern "C" {
 typedef struct Range Range;
 struct Range {
     usize start; // start index in array
-    usize end; // end index in array
+    usize end;   // end index in array
 };
-#define Range_(...) makeWith(Range, __VA_ARGS__)
 Range Range_from(usize start, usize end);
 usize Range_length(Range r);
 bool  Range_isValid(Range r);

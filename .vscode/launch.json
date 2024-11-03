@@ -1,0 +1,95 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // Windows
+    { // clang/clang++ - debug active file
+      "name": "clang/clang++ - debug active file",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+    },
+    { // clang - debug active file with build
+      "name": "clang - debug active file with build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+      "preLaunchTask": "clang build active file for C"
+    },
+    { // clang++ - debug active file with build
+      "name": "clang++ - debug active file with build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+      "preLaunchTask": "clang++ build active file for C++"
+    },
+    { // clang/clang++ - debug multi-file
+      "name": "clang/clang++ - debug multi-file",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileDirnameBasename}.exe",
+    },
+    { // clang - debug multi-file with build
+      "name": "clang - debug multi-file with build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileDirnameBasename}.exe",
+      "preLaunchTask": "clang build multi-file for C"
+    },
+    { // clang++ - debug multi-file with build
+      "name": "clang++ - debug multi-file with build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+      "preLaunchTask": "clang++ build multi-file for C++"
+    },
+    // Linux
+    { // clang - debug active file with build in Linux
+      "name": "clang - debug active file with build in Linux",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "preLaunchTask": "clang build active file for C"
+    },
+    { // clang++ - debug active file with build in Linux
+      "name": "clang++ - debug active file with build in Linux",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "preLaunchTask": "clang++ build active file for C++"
+    },
+    { // clang - debug multi-file with build in Linux
+      "name": "clang - debug multi-file with build in Linux",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "preLaunchTask": "clang build multi-file for C"
+    },
+    { // clang++ - debug multi-file with build in Linux
+      "name": "clang++ - debug multi-file with build in Linux",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "preLaunchTask": "clang++ build multi-file for C++"
+    }
+  ]
+}

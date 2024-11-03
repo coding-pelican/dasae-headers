@@ -5,10 +5,12 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
+/*========== Includes =======================================================*/
+
 #include "debug_cfg.h"
 
+/*========== Macros and Definitions =========================================*/
 
-/* MACROS DECLARATION */
 #define debug_break() \
     /* Breakpoint. */ \
     RETURN_debug_break()
@@ -16,11 +18,10 @@ extern "C" {
     /* Used only when `DEBUG_ENABLED`. */ \
     RETURN_debug_only(__VA_ARGS__)
 
+/*========== Macros Implementation ==========================================*/
 
-/* MACROS IMPLEMENTATION */
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 
-#define RETURN_debug_only(...) __VA_ARGS__
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
 #define RETURN_debug_break() __builtin_trap()
@@ -31,12 +32,13 @@ extern "C" {
 /* Fallback using signal */
 #include <signal.h>
 #define RETURN_debug_break() raise(SIGTRAP)
-#endif /* defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER)  */
+#endif
+#define RETURN_debug_only(...) __VA_ARGS__
 
 #else
 
-#define RETURN_debug_only(...)
 #define RETURN_debug_break()
+#define RETURN_debug_only(...)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 

@@ -6,9 +6,8 @@ extern "C" {
 
 
 #include "compat_auto.h"
-#include "compat_bool.h"
+#include "compat_inline.h"
 #include "compat_lambda.h"
-#include "compat_null.h"
 #include "compat_primitive.h"
 #include "compat_ref.h"
 #include "compat_wchar.h"

@@ -21,33 +21,42 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include <stdint.h>
+/*========== Includes =======================================================*/
 
+#include "compat_cfg_arch.h"
 
-typedef uint8_t   u8;
-typedef uint16_t  u16;
-typedef uint32_t  u32;
-typedef uint64_t  u64;
-// typedef __uint128_t u128;
-typedef uintptr_t usize;
+/*========== Macros and Definitions =========================================*/
 
-typedef int8_t   i8;
-typedef int16_t  i16;
-typedef int32_t  i32;
-typedef int64_t  i64;
-// typedef __int128_t i128;
-typedef intptr_t isize;
+/* Experimental features */
+#define prim_Array(_T)                      RETURN_prim_Array(_T)
+#define prim_ArrayN(_T, _n)                 RETURN_prim_ArrayN(_T, _n)
+#define prim_array(_T)                      RETURN_prim_array(_T)
+#define prim_arrayFrom(_T, _braced...)      RETURN_prim_arrayFrom(_T, _braced)
+#define prim_arrayN(_T, _n)                 RETURN_prim_arrayN(_T, _n)
+#define prim_arrayNWith(_T, _n, _braced...) RETURN_prim_arrayNWith(_T, _n, _braced)
 
-// typedef _Float16    f16;
-typedef float  f32;
-typedef double f64;
-// typedef long double f80;
-// typedef _Float128   f128;
+// #define make(_T)                    RETURN_make(_T)
+// #define makeWith(_T, _braced...)    RETURN_makeWith(_T, _braced)
+// #define create(_T)                  RETURN_create(_T)
+// #define createWith(_T, _braced...)  RETURN_createWith(_T, _braced)
+// #define new(_T, _n)                 RETURN_new(_T, _n)
+// #define newWith(_T, _n, _braced...) RETURN_newWith(_T, _n, _braced)
 
-typedef void* anyopaque;
+/*========== Macros Implementation ==========================================*/
 
-#define prim_as(_T, ...)             ((_T)__VA_ARGS__)
-#define prim_divisible(_prim_n, ...) ((__VA_ARGS__ == 0) ? 0 : ((_prim_n) % (__VA_ARGS__) == 0))
+#define RETURN_prim_Array(_T)                      _T[]
+#define RETURN_prim_ArrayN(_T, _n)                 _T[_n]
+#define RETURN_prim_array(_T)                      ((prim_Array(_T)){ 0 })
+#define RETURN_prim_arrayFrom(_T, _braced...)      ((prim_Array(_T))_braced)
+#define RETURN_prim_arrayN(_T, _n)                 ((prim_ArrayN(_T, _n)){ 0 })
+#define RETURN_prim_arrayNWith(_T, _n, _braced...) ((prim_ArrayN(_T, _n))_braced)
+
+// #define RETURN_make(_T)                    ((_T){ 0 })
+// #define RETURN_makeWith(_T, _braced...)    ((_T)_braced)
+// #define RETURN_create(_T)                  ((prim_Array(_T)){ 0 })
+// #define RETURN_createWith(_T, _braced...)  ((prim_Array(_T))_braced)
+// #define RETURN_new(_T, _n)                 ((prim_ArrayN(_T, _n)){ 0 })
+// #define RETURN_newWith(_T, _n, _braced...) ((prim_ArrayN(_T, _n))_braced)
 
 
 #if defined(__cplusplus)

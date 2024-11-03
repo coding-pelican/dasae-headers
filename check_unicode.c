@@ -1,7 +1,12 @@
+// build `clang -xc check_unicode.c -o check_unicode`
+// run with `./check_unicode`
+
+
 #include <locale.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <windows.h>
+
 
 void enableANSI() {
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -17,7 +22,7 @@ void printRGB(int r, int g, int b, const char* text) {
 
 int main() {
     // Set locale to UTF-8
-    setlocale(LC_ALL, ".UTF-8"); // chcp 65001
+    (void)setlocale(LC_ALL, ".UTF-8"); // chcp 65001
 
     // Set console output to UTF-8
     SetConsoleOutputCP(CP_UTF8);

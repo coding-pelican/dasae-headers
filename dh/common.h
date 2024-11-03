@@ -6,7 +6,7 @@
  * @date    2024-10-21 (date of creation)
  * @updated 2024-10-21 (date of last update)
  * @version v1.0.0
- * @ingroup SOME_GROUP
+ * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
  * @brief   Header of some software
@@ -20,8 +20,8 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
-#include "types.h"
+#include "compat/compat_primitive.h"
+#include "preprocessor.h"
 
 
 #define cmp_eq(_T, _x, _y) (_T##_eq(_x, _y))
@@ -40,27 +40,26 @@ extern "C" {
 #define pp_div(_T, _x, _y) (_T##_div(_x, _y))
 #define pp_mod(_T, _x, _y) (_T##_mod(_x, _y))
 
-#define pp_min(_T, _x, _y) (_T##_min(_x, _y))
-#define pp_max(_T, _x, _y) (_T##_max(_x, _y))
+#define pp_min(_T, _x, _y)            (_T##_min(_x, _y))
+#define pp_max(_T, _x, _y)            (_T##_max(_x, _y))
 /* _x in [low, high] */
 #define pp_clamp(_T, _x, _low, _high) (_T##_clamp(_x, _low, _high))
 /* _x in [low, high] */
-#define pp_wrap(_T, _x, _low, _high) (_T##_wrap(_x, _low, _high))
+#define pp_wrap(_T, _x, _low, _high)  (_T##_wrap(_x, _low, _high))
 
-#define pp_swap(_T, _a, _b)  \
-    do {                     \
-        Ptr(_T) __a = &(_a); \
-        Ptr(_T) __b = &(_b); \
-        _T __t      = *__a;  \
-        *__a        = *__b;  \
-        *__b        = __t;   \
-    } while (false)
+#define pp_swap(_T, _a, _b) pp_func( \
+    Ptr(_T) __a = &(_a);             \
+    Ptr(_T) __b = &(_b);             \
+    _T __t      = *__a;              \
+    *__a        = *__b;              \
+    *__b        = __t;               \
+)
 
 
 #define pp_abs_(_T, _x) (_T##_ge((_x), (0)) ? (_x) : (_T##_neg(_x)))
 
-#define pp_min_(_T, _x, _y) (_T##_lt((_x), (_y)) ? (_x) : (_y))
-#define pp_max_(_T, _x, _y) (_T##_gt((_x), (_y)) ? (_x) : (_y))
+#define pp_min_(_T, _x, _y)            (_T##_lt((_x), (_y)) ? (_x) : (_y))
+#define pp_max_(_T, _x, _y)            (_T##_gt((_x), (_y)) ? (_x) : (_y))
 /* _x in [low, high] */
 #define pp_clamp_(_T, _x, _low, _high) pp_max_(_T, _low, pp_min_(_T, _x, _high))
 // clang-format off
