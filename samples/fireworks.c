@@ -9,6 +9,7 @@ use pixel_loop::canvas::CrosstermCanvas;
 use pixel_loop::input::{ CrosstermInputState, KeyboardKey, KeyboardState };
 use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
 
+// FIXME(dev-dasae): Expected memory access error
 
 #include "../dh/mem.h"
 #include "../dh/types.h"
@@ -22,6 +23,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
 #include "../dh-terminal/terminal.h"
 #include "../dh-terminal/window.h"
 
+#include <conio.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -506,7 +508,7 @@ void Display_setBufferFromColors(const Window* window, const Color colors[Displa
         index += strlen(title_seq);
 
         // Add title content
-        const char* title = Window_title(window);
+        const char* title = Window_title(window, true);
         memcpy(Display_bufferNext + index, title, strlen(title));
         index += strlen(title);
 
@@ -586,6 +588,26 @@ void Display_render() {
 #endif
 }
 
+Duration Display_testOverhead(Window* window, Canvas* canvas) {
+    Duration overhead_duration = Duration_zero;
+
+    Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
+
+    const u64 overhead_iterations = 32;
+    for (usize measurements = 0; measurements < overhead_iterations; ++measurements) {
+        Instant start = Instant_now();
+        for (usize i = 0; i < Display_Size; ++i) {
+            buffer[i] = Color_fromOpaque(0, 0, 0);
+        }
+        Display_setBufferFromColors(window, buffer);
+        Display_render();
+        overhead_duration = Duration_add(overhead_duration, Instant_elapsed(start));
+    }
+    overhead_duration = Duration_div(overhead_duration, overhead_iterations);
+
+    return overhead_duration;
+}
+
 
 int main() {
     random_init(random_rng);
@@ -594,12 +616,12 @@ int main() {
     Window_init(window, WindowConfig_default);
     Window_withSize(window, 160, 50);
     Window_withTitle(window, "firework", Display_shows_title_in_buffer);
-    // Window_withFrameControl(window, true, 10.0f, false);
-    Window_withFrameControl(window, true, 62.5f, false);
-    // Window_withFrameControl(window, true, 62.5f, false);
+    Window_withFrameRate(window, true, 62.50f, false, true);
+    // Window_withFrameControl(window, true, 31.25f, false, true);
+    // Window_withFrameControl(window, true, 10.00f, false, true);
 
     State* state = mem_create(State);
-    State_init(state, window->actual_width, window->actual_height * 2);
+    State_init(state, Window_width(window), Window_height(window) * 2);
 
     Canvas* canvas = mem_create(Canvas);
     Canvas_init(canvas, state->width, state->height);
@@ -608,38 +630,9 @@ int main() {
     Display_init();
     Terminal_bootup();
 
-    Duration overhead_duration = Duration_zero;
-    // const u64 overhead_iterations = 32;
-    // {
-    //     // Fill canvas with random colors for worst-case measurement
-    //     Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
-    //     for (usize measurements = 0; measurements < overhead_iterations; ++measurements) {
-    //         // // Randomize entire screen
-    //         // for (usize index = 0; index < Display_Size; ++index) {
-    //         //     buffer[index] = Color_fromOpaque(
-    //         //         random_u8(random_rng),
-    //         //         random_u8(random_rng),
-    //         //         random_u8(random_rng)
-    //         //     );
-    //         // }
-
-    //         Instant start = Instant_now();
-    //         Display_setBufferFromColors(window, buffer);
-    //         Display_render();
-    //         overhead_duration = Duration_add(overhead_duration, Instant_elapsed(start));
-    //     }
-    // }
-    // overhead_duration = Duration_div(overhead_duration, overhead_iterations);
-
-
-    Instant  frame_start       = Instant_now();
-    Duration frame_time        = Duration_fromNanos(0);
-    Duration target_frame_time = Duration_fromSecs(1.0 / window->config.frame_control.target_fps);
-
     bool is_running = true;
     while (is_running) {
         Window_update(window);
-        frame_start = window->frame_stats.frame_instant_current;
 
         if (GetAsyncKeyState(VK_ESCAPE)) { is_running = false; }
 
@@ -662,6 +655,7 @@ int main() {
         for (i64 i = 0; i < state->fireworks_count; ++i) {
             Firework_update(&state->fireworks[i]);
         }
+
         // RENDER BEGIN
         Canvas_clear(canvas, Color_black);
         for (i64 i = 0; i < state->fireworks_count; ++i) {
@@ -672,11 +666,7 @@ int main() {
         Display_render();
         // RENDER END
 
-        frame_time               = Instant_elapsed(frame_start);
-        Duration adjusted_target = Duration_sub(target_frame_time, overhead_duration);
-        if (Duration_lt(frame_time, adjusted_target)) {
-            SystemTime_sleep(Duration_sub(adjusted_target, frame_time));
-        }
+        Window_delay(window);
     }
 
     Terminal_shutdown();

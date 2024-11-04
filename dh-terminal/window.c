@@ -1,115 +1,267 @@
 #include "window.h"
 #include "../dh/debug/debug_assert.h"
+#include "../dh/mem.h"
 #include "../dh/time.h"
 #include <stdio.h>
 
 
-FrameStats* FrameStats_init(FrameStats* s, const char* title, f32 frame_cap, bool vsync) {
+FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* config) {
     debug_assertNotNull(s);
+    debug_assertNotNull(config);
 
-    s->base_title             = title;
-    s->frame_count            = 0;
-    s->frame_capacity         = frame_cap;
-    s->is_vsync               = vsync;
-    s->frame_instant_last     = Instant_now();
-    s->frame_instant_current  = s->frame_instant_last;
-    s->frame_time_index       = 0;
-    s->current_fps            = 0.0f;
-    s->current_frame_duration = 0.0f;
-    s->average_fps            = 0.0f;
-    s->average_frame_duration = 0.0f;
+    s->times = mem_newCleared(f32, s->sample_count);
+    debug_assertNotNull(s->times);
+    s->time_index      = 0;
+    s->instant_last    = Instant_now();
+    s->instant_current = s->instant_last;
+    s->sample_count    = config->frame_rate_.sample_count;
 
-    // Initialize frame time buffer
-    for (usize i = 0; i < FrameState_FRAME_TIME_RING_BUFFER_SIZE; ++i) {
-        s->frame_times[i] = 0.0f;
-    }
+    s->count = 0;
+
+    s->current_duration = 0;
+    s->current_fps      = 0;
+    s->average_duration = 0;
+    s->average_fps      = 0;
 
     return s;
 }
 
-// Update frame statistics
-void FrameStats_update(FrameStats* s) {
+FrameRateStats* FrameRateStats_fini(FrameRateStats* s) {
     debug_assertNotNull(s);
 
-    s->frame_count++;
-    s->frame_instant_last    = s->frame_instant_current;
-    s->frame_instant_current = Instant_now();
+    mem_delete(&s->times);
+    debug_assertNull(s->times);
 
-    // Calculate frame time
-    f64 frame_time = Duration_toMillis(
+    return s;
+}
+
+void FrameRateStats_update(FrameRateStats* s) {
+    debug_assertNotNull(s);
+
+    s->count++;
+    s->instant_last    = s->instant_current;
+    s->instant_current = Instant_now();
+
+    // Calculate frame time duration
+    f32 current_duration = (f32)Duration_toMillis(
         Instant_durationSince(
-            s->frame_instant_current,
-            s->frame_instant_last
+            s->instant_current,
+            s->instant_last
         )
     );
 
     // Store frame time in ring buffer
-    s->frame_times[s->frame_time_index] = frame_time;
-    s->frame_time_index                 = (s->frame_time_index + 1) % FrameState_FRAME_TIME_RING_BUFFER_SIZE;
+    s->times[s->time_index] = current_duration;
+    s->time_index           = (s->time_index + 1) % s->sample_count;
 
     // Calculate current values first
     // Protect against division by zero and extreme values
-    frame_time                = 0.0001 < frame_time ? frame_time : 0.0001;
-    s->current_frame_duration = (f32)frame_time;
-    s->current_fps            = 1000.0f / (f32)frame_time;
+    current_duration    = 0.0001f < current_duration ? current_duration : 0.0001f;
+    s->current_duration = current_duration;
+    s->current_fps      = (f32)Time_millis_per_sec / current_duration;
 
+    if (s->count < s->sample_count) { return; }
     // Calculate running averages only when we have enough samples
-    if (FrameState_FRAME_TIME_RING_BUFFER_SIZE <= s->frame_count) {
-        f64   total_frame_time = 0.0;
-        usize valid_samples    = 0;
-
-        for (usize i = 0; i < FrameState_FRAME_TIME_RING_BUFFER_SIZE; ++i) {
-            if (0.0 < s->frame_times[i]) {
-                total_frame_time += s->frame_times[i];
-                valid_samples++;
-            }
+    f64   total_duration     = 0.0;
+    usize valid_sample_count = 0;
+    for (usize index = 0; index < s->sample_count; ++index) {
+        if (0.0 < s->times[index]) {
+            total_duration += s->times[index];
+            valid_sample_count++;
         }
+    }
 
-        if (0 < valid_samples) {
-            f32 avg_frame_time        = (f32)(total_frame_time / (f64)valid_samples);
-            avg_frame_time            = 0.0001f < avg_frame_time ? avg_frame_time : 0.0001f;
-            s->average_frame_duration = avg_frame_time;
-            s->average_fps            = 1000.0f / avg_frame_time;
-        }
+    if (0 < valid_sample_count) {
+        f32 average_duration = (f32)(total_duration / (f64)valid_sample_count);
+        average_duration     = 0.0001f < average_duration ? average_duration : 0.0001f;
+        s->average_duration  = average_duration;
+        s->average_fps       = (f32)Time_millis_per_sec / average_duration;
     }
 }
 
-const char* FrameStats_getTitle(const FrameStats* s) {
-    debug_assertNotNull(s);
+Window* Window_init(Window* w, WindowConfig config) {
+    debug_assertNotNull(w);
+    w->config_ = config;
+    return w;
+}
 
-    static char title_buffer[WindowConfig_title_buffer_size] = { 0 };
-    char        frame_cap_str[32]                            = { 0 };
+Window* Window_withSize(Window* w, u32 width, u32 height) {
+    debug_assertNotNull(w);
+    w->config_.dimensions_.width  = width;
+    w->config_.dimensions_.height = height;
+    return w;
+}
 
-    // Format frame cap string
-    if (s->is_vsync) {
-        pp_ignore snprintf(frame_cap_str, sizeof(frame_cap_str), "vsync");
-    } else if (s->frame_capacity <= 0) {
-        pp_ignore snprintf(frame_cap_str, sizeof(frame_cap_str), FrameState_UNCAPPED_STRING);
-    } else {
-        pp_ignore snprintf(frame_cap_str, sizeof(frame_cap_str), "%.1f", s->frame_capacity);
+Window* Window_withMinSize(Window* w, u32 width, u32 height) {
+    debug_assertNotNull(w);
+    w->config_.dimensions_.constraints.min_width  = width;
+    w->config_.dimensions_.constraints.min_height = height;
+    // Validate current size against new constraints
+    return w;
+}
+
+Window* Window_withMaxSize(Window* w, u32 width, u32 height) {
+    debug_assertNotNull(w);
+    w->config_.dimensions_.constraints.max_width  = width;
+    w->config_.dimensions_.constraints.max_height = height;
+    // Validate current size against new constraints
+    return w;
+}
+
+Window* Window_withTitle(Window* w, const char* title, bool shows_in_buffer) {
+    debug_assertNotNull(w);
+    w->config_.title_text_            = title;
+    w->config_.title_shows_in_buffer_ = shows_in_buffer;
+    return w;
+}
+
+Window* Window_withFrameRate(Window* w, bool enabled, f32 target_fps, bool vsync, bool displays_in_title) {
+    debug_assertNotNull(w);
+    w->config_.frame_rate_.enabled           = enabled;
+    w->config_.frame_rate_.target            = target_fps;
+    w->config_.frame_rate_.vsync             = vsync;
+    w->config_.frame_rate_.displays_in_title = displays_in_title;
+    FrameRateStats_init(&w->frame_rate_stats_, &w->config_);
+    return w;
+}
+
+Window* Window_fini(Window* w) {
+    debug_assertNotNull(w);
+    FrameRateStats_fini(&w->frame_rate_stats_);
+    return w;
+}
+
+const WindowConfig* Window_config(const Window* w) {
+    return &w->config_;
+}
+
+u16 Window_width(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.dimensions_.width;
+}
+
+u16 Window_height(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.dimensions_.height;
+}
+
+const char* Window_title(const Window* w, bool with_frame_rate_stats) {
+    debug_assertNotNull(w);
+
+    if (!with_frame_rate_stats) {
+        if (!w->config_.title_text_) { return ""; }
+        return w->config_.title_text_;
     }
 
-    // Format the title string
-    pp_ignore snprintf(
-        title_buffer,
-        WindowConfig_title_buffer_size,
-        "%s | frame: %s / %.1f(%.2fms) avg: %.1f(%.2fms)",
-        s->base_title,
-        frame_cap_str,
-        s->current_fps,
-        s->current_frame_duration,
-        s->average_fps,
-        s->average_frame_duration
+    static char frame_rate_target_text[WindowConfig_frame_rate_target_text_size] = { 0 };
+
+    usize frame_rate_target_text_size = 0;
+    if (!w->config_.frame_rate_.enabled || w->config_.frame_rate_.target <= 0.0f) {
+        frame_rate_target_text_size = snprintf(
+            frame_rate_target_text,
+            WindowConfig_frame_rate_target_text_size,
+            "%s",
+            WindowConfig_frame_rate_uncapped_text
+        );
+    } else if (w->config_.frame_rate_.vsync) {
+        frame_rate_target_text_size = snprintf(
+            frame_rate_target_text,
+            WindowConfig_frame_rate_target_text_size,
+            "%s",
+            WindowConfig_frame_rate_vsync_text
+        );
+    } else {
+        frame_rate_target_text_size = snprintf(
+            frame_rate_target_text,
+            WindowConfig_frame_rate_target_text_size,
+            "%.1f",
+            w->config_.frame_rate_.target
+        );
+    }
+    pp_unused(frame_rate_target_text_size);
+
+    static char title_text[WindowConfig_title_text_size] = { 0 };
+
+    usize title_text_size = 0;
+    if (w->config_.title_text_) {
+        title_text_size = snprintf(
+            title_text,
+            WindowConfig_title_text_size,
+            "%s",
+            w->config_.title_text_
+        );
+    }
+    if (0 < title_text_size) {
+        title_text_size += snprintf(
+            title_text + title_text_size,
+            WindowConfig_title_text_size - title_text_size,
+            " | "
+        );
+    }
+    title_text_size += snprintf(
+        title_text + title_text_size,
+        WindowConfig_title_text_size - title_text_size,
+        "frame: %s / %.1f(%.2fms) avg: %.1f(%.2fms)",
+        frame_rate_target_text,
+        w->frame_rate_stats_.current_fps,
+        w->frame_rate_stats_.current_duration,
+        w->frame_rate_stats_.average_fps,
+        w->frame_rate_stats_.average_duration
     );
 
-    return title_buffer;
+    return title_text;
 }
 
-void FrameStats_setTerminalTitle(const FrameStats* s) {
-    debug_assertNotNull(s);
+bool Window_showsTitleInBuffer(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.title_shows_in_buffer_;
+}
 
-    const char* title = FrameStats_getTitle(s);
-#ifdef _WIN32
+const FrameRateStats* Window_frameRateStats(const Window* w) {
+    debug_assertNotNull(w);
+    return &w->frame_rate_stats_;
+}
+
+bool Window_frameRateEnabled(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.frame_rate_.enabled;
+}
+
+f32 Window_frameRateTarget(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.frame_rate_.target;
+}
+
+f32 Window_frameRateCurrent(const Window* w) {
+    debug_assertNotNull(w);
+    return w->frame_rate_stats_.current_fps;
+}
+
+f32 Window_frameRateCurrentDuration(const Window* w) {
+    debug_assertNotNull(w);
+    return w->frame_rate_stats_.current_duration;
+}
+
+f32 Window_frameRateAverage(const Window* w) {
+    debug_assertNotNull(w);
+    return w->frame_rate_stats_.average_fps;
+}
+
+f32 Window_frameRateAverageDuration(const Window* w) {
+    debug_assertNotNull(w);
+    return w->frame_rate_stats_.average_duration;
+}
+
+bool Window_displaysFrameRateInTitle(const Window* w) {
+    debug_assertNotNull(w);
+    return w->config_.frame_rate_.displays_in_title;
+}
+
+static void Window__setTerminalTitle(Window* w, const char* title) {
+    debug_assertNotNull(w);
+    debug_assertNotNull(title);
+
+#if defined(_WIN32) || defined(_WIN64)
     SetConsoleTitleA(title);
 #else
     printf("\033]0;%s\007", title);
@@ -117,105 +269,32 @@ void FrameStats_setTerminalTitle(const FrameStats* s) {
 #endif
 }
 
-Window* Window_init(Window* w, WindowConfig config) {
+static void Window__updateTitle(Window* w) {
     debug_assertNotNull(w);
-
-    w->cell_width  = WindowConfig_font_width;
-    w->cell_height = WindowConfig_font_height;
-
-    w->actual_width  = config.buffer.width;
-    w->actual_height = config.buffer.height;
-
-    w->config = config;
-    if (config.shows_frame_info) {
-        FrameStats_init(
-            &w->frame_stats,
-            config.title,
-            config.frame_control.target_fps,
-            config.frame_control.vsync
-        );
-    }
-
-    return w;
-}
-
-Window* Window_withSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
-
-    w->config.buffer.width  = width;
-    w->config.buffer.height = height;
-    w->actual_width         = width;
-    w->actual_height        = height;
-
-    return w;
-}
-
-Window* Window_withMinSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
-
-    w->config.buffer.constraints.min_width  = width;
-    w->config.buffer.constraints.min_height = height;
-    // Validate current size against new constraints
-    return w;
-}
-
-Window* Window_withMaxSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
-
-    w->config.buffer.constraints.max_width  = width;
-    w->config.buffer.constraints.max_height = height;
-    // Validate current size against new constraints
-    return w;
-}
-
-Window* Window_withTitle(Window* w, const char* title, bool shows_in_buffer) {
-    debug_assertNotNull(w);
-
-    w->config.title                  = title;
-    w->config.allows_title_in_buffer = shows_in_buffer;
-    return w;
-}
-
-Window* Window_withFrameControl(Window* w, bool enabled, f32 target_fps, bool vsync) {
-    debug_assertNotNull(w);
-
-    w->config.frame_control.enabled    = enabled;
-    w->config.frame_control.target_fps = target_fps;
-    w->config.frame_control.vsync      = vsync;
-
-    FrameStats_init(
-        &w->frame_stats,
-        w->config.title,
-        target_fps,
-        vsync
-    );
-
-    return w;
-}
-
-Window* Window_fini(Window* w) {
-    debug_assertNotNull(w);
-
-    if (w->config.shows_frame_info) {
-        // FrameStats_fini(&w->frame_stats);
-    }
-    return w;
+    const bool  with_frame_rate_stats = Window_displaysFrameRateInTitle(w);
+    const char* title                 = Window_title(w, with_frame_rate_stats);
+    Window__setTerminalTitle(w, title);
 }
 
 void Window_update(Window* w) {
     debug_assertNotNull(w);
 
-    FrameStats_update(&w->frame_stats);
-    if (w->config.shows_frame_info) {
-        FrameStats_setTerminalTitle(&w->frame_stats);
-    }
+    FrameRateStats_update(&w->frame_rate_stats_);
+    Window__updateTitle(w);
 }
 
-const char* Window_title(const Window* w) {
+void Window_delay(const Window* w) {
     debug_assertNotNull(w);
 
-    if (!w->config.shows_frame_info) {
-        return w->config.title;
-    }
-    return FrameStats_getTitle(&w->frame_stats);
+    const bool enabled = Window_frameRateEnabled(w);
+    if (!enabled) { return; }
+
+    const f32 target = Window_frameRateTarget(w);
+    if (target <= 0.0f) { return; }
+
+    const Duration frame_time        = Instant_elapsed(w->frame_rate_stats_.instant_current);
+    const Duration target_frame_time = Duration_fromSecs(1.0 / w->config_.frame_rate_.target);
+    const Duration sleep_time        = Duration_sub(target_frame_time, frame_time);
+
+    SystemTime_sleep(sleep_time);
 }

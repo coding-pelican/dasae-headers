@@ -174,7 +174,7 @@ WindowConfig config = {
 
 
 typedef struct Window {
-    WindowConfig config;
+    WindowConfig config_;
     u32          actualWidth;
     u32          actualHeight;
     f32          cellWidth;  // Fixed at 8
