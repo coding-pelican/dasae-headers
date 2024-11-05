@@ -24,7 +24,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "compat/compat_inline.h"
-#include "debug/debug_assert.h"
 #include "preprocessor.h"
 
 #include "mem.h"
@@ -174,7 +173,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 TArrayN(f32, 4);
 TVector(f32);
 
-void example_usage(void) {
+void TEST_container_f32ArrayAndVector(void) {
     // Array usage
     f32Array4 _arr = make(f32Array4);
     f32Array4_init(&_arr);

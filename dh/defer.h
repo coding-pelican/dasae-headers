@@ -43,22 +43,20 @@ typedef struct DeferScope {
     bool        active;
 } DeferScope;
 
-#define defer_scope_begin             \
-    DeferScope __defer_scope = { 0 }; \
-    __defer_scope.active     = true;  \
-    do
-
-#define defer_scope_end                                      \
-    while (0);                                               \
-    if (__defer_scope.active) {                              \
-        DeferBlock* __curr = __defer_scope.current;          \
-        while (__curr) {                                     \
-            if (__curr->func) __curr->func(__curr->context); \
-            DeferBlock* __prev = __curr->prev;               \
-            mem_destroy(__curr);                             \
-            __curr = __prev;                                 \
-        }                                                    \
-    }
+#define defer_scope                                      \
+    for (DeferScope __defer_scope = { 0, true };         \
+         __defer_scope.active;                           \
+         ({                                              \
+             DeferBlock* __curr = __defer_scope.current; \
+             while (__curr) {                            \
+                 if (__curr->func)                       \
+                     __curr->func(__curr->context);      \
+                 DeferBlock* __prev = __curr->prev;      \
+                 mem_destroy(__curr);                    \
+                 __curr = __prev;                        \
+             }                                           \
+             __defer_scope.active = false;               \
+         }))
 
 #define defer(_func, _ctx) pp_func(                 \
     DeferBlock* __block   = mem_create(DeferBlock); \
@@ -78,17 +76,16 @@ typedef struct DeferScope {
 
 #ifdef UNIT_TEST
 
-void cleanup_vec(void* vec) {
+void TEST_defer_cleanupVec(void* vec) {
     f32Vector_fini((f32Vector*)vec);
 }
 
 /* Example usage of sophisticated version */
-void sophisticated_example(void) {
-    defer_scope_begin {
+void TEST_defer_SophisticatedExample(void) {
+    defer_scope {
         f32Vector vec = make(f32Vector);
         f32Vector_init(&vec, 4);
-
-        defer(cleanup_vec, &vec);
+        defer(TEST_defer_cleanupVec, &vec);
 
         // Use vector...
 
@@ -100,7 +97,6 @@ void sophisticated_example(void) {
 
         // More operations...
     }
-    defer_scope_end;
 }
 
 #endif /* UNIT_TEST */

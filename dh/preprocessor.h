@@ -24,13 +24,13 @@
 #define pp_ensureNotNull(_x, ...) \
     pp_ensureNotNull(_x, __VA_ARGS__)
 
-#define pp_func(...)                                                     \
-    /**                                                                  \
-     * @brief Creates a single statement block from multiple expressions \
-     * @param ... Multiple statements to be executed as a single block   \
-     * @details Wraps multiple statements in a do-while(0) block         \
-    for macro safety                                                     \
-     */                                                                  \
+#define pp_func(...)                                                        \
+    /**                                                                     \
+     * @brief Creates a single statement block from multiple expressions    \
+     * @param ... Multiple statements to be executed as a single block      \
+     * @details Wraps multiple statements in a parentheses and braces block \
+    for macro safety                                                        \
+     */                                                                     \
     RETURN_pp_func(__VA_ARGS__)
 
 #define pp_concat(_token, ...) \
@@ -50,7 +50,7 @@
     ((_x) ? (_x) : (__VA_ARGS__))
 
 #define RETURN_pp_func(...) \
-    do { __VA_ARGS__ } while (0)
+    ({ __VA_ARGS__ })
 
 #define RETURN_pp_concat(_token, ...) \
     _token##__VA_ARGS__
