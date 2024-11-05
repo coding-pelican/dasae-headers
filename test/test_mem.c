@@ -1,5 +1,8 @@
-#include "../src/assert.h"
-#include "../src/mem.h"
+// build `clang -xc test_mem.c ../dh/src/*.c -o test_mem -g -static`
+
+#include "../dh/debug/debug_assert.h"
+#include "../dh/mem.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -19,7 +22,7 @@ void TEST_mem_allocate_deallocate() {
 
     // Test basic allocation
     i32* numbers = (i32*)mem_allocate(5 * sizeof(i32));
-    assertNotNull(numbers);
+    debug_assertNotNull(numbers);
     TEST_PrintResult("Basic malloc", 1);
 
     // Fill with data
@@ -52,7 +55,7 @@ void TEST_mem_allocateCleared() {
 
     // Test basic calloc
     i32* numbers = (i32*)mem_allocateCleared(5, sizeof(i32));
-    assertNotNull(numbers);
+    debug_assertNotNull(numbers);
     TEST_PrintResult("Basic calloc", 1);
 
     // Verify zero initialization
@@ -61,6 +64,35 @@ void TEST_mem_allocateCleared() {
         sum += numbers[i];
     }
     TEST_PrintResult("Zero initialization", sum == 0);
+
+    mem_deallocate(&numbers);
+}
+
+void TEST_mem_reallocate() {
+    TEST_PrintSection("realloc");
+
+    // Initial allocation
+    i32* numbers = (i32*)mem_allocate(2 * sizeof(i32));
+    numbers[0]   = 1;
+    numbers[1]   = 2;
+
+    // Reallocate to larger size
+    numbers = (i32*)mem_reallocate(numbers, 4 * sizeof(i32));
+    debug_assertNotNull(numbers);
+
+    // Verify original data preserved
+    TEST_PrintResult("Data preserved", numbers[0] == 1 && numbers[1] == 2);
+
+    // Add new data
+    numbers[2] = 3;
+    numbers[3] = 4;
+
+    // Verify new space usable
+    i32 sum = 0;
+    for (i32 i = 0; i < 4; i++) {
+        sum += numbers[i];
+    }
+    TEST_PrintResult("Extended memory usable", sum == 10);
 
     mem_deallocate(&numbers);
 }
@@ -91,7 +123,7 @@ void TEST_mem_copy() {
     const char* source = "Hello";
     char*       dest   = (char*)mem_allocate(6);
 
-    mem_copy(dest, (anyopaque)source, 6);
+    mem_copy(dest, (anyptr)source, 6);
     TEST_PrintResult("memcpy", strcmp(dest, source) == 0);
 
     mem_deallocate(&dest);
@@ -134,8 +166,8 @@ void TEST_mem_copyBlock() {
 void TEST_mem_MultipleOperations() {
     TEST_PrintSection("multiple operations");
 
-    anyopaque ptrs[100];
-    i32       success = 1;
+    anyptr ptrs[100];
+    i32    success = 1;
 
     // Allocate 100 blocks
     for (i32 i = 0; i < 100; ++i) {
@@ -190,13 +222,7 @@ void TEST_mem_new_delete() {
     TestStruct* test_struct = mem_createWith(TestStruct, .a = 1, .b = 2, .c = { 3, 4, 5, 6 }, .canUse = true);
     TEST_PrintResult(
         "newWith",
-        test_struct->a == 1 &&
-            test_struct->b == 2 &&
-            test_struct->c[0] == 3 &&
-            test_struct->c[1] == 4 &&
-            test_struct->c[2] == 5 &&
-            test_struct->c[3] == 6 &&
-            test_struct->canUse
+        test_struct->a == 1 && test_struct->b == 2 && test_struct->c[0] == 3 && test_struct->c[1] == 4 && test_struct->c[2] == 5 && test_struct->c[3] == 6 && test_struct->canUse
     );
 
     mem_delete(&test_struct);
@@ -212,6 +238,7 @@ void TEST_mem_MemoryLeakDetection() {
     *leaked     = 42;
 
     TestStruct* leaked_struct = mem_createWith(TestStruct, .a = 1, .b = 2, .c = { 3, 4, 5, 6 }, .canUse = true);
+    leaked_struct->canUse     = false;
 
     // Don't free 'leaked' - it should be reported at program exit
     TEST_PrintResult("Created intentional leak", 1);
@@ -223,6 +250,7 @@ i32 main() {
 
     TEST_mem_allocate_deallocate();
     TEST_mem_allocateCleared();
+    TEST_mem_reallocate();
     TEST_mem_set();
     TEST_mem_copy();
     TEST_mem_move();

@@ -18,6 +18,8 @@ static void __attribute__((constructor)) mem__initInfoList(void) {
 }
 
 static void __attribute__((destructor)) mem__finiInfoList(void) {
+    mem__printInfoMemoryLeakTrace();
+
     memInfo* current = mem__info_list;
     memInfo* next    = null;
 
@@ -102,6 +104,29 @@ anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* f
     return result;
 }
 
+anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line) {
+    debug_assertNotNullFmt(ptr, "null in reallocation(realloc) from %s at %s:%d\n", func, file, line);
+    if (!ptr) {
+        return mem__allocate(size, func, file, line);
+    }
+
+    anyptr reallocated = realloc(ptr, size);
+    debug_assertNotNullFmt(reallocated, "Memory reallocation failed in %s at %s:%d\n", func, file, line);
+
+    // Update tracking info
+    memInfo* current = mem__info_list;
+    while (current) {
+        if (current->ptr == ptr) {
+            current->ptr  = reallocated;
+            current->size = size;
+            break;
+        }
+        current = current->next;
+    }
+
+    return reallocated;
+}
+
 void mem__deallocate(anyptr ptr, const char* func, const char* file, i32 line) {
     debug_assertNotNullFmt(ptr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
     anyptr* target_ptr = (anyptr*)ptr;
@@ -147,6 +172,10 @@ anyptr mem__allocateCleared(usize count, usize size) {
 
 anyptr mem__allocateWith(usize size, anyptr src) {
     return mem__copy(mem__allocate(size), src, size);
+}
+
+anyptr mem__reallocate(anyptr ptr, usize size) {
+    return realloc(ptr, size);
 }
 
 void mem__deallocate(anyptr ptr) {

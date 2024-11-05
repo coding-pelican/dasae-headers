@@ -46,6 +46,7 @@ extern "C" {
 #define mem_allocate(_size)                mem__allocate(_size, __func__, __FILE__, __LINE__)
 #define mem_allocateCleared(_size, _count) mem__allocateCleared(_size, _count, __func__, __FILE__, __LINE__)
 #define mem_allocateWith(_size, _src)      mem__allocateWith(_size, _src, __func__, __FILE__, __LINE__)
+#define mem_reallocate(_ptr, _size)        mem__reallocate(_ptr, _size, __func__, __FILE__, __LINE__)
 #define mem_deallocate(_ptr)               mem__deallocate(_ptr, __func__, __FILE__, __LINE__)
 #define mem_set(_dest, _val, _size)        mem__set(_dest, _val, _size, __func__, __FILE__, __LINE__)
 #define mem_copy(_dest, _src, _size)       mem__copy(_dest, _src, _size, __func__, __FILE__, __LINE__)
@@ -54,6 +55,7 @@ extern "C" {
 #define mem_allocate(_size)                mem__allocate(_size)
 #define mem_allocateCleared(_size, _count) mem__allocateCleared(_size, _count)
 #define mem_allocateWith(_size, _src)      mem__allocateWith(_size, _src)
+#define mem_reallocate(_ptr, _size)        mem__reallocate(_ptr, _size)
 #define mem_deallocate(_ptr)               mem__deallocate(_ptr)
 #define mem_set(_dest, _val, _size)        mem__set(_dest, _val, _size)
 #define mem_copy(_dest, _src, _size)       mem__copy(_dest, _src, _size)
@@ -101,6 +103,7 @@ static void                              mem__printInfoMemoryLeakTrace(void);
 anyptr mem__allocate(usize size, const char* func, const char* file, i32 line);
 anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line);
 anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* file, i32 line);
+anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line);
 void   mem__deallocate(anyptr ptr, const char* func, const char* file, i32 line);
 anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line);
 anyptr mem__copy(anyptr dest, const anyptr src, usize size, const char* func, const char* file, i32 line);
@@ -109,6 +112,7 @@ anyptr mem__move(anyptr dest, anyptr src, usize size, const char* func, const ch
 anyptr mem__allocate(usize size);
 anyptr mem__allocateCleared(usize size, usize count);
 anyptr mem__allocateWith(usize size, anyptr src);
+anyptr mem__reallocate(anyptr ptr, usize size);
 void   mem__deallocate(anyptr ptr);
 anyptr mem__set(anyptr dest, i32 val, usize size);
 anyptr mem__copy(anyptr dest, const anyptr src, usize size);

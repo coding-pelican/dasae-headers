@@ -12,6 +12,7 @@
  * @brief   Header of some software
  * @details Some detailed explanation
  */
+// TODO(dev-dasae): Improve generic usability, foreach, etc.
 
 
 #ifndef CONTAINER_INCLUDED
@@ -29,6 +30,7 @@ extern "C" {
 #include "mem.h"
 #include "types.h"
 
+/*========== Forward Declarations ===========================================*/
 /*========== Macros and Definitions =========================================*/
 
 /* Base container structure */
@@ -41,11 +43,23 @@ typedef struct Container {
     };
 } Container;
 
-#define TArrayN(_T, _N)         \
-    /* Array type definition */ \
+/* Base array structure */
+typedef struct Array {
+    Container container;
+    anyptr    fixed;
+} Array;
+
+/* Base vector structure */
+typedef struct Vector {
+    Container container;
+    usize     capacity;
+} Vector;
+
+#define TArrayN(_T, _N)                 \
+    /* Generic array type definition */ \
     RETURN_TArrayN(_T, _N)
-#define TVector(_T)              \
-    /* Vector type definition */ \
+#define TVector(_T)                      \
+    /* Generic vector type definition */ \
     RETURN_TVector(_T)
 
 /* Base container operations (force_inline functions) */
@@ -73,56 +87,56 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 
 /* Generic method wrappers */
 
-#define Array_peekData(_arr)       RETURN_Array_peekData(_arr)
-#define Array_accessData(_arr)     RETURN_Array_accessData(_arr)
-#define Array_peekAsBytes(_arr)    RETURN_Array_peekAsBytes(_arr)
-#define Array_accessAsBytes(_arr)  RETURN_Array_accessAsBytes(_arr)
-#define Array_length(_arr)         RETURN_Array_length(_arr)
-#define Array_peekAt(_arr, _idx)   RETURN_Array_peekAt(_arr, _idx)
-#define Array_accessAt(_arr, _idx) RETURN_Array_accessAt(_arr, _idx)
+#define Array_peekData(_T, _arr)       RETURN_Array_peekData(_T, _arr)
+#define Array_accessData(_T, _arr)     RETURN_Array_accessData(_T, _arr)
+#define Array_peekAsBytes(_T, _arr)    RETURN_Array_peekAsBytes(_T, _arr)
+#define Array_accessAsBytes(_T, _arr)  RETURN_Array_accessAsBytes(_T, _arr)
+#define Array_length(_T, _arr)         RETURN_Array_length(_T, _arr)
+#define Array_peekAt(_T, _arr, _idx)   RETURN_Array_peekAt(_T, _arr, _idx)
+#define Array_accessAt(_T, _arr, _idx) RETURN_Array_accessAt(_T, _arr, _idx)
 
-#define Vector_peekData(_vec)       RETURN_Vector_peekData(_vec)
-#define Vector_accessData(_vec)     RETURN_Vector_accessData(_vec)
-#define Vector_peekAsBytes(_vec)    RETURN_Vector_peekAsBytes(_vec)
-#define Vector_accessAsBytes(_vec)  RETURN_Vector_accessAsBytes(_vec)
-#define Vector_length(_vec)         RETURN_Vector_length(_vec)
-#define Vector_peekAt(_vec, _idx)   RETURN_Vector_peek_at(_vec, _idx)
-#define Vector_accessAt(_vec, _idx) RETURN_Vector_access_at(_vec, _idx)
+#define Vector_peekData(_T, _vec)       RETURN_Vector_peekData(_T, _vec)
+#define Vector_accessData(_T, _vec)     RETURN_Vector_accessData(_T, _vec)
+#define Vector_peekAsBytes(_T, _vec)    RETURN_Vector_peekAsBytes(_T, _vec)
+#define Vector_accessAsBytes(_T, _vec)  RETURN_Vector_accessAsBytes(_T, _vec)
+#define Vector_length(_T, _vec)         RETURN_Vector_length(_T, _vec)
+#define Vector_peekAt(_T, _vec, _idx)   RETURN_Vector_peekAt(_T, _vec, _idx)
+#define Vector_accessAt(_T, _vec, _idx) RETURN_Vector_accessAt(_T, _vec, _idx)
 
 /* Type-safe element access macros */
 
 #define Array_get(_T, _arr, _idx) \
-    (*(const _T*)Array_peekAt(_arr, _idx))
+    (*Array_peekAt(_T, _arr, _idx))
 
 #define Array_getMut(_T, _arr, _idx) \
-    (*(_T*)Array_accessAt(_arr, _idx))
+    (*Array_accessAt(_T, _arr, _idx))
 
 #define Array_set(_T, _arr, _idx, _val) \
-    (*(_T*)Array_accessAt(_arr, _idx)) = _val
+    (*Array_accessAt(_T, _arr, _idx)) = _val
 
 #define Vector_get(_T, _vec, _idx) \
-    (*(const _T*)Vector_peekAt(_vec, _idx))
+    (*Vector_peekAt(_T, _vec, _idx))
 
 #define Vector_getMut(_T, _vec, _idx) \
-    (*(_T*)Vector_accessAt(_vec, _idx))
+    (*Vector_accessAt(_T, _vec, _idx))
 
 #define Vector_set(_T, _vec, _idx, _val) \
-    (*(_T*)Vector_accessAt(_vec, _idx)) = _val
+    (*Vector_accessAt(_T, _vec, _idx)) = _val
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_TArrayN(_T, _N)                                            \
-    struct Array(_T, _N) {                                                \
-        Container container;                                              \
-        _T        fixed[_N];                                              \
-    };                                                                    \
-    force_inline void _T##Array##_N##_init(struct Array(_T, _N) * _arr) { \
-        _arr->container = (Container){                                    \
-            .data      = _arr->fixed,                                     \
-            .length    = (_N),                                            \
-            .elem_size = sizeof(_T)                                       \
-        };                                                                \
-    }                                                                     \
+#define RETURN_TArrayN(_T, _N)                                      \
+    struct Array(_T, _N) {                                          \
+        Container container;                                        \
+        _T        fixed[_N];                                        \
+    };                                                              \
+    static void _T##Array##_N##_init(struct Array(_T, _N) * _arr) { \
+        _arr->container = (Container){                              \
+            .data      = _arr->fixed,                               \
+            .length    = (_N),                                      \
+            .elem_size = sizeof(_T)                                 \
+        };                                                          \
+    }                                                               \
     typedef struct Array(_T, _N) Array(_T, _N)
 
 #define RETURN_TVector(_T)                                                                   \
@@ -130,7 +144,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
         Container container;                                                                 \
         usize     capacity;                                                                  \
     };                                                                                       \
-    force_inline void _T##Vector##_init(struct Vector(_T) * _vec, usize initial_capacity) {  \
+    static void _T##Vector##_init(struct Vector(_T) * _vec, usize initial_capacity) {        \
         *_vec = (struct Vector(_T)){                                                         \
             .container = {                                                                   \
                           .data      = initial_capacity ? mem_newCleared(_T, initial_capacity) : NULL, \
@@ -139,7 +153,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
             .capacity = initial_capacity                                                     \
         };                                                                                   \
     }                                                                                        \
-    force_inline void _T##Vector##_fini(struct Vector(_T) * _vec) {                          \
+    static void _T##Vector##_fini(struct Vector(_T) * _vec) {                                \
         mem_delete(&(_vec)->container.data);                                                 \
         _vec->container.length = 0;                                                          \
         _vec->capacity         = 0;                                                          \
@@ -149,25 +163,26 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 #define RETURN_Array(_T, _N) _T##Array##_N
 #define RETURN_Vector(_T)    _T##Vector
 
-#define RETURN_Array_peekData(_arr)       Container_peekData(&(_arr)->container)
-#define RETURN_Array_accessData(_arr)     Container_accessData(&(_arr)->container)
-#define RETURN_Array_peekAsBytes(_arr)    Container_peekAsBytes(&(_arr)->container)
-#define RETURN_Array_accessAsBytes(_arr)  Container_accessAsBytes(&(_arr)->container)
-#define RETURN_Array_length(_arr)         Container_length(&(_arr)->container)
-#define RETURN_Array_peekAt(_arr, _idx)   Container_peekAt(&(_arr)->container, _idx)
-#define RETURN_Array_accessAt(_arr, _idx) Container_accessAt(&(_arr)->container, _idx)
+#define RETURN_Array_peekData(_T, _arr)       (const _T*)Container_peekData(&(_arr)->container)
+#define RETURN_Array_accessData(_T, _arr)     (_T*)Container_accessData(&(_arr)->container)
+#define RETURN_Array_peekAsBytes(_T, _arr)    Container_peekAsBytes(&(_arr)->container)
+#define RETURN_Array_accessAsBytes(_T, _arr)  Container_accessAsBytes(&(_arr)->container)
+#define RETURN_Array_length(_T, _arr)         Container_length(&(_arr)->container)
+#define RETURN_Array_peekAt(_T, _arr, _idx)   (const _T*)Container_peekAt(&(_arr)->container, _idx)
+#define RETURN_Array_accessAt(_T, _arr, _idx) (_T*)Container_accessAt(&(_arr)->container, _idx)
 
-#define RETURN_Vector_peekData(_vec)       Container_peekData(&(_vec)->container)
-#define RETURN_Vector_accessData(_vec)     Container_accessData(&(_vec)->container)
-#define RETURN_Vector_peekAsBytes(_vec)    Container_peekAsBytes(&(_vec)->container)
-#define RETURN_Vector_accessAsBytes(_vec)  Container_accessAsBytes(&(_vec)->container)
-#define RETURN_Vector_length(_vec)         Container_length(&(_vec)->container)
-#define RETURN_Vector_peekAt(_vec, _idx)   Container_peekAt(&(_vec)->container, _idx)
-#define RETURN_Vector_accessAt(_vec, _idx) Container_accessAt(&(_vec)->container, _idx)
+#define RETURN_Vector_peekData(_T, _vec)       (const _T*)Container_peekData(&(_vec)->container)
+#define RETURN_Vector_accessData(_T, _vec)     (_T*)Container_accessData(&(_vec)->container)
+#define RETURN_Vector_peekAsBytes(_T, _vec)    Container_peekAsBytes(&(_vec)->container)
+#define RETURN_Vector_accessAsBytes(_T, _vec)  Container_accessAsBytes(&(_vec)->container)
+#define RETURN_Vector_length(_T, _vec)         Container_length(&(_vec)->container)
+#define RETURN_Vector_peekAt(_T, _vec, _idx)   (const _T*)Container_peekAt(&(_vec)->container, _idx)
+#define RETURN_Vector_accessAt(_T, _vec, _idx) (_T*)Container_accessAt(&(_vec)->container, _idx)
 
+/*========== Extern Constant and Variable Declarations ======================*/
+/*========== Extern Function Prototypes =====================================*/
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
-#define UNIT_TEST
 #ifdef UNIT_TEST
 
 TArrayN(f32, 4);
@@ -179,7 +194,7 @@ void TEST_container_f32ArrayAndVector(void) {
     f32Array4_init(&_arr);
 
     // Initialize array elements
-    f32* data = Array_accessData(&_arr);
+    f32* data = Array_accessData(f32, &_arr);
     data[0]   = 1.0f;
     data[1]   = 2.0f;
     data[2]   = 3.0f;

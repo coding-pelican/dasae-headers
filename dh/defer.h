@@ -12,6 +12,7 @@
  * @brief   Header of some software
  * @details Some detailed explanation
  */
+// TODO(dev-dasae): Implement to be generic for function (like lambda)
 
 
 #ifndef DEFER_INCLUDED
@@ -34,7 +35,7 @@ extern "C" {
 /* More sophisticated version combining best aspects */
 typedef struct DeferBlock {
     struct DeferBlock* prev;
-    void (*func)(void*);
+    void (*func)(void* args);
     void* context;
 } DeferBlock;
 
@@ -43,20 +44,16 @@ typedef struct DeferScope {
     bool        active;
 } DeferScope;
 
-#define defer_scope                                      \
-    for (DeferScope __defer_scope = { 0, true };         \
-         __defer_scope.active;                           \
-         ({                                              \
-             DeferBlock* __curr = __defer_scope.current; \
-             while (__curr) {                            \
-                 if (__curr->func)                       \
-                     __curr->func(__curr->context);      \
-                 DeferBlock* __prev = __curr->prev;      \
-                 mem_destroy(__curr);                    \
-                 __curr = __prev;                        \
-             }                                           \
-             __defer_scope.active = false;               \
-         }))
+#define defer_scope                             \
+    for (                                       \
+        DeferScope __defer_scope = { 0, true }; \
+        __defer_scope.active;                   \
+        defer__run()                            \
+    )
+
+#define defer_scope_return \
+    defer__run();          \
+    return
 
 #define defer(_func, _ctx) pp_func(                 \
     DeferBlock* __block   = mem_create(DeferBlock); \
@@ -66,11 +63,16 @@ typedef struct DeferScope {
     __defer_scope.current = __block;                \
 )
 
-#define defer_scope_return            \
-    pp_func(                          \
-        __defer_scope.active = false; \
-    );                                \
-    return
+#define defer__run() pp_func(                                \
+    DeferBlock* __curr = __defer_scope.current;              \
+    while (__curr) {                                         \
+        if (__curr->func) { __curr->func(__curr->context); } \
+        DeferBlock* __prev = __curr->prev;                   \
+        mem_destroy(&__curr);                                \
+        __curr = __prev;                                     \
+    } __defer_scope.active                                   \
+    = false;                                                 \
+)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
