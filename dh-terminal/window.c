@@ -9,7 +9,7 @@ FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* confi
     debug_assertNotNull(s);
     debug_assertNotNull(config);
 
-    s->times = mem_newCleared(f32, s->sample_count);
+    s->times = mem_newCleared(f32, config->frame_rate_.sample_count);
     debug_assertNotNull(s->times);
     s->time_index      = 0;
     s->instant_last    = Instant_now();

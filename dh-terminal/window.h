@@ -6,6 +6,36 @@ typedef struct FrameRateStats FrameRateStats;
 typedef struct WindowConfig   WindowConfig;
 typedef struct Window         Window;
 
+
+typedef struct WindowTime {
+    Instant  last_frame; // Time of last frame beginning
+    Instant  curr_frame; // Time of current frame beginning
+    Instant  prev_step;  // Time before current step
+    Instant  curr_step;  // Time begin current step
+    Duration time;       // Time since window creation
+    f64      time_scale; // Time scale
+    Duration target;     // Target frame time
+    f64      target_fps; // Target frames per second
+    Duration update;     // Update time
+    Duration render;     // Render time
+    Duration frame;      // Update + Render time
+    Duration delay;      // Target frame - Frame time
+} WindowTime;
+f64  WindowTime_time();
+f64  WindowTime_timeScale();
+void WindowTime_setTimeScale(f64 scale);
+f64  WindowTime_targetFPS();
+void WindowTime_setTargetFPS(f64 target);
+f64  WindowTime_deltaTime();
+f64  WindowTime_unscaledDeltaTime();
+
+typedef struct WindowFrameStats {
+    u64  count;             // Total elapsed frames
+    f64* sample_times;      // Dynamic array based on window config
+    u16  sample_time_index; // Index of current sample time
+    u16  sample_count;      // Criteria for ring-buffers (Derived from window config)
+} WindowFrameStats;
+
 struct FrameRateStats {
     // Timing data
     Instant instant_last;

@@ -28,14 +28,17 @@ extern "C" {
 #include "prim_ptr.h"
 
 
-#define prim_eq(_prim_a, _prim_b...) ((_prim_a) == (_prim_b))
-#define prim_ne(_prim_a, _prim_b...) ((_prim_a) != (_prim_b))
-#define prim_lt(_prim_a, _prim_b...) ((_prim_a) < (_prim_b))
-#define prim_le(_prim_a, _prim_b...) ((_prim_a) <= (_prim_b))
-#define prim_gt(_prim_a, _prim_b...) ((_prim_a) > (_prim_b))
-#define prim_ge(_prim_a, _prim_b...) ((_prim_a) >= (_prim_b))
+#define prim_as(_T, _prim_val...)      ((_T)_prim_val)
+#define prim_value(_T, _prim_val...)   ((_T){ _prim_val })
+#define prim_literal(_T, _prim_val...) ((_T[1]){ _prim_val })
 
-#define prim_as(_T, _prim_val...)           ((_T)_prim_val)
+#define prim_eq(_prim_lhs, _prim_rhs...) ((_prim_lhs) == (_prim_rhs))
+#define prim_ne(_prim_lhs, _prim_rhs...) ((_prim_lhs) != (_prim_rhs))
+#define prim_lt(_prim_lhs, _prim_rhs...) ((_prim_lhs) < (_prim_rhs))
+#define prim_le(_prim_lhs, _prim_rhs...) ((_prim_lhs) <= (_prim_rhs))
+#define prim_gt(_prim_lhs, _prim_rhs...) ((_prim_lhs) > (_prim_rhs))
+#define prim_ge(_prim_lhs, _prim_rhs...) ((_prim_lhs) >= (_prim_rhs))
+
 #define prim_divisible(_prim_n, _prim_m...) ((_prim_m == 0) ? 0 : ((_prim_n) % (_prim_m) == 0))
 
 

@@ -1,5 +1,11 @@
 /*========== MACROS DEFINITION ==============================================*/
 
+#define pp_fallthrough                          \
+    /**                                         \
+     * @brief fallthrough for `switch` internal \
+     */                                         \
+    RETURN_pp_fallthrough
+
 #define pp_unused(...)                                                \
     /**                                                               \
      * @brief Marks variables or expressions as intentionally unused  \
@@ -31,6 +37,8 @@
     RETURN_pp_concat(_token, __VA_ARGS__)
 
 /*========== MACROS IMPLEMENTATION ==========================================*/
+
+#define RETURN_pp_fallthrough
 
 #define RETURN_pp_unused(...) \
     ((void)(__VA_ARGS__))
