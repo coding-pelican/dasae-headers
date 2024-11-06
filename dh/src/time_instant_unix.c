@@ -1,6 +1,6 @@
 #if !(defined(_WIN32) || defined(_WIN64))
 
-#include "../time.h"
+#include "../include/dh/time/time.h"
 
 
 SystemTime SystemTime_now(void) {
@@ -46,8 +46,8 @@ void SystemTime_sleep_ns(u64 nanos) {
 
     struct timespec req = make(struct timespec);
     struct timespec rem = make(struct timespec);
-    req.tv_sec  = nanos / Time_nanos_per_sec;
-    req.tv_nsec = nanos % Time_nanos_per_sec;
+    req.tv_sec          = nanos / Time_nanos_per_sec;
+    req.tv_nsec         = nanos % Time_nanos_per_sec;
 
     while (nanosleep(&req, &rem) == -1) {
         if (errno == EINTR) {

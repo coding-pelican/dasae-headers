@@ -1,7 +1,6 @@
 #if defined(_WIN32) || defined(_WIN64)
 
-#include "../debug/debug_assert.h"
-#include "../time.h"
+#include "../include/dh/time/time.h"
 
 
 static SystemTime SystemTime__s_performance_frequency = { 0 };

@@ -1,0 +1,155 @@
+dasae-headers-c/
+├── docs/
+│   ├── api/                    # API documentation
+│   ├── examples/               # Usage examples
+│   └── guide/                  # User guide and best practices
+│
+├── include/
+│   ├── dh/
+│   │   ├── builtin/            # Low-level compiler and platform features
+│   │   │   ├── comp.h              # Compiler-specific intrinsics
+│   │   │   ├── arch.h              # CPU instruction set intrinsics
+│   │   │   ├── types.h             # Built-in type traits and checks
+│   │   │   └── os.h                # Platform-specific features
+│   │   │
+│   │   ├── core/               # Core library fundamentals
+│   │   │   ├── prim/               # Primitive types and utilities
+│   │   │   │   ├── ints.h              # Integer types (u/i 8, 16, 32, 64, size)
+│   │   │   │   ├── flts.h              # Float types (f32, f64)
+│   │   │   │   ├── ptr.h               # Pointer types (ptr, mutptr, anyptr, mutanyptr)
+│   │   │   │   ├── ref.h               # Reference types (ref, mutref)
+│   │   │   │   ├── null.h              # Null values and attributes (null, nullable, nonnull)
+│   │   │   │   ├── bool.h              # Boolean type
+│   │   │   │   ├── struct.h            # Struct type
+│   │   │   │   ├── union.h             # Union type
+│   │   │   │   ├── enum.h              # Enum type
+│   │   │   │   └── prim.h              # Primitive types and utilities
+│   │   │   ├── attributes.h        # Attribute system
+│   │   │   ├── lambda.h            # Lambda expressions
+│   │   │   ├── defer.h             # Defer mechanism
+│   │   │   ├── try_catch.h         # Try catch mechanism
+│   │   │   ├── auto.h              # Type inference
+│   │   │   ├── pp.h                # Preprocessor utilities
+│   │   │   └── core.h              # Core library and utilities
+│   │   │
+│   │   ├── meta/               # Meta-programming facilities
+│   │   │   ├── reflection.h        # Reflection utilities
+│   │   │   ├── typeinfo.h          # Type information system
+│   │   │   ├── traits.h            # Type trait system
+│   │   │   ├── pp.h                # Advanced preprocessor utilities
+│   │   │   └── meta.h              # Meta-programming and utilities
+│   │   │
+│   │   ├── debug/              # Debug diagnostics
+│   │   │   ├── assert.h            # Assertion macros
+│   │   │   └── debug.h             # Debug diagnostics and utilities
+│   │   │
+│   │   ├── claim/              # Claim assertions
+│   │   │   ├── assert_static.h     # Static assertions
+│   │   │   ├── assert.h            # Dynamic assertions
+│   │   │   └── claim.h             # Claim assertions and utilities
+│   │   │
+│   │   ├── error/              # Error handling
+│   │   │   ├── result.h            # Result type
+│   │   │   ├── option.h            # Option type
+│   │   │   └── error.h
+│   │   │
+│   │   ├── mem/                # Memory management
+│   │   │   ├── allocator.h         # Allocator interface
+│   │   │   ├── arena.h             # Arena allocator
+│   │   │   ├── pool.h              # Memory pool
+│   │   │   ├── rc.h                # Reference counting
+│   │   │   ├── lifetime.h          # Object lifetime management
+│   │   │   └── mem.h
+│   │   │
+│   │   ├── ds/                 # Data structures
+│   │   │   ├── container.h         # Container interfaces
+│   │   │   ├── foreach.h           # Foreach loop
+│   │   │   ├── array.h             # Fixed-size arrays
+│   │   │   ├── vector.h            # Dynamic arrays
+│   │   │   ├── hashmap.h           # Hash maps
+│   │   │   ├── list.h              # Linked lists
+│   │   │   ├── stack.h             # Stacks
+│   │   │   ├── queue.h             # Queues and deques
+│   │   │   ├── slice.h             # Array views
+│   │   │   └── ds.h
+│   │   │
+│   │   ├── iter/
+│   │   │   ├── iterator.h          # Iterator interfaces
+│   │   │   └── range.h             # Range implementations
+│   │   │
+│   │   │
+│   │   ├── io/             # Input/Output
+│   │   │   ├── buffer.h        # Buffered I/O
+│   │   │   ├── stream.h        # Stream abstractions
+│   │   │   └── writer.h        # Writer interfaces
+│   │   │
+│   │   ├── fs/             # Filesystem
+│   │   │   ├── file.h          # File operations
+│   │   │   ├── path.h          # Path manipulation
+│   │   │   └── dir.h           # Directory operations
+│   │   │
+│   │   ├── net/            # Networking
+│   │   │   ├── socket.h        # Socket operations
+│   │   │   ├── http.h          # HTTP client/server
+│   │   │   └── url.h           # URL handling
+│   │   │
+│   │   ├── sync/           # Synchronization
+│   │   │   ├── mutex.h         # Mutual exclusion
+│   │   │   ├── atomic.h        # Atomic operations
+│   │   │   └── channel.h       # Thread communication
+│   │   │
+│   │   ├── thread/         # Threading
+│   │   │   ├── pool.h          # Thread pool
+│   │   │   └── worker.h        # Worker threads
+│   │   │
+│   │   ├── text/           # Text processing
+│   │   │   ├── string.h        # String utilities
+│   │   │   ├── unicode.h       # Unicode support
+│   │   │   └── format.h        # String formatting
+│   │   │
+│   │   └── time/           # Time handling
+│   │       ├── duration.h      # Duration
+│   │       ├── instant.h       # Time points
+│   │       ├── system.h        # System time
+│   │       └── time.h          # Time handling and utilities
+│   │
+│   └── dh.h                # Main header
+│
+├── src/                    # Implementation files
+│   ├── builtin/
+│   ├── core/
+│   ├── meta/
+│   ├── debug/
+│   ├── claim/
+│   ├── error/
+│   ├── mem/
+│   ├── ds/
+│   ├── iter/
+│   ├── io/
+│   ├── fs/
+│   ├── net/
+│   ├── sync/
+│   ├── thread/
+│   ├── text/
+│   └── time/
+│
+├── tests/
+│   ├── unit/               # Unit tests
+│   └── integration/        # Integration tests
+│
+├── examples/
+│   ├── basic/              # Basic usage examples
+│   ├── advanced/           # Advanced features
+│   └── real-world/         # Real-world applications
+│
+├── tools/
+│   ├── build/              # Build tools
+│   ├── format/             # Code formatters
+│   ├── lint/               # Linting tools
+│   ├── codegen/            # Code generators
+│   └── analysis/           # Static analysis
+│
+├── bench/                  # Benchmarks
+├── CMakeLists.txt          # CMake configuration
+├── LICENSE
+└── README.md

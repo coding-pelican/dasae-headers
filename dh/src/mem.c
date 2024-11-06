@@ -1,5 +1,5 @@
-#include "../mem.h"
-#include "../debug/debug_assert.h"
+#include "../include/dh/mem/mem.h"
+#include "../include/dh/debug/debug_assert.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <time.h>
 
 
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
+#if defined(debug_enabled) && debug_enabled
 
 // Global memory tracking list
 memInfo* mem__info_list = null;
@@ -127,9 +127,9 @@ anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* fil
     return reallocated;
 }
 
-void mem__deallocate(anyptr ptr, const char* func, const char* file, i32 line) {
-    debug_assertNotNullFmt(ptr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
-    anyptr* target_ptr = (anyptr*)ptr;
+void mem__deallocate(anyptr ptr_addr, const char* func, const char* file, i32 line) {
+    debug_assertNotNullFmt(ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
+    anyptr* target_ptr = (anyptr*)ptr_addr;
     mem__removeInfo(*target_ptr);
     free(*target_ptr);
     *target_ptr = null;
@@ -178,8 +178,8 @@ anyptr mem__reallocate(anyptr ptr, usize size) {
     return realloc(ptr, size);
 }
 
-void mem__deallocate(anyptr ptr) {
-    anyptr* target_ptr = (anyptr*)ptr;
+void mem__deallocate(anyptr ptr_addr) {
+    anyptr* target_ptr = (anyptr*)ptr_addr;
     free(*target_ptr);
     *target_ptr = null;
 }
