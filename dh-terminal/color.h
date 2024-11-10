@@ -21,7 +21,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "../dh/include/dh/core/core.h"
+#include <dh/core.h>
 
 
 enum EColorChannel {

@@ -1,22 +1,22 @@
 // build `clang -xc fireworks.c ../dh/src/*.c -o fireworks -DNDEBUG -O3 -static`
 // run with `.\launcher fireworks 160 50`
 
-/* use anydebugedebug_;sser
+/*
 use crossterm::style::Print;
 use crossterm::terminal::{ Clear, ClearType };
 use crossterm::{ cursor, execute, terminal };
 use pixel_loop::canvas::CrosstermCanvas;
 use pixel_loop::input::{ CrosstermInputState, KeyboardKey, KeyboardState };
-use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas }; */
+use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
+*/
 
 // FIXME(dev-dasae): Expected memory access error
 
-#include "../dh/mem.h"
-#include "../dh/types.h"
-
-#include "../dh/common.h"
-#include "../dh/debug/debug_assert.h"
-#include "../dh/random.h"
+#include <dh/core.h>
+#include <dh/mem.h>
+#include <dh/random.h>
+#include <dh/debug/assert.h>
+#include <dh/defer.h>
 
 #include "../dh-terminal/canvas.h"
 #include "../dh-terminal/color.h"
@@ -321,7 +321,7 @@ State* State_init(State* s, u32 width, u32 height) {
 void State_fini(State* self) {
     for (i64 i = 0; i < self->fireworks_count; ++i) {
         if (!self->fireworks[i].rocket) { continue; }
-        mem_delete(&self->fireworks[i].rocket);
+        mem_free(&self->fireworks[i].rocket);
     }
 }
 
@@ -492,8 +492,8 @@ void Display_clear() {
 }
 
 void Display_swapBuffers() {
-    pp_swap(char*, Display_bufferCurrent, Display_bufferNext);
-    pp_swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+    swap(char*, Display_bufferCurrent, Display_bufferNext);
+    swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
 }
 
 void Display_setBufferFromColors(const Window* window, const Color colors[Display_Size]) {
@@ -608,73 +608,81 @@ Duration Display_testOverhead(Window* window, Canvas* canvas) {
     return overhead_duration;
 }
 
+// TODO: Apply descriptive type
+typedef struct WindowTargetFrame {
+    f32 rate;
+} WindowTargetFrame;
+const f32 target_frame_62_50_per_s = 62.50f;
+const f32 target_frame_31_25_per_s = 31.25f;
+const f32 target_frame_10_00_per_s = 10.00f;
+
 
 int main() {
     random_init(random_rng);
 
-    Window* window = create(Window);
-    Window_init(window, WindowConfig_default);
-    Window_withSize(window, 160, 50);
-    Window_withTitle(window, "firework", Display_shows_title_in_buffer);
-    Window_withFrameRate(window, true, 62.50f, false, true);
-    // Window_withFrameControl(window, true, 31.25f, false, true);
-    // Window_withFrameControl(window, true, 10.00f, false, true);
+    // FIXME: Fix how defer is called/used
+    defer_scope {
 
-    State* state = mem_create(State);
-    State_init(state, Window_width(window), Window_height(window) * 2);
+        Window* window = create(Window);
+        Window_init(window, WindowConfig_default);
+        Window_withSize(window, 160, 50);
+        Window_withTitle(window, "firework", Display_shows_title_in_buffer);
+        Window_withFrameRate(window, true, target_frame_62_50_per_s, false, true);
+        defer(Window_fini, window);
 
-    Canvas* canvas = mem_create(Canvas);
-    Canvas_init(canvas, state->width, state->height);
-    Canvas_initWithColor(canvas, Color_black);
+        State* state = mem_create(State);
+        State_init(state, Window_width(window), Window_height(window) * 2);
+        defer(State_fini, state);
+        defer(mem__deallocate, &state);
 
-    Display_init();
-    Terminal_bootup();
+        Canvas* canvas = mem_create(Canvas);
+        Canvas_init(canvas, state->width, state->height);
+        Canvas_initWithColor(canvas, Color_black);
+        defer(Canvas_fini, canvas);
+        defer(mem__deallocate, &canvas);
 
-    bool is_running = true;
-    while (is_running) {
-        Window_update(window);
+        Display_init();
+        Terminal_bootup();
+        defer(Terminal_shutdown, null);
 
-        if (GetAsyncKeyState(VK_ESCAPE)) { is_running = false; }
+        bool is_running = true;
+        while (is_running) {
+            Window_update(window);
+            /* UPDATE BEGIN */ {
+                if (GetAsyncKeyState(VK_ESCAPE)) { is_running = false; }
 
-        // Add a new rocket with with 5% chance.
-        if (random_f64(random_rng) < 0.05) {
-            if (state->fireworks_count < Fireworks_max) {
-                Firework_init(
-                    &state->fireworks[state->fireworks_count++],
-                    prim_as(i64, random_u32(random_rng) % state->width),
-                    state->height,
-                    Color_fromOpaque(
-                        random_u8(random_rng),
-                        random_u8(random_rng),
-                        random_u8(random_rng)
-                    )
-                );
-            }
+                // Add a new rocket with with 5% chance.
+                if (random_f64(random_rng) < 0.05) {
+                    if (state->fireworks_count < Fireworks_max) {
+                        Firework_init(
+                            &state->fireworks[state->fireworks_count++],
+                            prim_as(i64, random_u32(random_rng) % state->width),
+                            state->height,
+                            Color_fromOpaque(
+                                random_u8(random_rng),
+                                random_u8(random_rng),
+                                random_u8(random_rng)
+                            )
+                        );
+                    }
+                }
+
+                for (i64 i = 0; i < state->fireworks_count; ++i) {
+                    Firework_update(&state->fireworks[i]);
+                }
+            } /* UPDATE END */
+            /* RENDER BEGIN */ {
+                Canvas_clear(canvas, Color_black);
+                for (i64 i = 0; i < state->fireworks_count; ++i) {
+                    Firework_render(&state->fireworks[i], canvas);
+                }
+                // Canvas_Render(canvas);
+                Display_setBufferFromColors(window, FrameBuffer_readData(Canvas_readBuffer(canvas)));
+                Display_render();
+            } /* RENDER END */
+            Window_delay(window);
         }
-
-        for (i64 i = 0; i < state->fireworks_count; ++i) {
-            Firework_update(&state->fireworks[i]);
-        }
-
-        // RENDER BEGIN
-        Canvas_clear(canvas, Color_black);
-        for (i64 i = 0; i < state->fireworks_count; ++i) {
-            Firework_render(&state->fireworks[i], canvas);
-        }
-        // Canvas_Render(canvas);
-        Display_setBufferFromColors(window, FrameBuffer_readData(Canvas_readBuffer(canvas)));
-        Display_render();
-        // RENDER END
-
-        Window_delay(window);
     }
-
-    Terminal_shutdown();
-    Canvas_fini(canvas);
-    mem_destroy(canvas);
-    State_fini(state);
-    mem_destroy(state);
-    Window_fini(window);
 
     return 0;
 }

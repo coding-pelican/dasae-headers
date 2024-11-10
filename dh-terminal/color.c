@@ -1,5 +1,5 @@
 #include "color.h"
-#include "../dh/prim/prim_flts_ops.h"
+#include <dh/core.h>
 
 
 RGB RGB_from(u8 r, u8 g, u8 b) {

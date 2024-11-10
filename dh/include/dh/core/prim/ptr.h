@@ -37,7 +37,7 @@ extern "C" {
 #define ptrAccess(PTR)           RETURN_ptrAccess(PTR)
 /* Access the value pointed to by a pointer of type TYPE */
 #define ptrCastAccess(TYPE, PTR) RETURN_ptrCastAccess(TYPE, PTR)
-#define addr(VAR)                RETURN_addr(PTR)
+#define addr(VAR)                RETURN_addr(VAR)
 
 /*========== Macros Implementation ==========================================*/
 

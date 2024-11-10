@@ -1,7 +1,8 @@
 #include "window.h"
-#include "../dh/debug/debug_assert.h"
-#include "../dh/mem.h"
-#include "../dh/time.h"
+#include <dh/debug/assert.h>
+#include <dh/mem.h>
+#include <dh/time.h>
+
 #include <stdio.h>
 
 
@@ -9,7 +10,7 @@ FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* confi
     debug_assertNotNull(s);
     debug_assertNotNull(config);
 
-    s->times = mem_newCleared(f32, config->frame_rate_.sample_count);
+    s->times = mem_allocCleared(f32, config->frame_rate_.sample_count);
     debug_assertNotNull(s->times);
     s->time_index      = 0;
     s->instant_last    = Instant_now();
@@ -29,7 +30,7 @@ FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* confi
 FrameRateStats* FrameRateStats_fini(FrameRateStats* s) {
     debug_assertNotNull(s);
 
-    mem_delete(&s->times);
+    mem_free(&s->times);
     debug_assertNull(s->times);
 
     return s;
@@ -58,7 +59,7 @@ void FrameRateStats_update(FrameRateStats* s) {
     // Protect against division by zero and extreme values
     current_duration    = 0.0001f < current_duration ? current_duration : 0.0001f;
     s->current_duration = current_duration;
-    s->current_fps      = (f32)Time_millis_per_sec / current_duration;
+    s->current_fps      = (f32)time_millis_per_sec / current_duration;
 
     if (s->count < s->sample_count) { return; }
     // Calculate running averages only when we have enough samples
@@ -75,7 +76,7 @@ void FrameRateStats_update(FrameRateStats* s) {
         f32 average_duration = (f32)(total_duration / (f64)valid_sample_count);
         average_duration     = 0.0001f < average_duration ? average_duration : 0.0001f;
         s->average_duration  = average_duration;
-        s->average_fps       = (f32)Time_millis_per_sec / average_duration;
+        s->average_fps       = (f32)time_millis_per_sec / average_duration;
     }
 }
 

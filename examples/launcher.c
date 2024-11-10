@@ -2,16 +2,17 @@
 // run with `.\launcher <program_to_run:game_of_life> <width:160> <height:50>`
 
 
-#include "../src/assert.h"
-#include "../src/primitive_types.h"
-#include "../src/terminal.h"
+#include <dh/core.h>
+#include <dh/debug/assert.h>
+#include "../dh-terminal/terminal.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
 
 static const char* const Launcher_WindowTitle = "Test Terminal Launcher";
 
-static const char* Terminal_windowTitle  = nullptr;
+static const char* Terminal_windowTitle  = null;
 static int         Terminal_windowWidth  = 80;
 static int         Terminal_windowHeight = 25;
 
@@ -22,16 +23,16 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     Terminal_windowTitle = argv[1];
-    assert(Launcher_WindowTitle);
-    assert(Terminal_windowTitle);
+    debug_assert(Launcher_WindowTitle);
+    debug_assert(Terminal_windowTitle);
     printf("[%s] Terminal: %s\n", Launcher_WindowTitle, Terminal_windowTitle);
 
     if (2 < argc) {
         Terminal_windowWidth  = atoi(argv[2]);
         Terminal_windowHeight = atoi(argv[3]);
     }
-    assert(0 < Terminal_windowWidth);
-    assert(0 < Terminal_windowHeight);
+    debug_assert(0 < Terminal_windowWidth);
+    debug_assert(0 < Terminal_windowHeight);
     printf("[%s] Terminal size: %dx%d\n", Launcher_WindowTitle, Terminal_windowWidth, Terminal_windowHeight);
 
     STARTUPINFO         startupInfo = { 0 };

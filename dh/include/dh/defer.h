@@ -52,10 +52,18 @@ typedef struct DeferScope {
     defer__run();          \
     return
 
-#define defer(_func, _ctx) pp_func(                 \
+#define defer(FUNC, CTX) pp_func(                    \
+    DeferBlock* __block   = mem_create(DeferBlock);  \
+    __block->func         = (void (*)(void*))(FUNC); \
+    __block->context      = CTX;                     \
+    __block->prev         = __defer_scope.current;   \
+    __defer_scope.current = __block;                 \
+)
+
+#define defer_lambda(LAMBDA) pp_func(               \
     DeferBlock* __block   = mem_create(DeferBlock); \
-    __block->func         = _func;                  \
-    __block->context      = _ctx;                   \
+    __block->func         = (LAMBDA).func;          \
+    __block->context      = (LAMBDA).context;       \
     __block->prev         = __defer_scope.current;  \
     __defer_scope.current = __block;                \
 )
@@ -70,6 +78,14 @@ typedef struct DeferScope {
     } __defer_scope.active                                   \
     = false;                                                 \
 )
+
+typedef struct Lambda {
+    void (*func)(void* args);
+    void* context;
+} Lambda;
+
+#define lambda(FUNC, CTX) ((Lambda){ .func = (FUNC), .context = (CTX) })
+
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

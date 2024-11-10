@@ -27,6 +27,19 @@ extern "C" {
 #include "core/prim.h"
 #include "core/pp.h"
 
+/*========== Macros and Definitions =========================================*/
+
+#define swap(TYPE, LHS, RHS) \
+    RETURN_swap(TYPE, LHS, RHS)
+
+#define RETURN_swap(TYPE, LHS, RHS) pp_func( \
+    Ptr(TYPE) __lhs  = addr(LHS);            \
+    Ptr(TYPE) __rhs  = addr(RHS);            \
+    TYPE __tmp       = ptrAccess(__lhs);     \
+    ptrAccess(__lhs) = ptrAccess(__rhs);     \
+    ptrAccess(__rhs) = __tmp;                \
+)
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

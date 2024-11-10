@@ -24,5 +24,8 @@
       "-Werror",
       "-g"
     ]
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/clangd.json": "file:///c%3A/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/.clangd"
   }
 }

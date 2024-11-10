@@ -5,21 +5,21 @@ Index:
   Background: Skip
   StandardLibrary: No
 InlayHints:
-  Enabled: Yes
+  Enabled: true
   TypeNameLimit: 24
-  DeducedTypes: Yes
-  ParameterNames: Yes
-  Designators: Yes
-  BlockEnd: No
+  DeducedTypes: true
+  ParameterNames: true
+  Designators: true
+  BlockEnd: false
 Hover:
-  ShowAKA: Yes
+  ShowAKA: true
 Diagnostics:
   # Suppress diagnostics for paths containing '/include/c++/' or '/include/c/', which are typically the locations of system headers.
   Suppress:
     - ".*include/c/.*"
     - ".*include/c\\+\\+/.*"
   UnusedIncludes: None
-  MissingIncludes: Strict
+  MissingIncludes: None
 ---
 # C Configs
 If:

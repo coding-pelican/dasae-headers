@@ -1,10 +1,7 @@
 #include "canvas.h"
-#include "../dh/common.h"
-#include "../dh/debug/debug_assert.h"
-#include "../dh/mem.h"
-#include "../dh/prim/ints.h"
-#include "../dh/prim/prim_ints_ops.h"
-#include "../dh/types.h"
+#include <dh/core.h>
+#include <dh/mem.h>
+#include <dh/debug/assert.h>
 
 
 FrameBuffer* FrameBuffer_init(FrameBuffer* self, u32 width, u32 height) {
@@ -12,7 +9,7 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* self, u32 width, u32 height) {
     debug_assert(0 < width);
     debug_assert(0 < height);
     *self = FrameBuffer_(
-            .data_   = mem_new(Color, (usize)width * height),
+            .data_   = mem_alloc(Color, (usize)width * height),
             .width_  = width,
             .height_ = height,
             .size_   = width * height
@@ -43,7 +40,7 @@ FrameBuffer* FrameBuffer_initWithColorRange(FrameBuffer* self, Color color, usiz
 
 void FrameBuffer_fini(FrameBuffer* self) {
     debug_assert(self);
-    mem_delete(&self->data_);
+    mem_free(&self->data_);
     self->data_   = null;
     self->width_  = 0;
     self->height_ = 0;
@@ -273,7 +270,7 @@ void Canvas_clear(Canvas* self, Color color) {
 
 void Canvas_swap(Canvas* self) {
     debug_assert(self);
-    pp_swap(FrameBuffer*, self->current_, self->next_);
+    swap(FrameBuffer*, self->current_, self->next_);
 }
 
 void Canvas_draw(Canvas* self, u32 x, u32 y, Color color) {

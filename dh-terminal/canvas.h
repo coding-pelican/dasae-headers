@@ -5,7 +5,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "../dh/types.h"
+#include <dh/core.h>
 
 #include "color.h"
 

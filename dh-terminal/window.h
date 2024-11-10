@@ -1,5 +1,5 @@
-#include "../dh/time.h"
-#include "../dh/types.h"
+#include <dh/core.h>
+#include <dh/time.h>
 
 
 typedef struct FrameRateStats FrameRateStats;
