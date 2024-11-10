@@ -66,8 +66,8 @@ extern "C" {
 
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 // Memory tracking structure
-typedef struct memInfo memInfo;
-struct memInfo {
+typedef struct mem_Info mem_Info;
+struct mem_Info {
     anyptr      ptr;          // Pointer to allocated memory
     usize       size;         // Size of allocation
     const char* func;         // Function name
@@ -76,10 +76,10 @@ struct memInfo {
     time_t      alloc_time;   // Allocation timestamp
     time_t      dealloc_time; // Deallocation timestamp
     i32         ref_count;    // Reference count
-    memInfo*    next;         // Next in linked list
+    mem_Info*   next;         // Next in linked list
 };
 // Global memory tracking list
-extern memInfo*                          mem__info_list;
+extern mem_Info*                         mem__info_list;
 // Register atexit handler for memory leak detection
 static void __attribute__((constructor)) mem__initInfoList(void);
 static void __attribute__((destructor))  mem__finiInfoList(void);

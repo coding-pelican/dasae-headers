@@ -41,7 +41,11 @@ Rect Rect_fromMinMax(i64 min_x, i64 min_y, i64 max_x, i64 max_y);
 
 
 struct FrameBuffer {
-    Color* data_;
+    struct Vector_Color {
+        Color* data;
+        usize  length;
+        usize  capacity;
+    } pixels_;
     union {
         u32 dimensions_[2];
         struct {
@@ -51,25 +55,24 @@ struct FrameBuffer {
     };
     u32 size_;
 };
-#define FrameBuffer_(...) makeWith(FrameBuffer, __VA_ARGS__)
-FrameBuffer* FrameBuffer_init(FrameBuffer* const self, u32 width, u32 height);
-FrameBuffer* FrameBuffer_initWithColor(FrameBuffer* const self, Color color);
-FrameBuffer* FrameBuffer_initWithColorRange(FrameBuffer* const self, Color color, usize range_start, usize range_end);
-void         FrameBuffer_fini(FrameBuffer* const self);
+FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height);
+FrameBuffer* FrameBuffer_withColor(FrameBuffer* const b, Color color);
+// FrameBuffer* FrameBuffer_withColorRange(FrameBuffer* const b, Color color, usize range_start, usize range_end);
+FrameBuffer* FrameBuffer_fini(FrameBuffer* const b);
 
-const Color* FrameBuffer_readData(const FrameBuffer* const self);
-Color*       FrameBuffer_accessData(FrameBuffer* const self);
-u32          FrameBuffer_width(const FrameBuffer* const self);
-u32          FrameBuffer_height(const FrameBuffer* const self);
-u32          FrameBuffer_size(const FrameBuffer* const self);
-const Color* FrameBuffer_readAt(const FrameBuffer* const self, usize x, usize y);
-Color*       FrameBuffer_accessAt(FrameBuffer* const self, usize x, usize y);
-Color        FrameBuffer_get(const FrameBuffer* const self, usize x, usize y);
-void         FrameBuffer_set(FrameBuffer* const self, Color color, usize x, usize y);
-Color*       FrameBuffer_getRange(const FrameBuffer* const self, usize range_start, usize range_end);
-void         FrameBuffer_setRange(FrameBuffer* const self, Color color, usize range_start, usize range_end);
-void         FrameBuffer_setRangeColors(FrameBuffer* const self, Color* colors, usize range_start, usize range_end);
-void         FrameBuffer_clear(FrameBuffer* const self, Color color);
+const Color* FrameBuffer_peekData(const FrameBuffer* const b);
+Color*       FrameBuffer_accessData(FrameBuffer* const b);
+u32          FrameBuffer_width(const FrameBuffer* const b);
+u32          FrameBuffer_height(const FrameBuffer* const b);
+u32          FrameBuffer_size(const FrameBuffer* const b);
+const Color* FrameBuffer_peekAt(const FrameBuffer* const b, usize x, usize y);
+Color*       FrameBuffer_accessAt(FrameBuffer* const b, usize x, usize y);
+Color        FrameBuffer_get(const FrameBuffer* const b, usize x, usize y);
+void         FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y);
+// Color*       FrameBuffer_getRange(const FrameBuffer* const b, usize range_start, usize range_end);
+// void         FrameBuffer_setRange(FrameBuffer* const b, Color color, usize range_start, usize range_end);
+// void         FrameBuffer_setRangeColors(FrameBuffer* const b, Color* colors, usize range_start, usize range_end);
+void         FrameBuffer_clear(FrameBuffer* const b, Color color);
 
 
 struct Canvas {
@@ -83,27 +86,26 @@ struct Canvas {
     FrameBuffer* current_;
     FrameBuffer* next_;
 };
-#define Canvas_(...) makeWith(Canvas, __VA_ARGS__)
-Canvas* Canvas_init(Canvas* self, u32 width, u32 height);
-Canvas* Canvas_initWithColor(Canvas* self, Color color);
-Canvas* Canvas_initWithColorRange(Canvas* self, Color color, usize range_start, usize range_end);
-void    Canvas_fini(Canvas* self);
+Canvas* Canvas_init(Canvas* const c, u32 width, u32 height);
+Canvas* Canvas_withColor(Canvas* const c, Color color);
+// Canvas* Canvas_withColorRange(Canvas* const c, Color color, usize range_start, usize range_end);
+Canvas* Canvas_fini(Canvas* const c);
 
-const FrameBuffer* Canvas_readBuffer(const Canvas* self);
-FrameBuffer*       Canvas_accessBuffer(Canvas* self);
-const Color*       Canvas_readAt(const Canvas* self, usize x, usize y);
-Color*             Canvas_accessAt(Canvas* self, usize x, usize y);
-Color              Canvas_get(const Canvas* self, usize x, usize y);
-void               Canvas_set(Canvas* self, usize x, usize y, Color color);
-Color*             Canvas_getRange(const Canvas* self, usize range_start, usize range_end);
-void               Canvas_setRange(Canvas* self, usize range_start, usize range_end, Color color);
-void               Canvas_setRangeColors(Canvas* self, usize range_start, usize range_end, Color* colors);
-void               Canvas_clear(Canvas* self, Color color);
-void               Canvas_swap(Canvas* self);
-void               Canvas_draw(Canvas* self, u32 x, u32 y, Color color);
-void               Canvas_drawPoint(Canvas* self, u32 x, u32 y, Color color);
-void               Canvas_fillRect(Canvas* self, Rect rect, Color color);
-Rect               Canvas_normalizeRect(Canvas* self, Rect rect);
+const FrameBuffer* Canvas_peekBuffer(const Canvas* const c);
+FrameBuffer*       Canvas_accessBuffer(Canvas* const c);
+const Color*       Canvas_peekAt(const Canvas* const c, usize x, usize y);
+Color*             Canvas_accessAt(Canvas* const c, usize x, usize y);
+Color              Canvas_get(const Canvas* const c, usize x, usize y);
+void               Canvas_set(Canvas* const c, usize x, usize y, Color color);
+// Color*             Canvas_getRange(const Canvas* const c, usize range_start, usize range_end);
+// void               Canvas_setRange(Canvas* const c, usize range_start, usize range_end, Color color);
+// void               Canvas_setRangeColors(Canvas* const c, usize range_start, usize range_end, Color* colors);
+void               Canvas_clear(Canvas* const c, Color color);
+void               Canvas_swap(Canvas* const c);
+void               Canvas_draw(Canvas* const c, u32 x, u32 y, Color color);
+void               Canvas_drawPoint(Canvas* const c, u32 x, u32 y, Color color);
+void               Canvas_fillRect(Canvas* const c, Rect rect, Color color);
+Rect               Canvas_normalizeRect(Canvas* const c, Rect rect);
 
 
 #if defined(__cplusplus)

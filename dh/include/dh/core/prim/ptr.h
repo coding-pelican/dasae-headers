@@ -37,7 +37,11 @@ extern "C" {
 #define ptrAccess(PTR)           RETURN_ptrAccess(PTR)
 /* Access the value pointed to by a pointer of type TYPE */
 #define ptrCastAccess(TYPE, PTR) RETURN_ptrCastAccess(TYPE, PTR)
-#define addr(VAR)                RETURN_addr(VAR)
+
+/* Normal type */
+#define Val(TYPE) RETURN_Val(TYPE)
+/* Address of a variable */
+#define addr(VAR) RETURN_addr(VAR)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -46,7 +50,9 @@ extern "C" {
 #define RETURN_ptrCast(TYPE, PTR)       (Ptr(TYPE))(PTR)
 #define RETURN_ptrAccess(PTR)           (*(PTR))
 #define RETURN_ptrCastAccess(TYPE, PTR) (*(Ptr(TYPE))(PTR))
-#define RETURN_addr(VAR)                &VAR
+
+#define RETURN_Val(TYPE) TYPE
+#define RETURN_addr(VAR) &VAR
 
 
 #if defined(ARCH_64BIT) && ARCH_64BIT

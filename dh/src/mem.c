@@ -11,7 +11,7 @@
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 
 // Global memory tracking list
-memInfo* mem__info_list = null;
+mem_Info* mem__info_list = null;
 
 // Register atexit handler for memory leak detection
 static void __attribute__((constructor)) mem__initInfoList(void) {
@@ -21,8 +21,8 @@ static void __attribute__((constructor)) mem__initInfoList(void) {
 static void __attribute__((destructor)) mem__finiInfoList(void) {
     mem__printInfoMemoryLeakTrace();
 
-    memInfo* current = mem__info_list;
-    memInfo* next    = null;
+    mem_Info* current = mem__info_list;
+    mem_Info* next    = null;
 
     while (current) {
         next = current->next;
@@ -35,7 +35,7 @@ static void __attribute__((destructor)) mem__finiInfoList(void) {
 
 // Memory tracking functions
 static void mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line) {
-    memInfo* info      = malloc(sizeof(memInfo));
+    mem_Info* info     = malloc(sizeof(mem_Info));
     info->ptr          = allocated;
     info->size         = size;
     info->func         = func;
@@ -49,7 +49,7 @@ static void mem__addInfo(anyptr allocated, usize size, const char* func, const c
 }
 
 static void mem__removeInfo(anyptr target) {
-    memInfo** current = &mem__info_list;
+    mem_Info** current = &mem__info_list;
     while (*current) {
         if ((*current)->ptr == target) {
             (*current)->dealloc_time = time(null);
@@ -57,8 +57,8 @@ static void mem__removeInfo(anyptr target) {
 
             // Remove if no references remain
             if ((*current)->ref_count <= 0) {
-                memInfo* to_remove = *current;
-                *current           = to_remove->next;
+                mem_Info* to_remove = *current;
+                *current            = to_remove->next;
                 free(to_remove);
             }
             return;
@@ -68,7 +68,7 @@ static void mem__removeInfo(anyptr target) {
 }
 
 static void mem__printInfoMemoryLeakTrace() {
-    memInfo* current = mem__info_list;
+    mem_Info* current = mem__info_list;
     while (current) {
         if (0 < current->ref_count) {
             pp_ignore fprintf(stderr, "Memory Leak Detected!\n");
@@ -115,7 +115,7 @@ anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* fil
     debug_assertNotNullFmt(reallocated, "Memory reallocation failed in %s at %s:%d\n", func, file, line);
 
     // Update tracking info
-    memInfo* current = mem__info_list;
+    mem_Info* current = mem__info_list;
     while (current) {
         if (current->ptr == ptr) {
             current->ptr  = reallocated;

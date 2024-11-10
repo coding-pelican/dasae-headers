@@ -29,17 +29,29 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define swap(TYPE, LHS, RHS) \
-    RETURN_swap(TYPE, LHS, RHS)
+#define swap(TYPE, LHS_VAR, RHS_VAR) \
+    RETURN_swap(TYPE, LHS_VAR, RHS_VAR)
 
-#define RETURN_swap(TYPE, LHS, RHS) pp_func( \
-    Ptr(TYPE) __lhs  = addr(LHS);            \
-    Ptr(TYPE) __rhs  = addr(RHS);            \
-    TYPE __tmp       = ptrAccess(__lhs);     \
-    ptrAccess(__lhs) = ptrAccess(__rhs);     \
-    ptrAccess(__rhs) = __tmp;                \
+#define foreach(TYPE, NAME, LIST_PTR) \
+    RETURN_foreach(TYPE, NAME, LIST_PTR)
+
+
+// NOLINTBEGIN
+#define RETURN_swap(TYPE, LHS_VAR, RHS_VAR) pp_func( \
+    Ptr(TYPE) __lhs  = addr(LHS_VAR);                \
+    Ptr(TYPE) __rhs  = addr(RHS_VAR);                \
+    TYPE __tmp       = ptrAccess(__lhs);             \
+    ptrAccess(__lhs) = ptrAccess(__rhs);             \
+    ptrAccess(__rhs) = __tmp;                        \
 )
 
+#define RETURN_foreach(TYPE, NAME, LIST_PTR)                                                  \
+    for (                                                                                     \
+        TYPE* NAME = (LIST_PTR)->data, * const __end = (LIST_PTR)->data + (LIST_PTR)->length; \
+        NAME < __end;                                                                         \
+        ++NAME                                                                                \
+    )
+// NOLINTEND
 
 #if defined(__cplusplus)
 } /* extern "C" */

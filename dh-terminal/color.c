@@ -1,6 +1,23 @@
 #include "color.h"
 #include <dh/core.h>
+#include <dh/cmp.h>
 
+
+cmp_Ordering f64_cmp(const f64 lhs, const f64 rhs) {
+    return lhs < rhs ? cmp_Ordering_less
+         : lhs > rhs ? cmp_Ordering_greater
+                     : cmp_Ordering_equal;
+}
+
+force_inline f64 f64_min(f64 lhs, f64 rhs) {
+    return lhs < rhs ? lhs : rhs;
+}
+force_inline f64 f64_max(f64 lhs, f64 rhs) {
+    return lhs > rhs ? lhs : rhs;
+}
+force_inline f64 f64_clamp(f64 val, f64 low, f64 high) {
+    return f64_min(f64_max(low, val), high);
+}
 
 RGB RGB_from(u8 r, u8 g, u8 b) {
     return RGB_(

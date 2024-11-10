@@ -7,15 +7,15 @@
  * @updated 2024-11-05 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  cmp
  *
  * @brief   Header of some software
  * @details Some detailed explanation
  */
 
 
-#ifndef CMP_INCLUDED
-#define CMP_INCLUDED (1)
+#ifndef cMP_INCLUDED
+#define cMP_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -29,52 +29,52 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-typedef enum ECmpOrdering {
-    CmpOrdering_less    = -1,
-    CmpOrdering_equal   = 0,
-    CmpOrdering_greater = 1
-} CmpOrdering;
+typedef enum cmp_EOrdering {
+    cmp_Ordering_less    = -1,
+    cmp_Ordering_equal   = 0,
+    cmp_Ordering_greater = 1
+} cmp_Ordering;
 
 // Generic comparison function type
-typedef CmpOrdering (*CmpFn)(const anyptr lhs, const anyptr rhs);
+typedef cmp_Ordering (*cmp_fn)(const anyptr lhs, const anyptr rhs);
 
 // Compare two values and return their ordering
-static_inline CmpOrdering Cmp(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
+static_inline cmp_Ordering cmp_cmp(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
     return cmp_fn(lhs, rhs);
 }
 
 // Check if lhs is equal to rhs
-static_inline bool Cmp_isEq(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) == CmpOrdering_equal;
+static_inline bool cmp_isEq(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) == cmp_Ordering_equal;
 }
 
 // Check if lhs is not equal to rhs
-static_inline bool Cmp_isNe(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) != CmpOrdering_equal;
+static_inline bool cmp_isNe(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) != cmp_Ordering_equal;
 }
 
 // Check if lhs is less than rhs
-static_inline bool Cmp_isLt(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) == CmpOrdering_less;
+static_inline bool cmp_isLt(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) == cmp_Ordering_less;
 }
 
 // Check if lhs is less than or equal to rhs
-static_inline bool Cmp_isLe(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) != CmpOrdering_greater;
+static_inline bool cmp_isLe(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) != cmp_Ordering_greater;
 }
 
 // Check if lhs is greater than rhs
-static_inline bool Cmp_isGt(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) == CmpOrdering_greater;
+static_inline bool cmp_isGt(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) == cmp_Ordering_greater;
 }
 
 // Check if lhs is greater than or equal to rhs
-static_inline bool Cmp_isGe(const anyptr lhs, const anyptr rhs, const CmpFn cmp_fn) {
-    return Cmp(lhs, rhs, cmp_fn) != CmpOrdering_less;
+static_inline bool cmp_isGe(const anyptr lhs, const anyptr rhs, const cmp_fn cmp_fn) {
+    return cmp_cmp(lhs, rhs, cmp_fn) != cmp_Ordering_less;
 }
 
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CMP_INCLUDED */
+#endif /* cMP_INCLUDED */
