@@ -12,12 +12,14 @@ InlayHints:
   Designators: Yes
   BlockEnd: No
 Hover:
-  ShowAKA: No
+  ShowAKA: Yes
 Diagnostics:
   # Suppress diagnostics for paths containing '/include/c++/' or '/include/c/', which are typically the locations of system headers.
   Suppress:
     - ".*include/c/.*"
     - ".*include/c\\+\\+/.*"
+  UnusedIncludes: None
+  MissingIncludes: Strict
 ---
 # C Configs
 If:
@@ -26,7 +28,16 @@ If:
     - .*\.h
 CompileFlags:
   Compiler: clang
-  Add: [-xc, -std=c17, -Wall, -Wextra, -Werror]
+  Add:
+    [
+      -xc,
+      -std=c17,
+      -Wall,
+      -Wextra,
+      -Werror,
+      -Wno-header-ordering,
+      -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include,
+    ]
 ---
 If:
   PathMatch:

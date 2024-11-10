@@ -151,11 +151,11 @@ Color Color_fromRGB(RGB rgb, u8 a) {
     return Color_from(rgb.r, rgb.g, rgb.b, a);
 }
 
-Color Color_fromRGBTransparent(RGB rgb) {
+Color Color_fromRgbTransparent(RGB rgb) {
     return Color_fromRGB(rgb, CCH_transparent);
 }
 
-Color Color_fromRGBOpaque(RGB rgb) {
+Color Color_fromRgbOpaque(RGB rgb) {
     return Color_fromRGB(rgb, CCH_opaque);
 }
 
@@ -175,11 +175,11 @@ Color Color_fromHSL(HSL hsl, u8 a) {
     return RGB_intoColor(HSL_intoRGB(hsl), a);
 }
 
-Color Color_fromHSLTransparent(HSL hsl) {
+Color Color_fromHslTransparent(HSL hsl) {
     return Color_fromHSL(hsl, CCH_transparent);
 }
 
-Color Color_fromHSLOpaque(HSL hsl) {
+Color Color_fromHslOpaque(HSL hsl) {
     return Color_fromHSL(hsl, CCH_opaque);
 }
 
@@ -188,9 +188,9 @@ Color HSL_intoColor(HSL hsl, u8 a) {
 }
 
 Color HSL_intoColorTransparent(HSL hsl) {
-    return Color_fromHSLTransparent(hsl);
+    return Color_fromHslTransparent(hsl);
 }
 
 Color HSL_intoColorOpaque(HSL hsl) {
-    return Color_fromHSLOpaque(hsl);
+    return Color_fromHslOpaque(hsl);
 }

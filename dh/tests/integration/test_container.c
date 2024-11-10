@@ -1,8 +1,9 @@
-// build `clang -xc test_container.c ../../src/*.c -o test_container -g -static`
+// build `clang -o test_container -xc -std=c17 test_container.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
-#include "../../include/dh/core/core.h"
-#include "../../include/dh/ds/ds_container.h"
-#include "../../include/dh/ds/ds_vector.h"
+#include <dh/core.h>
+#include <dh/ds/container.h>
+#include <dh/ds/vector.h>
+#include <dh/defer.h>
 
 #include <stdio.h>
 

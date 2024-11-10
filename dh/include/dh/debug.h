@@ -1,0 +1,20 @@
+#ifndef DEBUG_INCLUDED
+#define DEBUG_INCLUDED (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+
+/*========== Includes =======================================================*/
+
+#include "debug/cfg.h"
+#include "debug/debug.h"
+#include "debug/assert.h"
+
+/*========== Macros and Definitions =========================================*/
+
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
+#endif /* DEBUG_INCLUDED */

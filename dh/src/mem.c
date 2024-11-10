@@ -1,5 +1,6 @@
-#include "../include/dh/mem/mem.h"
-#include "../include/dh/debug/debug_assert.h"
+#include <dh/mem.h>
+#include <dh/debug/cfg.h>
+#include <dh/debug/assert.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@
 #include <time.h>
 
 
-#if defined(debug_enabled) && debug_enabled
+#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 
 // Global memory tracking list
 memInfo* mem__info_list = null;

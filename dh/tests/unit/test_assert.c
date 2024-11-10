@@ -1,4 +1,4 @@
-#include "../../include/dh/debug/debug_assert.h"
+#include <dh/debug/assert.h>
 
 
 int main(void) {

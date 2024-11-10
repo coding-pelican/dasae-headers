@@ -1,7 +1,7 @@
 /*========== Includes =======================================================*/
 
-#include "../include/dh/random.h"
-#include "../include/dh/time/time.h"
+#include <dh/random.h>
+#include <dh/time.h>
 
 /*========== Extern Constant and Variable Definitions =======================*/
 

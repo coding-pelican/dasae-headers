@@ -1,6 +1,8 @@
 #if defined(_WIN32) || defined(_WIN64)
 
-#include "../include/dh/time/time.h"
+#include <dh/time/instant.h>
+#include <dh/time/duration.h>
+#include <dh/time/system.h>
 
 
 static SystemTime SystemTime__s_performance_frequency = { 0 };
@@ -25,33 +27,33 @@ f64 SystemTime_toSecs(SystemTime time) {
 
 f64 SystemTime_toMillis(SystemTime time) {
     SystemTime__initFrequency();
-    return (f64)time.QuadPart * (f64)Time_millis_per_sec / (f64)SystemTime__s_performance_frequency.QuadPart;
+    return (f64)time.QuadPart * (f64)time_millis_per_sec / (f64)SystemTime__s_performance_frequency.QuadPart;
 }
 
 f64 SystemTime_toMicros(SystemTime time) {
     SystemTime__initFrequency();
-    return (f64)time.QuadPart * (f64)Time_micros_per_sec / (f64)SystemTime__s_performance_frequency.QuadPart;
+    return (f64)time.QuadPart * (f64)time_micros_per_sec / (f64)SystemTime__s_performance_frequency.QuadPart;
 }
 
 u64 SystemTime_toNanos(SystemTime time) {
     SystemTime__initFrequency();
-    return (u64)time.QuadPart * (u64)Time_nanos_per_sec / (u64)SystemTime__s_performance_frequency.QuadPart;
+    return (u64)time.QuadPart * (u64)time_nanos_per_sec / (u64)SystemTime__s_performance_frequency.QuadPart;
 }
 
 void SystemTime_sleep(Duration duration) {
-    SystemTime_sleep_ns((duration.secs * Time_nanos_per_sec) + duration.nanos);
+    SystemTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
 }
 
 void SystemTime_sleep_s(f64 secs) {
-    SystemTime_sleep_ns((u64)(secs * Time_nanos_per_sec));
+    SystemTime_sleep_ns((u64)(secs * time_nanos_per_sec));
 }
 
 void SystemTime_sleep_ms(f64 millis) {
-    SystemTime_sleep_ns((u64)(millis * Time_nanos_per_milli));
+    SystemTime_sleep_ns((u64)(millis * time_nanos_per_milli));
 }
 
 void SystemTime_sleep_us(f64 micros) {
-    SystemTime_sleep_ns((u64)(micros * Time_nanos_per_micro));
+    SystemTime_sleep_ns((u64)(micros * time_nanos_per_micro));
 }
 
 // void SystemTime_sleep_ns(u64 nanos) {
@@ -61,10 +63,10 @@ void SystemTime_sleep_us(f64 micros) {
 //     }
 
 //     SystemTime start_time = SystemTime_now();
-//     u64        target     = start_time.QuadPart + ((nanos * SystemTime__s_performance_frequency.QuadPart) / Time_nanos_per_sec);
+//     u64        target     = start_time.QuadPart + ((nanos * SystemTime__s_performance_frequency.QuadPart) / time_nanos_per_sec);
 
 //     // Increase Sleep threshold for better CPU utilization
-//     u64 ms_remaining = nanos / Time_nanos_per_milli;
+//     u64 ms_remaining = nanos / time_nanos_per_milli;
 //     if (5 < ms_remaining) {               // Increased threshold
 //         Sleep((DWORD)(ms_remaining - 1)); // Sleep slightly less to account for overhead
 //     }
@@ -81,10 +83,10 @@ void SystemTime_sleep_us(f64 micros) {
 
 void SystemTime_sleep_ns(u64 nanos) {
     SystemTime start_time = SystemTime_now();
-    u64        target     = start_time.QuadPart + ((nanos * SystemTime__s_performance_frequency.QuadPart) / Time_nanos_per_sec);
+    u64        target     = start_time.QuadPart + ((nanos * SystemTime__s_performance_frequency.QuadPart) / time_nanos_per_sec);
 
     // Use larger sleep for most of the duration
-    u64 ms_remaining = nanos / Time_nanos_per_milli;
+    u64 ms_remaining = nanos / time_nanos_per_milli;
     if (ms_remaining > 1) {
         Sleep((DWORD)(ms_remaining - 1));
     }
@@ -140,7 +142,7 @@ Duration Instant_durationSince(Instant start, Instant earlier) {
     u64 diff      = start.time_.QuadPart - earlier.time_.QuadPart;
     u64 secs      = diff / SystemTime__s_performance_frequency.QuadPart;
     u64 remainder = diff % SystemTime__s_performance_frequency.QuadPart;
-    u32 nanos     = (u32)((remainder * Time_nanos_per_sec) / SystemTime__s_performance_frequency.QuadPart);
+    u32 nanos     = (u32)((remainder * time_nanos_per_sec) / SystemTime__s_performance_frequency.QuadPart);
     return Duration_from(secs, nanos);
 }
 

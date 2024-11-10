@@ -17,9 +17,9 @@ update)
 
 /*========== Includes =======================================================*/
 
-#include "../include/dh/ds/ds_vector.h"
-
-#include "../include/dh/debug/debug_assert.h"
+#include <dh/ds/vector.h>
+#include <dh/mem.h>
+#include <dh/debug/assert.h>
 
 /*========== Macros and Definitions =========================================*/
 /*========== Static Constant and Variable Definitions =======================*/
@@ -100,7 +100,7 @@ anyptr Vector__shift(Vector* vec) {
     debug_assert(vec->container.length > 0);
 
     // Store first element for return
-    u8* first = mem_new(u8, vec->container.elem_size);
+    u8* first = mem_alloc(u8, vec->container.elem_size);
     mem_copy(first, vec->container.data, vec->container.elem_size);
 
     // Move remaining elements backward

@@ -1,7 +1,7 @@
-// build `clang -xc test_mem.c ../../src/*.c -o test_mem -g -static`
+// build `clang -o test_mem -xc -std=c17 test_mem.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
-#include "../../include/dh/debug/debug_assert.h"
-#include "../../include/dh/mem/mem.h"
+#include <dh/debug/assert.h>
+#include <dh/mem.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -216,7 +216,7 @@ void TEST_mem_new_delete() {
     *ptr     = 42;
     TEST_PrintResult("new", *ptr == 42);
 
-    mem_delete(&ptr);
+    mem_free(&ptr);
     TEST_PrintResult("delete", ptr == null);
 
     TestStruct* test_struct = mem_createWith(TestStruct, .a = 1, .b = 2, .c = { 3, 4, 5, 6 }, .canUse = true);
@@ -225,7 +225,7 @@ void TEST_mem_new_delete() {
         test_struct->a == 1 && test_struct->b == 2 && test_struct->c[0] == 3 && test_struct->c[1] == 4 && test_struct->c[2] == 5 && test_struct->c[3] == 6 && test_struct->canUse
     );
 
-    mem_delete(&test_struct);
+    mem_free(&test_struct);
     TEST_PrintResult("delete", test_struct == null);
 }
 

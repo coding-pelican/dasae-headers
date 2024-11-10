@@ -7,18 +7,14 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/core.h"
-
-/*========== Forward Declarations ===========================================*/
-
-typedef struct Random Random;
+#include "core.h"
 
 /*========== Macros and Definitions =========================================*/
 
-struct Random {
+typedef struct Random {
     u64 state_;
     u64 stream_;
-};
+} Random;
 
 /*========== Extern Constant and Variable Declarations ======================*/
 

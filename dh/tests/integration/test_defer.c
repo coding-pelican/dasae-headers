@@ -9,16 +9,17 @@
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
  */
-// build `clang -xc test_defer.c ../../src/*.c -o test_defer -g -static`
+// build `clang -o test_defer -xc -std=c17 test_defer.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
 
 /*========== Includes =======================================================*/
 
-#include "../../include/dh/debug/debug_assert.h"
+#include "dh/core.h"
+#include "dh/debug/assert.h"
 
-#include "../../include/dh/core/core.h"
-#include "../../include/dh/ds/ds_container.h"
-#include "../../include/dh/ds/ds_vector.h"
+#include "dh/ds/container.h"
+#include "dh/ds/vector.h"
+#include "dh/defer.h"
 
 #include <stdio.h>
 

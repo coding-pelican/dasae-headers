@@ -1,6 +1,7 @@
 #if !(defined(_WIN32) || defined(_WIN64))
 
-#include "../include/dh/time/time.h"
+#include <dh/time/instant.h>
+#include <dh/time/system.h>
 
 
 SystemTime SystemTime_now(void) {
@@ -10,35 +11,35 @@ SystemTime SystemTime_now(void) {
 }
 
 f64 SystemTime_toSecs(SystemTime time) {
-    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)Time_nanos_per_sec);
+    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_sec);
 }
 
 f64 SystemTime_toMillis(SystemTime time) {
-    return (f64)time.tv_sec * (f64)Time_millis_per_sec + ((f64)time.tv_nsec / (f64)Time_nanos_per_milli);
+    return (f64)time.tv_sec * (f64)time_millis_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_milli);
 }
 
 f64 SystemTime_toMicros(SystemTime time) {
-    return (f64)time.tv_sec * (f64)Time_micros_per_sec + ((f64)time.tv_nsec / (f64)Time_nanos_per_micro);
+    return (f64)time.tv_sec * (f64)time_micros_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_micro);
 }
 
 u64 SystemTime_toNanos(SystemTime time) {
-    return (u64)time.tv_sec * (u64)Time_nanos_per_sec + (u64)time.tv_nsec;
+    return (u64)time.tv_sec * (u64)time_nanos_per_sec + (u64)time.tv_nsec;
 }
 
 void SystemTime_sleep(Duration duration) {
-    SystemTime_sleep_ns((duration.secs * Time_nanos_per_sec) + duration.nanos);
+    SystemTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
 }
 
 void SystemTime_sleep_s(f64 secs) {
-    SystemTime_sleep_ns((u64)(secs * Time_nanos_per_sec));
+    SystemTime_sleep_ns((u64)(secs * time_nanos_per_sec));
 }
 
 void SystemTime_sleep_ms(f64 millis) {
-    SystemTime_sleep_ns((u64)(millis * Time_nanos_per_milli));
+    SystemTime_sleep_ns((u64)(millis * time_nanos_per_milli));
 }
 
 void SystemTime_sleep_us(f64 micros) {
-    SystemTime_sleep_ns((u64)(micros * Time_nanos_per_micro));
+    SystemTime_sleep_ns((u64)(micros * time_nanos_per_micro));
 }
 
 void SystemTime_sleep_ns(u64 nanos) {
@@ -46,8 +47,8 @@ void SystemTime_sleep_ns(u64 nanos) {
 
     struct timespec req = make(struct timespec);
     struct timespec rem = make(struct timespec);
-    req.tv_sec          = nanos / Time_nanos_per_sec;
-    req.tv_nsec         = nanos % Time_nanos_per_sec;
+    req.tv_sec          = nanos / time_nanos_per_sec;
+    req.tv_nsec         = nanos % time_nanos_per_sec;
 
     while (nanosleep(&req, &rem) == -1) {
         if (errno == EINTR) {
@@ -71,7 +72,7 @@ Duration Instant_durationSince(Instant start, Instant earlier) {
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
         secs--;
-        nano_diff += Time_nanos_per_sec;
+        nano_diff += time_nanos_per_sec;
     }
     u32 nanos = prim_as(u32, nano_diff);
     return Duration_from(secs, nanos);

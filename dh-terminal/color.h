@@ -21,7 +21,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include "../dh/types.h"
+#include "../dh/include/dh/core/core.h"
 
 
 enum EColorChannel {
@@ -74,7 +74,7 @@ union HSL {
 };
 #define HSL_(...) makeWith(HSL, __VA_ARGS__)
 HSL HSL_from(f64 h, f64 s, f64 l);
-f64 HSL_hueToRGBSpace(f64 p, f64 q, f64 t);
+f64 HSL_hueToRgbSpace(f64 p, f64 q, f64 t);
 
 HSL HSL_fromRGB(RGB rgb);
 HSL RGB_intoHSL(RGB rgb);
@@ -105,14 +105,14 @@ Color Color_fromTransparent(u8 r, u8 g, u8 b);
 Color Color_fromOpaque(u8 r, u8 g, u8 b);
 
 Color Color_fromRGB(RGB rgb, u8 a);
-Color Color_fromRGBTransparent(RGB rgb);
-Color Color_fromRGBOpaque(RGB rgb);
+Color Color_fromRgbTransparent(RGB rgb);
+Color Color_fromRgbOpaque(RGB rgb);
 Color RGB_intoColor(RGB rgb, u8 a);
 Color RGB_intoColorTransparent(RGB rgb);
 Color RGB_intoColorOpaque(RGB rgb);
 Color Color_fromHSL(HSL hsl, u8 a);
-Color Color_fromHSLTransparent(HSL hsl);
-Color Color_fromHSLOpaque(HSL hsl);
+Color Color_fromHslTransparent(HSL hsl);
+Color Color_fromHslOpaque(HSL hsl);
 Color HSL_intoColor(HSL hsl, u8 a);
 Color HSL_intoColorTransparent(HSL hsl);
 Color HSL_intoColorOpaque(HSL hsl);

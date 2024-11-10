@@ -23,7 +23,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/core.h"
+#include "dh/builtin/comp.h"
+#include "dh/core/prim/ptr.h"
+#include "dh/core.h"
 
 /*========== Macros and Definitions =========================================*/
 

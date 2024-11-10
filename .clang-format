@@ -57,6 +57,7 @@ InsertNewlineAtEOF: true
 MaxEmptyLinesToKeep: 5
 ObjCBlockIndentWidth: 4
 PointerAlignment: Left
+SortIncludes: Never
 Standard: c++20
 TabWidth: 4
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
