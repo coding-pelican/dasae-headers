@@ -12,9 +12,9 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Dynamically-typed variable definition */
-#define auto RETURN_auto
-#define var  RETURN_var
-#define let  RETURN_let
+#define auto IMPL_auto
+#define var  IMPL_var
+#define let  IMPL_let
 
 /*========== Macros Implementation ==========================================*/
 
@@ -23,30 +23,30 @@ extern "C" {
 #if (__cplusplus >= 201103L)
 /* C++11 or later */
 #undef auto
-#define RETURN_var auto
-#define RETURN_let auto
+#define IMPL_var auto
+#define IMPL_let auto
 #else
 /* Pre-C++11 */
-#define RETURN_auto no_auto
-#define RETURN_var  no_var
-#define RETURN_let  no_let
+#define IMPL_auto no_auto
+#define IMPL_var  no_var
+#define IMPL_let  no_let
 // #    error "C++11 or later is required for auto keyword support"
 #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201710L)
 /* C18 or later supports the auto keyword */
 #undef auto
-#define RETURN_var auto
-#define RETURN_let auto
+#define IMPL_var auto
+#define IMPL_let auto
 #elif defined(__GNUC__) || defined(__GNUG__)
 /* GCC or Clang - use __auto_type extension available in C99 and later */
-#define RETURN_auto __auto_type
-#define RETURN_var  __auto_type
-#define RETURN_let  __auto_type
+#define IMPL_auto __auto_type
+#define IMPL_var  __auto_type
+#define IMPL_let  __auto_type
 #else
 /* Compiler does not support auto type deduction */
-#define RETURN_auto no_auto
-#define RETURN_var  no_var
-#define RETURN_let  no_let
+#define IMPL_auto no_auto
+#define IMPL_var  no_var
+#define IMPL_let  no_let
 // #  error "No support for auto type deduction in this compiler"
 #endif
 

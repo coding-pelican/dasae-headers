@@ -10,13 +10,16 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
     debug_assert(0 < width);
     debug_assert(0 < height);
 
-    const usize size = prim_as(usize, width) * height;
+    usize const size = prim_as(usize, width) * height;
     debug_assert(0 < size);
+
+    anyptr const data = mem_alloc(Color, size);
+    debug_assertNotNull(data);
 
     *b = makeWith(
         FrameBuffer,
         .pixels_ = {
-            .data     = mem_alloc(Color, size),
+            .data     = data,
             .length   = 0,
             .capacity = size },
         .width_  = width,

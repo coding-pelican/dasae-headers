@@ -30,7 +30,7 @@ extern "C" {
     /**                                         \
      * @brief fallthrough for `switch` internal \
      */                                         \
-    RETURN_pp_fallthrough
+    IMPL_pp_fallthrough
 
 #define pp_unused(...)                                                \
     /**                                                               \
@@ -38,14 +38,14 @@ extern "C" {
     to suppress compiler warnings                                     \
      * @param ... Variable number of arguments to be marked as unused \
      */                                                               \
-    RETURN_pp_unused(__VA_ARGS__)
+    IMPL_pp_unused(__VA_ARGS__)
 
 #define pp_ignore                                                        \
     /**                                                                  \
      * @brief Attribute explicitly ignores an expression or return value \
      * @details Used to suppress compiler warnings about unused values   \
      */                                                                  \
-    RETURN_pp_ignore
+    IMPL_pp_ignore
 
 #define pp_ensureNotNull(VAL, ...) \
     pp_ensureNotNull(VAL, __VA_ARGS__)
@@ -57,28 +57,28 @@ extern "C" {
      * @details Wraps multiple statements in a parentheses and braces block \
     for macro safety                                                        \
      */                                                                     \
-    RETURN_pp_func(__VA_ARGS__)
+    IMPL_pp_func(__VA_ARGS__)
 
 #define pp_concat(TOKEN, ...) \
-    RETURN_pp_concat(TOKEN, __VA_ARGS__)
+    IMPL_pp_concat(TOKEN, __VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_pp_fallthrough
+#define IMPL_pp_fallthrough
 
-#define RETURN_pp_unused(...) \
+#define IMPL_pp_unused(...) \
     ((void)(__VA_ARGS__))
 
-#define RETURN_pp_ignore \
+#define IMPL_pp_ignore \
     (void)
 
-#define RETURN_pp_ensureNotNull(VAL, ...) \
+#define IMPL_pp_ensureNotNull(VAL, ...) \
     ((VAL) ? (VAL) : (__VA_ARGS__))
 
-#define RETURN_pp_func(...) \
+#define IMPL_pp_func(...) \
     ({ __VA_ARGS__ })
 
-#define RETURN_pp_concat(TOKEN, ...) \
+#define IMPL_pp_concat(TOKEN, ...) \
     TOKEN##__VA_ARGS__
 
 

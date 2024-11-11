@@ -60,27 +60,27 @@ extern "C" {
 #endif
 
 /* Nullable-Nonnull attributes */
-#define nullable RETURN_nullable
-#define nonnull  RETURN_nonnull
+#define nullable IMPL_nullable
+#define nonnull  IMPL_nonnull
 
-#define Nullable(TYPE) RETURN_Nullable(TYPE)
-#define Nonnull(TYPE)  RETURN_Nonnull(TYPE)
+#define Nullable(TYPE) IMPL_Nullable(TYPE)
+#define Nonnull(TYPE)  IMPL_Nonnull(TYPE)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
-#define RETURN_nullable _Nullable
-#define RETURN_nonnull  _Nonnull
+#define IMPL_nullable _Nullable
+#define IMPL_nonnull  _Nonnull
 #elif defined(__GNUC__)
-#define RETURN_nullable __attribute__((nullable))
-#define RETURN_nonnull  __attribute__((nonnull))
+#define IMPL_nullable __attribute__((nullable))
+#define IMPL_nonnull  __attribute__((nonnull))
 #else
-#define RETURN_nullable
-#define RETURN_nonnull
+#define IMPL_nullable
+#define IMPL_nonnull
 #endif
 
-#define RETURN_Nullable(TYPE) TYPE nullable
-#define RETURN_Nonnull(TYPE)  TYPE nonnull
+#define IMPL_Nullable(TYPE) TYPE nullable
+#define IMPL_Nonnull(TYPE)  TYPE nonnull
 
 
 #if defined(__cplusplus)

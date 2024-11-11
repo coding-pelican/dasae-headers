@@ -32,8 +32,8 @@ extern "C" {
 /* More sophisticated version combining best aspects */
 typedef struct DeferBlock {
     struct DeferBlock* prev;
-    void (*func)(void* args);
-    void* context;
+    anyptr (*func)(anyptr args);
+    anyptr context;
 } DeferBlock;
 
 typedef struct DeferScope {
@@ -41,51 +41,35 @@ typedef struct DeferScope {
     bool        active;
 } DeferScope;
 
-#define defer_scope                             \
-    for (                                       \
-        DeferScope __defer_scope = { 0, true }; \
-        __defer_scope.active;                   \
-        defer__run()                            \
+#define defer_scope                            \
+    for (                                      \
+        DeferScope _defer_scope = { 0, true }; \
+        _defer_scope.active;                   \
+        defer__run()                           \
     )
 
 #define defer_scope_return \
     defer__run();          \
     return
 
-#define defer(FUNC, CTX) pp_func(                    \
-    DeferBlock* __block   = mem_create(DeferBlock);  \
-    __block->func         = (void (*)(void*))(FUNC); \
-    __block->context      = CTX;                     \
-    __block->prev         = __defer_scope.current;   \
-    __defer_scope.current = __block;                 \
+#define defer(FUNC, CTX) pp_func(                     \
+    DeferBlock* _block   = mem_create(DeferBlock);    \
+    _block->func         = (anyptr(*)(anyptr))(FUNC); \
+    _block->context      = (CTX);                     \
+    _block->prev         = _defer_scope.current;      \
+    _defer_scope.current = _block;                    \
 )
 
-#define defer_lambda(LAMBDA) pp_func(               \
-    DeferBlock* __block   = mem_create(DeferBlock); \
-    __block->func         = (LAMBDA).func;          \
-    __block->context      = (LAMBDA).context;       \
-    __block->prev         = __defer_scope.current;  \
-    __defer_scope.current = __block;                \
+#define defer__run() pp_func(                             \
+    DeferBlock* _curr = _defer_scope.current;             \
+    while (_curr) {                                       \
+        if (_curr->func) { _curr->func(_curr->context); } \
+        DeferBlock* _prev = _curr->prev;                  \
+        mem_destroy(&_curr);                              \
+        _curr = _prev;                                    \
+    } _defer_scope.active                                 \
+    = false;                                              \
 )
-
-#define defer__run() pp_func(                                \
-    DeferBlock* __curr = __defer_scope.current;              \
-    while (__curr) {                                         \
-        if (__curr->func) { __curr->func(__curr->context); } \
-        DeferBlock* __prev = __curr->prev;                   \
-        mem_destroy(&__curr);                                \
-        __curr = __prev;                                     \
-    } __defer_scope.active                                   \
-    = false;                                                 \
-)
-
-typedef struct Lambda {
-    void (*func)(void* args);
-    void* context;
-} Lambda;
-
-#define lambda(FUNC, CTX) ((Lambda){ .func = (FUNC), .context = (CTX) })
-
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

@@ -32,25 +32,25 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Reference definition */
-#define Ref(TYPE)  RETURN_Ref(TYPE)
-#define ref(VAR)   RETURN_ref(VAR)
-#define deref(VAR) RETURN_deref(VAR)
+#define Ref(TYPE)  IMPL_Ref(TYPE)
+#define ref(VAR)   IMPL_ref(VAR)
+#define deref(VAR) IMPL_deref(VAR)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__cplusplus)
 /* In C++, references work normally */
-#define RETURN_Ref(TYPE)  TYPE&
-#define RETURN_ref(VAR)   VAR
-#define RETURN_deref(VAR) VAR
+#define IMPL_Ref(TYPE)  TYPE&
+#define IMPL_ref(VAR)   VAR
+#define IMPL_deref(VAR) VAR
 #else
-#define RETURN_Ref(TYPE) Nonnull(Ptr(TYPE))
+#define IMPL_Ref(TYPE) Nonnull(Ptr(TYPE))
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
-#define RETURN_ref(VAR) Nonnull(anyptr) ref__checkNotNull((anyptr)(addr(VAR)))
+#define IMPL_ref(VAR) Nonnull(anyptr) ref__checkNotNull((anyptr)(addr(VAR)))
 #else
-#define RETURN_ref(VAR) ((anyptr)(addr(VAR)))
+#define IMPL_ref(VAR) ((anyptr)(addr(VAR)))
 #endif
-#define RETURN_deref(VAR) (*(VAR))
+#define IMPL_deref(VAR) (*(VAR))
 #endif
 
 /*========== Extern Function Prototypes =====================================*/

@@ -1,11 +1,9 @@
 #include <dh/core.h>
 #include <dh/time.h>
 
-
 typedef struct FrameRateStats FrameRateStats;
 typedef struct WindowConfig   WindowConfig;
 typedef struct Window         Window;
-
 
 typedef struct WindowTime {
     Instant  last_frame; // Time of last frame beginning
@@ -60,7 +58,6 @@ FrameRateStats* FrameRateStats_fini(FrameRateStats* s);
 // Update frame statistics
 void            FrameRateStats_update(FrameRateStats* s);
 
-
 #define WindowConfig_font_width                  (8)
 #define WindowConfig_font_height                 (16)
 #define WindowConfig_title_text_size             (256)
@@ -89,12 +86,30 @@ struct WindowConfig {
         bool displays_in_title;
     } frame_rate_;
 };
+/* clang-format off */
 static const WindowConfig WindowConfig_default = {
-    .dimensions_            = { .constraints = { .min_width = 80, .min_height = 25, .max_width = 160, .max_height = 50 }, .width = 80, .height = 25 },
+    .dimensions_ = {
+        .constraints = {
+            .min_width  = 80,
+            .min_height = 25,
+            .max_width  = 160,
+            .max_height = 50
+        },
+        .width  = 80,
+        .height = 25
+    },
     .title_text_            = "DH-Window",
     .title_shows_in_buffer_ = true,
-    .frame_rate_            = { .target = 0, .sample_count = 128, .enabled = false, .vsync = false, .displays_in_title = true }
+    .frame_rate_            = {
+        .target            = 0,
+        .sample_count      = 128,
+        .enabled           = false,
+        .vsync             = false,
+        .displays_in_title = true
+    }
 };
+/* clang-format on */
+
 
 struct Window {
     WindowConfig   config_;

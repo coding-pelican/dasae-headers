@@ -27,38 +27,38 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define make(TYPE)                RETURN_make(TYPE)
-#define makeWith(TYPE, INITAL...) RETURN_makeWith(TYPE, INITAL)
+#define make(TYPE)                IMPL_make(TYPE)
+#define makeWith(TYPE, INITAL...) IMPL_makeWith(TYPE, INITAL)
 
-#define create(TYPE)                RETURN_create(TYPE)
-#define createWith(TYPE, INITAL...) RETURN_createWith(TYPE, INITAL)
+#define create(TYPE)                IMPL_create(TYPE)
+#define createWith(TYPE, INITAL...) IMPL_createWith(TYPE, INITAL)
 
-#define array(TYPE, INITAL...)              RETURN_array(TYPE, INITAL)
-#define nArray(LENGTH, TYPE)                RETURN_nArray(TYPE, LENGTH)
-#define nArrayWith(LENGTH, TYPE, INITAL...) RETURN_nArrayWith(TYPE, LENGTH, INITAL)
+#define array(TYPE, INITAL...)              IMPL_array(TYPE, INITAL)
+#define nArray(LENGTH, TYPE)                IMPL_nArray(TYPE, LENGTH)
+#define nArrayWith(LENGTH, TYPE, INITAL...) IMPL_nArrayWith(TYPE, LENGTH, INITAL)
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_make(TYPE) \
+#define IMPL_make(TYPE) \
     (TYPE) { 0 }
-#define RETURN_makeWith(TYPE, INITAL...) \
+#define IMPL_makeWith(TYPE, INITAL...) \
     (TYPE) { INITAL }
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define RETURN_create(TYPE) \
-    (TYPE[1]) {             \
-        { 0 }               \
+#define IMPL_create(TYPE) \
+    (TYPE[1]) {           \
+        { 0 }             \
     }
-#define RETURN_createWith(TYPE, INITAL...) \
-    (TYPE[1]) {                            \
-        { INITAL }                         \
+#define IMPL_createWith(TYPE, INITAL...) \
+    (TYPE[1]) {                          \
+        { INITAL }                       \
     }
 
-#define RETURN_array(TYPE, INITAL...) \
+#define IMPL_array(TYPE, INITAL...) \
     (TYPE[]) { INITAL }
-#define RETURN_nArray(LENGTH, TYPE) \
+#define IMPL_nArray(LENGTH, TYPE) \
     (TYPE[LENGTH]) { 0 }
-#define RETURN_nArrayWith(LENGTH, TYPE, INITAL...) \
+#define IMPL_nArrayWith(LENGTH, TYPE, INITAL...) \
     (TYPE[(LENGTH)]) { INITAL }
 // NOLINTEND(bugprone-macro-parentheses)
 

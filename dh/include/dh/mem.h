@@ -33,15 +33,15 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define mem_create(TYPE)                 RETURN_mem_create(TYPE)
-#define mem_createCleared(TYPE)          RETURN_mem_createCleared(TYPE)
-#define mem_createWith(TYPE, INITIAL...) RETURN_mem_createWith(TYPE, INITIAL)
-#define mem_destroy(PTR_ADDR)            RETURN_mem_destroy(PTR_ADDR)
+#define mem_create(TYPE)                 IMPL_mem_create(TYPE)
+#define mem_createCleared(TYPE)          IMPL_mem_createCleared(TYPE)
+#define mem_createWith(TYPE, INITIAL...) IMPL_mem_createWith(TYPE, INITIAL)
+#define mem_destroy(PTR_ADDR)            IMPL_mem_destroy(PTR_ADDR)
 
-#define mem_alloc(TYPE, COUNT)                 RETURN_mem_alloc(TYPE, COUNT)
-#define mem_allocCleared(TYPE, COUNT)          RETURN_mem_allocCleared(TYPE, COUNT)
-#define mem_allocWith(TYPE, COUNT, INITIAL...) RETURN_mem_allocWith(TYPE, COUNT, INITIAL)
-#define mem_free(PTR_ADDR)                     RETURN_mem_free(PTR_ADDR)
+#define mem_alloc(TYPE, COUNT)                 IMPL_mem_alloc(TYPE, COUNT)
+#define mem_allocCleared(TYPE, COUNT)          IMPL_mem_allocCleared(TYPE, COUNT)
+#define mem_allocWith(TYPE, COUNT, INITIAL...) IMPL_mem_allocWith(TYPE, COUNT, INITIAL)
+#define mem_free(PTR_ADDR)                     IMPL_mem_free(PTR_ADDR)
 
 // Debug macro definitions
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
@@ -90,15 +90,15 @@ static void                              mem__printInfoMemoryLeakTrace(void);
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 
 
-#define RETURN_mem_create(TYPE)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE))
-#define RETURN_mem_createCleared(TYPE)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), 0)
-#define RETURN_mem_createWith(TYPE, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE), &makeWith(TYPE, __VA_ARGS__))
-#define RETURN_mem_destroy(PTR)          mem_deallocate(PTR)
+#define IMPL_mem_create(TYPE)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE))
+#define IMPL_mem_createCleared(TYPE)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), 0)
+#define IMPL_mem_createWith(TYPE, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE), &makeWith(TYPE, __VA_ARGS__))
+#define IMPL_mem_destroy(PTR)          mem_deallocate(PTR)
 
-#define RETURN_mem_alloc(TYPE, COUNT)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE) * (COUNT))
-#define RETURN_mem_allocCleared(TYPE, COUNT)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), COUNT)
-#define RETURN_mem_allocWith(TYPE, COUNT, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE) * COUNT, &nArrayWith(COUNT, TYPE, __VA_ARGS__))
-#define RETURN_mem_free(PTR)                   mem_deallocate(PTR)
+#define IMPL_mem_alloc(TYPE, COUNT)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE) * (COUNT))
+#define IMPL_mem_allocCleared(TYPE, COUNT)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), COUNT)
+#define IMPL_mem_allocWith(TYPE, COUNT, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE) * COUNT, &nArrayWith(COUNT, TYPE, __VA_ARGS__))
+#define IMPL_mem_free(PTR)                   mem_deallocate(PTR)
 
 // Debug memory management functions
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED

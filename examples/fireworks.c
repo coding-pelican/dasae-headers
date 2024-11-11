@@ -46,7 +46,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 #define Display_Height (Terminal_Height * 2)
 #define Display_Size   (Display_Width * Display_Height)
 
-void TerminalCursor_resetColor() {
+void TerminalCursor_resetColor(void) {
     printf("\033[0m");
 }
 
@@ -63,24 +63,24 @@ void TerminalCursor_setColor(Color foreground, Color background) {
 }
 
 // Set locale to UTF-8
-void Terminal_ensureLocaleUTF8() {
-    static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
-    static const i32         localesNum = sizeof(locales) / sizeof(locales[0]);
+void Terminal_ensureLocaleUTF8(void) {
+    static const char* const locales[]      = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
+    static const i32         locales_length = sizeof(locales) / sizeof(locales[0]);
 
-    const char* settedLocale = NULL;
+    const char* setted_locale = NULL;
 
-    for (i32 i = 0; i < localesNum; ++i) {
-        settedLocale = setlocale(LC_ALL, locales[i]);
-        if (settedLocale) {
-            printf("Successfully set locale to: %s\n", settedLocale);
+    for (i32 i = 0; i < locales_length; ++i) {
+        setted_locale = setlocale(LC_ALL, locales[i]);
+        if (setted_locale) {
+            printf("Successfully set locale to: %s\n", setted_locale);
             break;
         }
     }
 
-    if (!settedLocale) {
+    if (!setted_locale) {
         printf("Warning: Failed to set UTF-8 locale. Using system default.\n");
-        settedLocale = setlocale(LC_ALL, "");
-        if (!settedLocale) {
+        setted_locale = setlocale(LC_ALL, "");
+        if (!setted_locale) {
             perror("Failed to set locale\n");
             // Not exiting here, as the program might still work
         }
@@ -96,7 +96,7 @@ void Terminal_ensureLocaleUTF8() {
 }
 
 // Enable ANSI escape sequence processing
-void Terminal_enableANSI() {
+void Terminal_enableANSI(void) {
 #ifdef _WIN32
     HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  dwMode = 0;
@@ -109,7 +109,7 @@ void Terminal_enableANSI() {
 }
 
 // Print diagnostic information for debugging
-void Terminal_printDiagnosticInformation() {
+void Terminal_printDiagnosticInformation(void) {
     printf("Current locale: %s\n", setlocale(LC_ALL, NULL));
 #ifdef _WIN32
     printf("Active code page: %d\n", GetACP());
@@ -118,7 +118,7 @@ void Terminal_printDiagnosticInformation() {
 }
 
 // Clear the terminal screen and move the cursor to the top left
-void Terminal_clear() {
+void Terminal_clear(void) {
 #ifdef _WIN32
     HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD                      topLeft  = { 0, 0 };
@@ -136,7 +136,7 @@ void Terminal_clear() {
 #endif
 }
 
-void Terminal_bootup() {
+void Terminal_bootup(void) {
     Terminal_ensureLocaleUTF8();
     Terminal_enableANSI();
     Terminal_printDiagnosticInformation();
@@ -146,7 +146,7 @@ void Terminal_bootup() {
     Terminal_clear();
 }
 
-void Terminal_shutdown() {
+void Terminal_shutdown(void) {
     TerminalCursor_resetColor();
     Terminal_clear();
 }
@@ -157,14 +157,14 @@ void Terminal_shutdown() {
 #define Display_BufferSize                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseSize)
 #define Display_shows_title_in_buffer         true
 
-static char  Display_frontBuffer[Display_BufferSize] = { 0 };
-static char  Display_backBuffer[Display_BufferSize]  = { 0 };
-static char* Display_bufferCurrent                   = Display_frontBuffer;
-static usize Display_bufferCurrentSize               = 0;
-static char* Display_bufferNext                      = Display_backBuffer;
-static usize Display_bufferNextSize                  = 0;
+static char  Display_front_buffer[Display_BufferSize] = { 0 };
+static char  Display_back_buffer[Display_BufferSize]  = { 0 };
+static char* Display_buffer_curr                      = Display_front_buffer;
+static usize Display_buffer_curr_size                 = 0;
+static char* Display_buffer_next                      = Display_back_buffer;
+static usize Display_buffer_next_size                 = 0;
 
-void Display_init() {
+void Display_init(void) {
 #ifdef _WIN32
     HANDLE     hConsoleOutput    = GetStdHandle(STD_OUTPUT_HANDLE);
     SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
@@ -196,36 +196,36 @@ void Display_init() {
 #endif
 }
 
-void Display_clear() {
-    memset(Display_bufferCurrent, 0, Display_bufferCurrentSize);
+void Display_clear(void) {
+    memset(Display_buffer_curr, 0, Display_buffer_curr_size);
 }
 
-void Display_swapBuffers() {
-    swap(char*, Display_bufferCurrent, Display_bufferNext);
-    swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
+void Display_swapBuffers(void) {
+    swap(char*, Display_buffer_curr, Display_buffer_next);
+    swap(usize, Display_buffer_curr_size, Display_buffer_next_size);
 }
 
-void Display_setBufferFromColors(const Window* window, const Color colors[Display_Size]) {
+void Display_setBufferFromColors(const Window* const window, const Color colors[Display_Size]) {
     Display_clear();
     usize index = 0;
 
     // Render title line if enabled
     if (Display_shows_title_in_buffer) {
         // Black background, White text ANSI sequence
-        const char* title_seq = "\033[38;2;255;255;255;48;2;0;0;0m";
-        memcpy(Display_bufferNext + index, title_seq, strlen(title_seq));
+        const char* const title_seq = "\033[38;2;255;255;255;48;2;0;0;0m";
+        memcpy(Display_buffer_next + index, title_seq, strlen(title_seq));
         index += strlen(title_seq);
 
         // Add title content
-        const char* title = Window_title(window, true);
-        memcpy(Display_bufferNext + index, title, strlen(title));
+        const char* const title = Window_title(window, true);
+        memcpy(Display_buffer_next + index, title, strlen(title));
         index += strlen(title);
 
         // Fill rest of line with spaces
-        for (usize i = strlen(title); i < Display_Width; i++) {
-            Display_bufferNext[index++] = ' ';
+        for (usize i = strlen(title); i < Display_Width; ++i) {
+            Display_buffer_next[index++] = ' ';
         }
-        Display_bufferNext[index++] = '\n';
+        Display_buffer_next[index++] = '\n';
     }
 
     for (usize y = 0; y < Display_Height; y += 2) {
@@ -238,20 +238,21 @@ void Display_setBufferFromColors(const Window* window, const Color colors[Displa
             const Color lower = colors[x + (y + 1) * Display_Width];
 
             // Start a run of characters with the same color
-            usize runLength = 1;
-            while ((x + runLength) < (usize)Display_Width) {
-                const Color nextUpper = colors[x + runLength + y * Display_Width];
-                const Color nextLower = colors[x + runLength + (y + 1) * Display_Width];
+            usize run_length = 1;
+            while ((x + run_length) < (usize)Display_Width) {
+                const Color next_upper = colors[x + run_length + y * Display_Width];
+                const Color next_lower = colors[x + run_length + (y + 1) * Display_Width];
 
-                if (memcmp(&upper.rgba, &nextUpper.rgba, sizeof(Color)) != 0 || memcmp(&lower.rgba, &nextLower.rgba, sizeof(Color)) != 0) {
+                if (memcmp(&upper.rgba, &next_upper.rgba, sizeof(Color)) != 0
+                    || memcmp(&lower.rgba, &next_lower.rgba, sizeof(Color)) != 0) {
                     break;
                 }
-                runLength++;
+                run_length++;
             }
 
             // Construct ANSI escape sequence once for the run
-            const i32 formattedSize = sprintf(
-                Display_bufferNext + index,
+            const i32 formatted_size = sprintf(
+                Display_buffer_next + index,
                 "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm",
                 upper.r,
                 upper.g,
@@ -260,25 +261,25 @@ void Display_setBufferFromColors(const Window* window, const Color colors[Displa
                 lower.g,
                 lower.b
             );
-            index += formattedSize;
+            index += formatted_size;
 
             // Append the block character '▀' runLength times
-            const char* const blockChar     = "▀"; // Multibyte character
-            const usize       blockCharSize = strlen(blockChar);
+            const char* const block_char        = "▀"; // Multibyte character
+            const usize       block_char_length = strlen(block_char);
 
             // Copy the multibyte character multiple times
-            for (usize i = 0; i < runLength; ++i) {
-                memcpy(Display_bufferNext + index, blockChar, blockCharSize);
-                index += blockCharSize;
+            for (usize i = 0; i < run_length; ++i) {
+                memcpy(Display_buffer_next + index, block_char, block_char_length);
+                index += block_char_length;
             }
 
-            x += runLength;
+            x += run_length;
         }
         // Append newline at the end of each line
-        Display_bufferNext[index++] = '\n';
+        Display_buffer_next[index++] = '\n';
     }
-    Display_bufferNext[--index] = '\0';
-    Display_bufferNextSize      = index;
+    Display_buffer_next[--index] = '\0';
+    Display_buffer_next_size     = index;
 
     Display_swapBuffers();
 }
@@ -290,14 +291,14 @@ void Display_render() {
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD  written  = 0;
-    WriteConsoleA(hConsole, Display_bufferCurrent, (DWORD)Display_bufferCurrentSize, &written, NULL);
+    WriteConsoleA(hConsole, Display_buffer_curr, (DWORD)Display_buffer_curr_size, &written, NULL);
 #else
     fwrite(Display_bufferCurrent, sizeof(Display_bufferCurrent[0]), Display_bufferCurrentSize, stdout);
     fflush(stdout);
 #endif
 }
 
-Duration Display_testOverhead(Window* window, Canvas* canvas) {
+Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
     Duration overhead_duration = Duration_zero;
 
     Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
@@ -389,7 +390,7 @@ void Particle_render(const Particle* const p, Canvas* const canvas) {
     debug_assertNotNull(p);
     if (Particle_isDead(p)) { return; }
 
-    const Color renderColor = Color_fromOpaque(
+    const Color render_color = Color_fromOpaque(
         prim_as(u8, prim_as(f64, p->color.r) * p->lifetime),
         prim_as(u8, prim_as(f64, p->color.g) * p->lifetime),
         prim_as(u8, prim_as(f64, p->color.b) * p->lifetime)
@@ -406,7 +407,7 @@ void Particle_render(const Particle* const p, Canvas* const canvas) {
                 prim_as(u32, p->dimensions[1])
             )
         ),
-        renderColor
+        render_color
     );
 }
 
@@ -457,11 +458,11 @@ void Firework_update(Firework* const f) {
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.length) { break; }
 
-                i64 const x      = prim_as(i64, f->rocket->position[0]);
-                i64 const y      = prim_as(i64, f->rocket->position[1]);
-                i64 const width  = 1;
-                i64 const height = 1;
-                HSL const color  = HSL_from(
+                const i64 x      = prim_as(i64, f->rocket->position[0]);
+                const i64 y      = prim_as(i64, f->rocket->position[1]);
+                const i64 width  = 1;
+                const i64 height = 1;
+                const HSL color  = HSL_from(
                     f->effect_base_color.h,
                     f->effect_base_color.s + (random_f64(random_rng) - 0.5) * 20.0,
                     f->effect_base_color.l + (random_f64(random_rng) - 0.5) * 40.0
@@ -525,7 +526,7 @@ typedef struct State {
     u32 height;
 } State;
 
-State* State_init(State* s, u32 width, u32 height) {
+State* State_init(State* const s, u32 width, u32 height) {
     *s = makeWith(
         State,
         .fireworks = {
@@ -538,7 +539,7 @@ State* State_init(State* s, u32 width, u32 height) {
     return s;
 }
 
-void State_spawnFirework(State* s) {
+void State_spawnFirework(State* const s) {
     if (s->fireworks.capacity <= s->fireworks.length) { return; }
     Firework_init(
         &s->fireworks.data[s->fireworks.length++],
@@ -552,7 +553,7 @@ void State_spawnFirework(State* s) {
     );
 }
 
-void State_update(State* s) {
+void State_update(State* const s) {
     // Remove dead fireworks.
     foreach (Firework, firework, &s->fireworks) {
         if (!Firework_isDead(firework)) { continue; }
@@ -570,7 +571,7 @@ void State_update(State* s) {
     }
 }
 
-void State_fini(State* s) {
+void State_fini(State* const s) {
     foreach (Firework, firework, &s->fireworks) {
         Firework_fini(firework);
         mem_free(&firework);
@@ -613,7 +614,7 @@ int main(int argc, const char* argv[]) {
     random_init(random_rng);
 
     defer_scope {
-        Window* window = mem_create(Window);
+        Window* const window = mem_create(Window);
         {
             Window_init(window, WindowConfig_default);
             Window_withSize(window, 160, 50);
@@ -622,13 +623,13 @@ int main(int argc, const char* argv[]) {
         }
         defer(Window_cleanup_defer, window);
 
-        State* state = mem_create(State);
+        State* const state = mem_create(State);
         {
             State_init(state, Window_width(window), Window_height(window) * 2);
         }
         defer(State_cleanup_defer, state);
 
-        Canvas* canvas = mem_create(Canvas);
+        Canvas* const canvas = mem_create(Canvas);
         {
             Canvas_init(canvas, state->width, state->height);
             Canvas_withColor(canvas, Color_black);
@@ -644,6 +645,7 @@ int main(int argc, const char* argv[]) {
             Window_update(window);
 
             /* UPDATE BEGIN */ {
+                // TODO: use wrapper module instead of this
                 if (GetAsyncKeyState(VK_ESCAPE)) {
                     is_running = false;
                 }
@@ -658,9 +660,11 @@ int main(int argc, const char* argv[]) {
                 foreach (const Firework, firework, &state->fireworks) {
                     Firework_render(firework, canvas);
                 }
-                /* Canvas_render(canvas); */
-                Display_setBufferFromColors(window, FrameBuffer_peekData(Canvas_peekBuffer(canvas)));
-                Display_render();
+                // Canvas_render(canvas);
+                {
+                    Display_setBufferFromColors(window, FrameBuffer_peekData(Canvas_peekBuffer(canvas)));
+                    Display_render();
+                }
             } /* RENDER END */
 
             Window_delay(window);

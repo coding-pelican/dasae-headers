@@ -26,30 +26,30 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #ifndef claim_assertStatic
-#define claim_assertStatic(_expr, _msg) \
-    RETURN_claim_assertStatic(_expr, _msg)
+#define claim_assertStatic(EXPR, MSG) \
+    IMPL_claim_assertStatic(EXPR, MSG)
 #endif /* static_assert */
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 /* C++11 or later - static_assert is available */
-#define RETURN_claim_assertStatic(_expr, _msg) static_assert(_expr, _msg)
+#define IMPL_claim_assertStatic(EXPR, MSG) static_assert(EXPR, MSG)
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 /* C11 or later - _Static_assert is available */
-#define RETURN_claim_assertStatic(_expr, _msg) _Static_assert(_expr, _msg)
+#define IMPL_claim_assertStatic(EXPR, MSG) _Static_assert(EXPR, MSG)
 #else
 /* Older versions - emulate static assert */
 
 #include "../core/pp.h"
-#include "../core/prim/prim.h"
+#include "../core/prim.h"
 
 #ifdef __COUNTER__
-#define RETURN_claim_assertStatic(_expr, _msg) \
-    typedef i8 pp_concat(claim_assertStatic_, __COUNTER__)[(_expr) ? 1 : -1]
+#define IMPL_claim_assertStatic(EXPR, MSG) \
+    typedef i8 pp_concat(claim_assertStatic_, __COUNTER__)[(EXPR) ? 1 : -1]
 #else
-#define RETURN_claim_assertStatic(_expr, _msg) \
-    typedef i8 pp_concat(claim_assertStatic_, __LINE__)[(_expr) ? 1 : -1]
+#define IMPL_claim_assertStatic(EXPR, MSG) \
+    typedef i8 pp_concat(claim_assertStatic_, __LINE__)[(EXPR) ? 1 : -1]
 #endif
 
 #endif

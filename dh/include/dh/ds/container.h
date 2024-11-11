@@ -54,10 +54,10 @@ typedef struct Vector {
 
 #define TArrayN(_T, _N)                 \
     /* Generic array type definition */ \
-    RETURN_TArrayN(_T, _N)
+    IMPL_TArrayN(_T, _N)
 #define TVector(_T)                      \
     /* Generic vector type definition */ \
-    RETURN_TVector(_T)
+    IMPL_TVector(_T)
 
 /* Base container operations (force_inline functions) */
 
@@ -79,26 +79,26 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 
 /* Alias for generic containers */
 
-#define Array(_T, _N) RETURN_Array(_T, _N)
-#define Vector(_T)    RETURN_Vector(_T)
+#define Array(_T, _N) IMPL_Array(_T, _N)
+#define Vector(_T)    IMPL_Vector(_T)
 
 /* Generic method wrappers */
 
-#define Array_peekData(_T, _arr)       RETURN_Array_peekData(_T, _arr)
-#define Array_accessData(_T, _arr)     RETURN_Array_accessData(_T, _arr)
-#define Array_peekAsBytes(_T, _arr)    RETURN_Array_peekAsBytes(_T, _arr)
-#define Array_accessAsBytes(_T, _arr)  RETURN_Array_accessAsBytes(_T, _arr)
-#define Array_length(_T, _arr)         RETURN_Array_length(_T, _arr)
-#define Array_peekAt(_T, _arr, _idx)   RETURN_Array_peekAt(_T, _arr, _idx)
-#define Array_accessAt(_T, _arr, _idx) RETURN_Array_accessAt(_T, _arr, _idx)
+#define Array_peekData(_T, _arr)       IMPL_Array_peekData(_T, _arr)
+#define Array_accessData(_T, _arr)     IMPL_Array_accessData(_T, _arr)
+#define Array_peekAsBytes(_T, _arr)    IMPL_Array_peekAsBytes(_T, _arr)
+#define Array_accessAsBytes(_T, _arr)  IMPL_Array_accessAsBytes(_T, _arr)
+#define Array_length(_T, _arr)         IMPL_Array_length(_T, _arr)
+#define Array_peekAt(_T, _arr, _idx)   IMPL_Array_peekAt(_T, _arr, _idx)
+#define Array_accessAt(_T, _arr, _idx) IMPL_Array_accessAt(_T, _arr, _idx)
 
-#define Vector_peekData(_T, _vec)       RETURN_Vector_peekData(_T, _vec)
-#define Vector_accessData(_T, _vec)     RETURN_Vector_accessData(_T, _vec)
-#define Vector_peekAsBytes(_T, _vec)    RETURN_Vector_peekAsBytes(_T, _vec)
-#define Vector_accessAsBytes(_T, _vec)  RETURN_Vector_accessAsBytes(_T, _vec)
-#define Vector_length(_T, _vec)         RETURN_Vector_length(_T, _vec)
-#define Vector_peekAt(_T, _vec, _idx)   RETURN_Vector_peekAt(_T, _vec, _idx)
-#define Vector_accessAt(_T, _vec, _idx) RETURN_Vector_accessAt(_T, _vec, _idx)
+#define Vector_peekData(_T, _vec)       IMPL_Vector_peekData(_T, _vec)
+#define Vector_accessData(_T, _vec)     IMPL_Vector_accessData(_T, _vec)
+#define Vector_peekAsBytes(_T, _vec)    IMPL_Vector_peekAsBytes(_T, _vec)
+#define Vector_accessAsBytes(_T, _vec)  IMPL_Vector_accessAsBytes(_T, _vec)
+#define Vector_length(_T, _vec)         IMPL_Vector_length(_T, _vec)
+#define Vector_peekAt(_T, _vec, _idx)   IMPL_Vector_peekAt(_T, _vec, _idx)
+#define Vector_accessAt(_T, _vec, _idx) IMPL_Vector_accessAt(_T, _vec, _idx)
 
 /* Type-safe element access macros */
 
@@ -122,7 +122,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_TArrayN(_T, _N)                                      \
+#define IMPL_TArrayN(_T, _N)                                        \
     struct Array(_T, _N) {                                          \
         Container container;                                        \
         _T        fixed[_N];                                        \
@@ -136,7 +136,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
     }                                                               \
     typedef struct Array(_T, _N) Array(_T, _N)
 
-#define RETURN_TVector(_T)                                                                     \
+#define IMPL_TVector(_T)                                                                       \
     struct Vector(_T) {                                                                        \
         Container container;                                                                   \
         usize     capacity;                                                                    \
@@ -144,9 +144,9 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
     static void _T##Vector##_init(struct Vector(_T) * _vec, usize initial_capacity) {          \
         *_vec = (struct Vector(_T)){                                                           \
             .container = {                                                                     \
-                          .data      = initial_capacity ? mem_allocCleared(_T, initial_capacity) : null, \
-                          .length    = 0,                                                                \
-                          .elem_size = sizeof(_T) },                                                     \
+                .data      = initial_capacity ? mem_allocCleared(_T, initial_capacity) : null, \
+                .length    = 0,                                                                \
+                .elem_size = sizeof(_T) },                                                     \
             .capacity = initial_capacity                                                       \
         };                                                                                     \
     }                                                                                          \
@@ -157,24 +157,24 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
     }                                                                                          \
     typedef struct Vector(_T) Vector(_T)
 
-#define RETURN_Array(_T, _N) _T##Array##_N
-#define RETURN_Vector(_T)    _T##Vector
+#define IMPL_Array(_T, _N) _T##Array##_N
+#define IMPL_Vector(_T)    _T##Vector
 
-#define RETURN_Array_peekData(_T, _arr)       (const _T*)Container_peekData(&(_arr)->container)
-#define RETURN_Array_accessData(_T, _arr)     (_T*)Container_accessData(&(_arr)->container)
-#define RETURN_Array_peekAsBytes(_T, _arr)    Container_peekAsBytes(&(_arr)->container)
-#define RETURN_Array_accessAsBytes(_T, _arr)  Container_accessAsBytes(&(_arr)->container)
-#define RETURN_Array_length(_T, _arr)         Container_length(&(_arr)->container)
-#define RETURN_Array_peekAt(_T, _arr, _idx)   (const _T*)Container_peekAt(&(_arr)->container, _idx)
-#define RETURN_Array_accessAt(_T, _arr, _idx) (_T*)Container_accessAt(&(_arr)->container, _idx)
+#define IMPL_Array_peekData(_T, _arr)       (const _T*)Container_peekData(&(_arr)->container)
+#define IMPL_Array_accessData(_T, _arr)     (_T*)Container_accessData(&(_arr)->container)
+#define IMPL_Array_peekAsBytes(_T, _arr)    Container_peekAsBytes(&(_arr)->container)
+#define IMPL_Array_accessAsBytes(_T, _arr)  Container_accessAsBytes(&(_arr)->container)
+#define IMPL_Array_length(_T, _arr)         Container_length(&(_arr)->container)
+#define IMPL_Array_peekAt(_T, _arr, _idx)   (const _T*)Container_peekAt(&(_arr)->container, _idx)
+#define IMPL_Array_accessAt(_T, _arr, _idx) (_T*)Container_accessAt(&(_arr)->container, _idx)
 
-#define RETURN_Vector_peekData(_T, _vec)       (const _T*)Container_peekData(&(_vec)->container)
-#define RETURN_Vector_accessData(_T, _vec)     (_T*)Container_accessData(&(_vec)->container)
-#define RETURN_Vector_peekAsBytes(_T, _vec)    Container_peekAsBytes(&(_vec)->container)
-#define RETURN_Vector_accessAsBytes(_T, _vec)  Container_accessAsBytes(&(_vec)->container)
-#define RETURN_Vector_length(_T, _vec)         Container_length(&(_vec)->container)
-#define RETURN_Vector_peekAt(_T, _vec, _idx)   (const _T*)Container_peekAt(&(_vec)->container, _idx)
-#define RETURN_Vector_accessAt(_T, _vec, _idx) (_T*)Container_accessAt(&(_vec)->container, _idx)
+#define IMPL_Vector_peekData(_T, _vec)       (const _T*)Container_peekData(&(_vec)->container)
+#define IMPL_Vector_accessData(_T, _vec)     (_T*)Container_accessData(&(_vec)->container)
+#define IMPL_Vector_peekAsBytes(_T, _vec)    Container_peekAsBytes(&(_vec)->container)
+#define IMPL_Vector_accessAsBytes(_T, _vec)  Container_accessAsBytes(&(_vec)->container)
+#define IMPL_Vector_length(_T, _vec)         Container_length(&(_vec)->container)
+#define IMPL_Vector_peekAt(_T, _vec, _idx)   (const _T*)Container_peekAt(&(_vec)->container, _idx)
+#define IMPL_Vector_accessAt(_T, _vec, _idx) (_T*)Container_accessAt(&(_vec)->container, _idx)
 
 /*========== Extern Constant and Variable Declarations ======================*/
 /*========== Extern Function Prototypes =====================================*/
@@ -228,17 +228,17 @@ void TEST_container_f32ArrayAndVector(void) {
 
 
 // /* PUBLIC INTERFACE */
-// #define Array_at(_arr, index) RETURN_Array_at(_arr, index)
+// #define Array_at(_arr, index) IMPL_Array_at(_arr, index)
 // #define Array_len(_arr)       ((_arr)->len)
 // #define Array_clear(_arr)     ((_arr)->len = 0)
 
-// #define Vector_init(type, cap) RETURN_Vector_init(type, cap)
-// #define Vector_push(_vec, val)  RETURN_Vector_push(_vec, val)
+// #define Vector_init(type, cap) IMPL_Vector_init(type, cap)
+// #define Vector_push(_vec, val)  IMPL_Vector_push(_vec, val)
 // #define Vector_len(_vec)        ((_vec)->len)
 // #define Vector_cap(_vec)        ((_vec)->capacity)
 // #define Vector_clear(_vec)      ((_vec)->len = 0)
 
-// #define Slice_from(data, start, length) RETURN_Slice_from(data, start, length)
+// #define Slice_from(data, start, length) IMPL_Slice_from(data, start, length)
 // #define Slice_len(slice)                ((slice)->len)
 
 
@@ -271,16 +271,16 @@ void TEST_container_f32ArrayAndVector(void) {
 // }
 
 // /* MACROS IMPLEMENTATION */
-// #define RETURN_Array_at(_arr, index) \
+// #define IMPL_Array_at(_arr, index) \
 //     (*((_T*)array_get(&(_arr)->data, index, sizeof((_arr)->data[0]))))
 
-// #define RETURN_Vector_init(type, cap) pp_func(     \
+// #define IMPL_Vector_init(type, cap) pp_func(     \
 //     { .data     = vector_alloc(cap, sizeof(type)), \
 //       .len      = 0,                               \
 //       .capacity = (cap) }                          \
 // )
 
-// #define RETURN_Vector_push(_vec, val) pp_func( \
+// #define IMPL_Vector_push(_vec, val) pp_func( \
 //     if ((_vec)->len == (_vec)->capacity) {      \
 //         (_vec)->data = vector_grow(            \
 //             (_vec)->data,                      \
@@ -292,5 +292,5 @@ void TEST_container_f32ArrayAndVector(void) {
 //     = (val);                                  \
 // )
 
-// #define RETURN_Slice_from(data, start, length) \
+// #define IMPL_Slice_from(data, start, length) \
 //     ((any)((u8*)(data) + ((start) * sizeof(*(data)))))

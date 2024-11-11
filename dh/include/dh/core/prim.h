@@ -38,33 +38,33 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define prim_as(TYPE, PRIM_VAL...)      RETURN_prim_as(TYPE, PRIM_VAL)
-#define prim_value(TYPE, PRIM_VAL...)   RETURN_prim_value(TYPE, PRIM_VAL)
-#define prim_literal(TYPE, PRIM_VAL...) RETURN_prim_literal(TYPE, PRIM_VAL)
+#define prim_as(TYPE, PRIM_VAL...)      IMPL_prim_as(TYPE, PRIM_VAL)
+#define prim_value(TYPE, PRIM_VAL...)   IMPL_prim_value(TYPE, PRIM_VAL)
+#define prim_literal(TYPE, PRIM_VAL...) IMPL_prim_literal(TYPE, PRIM_VAL)
 
-#define prim_eq(PRIM_LHS, PRIM_RHS...) RETURN_prim_eq(PRIM_LHS, PRIM_RHS)
-#define prim_ne(PRIM_LHS, PRIM_RHS...) RETURN_prim_ne(PRIM_LHS, PRIM_RHS)
-#define prim_lt(PRIM_LHS, PRIM_RHS...) RETURN_prim_lt(PRIM_LHS, PRIM_RHS)
-#define prim_le(PRIM_LHS, PRIM_RHS...) RETURN_prim_le(PRIM_LHS, PRIM_RHS)
-#define prim_gt(PRIM_LHS, PRIM_RHS...) RETURN_prim_gt(PRIM_LHS, PRIM_RHS)
-#define prim_ge(PRIM_LHS, PRIM_RHS...) RETURN_prim_ge(PRIM_LHS, PRIM_RHS)
+#define prim_eq(PRIM_LHS, PRIM_RHS...) IMPL_prim_eq(PRIM_LHS, PRIM_RHS)
+#define prim_ne(PRIM_LHS, PRIM_RHS...) IMPL_prim_ne(PRIM_LHS, PRIM_RHS)
+#define prim_lt(PRIM_LHS, PRIM_RHS...) IMPL_prim_lt(PRIM_LHS, PRIM_RHS)
+#define prim_le(PRIM_LHS, PRIM_RHS...) IMPL_prim_le(PRIM_LHS, PRIM_RHS)
+#define prim_gt(PRIM_LHS, PRIM_RHS...) IMPL_prim_gt(PRIM_LHS, PRIM_RHS)
+#define prim_ge(PRIM_LHS, PRIM_RHS...) IMPL_prim_ge(PRIM_LHS, PRIM_RHS)
 
-#define prim_divisible(PRIM_N, PRIM_M...) RETURN_prim_divisible(PRIM_N, PRIM_M...)
+#define prim_divisible(PRIM_N, PRIM_M...) IMPL_prim_divisible(PRIM_N, PRIM_M...)
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_prim_as(TYPE, PRIM_VAL...)      ((TYPE)PRIM_VAL)
-#define RETURN_prim_value(TYPE, PRIM_VAL...)   ((TYPE){ PRIM_VAL })
-#define RETURN_prim_literal(TYPE, PRIM_VAL...) ((TYPE[1]){ PRIM_VAL })
+#define IMPL_prim_as(TYPE, PRIM_VAL...)      ((TYPE)PRIM_VAL)
+#define IMPL_prim_value(TYPE, PRIM_VAL...)   ((TYPE){ PRIM_VAL })
+#define IMPL_prim_literal(TYPE, PRIM_VAL...) ((TYPE[1]){ PRIM_VAL })
 
-#define RETURN_prim_eq(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) == (PRIM_RHS))
-#define RETURN_prim_ne(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) != (PRIM_RHS))
-#define RETURN_prim_lt(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) < (PRIM_RHS))
-#define RETURN_prim_le(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) <= (PRIM_RHS))
-#define RETURN_prim_gt(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) > (PRIM_RHS))
-#define RETURN_prim_ge(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) >= (PRIM_RHS))
+#define IMPL_prim_eq(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) == (PRIM_RHS))
+#define IMPL_prim_ne(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) != (PRIM_RHS))
+#define IMPL_prim_lt(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) < (PRIM_RHS))
+#define IMPL_prim_le(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) <= (PRIM_RHS))
+#define IMPL_prim_gt(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) > (PRIM_RHS))
+#define IMPL_prim_ge(PRIM_LHS, PRIM_RHS...) ((PRIM_LHS) >= (PRIM_RHS))
 
-#define RETURN_prim_divisible(PRIM_N, PRIM_M...) ((PRIM_M == 0) ? 0 : ((PRIM_N) % (PRIM_M) == 0))
+#define IMPL_prim_divisible(PRIM_N, PRIM_M...) ((PRIM_M == 0) ? 0 : ((PRIM_N) % (PRIM_M) == 0))
 
 
 #if defined(__cplusplus)

@@ -28,31 +28,31 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Type pointer*/
-#define Ptr(TYPE)                RETURN_Ptr(TYPE)
+#define Ptr(TYPE)                IMPL_Ptr(TYPE)
 /* Any type pointer */
-#define anyptr                   RETURN_anytype
+#define anyptr                   IMPL_anytype
 /* Convert anyptr to pointer of type TYPE */
-#define ptrCast(TYPE, PTR)       RETURN_ptrCast(TYPE, PTR)
+#define ptrCast(TYPE, PTR)       IMPL_ptrCast(TYPE, PTR)
 /* Access the value pointed to by a pointer */
-#define ptrAccess(PTR)           RETURN_ptrAccess(PTR)
+#define ptrAccess(PTR)           IMPL_ptrAccess(PTR)
 /* Access the value pointed to by a pointer of type TYPE */
-#define ptrCastAccess(TYPE, PTR) RETURN_ptrCastAccess(TYPE, PTR)
+#define ptrCastAccess(TYPE, PTR) IMPL_ptrCastAccess(TYPE, PTR)
 
 /* Normal type */
-#define Val(TYPE) RETURN_Val(TYPE)
+#define Val(TYPE) IMPL_Val(TYPE)
 /* Address of a variable */
-#define addr(VAR) RETURN_addr(VAR)
+#define addr(VAR) IMPL_addr(VAR)
 
 /*========== Macros Implementation ==========================================*/
 
-#define RETURN_Ptr(TYPE)                TYPE*
-#define RETURN_anytype                  void*
-#define RETURN_ptrCast(TYPE, PTR)       (Ptr(TYPE))(PTR)
-#define RETURN_ptrAccess(PTR)           (*(PTR))
-#define RETURN_ptrCastAccess(TYPE, PTR) (*(Ptr(TYPE))(PTR))
+#define IMPL_Ptr(TYPE)                TYPE*
+#define IMPL_anytype                  void*
+#define IMPL_ptrCast(TYPE, PTR)       (Ptr(TYPE))(PTR)
+#define IMPL_ptrAccess(PTR)           (*(PTR))
+#define IMPL_ptrCastAccess(TYPE, PTR) (*(Ptr(TYPE))(PTR))
 
-#define RETURN_Val(TYPE) TYPE
-#define RETURN_addr(VAR) &VAR
+#define IMPL_Val(TYPE) TYPE
+#define IMPL_addr(VAR) &VAR
 
 
 #if defined(ARCH_64BIT) && ARCH_64BIT
