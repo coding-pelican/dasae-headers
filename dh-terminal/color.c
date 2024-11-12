@@ -3,10 +3,10 @@
 #include <dh/cmp.h>
 
 
-cmp_Ordering f64_cmp(const f64 lhs, const f64 rhs) {
-    return lhs < rhs ? cmp_Ordering_less
-         : lhs > rhs ? cmp_Ordering_greater
-                     : cmp_Ordering_equal;
+EOrd f64_cmp(f64 lhs, f64 rhs) {
+    return lhs < rhs ? EOrd_less
+         : lhs > rhs ? EOrd_greater
+                     : EOrd_equal;
 }
 
 force_inline f64 f64_min(f64 lhs, f64 rhs) {

@@ -14,6 +14,7 @@
  */
 
 
+// TODO: Change lambda usage
 #ifndef LAMBDA_INCLUDED
 #define LAMBDA_INCLUDED (1)
 #if defined(__cplusplus)
