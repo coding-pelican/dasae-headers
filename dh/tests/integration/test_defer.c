@@ -14,12 +14,12 @@
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/debug/assert.h"
+#include <dh/core.h>
+#include <dh/debug/assert.h>
 
-#include "dh/ds/container.h"
-#include "dh/ds/vector.h"
-#include "dh/defer.h"
+#include <dh/ds/container.h>
+#include <dh/ds/vector.h>
+#include <dh/defer.h>
 
 #include <stdio.h>
 
@@ -30,42 +30,81 @@ static i32 cleanup_counter = 0;
 static void TEST_defer_countCleanup(anyptr context) {
     pp_unused(context);
     cleanup_counter++;
+    printf("Cleanup called: %d\n", cleanup_counter);
 }
 
-void TEST_defer_BasicUsage(void) {
+#define get_stack_pointer() (__builtin_return_address(0))
+
+static void TEST_defer_BasicUsage(void) {
     cleanup_counter = 0;
 
+    int   stack_var = 42;                  // 스택 변수 추가
+    void* sp_start  = get_stack_pointer(); // 시작 시 스택 포인터
+
+    printf("Entering defer scope (sp: %p)\n", sp_start);
     defer_scope {
-        defer(TEST_defer_countCleanup, null);
-        defer(TEST_defer_countCleanup, null);
+        printf("Entered defer scope (stack_var: %d, sp: %p)\n", stack_var, get_stack_pointer());
+
+        defer({
+            void* sp_defer1 = get_stack_pointer();
+            printf("Cleanup 1 (stack_var: %d, sp: %p)\n", stack_var, sp_defer1);
+            TEST_defer_countCleanup(null);
+        });
+
+        defer({
+            void* sp_defer2 = get_stack_pointer();
+            printf("Cleanup 2 (stack_var: %d, sp: %p)\n", stack_var, sp_defer2);
+            TEST_defer_countCleanup(null);
+        });
+
+        printf("Exiting defer scope (stack_var: %d)\n", stack_var);
     }
+    printf("Exited defer scope\n");
 
     debug_assert(cleanup_counter == 2);
 }
 
-void TEST_defer_NestedScopes(void) {
+static void TEST_defer_NestedDefers(void) {
     cleanup_counter = 0;
 
     defer_scope {
-        defer(TEST_defer_countCleanup, null);
+        defer({ TEST_defer_countCleanup(null); });
 
-        defer_scope {
-            defer(TEST_defer_countCleanup, null);
-        }
+        defer({
+            TEST_defer_countCleanup(null);
+            defer({ TEST_defer_countCleanup(null); });
+            TEST_defer_countCleanup(null);
+        });
 
-        defer(TEST_defer_countCleanup, null);
+        defer({ TEST_defer_countCleanup(null); });
     }
 
     debug_assert(cleanup_counter == 3);
 }
 
-void TEST_defer_EarlyReturn(void) {
+static void TEST_defer_NestedScopes(void) { // NOLINT
     cleanup_counter = 0;
 
     defer_scope {
-        defer(TEST_defer_countCleanup, null);
+        defer({ TEST_defer_countCleanup(null); });
+
+        defer_scope {
+            defer({ TEST_defer_countCleanup(null); });
+        }
+
+        defer({ TEST_defer_countCleanup(null); });
+    }
+
+    debug_assert(cleanup_counter == 3);
+}
+
+static void TEST_defer_EarlyReturn(void) {
+    cleanup_counter = 0;
+
+    defer_scope {
+        defer({ TEST_defer_countCleanup(null); });
         defer_scope_return;
-        defer(TEST_defer_countCleanup, null); // Should not be executed
+        defer({ TEST_defer_countCleanup(null); }); // Should not be executed
     }
 
     debug_assert(cleanup_counter == 1);
@@ -76,12 +115,12 @@ static void TEST_defer_modifyValue(anyptr context) {
     (*value)++;
 }
 
-void TEST_defer_ContextPassing(void) {
+static void TEST_defer_ContextPassing(void) {
     i32 test_value = 0;
 
     defer_scope {
-        defer(TEST_defer_modifyValue, &test_value);
-        defer(TEST_defer_modifyValue, &test_value);
+        defer({ TEST_defer_modifyValue(&test_value); });
+        defer({ TEST_defer_modifyValue(&test_value); });
     }
 
     debug_assert(test_value == 2);
@@ -93,13 +132,16 @@ static void TEST_defer_cleanupVec(void* vec) {
     f32Vector_fini((f32Vector*)vec);
 }
 
-void TEST_defer_VectorCleanup(void) {
+static void TEST_defer_VectorCleanup(void) {
     bool vector_initialized = false;
 
     defer_scope {
         f32Vector* vec = create(f32Vector);
         f32Vector_init(vec, 4);
-        defer(TEST_defer_cleanupVec, vec);
+        defer({
+            TEST_defer_cleanupVec(vec);
+            printf("Vector cleanup");
+        });
         vector_initialized = true;
 
         Vector_append(f32, vec, prim_value(f32, 1.0f));
@@ -116,7 +158,7 @@ void TEST_defer_VectorCleanup(void) {
     defer_scope {
         f32Vector* vec = create(f32Vector);
         f32Vector_init(vec, 4);
-        defer((void (*)(void*))f32Vector_fini, vec);
+        defer({ f32Vector_fini(vec); });
         vector_initialized = true;
 
         Vector_append(f32, vec, prim_value(f32, 5.0f));
@@ -136,6 +178,7 @@ void TEST_defer_VectorCleanup(void) {
 
 i32 main(void) {
     TEST_defer_BasicUsage();
+    TEST_defer_NestedDefers();
     TEST_defer_NestedScopes();
     TEST_defer_EarlyReturn();
     TEST_defer_ContextPassing();

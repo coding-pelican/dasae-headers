@@ -35,6 +35,7 @@ extern "C" {
 #define foreach(TYPE, NAME, LIST_PTR) \
     IMPL_foreach(TYPE, NAME, LIST_PTR)
 
+/*========== Macros Implementation ==========================================*/
 
 /* NOLINTBEGIN */
 #define IMPL_swap(TYPE, LHS_VAR, RHS_VAR) pp_func( \

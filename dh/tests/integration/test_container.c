@@ -31,7 +31,7 @@ i32 main() {
         // Heap-allocated Vector<f32>
         f32Vector* vec = create(f32Vector);
         f32Vector_init(vec, 1); // Initial capacity of 1
-        defer((void (*)(void*))f32Vector_fini, vec);
+        defer((void* (*)(void*))f32Vector_fini, vec);
 
         // Add elements
         for (usize i = 0; i < 16; ++i) {

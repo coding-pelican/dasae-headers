@@ -20,6 +20,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -62,6 +63,9 @@ extern "C" {
 #define pp_concat(TOKEN, ...) \
     IMPL_pp_concat(TOKEN, __VA_ARGS__)
 
+#define pp_uniqueToken(TOKEN) \
+    IMPL_pp_uniqueToken(TOKEN)
+
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_pp_fallthrough
@@ -80,6 +84,9 @@ extern "C" {
 
 #define IMPL_pp_concat(TOKEN, ...) \
     TOKEN##__VA_ARGS__
+
+#define IMPL_pp_uniqueToken(TOKEN) \
+    pp_concat(TOKEN, __LINE__)
 
 
 #if defined(__cplusplus)
