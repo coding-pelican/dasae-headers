@@ -14,8 +14,8 @@
  */
 
 
-#ifndef PRIM_PTR_INCLUDED
-#define PRIM_PTR_INCLUDED (1)
+#ifndef CORE_PRIM_PTR_INCLUDED
+#define CORE_PRIM_PTR_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -27,16 +27,17 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+// TODO: Separate Ptr to Ptr and PtrMut
 /* Type pointer*/
 #define Ptr(TYPE)                IMPL_Ptr(TYPE)
 /* Any type pointer */
 #define anyptr                   IMPL_anytype
 /* Convert anyptr to pointer of type TYPE */
-#define ptrCast(TYPE, PTR)       IMPL_ptrCast(TYPE, PTR)
+#define castPtr(TYPE, PTR)       IMPL_castPtr(TYPE, PTR)
 /* Access the value pointed to by a pointer */
-#define ptrAccess(PTR)           IMPL_ptrAccess(PTR)
+#define accessPtr(PTR)           IMPL_accessPtr(PTR)
 /* Access the value pointed to by a pointer of type TYPE */
-#define ptrCastAccess(TYPE, PTR) IMPL_ptrCastAccess(TYPE, PTR)
+#define accessCastPtr(TYPE, PTR) IMPL_accessCastPtr(TYPE, PTR)
 
 /* Normal type */
 #define Val(TYPE) IMPL_Val(TYPE)
@@ -47,12 +48,12 @@ extern "C" {
 
 #define IMPL_Ptr(TYPE)                TYPE*
 #define IMPL_anytype                  void*
-#define IMPL_ptrCast(TYPE, PTR)       (Ptr(TYPE))(PTR)
-#define IMPL_ptrAccess(PTR)           (*(PTR))
-#define IMPL_ptrCastAccess(TYPE, PTR) (*(Ptr(TYPE))(PTR))
+#define IMPL_castPtr(TYPE, PTR)       (TYPE*)(PTR)
+#define IMPL_accessPtr(PTR)           (*(PTR))
+#define IMPL_accessCastPtr(TYPE, PTR) (*((TYPE*)(PTR)))
 
-#define IMPL_Val(TYPE) TYPE
-#define IMPL_addr(VAR) &VAR
+#define IMPL_Val(TYPE)    TYPE
+#define IMPL_addr(VAR...) (&(VAR))
 
 
 #if defined(ARCH_64BIT) && ARCH_64BIT
@@ -69,4 +70,4 @@ claim_assertStatic(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* PRIM_PTR_INCLUDED */
+#endif /* CORE_PRIM_PTR_INCLUDED */

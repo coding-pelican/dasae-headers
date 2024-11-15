@@ -7,7 +7,7 @@
  * @updated 2024-11-11 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
- * @prefix  lambda
+ * @prefix  NONE
  *
  * @brief   Header of some software
  * @details Some detailed explanation
@@ -22,7 +22,6 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-/*========== Includes =======================================================*/
 /*========== Macros and Definitions =========================================*/
 
 #define lambda(RETURN_TYPE, NAME, PAREN_ARGS...) IMPL_lambda(RETURN_TYPE, NAME, PAREN_ARGS)

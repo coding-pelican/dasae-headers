@@ -1,8 +1,8 @@
 #include "canvas.h"
-#include <dh/core.h>
-#include <dh/mem.h>
-#include <dh/cmp.h>
-#include <dh/debug/assert.h>
+#include "dh/core.h"
+#include "dh/mem.h"
+#include "dh/cmp.h"
+#include "dh/debug/assert.h"
 
 
 FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
@@ -10,7 +10,7 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
     debug_assert(0 < width);
     debug_assert(0 < height);
 
-    usize const size = prim_as(usize, width) * height;
+    usize const size = as(usize, width) * height;
     debug_assert(0 < size);
 
     anyptr const data = mem_alloc(Color, size);

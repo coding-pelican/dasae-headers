@@ -4,10 +4,10 @@
  * @file    duration.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-10 (date of last update)
+ * @updated 2024-11-15 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/time
- * @prefix  time
+ * @prefix  time_Duration
  *
  * @brief   Source of some software
  * @details Some detailed explanation
@@ -27,72 +27,74 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-struct Duration {
+struct time_Duration {
     u64 secs;
     u32 nanos;
 };
-Duration Duration_from(u64 secs, u32 nanos);
-Duration Duration_fromSecs(f64 secs);
-Duration Duration_fromMillis(f64 millis);
-Duration Duration_fromMicros(f64 micros);
-Duration Duration_fromSecs_u64(u64 secs);
-Duration Duration_fromMillis_u64(u64 millis);
-Duration Duration_fromMicros_u64(u64 micros);
-Duration Duration_fromNanos(u64 nanos);
-f64      Duration_toSecs(Duration d);
-f64      Duration_toMillis(Duration d);
-f64      Duration_toMicros(Duration d);
-u64      Duration_toNanos(Duration d);
+time_Duration time_Duration_from(u64 secs, u32 nanos);
 
-Duration Duration_add(Duration lhs, Duration rhs);
-Duration Duration_sub(Duration lhs, Duration rhs);
-Duration Duration_mul(Duration d, u64 scalar);
-Duration Duration_div(Duration d, u64 scalar);
+time_Duration time_Duration_fromSecs(u64 secs);
+time_Duration time_Duration_fromMillis(u64 millis);
+time_Duration time_Duration_fromMicros(u64 micros);
+time_Duration time_Duration_fromNanos(u64 nanos);
 
-bool Duration_eq(Duration lhs, Duration rhs);
-bool Duration_ne(Duration lhs, Duration rhs);
-bool Duration_lt(Duration lhs, Duration rhs);
-bool Duration_le(Duration lhs, Duration rhs);
-bool Duration_gt(Duration lhs, Duration rhs);
-bool Duration_ge(Duration lhs, Duration rhs);
-bool Duration_isZero(Duration duration);
+u64 time_Duration_asSecs(time_Duration d);
+u32 time_Duration_subsecMillis(time_Duration d);
+u32 time_Duration_subsecMicros(time_Duration d);
+u32 time_Duration_subsecNanos(time_Duration d);
 
-#define comptime_Duration_from(_secs, _nanos) \
+time_Duration time_Duration_fromSecs_f64(f64 secs);
+f64           time_Duration_asSecs_f64(time_Duration d);
+
+time_Duration time_Duration_add(time_Duration lhs, time_Duration rhs);
+time_Duration time_Duration_sub(time_Duration lhs, time_Duration rhs);
+time_Duration time_Duration_mul(time_Duration d, u64 scalar);
+time_Duration time_Duration_div(time_Duration d, u64 scalar);
+
+bool time_Duration_eq(time_Duration lhs, time_Duration rhs);
+bool time_Duration_ne(time_Duration lhs, time_Duration rhs);
+bool time_Duration_lt(time_Duration lhs, time_Duration rhs);
+bool time_Duration_le(time_Duration lhs, time_Duration rhs);
+bool time_Duration_gt(time_Duration lhs, time_Duration rhs);
+bool time_Duration_ge(time_Duration lhs, time_Duration rhs);
+bool time_Duration_isZero(time_Duration duration);
+
+#define literal_time_Duration_from(_secs, _nanos) \
+    makeWith(                                     \
+        time_Duration,                            \
+        .secs  = (_secs),                         \
+        .nanos = (_nanos)                         \
+    )
+#define literal_time_Duration_fromSecs(_secs) \
     makeWith(                                 \
-        Duration,                             \
-        .secs  = (_secs),                     \
-        .nanos = (_nanos)                     \
+        time_Duration,                        \
+        .secs  = (_secs) == 0 ? 0 : (_secs),  \
+        .nanos = 0                            \
     )
-#define comptime_Duration_fromSecs(_secs)    \
-    makeWith(                                \
-        Duration,                            \
-        .secs  = (_secs) == 0 ? 0 : (_secs), \
-        .nanos = 0                           \
-    )
-#define comptime_Duration_fromMillis(_millis)                                                  \
+#define literal_time_Duration_fromMillis(_millis)                                              \
     makeWith(                                                                                  \
-        Duration,                                                                              \
+        time_Duration,                                                                         \
         .secs  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
         .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
     )
-#define comptime_Duration_fromMicros(_micros)                                                  \
+#define literal_time_Duration_fromMicros(_micros)                                              \
     makeWith(                                                                                  \
-        Duration,                                                                              \
+        time_Duration,                                                                         \
         .secs  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
         .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
     )
-#define comptime_Duration_fromNanos(_nanos)                         \
+#define literal_time_Duration_fromNanos(_nanos)                     \
     makeWith(                                                       \
-        Duration,                                                   \
+        time_Duration,                                              \
         .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
         .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec  \
     )
 
-static const Duration Duration_zero        = comptime_Duration_fromNanos(0);
-static const Duration Duration_second      = comptime_Duration_fromSecs(1);
-static const Duration Duration_millisecond = comptime_Duration_fromMillis(1);
-static const Duration Duration_microsecond = comptime_Duration_fromMicros(1);
-static const Duration Duration_nanosecond  = comptime_Duration_fromNanos(1);
+static const time_Duration time_Duration_zero        = literal_time_Duration_fromNanos(0);
+static const time_Duration time_Duration_second      = literal_time_Duration_fromSecs(1);
+static const time_Duration time_Duration_millisecond = literal_time_Duration_fromMillis(1);
+static const time_Duration time_Duration_microsecond = literal_time_Duration_fromMicros(1);
+static const time_Duration time_Duration_nanosecond  = literal_time_Duration_fromNanos(1);
 
 
 #if defined(__cplusplus)

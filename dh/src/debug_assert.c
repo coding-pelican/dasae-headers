@@ -16,8 +16,8 @@
 
 /*========== Includes =======================================================*/
 
-#include <dh/debug/assert.h> /* For `debug_break()` */
-#include <dh/debug/debug.h>
+#include "dh/debug/assert.h" /* For `debug_break()` */
+#include "dh/debug/debug.h"
 
 #include <stdarg.h> /* For `va_list`, `va_start()`, `va_end()` */
 #include <stdio.h>  /* For `fprintf()`, `stderr` */
@@ -25,7 +25,7 @@
 /*========== Extern Function Implementations ================================*/
 
 void debug__assertFail(const char* expr, const char* func, const char* file, i32 line) {
-    pp_ignore fprintf(
+    ignore fprintf(
         stderr,
         "Assertion failed: %s, in function %s, at file %s, line %d\n",
         expr,
@@ -38,7 +38,7 @@ void debug__assertFail(const char* expr, const char* func, const char* file, i32
 }
 
 void debug__assertFailFmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
-    pp_ignore fprintf(
+    ignore fprintf(
         stderr,
         "Assertion failed: %s\n",
         expr
@@ -46,14 +46,14 @@ void debug__assertFailFmt(const char* expr, const char* func, const char* file, 
 
     va_list args = null;
     va_start(args, fmt);
-    pp_ignore vfprintf(
+    ignore vfprintf(
         stderr,
         fmt,
         args
     );
     va_end(args);
 
-    pp_ignore fprintf(
+    ignore fprintf(
         stderr,
         "\nin function %s, at file %s, line %d\n",
         func,

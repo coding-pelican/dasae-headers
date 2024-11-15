@@ -16,6 +16,11 @@ extern "C" {
 
 // TODO(dev-dasae, compat): Implement builtin.h
 
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

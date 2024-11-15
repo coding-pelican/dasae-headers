@@ -1,6 +1,6 @@
 #include "color.h"
-#include <dh/core.h>
-#include <dh/cmp.h>
+#include "dh/core.h"
+#include "dh/cmp.h"
 
 
 EOrd f64_cmp(f64 lhs, f64 rhs) {
@@ -86,9 +86,9 @@ RGB RGB_fromHSL(HSL hsl) {
     }
 
     return RGB_from(
-        prim_as(u8, f64_clamp(r * CCH_max, 0, CCH_max)),
-        prim_as(u8, f64_clamp(g * CCH_max, 0, CCH_max)),
-        prim_as(u8, f64_clamp(b * CCH_max, 0, CCH_max))
+        as(u8, f64_clamp(r * CCH_max, 0, CCH_max)),
+        as(u8, f64_clamp(g * CCH_max, 0, CCH_max)),
+        as(u8, f64_clamp(b * CCH_max, 0, CCH_max))
     );
 }
 
@@ -113,9 +113,9 @@ RGB Color_asRGB(Color color) {
 }
 
 HSL HSL_fromRGB(RGB rgb) {
-    f64 r = rgb.r / prim_as(f64, CCH_max);
-    f64 g = rgb.g / prim_as(f64, CCH_max);
-    f64 b = rgb.b / prim_as(f64, CCH_max);
+    f64 r = rgb.r / as(f64, CCH_max);
+    f64 g = rgb.g / as(f64, CCH_max);
+    f64 b = rgb.b / as(f64, CCH_max);
 
     f64 max  = f64_max(f64_max(r, g), b);
     f64 min  = f64_min(f64_min(r, g), b);

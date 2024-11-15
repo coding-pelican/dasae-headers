@@ -27,7 +27,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "mem/cfg.h"
-
 #include "debug/cfg.h"
 #include "core.h"
 
@@ -44,7 +43,7 @@ extern "C" {
 #define mem_free(PTR_ADDR)                     IMPL_mem_free(PTR_ADDR)
 
 // Debug macro definitions
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
+#if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 #define mem_allocate(SIZE)               mem__allocate(SIZE, __func__, __FILE__, __LINE__)
 #define mem_allocateCleared(SIZE, COUNT) mem__allocateCleared(SIZE, COUNT, __func__, __FILE__, __LINE__)
 #define mem_allocateWith(SIZE, SRC)      mem__allocateWith(SIZE, SRC, __func__, __FILE__, __LINE__)
@@ -64,7 +63,7 @@ extern "C" {
 #define mem_move(DEST, SRC, SIZE)        mem__move(DEST, SRC, SIZE)
 #endif
 
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
+#if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 // Memory tracking structure
 typedef struct mem_Info mem_Info;
 struct mem_Info {
@@ -87,39 +86,44 @@ static void __attribute__((destructor))  mem__finiInfoList(void);
 static void                              mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
 static void                              mem__removeInfo(anyptr target);
 static void                              mem__printInfoMemoryLeakTrace(void);
-#endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
+#endif /* defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED */
 
 
 #define IMPL_mem_create(TYPE)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE))
 #define IMPL_mem_createCleared(TYPE)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), 0)
 #define IMPL_mem_createWith(TYPE, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE), &makeWith(TYPE, __VA_ARGS__))
-#define IMPL_mem_destroy(PTR)          mem_deallocate(PTR)
+#define IMPL_mem_destroy(PTR)          mem_deallocate((anyptr*)(PTR))
 
 #define IMPL_mem_alloc(TYPE, COUNT)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE) * (COUNT))
 #define IMPL_mem_allocCleared(TYPE, COUNT)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), COUNT)
 #define IMPL_mem_allocWith(TYPE, COUNT, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE) * COUNT, &nArrayWith(COUNT, TYPE, __VA_ARGS__))
-#define IMPL_mem_free(PTR)                   mem_deallocate(PTR)
+#define IMPL_mem_free(PTR)                   mem_deallocate((anyptr*)(PTR))
 
 // Debug memory management functions
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
-anyptr mem__allocate(usize size, const char* func, const char* file, i32 line);
-anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line);
-anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* file, i32 line);
-anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line);
-void   mem__deallocate(anyptr ptr_addr, const char* func, const char* file, i32 line);
-anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line);
-anyptr mem__copy(anyptr dest, const anyptr src, usize size, const char* func, const char* file, i32 line);
-anyptr mem__move(anyptr dest, anyptr src, usize size, const char* func, const char* file, i32 line);
+#if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
+extern anyptr mem__allocate(usize size, const char* func, const char* file, i32 line);
+extern anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line);
+extern anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* file, i32 line);
+extern anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line);
+extern void   mem__deallocate(anyptr* ptr_addr, const char* func, const char* file, i32 line);
+extern anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line);
+extern anyptr mem__copy(anyptr dest, const anyptr src, usize size, const char* func, const char* file, i32 line);
+extern anyptr mem__move(anyptr dest, anyptr src, usize size, const char* func, const char* file, i32 line);
 #else
-anyptr mem__allocate(usize size);
-anyptr mem__allocateCleared(usize size, usize count);
-anyptr mem__allocateWith(usize size, anyptr src);
-anyptr mem__reallocate(anyptr ptr, usize size);
-void   mem__deallocate(anyptr ptr_addr);
-anyptr mem__set(anyptr dest, i32 val, usize size);
-anyptr mem__copy(anyptr dest, const anyptr src, usize size);
-anyptr mem__move(anyptr dest, anyptr src, usize size);
+extern anyptr mem__allocate(usize size);
+extern anyptr mem__allocateCleared(usize size, usize count);
+extern anyptr mem__allocateWith(usize size, anyptr src);
+extern anyptr mem__reallocate(anyptr ptr, usize size);
+extern void   mem__deallocate(anyptr* ptr_addr);
+extern anyptr mem__set(anyptr dest, i32 val, usize size);
+extern anyptr mem__copy(anyptr dest, const anyptr src, usize size);
+extern anyptr mem__move(anyptr dest, anyptr src, usize size);
 #endif
+
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
 
 
 #if defined(__cplusplus)

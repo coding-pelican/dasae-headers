@@ -24,35 +24,53 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core/cfg.h"
-#include "core/prim.h"
 #include "core/pp.h"
+#include "core/prim.h"
 
 /*========== Macros and Definitions =========================================*/
 
 #define swap(TYPE, LHS_VAR, RHS_VAR) \
-    IMPL_swap(TYPE, LHS_VAR, RHS_VAR)
+    IMPL_swap(                       \
+        pp_uniqueToken(lhs),         \
+        pp_uniqueToken(rhs),         \
+        pp_uniqueToken(tmp),         \
+        TYPE,                        \
+        LHS_VAR,                     \
+        RHS_VAR                      \
+    )
 
 #define foreach(TYPE, NAME, LIST_PTR) \
-    IMPL_foreach(TYPE, NAME, LIST_PTR)
+    IMPL_foreach(                     \
+        pp_uniqueToken(end),          \
+        TYPE,                         \
+        NAME,                         \
+        LIST_PTR                      \
+    )
 
 /*========== Macros Implementation ==========================================*/
 
-/* NOLINTBEGIN */
-#define IMPL_swap(TYPE, LHS_VAR, RHS_VAR) pp_func( \
-    Ptr(TYPE) _lhs  = addr(LHS_VAR);               \
-    Ptr(TYPE) _rhs  = addr(RHS_VAR);               \
-    TYPE _tmp       = ptrAccess(_lhs);             \
-    ptrAccess(_lhs) = ptrAccess(_rhs);             \
-    ptrAccess(_rhs) = _tmp;                        \
+// NOLINTBEGIN
+#define IMPL_swap(_lhs, _rhs, _tmp, TYPE, LHS_VAR, RHS_VAR) pp_func( \
+    Ptr(TYPE) _lhs  = addr(LHS_VAR);                                 \
+    Ptr(TYPE) _rhs  = addr(RHS_VAR);                                 \
+    TYPE _tmp       = accessPtr(_lhs);                               \
+    accessPtr(_lhs) = accessPtr(_rhs);                               \
+    accessPtr(_rhs) = _tmp;                                          \
 )
 
-#define IMPL_foreach(TYPE, NAME, LIST_PTR)                                                   \
+#define IMPL_foreach(_end, TYPE, NAME, LIST_PTR)                                             \
     for (                                                                                    \
         TYPE* NAME = (LIST_PTR)->data, * const _end = (LIST_PTR)->data + (LIST_PTR)->length; \
         NAME < _end;                                                                         \
         ++NAME                                                                               \
     )
-/* NOLINTEND */
+// NOLINTEND
+
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

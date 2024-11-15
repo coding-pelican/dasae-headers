@@ -1,3 +1,4 @@
+// NOLINTBEGIN(bugprone-terminating-continue)
 #define defer_block        \
     int _defer_return = 0; \
     int _defer_curr   = 0; \
@@ -13,7 +14,7 @@
     }                  \
     while (0)
 
-#define _DEFER_SNAPSHOT(A)             \
+#define defer__snapshot(A)             \
     {                                  \
         int _defer_prev = _defer_curr; \
         _defer_curr     = __LINE__;    \
@@ -25,11 +26,11 @@
     }
 
 #define defer(F) \
-    _DEFER_SNAPSHOT(F; goto _deferred)
+    defer__snapshot(F; goto _deferred)
 
 #define defer_scope          \
     do {                     \
-    _DEFER_SNAPSHOT(         \
+    defer__snapshot(         \
         if (_defer_return) { \
             goto _deferred;  \
         } else {             \
@@ -47,7 +48,7 @@
         _defer_return = 1; \
         goto _deferred;    \
     }
-
+// NOLINTEND(bugprone-terminating-continue)
 
 #include <stdio.h>
 

@@ -7,7 +7,7 @@
  * @updated 2024-11-10 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  time
  *
  * @brief   Source of some software
  * @details Some detailed explanation
@@ -29,6 +29,10 @@ extern "C" {
 #include "time/duration.h"
 
 /*========== Macros and Definitions =========================================*/
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
 
 
 #if defined(__cplusplus)

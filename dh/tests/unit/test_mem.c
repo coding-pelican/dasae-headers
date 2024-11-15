@@ -1,7 +1,7 @@
 // build `clang -o test_mem -xc -std=c17 test_mem.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
-#include <dh/debug/assert.h>
-#include <dh/mem.h>
+#include "dh/mem.h"
+#include "dh/debug/assert.h"
 
 #include <stdio.h>
 #include <string.h>

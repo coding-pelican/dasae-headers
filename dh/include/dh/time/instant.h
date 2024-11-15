@@ -4,10 +4,10 @@
  * @file    instant.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-10 (date of last update)
+ * @updated 2024-11-15 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/time
- * @prefix  time
+ * @prefix  time_Instant
  *
  * @brief   Source of some software
  * @details Some detailed explanation
@@ -28,20 +28,21 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 
-struct Instant {
-    SystemTime time_;
+struct time_Instant {
+    time_SystemTime time_;
 };
-Instant  Instant_now(void);
-Duration Instant_elapsed(Instant start);
-Duration Instant_durationSince(Instant start, Instant earlier);
+time_Instant  time_Instant_now(void);
+time_Duration time_Instant_elapsed(time_Instant start);
+time_Duration time_Instant_durationSince(time_Instant start, time_Instant earlier);
+u64           time_Instant_toNanos(time_Instant ins);
 
-bool Instant_eq(Instant lhs, Instant rhs);
-bool Instant_ne(Instant lhs, Instant rhs);
-bool Instant_lt(Instant lhs, Instant rhs);
-bool Instant_le(Instant lhs, Instant rhs);
-bool Instant_gt(Instant lhs, Instant rhs);
-bool Instant_ge(Instant lhs, Instant rhs);
-bool Instant_isValid(Instant ins);
+bool time_Instant_eq(time_Instant lhs, time_Instant rhs);
+bool time_Instant_ne(time_Instant lhs, time_Instant rhs);
+bool time_Instant_lt(time_Instant lhs, time_Instant rhs);
+bool time_Instant_le(time_Instant lhs, time_Instant rhs);
+bool time_Instant_gt(time_Instant lhs, time_Instant rhs);
+bool time_Instant_ge(time_Instant lhs, time_Instant rhs);
+bool time_Instant_isValid(time_Instant ins);
 
 
 #if defined(__cplusplus)

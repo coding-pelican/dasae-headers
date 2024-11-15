@@ -21,20 +21,33 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
+/*========== Includes =======================================================*/
+
 #include "core.h"
 
+/*========== Macros and Definitions =========================================*/
 
 typedef struct Range {
-    usize start; // start index in array
+    usize begin; // begin index in array
     usize end;   // end index in array
 } Range;
-Range Range_from(usize start, usize end);
-usize Range_length(Range r);
-bool  Range_isValid(Range r);
-bool  Range_contains(Range r, usize index);
 
-bool Range_eq(Range lhs, Range rhs);
-bool Range_ne(Range lhs, Range rhs);
+/*========== Extern Function Prototypes =====================================*/
+
+extern Range Range_from(usize begin, usize end);
+// length == (end - begin + 1)
+extern usize Range_length(Range r);
+extern bool  Range_isValid(Range r);
+// index must be in range [begin, end)
+extern bool  Range_contains(Range r, usize index);
+
+extern bool Range_eq(Range lhs, Range rhs);
+extern bool Range_ne(Range lhs, Range rhs);
+
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
 
 
 #if defined(__cplusplus)

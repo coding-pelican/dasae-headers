@@ -20,11 +20,12 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+
 /*========== Includes =======================================================*/
 
 #include "cfg.h" /* For `DEBUG_ENABLED` */
-#include "../core/prim.h"
-#include "../core/pp.h"
+#include "dh/core/prim.h"
+#include "dh/core/pp.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -78,10 +79,10 @@ extern "C" {
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 
 #define IMPL_debug_assert(EXPR) \
-    pp_ignore((!!(EXPR)) || (debug__assertFail(#EXPR, __func__, __FILE__, __LINE__), 0))
+    ignore((!!(EXPR)) || (debug__assertFail(#EXPR, __func__, __FILE__, __LINE__), 0))
 
-#define IMPL_debug_assertFmt(EXPR, FMT...) \
-    pp_ignore((!!(EXPR)) || (debug__assertFailFmt(#EXPR, __func__, __FILE__, __LINE__, FMT), 0))
+#define IMPL_debug_assertFmt(EXPR, ...) \
+    ignore((!!(EXPR)) || (debug__assertFailFmt(#EXPR, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
 
 #define IMPL_debug_assertTrue(EXPR)       IMPL_debug_assertFmt((EXPR) == true, "%s is not true", #EXPR)
 #define IMPL_debug_assertFalse(EXPR)      IMPL_debug_assertFmt((EXPR) == false, "%s is not false", #EXPR)
@@ -99,22 +100,22 @@ extern "C" {
 
 #else
 
-#define IMPL_debug_assert(EXPR)         pp_unused(0)
-#define IMPL_debug_assertFmt(EXPR, ...) pp_unused(0)
+#define IMPL_debug_assert(EXPR)         unused(0)
+#define IMPL_debug_assertFmt(EXPR, ...) unused(0)
 
-#define IMPL_debug_assertTrue(EXPR)       pp_unused(0)
-#define IMPL_debug_assertFalse(EXPR)      pp_unused(0)
-#define IMPL_debug_assertEq(EXPR1, EXPR2) pp_unused(0)
-#define IMPL_debug_assertNe(EXPR1, EXPR2) pp_unused(0)
-#define IMPL_debug_assertNull(EXPR)       pp_unused(0)
-#define IMPL_debug_assertNotNull(EXPR)    pp_unused(0)
+#define IMPL_debug_assertTrue(EXPR)       unused(0)
+#define IMPL_debug_assertFalse(EXPR)      unused(0)
+#define IMPL_debug_assertEq(EXPR1, EXPR2) unused(0)
+#define IMPL_debug_assertNe(EXPR1, EXPR2) unused(0)
+#define IMPL_debug_assertNull(EXPR)       unused(0)
+#define IMPL_debug_assertNotNull(EXPR)    unused(0)
 
-#define IMPL_debug_assertTrueFmt(EXPR, ...)       pp_unused(0)
-#define IMPL_debug_assertFalseFmt(EXPR, ...)      pp_unused(0)
-#define IMPL_debug_assertEqFmt(EXPR1, EXPR2, ...) pp_unused(0)
-#define IMPL_debug_assertNeFmt(EXPR1, EXPR2, ...) pp_unused(0)
-#define IMPL_debug_assertNullFmt(EXPR, ...)       pp_unused(0)
-#define IMPL_debug_assertNotNullFmt(EXPR, ...)    pp_unused(0)
+#define IMPL_debug_assertTrueFmt(EXPR, ...)       unused(0)
+#define IMPL_debug_assertFalseFmt(EXPR, ...)      unused(0)
+#define IMPL_debug_assertEqFmt(EXPR1, EXPR2, ...) unused(0)
+#define IMPL_debug_assertNeFmt(EXPR1, EXPR2, ...) unused(0)
+#define IMPL_debug_assertNullFmt(EXPR, ...)       unused(0)
+#define IMPL_debug_assertNotNullFmt(EXPR, ...)    unused(0)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 

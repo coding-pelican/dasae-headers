@@ -14,8 +14,8 @@
  */
 
 
-#ifndef PRIM_STRUCT_INCLUDED
-#define PRIM_STRUCT_INCLUDED (1)
+#ifndef CORE_PRIM_STRUCT_INCLUDED
+#define CORE_PRIM_STRUCT_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -27,43 +27,41 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define make(TYPE)                IMPL_make(TYPE)
-#define makeWith(TYPE, INITAL...) IMPL_makeWith(TYPE, INITAL)
+#define make(TYPE)              IMPL_make(TYPE)
+#define makeWith(TYPE, INIT...) IMPL_makeWith(TYPE, INIT)
 
-#define create(TYPE)                IMPL_create(TYPE)
-#define createWith(TYPE, INITAL...) IMPL_createWith(TYPE, INITAL)
+#define create(TYPE)              IMPL_create(TYPE)
+#define createWith(TYPE, INIT...) IMPL_createWith(TYPE, INIT)
 
-#define array(TYPE, INITAL...)              IMPL_array(TYPE, INITAL)
-#define nArray(LENGTH, TYPE)                IMPL_nArray(TYPE, LENGTH)
-#define nArrayWith(LENGTH, TYPE, INITAL...) IMPL_nArrayWith(TYPE, LENGTH, INITAL)
+#define array(TYPE, INIT...)              IMPL_array(TYPE, INIT)
+#define nArray(LENGTH, TYPE)              IMPL_nArray(TYPE, LENGTH)
+#define nArrayWith(LENGTH, TYPE, INIT...) IMPL_nArrayWith(TYPE, LENGTH, INIT)
 
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_make(TYPE) \
-    (TYPE) { 0 }
-#define IMPL_makeWith(TYPE, INITAL...) \
-    (TYPE) { INITAL }
+    literal(TYPE) { 0 }
+#define IMPL_makeWith(TYPE, INIT...) \
+    literal(TYPE) { INIT }
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define IMPL_create(TYPE) \
-    (TYPE[1]) {           \
-        { 0 }             \
-    }
-#define IMPL_createWith(TYPE, INITAL...) \
-    (TYPE[1]) {                          \
-        { INITAL }                       \
-    }
+    ((TYPE[1]){           \
+        literal(TYPE){ 0 } })
+#define IMPL_createWith(TYPE, INIT...) \
+    ((TYPE[1]){                        \
+        literal(TYPE){ INIT } })
 
-#define IMPL_array(TYPE, INITAL...) \
-    (TYPE[]) { INITAL }
+#define IMPL_array(TYPE, INIT...) \
+    ((TYPE[]){ INIT })
 #define IMPL_nArray(LENGTH, TYPE) \
-    (TYPE[LENGTH]) { 0 }
-#define IMPL_nArrayWith(LENGTH, TYPE, INITAL...) \
-    (TYPE[(LENGTH)]) { INITAL }
+    ((TYPE[LENGTH]){ 0 })
+#define IMPL_nArrayWith(LENGTH, TYPE, INIT...) \
+    ((TYPE[(LENGTH)]){ INIT })
 // NOLINTEND(bugprone-macro-parentheses)
 
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* PRIM_STRUCT_INCLUDED */
+#endif /* CORE_PRIM_STRUCT_INCLUDED */

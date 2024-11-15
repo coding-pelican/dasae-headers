@@ -2,8 +2,8 @@
 // run with `.\launcher <program_to_run:game_of_life> <width:160> <height:50>`
 
 
-#include <dh/core.h>
-#include <dh/debug/assert.h>
+#include "dh/core.h"
+#include "dh/debug/assert.h"
 #include "../dh-terminal/terminal.h"
 
 #include <stdio.h>
@@ -19,7 +19,11 @@ static int         Terminal_windowHeight = 25;
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        printf("[%s] Usage: %s <program_to_run> <width> <height>\n", Launcher_WindowTitle, argv[0]);
+        printf(
+            "[%s] Usage: %s <program_to_run> <width> <height>\n",
+            Launcher_WindowTitle,
+            argv[0]
+        );
         return 1;
     }
     Terminal_windowTitle = argv[1];
@@ -33,7 +37,12 @@ int main(int argc, const char* argv[]) {
     }
     debug_assert(0 < Terminal_windowWidth);
     debug_assert(0 < Terminal_windowHeight);
-    printf("[%s] Terminal size: %dx%d\n", Launcher_WindowTitle, Terminal_windowWidth, Terminal_windowHeight);
+    printf(
+        "[%s] Terminal size: %dx%d\n",
+        Launcher_WindowTitle,
+        Terminal_windowWidth,
+        Terminal_windowHeight
+    );
 
     STARTUPINFO         startupInfo = { 0 };
     PROCESS_INFORMATION processInfo = { 0 };
@@ -56,8 +65,23 @@ int main(int argc, const char* argv[]) {
     );
 
     // Create process
-    if (!CreateProcessA(NULL, command, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
-        printf("[%s] CreateProcess failed (%d).\n", Launcher_WindowTitle, (int)GetLastError());
+    if (!CreateProcessA(
+            null,
+            command,
+            null,
+            null,
+            false,
+            0,
+            null,
+            null,
+            &startupInfo,
+            &processInfo
+        )) {
+        printf(
+            "[%s] CreateProcess failed (%d).\n",
+            Launcher_WindowTitle,
+            (int)GetLastError()
+        );
         return 1;
     }
 

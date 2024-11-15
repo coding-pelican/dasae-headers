@@ -1,30 +1,28 @@
-#include <dh/range.h>
-#include <dh/debug/assert.h>
+#include "dh/range.h"
+#include "dh/debug/assert.h"
 
 
-Range Range_from(usize start, usize end) {
-    debug_assert(start <= end);
-    return makeWith(Range, .start = start, .end = end);
+Range Range_from(usize begin, usize end) {
+    debug_assert(begin <= end);
+    return makeWith(Range, .begin = begin, .end = end);
 }
 
-// length == (end - start + 1)
 usize Range_length(Range r) {
-    return r.end - r.start + 1;
+    return r.end - r.begin + 1;
 }
 
 bool Range_isValid(Range r) {
-    return r.start <= r.end;
+    return r.begin <= r.end;
 }
 
-// index must be in range [start, end)
 bool Range_contains(Range r, usize index) {
-    return r.start <= index && index < r.end;
+    return r.begin <= index && index < r.end;
 }
 
 bool Range_eq(Range lhs, Range rhs) {
-    return lhs.start == rhs.start && lhs.end == rhs.end;
+    return lhs.begin == rhs.begin && lhs.end == rhs.end;
 }
 
 bool Range_ne(Range lhs, Range rhs) {
-    return lhs.start != rhs.start || lhs.end != rhs.end;
+    return lhs.begin != rhs.begin || lhs.end != rhs.end;
 }

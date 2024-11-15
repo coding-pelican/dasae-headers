@@ -1,119 +1,113 @@
-#include <dh/time/duration.h>
-#include <dh/debug/assert.h>
+#include "dh/time/duration.h"
+#include "dh/debug/assert.h"
 
 
-Duration Duration_from(u64 secs, u32 nanos) {
-    Duration duration = makeWith(Duration, .secs = secs, .nanos = nanos);
-    if (time_nanos_per_sec <= duration.nanos) {
-        duration.secs += duration.nanos / time_nanos_per_sec;
-        duration.nanos %= time_nanos_per_sec;
-    }
-    return duration;
+time_Duration time_Duration_from(u64 secs, u32 nanos) {
+    return literal_time_Duration_from(secs, nanos);
 }
 
-Duration Duration_fromSecs(f64 secs) {
-    return Duration_from((u64)secs, (u32)((secs - (f64)(u64)secs) * time_nanos_per_sec));
+time_Duration time_Duration_fromSecs(u64 secs) {
+    return literal_time_Duration_fromSecs(secs);
 }
 
-Duration Duration_fromMillis(f64 millis) {
-    return Duration_from((u64)(millis / time_millis_per_sec), (u32)((millis - (f64)(u64)millis) * time_nanos_per_milli));
+time_Duration time_Duration_fromMillis(u64 millis) {
+    return literal_time_Duration_fromMillis(millis);
 }
 
-Duration Duration_fromMicros(f64 micros) {
-    return Duration_from((u64)(micros / time_micros_per_sec), (u32)((micros - (f64)(u64)micros) * time_nanos_per_micro));
+time_Duration time_Duration_fromMicros(u64 micros) {
+    return literal_time_Duration_fromMicros(micros);
 }
 
-Duration Duration_fromSecs_u64(u64 secs) {
-    return comptime_Duration_fromSecs(secs);
+time_Duration time_Duration_fromNanos(u64 nanos) {
+    return literal_time_Duration_fromNanos(nanos);
 }
 
-Duration Duration_fromMillis_u64(u64 millis) {
-    return comptime_Duration_fromMillis(millis);
+u64 time_Duration_asSecs(time_Duration d) {
+    return d.secs;
 }
 
-Duration Duration_fromMicros_u64(u64 micros) {
-    return comptime_Duration_fromMicros(micros);
+u32 time_Duration_subsecMillis(time_Duration d) {
+    return d.nanos / time_nanos_per_milli;
 }
 
-Duration Duration_fromNanos(u64 nanos) {
-    return comptime_Duration_fromNanos(nanos);
+u32 time_Duration_subsecMicros(time_Duration d) {
+    return d.nanos / time_nanos_per_micro;
 }
 
-f64 Duration_toSecs(Duration d) {
+u32 time_Duration_subsecNanos(time_Duration d) {
+    return d.nanos;
+}
+
+time_Duration time_Duration_fromSecs_f64(f64 secs) {
+    return time_Duration_from(
+        (u64)secs,
+        (u32)((secs - (f64)((u64)secs)) * (f64)time_nanos_per_sec)
+    );
+}
+
+f64 time_Duration_asSecs_f64(time_Duration d) {
     return (f64)d.secs + (f64)d.nanos / (f64)time_nanos_per_sec;
 }
 
-f64 Duration_toMillis(Duration d) {
-    return (f64)d.secs * (f64)time_millis_per_sec + (f64)d.nanos / (f64)time_nanos_per_milli;
-}
-
-f64 Duration_toMicros(Duration d) {
-    return (f64)d.secs * (f64)time_micros_per_sec + (f64)d.nanos / (f64)time_nanos_per_micro;
-}
-
-u64 Duration_toNanos(Duration d) {
-    return (u64)d.secs * (u64)time_nanos_per_sec + (u64)d.nanos;
-}
-
-Duration Duration_add(Duration lhs, Duration rhs) {
+time_Duration time_Duration_add(time_Duration lhs, time_Duration rhs) {
     u64 total_nanos = (u64)lhs.nanos + rhs.nanos;
     return makeWith(
-        Duration,
+        time_Duration,
         lhs.secs + rhs.secs + (total_nanos >= time_nanos_per_sec),
         (u32)(total_nanos >= time_nanos_per_sec ? total_nanos - time_nanos_per_sec : total_nanos)
     );
 }
 
-Duration Duration_sub(Duration lhs, Duration rhs) {
+time_Duration time_Duration_sub(time_Duration lhs, time_Duration rhs) {
     return makeWith(
-        Duration,
+        time_Duration,
         lhs.secs - rhs.secs - (lhs.nanos < rhs.nanos),
         lhs.nanos < rhs.nanos ? lhs.nanos + time_nanos_per_sec - rhs.nanos : lhs.nanos - rhs.nanos
     );
 }
 
-Duration Duration_mul(Duration d, u64 scalar) {
+time_Duration time_Duration_mul(time_Duration d, u64 scalar) {
     u64 total_nanos = d.nanos * scalar;
     return makeWith(
-        Duration,
+        time_Duration,
         d.secs * scalar + total_nanos / time_nanos_per_sec,
         (u32)(total_nanos % time_nanos_per_sec)
     );
 }
 
-Duration Duration_div(Duration d, u64 scalar) {
+time_Duration time_Duration_div(time_Duration d, u64 scalar) {
     u64 total_nanos = d.nanos / scalar;
     return makeWith(
-        Duration,
+        time_Duration,
         d.secs / scalar + total_nanos / time_nanos_per_sec,
         (u32)(total_nanos % time_nanos_per_sec)
     );
 }
 
-bool Duration_eq(Duration lhs, Duration rhs) {
+bool time_Duration_eq(time_Duration lhs, time_Duration rhs) {
     return lhs.secs == rhs.secs && lhs.nanos == rhs.nanos;
 }
 
-bool Duration_ne(Duration lhs, Duration rhs) {
+bool time_Duration_ne(time_Duration lhs, time_Duration rhs) {
     return lhs.secs != rhs.secs || lhs.nanos != rhs.nanos;
 }
 
-bool Duration_lt(Duration lhs, Duration rhs) {
+bool time_Duration_lt(time_Duration lhs, time_Duration rhs) {
     return lhs.secs < rhs.secs || (lhs.secs == rhs.secs && lhs.nanos < rhs.nanos);
 }
 
-bool Duration_le(Duration lhs, Duration rhs) {
+bool time_Duration_le(time_Duration lhs, time_Duration rhs) {
     return lhs.secs < rhs.secs || (lhs.secs == rhs.secs && lhs.nanos <= rhs.nanos);
 }
 
-bool Duration_gt(Duration lhs, Duration rhs) {
+bool time_Duration_gt(time_Duration lhs, time_Duration rhs) {
     return lhs.secs > rhs.secs || (lhs.secs == rhs.secs && lhs.nanos > rhs.nanos);
 }
 
-bool Duration_ge(Duration lhs, Duration rhs) {
+bool time_Duration_ge(time_Duration lhs, time_Duration rhs) {
     return lhs.secs > rhs.secs || (lhs.secs == rhs.secs && lhs.nanos >= rhs.nanos);
 }
 
-bool Duration_isZero(Duration d) {
+bool time_Duration_isZero(time_Duration d) {
     return d.secs == 0 && d.nanos == 0;
 }

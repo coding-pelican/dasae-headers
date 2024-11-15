@@ -14,8 +14,8 @@
  */
 
 
-#ifndef PRIM_BOOL_INCLUDED
-#define PRIM_BOOL_INCLUDED (1)
+#ifndef CORE_PRIM_BOOL_INCLUDED
+#define CORE_PRIM_BOOL_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -66,4 +66,4 @@ claim_assertStatic(sizeof(bool) == 1, "bool must be 1 byte");
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* __cplusplus */
-#endif /* PRIM_BOOL_INCLUDED */
+#endif /* CORE_PRIM_BOOL_INCLUDED */

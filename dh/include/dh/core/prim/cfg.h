@@ -1,14 +1,14 @@
-#ifndef PRIM_CFG_INCLUDED
-#define PRIM_CFG_INCLUDED (1)
+#ifndef CORE_PRIM_CFG_INCLUDED
+#define CORE_PRIM_CFG_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include <dh/core/cfg.h>
+#include "dh/core/cfg.h"
 
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* __cplusplus */
-#endif /* PRIM_CFG_INCLUDED */
+#endif /* CORE_PRIM_CFG_INCLUDED */

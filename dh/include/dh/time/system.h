@@ -4,7 +4,7 @@
  * @file    system.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-10 (date of last update)
+ * @updated 2024-11-15 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
@@ -27,36 +27,27 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-
-#if defined(_WIN32) || defined(_WIN64)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#else // UNIX
-#include <sys/time.h>
-#include <time.h>
-#endif
-
-
 // #if defined(_WIN32) || defined(_WIN64)
-// static SystemTime SystemTime__s_performance_frequency = { 0 };
-// static bool       SystemTime__s_frequency_initialized = false;
-// static void       SystemTime__initFrequency(void);
+// static time_SystemTime   time_SystemTime__s_performance_frequency  = 0;
+// static f64               time_SystemTime__s_frequency_inverse      = 0.0;
+// static time_SystemTime   time_SystemTime__s_offset_value_frequency = 0;
+// static bool              time_SystemTime__s_frequency_initialized  = false;
+// static void              time_SystemTime__init(void);
 // #endif /* defined(_WIN32) || defined(_WIN64) */
-SystemTime SystemTime_now(void);
-f64        SystemTime_toSecs(SystemTime time);
-f64        SystemTime_toMillis(SystemTime time);
-f64        SystemTime_toMicros(SystemTime time);
-u64        SystemTime_toNanos(SystemTime time);
-void       SystemTime_sleep(Duration duration);
-void       SystemTime_sleep_s(f64 secs);
-void       SystemTime_sleep_ms(f64 millis);
-void       SystemTime_sleep_us(f64 micros);
-void       SystemTime_sleep_ns(u64 nanos);
+
+time_SystemTime time_SystemTime_frequency(void);
+f64             time_SystemTime_frequency_inv(void);
+time_SystemTime time_SystemTime_value(void);
+time_SystemTime time_SystemTime_offset(void);
+time_SystemTime time_SystemTime_now(void);
+f64             time_SystemTime_now_f64(void);
+
+void time_SystemTime_sleep(time_Duration duration);
+void time_SystemTime_sleep_s(u64 secs);
+void time_SystemTime_sleep_s_f64(f64 secs);
+void time_SystemTime_sleep_ms(u64 millis);
+void time_SystemTime_sleep_us(u64 micros);
+void time_SystemTime_sleep_ns(u32 nanos);
 
 
 #if defined(__cplusplus)

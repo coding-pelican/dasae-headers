@@ -1,6 +1,6 @@
-#include <dh/mem.h>
-#include <dh/debug/cfg.h>
-#include <dh/debug/assert.h>
+#include "dh/mem.h"
+#include "dh/debug/cfg.h"
+#include "dh/debug/assert.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,14 +8,14 @@
 #include <time.h>
 
 
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
+#if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 
 // Global memory tracking list
 mem_Info* mem__info_list = null;
 
 // Register atexit handler for memory leak detection
 static void __attribute__((constructor)) mem__initInfoList(void) {
-    pp_ignore atexit(mem__printInfoMemoryLeakTrace);
+    ignore atexit(mem__printInfoMemoryLeakTrace);
 }
 
 static void __attribute__((destructor)) mem__finiInfoList(void) {
@@ -71,11 +71,11 @@ static void mem__printInfoMemoryLeakTrace() {
     mem_Info* current = mem__info_list;
     while (current) {
         if (0 < current->ref_count) {
-            pp_ignore fprintf(stderr, "Memory Leak Detected!\n");
-            pp_ignore fprintf(stderr, "Allocated in %s at %s:%d\n", current->func, current->file, current->line);
-            pp_ignore fprintf(stderr, "Size: %zu bytes\n", current->size);
-            pp_ignore fprintf(stderr, "Allocation time: %s", ctime(&current->alloc_time));
-            pp_ignore fprintf(stderr, "Reference count: %d\n\n", current->ref_count);
+            ignore fprintf(stderr, "Memory Leak Detected!\n");
+            ignore fprintf(stderr, "Allocated in %s at %s:%d\n", current->func, current->file, current->line);
+            ignore fprintf(stderr, "Size: %zu bytes\n", current->size);
+            ignore fprintf(stderr, "Allocation time: %s", ctime(&current->alloc_time));
+            ignore fprintf(stderr, "Reference count: %d\n\n", current->ref_count);
         }
         current = current->next;
     }
@@ -128,12 +128,12 @@ anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* fil
     return reallocated;
 }
 
-void mem__deallocate(anyptr ptr_addr, const char* func, const char* file, i32 line) {
+void mem__deallocate(anyptr* ptr_addr, const char* func, const char* file, i32 line) {
     debug_assertNotNullFmt(ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
-    anyptr* target_ptr = (anyptr*)ptr_addr;
-    mem__removeInfo(*target_ptr);
-    free(*target_ptr);
-    *target_ptr = null;
+    debug_assertNotNullFmt(*ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
+    mem__removeInfo(*ptr_addr);
+    free(*ptr_addr);
+    *ptr_addr = null;
 }
 
 anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line) {
@@ -179,10 +179,9 @@ anyptr mem__reallocate(anyptr ptr, usize size) {
     return realloc(ptr, size);
 }
 
-void mem__deallocate(anyptr ptr_addr) {
-    anyptr* target_ptr = (anyptr*)ptr_addr;
-    free(*target_ptr);
-    *target_ptr = null;
+void mem__deallocate(anyptr* ptr_addr) {
+    free(*ptr_addr);
+    *ptr_addr = null;
 }
 
 anyptr mem__set(anyptr dest, i32 val, usize size) {

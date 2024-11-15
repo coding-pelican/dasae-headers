@@ -5,17 +5,11 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include <dh/core.h>
-
+#include "dh/core.h"
 #include "color.h"
 
 
-typedef union Rect         Rect;
-typedef struct FrameBuffer FrameBuffer;
-typedef struct Canvas      Canvas;
-
-
-union Rect {
+typedef union Rect {
     i64 components[4];
     struct {
         i64 x;
@@ -29,7 +23,7 @@ union Rect {
         i64 max_x;
         i64 max_y;
     };
-};
+} Rect;
 #define Rect_(...) makeWith(Rect, __VA_ARGS__)
 Rect Rect_from(i64 x, i64 y, i64 width, i64 height);
 Rect Rect_fromMinMax(i64 min_x, i64 min_y, i64 max_x, i64 max_y);
@@ -40,7 +34,7 @@ Rect Rect_fromMinMax(i64 min_x, i64 min_y, i64 max_x, i64 max_y);
     Rect_(.min_x = (_min_x), .min_y = (_min_y), .max_x = (_max_x), .max_y = (_max_y))
 
 
-struct FrameBuffer {
+typedef struct FrameBuffer {
     struct Vector_Color {
         Color* data;
         usize  length;
@@ -54,7 +48,7 @@ struct FrameBuffer {
         };
     };
     u32 size_;
-};
+} FrameBuffer;
 FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height);
 FrameBuffer* FrameBuffer_withColor(FrameBuffer* const b, Color color);
 // FrameBuffer* FrameBuffer_withColorRange(FrameBuffer* const b, Color color, usize range_start, usize range_end);
@@ -75,7 +69,7 @@ void         FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y
 void         FrameBuffer_clear(FrameBuffer* const b, Color color);
 
 
-struct Canvas {
+typedef struct Canvas {
     union {
         FrameBuffer buffers_[2];
         struct {
@@ -85,7 +79,7 @@ struct Canvas {
     };
     FrameBuffer* current_;
     FrameBuffer* next_;
-};
+} Canvas;
 Canvas* Canvas_init(Canvas* const c, u32 width, u32 height);
 Canvas* Canvas_withColor(Canvas* const c, Color color);
 // Canvas* Canvas_withColorRange(Canvas* const c, Color color, usize range_start, usize range_end);

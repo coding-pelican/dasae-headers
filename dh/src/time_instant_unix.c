@@ -1,48 +1,49 @@
 #if !(defined(_WIN32) || defined(_WIN64))
 
-#include <dh/time/instant.h>
-#include <dh/time/system.h>
+#include "dh/time/instant.h"
+#include "dh/time/system.h"
 
+/* TODO: Apply modified version of time_SystemTime_now() */
 
-SystemTime SystemTime_now(void) {
-    SystemTime sys_time = make(SystemTime);
+time_SystemTime time_SystemTime_now(void) {
+    time_SystemTime sys_time = make(time_SystemTime);
     clock_gettime(CLOCK_MONOTONIC, &sys_time);
     return sys_time;
 }
 
-f64 SystemTime_toSecs(SystemTime time) {
+f64 time_SystemTime_toSecs(time_SystemTime time) {
     return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_sec);
 }
 
-f64 SystemTime_toMillis(SystemTime time) {
+f64 time_SystemTime_toMillis(time_SystemTime time) {
     return (f64)time.tv_sec * (f64)time_millis_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_milli);
 }
 
-f64 SystemTime_toMicros(SystemTime time) {
+f64 time_SystemTime_toMicros(time_SystemTime time) {
     return (f64)time.tv_sec * (f64)time_micros_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_micro);
 }
 
-u64 SystemTime_toNanos(SystemTime time) {
+u64 time_SystemTime_toNanos(time_SystemTime time) {
     return (u64)time.tv_sec * (u64)time_nanos_per_sec + (u64)time.tv_nsec;
 }
 
-void SystemTime_sleep(Duration duration) {
-    SystemTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
+void time_SystemTime_sleep(Duration duration) {
+    time_SystemTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
 }
 
-void SystemTime_sleep_s(f64 secs) {
-    SystemTime_sleep_ns((u64)(secs * time_nanos_per_sec));
+void time_SystemTime_sleep_s(f64 secs) {
+    time_SystemTime_sleep_ns((u64)(secs * time_nanos_per_sec));
 }
 
-void SystemTime_sleep_ms(f64 millis) {
-    SystemTime_sleep_ns((u64)(millis * time_nanos_per_milli));
+void time_SystemTime_sleep_ms(f64 millis) {
+    time_SystemTime_sleep_ns((u64)(millis * time_nanos_per_milli));
 }
 
-void SystemTime_sleep_us(f64 micros) {
-    SystemTime_sleep_ns((u64)(micros * time_nanos_per_micro));
+void time_SystemTime_sleep_us(f64 micros) {
+    time_SystemTime_sleep_ns((u64)(micros * time_nanos_per_micro));
 }
 
-void SystemTime_sleep_ns(u64 nanos) {
+void time_SystemTime_sleep_ns(u64 nanos) {
     if (nanos < 100) { return; }
 
     struct timespec req = make(struct timespec);
@@ -59,15 +60,15 @@ void SystemTime_sleep_ns(u64 nanos) {
     }
 }
 
-Instant Instant_now(void) {
-    return makeWith(Instant, .time_ = SystemTime_now());
+time_Instant time_Instant_now(void) {
+    return makeWith(time_Instant, .time_ = time_SystemTime_now());
 }
 
-Duration Instant_elapsed(Instant start) {
-    return Instant_durationSince(Instant_now(), start);
+Duration time_Instant_elapsed(time_Instant start) {
+    return time_Instant_durationSince(time_Instant_now(), start);
 }
 
-Duration Instant_durationSince(Instant start, Instant earlier) {
+Duration time_Instant_durationSince(time_Instant start, time_Instant earlier) {
     u64 secs      = start.time_.tv_sec - earlier.time_.tv_sec;
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
@@ -75,34 +76,34 @@ Duration Instant_durationSince(Instant start, Instant earlier) {
         nano_diff += time_nanos_per_sec;
     }
     u32 nanos = prim_as(u32, nano_diff);
-    return Duration_from(secs, nanos);
+    return time_Duration_from(secs, nanos);
 }
 
-bool Instant_eq(Instant lhs, Instant rhs) {
+bool time_Instant_eq(time_Instant lhs, time_Instant rhs) {
     return lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec == rhs.time_.tv_nsec;
 }
 
-bool Instant_ne(Instant lhs, Instant rhs) {
+bool time_Instant_ne(time_Instant lhs, time_Instant rhs) {
     return lhs.time_.tv_sec != rhs.time_.tv_sec || lhs.time_.tv_nsec != rhs.time_.tv_nsec;
 }
 
-bool Instant_lt(Instant lhs, Instant rhs) {
+bool time_Instant_lt(time_Instant lhs, time_Instant rhs) {
     return (lhs.time_.tv_sec < rhs.time_.tv_sec) || (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec < rhs.time_.tv_nsec);
 }
 
-bool Instant_le(Instant lhs, Instant rhs) {
+bool time_Instant_le(time_Instant lhs, time_Instant rhs) {
     return (lhs.time_.tv_sec < rhs.time_.tv_sec) || (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec <= rhs.time_.tv_nsec);
 }
 
-bool Instant_gt(Instant lhs, Instant rhs) {
+bool time_Instant_gt(time_Instant lhs, time_Instant rhs) {
     return (lhs.time_.tv_sec > rhs.time_.tv_sec) || (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec > rhs.time_.tv_nsec);
 }
 
-bool Instant_ge(Instant lhs, Instant rhs) {
+bool time_Instant_ge(time_Instant lhs, time_Instant rhs) {
     return (lhs.time_.tv_sec > rhs.time_.tv_sec) || (lhs.time_.tv_sec == rhs.time_.tv_sec && lhs.time_.tv_nsec >= rhs.time_.tv_nsec);
 }
 
-bool Instant_isValid(Instant i) {
+bool time_Instant_isValid(time_Instant i) {
     return 0 < i.time_.tv_sec;
 }
 

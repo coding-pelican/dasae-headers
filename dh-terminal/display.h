@@ -1,32 +1,32 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    claim.h
+ * @file    display.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
- * @date    2024-11-10 (date of creation)
- * @updated 2024-11-10 (date of last update)
+ * @date    2024-11-15 (date of creation)
+ * @updated 2024-11-15 (date of last update)
  * @version v1.0.0
- * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @ingroup dasae-headers(dh)/terminal
+ * @prefix  Display
  *
  * @brief   Header of some software
  * @details Some detailed explanation
  */
 
 
-#ifndef CLAIM_INCLUDED
-#define CLAIM_INCLUDED (1)
+#ifndef DISPLAY_INCLUDED
+#define DISPLAY_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif /* defined(__cplusplus) */
+#endif /* __cplusplus */
 
 
 /*========== Includes =======================================================*/
-
-#include "claim/assert_static.h"
-#include "claim/assert.h"
-
 /*========== Macros and Definitions =========================================*/
+
+#define Display_refresh_rate (30.0)
+#define Display_delta_time   (1.0 / Display_refresh_rate)
+
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST
@@ -36,4 +36,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CLAIM_INCLUDED */
+#endif /* DISPLAY_INCLUDED */

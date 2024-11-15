@@ -13,10 +13,10 @@ extern "C" {
 
 #define debug_break() \
     /* Breakpoint. */ \
-    RETURN_debug_break()
+    IMPL_debug_break()
 #define debug_only(...)                   \
     /* Used only when `DEBUG_ENABLED`. */ \
-    RETURN_debug_only(__VA_ARGS__)
+    IMPL_debug_only(__VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -24,21 +24,21 @@ extern "C" {
 
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#define RETURN_debug_break() __builtin_trap()
+#define IMPL_debug_break() __builtin_trap()
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#define RETURN_debug_break() __debugbreak()
+#define IMPL_debug_break() __debugbreak()
 #else
 /* Fallback using signal */
 #include <signal.h>
-#define RETURN_debug_break() raise(SIGTRAP)
+#define IMPL_debug_break() raise(SIGTRAP)
 #endif
-#define RETURN_debug_only(...) __VA_ARGS__
+#define IMPL_debug_only(...) __VA_ARGS__
 
 #else
 
-#define RETURN_debug_break()
-#define RETURN_debug_only(...)
+#define IMPL_debug_break()
+#define IMPL_debug_only(...)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 

@@ -24,10 +24,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-
 #include "null.h"
 #include "ptr.h"
-
 
 /*========== Macros and Definitions =========================================*/
 
@@ -46,9 +44,9 @@ extern "C" {
 #else
 #define IMPL_Ref(TYPE) Nonnull(Ptr(TYPE))
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
-#define IMPL_ref(VAR) Nonnull(anyptr) ref__checkNotNull((anyptr)(addr(VAR)))
+#define IMPL_ref(VAR) Nonnull(anyptr) ref__checkNotNull((anyptr)(&(VAR)))
 #else
-#define IMPL_ref(VAR) ((anyptr)(addr(VAR)))
+#define IMPL_ref(VAR) ((anyptr)(&(VAR)))
 #endif
 #define IMPL_deref(VAR) (*(VAR))
 #endif

@@ -108,7 +108,7 @@ dasae-headers-c/
 │   │   │   └── format.h        # String formatting
 │   │   │
 │   │   └── time/           # Time handling
-│   │       ├── duration.h      # Duration
+│   │       ├── duration.h      # time_Duration
 │   │       ├── instant.h       # Time points
 │   │       ├── system.h        # System time
 │   │       └── time.h          # Time handling and utilities

@@ -23,9 +23,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/builtin/comp.h"
-#include "dh/core/prim/ptr.h"
-#include "dh/core.h"
+#include "builtin/comp.h"
+#include "core.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -74,6 +73,11 @@ static_inline bool isGt(const anyptr lhs, const anyptr rhs, Cmp fn) {
 static_inline bool isGe(const anyptr lhs, const anyptr rhs, Cmp fn) {
     return cmp(lhs, rhs, fn) != EOrd_less;
 }
+
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
 
 
 #if defined(__cplusplus)

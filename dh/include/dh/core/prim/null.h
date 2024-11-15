@@ -14,8 +14,8 @@
  */
 
 
-#ifndef PRIM_NULL_INCLUDED
-#define PRIM_NULL_INCLUDED (1)
+#ifndef CORE_PRIM_NULL_INCLUDED
+#define CORE_PRIM_NULL_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -24,7 +24,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-
 #include "ptr.h"
 
 /*========== Macros and Definitions =========================================*/
@@ -66,6 +65,8 @@ extern "C" {
 #define Nullable(TYPE) IMPL_Nullable(TYPE)
 #define Nonnull(TYPE)  IMPL_Nonnull(TYPE)
 
+#define ensureNotNull(VAR, ...) IMPL_ensureNotNull(VAR, __VA_ARGS__)
+
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
@@ -82,8 +83,10 @@ extern "C" {
 #define IMPL_Nullable(TYPE) TYPE nullable
 #define IMPL_Nonnull(TYPE)  TYPE nonnull
 
+#define IMPL_ensureNotNull(VAR, ...) ((VAR) ? (VAR) : (__VA_ARGS__))
+
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* __cplusplus */
-#endif /* PRIM_NULL_INCLUDED */
+#endif /* CORE_PRIM_NULL_INCLUDED */

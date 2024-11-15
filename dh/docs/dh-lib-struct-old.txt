@@ -114,7 +114,7 @@ modern-c-lib/
 │   │   │   ├── pool.h         # Thread pool
 │   │   │   └── worker.h       # Worker thread utilities
 │   │   └── time/
-│   │       ├── duration.h     # Duration utilities
+│   │       ├── duration.h     # time_Duration utilities
 │   │       └── instant.h      # Time point utilities
 │   └── modern.h               # Main header file
 │

@@ -1,4 +1,4 @@
-// build `clang -xc fireworks.c ../dh/src/*.c -o fireworks -DNDEBUG -O3 -static`
+// build `clang -o fireworks -xc fireworks.c ../dh/src/*.c ../dh-terminal/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 // run with `.\launcher fireworks 160 50`
 
 /*
@@ -11,14 +11,18 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 */
 
 
-#include <dh/core/prim.h>
-#include <dh/core/pp.h>
-#include <dh/core.h>
-#include <dh/debug/assert.h>
+#include "dh/core/prim.h"
+#include "dh/core/pp.h"
+#include "dh/core.h"
+#include "dh/debug/assert.h"
+#include "dh/time/duration.h"
+#include "dh/time/instant.h"
+#include "dh/time/system.h"
 
-#include <dh/mem.h>
-#include <dh/defer.h>
-#include <dh/random.h>
+#define NMEM_TRACE
+#include "dh/mem.h"
+#include "dh/defer.h"
+#include "dh/random.h"
 
 // FIXME: Expected memory access error
 #include "../dh-terminal/terminal.h"
@@ -28,6 +32,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 #include "../dh-terminal/color.h"
 #include "../dh-terminal/canvas.h"
 #include "../dh-terminal/window.h" /* WIP FIXING HEADER INTERNAL */
+#include "../dh-terminal/display.h"
 
 #include <locale.h>
 #include <stdio.h>
@@ -155,7 +160,7 @@ void Terminal_shutdown(void) {
 #define Display_UnitPixel1x2FormatMaxCase     "\033[38;2;255;255;255;48;2;255;255;255m▀"
 #define Display_UnitPixel1x2FormatMaxCaseSize (sizeof(Display_UnitPixel1x2FormatMaxCase) / sizeof(Display_UnitPixel1x2FormatMaxCase[0]))
 #define Display_BufferSize                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseSize)
-#define Display_shows_title_in_buffer         true
+#define Display_shows_title_in_buffer         false
 
 static char  Display_front_buffer[Display_BufferSize] = { 0 };
 static char  Display_back_buffer[Display_BufferSize]  = { 0 };
@@ -298,22 +303,22 @@ void Display_render() {
 #endif
 }
 
-Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
-    Duration overhead_duration = Duration_zero;
+time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
+    time_Duration overhead_duration = time_Duration_zero;
 
     Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
 
     const u64 overhead_iterations = 32;
     for (usize measurements = 0; measurements < overhead_iterations; ++measurements) {
-        Instant start = Instant_now();
+        time_Instant start = time_Instant_now();
         for (usize i = 0; i < Display_Size; ++i) {
             buffer[i] = Color_fromOpaque(0, 0, 0);
         }
         Display_setBufferFromColors(window, buffer);
         Display_render();
-        overhead_duration = Duration_add(overhead_duration, Instant_elapsed(start));
+        overhead_duration = time_Duration_add(overhead_duration, time_Instant_elapsed(start));
     }
-    overhead_duration = Duration_div(overhead_duration, overhead_iterations);
+    overhead_duration = time_Duration_div(overhead_duration, overhead_iterations);
 
     return overhead_duration;
 }
@@ -369,31 +374,31 @@ Particle* Particle_withFading(Particle* const p, f64 fading) {
 }
 
 bool Particle_isDead(const Particle* const p) {
-    debug_assertNotNull(p);
+    if (p == null) { return false; }
     return p->lifetime <= 0.0;
 }
 
-void Particle_update(Particle* const p) {
+void Particle_update(Particle* const p, f64 delta) {
     debug_assertNotNull(p);
     if (Particle_isDead(p)) { return; }
 
-    p->speed[0] += p->acceleration[0];
-    p->speed[1] += p->acceleration[1];
+    p->speed[0] += p->acceleration[0] * delta;
+    p->speed[1] += p->acceleration[1] * delta;
 
-    p->position[0] += p->speed[0];
-    p->position[1] += p->speed[1];
+    p->position[0] += p->speed[0] * delta;
+    p->position[1] += p->speed[1] * delta;
 
-    p->lifetime -= p->fading;
+    p->lifetime -= p->fading * delta;
 }
 
-void Particle_render(const Particle* const p, Canvas* const canvas) {
+void Particle_render(const Particle* const p, Canvas* const canvas, f64 delta) {
     debug_assertNotNull(p);
     if (Particle_isDead(p)) { return; }
 
     const Color render_color = Color_fromOpaque(
-        prim_as(u8, prim_as(f64, p->color.r) * p->lifetime),
-        prim_as(u8, prim_as(f64, p->color.g) * p->lifetime),
-        prim_as(u8, prim_as(f64, p->color.b) * p->lifetime)
+        as(u8, as(f64, p->color.r) * p->lifetime * delta),
+        as(u8, as(f64, p->color.g) * p->lifetime * delta),
+        as(u8, as(f64, p->color.b) * p->lifetime * delta)
     );
 
     Canvas_fillRect(
@@ -401,17 +406,17 @@ void Particle_render(const Particle* const p, Canvas* const canvas) {
         Canvas_normalizeRect(
             canvas,
             comptime_Rect_from(
-                prim_as(i64, p->position[0]),
-                prim_as(i64, p->position[1]),
-                prim_as(u32, p->dimensions[0]),
-                prim_as(u32, p->dimensions[1])
+                as(i64, p->position[0]),
+                as(i64, p->position[1]),
+                as(u32, p->dimensions[0]),
+                as(u32, p->dimensions[1])
             )
         ),
         render_color
     );
 }
 
-
+// FIXME: Find null access bug
 typedef struct Firework {
     Particle* rocket;
     struct Vector_Particle {
@@ -425,7 +430,7 @@ typedef struct Firework {
 Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color) {
     Particle* const rocket = mem_create(Particle);
     Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_white);
-    Particle_withSpeed(rocket, 0.0, -2.0 - random_f64(random_rng) * -1.0);
+    Particle_withSpeed(rocket, 0.0, -2.0 - Random_f64(Random_rng) * -1.0);
     Particle_withAcceleration(rocket, 0.0, 0.02);
 
     *f = makeWith(
@@ -451,35 +456,35 @@ Firework* Firework_fini(Firework* const f) {
     return f;
 }
 
-void Firework_update(Firework* const f) {
+void Firework_update(Firework* const f, f64 delta) {
     if (f->rocket) {
-        Particle_update(f->rocket);
+        Particle_update(f->rocket, delta);
         if (-0.2 <= f->rocket->speed[1]) {
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.length) { break; }
 
-                const i64 x      = prim_as(i64, f->rocket->position[0]);
-                const i64 y      = prim_as(i64, f->rocket->position[1]);
+                const i64 x      = as(i64, f->rocket->position[0]);
+                const i64 y      = as(i64, f->rocket->position[1]);
                 const i64 width  = 1;
                 const i64 height = 1;
                 const HSL color  = HSL_from(
                     f->effect_base_color.h,
-                    f->effect_base_color.s + (random_f64(random_rng) - 0.5) * 20.0,
-                    f->effect_base_color.l + (random_f64(random_rng) - 0.5) * 40.0
+                    f->effect_base_color.s + (Random_f64(Random_rng) - 0.5) * 20.0,
+                    f->effect_base_color.l + (Random_f64(Random_rng) - 0.5) * 40.0
                 );
 
                 Particle* const particle = Particle_init(
                     create(Particle),
-                    prim_as(f64, x),
-                    prim_as(f64, y),
-                    prim_as(f64, width),
-                    prim_as(f64, height),
+                    as(f64, x),
+                    as(f64, y),
+                    as(f64, width),
+                    as(f64, height),
                     HSL_intoColorOpaque(color)
                 );
                 Particle_withSpeed(
                     particle,
-                    (random_f64(random_rng) - 0.5) * 1.0,
-                    (random_f64(random_rng) - 0.9) * 1.0
+                    (Random_f64(Random_rng) - 0.5) * 1.0,
+                    (Random_f64(Random_rng) - 0.9) * 1.0
                 );
                 Particle_withAcceleration(particle, 0.0, 0.02);
                 Particle_withFading(particle, 0.01);
@@ -490,16 +495,16 @@ void Firework_update(Firework* const f) {
         }
     }
     foreach (Particle, particle, &f->effects) {
-        Particle_update(particle);
+        Particle_update(particle, delta);
     }
 }
 
-void Firework_render(const Firework* const f, Canvas* const canvas) {
+void Firework_render(const Firework* const f, Canvas* const canvas, f64 delta) {
     if (f->rocket) {
-        Particle_render(f->rocket, canvas);
+        Particle_render(f->rocket, canvas, delta);
     }
     foreach (const Particle, particle, &f->effects) {
-        Particle_render(particle, canvas);
+        Particle_render(particle, canvas, delta);
     }
 }
 
@@ -543,17 +548,17 @@ void State_spawnFirework(State* const s) {
     if (s->fireworks.capacity <= s->fireworks.length) { return; }
     Firework_init(
         &s->fireworks.data[s->fireworks.length++],
-        prim_as(i64, random_u32(random_rng) % s->width),
+        as(i64, Random_u32(Random_rng) % s->width),
         s->height,
         Color_fromOpaque(
-            random_u8(random_rng),
-            random_u8(random_rng),
-            random_u8(random_rng)
+            Random_u8(Random_rng),
+            Random_u8(Random_rng),
+            Random_u8(Random_rng)
         )
     );
 }
 
-void State_update(State* const s) {
+void State_update(State* const s, f64 delta) {
     // Remove dead fireworks.
     foreach (Firework, firework, &s->fireworks) {
         if (!Firework_isDead(firework)) { continue; }
@@ -562,12 +567,12 @@ void State_update(State* const s) {
         --firework;
     }
     // Add a new rocket with with 5% chance.
-    if (random_f64(random_rng) < 0.05) {
+    if (Random_f64(Random_rng) < 0.05) {
         State_spawnFirework(s);
     }
     // Update all fireworks.
     foreach (Firework, firework, &s->fireworks) {
-        Firework_update(firework);
+        Firework_update(firework, delta);
     }
 }
 
@@ -588,7 +593,7 @@ const f32 target_frame_31_25_per_s = 31.25f;
 const f32 target_frame_10_00_per_s = 10.00f;
 
 
-// FIXME: Fix how defer is called/used
+/* // Fix how defer is called/used
 void Window_cleanup_defer(Window* w) {
     Window_fini(w);
     mem_destroy(&w);
@@ -602,47 +607,64 @@ void Canvas_cleanup_defer(Canvas* c) {
     mem_destroy(&c);
 }
 void Terminal_cleanup_defer(anyptr null_args) {
-    pp_unused(null_args);
+    unused(null_args);
     Terminal_shutdown();
-}
+} */
 
 
 int main(int argc, const char* argv[]) {
-    pp_unused(argc);
-    pp_unused(argv);
+    unused(argc);
+    unused(argv);
 
-    random_init(random_rng);
+    Random_init(Random_rng);
 
-    defer_scope {
+    defer_block {
         Window* const window = mem_create(Window);
         {
             Window_init(window, WindowConfig_default);
             Window_withSize(window, 160, 50);
             Window_withTitle(window, "firework", Display_shows_title_in_buffer);
-            Window_withFrameRate(window, true, target_frame_62_50_per_s, false, true);
+            Window_withFrame(window, true, target_frame_62_50_per_s, 32, false, false);
         }
-        defer(Window_cleanup_defer, window);
+        defer({
+            Window_fini(window);
+            mem_destroy(&window);
+        });
 
         State* const state = mem_create(State);
         {
             State_init(state, Window_width(window), Window_height(window) * 2);
         }
-        defer(State_cleanup_defer, state);
+        defer({
+            State_fini(state);
+            mem_destroy(&state);
+        });
 
         Canvas* const canvas = mem_create(Canvas);
         {
             Canvas_init(canvas, state->width, state->height);
             Canvas_withColor(canvas, Color_black);
         }
-        defer(Canvas_cleanup_defer, canvas);
+        defer({
+            Canvas_fini(canvas);
+            mem_destroy(&canvas);
+        });
 
         Display_init();
         Terminal_bootup();
-        defer(Terminal_cleanup_defer, null);
 
         bool is_running = true;
         while (is_running) {
-            Window_update(window);
+            /* Window_update(window); */ {
+                // prev    = curr;
+                // curr    = time_SystemTime_now_f64();
+                // elapsed = curr - prev;
+            }
+
+            // const f64   real_delta_time = elapsed;
+            // const usize update_step     = (usize)(Display_delta_time / real_delta_time);
+            // for (usize step = 0; step < update_step; ++step) {
+            //     const f64 delta_time = (f64)step * real_delta_time;
 
             /* UPDATE BEGIN */ {
                 // TODO: use wrapper module instead of this
@@ -653,24 +675,30 @@ int main(int argc, const char* argv[]) {
                     State_spawnFirework(state);
                 }
 
-                State_update(state);
+                State_update(state, 1);
             } /* UPDATE END */
             /* RENDER BEGIN */ {
                 Canvas_clear(canvas, Color_black);
                 foreach (const Firework, firework, &state->fireworks) {
-                    Firework_render(firework, canvas);
+                    Firework_render(firework, canvas, 1);
                 }
-                // Canvas_render(canvas);
-                {
-                    Display_setBufferFromColors(window, FrameBuffer_peekData(Canvas_peekBuffer(canvas)));
-                    Display_render();
-                }
-            } /* RENDER END */
 
-            Window_delay(window);
+            } /* RENDER END */
+            // }
+
+            /* Window_render(window, canvas); */ {
+                Display_setBufferFromColors(window, FrameBuffer_peekData(Canvas_peekBuffer(canvas)));
+                Display_render();
+            }
+            /* Window_delay(window); */ {
+                // const f64 delay = Display_delta_time - elapsed;
+                // time_SystemTime_sleep_s_f64(delay);
+            }
         }
     }
+    block_deferred();
 
+    Terminal_shutdown();
     return 0;
 }
 

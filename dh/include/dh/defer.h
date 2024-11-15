@@ -3,8 +3,8 @@
  *
  * @file    defer.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
- * @date    2024-11-05 (date of creation)
- * @updated 2024-11-12 (date of last update)
+ * @date    2024-11-15 (date of creation)
+ * @updated 2024-11-15 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -24,105 +24,81 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core.h"
-#include "mem.h"
-
-#include <setjmp.h>
 
 /*========== Macros and Definitions =========================================*/
 
-/* More sophisticated version combining best aspects */
-typedef struct DeferBlock {
-    struct DeferBlock* prev;
-    jmp_buf            jump_buf;
-    bool               executed;
-} DeferBlock;
-static DeferBlock DeferBlock_sentinel_node = { &DeferBlock_sentinel_node, { 0 }, true };
+#define defer_block IMPL_defer_block
+#define defer_scope IMPL_defer_scope
 
-force_inline DeferBlock* DeferBlock_init(DeferBlock* b) {
-    b->prev     = &DeferBlock_sentinel_node;
-    b->executed = false;
-    return b;
-}
+#define defer_break  IMPL_defer_break
+#define defer_return IMPL_defer_return
 
+#define scope_deferred() IMPL_scope_deferred()
+#define block_deferred() IMPL_block_deferred()
 
-typedef struct DeferScope {
-    DeferBlock* curr;
-    bool        active;
-    jmp_buf     execute_return; // defer_scope__execute의 컨텍스트를 저장
-} DeferScope;
-static DeferBlock* const DeferScope__sentinel = &DeferBlock_sentinel_node;
+#define defer(STMT...) IMPL_defer(STMT)
 
-force_inline DeferScope* DeferScope_init(DeferScope* s) {
-    s->curr   = DeferScope__sentinel;
-    s->active = true;
-    return s;
-}
-force_inline DeferScope* DeferScope_fini(DeferScope* s) {
-    while (s->curr != DeferScope__sentinel) {
-        DeferBlock* curr = s->curr;
-        s->curr          = curr->prev;
-        mem_destroy(curr);
+#define defer_block__snapshot(STMT...) IMPL_defer_block__snapshot(STMT)
+
+/*========== Macros Implementation ==========================================*/
+
+// NOLINTBEGIN(bugprone-terminating-continue)
+#define IMPL_defer_block   \
+    i32 _defer_return = 0; \
+    unused(_defer_return); \
+    i32 _defer_curr = 0;   \
+    _deferred:             \
+    switch (_defer_curr) { \
+    default:               \
+        break;             \
+    case 0:                \
+        _defer_curr = -1;
+
+#define IMPL_defer_scope     \
+    do {                     \
+    defer_block__snapshot(   \
+        if (_defer_return) { \
+            goto _deferred;  \
+        } else {             \
+            continue;        \
+        }                    \
+    )
+
+#define IMPL_defer_break \
+    {                    \
+        goto _deferred;  \
     }
-    s->curr   = DeferScope__sentinel;
-    s->active = false;
-    return s;
-}
-force_inline void DeferScope_addBlock(DeferScope* s, DeferBlock* block) {
-    if (s->curr != DeferScope__sentinel) {
-        block->prev = s->curr;
+
+#define IMPL_defer_return  \
+    {                      \
+        _defer_return = 1; \
+        goto _deferred;    \
     }
-    s->curr = block;
-}
 
-#define DeferScope_deferred(S) ({                                   \
-    printf("Execute defer blocks...\n");                            \
-    DeferBlock* _curr = (S)->curr;                                  \
-    while (_curr != DeferScope__sentinel) {                         \
-        if (!_curr->executed) {                                     \
-            _curr->executed = true;                                 \
-            /* 현재 실행 컨텍스트를 저장 */              \
-            if (setjmp((S)->execute_return) == 0) {                 \
-                /* defer block으로 점프 */                      \
-                printf("Executing defer block...\n");               \
-                longjmp(_curr->jump_buf, 1);                        \
-                /* 이 지점 이후로는 실행되지 않음 */   \
-            }                                                       \
-            printf("Returned from defer block\n");                  \
-            /* defer block 실행 완료 후 여기로 돌아옴 */ \
-        }                                                           \
-        _curr = _curr->prev;                                        \
-        printf("Executed defer block\n");                           \
-    }                                                               \
-})
+#define IMPL_scope_deferred() \
+    goto _deferred;           \
+    }                         \
+    while (false)
 
-#define defer_scope                             \
-    for (DeferScope* const _defer_scope         \
-         = DeferScope_init(create(DeferScope)); \
-         _defer_scope->active;                  \
-         /* none */)                            \
-        for (bool _run_once = true;             \
-             _run_once;                         \
-             (_run_once = false,                \
-             DeferScope_deferred(_defer_scope), \
-             DeferScope_fini(_defer_scope)))
+#define IMPL_block_deferred() \
+    goto _deferred;           \
+    }                         \
+    while (false)
 
-#define defer_scope_return             \
-    DeferScope_deferred(_defer_scope); \
-    DeferScope_fini(_defer_scope);\
-    return
+#define IMPL_defer(STMT...) \
+    defer_block__snapshot(STMT; goto _deferred)
 
-#define defer(STATEMENTS...)                                                \
-    do {                                                                    \
-        DeferBlock* const _block = DeferBlock_init(mem_create(DeferBlock)); \
-        if (setjmp(_block->jump_buf) == 0) {                                \
-            /* first call setjmp */                                         \
-            DeferScope_addBlock(_defer_scope, _block);                      \
-            break;                                                          \
-        }                                                                   \
-        STATEMENTS                                                          \
-        /* return DeferScope_deferred */                                    \
-        longjmp(_defer_scope->execute_return, 1);                           \
-    } while (false)
+#define IMPL_defer_block__snapshot(STMT...) \
+    {                                       \
+        i32 _defer_prev = _defer_curr;      \
+        _defer_curr     = __LINE__;         \
+        if (false) {                        \
+        case __LINE__:                      \
+            _defer_curr = _defer_prev;      \
+            STMT;                           \
+        }                                   \
+    }
+// NOLINTEND(bugprone-terminating-continue)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

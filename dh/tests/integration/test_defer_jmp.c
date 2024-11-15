@@ -1,25 +1,25 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    test_defer.c
+ * @file    test_defer_jmp.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-05
- * @updated 2024-11-05
+ * @updated 2024-11-15
  * @version v1.0.0
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
  */
-// build `clang -o test_defer -xc -std=c17 test_defer.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
+// build `clang -o test_defer_jmp -xc -std=c17 test_defer.c ../../src/*.c -static -g  -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
 
 /*========== Includes =======================================================*/
 
-#include <dh/core.h>
-#include <dh/debug/assert.h>
+#include "dh/core.h"
+#include "dh/debug/assert.h"
 
-#include <dh/ds/container.h>
-#include <dh/ds/vector.h>
-#include <dh/defer.h>
+#include "dh/ds/container.h"
+#include "dh/ds/vector.h"
+#include "dh/defer_jmp.h"
 
 #include <stdio.h>
 
@@ -28,7 +28,7 @@
 static i32 cleanup_counter = 0;
 
 static void TEST_defer_countCleanup(anyptr context) {
-    pp_unused(context);
+    unused(context);
     cleanup_counter++;
     printf("Cleanup called: %d\n", cleanup_counter);
 }
@@ -144,10 +144,10 @@ static void TEST_defer_VectorCleanup(void) {
         });
         vector_initialized = true;
 
-        Vector_append(f32, vec, prim_value(f32, 1.0f));
-        Vector_append(f32, vec, prim_value(f32, 2.0f));
-        Vector_append(f32, vec, prim_value(f32, 3.0f));
-        Vector_append(f32, vec, prim_value(f32, 4.0f));
+        Vector_append(f32, vec, createWith(f32, 1.0f));
+        Vector_append(f32, vec, createWith(f32, 2.0f));
+        Vector_append(f32, vec, createWith(f32, 3.0f));
+        Vector_append(f32, vec, createWith(f32, 4.0f));
 
         for (usize i = 0; i < Vector_length(f32, vec); ++i) {
             debug_assert(Vector_get(f32, vec, i) == (f32)(i + 1.0f));
@@ -161,10 +161,10 @@ static void TEST_defer_VectorCleanup(void) {
         defer({ f32Vector_fini(vec); });
         vector_initialized = true;
 
-        Vector_append(f32, vec, prim_value(f32, 5.0f));
-        Vector_append(f32, vec, prim_value(f32, 6.0f));
-        Vector_append(f32, vec, prim_value(f32, 7.0f));
-        Vector_append(f32, vec, prim_value(f32, 8.0f));
+        Vector_append(f32, vec, createWith(f32, 5.0f));
+        Vector_append(f32, vec, createWith(f32, 6.0f));
+        Vector_append(f32, vec, createWith(f32, 7.0f));
+        Vector_append(f32, vec, createWith(f32, 8.0f));
 
         for (usize i = 0; i < Vector_length(f32, vec); ++i) {
             debug_assert(Vector_get(f32, vec, i) == (f32)(i + 5.0f));

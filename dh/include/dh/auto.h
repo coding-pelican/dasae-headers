@@ -1,13 +1,11 @@
-#ifndef CORE_AUTO_INCLUDED
-#define CORE_AUTO_INCLUDED (1)
+#ifndef AUTO_INCLUDED
+#define AUTO_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 
 /*========== Includes =======================================================*/
-
-#include "cfg.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -30,7 +28,7 @@ extern "C" {
 #define IMPL_auto no_auto
 #define IMPL_var  no_var
 #define IMPL_let  no_let
-// #    error "C++11 or later is required for auto keyword support"
+#warning "C++11 or later is required for auto keyword support"
 #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201710L)
 /* C18 or later supports the auto keyword */
@@ -47,11 +45,16 @@ extern "C" {
 #define IMPL_auto no_auto
 #define IMPL_var  no_var
 #define IMPL_let  no_let
-// #  error "No support for auto type deduction in this compiler"
+#warning "No support for auto type deduction in this compiler"
 #endif
+
+/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
 
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* __cplusplus */
-#endif /* CORE_AUTO_INCLUDED */
+#endif /* AUTO_INCLUDED */
