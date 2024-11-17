@@ -28,14 +28,14 @@ update)
 /*========== Static Function Implementations ================================*/
 /*========== Extern Function Implementations ================================*/
 
-usize Vector__capacity(Vector* vec) {
+usize ds_Vec__capacity(ds_Vec* vec) {
     return vec->capacity;
 }
 
-bool Vector__append(Vector* vec, anyptr item) {
+bool ds_Vec__append(ds_Vec* vec, anyptr item) {
     if (vec->container.length >= vec->capacity) {
         usize new_cap = vec->capacity * 2 + 8;
-        if (!Vector__ensureCapacity(vec, new_cap)) {
+        if (!ds_Vec__ensureCapacity(vec, new_cap)) {
             return false;
         }
     }
@@ -46,17 +46,17 @@ bool Vector__append(Vector* vec, anyptr item) {
     return true;
 }
 
-void Vector__appendAssumeCapacity(Vector* vec, anyptr item) {
+void ds_Vec__appendAssumeCapacity(ds_Vec* vec, anyptr item) {
     debug_assert(vec->container.length < vec->capacity);
     u8* dest = (u8*)vec->container.data + (vec->container.length * vec->container.elem_size);
     mem_copy(dest, item, vec->container.elem_size);
     vec->container.length++;
 }
 
-bool Vector__prepend(Vector* vec, anyptr item) {
+bool ds_Vec__prepend(ds_Vec* vec, anyptr item) {
     if (vec->container.length >= vec->capacity) {
         usize new_cap = vec->capacity * 2 + 8;
-        if (!Vector__ensureCapacity(vec, new_cap)) {
+        if (!ds_Vec__ensureCapacity(vec, new_cap)) {
             return false;
         }
     }
@@ -72,7 +72,7 @@ bool Vector__prepend(Vector* vec, anyptr item) {
     return true;
 }
 
-void Vector__prependAssumeCapacity(Vector* vec, anyptr item) {
+void ds_Vec__prependAssumeCapacity(ds_Vec* vec, anyptr item) {
     debug_assert(vec->container.length < vec->capacity);
 
     u8* src = vec->container.data;
@@ -83,20 +83,20 @@ void Vector__prependAssumeCapacity(Vector* vec, anyptr item) {
     vec->container.length++;
 }
 
-anyptr Vector__pop(Vector* vec) {
+anyptr ds_Vec__pop(ds_Vec* vec) {
     debug_assert(vec->container.length > 0);
     vec->container.length--;
     return (u8*)vec->container.data + (vec->container.length * vec->container.elem_size);
 }
 
-anyptr Vector__popOrNull(Vector* vec) {
+anyptr ds_Vec__popOrNull(ds_Vec* vec) {
     if (vec->container.length == 0) {
         return null;
     }
-    return Vector__pop(vec);
+    return ds_Vec__pop(vec);
 }
 
-anyptr Vector__shift(Vector* vec) {
+anyptr ds_Vec__shift(ds_Vec* vec) {
     debug_assert(vec->container.length > 0);
 
     // Store first element for return
@@ -112,14 +112,14 @@ anyptr Vector__shift(Vector* vec) {
     return first;
 }
 
-anyptr Vector__shiftOrNull(Vector* vec) {
+anyptr ds_Vec__shiftOrNull(ds_Vec* vec) {
     if (vec->container.length == 0) {
         return null;
     }
-    return Vector__shift(vec);
+    return ds_Vec__shift(vec);
 }
 
-bool Vector__ensureCapacity(Vector* vec, usize new_capacity) {
+bool ds_Vec__ensureCapacity(ds_Vec* vec, usize new_capacity) {
     if (vec->capacity >= new_capacity) {
         return true;
     }
@@ -135,7 +135,7 @@ bool Vector__ensureCapacity(Vector* vec, usize new_capacity) {
     return true;
 }
 
-bool Vector__ensurePreciseCapacity(Vector* vec, usize new_capacity) {
+bool ds_Vec__ensurePreciseCapacity(ds_Vec* vec, usize new_capacity) {
     if (vec->capacity == new_capacity) {
         return true;
     }
@@ -150,16 +150,16 @@ bool Vector__ensurePreciseCapacity(Vector* vec, usize new_capacity) {
     return true;
 }
 
-void Vector__expandToCapacity(Vector* vec) {
+void ds_Vec__expandToCapacity(ds_Vec* vec) {
     vec->container.length = vec->capacity;
 }
 
-bool Vector__insert(Vector* vec, usize index, anyptr item) {
+bool ds_Vec__insert(ds_Vec* vec, usize index, anyptr item) {
     debug_assert(index <= vec->container.length);
 
     if (vec->container.length >= vec->capacity) {
         usize new_cap = vec->capacity * 2 + 8;
-        if (!Vector__ensureCapacity(vec, new_cap)) {
+        if (!ds_Vec__ensureCapacity(vec, new_cap)) {
             return false;
         }
     }
@@ -175,7 +175,7 @@ bool Vector__insert(Vector* vec, usize index, anyptr item) {
     return true;
 }
 
-void Vector__insertAssumeCapacity(Vector* vec, usize index, anyptr item) {
+void ds_Vec__insertAssumeCapacity(ds_Vec* vec, usize index, anyptr item) {
     debug_assert(index <= vec->container.length);
     debug_assert(vec->container.length < vec->capacity);
 
@@ -187,7 +187,7 @@ void Vector__insertAssumeCapacity(Vector* vec, usize index, anyptr item) {
     vec->container.length++;
 }
 
-anyptr Vector__orderedRemove(Vector* vec, usize index) {
+anyptr ds_Vec__orderedRemove(ds_Vec* vec, usize index) {
     debug_assert(index < vec->container.length);
 
     u8* removed = (u8*)vec->container.data + (index * vec->container.elem_size);
@@ -198,7 +198,7 @@ anyptr Vector__orderedRemove(Vector* vec, usize index) {
     return removed;
 }
 
-anyptr Vector__swapRemove(Vector* vec, usize index) {
+anyptr ds_Vec__swapRemove(ds_Vec* vec, usize index) {
     debug_assert(index < vec->container.length);
 
     u8* removed = (u8*)vec->container.data + (index * vec->container.elem_size);
@@ -212,9 +212,9 @@ anyptr Vector__swapRemove(Vector* vec, usize index) {
     return removed;
 }
 
-bool Vector__resize(Vector* vec, usize new_len) {
+bool ds_Vec__resize(ds_Vec* vec, usize new_len) {
     if (new_len > vec->capacity) {
-        if (!Vector__ensureCapacity(vec, new_len)) {
+        if (!ds_Vec__ensureCapacity(vec, new_len)) {
             return false;
         }
     }
@@ -222,38 +222,38 @@ bool Vector__resize(Vector* vec, usize new_len) {
     return true;
 }
 
-void Vector__shrinkAndFree(Vector* vec, usize new_len) {
+void ds_Vec__shrinkAndFree(ds_Vec* vec, usize new_len) {
     debug_assert(new_len <= vec->container.length);
 
     if (new_len < vec->container.length) {
         vec->container.length = new_len;
-        Vector__ensurePreciseCapacity(vec, new_len);
+        ds_Vec__ensurePreciseCapacity(vec, new_len);
     }
 }
 
-void Vector__shrinkRetainingCapacity(Vector* vec, usize new_len) {
+void ds_Vec__shrinkRetainingCapacity(ds_Vec* vec, usize new_len) {
     debug_assert(new_len <= vec->container.length);
     vec->container.length = new_len;
 }
 
-anyptr Vector__getFirst(Vector* vec) {
+anyptr ds_Vec__getFirst(ds_Vec* vec) {
     debug_assert(vec->container.length > 0);
     return vec->container.data;
 }
 
-anyptr Vector__getFirstOrNull(Vector* vec) {
+anyptr ds_Vec__getFirstOrNull(ds_Vec* vec) {
     if (vec->container.length == 0) {
         return null;
     }
     return vec->container.data;
 }
 
-anyptr Vector__getLast(Vector* vec) {
+anyptr ds_Vec__getLast(ds_Vec* vec) {
     debug_assert(vec->container.length > 0);
     return (u8*)vec->container.data + ((vec->container.length - 1) * vec->container.elem_size);
 }
 
-anyptr Vector__getLastOrNull(Vector* vec) {
+anyptr ds_Vec__getLastOrNull(ds_Vec* vec) {
     if (vec->container.length == 0) {
         return null;
     }

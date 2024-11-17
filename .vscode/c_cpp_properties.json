@@ -25,7 +25,7 @@
           "${vcpkgRoot}/x64-windows/include/*",
           "${vcpkgRoot}/x86-windows/include/*"
         ],
-        "limitSymbolsToIncludedHeaders": true
+        "LIMITSymbolsToIncludedHeaders": true
       },
       "configurationProvider": "ms-vscode.cpptools"
     },
@@ -48,7 +48,7 @@
         "path": [
           "${workspaceFolder}/*"
         ],
-        "limitSymbolsToIncludedHeaders": true
+        "LIMITSymbolsToIncludedHeaders": true
       },
       "configurationProvider": "ms-vscode.cpptools"
     },
@@ -76,7 +76,7 @@
           "${vcpkgRoot}/x64-windows/include/*",
           "${vcpkgRoot}/x86-windows/include/*"
         ],
-        "limitSymbolsToIncludedHeaders": true
+        "LIMITSymbolsToIncludedHeaders": true
       },
       "configurationProvider": "ms-vscode.cpptools"
     },
@@ -99,7 +99,7 @@
         "path": [
           "${workspaceFolder}/*"
         ],
-        "limitSymbolsToIncludedHeaders": true
+        "LIMITSymbolsToIncludedHeaders": true
       },
       "configurationProvider": "ms-vscode.cpptools"
     }

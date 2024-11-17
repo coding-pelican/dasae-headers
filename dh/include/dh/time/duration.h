@@ -1,7 +1,7 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    duration.h
+ * @file    Duration.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
  * @updated 2024-11-15 (date of last update)
@@ -24,6 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "common.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -31,6 +32,7 @@ struct time_Duration {
     u64 secs;
     u32 nanos;
 };
+
 time_Duration time_Duration_from(u64 secs, u32 nanos);
 
 time_Duration time_Duration_fromSecs(u64 secs);
@@ -74,27 +76,27 @@ bool time_Duration_isZero(time_Duration duration);
 #define literal_time_Duration_fromMillis(_millis)                                              \
     makeWith(                                                                                  \
         time_Duration,                                                                         \
-        .secs  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
-        .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
+        .secs  = (_millis) == 0 ? 0 : (_millis) / time_MILLIS_PER_SEC,                         \
+        .nanos = (_millis) == 0 ? 0 : ((_millis) % time_MILLIS_PER_SEC) * time_NANOS_PER_MILLI \
     )
 #define literal_time_Duration_fromMicros(_micros)                                              \
     makeWith(                                                                                  \
         time_Duration,                                                                         \
-        .secs  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
-        .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
+        .secs  = (_micros) == 0 ? 0 : (_micros) / time_MICROS_PER_SEC,                         \
+        .nanos = (_micros) == 0 ? 0 : ((_micros) % time_MICROS_PER_SEC) * time_NANOS_PER_MICRO \
     )
 #define literal_time_Duration_fromNanos(_nanos)                     \
     makeWith(                                                       \
         time_Duration,                                              \
-        .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
-        .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec  \
+        .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_NANOS_PER_SEC, \
+        .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_NANOS_PER_SEC  \
     )
 
-static const time_Duration time_Duration_zero        = literal_time_Duration_fromNanos(0);
-static const time_Duration time_Duration_second      = literal_time_Duration_fromSecs(1);
-static const time_Duration time_Duration_millisecond = literal_time_Duration_fromMillis(1);
-static const time_Duration time_Duration_microsecond = literal_time_Duration_fromMicros(1);
-static const time_Duration time_Duration_nanosecond  = literal_time_Duration_fromNanos(1);
+static const time_Duration time_Duration_ZERO        = literal_time_Duration_fromNanos(0);
+static const time_Duration time_Duration_SECOND      = literal_time_Duration_fromSecs(1);
+static const time_Duration time_Duration_MILLISECOND = literal_time_Duration_fromMillis(1);
+static const time_Duration time_Duration_MICROSECOND = literal_time_Duration_fromMicros(1);
+static const time_Duration time_Duration_NANOSECOND  = literal_time_Duration_fromNanos(1);
 
 
 #if defined(__cplusplus)

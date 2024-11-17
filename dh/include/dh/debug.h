@@ -8,7 +8,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "debug/cfg.h"
-#include "debug/debug.h"
+#include "debug/common.h"
 #include "debug/assert.h"
 
 /*========== Macros and Definitions =========================================*/

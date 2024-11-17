@@ -58,11 +58,11 @@ extern "C" {
     accessPtr(_rhs) = _tmp;                                          \
 )
 
-#define IMPL_foreach(_end, TYPE, NAME, LIST_PTR)                                             \
-    for (                                                                                    \
-        TYPE* NAME = (LIST_PTR)->data, * const _end = (LIST_PTR)->data + (LIST_PTR)->length; \
-        NAME < _end;                                                                         \
-        ++NAME                                                                               \
+#define IMPL_foreach(_end, TYPE, NAME, LIST_PTR)                                          \
+    for (                                                                                 \
+        TYPE* NAME = (LIST_PTR)->data, * const _end = (LIST_PTR)->data + (LIST_PTR)->len; \
+        NAME < _end;                                                                      \
+        ++NAME                                                                            \
     )
 // NOLINTEND
 

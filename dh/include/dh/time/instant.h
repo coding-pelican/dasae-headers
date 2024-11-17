@@ -1,7 +1,7 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    instant.h
+ * @file    Instant.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
  * @updated 2024-11-15 (date of last update)
@@ -24,17 +24,23 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "common.h"
 
 /*========== Macros and Definitions =========================================*/
 
-
 struct time_Instant {
-    time_SystemTime time_;
+    time_SysTime time_;
 };
-time_Instant  time_Instant_now(void);
-time_Duration time_Instant_elapsed(time_Instant start);
-time_Duration time_Instant_durationSince(time_Instant start, time_Instant earlier);
-u64           time_Instant_toNanos(time_Instant ins);
+
+time_Instant time_Instant_now(void);
+
+time_Duration time_Instant_elapsed(time_Instant ins);
+time_Duration time_Instant_durationSince(time_Instant ins, time_Instant earlier);
+
+time_Instant time_Instant_addDuration(time_Instant ins, time_Duration duration);
+time_Instant time_Instant_subDuration(time_Instant ins, time_Duration duration);
+
+u64 time_Instant_toNanos(time_Instant ins);
 
 bool time_Instant_eq(time_Instant lhs, time_Instant rhs);
 bool time_Instant_ne(time_Instant lhs, time_Instant rhs);

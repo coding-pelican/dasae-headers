@@ -1,4 +1,5 @@
 #include "dh/mem.h"
+#include "dh/mem/cfg.h"
 #include "dh/debug/cfg.h"
 #include "dh/debug/assert.h"
 
@@ -10,8 +11,19 @@
 
 #if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 
+
 // Global memory tracking list
-mem_Info* mem__info_list = null;
+static mem_Info* mem__s_info_list = null;
+
+
+// Register atexit handler for memory leak detection
+static void __attribute__((constructor)) mem__initInfoList(void);
+static void __attribute__((destructor))  mem__finiInfoList(void);
+// Memory tracking functions
+static void                              mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
+static void                              mem__removeInfo(anyptr target);
+static void                              mem__printInfoMemoryLeakTrace(void);
+
 
 // Register atexit handler for memory leak detection
 static void __attribute__((constructor)) mem__initInfoList(void) {

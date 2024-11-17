@@ -4,9 +4,9 @@
 
 
 EOrd f64_cmp(f64 lhs, f64 rhs) {
-    return lhs < rhs ? EOrd_less
-         : lhs > rhs ? EOrd_greater
-                     : EOrd_equal;
+    return lhs < rhs ? EOrd_LESS
+         : lhs > rhs ? EOrd_GREATER
+                     : EOrd_EQUAL;
 }
 
 force_inline f64 f64_min(f64 lhs, f64 rhs) {
@@ -19,23 +19,23 @@ force_inline f64 f64_clamp(f64 val, f64 low, f64 high) {
     return f64_min(f64_max(low, val), high);
 }
 
-RGB RGB_from(u8 r, u8 g, u8 b) {
-    return RGB_(
+Rgb Rgb_from(u8 r, u8 g, u8 b) {
+    return Rgb_(
             .r = r,
             .g = g,
             .b = b,
     );
 }
 
-HSL HSL_from(f64 h, f64 s, f64 l) {
-    return HSL_(
+Hsl Hsl_from(f64 h, f64 s, f64 l) {
+    return Hsl_(
             .h = h,
             .s = s,
             .l = l,
     );
 }
 
-f64 HSL_hueToRGBSpace(f64 p, f64 q, f64 t) {
+f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t) {
     if (t < 0.0) {
         t += 1;
     }
@@ -55,74 +55,74 @@ f64 HSL_hueToRGBSpace(f64 p, f64 q, f64 t) {
 }
 
 Color Color_from(u8 r, u8 g, u8 b, u8 a) {
-    return comptime_Color_from(r, g, b, a);
+    return literal_Color_from(r, g, b, a);
 }
 
 Color Color_fromTransparent(u8 r, u8 g, u8 b) {
-    return comptime_Color_fromTransparent(r, g, b);
+    return literal_Color_fromTransparent(r, g, b);
 }
 
 Color Color_fromOpaque(u8 r, u8 g, u8 b) {
-    return comptime_Color_fromOpaque(r, g, b);
+    return literal_Color_fromOpaque(r, g, b);
 }
 
-RGB RGB_fromHSL(HSL hsl) {
+Rgb Rgb_fromHsl(Hsl hsl) {
     f64 h = hsl.h / 360.0;
     f64 s = hsl.s / 100.0;
     f64 l = hsl.l / 100.0;
 
-    f64 r = f64_nan;
-    f64 g = f64_nan;
-    f64 b = f64_nan;
+    f64 r = f64_NAN;
+    f64 g = f64_NAN;
+    f64 b = f64_NAN;
 
     if (s == 0.0) {
         r = g = b = l;
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = HSL_hueToRGBSpace(p, q, h + 1.0 / 3.0);
-        g     = HSL_hueToRGBSpace(p, q, h);
-        b     = HSL_hueToRGBSpace(p, q, h - 1.0 / 3.0);
+        r     = Hsl_hueToRgbSpace(p, q, h + 1.0 / 3.0);
+        g     = Hsl_hueToRgbSpace(p, q, h);
+        b     = Hsl_hueToRgbSpace(p, q, h - 1.0 / 3.0);
     }
 
-    return RGB_from(
-        as(u8, f64_clamp(r * CCH_max, 0, CCH_max)),
-        as(u8, f64_clamp(g * CCH_max, 0, CCH_max)),
-        as(u8, f64_clamp(b * CCH_max, 0, CCH_max))
+    return Rgb_from(
+        as(u8, f64_clamp(r * ColorChannel_MAX, 0, ColorChannel_MAX)),
+        as(u8, f64_clamp(g * ColorChannel_MAX, 0, ColorChannel_MAX)),
+        as(u8, f64_clamp(b * ColorChannel_MAX, 0, ColorChannel_MAX))
     );
 }
 
-RGB HSL_intoRGB(HSL hsl) {
-    return RGB_fromHSL(hsl);
+Rgb Hsl_intoRgb(Hsl hsl) {
+    return Rgb_fromHsl(hsl);
 }
 
-RGB RGB_fromColor(Color color) {
-    return RGB_from(color.r, color.g, color.b);
+Rgb Rgb_fromColor(Color color) {
+    return Rgb_from(color.r, color.g, color.b);
 }
 
-RGB Color_intoRGB(Color color) {
-    return RGB_fromColor(color);
+Rgb Color_intoRgb(Color color) {
+    return Rgb_fromColor(color);
 }
 
-RGB HSL_asRGB(HSL hsl) {
-    return RGB_fromHSL(hsl);
+Rgb Hsl_asRgb(Hsl hsl) {
+    return Rgb_fromHsl(hsl);
 }
 
-RGB Color_asRGB(Color color) {
-    return RGB_fromColor(color);
+Rgb Color_asRgb(Color color) {
+    return Rgb_fromColor(color);
 }
 
-HSL HSL_fromRGB(RGB rgb) {
-    f64 r = rgb.r / as(f64, CCH_max);
-    f64 g = rgb.g / as(f64, CCH_max);
-    f64 b = rgb.b / as(f64, CCH_max);
+Hsl Hsl_fromRgb(Rgb rgb) {
+    f64 r = rgb.r / as(f64, ColorChannel_MAX);
+    f64 g = rgb.g / as(f64, ColorChannel_MAX);
+    f64 b = rgb.b / as(f64, ColorChannel_MAX);
 
     f64 max  = f64_max(f64_max(r, g), b);
     f64 min  = f64_min(f64_min(r, g), b);
     f64 diff = max - min;
 
-    f64 h = f64_nan;
-    f64 s = f64_nan;
+    f64 h = f64_NAN;
+    f64 s = f64_NAN;
     f64 l = (max + min) / 2.0;
 
     if (diff != 0.0) {
@@ -137,77 +137,77 @@ HSL HSL_fromRGB(RGB rgb) {
         }
         h /= 6.0;
     }
-    return HSL_from(
+    return Hsl_from(
         h * 360.0,
         s * 100.0,
         l * 100.0
     );
 }
 
-HSL RGB_intoHSL(RGB rgb) {
-    return HSL_fromRGB(rgb);
+Hsl Rgb_intoHsl(Rgb rgb) {
+    return Hsl_fromRgb(rgb);
 }
 
-HSL HSL_fromColor(Color color) {
-    return RGB_intoHSL(Color_intoRGB(color));
+Hsl Hsl_fromColor(Color color) {
+    return Rgb_intoHsl(Color_intoRgb(color));
 }
 
-HSL Color_intoHSL(Color color) {
-    return HSL_fromColor(color);
+Hsl Color_intoHsl(Color color) {
+    return Hsl_fromColor(color);
 }
 
-HSL RGB_asHSL(RGB rgb) {
-    return HSL_fromRGB(rgb);
+Hsl Rgb_asHsl(Rgb rgb) {
+    return Hsl_fromRgb(rgb);
 }
 
-HSL Color_asHSL(Color color) {
-    return HSL_fromColor(color);
+Hsl Color_asHsl(Color color) {
+    return Hsl_fromColor(color);
 }
 
-Color Color_fromRGB(RGB rgb, u8 a) {
+Color Color_fromRgb(Rgb rgb, u8 a) {
     return Color_from(rgb.r, rgb.g, rgb.b, a);
 }
 
-Color Color_fromRgbTransparent(RGB rgb) {
-    return Color_fromRGB(rgb, CCH_transparent);
+Color Color_fromRgbTransparent(Rgb rgb) {
+    return Color_fromRgb(rgb, ColorChannel_TRANSPARENT);
 }
 
-Color Color_fromRgbOpaque(RGB rgb) {
-    return Color_fromRGB(rgb, CCH_opaque);
+Color Color_fromRgbOpaque(Rgb rgb) {
+    return Color_fromRgb(rgb, ColorChannel_OPAQUE);
 }
 
-Color RGB_intoColor(RGB rgb, u8 a) {
+Color Rgb_intoColor(Rgb rgb, u8 a) {
     return Color_from(rgb.r, rgb.g, rgb.b, a);
 }
 
-Color RGB_intoColorTransparent(RGB rgb) {
-    return Color_fromRGB(rgb, CCH_transparent);
+Color Rgb_intoColorTransparent(Rgb rgb) {
+    return Color_fromRgb(rgb, ColorChannel_TRANSPARENT);
 }
 
-Color RGB_intoColorOpaque(RGB rgb) {
-    return Color_fromRGB(rgb, CCH_opaque);
+Color Rgb_intoColorOpaque(Rgb rgb) {
+    return Color_fromRgb(rgb, ColorChannel_OPAQUE);
 }
 
-Color Color_fromHSL(HSL hsl, u8 a) {
-    return RGB_intoColor(HSL_intoRGB(hsl), a);
+Color Color_fromHsl(Hsl hsl, u8 a) {
+    return Rgb_intoColor(Hsl_intoRgb(hsl), a);
 }
 
-Color Color_fromHslTransparent(HSL hsl) {
-    return Color_fromHSL(hsl, CCH_transparent);
+Color Color_fromHslTransparent(Hsl hsl) {
+    return Color_fromHsl(hsl, ColorChannel_TRANSPARENT);
 }
 
-Color Color_fromHslOpaque(HSL hsl) {
-    return Color_fromHSL(hsl, CCH_opaque);
+Color Color_fromHslOpaque(Hsl hsl) {
+    return Color_fromHsl(hsl, ColorChannel_OPAQUE);
 }
 
-Color HSL_intoColor(HSL hsl, u8 a) {
-    return Color_fromHSL(hsl, a);
+Color Hsl_intoColor(Hsl hsl, u8 a) {
+    return Color_fromHsl(hsl, a);
 }
 
-Color HSL_intoColorTransparent(HSL hsl) {
+Color Hsl_intoColorTransparent(Hsl hsl) {
     return Color_fromHslTransparent(hsl);
 }
 
-Color HSL_intoColorOpaque(HSL hsl) {
+Color Hsl_intoColorOpaque(Hsl hsl) {
     return Color_fromHslOpaque(hsl);
 }

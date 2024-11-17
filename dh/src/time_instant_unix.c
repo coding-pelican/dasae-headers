@@ -3,53 +3,53 @@
 #include "dh/time/instant.h"
 #include "dh/time/system.h"
 
-/* TODO: Apply modified version of time_SystemTime_now() */
+/* TODO: Apply modified version of time_SysTime_now() */
 
-time_SystemTime time_SystemTime_now(void) {
-    time_SystemTime sys_time = make(time_SystemTime);
+time_SysTime time_SysTime_now(void) {
+    time_SysTime sys_time = make(time_SysTime);
     clock_gettime(CLOCK_MONOTONIC, &sys_time);
     return sys_time;
 }
 
-f64 time_SystemTime_toSecs(time_SystemTime time) {
-    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_sec);
+f64 time_SysTime_toSecs(time_SysTime time) {
+    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_NANOS_PER_SEC);
 }
 
-f64 time_SystemTime_toMillis(time_SystemTime time) {
-    return (f64)time.tv_sec * (f64)time_millis_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_milli);
+f64 time_SysTime_toMillis(time_SysTime time) {
+    return (f64)time.tv_sec * (f64)time_MILLIS_PER_SEC + ((f64)time.tv_nsec / (f64)time_NANOS_PER_MILLI);
 }
 
-f64 time_SystemTime_toMicros(time_SystemTime time) {
-    return (f64)time.tv_sec * (f64)time_micros_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_micro);
+f64 time_SysTime_toMicros(time_SysTime time) {
+    return (f64)time.tv_sec * (f64)time_MICROS_PER_SEC + ((f64)time.tv_nsec / (f64)time_NANOS_PER_MICRO);
 }
 
-u64 time_SystemTime_toNanos(time_SystemTime time) {
-    return (u64)time.tv_sec * (u64)time_nanos_per_sec + (u64)time.tv_nsec;
+u64 time_SysTime_toNanos(time_SysTime time) {
+    return (u64)time.tv_sec * (u64)time_NANOS_PER_SEC + (u64)time.tv_nsec;
 }
 
-void time_SystemTime_sleep(Duration duration) {
-    time_SystemTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
+void time_SysTime_sleep(Duration duration) {
+    time_SysTime_sleep_ns((duration.secs * time_NANOS_PER_SEC) + duration.nanos);
 }
 
-void time_SystemTime_sleep_s(f64 secs) {
-    time_SystemTime_sleep_ns((u64)(secs * time_nanos_per_sec));
+void time_SysTime_sleep_s(f64 secs) {
+    time_SysTime_sleep_ns((u64)(secs * time_NANOS_PER_SEC));
 }
 
-void time_SystemTime_sleep_ms(f64 millis) {
-    time_SystemTime_sleep_ns((u64)(millis * time_nanos_per_milli));
+void time_SysTime_sleep_ms(f64 millis) {
+    time_SysTime_sleep_ns((u64)(millis * time_NANOS_PER_MILLI));
 }
 
-void time_SystemTime_sleep_us(f64 micros) {
-    time_SystemTime_sleep_ns((u64)(micros * time_nanos_per_micro));
+void time_SysTime_sleep_us(f64 micros) {
+    time_SysTime_sleep_ns((u64)(micros * time_NANOS_PER_MICRO));
 }
 
-void time_SystemTime_sleep_ns(u64 nanos) {
+void time_SysTime_sleep_ns(u64 nanos) {
     if (nanos < 100) { return; }
 
     struct timespec req = make(struct timespec);
     struct timespec rem = make(struct timespec);
-    req.tv_sec          = nanos / time_nanos_per_sec;
-    req.tv_nsec         = nanos % time_nanos_per_sec;
+    req.tv_sec          = nanos / time_NANOS_PER_SEC;
+    req.tv_nsec         = nanos % time_NANOS_PER_SEC;
 
     while (nanosleep(&req, &rem) == -1) {
         if (errno == EINTR) {
@@ -61,7 +61,7 @@ void time_SystemTime_sleep_ns(u64 nanos) {
 }
 
 time_Instant time_Instant_now(void) {
-    return makeWith(time_Instant, .time_ = time_SystemTime_now());
+    return makeWith(time_Instant, .time_ = time_SysTime_now());
 }
 
 Duration time_Instant_elapsed(time_Instant start) {
@@ -73,7 +73,7 @@ Duration time_Instant_durationSince(time_Instant start, time_Instant earlier) {
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
         secs--;
-        nano_diff += time_nanos_per_sec;
+        nano_diff += time_NANOS_PER_SEC;
     }
     u32 nanos = prim_as(u32, nano_diff);
     return time_Duration_from(secs, nanos);

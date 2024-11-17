@@ -1,5 +1,5 @@
-#ifndef DEBUG_DEBUG_INCLUDED
-#define DEBUG_DEBUG_INCLUDED (1)
+#ifndef DEBUG_COMMON_INCLUDED
+#define DEBUG_COMMON_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -46,4 +46,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* DEBUG_DEBUG_INCLUDED */
+#endif /* DEBUG_COMMON_INCLUDED */

@@ -83,7 +83,7 @@ extern "C" {
 #define IMPL_block_deferred() \
     goto _deferred;           \
     }                         \
-    while (false)
+    while (false) {}
 
 #define IMPL_defer(STMT...) \
     defer_block__snapshot(STMT; goto _deferred)

@@ -35,6 +35,8 @@ extern "C" {
 // when NEEDED in this header file
 // definitions: typedef, enum, struct, static const, ...
 
+/*========== Macro Implementations ==========================================*/
+
 /*========== Extern Constant and Variable Declarations ======================*/
 
 // declarations: global variables, ...

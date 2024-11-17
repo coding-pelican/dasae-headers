@@ -23,8 +23,8 @@ typedef float_t  f32;
 typedef double_t f64;
 
 
-typedef struct RGBAColor RGBAColor;
-struct RGBAColor {
+typedef struct RgbAColor RgbAColor;
+struct RgbAColor {
     union {
         struct {
             u8 rgba[4];
@@ -37,13 +37,13 @@ struct RGBAColor {
         };
     };
 };
-typedef RGBAColor Color;
+typedef RgbAColor Color;
 #define Color_From(...) (              \
     (Color){ .rgba = { __VA_ARGS__ } } \
 )
 
-typedef struct HSLColor HSLColor;
-struct HSLColor {
+typedef struct HslColor HslColor;
+struct HslColor {
     union {
         struct {
             f64 hsl[3];
@@ -55,8 +55,8 @@ struct HSLColor {
         };
     };
 };
-#define HSLColor_From(...) (             \
-    (HSLColor){ .hsl = { __VA_ARGS__ } } \
+#define HslColor_From(...) (             \
+    (HslColor){ .hsl = { __VA_ARGS__ } } \
 )
 
 
@@ -74,7 +74,7 @@ const Color* Color_FromBytes(const uint8_t* bytes, size_t len) {
 }
 
 
-HSLColor RGBA_toHSL(const Color* color) {
+HslColor RgbA_toHsl(const Color* color) {
     f64 r = color->r / 255.0;
     f64 g = color->g / 255.0;
     f64 b = color->b / 255.0;
@@ -83,7 +83,7 @@ HSLColor RGBA_toHSL(const Color* color) {
     f64 min_val = fmin(r, fmin(g, b));
     f64 l       = (max_val + min_val) / 2.0;
 
-    HSLColor hsl = HSLColor_From(0.0, 0.0, l * 100.0);
+    HslColor hsl = HslColor_From(0.0, 0.0, l * 100.0);
 
     if (max_val == min_val) {
         return hsl; // Achromatic
@@ -100,14 +100,14 @@ HSLColor RGBA_toHSL(const Color* color) {
         hsl.h = (r - g) / delta + 4.0;
     }
 
-    hsl.h *= 60.0; // Convert to degrees
+    hsl.h *= 60.0;  // Convert to degrees
     hsl.s *= 100.0; // Scale to percentage
     hsl.l *= 100.0; // Scale to percentage
     return hsl;
 }
 
 
-f64 HUE_toRGB(f64 p, f64 q, f64 t) {
+f64 HUE_toRgb(f64 p, f64 q, f64 t) {
     if (t < 0) {
         t += 1;
     }
@@ -126,7 +126,7 @@ f64 HUE_toRGB(f64 p, f64 q, f64 t) {
     return p;
 }
 
-Color HSL_toRGBA(const HSLColor* hsl) {
+Color Hsl_toRgbA(const HslColor* hsl) {
     f64 r = 0.0;
     f64 g = 0.0;
     f64 b = 0.0;
@@ -140,25 +140,25 @@ Color HSL_toRGBA(const HSLColor* hsl) {
     } else {
         f64 q = (l < 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
         f64 p = 2.0 * l - q;
-        r     = HUE_toRGB(p, q, h + 1.0 / 3.0);
-        g     = HUE_toRGB(p, q, h);
-        b     = HUE_toRGB(p, q, h - 1.0 / 3.0);
+        r     = HUE_toRgb(p, q, h + 1.0 / 3.0);
+        g     = HUE_toRgb(p, q, h);
+        b     = HUE_toRgb(p, q, h - 1.0 / 3.0);
     }
     return Color_From((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255), 255);
 }
 
 
 int main() {
-    // Create a color from RGB values
+    // Create a color from Rgb values
     Color color[1] = { Color_From(255, 100, 50, 255) };
 
-    // Convert it to HSL
-    HSLColor hsl[1] = { RGBA_toHSL(color) };
-    printf("HSL: (%f, %f, %f)\n", hsl->h, hsl->s, hsl->l);
+    // Convert it to Hsl
+    HslColor hsl[1] = { RgbA_toHsl(color) };
+    printf("Hsl: (%f, %f, %f)\n", hsl->h, hsl->s, hsl->l);
 
-    // Convert it back to RGB
-    Color rgb_color[1] = { HSL_toRGBA(hsl) };
-    printf("RGB: (%u, %u, %u, %u)\n", rgb_color->r, rgb_color->g, rgb_color->b, rgb_color->a);
+    // Convert it back to Rgb
+    Color rgb_color[1] = { Hsl_toRgbA(hsl) };
+    printf("Rgb: (%u, %u, %u, %u)\n", rgb_color->r, rgb_color->g, rgb_color->b, rgb_color->a);
 
     return 0;
 }

@@ -7,7 +7,7 @@ Copyright (c) 2017 Seleznev Anton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
+in the Software without restriction, including without LIMITation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
@@ -27,20 +27,19 @@ SOFTWARE.
 #include <stdio.h>
 #include "ceraii.h"
 
-int factorial(int value)
-{
+int factorial(int value) {
     printf(" Factorial(%d) begin\n", value);
     DO_AT_EXIT(printf(" Factorial(%d) end\n", value););
 
     printf("   Factorial body\n");
-    if (value == 0 || value == 1)
+    if (value == 0 || value == 1) {
         RETURN(1);
+    }
 
     RETURN(value * factorial(value - 1));
 }
 
-int conditional(int value)
-{
+int conditional(int value) {
     if (value) {
         DO_AT_EXIT(printf(" Condition was true\n"););
     } else {
@@ -51,28 +50,31 @@ int conditional(int value)
     RETURN(1);
 }
 
-int switch_case(int value)
-{
+int switch_case(int value) {
     switch (value) {
-        case 1: DO_AT_EXIT(printf(" Value = 1\n");); break;
-        case 2: DO_AT_EXIT(printf(" Value = 2\n");); break;
-        default: DO_AT_EXIT(printf(" Value is default\n");); break;
+    case 1:
+        DO_AT_EXIT(printf(" Value = 1\n"););
+        break;
+    case 2:
+        DO_AT_EXIT(printf(" Value = 2\n"););
+        break;
+    default:
+        DO_AT_EXIT(printf(" Value is default\n"););
+        break;
     }
 
     printf("   Switch function body\n");
     RETURN(1);
 }
 
-int not_like_go()
-{
+int not_like_go() {
     volatile int i = 0;
     DO_AT_EXIT(printf("%d\n", i););
     i++;
     return (0);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     (void)argc;
     (void)argv;
 
@@ -91,5 +93,3 @@ int main(int argc, char *argv[])
 
     RETURN(0);
 }
-
-

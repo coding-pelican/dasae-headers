@@ -96,8 +96,8 @@ typedef float_t  f32;
 typedef double_t f64;
 
 
-typedef struct RGBA RGBA;
-struct RGBA {
+typedef struct RgbA RgbA;
+struct RgbA {
     union {
         u8 rgba[4];
         struct {
@@ -108,17 +108,17 @@ struct RGBA {
         };
     };
 };
-#define RGBA_from(...) (                  \
-    (RGBA){ { .rgba = { __VA_ARGS__ } } } \
+#define RgbA_from(...) (                  \
+    (RgbA){ { .rgba = { __VA_ARGS__ } } } \
 )
-#define RGBA_fromRGB(...) \
-    RGBA_from(__VA_ARGS__, 255)
+#define RgbA_fromRgb(...) \
+    RgbA_from(__VA_ARGS__, 255)
 
-const RGBA RGBA_Black = RGBA_fromRGB(0, 0, 0);
-const RGBA RGBA_White = RGBA_fromRGB(255, 255, 255);
-const RGBA RGBA_Red   = RGBA_fromRGB(255, 0, 0);
-const RGBA RGBA_Green = RGBA_fromRGB(0, 255, 0);
-const RGBA RGBA_Blue  = RGBA_fromRGB(0, 0, 255);
+const RgbA RgbA_Black = RgbA_fromRgb(0, 0, 0);
+const RgbA RgbA_White = RgbA_fromRgb(255, 255, 255);
+const RgbA RgbA_Red   = RgbA_fromRgb(255, 0, 0);
+const RgbA RgbA_Green = RgbA_fromRgb(0, 255, 0);
+const RgbA RgbA_Blue  = RgbA_fromRgb(0, 0, 255);
 
 
 #define Terminal_Width  (80 * 2)
@@ -136,7 +136,7 @@ void TerminalCursor_resetColor() {
     printf("\033[0m");
 }
 
-void TerminalCursor_setColor(RGBA foreground, RGBA background) {
+void TerminalCursor_setColor(RgbA foreground, RgbA background) {
     printf(
         "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm", // background
         foreground.r,
@@ -289,7 +289,7 @@ void Display_swapBuffers() {
     swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
 }
 
-void Display_setBufferFromColors(const RGBA colors[Display_Size]) {
+void Display_setBufferFromColors(const RgbA colors[Display_Size]) {
     Display_clear();
 
     i32 index = 0;
@@ -300,8 +300,8 @@ void Display_setBufferFromColors(const RGBA colors[Display_Size]) {
             // Ensure don't go out of bounds
             if (Display_Height <= (y + 1)) { break; }
 
-            const RGBA upper = colors[x + y * Display_Width];
-            const RGBA lower = colors[x + (y + 1) * Display_Width];
+            const RgbA upper = colors[x + y * Display_Width];
+            const RgbA lower = colors[x + (y + 1) * Display_Width];
 
             // Construct ANSI escape sequence for 24-bit color
             const i32 formattedSize = sprintf(
@@ -354,9 +354,9 @@ void GameOfLife_Fini();
 
 static GameOfLife self[1] = {
     {
-     .states_     = NULL,
-     .nextStates_ = NULL,
-     }
+        .states_     = NULL,
+        .nextStates_ = NULL,
+    }
 };
 static int  getCell(int x, int y);
 static void setCell(int x, int y, const char* str);
@@ -424,7 +424,7 @@ void GameOfLife_Init() {
 }
 
 void GameOfLife_Update() {
-    RGBA colors[Display_Size] = { 0 };
+    RgbA colors[Display_Size] = { 0 };
 
     // Store output state
     const int size = Display_Size;
@@ -447,9 +447,9 @@ void GameOfLife_Update() {
             // ===============================================================================
 
             if (getCell(x, y) == 1) {
-                colors[x + y * width] = RGBA_White;
+                colors[x + y * width] = RgbA_White;
             } else {
-                colors[x + y * width] = RGBA_Black;
+                colors[x + y * width] = RgbA_Black;
             }
         }
     }

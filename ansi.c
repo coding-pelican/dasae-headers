@@ -10,8 +10,8 @@ void Terminal_EnableANSI() {
     SetConsoleMode(hOut, dwMode);
 }
 
-// Function to print text in RGB color
-void printRGB(int r, int g, int b, const char* text) {
+// Function to print text in Rgb color
+void printRgb(int r, int g, int b, const char* text) {
     printf("\033[38;2;%d;%d;%dm%s\033[0m", r, g, b, text);
 }
 
@@ -21,9 +21,9 @@ int main() {
     Terminal_EnableANSI();
 
     // Print some colored text
-    printRGB(255, 100, 0, "This is orange text\n");
-    printRGB(0, 255, 0, "This is green text\n");
-    printRGB(0, 100, 255, "This is light blue text\n");
+    printRgb(255, 100, 0, "This is orange text\n");
+    printRgb(0, 255, 0, "This is green text\n");
+    printRgb(0, 100, 255, "This is light blue text\n");
 
     (void)getchar();
     return 0;

@@ -1,15 +1,15 @@
-#include "window.h"
+#include "window_old.h"
 #include "dh/core.h"
 #include "dh/core/cfg.h"
 #include "dh/mem.h"
 #include "dh/time/cfg.h"
 #include "dh/time/duration.h"
 #include "dh/time/instant.h"
-#include "dh/time/system.h"
+#include "dh/time/system_time.h"
 
 static WindowTime* WindowTime_init(WindowTime* t, const Window* owner, f64 target_fps) {
     t->owner      = owner;
-    t->time       = time_Duration_zero;
+    t->time       = time_Duration_ZERO;
     t->time_scale = 1.0;
     t->curr_step  = time_Instant_now();
     t->prev_step  = time_Instant_now();
@@ -250,5 +250,5 @@ void Window_render(Window* w, Canvas* canvas) {
 }
 void Window_delay(Window* w) {
     time_Duration delay = WindowTime_durationDelay(w->time_);
-    time_SystemTime_sleep(delay);
+    time_SysTime_sleep(delay);
 }

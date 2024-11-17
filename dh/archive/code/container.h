@@ -47,17 +47,17 @@ typedef struct Array {
 } Array;
 
 /* Base vector structure */
-typedef struct Vector {
+typedef struct ds_Vec {
     Container container;
     usize     capacity;
-} Vector;
+} ds_Vec;
 
 #define TArrayN(_T, _N)                 \
     /* Generic array type definition */ \
     IMPL_TArrayN(_T, _N)
-#define TVector(_T)                      \
+#define Tds_Vec(_T)                      \
     /* Generic vector type definition */ \
-    IMPL_TVector(_T)
+    IMPL_Tds_Vec(_T)
 
 /* Base container operations (force_inline functions) */
 
@@ -80,7 +80,7 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 /* Alias for generic containers */
 
 #define Array(_T, _N) IMPL_Array(_T, _N)
-#define Vector(_T)    IMPL_Vector(_T)
+#define ds_Vec(_T)    IMPL_ds_Vec(_T)
 
 /* Generic method wrappers */
 
@@ -92,13 +92,13 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 #define Array_peekAt(_T, _arr, _idx)   IMPL_Array_peekAt(_T, _arr, _idx)
 #define Array_accessAt(_T, _arr, _idx) IMPL_Array_accessAt(_T, _arr, _idx)
 
-#define Vector_peekData(_T, _vec)       IMPL_Vector_peekData(_T, _vec)
-#define Vector_accessData(_T, _vec)     IMPL_Vector_accessData(_T, _vec)
-#define Vector_peekAsBytes(_T, _vec)    IMPL_Vector_peekAsBytes(_T, _vec)
-#define Vector_accessAsBytes(_T, _vec)  IMPL_Vector_accessAsBytes(_T, _vec)
-#define Vector_length(_T, _vec)         IMPL_Vector_length(_T, _vec)
-#define Vector_peekAt(_T, _vec, _idx)   IMPL_Vector_peekAt(_T, _vec, _idx)
-#define Vector_accessAt(_T, _vec, _idx) IMPL_Vector_accessAt(_T, _vec, _idx)
+#define ds_Vec_peekData(_T, _vec)       IMPL_ds_Vec_peekData(_T, _vec)
+#define ds_Vec_accessData(_T, _vec)     IMPL_ds_Vec_accessData(_T, _vec)
+#define ds_Vec_peekAsBytes(_T, _vec)    IMPL_ds_Vec_peekAsBytes(_T, _vec)
+#define ds_Vec_accessAsBytes(_T, _vec)  IMPL_ds_Vec_accessAsBytes(_T, _vec)
+#define ds_Vec_length(_T, _vec)         IMPL_ds_Vec_length(_T, _vec)
+#define ds_Vec_peekAt(_T, _vec, _idx)   IMPL_ds_Vec_peekAt(_T, _vec, _idx)
+#define ds_Vec_accessAt(_T, _vec, _idx) IMPL_ds_Vec_accessAt(_T, _vec, _idx)
 
 /* Type-safe element access macros */
 
@@ -111,14 +111,14 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 #define Array_set(_T, _arr, _idx, _val) \
     (*Array_accessAt(_T, _arr, _idx)) = _val
 
-#define Vector_get(_T, _vec, _idx) \
-    (*Vector_peekAt(_T, _vec, _idx))
+#define ds_Vec_get(_T, _vec, _idx) \
+    (*ds_Vec_peekAt(_T, _vec, _idx))
 
-#define Vector_getMut(_T, _vec, _idx) \
-    (*Vector_accessAt(_T, _vec, _idx))
+#define ds_Vec_getMut(_T, _vec, _idx) \
+    (*ds_Vec_accessAt(_T, _vec, _idx))
 
-#define Vector_set(_T, _vec, _idx, _val) \
-    (*Vector_accessAt(_T, _vec, _idx)) = _val
+#define ds_Vec_set(_T, _vec, _idx, _val) \
+    (*ds_Vec_accessAt(_T, _vec, _idx)) = _val
 
 /*========== Macros Implementation ==========================================*/
 
@@ -136,13 +136,13 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
     }                                                               \
     typedef struct Array(_T, _N) Array(_T, _N)
 
-#define IMPL_TVector(_T)                                                                       \
-    struct Vector(_T) {                                                                        \
+#define IMPL_Tds_Vec(_T)                                                                       \
+    struct ds_Vec(_T) {                                                                        \
         Container container;                                                                   \
         usize     capacity;                                                                    \
     };                                                                                         \
-    static void _T##Vector##_init(struct Vector(_T) * _vec, usize initial_capacity) {          \
-        *_vec = (struct Vector(_T)){                                                           \
+    static void _T##ds_Vec##_init(struct ds_Vec(_T) * _vec, usize initial_capacity) {          \
+        *_vec = (struct ds_Vec(_T)){                                                           \
             .container = {                                                                     \
                 .data      = initial_capacity ? mem_allocCleared(_T, initial_capacity) : null, \
                 .length    = 0,                                                                \
@@ -150,15 +150,15 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
             .capacity = initial_capacity                                                       \
         };                                                                                     \
     }                                                                                          \
-    static void _T##Vector##_fini(struct Vector(_T) * _vec) {                                  \
+    static void _T##ds_Vec##_fini(struct ds_Vec(_T) * _vec) {                                  \
         mem_free(&(_vec)->container.data);                                                     \
         _vec->container.length = 0;                                                            \
         _vec->capacity         = 0;                                                            \
     }                                                                                          \
-    typedef struct Vector(_T) Vector(_T)
+    typedef struct ds_Vec(_T) ds_Vec(_T)
 
 #define IMPL_Array(_T, _N) _T##Array##_N
-#define IMPL_Vector(_T)    _T##Vector
+#define IMPL_ds_Vec(_T)    _T##ds_Vec
 
 #define IMPL_Array_peekData(_T, _arr)       (const _T*)Container_peekData(&(_arr)->container)
 #define IMPL_Array_accessData(_T, _arr)     (_T*)Container_accessData(&(_arr)->container)
@@ -168,13 +168,13 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 #define IMPL_Array_peekAt(_T, _arr, _idx)   (const _T*)Container_peekAt(&(_arr)->container, _idx)
 #define IMPL_Array_accessAt(_T, _arr, _idx) (_T*)Container_accessAt(&(_arr)->container, _idx)
 
-#define IMPL_Vector_peekData(_T, _vec)       (const _T*)Container_peekData(&(_vec)->container)
-#define IMPL_Vector_accessData(_T, _vec)     (_T*)Container_accessData(&(_vec)->container)
-#define IMPL_Vector_peekAsBytes(_T, _vec)    Container_peekAsBytes(&(_vec)->container)
-#define IMPL_Vector_accessAsBytes(_T, _vec)  Container_accessAsBytes(&(_vec)->container)
-#define IMPL_Vector_length(_T, _vec)         Container_length(&(_vec)->container)
-#define IMPL_Vector_peekAt(_T, _vec, _idx)   (const _T*)Container_peekAt(&(_vec)->container, _idx)
-#define IMPL_Vector_accessAt(_T, _vec, _idx) (_T*)Container_accessAt(&(_vec)->container, _idx)
+#define IMPL_ds_Vec_peekData(_T, _vec)       (const _T*)Container_peekData(&(_vec)->container)
+#define IMPL_ds_Vec_accessData(_T, _vec)     (_T*)Container_accessData(&(_vec)->container)
+#define IMPL_ds_Vec_peekAsBytes(_T, _vec)    Container_peekAsBytes(&(_vec)->container)
+#define IMPL_ds_Vec_accessAsBytes(_T, _vec)  Container_accessAsBytes(&(_vec)->container)
+#define IMPL_ds_Vec_length(_T, _vec)         Container_length(&(_vec)->container)
+#define IMPL_ds_Vec_peekAt(_T, _vec, _idx)   (const _T*)Container_peekAt(&(_vec)->container, _idx)
+#define IMPL_ds_Vec_accessAt(_T, _vec, _idx) (_T*)Container_accessAt(&(_vec)->container, _idx)
 
 /*========== Extern Constant and Variable Declarations ======================*/
 /*========== Extern Function Prototypes =====================================*/
@@ -183,9 +183,9 @@ force_inline anyptr Container_accessAt(Container* c, usize index) {
 #ifdef UNIT_TEST
 
 TArrayN(f32, 4);
-TVector(f32);
+Tds_Vec(f32);
 
-void TEST_container_f32ArrayAndVector(void) {
+void TEST_container_f32ArrayAndds_Vec(void) {
     // Array usage
     f32Array4 _arr = make(f32Array4);
     f32Array4_init(&_arr);
@@ -201,10 +201,10 @@ void TEST_container_f32ArrayAndVector(void) {
     f32 first                   = Array_get(f32, &_arr, 0);
     Array_getMut(f32, &_arr, 1) = 5.0f;
 
-    // Vector usage
-    f32Vector _vec = make(f32Vector);
-    f32Vector_init(&_vec, 4);
-    f32Vector_fini(&_vec);
+    // ds_Vec usage
+    f32ds_Vec _vec = make(f32ds_Vec);
+    f32ds_Vec_init(&_vec, 4);
+    f32ds_Vec_fini(&_vec);
 
     // Cleanup vector
     mem_free(_vec.container.data);
@@ -232,11 +232,11 @@ void TEST_container_f32ArrayAndVector(void) {
 // #define Array_len(_arr)       ((_arr)->len)
 // #define Array_clear(_arr)     ((_arr)->len = 0)
 
-// #define Vector_init(type, cap) IMPL_Vector_init(type, cap)
-// #define Vector_push(_vec, val)  IMPL_Vector_push(_vec, val)
-// #define Vector_len(_vec)        ((_vec)->len)
-// #define Vector_cap(_vec)        ((_vec)->capacity)
-// #define Vector_clear(_vec)      ((_vec)->len = 0)
+// #define ds_Vec_init(type, cap) IMPL_ds_Vec_init(type, cap)
+// #define ds_Vec_push(_vec, val)  IMPL_ds_Vec_push(_vec, val)
+// #define ds_Vec_len(_vec)        ((_vec)->len)
+// #define ds_Vec_cap(_vec)        ((_vec)->capacity)
+// #define ds_Vec_clear(_vec)      ((_vec)->len = 0)
 
 // #define Slice_from(data, start, length) IMPL_Slice_from(data, start, length)
 // #define Slice_len(slice)                ((slice)->len)
@@ -274,13 +274,13 @@ void TEST_container_f32ArrayAndVector(void) {
 // #define IMPL_Array_at(_arr, index) \
 //     (*((_T*)array_get(&(_arr)->data, index, sizeof((_arr)->data[0]))))
 
-// #define IMPL_Vector_init(type, cap) pp_func(     \
+// #define IMPL_ds_Vec_init(type, cap) pp_func(     \
 //     { .data     = vector_alloc(cap, sizeof(type)), \
 //       .len      = 0,                               \
 //       .capacity = (cap) }                          \
 // )
 
-// #define IMPL_Vector_push(_vec, val) pp_func( \
+// #define IMPL_ds_Vec_push(_vec, val) pp_func( \
 //     if ((_vec)->len == (_vec)->capacity) {      \
 //         (_vec)->data = vector_grow(            \
 //             (_vec)->data,                      \

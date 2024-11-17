@@ -17,7 +17,7 @@
 /*========== Includes =======================================================*/
 
 #include "dh/debug/assert.h" /* For `debug_break()` */
-#include "dh/debug/debug.h"
+#include "dh/debug/common.h"
 
 #include <stdarg.h> /* For `va_list`, `va_start()`, `va_end()` */
 #include <stdio.h>  /* For `fprintf()`, `stderr` */

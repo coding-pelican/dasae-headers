@@ -37,33 +37,18 @@ extern "C" {
 #else
 /* Unix */
 #include <sys/time.h>
-#include <time.h>
 #endif
+#include <time.h>
 
 /*========== Macros and Definitions =========================================*/
 
-typedef struct time_Duration time_Duration;
-typedef struct time_Instant  time_Instant;
-
 #if defined(_WIN32) || defined(_WIN64)
-typedef LARGE_INTEGER          time_SystemTimeWindows;
-typedef time_SystemTimeWindows time_SystemTime;
+typedef LARGE_INTEGER       time_SysTimeWindows;
+typedef time_SysTimeWindows time_SysTimePlatform;
 #else
-typedef struct timespec     time_SystemTimeUnix;
-typedef time_SystemTimeUnix time_SystemTime;
+typedef struct timespec  time_SysTimeUnix;
+typedef time_SysTimeUnix time_SysTimePlatform;
 #endif
-
-
-static const u32 time_nanos_per_sec   = 1000u * 1000u * 1000u;
-static const u32 time_nanos_per_milli = 1000u * 1000u;
-static const u32 time_nanos_per_micro = 1000u;
-static const u32 time_millis_per_sec  = 1000u;
-static const u32 time_micros_per_sec  = 1000u * 1000u;
-
-static const u64 time_secs_per_minute = 60ull;
-static const u64 time_mins_per_hour   = 60ull;
-static const u64 time_hours_per_day   = 24ull;
-static const u64 time_days_per_week   = 7ull;
 
 
 #if defined(__cplusplus)

@@ -36,33 +36,39 @@ extern "C" {
 #define as(TYPE, VAL) \
     IMPL_as(TYPE, VAL)
 
-#define literal(TYPE)                                                        \
+#define literal(TYPE, INIT...)                                               \
     /**                                                                      \
      * @brief Literal macro for creating a compound literal                  \
      * @details Plain structures in C++ (without constructors) can be        \
         initialized with { } This is called aggregate initialization (C++11) \
      * @note MSVC C++ compiler does not support compound literals (C99)      \
      */                                                                      \
-    IMPL_literal(TYPE)
+    IMPL_literal(TYPE, INIT)
 
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_fallthrough
 
-#define IMPL_unused(EXPR...) ((void)(EXPR))
+#define IMPL_unused(EXPR...) \
+    ((void)(EXPR))
 
-#define IMPL_ignore (void)
+#define IMPL_ignore \
+    (void)
 
 #if defined(__cplusplus)
-#define IMPL_as(TYPE, VAL) static_cast<TYPE>(VAL)
+#define IMPL_as(TYPE, VAL) \
+    static_cast<TYPE>(VAL)
 #else
-#define IMPL_as(TYPE, VAL) ((TYPE)(VAL))
+#define IMPL_as(TYPE, VAL) \
+    ((TYPE)(VAL))
 #endif
 
 #if defined(__cplusplus)
-#define IMPL_literal(TYPE) TYPE
+#define IMPL_literal(TYPE, INIT...) \
+    TYPE { INIT }
 #else
-#define IMPL_literal(TYPE) (TYPE)
+#define IMPL_literal(TYPE, INIT...) \
+    (TYPE) { INIT }
 #endif
 
 

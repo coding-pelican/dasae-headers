@@ -11,10 +11,10 @@
  *
  * @brief   Source for rgb print testing the terminal
  * @details Implements terminal color visualization tools:
- * - RGB and HSL color space conversions
+ * - Rgb and Hsl color space conversions
  * - ASCII character-based color rendering
  * - ANSI escape sequence color output
- * - RGB channel palettes and HSL gradient displays
+ * - Rgb channel palettes and Hsl gradient displays
  * - Efficient double-buffering for smooth rendering
  * - Unit tests for color conversion accuracy
  * - Cross-platform terminal setup and color support
@@ -35,14 +35,14 @@
 #include <wchar.h>
 
 #ifdef _WIN32
-#  include <conio.h>
-#  include <corecrt.h>
-#  define NOMINMAX
-#  include <windows.h>
+#include <conio.h>
+#include <corecrt.h>
+#define NOMINMAX
+#include <windows.h>
 #else
-#  include <fcntl.h>
-#  include <termios.h>
-#  include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
 
 // Check if a key has been pressed
 int kbhit() {
@@ -148,7 +148,7 @@ f64 f64_wrap(f64 x, f64 low, f64 high) { return (high - low <= 0.0f) ? x : fmod(
 f64 f64_wrap01(f64 x) { return f64_wrap(x, 0.0f, 1.0f); }
 
 
-typedef struct Color RGBA;
+typedef struct Color RgbA;
 struct Color {
     union {
         u8 rgba[4];
@@ -160,21 +160,21 @@ struct Color {
         };
     };
 };
-#define RGBA_from(...) (                  \
-    (RGBA){ { .rgba = { __VA_ARGS__ } } } \
+#define RgbA_from(...) (                  \
+    (RgbA){ { .rgba = { __VA_ARGS__ } } } \
 )
-#define RGBA_fromRGB(...) \
-    RGBA_from(__VA_ARGS__, 255)
+#define RgbA_fromRgb(...) \
+    RgbA_from(__VA_ARGS__, 255)
 
-const RGBA RGBA_Black = RGBA_fromRGB(0, 0, 0);
-const RGBA RGBA_White = RGBA_fromRGB(255, 255, 255);
-const RGBA RGBA_Red   = RGBA_fromRGB(255, 0, 0);
-const RGBA RGBA_Green = RGBA_fromRGB(0, 255, 0);
-const RGBA RGBA_Blue  = RGBA_fromRGB(0, 0, 255);
+const RgbA RgbA_Black = RgbA_fromRgb(0, 0, 0);
+const RgbA RgbA_White = RgbA_fromRgb(255, 255, 255);
+const RgbA RgbA_Red   = RgbA_fromRgb(255, 0, 0);
+const RgbA RgbA_Green = RgbA_fromRgb(0, 255, 0);
+const RgbA RgbA_Blue  = RgbA_fromRgb(0, 0, 255);
 
 
-typedef struct ColorHSL HSL;
-struct ColorHSL {
+typedef struct ColorHsl Hsl;
+struct ColorHsl {
     union {
         f64 hsl[3];
         struct {
@@ -184,13 +184,13 @@ struct ColorHSL {
         };
     };
 };
-#define HSL_from(...) (                 \
-    (HSL){ { .hsl = { __VA_ARGS__ } } } \
+#define Hsl_from(...) (                 \
+    (Hsl){ { .hsl = { __VA_ARGS__ } } } \
 )
 
 
-// RGB to HSL conversion
-HSL RGBA_to_HSL(RGBA color) {
+// Rgb to Hsl conversion
+Hsl RgbA_to_Hsl(RgbA color) {
     f64 r = color.r / 255.0;
     f64 g = color.g / 255.0;
     f64 b = color.b / 255.0;
@@ -215,11 +215,11 @@ HSL RGBA_to_HSL(RGBA color) {
         }
         h /= 6;
     }
-    return HSL_from(h * 360, s * 100, l * 100);
+    return Hsl_from(h * 360, s * 100, l * 100);
 }
 
-// Helper function for HSL to RGB conversion
-static f64 Hue_to_RGB(f64 p, f64 q, f64 t) {
+// Helper function for Hsl to Rgb conversion
+static f64 Hue_to_Rgb(f64 p, f64 q, f64 t) {
     if (t < 0) {
         t += 1;
     }
@@ -238,8 +238,8 @@ static f64 Hue_to_RGB(f64 p, f64 q, f64 t) {
     return p;
 }
 
-// HSL to RGB conversion
-RGBA HSL_to_RGBA(HSL color) {
+// Hsl to Rgb conversion
+RgbA Hsl_to_RgbA(Hsl color) {
     f64 h = color.h / 360.0;
     f64 s = color.s / 100.0;
     f64 l = color.l / 100.0;
@@ -253,12 +253,12 @@ RGBA HSL_to_RGBA(HSL color) {
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = Hue_to_RGB(p, q, h + 1.0 / 3.0);
-        g     = Hue_to_RGB(p, q, h);
-        b     = Hue_to_RGB(p, q, h - 1.0 / 3.0);
+        r     = Hue_to_Rgb(p, q, h + 1.0 / 3.0);
+        g     = Hue_to_Rgb(p, q, h);
+        b     = Hue_to_Rgb(p, q, h - 1.0 / 3.0);
     }
 
-    return RGBA_fromRGB(
+    return RgbA_fromRgb(
         (u8)f64_clamp(r * 255, 0, 255),
         (u8)f64_clamp(g * 255, 0, 255),
         (u8)f64_clamp(b * 255, 0, 255)
@@ -266,35 +266,35 @@ RGBA HSL_to_RGBA(HSL color) {
 }
 
 
-f64 sRGB_to_linear(f64 srgb) {
+f64 sRgb_to_linear(f64 srgb) {
     if (srgb <= 0.04045) {
         return srgb / 12.92;
     }
     return pow((srgb + 0.055) / 1.055, 2.4);
 }
 
-f64 linear_to_sRGB(f64 linear) {
+f64 linear_to_sRgb(f64 linear) {
     if (linear <= 0.0031308) {
         return 12.92 * linear;
     }
     return 1.055 * pow(linear, 1 / 2.4) - 0.055;
 }
 
-RGBA HSL_to_sRGBA(HSL color) {
-    RGBA linear = HSL_to_RGBA(color);
-    return RGBA_fromRGB(
-        (u8)(linear_to_sRGB(linear.r / 255.0) * 255),
-        (u8)(linear_to_sRGB(linear.g / 255.0) * 255),
-        (u8)(linear_to_sRGB(linear.b / 255.0) * 255)
+RgbA Hsl_to_sRgbA(Hsl color) {
+    RgbA linear = Hsl_to_RgbA(color);
+    return RgbA_fromRgb(
+        (u8)(linear_to_sRgb(linear.r / 255.0) * 255),
+        (u8)(linear_to_sRgb(linear.g / 255.0) * 255),
+        (u8)(linear_to_sRgb(linear.b / 255.0) * 255)
     );
 }
 
-RGBA HSL_to_liner(HSL color) {
-    RGBA linear = HSL_to_RGBA(color);
-    return RGBA_fromRGB(
-        (u8)(sRGB_to_linear(linear.r / 255.0) * 255),
-        (u8)(sRGB_to_linear(linear.g / 255.0) * 255),
-        (u8)(sRGB_to_linear(linear.b / 255.0) * 255)
+RgbA Hsl_to_liner(Hsl color) {
+    RgbA linear = Hsl_to_RgbA(color);
+    return RgbA_fromRgb(
+        (u8)(sRgb_to_linear(linear.r / 255.0) * 255),
+        (u8)(sRgb_to_linear(linear.g / 255.0) * 255),
+        (u8)(sRgb_to_linear(linear.b / 255.0) * 255)
     );
 }
 
@@ -306,93 +306,88 @@ bool f64_approx_equal(f64 a, f64 b, f64 epsilon) {
     return fabs(a - b) < epsilon;
 }
 
-// Updated helper function to compare RGBA colors with tolerance
-bool RGBA_approx_equal(RGBA a, RGBA b, i32 tolerance) {
-    return abs(a.r - b.r) <= tolerance &&
-           abs(a.g - b.g) <= tolerance &&
-           abs(a.b - b.b) <= tolerance &&
-           abs(a.a - b.a) <= tolerance;
+// Updated helper function to compare RgbA colors with tolerance
+bool RgbA_approx_equal(RgbA a, RgbA b, i32 tolerance) {
+    return abs(a.r - b.r) <= tolerance && abs(a.g - b.g) <= tolerance && abs(a.b - b.b) <= tolerance && abs(a.a - b.a) <= tolerance;
 }
 
-// Helper function to compare HSL colors
-bool HSL_approx_equal(HSL a, HSL b, f64 epsilon) {
-    return f64_approx_equal(a.h, b.h, epsilon) &&
-           f64_approx_equal(a.s, b.s, epsilon) &&
-           f64_approx_equal(a.l, b.l, epsilon);
+// Helper function to compare Hsl colors
+bool Hsl_approx_equal(Hsl a, Hsl b, f64 epsilon) {
+    return f64_approx_equal(a.h, b.h, epsilon) && f64_approx_equal(a.s, b.s, epsilon) && f64_approx_equal(a.l, b.l, epsilon);
 }
 
 
-void TEST_RGB_to_HSL() {
-    printf("Testing RGB to HSL conversion...\n");
+void TEST_Rgb_to_Hsl() {
+    printf("Testing Rgb to Hsl conversion...\n");
 
     // Test black
-    HSL black_hsl = RGBA_to_HSL(RGBA_Black);
-    assert(HSL_approx_equal(black_hsl, HSL_from(0, 0, 0), 0.01));
+    Hsl black_hsl = RgbA_to_Hsl(RgbA_Black);
+    assert(Hsl_approx_equal(black_hsl, Hsl_from(0, 0, 0), 0.01));
 
     // Test white
-    HSL white_hsl = RGBA_to_HSL(RGBA_White);
-    assert(HSL_approx_equal(white_hsl, HSL_from(0, 0, 100), 0.01));
+    Hsl white_hsl = RgbA_to_Hsl(RgbA_White);
+    assert(Hsl_approx_equal(white_hsl, Hsl_from(0, 0, 100), 0.01));
 
     // Test red
-    HSL red_hsl = RGBA_to_HSL(RGBA_Red);
-    assert(HSL_approx_equal(red_hsl, HSL_from(0, 100, 50), 0.01));
+    Hsl red_hsl = RgbA_to_Hsl(RgbA_Red);
+    assert(Hsl_approx_equal(red_hsl, Hsl_from(0, 100, 50), 0.01));
 
     // Test green
-    HSL green_hsl = RGBA_to_HSL(RGBA_Green);
-    assert(HSL_approx_equal(green_hsl, HSL_from(120, 100, 50), 0.01));
+    Hsl green_hsl = RgbA_to_Hsl(RgbA_Green);
+    assert(Hsl_approx_equal(green_hsl, Hsl_from(120, 100, 50), 0.01));
 
     // Test blue
-    HSL blue_hsl = RGBA_to_HSL(RGBA_Blue);
-    assert(HSL_approx_equal(blue_hsl, HSL_from(240, 100, 50), 0.01));
+    Hsl blue_hsl = RgbA_to_Hsl(RgbA_Blue);
+    assert(Hsl_approx_equal(blue_hsl, Hsl_from(240, 100, 50), 0.01));
 
-    printf("RGB to HSL conversion tests passed.\n");
+    printf("Rgb to Hsl conversion tests passed.\n");
 }
 
-void TEST_HSL_to_RGB() {
-    printf("Testing HSL to RGB conversion...\n");
+void TEST_Hsl_to_Rgb() {
+    printf("Testing Hsl to Rgb conversion...\n");
 
     // Test black
-    RGBA black_rgb = HSL_to_RGBA(HSL_from(0, 0, 0));
-    assert(RGBA_approx_equal(black_rgb, RGBA_Black, 1));
+    RgbA black_rgb = Hsl_to_RgbA(Hsl_from(0, 0, 0));
+    assert(RgbA_approx_equal(black_rgb, RgbA_Black, 1));
 
     // Test white
-    RGBA white_rgb = HSL_to_RGBA(HSL_from(0, 0, 100));
-    assert(RGBA_approx_equal(white_rgb, RGBA_White, 1));
+    RgbA white_rgb = Hsl_to_RgbA(Hsl_from(0, 0, 100));
+    assert(RgbA_approx_equal(white_rgb, RgbA_White, 1));
 
     // Test red
-    RGBA red_rgb = HSL_to_RGBA(HSL_from(0, 100, 50));
-    assert(RGBA_approx_equal(red_rgb, RGBA_Red, 1));
+    RgbA red_rgb = Hsl_to_RgbA(Hsl_from(0, 100, 50));
+    assert(RgbA_approx_equal(red_rgb, RgbA_Red, 1));
 
     // Test green
-    RGBA green_rgb = HSL_to_RGBA(HSL_from(120, 100, 50));
-    assert(RGBA_approx_equal(green_rgb, RGBA_Green, 1));
+    RgbA green_rgb = Hsl_to_RgbA(Hsl_from(120, 100, 50));
+    assert(RgbA_approx_equal(green_rgb, RgbA_Green, 1));
 
     // Test blue
-    RGBA blue_rgb = HSL_to_RGBA(HSL_from(240, 100, 50));
-    assert(RGBA_approx_equal(blue_rgb, RGBA_Blue, 1));
+    RgbA blue_rgb = Hsl_to_RgbA(Hsl_from(240, 100, 50));
+    assert(RgbA_approx_equal(blue_rgb, RgbA_Blue, 1));
 
-    printf("HSL to RGB conversion tests passed.\n");
+    printf("Hsl to Rgb conversion tests passed.\n");
 }
 
 void TEST_RoundtripConversion() {
     printf("Testing roundtrip conversion...\n");
 
     // Test a variety of colors
-    const RGBA colors[] = {
-        RGBA_fromRGB(128, 64, 32), // Brown
-        RGBA_fromRGB(255, 128, 0), // Orange
-        RGBA_fromRGB(0, 255, 255), // Cyan
-        RGBA_fromRGB(128, 0, 128), // Purple
-        RGBA_fromRGB(192, 192, 192), // Silver
+    const RgbA colors[] = {
+        RgbA_fromRgb(128, 64, 32),   // Brown
+        RgbA_fromRgb(255, 128, 0),   // Orange
+        RgbA_fromRgb(0, 255, 255),   // Cyan
+        RgbA_fromRgb(128, 0, 128),   // Purple
+        RgbA_fromRgb(192, 192, 192), // Silver
     };
     const int colorsNum = sizeof(colors) / sizeof(colors[0]);
 
     for (int i = 0; i < colorsNum; ++i) {
-        RGBA original  = colors[i];
-        HSL  hsl       = RGBA_to_HSL(original);
-        RGBA converted = HSL_to_RGBA(hsl);
+        RgbA original  = colors[i];
+        Hsl  hsl       = RgbA_to_Hsl(original);
+        RgbA converted = Hsl_to_RgbA(hsl);
 
-        if (!RGBA_approx_equal(original, converted, 1)) {
+        if (!RgbA_approx_equal(original, converted, 1)) {
             printf("Conversion failed for color: R:%d G:%d B:%d\n", original.r, original.g, original.b);
             printf("Converted to: R:%d G:%d B:%d\n", converted.r, converted.g, converted.b);
             assert(0); // Force test failure
@@ -408,7 +403,7 @@ void TerminalCursor_ResetColor() {
     printf("\033[0m");
 }
 
-void TerminalCursor_SetColor(RGBA foreground, RGBA background) {
+void TerminalCursor_SetColor(RgbA foreground, RgbA background) {
     // printf(
     //     "\033[38;2;%d;%d;%dm" // foreground
     //     "\033[48;2;%d;%d;%dm", // background
@@ -533,7 +528,7 @@ void Terminal_Print(const wchar* const string) {
     printf("%ls", string);
 }
 
-void DrawPixel1x2Single(RGBA upper, RGBA lower) {
+void DrawPixel1x2Single(RgbA upper, RgbA lower) {
     static const wchar* const Terminal_UpperHalfBlock = L"▀";
 
     TerminalCursor_SetColor(upper, lower);
@@ -541,7 +536,7 @@ void DrawPixel1x2Single(RGBA upper, RGBA lower) {
     TerminalCursor_ResetColor();
 }
 
-void DrawPixel1x2SingleCharacter(RGBA upper, RGBA lower) {
+void DrawPixel1x2SingleCharacter(RgbA upper, RgbA lower) {
     static const wchar Terminal_UpperHalfBlock = L'▀';
 
     TerminalCursor_SetColor(upper, lower);
@@ -549,7 +544,7 @@ void DrawPixel1x2SingleCharacter(RGBA upper, RGBA lower) {
     TerminalCursor_ResetColor();
 }
 
-void DrawPixel1x2SingleCharacterDontResetColor(RGBA upper, RGBA lower) {
+void DrawPixel1x2SingleCharacterDontResetColor(RgbA upper, RgbA lower) {
     static const wchar Terminal_UpperHalfBlock = L'▀';
 
     TerminalCursor_SetColor(upper, lower);
@@ -557,63 +552,63 @@ void DrawPixel1x2SingleCharacterDontResetColor(RGBA upper, RGBA lower) {
 }
 
 
-void DrawRGBChannelPalette() {
+void DrawRgbChannelPalette() {
     const f64 scalerByWidth = 255.0 / Display_Width;
 
     for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
-            RGBA_fromRGB(scaled, 0, 0),
-            RGBA_fromRGB(0, scaled, 0)
+            RgbA_fromRgb(scaled, 0, 0),
+            RgbA_fromRgb(0, scaled, 0)
         );
     }
     printf("\n");
     for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
-            RGBA_fromRGB(0, 0, scaled),
-            RGBA_fromRGB(scaled, scaled, 0)
+            RgbA_fromRgb(0, 0, scaled),
+            RgbA_fromRgb(scaled, scaled, 0)
         );
     }
     printf("\n");
     for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
-            RGBA_fromRGB(scaled, 0, scaled),
-            RGBA_fromRGB(0, scaled, scaled)
+            RgbA_fromRgb(scaled, 0, scaled),
+            RgbA_fromRgb(0, scaled, scaled)
         );
     }
     printf("\n");
     for (int i = 0; i < Display_Width; ++i) {
         const u8 scaled = (u8)scalerByWidth * i;
         DrawPixel1x2Single(
-            RGBA_fromRGB(scaled, scaled, scaled),
-            RGBA_fromRGB(0, 0, 0)
+            RgbA_fromRgb(scaled, scaled, scaled),
+            RgbA_fromRgb(0, 0, 0)
         );
     }
     printf("\n");
 }
 
-void DrawRGBAToHSLConvertedTest() {
-    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
-    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Red)));
+void DrawRgbAToHslConvertedTest() {
+    DrawPixel1x2Single(RgbA_Red, RgbA_Red);
+    DrawPixel1x2Single(RgbA_Red, RgbA_Red);
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Red)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Red)));
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Red)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Red)));
     printf("\n");
-    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
-    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Green)));
+    DrawPixel1x2Single(RgbA_Green, RgbA_Green);
+    DrawPixel1x2Single(RgbA_Green, RgbA_Green);
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Green)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Green)));
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Green)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Green)));
     printf("\n");
-    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
-    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
-    DrawPixel1x2Single(HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)), HSL_to_RGBA(RGBA_to_HSL(RGBA_Blue)));
+    DrawPixel1x2Single(RgbA_Blue, RgbA_Blue);
+    DrawPixel1x2Single(RgbA_Blue, RgbA_Blue);
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Blue)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Blue)));
+    DrawPixel1x2Single(Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Blue)), Hsl_to_RgbA(RgbA_to_Hsl(RgbA_Blue)));
     printf("\n");
 }
 
-void DrawHSLGradientPalette() {
-    RGBA buffer[Display_Size] = { 0 };
+void DrawHslGradientPalette() {
+    RgbA buffer[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
@@ -624,22 +619,22 @@ void DrawHSLGradientPalette() {
         for (i32 x = 0; x < Display_Width; ++x) {
             f64 h                         = (f64)x * hueInterval;
             f64 l                         = (f64)y * lightnessInterval;
-            HSL hsl                       = HSL_from(h, saturation, l);
-            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
+            Hsl hsl                       = Hsl_from(h, saturation, l);
+            buffer[x + y * Display_Width] = Hsl_to_RgbA(hsl);
         }
     }
 
     for (i32 y = 0; y < Display_Height; y += 2) {
         for (i32 x = 0; x < Display_Width; ++x) {
-            RGBA upper = buffer[x + y * Display_Width];
-            RGBA lower = buffer[x + (y + 1) * Display_Width];
+            RgbA upper = buffer[x + y * Display_Width];
+            RgbA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2Single(upper, lower);
         }
     }
 }
 
-void DrawHSLGradientPaletteCharacter() {
-    RGBA buffer[Display_Size] = { 0 };
+void DrawHslGradientPaletteCharacter() {
+    RgbA buffer[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
@@ -650,22 +645,22 @@ void DrawHSLGradientPaletteCharacter() {
         for (i32 x = 0; x < Display_Width; ++x) {
             f64 h                         = (f64)x * hueInterval;
             f64 l                         = (f64)y * lightnessInterval;
-            HSL hsl                       = HSL_from(h, saturation, l);
-            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
+            Hsl hsl                       = Hsl_from(h, saturation, l);
+            buffer[x + y * Display_Width] = Hsl_to_RgbA(hsl);
         }
     }
 
     for (i32 y = 0; y < Display_Height; y += 2) {
         for (i32 x = 0; x < Display_Width; ++x) {
-            RGBA upper = buffer[x + y * Display_Width];
-            RGBA lower = buffer[x + (y + 1) * Display_Width];
+            RgbA upper = buffer[x + y * Display_Width];
+            RgbA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2SingleCharacter(upper, lower);
         }
     }
 }
 
-void DrawHSLGradientPaletteCharacterDontResetColor() {
-    RGBA buffer[Display_Width * Display_Height] = { 0 };
+void DrawHslGradientPaletteCharacterDontResetColor() {
+    RgbA buffer[Display_Width * Display_Height] = { 0 };
 
     const f64 saturation = 100.0;
 
@@ -676,15 +671,15 @@ void DrawHSLGradientPaletteCharacterDontResetColor() {
         for (i32 x = 0; x < Display_Width; ++x) {
             f64 h                         = (f64)x * hueInterval;
             f64 l                         = (f64)y * lightnessInterval;
-            HSL hsl                       = HSL_from(h, saturation, l);
-            buffer[x + y * Display_Width] = HSL_to_RGBA(hsl);
+            Hsl hsl                       = Hsl_from(h, saturation, l);
+            buffer[x + y * Display_Width] = Hsl_to_RgbA(hsl);
         }
     }
 
     for (i32 y = 0; y < Display_Height; y += 2) {
         for (i32 x = 0; x < Display_Width; ++x) {
-            RGBA upper = buffer[x + y * Display_Width];
-            RGBA lower = buffer[x + (y + 1) * Display_Width];
+            RgbA upper = buffer[x + y * Display_Width];
+            RgbA lower = buffer[x + (y + 1) * Display_Width];
             DrawPixel1x2SingleCharacterDontResetColor(upper, lower);
         }
     }
@@ -744,7 +739,7 @@ void Display_SwapBuffers() {
     PP_Swap(usize, Display_bufferCurrentSize, Display_bufferNextSize);
 }
 
-void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
+void Display_SetBufferFromColors(const RgbA colors[Display_Size]) {
     Display_Clear();
 
     i32 index = 0;
@@ -752,8 +747,8 @@ void Display_SetBufferFromColors(const RGBA colors[Display_Size]) {
         for (i32 x = 0; x < Display_Width; ++x) {
             char displayFormat[Display_UnitPixel1x2FormatMaxCaseSize] = { 0 };
 
-            const RGBA upper = colors[x + y * Display_Width];
-            const RGBA lower = colors[x + (y + 1) * Display_Width];
+            const RgbA upper = colors[x + y * Display_Width];
+            const RgbA lower = colors[x + (y + 1) * Display_Width];
 
             const i32 formattedSize = sprintf(
                 displayFormat,
@@ -790,8 +785,8 @@ void Display_Render() {
     TerminalCursor_ResetColor();
 }
 
-void DrawHSLGradientPaletteToDisplay() {
-    RGBA colors[Display_Size] = { 0 };
+void DrawHslGradientPaletteToDisplay() {
+    RgbA colors[Display_Size] = { 0 };
 
     const f64 saturation = 100.0;
 
@@ -802,8 +797,8 @@ void DrawHSLGradientPaletteToDisplay() {
         for (i32 x = 0; x < Display_Width; ++x) {
             f64 h                         = (f64)x * hueInterval;
             f64 l                         = (f64)y * lightnessInterval;
-            HSL hsl                       = HSL_from(h, saturation, l);
-            colors[x + y * Display_Width] = HSL_to_RGBA(hsl);
+            Hsl hsl                       = Hsl_from(h, saturation, l);
+            colors[x + y * Display_Width] = Hsl_to_RgbA(hsl);
         }
     }
     Display_SetBufferFromColors(colors);
@@ -815,48 +810,48 @@ i32 main() {
     Terminal_Bootup();
 
 #ifdef UNIT_TESTS
-    TEST_RGB_to_HSL();
-    TEST_HSL_to_RGB();
+    TEST_Rgb_to_Hsl();
+    TEST_Hsl_to_Rgb();
     TEST_RoundtripConversion();
     getch();
     Terminal_Clear();
 #endif
 
-    DrawPixel1x2Single(RGBA_Red, RGBA_Green);
-    DrawPixel1x2Single(RGBA_Blue, RGBA_White);
-    DrawPixel1x2Single(RGBA_Red, RGBA_Red);
-    DrawPixel1x2Single(RGBA_Green, RGBA_Green);
-    DrawPixel1x2Single(RGBA_Blue, RGBA_Blue);
+    DrawPixel1x2Single(RgbA_Red, RgbA_Green);
+    DrawPixel1x2Single(RgbA_Blue, RgbA_White);
+    DrawPixel1x2Single(RgbA_Red, RgbA_Red);
+    DrawPixel1x2Single(RgbA_Green, RgbA_Green);
+    DrawPixel1x2Single(RgbA_Blue, RgbA_Blue);
     getch();
     Terminal_Clear();
 
-    DrawRGBChannelPalette();
+    DrawRgbChannelPalette();
     getch();
     Terminal_Clear();
 
-    DrawRGBAToHSLConvertedTest();
+    DrawRgbAToHslConvertedTest();
     getch();
     Terminal_Clear();
 
-    DrawHSLGradientPalette();
+    DrawHslGradientPalette();
     getch();
     Terminal_Clear();
 
-    DrawHSLGradientPaletteCharacter();
+    DrawHslGradientPaletteCharacter();
     getch();
     Terminal_Clear();
 
-    DrawHSLGradientPaletteCharacterDontResetColor();
+    DrawHslGradientPaletteCharacterDontResetColor();
     getch();
     Terminal_Clear();
 
-    DrawHSLGradientPaletteToDisplay();
+    DrawHslGradientPaletteToDisplay();
     Display_Render();
     getch();
-    DrawHSLGradientPaletteToDisplay();
+    DrawHslGradientPaletteToDisplay();
     Display_Render();
     getch();
-    DrawHSLGradientPaletteToDisplay();
+    DrawHslGradientPaletteToDisplay();
     Display_Render();
     getch();
 

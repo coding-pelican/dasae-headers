@@ -40,10 +40,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Create the window
     hwnd = CreateWindowEx(
-        0, // Optional window styles
-        CLASS_NAME, // Window class
+        0,                      // Optional window styles
+        CLASS_NAME,             // Window class
         "Terminal-like Window", // Window text
-        WS_OVERLAPPEDWINDOW, // Window style
+        WS_OVERLAPPEDWINDOW,    // Window style
 
         // Size and position
         CW_USEDEFAULT,
@@ -51,10 +51,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
 
-        NULL, // Parent window
-        NULL, // Menu
+        NULL,      // Parent window
+        NULL,      // Menu
         hInstance, // Instance handle
-        NULL // Additional application data
+        NULL       // Additional application data
     );
 
     if (hwnd == NULL) {
@@ -91,8 +91,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         hdc = BeginPaint(hwnd, &ps);
 
         SelectObject(hdc, hFont);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        SetBkColor(hdc, RGB(0, 0, 0));
+        SetTextColor(hdc, Rgb(255, 255, 255));
+        SetBkColor(hdc, Rgb(0, 0, 0));
 
         DrawBuffer(hdc);
 

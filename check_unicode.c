@@ -16,7 +16,7 @@ void enableANSI() {
     SetConsoleMode(hOut, dwMode);
 }
 
-void printRGB(int r, int g, int b, const char* text) {
+void printRgb(int r, int g, int b, const char* text) {
     printf("\033[38;2;%d;%d;%dm%s\033[0m", r, g, b, text);
 }
 
@@ -36,9 +36,9 @@ int main() {
     printf("Output code page: %d\n", GetConsoleOutputCP());
 
     // Print colored Unicode block
-    printRGB(255, 100, 0, "▀ This is an orange upper half block\n");
-    printRGB(0, 255, 0, "▀ This is a green upper half block\n");
-    printRGB(0, 100, 255, "▀ This is a light blue upper half block\n");
+    printRgb(255, 100, 0, "▀ This is an orange upper half block\n");
+    printRgb(0, 255, 0, "▀ This is a green upper half block\n");
+    printRgb(0, 100, 255, "▀ This is a light blue upper half block\n");
 
     // Print normal Unicode block
     printf("This is a normal upper half block: ▀\n");

@@ -387,9 +387,9 @@ void Canvas_fillRect(Canvas* const c, Rect rect, Color color) {
 // )
 
 EOrd i64_cmp(i64 lhs, i64 rhs) {
-    return lhs < rhs ? EOrd_less
-         : lhs > rhs ? EOrd_greater
-                     : EOrd_equal;
+    return lhs < rhs ? EOrd_LESS
+         : lhs > rhs ? EOrd_GREATER
+                     : EOrd_EQUAL;
 }
 
 force_inline i64 i64_min(i64 lhs, i64 rhs) {

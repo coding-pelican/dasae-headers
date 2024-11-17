@@ -35,7 +35,7 @@ Rect Rect_fromMinMax(i64 min_x, i64 min_y, i64 max_x, i64 max_y);
 
 
 typedef struct FrameBuffer {
-    struct Vector_Color {
+    struct ds_Vec_Color {
         Color* data;
         usize  length;
         usize  capacity;

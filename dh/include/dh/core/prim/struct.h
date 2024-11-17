@@ -24,6 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "../pp.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -37,20 +38,24 @@ extern "C" {
 #define nArray(LENGTH, TYPE)              IMPL_nArray(TYPE, LENGTH)
 #define nArrayWith(LENGTH, TYPE, INIT...) IMPL_nArrayWith(TYPE, LENGTH, INIT)
 
+#define struct_GenericBase(TYPE, FIELDS...) IMPL_struct_GenericBase(TYPE, FIELDS)
+#define struct_GenericPart(TYPE, FIELDS...) IMPL_struct_GenericPart(TYPE, FIELDS)
+#define struct_Generic(TYPE, FIELDS...)     IMPL_struct_Generic(TYPE, FIELDS)
+
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_make(TYPE) \
-    literal(TYPE) { 0 }
+    literal(TYPE, 0)
 #define IMPL_makeWith(TYPE, INIT...) \
-    literal(TYPE) { INIT }
+    literal(TYPE, INIT)
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define IMPL_create(TYPE) \
     ((TYPE[1]){           \
-        literal(TYPE){ 0 } })
+        literal(TYPE, 0) })
 #define IMPL_createWith(TYPE, INIT...) \
     ((TYPE[1]){                        \
-        literal(TYPE){ INIT } })
+        literal(TYPE, INIT) })
 
 #define IMPL_array(TYPE, INIT...) \
     ((TYPE[]){ INIT })
@@ -58,6 +63,35 @@ extern "C" {
     ((TYPE[LENGTH]){ 0 })
 #define IMPL_nArrayWith(LENGTH, TYPE, INIT...) \
     ((TYPE[(LENGTH)]){ INIT })
+
+#define IMPL_struct_GenericBase(TYPE, FIELDS...) \
+    union {                                      \
+        struct pp_concat(TYPE, Base){            \
+            FIELDS                               \
+        } Base[1];                               \
+        struct {                                 \
+            FIELDS                               \
+        };                                       \
+    }
+
+#define IMPL_struct_GenericPart(TYPE, FIELDS...) \
+    union {                                      \
+        struct pp_concat(TYPE, Part){            \
+            FIELDS                               \
+        } Part[1];                               \
+        struct {                                 \
+            FIELDS                               \
+        };                                       \
+    }
+
+#define IMPL_struct_Generic(TYPE, FIELDS...)      \
+    union {                                       \
+        TYPE TYPE[1];                             \
+        struct {                                  \
+            struct pp_concat(TYPE, Base) Base[1]; \
+            FIELDS                                \
+        };                                        \
+    }
 // NOLINTEND(bugprone-macro-parentheses)
 
 

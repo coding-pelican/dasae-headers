@@ -24,11 +24,11 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "time/cfg.h"
-#include "time/system.h"
-#include "time/instant.h"
-#include "time/duration.h"
+#include "time/common.h"
+#include "time/Duration.h"
+#include "time/Instant.h"
+#include "time/SysTime.h"
 
-/*========== Macros and Definitions =========================================*/
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST

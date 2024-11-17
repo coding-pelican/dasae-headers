@@ -42,13 +42,13 @@ extern "C" {
 #define mem_allocWith(TYPE, COUNT, INITIAL...) IMPL_mem_allocWith(TYPE, COUNT, INITIAL)
 #define mem_free(PTR_ADDR)                     IMPL_mem_free(PTR_ADDR)
 
-// Debug macro definitions
+/* Debug macro definitions */
 #if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 #define mem_allocate(SIZE)               mem__allocate(SIZE, __func__, __FILE__, __LINE__)
 #define mem_allocateCleared(SIZE, COUNT) mem__allocateCleared(SIZE, COUNT, __func__, __FILE__, __LINE__)
 #define mem_allocateWith(SIZE, SRC)      mem__allocateWith(SIZE, SRC, __func__, __FILE__, __LINE__)
 #define mem_reallocate(PTR, SIZE)        mem__reallocate(PTR, SIZE, __func__, __FILE__, __LINE__)
-#define mem_deallocate(PTR_ADDR)         mem__deallocate(PTR_ADDR, __func__, __FILE__, __LINE__)
+#define mem_deallocate(PTR_ADDR)         mem__deallocate((anyptr*)(PTR_ADDR), __func__, __FILE__, __LINE__)
 #define mem_set(DEST, VAL, SIZE)         mem__set(DEST, VAL, SIZE, __func__, __FILE__, __LINE__)
 #define mem_copy(DEST, SRC, SIZE)        mem__copy(DEST, SRC, SIZE, __func__, __FILE__, __LINE__)
 #define mem_move(DEST, SRC, SIZE)        mem__move(DEST, SRC, SIZE, __func__, __FILE__, __LINE__)
@@ -57,37 +57,42 @@ extern "C" {
 #define mem_allocateCleared(SIZE, COUNT) mem__allocateCleared(SIZE, COUNT)
 #define mem_allocateWith(SIZE, SRC)      mem__allocateWith(SIZE, SRC)
 #define mem_reallocate(PTR, SIZE)        mem__reallocate(PTR, SIZE)
-#define mem_deallocate(PTR_ADDR)         mem__deallocate(PTR_ADDR)
+#define mem_deallocate(PTR_ADDR)         mem__deallocate((anyptr*)(PTR_ADDR))
 #define mem_set(DEST, VAL, SIZE)         mem__set(DEST, VAL, SIZE)
 #define mem_copy(DEST, SRC, SIZE)        mem__copy(DEST, SRC, SIZE)
 #define mem_move(DEST, SRC, SIZE)        mem__move(DEST, SRC, SIZE)
 #endif
 
 #if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
-// Memory tracking structure
+/* Memory tracking structure */
 typedef struct mem_Info mem_Info;
 struct mem_Info {
-    anyptr      ptr;          // Pointer to allocated memory
-    usize       size;         // Size of allocation
-    const char* func;         // Function name
-    const char* file;         // Source file
-    i32         line;         // Line number
-    time_t      alloc_time;   // Allocation timestamp
-    time_t      dealloc_time; // Deallocation timestamp
-    i32         ref_count;    // Reference count
-    mem_Info*   next;         // Next in linked list
+    anyptr      ptr;          /* Pointer to allocated memory */
+    usize       size;         /* Size of allocation */
+    const char* func;         /* Function name */
+    const char* file;         /* Source file */
+    i32         line;         /* Line number */
+    time_t      alloc_time;   /* Allocation timestamp */
+    time_t      dealloc_time; /* Deallocation timestamp */
+    i32         ref_count;    /* Reference count */
+    mem_Info*   next;         /* Next in linked list */
 };
-// Global memory tracking list
-extern mem_Info*                         mem__info_list;
-// Register atexit handler for memory leak detection
-static void __attribute__((constructor)) mem__initInfoList(void);
-static void __attribute__((destructor))  mem__finiInfoList(void);
-// Memory tracking functions
-static void                              mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
-static void                              mem__removeInfo(anyptr target);
-static void                              mem__printInfoMemoryLeakTrace(void);
+
+/*
+ * // Global memory tracking list
+ * static mem_Info* mem__s_info_list = null;
+ * // Register atexit handler for memory leak detection
+ * static void __attribute__((constructor)) mem__initInfoList(void);
+ * static void __attribute__((destructor))  mem__finiInfoList(void);
+ * // Memory tracking functions
+ * static void                              mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
+ * static void                              mem__removeInfo(anyptr target);
+ * static void
+ * mem__printInfoMemoryLeakTrace(void);
+ */
 #endif /* defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED */
 
+/*========== Macros Implementation ==========================================*/
 
 #define IMPL_mem_create(TYPE)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE))
 #define IMPL_mem_createCleared(TYPE)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), 0)
@@ -99,7 +104,9 @@ static void                              mem__printInfoMemoryLeakTrace(void);
 #define IMPL_mem_allocWith(TYPE, COUNT, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE) * COUNT, &nArrayWith(COUNT, TYPE, __VA_ARGS__))
 #define IMPL_mem_free(PTR)                   mem_deallocate((anyptr*)(PTR))
 
-// Debug memory management functions
+/*========== Extern Function Prototypes =====================================*/
+
+/* Debug memory management functions */
 #if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
 extern anyptr mem__allocate(usize size, const char* func, const char* file, i32 line);
 extern anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line);

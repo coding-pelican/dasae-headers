@@ -21,76 +21,76 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 
-#include <dh/core.h>
+#include "dh/core.h"
 
 
 enum EColorChannel {
-    CCH_red         = 0,
-    CCH_green       = 1,
-    CCH_blue        = 2,
-    CCH_alpha       = 3,
-    CCH_count       = 4,
-    CCH_min         = 0,
-    CCH_max         = 0xFF,
-    CCH_transparent = CCH_min,
-    CCH_opaque      = CCH_max,
+    ColorChannel_RED         = 0,
+    ColorChannel_GREEN       = 1,
+    ColorChannel_BLUE        = 2,
+    ColorChannel_ALPHA       = 3,
+    ColorChannel_COUNT       = 4,
+    ColorChannel_MIN         = 0,
+    ColorChannel_MAX         = 0xFF,
+    ColorChannel_TRANSPARENT = ColorChannel_MIN,
+    ColorChannel_OPAQUE      = ColorChannel_MAX,
 };
 
 
-typedef union RGB   RGB;
-typedef union HSL   HSL;
+typedef union Rgb   Rgb;
+typedef union Hsl   Hsl;
 typedef union Color Color;
 
 
-union RGB {
-    u8 rgb[3]; // RGB channel components in [0,255]
+union Rgb {
+    u8 rgb[3]; // Rgb channel components in [0,255]
     struct {
         u8 r; // Red channel in [0,255]
         u8 g; // Green channel in [0,255]
         u8 b; // Blue channel in [0,255]
     };
 };
-#define RGB_(...) makeWith(RGB, __VA_ARGS__)
-RGB RGB_from(u8 r, u8 g, u8 b);
+#define Rgb_(...) makeWith(Rgb, __VA_ARGS__)
+Rgb Rgb_from(u8 r, u8 g, u8 b);
 
-RGB RGB_fromHSL(HSL hsl);
-RGB HSL_intoRGB(HSL hsl);
-RGB RGB_fromColor(Color color);
-RGB Color_intoRGB(Color color);
-RGB HSL_asRGB(HSL hsl);
-RGB Color_asRGB(Color color);
+Rgb Rgb_fromHsl(Hsl hsl);
+Rgb Hsl_intoRgb(Hsl hsl);
+Rgb Rgb_fromColor(Color color);
+Rgb Color_intoRgb(Color color);
+Rgb Hsl_asRgb(Hsl hsl);
+Rgb Color_asRgb(Color color);
 
-#define comptime_RGB_from(_r, _g, _b) \
-    RGB_(.r = (_r), .g = (_g), .b = (_b))
+#define literal_Rgb_from(_r, _g, _b) \
+    Rgb_(.r = (_r), .g = (_g), .b = (_b))
 
 
-union HSL {
-    f64 hsl[3]; // HSL color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
+union Hsl {
+    f64 hsl[3]; // Hsl color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
     struct {
         f64 h; // Hue in [0,360]
         f64 s; // Saturation in [0,100]
         f64 l; // Lightness in [0,100]
     };
 };
-#define HSL_(...) makeWith(HSL, __VA_ARGS__)
-HSL HSL_from(f64 h, f64 s, f64 l);
-f64 HSL_hueToRgbSpace(f64 p, f64 q, f64 t);
+#define Hsl_(...) makeWith(Hsl, __VA_ARGS__)
+Hsl Hsl_from(f64 h, f64 s, f64 l);
+f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
 
-HSL HSL_fromRGB(RGB rgb);
-HSL RGB_intoHSL(RGB rgb);
-HSL HSL_fromColor(Color color);
-HSL Color_intoHSL(Color color);
-HSL RGB_asHSL(RGB rgb);
-HSL Color_asHSL(Color color);
+Hsl Hsl_fromRgb(Rgb rgb);
+Hsl Rgb_intoHsl(Rgb rgb);
+Hsl Hsl_fromColor(Color color);
+Hsl Color_intoHsl(Color color);
+Hsl Rgb_asHsl(Rgb rgb);
+Hsl Color_asHsl(Color color);
 
-#define comptime_HSL_from(_h, _s, _l) \
-    HSL_(.h = (_h), .s = (_s), .l = (_l))
+#define literal_Hsl_from(_h, _s, _l) \
+    Hsl_(.h = (_h), .s = (_s), .l = (_l))
 
 
 union Color {
-    u8 rgba[4]; // RGBA channel components in [0,255]
+    u8 rgba[4]; // RgbA channel components in [0,255]
     union {
-        RGB rgb; // RGB channel components in [0,255]
+        Rgb rgb; // Rgb channel components in [0,255]
         struct {
             u8 r; // Red channel in [0,255]
             u8 g; // Green channel in [0,255]
@@ -104,35 +104,36 @@ Color Color_from(u8 r, u8 g, u8 b, u8 a);
 Color Color_fromTransparent(u8 r, u8 g, u8 b);
 Color Color_fromOpaque(u8 r, u8 g, u8 b);
 
-Color Color_fromRGB(RGB rgb, u8 a);
-Color Color_fromRgbTransparent(RGB rgb);
-Color Color_fromRgbOpaque(RGB rgb);
-Color RGB_intoColor(RGB rgb, u8 a);
-Color RGB_intoColorTransparent(RGB rgb);
-Color RGB_intoColorOpaque(RGB rgb);
-Color Color_fromHSL(HSL hsl, u8 a);
-Color Color_fromHslTransparent(HSL hsl);
-Color Color_fromHslOpaque(HSL hsl);
-Color HSL_intoColor(HSL hsl, u8 a);
-Color HSL_intoColorTransparent(HSL hsl);
-Color HSL_intoColorOpaque(HSL hsl);
+Color Color_fromRgb(Rgb rgb, u8 a);
+Color Color_fromRgbTransparent(Rgb rgb);
+Color Color_fromRgbOpaque(Rgb rgb);
+Color Rgb_intoColor(Rgb rgb, u8 a);
+Color Rgb_intoColorTransparent(Rgb rgb);
+Color Rgb_intoColorOpaque(Rgb rgb);
+Color Color_fromHsl(Hsl hsl, u8 a);
+Color Color_fromHslTransparent(Hsl hsl);
+Color Color_fromHslOpaque(Hsl hsl);
+Color Hsl_intoColor(Hsl hsl, u8 a);
+Color Hsl_intoColorTransparent(Hsl hsl);
+Color Hsl_intoColorOpaque(Hsl hsl);
 
-#define comptime_Color_from(_r, _g, _b, _a) \
+#define literal_Color_from(_r, _g, _b, _a) \
     Color_(.rgba = { _r, _g, _b, _a })
-#define comptime_Color_fromTransparent(_r, _g, _b) \
-    Color_(.rgba = { _r, _g, _b, CCH_min })
-#define comptime_Color_fromOpaque(_r, _g, _b) \
-    Color_(.rgba = { _r, _g, _b, CCH_max })
+#define literal_Color_fromTransparent(_r, _g, _b) \
+    Color_(.rgba = { _r, _g, _b, ColorChannel_MIN })
+#define literal_Color_fromOpaque(_r, _g, _b) \
+    Color_(.rgba = { _r, _g, _b, ColorChannel_MAX })
 
-static const Color Color_transparent = comptime_Color_from(0, 0, 0, 0);
-static const Color Color_black       = comptime_Color_fromOpaque(0, 0, 0);
-static const Color Color_white       = comptime_Color_fromOpaque(255, 255, 255);
-static const Color Color_red         = comptime_Color_fromOpaque(255, 0, 0);
-static const Color Color_green       = comptime_Color_fromOpaque(0, 255, 0);
-static const Color Color_blue        = comptime_Color_fromOpaque(0, 0, 255);
-static const Color Color_yellow      = comptime_Color_fromOpaque(255, 255, 0);
-static const Color Color_cyan        = comptime_Color_fromOpaque(0, 255, 255);
-static const Color Color_magenta     = comptime_Color_fromOpaque(255, 0, 255);
+static const Color Color_TRANSPARENT = literal_Color_from(0, 0, 0, 0);
+static const Color Color_BLACK       = literal_Color_fromOpaque(0, 0, 0);
+static const Color Color_WHITE       = literal_Color_fromOpaque(255, 255, 255);
+static const Color Color_RED         = literal_Color_fromOpaque(255, 0, 0);
+static const Color Color_GREEN       = literal_Color_fromOpaque(0, 255, 0);
+static const Color Color_BLUE        = literal_Color_fromOpaque(0, 0, 255);
+static const Color Color_YELLOW      = literal_Color_fromOpaque(255, 255, 0);
+static const Color Color_CYAN        = literal_Color_fromOpaque(0, 255, 255);
+static const Color Color_MAGENTA     = literal_Color_fromOpaque(255, 0, 255);
+static const Color Color_BLANK       = Color_TRANSPARENT;
 
 
 #if defined(__cplusplus)

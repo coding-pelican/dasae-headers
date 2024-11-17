@@ -15,11 +15,12 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 #include "dh/core/pp.h"
 #include "dh/core.h"
 #include "dh/debug/assert.h"
-#include "dh/time/duration.h"
-#include "dh/time/instant.h"
-#include "dh/time/system.h"
+#include "dh/time/Duration.h"
+#include "dh/time/Instant.h"
+#include "dh/time/SysTime.h"
+#include "dh/ds/Vec.h"
 
-#define NMEM_TRACE
+// #define NMEM_TRACE
 #include "dh/mem.h"
 #include "dh/defer.h"
 #include "dh/random.h"
@@ -31,7 +32,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 // #include "../dh-terminal/keyboard_state.h"
 #include "../dh-terminal/color.h"
 #include "../dh-terminal/canvas.h"
-#include "../dh-terminal/window.h" /* WIP FIXING HEADER INTERNAL */
+#include "../dh-terminal/window_old.h" /* WIP FIXING HEADER INTERNAL */
 #include "../dh-terminal/display.h"
 
 #include <locale.h>
@@ -304,7 +305,7 @@ void Display_render() {
 }
 
 time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
-    time_Duration overhead_duration = time_Duration_zero;
+    time_Duration overhead_duration = time_Duration_ZERO;
 
     Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
 
@@ -416,31 +417,31 @@ void Particle_render(const Particle* const p, Canvas* const canvas, f64 delta) {
     );
 }
 
+typedef ds_Vec(Particle) ds_Vec_Particle;
+
 // FIXME: Find null access bug
 typedef struct Firework {
-    Particle* rocket;
-    struct Vector_Particle {
-        Particle* data;
-        usize     length;
-        usize     capacity;
-    } effects;
-    HSL effect_base_color;
+    Particle*       rocket;
+    ds_Vec_Particle effects[1];
+    Hsl             effect_base_color;
 } Firework;
 
 Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color) {
     Particle* const rocket = mem_create(Particle);
-    Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_white);
-    Particle_withSpeed(rocket, 0.0, -2.0 - Random_f64(Random_rng) * -1.0);
+    Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_WHITE);
+    Particle_withSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
     Particle_withAcceleration(rocket, 0.0, 0.02);
 
     *f = makeWith(
         Firework,
         .rocket  = rocket,
         .effects = {
-            .data     = mem_alloc(Particle, Firework_effects_per_rocket),
-            .length   = 0,
-            .capacity = Firework_effects_per_rocket },
-        .effect_base_color = Color_intoHSL(effect_base_color)
+            *(ds_Vec_Particle*)ds_Vec_initWithCap(
+                Particle,
+                create(ds_Vec),
+                Firework_effects_per_rocket
+            ) },
+        .effect_base_color = Color_intoHsl(effect_base_color)
     );
 
     return f;
@@ -450,9 +451,7 @@ Firework* Firework_fini(Firework* const f) {
     if (f->rocket) {
         mem_destroy(&f->rocket);
     }
-    if (f->effects.data) {
-        mem_free(&f->effects.data);
-    }
+    ds_Vec_fini(f->effects[0].ds_Vec);
     return f;
 }
 
@@ -461,16 +460,16 @@ void Firework_update(Firework* const f, f64 delta) {
         Particle_update(f->rocket, delta);
         if (-0.2 <= f->rocket->speed[1]) {
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
-                if (Firework_effects_max <= f->effects.length) { break; }
+                if (Firework_effects_max <= f->effects->len) { break; }
 
                 const i64 x      = as(i64, f->rocket->position[0]);
                 const i64 y      = as(i64, f->rocket->position[1]);
                 const i64 width  = 1;
                 const i64 height = 1;
-                const HSL color  = HSL_from(
+                const Hsl color  = Hsl_from(
                     f->effect_base_color.h,
-                    f->effect_base_color.s + (Random_f64(Random_rng) - 0.5) * 20.0,
-                    f->effect_base_color.l + (Random_f64(Random_rng) - 0.5) * 40.0
+                    f->effect_base_color.s + (Random_f64() - 0.5) * 20.0,
+                    f->effect_base_color.l + (Random_f64() - 0.5) * 40.0
                 );
 
                 Particle* const particle = Particle_init(
@@ -479,22 +478,22 @@ void Firework_update(Firework* const f, f64 delta) {
                     as(f64, y),
                     as(f64, width),
                     as(f64, height),
-                    HSL_intoColorOpaque(color)
+                    Hsl_intoColorOpaque(color)
                 );
                 Particle_withSpeed(
                     particle,
-                    (Random_f64(Random_rng) - 0.5) * 1.0,
-                    (Random_f64(Random_rng) - 0.9) * 1.0
+                    (Random_f64() - 0.5) * 1.0,
+                    (Random_f64() - 0.9) * 1.0
                 );
                 Particle_withAcceleration(particle, 0.0, 0.02);
                 Particle_withFading(particle, 0.01);
 
-                f->effects.data[f->effects.length++] = *particle;
+                ds_Vec_append(f->effects->ds_Vec, particle);
             }
             mem_destroy(&f->rocket);
         }
     }
-    foreach (Particle, particle, &f->effects) {
+    foreach (Particle, particle, f->effects) {
         Particle_update(particle, delta);
     }
 }
@@ -503,13 +502,13 @@ void Firework_render(const Firework* const f, Canvas* const canvas, f64 delta) {
     if (f->rocket) {
         Particle_render(f->rocket, canvas, delta);
     }
-    foreach (const Particle, particle, &f->effects) {
+    foreach (const Particle, particle, f->effects) {
         Particle_render(particle, canvas, delta);
     }
 }
 
 static bool Firework__deadsAllEffect(const Firework* const f) {
-    foreach (const Particle, particle, &f->effects) {
+    foreach (const Particle, particle, f->effects) {
         if (Particle_isDead(particle)) { continue; }
         return false;
     }
@@ -517,27 +516,27 @@ static bool Firework__deadsAllEffect(const Firework* const f) {
 }
 
 bool Firework_isDead(const Firework* const f) {
-    return f->rocket == null && (f->effects.length == 0 || Firework__deadsAllEffect(f));
+    return f->rocket == null && (f->effects->len == 0 || Firework__deadsAllEffect(f));
 }
 
 
+typedef ds_Vec(Firework) ds_Vec_Firework;
+
 typedef struct State {
-    struct Vector_Firework {
-        Firework* data;
-        usize     length;
-        usize     capacity;
-    } fireworks;
-    u32 width;
-    u32 height;
+    ds_Vec_Firework fireworks[1];
+    u32             width;
+    u32             height;
 } State;
 
 State* State_init(State* const s, u32 width, u32 height) {
     *s = makeWith(
         State,
         .fireworks = {
-            .data     = mem_alloc(Firework, Fireworks_max),
-            .length   = 0,
-            .capacity = Fireworks_max },
+            *(ds_Vec_Firework*)ds_Vec_initWithCap(
+                Firework,
+                create(ds_Vec),
+                Fireworks_max
+            ) },
         .width  = width,
         .height = height
     );
@@ -545,39 +544,41 @@ State* State_init(State* const s, u32 width, u32 height) {
 }
 
 void State_spawnFirework(State* const s) {
-    if (s->fireworks.capacity <= s->fireworks.length) { return; }
+    if (ds_Vec_cap(s->fireworks->ds_Vec) <= s->fireworks->len) { return; }
+    ds_Vec_append(s->fireworks->ds_Vec, create(Firework));
+    Firework* const f = ds_Vec_mut_last(s->fireworks->ds_Vec);
     Firework_init(
-        &s->fireworks.data[s->fireworks.length++],
-        as(i64, Random_u32(Random_rng) % s->width),
+        f,
+        as(i64, Random_u32() % s->width),
         s->height,
         Color_fromOpaque(
-            Random_u8(Random_rng),
-            Random_u8(Random_rng),
-            Random_u8(Random_rng)
+            Random_u8(),
+            Random_u8(),
+            Random_u8()
         )
     );
 }
 
 void State_update(State* const s, f64 delta) {
     // Remove dead fireworks.
-    foreach (Firework, firework, &s->fireworks) {
+    foreach (Firework, firework, s->fireworks) {
         if (!Firework_isDead(firework)) { continue; }
         Firework_fini(firework);
-        *firework = s->fireworks.data[--s->fireworks.length];
+        *firework = s->fireworks->data[--s->fireworks->len];
         --firework;
     }
     // Add a new rocket with with 5% chance.
-    if (Random_f64(Random_rng) < 0.05) {
+    if (Random_f64() < 0.05) {
         State_spawnFirework(s);
     }
     // Update all fireworks.
-    foreach (Firework, firework, &s->fireworks) {
+    foreach (Firework, firework, s->fireworks) {
         Firework_update(firework, delta);
     }
 }
 
 void State_fini(State* const s) {
-    foreach (Firework, firework, &s->fireworks) {
+    foreach (Firework, firework, s->fireworks) {
         Firework_fini(firework);
         mem_free(&firework);
     }
@@ -616,7 +617,7 @@ int main(int argc, const char* argv[]) {
     unused(argc);
     unused(argv);
 
-    Random_init(Random_rng);
+    Random_init();
 
     defer_block {
         Window* const window = mem_create(Window);
@@ -643,7 +644,7 @@ int main(int argc, const char* argv[]) {
         Canvas* const canvas = mem_create(Canvas);
         {
             Canvas_init(canvas, state->width, state->height);
-            Canvas_withColor(canvas, Color_black);
+            Canvas_withColor(canvas, Color_BLACK);
         }
         defer({
             Canvas_fini(canvas);
@@ -657,12 +658,12 @@ int main(int argc, const char* argv[]) {
         while (is_running) {
             /* Window_update(window); */ {
                 // prev    = curr;
-                // curr    = time_SystemTime_now_f64();
+                // curr    = time_SysTime_now_f64();
                 // elapsed = curr - prev;
             }
 
             // const f64   real_delta_time = elapsed;
-            // const usize update_step     = (usize)(Display_delta_time / real_delta_time);
+            // const usize update_step     = (usize)(Display_DELTA_TIME / real_delta_time);
             // for (usize step = 0; step < update_step; ++step) {
             //     const f64 delta_time = (f64)step * real_delta_time;
 
@@ -678,8 +679,8 @@ int main(int argc, const char* argv[]) {
                 State_update(state, 1);
             } /* UPDATE END */
             /* RENDER BEGIN */ {
-                Canvas_clear(canvas, Color_black);
-                foreach (const Firework, firework, &state->fireworks) {
+                Canvas_clear(canvas, Color_BLACK);
+                foreach (const Firework, firework, state->fireworks) {
                     Firework_render(firework, canvas, 1);
                 }
 
@@ -691,8 +692,8 @@ int main(int argc, const char* argv[]) {
                 Display_render();
             }
             /* Window_delay(window); */ {
-                // const f64 delay = Display_delta_time - elapsed;
-                // time_SystemTime_sleep_s_f64(delay);
+                // const f64 delay = Display_DELTA_TIME - elapsed;
+                // time_SysTime_sleep_s_f64(delay);
             }
         }
     }
@@ -708,7 +709,7 @@ int main(int argc, const char* argv[]) {
     let height                           = terminal_height * 2;
 
     let mut canvas = CrosstermCanvas::new (width, height);
-    canvas.set_refresh_limit(120);
+    canvas.set_refresh_LIMIT(120);
 
     let state = State::new (width as u32, height as u32);
 

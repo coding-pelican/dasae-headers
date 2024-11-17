@@ -7,7 +7,7 @@ Copyright (c) 2017 Seleznev Anton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
+in the Software without restriction, including without LIMITation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
@@ -30,70 +30,68 @@ SOFTWARE.
 #include <string.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 
 #if defined(CERAII_GCC_COMPILER)
-#define ERAII_THREAD_LOCAL __thread       // gcc
+#define ERAII_THREAD_LOCAL __thread // gcc
 #elif defined(CERAII_CLANG_COMPILER)
-#define ERAII_THREAD_LOCAL _Thread_local  // clang
+#define ERAII_THREAD_LOCAL _Thread_local // clang
 #elif defined(CERAII_MICROSOFT_COMPILER)
-#define ERAII_THREAD_LOCAL __declspec( thread ) //msvc
+#define ERAII_THREAD_LOCAL __declspec(thread) // msvc
 #else
-#define ERAII_THREAD_LOCAL _Thread_local  // default
+#define ERAII_THREAD_LOCAL _Thread_local // default
 #endif
 
 
 /* Possible values of AsockReturnCode */
-#define ASOCK_SUCCESS        0
-#define ASOCK_FAILURE        1
+#define ASOCK_SUCCESS 0
+#define ASOCK_FAILURE 1
 
 #define SYS_LOG_ERROR(...)
-#define MAX(a,b) ((a) > (b) ? (a) : b)
+#define MAX(a, b) ((a) > (b) ? (a) : b)
 
 struct asock_vector;
 typedef struct asock_vector asock_vector_t;
 
 static asock_vector_t* vector_create(size_t item_size, size_t capacity);
-static void vector_destroy(asock_vector_t*);
-static size_t vector_size(const asock_vector_t*);
-static int vector_push(asock_vector_t*, const void *item);
-static void* vector_at(asock_vector_t*, size_t index);
+static void            vector_destroy(asock_vector_t*);
+static size_t          vector_size(const asock_vector_t*);
+static int             vector_push(asock_vector_t*, const void* item);
+static void*           vector_at(asock_vector_t*, size_t index);
 
 
 struct asock_vector {
     size_t m_size;
-    void  *m_data;
+    void*  m_data;
     size_t m_capacity;
     size_t m_item_size;
 };
 
 
-static int reallocate(asock_vector_t *vector, size_t new_capacity)
-{
+static int reallocate(asock_vector_t* vector, size_t new_capacity) {
     assert(vector);
     assert(new_capacity > vector->m_capacity);
 
     size_t new_size = new_capacity * vector->m_item_size;
-    vector->m_data = realloc(vector->m_data, new_size);
-    if (vector->m_data == NULL)
+    vector->m_data  = realloc(vector->m_data, new_size);
+    if (vector->m_data == NULL) {
         return -1;
+    }
     return 0;
 }
 
 
-static asock_vector_t* vector_create(size_t item_size, size_t capacity)
-{
-    asock_vector_t *vector = malloc(sizeof(asock_vector_t));
+static asock_vector_t* vector_create(size_t item_size, size_t capacity) {
+    asock_vector_t* vector = malloc(sizeof(asock_vector_t));
     if (vector == NULL) {
         SYS_LOG_ERROR("Failed to allocate memory for vector");
         return NULL;
     }
 
     size_t init_size = MAX(item_size * capacity, 1);
-    vector->m_data = malloc(init_size);
+    vector->m_data   = malloc(init_size);
     if (vector->m_data == NULL) {
         SYS_LOG_ERROR("Failed to allocate memory for vector inern. buffer");
         free(vector);
@@ -108,34 +106,32 @@ static asock_vector_t* vector_create(size_t item_size, size_t capacity)
 }
 
 
-static void vector_destroy(asock_vector_t* vector)
-{
+static void vector_destroy(asock_vector_t* vector) {
     assert(vector);
     free(vector->m_data);
     free(vector);
 }
 
 
-size_t vector_size(const asock_vector_t* vector)
-{
+size_t vector_size(const asock_vector_t* vector) {
     assert(vector);
     return vector->m_size;
 }
 
 
-static int vector_push (asock_vector_t* vector, const void* item)
-{
+static int vector_push(asock_vector_t* vector, const void* item) {
     assert(vector);
     assert(item);
 
     if (vector->m_size == vector->m_capacity) {
-        if (reallocate(vector, vector->m_capacity * 2) == -1)
+        if (reallocate(vector, vector->m_capacity * 2) == -1) {
             return ASOCK_FAILURE;
+        }
         vector->m_capacity = vector->m_capacity * 2;
     }
 
     ptrdiff_t deviation = vector->m_size * vector->m_item_size;
-    memcpy((char *)vector->m_data + deviation, item, vector->m_item_size);
+    memcpy((char*)vector->m_data + deviation, item, vector->m_item_size);
 
     ++(vector->m_size);
 
@@ -143,34 +139,33 @@ static int vector_push (asock_vector_t* vector, const void* item)
 }
 
 
-static void *vector_at(asock_vector_t *vector, size_t index)
-{
-    if (index >= vector->m_size)
+static void* vector_at(asock_vector_t* vector, size_t index) {
+    if (index >= vector->m_size) {
         return NULL;
+    }
 
-    return (char *)vector->m_data + index * vector->m_item_size;
+    return (char*)vector->m_data + index * vector->m_item_size;
 }
 
 /* ----------------------------------------------------------------------- */
 
-static ERAII_THREAD_LOCAL  struct stack_return_item stack_items[CERAII_ENV_STACK_SIZE];
-static ERAII_THREAD_LOCAL  struct stack_return_item return_caller;
-static ERAII_THREAD_LOCAL  int raii_objects_counter = 0;
+static ERAII_THREAD_LOCAL struct stack_return_item stack_items[CERAII_ENV_STACK_SIZE];
+static ERAII_THREAD_LOCAL struct stack_return_item return_caller;
+static ERAII_THREAD_LOCAL int                      raii_objects_counter = 0;
 
-static void stack_items_vector_destructor(int status, void *stack_items_vector)
-{
+static void stack_items_vector_destructor(int status, void* stack_items_vector) {
     (void)status;
     if (stack_items_vector != NULL) {
         vector_destroy(stack_items_vector);
     }
 }
 
-static ERAII_THREAD_LOCAL  asock_vector_t * stack_items_vector= NULL;
+static ERAII_THREAD_LOCAL asock_vector_t* stack_items_vector = NULL;
 
-struct stack_return_item* get_stack_item(int index)
-{
-    if (index < CERAII_ENV_STACK_SIZE)
+struct stack_return_item* get_stack_item(int index) {
+    if (index < CERAII_ENV_STACK_SIZE) {
         return &stack_items[index];
+    }
 
     if (stack_items_vector == NULL) {
         stack_items_vector = vector_create(sizeof(struct stack_return_item), CERAII_ALLOC_ENV_STACK_INITIAL_CAPACITY);
@@ -192,13 +187,11 @@ struct stack_return_item* get_stack_item(int index)
     return (struct stack_return_item*)vector_at(stack_items_vector, index - CERAII_ENV_STACK_SIZE);
 }
 
-struct stack_return_item* get_return_caller(void)
-{
+struct stack_return_item* get_return_caller(void) {
     return &return_caller;
 }
 
-int* get_raii_objects_counter(void)
-{
+int* get_raii_objects_counter(void) {
     return &raii_objects_counter;
 }
 
