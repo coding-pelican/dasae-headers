@@ -26,23 +26,23 @@ i32 main() {
     defer_block {
         // Heap-allocated ds_Vec<f32>
         ds_Vec_f32* vec = create(ds_Vec_f32);
-        ds_Vec_initWithCap(f32, vec->ds_Vec, 1); // Initial capacity of 1
+        ds_Vec_initWithCap(f32, vec, 1); // Initial capacity of 1
         defer(printf("finished\n"));
         defer({
             printf("finish\n");
-            ds_Vec_fini(vec->ds_Vec);
+            ds_Vec_fini(vec);
         });
         defer(printf("finishing\n"));
 
         // Add elements
         for (usize i = 0; i < 8; ++i) {
-            ds_Vec_append(vec->ds_Vec, &literal(f32, (i + 1) * 1.1f));
+            ds_Vec_append(vec, &literal(f32, (i + 1) * 1.1f));
         }
 
         // Access elements
         printf("case 1: ");
-        for (usize i = 0; i < ds_Vec_len(vec->ds_Vec); ++i) {
-            printf("%.2f ", accessCastPtr(f32, ds_Vec_at(vec->ds_Vec, i)));
+        for (usize i = 0; i < ds_Vec_len(vec); ++i) {
+            printf("%.2f ", accessCastPtr(f32, ds_Vec_at(vec, i)));
         }
         printf("\n");
         printf("case 2: ");

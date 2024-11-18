@@ -58,6 +58,7 @@ extern "C" {
     accessPtr(_rhs) = _tmp;                                          \
 )
 
+// TODO: Make foreach type generic using SizedPtr with Begin Len/End
 #define IMPL_foreach(_end, TYPE, NAME, LIST_PTR)                                          \
     for (                                                                                 \
         TYPE* NAME = (LIST_PTR)->data, * const _end = (LIST_PTR)->data + (LIST_PTR)->len; \

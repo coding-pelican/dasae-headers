@@ -23,6 +23,8 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 // #define NMEM_TRACE
 #include "dh/mem.h"
 #include "dh/defer.h"
+#include "dh/scope.h"
+#include "dh/unreachable.h"
 #include "dh/random.h"
 
 // FIXME: Expected memory access error
@@ -432,17 +434,19 @@ Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color
     Particle_withSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
     Particle_withAcceleration(rocket, 0.0, 0.02);
 
-    *f = makeWith(
-        Firework,
-        .rocket  = rocket,
-        .effects = {
-            *(ds_Vec_Particle*)ds_Vec_initWithCap(
+    scope_with(Firework temp = make(Firework)) {
+        defer_block {
+            defer(*f = temp);
+            temp.rocket     = rocket;
+            temp.effects[0] = *ds_Vec_initWithCap(
                 Particle,
                 create(ds_Vec),
                 Firework_effects_per_rocket
-            ) },
-        .effect_base_color = Color_intoHsl(effect_base_color)
-    );
+            );
+            temp.effect_base_color = Color_intoHsl(effect_base_color);
+        }
+        block_deferred();
+    }
 
     return f;
 }
@@ -451,7 +455,7 @@ Firework* Firework_fini(Firework* const f) {
     if (f->rocket) {
         mem_destroy(&f->rocket);
     }
-    ds_Vec_fini(f->effects[0].ds_Vec);
+    ds_Vec_fini(f->effects);
     return f;
 }
 
@@ -488,12 +492,12 @@ void Firework_update(Firework* const f, f64 delta) {
                 Particle_withAcceleration(particle, 0.0, 0.02);
                 Particle_withFading(particle, 0.01);
 
-                ds_Vec_append(f->effects->ds_Vec, particle);
+                ds_Vec_append(f->effects, particle);
             }
             mem_destroy(&f->rocket);
         }
     }
-    foreach (Particle, particle, f->effects) {
+    ds_Vec_foreach(Particle, particle, f->effects) {
         Particle_update(particle, delta);
     }
 }
@@ -502,13 +506,13 @@ void Firework_render(const Firework* const f, Canvas* const canvas, f64 delta) {
     if (f->rocket) {
         Particle_render(f->rocket, canvas, delta);
     }
-    foreach (const Particle, particle, f->effects) {
+    ds_Vec_foreach(const Particle, particle, f->effects) {
         Particle_render(particle, canvas, delta);
     }
 }
 
 static bool Firework__deadsAllEffect(const Firework* const f) {
-    foreach (const Particle, particle, f->effects) {
+    ds_Vec_foreach(const Particle, particle, f->effects) {
         if (Particle_isDead(particle)) { continue; }
         return false;
     }
@@ -532,11 +536,11 @@ State* State_init(State* const s, u32 width, u32 height) {
     *s = makeWith(
         State,
         .fireworks = {
-            *(ds_Vec_Firework*)ds_Vec_initWithCap(
+            ds_Vec_initWithCap(
                 Firework,
                 create(ds_Vec),
                 Fireworks_max
-            ) },
+            )[0] },
         .width  = width,
         .height = height
     );
@@ -544,9 +548,9 @@ State* State_init(State* const s, u32 width, u32 height) {
 }
 
 void State_spawnFirework(State* const s) {
-    if (ds_Vec_cap(s->fireworks->ds_Vec) <= s->fireworks->len) { return; }
-    ds_Vec_append(s->fireworks->ds_Vec, create(Firework));
-    Firework* const f = ds_Vec_mut_last(s->fireworks->ds_Vec);
+    if (ds_Vec_cap(s->fireworks) <= s->fireworks->len) { return; }
+    ds_Vec_append(s->fireworks, create(Firework));
+    Firework* const f = ds_Vec_mut_last(s->fireworks);
     Firework_init(
         f,
         as(i64, Random_u32() % s->width),
@@ -561,24 +565,32 @@ void State_spawnFirework(State* const s) {
 
 void State_update(State* const s, f64 delta) {
     // Remove dead fireworks.
-    foreach (Firework, firework, s->fireworks) {
-        if (!Firework_isDead(firework)) { continue; }
-        Firework_fini(firework);
-        *firework = s->fireworks->data[--s->fireworks->len];
-        --firework;
+    scope_with(usize index = 0) {
+        ds_Vec_foreach(Firework, firework, s->fireworks) {
+            ++index;
+            if (!Firework_isDead(firework)) { continue; }
+            scope_if(Firework* f = null, !ds_Vec_removeSwap(s->fireworks, index, f)) {
+                unreachable_msg("ds_Vec_removeSwap");
+            }
+            else {
+                Firework_fini(f);
+            }
+            --index;
+            --firework;
+        }
     }
     // Add a new rocket with with 5% chance.
     if (Random_f64() < 0.05) {
         State_spawnFirework(s);
     }
     // Update all fireworks.
-    foreach (Firework, firework, s->fireworks) {
+    ds_Vec_foreach(Firework, firework, s->fireworks) {
         Firework_update(firework, delta);
     }
 }
 
 void State_fini(State* const s) {
-    foreach (Firework, firework, s->fireworks) {
+    ds_Vec_foreach(Firework, firework, s->fireworks) {
         Firework_fini(firework);
         mem_free(&firework);
     }
@@ -680,7 +692,7 @@ int main(int argc, const char* argv[]) {
             } /* UPDATE END */
             /* RENDER BEGIN */ {
                 Canvas_clear(canvas, Color_BLACK);
-                foreach (const Firework, firework, state->fireworks) {
+                ds_Vec_foreach(const Firework, firework, state->fireworks) {
                     Firework_render(firework, canvas, 1);
                 }
 

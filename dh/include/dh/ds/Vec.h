@@ -29,12 +29,26 @@ extern "C" {
 
 // TODO: Consider fat pointer and expanded member visibility scope of struct
 
+// typedef struct ds_Vec {
+//     struct_GenericBase(
+//         ds_Vec,
+//         usize cap;
+//         usize elem_size;
+//     );
+//     usize len;
+//     union {
+//         u8*    bytes;
+//         anyptr data;
+//     };
+// } ds_Vec;
+
+// TODO: Add Byte-Wise Cmp and Ops
+// TODO: Replace 'void*' to expt_SizedPtr
+// TODO: Use expt_SizedPtr insted of elem_size with bytes-data's union
+
 typedef struct ds_Vec {
-    struct_GenericBase(
-        ds_Vec,
-        usize cap;
-        usize elem_size;
-    );
+    usize cap;
+    usize elem_size;
     usize len;
     union {
         u8*    bytes;
@@ -42,12 +56,15 @@ typedef struct ds_Vec {
     };
 } ds_Vec;
 
-#define ds_Vec(TYPE)    \
-    struct_Generic(     \
-        ds_Vec,         \
-        usize len;      \
-        Ptr(TYPE) data; \
-    )
+// #define ds_Vec(TYPE)    \
+//     struct_Generic(     \
+//         ds_Vec,         \
+//         usize len;      \
+//         Ptr(TYPE) data; \
+//     )
+
+#define ds_Vec(TYPE) \
+    ds_Vec
 
 /* Built-in types */
 typedef ds_Vec(anyptr) ds_Vec_anyptr;
@@ -116,6 +133,15 @@ extern bool ds_Vec_removeSwap(ds_Vec* vec, usize index, anyptr const out_elem);
 
 extern ds_Vec* ds_Vec__init(ds_Vec* vec, usize elem_size);
 extern ds_Vec* ds_Vec__initWithCap(ds_Vec* vec, usize elem_size, usize cap);
+
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define ds_Vec_foreach(TYPE, iter, vec)        \
+    for (                                      \
+        TYPE* iter = (TYPE*)ds_Vec_first(vec); \
+        iter < (TYPE*)ds_Vec_last(vec);        \
+        ++iter                                 \
+    )
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
