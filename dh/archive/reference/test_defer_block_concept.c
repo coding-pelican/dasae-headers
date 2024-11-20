@@ -1,4 +1,4 @@
-#define defer_block        \
+#define scope_defer        \
     int _defer_return = 0; \
     int _defer_curr   = 0; \
     _deferred:             \
@@ -25,7 +25,7 @@
 #define defer(F) \
     _DEFER_SNAPSHOT(F; goto _deferred)
 
-#define defer_scope          \
+#define block_defer          \
     do {                     \
     _DEFER_SNAPSHOT(         \
         if (_defer_return) { \
@@ -52,7 +52,7 @@
 int main(void) {
     int result = 0;
     printf("0\n");
-    defer_block {
+    scope_defer {
         printf("1\n");
         FILE* log_file = fopen("log.txt", "r");
         if (!log_file) {
@@ -68,7 +68,7 @@ int main(void) {
         );
         printf("6\n");
 
-        defer_scope {
+        block_defer {
             printf("7\n");
             FILE* info_log_file = fopen("info_log.txt", "w");
             if (!info_log_file) {
@@ -120,8 +120,8 @@ int main(void) {
 }
 
 /*
-#define defer_scope
-#define defer_scope_return return
+#define block_defer
+#define block_defer_return return
 #define defer
 
 // output order
@@ -133,7 +133,7 @@ int main(void) {
 //  8
 void defer_usage() {
     printf("0\n");
-    defer_scope {
+    block_defer {
         printf("1\n");
         defer printf("2\n");
         printf("3\n");

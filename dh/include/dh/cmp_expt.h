@@ -1,7 +1,7 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    cmp.h
+ * @file    cmp_expt.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-17 (date of creation)
  * @updated 2024-11-17 (date of last update)
@@ -174,7 +174,6 @@ void test() {
     cmp_Obj a;
     cmp_Obj b;
     // cmp_PartialEq_eq(&vt, &a, &b, sizeof(i32));
-
 }
 
 // ------------------------------

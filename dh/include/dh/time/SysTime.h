@@ -25,37 +25,36 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
-#include "dh/cmp.h"
+// #include "dh/cmp.h"
 // #include "dh/arith.h"
 
 /*========== Macros and Definitions =========================================*/
-
-// #if defined(_WIN32) || defined(_WIN64)
-// static time_SysTime   time_SysTime__s_performance_frequency  = 0;
-// static f64               time_SysTime__s_frequency_inverse      = 0.0;
-// static time_SysTime   time_SysTime__s_offset_value_frequency = 0;
-// static bool              time_SysTime__s_frequency_initialized  = false;
-// static void __attribute__((constructor)) time_SysTime__init(void);
-// static inline bool time_SysTime_checkedCmp(
-//     time_SysTime lhs,
-//     time_SysTime rhs,
-//     EOrd* out_result
-// );
-// static inline bool time_SysTime_checkedDurationCalc(
-//     time_SysTime lhs,
-//     time_SysTime rhs,
-//     time_Duration* out_duration,
-//     bool allow_negative
-// );
-// static inline bool time_SysTime_checkedArith(
-//     time_SysTime t,
-//     time_Duration d,
-//     time_SysTime* out_time,
-//     bool is_add
-// );
-// #endif /* defined(_WIN32) || defined(_WIN64) */
-
-// Ord time_SysTime_cmp(const time_SysTime* lhs, const time_SysTime* rhs);
+/*
+ * #if defined(_WIN32) || defined(_WIN64)
+ * static time_SysTime   time_SysTime__s_performance_frequency  = 0;
+ * static f64               time_SysTime__s_frequency_inverse      = 0.0;
+ * static time_SysTime   time_SysTime__s_offset_value_frequency = 0;
+ * static bool              time_SysTime__s_frequency_initialized  = false;
+ * static void __attribute__((constructor)) time_SysTime__init(void);
+ * static inline bool time_SysTime_checkedCmp(
+ *     time_SysTime lhs,
+ *     time_SysTime rhs,
+ *     EOrd* out_result
+ * );
+ * static inline bool time_SysTime_checkedDurationCalc(
+ *     time_SysTime lhs,
+ *     time_SysTime rhs,
+ *     time_Duration* out_duration,
+ *     bool allow_negative
+ * );
+ * static inline bool time_SysTime_checkedArith(
+ *     time_SysTime t,
+ *     time_Duration d,
+ *     time_SysTime* out_time,
+ *     bool is_add
+ * );
+ * #endif // defined(_WIN32) || defined(_WIN64)
+ */
 
 time_SysTime time_SysTime_frequency(void);
 f64          time_SysTime_frequency_inv(void);

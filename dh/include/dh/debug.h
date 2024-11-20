@@ -12,6 +12,7 @@ extern "C" {
 #include "debug/assert.h"
 
 /*========== Macros and Definitions =========================================*/
+
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST

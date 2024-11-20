@@ -33,9 +33,9 @@ typedef struct Random {
 } Random;
 
 /*
- * static       Random Random__s_rng[1];
- * force_inline u64    Random__xorshiro256(u64 x, u32 k);
- * static       u64    Random__next();
+ * static       Random Random_s_rng[1];
+ * force_inline u64    Random_xorshiro256(u64 x, u32 k);
+ * static       u64    Random_next();
  */
 
 /*========== Extern Constant and Variable Declarations ======================*/

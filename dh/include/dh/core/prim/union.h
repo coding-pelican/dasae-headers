@@ -1,1 +1,4 @@
-// TODO(dev-dasae): Implement `prim_union.h`
+#define typedef_union(_Alias) IMPL_typedef_union(_Alias)
+#define IMPL_typedef_union(_Alias) \
+    typedef union _Alias _Alias;   \
+    union _Alias

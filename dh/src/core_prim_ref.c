@@ -2,7 +2,7 @@
 #include "dh/debug/assert.h"
 
 
-Nonnull(anyptr) ref_checkNotNull(Nonnull(anyptr) ptr) {
-    debug_assertNotNullFmt(ptr, "Reference cannot be null");
+Nonnull(anyptr) ref_checkNonNull(Nonnull(anyptr) ptr) {
+    debug_assertNonNullFmt(ptr, "Reference cannot be null");
     return ptr;
 }

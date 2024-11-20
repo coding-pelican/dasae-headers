@@ -29,41 +29,41 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define swap(TYPE, LHS_VAR, RHS_VAR) \
+#define swap(_T, _lhs_var, _rhs_var) \
     IMPL_swap(                       \
         pp_uniqueToken(lhs),         \
         pp_uniqueToken(rhs),         \
         pp_uniqueToken(tmp),         \
-        TYPE,                        \
-        LHS_VAR,                     \
-        RHS_VAR                      \
+        _T,                          \
+        _lhs_var,                    \
+        _rhs_var                     \
     )
 
-#define foreach(TYPE, NAME, LIST_PTR) \
+#define foreach(_T, _name, _list_ptr) \
     IMPL_foreach(                     \
         pp_uniqueToken(end),          \
-        TYPE,                         \
-        NAME,                         \
-        LIST_PTR                      \
+        _T,                           \
+        _name,                        \
+        _list_ptr                     \
     )
 
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN
-#define IMPL_swap(_lhs, _rhs, _tmp, TYPE, LHS_VAR, RHS_VAR) pp_func( \
-    Ptr(TYPE) _lhs  = addr(LHS_VAR);                                 \
-    Ptr(TYPE) _rhs  = addr(RHS_VAR);                                 \
-    TYPE _tmp       = accessPtr(_lhs);                               \
+#define IMPL_swap(_lhs, _rhs, _tmp, _T, _lhs_var, _rhs_var) pp_func( \
+    rawptr(_T) _lhs = addr(_lhs_var);                                \
+    rawptr(_T) _rhs = addr(_rhs_var);                                \
+    _T _tmp         = accessPtr(_lhs);                               \
     accessPtr(_lhs) = accessPtr(_rhs);                               \
     accessPtr(_rhs) = _tmp;                                          \
 )
 
 // TODO: Make foreach type generic using SizedPtr with Begin Len/End
-#define IMPL_foreach(_end, TYPE, NAME, LIST_PTR)                                          \
-    for (                                                                                 \
-        TYPE* NAME = (LIST_PTR)->data, * const _end = (LIST_PTR)->data + (LIST_PTR)->len; \
-        NAME < _end;                                                                      \
-        ++NAME                                                                            \
+#define IMPL_foreach(_end, _T, _name, _list_ptr)                                            \
+    for (                                                                                   \
+        _T* _name = (_list_ptr)->data, * const _end = (_list_ptr)->data + (_list_ptr)->len; \
+        _name < _end;                                                                       \
+        ++_name                                                                             \
     )
 // NOLINTEND
 

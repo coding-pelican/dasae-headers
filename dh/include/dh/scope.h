@@ -27,31 +27,31 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define scope_with(INIT...) \
-    IMPL_scope_with(pp_uniqueToken(run_once), pp_uniqueToken(init_once), INIT)
+#define scope_with(_Init_Statement...) \
+    IMPL_scope_with(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
 
-#define scope_if(INIT, COND) \
-    IMPL_scope_if(pp_uniqueToken(run_once), pp_uniqueToken(init_once), INIT, COND)
+#define scope_if(_Init_Statement, _Condition) \
+    IMPL_scope_if(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
-#define scope_switch(INIT, COND) \
-    IMPL_scope_switch(pp_uniqueToken(run_once), pp_uniqueToken(init_once), INIT, COND)
+#define scope_switch(_Init_Statement, _Condition) \
+    IMPL_scope_switch(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN
-#define IMPL_scope_with(_run_once, _init_once, INIT...)                          \
+#define IMPL_scope_with(_run_once, _init_once, _Init_Statement...)               \
     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (INIT; _init_once; _init_once = false)
+        for (_Init_Statement; _init_once; _init_once = false)
 
-#define IMPL_scope_if(_run_once, _init_once, INIT, COND)                         \
+#define IMPL_scope_if(_run_once, _init_once, _Init_Statement, _Condition)        \
     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (INIT; _init_once; _init_once = false)                               \
-            if (COND)
+        for (_Init_Statement; _init_once; _init_once = false)                    \
+            if (_Condition)
 
-#define IMPL_scope_switch(_run_once, _init_once, INIT, COND)                     \
+#define IMPL_scope_switch(_run_once, _init_once, _Init_Statement, _Condition)    \
     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (INIT; _init_once; _init_once = false)                               \
-            switch (COND)
+        for (_Init_Statement; _init_once; _init_once = false)                    \
+            switch (_Condition)
 // NOLINTEND
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

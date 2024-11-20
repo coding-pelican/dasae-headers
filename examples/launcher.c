@@ -10,46 +10,46 @@
 #include <stdlib.h>
 
 
-static const char* const Launcher_WindowTitle = "Test Terminal Launcher";
+static const char* const Launcher_window_title = "Test Terminal Launcher";
 
-static const char* Terminal_windowTitle  = null;
-static int         Terminal_windowWidth  = 80;
-static int         Terminal_windowHeight = 25;
+static const char* Terminal_window_title  = null;
+static i32         Terminal_window_width  = 80;
+static i32         Terminal_window_height = 25;
 
 
-int main(int argc, const char* argv[]) {
+i32 main(i32 argc, const char* argv[]) {
     if (argc < 2) {
         printf(
             "[%s] Usage: %s <program_to_run> <width> <height>\n",
-            Launcher_WindowTitle,
+            Launcher_window_title,
             argv[0]
         );
         return 1;
     }
-    Terminal_windowTitle = argv[1];
-    debug_assert(Launcher_WindowTitle);
-    debug_assert(Terminal_windowTitle);
-    printf("[%s] Terminal: %s\n", Launcher_WindowTitle, Terminal_windowTitle);
+    Terminal_window_title = argv[1];
+    debug_assert(Launcher_window_title);
+    debug_assert(Terminal_window_title);
+    printf("[%s] Terminal: %s\n", Launcher_window_title, Terminal_window_title);
 
     if (2 < argc) {
-        Terminal_windowWidth  = atoi(argv[2]);
-        Terminal_windowHeight = atoi(argv[3]);
+        Terminal_window_width  = atoi(argv[2]);
+        Terminal_window_height = atoi(argv[3]);
     }
-    debug_assert(0 < Terminal_windowWidth);
-    debug_assert(0 < Terminal_windowHeight);
+    debug_assert(0 < Terminal_window_width);
+    debug_assert(0 < Terminal_window_height);
     printf(
         "[%s] Terminal size: %dx%d\n",
-        Launcher_WindowTitle,
-        Terminal_windowWidth,
-        Terminal_windowHeight
+        Launcher_window_title,
+        Terminal_window_width,
+        Terminal_window_height
     );
 
-    STARTUPINFO         startupInfo = { 0 };
-    PROCESS_INFORMATION processInfo = { 0 };
+    STARTUPINFO         startup_info = { 0 };
+    PROCESS_INFORMATION process_info = { 0 };
 
-    ZeroMemory(&startupInfo, sizeof(startupInfo));
-    startupInfo.cb = sizeof(startupInfo);
-    ZeroMemory(&processInfo, sizeof(processInfo));
+    ZeroMemory(&startup_info, sizeof(startup_info));
+    startup_info.cb = sizeof(startup_info);
+    ZeroMemory(&process_info, sizeof(process_info));
 
     // Prepare the command string
     char command[1024] = { 0 };
@@ -57,11 +57,11 @@ int main(int argc, const char* argv[]) {
         command,
         sizeof(command),
         "wt --size %d,%d -d . cmd /k .\\%s %d %d",
-        Terminal_windowWidth,
-        Terminal_windowHeight,
-        Terminal_windowTitle,
-        Terminal_windowWidth,
-        Terminal_windowHeight
+        Terminal_window_width,
+        Terminal_window_height,
+        Terminal_window_title,
+        Terminal_window_width,
+        Terminal_window_height
     );
 
     // Create process
@@ -74,24 +74,24 @@ int main(int argc, const char* argv[]) {
             0,
             null,
             null,
-            &startupInfo,
-            &processInfo
+            &startup_info,
+            &process_info
         )) {
         printf(
             "[%s] CreateProcess failed (%d).\n",
-            Launcher_WindowTitle,
-            (int)GetLastError()
+            Launcher_window_title,
+            (i32)GetLastError()
         );
         return 1;
     }
 
     // Wait for the process to finish
-    WaitForSingleObject(processInfo.hProcess, INFINITE);
+    WaitForSingleObject(process_info.hProcess, INFINITE);
 
     // Close process and thread handles
-    CloseHandle(processInfo.hProcess);
-    CloseHandle(processInfo.hThread);
+    CloseHandle(process_info.hProcess);
+    CloseHandle(process_info.hThread);
 
-    printf("[%s] Windows Terminal executed successfully.\n", Launcher_WindowTitle);
+    printf("[%s] Windows Terminal executed successfully.\n", Launcher_window_title);
     return 0;
 }

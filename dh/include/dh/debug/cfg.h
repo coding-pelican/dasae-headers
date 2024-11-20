@@ -11,6 +11,8 @@ extern "C" {
 #define DEBUG_ENABLED (0)
 #endif
 
+#define debug_enabled (DEBUG_ENABLED)
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -32,33 +32,33 @@ extern "C" {
 
 /* floating point */
 // typedef _Float16 f16;
-// #define f16_LIMIT_MIN (FLT16_MIN)
-// #define f16_LIMIT_MAX (FLT16_MAX)
-// #define f16_EPS       (FLT16_EPSILON)
+// #define f16_limit_min (FLT16_MIN)
+// #define f16_limit_max (FLT16_MAX)
+// #define f16_eps      (FLT16_EPSILON)
 
 typedef float_t f32;
-#define f32_LIMIT_MIN (FLT_MIN)
-#define f32_LIMIT_MAX (FLT_MAX)
-#define f32_EPS       (FLT_EPSILON)
-#define f32_NAN       (NAN)
-#define f32_INF       (INFINITY)
+#define f32_limit_min (FLT_MIN)
+#define f32_limit_max (FLT_MAX)
+#define f32_eps       (FLT_EPSILON)
+#define f32_nan       (NAN)
+#define f32_inf       (INFINITY)
 
 typedef double_t f64;
-#define f64_LIMIT_MIN (FLT_MIN)
-#define f64_LIMIT_MAX (DBL_MAX)
-#define f64_EPS       (DBL_EPSILON)
-#define f64_NAN       (NAN)
-#define f64_INF       (INFINITY)
+#define f64_limit_min (FLT_MIN)
+#define f64_limit_max (DBL_MAX)
+#define f64_eps       (DBL_EPSILON)
+#define f64_nan       (NAN)
+#define f64_inf       (INFINITY)
 
 // typedef long double f80;
-// #define f80_LIMIT_MIN (LDBL_MIN)
-// #define f80_LIMIT_MAX (LDBL_MAX)
-// #define f80_EPS       (LDBL_EPSILON)
+// #define f80_limit_min (LDBL_MIN)
+// #define f80_limit_max (LDBL_MAX)
+// #define f80_eps      (LDBL_EPSILON)
 
 // typedef __float128 f128;
-// #define f128_LIMIT_MIN (FLT128_MIN)
-// #define f128_LIMIT_MAX (FLT128_MAX)
-// #define f128_EPS       (FLT128_EPSILON)
+// #define f128_limit_min (FLT128_MIN)
+// #define f128_limit_max (FLT128_MAX)
+// #define f128_eps      (FLT128_EPSILON)
 
 
 #if defined(__cplusplus)

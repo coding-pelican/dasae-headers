@@ -199,3 +199,97 @@ static inline bool SizedPtr_isNull(const SizedPtr* self) {
 
 /* TODO: Implement mem_alloc<->free, create<->destroy,
 realloc, set, copy, move, cmp */
+
+// Core types
+typedef struct {
+    anyptr raw_;
+    usize  size_;
+} Ptr;
+
+typedef struct {
+    usize offset_;
+    usize size_;
+} PtrDiff;
+
+typedef enum Error {
+    Error_expt
+} Error;
+
+// Result type for operations that can fail
+typedef struct {
+    bool  success;
+    Error error; // Assuming Error type exists
+} Result;
+
+// Option type for operations that might return null
+typedef struct {
+    bool has_value;
+    Ptr  value;
+} Option_Ptr;
+
+// Constants
+#define PTR_NULL ((Ptr){ NULL, 0 })
+
+// Construction and validation
+Ptr  Ptr_from(anyptr raw, usize size); // More explicit than "make"
+Ptr  Ptr_withAlloc(usize size);        // Allocates new memory
+Ptr  Ptr_nullWithSize(usize size);     // Explicit null with size
+bool Ptr_isValid(Ptr p);               // Validates pointer state
+bool Ptr_isNull(Ptr p);
+bool Ptr_hasMinSize(Ptr p, usize required_size);
+
+// Safe type casting
+#define Ptr_as(ptr, T) \
+    ((ptr).size_ >= sizeof(T) ? (T*)(ptr).raw_ : NULL)
+
+#define Ptr_asArray(ptr, T, count) \
+    ((ptr).size_ >= sizeof(T) * (count) ? (T*)(ptr).raw_ : NULL)
+
+#define Ptr_asBytes(ptr) \
+    Ptr_as(ptr, u8)
+
+// Bounds checking and safety
+bool  Ptr_canRead(Ptr p, usize offset, usize count);
+bool  Ptr_canWrite(Ptr p, usize offset, usize count);
+bool  Ptr_isAligned(Ptr p, usize alignment);
+usize Ptr_remainingBytes(Ptr p, usize offset);
+bool  Ptr_containsRange(Ptr container, Ptr inner);
+
+// Safe memory operations
+Result Ptr_copyTo(Ptr dest, Ptr src, usize count);
+Result Ptr_copyFromRaw(Ptr dest, const anyptr src, usize count);
+Result Ptr_copyToRaw(anyptr dest, Ptr src, usize count);
+Result Ptr_writeBytes(Ptr dest, u8 value, usize count);
+Result Ptr_zero(Ptr dest);
+
+// Safe pointer arithmetic
+Option_Ptr Ptr_advance(Ptr p, usize count);
+Option_Ptr Ptr_retreat(Ptr p, usize count);
+Option_Ptr Ptr_offset(Ptr p, isize offset);
+Option_Ptr Ptr_slice(Ptr p, usize offset, usize size);
+
+// Explicit comparison operations
+bool  Ptr_eq(Ptr lhs, Ptr rhs);        // Compares both ptr and size
+bool  Ptr_eqPtr(Ptr lhs, Ptr rhs);     // Compares only ptr values
+isize Ptr_cmp(Ptr lhs, Ptr rhs);       // Three-way comparison
+bool  Ptr_contentEq(Ptr lhs, Ptr rhs); // Deep comparison
+
+// Memory manipulation with explicit safety
+Result Ptr_swap(Ptr a, Ptr b, usize count);
+Result Ptr_fill(Ptr dest, u8 value, usize count);
+Result Ptr_move(Ptr dest, Ptr src, usize count);
+
+// Alignment operations
+usize      Ptr_alignmentOffset(Ptr p, usize alignment);
+Option_Ptr Ptr_alignUp(Ptr p, usize alignment);
+Option_Ptr Ptr_alignDown(Ptr p, usize alignment);
+
+// Metadata access
+usize  Ptr_size(Ptr p);
+anyptr Ptr_raw(Ptr p);
+bool   Ptr_hasData(Ptr p);
+
+// PtrDiff operations
+PtrDiff    PtrDiff_new(usize offset, usize size);
+PtrDiff    PtrDiff_fromPtrs(Ptr end, Ptr start);
+Option_Ptr PtrDiff_apply(PtrDiff diff, Ptr base);

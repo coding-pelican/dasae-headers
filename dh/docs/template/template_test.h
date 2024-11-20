@@ -4,8 +4,8 @@
  * @file    template_test.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-10-27 (date of last update)
- * @version v1.0.0
+ * @updated 2024-11-23 (date of last update)
+ * @version v1.0.1
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
  *
@@ -13,20 +13,17 @@
  * @details TODO
  */
 
-
 #ifndef TEMPLATE_INCLUDED
 #define TEMPLATE_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 /*========== Unit Testing Framework Directives ==============================*/
 
 /*========== Macros and Definitions =========================================*/
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

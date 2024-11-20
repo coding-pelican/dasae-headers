@@ -24,18 +24,18 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define lambda(RETURN_TYPE, NAME, PAREN_ARGS...) IMPL_lambda(RETURN_TYPE, NAME, PAREN_ARGS)
+#define lambda(_Return_T, _name, _Paren_Args...) IMPL_lambda(_Return_T, _name, _Paren_Args)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__cplusplus)
 /* C++11 */
-#define IMPL_lambda(RETURN_TYPE, NAME, PAREN_ARGS...) auto NAME = [] PAREN_ARGS
+#define IMPL_lambda(_Return_T, _name, _Paren_Args...) auto _name = [] _Paren_Args
 #elif defined(__clang_major__)
 /* Needs compile flag `-fblocks` */
-#define IMPL_lambda(RETURN_TYPE, NAME, PAREN_ARGS...) RETURN_TYPE(^NAME) PAREN_ARGS = ^RETURN_TYPE PAREN_ARGS
+#define IMPL_lambda(_Return_T, _name, _Paren_Args...) _Return_T(^_name) _Paren_Args = ^_Return_T _Paren_Args
 #elif defined(__GNUC__) || defined(__GNUG__)
-#define IMPL_lambda(RETURN_TYPE, NAME, PAREN_ARGS...) RETURN_TYPE NAME PAREN_ARGS
+#define IMPL_lambda(_Return_T, _name, _Paren_Args...) _Return_T _name _Paren_Args
 #else
 /* TODO: Add other compilers */
 #endif

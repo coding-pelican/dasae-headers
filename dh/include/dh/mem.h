@@ -80,13 +80,13 @@ struct mem_Info {
 
 /*
  * // Global memory tracking list
- * static mem_Info* mem__s_info_list = null;
+ * static mem_Info*                         mem_s_info_list = null;
  * // Register atexit handler for memory leak detection
- * static void __attribute__((constructor)) mem__initInfoList(void);
- * static void __attribute__((destructor))  mem__finiInfoList(void);
+ * static void __attribute__((constructor)) mem_initInfoList(void);
+ * static void __attribute__((destructor))  mem_finiInfoList(void);
  * // Memory tracking functions
- * static void                              mem__addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
- * static void                              mem__removeInfo(anyptr target);
+ * static void                              mem_addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
+ * static void                              mem_removeInfo(anyptr target);
  * static void
  * mem__printInfoMemoryLeakTrace(void);
  */

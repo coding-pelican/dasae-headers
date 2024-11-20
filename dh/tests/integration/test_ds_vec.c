@@ -23,7 +23,7 @@ i32 main() {
     // }
     // printf("\n");
 
-    defer_block {
+    scope_defer {
         // Heap-allocated ds_Vec<f32>
         ds_Vec_f32* vec = create(ds_Vec_f32);
         ds_Vec_initWithCap(f32, vec, 1); // Initial capacity of 1
@@ -51,7 +51,7 @@ i32 main() {
         }
         printf("\n");
     }
-    block_deferred();
+    scope_deferred();
 
     /* make memory leak */ {
         ds_Vec* vec = create(ds_Vec);

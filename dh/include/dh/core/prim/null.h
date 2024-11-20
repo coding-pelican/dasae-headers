@@ -62,10 +62,10 @@ extern "C" {
 #define nullable IMPL_nullable
 #define nonnull  IMPL_nonnull
 
-#define Nullable(TYPE) IMPL_Nullable(TYPE)
-#define Nonnull(TYPE)  IMPL_Nonnull(TYPE)
+#define Nullable(_T) IMPL_Nullable(_T)
+#define Nonnull(_T)  IMPL_Nonnull(_T)
 
-#define ensureNotNull(VAR, ...) IMPL_ensureNotNull(VAR, __VA_ARGS__)
+#define ensureNonNull(_var, ...) IMPL_ensureNonNull(_var, __VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -80,10 +80,10 @@ extern "C" {
 #define IMPL_nonnull
 #endif
 
-#define IMPL_Nullable(TYPE) TYPE nullable
-#define IMPL_Nonnull(TYPE)  TYPE nonnull
+#define IMPL_Nullable(_T) _T nullable
+#define IMPL_Nonnull(_T)  _T nonnull
 
-#define IMPL_ensureNotNull(VAR, ...) ((VAR) ? (VAR) : (__VA_ARGS__))
+#define IMPL_ensureNonNull(_var, ...) ((_var) ? (_var) : (__VA_ARGS__))
 
 
 #if defined(__cplusplus)

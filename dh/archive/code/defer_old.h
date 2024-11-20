@@ -41,7 +41,7 @@ typedef struct DeferScope {
     DeferBlock* curr;
     DeferBlock* tail;
     bool        active;
-    jmp_buf     execute_return; // defer_scope__execute의 컨텍스트를 저장
+    jmp_buf     execute_return; // block_defer__execute의 컨텍스트를 저장
 } DeferScope;
 
 // typedef struct DeferBlock {
@@ -65,46 +65,46 @@ typedef struct DeferScope {
 // } DeferScope;
 
 // FIXME: Critical error
-#define defer_scope                  \
-    for (DeferScope _defer_scope = { \
-             defer_scope__sentinel,  \
-             defer_scope__sentinel,  \
+#define block_defer                  \
+    for (DeferScope _block_defer = { \
+             block_defer__sentinel,  \
+             block_defer__sentinel,  \
              true,                   \
              { 0 } };                \
-         _defer_scope.active;        \
+         _block_defer.active;        \
          /* None */)                 \
         for (bool _run_once = true;  \
              _run_once;              \
-             (_run_once = false, defer_scope__execute(&_defer_scope)))
+             (_run_once = false, block_defer__execute(&_block_defer)))
 
-#define defer_scope_return               \
-    defer_scope__execute(&_defer_scope); \
+#define block_defer_return               \
+    block_defer__execute(&_block_defer); \
     return
 
 #define defer(STATEMENTS...)                         \
     do {                                             \
         DeferBlock* _block = mem_create(DeferBlock); \
         if (!_block) { break; }                      \
-        _block->next     = defer_scope__sentinel;    \
+        _block->next     = block_defer__sentinel;    \
         _block->executed = false;                    \
         if (setjmp(_block->jump_buf) == 0) {         \
             /* 처음 setjmp 호출 시 */           \
-            defer_scope__add(&_defer_scope, _block); \
+            block_defer__add(&_block_defer, _block); \
             break;                                   \
         }                                            \
         /* cleanup 실행 */                         \
         STATEMENTS                                   \
-        /* defer_scope__execute로 돌아가기 */   \
-        longjmp(_defer_scope.execute_return, 1);     \
+        /* block_defer__execute로 돌아가기 */   \
+        longjmp(_block_defer.execute_return, 1);     \
     } while (false)
 
-#define defer_scope__execute(scope) ({                              \
-    debug_assertNotNull(scope);                                     \
+#define block_defer__execute(scope) ({                              \
+    debug_assertNonNull(scope);                                     \
     if (!(scope)->active) { return; }                               \
                                                                     \
     printf("Execute defer blocks...\n");                            \
     DeferBlock* curr = (scope)->head;                               \
-    while (curr != defer_scope__sentinel) {                         \
+    while (curr != block_defer__sentinel) {                         \
         if (!curr->executed) {                                      \
             curr->executed = true;                                  \
                                                                     \
@@ -131,12 +131,12 @@ typedef struct DeferScope {
 //     do {                                                 \
 //         DeferBlock* _block = mem_create(DeferBlock);     \
 //         if (!_block) { break; }                          \
-//         _block->next       = defer_scope__sentinel;      \
+//         _block->next       = block_defer__sentinel;      \
 //         _block->executed   = false;                      \
 //         _block->in_cleanup = false;                      \
 //         if (setjmp(_block->jump_buf) == 0) {             \
 //             /* 처음 setjmp 호출 시 */               \
-//             defer_scope__add(&_defer_scope, _block);     \
+//             block_defer__add(&_block_defer, _block);     \
 //             break;                                       \
 //         }                                                \
 //         /* cleanup 실행 */                             \
@@ -151,11 +151,11 @@ typedef struct DeferScope {
 //     do {                                             \
 //         DeferBlock* _block = mem_create(DeferBlock); \
 //         if (!_block) { break; }                      \
-//         _block->next     = defer_scope__sentinel;    \
+//         _block->next     = block_defer__sentinel;    \
 //         _block->executed = false;                    \
 //         if (setjmp(_block->jump_buf) == 0) {         \
 //             /* 처음 setjmp 호출 시 */           \
-//             defer_scope__add(&_defer_scope, _block); \
+//             block_defer__add(&_block_defer, _block); \
 //             break;                                   \
 //         }                                            \
 //         /* longjmp로 돌아왔을 때 */            \
@@ -167,10 +167,10 @@ typedef struct DeferScope {
 //         DeferBlock* const _block = mem_create(DeferBlock);                                   \
 //         if (!_block) { break; }                                                              \
 //         /* defer block을 초기화 */                                                       \
-//         _block->next     = defer_scope__sentinel;                                            \
+//         _block->next     = block_defer__sentinel;                                            \
 //         _block->executed = false;                                                            \
 //         /* FIFO queue에 추가 */                                                           \
-//         defer_scope__add(&_defer_scope, _block);                                             \
+//         block_defer__add(&_block_defer, _block);                                             \
 //         /* defer block을 평가하지 않고 스킵하기 위한 점프 포인트 설정 */ \
 //         if (setjmp(_block->jump_point) == 0 && !_block->executed) { break; }                 \
 //         /* defer block 실행 */                                                             \
@@ -182,12 +182,12 @@ typedef struct DeferScope {
 //         }                                                                                    \
 //     } while (false)
 
-extern DeferBlock* const defer_scope__sentinel;
+extern DeferBlock* const block_defer__sentinel;
 
 /*========== Extern Function Prototypes =====================================*/
 
-extern void defer_scope__add(DeferScope* scope, DeferBlock* block);
-// extern void defer_scope__execute(DeferScope* scope);
+extern void block_defer__add(DeferScope* scope, DeferBlock* block);
+// extern void block_defer__execute(DeferScope* scope);
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

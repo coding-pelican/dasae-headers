@@ -27,31 +27,37 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define pp_func(STMT...)                                                    \
-    /**                                                                     \
-     * @brief Creates a single statement block from multiple expressions    \
-     * @param STMT... Multiple statements to be executed as a single block  \
-     * @details Wraps multiple statements in a parentheses and braces block \
-    for macro safety                                                        \
-     */                                                                     \
-    IMPL_pp_func(STMT)
+#define pp_func(_Statement...)                                                   \
+    /**                                                                          \
+     * @brief Creates a single statement block from multiple expressions         \
+     * @param _Statement... Multiple statements to be executed as a single block \
+     * @details Wraps multiple statements in a parentheses and braces block      \
+    for macro safety                                                             \
+     */                                                                          \
+    IMPL_pp_func(_Statement)
 
-#define pp_concat(TOKEN_LHS, TOKEN_RHS...) \
-    IMPL_pp_concat(TOKEN_LHS, TOKEN_RHS)
+#define pp_concat(_Token_lhs, _Token_rhs...) \
+    IMPL_pp_concat(_Token_lhs, _Token_rhs)
 
-#define pp_uniqueToken(TOKEN...) \
-    IMPL_pp_uniqueToken(TOKEN)
+#define pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
+    IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs)
+
+#define pp_uniqueToken(_Token...) \
+    IMPL_pp_uniqueToken(_Token)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_pp_func(STMT...) \
-    ({ STMT })
+#define IMPL_pp_func(_Statement...) \
+    ({ _Statement })
 
-#define IMPL_pp_concat(TOKEN_LHS, TOKEN_RHS...) \
-    TOKEN_LHS##TOKEN_RHS
+#define IMPL_pp_concat(_Token_lhs, _Token_rhs...) \
+    _Token_lhs##_Token_rhs
 
-#define IMPL_pp_uniqueToken(TOKEN...) \
-    pp_concat(pp_concat(pp_concat(_, __LINE__), _), TOKEN)
+#define IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
+    _Token_lhs##_Token_mid##_Token_rhs
+
+#define IMPL_pp_uniqueToken(_Token...) \
+    pp_concat(pp_concat3(_, __LINE__, _), _Token)
 
 
 #if defined(__cplusplus)

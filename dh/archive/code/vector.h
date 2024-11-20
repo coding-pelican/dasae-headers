@@ -122,7 +122,7 @@ void TEST_defer_cleanupVec(void* vec) {
 
 /* Example usage of sophisticated version */
 void TEST_defer_SophisticatedExample(void) {
-    defer_scope {
+    block_defer {
         f32ds_Vec vec = make(f32ds_Vec);
         f32ds_Vec_init(&vec, 4);
         defer(TEST_defer_cleanupVec, &vec);
@@ -132,7 +132,7 @@ void TEST_defer_SophisticatedExample(void) {
         // Optional early return:
         bool some_condition = true;
         if (some_condition) {
-            defer_scope_return;
+            block_defer_return;
         }
 
         // More operations...

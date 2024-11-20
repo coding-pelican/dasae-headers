@@ -18,6 +18,9 @@ extern "C" {
 // #  error "Unknown architecture"
 #endif
 
+#define arch_64bit (BUILTIN_ARCH_64BIT)
+#define arch_32bit (BUILTIN_ARCH_32BIT)
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -24,6 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/gen_expt.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -46,49 +47,23 @@ extern "C" {
 // TODO: Replace 'void*' to expt_SizedPtr
 // TODO: Use expt_SizedPtr insted of elem_size with bytes-data's union
 
-typedef struct ds_Vec {
-    usize cap;
+typedef_struct(ds_Vec) {
     usize elem_size;
+    usize cap;
     usize len;
     union {
         u8*    bytes;
         anyptr data;
     };
-} ds_Vec;
+};
 
-// #define ds_Vec(TYPE)    \
-//     struct_Generic(     \
-//         ds_Vec,         \
-//         usize len;      \
-//         Ptr(TYPE) data; \
-//     )
-
-#define ds_Vec(TYPE) \
+#define ds_Vec(_T) \
     ds_Vec
-
-/* Built-in types */
-typedef ds_Vec(anyptr) ds_Vec_anyptr;
-typedef ds_Vec(bool) ds_Vec_bool;
-
-typedef ds_Vec(u8) ds_Vec_u8;
-typedef ds_Vec(u16) ds_Vec_u16;
-typedef ds_Vec(u32) ds_Vec_u32;
-typedef ds_Vec(u64) ds_Vec_u64;
-typedef ds_Vec(usize) ds_Vec_usize;
-
-typedef ds_Vec(i8) ds_Vec_i8;
-typedef ds_Vec(i16) ds_Vec_i16;
-typedef ds_Vec(i32) ds_Vec_i32;
-typedef ds_Vec(i64) ds_Vec_i64;
-typedef ds_Vec(isize) ds_Vec_isize;
-
-typedef ds_Vec(f32) ds_Vec_f32;
-typedef ds_Vec(f64) ds_Vec_f64;
 
 /*========== Extern Function Prototypes =====================================*/
 
-#define ds_Vec_init(TYPE, vec)             ds_Vec__init(vec, sizeof(TYPE))
-#define ds_Vec_initWithCap(TYPE, vec, cap) ds_Vec__initWithCap(vec, sizeof(TYPE), cap)
+#define ds_Vec_init(_T, _vec)              ds_Vec__init(_vec, sizeof(_T))
+#define ds_Vec_initWithCap(_T, _vec, _cap) ds_Vec__initWithCap(_vec, sizeof(_T), _cap)
 extern ds_Vec* ds_Vec_fini(ds_Vec* vec);
 
 extern usize ds_Vec_cap(const ds_Vec* vec);
@@ -135,18 +110,131 @@ extern ds_Vec* ds_Vec__init(ds_Vec* vec, usize elem_size);
 extern ds_Vec* ds_Vec__initWithCap(ds_Vec* vec, usize elem_size, usize cap);
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ds_Vec_foreach(TYPE, iter, vec)        \
-    for (                                      \
-        TYPE* iter = (TYPE*)ds_Vec_first(vec); \
-        iter < (TYPE*)ds_Vec_last(vec);        \
-        ++iter                                 \
+#define ds_Vec_foreach(_T, _iter, vec)                    \
+    for (                                                 \
+        rawptr(_T) _iter = (rawptr(_T))ds_Vec_first(vec); \
+        _iter < (rawptr(_T))ds_Vec_last(vec);             \
+        ++_iter                                           \
     )
 // NOLINTEND(bugprone-macro-parentheses)
 
+
+// Define the base structure of Vec's extra members
+#define ds_Vec_fields(T)  \
+    usize elem_size;      \
+    usize cap;            \
+    usize len;            \
+    union {               \
+        rawptr(u8) bytes; \
+        rawptr(T) data;   \
+    };
+
+// Generate all Vec method wrappers
+#define ds_Vec_methods(BaseType, T, Alias)                                                                      \
+    /* Capacity methods */                                                                                      \
+    gen_wrapFn(BaseType, T, Alias, cap, (const rawptr(Alias) vec), (vec->Base), usize);                         \
+    gen_wrapFn(BaseType, T, Alias, len, (const rawptr(Alias) vec), (vec->Base), usize);                         \
+    gen_wrapFn(BaseType, T, Alias, isEmpty, (const rawptr(Alias) vec), (vec->Base), bool);                      \
+    gen_wrapFn(BaseType, T, Alias, isFull, (const rawptr(Alias) vec), (vec->Base), bool);                       \
+                                                                                                                \
+    /* Data access methods with type conversion */                                                              \
+    gen_wrapFnConvert(BaseType, T, Alias, data, (const rawptr(Alias) vec), (vec->Base), const rawptr(T));       \
+    gen_wrapFnConvert(BaseType, T, Alias, mut_data, (rawptr(Alias) vec), (vec->Base), rawptr(T));               \
+    gen_wrapFnConvert(BaseType, T, Alias, dataOrNull, (const rawptr(Alias) vec), (vec->Base), const rawptr(T)); \
+    gen_wrapFnConvert(BaseType, T, Alias, mut_dataOrNull, (rawptr(Alias) vec), (vec->Base), rawptr(T));
+
+// Main macro to generate a type-safe Vec wrapper
+#define gen_type_for(BaseType, T, Alias) \
+    gen_Type(BaseType, T, Alias);        \
+    gen_wrapFnAll(BaseType, T, Alias)
+
+/* Built-in types */
+typedef ds_Vec(anyptr) ds_Vec_anyptr;
+typedef ds_Vec(bool) ds_Vec_bool;
+
+typedef ds_Vec(u8) ds_Vec_u8;
+typedef ds_Vec(u16) ds_Vec_u16;
+typedef ds_Vec(u32) ds_Vec_u32;
+typedef ds_Vec(u64) ds_Vec_u64;
+typedef ds_Vec(usize) ds_Vec_usize;
+
+typedef ds_Vec(i8) ds_Vec_i8;
+typedef ds_Vec(i16) ds_Vec_i16;
+typedef ds_Vec(i32) ds_Vec_i32;
+typedef ds_Vec(i64) ds_Vec_i64;
+typedef ds_Vec(isize) ds_Vec_isize;
+
+typedef ds_Vec(f32) ds_Vec_f32;
+typedef ds_Vec(f64) ds_Vec_f64;
+
+/*========== Usage Example ==============================================*/
+
+// Generate a type-safe vector of integers
+gen_type_for(ds_Vec, i32, i32s);
+
+// Use it with type safety
+void example(void) {
+    i32s vec;
+
+    // Type-safe access
+    i32* data = i32s_mut_data(&vec);
+
+    // Original functions still work
+    ds_Vec_append(&vec.Base[0], &(int){ 42 });
+
+    // Type-safe iteration
+    for (const int* it = i32s_data(&vec);
+         it < i32s_data(&vec) + i32s_len(&vec);
+         ++it) {
+        // Use it...
+    }
+}
+
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
-// #ifdef UNIT_TEST
-// #endif /* UNIT_TEST */
+#ifdef UNIT_TEST
+#endif /* UNIT_TEST */
+
+
+// #define gen_ds_Vec_for(_where_T, _Alias)                                                              \
+//     typedef_union(_Alias) {                                                                           \
+//         ds_Vec(_where_T) Base[1];                                                                     \
+//         struct {                                                                                      \
+//             usize elem_size;                                                                          \
+//             usize cap;                                                                                \
+//             usize len;                                                                                \
+//             union {                                                                                   \
+//                 u8*      bytes;                                                                       \
+//                 _where_T data;                                                                        \
+//             };                                                                                        \
+//         };                                                                                            \
+//     };                                                                                                \
+//     static_inline usize gen_methName(_Alias, cap)(const rawptr(_Alias) vec) {                         \
+//         return gen_methName(ds_Vec, cap)(vec->Base);                                                  \
+//     }                                                                                                 \
+//     static_inline usize gen_methName(_Alias, len)(const rawptr(_Alias) vec) {                         \
+//         return gen_methName(ds_Vec, len)(vec->Base);                                                  \
+//     }                                                                                                 \
+//     static_inline bool gen_methName(_Alias, isEmpty)(const rawptr(_Alias) vec) {                      \
+//         return gen_methName(ds_Vec, isEmpty)(vec->Base);                                              \
+//     }                                                                                                 \
+//     static_inline bool gen_methName(_Alias, isFull)(const rawptr(_Alias) vec) {                       \
+//         return gen_methName(ds_Vec, isFull)(vec->Base);                                               \
+//     }                                                                                                 \
+//     static_inline const rawptr(_where_T) gen_methName(_Alias, data)(const rawptr(_Alias) vec) {       \
+//         return (const rawptr(_where_T))gen_methName(ds_Vec, data)(vec->Base);                         \
+//     }                                                                                                 \
+//     static_inline rawptr(_where_T) gen_methName(_Alias, mut_data)(rawptr(_Alias) vec) {               \
+//         return (rawptr(_where_T))gen_methName(ds_Vec, mut_data)(vec->Base);                           \
+//     }                                                                                                 \
+//     static_inline const rawptr(_where_T) gen_methName(_Alias, dataOrNull)(const rawptr(_Alias) vec) { \
+//         return (const rawptr(_where_T))gen_methName(ds_Vec, dataOrNull)(vec->Base);                   \
+//     }                                                                                                 \
+//     static_inline rawptr(_where_T) gen_methName(_Alias, mut_dataOrNull)(rawptr(_Alias) vec) {         \
+//         return (rawptr(_where_T))gen_methName(ds_Vec, mut_dataOrNull)(vec->Base);                     \
+//     }
+
+// gen_ds_Vec_for(i32, i32s);
 
 
 #if defined(__cplusplus)

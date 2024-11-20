@@ -27,6 +27,7 @@ extern "C" {
 #include "claim/assert.h"
 
 /*========== Macros and Definitions =========================================*/
+
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST

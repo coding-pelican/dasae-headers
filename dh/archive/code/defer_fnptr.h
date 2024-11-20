@@ -41,14 +41,14 @@ typedef struct DeferScope {
     bool        active;
 } DeferScope;
 
-#define defer_scope                            \
+#define block_defer                            \
     for (                                      \
-        DeferScope _defer_scope = { 0, true }; \
-        _defer_scope.active;                   \
+        DeferScope _block_defer = { 0, true }; \
+        _block_defer.active;                   \
         defer__run()                           \
     )
 
-#define defer_scope_return \
+#define block_defer_return \
     defer__run();          \
     return
 
@@ -56,18 +56,18 @@ typedef struct DeferScope {
     DeferBlock* _block   = mem_create(DeferBlock);    \
     _block->func         = (anyptr(*)(anyptr))(FUNC); \
     _block->context      = (CTX);                     \
-    _block->prev         = _defer_scope.current;      \
-    _defer_scope.current = _block;                    \
+    _block->prev         = _block_defer.current;      \
+    _block_defer.current = _block;                    \
 )
 
 #define defer__run() pp_func(                             \
-    DeferBlock* _curr = _defer_scope.current;             \
+    DeferBlock* _curr = _block_defer.current;             \
     while (_curr) {                                       \
         if (_curr->func) { _curr->func(_curr->context); } \
         DeferBlock* _prev = _curr->prev;                  \
         mem_destroy(&_curr);                              \
         _curr = _prev;                                    \
-    } _defer_scope.active                                 \
+    } _block_defer.active                                 \
     = false;                                              \
 )
 

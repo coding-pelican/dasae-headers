@@ -44,6 +44,8 @@ extern "C" {
 /* Address of a variable */
 #define addr(VAR) IMPL_addr(VAR)
 
+#define rawptr(_T) IMPL_rawptr(_T)
+
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_Ptr(TYPE)                TYPE*
@@ -55,13 +57,15 @@ extern "C" {
 #define IMPL_Val(TYPE)    TYPE
 #define IMPL_addr(VAR...) (&(VAR))
 
+#define IMPL_rawptr(_T) _T*
 
-#if defined(ARCH_64BIT) && ARCH_64BIT
+
+#if defined(arch_64bit) && arch_64bit
 /* 64-bit */
-claim_assertStatic(sizeof(anyptr) == 8, "pointer must be 8 bytes on 64-bit");
-#elif defined(ARCH_32BIT) && ARCH_32BIT
+claim_assert_static_msg(sizeof(anyptr) == 8, "pointer must be 8 bytes on 64-bit");
+#elif defined(arch_32bit) && arch_32bit
 /* 32-bit */
-claim_assertStatic(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
+claim_assert_static_msg(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
 #else
 // #  error "Unknown architecture"
 #endif

@@ -4,7 +4,7 @@
  * @file    defer.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-15 (date of creation)
- * @updated 2024-11-15 (date of last update)
+ * @updated 2024-11-19 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -23,27 +23,27 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
+#include "dh/core.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define defer_block IMPL_defer_block
-#define defer_scope IMPL_defer_scope
+#define scope_defer IMPL_scope_defer
+#define block_defer IMPL_block_defer
 
 #define defer_break  IMPL_defer_break
 #define defer_return IMPL_defer_return
 
-#define scope_deferred() IMPL_scope_deferred()
 #define block_deferred() IMPL_block_deferred()
+#define scope_deferred() IMPL_scope_deferred()
 
-#define defer(STMT...) IMPL_defer(STMT)
+#define defer(_Statement...) IMPL_defer(_Statement)
 
-#define defer_block__snapshot(STMT...) IMPL_defer_block__snapshot(STMT)
+#define scope_defer__snapshot(_Statement...) IMPL_scope_defer__snapshot(_Statement)
 
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN(bugprone-terminating-continue)
-#define IMPL_defer_block   \
+#define IMPL_scope_defer   \
     i32 _defer_return = 0; \
     unused(_defer_return); \
     i32 _defer_curr = 0;   \
@@ -54,9 +54,9 @@ extern "C" {
     case 0:                \
         _defer_curr = -1;
 
-#define IMPL_defer_scope     \
+#define IMPL_block_defer     \
     do {                     \
-    defer_block__snapshot(   \
+    scope_defer__snapshot(   \
         if (_defer_return) { \
             goto _deferred;  \
         } else {             \
@@ -75,28 +75,28 @@ extern "C" {
         goto _deferred;    \
     }
 
-#define IMPL_scope_deferred() \
+#define IMPL_block_deferred() \
     goto _deferred;           \
     }                         \
     while (false)
 
-#define IMPL_block_deferred() \
+#define IMPL_scope_deferred() \
     goto _deferred;           \
     }                         \
     while (false) {}
 
-#define IMPL_defer(STMT...) \
-    defer_block__snapshot(STMT; goto _deferred)
+#define IMPL_defer(_Statement...) \
+    scope_defer__snapshot(_Statement; goto _deferred)
 
-#define IMPL_defer_block__snapshot(STMT...) \
-    {                                       \
-        i32 _defer_prev = _defer_curr;      \
-        _defer_curr     = __LINE__;         \
-        if (false) {                        \
-        case __LINE__:                      \
-            _defer_curr = _defer_prev;      \
-            STMT;                           \
-        }                                   \
+#define IMPL_scope_defer__snapshot(_Statement...) \
+    {                                             \
+        i32 _defer_prev = _defer_curr;            \
+        _defer_curr     = __LINE__;               \
+        if (false) {                              \
+        case __LINE__:                            \
+            _defer_curr = _defer_prev;            \
+            _Statement;                           \
+        }                                         \
     }
 // NOLINTEND(bugprone-terminating-continue)
 

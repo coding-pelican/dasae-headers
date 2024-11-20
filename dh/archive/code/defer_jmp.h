@@ -48,7 +48,7 @@ force_inline DeferBlock* DeferBlock_init(DeferBlock* b) {
 typedef struct DeferScope {
     DeferBlock* curr;
     bool        active;
-    jmp_buf     execute_return; // defer_scope__execute의 컨텍스트를 저장
+    jmp_buf     execute_return; // block_defer__execute의 컨텍스트를 저장
 } DeferScope;
 static DeferBlock* const DeferScope__sentinel = &DeferBlock_sentinel_node;
 
@@ -95,20 +95,20 @@ force_inline void DeferScope_addBlock(DeferScope* s, DeferBlock* block) {
     }                                                               \
 })
 
-#define defer_scope                             \
-    for (DeferScope* const _defer_scope         \
+#define block_defer                             \
+    for (DeferScope* const _block_defer         \
          = DeferScope_init(create(DeferScope)); \
-         _defer_scope->active;                  \
+         _block_defer->active;                  \
          /* none */)                            \
         for (bool _run_once = true;             \
              _run_once;                         \
              (_run_once = false,                \
-             DeferScope_deferred(_defer_scope), \
-             DeferScope_fini(_defer_scope)))
+             DeferScope_deferred(_block_defer), \
+             DeferScope_fini(_block_defer)))
 
-#define defer_scope_return             \
-    DeferScope_deferred(_defer_scope); \
-    DeferScope_fini(_defer_scope);     \
+#define block_defer_return             \
+    DeferScope_deferred(_block_defer); \
+    DeferScope_fini(_block_defer);     \
     return
 
 #define defer(STATEMENTS...)                                                \
@@ -116,12 +116,12 @@ force_inline void DeferScope_addBlock(DeferScope* s, DeferBlock* block) {
         DeferBlock* const _block = DeferBlock_init(mem_create(DeferBlock)); \
         if (setjmp(_block->jump_buf) == 0) {                                \
             /* first call setjmp */                                         \
-            DeferScope_addBlock(_defer_scope, _block);                      \
+            DeferScope_addBlock(_block_defer, _block);                      \
             break;                                                          \
         }                                                                   \
         STATEMENTS                                                          \
         /* return DeferScope_deferred */                                    \
-        longjmp(_defer_scope->execute_return, 1);                           \
+        longjmp(_block_defer->execute_return, 1);                           \
     } while (false)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

@@ -4,21 +4,21 @@
 
 #include <stdio.h>
 
-// static DeferBlock defer_scope__s_sentinel = { &defer_scope__s_sentinel, { 0 }, true };
-// DeferBlock* const defer_scope__sentinel   = &defer_scope__s_sentinel;
+// static DeferBlock block_defer__s_sentinel = { &block_defer__s_sentinel, { 0 }, true };
+// DeferBlock* const block_defer__sentinel   = &block_defer__s_sentinel;
 
-// void defer_scope__add(DeferScope* scope, DeferBlock* block) {
-//     debug_assertNotNull(scope);
-//     debug_assertNotNull(block);
+// void block_defer__add(DeferScope* scope, DeferBlock* block) {
+//     debug_assertNonNull(scope);
+//     debug_assertNonNull(block);
 //     if (!scope->active) {
 //         mem_destroy(&block);
 //         return;
 //     }
 
 //     /* FIFO 구현을 위해 tail 앞에 새 노드 삽입 */
-//     // block->next     = defer_scope__sentinel;
+//     // block->next     = block_defer__sentinel;
 //     // block->executed = false;
-//     if (scope->curr == defer_scope__sentinel) {
+//     if (scope->curr == block_defer__sentinel) {
 //         scope->curr = block;
 //     } else {
 //         scope->tail->next = block;
@@ -26,13 +26,13 @@
 //     scope->tail = block;
 // }
 
-// void defer_scope__execute(DeferScope* scope) {
-//     debug_assertNotNull(scope);
+// void block_defer__execute(DeferScope* scope) {
+//     debug_assertNonNull(scope);
 //     if (!scope->active) { return; }
 
 //     printf("Execute defer blocks...\n");
 //     DeferBlock* curr = scope->head;
-//     while (curr != defer_scope__sentinel) {
+//     while (curr != block_defer__sentinel) {
 //         if (!curr->executed) {
 //             curr->executed = true;
 
@@ -55,12 +55,12 @@
 //     scope->active = false;
 // }
 
-// void defer_scope__execute(DeferScope* scope) {
-//     debug_assertNotNull(scope);
+// void block_defer__execute(DeferScope* scope) {
+//     debug_assertNonNull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* curr = scope->head;
-//     while (curr != defer_scope__sentinel) {
+//     while (curr != block_defer__sentinel) {
 //         if (!curr->executed) {
 //             curr->executed   = true;
 //             curr->in_cleanup = true;
@@ -79,12 +79,12 @@
 //     scope->active = false;
 // }
 
-// void defer_scope__execute(DeferScope* scope) {
-//     debug_assertNotNull(scope);
+// void block_defer__execute(DeferScope* scope) {
+//     debug_assertNonNull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* curr = scope->head;
-//     while (curr != defer_scope__sentinel) {
+//     while (curr != block_defer__sentinel) {
 //         if (!curr->executed) {
 //             curr->executed = true;
 //             longjmp(curr->jump_buf, 1); // 원래 스택 프레임으로 점프
@@ -96,12 +96,12 @@
 //     scope->active = false;
 // }
 
-// void defer_scope__execute(DeferScope* scope) {
-//     debug_assertNotNull(scope);
+// void block_defer__execute(DeferScope* scope) {
+//     debug_assertNonNull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* const begin = scope->head;
-//     DeferBlock* const end   = defer_scope__sentinel;
+//     DeferBlock* const end   = block_defer__sentinel;
 
 //     /* 모든 블록을 실행 */ {
 //         DeferBlock* mark = begin;

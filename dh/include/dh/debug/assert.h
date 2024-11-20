@@ -7,7 +7,7 @@
  * @updated 2024-11-02 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/debug
- * @prefix  debug
+ * @prefix  debug_assert
  *
  * @brief   Header of some software
  * @details Some detailed explanation
@@ -29,93 +29,93 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define debug_assert(EXPR)   \
+#define debug_assert(_Expr)  \
     /* Assert expression. */ \
-    IMPL_debug_assert(EXPR)
-#define debug_assertFmt(EXPR, FMT...)               \
+    IMPL_debug_assert(_Expr)
+#define debug_assertFmt(_Expr, _fmt...)             \
     /* Assert expression with formatted message. */ \
-    IMPL_debug_assertFmt(EXPR, FMT)
+    IMPL_debug_assertFmt(_Expr, _fmt)
 
-#define debug_assertTrue(EXPR)            \
+#define debug_assertTrue(_Expr)           \
     /* Assert that expression is true. */ \
-    IMPL_debug_assertTrue(EXPR)
-#define debug_assertFalse(EXPR)            \
+    IMPL_debug_assertTrue(_Expr)
+#define debug_assertFalse(_Expr)           \
     /* Assert that expression is false. */ \
-    IMPL_debug_assertFalse(EXPR)
-#define debug_assertEq(EXPR1, EXPR2)             \
+    IMPL_debug_assertFalse(_Expr)
+#define debug_assertEq(_Expr1, _Expr2)           \
     /* Assert that two expressions are equal. */ \
-    IMPL_debug_assertEq(EXPR1, EXPR2)
-#define debug_assertNe(EXPR1, EXPR2)                 \
+    IMPL_debug_assertEq(_Expr1, _Expr2)
+#define debug_assertNe(_Expr1, _Expr2)               \
     /* Assert that two expressions are not equal. */ \
-    IMPL_debug_assertNe(EXPR1, EXPR2)
-#define debug_assertNull(EXPR)              \
+    IMPL_debug_assertNe(_Expr1, _Expr2)
+#define debug_assertNull(_Expr)             \
     /* Assert that expressions is null.  */ \
-    IMPL_debug_assertNull(EXPR)
-#define debug_assertNotNull(EXPR)               \
-    /* Assert that expressions is not null.  */ \
-    IMPL_debug_assertNotNull(EXPR)
+    IMPL_debug_assertNull(_Expr)
+#define debug_assertNonNull(_Expr)              \
+    /* Assert that expressions is non null.  */ \
+    IMPL_debug_assertNonNull(_Expr)
 
-#define debug_assertTrueFmt(EXPR, FMT...)                        \
+#define debug_assertTrueFmt(_Expr, _fmt...)                      \
     /* Assert that expression is true with formatted message. */ \
-    IMPL_debug_assertTrueFmt(EXPR, FMT)
-#define debug_assertFalseFmt(EXPR, FMT...)                        \
+    IMPL_debug_assertTrueFmt(_Expr, _fmt)
+#define debug_assertFalseFmt(_Expr, _fmt...)                      \
     /* Assert that expression is false with formatted message. */ \
-    IMPL_debug_assertFalseFmt(EXPR, FMT)
-#define debug_assertEqFmt(EXPR1, EXPR2, FMT...)                         \
+    IMPL_debug_assertFalseFmt(_Expr, _fmt)
+#define debug_assertEqFmt(_Expr1, _Expr2, _fmt...)                      \
     /* Assert that two expressions are equal with formatted message. */ \
-    IMPL_debug_assertEqFmt(EXPR1, EXPR2, FMT)
-#define debug_assertNeFmt(EXPR1, EXPR2, FMT...)                             \
+    IMPL_debug_assertEqFmt(_Expr1, _Expr2, _fmt)
+#define debug_assertNeFmt(_Expr1, _Expr2, _fmt...)                          \
     /* Assert that two expressions are not equal with formatted message. */ \
-    IMPL_debug_assertNeFmt(EXPR1, EXPR2, FMT)
-#define debug_assertNullFmt(EXPR, FMT...)                         \
+    IMPL_debug_assertNeFmt(_Expr1, _Expr2, _fmt)
+#define debug_assertNullFmt(_Expr, _fmt...)                       \
     /* Assert that expressions is null with formatted message. */ \
-    IMPL_debug_assertNullFmt(EXPR, FMT)
-#define debug_assertNotNullFmt(EXPR, FMT...)                          \
-    /* Assert that expressions is not null with formatted message. */ \
-    IMPL_debug_assertNotNullFmt(EXPR, FMT)
+    IMPL_debug_assertNullFmt(_Expr, _fmt)
+#define debug_assertNonNullFmt(_Expr, _fmt...)                        \
+    /* Assert that expressions is non null with formatted message. */ \
+    IMPL_debug_assertNonNullFmt(_Expr, _fmt)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
 
-#define IMPL_debug_assert(EXPR) \
-    ignore((!!(EXPR)) || (debug__assertFail(#EXPR, __func__, __FILE__, __LINE__), 0))
+#define IMPL_debug_assert(_Expr) \
+    ignore((!!(_Expr)) || (debug__assertFail(#_Expr, __func__, __FILE__, __LINE__), 0))
 
-#define IMPL_debug_assertFmt(EXPR, ...) \
-    ignore((!!(EXPR)) || (debug__assertFailFmt(#EXPR, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
+#define IMPL_debug_assertFmt(_Expr, ...) \
+    ignore((!!(_Expr)) || (debug__assertFailFmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
 
-#define IMPL_debug_assertTrue(EXPR)       IMPL_debug_assertFmt((EXPR) == true, "%s is not true", #EXPR)
-#define IMPL_debug_assertFalse(EXPR)      IMPL_debug_assertFmt((EXPR) == false, "%s is not false", #EXPR)
-#define IMPL_debug_assertEq(EXPR1, EXPR2) IMPL_debug_assertFmt((EXPR1) == (EXPR2), "%s is not equal to %s", #EXPR1, #EXPR2)
-#define IMPL_debug_assertNe(EXPR1, EXPR2) IMPL_debug_assertFmt((EXPR1) != (EXPR2), "%s is equal to %s", #EXPR1, #EXPR2)
-#define IMPL_debug_assertNull(EXPR)       IMPL_debug_assertFmt((EXPR) == null, "%s is not null", #EXPR)
-#define IMPL_debug_assertNotNull(EXPR)    IMPL_debug_assertFmt((EXPR) != null, "%s is null", #EXPR)
+#define IMPL_debug_assertTrue(_Expr)        IMPL_debug_assertFmt((_Expr) == true, "%s is not true", #_Expr)
+#define IMPL_debug_assertFalse(_Expr)       IMPL_debug_assertFmt((_Expr) == false, "%s is not false", #_Expr)
+#define IMPL_debug_assertEq(_Expr1, _Expr2) IMPL_debug_assertFmt((_Expr1) == (_Expr2), "%s is not equal to %s", #_Expr1, #_Expr2)
+#define IMPL_debug_assertNe(_Expr1, _Expr2) IMPL_debug_assertFmt((_Expr1) != (_Expr2), "%s is equal to %s", #_Expr1, #_Expr2)
+#define IMPL_debug_assertNull(_Expr)        IMPL_debug_assertFmt((_Expr) == null, "%s is non null", #_Expr)
+#define IMPL_debug_assertNonNull(_Expr)     IMPL_debug_assertFmt((_Expr) != null, "%s is null", #_Expr)
 
-#define IMPL_debug_assertTrueFmt(EXPR, ...)       IMPL_debug_assertFmt((EXPR) == true, __VA_ARGS__)
-#define IMPL_debug_assertFalseFmt(EXPR, ...)      IMPL_debug_assertFmt((EXPR) == false, __VA_ARGS__)
-#define IMPL_debug_assertEqFmt(EXPR1, EXPR2, ...) IMPL_debug_assertFmt((EXPR1) == (EXPR2), __VA_ARGS__)
-#define IMPL_debug_assertNeFmt(EXPR1, EXPR2, ...) IMPL_debug_assertFmt((EXPR1) != (EXPR2), __VA_ARGS__)
-#define IMPL_debug_assertNullFmt(EXPR, ...)       IMPL_debug_assertFmt((EXPR) == null, __VA_ARGS__)
-#define IMPL_debug_assertNotNullFmt(EXPR, ...)    IMPL_debug_assertFmt((EXPR) != null, __VA_ARGS__)
+#define IMPL_debug_assertTrueFmt(_Expr, ...)        IMPL_debug_assertFmt((_Expr) == true, __VA_ARGS__)
+#define IMPL_debug_assertFalseFmt(_Expr, ...)       IMPL_debug_assertFmt((_Expr) == false, __VA_ARGS__)
+#define IMPL_debug_assertEqFmt(_Expr1, _Expr2, ...) IMPL_debug_assertFmt((_Expr1) == (_Expr2), __VA_ARGS__)
+#define IMPL_debug_assertNeFmt(_Expr1, _Expr2, ...) IMPL_debug_assertFmt((_Expr1) != (_Expr2), __VA_ARGS__)
+#define IMPL_debug_assertNullFmt(_Expr, ...)        IMPL_debug_assertFmt((_Expr) == null, __VA_ARGS__)
+#define IMPL_debug_assertNonNullFmt(_Expr, ...)     IMPL_debug_assertFmt((_Expr) != null, __VA_ARGS__)
 
 #else
 
-#define IMPL_debug_assert(EXPR)         unused(0)
-#define IMPL_debug_assertFmt(EXPR, ...) unused(0)
+#define IMPL_debug_assert(_Expr)         unused(0)
+#define IMPL_debug_assertFmt(_Expr, ...) unused(0)
 
-#define IMPL_debug_assertTrue(EXPR)       unused(0)
-#define IMPL_debug_assertFalse(EXPR)      unused(0)
-#define IMPL_debug_assertEq(EXPR1, EXPR2) unused(0)
-#define IMPL_debug_assertNe(EXPR1, EXPR2) unused(0)
-#define IMPL_debug_assertNull(EXPR)       unused(0)
-#define IMPL_debug_assertNotNull(EXPR)    unused(0)
+#define IMPL_debug_assertTrue(_Expr)        unused(0)
+#define IMPL_debug_assertFalse(_Expr)       unused(0)
+#define IMPL_debug_assertEq(_Expr1, _Expr2) unused(0)
+#define IMPL_debug_assertNe(_Expr1, _Expr2) unused(0)
+#define IMPL_debug_assertNull(_Expr)        unused(0)
+#define IMPL_debug_assertNonNull(_Expr)     unused(0)
 
-#define IMPL_debug_assertTrueFmt(EXPR, ...)       unused(0)
-#define IMPL_debug_assertFalseFmt(EXPR, ...)      unused(0)
-#define IMPL_debug_assertEqFmt(EXPR1, EXPR2, ...) unused(0)
-#define IMPL_debug_assertNeFmt(EXPR1, EXPR2, ...) unused(0)
-#define IMPL_debug_assertNullFmt(EXPR, ...)       unused(0)
-#define IMPL_debug_assertNotNullFmt(EXPR, ...)    unused(0)
+#define IMPL_debug_assertTrueFmt(_Expr, ...)        unused(0)
+#define IMPL_debug_assertFalseFmt(_Expr, ...)       unused(0)
+#define IMPL_debug_assertEqFmt(_Expr1, _Expr2, ...) unused(0)
+#define IMPL_debug_assertNeFmt(_Expr1, _Expr2, ...) unused(0)
+#define IMPL_debug_assertNullFmt(_Expr, ...)        unused(0)
+#define IMPL_debug_assertNonNullFmt(_Expr, ...)     unused(0)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 

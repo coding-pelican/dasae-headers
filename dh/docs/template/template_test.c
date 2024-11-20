@@ -4,14 +4,13 @@
  * @file    template_test.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-10-27 (date of last update)
- * @version v1.0.0
+ * @updated 2024-11-23 (date of last update)
+ * @version v1.0.1
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
  *
  * @brief   Test of some module
  */
-
 
 /*========== Includes =======================================================*/
 

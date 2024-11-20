@@ -42,7 +42,7 @@
 //     void* sp_start  = get_stack_pointer(); // 시작 시 스택 포인터
 
 //     printf("Entering defer scope (sp: %p)\n", sp_start);
-//     defer_scope {
+//     block_defer {
 //         printf("Entered defer scope (stack_var: %d, sp: %p)\n", stack_var, get_stack_pointer());
 
 //         defer({
@@ -67,7 +67,7 @@
 // static void TEST_defer_NestedDefers(void) {
 //     cleanup_counter = 0;
 
-//     defer_scope {
+//     block_defer {
 //         defer({ TEST_defer_countCleanup(null); });
 
 //         defer({
@@ -85,10 +85,10 @@
 // static void TEST_defer_NestedScopes(void) { // NOLINT
 //     cleanup_counter = 0;
 
-//     defer_scope {
+//     block_defer {
 //         defer({ TEST_defer_countCleanup(null); });
 
-//         defer_scope {
+//         block_defer {
 //             defer({ TEST_defer_countCleanup(null); });
 //         }
 
@@ -101,9 +101,9 @@
 // static void TEST_defer_EarlyReturn(void) {
 //     cleanup_counter = 0;
 
-//     defer_scope {
+//     block_defer {
 //         defer({ TEST_defer_countCleanup(null); });
-//         defer_scope_return;
+//         block_defer_return;
 //         defer({ TEST_defer_countCleanup(null); }); // Should not be executed
 //     }
 
@@ -118,7 +118,7 @@
 // static void TEST_defer_ContextPassing(void) {
 //     i32 test_value = 0;
 
-//     defer_scope {
+//     block_defer {
 //         defer({ TEST_defer_modifyValue(&test_value); });
 //         defer({ TEST_defer_modifyValue(&test_value); });
 //     }
@@ -135,7 +135,7 @@
 // static void TEST_defer_ds_VecCleanup(void) {
 //     bool vector_initialized = false;
 
-//     defer_scope {
+//     block_defer {
 //         f32ds_Vec* vec = create(f32ds_Vec);
 //         f32ds_Vec_init(vec, 4);
 //         defer({
@@ -155,7 +155,7 @@
 //         }
 //     }
 
-//     defer_scope {
+//     block_defer {
 //         f32ds_Vec* vec = create(f32ds_Vec);
 //         f32ds_Vec_init(vec, 4);
 //         defer({ f32ds_Vec_fini(vec); });

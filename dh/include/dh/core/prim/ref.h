@@ -42,9 +42,9 @@ extern "C" {
 #define IMPL_ref(VAR)   VAR
 #define IMPL_deref(VAR) VAR
 #else
-#define IMPL_Ref(TYPE) Nonnull(Ptr(TYPE))
+#define IMPL_Ref(TYPE) NonNull(Ptr(TYPE))
 #if defined(DEBUG_ENABLED) && DEBUG_ENABLED
-#define IMPL_ref(VAR) Nonnull(anyptr) ref__checkNotNull((anyptr)(&(VAR)))
+#define IMPL_ref(VAR) NonNull(anyptr) ref__checkNonNull((anyptr)(&(VAR)))
 #else
 #define IMPL_ref(VAR) ((anyptr)(&(VAR)))
 #endif
@@ -53,7 +53,7 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
-extern Nonnull(anyptr) ref__checkNotNull(Nonnull(anyptr) ptr);
+extern Nonnull(anyptr) ref__checkNonNull(Nonnull(anyptr) ptr);
 
 
 #if defined(__cplusplus)

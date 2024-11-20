@@ -4,7 +4,7 @@
  * @file    template.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-10-27 (date of last update)
+ * @updated 2024-11-23 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TEMPLATE_INCLUDED
 #define TEMPLATE_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -48,6 +46,10 @@ extern "C" {
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
 
+/*========== Example Usage (Disabled to prevent compilation) ================*/
+
+#if 0  /* Example Usage */
+#endif /* Example Usage */
 
 #if defined(__cplusplus)
 } /* extern "C" */

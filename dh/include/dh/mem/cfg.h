@@ -33,6 +33,8 @@ extern "C" {
 #define MEM_TRACE_ENABLED (0)
 #endif
 
+#define mem_trace_enabled (MEM_TRACE_ENABLED)
+
 
 #if defined(__cplusplus)
 }

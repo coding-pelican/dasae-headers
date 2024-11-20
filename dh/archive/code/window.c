@@ -7,11 +7,11 @@
 
 
 FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* config) {
-    debug_assertNotNull(s);
-    debug_assertNotNull(config);
+    debug_assertNonNull(s);
+    debug_assertNonNull(config);
 
     s->times = mem_allocCleared(f32, config->frame_rate_.sample_count);
-    debug_assertNotNull(s->times);
+    debug_assertNonNull(s->times);
     s->time_index      = 0;
     s->instant_last    = time_Instant_now();
     s->instant_current = s->instant_last;
@@ -28,7 +28,7 @@ FrameRateStats* FrameRateStats_init(FrameRateStats* s, const WindowConfig* confi
 }
 
 FrameRateStats* FrameRateStats_fini(FrameRateStats* s) {
-    debug_assertNotNull(s);
+    debug_assertNonNull(s);
 
     mem_free(&s->times);
     debug_assertNull(s->times);
@@ -37,7 +37,7 @@ FrameRateStats* FrameRateStats_fini(FrameRateStats* s) {
 }
 
 void FrameRateStats_update(FrameRateStats* s) {
-    debug_assertNotNull(s);
+    debug_assertNonNull(s);
 
     s->count++;
     s->instant_last    = s->instant_current;
@@ -81,20 +81,20 @@ void FrameRateStats_update(FrameRateStats* s) {
 }
 
 Window* Window_init(Window* w, WindowConfig config) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_ = config;
     return w;
 }
 
 Window* Window_withSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_.dimensions_.width  = width;
     w->config_.dimensions_.height = height;
     return w;
 }
 
 Window* Window_withMinSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_.dimensions_.constraints.min_width  = width;
     w->config_.dimensions_.constraints.min_height = height;
     // Validate current size against new constraints
@@ -102,7 +102,7 @@ Window* Window_withMinSize(Window* w, u32 width, u32 height) {
 }
 
 Window* Window_withMaxSize(Window* w, u32 width, u32 height) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_.dimensions_.constraints.max_width  = width;
     w->config_.dimensions_.constraints.max_height = height;
     // Validate current size against new constraints
@@ -110,14 +110,14 @@ Window* Window_withMaxSize(Window* w, u32 width, u32 height) {
 }
 
 Window* Window_withTitle(Window* w, const char* title, bool shows_in_buffer) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_.title_text_            = title;
     w->config_.title_shows_in_buffer_ = shows_in_buffer;
     return w;
 }
 
 Window* Window_withFrameRate(Window* w, bool enabled, f32 target_fps, bool vsync, bool displays_in_title) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     w->config_.frame_rate_.enabled           = enabled;
     w->config_.frame_rate_.target            = target_fps;
     w->config_.frame_rate_.vsync             = vsync;
@@ -127,7 +127,7 @@ Window* Window_withFrameRate(Window* w, bool enabled, f32 target_fps, bool vsync
 }
 
 Window* Window_fini(Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     FrameRateStats_fini(&w->frame_rate_stats_);
     return w;
 }
@@ -137,17 +137,17 @@ const WindowConfig* Window_config(const Window* w) {
 }
 
 u16 Window_width(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.dimensions_.width;
 }
 
 u16 Window_height(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.dimensions_.height;
 }
 
 const char* Window_title(const Window* w, bool with_frame_rate_stats) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
 
     if (!with_frame_rate_stats) {
         if (!w->config_.title_text_) { return ""; }
@@ -214,53 +214,53 @@ const char* Window_title(const Window* w, bool with_frame_rate_stats) {
 }
 
 bool Window_title_shows_in_buffer(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.title_shows_in_buffer_;
 }
 
 const FrameRateStats* Window_frameRateStats(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return &w->frame_rate_stats_;
 }
 
 bool Window_frameRateEnabled(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.frame_rate_.enabled;
 }
 
 f32 Window_frameRateTarget(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.frame_rate_.target;
 }
 
 f32 Window_frameRateCurrent(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->frame_rate_stats_.current_fps;
 }
 
 f32 Window_frameRateCurrentDuration(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->frame_rate_stats_.current_duration;
 }
 
 f32 Window_frameRateAverage(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->frame_rate_stats_.average_fps;
 }
 
 f32 Window_frameRateAverageDuration(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->frame_rate_stats_.average_duration;
 }
 
 bool Window_displaysFrameRateInTitle(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     return w->config_.frame_rate_.displays_in_title;
 }
 
 static void Window__setTerminalTitle(Window* w, const char* title) {
-    debug_assertNotNull(w);
-    debug_assertNotNull(title);
+    debug_assertNonNull(w);
+    debug_assertNonNull(title);
 
 #if defined(_WIN32) || defined(_WIN64)
     SetConsoleTitleA(title);
@@ -271,21 +271,21 @@ static void Window__setTerminalTitle(Window* w, const char* title) {
 }
 
 static void Window__updateTitle(Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
     const bool  with_frame_rate_stats = Window_displaysFrameRateInTitle(w);
     const char* title                 = Window_title(w, with_frame_rate_stats);
     Window__setTerminalTitle(w, title);
 }
 
 void Window_update(Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
 
     FrameRateStats_update(&w->frame_rate_stats_);
     Window__updateTitle(w);
 }
 
 void Window_delay(const Window* w) {
-    debug_assertNotNull(w);
+    debug_assertNonNull(w);
 
     const bool enabled = Window_frameRateEnabled(w);
     if (!enabled) { return; }

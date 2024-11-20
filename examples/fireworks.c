@@ -22,8 +22,8 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 
 // #define NMEM_TRACE
 #include "dh/mem.h"
-#include "dh/defer.h"
 #include "dh/scope.h"
+#include "dh/defer.h"
 #include "dh/unreachable.h"
 #include "dh/random.h"
 
@@ -43,16 +43,16 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 
 // TODO(dev-dasae): Move to library and make it more generic.
 
-#define Terminal_Width  (80ull * 2)
-#define Terminal_Height (25ull * 2)
-#define Terminal_Size   (Terminal_Width * Terminal_Height)
+#define Terminal_width  (80ull * 2)
+#define Terminal_height (25ull * 2)
+#define Terminal_size   (Terminal_width * Terminal_height)
 
-#define Terminal_FontWidth  (6)
-#define Terminal_FontHeight (Terminal_FontWidth * 2)
+#define Terminal_font_width  (6)
+#define Terminal_font_height (Terminal_font_width * 2)
 
-#define Display_Width  (Terminal_Width)
-#define Display_Height (Terminal_Height * 2)
-#define Display_Size   (Display_Width * Display_Height)
+#define Display_width  (Terminal_width)
+#define Display_height (Terminal_height * 2)
+#define Display_size   (Display_width * Display_height)
 
 void TerminalCursor_resetColor(void) {
     printf("\033[0m");
@@ -162,7 +162,7 @@ void Terminal_shutdown(void) {
 #define Display_UnitPixel1x2Format            "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀"
 #define Display_UnitPixel1x2FormatMaxCase     "\033[38;2;255;255;255;48;2;255;255;255m▀"
 #define Display_UnitPixel1x2FormatMaxCaseSize (sizeof(Display_UnitPixel1x2FormatMaxCase) / sizeof(Display_UnitPixel1x2FormatMaxCase[0]))
-#define Display_BufferSize                    ((usize)Terminal_Size * (usize)Display_UnitPixel1x2FormatMaxCaseSize)
+#define Display_BufferSize                    ((usize)Terminal_size * (usize)Display_UnitPixel1x2FormatMaxCaseSize)
 #define Display_shows_title_in_buffer         false
 
 static char  Display_front_buffer[Display_BufferSize] = { 0 };
@@ -180,7 +180,7 @@ void Display_init(void) {
     SetConsoleWindowInfo(hConsoleOutput, TRUE, &windowSizeInitial);
 
     // void SetConsoleScreenBuffer()
-    COORD dwSize = (COORD){ (SHORT)Terminal_Width, (SHORT)Terminal_Height + Display_shows_title_in_buffer };
+    COORD dwSize = (COORD){ (SHORT)Terminal_width, (SHORT)Terminal_height + Display_shows_title_in_buffer };
     SetConsoleActiveScreenBuffer(hConsoleOutput);
     SetConsoleScreenBufferSize(hConsoleOutput, dwSize);
 
@@ -188,12 +188,12 @@ void Display_init(void) {
     CONSOLE_FONT_INFOEX fontInfo = (CONSOLE_FONT_INFOEX){ 0 };
     fontInfo.cbSize              = sizeof(CONSOLE_FONT_INFOEX);
     GetCurrentConsoleFontEx(hConsoleOutput, FALSE, &fontInfo);
-    fontInfo.dwFontSize.X = Terminal_FontWidth;
-    fontInfo.dwFontSize.Y = Terminal_FontHeight;
+    fontInfo.dwFontSize.X = Terminal_font_width;
+    fontInfo.dwFontSize.Y = Terminal_font_height;
     SetCurrentConsoleFontEx(hConsoleOutput, FALSE, &fontInfo);
 
     // void SetConsoleWindowSize()
-    SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)Terminal_Width - 1, (SHORT)Terminal_Height - 1 + Display_shows_title_in_buffer };
+    SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)Terminal_width - 1, (SHORT)Terminal_height - 1 + Display_shows_title_in_buffer };
     SetConsoleWindowInfo(hConsoleOutput, TRUE, &windowSize);
 
     // void DisableConsoleCursor()
@@ -213,7 +213,7 @@ void Display_swapBuffers(void) {
     swap(usize, Display_buffer_curr_size, Display_buffer_next_size);
 }
 
-void Display_setBufferFromColors(const Window* const window, const Color colors[Display_Size]) {
+void Display_setBufferFromColors(const Window* const window, const Color colors[Display_size]) {
     Display_clear();
     usize index = 0;
 
@@ -230,26 +230,26 @@ void Display_setBufferFromColors(const Window* const window, const Color colors[
         index += strlen(title);
 
         // Fill rest of line with spaces
-        for (usize i = strlen(title); i < Display_Width; ++i) {
+        for (usize i = strlen(title); i < Display_width; ++i) {
             Display_buffer_next[index++] = ' ';
         }
         Display_buffer_next[index++] = '\n';
     }
 
-    for (usize y = 0; y < Display_Height; y += 2) {
+    for (usize y = 0; y < Display_height; y += 2) {
         usize x = 0;
-        while (x < Display_Width) {
+        while (x < Display_width) {
             // Ensure we don't go out of bounds
-            if (Display_Height <= (y + 1)) { break; }
+            if (Display_height <= (y + 1)) { break; }
 
-            const Color upper = colors[x + y * Display_Width];
-            const Color lower = colors[x + (y + 1) * Display_Width];
+            const Color upper = colors[x + y * Display_width];
+            const Color lower = colors[x + (y + 1) * Display_width];
 
             // Start a run of characters with the same color
             usize run_length = 1;
-            while ((x + run_length) < (usize)Display_Width) {
-                const Color next_upper = colors[x + run_length + y * Display_Width];
-                const Color next_lower = colors[x + run_length + (y + 1) * Display_Width];
+            while ((x + run_length) < (usize)Display_width) {
+                const Color next_upper = colors[x + run_length + y * Display_width];
+                const Color next_lower = colors[x + run_length + (y + 1) * Display_width];
 
                 if (memcmp(&upper.rgba, &next_upper.rgba, sizeof(Color)) != 0
                     || memcmp(&lower.rgba, &next_lower.rgba, sizeof(Color)) != 0) {
@@ -314,7 +314,7 @@ time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
     const u64 overhead_iterations = 32;
     for (usize measurements = 0; measurements < overhead_iterations; ++measurements) {
         time_Instant start = time_Instant_now();
-        for (usize i = 0; i < Display_Size; ++i) {
+        for (usize i = 0; i < Display_size; ++i) {
             buffer[i] = Color_fromOpaque(0, 0, 0);
         }
         Display_setBufferFromColors(window, buffer);
@@ -357,21 +357,21 @@ Particle* Particle_init(Particle* const p, f64 x, f64 y, f64 width, f64 height, 
 }
 
 Particle* Particle_withSpeed(Particle* const p, f64 x, f64 y) {
-    debug_assertNotNull(p);
+    debug_assertNonNull(p);
     p->speed[0] = x;
     p->speed[1] = y;
     return p;
 }
 
 Particle* Particle_withAcceleration(Particle* const p, f64 x, f64 y) {
-    debug_assertNotNull(p);
+    debug_assertNonNull(p);
     p->acceleration[0] = x;
     p->acceleration[1] = y;
     return p;
 }
 
 Particle* Particle_withFading(Particle* const p, f64 fading) {
-    debug_assertNotNull(p);
+    debug_assertNonNull(p);
     p->fading = fading;
     return p;
 }
@@ -382,7 +382,7 @@ bool Particle_isDead(const Particle* const p) {
 }
 
 void Particle_update(Particle* const p, f64 delta) {
-    debug_assertNotNull(p);
+    debug_assertNonNull(p);
     if (Particle_isDead(p)) { return; }
 
     p->speed[0] += p->acceleration[0] * delta;
@@ -395,7 +395,7 @@ void Particle_update(Particle* const p, f64 delta) {
 }
 
 void Particle_render(const Particle* const p, Canvas* const canvas, f64 delta) {
-    debug_assertNotNull(p);
+    debug_assertNonNull(p);
     if (Particle_isDead(p)) { return; }
 
     const Color render_color = Color_fromOpaque(
@@ -435,7 +435,7 @@ Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color
     Particle_withAcceleration(rocket, 0.0, 0.02);
 
     scope_with(Firework temp = make(Firework)) {
-        defer_block {
+        scope_defer {
             defer(*f = temp);
             temp.rocket     = rocket;
             temp.effects[0] = *ds_Vec_initWithCap(
@@ -445,7 +445,7 @@ Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color
             );
             temp.effect_base_color = Color_intoHsl(effect_base_color);
         }
-        block_deferred();
+        scope_deferred();
     }
 
     return f;
@@ -631,7 +631,7 @@ int main(int argc, const char* argv[]) {
 
     Random_init();
 
-    defer_block {
+    scope_defer {
         Window* const window = mem_create(Window);
         {
             Window_init(window, WindowConfig_default);
@@ -709,7 +709,7 @@ int main(int argc, const char* argv[]) {
             }
         }
     }
-    block_deferred();
+    scope_deferred();
 
     Terminal_shutdown();
     return 0;
@@ -721,7 +721,7 @@ int main(int argc, const char* argv[]) {
     let height                           = terminal_height * 2;
 
     let mut canvas = CrosstermCanvas::new (width, height);
-    canvas.set_refresh_LIMIT(120);
+    canvas.set_refresh_limit(120);
 
     let state = State::new (width as u32, height as u32);
 

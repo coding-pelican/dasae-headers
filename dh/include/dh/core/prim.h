@@ -35,28 +35,31 @@ extern "C" {
 #include "prim/enum.h"
 #include "prim/struct.h"
 #include "prim/union.h"
+#include "prim/switch.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define prim_eq(LHS, RHS...) IMPL_prim_eq(LHS, RHS)
-#define prim_ne(LHS, RHS...) IMPL_prim_ne(LHS, RHS)
-#define prim_lt(LHS, RHS...) IMPL_prim_lt(LHS, RHS)
-#define prim_le(LHS, RHS...) IMPL_prim_le(LHS, RHS)
-#define prim_gt(LHS, RHS...) IMPL_prim_gt(LHS, RHS)
-#define prim_ge(LHS, RHS...) IMPL_prim_ge(LHS, RHS)
+#define prim_cmp(_lhs, _rhs...) IMPL_prim_cmp(_lhs, _rhs...)
+#define prim_eq(_lhs, _rhs...)  IMPL_prim_eq(_lhs, _rhs)
+#define prim_ne(_lhs, _rhs...)  IMPL_prim_ne(_lhs, _rhs)
+#define prim_lt(_lhs, _rhs...)  IMPL_prim_lt(_lhs, _rhs)
+#define prim_gt(_lhs, _rhs...)  IMPL_prim_gt(_lhs, _rhs)
+#define prim_le(_lhs, _rhs...)  IMPL_prim_le(_lhs, _rhs)
+#define prim_ge(_lhs, _rhs...)  IMPL_prim_ge(_lhs, _rhs)
 
-#define prim_divisible(LHS, RHS...) IMPL_prim_divisible(LHS, RHS...)
+#define prim_divisible(_lhs, _rhs...) IMPL_prim_divisible(_lhs, _rhs...)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_prim_eq(LHS, RHS...) ((LHS) == (RHS))
-#define IMPL_prim_ne(LHS, RHS...) ((LHS) != (RHS))
-#define IMPL_prim_lt(LHS, RHS...) ((LHS) < (RHS))
-#define IMPL_prim_le(LHS, RHS...) ((LHS) <= (RHS))
-#define IMPL_prim_gt(LHS, RHS...) ((LHS) > (RHS))
-#define IMPL_prim_ge(LHS, RHS...) ((LHS) >= (RHS))
+#define IMPL_prim_cmp(_lhs, _rhs...) ((_lhs) < (_rhs) ? -1 : ((_lhs) > (_rhs) ? 1 : 0))
+#define IMPL_prim_eq(_lhs, _rhs...)  ((_lhs) == (_rhs))
+#define IMPL_prim_ne(_lhs, _rhs...)  ((_lhs) != (_rhs))
+#define IMPL_prim_lt(_lhs, _rhs...)  ((_lhs) < (_rhs))
+#define IMPL_prim_le(_lhs, _rhs...)  ((_lhs) <= (_rhs))
+#define IMPL_prim_gt(_lhs, _rhs...)  ((_lhs) > (_rhs))
+#define IMPL_prim_ge(_lhs, _rhs...)  ((_lhs) >= (_rhs))
 
-#define IMPL_prim_divisible(LHS, RHS...) (((RHS) == 0) ? 0 : ((LHS) % (RHS) == 0))
+#define IMPL_prim_divisible(_lhs, _rhs...) (((_rhs) == 0) ? 0 : ((_lhs) % (_rhs) == 0))
 
 
 #if defined(__cplusplus)

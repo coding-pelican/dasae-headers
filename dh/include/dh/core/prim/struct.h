@@ -28,6 +28,11 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define typedef_struct(_Alias) IMPL_typedef_struct(_Alias)
+#define IMPL_typedef_struct(_Alias) \
+    typedef struct _Alias _Alias;   \
+    struct _Alias
+
 #define make(TYPE)              IMPL_make(TYPE)
 #define makeWith(TYPE, INIT...) IMPL_makeWith(TYPE, INIT)
 

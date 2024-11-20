@@ -6,7 +6,7 @@
 
 
 FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     debug_assert(0 < width);
     debug_assert(0 < height);
 
@@ -14,7 +14,7 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
     debug_assert(0 < size);
 
     anyptr const data = mem_alloc(Color, size);
-    debug_assertNotNull(data);
+    debug_assertNonNull(data);
 
     *b = makeWith(
         FrameBuffer,
@@ -26,13 +26,13 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
         .height_ = height,
         .size_   = size
     );
-    debug_assertNotNull(b->pixels_.data);
+    debug_assertNonNull(b->pixels_.data);
 
     return b;
 }
 
 FrameBuffer* FrameBuffer_withColor(FrameBuffer* const b, Color color) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
 
     for (usize i = 0; i < b->size_; ++i) {
         b->pixels_.data[i] = color;
@@ -42,7 +42,7 @@ FrameBuffer* FrameBuffer_withColor(FrameBuffer* const b, Color color) {
 }
 
 // FrameBuffer* FrameBuffer_withColorRange(FrameBuffer* const b, Color color, usize range_start, usize range_end) {
-//     debug_assertNotNull(b);
+//     debug_assertNonNull(b);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= b->size_);
@@ -69,32 +69,32 @@ FrameBuffer* FrameBuffer_fini(FrameBuffer* const b) {
 }
 
 const Color* FrameBuffer_peekData(const FrameBuffer* const b) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     return b->pixels_.data;
 }
 
 Color* FrameBuffer_accessData(FrameBuffer* const b) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     return b->pixels_.data;
 }
 
 u32 FrameBuffer_width(const FrameBuffer* const b) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     return b->width_;
 }
 
 u32 FrameBuffer_height(const FrameBuffer* const b) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     return b->height_;
 }
 
 u32 FrameBuffer_size(const FrameBuffer* const b) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     return b->size_;
 }
 
 force_inline Color* FrameBuffer__at(FrameBuffer* b, usize x, usize y) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     debug_assert(0 <= x);
     debug_assert(x < b->width_);
     debug_assert(0 <= y);
@@ -107,7 +107,7 @@ const Color* FrameBuffer_peekAt(const FrameBuffer* const b, usize x, usize y) {
 }
 
 Color* FrameBuffer_accessAt(FrameBuffer* const b, usize x, usize y) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     debug_assert(0 <= x);
     debug_assert(x < b->width_);
     debug_assert(0 <= y);
@@ -116,7 +116,7 @@ Color* FrameBuffer_accessAt(FrameBuffer* const b, usize x, usize y) {
 }
 
 Color FrameBuffer_get(const FrameBuffer* const b, usize x, usize y) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     debug_assert(0 <= x);
     debug_assert(x < b->width_);
     debug_assert(0 <= y);
@@ -125,7 +125,7 @@ Color FrameBuffer_get(const FrameBuffer* const b, usize x, usize y) {
 }
 
 void FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
     debug_assert(0 <= x);
     debug_assert(x < b->width_);
     debug_assert(0 <= y);
@@ -135,7 +135,7 @@ void FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y) {
 
 // TODO: Impl Slice and Range Type
 // Color* FrameBuffer_getRange(const FrameBuffer* self, usize range_start, usize range_end) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start <= range_end);
 //     debug_assert(range_end <= self->size_);
@@ -143,7 +143,7 @@ void FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y) {
 // }
 
 // void FrameBuffer_setRange(FrameBuffer* self, Color color, usize range_start, usize range_end) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= self->size_);
@@ -153,7 +153,7 @@ void FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y) {
 // }
 
 // void FrameBuffer_setRangeColors(FrameBuffer* self, Color* colors, usize range_start, usize range_end) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= self->size_);
@@ -163,7 +163,7 @@ void FrameBuffer_set(FrameBuffer* const b, Color color, usize x, usize y) {
 // }
 
 void FrameBuffer_clear(FrameBuffer* const b, Color color) {
-    debug_assertNotNull(b);
+    debug_assertNonNull(b);
 
     for (usize i = 0; i < b->size_; ++i) {
         b->pixels_.data[i] = color;
@@ -172,7 +172,7 @@ void FrameBuffer_clear(FrameBuffer* const b, Color color) {
 
 // TODO: Blitting functions
 Canvas* Canvas_init(Canvas* const c, u32 width, u32 height) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 < width);
     debug_assert(0 < height);
 
@@ -185,14 +185,14 @@ Canvas* Canvas_init(Canvas* const c, u32 width, u32 height) {
 };
 
 Canvas* Canvas_withColor(Canvas* const c, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     FrameBuffer_withColor(c->current_, color);
     FrameBuffer_withColor(c->next_, color);
     return c;
 }
 
 // Canvas* Canvas_initWithColorRange(Canvas* c, Color color, usize range_start, usize range_end) {
-//     debug_assertNotNull(c);
+//     debug_assertNonNull(c);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start <= range_end);
 //     debug_assert(range_end <= FrameBuffer_size(c->current_));
@@ -202,7 +202,7 @@ Canvas* Canvas_withColor(Canvas* const c, Color color) {
 // }
 
 Canvas* Canvas_fini(Canvas* const c) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
 
     FrameBuffer_fini(c->current_);
     FrameBuffer_fini(c->next_);
@@ -228,17 +228,17 @@ force_inline FrameBuffer* Canvas__buffer(Canvas* c) {
 }
 
 const FrameBuffer* Canvas_peekBuffer(const Canvas* const c) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     return Canvas__buffer((Canvas*)c);
 }
 
 FrameBuffer* Canvas_accessBuffer(Canvas* const c) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     return Canvas__buffer(c);
 }
 
 const Color* Canvas_peekAt(const Canvas* const c, usize x, usize y) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_peekBuffer(c)));
     debug_assert(0 <= y);
@@ -247,7 +247,7 @@ const Color* Canvas_peekAt(const Canvas* const c, usize x, usize y) {
 }
 
 Color* Canvas_accessAt(Canvas* const c, usize x, usize y) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_accessBuffer(c)));
     debug_assert(0 <= y);
@@ -256,7 +256,7 @@ Color* Canvas_accessAt(Canvas* const c, usize x, usize y) {
 }
 
 Color Canvas_get(const Canvas* const c, usize x, usize y) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_peekBuffer(c)));
     debug_assert(0 <= y);
@@ -265,7 +265,7 @@ Color Canvas_get(const Canvas* const c, usize x, usize y) {
 }
 
 void Canvas_set(Canvas* const c, usize x, usize y, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_accessBuffer(c)));
     debug_assert(0 <= y);
@@ -275,7 +275,7 @@ void Canvas_set(Canvas* const c, usize x, usize y, Color color) {
 
 // TODO: Impl Slice and Range Type
 // Color* Canvas_getRange(const Canvas* self, usize range_start, usize range_end) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= FrameBuffer_size(Canvas_peekBuffer(self)));
@@ -283,7 +283,7 @@ void Canvas_set(Canvas* const c, usize x, usize y, Color color) {
 // }
 
 // void Canvas_setRange(Canvas* self, usize range_start, usize range_end, Color color) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= FrameBuffer_size(Canvas_accessBuffer(self)));
@@ -291,7 +291,7 @@ void Canvas_set(Canvas* const c, usize x, usize y, Color color) {
 // }
 
 // void Canvas_setRangeColors(Canvas* self, usize range_start, usize range_end, Color* colors) {
-//     debug_assertNotNull(self);
+//     debug_assertNonNull(self);
 //     debug_assert(0 <= range_start);
 //     debug_assert(range_start < range_end);
 //     debug_assert(range_end <= FrameBuffer_size(Canvas_accessBuffer(self)));
@@ -299,12 +299,12 @@ void Canvas_set(Canvas* const c, usize x, usize y, Color color) {
 // }
 
 void Canvas_clear(Canvas* const c, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     FrameBuffer_clear(Canvas_accessBuffer(c), color);
 }
 
 void Canvas_swap(Canvas* const c) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     swap(FrameBuffer*, c->current_, c->next_);
 }
 
@@ -313,7 +313,7 @@ force_inline void Canvas__draw(Canvas* c, u32 x, u32 y, Color color) {
 }
 
 void Canvas_draw(Canvas* const c, u32 x, u32 y, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_accessBuffer(c)));
     debug_assert(0 <= y);
@@ -322,7 +322,7 @@ void Canvas_draw(Canvas* const c, u32 x, u32 y, Color color) {
 }
 
 void Canvas_drawPoint(Canvas* const c, u32 x, u32 y, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= x);
     debug_assert(x < FrameBuffer_width(Canvas_accessBuffer(c)));
     debug_assert(0 <= y);
@@ -331,7 +331,7 @@ void Canvas_drawPoint(Canvas* const c, u32 x, u32 y, Color color) {
 }
 
 void Canvas_fillRect(Canvas* const c, Rect rect, Color color) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
     debug_assert(0 <= rect.x);
     debug_assert(rect.x < FrameBuffer_width(Canvas_accessBuffer(c)));
     debug_assert(0 <= rect.y);
@@ -403,7 +403,7 @@ force_inline i64 i64_clamp(i64 val, i64 low, i64 high) {
 }
 
 Rect Canvas_normalizeRect(Canvas* const c, Rect rect) {
-    debug_assertNotNull(c);
+    debug_assertNonNull(c);
 
     // Clamp x and y to valid range
     rect.x = i64_clamp(rect.x, 0, FrameBuffer_width(Canvas_peekBuffer(c)) - 1);
