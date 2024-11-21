@@ -93,7 +93,7 @@ extern "C" {
      * @param _T The type of the value                              \
      * @param _val The value being switched on                      \
      */                                                             \
-    IMPL_claim_unreachable_switch(pp_uniqueToken(_unreachable_tmp), _T, _val)
+    IMPL_claim_unreachable_switch(pp_uniqueToken(unreachable_tmp), _T, _val)
 
 #define IMPL_claim_unreachable_switch(_unreachable_tmp, _T, _val) \
     do {                                                          \
