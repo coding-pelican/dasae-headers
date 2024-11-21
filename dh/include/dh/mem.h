@@ -12,10 +12,10 @@
  * @brief   Header of some software
  * @details Some detailed explanation
  */
+// TODO(dev-dasae): Move to 'mem/' and Rename to Info.h
 // TODO(dev-dasae): Separate implementation from header
 // TODO(dev-dasae): Use member `deallocTime` to track memory leaks
 // TODO(dev-dasae): Document annotations with heading
-
 
 #ifndef MEM_INCLUDED
 #define MEM_INCLUDED (1)

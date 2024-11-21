@@ -22,7 +22,7 @@ void TEST_mem_allocate_deallocate() {
 
     // Test basic allocation
     i32* numbers = (i32*)mem_allocate(5 * sizeof(i32));
-    debug_assertNonNull(numbers);
+    debug_assert_nonnull(numbers);
     TEST_PrintResult("Basic malloc", 1);
 
     // Fill with data
@@ -55,7 +55,7 @@ void TEST_mem_allocateCleared() {
 
     // Test basic calloc
     i32* numbers = (i32*)mem_allocateCleared(5, sizeof(i32));
-    debug_assertNonNull(numbers);
+    debug_assert_nonnull(numbers);
     TEST_PrintResult("Basic calloc", 1);
 
     // Verify zero initialization
@@ -78,7 +78,7 @@ void TEST_mem_reallocate() {
 
     // Reallocate to larger size
     numbers = (i32*)mem_reallocate(numbers, 4 * sizeof(i32));
-    debug_assertNonNull(numbers);
+    debug_assert_nonnull(numbers);
 
     // Verify original data preserved
     TEST_PrintResult("Data preserved", numbers[0] == 1 && numbers[1] == 2);

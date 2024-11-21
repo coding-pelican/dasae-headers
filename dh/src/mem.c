@@ -96,35 +96,35 @@ static void mem_printInfoMemoryLeakTrace() {
 // Debug memory management functions
 anyptr mem__allocate(usize size, const char* func, const char* file, i32 line) {
     anyptr allocated = malloc(size);
-    debug_assertNonNullFmt(allocated, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(allocated, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
     mem_addInfo(allocated, size, func, file, line);
     return allocated;
 }
 
 anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line) {
     anyptr allocated = calloc(count, size);
-    debug_assertNonNullFmt(allocated, "Memory allocation(calloc) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(allocated, "Memory allocation(calloc) failed in %s at %s:%d\n", func, file, line);
     mem_addInfo(allocated, count * size, func, file, line);
     return allocated;
 }
 
 anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(src, "null in allocation(memcpy) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(src, "null in allocation(memcpy) from %s at %s:%d\n", func, file, line);
     anyptr dest = mem__allocate(size, func, file, line);
-    debug_assertNonNullFmt(dest, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(dest, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
     anyptr result = mem__copy(dest, src, size, func, file, line);
-    debug_assertNonNullFmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
     return result;
 }
 
 anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(ptr, "null in reallocation(realloc) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(ptr, "null in reallocation(realloc) from %s at %s:%d\n", func, file, line);
     if (!ptr) {
         return mem__allocate(size, func, file, line);
     }
 
     anyptr reallocated = realloc(ptr, size);
-    debug_assertNonNullFmt(reallocated, "Memory reallocation failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(reallocated, "Memory reallocation failed in %s at %s:%d\n", func, file, line);
 
     // Update tracking info
     mem_Info* current = mem_s_info_list;
@@ -141,35 +141,35 @@ anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* fil
 }
 
 void mem__deallocate(anyptr* ptr_addr, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
-    debug_assertNonNullFmt(*ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(*ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
     mem_removeInfo(*ptr_addr);
     free(*ptr_addr);
     *ptr_addr = null;
 }
 
 anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(dest, "null in set(memset) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(dest, "null in set(memset) from %s at %s:%d\n", func, file, line);
     anyptr result = memset(dest, val, size);
-    debug_assertNonNullFmt(result, "Memory set(memset) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(result, "Memory set(memset) failed in %s at %s:%d\n", func, file, line);
     return result;
 }
 
 // Only update reference counts for tracked memory
 anyptr mem__copy(anyptr dest, const anyptr src, usize size, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(dest, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
-    debug_assertNonNullFmt(src, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(dest, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(src, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
     anyptr result = memcpy(dest, src, size);
-    debug_assertNonNullFmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
     return result;
 }
 
 // Don't create new tracking entry, just update existing ones
 anyptr mem__move(anyptr dest, anyptr src, usize size, const char* func, const char* file, i32 line) {
-    debug_assertNonNullFmt(dest, "null in move(memmove) from %s at %s:%d\n", func, file, line);
-    debug_assertNonNullFmt(src, "null in move(memmove) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(dest, "null in move(memmove) from %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(src, "null in move(memmove) from %s at %s:%d\n", func, file, line);
     anyptr result = memmove(dest, src, size);
-    debug_assertNonNullFmt(result, "Memory move(memmove) failed in %s at %s:%d\n", func, file, line);
+    debug_assert_nonnull_fmt(result, "Memory move(memmove) failed in %s at %s:%d\n", func, file, line);
     return result;
 }
 

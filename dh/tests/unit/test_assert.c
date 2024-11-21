@@ -14,8 +14,8 @@ int main(void) {
 
     // Test with a failing assertion with a message
     // This should print the assertion details, the custom message, and abort
-    debug_assertFmt(x != 5, "x was expected to be 10, but got %d", x);
-    // debug_assertFmt(x != NULL, "x should never be NULL at this point!");
+    debug_assert_fmt(x != 5, "x was expected to be 10, but got %d", x);
+    // debug_assert_fmt(x != NULL, "x should never be NULL at this point!");
 
     return 0;
 }

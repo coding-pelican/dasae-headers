@@ -8,8 +8,8 @@
 // DeferBlock* const block_defer__sentinel   = &block_defer__s_sentinel;
 
 // void block_defer__add(DeferScope* scope, DeferBlock* block) {
-//     debug_assertNonNull(scope);
-//     debug_assertNonNull(block);
+//     debug_assert_nonnull(scope);
+//     debug_assert_nonnull(block);
 //     if (!scope->active) {
 //         mem_destroy(&block);
 //         return;
@@ -27,7 +27,7 @@
 // }
 
 // void block_defer__execute(DeferScope* scope) {
-//     debug_assertNonNull(scope);
+//     debug_assert_nonnull(scope);
 //     if (!scope->active) { return; }
 
 //     printf("Execute defer blocks...\n");
@@ -56,7 +56,7 @@
 // }
 
 // void block_defer__execute(DeferScope* scope) {
-//     debug_assertNonNull(scope);
+//     debug_assert_nonnull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* curr = scope->head;
@@ -80,7 +80,7 @@
 // }
 
 // void block_defer__execute(DeferScope* scope) {
-//     debug_assertNonNull(scope);
+//     debug_assert_nonnull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* curr = scope->head;
@@ -97,7 +97,7 @@
 // }
 
 // void block_defer__execute(DeferScope* scope) {
-//     debug_assertNonNull(scope);
+//     debug_assert_nonnull(scope);
 //     if (!scope->active) { return; }
 
 //     DeferBlock* const begin = scope->head;

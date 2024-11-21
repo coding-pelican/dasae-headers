@@ -3,6 +3,6 @@
 
 
 Nonnull(anyptr) ref_checkNonNull(Nonnull(anyptr) ptr) {
-    debug_assertNonNullFmt(ptr, "Reference cannot be null");
+    debug_assert_nonnull_fmt(ptr, "Reference cannot be null");
     return ptr;
 }

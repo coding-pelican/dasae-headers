@@ -15,6 +15,8 @@
  *          Replaces anyptr with type-safe alternatives.
  */
 
+// TODO: Add bytes ops
+
 #ifndef MEM_EXPT_INCLUDED
 #define MEM_EXPT_INCLUDED (1)
 #if defined(__cplusplus)

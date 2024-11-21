@@ -7,19 +7,17 @@
  * @updated 2024-11-06 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/claim
- * @prefix  claim_assert_static_msg
+ * @prefix  claim_assert_static
  *
  * @brief   Header of some software
  * @details Some detailed explanation
  */
-
 
 #ifndef CLAIM_ASSERT_STATIC_INCLUDED
 #define CLAIM_ASSERT_STATIC_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -60,7 +58,6 @@ extern "C" {
 #endif
 
 #endif
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

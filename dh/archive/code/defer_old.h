@@ -99,7 +99,7 @@ typedef struct DeferScope {
     } while (false)
 
 #define block_defer__execute(scope) ({                              \
-    debug_assertNonNull(scope);                                     \
+    debug_assert_nonnull(scope);                                    \
     if (!(scope)->active) { return; }                               \
                                                                     \
     printf("Execute defer blocks...\n");                            \

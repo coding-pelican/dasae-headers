@@ -4,62 +4,61 @@
  * @file    debug_assert.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-02 (date of creation)
- * @updated 2024-11-02 (date of last update)
+ * @updated 2024-11-21 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/debug
- * @prefix  debug
+ * @prefix  debug_assert
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Source for debug assertion checks
+ * @details Implementation of debug assertion functions
  */
-
 
 /*========== Includes =======================================================*/
 
-#include "dh/debug/assert.h" /* For `debug_break()` */
-#include "dh/debug/common.h"
+#include "dh/debug/cfg.h"
+#include "dh/debug/assert.h"
 
-#include <stdarg.h> /* For `va_list`, `va_start()`, `va_end()` */
-#include <stdio.h>  /* For `fprintf()`, `stderr` */
+#include <stdarg.h> /* For va_list, va_start(), va_end() */
+#include <stdio.h>  /* For fprintf() */
 
 /*========== Extern Function Implementations ================================*/
 
-void debug__assertFail(const char* expr, const char* func, const char* file, i32 line) {
+void debug_assert__fail(const char* expr, const char* func, const char* file, i32 line) {
     ignore fprintf(
-        stderr,
-        "Assertion failed: %s, in function %s, at file %s, line %d\n",
+        DEBUG_OUTPUT,
+        DEBUG_ASSERT_MSG_FORMAT,
         expr,
         func,
         file,
         line
     );
 
-    debug_break();
+    DEBUG_BREAK();
 }
 
-void debug__assertFailFmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
+void debug_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
     ignore fprintf(
-        stderr,
-        "Assertion failed: %s\n",
+        DEBUG_OUTPUT,
+        DEBUG_ASSERT_FMT_MSG_FORMAT,
         expr
     );
 
     va_list args = null;
     va_start(args, fmt);
     ignore vfprintf(
-        stderr,
+        DEBUG_OUTPUT,
         fmt,
         args
     );
     va_end(args);
 
     ignore fprintf(
-        stderr,
-        "\nin function %s, at file %s, line %d\n",
+        DEBUG_OUTPUT,
+        DEBUG_ASSERT_FMT_LOC_FORMAT,
         func,
         file,
         line
     );
 
-    debug_break();
+    DEBUG_BREAK();
 }

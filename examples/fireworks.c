@@ -357,21 +357,21 @@ Particle* Particle_init(Particle* const p, f64 x, f64 y, f64 width, f64 height, 
 }
 
 Particle* Particle_withSpeed(Particle* const p, f64 x, f64 y) {
-    debug_assertNonNull(p);
+    debug_assert_nonnull(p);
     p->speed[0] = x;
     p->speed[1] = y;
     return p;
 }
 
 Particle* Particle_withAcceleration(Particle* const p, f64 x, f64 y) {
-    debug_assertNonNull(p);
+    debug_assert_nonnull(p);
     p->acceleration[0] = x;
     p->acceleration[1] = y;
     return p;
 }
 
 Particle* Particle_withFading(Particle* const p, f64 fading) {
-    debug_assertNonNull(p);
+    debug_assert_nonnull(p);
     p->fading = fading;
     return p;
 }
@@ -382,7 +382,7 @@ bool Particle_isDead(const Particle* const p) {
 }
 
 void Particle_update(Particle* const p, f64 delta) {
-    debug_assertNonNull(p);
+    debug_assert_nonnull(p);
     if (Particle_isDead(p)) { return; }
 
     p->speed[0] += p->acceleration[0] * delta;
@@ -395,7 +395,7 @@ void Particle_update(Particle* const p, f64 delta) {
 }
 
 void Particle_render(const Particle* const p, Canvas* const canvas, f64 delta) {
-    debug_assertNonNull(p);
+    debug_assert_nonnull(p);
     if (Particle_isDead(p)) { return; }
 
     const Color render_color = Color_fromOpaque(
