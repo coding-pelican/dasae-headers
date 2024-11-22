@@ -13,14 +13,12 @@
  * @details Some detailed explanation
  */
 
-
 // TODO: Change lambda usage
 #ifndef LAMBDA_INCLUDED
 #define LAMBDA_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Macros and Definitions =========================================*/
 
@@ -44,7 +42,6 @@ extern "C" {
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

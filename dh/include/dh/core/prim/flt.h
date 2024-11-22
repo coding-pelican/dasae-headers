@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_FLTS_INCLUDED
 #define CORE_PRIM_FLTS_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -59,7 +57,6 @@ typedef double_t f64;
 // #define f128_limit_min (FLT128_MIN)
 // #define f128_limit_max (FLT128_MAX)
 // #define f128_eps      (FLT128_EPSILON)
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_SWITCH_INCLUDED
 #define CORE_PRIM_SWITCH_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -54,7 +52,6 @@ extern "C" {
 #define IMPL_default_return(_Expr) \
     default:                       \
         return
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -4,7 +4,6 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 #include "dh/builtin.h"
@@ -62,7 +61,6 @@ extern "C" {
 #define IMPL_literal(_T, _Inital...) \
     (_T) { _Inital }
 #endif
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

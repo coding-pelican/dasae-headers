@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_INCLUDED
 #define TIME_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -33,7 +31,6 @@ extern "C" {
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 }

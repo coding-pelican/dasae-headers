@@ -1,45 +1,46 @@
+/**
+ * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ *
+ * @file    comp.h
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2024-11-03 (date of creation)
+ * @updated 2024-11-22 (date of last update)
+ * @version v1.0.0
+ * @ingroup dasae-headers(dh)/builtin
+ * @prefix  NONE
+ *
+ * @brief   Compiler-specific configurations and optimizations
+ * @details Provides compiler-specific inline directives and optimizations based on detected environment
+ */
+
 #ifndef BUILTIN_COMP_INCLUDED
 #define BUILTIN_COMP_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "arch_cfg.h"
+#include "comp_cfg.h"
+#include "lang_cfg.h"
+#include "pltf_cfg.h"
 
-/* Detect compiler and language standard */
-#if defined(__cplusplus)
+/* Inline Definitions Based on Language Mode */
+#if BUILTIN_LANG_MODE_CPP
 /* C++ always supports 'inline' */
 #define static_inline static inline
 #define extern_inline inline
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#elif BUILTIN_LANG_C_99
 /* C99 or later */
 #define static_inline static inline
 #define extern_inline inline
-#elif defined(_MSC_VER)
-/* Microsoft Visual Studio */
-#define static_inline static __inline
-#define extern_inline __inline
-#elif defined(__GNUC__) || defined(__clang__)
-/* GNU C and Clang support 'inline' */
-#define static_inline static inline
-#define extern_inline inline
 #else
-/* Fallback for compilers without 'inline' */
-#define static_inline static
-#define extern_inline
+/* Use compiler-specific inline directives */
+#define static_inline BUILTIN_COMP_INLINE static
+#define extern_inline BUILTIN_COMP_INLINE
 #endif
 
-/* Force inline for performance-critical functions */
-#if defined(_MSC_VER)
-/* Microsoft Visual Studio */
-#define force_inline __forceinline
-#elif defined(__GNUC__) || defined(__clang__)
-/* GNU C and Clang support 'inline' */
-#define force_inline inline __attribute__((always_inline))
-#else
-/* Fallback for compilers without 'static_inline' */
-#define force_inline static_inline
-#endif
-
+/* Force Inline Definition */
+#define force_inline BUILTIN_COMP_FORCE_INLINE
 
 #if defined(__cplusplus)
 } /* extern "C" */

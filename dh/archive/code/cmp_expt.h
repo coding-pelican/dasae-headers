@@ -24,7 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core.h"
-#include "unreachable.h"
+#include "claim/unreachable.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -106,7 +106,7 @@ static inline cmp_Ordering cmp_Ordering_reverse(cmp_Ordering ord) {
         match(cmp_Ordering_EQUAL) cmp_Ordering_EQUAL;
         match(cmp_Ordering_GREATER) cmp_Ordering_LESS;
     }
-    unreachable_msg("Invalid Ordering value in reverse()");
+    claim_unreachable_msg("Invalid Ordering value in reverse()");
 }
 
 static inline cmp_Ordering cmp_Ordering_then(cmp_Ordering self, cmp_Ordering other) {
@@ -228,7 +228,7 @@ static inline const anyptr cmp_Ord_max(const cmp_Ord* vt, const anyptr self, con
 
 static inline const anyptr cmp_Ord_clamp(const cmp_Ord* vt, const anyptr self, const anyptr min, const anyptr max, usize size) {
     if (cmp_Ordering_isGt(vt->cmp(min, max, size))) {
-        unreachable_msg("min > max in cmp_Ord_clamp");
+        claim_unreachable_msg("min > max in cmp_Ord_clamp");
     }
     if (cmp_Ordering_isLt(vt->cmp(self, min, size))) { return min; }
     if (cmp_Ordering_isGt(vt->cmp(self, max, size))) { return max; }
@@ -292,7 +292,7 @@ static inline const anyptr cmp_clamp(
     usize        size
 ) {
     if (cmp_Ordering_isGt(cmp(min, max, size))) {
-        unreachable_msg("min > max in cmp_clamp");
+        claim_unreachable_msg("min > max in cmp_clamp");
     }
 
     if (cmp_Ordering_isLt(cmp(self, min, size))) {

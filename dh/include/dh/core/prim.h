@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_INCLUDED
 #define CORE_PRIM_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -29,7 +27,6 @@ extern "C" {
 #include "prim/int.h"
 #include "prim/flt.h"
 #include "prim/ptr.h"
-#include "prim/ref.h"
 #include "prim/null.h"
 
 #include "prim/enum.h"
@@ -60,7 +57,6 @@ extern "C" {
 #define IMPL_prim_ge(_lhs, _rhs...)  ((_lhs) >= (_rhs))
 
 #define IMPL_prim_divisible(_lhs, _rhs...) (((_rhs) == 0) ? 0 : ((_lhs) % (_rhs) == 0))
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

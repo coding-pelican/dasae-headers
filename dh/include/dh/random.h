@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef RANDOM_INCLUDED
 #define RANDOM_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
-
 
 /*========== Includes =======================================================*/
 
@@ -75,7 +73,6 @@ extern f64 Random_range_f64(f64 min, f64 max);
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

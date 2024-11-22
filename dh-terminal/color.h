@@ -126,7 +126,7 @@ Color Hsl_intoColorOpaque(Hsl hsl);
 
 static const Color Color_TRANSPARENT = literal_Color_from(0, 0, 0, 0);
 static const Color Color_BLACK       = literal_Color_fromOpaque(0, 0, 0);
-static const Color Color_WHITE       = literal_Color_fromOpaque(255, 255, 255);
+static const Color Color_white       = literal_Color_fromOpaque(255, 255, 255);
 static const Color Color_RED         = literal_Color_fromOpaque(255, 0, 0);
 static const Color Color_GREEN       = literal_Color_fromOpaque(0, 255, 0);
 static const Color Color_BLUE        = literal_Color_fromOpaque(0, 0, 255);

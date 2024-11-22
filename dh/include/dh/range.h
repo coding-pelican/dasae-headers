@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef RANGE_INCLUDED
 #define RANGE_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -48,7 +46,6 @@ extern bool Range_ne(Range lhs, Range rhs);
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 }

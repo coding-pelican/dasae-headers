@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_PTR_INCLUDED
 #define CORE_PRIM_PTR_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -27,49 +25,60 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-// TODO: Separate Ptr to Ptr and PtrMut
-/* Type pointer*/
-#define Ptr(TYPE)                IMPL_Ptr(TYPE)
-/* Any type pointer */
-#define anyptr                   IMPL_anytype
-/* Convert anyptr to pointer of type TYPE */
-#define castPtr(TYPE, PTR)       IMPL_castPtr(TYPE, PTR)
-/* Access the value pointed to by a pointer */
-#define accessPtr(PTR)           IMPL_accessPtr(PTR)
-/* Access the value pointed to by a pointer of type TYPE */
-#define accessCastPtr(TYPE, PTR) IMPL_accessCastPtr(TYPE, PTR)
+#define rawptr(_T)             \
+    /**                        \
+     * @brief Type raw pointer \
+     */                        \
+    IMPL_rawptr(_T)
 
-/* Normal type */
-#define Val(TYPE) IMPL_Val(TYPE)
-/* Address of a variable */
-#define addr(VAR) IMPL_addr(VAR)
+#define rawaddr(_var)              \
+    /**                            \
+     * @brief Variable raw address \
+     */                            \
+    IMPL_rawaddr(_var)
 
-#define rawptr(_T) IMPL_rawptr(_T)
+#define anyptr                 \
+    /**                        \
+     * @brief Any type pointer \
+     */                        \
+    IMPL_anyptr
+
+#define castPtr(_T, _raw)                          \
+    /**                                            \
+     * @brief Convert anyptr to pointer of type _T \
+     */                                            \
+    IMPL_castPtr(_T, _raw)
+
+#define accessPtr(_raw)                                \
+    /**                                                \
+     * @brief Access the value pointed to by a pointer \
+     */                                                \
+    IMPL_accessPtr(_raw)
+
+#define accessCastPtr(_T, _raw)                                   \
+    /**                                                           \
+     * @brief Access the value pointed to by a pointer of type _T \
+     */                                                           \
+    IMPL_accessCastPtr(_T, _raw)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_Ptr(TYPE)                TYPE*
-#define IMPL_anytype                  void*
-#define IMPL_castPtr(TYPE, PTR)       (TYPE*)(PTR)
-#define IMPL_accessPtr(PTR)           (*(PTR))
-#define IMPL_accessCastPtr(TYPE, PTR) (*((TYPE*)(PTR)))
+#define IMPL_rawptr(_T)              _T*
+#define IMPL_rawaddr(_var...)        (&(_var))
+#define IMPL_anyptr                  void*
+#define IMPL_castPtr(_T, _raw)       (_T*)(_raw)
+#define IMPL_accessPtr(_raw)         (*(_raw))
+#define IMPL_accessCastPtr(_T, _raw) (*((_T*)(_raw)))
 
-#define IMPL_Val(TYPE)    TYPE
-#define IMPL_addr(VAR...) (&(VAR))
+/*========== Validation Checks ==============================================*/
 
-#define IMPL_rawptr(_T) _T*
-
-
-#if defined(arch_64bit) && arch_64bit
+#if BUILTIN_PLTF_64BIT
 /* 64-bit */
 claim_assert_static_msg(sizeof(anyptr) == 8, "pointer must be 8 bytes on 64-bit");
-#elif defined(arch_32bit) && arch_32bit
+#elif BUILTIN_PLTF_32BIT
 /* 32-bit */
 claim_assert_static_msg(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
-#else
-// #  error "Unknown architecture"
 #endif
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

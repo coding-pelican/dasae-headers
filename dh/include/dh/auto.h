@@ -4,7 +4,6 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 /*========== Macros and Definitions =========================================*/
@@ -52,7 +51,6 @@ extern "C" {
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

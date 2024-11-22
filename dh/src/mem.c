@@ -1,211 +1,322 @@
-#include "dh/mem.h"
-#include "dh/mem/cfg.h"
-#include "dh/debug/cfg.h"
-#include "dh/debug/assert.h"
+/**
+ * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ *
+ * @file    mem.c
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2024-11-20 (date of creation)
+ * @updated 2024-11-21 (date of last update)
+ * @version v1.0.0
+ * @ingroup dasae-headers(dh)
+ * @prefix  mem
+ *
+ * @brief   Memory management with Zig-style semantics
+ * @details Provides type-safe memory management with clear separation between
+ *          single-element pointers (Ptr) and multi-element views (Slice).
+ *          Replaces anyptr with type-safe alternatives.
+ */
 
-#include <stdio.h>
+#include "dh/claim.h"
+#include "dh/mem.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
+/*========== Default Allocator Implementation ==============================*/
 
-#if defined(MEM_TRACE_ENABLED) && MEM_TRACE_ENABLED
-
-
-// Global memory tracking list
-static mem_Info* mem_s_info_list = null;
-
-
-// Register atexit handler for memory leak detection
-static void __attribute__((constructor)) mem_initInfoList(void);
-static void __attribute__((destructor))  mem_finiInfoList(void);
-// Memory tracking functions
-static void                              mem_addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line);
-static void                              mem_removeInfo(anyptr target);
-static void                              mem_printInfoMemoryLeakTrace(void);
-
-
-// Register atexit handler for memory leak detection
-static void __attribute__((constructor)) mem_initInfoList(void) {
-    ignore atexit(mem_printInfoMemoryLeakTrace);
-}
-
-static void __attribute__((destructor)) mem_finiInfoList(void) {
-    mem_printInfoMemoryLeakTrace();
-
-    mem_Info* current = mem_s_info_list;
-    mem_Info* next    = null;
-
-    while (current) {
-        next = current->next;
-        free(current);
-        current = next;
-    }
-
-    mem_s_info_list = null;
-}
-
-// Memory tracking functions
-static void mem_addInfo(anyptr allocated, usize size, const char* func, const char* file, i32 line) {
-    mem_Info* info     = malloc(sizeof(mem_Info));
-    info->ptr          = allocated;
-    info->size         = size;
-    info->func         = func;
-    info->file         = file;
-    info->line         = line;
-    info->alloc_time   = time(null);
-    info->dealloc_time = 0;
-    info->ref_count    = 1;
-    info->next         = mem_s_info_list;
-    mem_s_info_list    = info;
-}
-
-static void mem_removeInfo(anyptr target) {
-    mem_Info** current = &mem_s_info_list;
-    while (*current) {
-        if ((*current)->ptr == target) {
-            (*current)->dealloc_time = time(null);
-            (*current)->ref_count--;
-
-            // Remove if no references remain
-            if ((*current)->ref_count <= 0) {
-                mem_Info* to_remove = *current;
-                *current            = to_remove->next;
-                free(to_remove);
-            }
-            return;
-        }
-        current = &(*current)->next;
-    }
-}
-
-static void mem_printInfoMemoryLeakTrace() {
-    mem_Info* current = mem_s_info_list;
-    while (current) {
-        if (0 < current->ref_count) {
-            ignore fprintf(stderr, "Memory Leak Detected!\n");
-            ignore fprintf(stderr, "Allocated in %s at %s:%d\n", current->func, current->file, current->line);
-            ignore fprintf(stderr, "Size: %zu bytes\n", current->size);
-            ignore fprintf(stderr, "Allocation time: %s", ctime(&current->alloc_time));
-            ignore fprintf(stderr, "Reference count: %d\n\n", current->ref_count);
-        }
-        current = current->next;
-    }
-}
-
-// Debug memory management functions
-anyptr mem__allocate(usize size, const char* func, const char* file, i32 line) {
-    anyptr allocated = malloc(size);
-    debug_assert_nonnull_fmt(allocated, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
-    mem_addInfo(allocated, size, func, file, line);
-    return allocated;
-}
-
-anyptr mem__allocateCleared(usize size, usize count, const char* func, const char* file, i32 line) {
-    anyptr allocated = calloc(count, size);
-    debug_assert_nonnull_fmt(allocated, "Memory allocation(calloc) failed in %s at %s:%d\n", func, file, line);
-    mem_addInfo(allocated, count * size, func, file, line);
-    return allocated;
-}
-
-anyptr mem__allocateWith(usize size, anyptr src, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(src, "null in allocation(memcpy) from %s at %s:%d\n", func, file, line);
-    anyptr dest = mem__allocate(size, func, file, line);
-    debug_assert_nonnull_fmt(dest, "Memory allocation(malloc) failed in %s at %s:%d\n", func, file, line);
-    anyptr result = mem__copy(dest, src, size, func, file, line);
-    debug_assert_nonnull_fmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
-    return result;
-}
-
-anyptr mem__reallocate(anyptr ptr, usize size, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(ptr, "null in reallocation(realloc) from %s at %s:%d\n", func, file, line);
-    if (!ptr) {
-        return mem__allocate(size, func, file, line);
-    }
-
-    anyptr reallocated = realloc(ptr, size);
-    debug_assert_nonnull_fmt(reallocated, "Memory reallocation failed in %s at %s:%d\n", func, file, line);
-
-    // Update tracking info
-    mem_Info* current = mem_s_info_list;
-    while (current) {
-        if (current->ptr == ptr) {
-            current->ptr  = reallocated;
-            current->size = size;
-            break;
-        }
-        current = current->next;
-    }
-
-    return reallocated;
-}
-
-void mem__deallocate(anyptr* ptr_addr, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
-    debug_assert_nonnull_fmt(*ptr_addr, "null in deallocation(free) from %s at %s:%d\n", func, file, line);
-    mem_removeInfo(*ptr_addr);
-    free(*ptr_addr);
-    *ptr_addr = null;
-}
-
-anyptr mem__set(anyptr dest, i32 val, usize size, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(dest, "null in set(memset) from %s at %s:%d\n", func, file, line);
-    anyptr result = memset(dest, val, size);
-    debug_assert_nonnull_fmt(result, "Memory set(memset) failed in %s at %s:%d\n", func, file, line);
-    return result;
-}
-
-// Only update reference counts for tracked memory
-anyptr mem__copy(anyptr dest, const anyptr src, usize size, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(dest, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
-    debug_assert_nonnull_fmt(src, "null in copy(memcpy) from %s at %s:%d\n", func, file, line);
-    anyptr result = memcpy(dest, src, size);
-    debug_assert_nonnull_fmt(result, "Memory copy(memcpy) failed in %s at %s:%d\n", func, file, line);
-    return result;
-}
-
-// Don't create new tracking entry, just update existing ones
-anyptr mem__move(anyptr dest, anyptr src, usize size, const char* func, const char* file, i32 line) {
-    debug_assert_nonnull_fmt(dest, "null in move(memmove) from %s at %s:%d\n", func, file, line);
-    debug_assert_nonnull_fmt(src, "null in move(memmove) from %s at %s:%d\n", func, file, line);
-    anyptr result = memmove(dest, src, size);
-    debug_assert_nonnull_fmt(result, "Memory move(memmove) failed in %s at %s:%d\n", func, file, line);
-    return result;
-}
-
-#else
-
-anyptr mem__allocate(usize size) {
+static anyptr mem_general_allocRaw(usize size) {
     return malloc(size);
 }
 
-anyptr mem__allocateCleared(usize count, usize size) {
-    return calloc(count, size);
+static void mem_general_freeRaw(anyptr raw) {
+    free(raw);
 }
 
-anyptr mem__allocateWith(usize size, anyptr src) {
-    return mem__copy(mem__allocate(size), src, size);
+static anyptr mem_general_reallocRaw(anyptr raw, usize size) {
+    return realloc(raw, size);
 }
 
-anyptr mem__reallocate(anyptr ptr, usize size) {
-    return realloc(ptr, size);
+const Allocator mem_general = {
+    .allocRaw   = mem_general_allocRaw,
+    .freeRaw    = mem_general_freeRaw,
+    .reallocRaw = mem_general_reallocRaw
+};
+
+/*========== Core Memory Operations ========================================*/
+
+Ptr mem_createSize(const Allocator* alloc, usize elem_size) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->allocRaw);
+
+    if (elem_size == 0) {
+        return Ptr_null;
+    }
+
+    anyptr raw = alloc->allocRaw(elem_size);
+    return Ptr_from(raw, elem_size);
 }
 
-void mem__deallocate(anyptr* ptr_addr) {
-    free(*ptr_addr);
-    *ptr_addr = null;
+void mem_destroy(const Allocator* alloc, Ptr ptr) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->freeRaw);
+
+    if (!Ptr_isNull(ptr)) {
+        alloc->freeRaw(ptr.raw);
+    }
 }
 
-anyptr mem__set(anyptr dest, i32 val, usize size) {
-    return memset(dest, val, size);
+Slice mem_allocSize(const Allocator* alloc, usize elem_size, usize count) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->allocRaw);
+
+    if (elem_size == 0 || count == 0) {
+        return Slice_null;
+    }
+
+    anyptr raw = alloc->allocRaw(elem_size * count);
+    return Slice_fromRaw(raw, elem_size, count);
 }
 
-anyptr mem__copy(anyptr dest, const anyptr src, usize size) {
-    return memcpy(dest, src, size);
+void mem_free(const Allocator* alloc, Slice slice) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->freeRaw);
+
+    if (!Slice_isNull(slice)) {
+        alloc->freeRaw(slice.raw);
+    }
 }
 
-anyptr mem__move(anyptr dest, anyptr src, usize size) {
-    return memmove(dest, src, size);
+Slice mem_reallocSize(const Allocator* alloc, Slice slice, usize elem_size, usize new_count) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->reallocRaw);
+
+    if (Slice_isNull(slice) || elem_size == 0) {
+        return Slice_null;
+    }
+
+    if (new_count == 0) {
+        mem_free(alloc, slice);
+        return Slice_null;
+    }
+
+    anyptr new_raw = alloc->reallocRaw(slice.raw, elem_size * new_count);
+    return Slice_fromRaw(new_raw, elem_size, new_count);
 }
 
-#endif
+anyptr mem_allocRaw(const Allocator* alloc, usize size) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->allocRaw);
+    return alloc->allocRaw(size);
+}
+
+void mem_freeRaw(const Allocator* alloc, anyptr raw) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->freeRaw);
+    if (raw != null) {
+        alloc->freeRaw(raw);
+    }
+}
+
+anyptr mem_reallocRaw(const Allocator* alloc, anyptr raw, usize new_size) {
+    claim_assert_nonnull(alloc);
+    claim_assert_nonnull(alloc->reallocRaw);
+    return alloc->reallocRaw(raw, new_size);
+}
+
+/*========== Memory Manipulation ===========================================*/
+
+// TODO: Separate these functions with Ptr and Slice
+
+void mem_copySize(Ptr dest, Ptr src, usize size) {
+    if (Ptr_isNull(dest) || Ptr_isNull(src)) {
+        return;
+    }
+    // claim_assert(Ptr_hasMinSize(dest, size));
+    // claim_assert(Ptr_hasMinSize(src, size));
+    mem_copyRaw(dest.raw, src.raw, size);
+}
+
+void mem_moveSize(Ptr dest, Ptr src, usize size) {
+    if (Ptr_isNull(dest) || Ptr_isNull(src)) {
+        return;
+    }
+    // claim_assert(Ptr_hasMinSize(dest, size));
+    // claim_assert(Ptr_hasMinSize(src, size));
+    mem_moveRaw(dest.raw, src.raw, size);
+}
+
+void mem_setSize(Ptr ptr, i32 val, usize size) {
+    if (Ptr_isNull(ptr)) {
+        return;
+    }
+    // claim_assert(Ptr_hasMinSize(ptr, size));
+    mem_setRaw(ptr.raw, val, size);
+}
+
+i32 mem_cmpSize(Ptr lhs, Ptr rhs, usize size) {
+    if (Ptr_isNull(lhs) || Ptr_isNull(rhs)) {
+        return 0;
+    }
+    // claim_assert(Ptr_hasMinSize(lhs, size));
+    // claim_assert(Ptr_hasMinSize(rhs, size));
+    return mem_cmpRaw(lhs.raw, rhs.raw, size);
+}
+
+void mem_copyRaw(anyptr dest, anyptr src, usize size) {
+    if (dest && src && size > 0) {
+        memcpy(dest, src, size);
+    }
+}
+
+void mem_moveRaw(anyptr dest, anyptr src, usize size) {
+    if (dest && src && size > 0) {
+        memmove(dest, src, size);
+    }
+}
+
+void mem_setRaw(anyptr raw, i32 val, usize size) {
+    if (raw && size > 0) {
+        memset(raw, val, size);
+    }
+}
+
+i32 mem_cmpRaw(anyptr lhs, anyptr rhs, usize size) {
+    if (!lhs || !rhs) {
+        return 0;
+    }
+    return memcmp(lhs, rhs, size);
+}
+
+/*========== Ptr Operations ==============================================*/
+
+Ptr Ptr_from(anyptr raw, usize elem_size) {
+    if (!raw || elem_size == 0) {
+        return Ptr_null;
+    }
+    return (Ptr){ raw, elem_size };
+}
+
+bool Ptr_isNull(Ptr p) {
+    return p.raw == null;
+}
+
+usize Ptr_elemSize(Ptr p) {
+    return p.elem_size;
+}
+
+anyptr Ptr_raw(Ptr p) {
+    return p.raw;
+}
+
+u8* Ptr_bytes(Ptr p) {
+    return (u8*)p.raw;
+}
+
+Ptr Ptr_offset(Ptr p, usize count) {
+    if (Ptr_isNull(p)) {
+        return Ptr_null;
+    }
+    return Ptr_from((u8*)p.raw + (count * p.elem_size), p.elem_size);
+}
+
+Ptr Ptr_byteOffset(Ptr p, usize byte_offset) {
+    if (Ptr_isNull(p)) {
+        return Ptr_null;
+    }
+    return Ptr_from((u8*)p.raw + byte_offset, p.elem_size);
+}
+
+bool Ptr_hasMinSize(Ptr p, usize required_size) {
+    return !Ptr_isNull(p) && p.elem_size >= required_size;
+}
+
+/*========== Slice Operations ===========================================*/
+
+Slice Slice_from(Ptr ptr, usize len) {
+    if (Ptr_isNull(ptr)) {
+        return Slice_null;
+    }
+    return (Slice){ .ptr = ptr, .len = len };
+}
+
+Slice Slice_fromRaw(anyptr raw, usize elem_size, usize len) {
+    return Slice_from(Ptr_from(raw, elem_size), len);
+}
+
+bool Slice_isNull(Slice sl) {
+    return Ptr_isNull(sl.ptr);
+}
+
+bool Slice_isEmpty(Slice sl) {
+    return sl.len == 0;
+}
+
+usize Slice_len(Slice sl) {
+    return sl.len;
+}
+
+usize Slice_elemSize(Slice sl) {
+    return sl.ptr.elem_size;
+}
+
+Ptr Slice_ptr(Slice sl) {
+    return sl.ptr;
+}
+
+anyptr Slice_raw(Slice sl) {
+    return sl.raw;
+}
+
+u8* Slice_bytes(Slice sl) {
+    return (u8*)sl.raw;
+}
+
+anyptr Slice_at(Slice sl, usize idx) {
+    if (Slice_isNull(sl) || idx >= sl.len) {
+        return null;
+    }
+    return (u8*)sl.raw + (idx * sl.elem_size);
+}
+
+u8* Slice_byteAt(Slice sl, usize byte_offset) {
+    if (Slice_isNull(sl)) {
+        return null;
+    }
+    return (u8*)sl.raw + byte_offset;
+}
+
+Slice Slice_subslice(Slice sl, usize start, usize end) {
+    if (start >= sl.len || end > sl.len || start > end) {
+        return Slice_null;
+    }
+    return Slice_fromRaw(
+        (u8*)sl.raw + (start * sl.elem_size),
+        sl.elem_size,
+        end - start
+    );
+}
+
+Slice Slice_byteSlice(Slice sl, usize start, usize end) {
+    usize total_size = sl.len * sl.elem_size;
+    if (start >= total_size || end > total_size || start > end) {
+        return Slice_null;
+    }
+    return Slice_fromRaw(
+        (u8*)sl.raw + start,
+        sl.elem_size,
+        (end - start) / sl.elem_size
+    );
+}
+
+Slice Slice_prefix(Slice sl, usize end) {
+    return Slice_subslice(sl, 0, end);
+}
+
+Slice Slice_suffix(Slice sl, usize start) {
+    return Slice_subslice(sl, start, sl.len);
+}
+
+/*========== Type Checking ==============================================*/
+
+bool mem_isTypeSize(usize elem_size, usize type_size) {
+    return elem_size == type_size;
+}

@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef MEM_CFG_INCLUDED
 #define MEM_CFG_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
-
 
 /*========== Includes =======================================================*/
 
@@ -34,7 +32,6 @@ extern "C" {
 #endif
 
 #define mem_trace_enabled (MEM_TRACE_ENABLED)
-
 
 #if defined(__cplusplus)
 }

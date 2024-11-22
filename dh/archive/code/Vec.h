@@ -24,47 +24,33 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-#include "dh/gen_expt.h"
+#include "dh/mem.h"
 
 /*========== Macros and Definitions =========================================*/
 
-// TODO: Consider fat pointer and expanded member visibility scope of struct
-
-// typedef struct ds_Vec {
-//     struct_GenericBase(
-//         ds_Vec,
-//         usize cap;
-//         usize elem_size;
-//     );
-//     usize len;
-//     union {
-//         u8*    bytes;
-//         anyptr data;
-//     };
-// } ds_Vec;
-
 // TODO: Add Byte-Wise Cmp and Ops
-// TODO: Replace 'void*' to expt_SizedPtr
-// TODO: Use expt_SizedPtr insted of elem_size with bytes-data's union
 
-typedef_struct(ds_Vec) {
-    usize elem_size;
-    usize cap;
-    usize len;
+typedef struct ds_Vec {
     union {
-        u8*    bytes;
-        anyptr data;
+        Slice slice;
+        struct {
+            Ptr   ptr;
+            usize cap;
+        };
     };
-};
+    usize len;
+} ds_Vec;
+#define ds_Vec(_T) ds_Vec
 
-#define ds_Vec(_T) \
-    ds_Vec
 
 /*========== Extern Function Prototypes =====================================*/
 
-#define ds_Vec_init(_T, _vec)              ds_Vec__init(_vec, sizeof(_T))
-#define ds_Vec_initWithCap(_T, _vec, _cap) ds_Vec__initWithCap(_vec, sizeof(_T), _cap)
+extern ds_Vec* ds_Vec_initSize(ds_Vec* vec, usize elem_size, mem_Allocator* alloc);
+extern ds_Vec* ds_Vec_initSizeWithCap(ds_Vec* vec, usize elem_size, mem_Allocator* alloc, usize cap);
 extern ds_Vec* ds_Vec_fini(ds_Vec* vec);
+
+#define ds_Vec_init(_vec, _T, _alloc)              ds_Vec_initSize(_vec, sizeof(_T), _alloc)
+#define ds_Vec_initWithCap(_vec, _T, _alloc, _cap) ds_Vec_initSizeWithCap(_vec, sizeof(_T), _alloc, _cap)
 
 extern usize ds_Vec_cap(const ds_Vec* vec);
 extern usize ds_Vec_len(const ds_Vec* vec);
@@ -106,9 +92,6 @@ extern bool ds_Vec_insert(ds_Vec* vec, usize index, const anyptr elem);
 extern bool ds_Vec_removeOrdered(ds_Vec* vec, usize index, anyptr const out_elem);
 extern bool ds_Vec_removeSwap(ds_Vec* vec, usize index, anyptr const out_elem);
 
-extern ds_Vec* ds_Vec__init(ds_Vec* vec, usize elem_size);
-extern ds_Vec* ds_Vec__initWithCap(ds_Vec* vec, usize elem_size, usize cap);
-
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define ds_Vec_foreach(_T, _iter, vec)                    \
     for (                                                 \
@@ -118,39 +101,13 @@ extern ds_Vec* ds_Vec__initWithCap(ds_Vec* vec, usize elem_size, usize cap);
     )
 // NOLINTEND(bugprone-macro-parentheses)
 
-
-// Define the base structure of Vec's extra members
-#define ds_Vec_fields(T)  \
-    usize elem_size;      \
-    usize cap;            \
-    usize len;            \
-    union {               \
-        rawptr(u8) bytes; \
-        rawptr(T) data;   \
-    };
-
-// Generate all Vec method wrappers
-#define ds_Vec_methods(BaseType, T, Alias)                                                                      \
-    /* Capacity methods */                                                                                      \
-    gen_wrapFn(BaseType, T, Alias, cap, (const rawptr(Alias) vec), (vec->Base), usize);                         \
-    gen_wrapFn(BaseType, T, Alias, len, (const rawptr(Alias) vec), (vec->Base), usize);                         \
-    gen_wrapFn(BaseType, T, Alias, isEmpty, (const rawptr(Alias) vec), (vec->Base), bool);                      \
-    gen_wrapFn(BaseType, T, Alias, isFull, (const rawptr(Alias) vec), (vec->Base), bool);                       \
-                                                                                                                \
-    /* Data access methods with type conversion */                                                              \
-    gen_wrapFnConvert(BaseType, T, Alias, data, (const rawptr(Alias) vec), (vec->Base), const rawptr(T));       \
-    gen_wrapFnConvert(BaseType, T, Alias, mut_data, (rawptr(Alias) vec), (vec->Base), rawptr(T));               \
-    gen_wrapFnConvert(BaseType, T, Alias, dataOrNull, (const rawptr(Alias) vec), (vec->Base), const rawptr(T)); \
-    gen_wrapFnConvert(BaseType, T, Alias, mut_dataOrNull, (rawptr(Alias) vec), (vec->Base), rawptr(T));
-
-// Main macro to generate a type-safe Vec wrapper
-#define gen_type_for(BaseType, T, Alias) \
-    gen_Type(BaseType, T, Alias);        \
-    gen_wrapFnAll(BaseType, T, Alias)
-
 /* Built-in types */
 typedef ds_Vec(anyptr) ds_Vec_anyptr;
+typedef ds_Vec(Ptr) ds_Vec_Ptr;
+typedef ds_Vec(Slice) ds_Vec_Slice;
+
 typedef ds_Vec(bool) ds_Vec_bool;
+typedef ds_Vec(char) ds_Vec_char;
 
 typedef ds_Vec(u8) ds_Vec_u8;
 typedef ds_Vec(u16) ds_Vec_u16;
@@ -169,26 +126,55 @@ typedef ds_Vec(f64) ds_Vec_f64;
 
 /*========== Usage Example ==============================================*/
 
-// Generate a type-safe vector of integers
-gen_type_for(ds_Vec, i32, i32s);
+// // Define the base structure of Vec's extra members
+// #define ds_Vec_fields(T)  \
+//     usize elem_size;      \
+//     usize cap;            \
+//     usize len;            \
+//     union {               \
+//         rawptr(u8) bytes; \
+//         rawptr(T) data;   \
+//     };
 
-// Use it with type safety
-void example(void) {
-    i32s vec;
+// // Generate all Vec method wrappers
+// #define ds_Vec_methods(BaseType, T, Alias)                                                                      \
+//     /* Capacity methods */                                                                                      \
+//     gen_wrapFn(BaseType, T, Alias, cap, (const rawptr(Alias) vec), (vec->Base), usize);                         \
+//     gen_wrapFn(BaseType, T, Alias, len, (const rawptr(Alias) vec), (vec->Base), usize);                         \
+//     gen_wrapFn(BaseType, T, Alias, isEmpty, (const rawptr(Alias) vec), (vec->Base), bool);                      \
+//     gen_wrapFn(BaseType, T, Alias, isFull, (const rawptr(Alias) vec), (vec->Base), bool);                       \
+//                                                                                                                 \
+//     /* Data access methods with type conversion */                                                              \
+//     gen_wrapFnConvert(BaseType, T, Alias, data, (const rawptr(Alias) vec), (vec->Base), const rawptr(T));       \
+//     gen_wrapFnConvert(BaseType, T, Alias, mut_data, (rawptr(Alias) vec), (vec->Base), rawptr(T));               \
+//     gen_wrapFnConvert(BaseType, T, Alias, dataOrNull, (const rawptr(Alias) vec), (vec->Base), const rawptr(T)); \
+//     gen_wrapFnConvert(BaseType, T, Alias, mut_dataOrNull, (rawptr(Alias) vec), (vec->Base), rawptr(T));
 
-    // Type-safe access
-    i32* data = i32s_mut_data(&vec);
+// // Main macro to generate a type-safe Vec wrapper
+// #define gen_type_for(BaseType, T, Alias) \
+//     gen_Type(BaseType, T, Alias);        \
+//     gen_wrapFnAll(BaseType, T, Alias)
 
-    // Original functions still work
-    ds_Vec_append(&vec.Base[0], &(int){ 42 });
+// // Generate a type-safe vector of integers
+// // gen_type_for(ds_Vec, i32, i32s);
 
-    // Type-safe iteration
-    for (const int* it = i32s_data(&vec);
-         it < i32s_data(&vec) + i32s_len(&vec);
-         ++it) {
-        // Use it...
-    }
-}
+// // Use it with type safety
+// void example(void) {
+//     i32s vec;
+
+//     // Type-safe access
+//     i32* data = i32s_mut_data(&vec);
+
+//     // Original functions still work
+//     ds_Vec_append(&vec.Base[0], &(int){ 42 });
+
+//     // Type-safe iteration
+//     for (const int* it = i32s_data(&vec);
+//          it < i32s_data(&vec) + i32s_len(&vec);
+//          ++it) {
+//         // Use it...
+//     }
+// }
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

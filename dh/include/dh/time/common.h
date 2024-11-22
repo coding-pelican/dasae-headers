@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_COMMON_INCLUDED
 #define TIME_COMMON_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -41,7 +39,6 @@ static const u64 time_SECS_PER_MIN  = 60ull;
 static const u64 time_MINS_PER_HOUR = 60ull;
 static const u64 time_HOURS_PER_DAY = 24ull;
 static const u64 time_DAYS_PER_WEEK = 7ull;
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

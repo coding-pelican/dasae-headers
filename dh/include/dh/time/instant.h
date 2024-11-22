@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_INSTANT_INCLUDED
 #define TIME_INSTANT_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -49,7 +47,6 @@ bool time_Instant_le(time_Instant lhs, time_Instant rhs);
 bool time_Instant_gt(time_Instant lhs, time_Instant rhs);
 bool time_Instant_ge(time_Instant lhs, time_Instant rhs);
 bool time_Instant_isValid(time_Instant ins);
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

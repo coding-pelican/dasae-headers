@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PP_INCLUDED
 #define CORE_PP_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -58,7 +56,6 @@ extern "C" {
 
 #define IMPL_pp_uniqueToken(_Token...) \
     pp_concat(pp_concat3(_, __LINE__, _), _Token)
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

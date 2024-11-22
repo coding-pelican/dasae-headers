@@ -4,7 +4,6 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -41,7 +40,6 @@ extern "C" {
 #define IMPL_debug_only(...)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

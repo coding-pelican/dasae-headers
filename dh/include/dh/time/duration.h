@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_DURATION_INCLUDED
 #define TIME_DURATION_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -93,11 +91,10 @@ bool time_Duration_isZero(time_Duration duration);
     )
 
 static const time_Duration time_Duration_ZERO        = literal_time_Duration_fromNanos(0);
-static const time_Duration time_Duration_SECOND      = literal_time_Duration_fromSecs(1);
+static const time_Duration time_Duration_second      = literal_time_Duration_fromSecs(1);
 static const time_Duration time_Duration_MILLISECOND = literal_time_Duration_fromMillis(1);
 static const time_Duration time_Duration_MICROSECOND = literal_time_Duration_fromMicros(1);
 static const time_Duration time_Duration_NANOSECOND  = literal_time_Duration_fromNanos(1);
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

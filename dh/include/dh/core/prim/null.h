@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_NULL_INCLUDED
 #define CORE_PRIM_NULL_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -84,7 +82,6 @@ extern "C" {
 #define IMPL_Nonnull(_T)  _T nonnull
 
 #define IMPL_ensureNonNull(_var, ...) ((_var) ? (_var) : (__VA_ARGS__))
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

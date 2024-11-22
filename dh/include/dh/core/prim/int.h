@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_INT_INCLUDED
 #define CORE_PRIM_INT_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -72,7 +70,6 @@ typedef int64_t i64;
 typedef intptr_t isize;
 #define isize_limit_min (INTPTR_MIN)
 #define isize_limit_max (INTPTR_MAX)
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

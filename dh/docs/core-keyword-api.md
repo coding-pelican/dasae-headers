@@ -2,7 +2,7 @@
 
 ## List
 
-- arch_64bit
+- BUILTIN_PLTF_64BIT
 - arch_32bit
 
 - u8

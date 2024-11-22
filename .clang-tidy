@@ -283,7 +283,7 @@ Checks: >
   hicpp-no-assembler,
   hicpp-no-malloc,
   hicpp-noexcept-move,
-  hicpp-signed-bitwise,
+  -hicpp-signed-bitwise,
   hicpp-special-member-functions,
   hicpp-static-assert,
   hicpp-undelegated-constructor,

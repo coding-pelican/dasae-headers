@@ -13,20 +13,16 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_SYS_TIME_INCLUDED
 #define TIME_SYS_TIME_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
 #include "common.h"
-// #include "dh/cmp.h"
-// #include "dh/arith.h"
 
 /*========== Macros and Definitions =========================================*/
 /*
@@ -57,7 +53,7 @@ extern "C" {
  */
 
 time_SysTime time_SysTime_frequency(void);
-f64          time_SysTime_frequency_inv(void);
+f64          time_SysTime_frequencyInv(void);
 time_SysTime time_SysTime_value(void);
 time_SysTime time_SysTime_offset(void);
 time_SysTime time_SysTime_now(void);
@@ -82,14 +78,13 @@ bool time_SysTime_gt(time_SysTime lhs, time_SysTime rhs);
 bool time_SysTime_ge(time_SysTime lhs, time_SysTime rhs);
 
 void time_SysTime_sleep(time_Duration duration);
-void time_SysTime_sleep_s(u64 secs);
-void time_SysTime_sleep_s_f64(f64 secs);
-void time_SysTime_sleep_ms(u64 millis);
-void time_SysTime_sleep_us(u64 micros);
-void time_SysTime_sleep_ns(u32 nanos);
+void time_SysTime_sleepSecs(u64 secs);
+void time_SysTime_sleepSecs_f64(f64 secs);
+void time_SysTime_sleepMillis(u64 millis);
+void time_SysTime_sleepMicros(u64 micros);
+void time_SysTime_sleepNanos(u32 nanos);
 
 static const time_SysTime time_SysTime_UNIX_EPOCH = make(time_SysTime);
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

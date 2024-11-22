@@ -4,9 +4,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 #include "dh/core/cfg.h"
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,6 +1,5 @@
 #include "dh/debug/assert.h"
 
-
 int main(void) {
     int x = 5;
 

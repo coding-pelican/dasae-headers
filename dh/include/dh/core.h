@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_INCLUDED
 #define CORE_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -49,10 +47,10 @@ extern "C" {
 
 /*========== Macros Implementation ==========================================*/
 
-// NOLINTBEGIN
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define IMPL_swap(_lhs, _rhs, _tmp, _T, _lhs_var, _rhs_var) pp_func( \
-    rawptr(_T) _lhs = addr(_lhs_var);                                \
-    rawptr(_T) _rhs = addr(_rhs_var);                                \
+    rawptr(_T) _lhs = rawaddr(_lhs_var);                             \
+    rawptr(_T) _rhs = rawaddr(_rhs_var);                             \
     _T _tmp         = accessPtr(_lhs);                               \
     accessPtr(_lhs) = accessPtr(_rhs);                               \
     accessPtr(_rhs) = _tmp;                                          \
@@ -65,13 +63,12 @@ extern "C" {
         _name < _end;                                                                       \
         ++_name                                                                             \
     )
-// NOLINTEND
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST
 #endif /* UNIT_TEST */
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

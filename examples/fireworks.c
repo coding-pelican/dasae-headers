@@ -430,7 +430,7 @@ typedef struct Firework {
 
 Firework* Firework_init(Firework* const f, i64 x, i64 y, Color effect_base_color) {
     Particle* const rocket = mem_create(Particle);
-    Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_WHITE);
+    Particle_init(rocket, (f64)x, (f64)y, 1, 3, Color_white);
     Particle_withSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
     Particle_withAcceleration(rocket, 0.0, 0.02);
 

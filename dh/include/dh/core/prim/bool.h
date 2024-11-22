@@ -13,13 +13,11 @@
  * @details Provides boolean type definitions and operations for C/C++ compatibility
  */
 
-
 #ifndef CORE_PRIM_BOOL_INCLUDED
 #define CORE_PRIM_BOOL_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -61,7 +59,6 @@ typedef unsigned char _Bool;
 
 /* Size verification */
 claim_assert_static_msg(sizeof(bool) == 1, "bool must be 1 byte");
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

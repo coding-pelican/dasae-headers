@@ -13,13 +13,11 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef TIME_CFG_INCLUDED
 #define TIME_CFG_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 /*========== Includes =======================================================*/
 
@@ -49,7 +47,6 @@ typedef time_SysTimeWindows time_SysTimePlatform;
 typedef struct timespec  time_SysTimeUnix;
 typedef time_SysTimeUnix time_SysTimePlatform;
 #endif
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -13,92 +13,42 @@
  * @details Some detailed explanation
  */
 
-
 #ifndef CORE_PRIM_STRUCT_INCLUDED
 #define CORE_PRIM_STRUCT_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "../pp.h"
+#include "dh/core/pp.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define typedef_struct(_Alias) IMPL_typedef_struct(_Alias)
-#define IMPL_typedef_struct(_Alias) \
-    typedef struct _Alias _Alias;   \
-    struct _Alias
+#define make(_T)                 IMPL_make(_T)
+#define makeWith(_T, _Inital...) IMPL_makeWith(_T, _Inital)
 
-#define make(TYPE)              IMPL_make(TYPE)
-#define makeWith(TYPE, INIT...) IMPL_makeWith(TYPE, INIT)
-
-#define create(TYPE)              IMPL_create(TYPE)
-#define createWith(TYPE, INIT...) IMPL_createWith(TYPE, INIT)
-
-#define array(TYPE, INIT...)              IMPL_array(TYPE, INIT)
-#define nArray(LENGTH, TYPE)              IMPL_nArray(TYPE, LENGTH)
-#define nArrayWith(LENGTH, TYPE, INIT...) IMPL_nArrayWith(TYPE, LENGTH, INIT)
-
-#define struct_GenericBase(TYPE, FIELDS...) IMPL_struct_GenericBase(TYPE, FIELDS)
-#define struct_GenericPart(TYPE, FIELDS...) IMPL_struct_GenericPart(TYPE, FIELDS)
-#define struct_Generic(TYPE, FIELDS...)     IMPL_struct_Generic(TYPE, FIELDS)
+#define create(_T)                 IMPL_create(_T)
+#define createWith(_T, _Inital...) IMPL_createWith(_T, _Inital)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_make(TYPE) \
-    literal(TYPE, 0)
-#define IMPL_makeWith(TYPE, INIT...) \
-    literal(TYPE, INIT)
+#define IMPL_make(_T) \
+    literal(_T, 0)
+#define IMPL_makeWith(_T, _Inital...) \
+    literal(_T, _Inital)
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define IMPL_create(TYPE) \
-    ((TYPE[1]){           \
-        literal(TYPE, 0) })
-#define IMPL_createWith(TYPE, INIT...) \
-    ((TYPE[1]){                        \
-        literal(TYPE, INIT) })
-
-#define IMPL_array(TYPE, INIT...) \
-    ((TYPE[]){ INIT })
-#define IMPL_nArray(LENGTH, TYPE) \
-    ((TYPE[LENGTH]){ 0 })
-#define IMPL_nArrayWith(LENGTH, TYPE, INIT...) \
-    ((TYPE[(LENGTH)]){ INIT })
-
-#define IMPL_struct_GenericBase(TYPE, FIELDS...) \
-    union {                                      \
-        struct pp_concat(TYPE, Base){            \
-            FIELDS                               \
-        } Base[1];                               \
-        struct {                                 \
-            FIELDS                               \
-        };                                       \
-    }
-
-#define IMPL_struct_GenericPart(TYPE, FIELDS...) \
-    union {                                      \
-        struct pp_concat(TYPE, Part){            \
-            FIELDS                               \
-        } Part[1];                               \
-        struct {                                 \
-            FIELDS                               \
-        };                                       \
-    }
-
-#define IMPL_struct_Generic(TYPE, FIELDS...)      \
-    union {                                       \
-        TYPE TYPE[1];                             \
-        struct {                                  \
-            struct pp_concat(TYPE, Base) Base[1]; \
-            FIELDS                                \
-        };                                        \
-    }
+#define IMPL_create(_T) ( \
+    (_T[1]){              \
+        literal(_T, 0) }  \
+)
+#define IMPL_createWith(_T, _Inital...) ( \
+    (_T[1]){                              \
+        literal(_T, _Inital) }            \
+)
 // NOLINTEND(bugprone-macro-parentheses)
-
 
 #if defined(__cplusplus)
 } /* extern "C" */
