@@ -268,10 +268,10 @@ force_inline Ptr Slice_endPtr(Slice self) {
 }
 
 #define IMPL_Slice_first(TElem, self) \
-    Ptr_deref(TElem, Slice_firstPtr(self))
+    ((TElem*)Slice_firstRaw(self))
 
 #define IMPL_Slice_last(TElem, self) \
-    Ptr_deref(TElem, Slice_lastPtr(self))
+    ((TElem*)Slice_lastRaw(self))
 
 #define IMPL_Slice_firstOrNull(TElem, self) \
     ((TElem*)Slice_firstRawOrNull(self))
