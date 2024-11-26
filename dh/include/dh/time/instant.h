@@ -30,23 +30,31 @@ struct time_Instant {
     time_SysTime time_;
 };
 
-time_Instant time_Instant_now(void);
+/* Operations */
+extern time_Instant  time_Instant_now(void);
+extern time_Duration time_Instant_elapsed(time_Instant self);
+extern time_Duration time_Instant_durationSince(time_Instant self, time_Instant earlier);
 
-time_Duration time_Instant_elapsed(time_Instant ins);
-time_Duration time_Instant_durationSince(time_Instant ins, time_Instant earlier);
+/* Validation */
+extern bool time_Instant_isValid(time_Instant self);
 
-time_Instant time_Instant_addDuration(time_Instant ins, time_Duration duration);
-time_Instant time_Instant_subDuration(time_Instant ins, time_Duration duration);
+/* Conversion */
+extern u64 time_Instant_toNanos(time_Instant self);
 
-u64 time_Instant_toNanos(time_Instant ins);
+/* Arithmetic */
+extern bool         ops_try_add_other(time_Instant, time_Duration, time_Instant);
+extern bool         ops_try_sub_other(time_Instant, time_Duration, time_Instant);
+extern time_Instant ops_add_other(time_Instant, time_Duration);
+extern time_Instant ops_sub_other(time_Instant, time_Duration);
 
-bool time_Instant_eq(time_Instant lhs, time_Instant rhs);
-bool time_Instant_ne(time_Instant lhs, time_Instant rhs);
-bool time_Instant_lt(time_Instant lhs, time_Instant rhs);
-bool time_Instant_le(time_Instant lhs, time_Instant rhs);
-bool time_Instant_gt(time_Instant lhs, time_Instant rhs);
-bool time_Instant_ge(time_Instant lhs, time_Instant rhs);
-bool time_Instant_isValid(time_Instant ins);
+/* Comparison */
+extern cmp_Ord time_Instant_cmp(time_Instant self, time_Instant other);
+cmp_eq_impl(time_Instant);
+cmp_ne_impl(time_Instant);
+cmp_lt_impl(time_Instant);
+cmp_gt_impl(time_Instant);
+cmp_le_impl(time_Instant);
+cmp_ge_impl(time_Instant);
 
 #if defined(__cplusplus)
 } /* extern "C" */

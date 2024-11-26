@@ -1,9 +1,8 @@
-#ifndef TEXT_WCHAR_INCLUDED
-#define TEXT_WCHAR_INCLUDED (1)
+#ifndef CORE_PRIM_WCHAR_INCLUDED
+#define CORE_PRIM_WCHAR_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-
 
 #include <wchar.h>
 #if defined(_WIN32) || defined(_WIN64)
@@ -12,8 +11,7 @@ extern "C" {
 
 typedef wchar_t wchar;
 
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TEXT_WCHAR_INCLUDED */
+#endif /* CORE_PRIM_WCHAR_INCLUDED */

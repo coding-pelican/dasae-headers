@@ -1,167 +1,193 @@
-// #if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64)
 
-// #include "dh/time/cfg.h"
-// #include "dh/time/common.h"
-// #include "dh/time/system_time.h"
-// #include "dh/time/instant.h"
-// #include "dh/time/duration.h"
-// #include "dh/cmp.h"
+#include "dh/core/ops.h"
+#include "dh/core/prim/struct.h"
+#include "dh/time/cfg.h"
+#include "dh/time/common.h"
+#include "dh/time/SysTime.h"
+#include "dh/time/Instant.h"
+#include "dh/time/Duration.h"
+#include "dh/debug/assert.h"
+#include "dh/claim/unreachable.h"
 
-// static time_SysTime time_SysTime__s_performance_frequency     = make(time_SysTime);
-// static f64             time_SysTime__s_frequency_inverse         = 0.0;
-// static time_SysTime time_SysTime__s_offset_frequency_to_value = make(time_SysTime);
-// static bool            time_SysTime__s_frequency_initialized     = false;
+#define intervals_per_sec       (10000000ULL)
+#define secs_to_unix_epoch      (11644473600ULL)
+#define intervals_to_unix_epoch (secs_to_unix_epoch * intervals_per_sec)
+const time_SysTime time_SysTime_unix_epoch = { .QuadPart = intervals_to_unix_epoch };
 
-// static void __attribute__((constructor)) time_SysTime__init(void) {
-//     if (time_SysTime__s_frequency_initialized) { return; }
-//     QueryPerformanceFrequency(&time_SysTime__s_performance_frequency);
-//     time_SysTime__s_frequency_inverse         = 1.0 / (f64)time_SysTime__s_performance_frequency.QuadPart;
-//     time_SysTime__s_frequency_initialized     = true;
-//     time_SysTime__s_offset_frequency_to_value = time_SysTime_value();
-// }
+/* Static variables for performance counter */
+static time_SysTime s_performance_frequency = make(time_SysTime);
+static f64          s_frequency_inverse     = 0.0;
+static time_SysTime s_offset_value          = make(time_SysTime);
+static bool         s_initialized           = false;
 
-// static_inline bool time_SysTime_checkedCmp(time_SysTime lhs, time_SysTime rhs, EOrd* out_result) {
-//     if (!out_result) { return false; }
-//     *out_result = time_SysTime_cmp(&lhs, &rhs);
-//     return true;
-// }
+/* Initialize performance counter frequency */
+static void __attribute__((constructor)) init(void) {
+    if (!QueryPerformanceFrequency(&s_performance_frequency)) {
+        return claim_unreachable();
+    }
+    s_frequency_inverse = 1.0 / (f64)s_performance_frequency.QuadPart;
+    QueryPerformanceCounter(&s_offset_value);
+    s_initialized = true;
+}
 
-// static_inline bool time_SysTime_checkedDurationCalc(time_SysTime lhs, time_SysTime rhs, time_Duration* out_duration, bool allow_negative) {
-//     time_SysTime__init();
-//     time_SysTime diff = make(time_SysTime);
-//     diff.QuadPart        = lhs.QuadPart - rhs.QuadPart;
+/*========== Core Functions ============================================*/
 
-//     if (!allow_negative && diff.QuadPart < 0) { return false; }
-//     if (out_duration) {
-//         out_duration->nanos = (u64)((f64)(diff.QuadPart * (LONGLONG)time_NANOS_PER_SEC)
-//                                     * time_SysTime_frequency_inv());
-//     }
-//     return true;
-// }
+time_SysTime time_SysTime_frequency(void) {
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    return s_performance_frequency;
+}
 
-// static_inline bool time_SysTime_checkedArith(time_SysTime t, time_Duration d, time_SysTime* out_time, bool is_add) {
-//     time_SysTime__init();
-//     u64 ticks = (u64)(d.nanos * time_SysTime_frequency_inv());
+f64 time_SysTime_frequencyInv(void) {
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    return s_frequency_inverse;
+}
 
-//     if (is_add) {
-//         if (t.QuadPart > LLONG_MAX - (LONGLONG)ticks) { return false; }
-//         out_time->QuadPart = t.QuadPart + (LONGLONG)ticks;
-//     } else {
-//         if (t.QuadPart < (LONGLONG)ticks) { return false; }
-//         out_time->QuadPart = t.QuadPart - (LONGLONG)ticks;
-//     }
-//     return true;
-// }
+time_SysTime time_SysTime_value(void) {
+    time_SysTime current = cleared();
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    QueryPerformanceCounter(&current);
+    return current;
+}
 
-// EOrd time_SysTime_cmp(const time_SysTime* lhs, const time_SysTime* rhs) {
-//     if (lhs->QuadPart < rhs->QuadPart) { return EOrd_less; }
-//     if (lhs->QuadPart > rhs->QuadPart) { return EOrd_greater; }
-//     return EOrd_equal;
-// }
+time_SysTime time_SysTime_offset(void) {
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    return s_offset_value;
+}
 
-// time_SysTime time_SysTime_frequency(void) {
-//     return time_SysTime__s_performance_frequency;
-// }
+time_SysTime time_SysTime_now(void) {
+    time_SysTime current = cleared();
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    QueryPerformanceCounter(&current);
+    return current;
+}
 
-// f64 time_SysTime_frequency_inv(void) {
-//     return time_SysTime__s_frequency_inverse;
-// }
+/*========== Duration Calculations =====================================*/
 
-// time_SysTime time_SysTime_value(void) {
-//     time_SysTime value = make(time_SysTime);
-//     QueryPerformanceCounter(&value);
-//     return value;
-// }
+time_Duration time_SysTime_elapsed(time_SysTime self) {
+    time_SysTime current = cleared();
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    QueryPerformanceCounter(&current);
 
-// time_SysTime time_SysTime_offset(void) {
-//     return time_SysTime__s_offset_frequency_to_value;
-// }
+    u64 diff = current.QuadPart - self.QuadPart;
+    return time_Duration_fromNanos(
+        (u64)((f64)diff * (f64)time_nanos_per_sec * s_frequency_inverse)
+    );
+}
 
-// time_SysTime time_SysTime_now(void) {
-//     time_SysTime time   = time_SysTime_value();
-//     time_SysTime result = make(time_SysTime);
-//     result.QuadPart        = (LONGLONG)((f64)(time.QuadPart - time_SysTime_offset().QuadPart) * time_SysTime__s_frequency_inverse);
-//     return result;
-// }
+time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier) {
+    debug_assert_fmt(s_initialized, "SysTime not initialized");
 
-// f64 time_SysTime_now_f64(void) {
-//     time_SysTime time = time_SysTime_value();
-//     return ((f64)(time.QuadPart - time_SysTime_offset().QuadPart) * time_SysTime__s_frequency_inverse);
-// }
+    // Calculate epsilon (1 tick) as in Rust implementation
+    time_Duration epsilon = time_Duration_fromNanos(
+        time_nanos_per_sec / s_performance_frequency.QuadPart
+    );
 
-// time_Duration time_SysTime_elapsed(time_SysTime t) {
-//     return time_SysTime_durationSince(time_SysTime_now(), t);
-// }
+    if (earlier.QuadPart > self.QuadPart && (u64)(earlier.QuadPart - self.QuadPart) <= (u64)(epsilon.nanos_ / s_frequency_inverse)) {
+        return time_Duration_zero;
+    }
 
-// bool time_SysTime_checkedElapsed(time_SysTime t, time_Duration* out_duration) {
-//     return time_SysTime_checkedDurationSince(time_SysTime_now(), t, out_duration);
-// }
+    u64 diff = self.QuadPart - earlier.QuadPart;
+    return time_Duration_fromNanos(
+        (u64)((f64)diff * (f64)time_nanos_per_sec * s_frequency_inverse)
+    );
+}
 
-// time_Duration time_SysTime_durationSince(time_SysTime t, time_SysTime earlier) {
-//     time_Duration duration = make(time_Duration);
-//     time_SysTime_checkedDurationCalc(t, earlier, &duration, false);
-//     return duration;
-// }
+/*========== Safe Arithmetic Operations ================================*/
+bool ops_try_add_other(time_SysTime, time_Duration, time_SysTime) {
+    debug_assert_fmt(out != null, "Output parameter cannot be null");
 
-// bool time_SysTime_checkedDurationSince(time_SysTime t, time_SysTime earlier, time_Duration* const out_duration) {
-//     return time_SysTime_checkedDurationCalc(t, earlier, out_duration, false);
-// }
+    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+    u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
+    if (ticks > (UINT64_MAX - self.QuadPart)) {
+        return false;
+    }
 
-// // Time arithmetic functions
-// time_SysTime time_SysTime_addDuration(time_SysTime t, time_Duration d) {
-//     time_SysTime result = make(time_SysTime);
-//     time_SysTime_checkedArith(t, d, &result, true);
-//     return result;
-// }
+    out->QuadPart = (LONGLONG)(self.QuadPart + ticks);
+    return true;
+}
 
-// bool time_SysTime_checkedAddDuration(time_SysTime t, time_Duration d, time_SysTime* out_time) {
-//     return time_SysTime_checkedArith(t, d, out_time, true);
-// }
+bool ops_try_sub_other(time_SysTime, time_Duration, time_SysTime) {
+    debug_assert_fmt(out != null, "Output parameter cannot be null");
 
-// time_SysTime time_SysTime_subDuration(time_SysTime t, time_Duration d) {
-//     time_SysTime result = make(time_SysTime);
-//     time_SysTime_checkedArith(t, d, &result, false);
-//     return result;
-// }
+    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+    u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
 
-// bool time_SysTime_checkedSubDuration(time_SysTime t, time_Duration d, time_SysTime* out_time) {
-//     return time_SysTime_checkedArith(t, d, out_time, false);
-// }
+    if (ticks > (u64)self.QuadPart) {
+        return false;
+    }
 
-// // Comparison functions
-// bool time_SysTime_eq(time_SysTime lhs, time_SysTime rhs) {
-//     EOrd result = -1;
-//     time_SysTime_checkedCmp(lhs, rhs, &result);
-//     return result == EOrd_equal;
-// }
+    out->QuadPart = (LONGLONG)(self.QuadPart - ticks);
+    return true;
+}
 
-// bool time_SysTime_lt(time_SysTime lhs, time_SysTime rhs) {
-//     EOrd result = -1;
-//     time_SysTime_checkedCmp(lhs, rhs, &result);
-//     return result == EOrd_less;
-// }
+/*========== Unsafe Arithmetic Operations ==============================*/
 
-// bool time_SysTime_le(time_SysTime lhs, time_SysTime rhs) {
-//     return time_SysTime_lt(lhs, rhs) || time_SysTime_eq(lhs, rhs);
-// }
+time_SysTime ops_add_other(time_SysTime, time_Duration) {
+    time_SysTime result  = cleared();
+    bool         success = time_SysTime_try_add_time_Duration(self, other, &result);
+    claim_assert_fmt(success, "Arithmetic overflow in time_SysTime addition");
+    return result;
+}
 
-// bool time_SysTime_gt(time_SysTime lhs, time_SysTime rhs) {
-//     EOrd result = -1;
-//     time_SysTime_checkedCmp(lhs, rhs, &result);
-//     return result == EOrd_greater;
-// }
+time_SysTime ops_sub_other(time_SysTime, time_Duration) {
+    time_SysTime result  = cleared();
+    bool         success = time_SysTime_try_sub_time_Duration(self, other, &result);
+    claim_assert_fmt(success, "Arithmetic underflow in time_SysTime subtraction");
+    return result;
+}
 
-// bool time_SysTime_ge(time_SysTime lhs, time_SysTime rhs) {
-//     return time_SysTime_gt(lhs, rhs) || time_SysTime_eq(lhs, rhs);
-// }
+/*========== Comparison Functions =====================================*/
 
-// void time_SysTime_sleep(time_Duration duration) {
-//     time_SysTime_sleep_s_f64(time_Duration_asSecs_f64(duration));
-// }
+cmp_Ord time_SysTime_cmp(time_SysTime self, time_SysTime other) {
+    if (self.QuadPart < other.QuadPart) { return cmp_Ord_less; }
+    if (self.QuadPart > other.QuadPart) { return cmp_Ord_greater; }
+    return cmp_Ord_equal;
+}
 
-// void time_SysTime_sleep_s(u64 secs) {
-//     time_SysTime_sleep(time_Duration_from(secs, 0));
-// }
+/*========== Sleep Functions ==========================================*/
+
+void time_SysTime_sleep(time_Duration duration) {
+    HANDLE timer = CreateWaitableTimerExW(
+        null, null, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS
+    );
+
+    if (timer == null) {
+        Sleep((DWORD)((duration.secs_ * time_millis_per_sec) + (duration.nanos_ / time_nanos_per_milli)));
+        return;
+    }
+
+    LARGE_INTEGER li = make(LARGE_INTEGER);
+    // Convert to negative 100-nanosecond intervals for relative time
+    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs_ * intervals_per_sec + (duration.nanos_ / 100)));
+
+    if (SetWaitableTimer(timer, &li, 0, null, null, false)) {
+        WaitForSingleObject(timer, INFINITE);
+    } else {
+        Sleep((DWORD)((duration.secs_ * time_millis_per_sec) + (duration.nanos_ / time_nanos_per_milli)));
+    }
+
+    CloseHandle(timer);
+}
+
+void time_SysTime_sleepSecs(u64 secs) {
+    time_SysTime_sleep(time_Duration_fromSecs(secs));
+}
+
+void time_SysTime_sleepMillis(u64 millis) {
+    time_SysTime_sleep(time_Duration_fromMillis(millis));
+}
+
+void time_SysTime_sleepMicros(u64 micros) {
+    time_SysTime_sleep(time_Duration_fromMicros(micros));
+}
+
+void time_SysTime_sleepNanos(u32 nanos) {
+    time_SysTime_sleep(time_Duration_fromNanos(nanos));
+}
+
+#endif /* defined(_WIN32) || defined(_WIN64) */
+
 
 // #define SUPPORT_BUSY_WAIT_LOOP
 // // Wait for some time (stop program execution)
@@ -187,7 +213,7 @@
 
 // // System halt functions
 // #if defined(_WIN32)
-//     Sleep((u16)(sleep_secs * time_MILLIS_PER_SEC));
+//     Sleep((u16)(sleep_secs * time_millis_per_sec));
 // #endif
 // #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
 //     struct timespec req  = { 0 };
@@ -210,17 +236,3 @@
 // #endif
 // #endif
 // }
-
-// void time_SysTime_sleep_ms(u64 millis) {
-//     time_SysTime_sleep(time_Duration_fromMillis(millis));
-// }
-
-// void time_SysTime_sleep_us(u64 micros) {
-//     time_SysTime_sleep(time_Duration_fromMicros(micros));
-// }
-
-// void time_SysTime_sleep_ns(u32 nanos) {
-//     time_SysTime_sleep(time_Duration_fromNanos(nanos));
-// }
-
-// #endif /* defined(_WIN32) || defined(_WIN64) */

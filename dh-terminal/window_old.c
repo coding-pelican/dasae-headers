@@ -9,7 +9,7 @@
 
 static WindowTime* WindowTime_init(WindowTime* t, const Window* owner, f64 target_fps) {
     t->owner      = owner;
-    t->time       = time_Duration_ZERO;
+    t->time       = time_Duration_zero;
     t->time_scale = 1.0;
     t->curr_step  = time_Instant_now();
     t->prev_step  = time_Instant_now();

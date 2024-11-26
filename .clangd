@@ -30,12 +30,12 @@ CompileFlags:
   Compiler: clang
   Add:
     [
+      -fblocks,
       -xc,
       -std=c17,
       -Wall,
       -Wextra,
       -Werror,
-      -fblocks,
       -Wno-header-ordering,
       -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include,
     ]

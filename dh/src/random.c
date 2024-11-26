@@ -5,11 +5,11 @@
 
 /*========== Static Constant and Variable Definitions =======================*/
 
-static Random Random__s_rng[1] = create(Random);
+static Random Random_s_rng[1] = create(Random);
 
 /*========== Extern Constant and Variable Definitions =======================*/
 
-Random* const Random_rng = Random__s_rng;
+Random* const Random_rng = Random_s_rng;
 
 /*========== Static Function Prototypes =====================================*/
 

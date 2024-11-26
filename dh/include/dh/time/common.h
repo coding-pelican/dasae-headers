@@ -29,16 +29,16 @@ typedef struct time_Duration time_Duration;
 typedef struct time_Instant  time_Instant;
 typedef time_SysTimePlatform time_SysTime;
 
-static const u32 time_NANOS_PER_SEC   = 1000u * 1000u * 1000u;
-static const u32 time_NANOS_PER_MILLI = 1000u * 1000u;
-static const u32 time_NANOS_PER_MICRO = 1000u;
-static const u32 time_MILLIS_PER_SEC  = 1000u;
-static const u32 time_MICROS_PER_SEC  = 1000u * 1000u;
+static const u32 time_nanos_per_sec   = 1000u * 1000u * 1000u;
+static const u32 time_nanos_per_milli = 1000u * 1000u;
+static const u32 time_nanos_per_micro = 1000u;
+static const u32 time_millis_per_sec  = 1000u;
+static const u32 time_micros_per_sec  = 1000u * 1000u;
 
-static const u64 time_SECS_PER_MIN  = 60ull;
-static const u64 time_MINS_PER_HOUR = 60ull;
-static const u64 time_HOURS_PER_DAY = 24ull;
-static const u64 time_DAYS_PER_WEEK = 7ull;
+static const u64 time_secs_per_min  = 60ull;
+static const u64 time_mins_per_hour = 60ull;
+static const u64 time_hours_per_day = 24ull;
+static const u64 time_days_per_week = 7ull;
 
 #if defined(__cplusplus)
 } /* extern "C" */

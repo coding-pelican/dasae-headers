@@ -40,6 +40,12 @@ extern "C" {
 #define pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
     IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs)
 
+#define pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
+    IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs)
+
+#define pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs...) \
+    IMPL_pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs)
+
 #define pp_uniqueToken(_Token...) \
     IMPL_pp_uniqueToken(_Token)
 
@@ -53,6 +59,12 @@ extern "C" {
 
 #define IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
     _Token_lhs##_Token_mid##_Token_rhs
+
+#define IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
+    _Token_lhs##_Token_sep##_Token_rhs
+
+#define IMPL_pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs...) \
+    _Token_lhs##_Token_sep##_Token_mid##_Token_sep##_Token_rhs
 
 #define IMPL_pp_uniqueToken(_Token...) \
     pp_concat(pp_concat3(_, __LINE__, _), _Token)

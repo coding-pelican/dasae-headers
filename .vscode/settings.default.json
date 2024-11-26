@@ -1,28 +1,44 @@
 {
   "tasks": {
-    "C_ARGS_BASE": [
-      "${fileDirname}\\*.c"
-    ],
-    "C_ARGS": [
-      "-std=c17",
-      "-v",
-      "-fdiagnostics-color=always",
-      "-Wall",
-      "-Wextra",
-      "-Werror",
-      "-g"
-    ],
-    "CPP_ARGS_BASE": [
-      "${fileDirname}\\*.cpp"
-    ],
-    "CPP_ARGS": [
-      "-std=c++20",
-      "-v",
-      "-fdiagnostics-color=always",
-      "-Wall",
-      "-Wextra",
-      "-Werror",
-      "-g"
-    ]
+    "compilerFlags": {
+      "debug": "-g",
+      "release": "-DNDEBUG -O2",
+      "optimize": "-DNDEBUG -O3",
+      "common": "-Wall -Wextra -fdiagnostics-color=always"
+    },
+    "compilerPaths": {
+      "windows": {
+        "clang": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin",
+        "clangpp": "C:\\dasae-storage\\dev\\tools\\msys64\\ucrt64\\bin"
+      },
+      "linux": {
+        "clang": "/usr/bin",
+        "clangpp": "/usr/bin"
+      }
+    },
+    "outputExtension": {
+      "windows": ".exe",
+      "linux": ""
+    },
+    "sourcePaths": {
+      "windows": [
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\src\\*.c"
+      ],
+      "linux": [
+        "/usr/src/*.c"
+      ]
+    },
+    "includePaths": {
+      "windows": [
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\include"
+      ],
+      "linux": [
+        "/usr/include"
+      ]
+    },
+    "libraries": {
+      "windows": [],
+      "linux": []
+    }
   }
 }

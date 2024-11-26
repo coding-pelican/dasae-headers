@@ -12,35 +12,35 @@ time_SysTime time_SysTime_now(void) {
 }
 
 f64 time_SysTime_toSecs(time_SysTime time) {
-    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_NANOS_PER_SEC);
+    return (f64)time.tv_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_sec);
 }
 
 f64 time_SysTime_toMillis(time_SysTime time) {
-    return (f64)time.tv_sec * (f64)time_MILLIS_PER_SEC + ((f64)time.tv_nsec / (f64)time_NANOS_PER_MILLI);
+    return (f64)time.tv_sec * (f64)time_millis_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_milli);
 }
 
 f64 time_SysTime_toMicros(time_SysTime time) {
-    return (f64)time.tv_sec * (f64)time_MICROS_PER_SEC + ((f64)time.tv_nsec / (f64)time_NANOS_PER_MICRO);
+    return (f64)time.tv_sec * (f64)time_micros_per_sec + ((f64)time.tv_nsec / (f64)time_nanos_per_micro);
 }
 
 u64 time_SysTime_toNanos(time_SysTime time) {
-    return (u64)time.tv_sec * (u64)time_NANOS_PER_SEC + (u64)time.tv_nsec;
+    return (u64)time.tv_sec * (u64)time_nanos_per_sec + (u64)time.tv_nsec;
 }
 
 void time_SysTime_sleep(Duration duration) {
-    time_SysTime_sleep_ns((duration.secs * time_NANOS_PER_SEC) + duration.nanos);
+    time_SysTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
 }
 
 void time_SysTime_sleep_s(f64 secs) {
-    time_SysTime_sleep_ns((u64)(secs * time_NANOS_PER_SEC));
+    time_SysTime_sleep_ns((u64)(secs * time_nanos_per_sec));
 }
 
 void time_SysTime_sleep_ms(f64 millis) {
-    time_SysTime_sleep_ns((u64)(millis * time_NANOS_PER_MILLI));
+    time_SysTime_sleep_ns((u64)(millis * time_nanos_per_milli));
 }
 
 void time_SysTime_sleep_us(f64 micros) {
-    time_SysTime_sleep_ns((u64)(micros * time_NANOS_PER_MICRO));
+    time_SysTime_sleep_ns((u64)(micros * time_nanos_per_micro));
 }
 
 void time_SysTime_sleep_ns(u64 nanos) {
@@ -48,8 +48,8 @@ void time_SysTime_sleep_ns(u64 nanos) {
 
     struct timespec req = make(struct timespec);
     struct timespec rem = make(struct timespec);
-    req.tv_sec          = nanos / time_NANOS_PER_SEC;
-    req.tv_nsec         = nanos % time_NANOS_PER_SEC;
+    req.tv_sec          = nanos / time_nanos_per_sec;
+    req.tv_nsec         = nanos % time_nanos_per_sec;
 
     while (nanosleep(&req, &rem) == -1) {
         if (errno == EINTR) {
@@ -73,7 +73,7 @@ Duration time_Instant_durationSince(time_Instant start, time_Instant earlier) {
     i64 nano_diff = start.time_.tv_nsec - earlier.time_.tv_nsec;
     if (nano_diff < 0) {
         secs--;
-        nano_diff += time_NANOS_PER_SEC;
+        nano_diff += time_nanos_per_sec;
     }
     u32 nanos = prim_as(u32, nano_diff);
     return time_Duration_from(secs, nanos);

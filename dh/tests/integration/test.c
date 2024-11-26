@@ -7,8 +7,6 @@
 #include "dh/ds/Vec.h"
 #include "../../dh-terminal/canvas.h"
 
-typedef Allocator mem_Allocator;
-
 typedef enum ErrorType {
     Error_None = 0,
     Error_OutOfMemory
@@ -24,27 +22,6 @@ typedef struct Error {
 } Error;
 
 #define pp_use(...) __VA_ARGS__
-
-#define Ptr(T)             \
-    union {                \
-        T*  data;          \
-        Ptr Ptr;           \
-    } pp_uniqueToken(Ptr); \
-    Ptr
-
-#define Slice(T)             \
-    union {                  \
-        T*    data;          \
-        Slice Slice;         \
-    } pp_uniqueToken(Slice); \
-    Slice
-
-#define ds_Vec(T)          \
-    union {                \
-        T*    data;        \
-        Slice Slice;       \
-    } pp_uniqueToken(Vec); \
-    ds_Vec
 
 // try operator for values
 #define tryPtr(var, expr)                                                \

@@ -22,20 +22,33 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "null.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define rawptr(_T)             \
-    /**                        \
-     * @brief Type raw pointer \
-     */                        \
+#define rawptr(_T)         \
+    /**                    \
+     * @brief Type pointer \
+     */                    \
     IMPL_rawptr(_T)
 
-#define rawaddr(_var)              \
-    /**                            \
-     * @brief Variable raw address \
-     */                            \
+#define rawaddr(_var)          \
+    /**                        \
+     * @brief Variable address \
+     */                        \
     IMPL_rawaddr(_var)
+
+#define rawref(_var)             \
+    /**                          \
+     * @brief Variable reference \
+     */                          \
+    IMPL_rawref(_var)
+
+#define rawderef(_var)             \
+    /**                            \
+     * @brief Variable dereference \
+     */                            \
+    IMPL_rawderef(_var)
 
 #define anyptr                 \
     /**                        \
@@ -43,32 +56,62 @@ extern "C" {
      */                        \
     IMPL_anyptr
 
-#define castPtr(_T, _raw)                          \
+#define rawCast(_T, _raw)                          \
     /**                                            \
      * @brief Convert anyptr to pointer of type _T \
      */                                            \
-    IMPL_castPtr(_T, _raw)
+    IMPL_rawCast(_T, _raw)
 
-#define accessPtr(_raw)                                \
+#define rawDeref(_raw)                                    \
+    /**                                                   \
+     * @brief Reference the value pointed to by a pointer \
+     */                                                   \
+    IMPL_rawDeref(_raw)
+
+#define rawCastDeref(_T, _raw)                                       \
+    /**                                                              \
+     * @brief Reference the value pointed to by a pointer of type _T \
+     */                                                              \
+    IMPL_rawCastDeref(_T, _raw)
+
+#define intToRaw(TDest, val)                           \
     /**                                                \
-     * @brief Access the value pointed to by a pointer \
+     * @brief Convert integer to pointer of type TDest \
      */                                                \
-    IMPL_accessPtr(_raw)
+    IMPL_intToRaw(TDest, val)
 
-#define accessCastPtr(_T, _raw)                                   \
-    /**                                                           \
-     * @brief Access the value pointed to by a pointer of type _T \
-     */                                                           \
-    IMPL_accessCastPtr(_T, _raw)
+#define rawToInt(val)                                \
+    /**                                              \
+     * @brief Convert pointer of to unsigned integer \
+     */                                              \
+    IMPL_rawToInt(val)
+
+#define rawIsNull(_ptr)                \
+    /**                                \
+     * @brief Check if pointer is null \
+     */                                \
+    IMPL_ptrIsNull(_ptr)
+
+#define rawIsNonnull(_ptr)                 \
+    /**                                    \
+     * @brief Check if pointer is not null \
+     */                                    \
+    IMPL_ptrIsNonnull(_ptr)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_rawptr(_T)              _T*
-#define IMPL_rawaddr(_var...)        (&(_var))
-#define IMPL_anyptr                  void*
-#define IMPL_castPtr(_T, _raw)       (_T*)(_raw)
-#define IMPL_accessPtr(_raw)         (*(_raw))
-#define IMPL_accessCastPtr(_T, _raw) (*((_T*)(_raw)))
+#define IMPL_rawptr(_T)             _T*
+#define IMPL_rawaddr(_var...)       (&(_var))
+#define IMPL_rawref(_var...)        (&(_var))
+#define IMPL_rawderef(_var...)      (*(_var))
+#define IMPL_anyptr                 void*
+#define IMPL_rawCast(_T, _raw)      ((_T)(_raw))
+#define IMPL_rawDeref(_raw)         (*(_raw))
+#define IMPL_rawCastDeref(_T, _raw) (*((_T*)(_raw)))
+#define IMPL_intToRaw(_T, val)      ((_T)(val))    // NOLINT(performance-no-int-to-ptr)
+#define IMPL_rawToInt(val)          ((usize)(val)) // NOLINT(performance-no-int-to-ptr)
+#define IMPL_ptrIsNull(_ptr)        ((_ptr) == null)
+#define IMPL_ptrIsNonnull(_ptr)     ((_ptr) != null)
 
 /*========== Validation Checks ==============================================*/
 

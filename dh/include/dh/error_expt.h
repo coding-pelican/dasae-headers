@@ -46,16 +46,17 @@ typedef ErrorUnionVoid ErrorVoid;
 
 
 
-void test() {
-    i32 value = /* value; // macro begin
-    scope_if(Error _result = getValue((i32){ 0 }); _result.has_error) {
-        // handle error
-    }
-    else {
-        // handle value
-        value = *Ptr_cast(_result.value, i32);
-    } */ // macro end
-}
+// void test(){
+//     i32 value = /* value; // macro begin
+//     scope_if(Error _result = getValue((i32){ 0 }); _result.has_error) {
+//         // handle error
+//     }
+//     else {
+//         // handle value
+//         value = *Ptr_cast(_result.value, i32);
+//     } */
+//                 // macro end
+// }
 
 
 /*========== Error Creation ============================================*/
@@ -138,59 +139,59 @@ void test() {
 
 /*========== Usage Example ============================================*/
 
-// Example usage:
-typedef ErrorUnion(i32) ErrorI32;
+// // Example usage:
+// typedef ErrorUnion(i32) ErrorI32;
 
-// Function that might fail
-ErrorI32 open_file(const char* path) {
-    if (access_denied) {
-        return Err(ErrorI32, Error_AccessDenied);
-    }
-    if (out_of_memory) {
-        return Err(ErrorI32, Error_OutOfMemory);
-    }
-    return Ok(ErrorI32, file_descriptor);
-}
+// // Function that might fail
+// ErrorI32 open_file(const char* path) {
+//     if (access_denied) {
+//         return Err(ErrorI32, Error_AccessDenied);
+//     }
+//     if (out_of_memory) {
+//         return Err(ErrorI32, Error_OutOfMemory);
+//     }
+//     return Ok(ErrorI32, file_descriptor);
+// }
 
-// Using try
-ErrorVoid process_file(const char* path) {
-    i32 fd = try(ErrorI32, open_file(path), fd);
+// // Using try
+// ErrorVoid process_file(const char* path) {
+//     i32 fd = try(ErrorI32, open_file(path), fd);
 
-    errdefer(close(fd)) {
-        // Do something that might fail
-        if (/* error_condition */ false) {
-            return ErrVoid(Error_IoError);
-        }
-    }
+//     errdefer(close(fd)) {
+//         // Do something that might fail
+//         if (/* error_condition */ false) {
+//             return ErrVoid(Error_IoError);
+//         }
+//     }
 
-    return OkVoid();
-}
+//     return OkVoid();
+// }
 
-// Using catch
-void example_catch(void) {
-    i32 fd = catch (i32, open_file("test.txt"), ^i32(Error err) {
-        switch (err) {
-        case Error_AccessDenied:
-            printf("Access denied\n");
-            return -1;
-        case Error_OutOfMemory:
-            printf("Out of memory\n");
-            return -1;
-        default:
-            printf("Unknown error\n");
-            return -1;
-        }
-    });
-}
+// // Using catch
+// void example_catch(void) {
+//     i32 fd = catch (i32, open_file("test.txt"), ^i32(Error err) {
+//         switch (err) {
+//         case Error_AccessDenied:
+//             printf("Access denied\n");
+//             return -1;
+//         case Error_OutOfMemory:
+//             printf("Out of memory\n");
+//             return -1;
+//         default:
+//             printf("Unknown error\n");
+//             return -1;
+//         }
+//     });
+// }
 
-// Error set coercion example
-void example_coercion(void) {
-    Error alloc_err = Error_OutOfMemory;
-    // This works because FileOpen error set includes OutOfMemory
-    Error file_err  = alloc_err;
+// // Error set coercion example
+// void example_coercion(void) {
+//     Error alloc_err = Error_OutOfMemory;
+//     // This works because FileOpen error set includes OutOfMemory
+//     Error file_err  = alloc_err;
 
-    // Verify coercion
-    assert(error_in_set(file_err, ErrorSet_FileOpen));
-}
+//     // Verify coercion
+//     assert(error_in_set(file_err, ErrorSet_FileOpen));
+// }
 
 #endif

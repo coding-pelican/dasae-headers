@@ -11,6 +11,15 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define used(_Expr...)                                                    \
+    /**                                                                   \
+     * @brief Marks variables or expressions as used to suppress compiler \
+    warnings                                                              \
+     * @details In macro functions, the arguments are marked as used      \
+     * @param _Expr... Variable number of arguments to be marked as used  \
+     */                                                                   \
+    IMPL_used(_Expr)
+
 #define unused(_Expr...)                                                   \
     /**                                                                    \
      * @brief Marks variables or expressions as intentionally unused       \
@@ -39,6 +48,9 @@ extern "C" {
     IMPL_literal(_T, _Inital)
 
 /*========== Macro Implementations ==========================================*/
+
+#define IMPL_used(_Expr...) \
+    _Expr
 
 #define IMPL_unused(_Expr...) \
     ((void)(_Expr))

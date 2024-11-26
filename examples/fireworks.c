@@ -24,6 +24,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 #include "dh/mem.h"
 #include "dh/scope.h"
 #include "dh/defer.h"
+#include "dh/time/duration.h"
 #include "dh/unreachable.h"
 #include "dh/random.h"
 
@@ -307,7 +308,7 @@ void Display_render() {
 }
 
 time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
-    time_Duration overhead_duration = time_Duration_ZERO;
+    time_Duration overhead_duration = time_Duration_zero;
 
     Color* const buffer = FrameBuffer_accessData(Canvas_accessBuffer(canvas));
 
@@ -321,7 +322,7 @@ time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
         Display_render();
         overhead_duration = time_Duration_add(overhead_duration, time_Instant_elapsed(start));
     }
-    overhead_duration = time_Duration_div(overhead_duration, overhead_iterations);
+    overhead_duration = time_Duration_div_u64(overhead_duration, overhead_iterations);
 
     return overhead_duration;
 }

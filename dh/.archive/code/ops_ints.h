@@ -12,8 +12,8 @@
 
 // // Helper functions for common types
 // force_inline cmpOrdering cmp_i32(const anyptr lhs, const anyptr rhs) {
-//     i32 val_lhs = ptrCastAccess(const i32, lhs);
-//     i32 val_rhs = ptrCastAccess(const i32, rhs);
+//     i32 val_lhs = rawCastAccess(const i32, lhs);
+//     i32 val_rhs = rawCastAccess(const i32, rhs);
 //     if (val_lhs < val_rhs) {
 //         return cmpOrd_Less;
 //     }

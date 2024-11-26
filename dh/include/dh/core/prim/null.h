@@ -22,7 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "ptr.h"
+#include "dh/claim/unreachable.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -60,10 +60,11 @@ extern "C" {
 #define nullable IMPL_nullable
 #define nonnull  IMPL_nonnull
 
-#define Nullable(_T) IMPL_Nullable(_T)
-#define Nonnull(_T)  IMPL_Nonnull(_T)
+#define Nullable(TPtr) IMPL_Nullable(TPtr)
+#define Nonnull(TPtr)  IMPL_Nonnull(TPtr)
 
-#define ensureNonNull(_var, ...) IMPL_ensureNonNull(_var, __VA_ARGS__)
+#define orelse(_var, ...) IMPL_orelse(_var, __VA_ARGS__)
+#define orerr(_var, ...)  IMPL_orerr(_var, __VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -78,10 +79,14 @@ extern "C" {
 #define IMPL_nonnull
 #endif
 
-#define IMPL_Nullable(_T) _T nullable
-#define IMPL_Nonnull(_T)  _T nonnull
+#define IMPL_Nullable(TPtr) TPtr nullable
+#define IMPL_Nonnull(TPtr)  TPtr nonnull
 
-#define IMPL_ensureNonNull(_var, ...) ((_var) ? (_var) : (__VA_ARGS__))
+#define IMPL_orelse(_var, ...) \
+    ((_var) ? (_var) : (__VA_ARGS__))
+
+#define IMPL_orerr(_var) \
+    ((_var) ? (_var) : claim_unreachable_val(anyptr))
 
 #if defined(__cplusplus)
 } /* extern "C" */

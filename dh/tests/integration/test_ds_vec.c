@@ -42,7 +42,7 @@ i32 main() {
         // Access elements
         printf("case 1: ");
         for (usize i = 0; i < ds_Vec_len(vec); ++i) {
-            printf("%.2f ", accessCastPtr(f32, ds_Vec_at(vec, i)));
+            printf("%.2f ", rawCastDeref(f32, ds_Vec_at(vec, i)));
         }
         printf("\n");
         printf("case 2: ");
@@ -64,7 +64,7 @@ i32 main() {
 
         // Access elements
         for (usize i = 0; i < ds_Vec_len(vec); ++i) {
-            printf("%.2f ", accessCastPtr(f32, ds_Vec_at(vec, i)));
+            printf("%.2f ", rawCastDeref(f32, ds_Vec_at(vec, i)));
         }
         foreach (f32, it, vec) {
             printf("%.2f ", *it);

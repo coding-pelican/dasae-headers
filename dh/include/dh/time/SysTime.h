@@ -26,65 +26,59 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 /*
- * #if defined(_WIN32) || defined(_WIN64)
- * static time_SysTime   time_SysTime__s_performance_frequency  = 0;
- * static f64               time_SysTime__s_frequency_inverse      = 0.0;
- * static time_SysTime   time_SysTime__s_offset_value_frequency = 0;
- * static bool              time_SysTime__s_frequency_initialized  = false;
- * static void __attribute__((constructor)) time_SysTime__init(void);
- * static inline bool time_SysTime_checkedCmp(
- *     time_SysTime lhs,
- *     time_SysTime rhs,
- *     EOrd* out_result
- * );
- * static inline bool time_SysTime_checkedDurationCalc(
- *     time_SysTime lhs,
- *     time_SysTime rhs,
- *     time_Duration* out_duration,
- *     bool allow_negative
- * );
- * static inline bool time_SysTime_checkedArith(
- *     time_SysTime t,
- *     time_Duration d,
- *     time_SysTime* out_time,
- *     bool is_add
- * );
- * #endif // defined(_WIN32) || defined(_WIN64)
+ * // Static variables for performance counter
+ * static time_SysTime s_performance_frequency;
+ * static f64          s_frequency_inverse;
+ * static time_SysTime s_offset_value;
+ * static bool         s_initialized;
+ * // Initialize performance counter frequency
+ * static void __attribute__((constructor)) init(void);
  */
 
-time_SysTime time_SysTime_frequency(void);
-f64          time_SysTime_frequencyInv(void);
-time_SysTime time_SysTime_value(void);
-time_SysTime time_SysTime_offset(void);
-time_SysTime time_SysTime_now(void);
-f64          time_SysTime_now_f64(void);
+/* Accessors */
+extern time_SysTime time_SysTime_frequency(void);
+extern f64          time_SysTime_frequencyInv(void);
+extern time_SysTime time_SysTime_value(void);
+extern time_SysTime time_SysTime_offset(void);
 
-time_Duration time_SysTime_elapsed(time_SysTime t);
-bool          time_SysTime_checkedElapsed(time_SysTime t, time_Duration* out_duration);
+/* Operations */
+extern time_SysTime  time_SysTime_now(void);
+extern time_Duration time_SysTime_elapsed(time_SysTime self);
+extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
 
-time_Duration time_SysTime_durationSince(time_SysTime t, time_SysTime earlier);
-bool          time_SysTime_checkedDurationSince(time_SysTime t, time_SysTime earlier, time_Duration* const out_duration);
+/* Arithmetic */
+extern bool         ops_try_add_other(time_SysTime, time_Duration, time_SysTime);
+extern bool         ops_try_sub_other(time_SysTime, time_Duration, time_SysTime);
+extern time_SysTime ops_add_other(time_SysTime, time_Duration);
+extern time_SysTime ops_sub_other(time_SysTime, time_Duration);
 
-time_SysTime time_SysTime_addDuration(time_SysTime t, time_Duration duration);
-bool         time_SysTime_checkedAddDuration(time_SysTime t, time_Duration duration, time_SysTime* out_time);
-time_SysTime time_SysTime_subDuration(time_SysTime t, time_Duration duration);
-bool         time_SysTime_checkedSubDuration(time_SysTime t, time_Duration duration, time_SysTime* out_time);
+/* Comparison */
+extern cmp_Ord time_SysTime_cmp(time_SysTime self, time_SysTime other);
+cmp_eq_impl(time_SysTime);
+cmp_ne_impl(time_SysTime);
+cmp_lt_impl(time_SysTime);
+cmp_gt_impl(time_SysTime);
+cmp_le_impl(time_SysTime);
+cmp_ge_impl(time_SysTime);
 
-bool time_SysTime_eq(time_SysTime lhs, time_SysTime rhs);
-bool time_SysTime_ne(time_SysTime lhs, time_SysTime rhs);
-bool time_SysTime_lt(time_SysTime lhs, time_SysTime rhs);
-bool time_SysTime_le(time_SysTime lhs, time_SysTime rhs);
-bool time_SysTime_gt(time_SysTime lhs, time_SysTime rhs);
-bool time_SysTime_ge(time_SysTime lhs, time_SysTime rhs);
+/* Sleep */
+extern void time_SysTime_sleep(time_Duration duration);
+extern void time_SysTime_sleepSecs(u64 secs);
+extern void time_SysTime_sleepMillis(u64 millis);
+extern void time_SysTime_sleepMicros(u64 micros);
+extern void time_SysTime_sleepNanos(u32 nanos);
 
-void time_SysTime_sleep(time_Duration duration);
-void time_SysTime_sleepSecs(u64 secs);
-void time_SysTime_sleepSecs_f64(f64 secs);
-void time_SysTime_sleepMillis(u64 millis);
-void time_SysTime_sleepMicros(u64 micros);
-void time_SysTime_sleepNanos(u32 nanos);
+// /* Constants for time conversion */
+// #define INTERVALS_PER_SEC       (10000000ULL)    /* 100ns intervals per second */
+// #define SECS_TO_UNIX_EPOCH      (11644473600ULL) /* seconds between Windows epoch (1601) and Unix epoch (1970) */
+// #define INTERVALS_TO_UNIX_EPOCH (SECS_TO_UNIX_EPOCH * INTERVALS_PER_SEC)
 
-static const time_SysTime time_SysTime_UNIX_EPOCH = make(time_SysTime);
+// /* UNIX Epoch constant definition
+//  * Windows FILETIME is measured in 100-nanosecond intervals since January 1, 1601 UTC
+//  * Unix Epoch is January 1, 1970 UTC
+//  * We need to represent Unix Epoch in Windows FILETIME format
+//  */
+extern const time_SysTime time_SysTime_unix_epoch;
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -59,7 +59,7 @@ void FrameRateStats_update(FrameRateStats* s) {
     // Protect against division by zero and extreme values
     current_duration    = 0.0001f < current_duration ? current_duration : 0.0001f;
     s->current_duration = current_duration;
-    s->current_fps      = (f32)time_MILLIS_PER_SEC / current_duration;
+    s->current_fps      = (f32)time_millis_per_sec / current_duration;
 
     if (s->count < s->sample_count) { return; }
     // Calculate running averages only when we have enough samples
@@ -76,7 +76,7 @@ void FrameRateStats_update(FrameRateStats* s) {
         f32 average_duration = (f32)(total_duration / (f64)valid_sample_count);
         average_duration     = 0.0001f < average_duration ? average_duration : 0.0001f;
         s->average_duration  = average_duration;
-        s->average_fps       = (f32)time_MILLIS_PER_SEC / average_duration;
+        s->average_fps       = (f32)time_millis_per_sec / average_duration;
     }
 }
 

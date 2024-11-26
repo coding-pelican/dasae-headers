@@ -26,6 +26,12 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define typedef_struct(Alias)   \
+    typedef struct Alias Alias; \
+    struct Alias
+
+#define cleared() IMPL_cleared()
+
 #define make(_T)                 IMPL_make(_T)
 #define makeWith(_T, _Inital...) IMPL_makeWith(_T, _Inital)
 
@@ -33,6 +39,9 @@ extern "C" {
 #define createWith(_T, _Inital...) IMPL_createWith(_T, _Inital)
 
 /*========== Macros Implementation ==========================================*/
+
+#define IMPL_cleared() \
+    { 0 }
 
 #define IMPL_make(_T) \
     literal(_T, 0)

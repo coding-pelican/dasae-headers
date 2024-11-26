@@ -23,11 +23,13 @@ extern "C" {
 
 #include "prim/cfg.h"
 
+#include "prim/bitwise.h"
 #include "prim/bool.h"
 #include "prim/int.h"
 #include "prim/flt.h"
 #include "prim/ptr.h"
 #include "prim/null.h"
+#include "prim/wchar.h"
 
 #include "prim/enum.h"
 #include "prim/struct.h"
@@ -36,27 +38,27 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define prim_cmp(_lhs, _rhs...) IMPL_prim_cmp(_lhs, _rhs...)
-#define prim_eq(_lhs, _rhs...)  IMPL_prim_eq(_lhs, _rhs)
-#define prim_ne(_lhs, _rhs...)  IMPL_prim_ne(_lhs, _rhs)
-#define prim_lt(_lhs, _rhs...)  IMPL_prim_lt(_lhs, _rhs)
-#define prim_gt(_lhs, _rhs...)  IMPL_prim_gt(_lhs, _rhs)
-#define prim_le(_lhs, _rhs...)  IMPL_prim_le(_lhs, _rhs)
-#define prim_ge(_lhs, _rhs...)  IMPL_prim_ge(_lhs, _rhs)
+#define prim_cmp(val_lhs, val_rhs) IMPL_prim_cmp(val_lhs, val_rhs)
+#define prim_eq(val_lhs, val_rhs)  IMPL_prim_eq(val_lhs, val_rhs)
+#define prim_ne(val_lhs, val_rhs)  IMPL_prim_ne(val_lhs, val_rhs)
+#define prim_lt(val_lhs, val_rhs)  IMPL_prim_lt(val_lhs, val_rhs)
+#define prim_gt(val_lhs, val_rhs)  IMPL_prim_gt(val_lhs, val_rhs)
+#define prim_le(val_lhs, val_rhs)  IMPL_prim_le(val_lhs, val_rhs)
+#define prim_ge(val_lhs, val_rhs)  IMPL_prim_ge(val_lhs, val_rhs)
 
-#define prim_divisible(_lhs, _rhs...) IMPL_prim_divisible(_lhs, _rhs...)
+#define prim_divisible(val_lhs, val_rhs) IMPL_prim_divisible(val_lhs, val_rhs)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_prim_cmp(_lhs, _rhs...) ((_lhs) < (_rhs) ? -1 : ((_lhs) > (_rhs) ? 1 : 0))
-#define IMPL_prim_eq(_lhs, _rhs...)  ((_lhs) == (_rhs))
-#define IMPL_prim_ne(_lhs, _rhs...)  ((_lhs) != (_rhs))
-#define IMPL_prim_lt(_lhs, _rhs...)  ((_lhs) < (_rhs))
-#define IMPL_prim_le(_lhs, _rhs...)  ((_lhs) <= (_rhs))
-#define IMPL_prim_gt(_lhs, _rhs...)  ((_lhs) > (_rhs))
-#define IMPL_prim_ge(_lhs, _rhs...)  ((_lhs) >= (_rhs))
+#define IMPL_prim_cmp(val_lhs, val_rhs) ((val_lhs) < (val_rhs) ? -1 : ((val_lhs) > (val_rhs) ? 1 : 0))
+#define IMPL_prim_eq(val_lhs, val_rhs)  ((val_lhs) == (val_rhs))
+#define IMPL_prim_ne(val_lhs, val_rhs)  ((val_lhs) != (val_rhs))
+#define IMPL_prim_lt(val_lhs, val_rhs)  ((val_lhs) < (val_rhs))
+#define IMPL_prim_le(val_lhs, val_rhs)  ((val_lhs) <= (val_rhs))
+#define IMPL_prim_gt(val_lhs, val_rhs)  ((val_lhs) > (val_rhs))
+#define IMPL_prim_ge(val_lhs, val_rhs)  ((val_lhs) >= (val_rhs))
 
-#define IMPL_prim_divisible(_lhs, _rhs...) (((_rhs) == 0) ? 0 : ((_lhs) % (_rhs) == 0))
+#define IMPL_prim_divisible(val_lhs, val_rhs) (((val_rhs) == 0) ? 0 : ((val_lhs) % (val_rhs) == 0))
 
 #if defined(__cplusplus)
 } /* extern "C" */
