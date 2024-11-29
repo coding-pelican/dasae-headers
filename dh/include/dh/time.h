@@ -27,6 +27,13 @@ extern "C" {
 #include "time/Instant.h"
 #include "time/SysTime.h"
 
+/*========== Macros and Definitions =========================================*/
+
+force_inline time_SysTime ops_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
+force_inline time_SysTime ops_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
+force_inline time_Instant ops_fnWrapAddBy(addDuration, time_Instant, time_Duration);
+force_inline time_Instant ops_fnWrapSubBy(subDuration, time_Instant, time_Duration);
+
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST

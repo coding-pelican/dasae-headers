@@ -11,7 +11,7 @@
  *
  * @brief   Memory management with Zig-style semantics
  * @details Provides type-safe memory management with clear separation between
- *          single-element pointers (Ptr) and multi-element views (Slice).
+ *          single-element pointers (sptr) and multi-element views (Slice).
  *          Features:
  *          - Type-safe memory operations
  *          - Clear error handling with try/OrNull variants
@@ -19,8 +19,10 @@
  *          - Extensible allocator interface
  */
 
-#ifndef MEM_INCLUDED
-#define MEM_INCLUDED (1)
+// TODO: Add more details about the memory management system
+
+#ifndef CORE_MEM_INCLUDED
+#define CORE_MEM_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -28,371 +30,344 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-#include "dh/core/Ptr.h"
-#include "dh/core/Slice.h"
 
-/*========== Core Types =====================================================*/
+/*========== Types ========================================================*/
 
-/**
- * Memory allocator interface
- * Provides raw memory operations that are wrapped with type-safe functions
- */
+// Memory state tracking for debug
+typedef enum mem_State {
+    mem_State_invalid,   // Not allocated/initialized
+    mem_State_allocated, // Currently allocated
+    mem_State_freed      // Has been freed
+} mem_State;
+
+// Debug information
+typedef struct mem_Debug {
+    mem_State   state;
+    const char* file;
+    i32         line;
+    const char* func;
+} mem_Debug;
+
+// Allocator interface
 typedef struct mem_Allocator {
-    anyptr (*allocRaw)(usize size);
-    void (*freeRaw)(anyptr raw);
-    anyptr (*reallocRaw)(anyptr raw, usize size);
+    anyptr ctx; // Allocator context
+
+    // Core allocation functions
+    anyptr (*alloc)(anyptr ctx, usize size, mem_Debug* debug);
+    void (*free)(anyptr ctx, anyptr ptr, mem_Debug* debug);
+    anyptr (*realloc)(anyptr ctx, anyptr ptr, usize size, mem_Debug* debug);
+
+#if DEBUG_ENABLED
+    mem_Debug debug; // Debug state tracking
+#endif
 } mem_Allocator;
 
-/**
- * General purpose allocator (uses malloc/free)
- */
-extern const mem_Allocator mem_general;
+/*========== Single Element Functions ======================================*/
 
-/*========== Single Element Operations ======================================*/
+// Create single element
+#define mem_create(alloc, T) \
+    IMPL_mem_create(alloc, sizeof(T), _Alignof(T))
 
-/**
- * Create a new element with size
- * Raises debug assertion on failure
- *
- * @param alloc Allocator to use
- * @param elem_size Size of element
- * @return Ptr to allocated memory
- */
-extern Ptr mem_createSize(const mem_Allocator* alloc, usize elem_size);
+#define mem_createDebug(alloc, T) \
+    IMPL_mem_createDebug(alloc, sizeof(T), _Alignof(T), __FILE__, __LINE__, __func__)
 
-/**
- * Try to create a new element with size
- *
- * @param alloc Allocator to use
- * @param elem_size Size of element
- * @param[out] out_ptr Output pointer if successful
- * @return true if allocation successful
- */
-extern bool mem_tryCreateSize(const mem_Allocator* alloc, usize elem_size, Ptr* out_ptr);
+// Create with optional
+#define mem_createOpt(alloc, T) \
+    IMPL_mem_createOpt(alloc, sizeof(T), _Alignof(T))
 
-/**
- * Create a new element with size
- * Returns null on failure
- *
- * @param alloc Allocator to use
- * @param elem_size Size of element
- * @return Ptr to allocated memory or null
- */
-extern Ptr mem_createSizeOrNull(const mem_Allocator* alloc, usize elem_size);
+// Destroy single element
+force_inline void mem_destroy(mem_Allocator* alloc, sptr_mut* ptr);
+force_inline void mem_destroyDebug(mem_Allocator* alloc, sptr_mut* ptr, const char* file, i32 line, const char* func);
 
-/**
- * Destroy a single element
- *
- * @param alloc Allocator to use
- * @param ptr Pointer to element
- */
-extern void mem_destroy(const mem_Allocator* alloc, Ptr* ptr);
+/*========== Multiple Element Functions ===================================*/
 
-/**
- * Type-safe element creation
- */
-#define mem_create(_alloc, _T) \
-    mem_createSize(_alloc, sizeof(_T))
+// Create array of elements
+#define mem_alloc(alloc, T, count) \
+    IMPL_mem_alloc(alloc, sizeof(T), _Alignof(T), count)
 
-#define mem_createOrNull(_alloc, _T) \
-    mem_createSizeOrNull(_alloc, sizeof(_T))
+#define mem_allocDebug(alloc, T, count) \
+    IMPL_mem_allocDebug(alloc, sizeof(T), _Alignof(T), count, __FILE__, __LINT__, __func__)
 
-/*========== Multi-Element Operations =======================================*/
+// Create with optional
+#define mem_allocOpt(alloc, T, count) \
+    IMPL_mem_allocOpt(alloc, sizeof(T), _Alignof(T), count)
 
-/**
- * Allocate multiple elements
- * Raises debug assertion on failure
- *
- * @param alloc Allocator to use
- * @param elem_size Size of each element
- * @param count Number of elements
- * @return Slice view of allocated memory
- */
-extern Slice mem_allocSize(const mem_Allocator* alloc, usize elem_size, usize count);
+// Free array
+force_inline void mem_free(mem_Allocator* alloc, Slice_mut* slice);
+force_inline void mem_freeDebug(mem_Allocator* alloc, Slice_mut* slice, const char* file, i32 line, const char* func);
 
-/**
- * Try to allocate multiple elements
- *
- * @param alloc Allocator to use
- * @param elem_size Size of each element
- * @param count Number of elements
- * @param[out] out_slice Output slice if successful
- * @return true if allocation successful
- */
-extern bool mem_tryAllocSize(const mem_Allocator* alloc, usize elem_size, usize count, Slice* out_slice);
+// Resize array
+#define mem_realloc(alloc, slice, T, new_count) \
+    IMPL_mem_realloc(alloc, slice, sizeof(T), _Alignof(T), new_count)
 
-/**
- * Allocate multiple elements
- * Returns null slice on failure
- *
- * @param alloc Allocator to use
- * @param elem_size Size of each element
- * @param count Number of elements
- * @return Slice view of allocated memory or null slice
- */
-extern Slice mem_allocSizeOrNull(const mem_Allocator* alloc, usize elem_size, usize count);
+#define mem_reallocOpt(alloc, slice, T, new_count) \
+    IMPL_mem_reallocOpt(alloc, slice, sizeof(T), _Alignof(T), new_count)
 
-/**
- * Free multiple elements
- *
- * @param alloc Allocator to use
- * @param slice Slice to free
- */
-extern void mem_free(const mem_Allocator* alloc, Slice* slice);
+/*========== Memory Operations ============================================*/
 
-/**
- * Reallocate memory to new size
- * Raises debug assertion on failure
- *
- * @param alloc Allocator to use
- * @param slice Current slice
- * @param elem_size Size of each element
- * @param new_count New number of elements
- * @return New slice view
- */
-extern Slice mem_reallocSize(const mem_Allocator* alloc, Slice slice, usize elem_size, usize new_count);
+// Copy between memory regions
+force_inline void mem_copy(sptr_mut dest, sptr src, usize size);
+force_inline void mem_copySlice(Slice_mut dest, Slice src);
 
-/**
- * Try to reallocate memory to new size
- *
- * @param alloc Allocator to use
- * @param slice Current slice
- * @param elem_size Size of each element
- * @param new_count New number of elements
- * @param[out] out_slice Output slice if successful
- * @return true if reallocation successful
- */
-extern bool mem_tryReallocSize(const mem_Allocator* alloc, Slice slice, usize elem_size, usize new_count, Slice* out_slice);
+// Move memory (handles overlap)
+force_inline void mem_move(sptr_mut dest, sptr src, usize size);
+force_inline void mem_moveSlice(Slice_mut dest, Slice src);
 
-/**
- * Type-safe allocation macros
- */
-#define mem_alloc(_alloc, _T, _count) \
-    mem_allocSize(_alloc, sizeof(_T), _count)
+// Set memory
+force_inline void mem_set(sptr_mut ptr, i32 value, usize size);
+force_inline void mem_setSlice(Slice_mut slice, i32 value);
 
-#define mem_tryAlloc(_alloc, _T, _count, _out_slice) \
-    mem_tryAllocSize(_alloc, sizeof(_T), _count, _out_slice)
+// Compare memory
+force_inline i32 mem_cmp(sptr lhs, sptr rhs, usize size);
+force_inline i32 mem_cmpSlice(Slice lhs, Slice rhs);
 
-#define mem_allocOrNull(_alloc, _T, _count) \
-    mem_allocSizeOrNull(_alloc, sizeof(_T), _count)
+/*========== Safety Functions ============================================*/
 
-#define mem_realloc(_alloc, _slice, _T, _new_count) \
-    mem_reallocSize(_alloc, _slice, sizeof(_T), _new_count)
+force_inline bool mem_isValidState(mem_State state);
+force_inline bool mem_canAccess(const mem_Debug* debug);
+force_inline bool mem_canFree(const mem_Debug* debug);
 
-#define mem_tryRealloc(_alloc, _slice, _T, _new_count, _out_slice) \
-    mem_tryReallocSize(_alloc, _slice, sizeof(_T), _new_count, _out_slice)
+#ifndef CORE_MEM_IMPL_INCLUDED
+#define CORE_MEM_IMPL_INCLUDED (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
 
-/*========== Raw Memory Operations (when needed) ============================*/
+/*========== Single Element Implementation ================================*/
 
-extern anyptr mem_allocRaw(const mem_Allocator* alloc, usize size);                   // Base function
-extern void   mem_freeRaw(const mem_Allocator* alloc, anyptr* raw);                   // Base function
-extern anyptr mem_reallocRaw(const mem_Allocator* alloc, anyptr raw, usize new_size); // Base function
+force_inline sptr_mut IMPL_mem_create(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+    mem_Debug debug = {
+        .state = mem_State_invalid,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-/*========== Memory Manipulation ============================================*/
+    void* raw = alloc->alloc(alloc->ctx, elem_size, &debug);
+    debug_assert_nonnull(raw);
 
-/**
- * Copy memory between pointers
- * Raises debug assertion on invalid parameters
- *
- * @param dest Destination pointer
- * @param src Source pointer
- * @param size Number of bytes to copy
- */
-extern void mem_copySize(Ptr dest, Ptr src, usize size);
+    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return result;
+}
 
-/**
- * Try to copy memory between pointers
- *
- * @param dest Destination pointer
- * @param src Source pointer
- * @param size Number of bytes to copy
- * @return true if copy successful
- */
-extern bool mem_tryCopySize(Ptr dest, Ptr src, usize size);
+force_inline sptr_mut IMPL_mem_createDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func) {
+    mem_Debug debug = {
+        .state = mem_State_invalid,
+        .file  = file,
+        .line  = line,
+        .func  = func
+    };
 
-/**
- * Move memory between possibly overlapping regions
- * Raises debug assertion on invalid parameters
- *
- * @param dest Destination pointer
- * @param src Source pointer
- * @param size Number of bytes to move
- */
-extern void mem_moveSize(Ptr dest, Ptr src, usize size);
+    void* raw = alloc->alloc(alloc->ctx, elem_size, &debug);
+    debug_assert_nonnull(raw);
 
-/**
- * Try to move memory between possibly overlapping regions
- *
- * @param dest Destination pointer
- * @param src Source pointer
- * @param size Number of bytes to move
- * @return true if move successful
- */
-extern bool mem_tryMoveSize(Ptr dest, Ptr src, usize size);
+    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return result;
+}
 
-/**
- * Set memory to a value
- * Raises debug assertion on invalid parameters
- *
- * @param ptr Pointer to memory
- * @param value Value to set
- * @param size Number of bytes to set
- */
-extern void mem_setSize(Ptr ptr, i32 value, usize size);
+force_inline Optional(sptr_mut) IMPL_mem_createOpt(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+    mem_Debug debug = {
+        .state = mem_State_invalid,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-/**
- * Try to set memory to a value
- *
- * @param ptr Pointer to memory
- * @param value Value to set
- * @param size Number of bytes to set
- * @return true if set successful
- */
-extern bool mem_trySetSize(Ptr ptr, i32 value, usize size);
+    void* raw = alloc->alloc(alloc->ctx, elem_size, &debug);
+    if (!raw) {
+        return sptr_mut_none();
+    }
 
-/**
- * Compare memory regions
- * Raises debug assertion on invalid parameters
- *
- * @param lhs First pointer
- * @param rhs Second pointer
- * @param size Number of bytes to compare
- * @return <0 if lhs < rhs, 0 if equal, >0 if lhs > rhs
- */
-extern i32 mem_cmpSize(Ptr lhs, Ptr rhs, usize size);
+    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return sptr_mut_some(result);
+}
 
-/**
- * Try to compare memory regions
- *
- * @param lhs First pointer
- * @param rhs Second pointer
- * @param size Number of bytes to compare
- * @param[out] out_result Comparison result if successful
- * @return true if comparison successful
- */
-extern bool mem_tryCmpSize(Ptr lhs, Ptr rhs, usize size, i32* out_result);
+force_inline void mem_destroy(mem_Allocator* alloc, sptr_mut* ptr) {
+    debug_assert_true(mem_canFree(&alloc->debug));
 
-/**
- * Type-safe memory operation macros
- */
-#define mem_copy(_dest, _src, _T) \
-    mem_copySize(_dest, _src, sizeof(_T))
+    mem_Debug debug = {
+        .state = mem_State_freed,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-#define mem_tryCopy(_dest, _src, _T) \
-    mem_tryCopySize(_dest, _src, sizeof(_T))
+    alloc->free(alloc->ctx, sptr_mut_raw(*ptr), &debug);
+    *ptr = sptr_mut_fromRaw(NULL, 0); // Clear pointer
 
-#define mem_move(_dest, _src, _T) \
-    mem_moveSize(_dest, _src, sizeof(_T))
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+}
 
-#define mem_tryMove(_dest, _src, _T) \
-    mem_tryMoveSize(_dest, _src, sizeof(_T))
+/*========== Multiple Element Implementation ==============================*/
 
-#define mem_set(_ptr, _value, _T) \
-    mem_setSize(_ptr, _value, sizeof(_T))
+force_inline Slice_mut IMPL_mem_alloc(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+    mem_Debug debug = {
+        .state = mem_State_invalid,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-#define mem_trySet(_ptr, _value, _T) \
-    mem_trySetSize(_ptr, _value, sizeof(_T))
+    void* raw = alloc->alloc(alloc->ctx, elem_size * count, &debug);
+    debug_assert_nonnull(raw);
 
-#define mem_cmp(_lhs, _rhs, _T) \
-    mem_cmpSize(_lhs, _rhs, sizeof(_T))
+    Slice_mut result = Slice_mut_fromParts(
+        mptr_mut_fromRaw(raw, elem_size),
+        count
+    );
 
-#define mem_tryCmp(_lhs, _rhs, _T, _out_result) \
-    mem_tryCmpSize(_lhs, _rhs, sizeof(_T), _out_result)
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return result;
+}
 
-/*========== Slice Memory Operations ========================================*/
+force_inline Optional(Slice_mut) IMPL_mem_allocOpt(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+    mem_Debug debug = {
+        .state = mem_State_invalid,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-/**
- * Copy contents between slices
- * Raises debug assertion if sizes don't match or invalid parameters
- *
- * @param dest Destination slice
- * @param src Source slice
- */
-extern void mem_copySlice(Slice dest, Slice src);
+    void* raw = alloc->alloc(alloc->ctx, elem_size * count, &debug);
+    if (!raw) {
+        return Slice_mut_none();
+    }
 
-/**
- * Try to copy contents between slices
- *
- * @param dest Destination slice
- * @param src Source slice
- * @return true if copy successful
- */
-extern bool mem_tryCopySlice(Slice dest, Slice src);
+    Slice_mut result = Slice_mut_fromParts(
+        mptr_mut_fromRaw(raw, elem_size),
+        count
+    );
 
-/**
- * Move contents between possibly overlapping slices
- * Raises debug assertion if sizes don't match or invalid parameters
- *
- * @param dest Destination slice
- * @param src Source slice
- */
-extern void mem_moveSlice(Slice dest, Slice src);
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return Slice_mut_some(result);
+}
 
-/**
- * Try to move contents between possibly overlapping slices
- *
- * @param dest Destination slice
- * @param src Source slice
- * @return true if move successful
- */
-extern bool mem_tryMoveSlice(Slice dest, Slice src);
+force_inline void mem_free(mem_Allocator* alloc, Slice_mut* slice) {
+    debug_assert_true(mem_canFree(&alloc->debug));
 
-/**
- * Set all elements in slice to a value
- * Raises debug assertion if invalid parameters
- *
- * @param slice Slice to modify
- * @param value Byte value to set
- */
-extern void mem_setSlice(Slice slice, i32 value);
+    mem_Debug debug = {
+        .state = mem_State_freed,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-/**
- * Try to set all elements in slice to a value
- *
- * @param slice Slice to modify
- * @param value Byte value to set
- * @return true if set successful
- */
-extern bool mem_trySetSlice(Slice slice, i32 value);
+    alloc->free(alloc->ctx, Slice_mut_raw(*slice), &debug);
+    *slice = Slice_mut_fromParts(mptr_mut_fromRaw(NULL, 0), 0); // Clear slice
 
-/**
- * Compare contents of two slices
- * Raises debug assertion if invalid parameters
- *
- * @param lhs First slice
- * @param rhs Second slice
- * @return <0 if lhs < rhs, 0 if equal, >0 if lhs > rhs
- */
-extern i32 mem_cmpSlice(Slice lhs, Slice rhs);
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+}
 
-/**
- * Try to compare contents of two slices
- *
- * @param lhs First slice
- * @param rhs Second slice
- * @param[out] out_result Comparison result if successful
- * @return true if comparison successful
- */
-extern bool mem_tryCmpSlice(Slice lhs, Slice rhs, i32* out_result);
+force_inline Optional(Slice_mut) IMPL_mem_realloc(mem_Allocator* alloc, Slice_mut slice, usize elem_size, usize elem_align, usize new_count) {
+    debug_assert_true(mem_canAccess(&alloc->debug));
 
-/*========== Type Checking ==================================================*/
+    mem_Debug debug = {
+        .state = mem_State_allocated,
+        .file  = __FILE__,
+        .line  = __LINE__,
+        .func  = __func__
+    };
 
-/**
- * Check if element size matches type size
- *
- * @param elem_size Element size to check
- * @param type_size Expected type size
- * @return true if sizes match
- */
-extern bool mem_isTypeSize(usize elem_size, usize type_size);
+    void* raw = alloc->realloc(alloc->ctx, Slice_mut_raw(slice), elem_size * new_count, &debug);
+    if (!raw) {
+        return Slice_mut_none();
+    }
 
-/**
- * Type-safe size checking macro
- */
-#define mem_isType(_ptrOrSlice, _T) \
-    mem_isTypeSize(Ptr_size((_ptrOrSlice).ptr_), sizeof(_T))
+    Slice_mut result = Slice_mut_fromParts(
+        mptr_mut_fromRaw(raw, elem_size),
+        new_count
+    );
+
+#if DEBUG_ENABLED
+    alloc->debug = debug;
+#endif
+    return Slice_mut_some(result);
+}
+
+/*========== Memory Operation Implementation =============================*/
+
+force_inline void mem_copy(sptr_mut dest, sptr src, usize size) {
+    debug_assert_nonnull(sptr_mut_raw(dest));
+    debug_assert_nonnull(sptr_raw(src));
+    memcpy(sptr_mut_raw(dest), sptr_raw(src), size);
+}
+
+force_inline void mem_copySlice(Slice_mut dest, Slice src) {
+    debug_assert_eq(Slice_mut_len(dest), Slice_len(src));
+    debug_assert_true(mptr_mut_hasSize(dest.ptr, mptr_size(src.ptr)));
+    memcpy(Slice_mut_raw(dest), Slice_raw(src), Slice_len(src) * mptr_size(src.ptr));
+}
+
+force_inline void mem_move(sptr_mut dest, sptr src, usize size) {
+    debug_assert_nonnull(sptr_mut_raw(dest));
+    debug_assert_nonnull(sptr_raw(src));
+    memmove(sptr_mut_raw(dest), sptr_raw(src), size);
+}
+
+force_inline void mem_moveSlice(Slice_mut dest, Slice src) {
+    debug_assert_eq(Slice_mut_len(dest), Slice_len(src));
+    debug_assert_true(mptr_mut_hasSize(dest.ptr, mptr_size(src.ptr)));
+    memmove(Slice_mut_raw(dest), Slice_raw(src), Slice_len(src) * mptr_size(src.ptr));
+}
+
+force_inline void mem_set(sptr_mut ptr, i32 value, usize size) {
+    debug_assert_nonnull(sptr_mut_raw(ptr));
+    memset(sptr_mut_raw(ptr), value, size);
+}
+
+force_inline void mem_setSlice(Slice_mut slice, i32 value) {
+    memset(Slice_mut_raw(slice), value, Slice_mut_len(slice) * mptr_mut_size(slice.ptr));
+}
+
+force_inline i32 mem_cmp(sptr lhs, sptr rhs, usize size) {
+    debug_assert_nonnull(sptr_raw(lhs));
+    debug_assert_nonnull(sptr_raw(rhs));
+    return memcmp(sptr_raw(lhs), sptr_raw(rhs), size);
+}
+
+force_inline i32 mem_cmpSlice(Slice lhs, Slice rhs) {
+    debug_assert_eq(Slice_len(lhs), Slice_len(rhs));
+    debug_assert_true(mptr_hasSize(lhs.ptr, mptr_size(rhs.ptr)));
+    return memcmp(Slice_raw(lhs), Slice_raw(rhs), Slice_len(lhs) * mptr_size(lhs.ptr));
+}
+
+/*========== Safety Implementation ======================================*/
+
+force_inline bool mem_isValidState(mem_State state) {
+    return state >= mem_State_invalid && state <= mem_State_freed;
+}
+
+force_inline bool mem_canAccess(const mem_Debug* debug) {
+#if DEBUG_ENABLED
+    return debug->state == mem_State_allocated;
+#else
+    return true;
+#endif
+}
+
+force_inline bool mem_canFree(const mem_Debug* debug) {
+#if DEBUG_ENABLED
+    return debug->state == mem_State_allocated;
+#else
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* MEM_INCLUDED */
+#endif /* CORE_MEM_INCLUDED */

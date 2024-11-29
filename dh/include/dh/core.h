@@ -24,8 +24,7 @@ extern "C" {
 #include "core/cfg.h"
 #include "core/pp.h"
 #include "core/prim.h"
-// #include "core/Ptr.h"
-// #include "core/Slice.h"
+#include "core/ptr.h"
 #include "core/ops.h"
 #include "core/cmp.h"
 

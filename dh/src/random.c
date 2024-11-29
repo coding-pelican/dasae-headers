@@ -5,7 +5,7 @@
 
 /*========== Static Constant and Variable Definitions =======================*/
 
-static Random Random_s_rng[1] = create(Random);
+static Random Random_s_rng[1] = cleared();
 
 /*========== Extern Constant and Variable Definitions =======================*/
 

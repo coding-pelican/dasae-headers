@@ -34,11 +34,11 @@ extern "C" {
      */                                                                          \
     IMPL_pp_func(_Statement)
 
-#define pp_concat(_Token_lhs, _Token_rhs...) \
-    IMPL_pp_concat(_Token_lhs, _Token_rhs)
+#define pp_cat(_Token_lhs, _Token_rhs...) \
+    IMPL_pp_cat(_Token_lhs, _Token_rhs)
 
-#define pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
-    IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs)
+#define pp_cat3(_Token_lhs, _Token_mid, _Token_rhs...) \
+    IMPL_pp_cat3(_Token_lhs, _Token_mid, _Token_rhs)
 
 #define pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
     IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs)
@@ -54,10 +54,10 @@ extern "C" {
 #define IMPL_pp_func(_Statement...) \
     ({ _Statement })
 
-#define IMPL_pp_concat(_Token_lhs, _Token_rhs...) \
+#define IMPL_pp_cat(_Token_lhs, _Token_rhs...) \
     _Token_lhs##_Token_rhs
 
-#define IMPL_pp_concat3(_Token_lhs, _Token_mid, _Token_rhs...) \
+#define IMPL_pp_cat3(_Token_lhs, _Token_mid, _Token_rhs...) \
     _Token_lhs##_Token_mid##_Token_rhs
 
 #define IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
@@ -67,7 +67,7 @@ extern "C" {
     _Token_lhs##_Token_sep##_Token_mid##_Token_sep##_Token_rhs
 
 #define IMPL_pp_uniqueToken(_Token...) \
-    pp_concat(pp_concat3(_, __LINE__, _), _Token)
+    pp_cat(pp_cat3(_, __LINE__, _), _Token)
 
 #if defined(__cplusplus)
 } /* extern "C" */

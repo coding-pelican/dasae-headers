@@ -54,7 +54,7 @@ time_Duration time_Duration_fromSecs_f64(f64 secs);
 f64           time_Duration_asSecs_f64(time_Duration self);
 
 /* Arithmetic */
-ops_fn(time_Duration, ops_add(time_Duration)) {
+force_inline time_Duration ops_fnAdd(time_Duration) {
     u64 total_nanos = (u64)self.nanos_ + other.nanos_;
     return makeWith(
         time_Duration,
@@ -64,7 +64,7 @@ ops_fn(time_Duration, ops_add(time_Duration)) {
                   : total_nanos)
     );
 }
-ops_fn(time_Duration, ops_sub(time_Duration)) {
+force_inline time_Duration ops_fnSub(time_Duration) {
     return makeWith(
         time_Duration,
         self.secs_ - other.secs_ - (self.nanos_ < other.nanos_),
@@ -73,7 +73,7 @@ ops_fn(time_Duration, ops_sub(time_Duration)) {
             : self.nanos_ - other.nanos_
     );
 }
-ops_fn(time_Duration, ops_mul_other(time_Duration, u64)) {
+force_inline time_Duration ops_fnMulBy(time_Duration, u64) {
     u64 total_nanos = self.nanos_ * other;
     return makeWith(
         time_Duration,
@@ -81,7 +81,7 @@ ops_fn(time_Duration, ops_mul_other(time_Duration, u64)) {
         (u32)(total_nanos % time_nanos_per_sec)
     );
 }
-ops_fn(time_Duration, ops_div_other(time_Duration, u64)) {
+force_inline time_Duration ops_fnDivBy(time_Duration, u64) {
     claim_assert_fmt(other != 0, "Division by zero");
     u64 total_nanos = self.nanos_ / other;
     return makeWith(
@@ -92,19 +92,19 @@ ops_fn(time_Duration, ops_div_other(time_Duration, u64)) {
 }
 
 /* Comparison */
-cmp_fnOrd(cmp_cmp(time_Duration)) {
+force_inline cmp_fnCmp(time_Duration) {
     if (self.secs_ < other.secs_) { return cmp_Ord_less; }
     if (self.secs_ > other.secs_) { return cmp_Ord_greater; }
     if (self.nanos_ < other.nanos_) { return cmp_Ord_less; }
     if (self.nanos_ > other.nanos_) { return cmp_Ord_greater; }
     return cmp_Ord_equal;
 }
-cmp_eq_impl(time_Duration);
-cmp_ne_impl(time_Duration);
-cmp_lt_impl(time_Duration);
-cmp_gt_impl(time_Duration);
-cmp_le_impl(time_Duration);
-cmp_ge_impl(time_Duration);
+cmp_fnEq_default(time_Duration);
+cmp_fnNe_default(time_Duration);
+cmp_fnLt_default(time_Duration);
+cmp_fnGt_default(time_Duration);
+cmp_fnLe_default(time_Duration);
+cmp_fnGe_default(time_Duration);
 
 /* Literal */
 #define literal_time_Duration_from(_secs, _nanos) \

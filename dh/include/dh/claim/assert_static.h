@@ -47,14 +47,14 @@ extern "C" {
 
 #ifdef __COUNTER__
 #define IMPL_claim_assert_static(_Expr) \
-    typedef i8 pp_concat(claim_assert_static_, __COUNTER__)[(_Expr) ? 1 : -1]
+    typedef i8 pp_cat(claim_assert_static_, __COUNTER__)[(_Expr) ? 1 : -1]
 #define IMPL_claim_assert_static_msg(_Expr, _msg) \
-    typedef i8 pp_concat(claim_assert_static_msg_, __COUNTER__)[(_Expr) ? 1 : -1]
+    typedef i8 pp_cat(claim_assert_static_msg_, __COUNTER__)[(_Expr) ? 1 : -1]
 #else
 #define IMPL_claim_assert_static(_Expr) \
-    typedef i8 pp_concat(claim_assert_static_, __LINE__)[(_Expr) ? 1 : -1]
+    typedef i8 pp_cat(claim_assert_static_, __LINE__)[(_Expr) ? 1 : -1]
 #define IMPL_claim_assert_static_msg(_Expr, _msg) \
-    typedef i8 pp_concat(claim_assert_static_msg_, __LINE__)[(_Expr) ? 1 : -1]
+    typedef i8 pp_cat(claim_assert_static_msg_, __LINE__)[(_Expr) ? 1 : -1]
 #endif
 
 #endif

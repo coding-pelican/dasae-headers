@@ -4,7 +4,7 @@
  * @file    cmp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-24 (date of creation)
- * @updated 2024-11-24 (date of last update)
+ * @updated 2024-11-29 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core
  * @prefix  cmp
@@ -33,53 +33,41 @@ typedef enum cmp_Ord {
     cmp_Ord_greater = 1
 } cmp_Ord;
 
-#define cmp(TSelf) pp_join(_, TSelf, cmp)
+/* Comparators */
+#define cmp_cmp(TSelf) pp_join(_, TSelf, cmp)
 
-#define eq(TSelf) pp_join(_, TSelf, eq)
-#define ne(TSelf) pp_join(_, TSelf, ne)
-#define lt(TSelf) pp_join(_, TSelf, lt)
-#define gt(TSelf) pp_join(_, TSelf, gt)
-#define le(TSelf) pp_join(_, TSelf, le)
-#define ge(TSelf) pp_join(_, TSelf, ge)
+/* Relational operators */
+#define cmp_eq(TSelf) pp_join(_, TSelf, eq)
+#define cmp_ne(TSelf) pp_join(_, TSelf, ne)
+#define cmp_lt(TSelf) pp_join(_, TSelf, lt)
+#define cmp_gt(TSelf) pp_join(_, TSelf, gt)
+#define cmp_le(TSelf) pp_join(_, TSelf, le)
+#define cmp_ge(TSelf) pp_join(_, TSelf, ge)
 
 /* Function-like macros */
-#define cmp_fn(TRet, fnOps...)                  static_inline TRet fnOps
-#define cmp_fnOrd(/* TRet: cmp_Ord */ fnOps...) cmp_fn(cmp_Ord, fnOps)
-#define cmp_fnBool(/* TRet: bool */ fnOps...)   cmp_fn(bool, fnOps)
-
-/* Comparators */
-#define cmp_cmp(TSelf) pp_join(_, TSelf, cmp)(TSelf self, TSelf other)
-
-// clang-format off
-/* Binary operators */
-#define cmp_eq(TSelf) cmp_fnBool(pp_join(_, TSelf, eq)(TSelf self, TSelf other))
-#define cmp_ne(TSelf) cmp_fnBool(pp_join(_, TSelf, ne)(TSelf self, TSelf other))
-#define cmp_lt(TSelf) cmp_fnBool(pp_join(_, TSelf, lt)(TSelf self, TSelf other))
-#define cmp_gt(TSelf) cmp_fnBool(pp_join(_, TSelf, gt)(TSelf self, TSelf other))
-#define cmp_le(TSelf) cmp_fnBool(pp_join(_, TSelf, le)(TSelf self, TSelf other))
-#define cmp_ge(TSelf) cmp_fnBool(pp_join(_, TSelf, ge)(TSelf self, TSelf other))
+#define cmp_fnCmp(TSelf)        cmp_Ord pp_join(_, cmp, cmp)(TSelf)(TSelf self, TSelf other)
+#define cmp_fnOrd(fnCmp, TSelf) bool pp_join(_, cmp, fnCmp)(TSelf)(TSelf self, TSelf other)
+#define cmp_fnEq(TSelf)         cmp_fnOrd(eq, TSelf)
+#define cmp_fnNe(TSelf)         cmp_fnOrd(ne, TSelf)
+#define cmp_fnLt(TSelf)         cmp_fnOrd(lt, TSelf)
+#define cmp_fnGt(TSelf)         cmp_fnOrd(gt, TSelf)
+#define cmp_fnLe(TSelf)         cmp_fnOrd(le, TSelf)
+#define cmp_fnGe(TSelf)         cmp_fnOrd(ge, TSelf)
 
 /* Binary operators default implementation */
-#define cmp_eq_impl(TSelf) cmp_eq(TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_equal; }
-#define cmp_ne_impl(TSelf) cmp_ne(TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
-#define cmp_lt_impl(TSelf) cmp_lt(TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_less; }
-#define cmp_gt_impl(TSelf) cmp_gt(TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_greater; }
-#define cmp_le_impl(TSelf) cmp_le(TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
-#define cmp_ge_impl(TSelf) cmp_ge(TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
+// clang-format off
+#define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_equal; }
+#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
+#define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_less; }
+#define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_greater; }
+#define cmp_fnLe_default(TSelf) force_inline cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
+#define cmp_fnGe_default(TSelf) force_inline cmp_fnOrd(ge, TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
 // clang-format on
-
-// #define cmp_impl(TSelf) \
-//     cmp_eq_impl(TSelf) \
-//     cmp_ne_impl(TSelf) \
-//     cmp_lt_impl(TSelf) \
-//     cmp_gt_impl(TSelf) \
-//     cmp_le_impl(TSelf) \
-//     cmp_ge_impl(TSelf)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #ifdef UNIT_TEST
-cmp_fnOrd(cmp_cmp(int)) {
+cmp_fnCmp(int) {
     if (self < other) { return cmp_Ord_less; }
     if (other < self) { return cmp_Ord_greater; }
     return cmp_Ord_equal;

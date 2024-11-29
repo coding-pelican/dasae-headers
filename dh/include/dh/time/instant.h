@@ -42,19 +42,17 @@ extern bool time_Instant_isValid(time_Instant self);
 extern u64 time_Instant_toNanos(time_Instant self);
 
 /* Arithmetic */
-extern bool         ops_try_add_other(time_Instant, time_Duration, time_Instant);
-extern bool         ops_try_sub_other(time_Instant, time_Duration, time_Instant);
-extern time_Instant ops_add_other(time_Instant, time_Duration);
-extern time_Instant ops_sub_other(time_Instant, time_Duration);
+extern time_Instant ops_fnAddBy(time_Instant, time_Duration);
+extern time_Instant ops_fnSubBy(time_Instant, time_Duration);
 
 /* Comparison */
-extern cmp_Ord time_Instant_cmp(time_Instant self, time_Instant other);
-cmp_eq_impl(time_Instant);
-cmp_ne_impl(time_Instant);
-cmp_lt_impl(time_Instant);
-cmp_gt_impl(time_Instant);
-cmp_le_impl(time_Instant);
-cmp_ge_impl(time_Instant);
+extern cmp_fnCmp(time_Instant);
+cmp_fnEq_default(time_Instant);
+cmp_fnNe_default(time_Instant);
+cmp_fnLt_default(time_Instant);
+cmp_fnGt_default(time_Instant);
+cmp_fnLe_default(time_Instant);
+cmp_fnGe_default(time_Instant);
 
 #if defined(__cplusplus)
 } /* extern "C" */

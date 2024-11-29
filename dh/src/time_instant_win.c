@@ -38,25 +38,25 @@ u64 time_Instant_toNanos(time_Instant self) {
 
 /*========== Safe Arithmetic Operations ================================*/
 
-bool ops_try_add_other(time_Instant, time_Duration, time_Instant) {
-    return time_SysTime_try_add_time_Duration(self.time_, other, &out->time_);
-}
+// bool time_Instant ops_try_add_other(time_Duration, time_Instant) {
+//     return time_SysTime_try_add_time_Duration(self.time_, other, &out->time_);
+// }
 
-bool ops_try_sub_other(time_Instant, time_Duration, time_Instant) {
-    return time_SysTime_try_sub_time_Duration(self.time_, other, &out->time_);
-}
+// bool time_Instant ops_try_sub_other(time_Duration, time_Instant) {
+//     return time_SysTime_try_sub_time_Duration(self.time_, other, &out->time_);
+// }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
-time_Instant ops_add_other(time_Instant, time_Duration) {
+time_Instant ops_fnAddBy(time_Instant, time_Duration) {
     return (time_Instant){
-        .time_ = time_SysTime_add_time_Duration(self.time_, other)
+        .time_ = ops_addBy(time_SysTime, time_Duration)(self.time_, other)
     };
 }
 
-time_Instant ops_sub_other(time_Instant, time_Duration) {
+time_Instant ops_fnSubBy(time_Instant, time_Duration) {
     return (time_Instant){
-        .time_ = time_SysTime_sub_time_Duration(self.time_, other)
+        .time_ = ops_addBy(time_SysTime, time_Duration)(self.time_, other)
     };
 }
 

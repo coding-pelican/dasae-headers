@@ -4,7 +4,7 @@
  * @file    int.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-10-27 (date of last update)
+ * @updated 2024-11-28 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
@@ -43,8 +43,11 @@ typedef uint64_t u64;
 // typedef __uint128_t u128;
 // #define u128_limit (UINT128_MAX)
 
-typedef uintptr_t usize;
+typedef size_t usize;
 #define usize_limit (UINTPTR_MAX)
+
+typedef uintptr_t uptr;
+#define uptr_limit (UINTPTR_MAX)
 
 /* signed integer */
 typedef int8_t i8;
@@ -67,9 +70,13 @@ typedef int64_t i64;
 // #define i128_limit_min (INT128_MIN)
 // #define i128_limit_max (INT128_MAX)
 
-typedef intptr_t isize;
+typedef ssize_t isize;
 #define isize_limit_min (INTPTR_MIN)
 #define isize_limit_max (INTPTR_MAX)
+
+typedef intptr_t iptr;
+#define iptr_limit_min (INTPTR_MIN)
+#define iptr_limit_max (INTPTR_MAX)
 
 #if defined(__cplusplus)
 } /* extern "C" */

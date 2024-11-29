@@ -4,7 +4,7 @@
  * @file    defer.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-15 (date of creation)
- * @updated 2024-11-19 (date of last update)
+ * @updated 2024-11-29 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -31,8 +31,8 @@ extern "C" {
 #define defer_break  IMPL_defer_break
 #define defer_return IMPL_defer_return
 
-#define block_deferred() IMPL_block_deferred()
-#define scope_deferred() IMPL_scope_deferred()
+#define block_deferred IMPL_block_deferred
+#define scope_deferred IMPL_scope_deferred
 
 #define defer(_Statement...) IMPL_defer(_Statement)
 
@@ -73,14 +73,14 @@ extern "C" {
         goto _deferred;    \
     }
 
-#define IMPL_block_deferred() \
-    goto _deferred;           \
-    }                         \
+#define IMPL_block_deferred \
+    goto _deferred;         \
+    }                       \
     while (false)
 
-#define IMPL_scope_deferred() \
-    goto _deferred;           \
-    }                         \
+#define IMPL_scope_deferred \
+    goto _deferred;         \
+    }                       \
     while (false) {}
 
 #define IMPL_defer(_Statement...) \

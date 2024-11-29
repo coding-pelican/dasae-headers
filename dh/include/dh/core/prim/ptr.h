@@ -4,7 +4,7 @@
  * @file    ptr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-02 (date of creation)
- * @updated 2024-11-02 (date of last update)
+ * @updated 2024-11-29 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
@@ -26,92 +26,77 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define rawptr(_T)         \
-    /**                    \
-     * @brief Type pointer \
-     */                    \
-    IMPL_rawptr(_T)
-
-#define rawaddr(_var)          \
-    /**                        \
-     * @brief Variable address \
-     */                        \
-    IMPL_rawaddr(_var)
-
-#define rawref(_var)             \
-    /**                          \
-     * @brief Variable reference \
-     */                          \
-    IMPL_rawref(_var)
-
-#define rawderef(_var)             \
-    /**                            \
-     * @brief Variable dereference \
-     */                            \
-    IMPL_rawderef(_var)
-
-#define anyptr                 \
-    /**                        \
-     * @brief Any type pointer \
-     */                        \
+#define anyptr                            \
+    /**                                   \
+     * @brief Pointer to any type (void*) \
+     */                                   \
     IMPL_anyptr
 
-#define rawCast(_T, _raw)                          \
-    /**                                            \
-     * @brief Convert anyptr to pointer of type _T \
-     */                                            \
-    IMPL_rawCast(_T, _raw)
+#define rawptr(TSrc)                  \
+    /**                               \
+     * @brief Pointer to type (TSrc*) \
+     */                               \
+    IMPL_rawptr(TSrc)
 
-#define rawDeref(_raw)                                    \
-    /**                                                   \
-     * @brief Reference the value pointed to by a pointer \
-     */                                                   \
-    IMPL_rawDeref(_raw)
+typedef ptrdiff_t ptrdiff;
 
-#define rawCastDeref(_T, _raw)                                       \
-    /**                                                              \
-     * @brief Reference the value pointed to by a pointer of type _T \
-     */                                                              \
-    IMPL_rawCastDeref(_T, _raw)
+#define ref(var)                 \
+    /**                          \
+     * @brief Reference variable \
+     */                          \
+    IMPL_rawref(var)
 
-#define intToRaw(TDest, val)                           \
-    /**                                                \
-     * @brief Convert integer to pointer of type TDest \
-     */                                                \
-    IMPL_intToRaw(TDest, val)
+#define deref(TSelf, var)          \
+    /**                            \
+     * @brief Dereference variable \
+     */                            \
+    IMPL_deref(var)
 
-#define rawToInt(val)                                \
-    /**                                              \
-     * @brief Convert pointer of to unsigned integer \
-     */                                              \
-    IMPL_rawToInt(val)
+#define rawptrCast(TDestPtr, var)                        \
+    /**                                                  \
+     * @brief Convert anyptr to pointer of type TDestPtr \
+     */                                                  \
+    IMPL_rawptrCast(TDestPtr, var)
 
-#define rawIsNull(_ptr)                \
+#define rawptrToInt(raw)                  \
+    /**                                   \
+     * @brief Convert rawptr to int(uptr) \
+     */                                   \
+    IMPL_rawptrToInt(raw)
+
+#define intToRawptr(TDestRaw, val)  \
+    /**                             \
+     * @brief Convert int to rawptr \
+     */                             \
+    IMPL_intToRawptr(TDestRaw, val)
+
+#define rawptrIsNull(var)              \
     /**                                \
      * @brief Check if pointer is null \
      */                                \
-    IMPL_ptrIsNull(_ptr)
+    IMPL_rawptrIsNull(var)
 
-#define rawIsNonnull(_ptr)                 \
+#define rawptrIsNonnull(_ptr)              \
     /**                                    \
-     * @brief Check if pointer is not null \
+     * @brief Check if pointer is non-null \
      */                                    \
-    IMPL_ptrIsNonnull(_ptr)
+    IMPL_rawptrIsNonnull(_ptr)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_rawptr(_T)             _T*
-#define IMPL_rawaddr(_var...)       (&(_var))
-#define IMPL_rawref(_var...)        (&(_var))
-#define IMPL_rawderef(_var...)      (*(_var))
-#define IMPL_anyptr                 void*
-#define IMPL_rawCast(_T, _raw)      ((_T)(_raw))
-#define IMPL_rawDeref(_raw)         (*(_raw))
-#define IMPL_rawCastDeref(_T, _raw) (*((_T*)(_raw)))
-#define IMPL_intToRaw(_T, val)      ((_T)(val))    // NOLINT(performance-no-int-to-ptr)
-#define IMPL_rawToInt(val)          ((usize)(val)) // NOLINT(performance-no-int-to-ptr)
-#define IMPL_ptrIsNull(_ptr)        ((_ptr) == null)
-#define IMPL_ptrIsNonnull(_ptr)     ((_ptr) != null)
+#define IMPL_anyptr void*
+
+#define IMPL_rawptr(TSrc) TSrc*
+
+#define IMPL_ref(var)          (&(var))
+#define IMPL_deref(TSelf, var) (*(TSelf*)(var))
+
+#define IMPL_rawptrCast(TDestPtr, var)  ((TDestPtr)(var))
+#define IMPL_rawptrToInt(raw)           ((uptr)(raw))     // NOLINT
+#define IMPL_intToRawptr(TDestRaw, val) ((TDestRaw)(val)) // NOLINT
+
+#define IMPL_rawptrIsNull(var)    ((var) == null)
+#define IMPL_rawptrIsNonnull(var) ((var) != null)
 
 /*========== Validation Checks ==============================================*/
 

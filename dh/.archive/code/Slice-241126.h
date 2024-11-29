@@ -86,27 +86,15 @@ force_inline Ptr    Slice_atPtrOrNull(Slice self, usize idx);
 // force_inline void Slice_setRaw(Slice self, usize idx, anyptr val);
 // force_inline void Slice_setPtr(Slice self, usize idx, Ptr val);
 
-#define Slice_begin(TElem, self) IMPL_Slice_begin(TElem, self)
-#define Slice_end(TElem, self)   IMPL_Slice_end(TElem, self)
-
-force_inline anyptr Slice_beginRaw(Slice self);
-force_inline Ptr    Slice_beginPtr(Slice self);
-force_inline anyptr Slice_endRaw(Slice self);
-force_inline Ptr    Slice_endPtr(Slice self);
-
 #define Slice_first(TElem, self)       IMPL_Slice_first(TElem, self)
 #define Slice_last(TElem, self)        IMPL_Slice_last(TElem, self)
 #define Slice_firstOrNull(TElem, self) IMPL_Slice_firstOrNull(TElem, self)
 #define Slice_lastOrNull(TElem, self)  IMPL_Slice_lastOrNull(TElem, self)
 
-force_inline anyptr Slice_firstRaw(Slice self);
-force_inline Ptr    Slice_firstPtr(Slice self);
-force_inline anyptr Slice_lastRaw(Slice self);
-force_inline Ptr    Slice_lastPtr(Slice self);
-force_inline anyptr Slice_firstRawOrNull(Slice self);
-force_inline Ptr    Slice_firstPtrOrNull(Slice self);
-force_inline anyptr Slice_lastRawOrNull(Slice self);
-force_inline Ptr    Slice_lastPtrOrNull(Slice self);
+force_inline Ptr Slice_firstPtr(Slice self);
+force_inline Ptr Slice_lastPtr(Slice self);
+force_inline Ptr Slice_firstPtrOrNull(Slice self);
+force_inline Ptr Slice_lastPtrOrNull(Slice self);
 
 force_inline Slice Slice_subslice(Slice self, usize begin, usize end);
 force_inline Slice Slice_subsliceOrNull(Slice self, usize begin, usize end);
@@ -120,11 +108,11 @@ force_inline Slice Slice_suffix(Slice self, usize begin);
  * @param var_iter Iterator variable name
  * @param sl Slice to iterate
  */
-#define Slice_iter(TElem, var_iter, sl)                          \
-    for (                                                        \
-        rawptr(TElem) used(var_iter) = Slice_begin(TElem, sl);   \
-        used(var_iter) && used(var_iter) < Slice_end(TElem, sl); \
-        ++used(var_iter)                                         \
+#define Slice_iter(TElem, var_iter, s)                                                        \
+    for (                                                                                     \
+        rawptr(TElem) used(var_iter) = Ptr_cast(rawptr(TElem), Slice_firstPtr(TElem, s));     \
+        used(var_iter) && used(var_iter) <= Ptr_cast(rawptr(TElem), Slice_lastPtr(TElem, s)); \
+        ++used(var_iter)                                                                      \
     )
 
 /*========== Implementation =================================================*/
@@ -214,10 +202,10 @@ force_inline bool Slice_isEmpty(Slice self) {
 }
 
 #define IMPL_Slice_at(TElem, self, idx) \
-    ((TElem*)Slice_atRaw(self, idx))
+    (Ptr_deref(TElem, Slice_atPtr(self, idx)))
 
 #define IMPL_Slice_atOrNull(TElem, self, idx) \
-    ((TElem*)Slice_atRawOrNull(self, idx))
+    Slice_atPtrOrNull(self, idx)
 
 // #define IMPL_Slice_get(TElem, self, idx) \
 //     Ptr_deref(Slice_getPtr(TElem, self, idx))
@@ -226,7 +214,6 @@ force_inline bool Slice_isEmpty(Slice self) {
 //     Slice_setPtr(self, idx, Ptr_ref(val))
 
 force_inline anyptr Slice_atRaw(Slice self, usize idx) {
-    debug_assert_fmt(idx < self.len_, "Slice index out of bounds: %u >= %u", idx, self.len_);
     return Ptr_raw(Slice_atPtr(self, idx));
 }
 
@@ -245,66 +232,28 @@ force_inline Ptr Slice_atPtrOrNull(Slice self, usize idx) {
     return Slice_atPtr(self, idx);
 }
 
-#define IMPL_Slice_begin(TElem, self) \
-    Ptr_cast(rawptr(TElem), Slice_beginPtr(self))
-
-#define IMPL_Slice_end(TElem, self) \
-    Ptr_cast(rawptr(TElem), Slice_endPtr(self))
-
-force_inline anyptr Slice_beginRaw(Slice self) {
-    return Ptr_raw(Slice_beginPtr(self));
-}
-
-force_inline Ptr Slice_beginPtr(Slice self) {
-    return Slice_ptr(self);
-}
-
-force_inline anyptr Slice_endRaw(Slice self) {
-    return Ptr_raw(Slice_endPtr(self));
-}
-
-force_inline Ptr Slice_endPtr(Slice self) {
-    return Ptr_addOffset(self.ptr_, self.len_);
-}
-
 #define IMPL_Slice_first(TElem, self) \
-    ((TElem*)Slice_firstRaw(self))
+    (Ptr_deref(TElem, Slice_firstPtr(self)))
 
 #define IMPL_Slice_last(TElem, self) \
-    ((TElem*)Slice_lastRaw(self))
+    (Ptr_deref(TElem, Slice_lastRaw(self)))
 
 #define IMPL_Slice_firstOrNull(TElem, self) \
-    ((TElem*)Slice_firstRawOrNull(self))
+    Slice_firstPtrOrNull(self)
 
 #define IMPL_Slice_lastOrNull(TElem, self) \
-    ((TElem*)Slice_lastRawOrNull(self))
-
-force_inline anyptr Slice_firstRaw(Slice self) {
-    return Ptr_raw(Slice_firstPtr(self));
-}
+    Slice_lastPtrOrNull(self)
 
 force_inline Ptr Slice_firstPtr(Slice self) {
     return Slice_atPtr(self, 0);
-}
-
-force_inline anyptr Slice_lastRaw(Slice self) {
-    return Ptr_raw(Slice_lastPtr(self));
 }
 
 force_inline Ptr Slice_lastPtr(Slice self) {
     return Slice_atPtr(self, Slice_len(self) - 1);
 }
 
-force_inline anyptr Slice_firstRawOrNull(Slice self) {
-    return Slice_len(self) == 0 ? null : Slice_firstRaw(self);
-}
-
 force_inline Ptr Slice_firstPtrOrNull(Slice self) {
     return Slice_len(self) == 0 ? Ptr_null : Slice_firstPtr(self);
-}
-
-force_inline anyptr Slice_lastRawOrNull(Slice self) {
-    return Slice_len(self) == 0 ? null : Slice_lastRaw(self);
 }
 
 force_inline Ptr Slice_lastPtrOrNull(Slice self) {

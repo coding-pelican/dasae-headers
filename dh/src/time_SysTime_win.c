@@ -93,53 +93,53 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
     );
 }
 
-/*========== Safe Arithmetic Operations ================================*/
-bool ops_try_add_other(time_SysTime, time_Duration, time_SysTime) {
-    debug_assert_fmt(out != null, "Output parameter cannot be null");
+// /*========== Safe Arithmetic Operations ================================*/
+// bool ops_try_add_other(time_SysTime, time_Duration, time_SysTime) {
+//     debug_assert_fmt(out != null, "Output parameter cannot be null");
 
-    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
-    if (ticks > (UINT64_MAX - self.QuadPart)) {
-        return false;
-    }
+//     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+//     u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
+//     if (ticks > (UINT64_MAX - self.QuadPart)) {
+//         return false;
+//     }
 
-    out->QuadPart = (LONGLONG)(self.QuadPart + ticks);
-    return true;
-}
+//     out->QuadPart = (LONGLONG)(self.QuadPart + ticks);
+//     return true;
+// }
 
-bool ops_try_sub_other(time_SysTime, time_Duration, time_SysTime) {
-    debug_assert_fmt(out != null, "Output parameter cannot be null");
+// bool ops_try_sub_other(time_SysTime, time_Duration, time_SysTime) {
+//     debug_assert_fmt(out != null, "Output parameter cannot be null");
 
-    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
+//     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+//     u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
 
-    if (ticks > (u64)self.QuadPart) {
-        return false;
-    }
+//     if (ticks > (u64)self.QuadPart) {
+//         return false;
+//     }
 
-    out->QuadPart = (LONGLONG)(self.QuadPart - ticks);
-    return true;
-}
+//     out->QuadPart = (LONGLONG)(self.QuadPart - ticks);
+//     return true;
+// }
 
-/*========== Unsafe Arithmetic Operations ==============================*/
+// /*========== Unsafe Arithmetic Operations ==============================*/
 
-time_SysTime ops_add_other(time_SysTime, time_Duration) {
-    time_SysTime result  = cleared();
-    bool         success = time_SysTime_try_add_time_Duration(self, other, &result);
-    claim_assert_fmt(success, "Arithmetic overflow in time_SysTime addition");
-    return result;
-}
+// time_SysTime ops_add_other(time_SysTime, time_Duration) {
+//     time_SysTime result  = cleared();
+//     bool         success = time_SysTime_try_add_time_Duration(self, other, &result);
+//     claim_assert_fmt(success, "Arithmetic overflow in time_SysTime addition");
+//     return result;
+// }
 
-time_SysTime ops_sub_other(time_SysTime, time_Duration) {
-    time_SysTime result  = cleared();
-    bool         success = time_SysTime_try_sub_time_Duration(self, other, &result);
-    claim_assert_fmt(success, "Arithmetic underflow in time_SysTime subtraction");
-    return result;
-}
+// time_SysTime ops_sub_other(time_SysTime, time_Duration) {
+//     time_SysTime result  = cleared();
+//     bool         success = time_SysTime_try_sub_time_Duration(self, other, &result);
+//     claim_assert_fmt(success, "Arithmetic underflow in time_SysTime subtraction");
+//     return result;
+// }
 
 /*========== Comparison Functions =====================================*/
 
-cmp_Ord time_SysTime_cmp(time_SysTime self, time_SysTime other) {
+cmp_fnCmp(time_SysTime) {
     if (self.QuadPart < other.QuadPart) { return cmp_Ord_less; }
     if (self.QuadPart > other.QuadPart) { return cmp_Ord_greater; }
     return cmp_Ord_equal;

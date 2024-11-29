@@ -47,19 +47,17 @@ extern time_Duration time_SysTime_elapsed(time_SysTime self);
 extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
 
 /* Arithmetic */
-extern bool         ops_try_add_other(time_SysTime, time_Duration, time_SysTime);
-extern bool         ops_try_sub_other(time_SysTime, time_Duration, time_SysTime);
-extern time_SysTime ops_add_other(time_SysTime, time_Duration);
-extern time_SysTime ops_sub_other(time_SysTime, time_Duration);
+extern time_SysTime ops_fnAddBy(time_SysTime, time_Duration);
+extern time_SysTime ops_fnSubBy(time_SysTime, time_Duration);
 
 /* Comparison */
-extern cmp_Ord time_SysTime_cmp(time_SysTime self, time_SysTime other);
-cmp_eq_impl(time_SysTime);
-cmp_ne_impl(time_SysTime);
-cmp_lt_impl(time_SysTime);
-cmp_gt_impl(time_SysTime);
-cmp_le_impl(time_SysTime);
-cmp_ge_impl(time_SysTime);
+extern cmp_fnCmp(time_SysTime);
+cmp_fnEq_default(time_SysTime);
+cmp_fnNe_default(time_SysTime);
+cmp_fnLt_default(time_SysTime);
+cmp_fnGt_default(time_SysTime);
+cmp_fnLe_default(time_SysTime);
+cmp_fnGe_default(time_SysTime);
 
 /* Sleep */
 extern void time_SysTime_sleep(time_Duration duration);
