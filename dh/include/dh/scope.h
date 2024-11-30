@@ -34,6 +34,9 @@ extern "C" {
 #define scope_switch(_Init_Statement, _Condition) \
     IMPL_scope_switch(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
+#define scope_va_list(_Init_Statement) \
+    /* TODO: Implement scope_va_list */
+
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN

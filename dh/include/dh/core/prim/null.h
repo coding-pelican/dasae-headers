@@ -83,10 +83,10 @@ extern "C" {
 #define IMPL_Nonnull(TPtr)  TPtr nonnull
 
 #define IMPL_orelse(var, ...) \
-    ((_var) ? (_var) : (__VA_ARGS__))
+    ((var) ? (var) : (__VA_ARGS__))
 
 #define IMPL_orerr(var) \
-    ((_var) ? (_var) : claim_unreachable_val(anyptr))
+    ((var) ? (var) : claim_unreachable_val(anyptr))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -73,8 +73,8 @@ extern "C" {
 /*========== Core Pointer Type ==============================================*/
 
 typedef union cptr {
-    const anyptr raw_;
-    uptr         bits_;
+    anyptr raw_;
+    uptr   bits_;
     struct {
         uptr addr : cptr_bits_addr_len;   // 256TB address space
         uptr size : cptr_bits_size_len;   // Up to 4096 bytes size
@@ -83,6 +83,19 @@ typedef union cptr {
     } meta_;
 } cptr;
 claim_assert_static_msg(sizeof(cptr) == sizeof(anyptr), "cptr size mismatch");
+
+// void test() {
+//     cptr p = *(cptr*)&((union {
+//         i32* raw_;
+//         uptr bits_;
+//         struct {
+//             uptr addr : cptr_bits_addr_len;
+//             uptr size : cptr_bits_size_len;
+//             uptr align : cptr_bits_algin_len;
+//             uptr flags : cptr_bits_flags_len;
+//         } meta_;
+//     }){ .raw_ = 0 });
+// }
 
 /*========== Core Operations ================================================*/
 
