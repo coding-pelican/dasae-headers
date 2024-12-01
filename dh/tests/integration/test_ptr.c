@@ -8,7 +8,6 @@
 #define PTR_ALIGN_H
 
 #include "dh/time/SysTime.h"
-#include <stddef.h>
 
 #if defined(_WIN32)
 #include <malloc.h>
@@ -37,8 +36,8 @@ static inline void* ptr_aligned_alloc(size_t alignment, size_t size) {
  * Performance tests for Ptr implementation
  */
 
-#include "dh/core/Ptr.h"
-#include "dh/core/Slice.h"
+#include "dh/core/ptr.h"
+// #include "dh/core/Slice.h"
 #include "dh/mem.h"
 #include "dh/time.h"
 

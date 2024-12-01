@@ -49,7 +49,6 @@ extern "C" {
 #include "dh/claim/unreachable.h"
 
 #include <stdalign.h>
-#include <stddef.h>
 #include <string.h>
 
 /*========== Metadata Layout ================================================*/

@@ -18,7 +18,7 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
 #include "dh/time/SysTime.h"
-#include "dh/ds/Vec.h"
+// #include "dh/ds/Vec.h"
 
 // #define NMEM_TRACE
 #include "dh/mem.h"

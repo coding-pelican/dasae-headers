@@ -24,6 +24,8 @@ extern "C" {
 #include "cfg.h"
 #include "null.h"
 
+#include <stddef.h>
+
 /*========== Macros and Definitions =========================================*/
 
 #define anyptr                            \
@@ -44,13 +46,13 @@ typedef ptrdiff_t ptrdiff;
     /**                          \
      * @brief Reference variable \
      */                          \
-    IMPL_rawref(var)
+    IMPL_ref(var)
 
 #define deref(TSelf, var)          \
     /**                            \
      * @brief Dereference variable \
      */                            \
-    IMPL_deref(var)
+    IMPL_deref(TSelf, var)
 
 #define rawptrCast(TDestPtr, var)                        \
     /**                                                  \

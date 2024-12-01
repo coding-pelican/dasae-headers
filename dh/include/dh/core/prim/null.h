@@ -22,7 +22,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/claim/unreachable.h"
 
 /*========== Macros and Definitions =========================================*/
 

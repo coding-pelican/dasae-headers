@@ -76,8 +76,8 @@ typedef struct mem_Allocator {
     IMPL_mem_createOpt(alloc, sizeof(T), _Alignof(T))
 
 // Destroy single element
-force_inline void mem_destroy(mem_Allocator* alloc, sptr_mut* ptr);
-force_inline void mem_destroyDebug(mem_Allocator* alloc, sptr_mut* ptr, const char* file, i32 line, const char* func);
+force_inline void mem_destroy(mem_Allocator* alloc, sptr* ptr);
+force_inline void mem_destroyDebug(mem_Allocator* alloc, sptr* ptr, const char* file, i32 line, const char* func);
 
 /*========== Multiple Element Functions ===================================*/
 
@@ -93,8 +93,8 @@ force_inline void mem_destroyDebug(mem_Allocator* alloc, sptr_mut* ptr, const ch
     IMPL_mem_allocOpt(alloc, sizeof(T), _Alignof(T), count)
 
 // Free array
-force_inline void mem_free(mem_Allocator* alloc, Slice_mut* slice);
-force_inline void mem_freeDebug(mem_Allocator* alloc, Slice_mut* slice, const char* file, i32 line, const char* func);
+force_inline void mem_free(mem_Allocator* alloc, Slice* slice);
+force_inline void mem_freeDebug(mem_Allocator* alloc, Slice* slice, const char* file, i32 line, const char* func);
 
 // Resize array
 #define mem_realloc(alloc, slice, T, new_count) \
@@ -106,16 +106,16 @@ force_inline void mem_freeDebug(mem_Allocator* alloc, Slice_mut* slice, const ch
 /*========== Memory Operations ============================================*/
 
 // Copy between memory regions
-force_inline void mem_copy(sptr_mut dest, sptr src, usize size);
-force_inline void mem_copySlice(Slice_mut dest, Slice src);
+force_inline void mem_copy(sptr dest, sptr src, usize size);
+force_inline void mem_copySlice(Slice dest, Slice src);
 
 // Move memory (handles overlap)
-force_inline void mem_move(sptr_mut dest, sptr src, usize size);
-force_inline void mem_moveSlice(Slice_mut dest, Slice src);
+force_inline void mem_move(sptr dest, sptr src, usize size);
+force_inline void mem_moveSlice(Slice dest, Slice src);
 
 // Set memory
-force_inline void mem_set(sptr_mut ptr, i32 value, usize size);
-force_inline void mem_setSlice(Slice_mut slice, i32 value);
+force_inline void mem_set(sptr ptr, i32 value, usize size);
+force_inline void mem_setSlice(Slice slice, i32 value);
 
 // Compare memory
 force_inline i32 mem_cmp(sptr lhs, sptr rhs, usize size);
@@ -135,7 +135,7 @@ extern "C" {
 
 /*========== Single Element Implementation ================================*/
 
-force_inline sptr_mut IMPL_mem_create(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+force_inline sptr IMPL_mem_create(mem_Allocator* alloc, usize elem_size, usize elem_align) {
     mem_Debug debug = {
         .state = mem_State_invalid,
         .file  = __FILE__,
@@ -146,14 +146,14 @@ force_inline sptr_mut IMPL_mem_create(mem_Allocator* alloc, usize elem_size, usi
     void* raw = alloc->alloc(alloc->ctx, elem_size, &debug);
     debug_assert_nonnull(raw);
 
-    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+    sptr result = sptr_mut_fromRaw(raw, elem_size);
 #if DEBUG_ENABLED
     alloc->debug = debug;
 #endif
     return result;
 }
 
-force_inline sptr_mut IMPL_mem_createDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func) {
+force_inline sptr IMPL_mem_createDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func) {
     mem_Debug debug = {
         .state = mem_State_invalid,
         .file  = file,
@@ -164,14 +164,14 @@ force_inline sptr_mut IMPL_mem_createDebug(mem_Allocator* alloc, usize elem_size
     void* raw = alloc->alloc(alloc->ctx, elem_size, &debug);
     debug_assert_nonnull(raw);
 
-    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+    sptr result = sptr_mut_fromRaw(raw, elem_size);
 #if DEBUG_ENABLED
     alloc->debug = debug;
 #endif
     return result;
 }
 
-force_inline Optional(sptr_mut) IMPL_mem_createOpt(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+force_inline Optional(sptr) IMPL_mem_createOpt(mem_Allocator* alloc, usize elem_size, usize elem_align) {
     mem_Debug debug = {
         .state = mem_State_invalid,
         .file  = __FILE__,
@@ -184,14 +184,14 @@ force_inline Optional(sptr_mut) IMPL_mem_createOpt(mem_Allocator* alloc, usize e
         return sptr_mut_none();
     }
 
-    sptr_mut result = sptr_mut_fromRaw(raw, elem_size);
+    sptr result = sptr_mut_fromRaw(raw, elem_size);
 #if DEBUG_ENABLED
     alloc->debug = debug;
 #endif
     return sptr_mut_some(result);
 }
 
-force_inline void mem_destroy(mem_Allocator* alloc, sptr_mut* ptr) {
+force_inline void mem_destroy(mem_Allocator* alloc, sptr* ptr) {
     debug_assert_true(mem_canFree(&alloc->debug));
 
     mem_Debug debug = {
@@ -211,7 +211,7 @@ force_inline void mem_destroy(mem_Allocator* alloc, sptr_mut* ptr) {
 
 /*========== Multiple Element Implementation ==============================*/
 
-force_inline Slice_mut IMPL_mem_alloc(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+force_inline Slice IMPL_mem_alloc(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
     mem_Debug debug = {
         .state = mem_State_invalid,
         .file  = __FILE__,
@@ -222,7 +222,7 @@ force_inline Slice_mut IMPL_mem_alloc(mem_Allocator* alloc, usize elem_size, usi
     void* raw = alloc->alloc(alloc->ctx, elem_size * count, &debug);
     debug_assert_nonnull(raw);
 
-    Slice_mut result = Slice_mut_fromParts(
+    Slice result = Slice_mut_fromParts(
         mptr_mut_fromRaw(raw, elem_size),
         count
     );
@@ -233,7 +233,7 @@ force_inline Slice_mut IMPL_mem_alloc(mem_Allocator* alloc, usize elem_size, usi
     return result;
 }
 
-force_inline Optional(Slice_mut) IMPL_mem_allocOpt(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+force_inline Optional(Slice) IMPL_mem_allocOpt(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
     mem_Debug debug = {
         .state = mem_State_invalid,
         .file  = __FILE__,
@@ -246,7 +246,7 @@ force_inline Optional(Slice_mut) IMPL_mem_allocOpt(mem_Allocator* alloc, usize e
         return Slice_mut_none();
     }
 
-    Slice_mut result = Slice_mut_fromParts(
+    Slice result = Slice_mut_fromParts(
         mptr_mut_fromRaw(raw, elem_size),
         count
     );
@@ -257,7 +257,7 @@ force_inline Optional(Slice_mut) IMPL_mem_allocOpt(mem_Allocator* alloc, usize e
     return Slice_mut_some(result);
 }
 
-force_inline void mem_free(mem_Allocator* alloc, Slice_mut* slice) {
+force_inline void mem_free(mem_Allocator* alloc, Slice* slice) {
     debug_assert_true(mem_canFree(&alloc->debug));
 
     mem_Debug debug = {
@@ -275,7 +275,7 @@ force_inline void mem_free(mem_Allocator* alloc, Slice_mut* slice) {
 #endif
 }
 
-force_inline Optional(Slice_mut) IMPL_mem_realloc(mem_Allocator* alloc, Slice_mut slice, usize elem_size, usize elem_align, usize new_count) {
+force_inline Optional(Slice) IMPL_mem_realloc(mem_Allocator* alloc, Slice slice, usize elem_size, usize elem_align, usize new_count) {
     debug_assert_true(mem_canAccess(&alloc->debug));
 
     mem_Debug debug = {
@@ -290,7 +290,7 @@ force_inline Optional(Slice_mut) IMPL_mem_realloc(mem_Allocator* alloc, Slice_mu
         return Slice_mut_none();
     }
 
-    Slice_mut result = Slice_mut_fromParts(
+    Slice result = Slice_mut_fromParts(
         mptr_mut_fromRaw(raw, elem_size),
         new_count
     );
@@ -303,36 +303,36 @@ force_inline Optional(Slice_mut) IMPL_mem_realloc(mem_Allocator* alloc, Slice_mu
 
 /*========== Memory Operation Implementation =============================*/
 
-force_inline void mem_copy(sptr_mut dest, sptr src, usize size) {
+force_inline void mem_copy(sptr dest, sptr src, usize size) {
     debug_assert_nonnull(sptr_mut_raw(dest));
     debug_assert_nonnull(sptr_raw(src));
     memcpy(sptr_mut_raw(dest), sptr_raw(src), size);
 }
 
-force_inline void mem_copySlice(Slice_mut dest, Slice src) {
+force_inline void mem_copySlice(Slice dest, Slice src) {
     debug_assert_eq(Slice_mut_len(dest), Slice_len(src));
     debug_assert_true(mptr_mut_hasSize(dest.ptr, mptr_size(src.ptr)));
     memcpy(Slice_mut_raw(dest), Slice_raw(src), Slice_len(src) * mptr_size(src.ptr));
 }
 
-force_inline void mem_move(sptr_mut dest, sptr src, usize size) {
+force_inline void mem_move(sptr dest, sptr src, usize size) {
     debug_assert_nonnull(sptr_mut_raw(dest));
     debug_assert_nonnull(sptr_raw(src));
     memmove(sptr_mut_raw(dest), sptr_raw(src), size);
 }
 
-force_inline void mem_moveSlice(Slice_mut dest, Slice src) {
+force_inline void mem_moveSlice(Slice dest, Slice src) {
     debug_assert_eq(Slice_mut_len(dest), Slice_len(src));
     debug_assert_true(mptr_mut_hasSize(dest.ptr, mptr_size(src.ptr)));
     memmove(Slice_mut_raw(dest), Slice_raw(src), Slice_len(src) * mptr_size(src.ptr));
 }
 
-force_inline void mem_set(sptr_mut ptr, i32 value, usize size) {
+force_inline void mem_set(sptr ptr, i32 value, usize size) {
     debug_assert_nonnull(sptr_mut_raw(ptr));
     memset(sptr_mut_raw(ptr), value, size);
 }
 
-force_inline void mem_setSlice(Slice_mut slice, i32 value) {
+force_inline void mem_setSlice(Slice slice, i32 value) {
     memset(Slice_mut_raw(slice), value, Slice_mut_len(slice) * mptr_mut_size(slice.ptr));
 }
 

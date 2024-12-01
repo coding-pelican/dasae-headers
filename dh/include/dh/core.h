@@ -77,11 +77,11 @@ force_inline anyptr orclaim_anyptr(anyptr var_ptr) {
 }
 
 #define IMPL_swap(_lhs, _rhs, _tmp, TParam, var_lhs, var_rhs) pp_func( \
-    rawptr(TParam) used(_lhs) = rawaddr(var_lhs);                      \
-    rawptr(TParam) used(_rhs) = rawaddr(var_rhs);                      \
-    TParam _tmp               = rawDeref(_lhs);                        \
-    rawDeref(_lhs)            = rawDeref(_rhs);                        \
-    rawDeref(_rhs)            = _tmp;                                  \
+    rawptr(TParam) used(_lhs) = ref(var_lhs);                          \
+    rawptr(TParam) used(_rhs) = ref(var_rhs);                          \
+    TParam _tmp               = deref(TParam, _lhs);                   \
+    deref(TParam, _lhs)       = deref(TParam, _rhs);                   \
+    deref(TParam, _rhs)       = _tmp;                                  \
 )
 
 #define IMPL_foreach(_iter_end, TParam, decl_iter, var_list_ptr)                                                               \
