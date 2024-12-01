@@ -118,7 +118,7 @@ force_inline bool ptr_isAligned(cptr self);
 // Internal helpers
 force_inline unsigned int ptr__calcAlignOrder(uptr align);
 
-/*========== Single-Item Pointer ========================================*/
+/*========== Single-Item Pointer ============================================*/
 
 typedef cptr sptr; // Alias for semantic clarity
 #define sptr(THint) sptr
@@ -140,7 +140,7 @@ typedef cptr sptr; // Alias for semantic clarity
 #define sptr_set(T, self, val) \
     (*(T*)ptr_raw(self) = (val))
 
-/*========== Many-Item Pointer =========================================*/
+/*========== Many-Item Pointer ==============================================*/
 
 typedef cptr mptr; // Alias for semantic clarity
 #define mptr(THint) mptr
@@ -161,7 +161,7 @@ force_inline mptr    mptr_add(mptr self, ptrdiff offset);
 force_inline mptr    mptr_sub(mptr self, ptrdiff offset);
 force_inline ptrdiff mptr_diff(mptr lhs, mptr rhs);
 
-/*========== Slice Type ===============================================*/
+/*========== Slice Type =====================================================*/
 
 typedef struct Slice {
     mptr  ptr;
@@ -196,7 +196,7 @@ force_inline usize        Slice_len(Slice self);
 void Slice_copy(Slice dest, Slice src);
 void Slice_clear(Slice self);
 
-/*========== Type-Safe Macros =========================================*/
+/*========== Type-Safe Macros ===============================================*/
 
 // Type checking
 #define ptr_isType(T, self) \
@@ -209,6 +209,151 @@ void Slice_clear(Slice self);
 // Optional support
 #define ptr_unwrap(T, opt) \
     (*(T*)ptr_raw(Opt_unwrap(opt)))
+
+/*========== Implementation =================================================*/
+
+force_inline unsigned int ptr__calcAlignOrder(uptr align) {
+    // Calculate log2 of alignment for compact storage
+#if defined(__GNUC__) || defined(__clang__)
+    return (unsigned int)__builtin_ctzll((unsigned long long)align);
+#elif defined(_MSC_VER)
+#if BUILTIN_PLTF_64BIT
+    unsigned long index = 0;
+    _BitScanForward64(&index, (unsigned __int64)align);
+    return (unsigned int)index;
+#else
+    unsigned long index = 0;
+    _BitScanForward(&index, (unsigned long)align);
+    return (unsigned int)index;
+#endif
+#else
+    unsigned int order = 0;
+    while (align > 1) {
+        align >>= 1;
+        order++;
+    }
+    return order;
+#endif
+}
+
+/*========== Core Creation Implementation =================================*/
+
+force_inline cptr ptr_make(anyptr raw, usize elem_size, usize elem_align) {
+    cptr self = cleared();
+    if (!rawptrIsNull(raw)) {
+        self.raw_        = raw;
+        self.meta_.size  = elem_size & cptr_mask_bits_size;
+        self.meta_.align = ptr__calcAlignOrder(elem_align) & cptr_mask_bits_align;
+        self.meta_.flags = 0;
+    }
+    return self;
+}
+
+force_inline cptr ptr_makeWithFlags(anyptr raw, usize elem_size, usize elem_align, bool flags) {
+    cptr self        = ptr_make(raw, elem_size, elem_align);
+    self.meta_.flags = flags & 1;
+    return self;
+}
+
+force_inline cptr ptr_withFlags(cptr self, bool flags) {
+    cptr result        = self;
+    result.meta_.flags = flags & 1;
+    return result;
+}
+
+/*========== Core Access Implementation ==================================*/
+
+force_inline const anyptr ptr_raw(cptr self) {
+    return intToRawptr(anyptr, self.bits_ & ((1ull << cptr_bits_addr_len) - 1));
+}
+
+force_inline usize ptr_size(cptr self) {
+    return self.meta_.size;
+}
+
+force_inline usize ptr_align(cptr self) {
+    return 1ull << self.meta_.align;
+}
+
+force_inline bool ptr_flags(cptr self) {
+    return self.meta_.flags != 0;
+}
+
+force_inline void ptr_setFlags(cptr* const self, bool flags) {
+    self->meta_.flags = flags & 1;
+}
+
+/*========== Core Safety Implementation =================================*/
+
+force_inline bool ptr_isNull(cptr self) {
+    return rawptrIsNull(self.raw_) || (!ptr_flags(self) && rawptrToInt(self.raw_) == 0);
+}
+
+force_inline bool ptr_hasMinSize(cptr self, usize required_size) {
+    return self.meta_.size >= required_size;
+}
+
+force_inline bool ptr_isAligned(cptr self) {
+    return (rawptrToInt(self.raw_) % (1ull << self.meta_.align)) == 0;
+}
+
+/*========== Many-item Pointer Implementation ===========================*/
+
+force_inline mptr mptr_add(mptr self, ptrdiff offset) {
+    return ptr_make(
+        (u8*)ptr_raw(self) + offset * ptr_size(self),
+        ptr_size(self),
+        ptr_align(self)
+    );
+}
+
+force_inline mptr mptr_sub(mptr self, ptrdiff offset) {
+    return ptr_make(
+        (u8*)ptr_raw(self) - offset * ptr_size(self),
+        ptr_size(self),
+        ptr_align(self)
+    );
+}
+
+force_inline ptrdiff mptr_diff(mptr lhs, mptr rhs) {
+    debug_assert_eq(ptr_size(lhs), ptr_size(rhs));
+    return as(ptrdiff, ((u8*)ptr_raw(lhs) - (u8*)ptr_raw(rhs)) / ptr_size(lhs));
+}
+
+/*========== Slice Implementation ======================================*/
+
+force_inline Slice Slice_make(mptr ptr, usize len) {
+    return (Slice){ .ptr = ptr, .len = len };
+}
+
+force_inline const anyptr Slice_raw(Slice self) {
+    debug_assert_nonnull(ptr_raw(self.ptr));
+    debug_assert_true(ptr_isAligned(self.ptr));
+    return ptr_raw(self.ptr);
+}
+
+force_inline usize Slice_len(Slice self) {
+    return self.len;
+}
+
+void Slice_copy(Slice dest, Slice src) {
+    debug_assert_eq(dest.len, src.len);
+    debug_assert_true(ptr_size(dest.ptr) == ptr_size(src.ptr));
+
+    memcpy(
+        (anyptr)Slice_raw(dest),
+        Slice_raw(src),
+        dest.len * ptr_size(dest.ptr)
+    );
+}
+
+void Slice_clear(Slice self) {
+    memset(
+        (anyptr)Slice_raw(self),
+        0,
+        self.len * ptr_size(self.ptr)
+    );
+}
 
 #if defined(__cplusplus)
 } /* extern "C" */
