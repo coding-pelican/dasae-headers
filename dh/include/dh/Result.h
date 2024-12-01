@@ -24,6 +24,7 @@ extern "C" {
 #include "dh/core/prim.h"
 #include "dh/core/ptr.h"
 #include "dh/debug/assert.h"
+#include "dh/Error.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -32,16 +33,6 @@ typedef enum ResultTag {
     ResultTag_Ok,
     ResultTag_Err
 } ResultTag;
-
-// Common error type
-typedef enum ResultErr {
-    ResultErr_none = 0,
-    ResultErr_out_of_memory,
-    ResultErr_invalid_argument,
-    ResultErr_not_found,
-    ResultErr_access_denied,
-    // Add more standard error types as needed
-} ResultErr;
 
 // Base Result structure for internal use
 typedef struct ResultBase {
@@ -103,31 +94,31 @@ force_inline ResultBase* ResultBase_unwrapOr(ResultBase* self, ResultBase* defau
     (((TResult*)ResultBase_unwrapOr((ResultBase*)(TResult[1]){ self }, (ResultBase*)(TResult[1]){ Result_ok(TResult, default_val) }))->data.value) // NOLINT
 
 // Result built-in types
-Result(u8, ResultErr) Result_u8_Err;
-Result(u16, ResultErr) Result_u16_Err;
-Result(u32, ResultErr) Result_u32_Err;
-Result(u64, ResultErr) Result_u64_Err;
-Result(uptr, ResultErr) Result_uptr_Err;
-Result(usize, ResultErr) Result_usize_Err;
+Result(u8, Error) Result_u8;
+Result(u16, Error) Result_u16;
+Result(u32, Error) Result_u32;
+Result(u64, Error) Result_u64;
+Result(uptr, Error) Result_uptr;
+Result(usize, Error) Result_usize;
 
-Result(i8, ResultErr) Result_i8_Err;
-Result(i16, ResultErr) Result_i16_Err;
-Result(i32, ResultErr) Result_i32_Err;
-Result(i64, ResultErr) Result_i64_Err;
-Result(iptr, ResultErr) Result_iptr_Err;
-Result(isize, ResultErr) Result_isize_Err;
+Result(i8, Error) Result_i8;
+Result(i16, Error) Result_i16;
+Result(i32, Error) Result_i32;
+Result(i64, Error) Result_i64;
+Result(iptr, Error) Result_iptr;
+Result(isize, Error) Result_isize;
 
-Result(f32, ResultErr) Result_f32_Err;
-Result(f64, ResultErr) Result_f64_Err;
+Result(f32, Error) Result_f32;
+Result(f64, Error) Result_f64;
 
-Result(bool, ResultErr) Result_bool_Err;
-Result(char, ResultErr) Result_char_Err;
+Result(bool, Error) Result_bool;
+Result(char, Error) Result_char;
 
-Result(anyptr, ResultErr) Result_anyptr_Err;
-Result(cptr, ResultErr) Result_cptr_Err;
-Result(sptr, ResultErr) Result_sptr_Err;
-Result(mptr, ResultErr) Result_mptr_Err;
-Result(Slice, ResultErr) Result_Slice_Err;
+Result(anyptr, Error) Result_anyptr;
+Result(cptr, Error) Result_cptr;
+Result(sptr, Error) Result_sptr;
+Result(mptr, Error) Result_mptr;
+Result(Slice, Error) Result_Slice;
 
 #if defined(__cplusplus)
 } /* extern "C" */

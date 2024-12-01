@@ -4,7 +4,7 @@
  * @file    test_option.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-30 (date of creation)
- * @updated 2024-11-30 (date of last update)
+ * @updated 2024-12-01 (date of last update)
  * @version v1.0.0
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
