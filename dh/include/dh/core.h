@@ -30,6 +30,18 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define orelse(TPtr, var_ptr, val_default)          \
+    /**                                             \
+     * @brief Return val_default if var_ptr is null \
+     */                                             \
+    IMPL_orelse(TPtr, var_ptr, val_default)
+
+#define orclaim(TPtr, var_ptr)                                                \
+    /**                                                                       \
+     * @brief Equivalent to: `orelse(TPtr, var_ptr, unreachable_val(anyptr))` \
+     */                                                                       \
+    IMPL_orclaim(TPtr, var_ptr)
+
 #define swap(TParam, var_lhs, var_rhs) \
     IMPL_swap(                         \
         pp_uniqueToken(lhs),           \
@@ -49,6 +61,20 @@ extern "C" {
     )
 
 /*========== Macros Implementation ==========================================*/
+
+#define IMPL_orelse(TPtr, var_ptr, val_default) \
+    ((TPtr*)orelse_anyptr(var_ptr, val_default))
+
+#define IMPL_orclaim(TPtr, var_ptr) \
+    ((TPtr*)orclaim_anyptr(var_ptr))
+
+force_inline anyptr orelse_anyptr(anyptr var_ptr, anyptr val_default) {
+    return var_ptr ? var_ptr : val_default;
+}
+
+force_inline anyptr orclaim_anyptr(anyptr var_ptr) {
+    return var_ptr ? var_ptr : claim_unreachable_val(anyptr);
+}
 
 #define IMPL_swap(_lhs, _rhs, _tmp, TParam, var_lhs, var_rhs) pp_func( \
     rawptr(TParam) used(_lhs) = rawaddr(var_lhs);                      \

@@ -63,9 +63,6 @@ extern "C" {
 #define Nullable(TPtr) IMPL_Nullable(TPtr)
 #define Nonnull(TPtr)  IMPL_Nonnull(TPtr)
 
-#define orelse(var, ...) IMPL_orelse(var, __VA_ARGS__)
-#define orerr(var, ...)  IMPL_orerr(var, __VA_ARGS__)
-
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
@@ -81,12 +78,6 @@ extern "C" {
 
 #define IMPL_Nullable(TPtr) TPtr nullable
 #define IMPL_Nonnull(TPtr)  TPtr nonnull
-
-#define IMPL_orelse(var, ...) \
-    ((var) ? (var) : (__VA_ARGS__))
-
-#define IMPL_orerr(var) \
-    ((var) ? (var) : claim_unreachable_val(anyptr))
 
 #if defined(__cplusplus)
 } /* extern "C" */
