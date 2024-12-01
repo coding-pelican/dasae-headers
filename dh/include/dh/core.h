@@ -25,8 +25,8 @@ extern "C" {
 #include "core/pp.h"
 #include "core/prim.h"
 #include "core/ptr.h"
-#include "core/ops.h"
 #include "core/cmp.h"
+#include "core/op.h"
 
 /*========== Macros and Definitions =========================================*/
 

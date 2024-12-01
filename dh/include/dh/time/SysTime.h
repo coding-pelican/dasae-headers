@@ -23,6 +23,7 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
+#include "dh/Option.h"
 
 /*========== Macros and Definitions =========================================*/
 /*
@@ -47,8 +48,12 @@ extern time_Duration time_SysTime_elapsed(time_SysTime self);
 extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
 
 /* Arithmetic */
-extern time_SysTime ops_fnAddBy(time_SysTime, time_Duration);
-extern time_SysTime ops_fnSubBy(time_SysTime, time_Duration);
+Option(time_SysTime) Option_time_SysTime;
+extern Option_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other);
+extern Option_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other);
+
+extern time_SysTime op_fnAddBy(time_SysTime, time_Duration);
+extern time_SysTime op_fnSubBy(time_SysTime, time_Duration);
 
 /* Comparison */
 extern cmp_fnCmp(time_SysTime);

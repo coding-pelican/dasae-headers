@@ -29,10 +29,10 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-force_inline time_SysTime ops_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
-force_inline time_SysTime ops_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
-force_inline time_Instant ops_fnWrapAddBy(addDuration, time_Instant, time_Duration);
-force_inline time_Instant ops_fnWrapSubBy(subDuration, time_Instant, time_Duration);
+force_inline time_SysTime op_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
+force_inline time_SysTime op_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
+force_inline time_Instant op_fnWrapAddBy(addDuration, time_Instant, time_Duration);
+force_inline time_Instant op_fnWrapSubBy(subDuration, time_Instant, time_Duration);
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

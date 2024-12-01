@@ -30,8 +30,8 @@ extern "C" {
 
 // Result tag enum
 typedef enum ResultTag {
-    ResultTag_Ok,
-    ResultTag_Err
+    ResultTag_err = 0,
+    ResultTag_ok
 } ResultTag;
 
 // Base Result structure for internal use
@@ -44,11 +44,11 @@ typedef struct ResultBase {
 } ResultBase;
 
 force_inline bool ResultBase_isOk(ResultBase* self) {
-    return self->tag == ResultTag_Ok;
+    return self->tag == ResultTag_ok;
 }
 
 force_inline bool ResultBase_isErr(ResultBase* self) {
-    return self->tag == ResultTag_Err;
+    return self->tag == ResultTag_err;
 }
 
 force_inline ResultBase* ResultBase_unwrap(ResultBase* self) {
@@ -77,8 +77,8 @@ force_inline ResultBase* ResultBase_unwrapOr(ResultBase* self, ResultBase* defau
     }
 
 // Result creation
-#define Result_ok(TResult, val)  ((TResult){ .tag = ResultTag_Ok, .data.value = (val) })
-#define Result_err(TResult, err) ((TResult){ .tag = ResultTag_Err, .data.error = (err) })
+#define Result_ok(TResult, val)  ((TResult){ .tag = ResultTag_ok, .data.value = (val) })
+#define Result_err(TResult, err) ((TResult){ .tag = ResultTag_err, .data.error = (err) })
 
 // Result operations
 #define Result_isOk(self)  ResultBase_isOk((ResultBase*)&(self))

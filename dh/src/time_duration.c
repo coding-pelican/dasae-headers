@@ -50,6 +50,43 @@ f64 time_Duration_asSecs_f64(time_Duration self) {
     return (f64)self.secs_ + (f64)self.nanos_ / (f64)time_nanos_per_sec;
 }
 
+time_Duration op_fnAdd(time_Duration) {
+    u64 total_nanos = (u64)self.nanos_ + other.nanos_;
+    return makeWith(
+        time_Duration,
+        self.secs_ + other.secs_ + (total_nanos >= time_nanos_per_sec),
+        (u32)(total_nanos >= time_nanos_per_sec
+                  ? total_nanos - time_nanos_per_sec
+                  : total_nanos)
+    );
+}
+time_Duration op_fnSub(time_Duration) {
+    return makeWith(
+        time_Duration,
+        self.secs_ - other.secs_ - (self.nanos_ < other.nanos_),
+        self.nanos_ < other.nanos_
+            ? self.nanos_ + time_nanos_per_sec - other.nanos_
+            : self.nanos_ - other.nanos_
+    );
+}
+time_Duration op_fnMulBy(time_Duration, u64) {
+    u64 total_nanos = self.nanos_ * other;
+    return makeWith(
+        time_Duration,
+        self.secs_ * other + total_nanos / time_nanos_per_sec,
+        (u32)(total_nanos % time_nanos_per_sec)
+    );
+}
+time_Duration op_fnDivBy(time_Duration, u64) {
+    claim_assert_fmt(other != 0, "Division by zero");
+    u64 total_nanos = self.nanos_ / other;
+    return makeWith(
+        time_Duration,
+        self.secs_ / other + total_nanos / time_nanos_per_sec,
+        (u32)(total_nanos % time_nanos_per_sec)
+    );
+}
+
 bool time_Duration_isZero(time_Duration self) {
     return self.secs_ == 0 && self.nanos_ == 0;
 }

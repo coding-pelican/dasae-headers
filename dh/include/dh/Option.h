@@ -27,6 +27,13 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+// Option tag enum
+
+typedef enum OptionTag {
+    OptionTag_none = 0,
+    OptionTag_some
+} OptionTag;
+
 // Base Option structure for internal use
 typedef struct OptionBase {
     bool has_value;

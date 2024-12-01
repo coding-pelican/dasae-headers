@@ -23,6 +23,7 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
+#include "dh/Option.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -42,8 +43,12 @@ extern bool time_Instant_isValid(time_Instant self);
 extern u64 time_Instant_toNanos(time_Instant self);
 
 /* Arithmetic */
-extern time_Instant ops_fnAddBy(time_Instant, time_Duration);
-extern time_Instant ops_fnSubBy(time_Instant, time_Duration);
+Option(time_Instant) Option_time_Instant;
+extern Option_time_Instant time_Instant_addDurationChecked(time_Instant, time_Duration);
+extern Option_time_Instant time_Instant_subDurationChecked(time_Instant, time_Duration);
+
+extern time_Instant op_fnAddBy(time_Instant, time_Duration);
+extern time_Instant op_fnSubBy(time_Instant, time_Duration);
 
 /* Comparison */
 extern cmp_fnCmp(time_Instant);

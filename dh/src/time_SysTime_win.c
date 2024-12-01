@@ -1,7 +1,6 @@
+#include "dh/core/cmp.h"
 #if defined(_WIN32) || defined(_WIN64)
 
-#include "dh/core/ops.h"
-#include "dh/core/prim/struct.h"
 #include "dh/time/cfg.h"
 #include "dh/time/common.h"
 #include "dh/time/SysTime.h"
@@ -26,7 +25,7 @@ static void __attribute__((constructor)) init(void) {
     if (!QueryPerformanceFrequency(&s_performance_frequency)) {
         return claim_unreachable();
     }
-    s_frequency_inverse = 1.0 / (f64)s_performance_frequency.QuadPart;
+    s_frequency_inverse = 1.0 / as(f64, s_performance_frequency.QuadPart);
     QueryPerformanceCounter(&s_offset_value);
     s_initialized = true;
 }
@@ -71,7 +70,7 @@ time_Duration time_SysTime_elapsed(time_SysTime self) {
 
     u64 diff = current.QuadPart - self.QuadPart;
     return time_Duration_fromNanos(
-        (u64)((f64)diff * (f64)time_nanos_per_sec * s_frequency_inverse)
+        as(u64, as(f64, diff) * as(f64, time_nanos_per_sec) * s_frequency_inverse)
     );
 }
 
@@ -83,59 +82,45 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
         time_nanos_per_sec / s_performance_frequency.QuadPart
     );
 
-    if (earlier.QuadPart > self.QuadPart && (u64)(earlier.QuadPart - self.QuadPart) <= (u64)(epsilon.nanos_ / s_frequency_inverse)) {
+    if (earlier.QuadPart > self.QuadPart && as(u64, earlier.QuadPart - self.QuadPart) <= as(u64, epsilon.nanos_ / s_frequency_inverse)) {
         return time_Duration_zero;
     }
 
     u64 diff = self.QuadPart - earlier.QuadPart;
     return time_Duration_fromNanos(
-        (u64)((f64)diff * (f64)time_nanos_per_sec * s_frequency_inverse)
+        as(u64, as(f64, diff) * as(f64, time_nanos_per_sec) * s_frequency_inverse)
     );
 }
 
-// /*========== Safe Arithmetic Operations ================================*/
-// bool ops_try_add_other(time_SysTime, time_Duration, time_SysTime) {
-//     debug_assert_fmt(out != null, "Output parameter cannot be null");
+/*========== Safe Arithmetic Operations ================================*/
 
-//     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-//     u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
-//     if (ticks > (UINT64_MAX - self.QuadPart)) {
-//         return false;
-//     }
+Option_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
+    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+    u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
+    if (ticks > (u64_limit - self.QuadPart)) {
+        return Option_none(Option_time_SysTime);
+    }
+    return Option_some(Option_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
+}
 
-//     out->QuadPart = (LONGLONG)(self.QuadPart + ticks);
-//     return true;
-// }
+Option_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
+    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
+    u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
+    if (ticks > as(u64, self.QuadPart)) {
+        return Option_none(Option_time_SysTime);
+    }
+    return Option_some(Option_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
+}
 
-// bool ops_try_sub_other(time_SysTime, time_Duration, time_SysTime) {
-//     debug_assert_fmt(out != null, "Output parameter cannot be null");
+/*========== Unsafe Arithmetic Operations ==============================*/
 
-//     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-//     u64 ticks = (u64)((f64)nanos * s_frequency_inverse);
+time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
+    return Option_unwrap(Option_time_SysTime, time_SysTime_addDurationChecked(self, other));
+}
 
-//     if (ticks > (u64)self.QuadPart) {
-//         return false;
-//     }
-
-//     out->QuadPart = (LONGLONG)(self.QuadPart - ticks);
-//     return true;
-// }
-
-// /*========== Unsafe Arithmetic Operations ==============================*/
-
-// time_SysTime ops_add_other(time_SysTime, time_Duration) {
-//     time_SysTime result  = cleared();
-//     bool         success = time_SysTime_try_add_time_Duration(self, other, &result);
-//     claim_assert_fmt(success, "Arithmetic overflow in time_SysTime addition");
-//     return result;
-// }
-
-// time_SysTime ops_sub_other(time_SysTime, time_Duration) {
-//     time_SysTime result  = cleared();
-//     bool         success = time_SysTime_try_sub_time_Duration(self, other, &result);
-//     claim_assert_fmt(success, "Arithmetic underflow in time_SysTime subtraction");
-//     return result;
-// }
+time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
+    return Option_unwrap(Option_time_SysTime, time_SysTime_subDurationChecked(self, other));
+}
 
 /*========== Comparison Functions =====================================*/
 
