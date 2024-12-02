@@ -121,7 +121,7 @@ force_inline unsigned int ptr__calcAlignOrder(uptr align);
 /*========== Single-Item Pointer ============================================*/
 
 typedef cptr sptr; // Alias for semantic clarity
-#define sptr(THint) sptr
+#define sptr(THint) typedef sptr
 
 // Creation
 #define sptr_make(T, raw) \
@@ -143,7 +143,7 @@ typedef cptr sptr; // Alias for semantic clarity
 /*========== Many-Item Pointer ==============================================*/
 
 typedef cptr mptr; // Alias for semantic clarity
-#define mptr(THint) mptr
+#define mptr(THint) typedef mptr
 
 // Creation
 #define mptr_make(T, raw) \
@@ -167,7 +167,7 @@ typedef struct Slice {
     mptr  ptr;
     usize len;
 } Slice;
-#define Slice(THint) Slice
+#define Slice(THint) typedef Slice
 
 // Creation
 force_inline Slice Slice_make(mptr ptr, usize len);
@@ -236,7 +236,7 @@ force_inline unsigned int ptr__calcAlignOrder(uptr align) {
 #endif
 }
 
-/*========== Core Creation Implementation =================================*/
+/*========== Core Creation Implementation ===================================*/
 
 force_inline cptr ptr_make(anyptr raw, usize elem_size, usize elem_align) {
     cptr self = cleared();
@@ -261,7 +261,7 @@ force_inline cptr ptr_withFlags(cptr self, bool flags) {
     return result;
 }
 
-/*========== Core Access Implementation ==================================*/
+/*========== Core Access Implementation =====================================*/
 
 force_inline const anyptr ptr_raw(cptr self) {
     return intToRawptr(anyptr, self.bits_ & ((1ull << cptr_bits_addr_len) - 1));
@@ -283,7 +283,7 @@ force_inline void ptr_setFlags(cptr* const self, bool flags) {
     self->meta_.flags = flags & 1;
 }
 
-/*========== Core Safety Implementation =================================*/
+/*========== Core Safety Implementation =====================================*/
 
 force_inline bool ptr_isNull(cptr self) {
     return rawptrIsNull(self.raw_) || (!ptr_flags(self) && rawptrToInt(self.raw_) == 0);
@@ -297,7 +297,7 @@ force_inline bool ptr_isAligned(cptr self) {
     return (rawptrToInt(self.raw_) % (1ull << self.meta_.align)) == 0;
 }
 
-/*========== Many-item Pointer Implementation ===========================*/
+/*========== Many-item Pointer Implementation ===============================*/
 
 force_inline mptr mptr_add(mptr self, ptrdiff offset) {
     return ptr_make(
@@ -320,7 +320,7 @@ force_inline ptrdiff mptr_diff(mptr lhs, mptr rhs) {
     return as(ptrdiff, ((u8*)ptr_raw(lhs) - (u8*)ptr_raw(rhs)) / ptr_size(lhs));
 }
 
-/*========== Slice Implementation ======================================*/
+/*========== Slice Implementation ===========================================*/
 
 force_inline Slice Slice_make(mptr ptr, usize len) {
     return (Slice){ .ptr = ptr, .len = len };
@@ -354,6 +354,89 @@ void Slice_clear(Slice self) {
         self.len * ptr_size(self.ptr)
     );
 }
+
+/*======== Built-in Types ===================================================*/
+
+// Single-Item Pointers
+sptr(u8) sp_u8;
+sptr(u16) sp_u16;
+sptr(u32) sp_u32;
+sptr(u64) sp_u64;
+sptr(uptr) sp_uptr;
+sptr(usize) sp_usize;
+
+sptr(i8) sp_i8;
+sptr(i16) sp_i16;
+sptr(i32) sp_i32;
+sptr(i64) sp_i64;
+sptr(iptr) sp_iptr;
+sptr(isize) sp_isize;
+
+sptr(f32) sp_f32;
+sptr(f64) sp_f64;
+
+sptr(bool) sp_bool;
+sptr(char) sp_char;
+
+sptr(anyptr) sp_anyptr;
+sptr(cptr) sp_cp;
+sptr(mptr) sp_mp;
+sptr(sptr) sp_sp;
+sptr(sptr) sp_Slice;
+
+// Many-item Pointers
+mptr(u8) mp_u8;
+mptr(u16) mp_u16;
+mptr(u32) mp_u32;
+mptr(u64) mp_u64;
+mptr(uptr) mp_uptr;
+mptr(usize) mp_usize;
+
+mptr(i8) mp_i8;
+mptr(i16) mp_i16;
+mptr(i32) mp_i32;
+mptr(i64) mp_i64;
+mptr(iptr) mp_iptr;
+mptr(isize) mp_isize;
+
+mptr(f32) mp_f32;
+mptr(f64) mp_f64;
+
+mptr(bool) mp_bool;
+mptr(char) mp_char;
+
+mptr(anyptr) mp_anyptr;
+mptr(cptr) mp_cp;
+mptr(mptr) mp_mp;
+mptr(sptr) mp_sp;
+mptr(sptr) mp_Slice;
+
+// Slice Types
+Slice(u8) Slice_u8;
+Slice(u16) Slice_u16;
+Slice(u32) Slice_u32;
+Slice(u64) Slice_u64;
+Slice(uptr) Slice_uptr;
+Slice(usize) Slice_usize;
+
+Slice(i8) Slice_i8;
+Slice(i16) Slice_i16;
+Slice(i32) Slice_i32;
+Slice(i64) Slice_i64;
+Slice(iptr) Slice_iptr;
+Slice(isize) Slice_isize;
+
+Slice(f32) Slice_f32;
+Slice(f64) Slice_f64;
+
+Slice(bool) Slice_bool;
+Slice(char) Slice_char;
+
+Slice(anyptr) Slice_anyptr;
+Slice(cptr) Slice_cp;
+Slice(mptr) Slice_mp;
+Slice(sptr) Slice_sp;
+Slice(sptr) Slice_Slice;
 
 #if defined(__cplusplus)
 } /* extern "C" */

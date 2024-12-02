@@ -19,7 +19,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "dh/core.h"
+#include "core.h"
 
 #include <setjmp.h>
 #include <stdio.h>

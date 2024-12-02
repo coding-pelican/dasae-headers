@@ -21,9 +21,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
-#include "dh/core/ptr.h"
-#include "dh/debug/assert.h"
+#include "core/prim.h"
+#include "core/ptr.h"
+#include "debug/assert.h"
 
 /*========== Macros and Definitions =========================================*/
 

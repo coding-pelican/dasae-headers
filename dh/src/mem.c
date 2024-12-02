@@ -1,3 +1,220 @@
+#include "dh/mem.h"
+#include <stdlib.h>
+
+/*========== Internal Helper Functions ===================================*/
+
+static Result_anyptr mem__stdAlloc(anyptr ctx, usize size, mem_Debug* debug) {
+    anyptr ptr = malloc(size);
+    if (rawptrIsNull(ptr)) {
+        return Result_err(Result_anyptr, Error_insufficient_memory);
+    }
+    debug->state = mem_State_allocated;
+    return Result_ok(Result_anyptr, ptr);
+}
+
+static Result_anyptr mem__stdRealloc(anyptr ctx, anyptr ptr, usize size, mem_Debug* debug) {
+    debug_assert_true(mem_canAccess(debug));
+
+    anyptr new_ptr = realloc(ptr, size);
+    if (rawptrIsNull(new_ptr)) {
+        return Result_err(Result_anyptr, Error_insufficient_memory);
+    }
+    debug->state = mem_State_allocated;
+    return Result_ok(Result_anyptr, new_ptr);
+}
+
+static void mem__stdFree(anyptr ctx, anyptr ptr, mem_Debug* debug) {
+    debug_assert_true(mem_canFree(debug));
+    free(ptr);
+    debug->state = mem_State_freed;
+}
+
+/*========== General Purpose Allocator ===================================*/
+
+const mem_Allocator mem_general = {
+    .ctx = null,
+    .alloc = mem__stdAlloc,
+    .realloc = mem__stdRealloc,
+    .free = mem__stdFree,
+#if DEBUG_ENABLED
+    .debug = {
+        .file = "(global)",
+        .func = "(global)",
+        .line = 0,
+        .state = mem_State_invalid
+    }
+#endif
+};
+
+/*========== Single Element Operations ===================================*/
+
+Result_sptr mem_createSptr(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+    Result_anyptr result = alloc->alloc(alloc->ctx, elem_size, &alloc->debug);
+    if (Result_isErr(result)) {
+        return Result_err(Result_sptr, Result_unwrapErr(Result_anyptr, result));
+    }
+
+    return Result_ok(Result_sptr,
+        sptr_make(void, Result_unwrap(Result_anyptr, result))
+    );
+}
+
+Result_sptr mem_createSptrDebug(mem_Allocator* alloc, usize elem_size, usize elem_align,
+                               const char* file, i32 line, const char* func) {
+    mem_initDebug(&alloc->debug, file, line, func);
+    return mem_createSptr(alloc, elem_size, elem_align);
+}
+
+void mem_destroy(mem_Allocator* alloc, sptr* ptr) {
+    alloc->free(alloc->ctx, ptr_raw(*ptr), &alloc->debug);
+    *ptr = sptr_make(void, null); // Clear pointer
+}
+
+/*========== Array Operations ===========================================*/
+
+Result_Slice mem_allocSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+    Result_anyptr result = alloc->alloc(alloc->ctx, elem_size * count, &alloc->debug);
+    if (Result_isErr(result)) {
+        return Result_err(Result_Slice, Result_unwrapErr(Result_anyptr, result));
+    }
+
+    return Result_ok(Result_Slice,
+        Slice_make(
+            mptr_make(void, Result_unwrap(Result_anyptr, result)),
+            count
+        )
+    );
+}
+
+Result_Slice mem_allocSliceDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count,
+                                const char* file, i32 line, const char* func) {
+    mem_initDebug(&alloc->debug, file, line, func);
+    return mem_allocSlice(alloc, elem_size, elem_align, count);
+}
+
+void mem_free(mem_Allocator* alloc, Slice* slice) {
+    alloc->free(alloc->ctx, Slice_raw(*slice), &alloc->debug);
+    *slice = Slice_make(mptr_make(void, null), 0); // Clear slice
+}
+
+Result_Slice mem_reallocSlice(mem_Allocator* alloc, Slice slice, usize elem_size, usize elem_align, usize new_count) {
+    Result_anyptr result = alloc->realloc(
+        alloc->ctx,
+        Slice_raw(slice),
+        elem_size * new_count,
+        &alloc->debug
+    );
+
+    if (Result_isErr(result)) {
+        return Result_err(Result_Slice, Result_unwrapErr(Result_anyptr, result));
+    }
+
+    return Result_ok(Result_Slice,
+        Slice_make(
+            mptr_make(void, Result_unwrap(Result_anyptr, result)),
+            new_count
+        )
+    );
+}
+
+/*========== Memory Operations =========================================*/
+
+void mem_copySptr(sptr dest, sptr src, usize size) {
+    debug_assert_nonnull(ptr_raw(dest));
+    debug_assert_nonnull(ptr_raw(src));
+    memcpy((void*)ptr_raw(dest), ptr_raw(src), size);
+}
+
+void mem_copySlice(Slice dest, Slice src) {
+    debug_assert_eq(dest.len, src.len);
+    debug_assert_eq(ptr_size(dest.ptr), ptr_size(src.ptr));
+
+    memcpy(
+        (void*)Slice_raw(dest),
+        Slice_raw(src),
+        dest.len * ptr_size(dest.ptr)
+    );
+}
+
+void mem_moveSptr(sptr dest, sptr src, usize size) {
+    debug_assert_nonnull(ptr_raw(dest));
+    debug_assert_nonnull(ptr_raw(src));
+    memmove((void*)ptr_raw(dest), ptr_raw(src), size);
+}
+
+void mem_moveSlice(Slice dest, Slice src) {
+    debug_assert_eq(dest.len, src.len);
+    debug_assert_eq(ptr_size(dest.ptr), ptr_size(src.ptr));
+
+    memmove(
+        (void*)Slice_raw(dest),
+        Slice_raw(src),
+        dest.len * ptr_size(dest.ptr)
+    );
+}
+
+void mem_setSptr(sptr dest, i32 value, usize size) {
+    debug_assert_nonnull(ptr_raw(dest));
+    memset((void*)ptr_raw(dest), value, size);
+}
+
+void mem_setSlice(Slice dest, i32 value) {
+    memset(
+        (void*)Slice_raw(dest),
+        value,
+        dest.len * ptr_size(dest.ptr)
+    );
+}
+
+i32 mem_cmpSptr(sptr lhs, sptr rhs, usize size) {
+    debug_assert_nonnull(ptr_raw(lhs));
+    debug_assert_nonnull(ptr_raw(rhs));
+    return memcmp(ptr_raw(lhs), ptr_raw(rhs), size);
+}
+
+i32 mem_cmpSlice(Slice lhs, Slice rhs) {
+    debug_assert_eq(lhs.len, rhs.len);
+    debug_assert_eq(ptr_size(lhs.ptr), ptr_size(rhs.ptr));
+
+    return memcmp(
+        Slice_raw(lhs),
+        Slice_raw(rhs),
+        lhs.len * ptr_size(lhs.ptr)
+    );
+}
+
+/*========== Debug Functions ==========================================*/
+
+void mem_initDebug(mem_Debug* debug, const char* file, i32 line, const char* func) {
+    debug->file = file;
+    debug->func = func;
+    debug->line = line;
+    debug->state = mem_State_invalid;
+}
+
+bool mem_isValidState(mem_State state) {
+    return state >= mem_State_invalid && state <= mem_State_freed;
+}
+
+bool mem_canAccess(const mem_Debug* debug) {
+#if DEBUG_ENABLED
+    return debug->state == mem_State_allocated;
+#else
+    unused(debug);
+    return true;
+#endif
+}
+
+bool mem_canFree(const mem_Debug* debug) {
+#if DEBUG_ENABLED
+    return debug->state == mem_State_allocated;
+#else
+    unused(debug);
+    return true;
+#endif
+}
+
+
 // /**
 //  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
 //  */

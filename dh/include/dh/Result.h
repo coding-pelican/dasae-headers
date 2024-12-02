@@ -21,10 +21,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
-#include "dh/core/ptr.h"
-#include "dh/debug/assert.h"
-#include "dh/Error.h"
+#include "core/prim.h"
+#include "core/ptr.h"
+#include "debug/assert.h"
+#include "Error.h"
 
 /*========== Macros and Definitions =========================================*/
 

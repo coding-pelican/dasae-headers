@@ -4,7 +4,7 @@
  * @file    mem.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2024-12-01 (date of last update)
+ * @updated 2024-12-02 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)
  * @prefix  mem
@@ -24,19 +24,19 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
-#include "dh/core/ptr.h"
-#include "dh/debug/assert.h"
-#include "dh/Result.h"
-#include "dh/Option.h"
-#include "dh/Error.h"
+#include "core/prim.h"
+#include "core/ptr.h"
+#include "debug/assert.h"
+#include "Result.h"
+#include "Option.h"
+#include "Error.h"
 
 /*========== Memory State ==================================================*/
 
 typedef enum mem_State {
-    mem_State_invalid,   // Unallocated/uninitialized
-    mem_State_allocated, // Currently allocated
-    mem_State_freed      // Has been freed
+    mem_State_invalid   = 0, // Unallocated/uninitialized
+    mem_State_allocated = 1, // Currently allocated
+    mem_State_freed     = 2  // Has been freed
 } mem_State;
 
 typedef struct mem_Debug {
@@ -64,15 +64,20 @@ typedef struct mem_Allocator {
 /*========== Single Element Operations =====================================*/
 
 // Create single element
+#if DEBUG_ENABLED
+#define mem_create(alloc, T) \
+    mem_createDebug(alloc, T, __FILE__, __LINE__, __func__)
+#else
 #define mem_create(alloc, T) \
     mem_createSptr(alloc, sizeof(T), alignof(T))
+#endif
 
 #define mem_createDebug(alloc, T, file, line, func) \
-    mem_createDebugSptr(alloc, sizeof(T), alignof(T), file, line, func)
+    mem_createSptrDebug(alloc, sizeof(T), alignof(T), file, line, func)
 
 // Base functions for single element operations
 extern Result_sptr mem_createSptr(mem_Allocator* alloc, usize elem_size, usize elem_align);
-extern Result_sptr mem_createDebugSptr(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func);
+extern Result_sptr mem_createSptrDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func);
 
 // Destroy single element
 extern void mem_destroy(mem_Allocator* alloc, sptr* ptr);
@@ -80,15 +85,20 @@ extern void mem_destroy(mem_Allocator* alloc, sptr* ptr);
 /*========== Array Operations =============================================*/
 
 // Create array of elements
+#if DEBUG_ENABLED
+#define mem_alloc(alloc, T, count) \
+    mem_allocDebug(alloc, T, count, __FILE__, __LINE__, __func__)
+#else
 #define mem_alloc(alloc, T, count) \
     mem_allocSlice(alloc, sizeof(T), alignof(T), count)
+#endif
 
 #define mem_allocDebug(alloc, T, count, file, line, func) \
-    mem_allocDebugSlice(alloc, sizeof(T), alignof(T), count, file, line, func)
+    mem_allocSliceDebug(alloc, sizeof(T), alignof(T), count, file, line, func)
 
 // Base functions for array operations
 extern Result_Slice mem_allocSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count);
-extern Result_Slice mem_allocDebugSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count, const char* file, i32 line, const char* func);
+extern Result_Slice mem_allocSliceDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count, const char* file, i32 line, const char* func);
 
 // Free array
 extern void mem_free(mem_Allocator* alloc, Slice* slice);
