@@ -77,6 +77,11 @@ extern "C" {
 #endif
 
 /* Endianness Detection */
+#if defined(__BYTE_ORDER__)
+#define BUILTIN_PLTF_BYTE_ORDER               (__BYTE_ORDER__)
+#define BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN (__ORDER_LITTLE_ENDIAN__)
+#define BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN    (__ORDER_BIG_ENDIAN__)
+#endif
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define BUILTIN_PLTF_LITTLE_ENDIAN (1)
 #define BUILTIN_PLTF_BIG_ENDIAN    (0)

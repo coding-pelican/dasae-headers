@@ -11,22 +11,15 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 */
 
 
-#include "dh/core/prim.h"
-#include "dh/core/pp.h"
 #include "dh/core.h"
-#include "dh/debug/assert.h"
-#include "dh/time/Duration.h"
-#include "dh/time/Instant.h"
-#include "dh/time/SysTime.h"
-// #include "dh/ds/Vec.h"
-
-// #define NMEM_TRACE
-#include "dh/mem.h"
+#include "dh/debug.h"
+#include "dh/claim.h"
+#include "dh/time.h"
 #include "dh/scope.h"
 #include "dh/defer.h"
-#include "dh/time/duration.h"
-#include "dh/unreachable.h"
-#include "dh/random.h"
+#include "dh/Random.h"
+#include "dh/mem.h"
+// #include "dh/ds/Vec.h"
 
 // FIXME: Expected memory access error
 #include "../dh-terminal/terminal.h"
@@ -40,7 +33,6 @@ use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 
 #include <locale.h>
 #include <stdio.h>
-
 
 // TODO(dev-dasae): Move to library and make it more generic.
 
@@ -332,7 +324,6 @@ time_Duration Display_testOverhead(Window* const window, Canvas* const canvas) {
 #define Firework_effects_per_rocket (25)
 #define Fireworks_max               (16)
 
-
 typedef struct Particle {
     f64   position[2];
     f64   speed[2];
@@ -607,25 +598,6 @@ const f32 target_frame_31_25_per_s = 31.25f;
 const f32 target_frame_10_00_per_s = 10.00f;
 
 
-/* // Fix how defer is called/used
-void Window_cleanup_defer(Window* w) {
-    Window_fini(w);
-    mem_destroy(&w);
-}
-void State_cleanup_defer(State* s) {
-    State_fini(s);
-    mem_destroy(&s);
-}
-void Canvas_cleanup_defer(Canvas* c) {
-    Canvas_fini(c);
-    mem_destroy(&c);
-}
-void Terminal_cleanup_defer(anyptr null_args) {
-    unused(null_args);
-    Terminal_shutdown();
-} */
-
-
 int main(int argc, const char* argv[]) {
     unused(argc);
     unused(argv);
@@ -676,7 +648,7 @@ int main(int argc, const char* argv[]) {
             }
 
             // const f64   real_delta_time = elapsed;
-            // const usize update_step     = (usize)(Display_DELTA_TIME / real_delta_time);
+            // const usize update_step     = (usize)(Display_deltaTime() / real_delta_time);
             // for (usize step = 0; step < update_step; ++step) {
             //     const f64 delta_time = (f64)step * real_delta_time;
 
@@ -691,12 +663,12 @@ int main(int argc, const char* argv[]) {
 
                 State_update(state, 1);
             } /* UPDATE END */
+
             /* RENDER BEGIN */ {
                 Canvas_clear(canvas, Color_BLACK);
                 ds_Vec_foreach(const Firework, firework, state->fireworks) {
                     Firework_render(firework, canvas, 1);
                 }
-
             } /* RENDER END */
             // }
 
@@ -705,7 +677,7 @@ int main(int argc, const char* argv[]) {
                 Display_render();
             }
             /* Window_delay(window); */ {
-                // const f64 delay = Display_DELTA_TIME - elapsed;
+                // const f64 delay = Display_deltaTime() - elapsed;
                 // time_SysTime_sleep_s_f64(delay);
             }
         }

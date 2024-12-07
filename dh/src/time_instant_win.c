@@ -1,4 +1,3 @@
-#include "dh/Option.h"
 #if defined(_WIN32) || defined(_WIN64)
 
 #include "dh/time/cfg.h"
@@ -39,30 +38,30 @@ u64 time_Instant_toNanos(time_Instant self) {
 
 /*========== Safe Arithmetic Operations ================================*/
 
-Option_time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duration other) {
-    Option_time_SysTime result = time_SysTime_addDurationChecked(self.time_, other);
-    if (!Option_hasValue(result)) {
-        return Option_none(Option_time_Instant);
+Opt_time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duration other) {
+    Opt_time_SysTime result = time_SysTime_addDurationChecked(self.time_, other);
+    if (Opt_isNone(result)) {
+        return Opt_none(Opt_time_Instant);
     }
-    return Option_some(Option_time_Instant, Option_unwrap(Option_time_SysTime, result));
+    return Opt_some(Opt_time_Instant, Opt_unwrap(Opt_time_SysTime, result));
 }
 
-Option_time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duration other) {
-    Option_time_SysTime result = time_SysTime_subDurationChecked(self.time_, other);
-    if (!Option_hasValue(result)) {
-        return Option_none(Option_time_Instant);
+Opt_time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duration other) {
+    Opt_time_SysTime result = time_SysTime_subDurationChecked(self.time_, other);
+    if (Opt_isNone(result)) {
+        return Opt_none(Opt_time_Instant);
     }
-    return Option_some(Option_time_Instant, Option_unwrap(Option_time_SysTime, result));
+    return Opt_some(Opt_time_Instant, Opt_unwrap(Opt_time_SysTime, result));
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
 time_Instant op_fnAddBy(time_Instant, time_Duration) {
-    return Option_unwrap(Option_time_Instant, time_Instant_addDurationChecked(self, other));
+    return Opt_unwrap(Opt_time_Instant, time_Instant_addDurationChecked(self, other));
 }
 
 time_Instant op_fnSubBy(time_Instant, time_Duration) {
-    return Option_unwrap(Option_time_Instant, time_Instant_subDurationChecked(self, other));
+    return Opt_unwrap(Opt_time_Instant, time_Instant_subDurationChecked(self, other));
 }
 
 /*========== Comparison Operations ====================================*/

@@ -24,8 +24,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 /*========== Macros and Definitions =========================================*/
 
-#define Display_REFRESH_RATE (30.0)
-#define Display_DELTA_TIME   (1.0 / Display_REFRESH_RATE)
+#define Display_refreshRate() (30.0)
+#define Display_deltaTime()   (1.0 / Display_refreshRate())
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

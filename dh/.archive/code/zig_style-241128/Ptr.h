@@ -83,12 +83,12 @@
 // Optimized single-word pointer for 64-bit systems
 typedef union {
     const anyptr raw;  // Direct pointer access
-    uptr         bits; // Raw bits access
+    usize        bits; // Raw bits access
     struct {
-        uptr addr : Ptr_bits_addr_len;   // Address bits
-        uptr size : Ptr_bits_size_len;   // Size bits
-        uptr align : Ptr_bits_algin_len; // Alignment bits
-        uptr flags : Ptr_bits_flags_len; // Flags bits
+        usize addr : Ptr_bits_addr_len;   // Address bits
+        usize size : Ptr_bits_size_len;   // Size bits
+        usize align : Ptr_bits_algin_len; // Alignment bits
+        usize flags : Ptr_bits_flags_len; // Flags bits
     } meta;
 } Ptr;
 #else
@@ -142,7 +142,7 @@ force_inline bool Ptr_isAligned(Ptr self);
 /*========== Implementation =================================================*/
 
 // Get alignment order (log2 of alignment)
-force_inline unsigned int get_alignment_order(uptr align) {
+force_inline unsigned int get_alignment_order(usize align) {
 #if defined(__GNUC__) || defined(__clang__)
     return (unsigned int)__builtin_ctzll((unsigned long long)align);
 #elif defined(_MSC_VER)
@@ -170,12 +170,12 @@ force_inline Ptr Ptr_make(const anyptr raw, usize size, usize alignment) {
 #if ZIG_PTR_64BIT
         ptr.raw        = raw;
         ptr.meta.size  = size & Ptr_mask_bits_size;
-        ptr.meta.align = get_alignment_order((uptr)raw) & Ptr_mask_bits_align;
+        ptr.meta.align = get_alignment_order((usize)raw) & Ptr_mask_bits_align;
         ptr.meta.flags = 0;
 #else
         ptr.raw        = raw;
         ptr.meta.size  = size & Ptr_mask_bits_size;
-        ptr.meta.align = get_alignment_order((uptr)raw) & Ptr_mask_bits_align;
+        ptr.meta.align = get_alignment_order((usize)raw) & Ptr_mask_bits_align;
         ptr.meta.flags = 0;
 #endif
     }
@@ -189,12 +189,12 @@ force_inline Ptr Ptr_makeWithFlags(const anyptr raw, usize size, usize alignment
 #if ZIG_PTR_64BIT
         ptr.raw        = raw;
         ptr.meta.size  = size & Ptr_mask_bits_size;
-        ptr.meta.align = get_alignment_order((uptr)raw) & Ptr_mask_bits_align;
+        ptr.meta.align = get_alignment_order((usize)raw) & Ptr_mask_bits_align;
         ptr.meta.flags = flags;
 #else
         ptr.raw        = raw;
         ptr.meta.size  = size & Ptr_mask_bits_size;
-        ptr.meta.align = get_alignment_order((uptr)raw) & Ptr_mask_bits_align;
+        ptr.meta.align = get_alignment_order((usize)raw) & Ptr_mask_bits_align;
         ptr.meta.flags = flags;
 #endif
     }
@@ -238,7 +238,7 @@ force_inline bool Ptr_hasMinSize(Ptr self, usize required_size) {
 }
 
 force_inline bool Ptr_isAligned(Ptr self) {
-    uptr addr = (uptr)Ptr_raw(self);
+    usize addr = (usize)Ptr_raw(self);
     return (addr % Ptr_align(self)) == 0;
 }
 
@@ -255,7 +255,7 @@ force_inline bool Ptr_isAligned(Ptr self) {
 /*========== Pointer Arithmetic =================================================*/
 
 // // Add offset to many-item pointer
-// force_inline MPtr MPtr_add(MPtr ptr, iptr offset) {
+// force_inline MPtr MPtr_add(MPtr ptr, isize offset) {
 //     void* base      = Ptr_raw(ptr.core);
 //     usize elem_size = Ptr_size(ptr.core);
 //     return many_item_ptr(
@@ -266,7 +266,7 @@ force_inline bool Ptr_isAligned(Ptr self) {
 // }
 
 // // Subtract pointers
-// force_inline iptr MPtr_diff(Ptr a, Ptr b) {
+// force_inline isize MPtr_diff(Ptr a, Ptr b) {
 //     assert(Ptr_size(a) == Ptr_size(b));
 //     return ((u8*)Ptr_raw(a) - (u8*)Ptr_raw(b)) / Ptr_size(a);
 // }

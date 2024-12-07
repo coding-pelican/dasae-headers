@@ -84,12 +84,12 @@ extern "C" {
 // Base immutable pointer with metadata
 typedef union cptr {
     const void* raw_;
-    uptr        bits_;
+    usize       bits_;
     struct {
-        uptr addr  : 48; // 256TB address space
-        uptr size  : 12; // Up to 4096 bytes size
-        uptr align : 3;  // Up to 128-byte alignment
-        uptr flags : 1;  // For allowzero, etc
+        usize addr  : 48; // 256TB address space
+        usize size  : 12; // Up to 4096 bytes size
+        usize align : 3;  // Up to 128-byte alignment
+        usize flags : 1;  // For allowzero, etc
     } meta_;
 } cptr;
 claim_assert_static_msg(sizeof(cptr) == sizeof(anyptr), "cptr size mismatch");
@@ -97,12 +97,12 @@ claim_assert_static_msg(sizeof(cptr) == sizeof(anyptr), "cptr size mismatch");
 // Base mutable pointer with metadata
 typedef union cptr_mut {
     void* raw_;
-    uptr  bits_;
+    usize bits_;
     struct {
-        uptr addr  : 48;
-        uptr size  : 12;
-        uptr align : 3;
-        uptr flags : 1;
+        usize addr  : 48;
+        usize size  : 12;
+        usize align : 3;
+        usize flags : 1;
     } meta_;
 } cptr_mut;
 claim_assert_static_msg(sizeof(cptr_mut) == sizeof(anyptr_mut), "cptr_mut size mismatch");
@@ -138,7 +138,7 @@ force_inline bool cptr_hasMinSize(cptr self, usize required);
 force_inline bool cptr_mut_hasMinSize(cptr_mut self, usize required);
 force_inline bool cptr_isAligned(cptr self);
 force_inline bool cptr_mut_isAligned(cptr_mut self);
-force_inline bool cptr_isNull(cptr self);
+force_inline bool cptr_isZero(cptr self);
 force_inline bool cptr_mut_isNull(cptr_mut self);
 
 // Conversion
@@ -146,7 +146,7 @@ force_inline cptr     cptr_fromMut(cptr_mut ptr);
 force_inline cptr_mut cptr_asMut(cptr ptr);
 
 // Internal helpers
-force_inline unsigned int cptr__calcAlignOrder(uptr align);
+force_inline unsigned int cptr__calcAlignOrder(usize align);
 
 #if defined(__cplusplus)
 } /* extern "C" */
@@ -162,7 +162,7 @@ extern "C" {
 /*========== Internal Helpers ==============================================*/
 
 // Calculate log2 of alignment for compact storage
-force_inline unsigned int cptr__calcAlignOrder(uptr align) {
+force_inline unsigned int cptr__calcAlignOrder(usize align) {
 #if defined(__GNUC__) || defined(__clang__)
     return (unsigned int)__builtin_ctzll((unsigned long long)align);
 #elif defined(_MSC_VER)
@@ -291,7 +291,7 @@ force_inline bool cptr_mut_isAligned(cptr_mut self) {
     return (rawptrToInt(self.raw_) % (1ull << self.meta_.align)) == 0;
 }
 
-force_inline bool cptr_isNull(cptr self) {
+force_inline bool cptr_isZero(cptr self) {
     return rawptrIsNull(self.raw_) || (!cptr_flags(self) && rawptrToInt(self.raw_) == 0);
 }
 
@@ -458,7 +458,7 @@ force_inline void* sptr_mut_raw(sptr_mut self) {
 /*========== Safety Implementation ====================================*/
 
 force_inline bool sptr_isNull(sptr self) {
-    return cptr_isNull(self.core);
+    return cptr_isZero(self.core);
 }
 
 force_inline bool sptr_mut_isNull(sptr_mut self) {
@@ -710,7 +710,7 @@ force_inline ptrdiff mptr_mut_diff(mptr_mut lhs, mptr_mut rhs) {
 /*========== Safety Implementation ====================================*/
 
 force_inline bool mptr_isNull(mptr self) {
-    return cptr_isNull(self.core);
+    return cptr_isZero(self.core);
 }
 
 force_inline bool mptr_mut_isNull(mptr_mut self) {
@@ -949,7 +949,7 @@ force_inline ptrdiff nptr_mut_diff(nptr_mut lhs, nptr_mut rhs) {
 /*========== Safety Implementation ====================================*/
 
 force_inline bool nptr_isNull(nptr self) {
-    return cptr_isNull(self.core);
+    return cptr_isZero(self.core);
 }
 
 force_inline bool nptr_mut_isNull(nptr_mut self) {

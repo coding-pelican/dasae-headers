@@ -1,20 +1,21 @@
-// Vec.h
 #ifndef VEC_INCLUDED
 #define VEC_INCLUDED (1)
 
 #include <stddef.h>
 #include <stdbool.h>
+#include "dh/core.h"
+#include "dh/mem.h"
 
-/*========== ArrayList Type ===============================================*/
+/*========== Vec Type ===============================================*/
 
-typedef struct {
-    Slice     items;     // Current items as a slice
-    usize     cap;       // Total allocated capacity
-    Allocator allocator; // Memory allocator
-} ArrayList;
+typedef struct Vec {
+    Slice         items;     // Current items as a slice
+    usize         cap;       // Total allocated capacity
+    mem_Allocator allocator; // Memory allocator
+} Vec;
 
 // Helper functions for memory layout
-static inline usize grow_capacity(usize current, usize minimum) {
+force_inline usize grow_capacity(usize current, usize minimum) {
     usize new_cap = current;
     while (new_cap < minimum) {
         new_cap = new_cap * 3 / 2 + 8;
@@ -22,18 +23,18 @@ static inline usize grow_capacity(usize current, usize minimum) {
     return new_cap;
 }
 
-static inline bool ensure_capacity(ArrayList* list, usize new_capacity) {
-    if (list->capacity >= new_capacity) {
+force_inline bool ensure_capacity(Vec* self, usize new_capacity) {
+    if (self->cap >= new_capacity) {
         return true;
     }
 
-    usize better_capacity = grow_capacity(list->capacity, new_capacity);
-    usize new_size        = better_capacity * core_ptr_size(list->items.core);
-    usize old_size        = list->capacity * core_ptr_size(list->items.core);
+    usize better_capacity = grow_capacity(self->cap, new_capacity);
+    usize new_size        = better_capacity * ptr_size(self->items.core);
+    usize old_size        = self->cap * ptr_size(self->items.core);
 
-    void* new_items = list->allocator.realloc(
-        list->allocator.ctx,
-        core_ptr_raw(list->items.core),
+    void* new_items = self->allocator.realloc(
+        self->allocator.ctx,
+        ptr_raw(self->items.core),
         old_size,
         new_size
     );
@@ -42,225 +43,225 @@ static inline bool ensure_capacity(ArrayList* list, usize new_capacity) {
         return false;
     }
 
-    list->items = slice_create(
+    self->items = Slice_make(
         new_items,
-        list->items.len,
-        core_ptr_size(list->items.core),
-        core_ptr_align(list->items.core),
+        self->items.len,
+        ptr_size(self->items.core),
+        ptr_align(self->items.core),
         false
     );
-    list->capacity = better_capacity;
+    self->cap = better_capacity;
     return true;
 }
 
-/*========== ArrayList Operations =========================================*/
+/*========== Vec Operations =========================================*/
 
-// Initialize new ArrayList
-static inline ArrayList* arraylist_init(Allocator allocator, usize elem_size, usize elem_align) {
-    ArrayList* list = allocator.alloc(allocator.ctx, sizeof(ArrayList));
-    if (!list) {
+// Initialize new Vec
+force_inline Vec* Vec_init(mem_Allocator allocator, usize elem_size, usize elem_align) {
+    Vec* self = allocator.alloc(allocator.ctx, sizeof(Vec), null);
+    if (!self) {
         return NULL;
     }
 
-    *list = (ArrayList){
-        .items     = slice_create(NULL, 0, elem_size, elem_align, false),
+    *self = (Vec){
+        .items     = Slice_make(NULL, 0, elem_size, elem_align, false),
         .capacity  = 0,
         .allocator = allocator
     };
 
-    return list;
+    return self;
 }
 
 // Initialize with capacity
-static inline ArrayList* arraylist_init_capacity(
-    Allocator allocator,
-    usize     elem_size,
-    usize     elem_align,
-    usize     initial_capacity
+force_inline Vec* Vec_init_capacity(
+    mem_Allocator allocator,
+    usize         elem_size,
+    usize         elem_align,
+    usize         initial_capacity
 ) {
-    ArrayList* list = arraylist_init(allocator, elem_size, elem_align);
-    if (!list) {
+    Vec* self = Vec_init(allocator, elem_size, elem_align);
+    if (!self) {
         return NULL;
     }
 
     if (initial_capacity > 0) {
         void* new_items = allocator.alloc(allocator.ctx, initial_capacity * elem_size);
         if (!new_items) {
-            allocator.dealloc(allocator.ctx, list);
+            allocator.free(allocator.ctx, self);
             return NULL;
         }
 
-        list->items    = slice_create(new_items, 0, elem_size, elem_align, false);
-        list->capacity = initial_capacity;
+        self->items = Slice_make(new_items, 0, elem_size, elem_align, false);
+        self->cap   = initial_capacity;
     }
 
-    return list;
+    return self;
 }
 
-// Deinitialize ArrayList
-static inline void arraylist_deinit(ArrayList* list) {
-    if (!list) {
+// Deinitialize Vec
+force_inline void Vec_deinit(Vec* self) {
+    if (!self) {
         return;
     }
-    if (core_ptr_raw(list->items.core)) {
-        list->allocator.dealloc(
-            list->allocator.ctx,
-            core_ptr_raw(list->items.core)
+    if (ptr_raw(self->items.core)) {
+        self->allocator.free(
+            self->allocator.ctx,
+            ptr_raw(self->items.core)
         );
     }
-    list->allocator.dealloc(list->allocator.ctx, list);
+    self->allocator.free(self->allocator.ctx, self);
 }
 
 // Append item
-static inline bool arraylist_append(ArrayList* list, const void* item) {
-    if (!ensure_capacity(list, list->items.len + 1)) {
+force_inline bool Vec_append(Vec* self, const void* item) {
+    if (!ensure_capacity(self, self->items.len + 1)) {
         return false;
     }
 
-    void* dest = (char*)core_ptr_raw(list->items.core) + (list->items.len * core_ptr_size(list->items.core));
-    memcpy(dest, item, core_ptr_size(list->items.core));
-    list->items.len++;
+    void* dest = (char*)ptr_raw(self->items.core) + (self->items.len * ptr_size(self->items.core));
+    memcpy(dest, item, ptr_size(self->items.core));
+    self->items.len++;
     return true;
 }
 
 // Insert item at index
-static inline bool arraylist_insert(ArrayList* list, usize index, const void* item) {
-    if (index > list->items.len) {
+force_inline bool Vec_insert(Vec* self, usize index, const void* item) {
+    if (index > self->items.len) {
         return false;
     }
-    if (!ensure_capacity(list, list->items.len + 1)) {
+    if (!ensure_capacity(self, self->items.len + 1)) {
         return false;
     }
 
-    void* base      = core_ptr_raw(list->items.core);
-    usize elem_size = core_ptr_size(list->items.core);
+    void* base      = ptr_raw(self->items.core);
+    usize elem_size = ptr_size(self->items.core);
 
     // Move items up to make space
     memmove(
         (char*)base + (index + 1) * elem_size,
         (char*)base + index * elem_size,
-        (list->items.len - index) * elem_size
+        (self->items.len - index) * elem_size
     );
 
     // Insert new item
     memcpy((char*)base + index * elem_size, item, elem_size);
-    list->items.len++;
+    self->items.len++;
     return true;
 }
 
 // Remove item at index
-static inline bool arraylist_remove(ArrayList* list, usize index) {
-    if (index >= list->items.len) {
+force_inline bool Vec_remove(Vec* self, usize index) {
+    if (index >= self->items.len) {
         return false;
     }
 
-    void* base      = core_ptr_raw(list->items.core);
-    usize elem_size = core_ptr_size(list->items.core);
+    void* base      = ptr_raw(self->items.core);
+    usize elem_size = ptr_size(self->items.core);
 
     // Move items down to fill gap
     memmove(
         (char*)base + index * elem_size,
         (char*)base + (index + 1) * elem_size,
-        (list->items.len - index - 1) * elem_size
+        (self->items.len - index - 1) * elem_size
     );
 
-    list->items.len--;
+    self->items.len--;
     return true;
 }
 
 // Swap remove (fast remove by swapping with last element)
-static inline bool arraylist_swap_remove(ArrayList* list, usize index) {
-    if (index >= list->items.len) {
+force_inline bool Vec_swap_remove(Vec* self, usize index) {
+    if (index >= self->items.len) {
         return false;
     }
 
-    void* base      = core_ptr_raw(list->items.core);
-    usize elem_size = core_ptr_size(list->items.core);
+    void* base      = ptr_raw(self->items.core);
+    usize elem_size = ptr_size(self->items.core);
 
-    if (index != list->items.len - 1) {
+    if (index != self->items.len - 1) {
         memcpy(
             (char*)base + index * elem_size,
-            (char*)base + (list->items.len - 1) * elem_size,
+            (char*)base + (self->items.len - 1) * elem_size,
             elem_size
         );
     }
 
-    list->items.len--;
+    self->items.len--;
     return true;
 }
 
 // Pop last item
-static inline bool arraylist_pop(ArrayList* list, void* out_item) {
-    if (list->items.len == 0) {
+force_inline bool Vec_pop(Vec* self, void* out_item) {
+    if (self->items.len == 0) {
         return false;
     }
 
     if (out_item) {
         memcpy(
             out_item,
-            (char*)core_ptr_raw(list->items.core) + (list->items.len - 1) * core_ptr_size(list->items.core),
-            core_ptr_size(list->items.core)
+            (char*)ptr_raw(self->items.core) + (self->items.len - 1) * ptr_size(self->items.core),
+            ptr_size(self->items.core)
         );
     }
 
-    list->items.len--;
+    self->items.len--;
     return true;
 }
 
 // Get slice of array
-static inline Slice arraylist_as_slice(const ArrayList* list) {
-    return list->items;
+force_inline Slice Vec_as_slice(const Vec* self) {
+    return self->items;
 }
 
 // Get mutable slice of array
-static inline Slice arraylist_as_mut_slice(ArrayList* list) {
-    return list->items;
+force_inline Slice Vec_as_mut_slice(Vec* self) {
+    return self->items;
 }
 
 // Append items from slice
-static inline bool arraylist_append_slice(ArrayList* list, Slice items) {
-    if (!ensure_capacity(list, list->items.len + items.len)) {
+force_inline bool Vec_append_slice(Vec* self, Slice items) {
+    if (!ensure_capacity(self, self->items.len + items.len)) {
         return false;
     }
 
     memcpy(
-        (char*)core_ptr_raw(list->items.core) + list->items.len * core_ptr_size(list->items.core),
-        core_ptr_raw(items.core),
-        items.len * core_ptr_size(items.core)
+        (char*)ptr_raw(self->items.core) + self->items.len * ptr_size(self->items.core),
+        ptr_raw(items.core),
+        items.len * ptr_size(items.core)
     );
 
-    list->items.len += items.len;
+    self->items.len += items.len;
     return true;
 }
 
 // Clear array (retain capacity)
-static inline void arraylist_clear(ArrayList* list) {
-    list->items.len = 0;
+force_inline void Vec_clear(Vec* self) {
+    self->items.len = 0;
 }
 
 // Shrink capacity to length
-static inline void arraylist_shrink(ArrayList* list) {
-    if (list->items.len == list->capacity) {
+force_inline void Vec_shrink(Vec* self) {
+    if (self->items.len == self->cap) {
         return;
     }
 
-    usize new_size  = list->items.len * core_ptr_size(list->items.core);
-    void* new_items = list->allocator.realloc(
-        list->allocator.ctx,
-        core_ptr_raw(list->items.core),
-        list->capacity * core_ptr_size(list->items.core),
+    usize new_size  = self->items.len * ptr_size(self->items.core);
+    void* new_items = self->allocator.realloc(
+        self->allocator.ctx,
+        ptr_raw(self->items.core),
+        self->cap * ptr_size(self->items.core),
         new_size
     );
 
     if (new_items) {
-        list->items = slice_create(
+        self->items = Slice_make(
             new_items,
-            list->items.len,
-            core_ptr_size(list->items.core),
-            core_ptr_align(list->items.core),
+            self->items.len,
+            ptr_size(self->items.core),
+            ptr_align(self->items.core),
             false
         );
-        list->capacity = list->items.len;
+        self->cap = self->items.len;
     }
 }
 

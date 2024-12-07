@@ -14,12 +14,12 @@
 typedef struct cptr {
     union {
         anyptr raw;
-        uptr   bits;
+        usize  bits;
         struct {
-            uptr addr  : 48; // 256TB address space
-            uptr size  : 12; // Up to 4096 bytes
-            uptr align : 3;  // Up to 128-byte alignment
-            uptr flags : 1;  // Flags
+            usize addr  : 48; // 256TB address space
+            usize size  : 12; // Up to 4096 bytes
+            usize align : 3;  // Up to 128-byte alignment
+            usize flags : 1;  // Flags
         } meta;
     };
 } cptr;
@@ -50,7 +50,7 @@ force_inline cptr cptr_null(void);
 
 // Conversion
 force_inline anyptr cptr_raw(cptr self);
-force_inline uptr   cptr_bits(cptr self);
+force_inline usize  cptr_bits(cptr self);
 force_inline size_t cptr_size(cptr self);
 force_inline size_t cptr_align(cptr self);
 force_inline bool   cptr_flags(cptr self);
@@ -122,7 +122,7 @@ force_inline anyptr cptr_raw(cptr self) {
     return self.raw;
 }
 
-force_inline uptr cptr_bits(cptr self) {
+force_inline usize cptr_bits(cptr self) {
     return self.bits;
 }
 

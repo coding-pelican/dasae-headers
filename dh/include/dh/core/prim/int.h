@@ -43,11 +43,8 @@ typedef uint64_t u64;
 // typedef __uint128_t u128;
 // #define u128_limit (UINT128_MAX)
 
-typedef size_t usize;
+typedef uintptr_t usize;
 #define usize_limit (UINTPTR_MAX)
-
-typedef uintptr_t uptr;
-#define uptr_limit (UINTPTR_MAX)
 
 /* signed integer */
 typedef int8_t i8;
@@ -70,13 +67,9 @@ typedef int64_t i64;
 // #define i128_limit_min (INT128_MIN)
 // #define i128_limit_max (INT128_MAX)
 
-typedef ssize_t isize;
+typedef intptr_t isize;
 #define isize_limit_min (INTPTR_MIN)
 #define isize_limit_max (INTPTR_MAX)
-
-typedef intptr_t iptr;
-#define iptr_limit_min (INTPTR_MIN)
-#define iptr_limit_max (INTPTR_MAX)
 
 #if defined(__cplusplus)
 } /* extern "C" */

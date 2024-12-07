@@ -39,7 +39,7 @@ void TEST_Ptr_bit_ranges() {
 
     // Create a pointer with maximum values
     i32 value     = 42;
-    sptr(i32) ptr = ptr_make(&value, max_size, max_align);
+    Sptr(i32) ptr = ptr_make(&value, max_size, max_align);
     ptr           = ptr_makeWithFlags(&value, max_size, max_align, true);
 
     bool ranges_correct
@@ -55,7 +55,7 @@ void TEST_Ptr_address_bits() {
 
     // Test address masking
     usize test_addr = 0x0000123456789000ull;
-    sptr(i32) ptr   = ptr_make(intToRawptr(anyptr, test_addr), 42, alignof(anyptr)); // NOLINT(performance-no-int-to-ptr)
+    Sptr(i32) ptr   = ptr_make(intToRawptr(anyptr, test_addr), 42, alignof(anyptr)); // NOLINT(performance-no-int-to-ptr)
 
     // The address bits should be preserved after raw extraction
     usize masked_addr    = (usize)ptr_raw(ptr);
@@ -75,7 +75,7 @@ void TEST_Ptr_alignment_order() {
         int x;
     } value;
 
-    sptr(i32) ptr = ptr_make(&value, sizeof(value), alignof(value));
+    Sptr(i32) ptr = ptr_make(&value, sizeof(value), alignof(value));
 
     // For 64-byte alignment, alignment order should be 6 (2^6 = 64)
     usize expected_order = 6;
@@ -94,7 +94,7 @@ void TEST_Ptr_bit_preservation() {
     // Create a pointer with known values
     i32   value   = 42;
     usize size    = 32;
-    sptr(i32) ptr = ptr_make(&value, size, alignof(value));
+    Sptr(i32) ptr = ptr_make(&value, size, alignof(value));
     ptr           = ptr_withFlags(ptr, true);
 
     // Read back values

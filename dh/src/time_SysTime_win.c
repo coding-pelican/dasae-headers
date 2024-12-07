@@ -1,4 +1,3 @@
-#include "dh/core/cmp.h"
 #if defined(_WIN32) || defined(_WIN64)
 
 #include "dh/time/cfg.h"
@@ -94,32 +93,32 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
 
 /*========== Safe Arithmetic Operations ================================*/
 
-Option_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
+Opt_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
     u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
     if (ticks > (u64_limit - self.QuadPart)) {
-        return Option_none(Option_time_SysTime);
+        return Opt_none(Opt_time_SysTime);
     }
-    return Option_some(Option_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
+    return Opt_some(Opt_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
 }
 
-Option_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
+Opt_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
     u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
     if (ticks > as(u64, self.QuadPart)) {
-        return Option_none(Option_time_SysTime);
+        return Opt_none(Opt_time_SysTime);
     }
-    return Option_some(Option_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
+    return Opt_some(Opt_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
 time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
-    return Option_unwrap(Option_time_SysTime, time_SysTime_addDurationChecked(self, other));
+    return Opt_unwrap(Opt_time_SysTime, time_SysTime_addDurationChecked(self, other));
 }
 
 time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
-    return Option_unwrap(Option_time_SysTime, time_SysTime_subDurationChecked(self, other));
+    return Opt_unwrap(Opt_time_SysTime, time_SysTime_subDurationChecked(self, other));
 }
 
 /*========== Comparison Functions =====================================*/

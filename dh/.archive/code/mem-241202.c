@@ -3,24 +3,24 @@
 
 /*========== Internal Helper Functions ===================================*/
 
-static Result_anyptr mem__stdAlloc(anyptr ctx, usize size, mem_Debug* debug) {
+static Res_anyptr mem__stdAlloc(anyptr ctx, usize size, mem_Debug* debug) {
     anyptr ptr = malloc(size);
     if (rawptrIsNull(ptr)) {
-        return Result_err(Result_anyptr, Error_insufficient_memory);
+        return Res_err(Res_anyptr, Error_insufficient_memory);
     }
     debug->state = mem_State_allocated;
-    return Result_ok(Result_anyptr, ptr);
+    return Res_ok(Res_anyptr, ptr);
 }
 
-static Result_anyptr mem__stdRealloc(anyptr ctx, anyptr ptr, usize size, mem_Debug* debug) {
+static Res_anyptr mem__stdRealloc(anyptr ctx, anyptr ptr, usize size, mem_Debug* debug) {
     debug_assert_true(mem_canAccess(debug));
 
     anyptr new_ptr = realloc(ptr, size);
     if (rawptrIsNull(new_ptr)) {
-        return Result_err(Result_anyptr, Error_insufficient_memory);
+        return Res_err(Res_anyptr, Error_insufficient_memory);
     }
     debug->state = mem_State_allocated;
-    return Result_ok(Result_anyptr, new_ptr);
+    return Res_ok(Res_anyptr, new_ptr);
 }
 
 static void mem__stdFree(anyptr ctx, anyptr ptr, mem_Debug* debug) {
@@ -32,94 +32,79 @@ static void mem__stdFree(anyptr ctx, anyptr ptr, mem_Debug* debug) {
 /*========== General Purpose Allocator ===================================*/
 
 const mem_Allocator mem_general = {
-    .ctx = null,
-    .alloc = mem__stdAlloc,
+    .ctx     = null,
+    .alloc   = mem__stdAlloc,
     .realloc = mem__stdRealloc,
-    .free = mem__stdFree,
+    .free    = mem__stdFree,
 #if DEBUG_ENABLED
     .debug = {
-        .file = "(global)",
-        .func = "(global)",
-        .line = 0,
-        .state = mem_State_invalid
-    }
+        .file  = "(global)",
+        .func  = "(global)",
+        .line  = 0,
+        .state = mem_State_invalid }
 #endif
 };
 
 /*========== Single Element Operations ===================================*/
 
-Result_sptr mem_createSptr(mem_Allocator* alloc, usize elem_size, usize elem_align) {
-    Result_anyptr result = alloc->alloc(alloc->ctx, elem_size, &alloc->debug);
-    if (Result_isErr(result)) {
-        return Result_err(Result_sptr, Result_unwrapErr(Result_anyptr, result));
+Res_Sptr mem_createSptr(mem_Allocator* alloc, usize elem_size, usize elem_align) {
+    Res_anyptr result = alloc->alloc(alloc->ctx, elem_size, &alloc->debug);
+    if (Res_isErr(result)) {
+        return Res_err(Res_Sptr, Res_unwrapErr(Res_anyptr, result));
     }
 
-    return Result_ok(Result_sptr,
-        sptr_make(void, Result_unwrap(Result_anyptr, result))
-    );
+    return Res_ok(Res_Sptr, Sptr_make(void, Res_unwrap(Res_anyptr, result)));
 }
 
-Result_sptr mem_createSptrDebug(mem_Allocator* alloc, usize elem_size, usize elem_align,
-                               const char* file, i32 line, const char* func) {
+Res_Sptr mem_createSptrDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func) {
     mem_initDebug(&alloc->debug, file, line, func);
     return mem_createSptr(alloc, elem_size, elem_align);
 }
 
-void mem_destroy(mem_Allocator* alloc, sptr* ptr) {
+void mem_destroy(mem_Allocator* alloc, Sptr* ptr) {
     alloc->free(alloc->ctx, ptr_raw(*ptr), &alloc->debug);
-    *ptr = sptr_make(void, null); // Clear pointer
+    *ptr = Sptr_make(void, null); // Clear pointer
 }
 
 /*========== Array Operations ===========================================*/
 
-Result_Slice mem_allocSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
-    Result_anyptr result = alloc->alloc(alloc->ctx, elem_size * count, &alloc->debug);
-    if (Result_isErr(result)) {
-        return Result_err(Result_Slice, Result_unwrapErr(Result_anyptr, result));
+Res_Slice mem_allocSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count) {
+    Res_anyptr result = alloc->alloc(alloc->ctx, elem_size * count, &alloc->debug);
+    if (Res_isErr(result)) {
+        return Res_err(Res_Slice, Res_unwrapErr(Res_anyptr, result));
     }
 
-    return Result_ok(Result_Slice,
-        Slice_make(
-            mptr_make(void, Result_unwrap(Result_anyptr, result)),
-            count
-        )
-    );
+    return Res_ok(Res_Slice, Slice_make(Mptr_make(void, Res_unwrap(Res_anyptr, result)), count));
 }
 
-Result_Slice mem_allocSliceDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count,
-                                const char* file, i32 line, const char* func) {
+Res_Slice mem_allocSliceDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count, const char* file, i32 line, const char* func) {
     mem_initDebug(&alloc->debug, file, line, func);
     return mem_allocSlice(alloc, elem_size, elem_align, count);
 }
 
 void mem_free(mem_Allocator* alloc, Slice* slice) {
     alloc->free(alloc->ctx, Slice_raw(*slice), &alloc->debug);
-    *slice = Slice_make(mptr_make(void, null), 0); // Clear slice
+    *slice = Slice_make(Mptr_make(void, null), 0); // Clear slice
 }
 
-Result_Slice mem_reallocSlice(mem_Allocator* alloc, Slice slice, usize elem_size, usize elem_align, usize new_count) {
-    Result_anyptr result = alloc->realloc(
+Res_Slice mem_reallocSlice(mem_Allocator* alloc, Slice slice, usize elem_size, usize elem_align, usize new_count) {
+    Res_anyptr result = alloc->realloc(
         alloc->ctx,
         Slice_raw(slice),
         elem_size * new_count,
         &alloc->debug
     );
 
-    if (Result_isErr(result)) {
-        return Result_err(Result_Slice, Result_unwrapErr(Result_anyptr, result));
+    if (Res_isErr(result)) {
+        return Res_err(Res_Slice, Res_unwrapErr(Res_anyptr, result));
     }
 
-    return Result_ok(Result_Slice,
-        Slice_make(
-            mptr_make(void, Result_unwrap(Result_anyptr, result)),
-            new_count
-        )
-    );
+    return Res_ok(Res_Slice, Slice_make(Mptr_make(void, Res_unwrap(Res_anyptr, result)), new_count));
 }
 
 /*========== Memory Operations =========================================*/
 
-void mem_copySptr(sptr dest, sptr src, usize size) {
+void mem_copySptr(Sptr dest, Sptr src, usize size) {
     debug_assert_nonnull(ptr_raw(dest));
     debug_assert_nonnull(ptr_raw(src));
     memcpy((void*)ptr_raw(dest), ptr_raw(src), size);
@@ -136,7 +121,7 @@ void mem_copySlice(Slice dest, Slice src) {
     );
 }
 
-void mem_moveSptr(sptr dest, sptr src, usize size) {
+void mem_moveSptr(Sptr dest, Sptr src, usize size) {
     debug_assert_nonnull(ptr_raw(dest));
     debug_assert_nonnull(ptr_raw(src));
     memmove((void*)ptr_raw(dest), ptr_raw(src), size);
@@ -153,7 +138,7 @@ void mem_moveSlice(Slice dest, Slice src) {
     );
 }
 
-void mem_setSptr(sptr dest, i32 value, usize size) {
+void mem_setSptr(Sptr dest, i32 value, usize size) {
     debug_assert_nonnull(ptr_raw(dest));
     memset((void*)ptr_raw(dest), value, size);
 }
@@ -166,7 +151,7 @@ void mem_setSlice(Slice dest, i32 value) {
     );
 }
 
-i32 mem_cmpSptr(sptr lhs, sptr rhs, usize size) {
+i32 mem_cmpSptr(Sptr lhs, Sptr rhs, usize size) {
     debug_assert_nonnull(ptr_raw(lhs));
     debug_assert_nonnull(ptr_raw(rhs));
     return memcmp(ptr_raw(lhs), ptr_raw(rhs), size);
@@ -186,9 +171,9 @@ i32 mem_cmpSlice(Slice lhs, Slice rhs) {
 /*========== Debug Functions ==========================================*/
 
 void mem_initDebug(mem_Debug* debug, const char* file, i32 line, const char* func) {
-    debug->file = file;
-    debug->func = func;
-    debug->line = line;
+    debug->file  = file;
+    debug->func  = func;
+    debug->line  = line;
     debug->state = mem_State_invalid;
 }
 
@@ -251,7 +236,7 @@ bool mem_canFree(const mem_Debug* debug) {
 
 // /*========== Core Memory Operations =========================================*/
 
-// sptr mem_createSize(const mem_Allocator* alloc, usize elem_size) {
+// Sptr mem_createSize(const mem_Allocator* alloc, usize elem_size) {
 //     claim_assert_fmt(alloc != null, "Allocator cannot be null");
 //     claim_assert_fmt(alloc->allocRaw != null, "Allocator must implement allocRaw");
 //     claim_assert_fmt(elem_size > 0, "Element size must be positive");
@@ -259,10 +244,10 @@ bool mem_canFree(const mem_Debug* debug) {
 //     anyptr raw = alloc->allocRaw(elem_size);
 //     claim_assert_fmt(raw != null, "Allocation failed");
 
-//     return sptr_make(elem_size, raw);
+//     return Sptr_make(elem_size, raw);
 // }
 
-// bool mem_tryCreateSize(const mem_Allocator* alloc, usize elem_size, sptr* out_ptr) {
+// bool mem_tryCreateSize(const mem_Allocator* alloc, usize elem_size, Sptr* out_ptr) {
 //     if (alloc == null
 //         || alloc->allocRaw == null
 //         || elem_size == 0
@@ -273,32 +258,32 @@ bool mem_canFree(const mem_Debug* debug) {
 //     anyptr raw = alloc->allocRaw(elem_size);
 //     if (raw == null) { return false; }
 
-//     *out_ptr = sptr_make(elem_size, raw);
+//     *out_ptr = Sptr_make(elem_size, raw);
 //     return true;
 // }
 
-// // sptr mem_createSizeOrNull(const mem_Allocator* alloc, usize elem_size) {
+// // Sptr mem_createSizeOrNull(const mem_Allocator* alloc, usize elem_size) {
 // //     if (alloc == null || alloc->allocRaw == null || elem_size == 0) {
-// //         return sptr_null;
+// //         return Sptr_null;
 // //     }
 
 // //     anyptr raw = alloc->allocRaw(elem_size);
 // //     if (raw == null) {
-// //         return sptr_null;
+// //         return Sptr_null;
 // //     }
 
-// //     return sptr_make(elem_size, raw);
+// //     return Sptr_make(elem_size, raw);
 // // }
 
-// void mem_destroy(const mem_Allocator* alloc, sptr* ptr) {
+// void mem_destroy(const mem_Allocator* alloc, Sptr* ptr) {
 //     claim_assert_fmt(alloc != null, "Allocator cannot be null");
 //     claim_assert_fmt(alloc->freeRaw != null, "Allocator must implement freeRaw");
-//     claim_assert_fmt(ptr != null, "sptr pointer cannot be null");
+//     claim_assert_fmt(ptr != null, "Sptr pointer cannot be null");
 
-//     if (!sptr_isValid(*ptr)) {
-//         anyptr_mut raw = sptr_raw_mut(ptr); // Get raw pointer first
+//     if (!Sptr_isValid(*ptr)) {
+//         anyptr_mut raw = Sptr_raw_mut(ptr); // Get raw pointer first
 //         alloc->freeRaw(raw);                // Free the raw pointer
-//         *ptr = (sptr){ 0 };                 // Set to null after freeing
+//         *ptr = (Sptr){ 0 };                 // Set to null after freeing
 //     }
 // }
 
@@ -326,7 +311,7 @@ bool mem_canFree(const mem_Debug* debug) {
 // //     anyptr raw = alloc->allocRaw(elem_size * count);
 // //     if (raw == null) { return false; }
 
-// //     *out_slice = Slice_make(sptr_make(elem_size, raw), count);
+// //     *out_slice = Slice_make(Sptr_make(elem_size, raw), count);
 // //     return true;
 // // }
 
@@ -341,7 +326,7 @@ bool mem_canFree(const mem_Debug* debug) {
 // //     anyptr raw = alloc->allocRaw(elem_size * count);
 // //     if (raw == null) { return Slice_null; }
 
-// //     return Slice_fromsptr(sptr_make(elem_size, raw), count);
+// //     return Slice_fromSptr(Sptr_make(elem_size, raw), count);
 // // }
 
 // void mem_free(const mem_Allocator* alloc, Slice* slice) {
@@ -424,101 +409,101 @@ bool mem_canFree(const mem_Debug* debug) {
 
 // /*========== Memory Manipulation ============================================*/
 
-// void mem_copySize(sptr dest, sptr src, usize size) {
-//     claim_assert_fmt(!sptr_isValid(dest), "Destination cannot be null");
-//     claim_assert_fmt(!sptr_isValid(src), "Source cannot be null");
+// void mem_copySize(Sptr dest, Sptr src, usize size) {
+//     claim_assert_fmt(!Sptr_isValid(dest), "Destination cannot be null");
+//     claim_assert_fmt(!Sptr_isValid(src), "Source cannot be null");
 //     claim_assert_fmt(cptr_hasMinSize(dest.core, size), "Destination too small");
 //     claim_assert_fmt(cptr_hasMinSize(src.core, size), "Source too small");
 
-//     memcpy(sptr_raw_mut(&dest), sptr_raw(src), size);
+//     memcpy(Sptr_raw_mut(&dest), Sptr_raw(src), size);
 // }
 
-// bool mem_tryCopySize(sptr dest, sptr src, usize size) {
-//     if (sptr_isNull(dest)
-//         || sptr_isNull(src)
-//         || !sptr_hasMinSize(dest, size)
-//         || !sptr_hasMinSize(src, size)) {
+// bool mem_tryCopySize(Sptr dest, Sptr src, usize size) {
+//     if (Sptr_isNull(dest)
+//         || Sptr_isNull(src)
+//         || !Sptr_hasMinSize(dest, size)
+//         || !Sptr_hasMinSize(src, size)) {
 //         return false;
 //     }
 
-//     memcpy(sptr_raw(dest), sptr_raw(src), size);
+//     memcpy(Sptr_raw(dest), Sptr_raw(src), size);
 //     return true;
 // }
 
-// void mem_moveSize(sptr dest, sptr src, usize size) {
-//     claim_assert_fmt(!sptr_isNull(dest), "Destination cannot be null");
-//     claim_assert_fmt(!sptr_isNull(src), "Source cannot be null");
-//     claim_assert_fmt(sptr_hasMinSize(dest, size), "Destination too small");
-//     claim_assert_fmt(sptr_hasMinSize(src, size), "Source too small");
+// void mem_moveSize(Sptr dest, Sptr src, usize size) {
+//     claim_assert_fmt(!Sptr_isNull(dest), "Destination cannot be null");
+//     claim_assert_fmt(!Sptr_isNull(src), "Source cannot be null");
+//     claim_assert_fmt(Sptr_hasMinSize(dest, size), "Destination too small");
+//     claim_assert_fmt(Sptr_hasMinSize(src, size), "Source too small");
 
-//     memmove(sptr_raw(dest), sptr_raw(src), size);
+//     memmove(Sptr_raw(dest), Sptr_raw(src), size);
 // }
 
-// bool mem_tryMoveSize(sptr dest, sptr src, usize size) {
-//     if (sptr_isNull(dest)
-//         || sptr_isNull(src)
-//         || !sptr_hasMinSize(dest, size)
-//         || !sptr_hasMinSize(src, size)) {
+// bool mem_tryMoveSize(Sptr dest, Sptr src, usize size) {
+//     if (Sptr_isNull(dest)
+//         || Sptr_isNull(src)
+//         || !Sptr_hasMinSize(dest, size)
+//         || !Sptr_hasMinSize(src, size)) {
 //         return false;
 //     }
 
-//     memmove(sptr_raw(dest), sptr_raw(src), size);
+//     memmove(Sptr_raw(dest), Sptr_raw(src), size);
 //     return true;
 // }
 
-// void mem_setSize(sptr ptr, i32 value, usize size) {
-//     claim_assert_fmt(!sptr_isNull(ptr), "Pointer cannot be null");
-//     claim_assert_fmt(sptr_hasMinSize(ptr, size), "Pointer too small");
+// void mem_setSize(Sptr ptr, i32 value, usize size) {
+//     claim_assert_fmt(!Sptr_isNull(ptr), "Pointer cannot be null");
+//     claim_assert_fmt(Sptr_hasMinSize(ptr, size), "Pointer too small");
 
-//     memset(sptr_raw(ptr), value, size);
+//     memset(Sptr_raw(ptr), value, size);
 // }
 
-// bool mem_trySetSize(sptr ptr, i32 value, usize size) {
-//     if (sptr_isNull(ptr) || !sptr_hasMinSize(ptr, size)) {
+// bool mem_trySetSize(Sptr ptr, i32 value, usize size) {
+//     if (Sptr_isNull(ptr) || !Sptr_hasMinSize(ptr, size)) {
 //         return false;
 //     }
 
-//     memset(sptr_raw(ptr), value, size);
+//     memset(Sptr_raw(ptr), value, size);
 //     return true;
 // }
 
-// i32 mem_cmpSize(sptr lhs, sptr rhs, usize size) {
+// i32 mem_cmpSize(Sptr lhs, Sptr rhs, usize size) {
 //     claim_assert_fmt(
-//         !sptr_isNull(lhs),
+//         !Sptr_isNull(lhs),
 //         "Left pointer cannot be null"
 //     );
 //     claim_assert_fmt(
-//         !sptr_isNull(rhs),
+//         !Sptr_isNull(rhs),
 //         "Right pointer cannot be null"
 //     );
 //     claim_assert_fmt(
-//         sptr_hasMinSize(lhs, size),
+//         Sptr_hasMinSize(lhs, size),
 //         "Left pointer too small"
 //     );
 //     claim_assert_fmt(
-//         sptr_hasMinSize(rhs, size),
+//         Sptr_hasMinSize(rhs, size),
 //         "Right pointer too small"
 //     );
 
 //     return memcmp(
-//         sptr_raw(lhs),
-//         sptr_raw(rhs),
+//         Sptr_raw(lhs),
+//         Sptr_raw(rhs),
 //         size
 //     );
 // }
 
-// bool mem_tryCmpSize(sptr lhs, sptr rhs, usize size, i32* out_result) {
-//     if (sptr_isNull(lhs)
-//         || sptr_isNull(rhs)
-//         || !sptr_hasMinSize(lhs, size)
-//         || !sptr_hasMinSize(rhs, size)
+// bool mem_tryCmpSize(Sptr lhs, Sptr rhs, usize size, i32* out_result) {
+//     if (Sptr_isNull(lhs)
+//         || Sptr_isNull(rhs)
+//         || !Sptr_hasMinSize(lhs, size)
+//         || !Sptr_hasMinSize(rhs, size)
 //         || out_result == null) {
 //         return false;
 //     }
 
 //     *out_result = memcmp(
-//         sptr_raw(lhs),
-//         sptr_raw(rhs),
+//         Sptr_raw(lhs),
+//         Sptr_raw(rhs),
 //         size
 //     );
 //     return true;
@@ -560,14 +545,14 @@ bool mem_canFree(const mem_Debug* debug) {
 //     if (Slice_isNull(dest)
 //         || Slice_isNull(src)
 //         || Slice_len(dest) < Slice_len(src)
-//         || sptr_size(dest.ptr_) != sptr_size(src.ptr_)) {
+//         || Sptr_size(dest.ptr_) != Sptr_size(src.ptr_)) {
 //         return false;
 //     }
 
 //     memcpy(
 //         Slice_raw(dest),
 //         Slice_raw(src),
-//         Slice_len(src) * sptr_size(src.ptr_)
+//         Slice_len(src) * Sptr_size(src.ptr_)
 //     );
 //     return true;
 // }
@@ -588,16 +573,16 @@ bool mem_canFree(const mem_Debug* debug) {
 //         Slice_len(src)
 //     );
 //     claim_assert_fmt(
-//         sptr_size(dest.ptr_) == sptr_size(src.ptr_),
+//         Sptr_size(dest.ptr_) == Sptr_size(src.ptr_),
 //         "Element size mismatch (%zu != %zu)",
-//         sptr_size(dest.ptr_),
-//         sptr_size(src.ptr_)
+//         Sptr_size(dest.ptr_),
+//         Sptr_size(src.ptr_)
 //     );
 
 //     memmove(
 //         Slice_raw(dest),
 //         Slice_raw(src),
-//         Slice_len(src) * sptr_size(src.ptr_)
+//         Slice_len(src) * Sptr_size(src.ptr_)
 //     );
 // }
 
@@ -605,14 +590,14 @@ bool mem_canFree(const mem_Debug* debug) {
 //     if (Slice_isNull(dest)
 //         || Slice_isNull(src)
 //         || Slice_len(dest) < Slice_len(src)
-//         || sptr_size(dest.ptr_) != sptr_size(src.ptr_)) {
+//         || Sptr_size(dest.ptr_) != Sptr_size(src.ptr_)) {
 //         return false;
 //     }
 
 //     memmove(
 //         Slice_raw(dest),
 //         Slice_raw(src),
-//         Slice_len(src) * sptr_size(src.ptr_)
+//         Slice_len(src) * Sptr_size(src.ptr_)
 //     );
 //     return true;
 // }
@@ -623,7 +608,7 @@ bool mem_canFree(const mem_Debug* debug) {
 //     memset(
 //         Slice_raw(slice),
 //         value,
-//         Slice_len(slice) * sptr_size(slice.ptr_)
+//         Slice_len(slice) * Sptr_size(slice.ptr_)
 //     );
 // }
 
@@ -633,7 +618,7 @@ bool mem_canFree(const mem_Debug* debug) {
 //     memset(
 //         Slice_raw(slice),
 //         value,
-//         Slice_len(slice) * sptr_size(slice.ptr_)
+//         Slice_len(slice) * Sptr_size(slice.ptr_)
 //     );
 //     return true;
 // }
@@ -648,10 +633,10 @@ bool mem_canFree(const mem_Debug* debug) {
 //         "Right slice cannot be null"
 //     );
 //     claim_assert_fmt(
-//         sptr_size(lhs.ptr_) == sptr_size(rhs.ptr_),
+//         Sptr_size(lhs.ptr_) == Sptr_size(rhs.ptr_),
 //         "Element size mismatch (%zu != %zu)",
-//         sptr_size(lhs.ptr_),
-//         sptr_size(rhs.ptr_)
+//         Sptr_size(lhs.ptr_),
+//         Sptr_size(rhs.ptr_)
 //     );
 
 //     // First compare by content up to the shorter length
@@ -663,7 +648,7 @@ bool mem_canFree(const mem_Debug* debug) {
 //     i32 result = memcmp(
 //         Slice_raw(lhs),
 //         Slice_raw(rhs),
-//         min_len * sptr_size(lhs.ptr_)
+//         min_len * Sptr_size(lhs.ptr_)
 //     );
 
 //     if (result != 0) { return result; }
@@ -675,7 +660,7 @@ bool mem_canFree(const mem_Debug* debug) {
 // bool mem_tryCmpSlice(Slice lhs, Slice rhs, i32* out_result) {
 //     if (Slice_isNull(lhs)
 //         || Slice_isNull(rhs)
-//         || sptr_size(lhs.ptr_) != sptr_size(rhs.ptr_)
+//         || Sptr_size(lhs.ptr_) != Sptr_size(rhs.ptr_)
 //         || out_result == null) {
 //         return false;
 //     }
@@ -688,7 +673,7 @@ bool mem_canFree(const mem_Debug* debug) {
 //     i32 result = memcmp(
 //         Slice_raw(lhs),
 //         Slice_raw(rhs),
-//         min_len * sptr_size(lhs.ptr_)
+//         min_len * Sptr_size(lhs.ptr_)
 //     );
 
 //     if (result != 0) {

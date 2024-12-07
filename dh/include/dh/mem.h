@@ -4,17 +4,14 @@
  * @file    mem.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2024-12-02 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-07 (date of last update)
+ * @version v0.1.1
  * @ingroup dasae-headers(dh)
  * @prefix  mem
  *
- * @brief Memory management with type-safe operations
- * @details Provides type-safe memory management with error handling through Result
+ * @brief   Memory management with type-safe operations
+ * @details
  */
-
-// TODO: Improve debug usage
-// TODO: Add implementation details
 
 #ifndef MEM_INCLUDED
 #define MEM_INCLUDED (1)
@@ -24,122 +21,330 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/prim.h"
-#include "core/ptr.h"
-#include "debug/assert.h"
-#include "Result.h"
-#include "Option.h"
-#include "Error.h"
+#include "dh/core/prim.h"
+#include "dh/core/ptr.h"
+#include "dh/core/Err.h"
+#include "dh/debug/assert.h"
+#include "dh/mem/Allocator.h"
 
-/*========== Memory State ==================================================*/
+/*========== Memory Constants ===============================================*/
 
-typedef enum mem_State {
-    mem_State_invalid   = 0, // Unallocated/uninitialized
-    mem_State_allocated = 1, // Currently allocated
-    mem_State_freed     = 2  // Has been freed
-} mem_State;
-
-typedef struct mem_Debug {
-    const char* file;
-    const char* func;
-    i32         line;
-    mem_State   state;
-} mem_Debug;
-
-/*========== Memory Interface ==============================================*/
-
-typedef struct mem_Allocator {
-    anyptr ctx;
-
-    // Core allocation functions
-    Result_anyptr (*alloc)(anyptr ctx, usize size, mem_Debug* debug);
-    Result_anyptr (*realloc)(anyptr ctx, anyptr ptr, usize new_size, mem_Debug* debug);
-    void (*free)(anyptr ctx, anyptr ptr, mem_Debug* debug);
-
-#if DEBUG_ENABLED
-    mem_Debug debug; // Track allocation state
-#endif
-} mem_Allocator;
-
-/*========== Single Element Operations =====================================*/
-
-// Create single element
-#if DEBUG_ENABLED
-#define mem_create(alloc, T) \
-    mem_createDebug(alloc, T, __FILE__, __LINE__, __func__)
+// Fixed page size (may be different per platform)
+#if defined(__wasm32__) || defined(__wasm64__)
+#define mem_page_size (64 * 1024)
+#elif defined(__aarch64__)
+#define mem_page_size (16 * 1024)
+#elif defined(__sparc64__)
+#define mem_page_size (8 * 1024)
 #else
-#define mem_create(alloc, T) \
-    mem_createSptr(alloc, sizeof(T), alignof(T))
+#define mem_page_size (4 * 1024)
 #endif
 
-#define mem_createDebug(alloc, T, file, line, func) \
-    mem_createSptrDebug(alloc, sizeof(T), alignof(T), file, line, func)
+/*========== Memory Utilities ===============================================*/
 
-// Base functions for single element operations
-extern Result_sptr mem_createSptr(mem_Allocator* alloc, usize elem_size, usize elem_align);
-extern Result_sptr mem_createSptrDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, const char* file, i32 line, const char* func);
+// Memory operations
+force_inline void mem_set(anyptr dest, u8 value, usize size);
+force_inline void mem_copy(anyptr dest, anyptr src, usize size);
+force_inline void mem_move(anyptr dest, anyptr src, usize size);
+force_inline i32  mem_cmp(anyptr lhs, anyptr rhs, usize size);
 
-// Destroy single element
-extern void mem_destroy(mem_Allocator* alloc, sptr* ptr);
+/*========== Alignment Functions ============================================*/
 
-/*========== Array Operations =============================================*/
+// Check if alignment is valid (power of 2)
+force_inline bool      mem_isValidAlign(usize alignment);
+// Check if address is aligned
+force_inline bool      mem_isAligned(usize addr, usize alignment);
+// Check if address is aligned to power of 2
+force_inline bool      mem_isAlignedLog2(usize addr, u8 log2_align);
+// Forward align an address
+force_inline usize     mem_alignForward(usize addr, usize alignment);
+// Forward align an address to power of 2
+force_inline usize     mem_alignForwardLog2(usize addr, u8 log2_align);
+// Backward align an address
+force_inline usize     mem_alignBackward(usize addr, usize alignment);
+// Get bytes needed to satisfy slice alignment with new_alignment
+force_inline Opt_usize mem_alignInBytes(Slice_u8 bytes, usize new_alignment);
 
-// Create array of elements
-#if DEBUG_ENABLED
-#define mem_alloc(alloc, T, count) \
-    mem_allocDebug(alloc, T, count, __FILE__, __LINE__, __func__)
+/*========== Buffer Manipulation ============================================*/
+
+// Copy bytes between buffers with bounds checking
+force_inline void mem_copyBytes(u8* dest, const u8* src, usize len);
+// Set bytes to value with bounds checking
+force_inline void mem_setBytes(u8* dest, u8 value, usize len);
+// Compare two byte buffers
+force_inline bool mem_eqlBytes(const u8* a, const u8* b, usize len);
+
+/*========== Endian Conversion ==============================================*/
+
+force_inline u16 mem_littleToNative16(u16 x);
+force_inline u32 mem_littleToNative32(u32 x);
+force_inline u64 mem_littleToNative64(u64 x);
+
+force_inline u16 mem_bigToNative16(u16 x);
+force_inline u32 mem_bigToNative32(u32 x);
+force_inline u64 mem_bigToNative64(u64 x);
+
+force_inline u16 mem_nativeToLittle16(u16 x);
+force_inline u32 mem_nativeToLittle32(u32 x);
+force_inline u64 mem_nativeToLittle64(u64 x);
+
+force_inline u16 mem_nativeToBig16(u16 x);
+force_inline u32 mem_nativeToBig32(u32 x);
+force_inline u64 mem_nativeToBig64(u64 x);
+
+/*========== Implementation =================================================*/
+
+/**
+ * @brief Count trailing zeros in an integer
+ *
+ * This is an implementation of Zig's @ctz builtin function.
+ * Returns the number of trailing least-significant zero bits in the binary
+ * representation of the given integer. If the input is 0, returns the bit
+ * width of the type.
+ *
+ * @param x The input value
+ * @return The number of trailing zeros
+ */
+force_inline u32 ctz(u64 x) {
+    if (x == 0) {
+        return sizeof(u64) * 8;
+    }
+
+#if defined(__GNUC__) || defined(__clang__)
+    // GCC and Clang provide builtin
+    return __builtin_ctzll(x);
 #else
-#define mem_alloc(alloc, T, count) \
-    mem_allocSlice(alloc, sizeof(T), alignof(T), count)
+    // Fallback implementation using De Bruijn sequence
+    static const u8 lookup[32] = {
+        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    };
+
+    // First isolate the lowest set bit
+    u64 isolate = x & (-x);
+
+    // DeBruijn constant for 32-bit integers
+    // Can be extended for 64-bit if needed
+    u64 debruijn = 0x077CB531U;
+
+    // Multiply by the DeBruijn constant and look up the result
+    return lookup[((isolate * debruijn) >> 27) & 31];
 #endif
+}
 
-#define mem_allocDebug(alloc, T, count, file, line, func) \
-    mem_allocSliceDebug(alloc, sizeof(T), alignof(T), count, file, line, func)
+/**
+ * @brief Swap the byte order of an integer
+ *
+ * This is an implementation of Zig's @byteSwap builtin function.
+ * Swaps the byte order of the given integer value. This can be used
+ * to convert between little-endian and big-endian representations.
+ *
+ * @param x The value to byte-swap
+ * @return The byte-swapped value
+ */
+force_inline u16 byteSwap16(u16 x) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_bswap16(x);
+#else
+    return (x << 8) | (x >> 8);
+#endif
+}
 
-// Base functions for array operations
-extern Result_Slice mem_allocSlice(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count);
-extern Result_Slice mem_allocSliceDebug(mem_Allocator* alloc, usize elem_size, usize elem_align, usize count, const char* file, i32 line, const char* func);
+force_inline u32 byteSwap32(u32 x) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_bswap32(x);
+#else
+    return ((x & 0xFF000000) >> 24) | ((x & 0x00FF0000) >> 8) | ((x & 0x0000FF00) << 8) | ((x & 0x000000FF) << 24);
+#endif
+}
 
-// Free array
-extern void mem_free(mem_Allocator* alloc, Slice* slice);
+force_inline u64 byteSwap64(u64 x) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_bswap64(x);
+#else
+    return ((x & 0xFF00000000000000ULL) >> 56) | ((x & 0x00FF000000000000ULL) >> 40) | ((x & 0x0000FF0000000000ULL) >> 24) | ((x & 0x000000FF00000000ULL) >> 8) | ((x & 0x00000000FF000000ULL) << 8) | ((x & 0x0000000000FF0000ULL) << 24) | ((x & 0x000000000000FF00ULL) << 40) | ((x & 0x00000000000000FFULL) << 56);
+#endif
+}
 
-// Resize array
-#define mem_realloc(alloc, slice, T, new_count) \
-    mem_reallocSlice(alloc, slice, sizeof(T), alignof(T), new_count)
+/*========== Memory Operations ==============================================*/
 
-extern Result_Slice mem_reallocSlice(mem_Allocator* alloc, Slice slice, usize elem_size, usize elem_align, usize new_count);
+force_inline void mem_set(anyptr dest, u8 value, usize size) {
+    memset(dest, value, size);
+}
 
-/*========== Memory Operations ===========================================*/
+force_inline void mem_copy(anyptr dest, anyptr src, usize size) {
+    memcpy(dest, src, size);
+}
 
-// Copy operations
-extern void mem_copySptr(sptr dest, sptr src, usize size);
-extern void mem_copySlice(Slice dest, Slice src);
+force_inline void mem_move(anyptr dest, anyptr src, usize size) {
+    memmove(dest, src, size);
+}
 
-// Move operations (handles overlap)
-extern void mem_moveSptr(sptr dest, sptr src, usize size);
-extern void mem_moveSlice(Slice dest, Slice src);
+force_inline i32 mem_cmp(anyptr lhs, anyptr rhs, usize size) {
+    return memcmp(lhs, rhs, size);
+}
 
-// Set operations
-extern void mem_setSptr(sptr dest, i32 value, usize size);
-extern void mem_setSlice(Slice dest, i32 value);
+/*========== Alignment Functions ============================================*/
 
-// Compare operations
-extern i32 mem_cmpSptr(sptr lhs, sptr rhs, usize size);
-extern i32 mem_cmpSlice(Slice lhs, Slice rhs);
+force_inline bool mem_isValidAlign(usize alignment) {
+    return alignment > 0 && (alignment & (alignment - 1)) == 0;
+}
 
-/*========== General Purpose Allocator ===================================*/
+force_inline bool mem_isAligned(usize addr, usize alignment) {
+    debug_assert(mem_isValidAlign(alignment));
+    return (addr & (alignment - 1)) == 0;
+}
 
-// Standard allocator using malloc/free/realloc
-extern const mem_Allocator mem_general;
+force_inline bool mem_isAlignedLog2(usize addr, u8 log2_align) {
+    return ctz(addr) >= log2_align;
+}
 
-// Initialize an allocator with debug info
-extern void mem_initDebug(mem_Debug* debug, const char* file, i32 line, const char* func);
+force_inline usize mem_alignForward(usize addr, usize alignment) {
+    debug_assert(mem_isValidAlign(alignment));
+    return (addr + (alignment - 1)) & ~(alignment - 1);
+}
 
-/*========== Safety Functions ===========================================*/
+force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align) {
+    const usize alignment = (usize)1 << log2_align;
+    return mem_alignForward(addr, alignment);
+}
 
-extern bool mem_isValidState(mem_State state);
-extern bool mem_canAccess(const mem_Debug* debug);
-extern bool mem_canFree(const mem_Debug* debug);
+force_inline usize mem_alignBackward(usize addr, usize alignment) {
+    debug_assert(mem_isValidAlign(alignment));
+    return addr & ~(alignment - 1);
+}
+
+force_inline Opt_usize mem_alignInBytes(Slice_u8 bytes, usize new_alignment) {
+    const usize begin_address = (usize)Slice_raw(bytes);
+    const usize end_address   = begin_address + bytes.len;
+
+    const usize begin_address_aligned = mem_alignForward(begin_address, new_alignment);
+
+    // Check for overflow
+    if (end_address < begin_address_aligned) {
+        return Opt_none(Opt_usize);
+    }
+    const usize alignment_offset = begin_address_aligned - begin_address;
+
+    return Opt_some(Opt_usize, alignment_offset);
+}
+
+/*========== Buffer Manipulation ============================================*/
+
+// Copy bytes between buffers with bounds checking
+force_inline void mem_copyBytes(u8* dest, const u8* src, usize len) {
+    debug_assert(dest != NULL && src != NULL);
+    mem_copy(dest, (anyptr)src, len);
+}
+
+// Set bytes to value with bounds checking
+force_inline void mem_setBytes(u8* dest, u8 value, usize len) {
+    debug_assert(dest != NULL);
+    mem_set(dest, value, len);
+}
+
+// Compare two byte buffers
+force_inline bool mem_eqlBytes(const u8* a, const u8* b, usize len) {
+    debug_assert(a != NULL && b != NULL);
+    return mem_cmp((anyptr)a, (anyptr)b, len) == 0;
+}
+
+/*========== Endian Conversion ==============================================*/
+
+force_inline u16 mem_littleToNative16(u16 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap16(x);
+#endif
+}
+
+force_inline u32 mem_littleToNative32(u32 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap32(x);
+#endif
+}
+
+force_inline u64 mem_littleToNative64(u64 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap64(x);
+#endif
+}
+
+force_inline u16 mem_bigToNative16(u16 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap16(x);
+#endif
+}
+
+force_inline u32 mem_bigToNative32(u32 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap32(x);
+#endif
+}
+
+force_inline u64 mem_bigToNative64(u64 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap64(x);
+#endif
+}
+
+force_inline u16 mem_nativeToLittle16(u16 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap16(x);
+#endif
+}
+
+force_inline u32 mem_nativeToLittle32(u32 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap32(x);
+#endif
+}
+
+force_inline u64 mem_nativeToLittle64(u64 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+    return x;
+#else
+    return byteSwap64(x);
+#endif
+}
+
+force_inline u16 mem_nativeToBig16(u16 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap16(x);
+#endif
+}
+
+force_inline u32 mem_nativeToBig32(u32 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap32(x);
+#endif
+}
+
+force_inline u64 mem_nativeToBig64(u64 x) {
+#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+    return x;
+#else
+    return byteSwap64(x);
+#endif
+}
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -60,10 +60,10 @@ typedef ptrdiff_t ptrdiff;
      */                                                  \
     IMPL_rawptrCast(TDestPtr, var)
 
-#define rawptrToInt(raw)                  \
-    /**                                   \
-     * @brief Convert rawptr to int(uptr) \
-     */                                   \
+#define rawptrToInt(raw)                   \
+    /**                                    \
+     * @brief Convert rawptr to int(usize) \
+     */                                    \
     IMPL_rawptrToInt(raw)
 
 #define intToRawptr(TDestRaw, val)  \
@@ -94,7 +94,7 @@ typedef ptrdiff_t ptrdiff;
 #define IMPL_deref(TSelf, var) (*(TSelf*)(var))
 
 #define IMPL_rawptrCast(TDestPtr, var)  ((TDestPtr)(var))
-#define IMPL_rawptrToInt(raw)           ((uptr)(raw))     // NOLINT
+#define IMPL_rawptrToInt(raw)           ((usize)(raw))    // NOLINT
 #define IMPL_intToRawptr(TDestRaw, val) ((TDestRaw)(val)) // NOLINT
 
 #define IMPL_rawptrIsNull(var)    ((var) == null)

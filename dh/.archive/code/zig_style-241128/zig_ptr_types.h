@@ -30,24 +30,24 @@
 // Base const pointer type
 typedef union Ptr {
     const anyptr raw;  // Direct pointer access
-    uptr         bits; // Raw bits access
+    usize        bits; // Raw bits access
     struct {
-        uptr addr : PTR_BITS_ADDR_LEN;   // Address bits
-        uptr size : PTR_BITS_SIZE_LEN;   // Size bits
-        uptr align : PTR_BITS_ALIGN_LEN; // Alignment bits
-        uptr flags : PTR_BITS_FLAGS_LEN; // Flags bits
+        usize addr : PTR_BITS_ADDR_LEN;   // Address bits
+        usize size : PTR_BITS_SIZE_LEN;   // Size bits
+        usize align : PTR_BITS_ALIGN_LEN; // Alignment bits
+        usize flags : PTR_BITS_FLAGS_LEN; // Flags bits
     } meta;
 } Ptr;
 
 // Base mutable pointer type
 typedef union PtrMut {
     anyptr raw;  // Direct pointer access
-    uptr   bits; // Raw bits access
+    usize  bits; // Raw bits access
     struct {
-        uptr addr : PTR_BITS_ADDR_LEN;   // Address bits
-        uptr size : PTR_BITS_SIZE_LEN;   // Size bits
-        uptr align : PTR_BITS_ALIGN_LEN; // Alignment bits
-        uptr flags : PTR_BITS_FLAGS_LEN; // Flags bits
+        usize addr : PTR_BITS_ADDR_LEN;   // Address bits
+        usize size : PTR_BITS_SIZE_LEN;   // Size bits
+        usize align : PTR_BITS_ALIGN_LEN; // Alignment bits
+        usize flags : PTR_BITS_FLAGS_LEN; // Flags bits
     } meta;
 } PtrMut;
 
@@ -143,26 +143,26 @@ static inline Slice Slice_asConst(SliceMut slice) {
 /*========== Creation Macros =========================================*/
 
 // Create const pointers
-#define Ptr_new(T, ptr) \
+#define Ptr_new(T, ptr)
 
-#define SPtr_new(T, ptr) \
+#define SPtr_new(T, ptr)
 
-#define ManyPtr_new(T, ptr) \
+#define ManyPtr_new(T, ptr)
 
-#define ArrayPtr_new(T, ptr, count) \
+#define ArrayPtr_new(T, ptr, count)
 
-#define Slice_new(T, ptr, count) \
+#define Slice_new(T, ptr, count)
 
 // Create mutable pointers
-#define PtrMut_new(T, ptr) \
+#define PtrMut_new(T, ptr)
 
-#define SPtrMut_new(T, ptr) \
+#define SPtrMut_new(T, ptr)
 
-#define ManyPtrMut_new(T, ptr) \
+#define ManyPtrMut_new(T, ptr)
 
-#define ArrayPtrMut_new(T, ptr, count) \
+#define ArrayPtrMut_new(T, ptr, count)
 
-#define SliceMut_new(T, ptr, count) \
+#define SliceMut_new(T, ptr, count)
 
 /*========== Access Macros ===========================================*/
 

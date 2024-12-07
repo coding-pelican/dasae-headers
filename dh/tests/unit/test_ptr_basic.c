@@ -3,10 +3,10 @@
 void example_usage(void) {
     // Single item usage
     i32 value   = 42;
-    sptr(i32) p = sptr_ref(i32, value);
+    Sptr(i32) p = Sptr_ref(i32, value);
 
-    i32 x = sptr_get(i32, p); // Read
-    sptr_set(i32, p, x + 1);  // Write
+    i32 x = Sptr_get(i32, p); // Read
+    Sptr_set(i32, p, x + 1);  // Write
 
     // Array usage
     i32 arr[]        = { 1, 2, 3, 4, 5 };
