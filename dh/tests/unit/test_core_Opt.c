@@ -1,7 +1,7 @@
 /**
  * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
- * @file    test_optional.c
+ * @file    test_core_Opt.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-30 (date of creation)
  * @updated 2024-12-01 (date of last update)

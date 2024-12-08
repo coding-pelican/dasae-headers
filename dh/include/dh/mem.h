@@ -132,6 +132,21 @@ force_inline u32 ctz(u64 x) {
 }
 
 /**
+ * @brief Convert actual alignment value to log2
+ */
+force_inline u8 mem_alignToLog2(usize alignment) {
+    debug_assert(mem_isValidAlign(alignment));
+    return (u8)ctz(alignment);
+}
+
+/**
+ * @brief Convert log2 value to actual alignment
+ */
+force_inline usize mem_log2ToAlign(u8 log2_align) {
+    return (usize)1 << log2_align;
+}
+
+/**
  * @brief Swap the byte order of an integer
  *
  * This is an implementation of Zig's @byteSwap builtin function.

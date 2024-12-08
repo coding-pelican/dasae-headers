@@ -30,33 +30,37 @@ extern "C" {
 
 /*========== Allocator Interface ============================================*/
 
-// Allocator vtable
-// The allocator must provide these functions:
-typedef struct mem_Allocator_VTable {
-    // Try to allocate memory
-    Res_Mptr_u8 (*alloc)(anyptr ctx, usize n, u8 log2_align);
-
-    // Try to resize in-place - returns true if successful
-    bool (*resize)(anyptr ctx, Slice_u8 buf, u8 log2_buf_align, usize new_len);
-
-    // Free memory
-    void (*free)(anyptr ctx, Slice_u8 buf, u8 log2_buf_align);
-} mem_Allocator_VTable;
+typedef struct mem_Allocator        mem_Allocator;
+typedef struct mem_Allocator_VTable mem_Allocator_VTable;
+Sptr(mem_Allocator) Sptr_mem_Allocator;
 
 // Allocator instance
-typedef struct mem_Allocator {
+struct mem_Allocator {
     anyptr                      ptr_;
     const mem_Allocator_VTable* vt_;
-} mem_Allocator;
+};
+
+// Allocator vtable
+// The allocator must provide these functions:
+struct mem_Allocator_VTable {
+    // Try to allocate memory
+    Res_Mptr_u8 (*alloc)(anyptr self, usize n, usize align);
+
+    // Try to resize in-place - returns true if successful
+    bool (*resize)(anyptr self, Slice_u8 buf, usize buf_align, usize new_len);
+
+    // Free memory
+    void (*free)(anyptr self, Slice_u8 buf, usize buf_align);
+};
 
 /*========== Core Allocator Functions =======================================*/
 
 // Raw allocation - returns null if out of memory
-force_inline Mptr_u8 mem_Allocator_rawAlloc(mem_Allocator self, usize n, u8 log2_align);
+force_inline Mptr_u8 mem_Allocator_rawAlloc(mem_Allocator self, usize n, usize align);
 // Try to resize in-place - returns true if successful
-force_inline bool    mem_Allocator_rawResize(mem_Allocator self, Slice_u8 buf, u8 log2_buf_align, usize new_len);
+force_inline bool    mem_Allocator_rawResize(mem_Allocator self, Slice_u8 buf, usize buf_align, usize new_len);
 // Free memory
-force_inline void    mem_Allocator_rawFree(mem_Allocator self, Slice_u8 buf, u8 log2_buf_align);
+force_inline void    mem_Allocator_rawFree(mem_Allocator self, Slice_u8 buf, usize buf_align);
 
 /*========== High-level Allocator Functions =================================*/
 
@@ -69,52 +73,52 @@ force_inline void    mem_Allocator_rawFree(mem_Allocator self, Slice_u8 buf, u8 
 #define mem_Allocator_alloc(self, T, n) \
     mem_Allocator_allocSlice(self, sizeof(T), alignof(T), n)
 
-#define mem_Allocator_realloc(self, ptr, T, n) \
-    mem_Allocator_reallocSlice(self, ptr, sizeof(T), alignof(T), n)
-
 #define mem_Allocator_resize(self, ptr, T, n) \
     mem_Allocator_resizeSlice(self, ptr, sizeof(T), alignof(T), n)
+
+#define mem_Allocator_realloc(self, ptr, T, n) \
+    mem_Allocator_reallocSlice(self, ptr, sizeof(T), alignof(T), n)
 
 #define mem_Allocator_free(self, ptr) \
     mem_Allocator_freeSlice(self, ptr, sizeof(T))
 
 // Allocate single-item
-force_inline Res_Sptr  mem_Allocator_createSptr(mem_Allocator* self, usize size, u8 log2_align);
+force_inline Res_Sptr  mem_Allocator_createSptr(mem_Allocator* self, usize size, usize align);
 // Free single-item
 force_inline void      mem_Allocator_destroySptr(mem_Allocator* self, Sptr* ptr);
 // Allocate many-item
-force_inline Res_Slice mem_Allocator_allocSlice(mem_Allocator* self, usize elem_size, u8 log2_align, usize count);
-// Reallocate buffer to new size, possibly moving it.
-// Returns optional new slice - null means allocation failed.
-// The existing memory is preserved up to min(old_len, new_len).
-force_inline Opt_Slice mem_Allocator_reallocSlice(mem_Allocator* self, Slice slice, usize new_len);
+force_inline Res_Slice mem_Allocator_allocSlice(mem_Allocator* self, usize elem_size, usize align, usize count);
 // Try to resize buffer in-place. Returns true if successful.
 // If true is returned, the buffer was resized in-place.
 // If false is returned, the buffer was unchanged.
 force_inline bool      mem_Allocator_resizeSlice(mem_Allocator* self, Slice* slice, usize new_len);
+// Reallocate buffer to new size, possibly moving it.
+// Returns optional new slice - null means allocation failed.
+// The existing memory is preserved up to min(old_len, new_len).
+force_inline Opt_Slice mem_Allocator_reallocSlice(mem_Allocator* self, Slice slice, usize new_len);
 // Free many-item
 force_inline void      mem_Allocator_freeSlice(mem_Allocator* self, Slice* slice);
 
 /*========== Implementation =================================================*/
 
-force_inline Mptr_u8 mem_Allocator_rawAlloc(mem_Allocator self, usize n, u8 log2_align) {
-    return Res_unwrap(Res_Mptr_u8, self.vt_->alloc(self.ptr_, n, log2_align));
+force_inline Mptr_u8 mem_Allocator_rawAlloc(mem_Allocator self, usize n, usize align) {
+    return Res_unwrap(Res_Mptr_u8, self.vt_->alloc(self.ptr_, n, align));
 }
 
-force_inline bool mem_Allocator_rawResize(mem_Allocator self, Slice_u8 buf, u8 log2_buf_align, usize new_len) {
-    return self.vt_->resize(self.ptr_, buf, log2_buf_align, new_len);
+force_inline bool mem_Allocator_rawResize(mem_Allocator self, Slice_u8 buf, usize buf_align, usize new_len) {
+    return self.vt_->resize(self.ptr_, buf, buf_align, new_len);
 }
 
-force_inline void mem_Allocator_rawFree(mem_Allocator self, Slice_u8 buf, u8 log2_buf_align) {
-    self.vt_->free(self.ptr_, buf, log2_buf_align);
+force_inline void mem_Allocator_rawFree(mem_Allocator self, Slice_u8 buf, usize buf_align) {
+    self.vt_->free(self.ptr_, buf, buf_align);
 }
 
-force_inline Res_Sptr mem_Allocator_createSptr(mem_Allocator* self, usize size, u8 log2_align) {
-    const Mptr_u8 ptr = mem_Allocator_rawAlloc(*self, size, log2_align);
+force_inline Res_Sptr mem_Allocator_createSptr(mem_Allocator* self, usize size, usize align) {
+    const Mptr_u8 ptr = mem_Allocator_rawAlloc(*self, size, align);
     if (Mptr_isZero(ptr)) {
         return Res_err(Res_Sptr, Err_insufficient_memory);
     }
-    return Res_ok(Res_Sptr, cptr_make(Mptr_raw(ptr), size, log2_align));
+    return Res_ok(Res_Sptr, cptr_make(Mptr_raw(ptr), size, align));
 }
 
 force_inline void mem_Allocator_destroySptr(mem_Allocator* self, Sptr* ptr) {
@@ -123,13 +127,28 @@ force_inline void mem_Allocator_destroySptr(mem_Allocator* self, Sptr* ptr) {
     *ptr = (Sptr){ 0 };
 }
 
-force_inline Res_Slice mem_Allocator_allocSlice(mem_Allocator* self, usize elem_size, u8 log2_align, usize count) {
+force_inline Res_Slice mem_Allocator_allocSlice(mem_Allocator* self, usize elem_size, usize align, usize count) {
     const usize size = elem_size * count;
-    const Mptr  ptr  = mem_Allocator_rawAlloc(*self, size, log2_align);
+    const Mptr  ptr  = mem_Allocator_rawAlloc(*self, size, align);
     if (Mptr_isZero(ptr)) {
         return Res_err(Res_Slice, Err_insufficient_memory);
     }
     return Res_ok(Res_Slice, Slice_make(ptr, count));
+}
+
+force_inline bool mem_Allocator_resizeSlice(mem_Allocator* self, Slice* slice, usize new_len) {
+    const Slice_u8 bytes = {
+        .ptr = Mptr_make(u8, Slice_raw(*slice)),
+        .len = slice->len * Slice_size(*slice)
+    };
+
+    const usize new_bytes = new_len * Slice_size(*slice);
+    if (!mem_Allocator_rawResize(*self, bytes, Slice_align(bytes), new_bytes)) {
+        return false;
+    }
+
+    slice->len = new_len;
+    return true;
 }
 
 force_inline Opt_Slice mem_Allocator_reallocSlice(mem_Allocator* self, Slice slice, usize new_len) {
@@ -149,21 +168,6 @@ force_inline Opt_Slice mem_Allocator_reallocSlice(mem_Allocator* self, Slice sli
 
     mem_Allocator_freeSlice(self, &slice);
     return Opt_some(Opt_Slice, new_buf);
-}
-
-force_inline bool mem_Allocator_resizeSlice(mem_Allocator* self, Slice* slice, usize new_len) {
-    const Slice_u8 bytes = {
-        .ptr = Mptr_make(u8, Slice_raw(*slice)),
-        .len = slice->len * Slice_size(*slice)
-    };
-
-    const usize new_bytes = new_len * Slice_size(*slice);
-    if (!mem_Allocator_rawResize(*self, bytes, Slice_align(bytes), new_bytes)) {
-        return false;
-    }
-
-    slice->len = new_len;
-    return true;
 }
 
 force_inline void mem_Allocator_freeSlice(mem_Allocator* self, Slice* slice) {

@@ -84,7 +84,7 @@ typedef union cptr {
 claim_assert_static_msg(sizeof(cptr) == sizeof(anyptr), "cptr size mismatch");
 
 // Core pointer operations
-force_inline cptr   cptr_make(anyptr raw, usize size, usize log2_align);
+force_inline cptr   cptr_make(anyptr raw, usize size, usize align);
 force_inline anyptr cptr_raw(cptr self);
 force_inline usize  cptr_size(cptr self);
 force_inline usize  cptr_align(cptr self);
@@ -93,7 +93,7 @@ force_inline void   cptr_setFlags(cptr* self, bool flags);
 force_inline bool   cptr_isZero(cptr self);
 force_inline bool   cptr_isAligned(cptr self);
 force_inline bool   cptr_hasMinSize(cptr self, usize required_size);
-force_inline usize  cptr__calcAlignOrder(usize align);
+force_inline usize  cptr__calcLog2AlignOrder(usize align);
 
 /*========== Single-Item Pointer (Sptr) =====================================*/
 
@@ -185,7 +185,7 @@ force_inline void Slice_clear(Slice self);
 /*========== Void Type ======================================================*/
 
 typedef struct Void {
-    u8 unused_;
+    u8 unused_[sizeof(void)];
 } Void;
 
 /*========== Built-in Types =================================================*/
@@ -267,23 +267,23 @@ Slice(Slice) Slice_Slice;
 
 /*========== Implementation =================================================*/
 
-force_inline usize cptr__calcAlignOrder(usize log2_align) {
+force_inline usize cptr__calcLog2AlignOrder(usize align) {
 #if defined(__GNUC__) || defined(__clang__)
-    return (usize)__builtin_ctzll((unsigned long long)log2_align);
+    return (usize)__builtin_ctzll((unsigned long long)align);
 #elif defined(_MSC_VER)
 #if BUILTIN_PLTF_64BIT
     unsigned long index = 0;
-    _BitScanForward64(&index, (unsigned __int64)log2_align);
+    _BitScanForward64(&index, (unsigned __int64)align);
     return (usize)index;
 #else
     unsigned long index = 0;
-    _BitScanForward(&index, (unsigned long)log2_align);
+    _BitScanForward(&index, (unsigned long)align);
     return (usize)index;
 #endif
 #else
     usize order = 0;
-    while (log2_align > 1) {
-        log2_align >>= 1;
+    while (align > 1) {
+        align >>= 1;
         order++;
     }
     return order;
@@ -292,12 +292,12 @@ force_inline usize cptr__calcAlignOrder(usize log2_align) {
 
 /*========== Core Pointer (cptr) Implementation =============================*/
 
-force_inline cptr cptr_make(anyptr raw, usize size, usize log2_align) {
+force_inline cptr cptr_make(anyptr raw, usize size, usize align) {
     cptr self = cleared();
     if (!rawptrIsNull(raw)) {
         self.raw_        = raw;
         self.meta_.size  = size & cptr_mask_bits_size;
-        self.meta_.align = cptr__calcAlignOrder(log2_align) & cptr_mask_bits_align;
+        self.meta_.align = cptr__calcLog2AlignOrder(align) & cptr_mask_bits_align;
         self.meta_.flags = 0;
     }
     return self;
