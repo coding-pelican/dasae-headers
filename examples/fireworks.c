@@ -335,7 +335,7 @@ typedef struct Particle {
 } Particle;
 
 Particle* Particle_init(Particle* const p, f64 x, f64 y, f64 width, f64 height, Color color) {
-    *p = makeWith(
+    *p = make(
         Particle,
         .position     = { x, y },
         .speed        = { 0.0, 0.0 },
@@ -525,7 +525,7 @@ typedef struct State {
 } State;
 
 State* State_init(State* const s, u32 width, u32 height) {
-    *s = makeWith(
+    *s = make(
         State,
         .fireworks = {
             ds_Vec_initWithCap(

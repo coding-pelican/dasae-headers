@@ -16,7 +16,7 @@ FrameBuffer* FrameBuffer_init(FrameBuffer* const b, u32 width, u32 height) {
     anyptr const data = mem_alloc(Color, size);
     debug_assert_nonnull(data);
 
-    *b = makeWith(
+    *b = make(
         FrameBuffer,
         .pixels_ = {
             .data     = data,

@@ -44,5 +44,5 @@ extern "C" {
 
 #if defined(__cplusplus)
 } /* extern "C" */
-#endif /* __cplusplus */
+#endif /* defined(__cplusplus) */
 #endif /* BUILTIN_COMP_INCLUDED */

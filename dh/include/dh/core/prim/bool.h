@@ -62,5 +62,5 @@ claim_assert_static_msg(sizeof(bool) == 1, "bool must be 1 byte");
 
 #if defined(__cplusplus)
 } /* extern "C" */
-#endif /* __cplusplus */
+#endif /* defined(__cplusplus) */
 #endif /* CORE_PRIM_BOOL_INCLUDED */

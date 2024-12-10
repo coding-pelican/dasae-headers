@@ -50,7 +50,7 @@ union Rgb {
         u8 b; // Blue channel in [0,255]
     };
 };
-#define Rgb_(...) makeWith(Rgb, __VA_ARGS__)
+#define Rgb_(...) make(Rgb, __VA_ARGS__)
 Rgb Rgb_from(u8 r, u8 g, u8 b);
 
 Rgb Rgb_fromHsl(Hsl hsl);
@@ -72,7 +72,7 @@ union Hsl {
         f64 l; // Lightness in [0,100]
     };
 };
-#define Hsl_(...) makeWith(Hsl, __VA_ARGS__)
+#define Hsl_(...) make(Hsl, __VA_ARGS__)
 Hsl Hsl_from(f64 h, f64 s, f64 l);
 f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
 
@@ -99,7 +99,7 @@ union Color {
         u8 a; // Alpha channel in [0,255]
     };
 };
-#define Color_(...) makeWith(Color, __VA_ARGS__)
+#define Color_(...) make(Color, __VA_ARGS__)
 Color Color_from(u8 r, u8 g, u8 b, u8 a);
 Color Color_fromTransparent(u8 r, u8 g, u8 b);
 Color Color_fromOpaque(u8 r, u8 g, u8 b);

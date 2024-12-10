@@ -55,5 +55,5 @@ extern "C" {
 
 #if defined(__cplusplus)
 } /* extern "C" */
-#endif /* __cplusplus */
+#endif /* defined(__cplusplus) */
 #endif /* CORE_PRIM_SWITCH_INCLUDED */

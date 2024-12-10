@@ -63,7 +63,7 @@ void time_SysTime_sleep_ns(u64 nanos) {
 }
 
 time_Instant time_Instant_now(void) {
-    return makeWith(time_Instant, .time_ = time_SysTime_now());
+    return make(time_Instant, .time_ = time_SysTime_now());
 }
 
 Duration time_Instant_elapsed(time_Instant start) {

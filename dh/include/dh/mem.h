@@ -51,19 +51,17 @@ force_inline i32  mem_cmp(anyptr lhs, anyptr rhs, usize size);
 /*========== Alignment Functions ============================================*/
 
 // Check if alignment is valid (power of 2)
-force_inline bool      mem_isValidAlign(usize alignment);
+force_inline bool  mem_isValidAlign(usize alignment);
 // Check if address is aligned
-force_inline bool      mem_isAligned(usize addr, usize alignment);
+force_inline bool  mem_isAligned(usize addr, usize alignment);
 // Check if address is aligned to power of 2
-force_inline bool      mem_isAlignedLog2(usize addr, u8 log2_align);
+force_inline bool  mem_isAlignedLog2(usize addr, u8 log2_align);
 // Forward align an address
-force_inline usize     mem_alignForward(usize addr, usize alignment);
+force_inline usize mem_alignForward(usize addr, usize alignment);
 // Forward align an address to power of 2
-force_inline usize     mem_alignForwardLog2(usize addr, u8 log2_align);
+force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align);
 // Backward align an address
-force_inline usize     mem_alignBackward(usize addr, usize alignment);
-// Get bytes needed to satisfy slice alignment with new_alignment
-force_inline Opt_usize mem_alignInBytes(Slice_u8 bytes, usize new_alignment);
+force_inline usize mem_alignBackward(usize addr, usize alignment);
 
 /*========== Buffer Manipulation ============================================*/
 
@@ -226,21 +224,6 @@ force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align) {
 force_inline usize mem_alignBackward(usize addr, usize alignment) {
     debug_assert(mem_isValidAlign(alignment));
     return addr & ~(alignment - 1);
-}
-
-force_inline Opt_usize mem_alignInBytes(Slice_u8 bytes, usize new_alignment) {
-    const usize begin_address = (usize)Slice_raw(bytes);
-    const usize end_address   = begin_address + bytes.len;
-
-    const usize begin_address_aligned = mem_alignForward(begin_address, new_alignment);
-
-    // Check for overflow
-    if (end_address < begin_address_aligned) {
-        return Opt_none(Opt_usize);
-    }
-    const usize alignment_offset = begin_address_aligned - begin_address;
-
-    return Opt_some(Opt_usize, alignment_offset);
 }
 
 /*========== Buffer Manipulation ============================================*/

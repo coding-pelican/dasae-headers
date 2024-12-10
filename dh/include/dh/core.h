@@ -28,6 +28,7 @@ extern "C" {
 #include "core/Err.h"
 #include "core/Res.h"
 #include "core/Opt.h"
+#include "core/Iter.h"
 #include "core/cmp.h"
 #include "core/op.h"
 
@@ -55,13 +56,13 @@ extern "C" {
         var_rhs                        \
     )
 
-#define foreach(TParam, decl_iter, var_list_ptr) \
-    IMPL_foreach(                                \
-        pp_uniqueToken(end),                     \
-        TParam,                                  \
-        decl_iter,                               \
-        var_list_ptr                             \
-    )
+// #define foreach(TParam, decl_iter, var_list_ptr) \
+//     IMPL_foreach(                                \
+//         pp_uniqueToken(end),                     \
+//         TParam,                                  \
+//         decl_iter,                               \
+//         var_list_ptr                             \
+//     )
 
 /*========== Macros Implementation ==========================================*/
 
@@ -87,12 +88,12 @@ extern "C" {
     deref(TParam, _rhs)       = _tmp;                                  \
 )
 
-#define IMPL_foreach(_iter_end, TParam, decl_iter, var_list_ptr)                                                               \
-    for (                                                                                                                      \
-        rawptr(TParam) used(decl_iter) = (var_list_ptr)->data, * const _iter_end = (var_list_ptr)->data + (var_list_ptr)->len; \
-        used(decl_iter) < used(_iter_end);                                                                                     \
-        ++used(decl_iter)                                                                                                      \
-    )
+// #define IMPL_foreach(_iter_end, TParam, decl_iter, var_list_ptr)                                                               \
+//     for (                                                                                                                      \
+//         rawptr(TParam) used(decl_iter) = (var_list_ptr)->data, * const _iter_end = (var_list_ptr)->data + (var_list_ptr)->len; \
+//         used(decl_iter) < used(_iter_end);                                                                                     \
+//         ++used(decl_iter)                                                                                                      \
+//     )
 // NOLINTEND(bugprone-macro-parentheses)
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

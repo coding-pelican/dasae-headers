@@ -4,7 +4,7 @@
 
 Range Range_from(usize begin, usize end) {
     debug_assert(begin <= end);
-    return makeWith(Range, .begin = begin, .end = end);
+    return make(Range, .begin = begin, .end = end);
 }
 
 usize Range_length(Range r) {

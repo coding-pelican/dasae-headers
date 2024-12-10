@@ -117,7 +117,7 @@ Res(char, Err) Res_char;
 Res(Void, Err) Res_Void;
 
 Res(anyptr, Err) Res_anyptr;
-Res(cptr, Err) Res_cptr;
+Res(PtrBase, Err) Res_PtrBase;
 Res(Sptr, Err) Res_Sptr;
 Res(Mptr, Err) Res_Mptr;
 Res(Slice, Err) Res_Slice;
@@ -142,7 +142,7 @@ Res(Sptr_bool, Err) Res_Sptr_bool;
 Res(Sptr_char, Err) Res_Sptr_char;
 
 Res(Sptr_anyptr, Err) Res_Sptr_anyptr;
-Res(Sptr_cptr, Err) Res_Sptr_cptr;
+Res(Sptr_PtrBase, Err) Res_Sptr_PtrBase;
 Res(Sptr_Sptr, Err) Res_Sptr_Sptr;
 Res(Sptr_Mptr, Err) Res_Sptr_Mptr;
 Res(Sptr_Slice, Err) Res_Sptr_Slice;
@@ -167,7 +167,7 @@ Res(Mptr_bool, Err) Res_Mptr_bool;
 Res(Mptr_char, Err) Res_Mptr_char;
 
 Res(Mptr_anyptr, Err) Res_Mptr_anyptr;
-Res(Mptr_cptr, Err) Res_Mptr_cptr;
+Res(Mptr_PtrBase, Err) Res_Mptr_PtrBase;
 Res(Mptr_Sptr, Err) Res_Mptr_Sptr;
 Res(Mptr_Mptr, Err) Res_Mptr_Mptr;
 Res(Mptr_Slice, Err) Res_Mptr_Slice;
@@ -192,7 +192,7 @@ Res(Slice_bool, Err) Res_Slice_bool;
 Res(Slice_char, Err) Res_Slice_char;
 
 Res(Slice_anyptr, Err) Res_Slice_anyptr;
-Res(Slice_cptr, Err) Res_Slice_cptr;
+Res(Slice_PtrBase, Err) Res_Slice_PtrBase;
 Res(Slice_Sptr, Err) Res_Slice_Sptr;
 Res(Slice_Mptr, Err) Res_Slice_Mptr;
 Res(Slice_Slice, Err) Res_Slice_Slice;

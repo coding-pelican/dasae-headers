@@ -30,14 +30,13 @@ extern "C" {
     typedef struct Alias Alias; \
     struct Alias
 
-#define initial(_Inital...) IMPL_initial(_Inital)
-#define cleared()           IMPL_cleared()
-
-#define make(_T)                 IMPL_make(_T)
-#define makeWith(_T, _Inital...) IMPL_makeWith(_T, _Inital)
-
-#define create(_T)                 IMPL_create(_T)
-#define createWith(_T, _Inital...) IMPL_createWith(_T, _Inital)
+#define initial(_Inital...)  IMPL_initial(_Inital)
+#define cleared()            IMPL_cleared()
+#define make(_T, _Inital...) IMPL_make(_T, _Inital)
+#define makeCleared(_T)      IMPL_makeCleared(_T)
+// #define create(_T, _Initial...) IMPL_create(_T, _Initial)
+// #define createCleared(_T)       IMPL_createCleared(_T)
+// #define createFrom(_T, _var)    IMPL_createFrom(_T, _var)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -47,20 +46,21 @@ extern "C" {
 #define IMPL_cleared() \
     { 0 }
 
-#define IMPL_make(_T) \
-    literal(_T, 0)
-#define IMPL_makeWith(_T, _Inital...) \
-    literal(_T, _Inital)
-
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define IMPL_create(_T) ( \
-    (_T[1]){              \
-        literal(_T, 0) }  \
-)
-#define IMPL_createWith(_T, _Inital...) ( \
-    (_T[1]){                              \
-        literal(_T, _Inital) }            \
-)
+#define IMPL_make(_T, _Inital...) \
+    ((_T){ _Inital })
+
+#define IMPL_makeCleared(_T) \
+    ((_T){ 0 })
+
+// #define IMPL_create(_T, _Inital...) \
+//     ((_T[1]){ _Inital })
+
+// #define IMPL_createCleared(_T) \
+//     ((_T[1]){ 0 })
+
+// #define IMPL_createFrom(_T, _var) \
+//     ((_T[1]){ _var })
 // NOLINTEND(bugprone-macro-parentheses)
 
 #if defined(__cplusplus)

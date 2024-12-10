@@ -96,7 +96,7 @@ struct mem_Info {
 
 #define IMPL_mem_create(TYPE)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE))
 #define IMPL_mem_createCleared(TYPE)   (Ptr(TYPE)) mem_allocateCleared(sizeof(TYPE), 0)
-#define IMPL_mem_createWith(TYPE, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE), &makeWith(TYPE, __VA_ARGS__))
+#define IMPL_mem_createWith(TYPE, ...) (Ptr(TYPE)) mem_allocateWith(sizeof(TYPE), &make(TYPE, __VA_ARGS__))
 #define IMPL_mem_destroy(PTR)          mem_deallocate((anyptr*)(PTR))
 
 #define IMPL_mem_alloc(TYPE, COUNT)          (Ptr(TYPE)) mem_allocate(sizeof(TYPE) * (COUNT))

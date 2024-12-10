@@ -78,11 +78,23 @@ typedef ptrdiff_t ptrdiff;
      */                                \
     IMPL_rawptrIsNull(var)
 
-#define rawptrIsNonnull(_ptr)              \
+#define rawptrIsNonnull(ptr)               \
     /**                                    \
      * @brief Check if pointer is non-null \
      */                                    \
-    IMPL_rawptrIsNonnull(_ptr)
+    IMPL_rawptrIsNonnull(ptr)
+
+#define sizeOf(var) \
+    IMPL_sizeOf(var)
+
+#define alignAs(align) \
+    IMPL_alignAs(align)
+
+#define alignOf(T) \
+    IMPL_alignOf(T)
+
+#define countOf(var_arr) \
+    IMPL_countOf(var_arr)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -99,6 +111,20 @@ typedef ptrdiff_t ptrdiff;
 
 #define IMPL_rawptrIsNull(var)    ((var) == null)
 #define IMPL_rawptrIsNonnull(var) ((var) != null)
+
+#define IMPL_sizeOf(var) \
+    sizeof(var)
+
+#define IMPL_alignAs(align) \
+    alignas(align)
+
+#define IMPL_alignOf(T) \
+    alignof(T)
+
+// NOLINTBEGIN
+#define IMPL_countOf(var_arr) \
+    (sizeof(var_arr) / sizeof(var_arr[0]))
+// NOLINTEND
 
 /*========== Validation Checks ==============================================*/
 

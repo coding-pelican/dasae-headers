@@ -116,7 +116,7 @@ Opt(bool) Opt_bool;
 Opt(char) Opt_char;
 
 Opt(anyptr) Opt_anyptr;
-Opt(cptr) Opt_cptr;
+Opt(PtrBase) Opt_PtrBase;
 Opt(Sptr) Opt_Sptr;
 Opt(Mptr) Opt_Mptr;
 Opt(Slice) Opt_Slice;
@@ -141,7 +141,7 @@ Opt(Sptr_bool) Opt_Sptr_bool;
 Opt(Sptr_char) Opt_Sptr_char;
 
 Opt(Sptr_anyptr) Opt_Sptr_anyptr;
-Opt(Sptr_cptr) Opt_Sptr_cptr;
+Opt(Sptr_PtrBase) Opt_Sptr_PtrBase;
 Opt(Sptr_Sptr) Opt_Sptr_Sptr;
 Opt(Sptr_Mptr) Opt_Sptr_Mptr;
 Opt(Sptr_Slice) Opt_Sptr_Slice;
@@ -166,7 +166,7 @@ Opt(Mptr_bool) Opt_Mptr_bool;
 Opt(Mptr_char) Opt_Mptr_char;
 
 Opt(Mptr_anyptr) Opt_Mptr_anyptr;
-Opt(Mptr_cptr) Opt_Mptr_cptr;
+Opt(Mptr_PtrBase) Opt_Mptr_PtrBase;
 Opt(Mptr_Sptr) Opt_Mptr_Sptr;
 Opt(Mptr_Mptr) Opt_Mptr_Mptr;
 Opt(Mptr_Slice) Opt_Mptr_Slice;
@@ -191,7 +191,7 @@ Opt(Slice_bool) Opt_Slice_bool;
 Opt(Slice_char) Opt_Slice_char;
 
 Opt(Slice_anyptr) Opt_Slice_anyptr;
-Opt(Slice_cptr) Opt_Slice_cptr;
+Opt(Slice_PtrBase) Opt_Slice_PtrBase;
 Opt(Slice_Sptr) Opt_Slice_Sptr;
 Opt(Slice_Mptr) Opt_Slice_Mptr;
 Opt(Slice_Slice) Opt_Slice_Slice;

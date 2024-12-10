@@ -1,186 +1,232 @@
 /**
- * @copyright Copyright 2024. All rights reserved.
  * @file    test_heap_Classic.c
  * @brief   Unit tests for heap allocator implementation
  */
 
+#include "dh/core/prim/struct.h"
 #include "dh/heap/Classic.h"
 #include "dh/debug/assert.h"
-
 #include <stdio.h>
 #include <string.h>
 
-// Test helper functions
-void TEST_PrintSection(const char* section_name) {
-    printf("\n=== Testing %s ===\n", section_name);
-}
+/* Test framework import */
+#include "dh/TEST.h"
 
-void TEST_PrintResult(const char* test_name, bool success) {
-    printf("%s: %s\n", test_name, success ? "PASSED" : "FAILED");
-}
+/*========== Basic Operations Tests ====================================*/
 
-void TEST_heap_Classic_basic() {
-    TEST_PrintSection("Heap Classic Allocator Basic Operations");
+TEST_Result TEST_heap_Classic_Basic(void) {
+    TEST_Result result = TEST_makeResult("Heap Classic basic operations");
 
     // Initialize allocator
-    heap_Classic  heap_ctx  = { 0 };
+    heap_Classic  heap_ctx  = cleared();
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
 
     // Test zero-size allocation
-    Res_Mptr_u8 zero_alloc = allocator.vt_->alloc(allocator.ptr_, 0, 8);
-    TEST_PrintResult("Zero-size allocation", Res_isOk(zero_alloc) && Mptr_isZero(Res_unwrap(Res_Mptr_u8, zero_alloc)));
+    PtrBase_MetaData meta_zero = PtrBase_typeInfo(u8);
+    meta_zero.type_size        = 0; // Force zero size
+    Res_Mptr zero_res          = heap_Classic_alloc(allocator.self_, meta_zero);
+    TEST_condition(Res_isOk(zero_res));
+    TEST_condition(Mptr_isUndefined(Res_unwrap(Res_Mptr, zero_res)));
 
-    // Test basic allocation
-    Res_Mptr_u8 basic_alloc = allocator.vt_->alloc(allocator.ptr_, 64, 8);
-    TEST_PrintResult("Basic allocation", Res_isOk(basic_alloc));
+    // Test i32 allocation
+    PtrBase_MetaData meta_i32 = PtrBase_typeInfo(i32);
+    Res_Mptr         i32_res  = heap_Classic_alloc(allocator.self_, meta_i32);
+    TEST_condition(Res_isOk(i32_res));
 
-    if (Res_isOk(basic_alloc)) {
-        Mptr_u8 ptr = Res_unwrap(Res_Mptr_u8, basic_alloc);
-        TEST_PrintResult("Allocation alignment", Mptr_isAligned(ptr));
+    if (Res_isOk(i32_res)) {
+        Mptr ptr = Res_unwrap(Res_Mptr, i32_res);
+        TEST_condition(!Mptr_isUndefined(ptr));
+        TEST_condition(Mptr_isAligned(ptr));
+        TEST_condition(Mptr_size(ptr) == sizeof(i32));
+        TEST_condition(Mptr_align(ptr) == alignof(i32));
 
         // Write and read test
-        u8* raw_ptr = (u8*)Mptr_raw(ptr);
-        raw_ptr[0]  = 42;
-        TEST_PrintResult("Memory access", raw_ptr[0] == 42);
+        i32* data = Mptr_rawCast(i32*, ptr);
+        *data     = 42;
+        TEST_condition(Mptr_at(i32, ptr, 0) == 42);
 
         // Free memory
-        Slice_u8 buf = { .ptr = ptr, .len = 64 };
-        allocator.vt_->free(allocator.ptr_, buf, 8);
+        heap_Classic_free(allocator.self_, ptr);
     }
+
+    return TEST_completeResult(&result);
 }
 
-void TEST_heap_Classic_alignment() {
-    TEST_PrintSection("Heap Classic Allocator Alignment Tests");
+/*========== Alignment Tests ==========================================*/
 
-    heap_Classic  heap_ctx  = { 0 };
+TEST_Result TEST_heap_Classic_Alignment(void) {
+    TEST_Result result = TEST_makeResult("Heap Classic alignment");
+
+    heap_Classic  heap_ctx  = cleared();
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
 
-    // Test various alignments
-    for (u8 log2_align = 0; log2_align <= 4; log2_align++) {
-        const usize align = 1ull << log2_align;
-        Res_Mptr_u8 alloc = allocator.vt_->alloc(allocator.ptr_, 82, align);
+    // Test various alignments using a struct
+    typedef struct AlignedStruct {
+        i32 value;
+    } AlignedStruct;
 
-        if (Res_isOk(alloc)) {
-            Mptr_u8 ptr        = Res_unwrap(Res_Mptr_u8, alloc);
-            usize   addr       = (usize)Mptr_raw(ptr);
-            bool    is_aligned = (addr % align) == 0;
+    // Create aligned structs with different alignments
+    for (usize align_order = 0; align_order <= 4; align_order++) {
+        PtrBase_MetaData meta = {
+            .type_size  = sizeof(AlignedStruct),
+            .log2_align = align_order,
+            .is_defined = true
+        };
 
-            char   test_name[64] = cleared();
-            ignore snprintf(test_name, sizeof(test_name), "Alignment 2^%d", log2_align);
-            TEST_PrintResult(test_name, is_aligned);
+        Res_Mptr res = heap_Classic_alloc(allocator.self_, meta);
+        TEST_condition(Res_isOk(res));
 
-            Slice_u8 buf = { .ptr = ptr, .len = 82 };
-            allocator.vt_->free(allocator.ptr_, buf, align);
-        } else {
-            printf("Failed to allocate with alignment 2^%d\n", log2_align);
+        if (Res_isOk(res)) {
+            Mptr ptr = Res_unwrap(Res_Mptr, res);
+            TEST_condition(!Mptr_isUndefined(ptr));
+            TEST_condition(Mptr_align(ptr) == (1ull << align_order));
+            TEST_condition(Mptr_isAligned(ptr));
+            heap_Classic_free(allocator.self_, ptr);
         }
     }
+
+    return TEST_completeResult(&result);
 }
 
-void TEST_heap_Classic_resize() {
-    TEST_PrintSection("Heap Classic Allocator Resize Operations");
+/*========== Resize Operations Tests =================================*/
 
-    heap_Classic  heap_ctx  = { 0 };
+TEST_Result TEST_heap_Classic_Resize(void) {
+    TEST_Result result = TEST_makeResult("Heap Classic resize operations");
+
+    heap_Classic  heap_ctx  = cleared();
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
 
-    // Initial allocation
-    Res_Mptr_u8 initial = allocator.vt_->alloc(allocator.ptr_, 64, 8);
-    TEST_PrintResult("Initial allocation", Res_isOk(initial));
+    // Allocate array of 4 integers
+    struct PtrBase_MetaData meta = PtrBase_typeInfo(i32);
+    Res_Mptr                res  = heap_Classic_alloc(allocator.self_, meta);
+    TEST_condition(Res_isOk(res));
 
-    if (Res_isOk(initial)) {
-        Mptr_u8  ptr = Res_unwrap(Res_Mptr_u8, initial);
-        Slice_u8 buf = { .ptr = ptr, .len = 64 };
+    if (Res_isOk(res)) {
+        Mptr ptr = Res_unwrap(Res_Mptr, res);
 
-        // Test grow
-        bool grow_result = allocator.vt_->resize(allocator.ptr_, buf, 8, 128);
-        TEST_PrintResult("Resize grow attempt", true); // Result doesn't matter, just that it runs
-        unused(grow_result);
+        // Test trying to grow to 8 elements (should fail)
+        bool grow_result = heap_Classic_resize(allocator.self_, ptr, 8);
+        TEST_condition(!grow_result); // Growing should fail
 
-        // Test shrink
-        bool shrink_result = allocator.vt_->resize(allocator.ptr_, buf, 8, 82);
-        TEST_PrintResult("Resize shrink attempt", true); // Result doesn't matter, just that it runs
-        unused(shrink_result);
+        // Test shrinking to 2 elements (should succeed)
+        bool shrink_result = heap_Classic_resize(allocator.self_, ptr, 2);
+        TEST_condition(shrink_result); // Shrinking should succeed
 
-        // Test resize to zero
-        bool zero_result = allocator.vt_->resize(allocator.ptr_, buf, 8, 0);
-        TEST_PrintResult("Resize to zero", zero_result == true);
+        // Test keeping same size (should succeed)
+        bool same_result = heap_Classic_resize(allocator.self_, ptr, 4);
+        TEST_condition(same_result); // Same size should succeed
 
-        // Free memory
-        allocator.vt_->free(allocator.ptr_, buf, 8);
+        // Test resize to zero elements (should succeed)
+        bool zero_result = heap_Classic_resize(allocator.self_, ptr, 0);
+        TEST_condition(zero_result); // Zero should always succeed
+
+        heap_Classic_free(allocator.self_, ptr);
     }
+
+    return TEST_completeResult(&result);
 }
 
-void TEST_heap_Classic_stress() {
-    TEST_PrintSection("Heap Classic Allocator Stress Tests");
+/*========== Stress Tests ============================================*/
 
-    heap_Classic  heap_ctx  = { 0 };
+TEST_Result TEST_heap_Classic_Stress(void) {
+    TEST_Result result = TEST_makeResult("Heap Classic stress test");
+
+    heap_Classic  heap_ctx  = cleared();
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
 
-    const usize num_allocs = 1000;
-    const usize max_size   = 1024;
+    const usize num_allocs   = 1000;
+    Mptr        allocs[1000] = cleared();
+    usize       successful   = 0;
 
-    // Track allocations
-    struct {
-        Mptr_u8 ptr;
-        usize   size;
-        u8      align;
-    } allocs[1000] = { 0 };
-
-    // Perform multiple allocations
-    usize successful = 0;
+    // Multiple allocations with varying sizes
     for (usize i = 0; i < num_allocs; ++i) {
-        usize size  = (i % max_size) + 1;
-        u8    align = (u8)(i % 4);
+        PtrBase_MetaData meta = {
+            .type_size  = (i % 128) + 1,
+            .log2_align = 3, // 8-byte alignment
+            .is_defined = true
+        };
 
-        Res_Mptr_u8 result = allocator.vt_->alloc(allocator.ptr_, size, align);
-
-        if (Res_isOk(result)) {
-            allocs[successful].ptr   = Res_unwrap(Res_Mptr_u8, result);
-            allocs[successful].size  = size;
-            allocs[successful].align = align;
-            successful++;
+        Res_Mptr res = heap_Classic_alloc(allocator.self_, meta);
+        if (Res_isOk(res)) {
+            allocs[successful++] = Res_unwrap(Res_Mptr, res);
         }
     }
 
-    TEST_PrintResult("Multiple allocations", successful > 0);
+    TEST_condition(successful > 0);
+    TEST_condition(successful == num_allocs);
+
+    // Verify all allocations
+    usize successful_count_not_undefined = 0;
+    usize successful_count_align_correct = 0;
+    usize successful_count_size_correct  = 0;
+    for (usize i = 0; i < successful; ++i) {
+        successful_count_not_undefined += (!Mptr_isUndefined(allocs[i]));
+        successful_count_align_correct += Mptr_isAligned(allocs[i]);
+        successful_count_size_correct += Mptr_size(allocs[i]) == ((i % 128) + 1);
+    }
+    TEST_condition(successful_count_not_undefined == successful);
+    TEST_condition(successful_count_align_correct == successful);
+    TEST_condition(successful_count_size_correct == successful);
 
     // Free all allocations
     for (usize i = 0; i < successful; ++i) {
-        Slice_u8 buf = { .ptr = allocs[i].ptr, .len = allocs[i].size };
-        allocator.vt_->free(allocator.ptr_, buf, allocs[i].align);
+        heap_Classic_free(allocator.self_, allocs[i]);
     }
 
-    TEST_PrintResult("Multiple frees", true);
+    return TEST_completeResult(&result);
 }
 
-void TEST_heap_Classic_errors() {
-    TEST_PrintSection("Heap Classic Allocator Error Handling");
+/*========== Error Handling Tests ====================================*/
 
-    heap_Classic  heap_ctx  = { 0 };
-    mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
+TEST_Result TEST_heap_Classic_Errors(void) {
+    TEST_Result result = TEST_makeResult("Heap Classic error handling");
 
-    // Test null context
-    Res_Mptr_u8 null_ctx_result = heap_Classic_alloc(null, 64, 8);
-    TEST_PrintResult("Null context handling", Res_isErr(null_ctx_result));
+    heap_Classic heap_ctx     = cleared();
+    Sptr         invalid_self = cleared(); // Undefined self pointer
 
-    // Test very large allocation (should fail)
-    Res_Mptr_u8 large_alloc = allocator.vt_->alloc(allocator.ptr_, (usize)-1, 8);
-    TEST_PrintResult("Excessive allocation handling", Res_isErr(large_alloc));
+    // Test undefined self
+    PtrBase_MetaData meta         = PtrBase_typeInfo(i32);
+    Res_Mptr         null_ctx_res = heap_Classic_alloc(invalid_self, meta);
+    TEST_condition(Res_isErr(null_ctx_res));
 
-    // Test invalid alignment
-    Res_Mptr_u8 invalid_align = allocator.vt_->alloc(allocator.ptr_, 64, 255);
-    TEST_PrintResult("Invalid alignment handling", Res_isErr(invalid_align));
+    // Test excessive allocation
+    mem_Allocator    allocator = heap_Classic_allocator(&heap_ctx);
+    PtrBase_MetaData huge_meta = {
+        .type_size  = SIZE_MAX, // Maximum size
+        .log2_align = 3,
+        .is_defined = true
+    };
+    Res_Mptr huge_res = heap_Classic_alloc(allocator.self_, huge_meta);
+    TEST_condition(Res_isErr(huge_res));
+
+    return TEST_completeResult(&result);
 }
+
+/*========== Main Test Runner ========================================*/
 
 int main(void) {
+    TEST_init();
+
     printf("Starting Heap Classic Allocator Tests\n");
 
-    TEST_heap_Classic_basic();
-    TEST_heap_Classic_alignment();
-    TEST_heap_Classic_resize();
-    TEST_heap_Classic_stress();
-    TEST_heap_Classic_errors();
+    // Run all tests
+    TEST_printSection("Basic Operations");
+    TEST_printResult(TEST_heap_Classic_Basic());
 
-    printf("\nAll tests completed.\n");
-    return 0;
+    TEST_printSection("Alignment");
+    TEST_printResult(TEST_heap_Classic_Alignment());
+
+    TEST_printSection("Resize Operations");
+    TEST_printResult(TEST_heap_Classic_Resize());
+
+    TEST_printSection("Stress Testing");
+    TEST_printResult(TEST_heap_Classic_Stress());
+
+    TEST_printSection("Error Handling");
+    TEST_printResult(TEST_heap_Classic_Errors());
+
+    // Print final summary
+    TEST_printSummary();
+
+    return TEST_fini();
 }

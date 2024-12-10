@@ -52,7 +52,7 @@ f64 time_Duration_asSecs_f64(time_Duration self) {
 
 time_Duration op_fnAdd(time_Duration) {
     u64 total_nanos = (u64)self.nanos_ + other.nanos_;
-    return makeWith(
+    return make(
         time_Duration,
         self.secs_ + other.secs_ + (total_nanos >= time_nanos_per_sec),
         (u32)(total_nanos >= time_nanos_per_sec
@@ -61,7 +61,7 @@ time_Duration op_fnAdd(time_Duration) {
     );
 }
 time_Duration op_fnSub(time_Duration) {
-    return makeWith(
+    return make(
         time_Duration,
         self.secs_ - other.secs_ - (self.nanos_ < other.nanos_),
         self.nanos_ < other.nanos_
@@ -71,7 +71,7 @@ time_Duration op_fnSub(time_Duration) {
 }
 time_Duration op_fnMulBy(time_Duration, u64) {
     u64 total_nanos = self.nanos_ * other;
-    return makeWith(
+    return make(
         time_Duration,
         self.secs_ * other + total_nanos / time_nanos_per_sec,
         (u32)(total_nanos % time_nanos_per_sec)
@@ -80,7 +80,7 @@ time_Duration op_fnMulBy(time_Duration, u64) {
 time_Duration op_fnDivBy(time_Duration, u64) {
     claim_assert_fmt(other != 0, "Division by zero");
     u64 total_nanos = self.nanos_ / other;
-    return makeWith(
+    return make(
         time_Duration,
         self.secs_ / other + total_nanos / time_nanos_per_sec,
         (u32)(total_nanos % time_nanos_per_sec)

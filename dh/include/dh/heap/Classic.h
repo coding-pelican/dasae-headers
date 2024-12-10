@@ -4,16 +4,14 @@
  * @file    Classic.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-07 (date of creation)
- * @updated 2024-12-08 (date of last update)
- * @version v0.1.1
+ * @updated 2024-12-10 (date of last update)
+ * @version v0.2
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Classic
  *
- * @brief   Classic C standard library allocator wrapper
- * @details
+ * @brief   Classic C standard library allocator wrapper using smart pointers
  */
 
-#include "dh/claim/assert.h"
 #ifndef HEAP_CLASSIC_INCLUDED
 #define HEAP_CLASSIC_INCLUDED (1)
 #if defined(__cplusplus)
@@ -38,15 +36,19 @@ extern "C" {
 typedef struct heap_Classic {
     u8 unused_; // Empty struct not allowed in C
 } heap_Classic;
+Sptr(heap_Classic) Sptr_heap_Classic;
 
+// Get allocator interface for instance
 static_inline mem_Allocator heap_Classic_allocator(heap_Classic* self);
 
+// Lifecycle
 static_inline Res_Void heap_Classic_init(mem_Allocator* self);
 static_inline void     heap_Classic_fini(mem_Allocator* self);
 
-static_inline Res_Mptr_u8 heap_Classic_alloc(anyptr self, usize n, usize align);
-static_inline bool        heap_Classic_resize(anyptr self, Slice_u8 buf, usize buf_align, usize new_size);
-static_inline void        heap_Classic_free(anyptr ctx, Slice_u8 buf, usize buf_align);
+// VTable implementations
+static_inline Res_Mptr heap_Classic_alloc(Sptr self, PtrBase_MetaData meta);
+static_inline bool     heap_Classic_resize(Sptr self, Mptr ptr, usize new_len);
+static_inline void     heap_Classic_free(Sptr self, Mptr ptr);
 
 // VTable for Classic allocator
 static const mem_Allocator_VTable heap_Classic_vtable[1] = { {
@@ -60,9 +62,9 @@ static const mem_Allocator_VTable heap_Classic_vtable[1] = { {
 // Get underlying malloc_size if available
 #if defined(__GLIBC__) || defined(__APPLE__)
 #define heap_Classic_has_malloc_size (1)
-force_inline usize heap_Classic_mallocSize(const anyptr ptr) {
+force_inline usize heap_Classic_mallocSize(anyptr ptr) {
 #if defined(__GLIBC__)
-    return malloc_usable_size((anyptr)ptr);
+    return malloc_usable_size(ptr);
 #else
     return malloc_size(ptr);
 #endif
@@ -72,75 +74,95 @@ force_inline usize heap_Classic_mallocSize(const anyptr ptr) {
 #endif
 
 static_inline mem_Allocator heap_Classic_allocator(heap_Classic* self) {
-    debug_assert_nonnull(self);
+    debug_assert_fmt(self != null, "Null allocator instance");
     return (mem_Allocator){
-        .ptr_ = self,
-        .vt_  = heap_Classic_vtable
+        .self_ = Sptr_ref(heap_Classic, *self),
+        .vt_   = heap_Classic_vtable
     };
 }
 
 static_inline Res_Void heap_Classic_init(mem_Allocator* self) {
-    debug_assert_nonnull(self);
+    debug_assert_fmt(self != null, "Null allocator");
     unused(self);
-    return Res_ok(Res_Void, (Void){ 0 });
+    return Res_ok(Res_Void, makeCleared(Void));
 }
 
 static_inline void heap_Classic_fini(mem_Allocator* self) {
-    debug_assert_nonnull(self);
+    debug_assert_fmt(self != null, "Null allocator");
     unused(self);
 }
 
-static_inline Res_Mptr_u8 heap_Classic_alloc(anyptr self, usize n, usize align) {
-    // Handle null sel
-    if (self == null) { return Res_err(Res_Mptr_u8, Err_invalid_argument); }
+static_inline Res_Mptr heap_Classic_alloc(Sptr self, PtrBase_MetaData meta) {
+    // Handle invalid input
+    if (Sptr_isUndefined(self)) {
+        return Res_err(Res_Mptr, Err_invalid_argument);
+    }
 
-    // Handle zero size allocation
-    if (n == 0) { return Res_ok(Res_Mptr_u8, Mptr_make(u8, null)); }
+    // Get size and alignment from meta
+    const usize size  = meta.type_size;
+    const usize align = PtrBase__calcAlignLog2Order(meta.log2_align);
 
-    // Calculate required alignment
-    const usize alignment = align;
-    anyptr      ptr       = null;
+    // Handle zero size
+    if (size == 0) {
+        return Res_ok(Res_Mptr, (Mptr){ .Base_ = PtrBase_undefined(meta) });
+    }
 
-// Use aligned allocation functions if available
-#if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    if (posix_memalign(&ptr, alignment, n) != 0) {
+    // Allocate aligned memory
+    anyptr ptr = null;
+
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+    ptr = _aligned_malloc(size, align);
+#elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    if (posix_memalign(&ptr, align, size) != 0) {
         ptr = null;
     }
-#elif defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    ptr = _aligned_malloc(n, alignment);
 #else
-    anyptr raw = malloc(n + alignment);
-    if (raw == null) {
-        ptr = null;
-    } else {
-        ptr                = mem_align_ptr(raw, alignment);
+    // Manual alignment
+    const usize header_size = sizeof(anyptr);
+    anyptr      raw         = malloc(size + align + header_size);
+    if (raw != null) {
+        ptr                = (u8*)raw + header_size;
+        ptr                = (anyptr)(((usize)ptr + align - 1) & ~(align - 1));
         ((anyptr*)ptr)[-1] = raw;
     }
 #endif
 
     if (ptr == null) {
-        return Res_err(Res_Mptr_u8, Err_insufficient_memory);
+        return Res_err(Res_Mptr, Err_insufficient_memory);
     }
 
-    return Res_ok(Res_Mptr_u8, cptr_make(ptr, sizeof(ptr), alignment));
+    // Create Mptr with provided type info
+    PtrBase base = PtrBase_fromAddr(ptr, meta);
+    return Res_ok(Res_Mptr, (Mptr){ .Base_ = base });
 }
 
-static_inline bool heap_Classic_resize(anyptr self, Slice_u8 buf, usize buf_align, usize new_size) {
-    claim_assert_nonnull(self);
-    claim_assert_fmt(Slice_align(buf) == buf_align, "buf_align: %zu, Slice_align(buf): %zu", buf_align, Slice_align(buf));
+static_inline bool heap_Classic_resize(Sptr self, Mptr ptr, usize new_size) {
+    debug_assert_fmt(!Sptr_isUndefined(self), "Undefined allocator");
+    debug_assert_fmt(!Mptr_isUndefined(ptr), "Undefined pointer");
+    unused(self);
 
-    // Special case: resizing to 0
-    if (new_size == 0) { return true; }
+    // Special cases
+    if (new_size == 0) {
+        return true;
+    }
 
-    // Special case: empty buffer
-    if (buf.len == 0) { return false; }
+    // Get current allocation size
+    const anyptr addr = Mptr_addr(ptr);
+    if (addr == null) {
+        return false;
+    }
 
-    // Check if new size fits in existing allocation
-    if (new_size <= buf.len) { return true; }
-
+    // Check if new size fits in current allocation
 #if heap_Classic_has_malloc_size
-    const usize full_size = heap_Classic_mallocSize(buf.ptr);
+    const usize full_size = heap_Classic_mallocSize(addr);
     if (new_size <= full_size) {
+        return true;
+    }
+#else
+    // Without malloc_size, we can only shrink within the original allocation
+    // Use PtrBase size which represents the original allocation size
+    const usize original_size = Mptr_size(ptr);
+    if (new_size <= original_size) {
         return true;
     }
 #endif
@@ -148,18 +170,23 @@ static_inline bool heap_Classic_resize(anyptr self, Slice_u8 buf, usize buf_alig
     return false;
 }
 
-static_inline void heap_Classic_free(anyptr ctx, Slice_u8 buf, usize buf_align) {
-    claim_assert_nonnull(ctx);
-    claim_assert_fmt(Slice_align(buf) == buf_align, "buf_align: %zu, Slice_align(buf): %zu", buf_align, Slice_align(buf));
+static_inline void heap_Classic_free(Sptr self, Mptr ptr) {
+    debug_assert_fmt(!Sptr_isUndefined(self), "Undefined allocator");
+    unused(self);
 
-    if (Mptr_isZero(buf.ptr)) { return; }
+    if (Mptr_isUndefined(ptr)) {
+        return;
+    }
+
+    anyptr raw_ptr = Mptr_addr(ptr);
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    _aligned_free(Mptr_raw(buf.ptr));
+    _aligned_free(raw_ptr);
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    free(Mptr_raw(buf.ptr));
+    free(raw_ptr);
 #else
-    free((Mptr_raw(buf.ptr))[-1]);
+    // Manual alignment cleanup
+    free(((anyptr*)raw_ptr)[-1]);
 #endif
 }
 

@@ -6,7 +6,7 @@
  * @date    2024-11-29 (date of creation)
  * @updated 2024-12-06 (date of last update)
  * @version v1.0.0
- * @ingroup dasae-headers(dh)/core/ds
+ * @ingroup dasae-headers(dh)/ds
  * @prefix  Arr
  *
  * @brief   Header for Fixed-Length Array

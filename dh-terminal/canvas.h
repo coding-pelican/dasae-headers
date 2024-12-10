@@ -24,7 +24,7 @@ typedef union Rect {
         i64 max_y;
     };
 } Rect;
-#define Rect_(...) makeWith(Rect, __VA_ARGS__)
+#define Rect_(...) make(Rect, __VA_ARGS__)
 Rect Rect_from(i64 x, i64 y, i64 width, i64 height);
 Rect Rect_fromMinMax(i64 min_x, i64 min_y, i64 max_x, i64 max_y);
 
