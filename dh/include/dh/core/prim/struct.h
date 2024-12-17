@@ -30,13 +30,34 @@ extern "C" {
     typedef struct Alias Alias; \
     struct Alias
 
-#define initial(_Inital...)  IMPL_initial(_Inital)
-#define cleared()            IMPL_cleared()
-#define make(_T, _Inital...) IMPL_make(_T, _Inital)
-#define makeCleared(_T)      IMPL_makeCleared(_T)
-// #define create(_T, _Initial...) IMPL_create(_T, _Initial)
-// #define createCleared(_T)       IMPL_createCleared(_T)
-// #define createFrom(_T, _var)    IMPL_createFrom(_T, _var)
+#define initial(_Inital...)     IMPL_initial(_Inital)
+#define cleared()               IMPL_cleared()
+#define make(_T, _Inital...)    IMPL_make(_T, _Inital)
+#define makeCleared(_T)         IMPL_makeCleared(_T)
+#define create(_T, _Initial...) IMPL_create(_T, _Initial)
+#define createCleared(_T)       IMPL_createCleared(_T)
+#define createFrom(_T, _var...) IMPL_createFrom(_T, _var)
+
+#define getContainer(_ptr_member, _TContainer)                        \
+    /**                                                               \
+     * Get struct pointer from member pointer.                        \
+     * this for _ptr_member same as _MemberName.                      \
+     *                                                                \
+     * _ptr_member: the pointer that point struct's member.           \
+     *            it's the member address offset from struct address. \
+     *                                                                \
+     */                                                               \
+    IMPL_getContainer(_ptr_member, _TContainer)
+
+#define getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
+    /**                                                                \
+     * Get struct pointer from member pointer with _MemberName.        \
+     * this for _ptr_member not same as _MemberName.                   \
+     *                                                                 \
+     * _ptr_member: the pointer that point struct's member.            \
+     *            it's the member address offset from struct address.  \
+     */                                                                \
+    IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -53,15 +74,21 @@ extern "C" {
 #define IMPL_makeCleared(_T) \
     ((_T){ 0 })
 
-// #define IMPL_create(_T, _Inital...) \
-//     ((_T[1]){ _Inital })
+#define IMPL_create(_T, _Inital...) \
+    ((_T[1]){ (_T){ _Inital } })
 
-// #define IMPL_createCleared(_T) \
-//     ((_T[1]){ 0 })
+#define IMPL_createCleared(_T) \
+    ((_T[1]){ (_T){ 0 } })
 
-// #define IMPL_createFrom(_T, _var) \
-//     ((_T[1]){ _var })
+#define IMPL_createFrom(_T, _var...) \
+    ((_T[1]){ _var })
 // NOLINTEND(bugprone-macro-parentheses)
+
+#define IMPL_getContainer(_ptr_member, _TContainer) \
+    ((Parent_TContainerType*)((u8*)(_ptr_member) - offsetof(_TContainer, _ptr_member)))
+
+#define IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
+    ((_TContainer*)((u8*)(_ptr_member) - offsetof(_TContainer, _MemberName)))
 
 #if defined(__cplusplus)
 } /* extern "C" */

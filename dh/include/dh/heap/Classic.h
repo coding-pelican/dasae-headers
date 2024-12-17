@@ -34,9 +34,9 @@ extern "C" {
 
 // Classic allocator instance (minimal state)
 typedef struct heap_Classic {
-    u8 unused_; // Empty struct not allowed in C
+    Void unused_; // Empty struct not allowed in C
 } heap_Classic;
-Sptr(heap_Classic) Sptr_heap_Classic;
+typedef Sptr(heap_Classic) Sptr_heap_Classic;
 
 // Get allocator interface for instance
 static_inline mem_Allocator heap_Classic_allocator(heap_Classic* self);
@@ -46,9 +46,9 @@ static_inline Res_Void heap_Classic_init(mem_Allocator* self);
 static_inline void     heap_Classic_fini(mem_Allocator* self);
 
 // VTable implementations
-static_inline Res_Mptr heap_Classic_alloc(Sptr self, PtrBase_MetaData meta);
-static_inline bool     heap_Classic_resize(Sptr self, Mptr ptr, usize new_len);
-static_inline void     heap_Classic_free(Sptr self, Mptr ptr);
+static_inline Res_Mptr heap_Classic_alloc(Sptr ctx, PtrBase_MetaData meta);
+static_inline bool     heap_Classic_resize(Sptr ctx, Mptr ptr, usize new_len);
+static_inline void     heap_Classic_free(Sptr ctx, Mptr ptr);
 
 // VTable for Classic allocator
 static const mem_Allocator_VTable heap_Classic_vtable[1] = { {
@@ -76,8 +76,8 @@ force_inline usize heap_Classic_mallocSize(anyptr ptr) {
 static_inline mem_Allocator heap_Classic_allocator(heap_Classic* self) {
     debug_assert_fmt(self != null, "Null allocator instance");
     return (mem_Allocator){
-        .self_ = Sptr_ref(heap_Classic, *self),
-        .vt_   = heap_Classic_vtable
+        .ctx = Sptr_ref(heap_Classic, *self),
+        .vt  = heap_Classic_vtable
     };
 }
 
@@ -104,7 +104,7 @@ static_inline Res_Mptr heap_Classic_alloc(Sptr self, PtrBase_MetaData meta) {
 
     // Handle zero size
     if (size == 0) {
-        return Res_ok(Res_Mptr, (Mptr){ .Base_ = PtrBase_undefined(meta) });
+        return Res_ok(Res_Mptr, (Mptr){ .Base = PtrBase_undefined });
     }
 
     // Allocate aligned memory
@@ -133,7 +133,7 @@ static_inline Res_Mptr heap_Classic_alloc(Sptr self, PtrBase_MetaData meta) {
 
     // Create Mptr with provided type info
     PtrBase base = PtrBase_fromAddr(ptr, meta);
-    return Res_ok(Res_Mptr, (Mptr){ .Base_ = base });
+    return Res_ok(Res_Mptr, (Mptr){ .Base = base });
 }
 
 static_inline bool heap_Classic_resize(Sptr self, Mptr ptr, usize new_size) {

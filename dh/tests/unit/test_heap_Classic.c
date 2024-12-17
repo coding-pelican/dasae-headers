@@ -24,13 +24,13 @@ TEST_Result TEST_heap_Classic_Basic(void) {
     // Test zero-size allocation
     PtrBase_MetaData meta_zero = PtrBase_typeInfo(u8);
     meta_zero.type_size        = 0; // Force zero size
-    Res_Mptr zero_res          = heap_Classic_alloc(allocator.self_, meta_zero);
+    Res_Mptr zero_res          = heap_Classic_alloc(allocator.ctx, meta_zero);
     TEST_condition(Res_isOk(zero_res));
     TEST_condition(Mptr_isUndefined(Res_unwrap(Res_Mptr, zero_res)));
 
     // Test i32 allocation
     PtrBase_MetaData meta_i32 = PtrBase_typeInfo(i32);
-    Res_Mptr         i32_res  = heap_Classic_alloc(allocator.self_, meta_i32);
+    Res_Mptr         i32_res  = heap_Classic_alloc(allocator.ctx, meta_i32);
     TEST_condition(Res_isOk(i32_res));
 
     if (Res_isOk(i32_res)) {
@@ -46,7 +46,7 @@ TEST_Result TEST_heap_Classic_Basic(void) {
         TEST_condition(Mptr_at(i32, ptr, 0) == 42);
 
         // Free memory
-        heap_Classic_free(allocator.self_, ptr);
+        heap_Classic_free(allocator.ctx, ptr);
     }
 
     return TEST_completeResult(&result);
@@ -73,7 +73,7 @@ TEST_Result TEST_heap_Classic_Alignment(void) {
             .is_defined = true
         };
 
-        Res_Mptr res = heap_Classic_alloc(allocator.self_, meta);
+        Res_Mptr res = heap_Classic_alloc(allocator.ctx, meta);
         TEST_condition(Res_isOk(res));
 
         if (Res_isOk(res)) {
@@ -81,7 +81,7 @@ TEST_Result TEST_heap_Classic_Alignment(void) {
             TEST_condition(!Mptr_isUndefined(ptr));
             TEST_condition(Mptr_align(ptr) == (1ull << align_order));
             TEST_condition(Mptr_isAligned(ptr));
-            heap_Classic_free(allocator.self_, ptr);
+            heap_Classic_free(allocator.ctx, ptr);
         }
     }
 
@@ -98,29 +98,29 @@ TEST_Result TEST_heap_Classic_Resize(void) {
 
     // Allocate array of 4 integers
     struct PtrBase_MetaData meta = PtrBase_typeInfo(i32);
-    Res_Mptr                res  = heap_Classic_alloc(allocator.self_, meta);
+    Res_Mptr                res  = heap_Classic_alloc(allocator.ctx, meta);
     TEST_condition(Res_isOk(res));
 
     if (Res_isOk(res)) {
         Mptr ptr = Res_unwrap(Res_Mptr, res);
 
         // Test trying to grow to 8 elements (should fail)
-        bool grow_result = heap_Classic_resize(allocator.self_, ptr, 8);
+        bool grow_result = heap_Classic_resize(allocator.ctx, ptr, 8);
         TEST_condition(!grow_result); // Growing should fail
 
         // Test shrinking to 2 elements (should succeed)
-        bool shrink_result = heap_Classic_resize(allocator.self_, ptr, 2);
+        bool shrink_result = heap_Classic_resize(allocator.ctx, ptr, 2);
         TEST_condition(shrink_result); // Shrinking should succeed
 
         // Test keeping same size (should succeed)
-        bool same_result = heap_Classic_resize(allocator.self_, ptr, 4);
+        bool same_result = heap_Classic_resize(allocator.ctx, ptr, 4);
         TEST_condition(same_result); // Same size should succeed
 
         // Test resize to zero elements (should succeed)
-        bool zero_result = heap_Classic_resize(allocator.self_, ptr, 0);
+        bool zero_result = heap_Classic_resize(allocator.ctx, ptr, 0);
         TEST_condition(zero_result); // Zero should always succeed
 
-        heap_Classic_free(allocator.self_, ptr);
+        heap_Classic_free(allocator.ctx, ptr);
     }
 
     return TEST_completeResult(&result);
@@ -146,7 +146,7 @@ TEST_Result TEST_heap_Classic_Stress(void) {
             .is_defined = true
         };
 
-        Res_Mptr res = heap_Classic_alloc(allocator.self_, meta);
+        Res_Mptr res = heap_Classic_alloc(allocator.ctx, meta);
         if (Res_isOk(res)) {
             allocs[successful++] = Res_unwrap(Res_Mptr, res);
         }
@@ -170,7 +170,7 @@ TEST_Result TEST_heap_Classic_Stress(void) {
 
     // Free all allocations
     for (usize i = 0; i < successful; ++i) {
-        heap_Classic_free(allocator.self_, allocs[i]);
+        heap_Classic_free(allocator.ctx, allocs[i]);
     }
 
     return TEST_completeResult(&result);
@@ -196,7 +196,7 @@ TEST_Result TEST_heap_Classic_Errors(void) {
         .log2_align = 3,
         .is_defined = true
     };
-    Res_Mptr huge_res = heap_Classic_alloc(allocator.self_, huge_meta);
+    Res_Mptr huge_res = heap_Classic_alloc(allocator.ctx, huge_meta);
     TEST_condition(Res_isErr(huge_res));
 
     return TEST_completeResult(&result);

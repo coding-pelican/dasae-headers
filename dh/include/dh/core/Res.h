@@ -48,8 +48,8 @@ typedef enum ResTag {
     }
 
 // Res creation
-#define Res_ok(TRes, val)  ((TRes){ .tag = ResTag_ok, .data.value = (val) })
-#define Res_err(TRes, err) ((TRes){ .tag = ResTag_err, .data.error = (err) })
+#define Res_ok(TRes, val...)  ((TRes){ .tag = ResTag_ok, .data.value = (val) })
+#define Res_err(TRes, err...) ((TRes){ .tag = ResTag_err, .data.error = (err) })
 
 // Res operations
 #define Res_isOk(self)  ResBase_isOk((ResBase*)&(self))
@@ -61,10 +61,8 @@ typedef enum ResTag {
 #define Res_unwrapErr(TRes, self) \
     (((TRes*)ResBase_unwrapErr((ResBase*)(TRes[1]){ self }))->data.error) // NOLINT
 
-#define Res_unwrapOr(TRes, self, val_default) \
+#define Res_unwrapOr(TRes, self, val_default...) \
     (((TRes*)ResBase_unwrapOr((ResBase*)(TRes[1]){ self }, (ResBase*)(TRes[1]){ Res_ok(TRes, val_default) }))->data.value) // NOLINT
-
-#define Res_try
 
 // Base Res structure for internal use
 typedef struct ResBase {

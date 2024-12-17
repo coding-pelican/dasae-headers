@@ -4,9 +4,9 @@
  * @file    Vec.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-08 (date of creation)
- * @updated 2024-12-08 (date of last update)
- * @version v0.1.0
- * @ingroup dasae-headers(dh)/container
+ * @updated 2024-12-11 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)
  * @prefix  Vec
  *
  * @brief   Dynamic array implementation using mem_Allocator
@@ -24,292 +24,320 @@ extern "C" {
 
 #include "dh/core/prim.h"
 #include "dh/core/ptr.h"
-#include "dh/core/Opt.h"
-#include "dh/core/Res.h"
 #include "dh/core/Err.h"
+#include "dh/core/Res.h"
+#include "dh/core/Opt.h"
 #include "dh/debug/assert.h"
 #include "dh/mem/Allocator.h"
 
-/*========== Vec Definition ===========================================*/
+/*========== Vec Definition =================================================*/
 
 // Vec structure definition
 typedef struct Vec {
-    mem_Allocator* allocator_; // Memory allocator
-    Slice          items_;     // Actual data storage
-    usize          len_;
+    Slice          data;      // Underlying slice for storage
+    usize          len;       // Current number of elements
+    mem_Allocator* allocator; // Memory allocator reference
 } Vec;
-#define Vec(T) typedef Vec
+
+// Type declarations
+#define Vec(THint) typedef Vec
 Res(Vec, Err) Res_Vec;
-
-// Initialize macros for type checking
-#define Vec_init(T, allocator) \
-    Vec_initWithCapacity(T, allocator, 0)
-
-#define Vec_initWithCapacity(T, allocator, initial_capacity) \
-    Vec__initWithCapacity(sizeof(T), alignof(T), allocator, initial_capacity)
 
 /*========== Core Functions ================================================*/
 
-// Initialize an Vec with given capacity
-force_inline Res_Vec Vec__initWithCapacity(
-    usize          elem_size,
-    usize          elem_align,
-    mem_Allocator* allocator,
-    usize          initial_capacity
-) {
-    Vec self = {
-        .allocator_ = allocator,
-        .items_     = { 0 },
-        .len_       = 0
-    };
+// Initialize Vec with default capacity
+#define Vec_init(T, allocator) Vec__init(allocator, PtrBase_typeInfo(T))
+force_inline Vec Vec__init(mem_Allocator* allocator, PtrBase_MetaData type_info);
 
-    if (initial_capacity > 0) {
-        const Res_Slice slice = mem_Allocator_allocSlice(
-            allocator,
-            elem_size,
-            elem_align,
-            initial_capacity
-        );
+// Initialize Vec with specific capacity
+#define Vec_initCapacity(T, allocator, capacity) Vec__initCapacity(allocator, capacity, PtrBase_typeInfo(T))
+force_inline Res_Vec Vec__initCapacity(mem_Allocator* allocator, usize capacity, PtrBase_MetaData type_info);
 
-        if (Res_isErr(slice)) {
-            return Res_err(Res_Vec, Res_unwrapErr(Res_Slice, slice));
-        }
-
-        self.items_ = Res_unwrap(Res_Slice, slice);
-        self.len_   = 0;
-    }
-
-    return Res_ok(Res_Vec, self);
-}
-
-// Free the Vec's memory
-force_inline void Vec_fini(Vec* self) {
-    debug_assert_nonnull(self);
-    if (!Slice_isZero(self->items_)) {
-        mem_Allocator_freeSlice(self->allocator_, &self->items_);
-    }
-    *self = (Vec){ 0 };
-}
+// Free Vec's memory
+force_inline void Vec_fini(Vec* self);
 
 // Get current length
-force_inline usize Vec_len(const Vec* self) {
-    debug_assert_nonnull(self);
-    return self->len_;
-}
-
+force_inline usize Vec_len(const Vec* self);
 // Get current capacity
-force_inline usize Vec_capacity(const Vec* self) {
-    debug_assert_nonnull(self);
-    return Slice_len(self->items_);
+force_inline usize Vec_capacity(const Vec* self);
+// Check if Vec is empty
+force_inline bool  Vec_isEmpty(const Vec* self);
+
+/*========== Access Functions ==============================================*/
+
+// Get item at index
+#define Vec_at(T, self, idx) (*(T*)Vec__at(self, idx))
+force_inline anyptr Vec__at(const Vec* self, usize idx);
+
+// Get first item as optional
+force_inline Opt_anyptr Vec_firstOrNull(const Vec* self);
+// Get last item as optional
+force_inline Opt_anyptr Vec_lastOrNull(const Vec* self);
+
+/*========== Growth Functions ============================================*/
+
+// Calculate growth capacity
+force_inline usize    Vec__nextCapacity(usize current_capacity);
+// Ensure capacity for n more items
+force_inline Res_Void Vec_ensureUnusedCapacity(Vec* self, usize additional);
+
+/*========== Modification Functions =======================================*/
+
+// Append item
+force_inline Res_Void Vec_append(Vec* self, const anyptr item);
+
+// Pop last item
+#define Vec_pop(T, self) (*(T*)Vec__pop(self))
+force_inline anyptr Vec__pop(Vec* self);
+
+// Pop last item as optional
+force_inline Opt_anyptr Vec_popOrNull(Vec* self);
+
+// Insert item at index
+#define Vec_insert(T, self, idx, item) Vec__insert(self, idx, &(item))
+force_inline Res_Void Vec__insert(Vec* self, usize idx, const anyptr item);
+
+// Remove item at index
+force_inline void Vec_remove(Vec* self, usize idx);
+// Clear all items
+force_inline void Vec_clear(Vec* self);
+
+/*========== Slice Access ================================================*/
+
+// Get slice of full capacity
+force_inline Slice Vec_slice(const Vec* self);
+// Get slice of current items
+force_inline Slice Vec_items(const Vec* self);
+
+/*========== Implementation =================================================*/
+
+force_inline Vec Vec__init(mem_Allocator* allocator, PtrBase_MetaData type_info) {
+    debug_assert_fmt(allocator != null, "Allocator cannot be null");
+    return (Vec){
+        .data = {
+            .Base = {
+                .addr = 0,
+                .meta = type_info },
+            .len = 0,
+        },
+        .len       = 0,
+        .allocator = allocator
+    };
 }
 
-// Access item at index
-#define Vec_at(T, self, idx) \
-    (*(T*)Vec__at(self, idx))
+force_inline Res_Vec Vec__initCapacity(mem_Allocator* allocator, usize capacity, PtrBase_MetaData type_info) {
+    debug_assert_fmt(allocator != null, "Allocator cannot be null");
+
+    if (capacity == 0) {
+        return Res_ok(Res_Vec, Vec__init(allocator, type_info));
+    }
+
+    Res_Slice slice = mem_Allocator_allocSlice(
+        allocator,
+        type_info.type_size,
+        PtrBase__calcAlignLog2Order(type_info.log2_align),
+        capacity
+    );
+
+    if (Res_isErr(slice)) {
+        return Res_err(Res_Vec, Res_unwrapErr(Res_Slice, slice));
+    }
+
+    return Res_ok(Res_Vec, (Vec){ .data = Res_unwrap(Res_Slice, slice), .len = 0, .allocator = allocator });
+}
+
+force_inline void Vec_fini(Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    if (!Slice_isUndefined(self->data)) {
+        mem_Allocator_freeSlice(self->allocator, self->data);
+        self->len = 0;
+    }
+}
+
+force_inline usize Vec_len(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    return self->len;
+}
+
+force_inline usize Vec_capacity(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    return Slice_len(self->data);
+}
+
+force_inline bool Vec_isEmpty(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    return self->len == 0;
+}
 
 force_inline anyptr Vec__at(const Vec* self, usize idx) {
-    debug_assert_nonnull(self);
-    debug_assert_true(idx < self->len_);
-    return Mptr_raw(Mptr_add(Slice_ptr(self->items_), (isize)idx));
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    debug_assert_fmt(idx < self->len, "Index out of bounds");
+    return Slice__getAtAddr(self->data, idx, Slice_size(self->data));
 }
 
-/*========== Growth Functions =============================================*/
-
-// Helper to calculate new capacity
-force_inline usize Vec__calcCapacityIncrease(usize capacity) {
-    if (capacity == 0) {
-        return 1;
+force_inline Opt_anyptr Vec_firstOrNull(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    if (Vec_isEmpty(self)) {
+        return Opt_none(Opt_anyptr);
     }
-    // Grow by ~1.5x
-    return capacity + (capacity / 2) + 1;
+    return Opt_some(Opt_anyptr, Vec__at(self, 0));
 }
 
-// Ensure capacity for additional items
-force_inline Res_Void Vec_ensureTotalCapacity(
-    Vec*  self,
-    usize new_capacity
-) {
-    debug_assert_nonnull(self);
+force_inline Opt_anyptr Vec_lastOrNull(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    if (Vec_isEmpty(self)) {
+        return Opt_none(Opt_anyptr);
+    }
+    return Opt_some(Opt_anyptr, Vec__at(self, self->len - 1));
+}
 
-    if (new_capacity <= self->len_) {
+force_inline usize Vec__nextCapacity(usize current_capacity) {
+    if (current_capacity == 0) {
+        return 4;
+    }
+    return current_capacity + (current_capacity / 2); // Grow by ~1.5x
+}
+
+force_inline Res_Void Vec_ensureUnusedCapacity(Vec* self, usize additional) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+
+    const usize required_cap = self->len + additional;
+    if (required_cap <= Vec_capacity(self)) {
         return Res_ok(Res_Void, (Void){ 0 });
     }
 
-    // Try to resize in place first
-    if (!Slice_isZero(self->items_)) {
-        if (mem_Allocator_resizeSlice(self->allocator_, &self->items_, new_capacity)) {
-            debug_assert(Slice_len(self->items_) == new_capacity);
+    const usize new_cap = Vec__nextCapacity(required_cap);
+
+    // Try resize in place first
+    if (!Slice_isUndefined(self->data)) {
+        if (mem_Allocator_resizeSlice(self->allocator, &self->data, new_cap)) {
             return Res_ok(Res_Void, (Void){ 0 });
         }
     }
 
-    // Need to allocate new buffer
-    const Res_Slice new_memory = mem_Allocator_allocSlice(
-        self->allocator_,
-        Slice_size(self->items_),
-        Slice_align(self->items_),
-        new_capacity
+    // Allocate new buffer
+    Res_Slice new_slice = mem_Allocator_allocSlice(
+        self->allocator,
+        Slice_size(self->data),
+        Slice_align(self->data),
+        new_cap
     );
 
-    if (Res_isErr(new_memory)) {
-        return Res_err(Res_Void, Res_unwrapErr(Res_Slice, new_memory));
+    if (Res_isErr(new_slice)) {
+        return Res_err(Res_Void, Res_unwrapErr(Res_Slice, new_slice));
     }
 
-    const Slice new_slice = Res_unwrap(Res_Slice, new_memory);
-
-    // Copy old data if any
-    if (!Slice_isZero(self->items_)) {
+    // Copy existing data if any
+    if (!Slice_isUndefined(self->data)) {
         memcpy(
-            Slice_raw(new_slice),
-            Slice_raw(self->items_),
-            Vec_len(self) * Slice_size(self->items_)
+            Slice_addr(Res_unwrap(Res_Slice, new_slice)),
+            Slice_addr(self->data),
+            self->len * Slice_size(self->data)
         );
-        mem_Allocator_freeSlice(self->allocator_, &self->items_);
+        mem_Allocator_freeSlice(self->allocator, self->data);
     }
 
-    self->items_ = new_slice;
+    self->data = Res_unwrap(Res_Slice, new_slice);
     return Res_ok(Res_Void, (Void){ 0 });
 }
 
-force_inline Res_Void Vec_ensureUnusedCapacity(
-    Vec*  self,
-    usize additional_count
-) {
-    debug_assert_nonnull(self);
-    const usize minimum_capacity = Vec_len(self) + additional_count;
-    if (minimum_capacity > Vec_capacity(self)) {
-        return Vec_ensureTotalCapacity(
-            self,
-            Vec__calcCapacityIncrease(minimum_capacity)
-        );
-    }
-    return Res_ok(Res_Void, (Void){ 0 });
-}
+force_inline Res_Void Vec_append(Vec* self, const anyptr item) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    debug_assert_fmt(item != null, "Item cannot be null");
 
-/*========== Modification Functions =======================================*/
-
-// Append an item
-#define Vec_append(T, self, item) \
-    Vec__append(self, &(item))
-
-force_inline Res_Void Vec__append(
-    Vec*         self,
-    const anyptr item
-) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(item);
-
-    const usize    elem_size  = Slice_size(self->items_);
-    const Res_Void ensure_res = Vec_ensureUnusedCapacity(self, 1);
+    Res_Void ensure_res = Vec_ensureUnusedCapacity(self, 1);
     if (Res_isErr(ensure_res)) {
         return ensure_res;
     }
-    printf("appending %p\n", item);
-    printf("appending %lld\n", *(isize*)item);
 
     memcpy(
-        Mptr_raw(Mptr_add(Slice_ptr(self->items_), (isize)self->len_)),
+        ((u8*)Slice_addr(self->data)) + (self->len * Slice_size(self->data)),
         item,
-        elem_size
+        Slice_size(self->data)
     );
-    self->len_ += 1;
+    self->len += 1;
 
     return Res_ok(Res_Void, (Void){ 0 });
 }
-
-// Pop last item
-#define Vec_pop(T, self) \
-    (*(T*)Vec__pop(self, sizeof(T)))
 
 force_inline anyptr Vec__pop(Vec* self) {
-    debug_assert_nonnull(self);
-    debug_assert_true(self->len_ > 0);
-
-    self->len_ -= 1;
-    const usize elem_size = Slice_size(self->items_);
-    return (u8*)Slice_raw(self->items_) + (self->len_ * elem_size);
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    debug_assert_fmt(!Vec_isEmpty(self), "Vec is empty");
+    self->len -= 1;
+    return (u8*)Slice_addr(self->data) + (self->len * Slice_size(self->data));
 }
 
-// Clear all items
-force_inline void Vec_clear(Vec* self) {
-    debug_assert_nonnull(self);
-    self->len_ = 0;
+force_inline Opt_anyptr Vec_popOrNull(Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    if (Vec_isEmpty(self)) {
+        return Opt_none(Opt_anyptr);
+    }
+
+    self->len -= 1;
+    return Opt_some(
+        Opt_anyptr,
+        (u8*)Slice_addr(self->data) + (self->len * Slice_size(self->data))
+    );
 }
 
-// Get slice (capacity range)
-force_inline Slice Vec_slice(const Vec* self) {
-    debug_assert_nonnull(self);
-    return self->items_; // Already contains correct size information
-}
+force_inline Res_Void Vec__insert(Vec* self, usize idx, const anyptr item) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    debug_assert_fmt(item != null, "Item cannot be null");
+    debug_assert_fmt(idx <= self->len, "Index out of bounds");
 
-// Get slice (length range)
-force_inline Slice Vec_items(const Vec* self) {
-    debug_assert_nonnull(self);
-    return Slice_make(Slice_ptr(self->items_), self->len_);
-}
-
-// Insert item at index
-#define Vec_insert(T, self, idx, item) \
-    Vec__insert(self, idx, &(item))
-
-force_inline Res_Void Vec__insert(
-    Vec*         self,
-    usize        idx,
-    const anyptr item
-) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(item);
-    debug_assert_true(idx <= self->len_);
-
-    const Res_Void ensure_res = Vec_ensureUnusedCapacity(self, 1);
+    Res_Void ensure_res = Vec_ensureUnusedCapacity(self, 1);
     if (Res_isErr(ensure_res)) {
         return ensure_res;
     }
 
-    const usize elem_size  = Slice_size(self->items_);
-    const usize move_count = self->len_ - idx;
-
-    if (move_count > 0) {
+    if (idx < self->len) {
         memmove(
-            (u8*)Slice_raw(self->items_) + ((idx + 1) * elem_size),
-            (u8*)Slice_raw(self->items_) + (idx * elem_size),
-            move_count * elem_size
+            (u8*)Slice_addr(self->data) + ((idx + 1) * Slice_size(self->data)),
+            (u8*)Slice_addr(self->data) + (idx * Slice_size(self->data)),
+            (self->len - idx) * Slice_size(self->data)
         );
     }
 
     memcpy(
-        (u8*)Slice_raw(self->items_) + (idx * elem_size),
+        (u8*)Slice_addr(self->data) + (idx * Slice_size(self->data)),
         item,
-        elem_size
+        Slice_size(self->data)
     );
-    self->len_ += 1;
+    self->len += 1;
 
     return Res_ok(Res_Void, (Void){ 0 });
 }
 
-// Remove item at index
-#define Vec_remove(self, idx) \
-    Vec__remove(self, idx)
+force_inline void Vec_remove(Vec* self, usize idx) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    debug_assert_fmt(idx < self->len, "Index out of bounds");
 
-force_inline void Vec__remove(
-    Vec*  self,
-    usize idx
-) {
-    debug_assert_nonnull(self);
-    debug_assert_true(idx < self->len_);
-
-    const usize elem_size  = Slice_size(self->items_);
-    const usize move_count = self->len_ - idx - 1;
-
-    if (move_count > 0) {
+    if (idx < self->len - 1) {
         memmove(
-            (u8*)Slice_raw(self->items_) + (idx * elem_size),
-            (u8*)Slice_raw(self->items_) + ((idx + 1) * elem_size),
-            move_count * elem_size
+            (u8*)Slice_addr(self->data) + (idx * Slice_size(self->data)),
+            (u8*)Slice_addr(self->data) + ((idx + 1) * Slice_size(self->data)),
+            (self->len - idx - 1) * Slice_size(self->data)
         );
     }
+    self->len -= 1;
+}
 
-    self->len_ -= 1;
+force_inline void Vec_clear(Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    self->len = 0;
+}
+
+force_inline Slice Vec_slice(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    return self->data;
+}
+
+force_inline Slice Vec_items(const Vec* self) {
+    debug_assert_fmt(self != null, "Vec cannot be null");
+    if (Slice_isUndefined(self->data)) {
+        return Slice_undefined(Void);
+    }
+    return Slice_prefix(self->data, self->len);
 }
 
 #if defined(__cplusplus)

@@ -34,8 +34,7 @@ extern "C" {
 #define NULL (0ll)
 #endif
 #else
-#define NULL ((anyptr)0)
-
+#define NULL ((void*)0)
 #endif
 #endif /* NULL */
 

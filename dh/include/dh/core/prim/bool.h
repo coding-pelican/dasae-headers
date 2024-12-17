@@ -33,14 +33,16 @@ extern "C" {
 /* C2x compatibility */
 #else
 /* C99 compatibility */
-#define bool  _Bool
+// #define bool  _Bool
+typedef _Bool bool;
 #define true  (1)
 #define false (0)
 #endif
 #else
 /* Pre-C99 compatibility */
 typedef unsigned char _Bool;
-#define bool  _Bool
+// #define bool  _Bool
+typedef _Bool bool;
 #define true  (1)
 #define false (0)
 #endif

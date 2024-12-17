@@ -48,10 +48,12 @@ typedef enum OptTag {
 /* Optional creation */
 #define Opt_some(TOpt, val) ((TOpt){ .tag = OptTag_some, .data.value = (val) })
 #define Opt_none(TOpt)      ((TOpt){ .tag = OptTag_none })
+#define Opt_null(TOpt)      ((TOpt){ .tag = OptTag_none })
 
 /* Optional checks */
 #define Opt_isSome(self) OptBase_isNone((OptBase*)&(self))
 #define Opt_isNone(self) OptBase_isNone((OptBase*)&(self))
+#define Opt_isNull(self) OptBase_isNone((OptBase*)&(self))
 
 // NOLINTBEGIN
 /* Safe unwrapping with runtime checks */

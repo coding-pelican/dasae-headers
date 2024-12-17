@@ -31,25 +31,25 @@ extern "C" {
 
 typedef struct mem_Allocator        mem_Allocator;
 typedef struct mem_Allocator_VTable mem_Allocator_VTable;
-Sptr(mem_Allocator) Sptr_mem_Allocator;
+typedef Sptr(mem_Allocator) Sptr_mem_Allocator;
 
 // Allocator instance
 struct mem_Allocator {
-    Sptr                        self_; // Self pointer with type info
-    const mem_Allocator_VTable* vt_;   // Virtual table
+    Sptr                        ctx; // Context pointer with type info
+    const mem_Allocator_VTable* vt;  // Virtual table
 };
 
 // Allocator vtable
 struct mem_Allocator_VTable {
     // Allocate memory with size/alignment from PtrBase
     // Returns Res_Mptr for allocation result
-    Res_Mptr (*alloc)(Sptr self, PtrBase_MetaData meta);
+    Res_Mptr (*alloc)(Sptr ctx, PtrBase_MetaData meta);
 
     // Try to resize existing allocation - returns success/failure
-    bool (*resize)(Sptr self, Mptr ptr, usize new_len);
+    bool (*resize)(Sptr ctx, Mptr ptr, usize new_len);
 
     // Free allocation using pointer's metadata
-    void (*free)(Sptr self, Mptr ptr);
+    void (*free)(Sptr ctx, Mptr ptr);
 };
 
 /*========== Core Allocator Functions =======================================*/
@@ -98,19 +98,19 @@ force_inline void      mem_Allocator_freeSlice(mem_Allocator* self, Slice slice)
 /*========== Implementation =================================================*/
 
 force_inline Res_Mptr mem_Allocator_rawAlloc(mem_Allocator self, PtrBase_MetaData meta) {
-    return self.vt_->alloc(self.self_, meta);
+    return self.vt->alloc(self.ctx, meta);
 }
 
 force_inline bool mem_Allocator_rawResize(mem_Allocator self, Mptr ptr, usize new_len) {
-    return self.vt_->resize(self.self_, ptr, new_len);
+    return self.vt->resize(self.ctx, ptr, new_len);
 }
 
 force_inline void mem_Allocator_rawFree(mem_Allocator self, Mptr ptr) {
-    self.vt_->free(self.self_, ptr);
+    self.vt->free(self.ctx, ptr);
 }
 
 force_inline Res_Sptr mem_Allocator_createSptr(mem_Allocator* self, usize size, usize align) {
-    debug_assert_fmt(!PtrBase_isUndefined(self->self_.Base_), "Invalid allocator");
+    debug_assert_fmt(!PtrBase_isUndefined(self->ctx.Base), "Invalid allocator");
 
     PtrBase_MetaData meta = PtrBase_makeTypeInfo(size, align);
     Res_Mptr         res  = mem_Allocator_rawAlloc(*self, meta);
@@ -119,7 +119,7 @@ force_inline Res_Sptr mem_Allocator_createSptr(mem_Allocator* self, usize size, 
         return Res_err(Res_Sptr, Res_unwrapErr(Res_Mptr, res));
     }
 
-    return Res_ok(Res_Sptr, (Sptr){ .Base_ = Res_unwrap(Res_Mptr, res).Base_ });
+    return Res_ok(Res_Sptr, (Sptr){ .Base = Res_unwrap(Res_Mptr, res).Base });
 }
 
 force_inline void mem_Allocator_destroySptr(mem_Allocator* self, Sptr ptr) {
@@ -129,7 +129,7 @@ force_inline void mem_Allocator_destroySptr(mem_Allocator* self, Sptr ptr) {
 }
 
 force_inline Res_Slice mem_Allocator_allocSlice(mem_Allocator* self, usize elem_size, usize elem_align, usize count) {
-    debug_assert_fmt(!PtrBase_isUndefined(self->self_.Base_), "Invalid allocator");
+    debug_assert_fmt(!PtrBase_isUndefined(self->ctx.Base), "Invalid allocator");
 
     PtrBase_MetaData meta = PtrBase_makeTypeInfo(elem_size, elem_align);
     Res_Mptr         res  = mem_Allocator_rawAlloc(*self, meta);
@@ -163,7 +163,7 @@ force_inline bool mem_Allocator_resizeSlice(mem_Allocator* self, Slice* slice, u
 
     // Call raw resize with byte size
     if (mem_Allocator_rawResize(*self, Slice_beginMptr(*slice), new_byte_size)) {
-        slice->len_ = new_len;
+        slice->len = new_len;
         return true;
     }
     return false;
@@ -183,7 +183,7 @@ force_inline Opt_Slice mem_Allocator_reallocSlice(mem_Allocator* self, Slice sli
 
     // Copy data and free old buffer
     Slice result   = Res_unwrap(Res_Slice, new_slice);
-    usize copy_len = slice.len_ < new_len ? slice.len_ : new_len;
+    usize copy_len = slice.len < new_len ? slice.len : new_len;
 
     memcpy(
         Slice_addr(result),
