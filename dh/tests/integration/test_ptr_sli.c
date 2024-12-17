@@ -73,6 +73,9 @@ int main(void) {
     };
     fmt_printStr((SliConst_u8){ .base = new_line.base });
 
+    // TODO: Add str literal init macro
+    // TODO: Support for utf-8 (make default)
+    // TODO: Support wchar str
     fmt_printlnStr(
         (SliConst_u8){
             .base = mem_span(
