@@ -36,11 +36,16 @@ typedef struct Sli {
 } Sli;
 
 /* Sentinel-terminated slice ([:sentinel]T in Zig) */
-typedef struct SSli {
-    anyptr addr;
-    usize  len;
+typedef struct SliS {
+    union {
+        Sli data;
+        struct {
+            anyptr addr;
+            usize  len;
+        };
+    };
     anyptr sentinel;
-} SSli;
+} SliS;
 
 /* Core slice operations */
 force_inline Sli    Sli_from(TypeInfo type, anyptr addr, usize begin, usize end);
@@ -48,22 +53,22 @@ force_inline anyptr Sli_at(TypeInfo type, Sli self, usize index);
 force_inline Sli    Sli_slice(TypeInfo type, Sli self, usize begin, usize end);
 
 /* Sentinel slice operations */
-force_inline SSli   SSli_from(TypeInfo type, anyptr addr, usize begin, usize end, anyptr sentinel);
-force_inline anyptr SSli_at(TypeInfo type, SSli self, usize index);
-force_inline Sli    SSli_slice(TypeInfo type, SSli self, usize begin, usize end);
-force_inline SSli   SSli_sliceS(TypeInfo type, SSli self, usize begin, usize end, anyptr sentinel);
+force_inline SliS   SliS_from(TypeInfo type, anyptr addr, usize begin, usize end, anyptr sentinel);
+force_inline anyptr SliS_at(TypeInfo type, SliS self, usize index);
+force_inline Sli    SliS_slice(TypeInfo type, SliS self, usize begin, usize end);
+force_inline SliS   SliS_sliceS(TypeInfo type, SliS self, usize begin, usize end, anyptr sentinel);
 
-#define using_Sli(T)      IMPL_using_Sli(T, pp_join(_, Ref, T), pp_join(_, Sli, T), pp_join(_, SSli, T))
-#define using_SliConst(T) IMPL_using_Sli(const T, pp_join(_, RefConst, T), pp_join(_, SliConst, T), pp_join(_, SSliConst, T))
+#define using_Sli(T)                                                                \
+    IMPL_using_Sli(T, pp_join(_, Ref, T), pp_join(_, Sli, T), pp_join(_, SliS, T)); \
+    IMPL_using_Sli(const T, pp_join(_, RefConst, T), pp_join(_, SliConst, T), pp_join(_, SliSConst, T))
 
 /* Span functions */
-
 /* Calculate length of sentinel-terminated sequence */
 force_inline usize mem_slen(TypeInfo type, anyptr addr, anyptr sentinel);
 /* Create slice from sentinel-terminated pointer */
-force_inline Sli   mem_span(TypeInfo type, SPtr ptr);
+force_inline Sli   mem_span(TypeInfo type, PtrS ptr);
 /* Create sentinel-terminated slice from sentinel-terminated pointer with new sentinel */
-force_inline SSli  mem_spanS(TypeInfo type, SPtr ptr, anyptr new_sentinel);
+force_inline SliS  mem_spanS(TypeInfo type, PtrS ptr, anyptr new_sentinel);
 
 /* Implementation */
 
@@ -96,28 +101,28 @@ force_inline Sli Sli_slice(TypeInfo type, Sli self, usize begin, usize end) {
     };
 }
 
-force_inline SSli SSli_from(TypeInfo type, anyptr addr, usize begin, usize end, anyptr sentinel) {
+force_inline SliS SliS_from(TypeInfo type, anyptr addr, usize begin, usize end, anyptr sentinel) {
     debug_assert_nonnull(addr);
     debug_assert_nonnull(sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     debug_assert_fmt(begin < end, "Begin index must be less than end index");
     debug_assert_fmt(mem_isAligned(as(usize, addr), type.align), "Address must be properly aligned");
     debug_assert_fmt(mem_isAligned(as(usize, sentinel), type.align), "Sentinel must be properly aligned");
-    return (SSli){
+    return (SliS){
         .addr     = as(u8*, addr) + (begin * type.size),
         .len      = end - begin,
         .sentinel = sentinel
     };
 }
 
-force_inline anyptr SSli_at(TypeInfo type, SSli self, usize index) {
+force_inline anyptr SliS_at(TypeInfo type, SliS self, usize index) {
     debug_assert_nonnull(self.addr);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     debug_assert_fmt(index < self.len, "Index out of bounds");
     return as(u8*, self.addr) + (index * type.size);
 }
 
-force_inline Sli SSli_slice(TypeInfo type, SSli self, usize begin, usize end) {
+force_inline Sli SliS_slice(TypeInfo type, SliS self, usize begin, usize end) {
     debug_assert_nonnull(self.addr);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     debug_assert_fmt(begin < end, "Begin index must be less than end index");
@@ -128,21 +133,21 @@ force_inline Sli SSli_slice(TypeInfo type, SSli self, usize begin, usize end) {
     };
 }
 
-force_inline SSli SSli_sliceS(TypeInfo type, SSli self, usize begin, usize end, anyptr sentinel) {
+force_inline SliS SliS_sliceS(TypeInfo type, SliS self, usize begin, usize end, anyptr sentinel) {
     debug_assert_nonnull(self.addr);
     debug_assert_nonnull(sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     debug_assert_fmt(begin < end, "Begin index must be less than end index");
     debug_assert_fmt(end <= self.len, "End index out of bounds");
     debug_assert_fmt(mem_isAligned(as(usize, sentinel), type.align), "Sentinel must be properly aligned");
-    return (SSli){
+    return (SliS){
         .addr     = as(u8*, self.addr) + (begin * type.size),
         .len      = end - begin,
         .sentinel = sentinel
     };
 }
 
-#define IMPL_using_Sli(T, AliasRef, AliasSli, AliasSSli)                                                         \
+#define IMPL_using_Sli(T, AliasRef, AliasSli, AliasSliS)                                                         \
     /* Slice types with reference wrapper */                                                                     \
     typedef union {                                                                                              \
         Sli base;                                                                                                \
@@ -152,13 +157,18 @@ force_inline SSli SSli_sliceS(TypeInfo type, SSli self, usize begin, usize end, 
         };                                                                                                       \
     } AliasSli; /* NOLINT */                                                                                     \
     typedef union {                                                                                              \
-        SSli base;                                                                                               \
+        SliS base;                                                                                               \
         struct {                                                                                                 \
-            rawptr(AliasRef) addr;                                                                               \
-            usize    len;                                                                                        \
+            union {                                                                                              \
+                AliasSli data;                                                                                   \
+                struct {                                                                                         \
+                    rawptr(AliasRef) addr;                                                                       \
+                    usize len;                                                                                   \
+                };                                                                                               \
+            };                                                                                                   \
             AliasRef sentinel[1];                                                                                \
         };                                                                                                       \
-    } AliasSSli; /* NOLINT */                                                                                    \
+    } AliasSliS; /* NOLINT */                                                                                    \
     /* Slice interface */                                                                                        \
     force_inline AliasSli pp_join(_, AliasSli, from)(rawptr(T) addr, usize begin, usize end) {                   \
         return (AliasSli){                                                                                       \
@@ -174,28 +184,28 @@ force_inline SSli SSli_sliceS(TypeInfo type, SSli self, usize begin, usize end, 
         };                                                                                                       \
     }                                                                                                            \
     /* Sentinel slice interface */                                                                               \
-    force_inline AliasSSli pp_join(_, AliasSSli, from)(rawptr(T) addr, usize begin, usize end, T sentinel) {     \
-        AliasSSli result = {                                                                                     \
+    force_inline AliasSliS pp_join(_, AliasSliS, from)(rawptr(T) addr, usize begin, usize end, T sentinel) {     \
+        AliasSliS result = {                                                                                     \
             .sentinel[0].value = sentinel,                                                                       \
         };                                                                                                       \
-        return (AliasSSli){                                                                                      \
-            .base = SSli_from(typeInfo(AliasRef), as(anyptr, addr), begin, end, as(anyptr, &result.sentinel[0])) \
+        return (AliasSliS){                                                                                      \
+            .base = SliS_from(typeInfo(AliasRef), as(anyptr, addr), begin, end, as(anyptr, &result.sentinel[0])) \
         };                                                                                                       \
     }                                                                                                            \
-    force_inline rawptr(AliasRef) pp_join(_, AliasSSli, at)(AliasSSli self, usize index) {                       \
-        return SSli_at(typeInfo(AliasRef), self.base, index);                                                    \
+    force_inline rawptr(AliasRef) pp_join(_, AliasSliS, at)(AliasSliS self, usize index) {                       \
+        return SliS_at(typeInfo(AliasRef), self.base, index);                                                    \
     }                                                                                                            \
-    force_inline AliasSli pp_join(_, AliasSSli, slice)(AliasSSli self, usize begin, usize end) {                 \
+    force_inline AliasSli pp_join(_, AliasSliS, slice)(AliasSliS self, usize begin, usize end) {                 \
         return (AliasSli){                                                                                       \
-            .base = SSli_slice(typeInfo(AliasRef), self.base, begin, end)                                        \
+            .base = SliS_slice(typeInfo(AliasRef), self.base, begin, end)                                        \
         };                                                                                                       \
     }                                                                                                            \
-    force_inline AliasSSli pp_join(_, AliasSSli, sliceS)(AliasSSli self, usize begin, usize end, T sentinel) {   \
-        AliasSSli result = {                                                                                     \
+    force_inline AliasSliS pp_join(_, AliasSliS, sliceS)(AliasSliS self, usize begin, usize end, T sentinel) {   \
+        AliasSliS result = {                                                                                     \
             .sentinel[0].value = sentinel,                                                                       \
         };                                                                                                       \
-        return (AliasSSli){                                                                                      \
-            .base = SSli_sliceS(typeInfo(AliasRef), self.base, begin, end, as(anyptr, &result.sentinel[0]))      \
+        return (AliasSliS){                                                                                      \
+            .base = SliS_sliceS(typeInfo(AliasRef), self.base, begin, end, as(anyptr, &result.sentinel[0]))      \
         };                                                                                                       \
     }
 
@@ -215,7 +225,7 @@ force_inline usize mem_slen(TypeInfo type, anyptr addr, anyptr sentinel) {
     return len;
 }
 
-force_inline Sli mem_span(TypeInfo type, SPtr ptr) {
+force_inline Sli mem_span(TypeInfo type, PtrS ptr) {
     debug_assert_nonnull(ptr.addr);
     debug_assert_nonnull(ptr.sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
@@ -228,7 +238,7 @@ force_inline Sli mem_span(TypeInfo type, SPtr ptr) {
     };
 }
 
-force_inline SSli mem_spanS(TypeInfo type, SPtr ptr, anyptr new_sentinel) {
+force_inline SliS mem_spanS(TypeInfo type, PtrS ptr, anyptr new_sentinel) {
     debug_assert_nonnull(ptr.addr);
     debug_assert_nonnull(ptr.sentinel);
     debug_assert_nonnull(new_sentinel);
@@ -237,7 +247,7 @@ force_inline SSli mem_spanS(TypeInfo type, SPtr ptr, anyptr new_sentinel) {
     debug_assert_fmt(mem_isAligned(as(usize, ptr.sentinel), type.align), "Sentinel must be properly aligned");
     debug_assert_fmt(mem_isAligned(as(usize, new_sentinel), type.align), "New sentinel must be properly aligned");
 
-    return (SSli){
+    return (SliS){
         .addr     = ptr.addr,
         .len      = mem_slen(type, ptr.addr, ptr.sentinel),
         .sentinel = new_sentinel
@@ -262,25 +272,6 @@ using_Sli(f64);
 
 using_Sli(bool);
 using_Sli(char);
-
-/* Builtin const types */
-using_SliConst(u8);
-using_SliConst(u16);
-using_SliConst(u32);
-using_SliConst(u64);
-using_SliConst(usize);
-
-using_SliConst(i8);
-using_SliConst(i16);
-using_SliConst(i32);
-using_SliConst(i64);
-using_SliConst(isize);
-
-using_SliConst(f32);
-using_SliConst(f64);
-
-using_SliConst(bool);
-using_SliConst(char);
 
 #if defined(__cplusplus)
 } /* extern "C" */

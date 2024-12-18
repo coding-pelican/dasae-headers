@@ -34,23 +34,27 @@ typedef struct Ptr {
 } Ptr;
 
 /* Sentinel-terminated pointer (similar to [*:sentinel]T in Zig) */
-typedef struct SPtr {
-    anyptr addr;
+typedef struct PtrS {
+    union {
+        Ptr    data;
+        anyptr addr;
+    };
     anyptr sentinel;
-} SPtr;
+} PtrS;
 
 /* Core pointer operations */
 force_inline Ptr    Ptr_from(TypeInfo type, anyptr addr);
 force_inline anyptr Ptr_at(TypeInfo type, Ptr self, usize index);
 
 /* Sentinel pointer operations */
-force_inline SPtr   SPtr_from(TypeInfo type, anyptr addr, anyptr sentinel);
-force_inline anyptr SPtr_at(TypeInfo type, SPtr self, usize index);
-force_inline anyptr SPtr_sentinel(TypeInfo type, SPtr self);
-force_inline bool   SPtr_isSentinel(TypeInfo type, SPtr self, usize index);
+force_inline PtrS   PtrS_from(TypeInfo type, anyptr addr, anyptr sentinel);
+force_inline anyptr PtrS_at(TypeInfo type, PtrS self, usize index);
+force_inline anyptr PtrS_sentinel(TypeInfo type, PtrS self);
+force_inline bool   PtrS_isSentinel(TypeInfo type, PtrS self, usize index);
 
-#define using_Ptr(T)      IMPL_using_Ptr(T, pp_join(_, Ref, T), pp_join(_, Ptr, T), pp_join(_, SPtr, T))
-#define using_PtrConst(T) IMPL_using_Ptr(const T, pp_join(_, RefConst, T), pp_join(_, PtrConst, T), pp_join(_, SPtrConst, T))
+#define using_Ptr(T)                                                                \
+    IMPL_using_Ptr(T, pp_join(_, Ref, T), pp_join(_, Ptr, T), pp_join(_, PtrS, T)); \
+    IMPL_using_Ptr(const T, pp_join(_, RefConst, T), pp_join(_, PtrConst, T), pp_join(_, PtrSConst, T));
 
 /* Implementation */
 
@@ -67,40 +71,40 @@ force_inline anyptr Ptr_at(TypeInfo type, Ptr self, usize index) {
     return (u8*)self.addr + (index * type.size);
 }
 
-force_inline SPtr SPtr_from(TypeInfo type, anyptr addr, anyptr sentinel) {
+force_inline PtrS PtrS_from(TypeInfo type, anyptr addr, anyptr sentinel) {
     debug_assert_nonnull(addr);
     debug_assert_nonnull(sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     debug_assert_fmt(mem_isAligned(as(usize, addr), type.align), "Address must be properly aligned");
     debug_assert_fmt(mem_isAligned(as(usize, sentinel), type.align), "Sentinel must be properly aligned");
-    return (SPtr){
+    return (PtrS){
         .addr     = addr,
         .sentinel = sentinel
     };
 }
 
-force_inline anyptr SPtr_at(TypeInfo type, SPtr self, usize index) {
+force_inline anyptr PtrS_at(TypeInfo type, PtrS self, usize index) {
     debug_assert_nonnull(self.addr);
     debug_assert_nonnull(self.sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     return as(u8*, self.addr) + (index * type.size);
 }
 
-force_inline anyptr SPtr_sentinel(TypeInfo type, SPtr self) {
+force_inline anyptr PtrS_sentinel(TypeInfo type, PtrS self) {
     debug_assert_nonnull(self.addr);
     debug_assert_nonnull(self.sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
     return self.sentinel;
 }
 
-force_inline bool SPtr_isSentinel(TypeInfo type, SPtr self, usize index) {
+force_inline bool PtrS_isSentinel(TypeInfo type, PtrS self, usize index) {
     debug_assert_nonnull(self.addr);
     debug_assert_nonnull(self.sentinel);
     debug_assert_fmt(type.size > 0, "Type size must be greater than 0");
-    return mem_cmp(SPtr_at(type, self, index), self.sentinel, type.size) == 0;
+    return mem_cmp(PtrS_at(type, self, index), self.sentinel, type.size) == 0;
 }
 
-#define IMPL_using_Ptr(T, AliasRef, AliasPtr, AliasSPtr)                                             \
+#define IMPL_using_Ptr(T, AliasRef, AliasPtr, AliasPtrS)                                             \
     /* Reference wrapper struct */                                                                   \
     typedef struct {                                                                                 \
         T value;                                                                                     \
@@ -113,12 +117,15 @@ force_inline bool SPtr_isSentinel(TypeInfo type, SPtr self, usize index) {
         };                                                                                           \
     } AliasPtr; /* NOLINT */                                                                         \
     typedef union {                                                                                  \
-        SPtr base;                                                                                   \
+        PtrS base;                                                                                   \
         struct {                                                                                     \
-            rawptr(AliasRef) addr;                                                                   \
+            union {                                                                                  \
+                AliasPtr data;                                                                       \
+                rawptr(AliasRef) addr;                                                               \
+            };                                                                                       \
             AliasRef sentinel[1];                                                                    \
         };                                                                                           \
-    } AliasSPtr; /* NOLINT */                                                                        \
+    } AliasPtrS; /* NOLINT */                                                                        \
     /* Pointer interface */                                                                          \
     force_inline AliasPtr pp_join(_, AliasPtr, from)(rawptr(T) addr) {                               \
         return (AliasPtr){ .base = Ptr_from(typeInfo(AliasRef), as(anyptr, addr)) };                 \
@@ -127,22 +134,22 @@ force_inline bool SPtr_isSentinel(TypeInfo type, SPtr self, usize index) {
         return Ptr_at(typeInfo(AliasRef), self.base, index);                                         \
     }                                                                                                \
     /* Sentinel pointer interface */                                                                 \
-    force_inline AliasSPtr pp_join(_, AliasSPtr, from)(rawptr(T) addr, T sentinel) {                 \
-        AliasSPtr result = {                                                                         \
+    force_inline AliasPtrS pp_join(_, AliasPtrS, from)(rawptr(T) addr, T sentinel) {                 \
+        AliasPtrS result = {                                                                         \
             .sentinel[0].value = sentinel                                                            \
         };                                                                                           \
-        return (AliasSPtr){                                                                          \
-            .base = SPtr_from(typeInfo(AliasRef), as(anyptr, addr), as(anyptr, &result.sentinel[0])) \
+        return (AliasPtrS){                                                                          \
+            .base = PtrS_from(typeInfo(AliasRef), as(anyptr, addr), as(anyptr, &result.sentinel[0])) \
         };                                                                                           \
     }                                                                                                \
-    force_inline rawptr(AliasRef) pp_join(_, AliasSPtr, at)(AliasSPtr self, usize index) {           \
-        return SPtr_at(typeInfo(AliasRef), self.base, index);                                        \
+    force_inline rawptr(AliasRef) pp_join(_, AliasPtrS, at)(AliasPtrS self, usize index) {           \
+        return PtrS_at(typeInfo(AliasRef), self.base, index);                                        \
     }                                                                                                \
-    force_inline rawptr(AliasRef) pp_join(_, AliasSPtr, sentinel)(AliasSPtr self) {                  \
-        return SPtr_sentinel(typeInfo(AliasRef), self.base);                                         \
+    force_inline rawptr(AliasRef) pp_join(_, AliasPtrS, sentinel)(AliasPtrS self) {                  \
+        return PtrS_sentinel(typeInfo(AliasRef), self.base);                                         \
     }                                                                                                \
-    force_inline bool pp_join(_, AliasSPtr, isSentinel)(AliasSPtr self, usize index) {               \
-        return SPtr_isSentinel(typeInfo(AliasRef), self.base, index);                                \
+    force_inline bool pp_join(_, AliasPtrS, isSentinel)(AliasPtrS self, usize index) {               \
+        return PtrS_isSentinel(typeInfo(AliasRef), self.base, index);                                \
     }
 
 /* Builtin mutable types */
@@ -163,25 +170,6 @@ using_Ptr(f64);
 
 using_Ptr(bool);
 using_Ptr(char);
-
-/* Builtin const types */
-using_PtrConst(u8);
-using_PtrConst(u16);
-using_PtrConst(u32);
-using_PtrConst(u64);
-using_PtrConst(usize);
-
-using_PtrConst(i8);
-using_PtrConst(i16);
-using_PtrConst(i32);
-using_PtrConst(i64);
-using_PtrConst(isize);
-
-using_PtrConst(f32);
-using_PtrConst(f64);
-
-using_PtrConst(bool);
-using_PtrConst(char);
 
 #if defined(__cplusplus)
 } /* extern "C" */

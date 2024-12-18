@@ -50,17 +50,17 @@ force_inline i32  mem_cmp(anyptr lhs, anyptr rhs, usize size);
 /*========== Alignment Functions ============================================*/
 
 // Check if alignment is valid (power of 2)
-force_inline bool  mem_isValidAlign(usize alignment);
+force_inline bool  mem_isValidAlign(usize align);
 // Check if address is aligned
-force_inline bool  mem_isAligned(usize addr, usize alignment);
+force_inline bool  mem_isAligned(usize addr, usize align);
 // Check if address is aligned to power of 2
 force_inline bool  mem_isAlignedLog2(usize addr, u8 log2_align);
 // Forward align an address
-force_inline usize mem_alignForward(usize addr, usize alignment);
+force_inline usize mem_alignForward(usize addr, usize align);
 // Forward align an address to power of 2
 force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align);
 // Backward align an address
-force_inline usize mem_alignBackward(usize addr, usize alignment);
+force_inline usize mem_alignBackward(usize addr, usize align);
 
 /*========== Buffer Manipulation ============================================*/
 
@@ -131,9 +131,9 @@ force_inline u32 ctz(u64 x) {
 /**
  * @brief Convert actual alignment value to log2
  */
-force_inline u8 mem_alignToLog2(usize alignment) {
-    debug_assert(mem_isValidAlign(alignment));
-    return (u8)ctz(alignment);
+force_inline u8 mem_alignToLog2(usize align) {
+    debug_assert(mem_isValidAlign(align));
+    return (u8)ctz(align);
 }
 
 /**
@@ -197,22 +197,22 @@ force_inline i32 mem_cmp(anyptr lhs, anyptr rhs, usize size) {
 
 /*========== Alignment Functions ============================================*/
 
-force_inline bool mem_isValidAlign(usize alignment) {
-    return alignment > 0 && (alignment & (alignment - 1)) == 0;
+force_inline bool mem_isValidAlign(usize align) {
+    return align > 0 && (align & (align - 1)) == 0;
 }
 
-force_inline bool mem_isAligned(usize addr, usize alignment) {
-    debug_assert(mem_isValidAlign(alignment));
-    return (addr & (alignment - 1)) == 0;
+force_inline bool mem_isAligned(usize addr, usize align) {
+    debug_assert(mem_isValidAlign(align));
+    return (addr & (align - 1)) == 0;
 }
 
 force_inline bool mem_isAlignedLog2(usize addr, u8 log2_align) {
     return ctz(addr) >= log2_align;
 }
 
-force_inline usize mem_alignForward(usize addr, usize alignment) {
-    debug_assert(mem_isValidAlign(alignment));
-    return (addr + (alignment - 1)) & ~(alignment - 1);
+force_inline usize mem_alignForward(usize addr, usize align) {
+    debug_assert(mem_isValidAlign(align));
+    return (addr + (align - 1)) & ~(align - 1);
 }
 
 force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align) {
@@ -220,9 +220,9 @@ force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align) {
     return mem_alignForward(addr, alignment);
 }
 
-force_inline usize mem_alignBackward(usize addr, usize alignment) {
-    debug_assert(mem_isValidAlign(alignment));
-    return addr & ~(alignment - 1);
+force_inline usize mem_alignBackward(usize addr, usize align) {
+    debug_assert(mem_isValidAlign(align));
+    return addr & ~(align - 1);
 }
 
 /*========== Buffer Manipulation ============================================*/
