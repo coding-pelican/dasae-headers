@@ -1,7 +1,6 @@
 #include "dh/core.h"
-#include "dh/Err.h"
+#include "dh/err_res.h"
 #include <stdlib.h>
-
 
 
 typedef struct mem_Allocator   mem_Allocator;
@@ -69,8 +68,7 @@ struct Slice {
 };
 
 typedef struct ArrayList ArrayList;
-usingAs_ErrRes(mem_AllocErr, anyptr, mem_AllocErr$anyptr);
-decl_ErrRes(mem_AllocErr, Void);
+using_ErrRes(mem_AllocErr, Void);
 decl_ErrRes(mem_AllocErr, ArrayList);
 
 struct ArrayList {
@@ -86,13 +84,13 @@ static Slice                  ArrayList_slice(const ArrayList* self);
 
 impl_ErrRes(mem_AllocErr, ArrayList);
 static mem_AllocErr$ArrayList ArrayList_init(usize item_size, mem_Allocator allocator) {
-    ErrRes_reserveReturn(mem_AllocErr$ArrayList);
+    reserveReturn(mem_AllocErr$ArrayList);
 
     anyptr const ptr = allocator.vt->alloc(allocator.ctx, item_size * 8); // Initial capacity of 8
     if (!ptr) {
-        return ErrRes_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
-    return ErrRes_ok((ArrayList){
+    return_ok((ArrayList){
         .allocator = allocator,
         .items     = {
                 .ptr = ptr,
@@ -110,9 +108,8 @@ static void ArrayList_fini(ArrayList* self) {
     self->capacity  = 0;
 }
 
-impl_ErrRes(mem_AllocErr, Void);
 static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
-    ErrRes_reserveReturn(mem_AllocErr$Void);
+    reserveReturn(mem_AllocErr$Void);
 
     if (self->items.len >= self->capacity) {
         const usize  new_capacity = self->capacity * 2;
@@ -123,7 +120,7 @@ static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
             new_capacity * self->item_size
         );
         if (!new_ptr) {
-            return ErrRes_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
 
         self->items.ptr = new_ptr;
@@ -134,7 +131,7 @@ static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
     memcpy(dest, item, self->item_size);
     self->items.len++;
 
-    return ErrRes_ok({});
+    return_void();
 }
 
 static Slice ArrayList_slice(const ArrayList* self) {
@@ -143,7 +140,7 @@ static Slice ArrayList_slice(const ArrayList* self) {
 
 // Example usage in main
 ErrVoid dh_main(int argc, const char* argv[]) {
-    ErrVoid_reserveReturn();
+    reserveReturn(ErrVoid);
     unused(argc);
     unused(argv);
 
@@ -154,7 +151,7 @@ ErrVoid dh_main(int argc, const char* argv[]) {
     // Create an ArrayList of integers
     var list = catch (ArrayList_init(sizeof(int), allocator), err, {
         ignore fprintf(stderr, "Error: %s\n", Err_message(err));
-        return ErrVoid_err(err);
+        return_err(err);
     });
 
     // Add some numbers
@@ -162,7 +159,7 @@ ErrVoid dh_main(int argc, const char* argv[]) {
         catch (ArrayList_append(&list, &i), err, {
             ignore fprintf(stderr, "Failed to append item: %s\n", Err_message(err));
             ArrayList_fini(&list);
-            return ErrVoid_err(err);
+            return_err(err);
         });
     }
 
@@ -178,7 +175,7 @@ ErrVoid dh_main(int argc, const char* argv[]) {
 
     // Clean up
     ArrayList_fini(&list);
-    return ErrVoid_ok();
+    return_void();
 }
 
 // void example(void) {

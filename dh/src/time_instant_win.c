@@ -1,3 +1,5 @@
+#include "dh/opt.h"
+#include "dh/time/Instant.h"
 #if defined(_WIN32) || defined(_WIN64)
 
 #include "dh/time.h"
@@ -34,30 +36,32 @@ u64 time_Instant_toNanos(time_Instant self) {
 
 /*========== Safe Arithmetic Operations ================================*/
 
-Opt_time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duration other) {
-    Opt_time_SysTime result = time_SysTime_addDurationChecked(self.time_, other);
-    if (!Opt_time_SysTime_isSome(result)) {
-        return Opt_time_Instant_none();
+Opt$time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duration other) {
+    reserveReturn(Opt$time_Instant);
+    let result = time_SysTime_addDurationChecked(self.time_, other);
+    if_some(result, opt) {
+        return_some(make(time_Instant, opt));
     }
-    return Opt_time_Instant_some(make(time_Instant, Opt_time_SysTime_unwrap(result)));
+    return_none();
 }
 
-Opt_time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duration other) {
-    Opt_time_SysTime result = time_SysTime_subDurationChecked(self.time_, other);
-    if (Opt_time_SysTime_isNone(result)) {
-        return Opt_time_Instant_none();
+Opt$time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duration other) {
+    reserveReturn(Opt$time_Instant);
+    let result = time_SysTime_subDurationChecked(self.time_, other);
+    if_some(result, opt) {
+        return_some(make(time_Instant, opt));
     }
-    return Opt_time_Instant_some(make(time_Instant, Opt_time_SysTime_unwrap(result)));
+    return_none();
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
 time_Instant op_fnAddBy(time_Instant, time_Duration) {
-    return Opt_time_Instant_unwrap(time_Instant_addDurationChecked(self, other));
+    return unwrap(time_Instant_addDurationChecked(self, other));
 }
 
 time_Instant op_fnSubBy(time_Instant, time_Duration) {
-    return Opt_time_Instant_unwrap(time_Instant_subDurationChecked(self, other));
+    return unwrap(time_Instant_subDurationChecked(self, other));
 }
 
 /*========== Comparison Operations ====================================*/

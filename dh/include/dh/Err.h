@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Err
  *
- * @brief   Header for Error type
- * @details Common Error type for error presentation
+ * @brief
+ * @details
  */
 
 #ifndef ERR_INCLUDED

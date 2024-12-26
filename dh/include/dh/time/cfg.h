@@ -22,6 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/opt.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 /* Windows */

@@ -31,7 +31,6 @@ struct time_Duration {
     u64 secs_;
     u32 nanos_;
 };
-using_ExtTypes(time_Duration);
 
 /* Constructors */
 extern time_Duration time_Duration_from(u64 secs, u32 nanos);

@@ -86,7 +86,7 @@ static Opt$i32 find_value(const i32* arr, usize len, i32 target) {
 }
 
 void example(void) {
-    i32 data[] = { 1, 2, 3, 4, 5, 6, 7, 8, 12 };
+    i32 data[] = { 1, 2, 3, 4, 5, 6, 10, 7, 8, 12 };
 
     // Using orelse
     let found_index = find_value(data, sizeof(data) / sizeof(data[0]), 10);
