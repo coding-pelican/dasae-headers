@@ -22,7 +22,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-#include "dh/ext_types.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 /* Windows */

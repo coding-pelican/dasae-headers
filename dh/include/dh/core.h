@@ -26,7 +26,6 @@ extern "C" {
 #include "core/pp.h"
 #include "core/op.h"
 #include "core/cmp.h"
-#include "core/Err.h"
 #include "core/type_info.h"
 
 /*========== Macros and Definitions =========================================*/
