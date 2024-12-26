@@ -1,4 +1,5 @@
 #include "dh/core.h"
+#include "dh/Err.h"
 
 /* Error Result */
 #define ErrRes(TErr, TOk) \
@@ -83,13 +84,18 @@ typedef ErrRes(Err, Void) ErrVoid;
     })
 
 // Example usage:
-typedef ErrRes(MathErr, i32) MathErr$i32;
+impl_Err(
+    math_Err,
+    DivisionByZero,
+    Overflow,
+    Underflow
+);
+typedef ErrRes(math_Err, i32) math_Err$i32;
 
-static MathErr$i32 safe_divide(i32 lhs, i32 rhs) {
-    reserveReturn(MathErr$i32);
-
+static math_Err$i32 safe_divide(i32 lhs, i32 rhs) {
+    reserveReturn(math_Err$i32);
     if (rhs == 0) {
-        return_err(MathErr_err(MathErrType_DivisionByZero));
+        return_err(math_Err_err(math_ErrType_DivisionByZero));
     }
     return_ok(lhs / rhs);
 }

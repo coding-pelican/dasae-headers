@@ -1,5 +1,32 @@
-/* Error Result type */
+/**
+ * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ *
+ * @file    ErrRes.h
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2024-12-26 (date of creation)
+ * @updated 2024-12-26 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)
+ * @prefix  ErrRes
+ *
+ * @brief   Header for Error Result type
+ * @details Common Error Result type for error handling
+ */
 
+#ifndef ERR_RES_INCLUDED
+#define ERR_RES_INCLUDED (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
+
+#include "core.h"
+#include "Err.h"
+
+/*========== Macros and Definitions =========================================*/
+
+/* Error Result type */
 #define using_ErrRes(TErr, TOk)             \
     typedef_struct(pp_join($, TErr, TOk)) { \
         bool is_err;                        \
@@ -103,7 +130,7 @@ usingAs_ErrRes(Err, Void, ErrVoid);
 
 /* Error main */
 
-#if ERR_INCLUDED
+#if ERR_RES_INCLUDED
 #if !defined(ERR_NO_HIJACK_MAIN) && !defined(ERR_MAIN_INCLUDED)
 #define ERR_MAIN_INCLUDED (1)
 
@@ -122,4 +149,9 @@ int main(int argc, const char* argv[]) {
 }
 
 #endif /* !defined(ERR_NO_HIJACK_MAIN) && !defined(ERR_MAIN_INCLUDED) */
-#endif /* ERR_INCLUDED */
+#endif /* ERR_RES_INCLUDED */
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
+#endif /* ERR_RES_INCLUDED */
