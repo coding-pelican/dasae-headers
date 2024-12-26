@@ -4,9 +4,9 @@
  * @file    Err.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2024-12-05 (date of last update)
- * @version v1.0.0
- * @ingroup dasae-headers(dh)/core
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/Core
  * @prefix  Err
  *
  * @brief   Header for Err type
@@ -19,16 +19,47 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-// Common error type
+/*========== Includes =======================================================*/
+
+#include "cfg.h"
+
+/*========== Macros and Definitions =========================================*/
+
 typedef enum Err {
-    Err_none = 0,
-    Err_out_of_memory,
-    Err_insufficient_memory,
-    Err_invalid_argument,
-    Err_not_found,
-    Err_access_denied,
+    Err_None = 0,
+    Err_NotImplemented,
+    Err_OutOfMemory,
+    Err_InsufficientMemory,
+    Err_InvalidArgument,
+    Err_NotFound,
+    Err_AccessDenied,
     // Add more standard error types as needed
 } Err;
+
+// TODO: Make extern
+static_inline const char* Err_parseToCStr(Err err) {
+    switch (err) {
+    case Err_None:
+        return "None";
+    case Err_NotImplemented:
+        return "NotImplemented";
+    case Err_OutOfMemory:
+        return "OutOfMemory";
+    case Err_InsufficientMemory:
+        return "InsufficientMemory";
+    case Err_InvalidArgument:
+        return "InvalidArgument";
+    case Err_NotFound:
+        return "NotFound";
+    case Err_AccessDenied:
+        return "AccessDenied";
+    default:
+        return claim_unreachable_fmt("Unknown error type (err: %d)", err), "UnknownError";
+    }
+}
+
+#define Err_unreachable(_err) \
+    claim_unreachable_fmt("Unexpected error: %s", Err_parseToCStr(_err))
 
 #if defined(__cplusplus)
 } /* extern "C" */

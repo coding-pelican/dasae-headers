@@ -21,10 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
-#include "dh/debug/assert.h"
-
-#include <string.h>
+#include "cfg.h"
 
 /*========== Memory Constants ===============================================*/
 
@@ -43,9 +40,9 @@ extern "C" {
 
 // Memory operations
 force_inline void mem_set(anyptr dest, u8 value, usize size);
-force_inline void mem_copy(anyptr dest, anyptr src, usize size);
+force_inline void mem_copy(anyptr dest, const anyptr src, usize size);
 force_inline void mem_move(anyptr dest, anyptr src, usize size);
-force_inline i32  mem_cmp(anyptr lhs, anyptr rhs, usize size);
+force_inline i32  mem_cmp(const anyptr lhs, const anyptr rhs, usize size);
 
 /*========== Alignment Functions ============================================*/
 
@@ -69,7 +66,7 @@ force_inline void mem_copyBytes(u8* dest, const u8* src, usize len);
 // Set bytes to value with bounds checking
 force_inline void mem_setBytes(u8* dest, u8 value, usize len);
 // Compare two byte buffers
-force_inline bool mem_eqlBytes(const u8* a, const u8* b, usize len);
+force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len);
 
 /*========== Endian Conversion ==============================================*/
 
@@ -180,18 +177,25 @@ force_inline u64 byteSwap64(u64 x) {
 /*========== Memory Operations ==============================================*/
 
 force_inline void mem_set(anyptr dest, u8 value, usize size) {
+    debug_assert_nonnull(dest);
     memset(dest, value, size);
 }
 
-force_inline void mem_copy(anyptr dest, anyptr src, usize size) {
+force_inline void mem_copy(anyptr dest, const anyptr src, usize size) {
+    debug_assert_nonnull(dest);
+    debug_assert_nonnull(src);
     memcpy(dest, src, size);
 }
 
 force_inline void mem_move(anyptr dest, anyptr src, usize size) {
+    debug_assert_nonnull(dest);
+    debug_assert_nonnull(src);
     memmove(dest, src, size);
 }
 
-force_inline i32 mem_cmp(anyptr lhs, anyptr rhs, usize size) {
+force_inline i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
+    debug_assert_nonnull(lhs);
+    debug_assert_nonnull(rhs);
     return memcmp(lhs, rhs, size);
 }
 
@@ -229,20 +233,22 @@ force_inline usize mem_alignBackward(usize addr, usize align) {
 
 // Copy bytes between buffers with bounds checking
 force_inline void mem_copyBytes(u8* dest, const u8* src, usize len) {
-    debug_assert(dest != NULL && src != NULL);
-    mem_copy(dest, (anyptr)src, len);
+    debug_assert_nonnull(dest);
+    debug_assert_nonnull(src);
+    mem_copy(dest, src, len);
 }
 
 // Set bytes to value with bounds checking
 force_inline void mem_setBytes(u8* dest, u8 value, usize len) {
-    debug_assert(dest != NULL);
+    debug_assert_nonnull(dest);
     mem_set(dest, value, len);
 }
 
 // Compare two byte buffers
-force_inline bool mem_eqlBytes(const u8* a, const u8* b, usize len) {
-    debug_assert(a != NULL && b != NULL);
-    return mem_cmp((anyptr)a, (anyptr)b, len) == 0;
+force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
+    debug_assert_nonnull(lhs);
+    debug_assert_nonnull(rhs);
+    return mem_cmp(lhs, rhs, len) == 0;
 }
 
 /*========== Endian Conversion ==============================================*/

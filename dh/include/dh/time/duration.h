@@ -4,8 +4,8 @@
  * @file    Duration.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-15 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Duration
  *
@@ -31,27 +31,28 @@ struct time_Duration {
     u64 secs_;
     u32 nanos_;
 };
+using_ExtTypes(time_Duration);
 
 /* Constructors */
-time_Duration time_Duration_from(u64 secs, u32 nanos);
+extern time_Duration time_Duration_from(u64 secs, u32 nanos);
 
-time_Duration time_Duration_fromSecs(u64 secs);
-time_Duration time_Duration_fromMillis(u64 millis);
-time_Duration time_Duration_fromMicros(u64 micros);
-time_Duration time_Duration_fromNanos(u64 nanos);
+extern time_Duration time_Duration_fromSecs(u64 secs);
+extern time_Duration time_Duration_fromMillis(u64 millis);
+extern time_Duration time_Duration_fromMicros(u64 micros);
+extern time_Duration time_Duration_fromNanos(u64 nanos);
 
 /* Accessors */
-u64 time_Duration_asSecs(time_Duration self);
-u32 time_Duration_subsecMillis(time_Duration self);
-u32 time_Duration_subsecMicros(time_Duration self);
-u32 time_Duration_subsecNanos(time_Duration self);
+extern u64 time_Duration_asSecs(time_Duration self);
+extern u32 time_Duration_subsecMillis(time_Duration self);
+extern u32 time_Duration_subsecMicros(time_Duration self);
+extern u32 time_Duration_subsecNanos(time_Duration self);
 
 /* Validation */
-bool time_Duration_isZero(time_Duration self);
+extern bool time_Duration_isZero(time_Duration self);
 
 /* Conversion */
-time_Duration time_Duration_fromSecs_f64(f64 secs);
-f64           time_Duration_asSecs_f64(time_Duration self);
+extern time_Duration time_Duration_fromSecs_f64(f64 secs);
+extern f64           time_Duration_asSecs_f64(time_Duration self);
 
 /* Arithmetic */
 extern time_Duration op_fnAdd(time_Duration);

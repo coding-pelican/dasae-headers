@@ -4,8 +4,8 @@
  * @file    Instant.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-15 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Instant
  *
@@ -29,6 +29,7 @@ extern "C" {
 struct time_Instant {
     time_SysTime time_;
 };
+using_ExtTypes(time_Instant);
 
 /* Operations */
 extern time_Instant  time_Instant_now(void);
@@ -42,7 +43,6 @@ extern bool time_Instant_isValid(time_Instant self);
 extern u64 time_Instant_toNanos(time_Instant self);
 
 /* Arithmetic */
-Opt(time_Instant) Opt_time_Instant;
 extern Opt_time_Instant time_Instant_addDurationChecked(time_Instant, time_Duration);
 extern Opt_time_Instant time_Instant_subDurationChecked(time_Instant, time_Duration);
 

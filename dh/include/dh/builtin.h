@@ -4,8 +4,8 @@
  * @file    builtin.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-11-22 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  builtin
  *
@@ -28,13 +28,9 @@ extern "C" {
 #include "builtin/lang_cfg.h"
 #include "builtin/pltf_cfg.h"
 #include "builtin/comp.h"
-
-/*========== Macros and Definitions =========================================*/
-
-/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
-
-#ifdef UNIT_TEST
-#endif /* UNIT_TEST */
+#include "builtin/type_info.h"
+#include "builtin/auto.h"
+#include "builtin/lambda.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -21,8 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/prim.h"
-#include "core/pp.h"
+#include "core.h"
 
 /*========== Macros and Definitions =========================================*/
 

@@ -7,6 +7,8 @@
 #ifndef PTR_ALIGN_H
 #define PTR_ALIGN_H
 
+#include "dh/heap/Classic.h"
+#include "dh/mem/Allocator.h"
 #include "dh/time/SysTime.h"
 
 #if defined(_WIN32)
@@ -35,9 +37,7 @@ static inline void* ptr_aligned_alloc(size_t alignment, size_t size) {
  * @file ptr_perf_test.c
  * Performance tests for Ptr implementation
  */
-
-#include "dh/core/ptr.h"
-// #include "dh/core/Slice.h"
+#include "dh/ext_types.h"
 #include "dh/mem.h"
 #include "dh/time.h"
 
@@ -95,9 +95,9 @@ static PerfResult test_basic_ops(usize iterations) {
     int        value  = 42;
 
     MEASURE(result, iterations, {
-        Ptr p              = Ptr_ref(value);
-        *Ptr_cast(int*, p) = *Ptr_cast(int*, p) + 1;
-        bool is_null       = Ptr_isNull(p);
+        const Ptr_i32 p = Ptr_i32_from(&value);
+        p.ref->value += p.ref->value + 1;
+        const bool is_null = p.addr == null;
         unused(is_null);
     });
 
@@ -109,9 +109,9 @@ static PerfResult test_raw_basic_ops(usize iterations) {
     int        value  = 42;
 
     MEASURE(result, iterations, {
-        anyptr p          = rawref(value);
-        *rawCast(int*, p) = *rawCast(int*, p) + 1;
-        bool is_null      = rawIsNull(p);
+        int* const p       = &value;
+        *p                 = *p + 1;
+        const bool is_null = p == null;
         unused(is_null);
     });
 
@@ -166,28 +166,37 @@ static PerfResult test_raw_basic_ops(usize iterations) {
 // #endif
 // #endif
 
+#undef createFrom
+#define createFrom(x) ((TypeOf(x)[1]){ x })
+
 // Array access patterns
 static PerfResult test_array_access(usize iterations, usize array_size) {
     PerfResult result = { "Array Access", 0, 0, 0 };
-    Slice(int) array  = mem_alloc(&mem_general, int, array_size);
-    // Ptr p             = Slice_ptr(array);
+
+    Sli_i32 array = {
+        .base = ResErr_Sli_unwrap(
+            mem_Allocator_alloc(
+                heap_Classic_allocator(),
+                typeInfo(i32),
+                array_size
+            )
+        )
+    };
 
     MEASURE(result, iterations, {
         for (usize i = 0; i < array_size; ++i) {
-            // int* elem = (int*)(((u8*)Ptr_raw(p)) + i * sizeof(int));
-            // *elem     = (int)i;
-            *Slice_at(int, array, i) = (int)i;
+            Sli_i32_at(array, i)->value = i;
         }
     });
 
-    mem_free(&mem_general, &array);
+    mem_Allocator_free(heap_Classic_allocator(), array.base);
     return result;
 }
 
 // Raw array access patterns
 static PerfResult test_raw_array_access(usize iterations, usize array_size) {
     PerfResult result = { "Raw Array Access", 0, 0, 0 };
-    anyptr*    array  = mem_allocRaw(&mem_general, array_size * sizeof(int));
+    let        array  = mem_Allocator_rawAlloc(heap, typeInfo(i32), array_size);
     // Ptr p             = Slice_ptr(array);
 
     MEASURE(result, iterations, {
@@ -200,36 +209,36 @@ static PerfResult test_raw_array_access(usize iterations, usize array_size) {
     return result;
 }
 
-// Cache effects test
-static PerfResult test_cache_effects(usize iterations) {
-    PerfResult  result     = { "Cache Effects", 0, 0, 0 };
-    const usize cache_line = 64;
-    const usize num_lines  = 1024;
+// // Cache effects test
+// static PerfResult test_cache_effects(usize iterations) {
+//     PerfResult  result     = { "Cache Effects", 0, 0, 0 };
+//     const usize cache_line = 64;
+//     const usize num_lines  = 1024;
 
-    char* data = ptr_aligned_alloc(cache_line, cache_line * num_lines);
-    if (!data) {
-        result.name = "Cache Effects (Failed - Memory allocation error)";
-        return result;
-    }
+//     char* data = ptr_aligned_alloc(cache_line, cache_line * num_lines);
+//     if (!data) {
+//         result.name = "Cache Effects (Failed - Memory allocation error)";
+//         return result;
+//     }
 
-    Ptr ptrs[num_lines];
+//     Ptr ptrs[num_lines];
 
-    // Initialize pointers to start of each cache line
-    for (usize i = 0; i < num_lines; ++i) {
-        ptrs[i] = Ptr_fromRaw(data + i * cache_line, cache_line);
-    }
+//     // Initialize pointers to start of each cache line
+//     for (usize i = 0; i < num_lines; ++i) {
+//         ptrs[i] = Ptr_fromRaw(data + i * cache_line, cache_line);
+//     }
 
-    MEASURE(result, iterations, {
-        // Access pattern to test cache behavior
-        for (usize i = 0; i < num_lines; i += 16) {
-            volatile char* ptr = (volatile char*)Ptr_raw(ptrs[i]);
-            *ptr += 1;
-        }
-    });
+//     MEASURE(result, iterations, {
+//         // Access pattern to test cache behavior
+//         for (usize i = 0; i < num_lines; i += 16) {
+//             volatile char* ptr = (volatile char*)Ptr_raw(ptrs[i]);
+//             *ptr += 1;
+//         }
+//     });
 
-    ptr_aligned_free(data);
-    return result;
-}
+//     ptr_aligned_free(data);
+//     return result;
+// }
 
 void compare_implementations(const PerfResult* ptr_perf, const PerfResult* raw_ptr_perf, const char* name) {
     printf("TEST: Performance Comparison (%s):\n", name);
@@ -264,7 +273,7 @@ int main(void) {
     const usize BASE_ITERATIONS = 10000000;
 
     printf("Running Ptr Performance Tests\n");
-    printf("Implementation: %s\n", CORE_PTR_IMPL == CORE_PTR_IMPL_BITFIELD ? "Bitfield" : "Double");
+    // printf("Implementation: %s\n", CORE_PTR_IMPL == CORE_PTR_IMPL_BITFIELD ? "Bitfield" : "Double");
     printf("Architecture: %s\n", sizeof(void*) == 8 ? "64-bit" : "32-bit");
     printf("\n");
 
@@ -297,8 +306,8 @@ int main(void) {
         "Array Access"
     );
 
-    printf("Testing...\n");
-    print_result((const PerfResult[]){ test_cache_effects(BASE_ITERATIONS / 100) });
+    // printf("Testing...\n");
+    // print_result((const PerfResult[]){ test_cache_effects(BASE_ITERATIONS / 100) });
 
     return 0;
 }

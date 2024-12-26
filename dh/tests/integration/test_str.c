@@ -1,3 +1,4 @@
+#include "dh/Ptr.h"
 #include "dh/Str.h"
 
 void TEST_string_literals(void) {
@@ -14,10 +15,10 @@ void TEST_string_literals(void) {
     Str_println(slice_style);
 
     Str_println(strL("Sentinel slice string:"));
-    Str_println((StrConst){ .base = sentinel_slice.data.base });
+    Str_println((StrConst){ .base = sentinel_slice.core.base });
 
     /* UTF-8 test */
-    StrConst utf8_str = strL("Hello, 世界! 안녕하세요!");
+    StrConst utf8_str = strL("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
     Str_println(strL("\nUTF-8 string:"));
     Str_println(utf8_str);
 
@@ -35,8 +36,9 @@ void TEST_string_literals(void) {
         }
         putchar('\n');
     }
-}
 
+    Str_println(strL("할아버지 보고싶어요"));
+}
 
 int main(void) {
     TEST_string_literals();

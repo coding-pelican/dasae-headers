@@ -5,8 +5,8 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-11 (date of creation)
  * @updated 2024-11-11 (date of last update)
- * @version v1.0.0
- * @ingroup dasae-headers(dh)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
  * @brief   Header of some software
@@ -14,8 +14,8 @@
  */
 
 // TODO: Change lambda usage
-#ifndef LAMBDA_INCLUDED
-#define LAMBDA_INCLUDED (1)
+#ifndef BUILTIN_LAMBDA_INCLUDED
+#define BUILTIN_LAMBDA_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -46,4 +46,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* DEFER_INCLUDED  */
+#endif /* BUILTIN_LAMBDA_INCLUDED  */

@@ -1,0 +1,67 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { // C/C++ - Debug Single File
+      "name": "Debug Single File",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug"
+    },
+    { // C - Debug Single File with Build
+      "name": "C: Debug Single File with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "build C file (debug)"
+    },
+    { // C++ - Debug Single File with Build
+      "name": "C++: Debug Single File with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "build C++ file (debug)"
+    },
+    { // C - Debug Project with Build
+      "name": "C: Debug Project with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "build C project (debug)"
+    },
+    { // C++ - Debug Project with Build
+      "name": "C++: Debug Project with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "build C++ project (debug)"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:",
+      "default": ""
+    }
+  ]
+}

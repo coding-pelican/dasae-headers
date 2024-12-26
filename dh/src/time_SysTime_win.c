@@ -1,12 +1,6 @@
 #if defined(_WIN32) || defined(_WIN64)
 
-#include "dh/time/cfg.h"
-#include "dh/time/common.h"
-#include "dh/time/SysTime.h"
-#include "dh/time/Instant.h"
-#include "dh/time/Duration.h"
-#include "dh/debug/assert.h"
-#include "dh/claim/unreachable.h"
+#include "dh/time.h"
 
 #define intervals_per_sec       (10000000ULL)
 #define secs_to_unix_epoch      (11644473600ULL)
@@ -97,28 +91,28 @@ Opt_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duratio
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
     u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
     if (ticks > (u64_limit - self.QuadPart)) {
-        return Opt_none(Opt_time_SysTime);
+        return Opt_time_SysTime_none();
     }
-    return Opt_some(Opt_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
+    return Opt_time_SysTime_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
 }
 
 Opt_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
     u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
     if (ticks > as(u64, self.QuadPart)) {
-        return Opt_none(Opt_time_SysTime);
+        return Opt_time_SysTime_none();
     }
-    return Opt_some(Opt_time_SysTime, (time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
+    return Opt_time_SysTime_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
 time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
-    return Opt_unwrap(Opt_time_SysTime, time_SysTime_addDurationChecked(self, other));
+    return Opt_time_SysTime_unwrap(time_SysTime_addDurationChecked(self, other));
 }
 
 time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
-    return Opt_unwrap(Opt_time_SysTime, time_SysTime_subDurationChecked(self, other));
+    return Opt_time_SysTime_unwrap(time_SysTime_subDurationChecked(self, other));
 }
 
 /*========== Comparison Functions =====================================*/

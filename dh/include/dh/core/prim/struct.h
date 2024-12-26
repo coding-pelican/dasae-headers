@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
  * @updated 2024-10-27 (date of last update)
- * @version v1.0.0
+ * @version v0.1
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
@@ -22,7 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/core/pp.h"
+#include "int.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -45,7 +45,6 @@ extern "C" {
      *                                                                \
      * _ptr_member: the pointer that point struct's member.           \
      *            it's the member address offset from struct address. \
-     *                                                                \
      */                                                               \
     IMPL_getContainer(_ptr_member, _TContainer)
 
@@ -58,6 +57,15 @@ extern "C" {
      *            it's the member address offset from struct address.  \
      */                                                                \
     IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName)
+
+#define reserveReturn(_T) \
+    IMPL_reserveReturn(_T)
+
+#define getReservedReturn() \
+    IMPL_getReservedReturn()
+
+#define setReservedReturn(_val_return...) \
+    IMPL_setReservedReturn(_val_return)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -89,6 +97,15 @@ extern "C" {
 
 #define IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
     ((_TContainer*)((u8*)(_ptr_member) - offsetof(_TContainer, _MemberName)))
+
+#define IMPL_reserveReturn(_T) \
+    _T _reserved_return = cleared()
+
+#define IMPL_getReservedReturn() \
+    (_reserved_return)
+
+#define IMPL_setReservedReturn(_val_return...) \
+    (getReservedReturn() = (_val_return))
 
 #if defined(__cplusplus)
 } /* extern "C" */

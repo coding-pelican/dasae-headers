@@ -4,8 +4,8 @@
  * @file    SysTime.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-11-15 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_SysTime
  *
@@ -27,13 +27,14 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 /*
  * // Static variables for performance counter
- * static time_SysTime s_performance_frequency;
- * static f64          s_frequency_inverse;
- * static time_SysTime s_offset_value;
- * static bool         s_initialized;
+ * static time_SysTime time_SysTime_s_performance_frequency;
+ * static f64          time_SysTime_s_frequency_inverse;
+ * static time_SysTime time_SysTime_s_offset_value;
+ * static bool         time_SysTime_s_initialized;
  * // Initialize performance counter frequency
  * static void __attribute__((constructor)) init(void);
  */
+using_ExtTypes(time_SysTime);
 
 /* Accessors */
 extern time_SysTime time_SysTime_frequency(void);
@@ -47,7 +48,6 @@ extern time_Duration time_SysTime_elapsed(time_SysTime self);
 extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
 
 /* Arithmetic */
-Opt(time_SysTime) Opt_time_SysTime;
 extern Opt_time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other);
 extern Opt_time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other);
 

@@ -4,8 +4,8 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-16 (date of creation)
- * @updated 2024-11-16 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *

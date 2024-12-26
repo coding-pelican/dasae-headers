@@ -1,0 +1,295 @@
+{
+  "version": "2.0.0",
+  "runner": "terminal",
+  "echoCommand": true,
+  "presentation": {
+    "reveal": "always",
+    "clear": false
+  },
+  "inputs": [
+    { // cStandard
+      "id": "cStandard",
+      "type": "pickString",
+      "description": "Select C standard:",
+      "options": [
+        "c17",
+        "c11",
+        "c99"
+      ],
+      "default": "c17"
+    },
+    { // cppStandard
+      "id": "cppStandard",
+      "type": "pickString",
+      "description": "Select C++ standard:",
+      "options": [
+        "c++20",
+        "c++17",
+        "c++14",
+        "c++11",
+        "c++98"
+      ],
+      "default": "c++20"
+    },
+    { // libraries
+      "id": "libraries",
+      "type": "promptString",
+      "description": "Enter libraries to link (space-separated):",
+      "default": ""
+    },
+    { // userArgs
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:",
+      "default": ""
+    }
+  ],
+  "tasks": [
+    { // build C file (debug)
+      "label": "build C file (debug)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src\\*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build C file (release)
+      "label": "build C file (release)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src\\*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DNDEBUG",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build C file (optimize)
+      "label": "build C file (optimize)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\src\\*.c",
+        "C:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src\\*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DNDEBUG",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\dh\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\engine\\include",
+        "-IC:\\dasae-storage\\dev\\source\\c-cpp-workspace\\projects\\tests\\test_terminal\\examples\\pseudo-3d-fps\\game\\src",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build C++ file (debug)
+      "label": "build C++ file (debug)",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+        "-std=${input:cppStandard}",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build C++ file (release)
+      "label": "build C++ file (release)",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+        "-std=${input:cppStandard}",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DNDEBUG",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // build C++ file (optimize)
+      "label": "build C++ file (optimize)",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+        "-std=${input:cppStandard}",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DNDEBUG",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // execute debug build
+      "label": "execute debug build",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C",
+          "${fileBasenameNoExtension}-debug ${input:userArgs}"
+        ]
+      },
+      "linux": {
+        "command": "./${fileBasenameNoExtension}-debug",
+        "args": [
+          "${input:userArgs}"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    },
+    { // execute release/optimize build
+      "label": "execute release/optimize build",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C",
+          "${fileBasenameNoExtension} ${input:userArgs}"
+        ]
+      },
+      "linux": {
+        "command": "./${fileBasenameNoExtension}",
+        "args": [
+          "${input:userArgs}"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    },
+    { // execute and cleanup debug build
+      "label": "execute and cleanup debug build",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C",
+          "${fileBasenameNoExtension}-debug ${input:userArgs} && del /f ${fileBasenameNoExtension}-debug.exe"
+        ]
+      },
+      "linux": {
+        "command": "./${fileBasenameNoExtension}-debug",
+        "args": [
+          "${input:userArgs}",
+          "&&",
+          "rm",
+          "-f",
+          "${fileBasenameNoExtension}-debug"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    },
+    { // execute and cleanup release/optimize build
+      "label": "execute and cleanup release/optimize build",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/C",
+          "${fileBasenameNoExtension} ${input:userArgs} && del /f ${fileBasenameNoExtension}.exe"
+        ]
+      },
+      "linux": {
+        "command": "./${fileBasenameNoExtension}",
+        "args": [
+          "${input:userArgs}",
+          "&&",
+          "rm",
+          "-f",
+          "${fileBasenameNoExtension}"
+        ]
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    }
+  ]
+}

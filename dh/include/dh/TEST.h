@@ -4,7 +4,7 @@
  * @file    TEST.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-10 (date of creation)
- * @updated 2024-12-10 (date of last update)
+ * @updated 2024-12-23 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  TEST
@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
+#include "dh/core.h"
 
 #include <stdio.h>
 
@@ -96,7 +96,7 @@ static_inline void TEST_printResult(TEST_Result result) {
     }
 
     // Print detailed conditions
-    for (usize i = 0; i < result.condition_count; i++) {
+    for (usize i = 0; i < result.condition_count; ++i) {
         TEST_Condition cond = result.conditions[i];
         printf("  %s%s" TEST_color_reset ": %s\n", cond.result ? TEST_color_green : TEST_color_red, cond.result ? "PASS" : "FAIL", cond.expr);
     }

@@ -1,5 +1,5 @@
-#include "dh/core/prim/flt.h"
 #include "dh/time/Duration.h"
+#include "dh/core/prim/flt.h"
 #include "dh/debug/assert.h"
 
 
@@ -60,6 +60,7 @@ time_Duration op_fnAdd(time_Duration) {
                   : total_nanos)
     );
 }
+
 time_Duration op_fnSub(time_Duration) {
     return make(
         time_Duration,
@@ -69,6 +70,7 @@ time_Duration op_fnSub(time_Duration) {
             : self.nanos_ - other.nanos_
     );
 }
+
 time_Duration op_fnMulBy(time_Duration, u64) {
     u64 total_nanos = self.nanos_ * other;
     return make(
@@ -77,6 +79,7 @@ time_Duration op_fnMulBy(time_Duration, u64) {
         (u32)(total_nanos % time_nanos_per_sec)
     );
 }
+
 time_Duration op_fnDivBy(time_Duration, u64) {
     claim_assert_fmt(other != 0, "Division by zero");
     u64 total_nanos = self.nanos_ / other;

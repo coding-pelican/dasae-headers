@@ -4,8 +4,8 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-11-15 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
@@ -17,11 +17,12 @@
 #define MEM_CFG_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
-#endif /* __cplusplus */
+#endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/cfg.h"
+#include "dh/core.h"
+#include <string.h>
 
 /*========== Macros and Definitions =========================================*/
 
@@ -35,5 +36,5 @@ extern "C" {
 
 #if defined(__cplusplus)
 }
-#endif /* __cplusplus */
+#endif /* defined(__cplusplus) */
 #endif /* MEM_CFG_INCLUDED */

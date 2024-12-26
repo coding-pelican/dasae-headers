@@ -21,12 +21,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core/prim.h"
-#include "dh/core/ptr.h"
-#include "dh/core/Err.h"
-#include "dh/debug/assert.h"
-#include "dh/mem/common.h"
-#include "dh/mem/Allocator.h"
+#include "core.h"
+#include "mem/common.h"
+#include "mem/Allocator.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

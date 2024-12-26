@@ -21,9 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/builtin.h"
-#include "dh/core/prim/ptr.h"
-#include "dh/core/pp.h"
+#include "cfg.h"
 
 /*========== Macros and Definitions =========================================*/
 

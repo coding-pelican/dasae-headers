@@ -88,9 +88,9 @@ Hsl Color_asHsl(Color color);
 
 
 union Color {
-    u8 rgba[4]; // RgbA channel components in [0,255]
+    u8 rgba[4]; // RGBA channel components in [0,255]
     union {
-        Rgb rgb; // Rgb channel components in [0,255]
+        Rgb rgb; // RGB channel components in [0,255]
         struct {
             u8 r; // Red channel in [0,255]
             u8 g; // Green channel in [0,255]

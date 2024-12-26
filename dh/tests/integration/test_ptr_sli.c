@@ -54,7 +54,7 @@ int main(void) {
     fmt_printStr(str);
 
     const Ptr_f64 dbl_num = Ptr_f64_from(create(f64, 3.141592653589793));
-    fmt_println_f64(dbl_num.addr->value);
+    fmt_println_f64(dbl_num.ref->value);
 
     // clang-format off
     const f64 dbl_nums[] = {

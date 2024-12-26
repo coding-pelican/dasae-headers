@@ -74,6 +74,15 @@ extern "C" {
      */                                                                              \
     (claim_assert_fmt(false, _msg), CLAIM_UNREACHABLE_BUILTIN)
 
+#define claim_unreachable_fmt(_msg, _fmt...)                                                   \
+    /**                                                                                        \
+     * @brief Runtime unreachable with formatted message - provides more context for debugging \
+     *                                                                                         \
+     * @param _msg The message to display if this is reached in debug mode                     \
+     * @param _fmt The format string and arguments for the message                             \
+     */                                                                                        \
+    (claim_assert_fmt(false, _msg, _fmt), CLAIM_UNREACHABLE_BUILTIN)
+
 #define claim_unreachable_val(_T)                                                   \
     /**                                                                             \
      * @brief Function implementation of unreachable for use in expression contexts \

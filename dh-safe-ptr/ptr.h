@@ -268,7 +268,7 @@ force_inline anyptr Slice__getRawCastAddr(Slice self);
 
 /* Void type for present empty type when use generic type parameter (like Res(T, E)) */
 typedef struct Void {
-    u8 unused_[sizeof(void)];
+    u8 unused_[0];
 } Void;
 
 /*========== Type Info ======================================================*/

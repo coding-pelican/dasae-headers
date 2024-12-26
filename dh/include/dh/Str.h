@@ -21,12 +21,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/prim.h"
-#include "debug/assert.h"
-#include "mem/common.h"
-#include "TypeInfo.h"
+#include "core.h"
 #include "Ptr.h"
 #include "Sli.h"
+#include "ext_types.h"
 
 #include <stdlib.h>
 #include <locale.h>
@@ -63,7 +61,7 @@ force_inline void  Str_println(StrConst str);
 force_inline usize Str_len(StrConst str);
 force_inline usize Str_utf8Len(StrConst str);
 
-/* Implementations */
+/*========== Implementations ================================================*/
 
 static_inline void __attribute__((constructor)) utf8__init(void) {
     static bool initialized = false;

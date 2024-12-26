@@ -1,10 +1,6 @@
 #if defined(_WIN32) || defined(_WIN64)
 
-#include "dh/time/cfg.h"
-#include "dh/time/common.h"
-#include "dh/time/SysTime.h"
-#include "dh/time/Instant.h"
-#include "dh/time/Duration.h"
+#include "dh/time.h"
 
 /*========== Operations =================================================*/
 
@@ -40,28 +36,28 @@ u64 time_Instant_toNanos(time_Instant self) {
 
 Opt_time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duration other) {
     Opt_time_SysTime result = time_SysTime_addDurationChecked(self.time_, other);
-    if (Opt_isNone(result)) {
-        return Opt_none(Opt_time_Instant);
+    if (!Opt_time_SysTime_isSome(result)) {
+        return Opt_time_Instant_none();
     }
-    return Opt_some(Opt_time_Instant, Opt_unwrap(Opt_time_SysTime, result));
+    return Opt_time_Instant_some(make(time_Instant, Opt_time_SysTime_unwrap(result)));
 }
 
 Opt_time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duration other) {
     Opt_time_SysTime result = time_SysTime_subDurationChecked(self.time_, other);
-    if (Opt_isNone(result)) {
-        return Opt_none(Opt_time_Instant);
+    if (Opt_time_SysTime_isNone(result)) {
+        return Opt_time_Instant_none();
     }
-    return Opt_some(Opt_time_Instant, Opt_unwrap(Opt_time_SysTime, result));
+    return Opt_time_Instant_some(make(time_Instant, Opt_time_SysTime_unwrap(result)));
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/
 
 time_Instant op_fnAddBy(time_Instant, time_Duration) {
-    return Opt_unwrap(Opt_time_Instant, time_Instant_addDurationChecked(self, other));
+    return Opt_time_Instant_unwrap(time_Instant_addDurationChecked(self, other));
 }
 
 time_Instant op_fnSubBy(time_Instant, time_Duration) {
-    return Opt_unwrap(Opt_time_Instant, time_Instant_subDurationChecked(self, other));
+    return Opt_time_Instant_unwrap(time_Instant_subDurationChecked(self, other));
 }
 
 /*========== Comparison Operations ====================================*/

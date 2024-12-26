@@ -4,8 +4,8 @@
  * @file    core.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-11-06 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -22,15 +22,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core/cfg.h"
-#include "core/pp.h"
 #include "core/prim.h"
-#include "core/ptr.h"
-#include "core/Err.h"
-#include "core/Res.h"
-#include "core/Opt.h"
-#include "core/Iter.h"
-#include "core/cmp.h"
+#include "core/pp.h"
 #include "core/op.h"
+#include "core/cmp.h"
+#include "core/Err.h"
+#include "core/type_info.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -45,16 +42,6 @@ extern "C" {
 //      * @brief Equivalent to: `orelse(TPtr, var_ptr, unreachable_val(anyptr))` \
 //      */                                                                       \
 //     IMPL_orclaim(TPtr, var_ptr)
-
-#define swap(TParam, var_lhs, var_rhs) \
-    IMPL_swap(                         \
-        pp_uniqueToken(lhs),           \
-        pp_uniqueToken(rhs),           \
-        pp_uniqueToken(tmp),           \
-        TParam,                        \
-        var_lhs,                       \
-        var_rhs                        \
-    )
 
 // #define foreach(TParam, decl_iter, var_list_ptr) \
 //     IMPL_foreach(                                \
@@ -79,14 +66,6 @@ extern "C" {
 // force_inline anyptr orclaim_anyptr(anyptr var_ptr) {
 //     return var_ptr ? var_ptr : claim_unreachable_val(anyptr);
 // }
-
-#define IMPL_swap(_lhs, _rhs, _tmp, TParam, var_lhs, var_rhs) pp_func( \
-    rawptr(TParam) used(_lhs) = ref(var_lhs);                          \
-    rawptr(TParam) used(_rhs) = ref(var_rhs);                          \
-    TParam _tmp               = deref(TParam, _lhs);                   \
-    deref(TParam, _lhs)       = deref(TParam, _rhs);                   \
-    deref(TParam, _rhs)       = _tmp;                                  \
-)
 
 // #define IMPL_foreach(_iter_end, TParam, decl_iter, var_list_ptr)                                                               \
 //     for (                                                                                                                      \

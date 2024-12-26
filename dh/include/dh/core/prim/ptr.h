@@ -4,8 +4,8 @@
  * @file    ptr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-02 (date of creation)
- * @updated 2024-11-29 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
@@ -28,6 +28,9 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+typedef void*     voidptr;
+typedef ptrdiff_t ptrdiff;
+
 #define anyptr                            \
     /**                                   \
      * @brief Pointer to any type (void*) \
@@ -39,20 +42,6 @@ extern "C" {
      * @brief Pointer to type (TSrc*) \
      */                               \
     IMPL_rawptr(TSrc)
-
-typedef ptrdiff_t ptrdiff;
-
-#define ref(var)                 \
-    /**                          \
-     * @brief Reference variable \
-     */                          \
-    IMPL_ref(var)
-
-#define deref(TSelf, var)          \
-    /**                            \
-     * @brief Dereference variable \
-     */                            \
-    IMPL_deref(TSelf, var)
 
 #define rawptrCast(TDestPtr, var)                        \
     /**                                                  \
@@ -84,26 +73,10 @@ typedef ptrdiff_t ptrdiff;
      */                                    \
     IMPL_rawptrIsNonnull(ptr)
 
-#define sizeOf(var) \
-    IMPL_sizeOf(var)
-
-#define alignAs(align) \
-    IMPL_alignAs(align)
-
-#define alignOf(T) \
-    IMPL_alignOf(T)
-
-#define countOf(var_arr) \
-    IMPL_countOf(var_arr)
-
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_anyptr void*
-
+#define IMPL_anyptr       void*
 #define IMPL_rawptr(TSrc) TSrc*
-
-#define IMPL_ref(var)          (&(var))
-#define IMPL_deref(TSelf, var) (*(TSelf*)(var))
 
 #define IMPL_rawptrCast(TDestPtr, var)  ((TDestPtr)(var))
 #define IMPL_rawptrToInt(raw)           ((usize)(raw))    // NOLINT
@@ -111,20 +84,6 @@ typedef ptrdiff_t ptrdiff;
 
 #define IMPL_rawptrIsNull(var)    ((var) == null)
 #define IMPL_rawptrIsNonnull(var) ((var) != null)
-
-#define IMPL_sizeOf(var) \
-    sizeof(var)
-
-#define IMPL_alignAs(align) \
-    alignas(align)
-
-#define IMPL_alignOf(T) \
-    alignof(T)
-
-// NOLINTBEGIN
-#define IMPL_countOf(var_arr) \
-    (sizeof(var_arr) / sizeof(var_arr[0]))
-// NOLINTEND
 
 /*========== Validation Checks ==============================================*/
 

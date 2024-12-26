@@ -4,8 +4,8 @@
  * @file    bool.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-11-10 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-23 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  bool
  *
@@ -48,16 +48,16 @@ typedef _Bool bool;
 #endif
 #endif
 
-/* Boolean operations */
-#define bool_and(_lhs, _rhs) ((_lhs) && (_rhs))
-#define bool_or(_lhs, _rhs)  ((_lhs) || (_rhs))
-#define bool_not(_val)       (!(_val))
-#define bool_xor(_lhs, _rhs) ((bool)((_lhs) != (_rhs)))
+// /* Boolean operations */
+// #define bool_and(_lhs, _rhs) ((_lhs) && (_rhs))
+// #define bool_or(_lhs, _rhs)  ((_lhs) || (_rhs))
+// #define bool_not(_val)       (!(_val))
+// #define bool_xor(_lhs, _rhs) ((bool)((_lhs) != (_rhs)))
 
-/* Type conversion */
-#define bool_from(_val)      ((bool)(!!(_val)))
-#define bool_toInt(_T, _val) ((_T)(_val))
-#define bool_const(_val)     ((bool)(!!(_val)))
+// /* Type conversion */
+// #define bool_from(_val)      ((bool)(!!(_val)))
+// #define bool_toInt(_T, _val) ((_T)(_val))
+// #define bool_const(_val)     ((bool)(!!(_val)))
 
 /* Size verification */
 claim_assert_static_msg(sizeof(bool) == 1, "bool must be 1 byte");
