@@ -111,6 +111,10 @@ static void ArrayList_fini(ArrayList* self) {
 static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
     reserveReturn(mem_AllocErr$Void);
 
+    if (self->items.len == 10) { // Note: Force error raising for exception checking
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+    }
+
     if (self->items.len >= self->capacity) {
         const usize  new_capacity = self->capacity * 2;
         anyptr const new_ptr      = self->allocator.vt->realloc(
