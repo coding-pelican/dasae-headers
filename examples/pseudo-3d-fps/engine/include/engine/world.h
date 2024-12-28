@@ -1,3 +1,4 @@
+#include "dh/builtin/comp.h"
 #ifndef WORLD_INCLUDED
 #define WORLD_INCLUDED (1)
 
@@ -11,21 +12,23 @@ struct engine_World {
     u32                 object_count;
     engine_Vec3f32      world_bounds;
 };
-using_ExtTypes(engine_World);
+using_Ptr$(engine_World);
+using_Err$(Ptr$engine_World);
 
 struct engine_WorldObject {
     engine_Transform    transform;
     anyptr              components; /* Flexible component system */
-    Ptr_engine_World    world;      /* Pointer to world this object belongs to */
+    engine_World*       world;      /* Pointer to world this object belongs to */
     engine_WorldObject* next;       /* Linked list of game objects */
 };
-using_ExtTypes(engine_WorldObject);
+using_Ptr$(engine_WorldObject);
+using_Err$(Ptr$engine_WorldObject);
 
 // Game World functions
-ResErr_Ptr_engine_World       engine_World_create(engine_Vec3f32 bounds);
-void                          engine_World_destroy(Ptr_engine_World world);
-ResErr_Ptr_engine_WorldObject engine_World_spawnObject(Ptr_engine_World world, engine_Vec3f32 position);
-void                          engine_World_update(Ptr_engine_World world, f32 delta_time);
+Err$Ptr$engine_World       engine_World_create(engine_Vec3f32 bounds) must_check;
+void                       engine_World_destroy(engine_World* self);
+Err$Ptr$engine_WorldObject engine_World_spawnObject(engine_World* self, engine_Vec3f32 position) must_check;
+void                       engine_World_update(engine_World* self, f32 delta_time);
 
 #if 0
 // Example main game loop

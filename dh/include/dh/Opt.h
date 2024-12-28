@@ -34,27 +34,36 @@ extern "C" {
     }
 
 #define using_Opt(T) \
-    typedef Opt(T) pp_join($, Opt, T)
+    decl_Opt(T);     \
+    impl_Opt(T)
 
-#define decl_Opt(T) \
-    typedef struct pp_join($, Opt, T) pp_join($, Opt, T)
+#define decl_Opt(T)                                       \
+    typedef struct pp_join($, Opt, T) pp_join($, Opt, T); \
+    typedef struct pp_join($, Optptr, T) pp_join($, Optptr, T)
 
-#define impl_Opt(T)             \
-    struct pp_join($, Opt, T) { \
-        bool has_value;         \
-        T    value;             \
+#define impl_Opt(T)                \
+    struct pp_join($, Opt, T) {    \
+        bool has_value;            \
+        T    value;                \
+    };                             \
+    struct pp_join($, Optptr, T) { \
+        bool has_value;            \
+        rawptr(T) value;           \
     }
 
-#define some(val_opt...)       \
-    {                          \
-        .has_value = true,     \
-        .value     = (val_opt) \
+#define some(val_opt...)     \
+    {                        \
+        .has_value = true,   \
+        .value     = val_opt \
     }
 
 #define none()              \
     {                       \
         .has_value = false, \
     }
+
+#define isSome(opt) ((opt).has_value)
+#define isNone(opt) (!isSome(opt))
 
 /* Return macros */
 #define return_Opt \
@@ -65,7 +74,7 @@ extern "C" {
         setReservedReturn(                 \
             (TypeOf(getReservedReturn())){ \
                 .has_value = true,         \
-                .value     = (val_opt),    \
+                .value     = val_opt,      \
             }                              \
         );                                 \
     })
@@ -82,13 +91,13 @@ extern "C" {
 /* Unwrapping macros (similar to Zig's orelse and .?) */
 #define orelse(expr, val_default)                          \
     ({                                                     \
-        let _result = (expr);                              \
+        var _result = (expr);                              \
         _result.has_value ? _result.value : (val_default); \
     })
 
 #define unwrap(expr)                                                 \
     ({                                                               \
-        let _result = (expr);                                        \
+        var _result = (expr);                                        \
         debug_assert_fmt(_result.has_value, "Unwrap of null value"); \
         _result.value;                                               \
     })

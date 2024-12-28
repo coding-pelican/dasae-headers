@@ -26,41 +26,42 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* Error Result */
-#define ErrRes(TErr, TOk) \
-    struct {              \
-        bool is_err;      \
-        union {           \
-            Err err;      \
-            TOk ok;       \
-        };                \
+/* Error result */
+#define ErrRes(TOk)  \
+    struct {         \
+        bool is_err; \
+        union {      \
+            Err err; \
+            TOk ok;  \
+        };           \
     }
 
-#define using_ErrRes(TErr, TOk) \
-    typedef ErrRes(TErr, TOk) pp_join($, TErr, TOk)
+#define using_ErrRes(TOk) \
+    decl_ErrRes(TOk);     \
+    impl_ErrRes(TOk)
 
-#define decl_ErrRes(TErr, TOk) \
-    typedef struct pp_join($, TErr, TOk) pp_join($, TErr, TOk)
+#define decl_ErrRes(TOk) \
+    typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
 
-#define impl_ErrRes(TErr, TOk)     \
-    struct pp_join($, TErr, TOk) { \
-        bool is_err;               \
-        union {                    \
-            Err err;               \
-            TOk ok;                \
-        };                         \
+#define impl_ErrRes(TOk)          \
+    struct pp_join($, Err, TOk) { \
+        bool is_err;              \
+        union {                   \
+            Err err;              \
+            TOk ok;               \
+        };                        \
     }
 
-#define err(val_err...)     \
-    {                       \
-        .is_err = true,     \
-        .err    = (val_err) \
+#define err(val_err...)   \
+    {                     \
+        .is_err = true,   \
+        .err    = val_err \
     }
 
-#define ok(val_ok...)      \
-    {                      \
-        .is_err = false,   \
-        .ok     = (val_ok) \
+#define ok(val_ok...)    \
+    {                    \
+        .is_err = false, \
+        .ok     = val_ok \
     }
 
 /* Return macros */
@@ -68,42 +69,62 @@ extern "C" {
     return (TypeOf(getReservedReturn()))
 
 #define return_err(val_err...)             \
-    return ({                              \
-        setReservedReturn(                 \
-            (TypeOf(getReservedReturn())){ \
-                .is_err = true,            \
-                .err    = (val_err),       \
-            }                              \
-        );                                 \
-    })
+    return (TypeOf(getReservedReturn())) { \
+        .is_err = true,                    \
+        .err    = val_err,                 \
+    }
 
 #define return_ok(val_ok...)               \
-    return ({                              \
-        setReservedReturn(                 \
-            (TypeOf(getReservedReturn())){ \
-                .is_err = false,           \
-                .ok     = (val_ok),        \
-            }                              \
-        );                                 \
-    })
+    return (TypeOf(getReservedReturn())) { \
+        .is_err = false,                   \
+        .ok     = val_ok,                  \
+    }
+
+/* Syntax sugar for Error result */
+#define Err$(TOk)    \
+    struct {         \
+        bool is_err; \
+        union {      \
+            Err err; \
+            TOk ok;  \
+        };           \
+    }
+
+#define using_Err$(TOk) \
+    decl_Err$(TOk);     \
+    impl_Err$(TOk)
+
+#define decl_Err$(TOk) \
+    typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
+
+#define impl_Err$(TOk)            \
+    struct pp_join($, Err, TOk) { \
+        bool is_err;              \
+        union {                   \
+            Err err;              \
+            TOk ok;               \
+        };                        \
+    }
+
+#define return_Err$ \
+    return (TypeOf(getReservedReturn()))
 
 /* Error void result (special case) */
-typedef ErrRes(Err, Void) ErrVoid;
+using_Err$(Void);
+#define return_Err$Void \
+    return (Err$Void)
 
-#define return_ErrVoid \
-    return (ErrVoid)
+typedef Err$Void Err$void;
+#define return_Err$void \
+    return (Err$void)
 
 #define return_void()                      \
-    return ({                              \
-        setReservedReturn(                 \
-            (TypeOf(getReservedReturn())){ \
-                .is_err = false,           \
-                .ok     = (Void){},        \
-            }                              \
-        );                                 \
-    })
+    return (TypeOf(getReservedReturn())) { \
+        .is_err = false,                   \
+        .ok     = (Void){},                \
+    }
 
-/* Error handling macros */
+/* Error handling */
 #define try(expr)                    \
     ({                               \
         let _result = (expr);        \
@@ -128,10 +149,10 @@ typedef ErrRes(Err, Void) ErrVoid;
 #if !defined(ERR_RES_NO_HIJACK_MAIN) && !defined(ERR_RES_MAIN_INCLUDED)
 #define ERR_RES_MAIN_INCLUDED (1)
 
-extern ErrVoid dh_main(int argc, const char* argv[]);
+extern must_check Err$void dh_main(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) {
-    const ErrVoid result = dh_main(argc, argv);
+    const Err$void result = dh_main(argc, argv);
     if (!result.is_err) { return 0; }
     ignore fprintf(
         stderr,

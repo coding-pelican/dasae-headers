@@ -15,9 +15,10 @@ typedef struct game_State {
     i32         map_height;
     bool        is_running;
 } game_State;
-using_ExtTypes(game_State);
+using_Ptr$(game_State);
+using_Err$(Ptr$game_State);
 
-ResErr_Ptr_game_State game_State_create(void);
-void                  game_State_update(Ptr_game_State state, f32 elapsed_time);
+Err$Ptr$game_State game_State_create(void);
+void               game_State_update(game_State* state, f32 elapsed_time);
 
 #endif // GAME_STATE_INCLUDE

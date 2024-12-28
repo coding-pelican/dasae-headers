@@ -36,10 +36,6 @@ enum ErrType {
     ErrType_NotImplemented = -2,
     ErrType_Unknown        = -1,
     ErrType_None           = 0
-    // ErrType_OutOfMemory,     // Alloc
-    // ErrType_InvalidArgument, // Parse
-    // ErrType_NotFound,        // IO
-    // ErrType_AccessDenied,    // IO
 };
 struct ErrVT {
     ErrType (*type)(ErrType ctx); // Could be an enum or other identifier
@@ -60,6 +56,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
 /* impl_Err(
     io_FileErr,
     NotFound,
+    AccessDenied,
     OpenFailed,
     ReadFailed,
     WriteFailed
@@ -121,6 +118,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
 #define IMPL_impl_Err_genEnumValues(Name, ...) \
     pp_cat(Name, Type_None) = 0,               \
                  __VA_ARGS__
+
 // Helper macro to generate case statements for type function
 #define IMPL_impl_Err_genTypeCases(Name, ...) \
     case pp_cat(Name, Type_None):             \
@@ -128,6 +126,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
         return self;                          \
     default:                                  \
         return claim_unreachable_fmt("Unknown error type (err: %d)", self), ErrType_Unknown;
+
 // Helper macro to generate case statements for message function
 #define IMPL_impl_Err_genMessageCases(Name, ...) \
     case pp_cat(Name, Type_None):                \
@@ -135,11 +134,14 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
         __VA_ARGS__                              \
     default:                                     \
         return claim_unreachable_fmt("Unknown error type (err: %d)", self), "UnknownError";
+
 // Helper macros for generating individual cases
 #define IMPL_impl_Err_genEnumValue(Name, Value) \
     pp_cat3(Name, Type_, Value),
+
 #define IMPL_impl_Err_genTypeCase(Name, Value) \
     case pp_cat3(Name, Type_, Value):
+
 #define IMPL_impl_Err_genMessageCase(Name, Value) \
     case pp_cat3(Name, Type_, Value):             \
         return #Value;

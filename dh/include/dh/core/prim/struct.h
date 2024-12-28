@@ -98,8 +98,9 @@ extern "C" {
 #define IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
     ((_TContainer*)((u8*)(_ptr_member) - offsetof(_TContainer, _MemberName)))
 
-#define IMPL_reserveReturn(_T) \
-    _T _reserved_return = cleared()
+#define IMPL_reserveReturn(_T)       \
+    _T _reserved_return = cleared(); \
+    unused(_reserved_return)
 
 #define IMPL_getReservedReturn() \
     (_reserved_return)

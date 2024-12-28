@@ -52,18 +52,18 @@ typedef union engine_ColorValue {
 // engine_Platform-specific initialization parameters
 typedef struct engine_PlatformParams {
     engine_RenderBackendType backend_type;
-    Opt_voidptr              native_window_handle; // Optional, platform-specific
-    StrConst                 window_title;
+    anyptr                   native_window_handle; // Optional, platform-specific
+    const char*              window_title;
     u32                      width;
     u32                      height;
 } engine_PlatformParams;
-using_ExtTypes(engine_PlatformParams);
+using_Ptr$(engine_PlatformParams);
+using_Err$(Ptr$engine_PlatformParams);
 
 // Forward declarations
 typedef struct engine_Platform      engine_Platform;
 typedef struct engine_RenderBackend engine_RenderBackend;
 
-decl_ExtType(engine_Platform);
 
 // engine_Platform interface
 struct engine_Platform {
@@ -72,10 +72,11 @@ struct engine_Platform {
     void (*process_events)(engine_Platform* platform);
     void (*present_buffer)(engine_Platform* platform, const anyptr buffer, u32 width, u32 height);
 };
-using_ExtTypes(engine_Platform);
+using_Ptr$(engine_Platform);
+using_Err$(Ptr$engine_Platform);
 
 // Create platform instance with specific backend
-ResErr_Ptr_engine_Platform engine_Platform_create(PtrConst_engine_PlatformParams params);
-void                       engine_Platform_destroy(Ptr_engine_Platform platform);
+Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
+void                    engine_Platform_destroy(engine_Platform platform);
 
 #endif // ENGINE_PLATFORM_INCLUDED

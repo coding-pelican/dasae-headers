@@ -74,6 +74,7 @@ extern "C" {
 #define BUILTIN_COMP_ALIGN(x)     __declspec(align(x))
 #define BUILTIN_COMP_DEPRECATED   __declspec(deprecated)
 #define BUILTIN_COMP_NORETURN     __declspec(noreturn)
+#define BUILTIN_COMP_MUST_CHECK   _Must_inspect_result_
 #elif BUILTIN_COMP_GCC || BUILTIN_COMP_CLANG
 #define BUILTIN_COMP_INLINE       inline
 #define BUILTIN_COMP_FORCE_INLINE __attribute__((always_inline)) inline
@@ -81,6 +82,7 @@ extern "C" {
 #define BUILTIN_COMP_ALIGN(x)     __attribute__((aligned(x)))
 #define BUILTIN_COMP_DEPRECATED   __attribute__((deprecated))
 #define BUILTIN_COMP_NORETURN     __attribute__((noreturn))
+#define BUILTIN_COMP_MUST_CHECK   __attribute__((warn_unused_result))
 #else
 #define BUILTIN_COMP_INLINE
 #define BUILTIN_COMP_FORCE_INLINE
@@ -88,6 +90,7 @@ extern "C" {
 #define BUILTIN_COMP_ALIGN(x)
 #define BUILTIN_COMP_DEPRECATED
 #define BUILTIN_COMP_NORETURN
+#define BUILTIN_COMP_MUST_CHECK
 #endif
 
 /*========== Calling Conventions ============================================*/

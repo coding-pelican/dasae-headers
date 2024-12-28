@@ -160,8 +160,10 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
-extern void debug_assert__fail(const char* expr, const char* func, const char* file, i32 line);
-extern void debug_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...);
+// extern void debug_assert__fail(const char* expr, const char* func, const char* file, i32 line);
+// extern void debug_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...);
+extern void debug_assert__fail(const char*, const char*, const char*, i32);
+extern void debug_assert__fail_fmt(const char*, const char*, const char*, i32, const char*, ...);
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,5 +1,6 @@
 #include "dh/core.h"
 #include "dh/Err.h"
+#include "dh/core/type_info.h"
 
 /* Error Result */
 #define ErrRes(TErr, TOk) \
@@ -90,8 +91,8 @@ impl_Err(
     Overflow,
     Underflow
 );
-typedef ErrRes(math_Err, i32) math_Err$i32;
 
+typedef ErrRes(math_Err, i32) math_Err$i32;
 static math_Err$i32 safe_divide(i32 lhs, i32 rhs) {
     reserveReturn(math_Err$i32);
     if (rhs == 0) {

@@ -42,6 +42,9 @@ extern "C" {
 /* Force Inline Definition */
 #define force_inline BUILTIN_COMP_FORCE_INLINE
 
+/* Must Check Definition */
+#define must_check BUILTIN_COMP_MUST_CHECK
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

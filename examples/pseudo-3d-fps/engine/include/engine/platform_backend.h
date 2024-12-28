@@ -15,7 +15,6 @@ struct engine_RenderBackend {
     void (*processInput)(void);
     void (*destroy)(struct engine_Platform* platform);
 };
-using_ExtTypes(engine_RenderBackend);
 
 // Win32 console backend
 typedef struct engine_Win32ConsoleBackend {
@@ -26,6 +25,5 @@ typedef struct engine_Win32ConsoleBackend {
     usize                buffer_capacity;
     bool                 cursor_visible;
 } engine_Win32ConsoleBackend;
-using_ExtTypes(engine_Win32ConsoleBackend);
 
 #endif // ENGINE_PLATFORM_BACKEND_H

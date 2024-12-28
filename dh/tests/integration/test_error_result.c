@@ -68,8 +68,7 @@ struct Slice {
 };
 
 typedef struct ArrayList ArrayList;
-using_ErrRes(mem_AllocErr, Void);
-decl_ErrRes(mem_AllocErr, ArrayList);
+decl_ErrRes(ArrayList);
 
 struct ArrayList {
     mem_Allocator allocator;
@@ -77,16 +76,16 @@ struct ArrayList {
     usize         capacity;
     usize         item_size;
 };
-static mem_AllocErr$ArrayList ArrayList_init(usize item_size, mem_Allocator allocator);
-static void                   ArrayList_fini(ArrayList* self);
-static mem_AllocErr$Void      ArrayList_append(ArrayList* self, const anyptr item);
-static Slice                  ArrayList_slice(const ArrayList* self);
+static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator);
+static void                     ArrayList_fini(ArrayList* self);
+static must_check Err$void      ArrayList_append(ArrayList* self, const anyptr item);
+static Slice                    ArrayList_slice(const ArrayList* self);
 
-impl_ErrRes(mem_AllocErr, ArrayList);
-static mem_AllocErr$ArrayList ArrayList_init(usize item_size, mem_Allocator allocator) {
-    reserveReturn(mem_AllocErr$ArrayList);
+impl_ErrRes(ArrayList);
+static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator) {
+    reserveReturn(Err$ArrayList);
 
-    anyptr const ptr = allocator.vt->alloc(allocator.ctx, item_size * 8); // Initial capacity of 8
+    anyptr const ptr = allocator.vt->alloc(allocator.ctx, type.size * 8); // Initial capacity of 8
     if (!ptr) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
@@ -97,7 +96,7 @@ static mem_AllocErr$ArrayList ArrayList_init(usize item_size, mem_Allocator allo
                 .len = 0,
         },
         .capacity  = 8,
-        .item_size = item_size,
+        .item_size = type.size,
     });
 }
 
@@ -108,8 +107,8 @@ static void ArrayList_fini(ArrayList* self) {
     self->capacity  = 0;
 }
 
-static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
-    reserveReturn(mem_AllocErr$Void);
+static must_check Err$void ArrayList_append(ArrayList* self, const anyptr item) {
+    reserveReturn(Err$void);
 
     if (self->items.len == 10) { // Note: Force error raising for exception checking
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
@@ -138,13 +137,16 @@ static mem_AllocErr$Void ArrayList_append(ArrayList* self, const anyptr item) {
     return_void();
 }
 
-static Slice ArrayList_slice(const ArrayList* self) {
+#undef nonnull
+#define nonnull_all __attribute__((nonnull))
+
+nonnull_all static Slice ArrayList_slice(const ArrayList* self) {
     return self->items;
 }
 
 // Example usage in main
-ErrVoid dh_main(int argc, const char* argv[]) {
-    reserveReturn(ErrVoid);
+Err$void dh_main(int argc, const char* argv[]) {
+    reserveReturn(Err$void);
     unused(argc);
     unused(argv);
 
@@ -153,7 +155,7 @@ ErrVoid dh_main(int argc, const char* argv[]) {
     let allocator = heap_C_allocator(&heap);
 
     // Create an ArrayList of integers
-    var list = catch (ArrayList_init(sizeof(int), allocator), err, {
+    var list = catch (ArrayList_init(typeInfo(i32), allocator), err, {
         ignore fprintf(stderr, "Error: %s\n", Err_message(err));
         return_err(err);
     });

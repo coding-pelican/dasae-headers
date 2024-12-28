@@ -42,13 +42,13 @@ extern "C" {
 
 // Immutable and mutable pointer variants
 typedef struct Ptr {
-    void*          addr;
-    const TypeInfo type;
+    void*    addr;
+    TypeInfo type;
 } Ptr;
 
 typedef struct PtrConst {
-    const void*    addr;
-    const TypeInfo type;
+    const void* addr;
+    TypeInfo    type;
 } PtrConst;
 
 // Sentinel-terminated pointers
@@ -58,8 +58,8 @@ typedef struct PtrS {
 } PtrS;
 
 typedef struct PtrSConst {
-    PtrConst    core;
-    const void* sentinel;
+    PtrConst core;
+    void*    sentinel;
 } PtrSConst;
 
 // Slices
@@ -80,8 +80,8 @@ typedef struct SliS {
 } SliS;
 
 typedef struct SliSConst {
-    SliConst    core;
-    const void* sentinel;
+    SliConst core;
+    void*    sentinel;
 } SliSConst;
 
 // /* Combined single-item/many-item pointer (similar to *T/[*]T in Zig) */
@@ -177,23 +177,23 @@ typedef struct SliSConst {
 
 /*========== Type-Safe Constructors ========================================*/
 
-#define asPtr(T, p) \
-    ((Ptr){ .addr = (p), .type = typeInfo(T) })
+#define asPtr(p) \
+    { .addr = (p), .type = typeInfo(TypeOf(p)) }
 
-#define asPtrConst(T, p) \
-    ((PtrConst){ .addr = (p), .type = typeInfo(T) })
+#define asPtrConst(p) \
+    { .addr = (p), .type = typeInfo(TypeOf(p)) }
 
-#define asPtrS(T, p, s) \
-    ((PtrS){ .core = asPtr(T, p), .sentinel = (s) })
+#define asPtrS(p, s) \
+    { .core = asPtr(p), .sentinel = (s) }
 
-#define asPtrSConst(T, p, s) \
-    ((PtrSConst){ .core = asPtrConst(T, p), .sentinel = (s) })
+#define asPtrSConst(p, s) \
+    { .core = asPtrConst(p), .sentinel = (s) }
 
-#define asSli(T, p, l) \
-    ((Sli){ .ptr = asPtr(T, p), .len = (l) })
+#define asSli(p, l) \
+    { .ptr = asPtr(p), .len = (l) }
 
-#define asSliConst(T, p, l) \
-    ((SliConst){ .ptr = asPtrConst(T, p), .len = (l) })
+#define asSliConst(p, l) \
+    { .ptr = asPtrConst(p), .len = (l) }
 
 /*========== Generic Operations ===========================================*/
 

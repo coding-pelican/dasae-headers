@@ -1,13 +1,13 @@
 #include "Screen.h"
 #include <math.h>
 
-void game_Screen_renderFirstPersonView(Ptr_engine_Canvas canvas, PtrConst_game_State state) {
-    const i32 width  = as(i32, canvas.addr->width);
-    const i32 height = as(i32, canvas.addr->height);
+void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
+    const i32 width  = as(i32, canvas->width);
+    const i32 height = as(i32, canvas->height);
 
     for (i32 x = 0; x < width; ++x) {
         // Calculate ray angle
-        const f32 ray_angle = (state.addr->player_angle - state.addr->fov / 2.0f) + (as(f32, x) / as(f32, width)) * state.addr->fov;
+        const f32 ray_angle = (state->player_angle - state->fov / 2.0f) + (as(f32, x) / as(f32, width)) * state->fov;
 
         // Cast ray
         const f32 eye_x    = sinf(ray_angle);
@@ -15,15 +15,15 @@ void game_Screen_renderFirstPersonView(Ptr_engine_Canvas canvas, PtrConst_game_S
         f32       distance = 0.0f;
         bool      hit_wall = false;
 
-        while (!hit_wall && distance < state.addr->depth) {
+        while (!hit_wall && distance < state->depth) {
             distance += 0.1f;
-            const i32 test_x = (i32)(state.addr->player_x + eye_x * distance);
-            const i32 test_y = (i32)(state.addr->player_y + eye_y * distance);
+            const i32 test_x = (i32)(state->player_x + eye_x * distance);
+            const i32 test_y = (i32)(state->player_y + eye_y * distance);
 
-            if (test_x < 0 || test_x >= state.addr->map_width || test_y < 0 || test_y >= state.addr->map_height) {
+            if (test_x < 0 || test_x >= state->map_width || test_y < 0 || test_y >= state->map_height) {
                 hit_wall = true;
-                distance = state.addr->depth;
-            } else if (state.addr->map[test_x * state.addr->map_width + test_y] == '#') {
+                distance = state->depth;
+            } else if (state->map[test_x * state->map_width + test_y] == '#') {
                 hit_wall = true;
             }
         }
@@ -45,7 +45,7 @@ void game_Screen_renderFirstPersonView(Ptr_engine_Canvas canvas, PtrConst_game_S
                 color.rgba.a       = 255;
             } else if (y > ceiling && y <= floor) {
                 // Wall - Shade based on distance with slight color variation
-                const f32 brightness = 1.0f - (distance / state.addr->depth);
+                const f32 brightness = 1.0f - (distance / state->depth);
                 const u8  base_shade = as(u8, 255.0f * brightness);
 
                 // Add slight color variation based on wall orientation
@@ -69,17 +69,17 @@ void game_Screen_renderFirstPersonView(Ptr_engine_Canvas canvas, PtrConst_game_S
     }
 }
 
-void game_Screen_renderMinimap(Ptr_engine_Canvas canvas, PtrConst_game_State state) {
+void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
     // Calculate scaling factors
-    const f32 scale_x = as(f32, canvas.addr->width) / as(f32, state.addr->map_width);
-    const f32 scale_y = as(f32, canvas.addr->height) / as(f32, state.addr->map_height);
+    const f32 scale_x = as(f32, canvas->width) / as(f32, state->map_width);
+    const f32 scale_y = as(f32, canvas->height) / as(f32, state->map_height);
 
     // Draw map
-    for (i32 y = 0; y < state.addr->map_height; ++y) {
-        for (i32 x = 0; x < state.addr->map_width; ++x) {
+    for (i32 y = 0; y < state->map_height; ++y) {
+        for (i32 x = 0; x < state->map_width; ++x) {
             engine_ColorValue color;
 
-            if (state.addr->map[y * state.addr->map_width + x] == '#') {
+            if (state->map[y * state->map_width + x] == '#') {
                 // Wall tiles - White with slight blue tint
                 color.rgba.r = 240;
                 color.rgba.g = 240;
@@ -108,13 +108,13 @@ void game_Screen_renderMinimap(Ptr_engine_Canvas canvas, PtrConst_game_State sta
     }
 
     // Draw player position and direction indicator
-    const i32 player_screen_x = (i32)(state.addr->player_x * scale_x);
-    const i32 player_screen_y = (i32)(state.addr->player_y * scale_y);
+    const i32 player_screen_x = (i32)(state->player_x * scale_x);
+    const i32 player_screen_y = (i32)(state->player_y * scale_y);
 
     // Draw player direction line
     const i32 line_length = 5;
-    const i32 dir_x       = player_screen_x + (i32)(sinf(state.addr->player_angle) * (f32)line_length);
-    const i32 dir_y       = player_screen_y + (i32)(cosf(state.addr->player_angle) * (f32)line_length);
+    const i32 dir_x       = player_screen_x + (i32)(sinf(state->player_angle) * (f32)line_length);
+    const i32 dir_y       = player_screen_y + (i32)(cosf(state->player_angle) * (f32)line_length);
 
     // Player marker (red dot with orange direction line)
     engine_ColorValue player_color = {
@@ -147,7 +147,7 @@ void game_Screen_renderMinimap(Ptr_engine_Canvas canvas, PtrConst_game_State sta
     engine_Canvas_drawPixel(canvas, dir_x, dir_y, direction_color);
 }
 
-void game_Screen_renderUi(Ptr_engine_Canvas canvas, PtrConst_game_State state) {
+void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
     unused(state);
 
     // Crosshair configuration
@@ -158,8 +158,8 @@ void game_Screen_renderUi(Ptr_engine_Canvas canvas, PtrConst_game_State state) {
         .rgba.a = 192 // Semi-transparent
     };
 
-    const i32 center_x            = as(i32, canvas.addr->width) / 2;
-    const i32 center_y            = as(i32, canvas.addr->height) / 2;
+    const i32 center_x            = as(i32, canvas->width) / 2;
+    const i32 center_y            = as(i32, canvas->height) / 2;
     const i32 crosshair_size      = 5;
     const i32 crosshair_thickness = 1;
 
