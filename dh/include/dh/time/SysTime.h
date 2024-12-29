@@ -34,7 +34,7 @@ extern "C" {
  * // Initialize performance counter frequency
  * static void __attribute__((constructor)) init(void);
  */
-typedef Opt(time_SysTime) Opt$time_SysTime;
+using_Opt$(time_SysTime);
 
 /* Accessors */
 extern time_SysTime time_SysTime_frequency(void);

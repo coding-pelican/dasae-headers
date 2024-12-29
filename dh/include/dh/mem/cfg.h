@@ -4,7 +4,7 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-12-23 (date of last update)
+ * @updated 2024-12-29 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
@@ -36,6 +36,14 @@ extern "C" {
 #endif
 
 #define mem_trace_enabled (MEM_TRACE_ENABLED)
+
+/*========== Memory Error ===================================================*/
+
+/* Allocation Error type */
+impl_Err(
+    mem_AllocErr,
+    OutOfMemory
+);
 
 #if defined(__cplusplus)
 }

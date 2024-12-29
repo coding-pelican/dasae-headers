@@ -25,7 +25,7 @@ void engine_Input_update(void) {
     }
 }
 
-void engine_Input_shutdown(void) {
+void engine_Input_fini(void) {
     if (engine_InputState_global) {
         free(engine_InputState_global);
         engine_InputState_global = null;

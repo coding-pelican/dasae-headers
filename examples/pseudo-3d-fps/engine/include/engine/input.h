@@ -36,7 +36,7 @@ extern engine_InputState* engine_InputState_global;
 
 extern void engine_Input_init(void);
 extern void engine_Input_update(void);
-extern void engine_Input_shutdown(void);
+extern void engine_Input_fini(void);
 
 force_inline bool engine_Key_pressed(engine_KeyCode key) {
     debug_assert_nonnull(engine_InputState_global);

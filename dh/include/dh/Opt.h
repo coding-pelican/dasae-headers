@@ -27,21 +27,21 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Optional */
-#define Opt(T)          \
+#define Opt$(T)         \
     struct {            \
         bool has_value; \
         T    value;     \
     }
 
-#define using_Opt(T) \
-    decl_Opt(T);     \
-    impl_Opt(T)
+#define using_Opt$(T) \
+    decl_Opt$(T);     \
+    impl_Opt$(T)
 
-#define decl_Opt(T)                                       \
+#define decl_Opt$(T)                                      \
     typedef struct pp_join($, Opt, T) pp_join($, Opt, T); \
     typedef struct pp_join($, Optptr, T) pp_join($, Optptr, T)
 
-#define impl_Opt(T)                \
+#define impl_Opt$(T)               \
     struct pp_join($, Opt, T) {    \
         bool has_value;            \
         T    value;                \
@@ -66,7 +66,7 @@ extern "C" {
 #define isNone(opt) (!isSome(opt))
 
 /* Return macros */
-#define return_Opt \
+#define return_Opt$ \
     return (TypeOf(getReservedReturn()))
 
 #define return_some(val_opt...)            \
@@ -89,10 +89,14 @@ extern "C" {
     })
 
 /* Unwrapping macros (similar to Zig's orelse and .?) */
-#define orelse(expr, val_default)                          \
-    ({                                                     \
-        var _result = (expr);                              \
-        _result.has_value ? _result.value : (val_default); \
+#define orelse(expr, val_default) \
+    ({                            \
+        var _result = (expr);     \
+        if (_result.has_value) {  \
+            _result.value         \
+        } else {                  \
+            val_default           \
+        }                         \
     })
 
 #define unwrap(expr)                                                 \

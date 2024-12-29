@@ -145,26 +145,12 @@ typedef Err$Void Err$void;
     })
 
 /* Error main */
-#if ERR_RES_INCLUDED
-#if !defined(ERR_RES_NO_HIJACK_MAIN) && !defined(ERR_RES_MAIN_INCLUDED)
-#define ERR_RES_MAIN_INCLUDED (1)
+#if !defined(ERR_RES_NO_HIJACK_MAIN)
 
 extern must_check Err$void dh_main(int argc, const char* argv[]);
+extern int                 main(int argc, const char* argv[]);
 
-int main(int argc, const char* argv[]) {
-    const Err$void result = dh_main(argc, argv);
-    if (!result.is_err) { return 0; }
-    ignore fprintf(
-        stderr,
-        "Program failed: %s (type: %d)\n",
-        Err_message(result.err),
-        Err_type(result.err)
-    );
-    return 1;
-}
-
-#endif /* !defined(ERR_RES_NO_HIJACK_MAIN) && !defined(ERR_RES_MAIN_INCLUDED) */
-#endif /* ERR_RES_INCLUDED */
+#endif /* !defined(ERR_RES_NO_HIJACK_MAIN) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

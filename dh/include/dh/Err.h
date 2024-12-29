@@ -25,17 +25,18 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-typedef int          ErrType;
-typedef struct ErrVT ErrVT;
-typedef struct Err   Err;
-ErrType              Err_type(Err self);             // Get error type
-const char*          Err_message(Err self);          // Get error message string
-bool                 Err_is(Err self, ErrType type); // Check if error is of specific type
+typedef int              ErrType;
+typedef struct ErrVT     ErrVT;
+typedef struct Err       Err;
+force_inline ErrType     Err_type(Err self);             // Get error type
+force_inline const char* Err_message(Err self);          // Get error message string
+force_inline bool        Err_is(Err self, ErrType type); // Check if error is of specific type
 
 enum ErrType {
-    ErrType_NotImplemented = -2,
-    ErrType_Unknown        = -1,
-    ErrType_None           = 0
+    ErrType_InvalidArgument = -3,
+    ErrType_NotImplemented  = -2,
+    ErrType_Unknown         = -1,
+    ErrType_None            = 0
 };
 struct ErrVT {
     ErrType (*type)(ErrType ctx); // Could be an enum or other identifier
@@ -91,19 +92,19 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
         IMPL_impl_Err_genEnumValues(Name, pp_foreach(IMPL_impl_Err_genEnumValue, Name, __VA_ARGS__))         \
     } pp_cat(Name, Type);                                                                                    \
     typedef pp_cat(Name, Type) Name;                                                                         \
-    static ErrType pp_join(_, Name, type)(ErrType ctx) {                                                     \
+    static_inline ErrType pp_join(_, Name, type)(ErrType ctx) {                                              \
         let self = (pp_cat(Name, Type))ctx;                                                                  \
         switch (self) {                                                                                      \
             IMPL_impl_Err_genTypeCases(Name, pp_foreach(IMPL_impl_Err_genTypeCase, Name, __VA_ARGS__))       \
         }                                                                                                    \
     }                                                                                                        \
-    static const char* pp_join(_, Name, message)(ErrType ctx) {                                              \
+    static_inline const char* pp_join(_, Name, message)(ErrType ctx) {                                       \
         let self = (pp_cat(Name, Type))ctx;                                                                  \
         switch (self) {                                                                                      \
             IMPL_impl_Err_genMessageCases(Name, pp_foreach(IMPL_impl_Err_genMessageCase, Name, __VA_ARGS__)) \
         }                                                                                                    \
     }                                                                                                        \
-    static Err pp_join(_, Name, err)(Name self) {                                                            \
+    static_inline Err pp_join(_, Name, err)(Name self) {                                                     \
         static const ErrVT vt[1] = { {                                                                       \
             .type    = pp_join(_, Name, type),                                                               \
             .message = pp_join(_, Name, message),                                                            \
@@ -115,12 +116,18 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
     }
 
 // Helper macro to generate error type enum values
-#define IMPL_impl_Err_genEnumValues(Name, ...) \
-    pp_cat(Name, Type_None) = 0,               \
+#define IMPL_impl_Err_genEnumValues(Name, ...)           \
+    pp_cat(Name, Type_InvalidArgument)             = -3, \
+                 pp_cat(Name, Type_NotImplemented) = -2, \
+                 pp_cat(Name, Type_Unknown)        = -1, \
+                 pp_cat(Name, Type_None)           = 0,  \
                  __VA_ARGS__
 
 // Helper macro to generate case statements for type function
 #define IMPL_impl_Err_genTypeCases(Name, ...) \
+    case pp_cat(Name, Type_InvalidArgument):  \
+    case pp_cat(Name, Type_NotImplemented):   \
+    case pp_cat(Name, Type_Unknown):          \
     case pp_cat(Name, Type_None):             \
         __VA_ARGS__                           \
         return self;                          \
@@ -129,6 +136,12 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
 
 // Helper macro to generate case statements for message function
 #define IMPL_impl_Err_genMessageCases(Name, ...) \
+    case pp_cat(Name, Type_InvalidArgument):     \
+        return "InvalidArgument";                \
+    case pp_cat(Name, Type_NotImplemented):      \
+        return "NotImplemented";                 \
+    case pp_cat(Name, Type_Unknown):             \
+        return "Unknown";                        \
     case pp_cat(Name, Type_None):                \
         return "None";                           \
         __VA_ARGS__                              \

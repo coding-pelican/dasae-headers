@@ -4,108 +4,100 @@
 
 #include <stdlib.h>
 
-ResErr_Ptr_engine_Window engine_Window_create(PtrConst_engine_PlatformParams params) {
+Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) {
+    reserveReturn(Err$Ptr$engine_Window);
     engine_Window* const window = (engine_Window*)malloc(sizeof(engine_Window));
     if (!window) {
-        return ResErr_Ptr_engine_Window_err(Err_OutOfMemory);
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
-
-    const Ptr_engine_Window self = Ptr_engine_Window_from(window);
 
     // Create platform
-    ResErr_Ptr_engine_Platform platform_result = engine_Platform_create(params);
-    if (platform_result.tag == ResTag_err) {
+    Ptr$engine_Platform platform_result = catch (engine_Platform_create(params), err, {
         free(window);
-        return ResErr_Ptr_engine_Window_err(platform_result.error);
-    }
+        return_err(err);
+    });
 
-    window->platform   = platform_result.value;
-    window->width      = params.addr->width;
-    window->height     = params.addr->height;
+    window->platform   = platform_result;
+    window->width      = params->width;
+    window->height     = params->height;
     window->view_count = 0;
 
     // Create composite buffer
-    ResErr_Ptr_engine_Canvas buffer_result = engine_Canvas_create(
-        params.addr->width,
-        params.addr->height,
-        engine_CanvasType_rgba
+    Ptr$engine_Canvas buffer_result = catch (
+        engine_Canvas_create(params->width, params->height, engine_CanvasType_rgba), err, {
+            engine_Platform_destroy(window->platform);
+            free(window);
+            return_err(err);
+        }
     );
+    window->composite_buffer = buffer_result;
+    return_ok(window);
+}
 
-    if (buffer_result.tag == ResTag_err) {
+void engine_Window_destroy(engine_Window* window) {
+    if (!window) { return; }
+
+    if (window->composite_buffer) {
+        engine_Canvas_destroy(window->composite_buffer);
+    }
+    if (window->platform) {
         engine_Platform_destroy(window->platform);
-        free(window);
-        return ResErr_Ptr_engine_Window_err(buffer_result.error);
     }
-
-    window->composite_buffer = buffer_result.value;
-
-    return ResErr_Ptr_engine_Window_ok(self);
+    free(window);
 }
 
-void engine_Window_destroy(Ptr_engine_Window window) {
-    if (!window.addr) { return; }
+void engine_Window_processEvents(engine_Window* window) {
+    debug_assert_nonnull(window);
+    debug_assert_nonnull(window->platform);
 
-    if (window.addr->composite_buffer.addr) {
-        engine_Canvas_destroy(window.addr->composite_buffer);
-    }
-    if (window.addr->platform.addr) {
-        engine_Platform_destroy(window.addr->platform);
-    }
-    free(window.addr);
-}
-
-void engine_Window_processEvents(Ptr_engine_Window window) {
-    debug_assert_nonnull(window.addr);
-    debug_assert_nonnull(window.addr->platform.addr);
-
-    if (window.addr->platform.addr->backend && window.addr->platform.addr->backend->processEvents) {
-        window.addr->platform.addr->backend->processEvents(window.addr->platform.addr);
+    if (window->platform->backend && window->platform->backend->processEvents) {
+        window->platform->backend->processEvents(window->platform);
     }
 }
 
-void engine_Window_present(Ptr_engine_Window window) {
-    debug_assert_nonnull(window.addr);
-    debug_assert_nonnull(window.addr->platform.addr);
-    debug_assert_nonnull(window.addr->composite_buffer.addr);
+void engine_Window_present(engine_Window* window) {
+    debug_assert_nonnull(window);
+    debug_assert_nonnull(window->platform);
+    debug_assert_nonnull(window->composite_buffer);
 
     // Clear composite buffer
     engine_Canvas_clear(
-        window.addr->composite_buffer,
+        window->composite_buffer,
         (engine_ColorValue){ .rgba = { { 0, 0, 0, 255 } } }
     );
 
     // Compose all visible canvas views
-    for (u32 i = 0; i < window.addr->view_count; ++i) {
-        engine_CanvasView* const view = &window.addr->views[i];
-        if (view->visible && view->canvas.addr) {
+    for (u32 i = 0; i < window->view_count; ++i) {
+        engine_CanvasView* const view = &window->views[i];
+        if (view->visible && view->canvas) {
             engine_Canvas_blitScaled(
-                window.addr->composite_buffer,
+                window->composite_buffer,
                 view->canvas,
                 view->x,
                 view->y,
-                as(f32, view->width) / as(f32, view->canvas.addr->width)
+                as(f32, view->width) / as(f32, view->canvas->width)
             );
         }
     }
 
     // Present to platform
-    if (window.addr->platform.addr->backend && window.addr->platform.addr->backend->presentBuffer) {
-        window.addr->platform.addr->backend->presentBuffer(
-            window.addr->platform.addr,
-            window.addr->composite_buffer.addr->buffer,
-            window.addr->width,
-            window.addr->height
+    if (window->platform->backend && window->platform->backend->presentBuffer) {
+        window->platform->backend->presentBuffer(
+            window->platform,
+            window->composite_buffer->buffer,
+            window->width,
+            window->height
         );
     }
 }
 
-i32 engine_Window_addCanvasView(Ptr_engine_Window window, Ptr_engine_Canvas canvas, i32 x, i32 y, i32 width, i32 height) {
-    debug_assert_nonnull(window.addr);
-    debug_assert_nonnull(canvas.addr);
+i32 engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, i32 width, i32 height) {
+    debug_assert_nonnull(window);
+    debug_assert_nonnull(canvas);
 
-    if (window.addr->view_count >= engine_Window_max_canvases) { return -1; }
+    if (window->view_count >= engine_Window_max_canvases) { return -1; }
 
-    engine_CanvasView* const view = &window.addr->views[window.addr->view_count];
+    engine_CanvasView* const view = &window->views[window->view_count];
     view->x                       = x;
     view->y                       = y;
     view->width                   = width;
@@ -113,31 +105,31 @@ i32 engine_Window_addCanvasView(Ptr_engine_Window window, Ptr_engine_Canvas canv
     view->canvas                  = canvas;
     view->visible                 = true;
 
-    return as(i32, window.addr->view_count++);
+    return as(i32, window->view_count++);
 }
 
-void engine_Window_removeCanvasView(Ptr_engine_Window window, i32 view_id) {
-    debug_assert_nonnull(window.addr);
+void engine_Window_removeCanvasView(engine_Window* window, i32 view_id) {
+    debug_assert_nonnull(window);
 
-    if (view_id < 0 || as(u32, view_id) >= window.addr->view_count) {
+    if (view_id < 0 || as(u32, view_id) >= window->view_count) {
         return;
     }
 
     // Shift remaining views down
-    for (i32 i = view_id; i < as(i32, window.addr->view_count) - 1; i++) {
-        window.addr->views[i] = window.addr->views[i + 1];
+    for (i32 i = view_id; i < as(i32, window->view_count) - 1; i++) {
+        window->views[i] = window->views[i + 1];
     }
-    window.addr->view_count--;
+    window->view_count--;
 }
 
-void engine_Window_updateCanvasView(Ptr_engine_Window window, i32 view_id, i32 x, i32 y, i32 width, i32 height) {
-    debug_assert_nonnull(window.addr);
+void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height) {
+    debug_assert_nonnull(window);
 
-    if (view_id < 0 || as(u32, view_id) >= window.addr->view_count) {
+    if (view_id < 0 || as(u32, view_id) >= window->view_count) {
         return;
     }
 
-    engine_CanvasView* const view = &window.addr->views[view_id];
+    engine_CanvasView* const view = &window->views[view_id];
     view->x                       = x;
     view->y                       = y;
     view->width                   = width;

@@ -108,20 +108,21 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     engine_Input_update();
 }
 
-ResErr_Ptr_engine_Platform engine_Platform_create(PtrConst_engine_PlatformParams params) {
+impl_Err(engine_PlatformErr, AccessDenied);
+
+Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
+    reserveReturn(Err$Ptr$engine_Platform);
     engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
     if (!platform) {
-        return ResErr_Ptr_engine_Platform_err(Err_OutOfMemory);
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
 
-    const Ptr_engine_Platform self = Ptr_engine_Platform_from(platform);
-
-    switch (params.addr->backend_type) {
+    switch (params->backend_type) {
     case engine_RenderBackendType_vt100: {
         engine_Win32ConsoleBackend* const backend = (engine_Win32ConsoleBackend*)malloc(sizeof(engine_Win32ConsoleBackend));
         if (!backend) {
             free(platform);
-            return ResErr_Ptr_engine_Platform_err(Err_OutOfMemory);
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
 
         // Initialize console backend
@@ -135,7 +136,7 @@ ResErr_Ptr_engine_Platform engine_Platform_create(PtrConst_engine_PlatformParams
         if (hConsole == INVALID_HANDLE_VALUE) {
             free(backend);
             free(platform);
-            return ResErr_Ptr_engine_Platform_err(Err_AccessDenied);
+            return_err(engine_PlatformErr_err(engine_PlatformErrType_AccessDenied));
         }
 
         // Configure console
@@ -150,13 +151,13 @@ ResErr_Ptr_engine_Platform engine_Platform_create(PtrConst_engine_PlatformParams
         SetConsoleCursorInfo(hConsole, &cursor_info);
 
         // Allocate string buffer for ANSI sequences
-        backend->buffer_capacity = (usize)DISPLAY_BUFFER_SIZE((usize)params.addr->width, (usize)params.addr->height);
+        backend->buffer_capacity = (usize)DISPLAY_BUFFER_SIZE((usize)params->width, (usize)params->height);
         backend->buffer          = malloc(backend->buffer_capacity);
         if (!backend->buffer) {
             CloseHandle(hConsole);
             free(backend);
             free(platform);
-            return ResErr_Ptr_engine_Platform_err(Err_OutOfMemory);
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
 
         backend->console_handle = hConsole;
@@ -173,24 +174,25 @@ ResErr_Ptr_engine_Platform engine_Platform_create(PtrConst_engine_PlatformParams
         backend->base.destroy       = Win32ConsoleBackend_destroy;
 
         platform->backend = &backend->base;
-        return ResErr_Ptr_engine_Platform_ok(self);
+
+        return_ok(platform);
     }
 
     case engine_RenderBackendType_win32_gdi:
     case engine_RenderBackendType_directx:
         free(platform);
-        return ResErr_Ptr_engine_Platform_err(Err_NotImplemented);
+        return_err(engine_PlatformErr_err(engine_PlatformErrType_NotImplemented));
 
     default:
         free(platform);
-        return ResErr_Ptr_engine_Platform_err(Err_InvalidArgument);
+        return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
     }
 }
 
-void engine_Platform_destroy(Ptr_engine_Platform platform) {
-    if (!platform.addr) { return; }
+void engine_Platform_destroy(engine_Platform* platform) {
+    if (!platform) { return; }
 
-    if (platform.addr->backend && platform.addr->backend->destroy) {
-        platform.addr->backend->destroy(platform.addr);
+    if (platform->backend && platform->backend->destroy) {
+        platform->backend->destroy(platform);
     }
 }

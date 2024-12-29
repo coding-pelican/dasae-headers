@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
+#include "mem/cfg.h"
 #include "mem/common.h"
 #include "mem/Allocator.h"
 

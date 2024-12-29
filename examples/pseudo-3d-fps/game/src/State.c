@@ -40,7 +40,8 @@ Err$Ptr$game_State game_State_create(void) {
           "#......#########"
           "#..............#"
           "################";
-    state->map = map_data;
+    state->map        = map_data;
+    state->is_running = true;
 
     return_ok(state);
 }

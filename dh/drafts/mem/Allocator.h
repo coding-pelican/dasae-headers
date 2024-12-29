@@ -1,35 +1,16 @@
-/**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
- *
- * @file    Allocator.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
- * @date    2024-12-07 (date of creation)
- * @updated 2024-12-29 (date of last update)
- * @version v0.2
- * @ingroup dasae-headers(dh)/mem
- * @prefix  mem_Allocator
- *
- * @brief   Memory allocator interface using smart pointers
- */
-
-#ifndef MEM_ALLOCATOR_INCLUDED
-#define MEM_ALLOCATOR_INCLUDED (1)
-#if defined(__cplusplus)
-extern "C" {
-#endif /* defined(__cplusplus) */
-
-/*========== Includes =======================================================*/
-
-#include "cfg.h"
+#include "dh/core.h"
+#include "dh/opt.h"
+#include "dh/err_res.h"
 #include "dh/meta/common.h"
 
-/*========== Allocator Interface ============================================*/
+using_Opt$(u8);
+typedef struct Sli$u8 Sli$u8;
 
 /* Allocator vtable */
 typedef struct mem_AllocatorVT mem_AllocatorVT;
 struct mem_AllocatorVT {
-    must_check Optptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align);
-    must_check bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len);
+    Optptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align) must_check;
+    bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
     void (*free)(anyptr ctx, Sli$u8 buf, usize buf_align);
 };
 
@@ -39,6 +20,12 @@ struct mem_Allocator {
     anyptr                 ctx; /* Context pointer with type info */
     const mem_AllocatorVT* vt;  /* Virtual table */
 };
+
+/* Allocation Error type */
+impl_Err(
+    mem_AllocErr,
+    OutOfMemory
+);
 
 /*========== Core Allocator Functions =======================================*/
 
@@ -63,8 +50,3 @@ extern must_check bool         mem_Allocator_resize(mem_Allocator self, AnyType 
 extern must_check Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len);
 /* Free slice */
 extern void                    mem_Allocator_free(mem_Allocator self, AnyType memory);
-
-#if defined(__cplusplus)
-} /* extern "C" */
-#endif /* defined(__cplusplus) */
-#endif /* MEM_ALLOCATOR_INCLUDED */

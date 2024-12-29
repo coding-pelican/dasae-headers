@@ -1,5 +1,9 @@
-#include "dh/mem/Allocator.h"
+#include "Allocator.h"
 
+typedef struct Sli$u8 {
+    u8*   ptr;
+    usize len;
+} Sli$u8;
 
 /* Raw allocation */
 Optptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
@@ -48,7 +52,7 @@ Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count)
     if (isNone(opt)) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
-    return_ok((meta_Sli){ .ptr = { .addr = unwrap(opt), .type = type }, .len = count });
+    return_ok((meta_Sli){ .ptr = { .addr = unwrap(opt) }, .type = type, .len = count });
 }
 
 /* Try to resize slice in-place */
