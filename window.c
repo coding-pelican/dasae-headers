@@ -1,4 +1,4 @@
-#include "dh/primitive.h"
+#include "dh/core.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -167,9 +167,9 @@ WindowConfig config = {
     .allowTitleInBuffer = true,
     .showFrameInfo      = true,
     .frameControl       = {
-                           .enabled   = true,
-                           .targetFps = 60.0f,
-                           .vsync     = false }
+              .enabled   = true,
+              .targetFps = 60.0f,
+              .vsync     = false }
 };
 
 

@@ -211,12 +211,6 @@ void test() {
     });
 } */
 
-/* Error main */
-#if !defined(ERR_RES_NO_HIJACK_MAIN)
-extern must_check Err$void dh_main(int argc, const char* argv[]);
-extern int                 main(int argc, const char* argv[]);
-#endif /* !defined(ERR_RES_NO_HIJACK_MAIN) */
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

@@ -1,10 +1,9 @@
+#include "dh/main.h"
 #include "../engine/include/engine.h"
 #include "src/State.h"
 #include "src/Screen.h"
-#include "dh/time/Duration.h"
 
 #include <stdio.h>
-
 
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
