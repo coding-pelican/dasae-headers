@@ -160,6 +160,13 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
         free(backend);
     }
     free(platform);
+
+    /* Reset cursor position */ {
+        static const char* const reset_cursor = "\033[H";
+        printf("%s", reset_cursor);
+        // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
+        // backend->buffer_size += strlen(reset_cursor);
+    }
 }
 
 static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {

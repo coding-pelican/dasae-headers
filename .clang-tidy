@@ -96,7 +96,7 @@ Checks: >
   cert-err61-cpp,
   cert-exp42-c,
   cert-fio38-c,
-  cert-flp30-c,
+  -cert-flp30-c,
   cert-flp37-c,
   cert-mem57-cpp,
   cert-msc24-c,

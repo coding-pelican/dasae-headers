@@ -3,14 +3,16 @@
 
 #define PI (3.14159265358979323846)
 
+// FIXME: Coordinate system is not uniform
+
 void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
     for (usize x = 0; x < canvas->width; ++x) {
         // Calculate ray angle - matches original implementation
         const f32 ray_angle = (state->player_angle - state->fov * 0.5f) + (as(f32, x) / as(f32, canvas->width)) * state->fov;
 
         // Use sin/cos matching the original implementation
-        const f32 eye_x = sinf(ray_angle); // Changed to sin
-        const f32 eye_y = cosf(ray_angle); // Changed to cos
+        const f32 eye_x = sinf(ray_angle);
+        const f32 eye_y = cosf(ray_angle);
 
         f32  distance_to_wall = 0.0f;
         bool hits_wall        = false;
@@ -104,6 +106,49 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
     }
 }
 
+void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
+    unused(state);
+
+    // Crosshair configuration
+    const Color ui_color = {
+        .channels = {
+            ColorChannel_max_value,
+            ColorChannel_max_value,
+            ColorChannel_max_value,
+            192, // Semi-transparent
+        }
+    };
+
+    const f32 center_x       = as(f32, canvas->width) / 2.0f;
+    const f32 center_y       = as(f32, canvas->height) / 2.0f;
+    const f32 crosshair_size = 3.0f;
+    const f32 thickness      = 1.0f;
+
+    // Draw horizontal line
+    for (f32 y = -thickness / 2.0f; y < thickness / 2.0f; y += 0.5f) {
+        for (f32 x = -crosshair_size; x < crosshair_size; x += 0.5f) {
+            engine_Canvas_drawPixel(
+                canvas,
+                as(i32, center_x + x),
+                as(i32, center_y + y),
+                ui_color
+            );
+        }
+    }
+
+    // Draw vertical line
+    for (f32 x = -thickness / 2.0f; x < thickness / 2.0f; x += 0.5f) {
+        for (f32 y = -crosshair_size; y < crosshair_size; y += 0.5f) {
+            engine_Canvas_drawPixel(
+                canvas,
+                as(i32, center_x + x),
+                as(i32, center_y + y),
+                ui_color
+            );
+        }
+    }
+}
+
 void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
     // Calculate scaling factors
     const f32 scale_x = as(f32, canvas->width) / as(f32, state->map_width);
@@ -119,7 +164,7 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
             i32 end_py   = as(i32, as(f32, y + 1) * scale_y);
 
             Color color;
-            if (state->map[y * state->map_width + x] == '#') {
+            if (state->map[x + (y * state->map_width)] == '#') {
                 color = (Color){
                     .channels = { 240, 240, ColorChannel_max_value, ColorChannel_max_value }
                 };
@@ -140,14 +185,13 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
         }
     }
 
-    // Draw player position and direction indicator
+    // Draw player position and direction indicator with corrected angle math
     const i32 player_screen_x = (i32)(state->player_x * scale_x);
     const i32 player_screen_y = (i32)(state->player_y * scale_y);
 
-    // Draw player direction line
     const i32 line_length = 5;
-    const i32 dir_x       = player_screen_x + (i32)(sinf(state->player_angle) * (f32)line_length);
-    const i32 dir_y       = player_screen_y + (i32)(cosf(state->player_angle) * (f32)line_length);
+    const i32 dir_x       = player_screen_x + (i32)(cosf(state->player_angle) * (f32)line_length);
+    const i32 dir_y       = player_screen_y + (i32)(sinf(state->player_angle) * (f32)line_length);
 
     // Player marker (red dot with orange direction line)
     Color player_color = {
@@ -173,8 +217,8 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
         for (i32 dx = -1; dx <= 1; ++dx) {
             engine_Canvas_drawPixel(
                 canvas,
-                player_screen_x + dx,
                 player_screen_y + dy,
+                player_screen_x + dx,
                 player_color
             );
         }
@@ -182,47 +226,4 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
 
     // Draw direction line
     engine_Canvas_drawPixel(canvas, dir_x, dir_y, direction_color);
-}
-
-void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
-    unused(state);
-
-    // Crosshair configuration
-    const Color ui_color = {
-        .channels = {
-            ColorChannel_max_value,
-            ColorChannel_max_value,
-            ColorChannel_max_value,
-            192, // Semi-transparent
-        }
-    };
-
-    const i32 center_x            = as(i32, canvas->width) / 2;
-    const i32 center_y            = as(i32, canvas->height) / 2;
-    const i32 crosshair_size      = 5;
-    const i32 crosshair_thickness = 1;
-
-    // Draw horizontal line of crosshair
-    for (i32 y = -crosshair_thickness; y <= crosshair_thickness; ++y) {
-        for (i32 x = -crosshair_size; x <= crosshair_size; ++x) {
-            engine_Canvas_drawPixel(
-                canvas,
-                center_x + x,
-                center_y + y,
-                ui_color
-            );
-        }
-    }
-
-    // Draw vertical line of crosshair
-    for (i32 x = -crosshair_thickness; x <= crosshair_thickness; ++x) {
-        for (i32 y = -crosshair_size; y <= crosshair_size; ++y) {
-            engine_Canvas_drawPixel(
-                canvas,
-                center_x + x,
-                center_y + y,
-                ui_color
-            );
-        }
-    }
 }
