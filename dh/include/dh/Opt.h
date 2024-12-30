@@ -89,15 +89,18 @@ extern "C" {
     })
 
 /* Unwrapping macros (similar to Zig's orelse and .?) */
-#define orelse(expr, val_default) \
-    ({                            \
-        var _result = (expr);     \
-        if (_result.has_value) {  \
-            _result.value         \
-        } else {                  \
-            val_default           \
-        }                         \
-    })
+#define orelse(expr, body...) ({ \
+    var _result = (expr);        \
+    if (!_result.has_value) {    \
+        body;                    \
+    }                            \
+    _result.value;               \
+})
+
+#define orelse_default(expr, val_default...) ({        \
+    var _result = (expr);                              \
+    _result.has_value ? _result.value : (val_default); \
+})
 
 #define unwrap(expr)                                                 \
     ({                                                               \

@@ -125,31 +125,96 @@ typedef Err$Void Err$void;
     }
 
 /* Error handling */
-#define try(expr)                    \
-    ({                               \
-        let _result = (expr);        \
-        if (_result.is_err) {        \
-            return_err(_result.err); \
-        }                            \
-        _result.ok;                  \
-    })
+#define try(expr) ({             \
+    let _result = (expr);        \
+    if (_result.is_err) {        \
+        return_err(_result.err); \
+    }                            \
+    _result.ok;                  \
+})
 
-#define catch(expr, var_err, body...)  \
-    ({                                 \
-        let _result = (expr);          \
-        if (_result.is_err) {          \
-            let var_err = _result.err; \
-            body                       \
-        }                              \
-        _result.ok;                    \
-    })
+// /* Enhanced catch macro that supports both statement blocks and default values */
+// #define catch(expr, val_default_or_var_err_with_body...)        \
+//     CATCH_MACRO_CHOOSER(expr, val_default_or_var_err_with_body) \
+//     (expr, val_default_or_var_err_with_body)
+
+// /* Helper macros to count and validate arguments */
+// #define CATCH_GET_ARG_COUNT(...) \
+//     CATCH_GET_ARG_COUNT_(__VA_ARGS__, 3, 2, 1, 0)
+
+// #define CATCH_GET_ARG_COUNT_(_1, _2, _3, count, ...) count
+
+// #define CATCH_CHECK_ARGS(...) \
+//     CATCH_CHECK_ARGS_(CATCH_GET_ARG_COUNT(__VA_ARGS__))
+
+// #define CATCH_CHECK_ARGS_(count) \
+//     CATCH_CHECK_ARGS__(count)
+
+// #define CATCH_MACRO_CHOOSER(...) \
+//     CATCH_MACRO_CHOOSER_(__VA_ARGS__, CATCH_WITH_STATEMENTS, CATCH_WITH_DEFAULT, )
+
+// #define CATCH_MACRO_CHOOSER_(_1, _2, _3, FUNC, ...) FUNC
+
+// /* Catch with default value (2 arguments version) */
+// #define CATCH_WITH_DEFAULT(expr, default_value...) ({ \
+//     var _result = (expr);                             \
+//     _result.is_err ? (default_value) : _result.ok;    \
+// })
+
+// /* Catch with statements (3 arguments version) */
+// #define CATCH_WITH_STATEMENTS(expr, var_err, body...) ({ \
+//     var _result = (expr);                                \
+//     if (_result.is_err) {                                \
+//         let var_err = _result.err;                       \
+//         body                                             \
+//     }                                                    \
+//     _result.ok;                                          \
+// })
+
+#define catch_default(expr, val_default...) ({   \
+    var _result = (expr);                        \
+    _result.is_err ? (val_default) : _result.ok; \
+})
+
+#define catch(expr, var_err, body...) ({ \
+    var _result = (expr);                \
+    if (_result.is_err) {                \
+        let var_err = _result.err;       \
+        body;                            \
+    }                                    \
+    _result.ok;                          \
+})
+
+/* // Example usage:
+impl_Err(
+    math_Err,
+    DivisionByZero,
+    Overflow,
+    Underflow
+);
+
+using_Err$(i32);
+must_check static Err$i32 safeDivide(i32 lhs, i32 rhs) {
+    reserveReturn(Err$i32);
+    if (rhs == 0) {
+        return_err(math_Err_err(math_ErrType_DivisionByZero));
+    }
+    return_ok(lhs / rhs);
+}
+
+void test() {
+    let result_invalid  = catch (safeDivide(10, 0));
+    let result_default  = catch (safeDivide(10, 0), 1);
+    let result_handling = catch (safeDivide(10, 0), err, {
+        printf("Error: %s\n", Err_message(err));
+        return;
+    });
+} */
 
 /* Error main */
 #if !defined(ERR_RES_NO_HIJACK_MAIN)
-
 extern must_check Err$void dh_main(int argc, const char* argv[]);
 extern int                 main(int argc, const char* argv[]);
-
 #endif /* !defined(ERR_RES_NO_HIJACK_MAIN) */
 
 #if defined(__cplusplus)
