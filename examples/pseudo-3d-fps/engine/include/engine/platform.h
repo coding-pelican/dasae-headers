@@ -14,42 +14,6 @@ typedef enum engine_RenderBackendType {
     engine_RenderBackendType_vulkan
 } engine_RenderBackendType;
 
-/* typedef union engine_ColorRgb {
-    u8 channels[3]; // Rgb channel components in [0,255]
-    struct {
-        u8 r; // Red channel in [0,255]
-        u8 g; // Green channel in [0,255]
-        u8 b; // Blue channel in [0,255]
-    };
-} engine_ColorRgb;
-
-typedef union engine_ColorRgba {
-    u8 channels[4]; // RGBA channel components in [0,255]
-    struct {
-        union {
-            engine_ColorRgb rgb; // RGB channel components in [0,255]
-            struct {
-                u8 r; // Red channel in [0,255]
-                u8 g; // Green channel in [0,255]
-                u8 b; // Blue channel in [0,255]
-            };
-        };
-        u8 a; // Alpha channel in [0,255]
-    };
-    u32 packed;
-} engine_ColorRgba;
-
-typedef struct engine_ColorIndexed {
-    u8 ascii_char;
-    u8 index; // Index in color palette
-} engine_ColorIndexed;
-
-// Abstract color type that can be interpreted differently by different backends
-typedef union engine_ColorValue {
-    engine_ColorRgba    rgba;
-    engine_ColorIndexed indexed;
-} engine_ColorValue; */
-
 // engine_Platform-specific initialization parameters
 typedef struct engine_PlatformParams {
     engine_RenderBackendType backend_type;
@@ -64,7 +28,6 @@ using_Err$(Ptr$engine_PlatformParams);
 // Forward declarations
 typedef struct engine_Platform      engine_Platform;
 typedef struct engine_RenderBackend engine_RenderBackend;
-
 
 // engine_Platform interface
 struct engine_Platform {

@@ -1,11 +1,8 @@
-// platform_backend.h (Include this before platform.h)
-#ifndef ENGINE_PLATFORM_BACKEND_H
-#define ENGINE_PLATFORM_BACKEND_H
+#ifndef ENGINE_PLATFORM_BACKEND_INCLUDED
+#define ENGINE_PLATFORM_BACKEND_INCLUDED (10)
 
 #include "platform.h"
 #include "common.h"
-
-#include <windows.h>
 
 // Complete render backend interface
 struct engine_RenderBackend {
@@ -15,6 +12,8 @@ struct engine_RenderBackend {
     void (*processInput)(void);
     void (*destroy)(struct engine_Platform* platform);
 };
+
+#include <windows.h>
 
 // Win32 console backend
 typedef struct engine_Win32ConsoleBackend {
@@ -26,4 +25,4 @@ typedef struct engine_Win32ConsoleBackend {
     bool                 cursor_visible;
 } engine_Win32ConsoleBackend;
 
-#endif // ENGINE_PLATFORM_BACKEND_H
+#endif // ENGINE_PLATFORM_BACKEND_INCLUDED

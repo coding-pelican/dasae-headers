@@ -163,14 +163,14 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
             i32 start_py = as(i32, as(f32, y) * scale_y);
             i32 end_py   = as(i32, as(f32, y + 1) * scale_y);
 
-            Color color;
+            Color color = Color_blank;
             if (state->map[x + (y * state->map_width)] == '#') {
                 color = (Color){
-                    .channels = { 240, 240, ColorChannel_max_value, ColorChannel_max_value }
+                    .channels = { 240, 240, ColorChannel_max_value, ColorChannel_alpha_opaque / 4 * 3 }
                 };
             } else {
                 color = (Color){
-                    .channels = { 40, 40, 50, ColorChannel_max_value }
+                    .channels = { 40, 40, 50, ColorChannel_alpha_opaque / 4 * 3 }
                 };
             }
 
@@ -199,7 +199,7 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
             ColorChannel_max_value,
             0,
             0,
-            ColorChannel_max_value,
+            ColorChannel_alpha_opaque / 4 * 3,
         }
     };
 
@@ -208,7 +208,7 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
             ColorChannel_max_value,
             165,
             0,
-            ColorChannel_max_value,
+            ColorChannel_alpha_opaque / 4 * 3,
         }
     };
 

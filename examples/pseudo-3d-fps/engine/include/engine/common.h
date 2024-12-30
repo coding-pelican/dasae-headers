@@ -7,10 +7,6 @@
 #include "dh/mem/Allocator.h"
 #include "dh/time.h"
 
-// #define using_Ptr$(T)                     \
-//     typedef rawptr(T) pp_join($, Ptr, T); \
-//     typedef const rawptr(T) pp_join($, PtrConst, T);
-
 typedef union engine_Vec3f32 {
     f32 xyz[3];
     struct {

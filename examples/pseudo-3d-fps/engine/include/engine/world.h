@@ -1,6 +1,5 @@
-#include "dh/builtin/comp.h"
-#ifndef WORLD_INCLUDED
-#define WORLD_INCLUDED (1)
+#ifndef ENGINE_WORLD_INCLUDED
+#define ENGINE_WORLD_INCLUDED (1)
 
 #include "common.h"
 
@@ -61,4 +60,4 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-#endif /* WORLD_INCLUDED */
+#endif /* ENGINE_WORLD_INCLUDED */
