@@ -38,6 +38,8 @@ extern "C" {
 
 #define scope_defer__snapshot(_Statement...) IMPL_scope_defer__snapshot(_Statement)
 
+// TODO: Implement errdefer
+
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN(bugprone-terminating-continue)
