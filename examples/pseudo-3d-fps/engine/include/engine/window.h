@@ -29,14 +29,14 @@ using_Ptr$(engine_Window);
 using_Err$(Ptr$engine_Window);
 
 // Window management
-Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;
-void                  engine_Window_destroy(engine_Window* window);
-void                  engine_Window_processEvents(engine_Window* window);
-void                  engine_Window_present(engine_Window* window);
+extern Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;
+extern void                  engine_Window_destroy(engine_Window* window);
+extern void                  engine_Window_processEvents(engine_Window* window);
+extern void                  engine_Window_present(engine_Window* window);
 
 // Canvas view management
-i32  engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, i32 width, i32 height);
-void engine_Window_removeCanvasView(engine_Window* window, i32 view_id);
-void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height);
+extern i32  engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, i32 width, i32 height);
+extern void engine_Window_removeCanvasView(engine_Window* window, i32 view_id);
+extern void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height);
 
 #endif // ENGINE_WINDOW_INCLUDED

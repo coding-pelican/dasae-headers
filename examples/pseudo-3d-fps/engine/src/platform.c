@@ -5,9 +5,62 @@
 
 #define DISPLAY_BUFFER_SIZE(width, height) ((width) * (height) * 32)
 
-static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const anyptr data, u32 width, u32 height) {
+/* static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const anyptr data, u32 width, u32 height) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
     const engine_ColorRgba*     pixels  = (const engine_ColorRgba*)data;
+
+    backend->buffer_size = 0;
+
+    // Process two rows at a time using block characters
+    for (usize y = 0; (y + 1) < height; y += 2) {
+        for (usize x = 0; x < width; ++x) {
+            const engine_ColorRgba upper = pixels[x + (y * width)];
+            const engine_ColorRgba lower = pixels[x + ((y + 1) * width)];
+
+            // Find run length of identical color pairs
+            usize run_length = 1;
+            while ((x + run_length) < width) {
+                const engine_ColorRgba next_upper = pixels[(x + run_length) + (y * width)];
+                const engine_ColorRgba next_lower = pixels[(x + run_length) + ((y + 1) * width)];
+
+                // clang-format off
+                if (memcmp(&upper, &next_upper, sizeof(engine_ColorRgba)) != 0 ||
+                    memcmp(&lower, &next_lower, sizeof(engine_ColorRgba)) != 0) {
+                    break;
+                }
+                run_length++;
+            }
+
+            // Write ANSI color sequence
+            backend->buffer_size += sprintf(
+                backend->buffer + backend->buffer_size,
+                "\033[38;2;%d;%d;%d;48;2;%d;%d;%d;m",
+                upper.r, upper.g, upper.b,
+                lower.r, lower.g, lower.b
+            );
+            // clang-format on
+
+            // Append the block character '▀' runLength times
+            static const char* const block_char        = "▀"; // Multibyte character
+            static const usize       block_char_length = strlen(block_char);
+
+            // Write block characters for the run
+            for (usize i = 0; i < run_length; ++i) {
+                memcpy(backend->buffer + backend->buffer_size, block_char, block_char_length);
+                backend->buffer_size += block_char_length;
+            }
+            x += run_length - 1;
+        }
+        backend->buffer[backend->buffer_size++] = '\n';
+    }
+
+    printf("\033[H"); // Reset cursor position
+    WriteConsoleA(backend->console_handle, backend->buffer, (DWORD)backend->buffer_size, NULL, NULL);
+} */
+
+static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height) {
+    engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
+    const Color*                pixels  = data;
 
     /* Reset buffer */ {
         backend->buffer_size = 0;
@@ -16,16 +69,18 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const a
     for (u32 y = 0; (y + 1) < height; y += 2) {
         for (u32 x = 0; x < width; ++x) {
             // Get upper and lower pixels
-            const engine_ColorRgba upper = pixels[y * width + x];
-            const engine_ColorRgba lower = pixels[(y + 1) * width + x];
+            const Color upper = pixels[y * width + x];
+            const Color lower = pixels[(y + 1) * width + x];
 
+            // clang-format off
             // Find run length of identical color pairs
             usize run_length = 1;
             while ((x + run_length) < width) {
-                const engine_ColorRgba next_upper = pixels[y * width + x + run_length];
-                const engine_ColorRgba next_lower = pixels[(y + 1) * width + x + run_length];
+                const Color next_upper = pixels[y * width + x + run_length];
+                const Color next_lower = pixels[(y + 1) * width + x + run_length];
 
-                if (memcmp(&upper, &next_upper, sizeof(engine_ColorRgba)) != 0 || memcmp(&lower, &next_lower, sizeof(engine_ColorRgba)) != 0) {
+                if (memcmp(&upper.channels, &next_upper.channels, sizeof(Color)) != 0
+                 || memcmp(&lower.channels, &next_lower.channels, sizeof(Color)) != 0) {
                     break;
                 }
                 run_length++;
@@ -35,21 +90,19 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const a
             backend->buffer_size += sprintf(
                 backend->buffer + backend->buffer_size,
                 "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm",
-                upper.r,
-                upper.g,
-                upper.b,
-                lower.r,
-                lower.g,
-                lower.b
+                upper.r, upper.g, upper.b,
+                lower.r, lower.g, lower.b
             );
+            // clang-format on
 
             // Write half-blocks for the run
             for (usize i = 0; i < run_length; ++i) {
                 memcpy(backend->buffer + backend->buffer_size, "▀", strlen("▀"));
                 backend->buffer_size += strlen("▀");
             }
-            x += run_length;
-            // x += run_length - 1; // -1 because loop will increment
+
+            // NOTE: 으아 ㅠㅠㅠ 드디어 고쳐냈다 ㅠㅠ 길이를 1개 감소시키지 않았다고 화면이 와장창 깨지다니...
+            x += run_length - 1; // -1 because loop will increment
         }
         backend->buffer[backend->buffer_size++] = '\n';
     }
@@ -75,7 +128,7 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const a
     // }
 
     /* Reset cursor position */ {
-        const char* reset_cursor = "\033[H";
+        static const char* const reset_cursor = "\033[H";
         printf("%s", reset_cursor);
         // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
         // backend->buffer_size += strlen(reset_cursor);

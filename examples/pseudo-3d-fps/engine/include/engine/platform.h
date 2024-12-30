@@ -2,6 +2,7 @@
 #define ENGINE_PLATFORM_INCLUDED (1)
 
 #include "common.h"
+#include "color.h"
 
 // engine_Platform-specific rendering backend types
 typedef enum engine_RenderBackendType {
@@ -13,7 +14,7 @@ typedef enum engine_RenderBackendType {
     engine_RenderBackendType_vulkan
 } engine_RenderBackendType;
 
-typedef union engine_ColorRgb {
+/* typedef union engine_ColorRgb {
     u8 channels[3]; // Rgb channel components in [0,255]
     struct {
         u8 r; // Red channel in [0,255]
@@ -47,7 +48,7 @@ typedef struct engine_ColorIndexed {
 typedef union engine_ColorValue {
     engine_ColorRgba    rgba;
     engine_ColorIndexed indexed;
-} engine_ColorValue;
+} engine_ColorValue; */
 
 // engine_Platform-specific initialization parameters
 typedef struct engine_PlatformParams {
@@ -70,13 +71,13 @@ struct engine_Platform {
     engine_RenderBackend* backend;
     void (*destroy)(engine_Platform* platform);
     void (*process_events)(engine_Platform* platform);
-    void (*present_buffer)(engine_Platform* platform, const anyptr buffer, u32 width, u32 height);
+    void (*present_buffer)(engine_Platform* platform, const Color* buffer, u32 width, u32 height);
 };
 using_Ptr$(engine_Platform);
 using_Err$(Ptr$engine_Platform);
 
 // Create platform instance with specific backend
-Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
-void                    engine_Platform_destroy(engine_Platform* platform);
+extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
+extern void                    engine_Platform_destroy(engine_Platform* platform);
 
 #endif // ENGINE_PLATFORM_INCLUDED

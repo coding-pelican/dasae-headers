@@ -25,10 +25,10 @@ using_Ptr$(engine_WorldObject);
 using_Err$(Ptr$engine_WorldObject);
 
 // Game World functions
-Err$Ptr$engine_World       engine_World_create(engine_Vec3f32 bounds) must_check;
-void                       engine_World_destroy(engine_World* self);
-Err$Ptr$engine_WorldObject engine_World_spawnObject(engine_World* self, engine_Vec3f32 position) must_check;
-void                       engine_World_update(engine_World* self, f32 delta_time);
+extern Err$Ptr$engine_World       engine_World_create(engine_Vec3f32 bounds) must_check;
+extern void                       engine_World_destroy(engine_World* self);
+extern Err$Ptr$engine_WorldObject engine_World_spawnObject(engine_World* self, engine_Vec3f32 position) must_check;
+extern void                       engine_World_update(engine_World* self, f32 delta_time);
 
 #if 0
 // Example main game loop

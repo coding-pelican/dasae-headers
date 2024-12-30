@@ -63,7 +63,7 @@ void engine_Window_present(engine_Window* window) {
     // Clear composite buffer
     engine_Canvas_clear(
         window->composite_buffer,
-        (engine_ColorValue){ .rgba = { { 0, 0, 0, 255 } } }
+        Color_blue
     );
 
     // Compose all visible canvas views
@@ -90,7 +90,7 @@ void engine_Window_present(engine_Window* window) {
     if (window->platform->backend && window->platform->backend->presentBuffer) {
         window->platform->backend->presentBuffer(
             window->platform,
-            window->composite_buffer->buffer,
+            window->composite_buffer->buffer.items,
             window->width,
             window->height
         );

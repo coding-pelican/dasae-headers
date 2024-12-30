@@ -27,11 +27,16 @@ Err$void dh_main(int argc, const char* argv[]) {
     let minimap_canvas = try(engine_Canvas_create(30, 30, engine_CanvasType_rgba));
     printf("canvas created\n");
 
+    engine_Canvas_clear(game_canvas, Color_blank);
+    engine_Canvas_clear(ui_canvas, Color_blank);
+    engine_Canvas_clear(minimap_canvas, Color_blank);
+    printf("canvas cleared\n");
+
     // Add canvas views
     engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
     engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80, 50);
     engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 30, 30);
-    printf("canvas bind\n");
+    printf("canvas views added\n");
 
     let state = try(game_State_create());
     printf("game state created\n");
@@ -62,6 +67,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     engine_Canvas_destroy(minimap_canvas);
     engine_Canvas_destroy(ui_canvas);
     engine_Canvas_destroy(game_canvas);
+    engine_Input_fini();
     engine_Window_destroy(window);
 
     return_void();

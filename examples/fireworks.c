@@ -10,13 +10,10 @@ use pixel_loop::input::{ CrosstermInputState, KeyboardKey, KeyboardState };
 use pixel_loop::{ Canvas, Color, HslColor, RenderableCanvas };
 */
 
-
-#include "dh/core.h"
-#include "dh/debug.h"
-#include "dh/claim.h"
-#include "dh/time.h"
+#include "dh/main.h"
 #include "dh/scope.h"
 #include "dh/defer.h"
+#include "dh/time.h"
 #include "dh/Random.h"
 #include "dh/mem.h"
 // #include "dh/ds/Vec.h"
@@ -202,8 +199,8 @@ void Display_clear(void) {
 }
 
 void Display_swapBuffers(void) {
-    swap(char*, Display_buffer_curr, Display_buffer_next);
-    swap(usize, Display_buffer_curr_size, Display_buffer_next_size);
+    prim_swap(Display_buffer_curr, Display_buffer_next);
+    prim_swap(Display_buffer_curr_size, Display_buffer_next_size);
 }
 
 void Display_setBufferFromColors(const Window* const window, const Color colors[Display_size]) {

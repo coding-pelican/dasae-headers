@@ -1,4 +1,3 @@
-#include "dh/builtin/comp.h"
 #ifndef ENGINE_VIEWPORT_INCLUDED
 #define ENGINE_VIEWPORT_INCLUDED (1)
 
@@ -25,10 +24,10 @@ using_Ptr$(engine_Viewport);
 using_Err$(Ptr$engine_Viewport);
 
 // Viewport and Camera functions
-struct Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) must_check;
-void                           engine_Viewport_destroy(engine_Viewport* viewport);
-void                           engine_Viewport_resize(engine_Viewport* viewport, f32 width, f32 height);
-void                           engine_Camera_setPosition(engine_Camera* camera, engine_Vec3f32 position);
-void                           engine_Camera_lookAt(engine_Camera* camera, engine_Vec3f32 target);
+extern Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) must_check;
+extern void                    engine_Viewport_destroy(engine_Viewport* viewport);
+extern void                    engine_Viewport_resize(engine_Viewport* viewport, f32 width, f32 height);
+extern void                    engine_Camera_setPosition(engine_Camera* camera, engine_Vec3f32 position);
+extern void                    engine_Camera_lookAt(engine_Camera* camera, engine_Vec3f32 target);
 
 #endif // ENGINE_VIEWPORT_INCLUDED

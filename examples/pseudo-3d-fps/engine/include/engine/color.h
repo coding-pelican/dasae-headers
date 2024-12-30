@@ -4,8 +4,8 @@
  * @file    color.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2024-10-21 (date of last update)
- * @version v1.0.0
+ * @updated 2024-12-30 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -13,16 +13,13 @@
  * @details Some detailed explanation
  */
 
-
-#ifndef COLOR_INCLUDED
-#define COLOR_INCLUDED (1)
+#ifndef ENGINE_COLOR_INCLUDED
+#define ENGINE_COLOR_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-
-#include "dh/core.h"
-
+#include "common.h"
 
 enum ColorChannel {
     ColorChannel_red               = 0,
@@ -38,11 +35,9 @@ enum ColorChannel {
     ColorChannel_alpha_opaque      = ColorChannel_max_value
 };
 
-
 typedef union Rgb   Rgb;
 typedef union Hsl   Hsl;
 typedef union Color Color;
-
 
 union Rgb {
     u8 channels[3]; // Rgb channel components in [0,255]
@@ -53,18 +48,17 @@ union Rgb {
     };
 };
 #define Rgb_(...) make(Rgb, __VA_ARGS__)
-Rgb Rgb_from(u8 r, u8 g, u8 b);
+extern Rgb Rgb_from(u8 r, u8 g, u8 b);
 
-Rgb Rgb_fromHsl(Hsl hsl);
-Rgb Hsl_intoRgb(Hsl hsl);
-Rgb Rgb_fromColor(Color color);
-Rgb Color_intoRgb(Color color);
-Rgb Hsl_asRgb(Hsl hsl);
-Rgb Color_asRgb(Color color);
+extern Rgb Rgb_fromHsl(Hsl hsl);
+extern Rgb Hsl_intoRgb(Hsl hsl);
+extern Rgb Rgb_fromColor(Color color);
+extern Rgb Color_intoRgb(Color color);
+extern Rgb Hsl_asRgb(Hsl hsl);
+extern Rgb Color_asRgb(Color color);
 
 #define literal_Rgb_from(_r, _g, _b) \
     Rgb_(.r = (_r), .g = (_g), .b = (_b))
-
 
 union Hsl {
     f64 channels[3]; // Hsl color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
@@ -75,19 +69,18 @@ union Hsl {
     };
 };
 #define Hsl_(...) make(Hsl, __VA_ARGS__)
-Hsl Hsl_from(f64 h, f64 s, f64 l);
-f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
+extern Hsl Hsl_from(f64 h, f64 s, f64 l);
+extern f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
 
-Hsl Hsl_fromRgb(Rgb rgb);
-Hsl Rgb_intoHsl(Rgb rgb);
-Hsl Hsl_fromColor(Color color);
-Hsl Color_intoHsl(Color color);
-Hsl Rgb_asHsl(Rgb rgb);
-Hsl Color_asHsl(Color color);
+extern Hsl Hsl_fromRgb(Rgb rgb);
+extern Hsl Rgb_intoHsl(Rgb rgb);
+extern Hsl Hsl_fromColor(Color color);
+extern Hsl Color_intoHsl(Color color);
+extern Hsl Rgb_asHsl(Rgb rgb);
+extern Hsl Color_asHsl(Color color);
 
 #define literal_Hsl_from(_h, _s, _l) \
     Hsl_(.h = (_h), .s = (_s), .l = (_l))
-
 
 union Color {
     u8 channels[4]; // RGBA channel components in [0,255]
@@ -104,22 +97,22 @@ union Color {
     };
 };
 #define Color_(...) make(Color, __VA_ARGS__)
-Color Color_from(u8 r, u8 g, u8 b, u8 a);
-Color Color_fromTransparent(u8 r, u8 g, u8 b);
-Color Color_fromOpaque(u8 r, u8 g, u8 b);
+extern Color Color_from(u8 r, u8 g, u8 b, u8 a);
+extern Color Color_fromTransparent(u8 r, u8 g, u8 b);
+extern Color Color_fromOpaque(u8 r, u8 g, u8 b);
 
-Color Color_fromRgb(Rgb rgb, u8 a);
-Color Color_fromRgbTransparent(Rgb rgb);
-Color Color_fromRgbOpaque(Rgb rgb);
-Color Rgb_intoColor(Rgb rgb, u8 a);
-Color Rgb_intoColorTransparent(Rgb rgb);
-Color Rgb_intoColorOpaque(Rgb rgb);
-Color Color_fromHsl(Hsl hsl, u8 a);
-Color Color_fromHslTransparent(Hsl hsl);
-Color Color_fromHslOpaque(Hsl hsl);
-Color Hsl_intoColor(Hsl hsl, u8 a);
-Color Hsl_intoColorTransparent(Hsl hsl);
-Color Hsl_intoColorOpaque(Hsl hsl);
+extern Color Color_fromRgb(Rgb rgb, u8 a);
+extern Color Color_fromRgbTransparent(Rgb rgb);
+extern Color Color_fromRgbOpaque(Rgb rgb);
+extern Color Rgb_intoColor(Rgb rgb, u8 a);
+extern Color Rgb_intoColorTransparent(Rgb rgb);
+extern Color Rgb_intoColorOpaque(Rgb rgb);
+extern Color Color_fromHsl(Hsl hsl, u8 a);
+extern Color Color_fromHslTransparent(Hsl hsl);
+extern Color Color_fromHslOpaque(Hsl hsl);
+extern Color Hsl_intoColor(Hsl hsl, u8 a);
+extern Color Hsl_intoColorTransparent(Hsl hsl);
+extern Color Hsl_intoColorOpaque(Hsl hsl);
 
 #define literal_Color_from(_r, _g, _b, _a) \
     Color_(.channels = { _r, _g, _b, _a })
@@ -128,20 +121,19 @@ Color Hsl_intoColorOpaque(Hsl hsl);
 #define literal_Color_fromOpaque(_r, _g, _b) \
     Color_(.channels = { _r, _g, _b, ColorChannel_max_value })
 
-static const Color Color_TRANSPARENT = literal_Color_from(0, 0, 0, ColorChannel_alpha_transparent);
-static const Color Color_BLANK       = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);
-static const Color Color_OPAQUE      = literal_Color_from(0, 0, 0, ColorChannel_alpha_opaque);
-static const Color Color_BLACK       = literal_Color_fromOpaque(0, 0, 0);
+static const Color Color_transparent = literal_Color_from(0, 0, 0, ColorChannel_alpha_transparent);
+static const Color Color_blank       = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);
+static const Color Color_opaque      = literal_Color_from(0, 0, 0, ColorChannel_alpha_opaque);
+static const Color Color_black       = literal_Color_fromOpaque(0, 0, 0);
 static const Color Color_white       = literal_Color_fromOpaque(255, 255, 255);
-static const Color Color_RED         = literal_Color_fromOpaque(255, 0, 0);
-static const Color Color_GREEN       = literal_Color_fromOpaque(0, 255, 0);
-static const Color Color_BLUE        = literal_Color_fromOpaque(0, 0, 255);
-static const Color Color_YELLOW      = literal_Color_fromOpaque(255, 255, 0);
-static const Color Color_CYAN        = literal_Color_fromOpaque(0, 255, 255);
-static const Color Color_MAGENTA     = literal_Color_fromOpaque(255, 0, 255);
-
+static const Color Color_red         = literal_Color_fromOpaque(255, 0, 0);
+static const Color Color_green       = literal_Color_fromOpaque(0, 255, 0);
+static const Color Color_blue        = literal_Color_fromOpaque(0, 0, 255);
+static const Color Color_yellow      = literal_Color_fromOpaque(255, 255, 0);
+static const Color Color_cyan        = literal_Color_fromOpaque(0, 255, 255);
+static const Color Color_magenta     = literal_Color_fromOpaque(255, 0, 255);
 
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */
-#endif /* COLOR_INCLUDED */
+#endif /* ENGINE_COLOR_INCLUDED */

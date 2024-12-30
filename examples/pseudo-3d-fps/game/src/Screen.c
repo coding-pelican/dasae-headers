@@ -1,70 +1,105 @@
 #include "Screen.h"
 #include <math.h>
 
+#define PI (3.14159265358979323846)
+
 void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
-    const i32 width  = as(i32, canvas->width);
-    const i32 height = as(i32, canvas->height);
+    for (usize x = 0; x < canvas->width; ++x) {
+        // Calculate ray angle - matches original implementation
+        const f32 ray_angle = (state->player_angle - state->fov * 0.5f) + (as(f32, x) / as(f32, canvas->width)) * state->fov;
 
-    for (i32 x = 0; x < width; ++x) {
-        // Calculate ray angle
-        const f32 ray_angle = (state->player_angle - state->fov / 2.0f) + (as(f32, x) / as(f32, width)) * state->fov;
+        // Use sin/cos matching the original implementation
+        const f32 eye_x = sinf(ray_angle); // Changed to sin
+        const f32 eye_y = cosf(ray_angle); // Changed to cos
 
-        // Cast ray
-        const f32 eye_x    = sinf(ray_angle);
-        const f32 eye_y    = cosf(ray_angle);
-        f32       distance = 0.0f;
-        bool      hit_wall = false;
+        f32  distance_to_wall = 0.0f;
+        bool hits_wall        = false;
 
-        while (!hit_wall && distance < state->depth) {
-            distance += 0.1f;
-            const i32 test_x = (i32)(state->player_x + eye_x * distance);
-            const i32 test_y = (i32)(state->player_y + eye_y * distance);
+        // Ray casting
+        while (!hits_wall && distance_to_wall < state->depth) {
+            distance_to_wall += 0.1f; // Match original step size
+            const i32 test_x = as(i32, state->player_x + eye_x * distance_to_wall);
+            const i32 test_y = as(i32, state->player_y + eye_y * distance_to_wall);
 
+            // Bounds checking
             if (test_x < 0 || test_x >= state->map_width || test_y < 0 || test_y >= state->map_height) {
-                hit_wall = true;
-                distance = state->depth;
-            } else if (state->map[test_x * state->map_width + test_y] == '#') {
-                hit_wall = true;
+                hits_wall        = true;
+                distance_to_wall = state->depth;
+            } else {
+                // Fixed map indexing to match original
+                if (state->map[test_x * state->map_width + test_y] == '#') {
+                    hits_wall = true;
+                }
             }
         }
 
-        // Calculate wall height
-        const i32 ceiling = as(i32, as(f32, height) / 2.0f - as(f32, height) / distance);
-        const i32 floor   = height - ceiling;
+        // Calculate wall height - note the y-axis inversion handling
+        const i32 ceiling = as(i32, (as(f32, canvas->height) / 2.0f) - (as(f32, canvas->height) / distance_to_wall));
+        const i32 floor   = as(i32, canvas->height) - ceiling;
 
-        // Draw vertical line
-        for (i32 y = 0; y < height; ++y) {
-            engine_ColorValue color;
+        // Draw vertical slice
+        for (usize y = 0; y < canvas->height; ++y) {
+            Color color = Color_transparent;
 
-            if (y <= ceiling) {
-                // Sky - Gradient from darker to lighter blue
-                const f32 sky_fade = as(f32, y) / as(f32, ceiling);
-                color.rgba.r       = as(u8, 100 * sky_fade);
-                color.rgba.g       = as(u8, 150 * sky_fade);
-                color.rgba.b       = 255;
-                color.rgba.a       = 255;
-            } else if (y > ceiling && y <= floor) {
-                // Wall - Shade based on distance with slight color variation
-                const f32 brightness = 1.0f - (distance / state->depth);
-                const u8  base_shade = as(u8, 255.0f * brightness);
+            // Ceiling (sky)
+            if (as(i32, y) <= ceiling) {
+                // Sky gradient - darker at top, lighter at horizon
+                f32 t   = 1.0f - (as(f32, y) / as(f32, ceiling));
+                color.r = as(u8, 50 * t);
+                color.g = as(u8, 100 * t);
+                color.b = as(u8, 200 * t);
+                color.a = ColorChannel_max_value;
+            }
+            // Walls
+            else if (ceiling < as(i32, y) && as(i32, y) <= floor) {
+                if (distance_to_wall < state->depth) {
+                    // Match original shading logic but with RGB values
+                    f32 brightness = 0.0f;
+                    if (distance_to_wall <= state->depth / 4.0f) {
+                        brightness = 1.0f; // Fullest block
+                    } else if (distance_to_wall < state->depth / 3.0f) {
+                        brightness = 0.8f; // Dark shade
+                    } else if (distance_to_wall < state->depth / 2.0f) {
+                        brightness = 0.6f; // Medium shade
+                    } else if (distance_to_wall < state->depth) {
+                        brightness = 0.4f; // Light shade
+                    } else {
+                        brightness = 0.2f; // Distant walls
+                    }
 
-                // Add slight color variation based on wall orientation
-                const f32 angle_factor = fabsf(eye_x) / (fabsf(eye_x) + fabsf(eye_y));
-                color.rgba.r           = base_shade;
-                color.rgba.g           = as(u8, base_shade * (0.9f + angle_factor * 0.1f));
-                color.rgba.b           = as(u8, base_shade * (0.8f + angle_factor * 0.2f));
-                color.rgba.a           = 255;
-            } else {
-                // Floor - Gradient with distance
-                const f32 floor_dist  = 1.0f - (as(f32, y - height / 2.0f) / as(f32, height / 2.0f));
-                const u8  floor_shade = as(u8, floor_dist * 128.0f);
-                color.rgba.r          = floor_shade;
-                color.rgba.g          = as(u8, floor_shade * 0.7f);
-                color.rgba.b          = as(u8, floor_shade * 0.5f);
-                color.rgba.a          = 255;
+                    color.r = as(u8, brightness * ColorChannel_max_value);
+                    color.g = as(u8, brightness * ColorChannel_max_value);
+                    color.b = as(u8, brightness * ColorChannel_max_value);
+                    color.a = ColorChannel_max_value;
+                }
+            }
+            // Floor
+            else {
+                // Match original floor shading logic
+                f32 b = 1.0f - (as(f32, y) - as(f32, canvas->height / 2.0)) / (as(f32, canvas->height / 2.0));
+
+                f32 brightness = 0.0f;
+                if (b < 0.25f) {
+                    brightness = 0.9f; // Closest floor sections
+                } else if (b < 0.5f) {
+                    brightness = 0.7f;
+                } else if (b < 0.75f) {
+                    brightness = 0.5f;
+                } else if (b < 0.9f) {
+                    brightness = 0.3f;
+                } else {
+                    brightness = 0.1f; // Distant floor
+                }
+
+                color.r = as(u8, brightness * ColorChannel_max_value);
+                color.g = as(u8, (brightness * 0.8f) * ColorChannel_max_value); // Slight color tint
+                color.b = as(u8, (brightness * 0.6f) * ColorChannel_max_value);
+                color.a = ColorChannel_max_value;
             }
 
-            engine_Canvas_drawPixel(canvas, x, y, color);
+            // Draw pixel with y-coordinate properly inverted for screen space
+            const i32 screen_y = as(i32, canvas->height) - 1 - as(i32, y);
+            engine_Canvas_drawPixel(canvas, as(i32, x), screen_y, color);
         }
     }
 }
@@ -74,34 +109,32 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
     const f32 scale_x = as(f32, canvas->width) / as(f32, state->map_width);
     const f32 scale_y = as(f32, canvas->height) / as(f32, state->map_height);
 
-    // Draw map
+    // Draw map tiles
     for (i32 y = 0; y < state->map_height; ++y) {
         for (i32 x = 0; x < state->map_width; ++x) {
-            engine_ColorValue color;
+            // Calculate pixel ranges for this tile
+            i32 start_px = as(i32, as(f32, x) * scale_x);
+            i32 end_px   = as(i32, as(f32, x + 1) * scale_x);
+            i32 start_py = as(i32, as(f32, y) * scale_y);
+            i32 end_py   = as(i32, as(f32, y + 1) * scale_y);
 
+            Color color;
             if (state->map[y * state->map_width + x] == '#') {
-                // Wall tiles - White with slight blue tint
-                color.rgba.r = 240;
-                color.rgba.g = 240;
-                color.rgba.b = 255;
-                color.rgba.a = 255;
+                color = (Color){
+                    .channels = { 240, 240, ColorChannel_max_value, ColorChannel_max_value }
+                };
             } else {
-                // Floor tiles - Dark gray with slight depth
-                color.rgba.r = 40;
-                color.rgba.g = 40;
-                color.rgba.b = 50;
-                color.rgba.a = 255;
+                color = (Color){
+                    .channels = { 40, 40, 50, ColorChannel_max_value }
+                };
             }
 
-            // Draw scaled tile
-            for (i32 sy = 0; sy < as(i32, scale_y); ++sy) {
-                for (i32 sx = 0; sx < as(i32, scale_x); ++sx) {
-                    engine_Canvas_drawPixel(
-                        canvas,
-                        as(i32, (as(f32, x) * scale_x + as(f32, sx))),
-                        as(i32, (as(f32, y) * scale_y + as(f32, sy))),
-                        color
-                    );
+            // Fill entire tile area
+            for (i32 py = start_py; py < end_py; ++py) {
+                for (i32 px = start_px; px < end_px; ++px) {
+                    if (px < as(i32, canvas->width) && py < as(i32, canvas->height)) {
+                        engine_Canvas_drawPixel(canvas, px, py, color);
+                    }
                 }
             }
         }
@@ -117,18 +150,22 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
     const i32 dir_y       = player_screen_y + (i32)(cosf(state->player_angle) * (f32)line_length);
 
     // Player marker (red dot with orange direction line)
-    engine_ColorValue player_color = {
-        .rgba.r = 255,
-        .rgba.g = 0,
-        .rgba.b = 0,
-        .rgba.a = 255
+    Color player_color = {
+        .channels = {
+            ColorChannel_max_value,
+            0,
+            0,
+            ColorChannel_max_value,
+        }
     };
 
-    engine_ColorValue direction_color = {
-        .rgba.r = 255,
-        .rgba.g = 165,
-        .rgba.b = 0,
-        .rgba.a = 255
+    Color direction_color = {
+        .channels = {
+            ColorChannel_max_value,
+            165,
+            0,
+            ColorChannel_max_value,
+        }
     };
 
     // Draw player marker (3x3 pixel dot)
@@ -151,11 +188,13 @@ void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
     unused(state);
 
     // Crosshair configuration
-    const engine_ColorValue ui_color = {
-        .rgba.r = 255,
-        .rgba.g = 255,
-        .rgba.b = 255,
-        .rgba.a = 192 // Semi-transparent
+    const Color ui_color = {
+        .channels = {
+            ColorChannel_max_value,
+            ColorChannel_max_value,
+            ColorChannel_max_value,
+            192, // Semi-transparent
+        }
     };
 
     const i32 center_x            = as(i32, canvas->width) / 2;

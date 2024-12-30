@@ -40,5 +40,6 @@
       "windows": [],
       "linux": []
     }
-  }
+  },
+  "discord.enabled": true
 }

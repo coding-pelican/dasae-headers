@@ -13,6 +13,12 @@ typedef enum engine_KeyCode {
     engine_KeyCode_Tab       = 0x09,
     engine_KeyCode_Backspace = 0x08,
 
+    // Common movement keys
+    engine_KeyCode_W = 0x57,
+    engine_KeyCode_A = 0x41,
+    engine_KeyCode_S = 0x53,
+    engine_KeyCode_D = 0x44,
+
     // Arrow keys
     engine_KeyCode_Left  = 0x25,
     engine_KeyCode_Up    = 0x26,
@@ -31,7 +37,6 @@ typedef struct engine_InputState {
     bool keys[engine_KeyCode_Count];
     bool prev_keys[engine_KeyCode_Count];
 } engine_InputState;
-
 extern engine_InputState* engine_InputState_global;
 
 extern void engine_Input_init(void);

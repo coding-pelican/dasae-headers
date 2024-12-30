@@ -3,11 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define engine_KeyCode_W (0x57)
-#define engine_KeyCode_A (0x41)
-#define engine_KeyCode_S (0x53)
-#define engine_KeyCode_D (0x44)
-
 Err$Ptr$game_State game_State_create(void) {
     reserveReturn(Err$Ptr$game_State);
 
@@ -46,9 +41,16 @@ Err$Ptr$game_State game_State_create(void) {
     return_ok(state);
 }
 
+void game_State_destroy(game_State* state) {
+    if (!state) { return; }
+    free(state);
+}
+
 void game_State_update(game_State* state, f32 elapsed_time) {
-    // Platform-independent key state checking would go here
-    // For this example, we'll assume a platform-specific engine_Key_pressed() function
+    if (engine_Key_pressed(engine_KeyCode_Escape)) {
+        state->is_running = false;
+        return;
+    }
 
     if (engine_Key_pressed(engine_KeyCode_A)) {
         state->player_angle -= 2.0f * elapsed_time;
