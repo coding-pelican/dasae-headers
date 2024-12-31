@@ -12,7 +12,7 @@ struct engine_World {
     engine_Vec3f32      world_bounds;
 };
 using_Ptr$(engine_World);
-using_Err$(Ptr$engine_World);
+using_Err$(engine_World);
 
 struct engine_WorldObject {
     engine_Transform    transform;
@@ -21,7 +21,7 @@ struct engine_WorldObject {
     engine_WorldObject* next;       /* Linked list of game objects */
 };
 using_Ptr$(engine_WorldObject);
-using_Err$(Ptr$engine_WorldObject);
+using_Err$(engine_WorldObject);
 
 // Game World functions
 extern Err$Ptr$engine_World       engine_World_create(engine_Vec3f32 bounds) must_check;

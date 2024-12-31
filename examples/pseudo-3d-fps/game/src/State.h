@@ -16,7 +16,7 @@ typedef struct game_State {
     bool        is_running;
 } game_State;
 using_Ptr$(game_State);
-using_Err$(Ptr$game_State);
+using_Err$(game_State);
 
 extern Err$Ptr$game_State game_State_create(void) must_check;
 extern void               game_State_destroy(game_State* state);

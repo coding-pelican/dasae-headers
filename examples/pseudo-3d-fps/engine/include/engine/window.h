@@ -14,7 +14,7 @@ struct engine_CanvasView {
     bool           visible;       // Visibility flag
 };
 using_Ptr$(engine_CanvasView);
-using_Err$(Ptr$engine_CanvasView);
+using_Err$(engine_CanvasView);
 
 struct engine_Window {
     engine_Platform*  platform;
@@ -25,7 +25,7 @@ struct engine_Window {
     engine_Canvas*    composite_buffer; // Final composition buffer
 };
 using_Ptr$(engine_Window);
-using_Err$(Ptr$engine_Window);
+using_Err$(engine_Window);
 
 // Window management
 extern Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;

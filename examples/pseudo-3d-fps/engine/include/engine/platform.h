@@ -23,7 +23,7 @@ typedef struct engine_PlatformParams {
     u32                      height;
 } engine_PlatformParams;
 using_Ptr$(engine_PlatformParams);
-using_Err$(Ptr$engine_PlatformParams);
+using_Err$(engine_PlatformParams);
 
 // Forward declarations
 typedef struct engine_Platform      engine_Platform;
@@ -37,7 +37,7 @@ struct engine_Platform {
     void (*present_buffer)(engine_Platform* platform, const Color* buffer, u32 width, u32 height);
 };
 using_Ptr$(engine_Platform);
-using_Err$(Ptr$engine_Platform);
+using_Err$(engine_Platform);
 
 // Create platform instance with specific backend
 extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
