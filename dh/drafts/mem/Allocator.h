@@ -3,13 +3,13 @@
 #include "dh/err_res.h"
 #include "dh/meta/common.h"
 
-using_Opt$(u8);
-typedef struct Sli$u8 Sli$u8;
+// using_Opt$(u8);
+// typedef struct Sli$u8 Sli$u8;
 
 /* Allocator vtable */
 typedef struct mem_AllocatorVT mem_AllocatorVT;
 struct mem_AllocatorVT {
-    Optptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align) must_check;
+    Opt$Ptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align) must_check;
     bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
     void (*free)(anyptr ctx, Sli$u8 buf, usize buf_align);
 };
@@ -30,11 +30,11 @@ impl_Err(
 /*========== Core Allocator Functions =======================================*/
 
 /* Raw allocation */
-extern must_check Optptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align);
+extern must_check Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align);
 /* Try to resize in-place */
-extern must_check bool      mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len);
+extern must_check bool       mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len);
 /* Free memory */
-extern void                 mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align);
+extern void                  mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align);
 
 /*========== High-level Allocator Functions =================================*/
 

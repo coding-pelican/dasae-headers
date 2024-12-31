@@ -3,7 +3,7 @@
 
 mem_Allocator heap_Classic_allocator(heap_Classic* self) {
     /* VTable implementations */
-    extern must_check Optptr$u8  heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align);
+    extern must_check Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align);
     extern must_check bool       heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len);
     extern void                  heap_Classic_free(anyptr ctx, Sli$u8 buf, usize buf_align);
     /* VTable for Classic allocator */
@@ -32,8 +32,8 @@ void heap_Classic_fini(mem_Allocator self) {
     unused(self);
 }
 
-Optptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
-    reserveReturn(Optptr$u8);
+Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
+    reserveReturn(Opt$Ptr$u8);
     unused(ctx);
 
     // Allocate aligned memory

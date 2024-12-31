@@ -4,10 +4,10 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-29 (date of creation)
- * @updated 2024-12-29 (date of last update)
+ * @updated 2024-12-31 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)/meta
- * @prefix  meta
+ * @prefix
  *
  * @brief
  * @details
@@ -28,33 +28,89 @@ extern "C" {
 /*========== Meta Utilities =================================================*/
 
 /* Generic type */
-#define PtrConst$(T) const T*
-#define Ptr$(T)      T*
+#define PtrConst$(T)  IMPL_PtrConst$(T)
+#define Ptr$(T)       IMPL_Ptr$(T)
+#define using_Ptr$(T) IMPL_using_Ptr$(T)
+#define decl_Ptr$(T)  IMPL_decl_Ptr$(T)
+#define impl_Ptr$(T)  IMPL_impl_Ptr$(T)
 
-#define using_Ptr$(T)                             \
+#define SliConst$(T)  IMPL_SliConst$(T)
+#define Sli$(T)       IMPL_Sli$(T)
+#define using_Sli$(T) IMPL_using_Sli$(T)
+#define decl_Sli$(T)  IMPL_decl_Sli$(T)
+#define impl_Sli$(T)  IMPL_impl_Sli$(T)
+
+typedef const anyptr PtrConst;
+typedef anyptr       Ptr;
+extern Ptr           Ptr_constCast(PtrConst);
+
+typedef struct SliConst SliConst;
+typedef union Sli       Sli;
+extern Sli              Sli_constCast(SliConst);
+extern anyptr           Sli_rawAt(TypeInfo, anyptr, usize, usize);
+extern anyptr           Sli_rawSlice(TypeInfo, anyptr, usize, usize, usize);
+
+#define Sli_from(var_ptr, val_len)                 IMPL_Sli_from(var_ptr, val_len)
+#define Sli_from$(T, var_ptr, val_len)             IMPL_Sli_from$(T, var_ptr, val_len)
+#define Sli_range(var_ptr, val_begin, val_end)     IMPL_Sli_range(var_ptr, val_begin, val_end)
+#define Sli_range$(T, var_ptr, val_begin, val_end) IMPL_Sli_range$(T, var_ptr, val_begin, val_end)
+#define Sli_arr(var_arr)                           IMPL_Sli_arr(var_arr)
+#define Sli_arr$(T, var_arr)                       IMPL_Sli_arr$(T, var_arr)
+#define Sli_at(var_sli, val_index)                 IMPL_Sli_at(var_sli, val_index)
+#define Sli_slice(var_sli, val_begin, val_end)     IMPL_Sli_slice(var_sli, val_begin, val_end)
+#define Sli_prefix(var_sli, val_end)               IMPL_Sli_prefix(var_sli, val_end)
+#define Sli_suffix(var_sli, val_begin)             IMPL_Sli_suffix(var_sli, val_begin)
+
+/* Iterator support with scope (similar to Zig's for loops over slices) */
+#define for_slice(var_sli, var_item) IMPL_for_slice(var_sli, var_item)
+
+/* Any type */
+typedef struct AnyType AnyType;
+#define AnyType(var_ptr...) IMPL_AnyType(var_ptr)
+#define AnyPtr(var_ptr...)  IMPL_AnyPtr(var_ptr)
+#define AnySli(var_sli...)  IMPL_AnySli(var_sli)
+
+/* Meta types */
+typedef struct meta_PtrConst meta_PtrConst;
+typedef union meta_Ptr       meta_Ptr;
+typedef struct meta_SliConst meta_SliConst;
+typedef union meta_Sli       meta_Sli;
+extern meta_Ptr              meta_Ptr_constCast(meta_PtrConst);
+extern meta_Sli              meta_Sli_constCast(meta_SliConst);
+#define meta_ptr(var_ptr...)    IMPL_meta_ptr(var_ptr)
+#define meta_sli(var_ptr...)    IMPL_meta_sli(var_ptr)
+#define meta_castPtr(T, ptr...) IMPL_meta_castPtr(T, ptr)
+#define meta_castSli(T, sli...) IMPL_meta_castSli(T, sli)
+
+/* Implementation generic type */
+
+#define IMPL_PtrConst$(T) const T*
+#define IMPL_Ptr$(T)      T*
+
+#define IMPL_using_Ptr$(T)                        \
     typedef PtrConst$(T) pp_join($, PtrConst, T); \
     typedef Ptr$(T) pp_join($, Ptr, T)
 
-#define SliConst$(T)      \
+#define IMPL_SliConst$(T) \
     struct {              \
         PtrConst$(T) ptr; \
         usize len;        \
     }
-#define Sli$(T)      \
+#define IMPL_Sli$(T) \
     struct {         \
         Ptr$(T) ptr; \
         usize len;   \
     }
 
-#define using_Sli$(T) \
-    decl_Sli$(T);     \
+#define IMPL_using_Sli$(T) \
+    decl_Sli$(T);          \
     impl_Sli$(T)
 
-#define decl_Sli$(T)                                                \
+#define IMPL_decl_Sli$(T)                                           \
     typedef struct pp_join($, SliConst, T) pp_join($, SliConst, T); \
     typedef struct pp_join($, Sli, T) pp_join($, Sli, T)
 
-#define impl_Sli$(T)                 \
+#define IMPL_impl_Sli$(T)            \
     struct pp_join($, SliConst, T) { \
         PtrConst$(T) ptr;            \
         usize len;                   \
@@ -64,28 +120,107 @@ extern "C" {
         usize len;                   \
     }
 
-/* Any type */
-typedef struct AnyType {
+struct SliConst {
+    PtrConst ptr;
+    usize    len;
+};
+
+union Sli {
+    SliConst as_const;
+    struct {
+        Ptr   ptr;
+        usize len;
+    };
+};
+
+#define IMPL_Sli_from(var_ptr, val_len)     { .ptr = (var_ptr), .len = (val_len) }
+#define IMPL_Sli_from$(T, var_ptr, val_len) ({ \
+    let IMPL__ptr = var_ptr;                   \
+    claim_assert_nonnull(_ptr);                \
+    (T){                                       \
+        .ptr = _ptr,                           \
+        .len = (val_len)                       \
+    };                                         \
+})
+
+#define IMPL_Sli_range(var_ptr, val_begin, val_end)     { .ptr = (var_ptr) + (val_begin), .len = (val_end) - (val_begin) }
+#define IMPL_Sli_range$(T, var_ptr, val_begin, val_end) ({                                 \
+    let   _ptr   = var_ptr;                                                                \
+    usize _begin = val_begin;                                                              \
+    usize _end   = val_end;                                                                \
+    claim_assert_nonnull(_ptr);                                                            \
+    claim_assert_fmt(_begin < _end, "Invalid range (begin: %zu, end: %zu)", _begin, _end); \
+    (T){                                                                                   \
+        .ptr = _ptr + _begin,                                                              \
+        .len = _end - _begin                                                               \
+    };                                                                                     \
+})
+#define IMPL_Sli_arr(var_arr)     { .ptr = (var_arr), .len = countOf(var_arr) }
+#define IMPL_Sli_arr$(T, var_arr) ({ \
+    let _arr = (var_arr);            \
+    claim_assert_nonnull(_arr);      \
+    (pp_join($, Sli, T)){            \
+        .ptr = _arr,                 \
+        .len = countOf(_arr)         \
+    };                               \
+})
+
+#define IMPL_Sli_at(var_sli, val_index) (({                                                     \
+    let _sli = var_sli;                                                                         \
+    (TypeOf(_sli.ptr)) Sli_rawAt(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, val_index); \
+})[0])
+
+#define IMPL_Sli_slice(var_sli, val_begin, val_end) ({                                        \
+    let   _sli   = var_sli;                                                                   \
+    usize _begin = val_begin;                                                                 \
+    usize _end   = val_end;                                                                   \
+    (TypeOf(_sli)){                                                                           \
+        .ptr = Sli_rawSlice(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, _begin, _end), \
+        .len = _end - _begin                                                                  \
+    };                                                                                        \
+})
+
+#define IMPL_Sli_prefix(var_sli, val_end) ({ \
+    let _sli = var_sli;                      \
+    Sli_slice(_sli, 0, val_end);             \
+})
+
+#define IMPL_Sli_suffix(var_sli, val_begin) ({ \
+    let _sli = var_sli;                        \
+    Sli_slice(_sli, val_begin, _sli.len);      \
+})
+
+#define IMPL_for_slice(var_sli, var_item)      \
+    for (usize _i = 0; _i < (slice).len; ++_i) \
+    scope_with(let item = Sli_at(slice, _i))
+
+/* Implementation any type */
+struct AnyType {
     anyptr   ctx;
     TypeInfo type;
-} AnyType;
+};
 
-#define AnyPtr(var_ptr) \
+#define IMPL_AnyType(var_ptr...) ({          \
+    let _var_ptr = var_ptr;                  \
+    claim_assert_nonnull(_var_ptr);          \
+    (AnyType){                               \
+        .ctx  = _var_ptr,                    \
+        .type = typeInfo(TypeOf(*_var_ptr)), \
+    };                                       \
+})
+
+#define IMPL_AnyPtr(var_ptr...) \
     ((AnyType){ .ctx = &(var_ptr), .type = typeInfo(TypeOf(*(var_ptr))) })
 
-#define AnySli(var_sli) \
+#define IMPL_AnySli(var_sli...) \
     ((AnyType){ .ctx = &(var_sli), .type = typeInfo(TypeOf(*((var_sli).ptr))) })
 
-/* Meta types */
-typedef struct meta_PtrConst meta_PtrConst;
-typedef union meta_Ptr       meta_Ptr;
-typedef struct meta_SliConst meta_SliConst;
-typedef union meta_Sli       meta_Sli;
-
+/* Implementation meta types */
 struct meta_PtrConst {
     const anyptr addr;
     TypeInfo     type;
 };
+
 union meta_Ptr {
     meta_PtrConst as_const;
     struct {
@@ -93,6 +228,7 @@ union meta_Ptr {
         TypeInfo type;
     };
 };
+
 struct meta_SliConst {
     union {
         meta_PtrConst ptr;
@@ -103,6 +239,7 @@ struct meta_SliConst {
     };
     usize len;
 };
+
 union meta_Sli {
     meta_SliConst as_const;
     struct {
@@ -117,24 +254,15 @@ union meta_Sli {
     };
 };
 
-using_Opt$(meta_PtrConst);
-using_Opt$(meta_Ptr);
-using_Opt$(meta_SliConst);
-using_Opt$(meta_Sli);
-
-using_Err$(meta_PtrConst);
-using_Err$(meta_Ptr);
-using_Err$(meta_SliConst);
-using_Err$(meta_Sli);
-
-#define meta_ptr(var_ptr...) ({      \
+#define IMPL_meta_ptr(var_ptr...) ({ \
     let _var_ptr = var_ptr;          \
     (meta_Ptr){                      \
         .addr = _var_ptr,            \
         .type = typeInfo(*_var_ptr), \
     };                               \
 })
-#define meta_sli(var_sli...) ({              \
+
+#define IMPL_meta_sli(var_sli...) ({         \
     let _var_sli = var_sli;                  \
     (meta_Sli){                              \
         .ptr = {                             \
@@ -144,42 +272,26 @@ using_Err$(meta_Sli);
         .len = _var_sli.len,                 \
     };                                       \
 })
-#define meta_castPtr(T, ptr...) ({ \
-    let _ptr = ptr;                \
-    (T)((_ptr).addr);              \
+
+#define IMPL_meta_castPtr(T, ptr...) ({ \
+    let _ptr = ptr;                     \
+    (T)((_ptr).addr);                   \
 })
-#define meta_castSli(T, sli...) ({                \
+
+#define IMPL_meta_castSli(T, sli...) ({           \
     let _sli = sli;                               \
     (T){ .ptr = (_sli).addr, .len = (_sli).len }; \
 })
 
-#define Sli_from(_ptr, _len)             { .ptr = (_ptr), .len = (_len) }
-#define Sli_fromPtr(_ptr)                { .ptr = (_ptr), .len = 1 }
-#define Sli_fromSli(_sli)                { .ptr = (_sli).ptr, .len = (_sli).len }
-#define Sli_fromArr(_arr)                { .ptr = (_arr), .len = countOf(_arr) }
-#define Sli_slice(_ptr, _begin, _end)    { .ptr = (_ptr) + (_begin), .len = (_end) - (_begin) }
-#define Sli_subslice(_sli, _begin, _end) { .ptr = (_sli).ptr + (_begin), .len = (_end) - (_begin) }
+using_Opt$(meta_PtrConst);
+using_Opt$(meta_Ptr);
+using_Opt$(meta_SliConst);
+using_Opt$(meta_Sli);
 
-/* Access operations with detailed assertions */
-#define Sli_at(slice, index)                \
-    ({                                      \
-        var _slice = (slice);               \
-        let _index = (index);               \
-        debug_assert_nonnull((_slice).ptr); \
-        debug_assert_fmt(                   \
-            (_index) < (_slice).len,        \
-            "Index out of bounds "          \
-            "(index: %zu, len: %zu)",       \
-            (usize)(_index),                \
-            (_slice).len                    \
-        );                                  \
-        &(_slice).ptr[_index];              \
-    })
-
-/* Iterator support with scope (similar to Zig's for loops over slices) */
-#define for_slice(slice, item)                 \
-    for (usize _i = 0; _i < (slice).len; ++_i) \
-    scope_with(let item = Sli_at(slice, _i))
+using_Err$(meta_PtrConst);
+using_Err$(meta_Ptr);
+using_Err$(meta_SliConst);
+using_Err$(meta_Sli);
 
 /* builtin types */
 using_Ptr$(u8);

@@ -2,7 +2,7 @@
 
 
 /* Raw allocation */
-Optptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
+Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
     debug_assert_nonnull(self.vt);
     return self.vt->alloc(self.ctx, len, ptr_align);
 }

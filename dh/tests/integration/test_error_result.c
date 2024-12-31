@@ -1,63 +1,8 @@
+#include "dh/main.h"
 #include "dh/core.h"
 #include "dh/err_res.h"
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Classic.h"
-
-// typedef struct mem_Allocator   mem_Allocator;
-// typedef struct mem_AllocatorVT mem_AllocatorVT;
-// impl_Err(mem_AllocErr, OutOfMemory);
-
-// struct mem_Allocator {
-//     anyptr                 ctx;
-//     const mem_AllocatorVT* vt;
-// };
-
-// struct mem_AllocatorVT {
-//     anyptr (*alloc)(anyptr ctx, usize size);
-//     anyptr (*realloc)(anyptr ctx, anyptr ptr, usize old_size, usize new_size);
-//     void (*free)(anyptr ctx, anyptr ptr, usize size);
-// };
-
-// typedef struct heap_C heap_C;
-
-// mem_Allocator heap_C_allocator(heap_C* self);
-
-// static anyptr heap_C_alloc(anyptr ctx, usize size);
-// static anyptr heap_C_realloc(anyptr ctx, anyptr ptr, usize old_size, usize new_size);
-// static void   heap_C_free(anyptr ctx, anyptr ptr, usize size);
-
-// typedef struct heap_C {
-//     Void unused_;
-// } heap_C;
-
-// mem_Allocator heap_C_allocator(heap_C* self) {
-//     static const mem_AllocatorVT vt[1] = { {
-//         .alloc   = heap_C_alloc,
-//         .realloc = heap_C_realloc,
-//         .free    = heap_C_free,
-//     } };
-//     return (mem_Allocator){
-//         .ctx = self,
-//         .vt  = vt,
-//     };
-// }
-
-// static anyptr heap_C_alloc(anyptr ctx, usize size) {
-//     unused(ctx);
-//     return malloc(size);
-// }
-
-// static anyptr heap_C_realloc(anyptr ctx, anyptr ptr, usize old_size, usize new_size) {
-//     unused(ctx);
-//     unused(old_size);
-//     return realloc(ptr, new_size);
-// }
-
-// static void heap_C_free(anyptr ctx, anyptr ptr, usize size) {
-//     unused(ctx);
-//     unused(size);
-//     free(ptr);
-// }
 
 typedef struct Slice Slice;
 struct Slice {
@@ -66,7 +11,7 @@ struct Slice {
 };
 
 typedef struct ArrayList ArrayList;
-decl_ErrRes(ArrayList);
+decl_Err$(ArrayList);
 
 struct ArrayList {
     mem_Allocator allocator;
@@ -79,7 +24,7 @@ static void                     ArrayList_fini(ArrayList* self);
 static must_check Err$void      ArrayList_append(ArrayList* self, const anyptr item);
 static Slice                    ArrayList_slice(const ArrayList* self);
 
-impl_ErrRes(ArrayList);
+impl_Err$(ArrayList);
 static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator) {
     reserveReturn(Err$ArrayList);
 

@@ -10,6 +10,9 @@
 
 #include "dh/TEST.h"
 
+#define ERR_RES_MAIN_NO_HIJACK (1)
+#include "dh/main.h"
+
 #include <stdio.h>
 
 /*========== Basic Operations Tests ====================================*/
@@ -209,8 +212,7 @@ TEST_Result TEST_heap_Classic_Errors(void) {
 
 /*========== Test Runner ============================================*/
 
-Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
+int main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
 
     TEST_init();
@@ -234,7 +236,35 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     // Print final summary
     TEST_printSummary();
-    TEST_fini();
-
-    return_ok({});
+    return TEST_fini();
 }
+
+// Err$void dh_main(int argc, const char* argv[]) {
+//     reserveReturn(Err$void);
+//     unused(argc), unused(argv);
+
+//     TEST_init();
+//     printf("Starting Heap Classic Allocator Tests\n");
+
+//     // Run all tests
+//     TEST_printSection("Basic Operations");
+//     TEST_printResult(TEST_heap_Classic_Basic());
+
+//     TEST_printSection("Alignment");
+//     TEST_printResult(TEST_heap_Classic_Alignment());
+
+//     TEST_printSection("Slice Operations");
+//     TEST_printResult(TEST_heap_Classic_Slices());
+
+//     TEST_printSection("Stress Testing");
+//     TEST_printResult(TEST_heap_Classic_Stress());
+
+//     TEST_printSection("Error Handling");
+//     TEST_printResult(TEST_heap_Classic_Errors());
+
+//     // Print final summary
+//     TEST_printSummary();
+//     TEST_fini();
+
+//     return_ok({});
+// }
