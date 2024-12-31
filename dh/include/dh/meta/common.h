@@ -200,6 +200,17 @@ union Sli {
     for (usize _i = 0; _i < (slice).len; ++_i) \
     scope_with(let item = Sli_at(slice, _i))
 
+using_Opt$(PtrConst);
+using_Opt$(Ptr);
+using_Err$(PtrConst);
+using_Err$(Ptr);
+
+using_Opt$(SliConst);
+using_Opt$(Sli);
+using_Err$(SliConst);
+using_Err$(Sli);
+
+
 /* Implementation any type */
 struct AnyType {
     anyptr   ctx;

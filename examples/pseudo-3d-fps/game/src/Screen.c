@@ -3,16 +3,14 @@
 
 #define PI (3.14159265358979323846)
 
-// FIXME: Coordinate system is not uniform
-
 void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
     for (usize x = 0; x < canvas->width; ++x) {
         // Calculate ray angle - matches original implementation
         const f32 ray_angle = (state->player_angle - state->fov * 0.5f) + (as(f32, x) / as(f32, canvas->width)) * state->fov;
 
         // Use sin/cos matching the original implementation
-        const f32 eye_x = sinf(ray_angle);
-        const f32 eye_y = cosf(ray_angle);
+        const f32 eye_x = cosf(ray_angle);
+        const f32 eye_y = sinf(ray_angle);
 
         f32  distance_to_wall = 0.0f;
         bool hits_wall        = false;
@@ -24,12 +22,12 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
             const i32 test_y = as(i32, state->player_y + eye_y * distance_to_wall);
 
             // Bounds checking
-            if (test_x < 0 || test_x >= state->map_width || test_y < 0 || test_y >= state->map_height) {
+            if (test_x < 0 || state->map_width <= test_x || test_y < 0 || state->map_height <= test_y) {
                 hits_wall        = true;
                 distance_to_wall = state->depth;
             } else {
                 // Fixed map indexing to match original
-                if (state->map[test_x * state->map_width + test_y] == '#') {
+                if (state->map[test_x + (test_y * state->map_width)] == '#') {
                     hits_wall = true;
                 }
             }
@@ -217,8 +215,8 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
         for (i32 dx = -1; dx <= 1; ++dx) {
             engine_Canvas_drawPixel(
                 canvas,
-                player_screen_y + dy,
                 player_screen_x + dx,
+                player_screen_y + dy,
                 player_color
             );
         }

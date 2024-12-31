@@ -27,8 +27,6 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-extern must_check Err$void dh_main(int argc, const char* argv[]);
-
 #ifndef ERR_RES_MAIN_INCLUDED
 #define ERR_RES_MAIN_INCLUDED (0)
 #endif /* ERR_RES_MAIN_INCLUDED */
@@ -39,7 +37,10 @@ extern must_check Err$void dh_main(int argc, const char* argv[]);
 #undef ERR_RES_MAIN_INCLUDED
 #define ERR_RES_MAIN_INCLUDED (1)
 
-// extern int main(int argc, const char* argv[]);
+#if !defined(ERR_RES_MAIN_NO_ARGS)
+
+extern must_check Err$void dh_main(int argc, const char* argv[]);
+
 int main(int argc, const char* argv[]) {
     const Err$void result = dh_main(argc, argv);
     if (!result.is_err) { return 0; }
@@ -51,6 +52,25 @@ int main(int argc, const char* argv[]) {
     );
     return 1;
 }
+
+#else /* defined(ERR_RES_MAIN_NO_ARGS) */
+
+extern must_check Err$void dh_main(void);
+
+int main(int argc, const char* argv[]) {
+    unused(argc), unused(argv);
+    const Err$void result = dh_main();
+    if (!result.is_err) { return 0; }
+    ignore fprintf(
+        stderr,
+        "Program failed: %s (type: %d)\n",
+        Err_message(result.err),
+        Err_type(result.err)
+    );
+    return 1;
+}
+
+#endif /* !defined(ERR_RES_MAIN_NO_ARGS) */
 
 #endif /* !ERR_RES_MAIN_INCLUDED */
 #endif /* !defined(ERR_RES_NO_HIJACK_MAIN) */
