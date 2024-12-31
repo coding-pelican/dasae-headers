@@ -96,10 +96,13 @@ extern meta_Sli              meta_Sli_constCast(meta_SliConst);
         PtrConst$(T) ptr; \
         usize len;        \
     }
-#define IMPL_Sli$(T) \
-    struct {         \
-        Ptr$(T) ptr; \
-        usize len;   \
+#define IMPL_Sli$(T)           \
+    union {                    \
+        SliConst$(T) as_const; \
+        struct {               \
+            Ptr$(T) ptr;       \
+            usize len;         \
+        };                     \
     }
 
 #define IMPL_using_Sli$(T) \
@@ -108,16 +111,19 @@ extern meta_Sli              meta_Sli_constCast(meta_SliConst);
 
 #define IMPL_decl_Sli$(T)                                           \
     typedef struct pp_join($, SliConst, T) pp_join($, SliConst, T); \
-    typedef struct pp_join($, Sli, T) pp_join($, Sli, T)
+    typedef union pp_join($, Sli, T) pp_join($, Sli, T)
 
-#define IMPL_impl_Sli$(T)            \
-    struct pp_join($, SliConst, T) { \
-        PtrConst$(T) ptr;            \
-        usize len;                   \
-    };                               \
-    struct pp_join($, Sli, T) {      \
-        Ptr$(T) ptr;                 \
-        usize len;                   \
+#define IMPL_impl_Sli$(T)                 \
+    struct pp_join($, SliConst, T) {      \
+        PtrConst$(T) ptr;                 \
+        usize len;                        \
+    };                                    \
+    union pp_join($, Sli, T) {            \
+        pp_join($, SliConst, T) as_const; \
+        struct {                          \
+            Ptr$(T) ptr;                  \
+            usize len;                    \
+        };                                \
     }
 
 struct SliConst {
