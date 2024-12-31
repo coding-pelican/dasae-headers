@@ -14,7 +14,7 @@ typedef enum engine_CanvasType {
 
 typedef struct engine_Canvas {
     struct Sli$Color {
-        Color* items;
+        Color* ptr;
         usize  len;
     } buffer;
     u32 width;

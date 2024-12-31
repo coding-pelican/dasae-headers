@@ -38,34 +38,34 @@ extern "C" {
 #define createCleared(_T)       IMPL_createCleared(_T)
 #define createFrom(_T, _var...) IMPL_createFrom(_T, _var)
 
-#define getContainer(_ptr_member, _TContainer)                        \
+#define getContainer(var_ptr_member, TContainer)                      \
     /**                                                               \
      * Get struct pointer from member pointer.                        \
-     * this for _ptr_member same as _MemberName.                      \
+     * this for var_ptr_member same as _MemberName.                   \
      *                                                                \
-     * _ptr_member: the pointer that point struct's member.           \
+     * var_ptr_member: the pointer that point struct's member.        \
      *            it's the member address offset from struct address. \
      */                                                               \
-    IMPL_getContainer(_ptr_member, _TContainer)
+    IMPL_getContainer(var_ptr_member, TContainer)
 
-#define getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
-    /**                                                                \
-     * Get struct pointer from member pointer with _MemberName.        \
-     * this for _ptr_member not same as _MemberName.                   \
-     *                                                                 \
-     * _ptr_member: the pointer that point struct's member.            \
-     *            it's the member address offset from struct address.  \
-     */                                                                \
-    IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName)
+#define getContainerByFieldName(var_ptr_member, TContainer, _MemberName) \
+    /**                                                                  \
+     * Get struct pointer from member pointer with _MemberName.          \
+     * this for var_ptr_member not same as _MemberName.                  \
+     *                                                                   \
+     * var_ptr_member: the pointer that point struct's member.           \
+     *            it's the member address offset from struct address.    \
+     */                                                                  \
+    IMPL_getContainerByFieldName(var_ptr_member, TContainer, _MemberName)
 
-#define reserveReturn(_T) \
-    IMPL_reserveReturn(_T)
+#define reserveReturn(T) \
+    IMPL_reserveReturn(T)
 
 #define getReservedReturn() \
     IMPL_getReservedReturn()
 
-#define setReservedReturn(_val_return...) \
-    IMPL_setReservedReturn(_val_return)
+#define setReservedReturn(val_return...) \
+    IMPL_setReservedReturn(val_return)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -92,21 +92,21 @@ extern "C" {
     ((_T[1]){ _var })
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define IMPL_getContainer(_ptr_member, _TContainer) \
-    ((Parent_TContainerType*)((u8*)(_ptr_member) - offsetof(_TContainer, _ptr_member)))
+#define IMPL_getContainer(var_ptr_member, TContainer) \
+    ((TContainer*)((u8*)(var_ptr_member) - offsetof(TContainer, var_ptr_member)))
 
-#define IMPL_getContainerByFieldName(_ptr_member, _TContainer, _MemberName) \
-    ((_TContainer*)((u8*)(_ptr_member) - offsetof(_TContainer, _MemberName)))
+#define IMPL_getContainerByFieldName(var_ptr_member, TContainer, _MemberName) \
+    ((TContainer*)((u8*)(var_ptr_member) - offsetof(TContainer, _MemberName)))
 
-#define IMPL_reserveReturn(_T)       \
-    _T _reserved_return = cleared(); \
+#define IMPL_reserveReturn(T)       \
+    T _reserved_return = cleared(); \
     unused(_reserved_return)
 
 #define IMPL_getReservedReturn() \
     (_reserved_return)
 
-#define IMPL_setReservedReturn(_val_return...) \
-    (getReservedReturn() = (_val_return))
+#define IMPL_setReservedReturn(val_return...) \
+    (getReservedReturn() = (val_return))
 
 #if defined(__cplusplus)
 } /* extern "C" */

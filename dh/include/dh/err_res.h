@@ -4,7 +4,7 @@
  * @file    err_res.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-26 (date of creation)
- * @updated 2024-12-26 (date of last update)
+ * @updated 2024-12-31 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -27,7 +27,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Error result */
-#define ErrRes(TOk)  \
+#define Err$(TOk)    \
     struct {         \
         bool is_err; \
         union {      \
@@ -36,36 +36,54 @@ extern "C" {
         };           \
     }
 
-#define using_ErrRes(TOk) \
-    decl_ErrRes(TOk);     \
-    impl_ErrRes(TOk)
+#define using_Err$(TOk) \
+    decl_Err$(TOk);     \
+    impl_Err$(TOk)
 
-#define decl_ErrRes(TOk) \
+#define decl_Err$(TOk)                                                          \
+    typedef struct pp_join($, Err$PtrConst, TOk) pp_join($, Err$PtrConst, TOk); \
+    typedef struct pp_join($, Err$Ptr, TOk) pp_join($, Err$Ptr, TOk);           \
     typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
 
-#define impl_ErrRes(TOk)          \
-    struct pp_join($, Err, TOk) { \
-        bool is_err;              \
-        union {                   \
-            Err err;              \
-            TOk ok;               \
-        };                        \
+#define impl_Err$(TOk)                     \
+    struct pp_join($, Err$PtrConst, TOk) { \
+        bool is_err;                       \
+        union {                            \
+            Err err;                       \
+            const rawptr(TOk) ok;          \
+        };                                 \
+    };                                     \
+    struct pp_join($, Err$Ptr, TOk) {      \
+        bool is_err;                       \
+        union {                            \
+            Err err;                       \
+            rawptr(TOk) ok;                \
+        };                                 \
+    };                                     \
+    struct pp_join($, Err, TOk) {          \
+        bool is_err;                       \
+        union {                            \
+            Err err;                       \
+            TOk ok;                        \
+        };                                 \
     }
 
-#define err(val_err...)   \
-    {                     \
-        .is_err = true,   \
-        .err    = val_err \
-    }
+/* Determines error result */
+#define err(val_err...) \
+    { .is_err = true, .err = val_err }
 
-#define ok(val_ok...)    \
-    {                    \
-        .is_err = false, \
-        .ok     = val_ok \
-    }
+#define ok(val_ok...) \
+    { .is_err = false, .ok = val_ok }
 
-/* Return macros */
-#define return_ErrRes \
+/* Checks error result */
+#define isErr(val_err_res) \
+    ((val_err_res).is_err)
+
+#define isOk(val_err_res) \
+    (!isErr(val_err_res))
+
+/* Returns error result */
+#define return_Err$ \
     return (TypeOf(getReservedReturn()))
 
 #define return_err(val_err...)             \
@@ -80,37 +98,39 @@ extern "C" {
         .ok     = val_ok,                  \
     }
 
-/* Syntax sugar for Error result */
-#define Err$(TOk)    \
-    struct {         \
-        bool is_err; \
-        union {      \
-            Err err; \
-            TOk ok;  \
-        };           \
-    }
+/* Propagates error (similar to Zig's try) */
+#define try(expr) ({             \
+    let _result = (expr);        \
+    if (_result.is_err) {        \
+        return_err(_result.err); \
+    }                            \
+    _result.ok;                  \
+})
 
-#define using_Err$(TOk) \
-    decl_Err$(TOk);     \
-    impl_Err$(TOk)
+/* Handles error (similar to Zig's catch) */
+#define catch_default(expr, val_default...) ({   \
+    var _result = (expr);                        \
+    _result.is_err ? (val_default) : _result.ok; \
+})
 
-#define decl_Err$(TOk) \
-    typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
-
-#define impl_Err$(TOk)            \
-    struct pp_join($, Err, TOk) { \
-        bool is_err;              \
-        union {                   \
-            Err err;              \
-            TOk ok;               \
-        };                        \
-    }
-
-#define return_Err$ \
-    return (TypeOf(getReservedReturn()))
+#define catch(expr, var_err, body...) ({ \
+    var _result = (expr);                \
+    if (_result.is_err) {                \
+        let var_err = _result.err;       \
+        body;                            \
+    }                                    \
+    _result.ok;                          \
+})
 
 /* Error void result (special case) */
-using_Err$(Void);
+typedef struct Err$Void Err$Void;
+struct Err$Void {
+    bool is_err;
+    union {
+        Err  err;
+        Void ok;
+    };
+};
 #define return_Err$Void \
     return (Err$Void)
 
@@ -124,14 +144,33 @@ typedef Err$Void Err$void;
         .ok     = (Void){},                \
     }
 
-/* Error handling */
-#define try(expr) ({             \
-    let _result = (expr);        \
-    if (_result.is_err) {        \
-        return_err(_result.err); \
-    }                            \
-    _result.ok;                  \
-})
+// #define ErrRes(TOk)  \
+//     struct {         \
+//         bool is_err; \
+//         union {      \
+//             Err err; \
+//             TOk ok;  \
+//         };           \
+//     }
+
+// #define using_ErrRes(TOk) \
+//     decl_ErrRes(TOk);     \
+//     impl_ErrRes(TOk)
+
+// #define decl_ErrRes(TOk) \
+//     typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
+
+// #define impl_ErrRes(TOk)          \
+//     struct pp_join($, Err, TOk) { \
+//         bool is_err;              \
+//         union {                   \
+//             Err err;              \
+//             TOk ok;               \
+//         };                        \
+//     }
+
+// #define return_ErrRes \
+//     return (TypeOf(getReservedReturn()))
 
 // /* Enhanced catch macro that supports both statement blocks and default values */
 // #define catch(expr, val_default_or_var_err_with_body...)        \
@@ -170,20 +209,6 @@ typedef Err$Void Err$void;
 //     }                                                    \
 //     _result.ok;                                          \
 // })
-
-#define catch_default(expr, val_default...) ({   \
-    var _result = (expr);                        \
-    _result.is_err ? (val_default) : _result.ok; \
-})
-
-#define catch(expr, var_err, body...) ({ \
-    var _result = (expr);                \
-    if (_result.is_err) {                \
-        let var_err = _result.err;       \
-        body;                            \
-    }                                    \
-    _result.ok;                          \
-})
 
 /* // Example usage:
 impl_Err(

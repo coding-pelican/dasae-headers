@@ -4,7 +4,7 @@
  * @file    opt.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-26 (date of creation)
- * @updated 2024-12-26 (date of last update)
+ * @updated 2024-12-31 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* Optional */
+/* Optional value */
 #define Opt$(T)         \
     struct {            \
         bool has_value; \
@@ -37,35 +37,40 @@ extern "C" {
     decl_Opt$(T);     \
     impl_Opt$(T)
 
-#define decl_Opt$(T)                                      \
-    typedef struct pp_join($, Opt, T) pp_join($, Opt, T); \
-    typedef struct pp_join($, Optptr, T) pp_join($, Optptr, T)
+#define decl_Opt$(T)                                                        \
+    typedef struct pp_join($, Opt$PtrConst, T) pp_join($, Opt$PtrConst, T); \
+    typedef struct pp_join($, Opt$Ptr, T) pp_join($, Opt$Ptr, T);           \
+    typedef struct pp_join($, Opt, T) pp_join($, Opt, T)
 
-#define impl_Opt$(T)               \
-    struct pp_join($, Opt, T) {    \
-        bool has_value;            \
-        T    value;                \
-    };                             \
-    struct pp_join($, Optptr, T) { \
-        bool has_value;            \
-        rawptr(T) value;           \
+#define impl_Opt$(T)                     \
+    struct pp_join($, Opt$PtrConst, T) { \
+        bool has_value;                  \
+        const rawptr(T) value;           \
+    };                                   \
+    struct pp_join($, Opt$Ptr, T) {      \
+        bool has_value;                  \
+        rawptr(T) value;                 \
+    };                                   \
+    struct pp_join($, Opt, T) {          \
+        bool has_value;                  \
+        T    value;                      \
     }
 
-#define some(val_opt...)     \
-    {                        \
-        .has_value = true,   \
-        .value     = val_opt \
-    }
+/* Determines optional value */
+#define some(val_opt...) \
+    { .has_value = true, .value = val_opt }
 
-#define none()              \
-    {                       \
-        .has_value = false, \
-    }
+#define none() \
+    { .has_value = false }
 
-#define isSome(opt) ((opt).has_value)
-#define isNone(opt) (!isSome(opt))
+/* Checks optional value */
+#define isSome(opt) \
+    ((opt).has_value)
 
-/* Return macros */
+#define isNone(opt) \
+    (!isSome(opt))
+
+/* Returns optional value */
 #define return_Opt$ \
     return (TypeOf(getReservedReturn()))
 
@@ -88,7 +93,7 @@ extern "C" {
         );                                 \
     })
 
-/* Unwrapping macros (similar to Zig's orelse and .?) */
+/* Unwraps optional value (similar to Zig's orelse and .?) */
 #define orelse(expr, body...) ({ \
     var _result = (expr);        \
     if (!_result.has_value) {    \

@@ -1,14 +1,5 @@
 #include "color.h"
 #include "dh/core.h"
-// #include "dh/cmp.h"
-#include "dh/core/prim/flt.h"
-
-
-// EOrd f64_cmp(f64 lhs, f64 rhs) {
-//     return lhs < rhs ? EOrd_LESS
-//          : lhs > rhs ? EOrd_GREATER
-//                      : EOrd_EQUAL;
-// }
 
 force_inline f64 f64_min(f64 lhs, f64 rhs) {
     return lhs < rhs ? lhs : rhs;

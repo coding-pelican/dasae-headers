@@ -90,7 +90,7 @@ void engine_Window_present(engine_Window* window) {
     if (window->platform->backend && window->platform->backend->presentBuffer) {
         window->platform->backend->presentBuffer(
             window->platform,
-            window->composite_buffer->buffer.items,
+            window->composite_buffer->buffer.ptr,
             window->width,
             window->height
         );

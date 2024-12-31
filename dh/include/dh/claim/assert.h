@@ -135,8 +135,27 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
-extern void claim_assert__fail(const char* expr, const char* func, const char* file, i32 line);
-extern void claim_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...);
+/**
+ * @brief Logs an assertion failure with the given expression, function, file, and line.
+ *
+ * @param expr The expression that failed the assertion.
+ * @param func The function where the assertion failed.
+ * @param file The file where the assertion failed.
+ * @param line The line number where the assertion failed.
+ */
+extern void claim_assert__fail(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */);
+
+/**
+ * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
+ *
+ * @param expr The expression that failed the assertion.
+ * @param func The function where the assertion failed.
+ * @param file The file where the assertion failed.
+ * @param line The line number where the assertion failed.
+ * @param fmt The formatted message to include in the assertion failure.
+ * @param ... The arguments for the formatted message.
+ */
+extern void claim_assert__fail_fmt(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */, const char* /* fmt */, ...);
 
 #if defined(__cplusplus)
 } /* extern "C" */
