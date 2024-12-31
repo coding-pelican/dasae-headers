@@ -1,5 +1,8 @@
 #include "dh/main.h"
 #include "../engine/include/engine.h"
+#include "dh/time/Duration.h"
+#include "dh/time/Instant.h"
+#include "dh/time/SysTime.h"
 #include "src/State.h"
 #include "src/Screen.h"
 
@@ -42,15 +45,21 @@ Err$void dh_main(int argc, const char* argv[]) {
     printf("game state created\n");
     ignore getchar();
 
+    var curr_time   = time_SysTime_now();
+    var prev_time   = curr_time;
+    let target_time = time_Duration_fromSecs_f64(0.025f); // Assume 40 FPS for simplicity
+
     // Game loop
     while (state->is_running) {
-        let elapsed_time = 0.025f; // Assume 40 FPS for simplicity
+        curr_time        = time_SysTime_now();
+        let elapsed_time = time_SysTime_durationSince(curr_time, prev_time);
+        let dt           = time_Duration_asSecs_f64(elapsed_time);
 
         // Process events
         engine_Window_processEvents(window);
 
         // Update game state
-        game_State_update(state, elapsed_time);
+        game_State_update(state, (f32)dt);
 
         // Render all views
         game_Screen_renderFirstPersonView(game_canvas, state);
@@ -61,7 +70,8 @@ Err$void dh_main(int argc, const char* argv[]) {
         engine_Window_present(window);
 
         // Sleep for the remaining time to maintain 40 FPS
-        time_SysTime_sleep(time_Duration_fromSecs_f64(elapsed_time));
+        time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));
+        prev_time = curr_time;
     }
 
     engine_Canvas_destroy(minimap_canvas);
