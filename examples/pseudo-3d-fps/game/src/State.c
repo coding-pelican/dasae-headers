@@ -52,10 +52,10 @@ void game_State_update(game_State* state, f32 elapsed_time) {
         return;
     }
 
-    if (engine_Key_pressed(engine_KeyCode_A)) {
+    if (engine_Key_pressed(engine_KeyCode_A) || engine_Key_pressed(engine_KeyCode_Left)) {
         state->player_angle -= 2.0f * elapsed_time;
     }
-    if (engine_Key_pressed(engine_KeyCode_D)) {
+    if (engine_Key_pressed(engine_KeyCode_D) || engine_Key_pressed(engine_KeyCode_Right)) {
         state->player_angle += 2.0f * elapsed_time;
     }
 
@@ -63,7 +63,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
     const f32 cos_angle  = cosf(state->player_angle);
     const f32 sin_angle  = sinf(state->player_angle);
 
-    if (engine_Key_pressed(engine_KeyCode_W)) {
+    if (engine_Key_pressed(engine_KeyCode_W) || engine_Key_pressed(engine_KeyCode_Up)) {
         const f32 new_x = state->player_x + cos_angle * move_speed;
         const f32 new_y = state->player_y + sin_angle * move_speed;
 
@@ -73,7 +73,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
             state->player_y = new_y;
         }
     }
-    if (engine_Key_pressed(engine_KeyCode_S)) {
+    if (engine_Key_pressed(engine_KeyCode_S) || engine_Key_pressed(engine_KeyCode_Down)) {
         const f32 new_x = state->player_x - cos_angle * move_speed;
         const f32 new_y = state->player_y - sin_angle * move_speed;
 

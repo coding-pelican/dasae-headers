@@ -6,12 +6,13 @@
 
 // engine_Platform-specific rendering backend types
 typedef enum engine_RenderBackendType {
-    engine_RenderBackendType_vt100,
+    engine_RenderBackendType_vt100 = 0,
     engine_RenderBackendType_win32_gdi,
     engine_RenderBackendType_xwindow,
     engine_RenderBackendType_directx,
     engine_RenderBackendType_opengl,
-    engine_RenderBackendType_vulkan
+    engine_RenderBackendType_vulkan,
+    engine_RenderBackendType_custom
 } engine_RenderBackendType;
 
 // engine_Platform-specific initialization parameters
@@ -21,21 +22,24 @@ typedef struct engine_PlatformParams {
     const char*              window_title;
     u32                      width;
     u32                      height;
+    anyptr                   custom_data; // Optional, platform-specific
 } engine_PlatformParams;
 using_Ptr$(engine_PlatformParams);
 using_Err$(engine_PlatformParams);
 
-// Forward declarations
-typedef struct engine_Platform      engine_Platform;
+// engine_Platform-specific error types
+impl_Err(
+    engine_PlatformErr,
+    AccessDenied
+);
+
+// engine_Platform-specific rendering backend interface
 typedef struct engine_RenderBackend engine_RenderBackend;
 
 // engine_Platform interface
-struct engine_Platform {
+typedef struct engine_Platform {
     engine_RenderBackend* backend;
-    void (*destroy)(engine_Platform* platform);
-    void (*process_events)(engine_Platform* platform);
-    void (*present_buffer)(engine_Platform* platform, const Color* buffer, u32 width, u32 height);
-};
+} engine_Platform;
 using_Ptr$(engine_Platform);
 using_Err$(engine_Platform);
 
@@ -43,4 +47,4 @@ using_Err$(engine_Platform);
 extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
 extern void                    engine_Platform_destroy(engine_Platform* platform);
 
-#endif // ENGINE_PLATFORM_INCLUDED
+#endif /* ENGINE_PLATFORM_INCLUDED */

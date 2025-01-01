@@ -58,4 +58,4 @@ force_inline bool engine_Key_justReleased(engine_KeyCode key) {
     return !engine_InputState_global->keys[key] && engine_InputState_global->prev_keys[key];
 }
 
-#endif // ENGINE_INPUT_INCLUDED
+#endif /* ENGINE_INPUT_INCLUDED */

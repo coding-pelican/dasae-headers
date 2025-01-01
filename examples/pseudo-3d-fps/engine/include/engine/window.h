@@ -38,4 +38,4 @@ extern i32  engine_Window_addCanvasView(engine_Window* window, engine_Canvas* ca
 extern void engine_Window_removeCanvasView(engine_Window* window, i32 view_id);
 extern void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height);
 
-#endif // ENGINE_WINDOW_INCLUDED
+#endif /* ENGINE_WINDOW_INCLUDED */

@@ -1,6 +1,7 @@
 #include "../include/engine/window.h"
 #include "../include/engine/canvas.h"
 #include "../include/engine/platform_backend.h"
+#include "../include/engine/input.h"
 
 #include <stdlib.h>
 
@@ -31,6 +32,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
         }
     );
     window->composite_buffer = buffer_result;
+    engine_Input_init();
     return_ok(window);
 }
 
@@ -43,6 +45,7 @@ void engine_Window_destroy(engine_Window* window) {
     if (window->platform) {
         engine_Platform_destroy(window->platform);
     }
+    engine_Input_fini();
     free(window);
 }
 
@@ -50,6 +53,7 @@ void engine_Window_processEvents(engine_Window* window) {
     debug_assert_nonnull(window);
     debug_assert_nonnull(window->platform);
 
+    engine_Input_update();
     if (window->platform->backend && window->platform->backend->processEvents) {
         window->platform->backend->processEvents(window->platform);
     }

@@ -21,6 +21,12 @@ Diagnostics:
   UnusedIncludes: None
   MissingIncludes: None
 ---
+If: # Apply this config conditionally
+  PathMatch: .*\.h # to all headers...
+  PathExclude:
+    - ".archive/.*" # except those under .archive/
+    - "drafts/.*" # or those under drafts/
+---
 # C Configs
 If:
   PathMatch:
@@ -30,16 +36,20 @@ CompileFlags:
   Compiler: clang
   Add:
     [
-      -fblocks,
-      -xc,
       -std=c17,
       -Wall,
       -Wextra,
       -Werror,
       -Wno-header-ordering,
-      -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include,
+      -fblocks,
+      -I./include,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/examples,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/examples/include,
     ]
 ---
+# Header Configs
 If:
   PathMatch:
     - .*\.h

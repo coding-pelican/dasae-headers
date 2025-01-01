@@ -5,8 +5,11 @@
 #include "dh/time/SysTime.h"
 #include "src/State.h"
 #include "src/Screen.h"
+#include "src/notepad_backend.h"
 
 #include <stdio.h>
+
+// D2CodingLigature Nerd Font
 
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
@@ -15,18 +18,19 @@ Err$void dh_main(int argc, const char* argv[]) {
     // Initialize platform with terminal backend
     let window = try(engine_Window_create(
         &(engine_PlatformParams){
-            .backend_type = engine_RenderBackendType_vt100,
+            .backend_type = engine_RenderBackendType_custom,
             .window_title = "Pseudo 3d FPS",
-            .width        = 80,
-            .height       = 50,
+            .width        = 80 * 2,
+            .height       = 50 * 2,
+            .custom_data  = try(NotepadBackend_create()),
         }
     ));
     printf("engine initialized\n");
 
     // Create canvases
-    let game_canvas    = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
-    let ui_canvas      = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
-    let minimap_canvas = try(engine_Canvas_create(30, 30, engine_CanvasType_rgba));
+    let game_canvas    = try(engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba));
+    let ui_canvas      = try(engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba));
+    let minimap_canvas = try(engine_Canvas_create(32, 32, engine_CanvasType_rgba));
     printf("canvas created\n");
 
     engine_Canvas_clear(game_canvas, Color_blank);
@@ -35,8 +39,8 @@ Err$void dh_main(int argc, const char* argv[]) {
     printf("canvas cleared\n");
 
     // Add canvas views
-    engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
-    engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80, 50);
+    engine_Window_addCanvasView(window, game_canvas, 0, 0, 80 * 2, 50 * 2);
+    engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80 * 2, 50 * 2);
     engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 30, 30);
     printf("canvas views added\n");
 

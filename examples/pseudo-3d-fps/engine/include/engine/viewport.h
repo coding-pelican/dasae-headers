@@ -30,4 +30,4 @@ extern void                    engine_Viewport_resize(engine_Viewport* viewport,
 extern void                    engine_Camera_setPosition(engine_Camera* camera, engine_Vec3f32 position);
 extern void                    engine_Camera_lookAt(engine_Camera* camera, engine_Vec3f32 target);
 
-#endif // ENGINE_VIEWPORT_INCLUDED
+#endif /* ENGINE_VIEWPORT_INCLUDED */

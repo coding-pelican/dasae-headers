@@ -3,64 +3,52 @@
 #include "../include/engine/canvas.h"
 #include "../include/engine/input.h"
 
-#define DISPLAY_BUFFER_SIZE(width, height) ((width) * (height) * 32)
+#define Win32ConsoleBackend_calculateBufferSize(width, height) ((width) * (height) * 32)
 
-/* static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const anyptr data, u32 width, u32 height) {
+static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
-    const engine_ColorRgba*     pixels  = (const engine_ColorRgba*)data;
-
-    backend->buffer_size = 0;
-
-    // Process two rows at a time using block characters
-    for (usize y = 0; (y + 1) < height; y += 2) {
-        for (usize x = 0; x < width; ++x) {
-            const engine_ColorRgba upper = pixels[x + (y * width)];
-            const engine_ColorRgba lower = pixels[x + ((y + 1) * width)];
-
-            // Find run length of identical color pairs
-            usize run_length = 1;
-            while ((x + run_length) < width) {
-                const engine_ColorRgba next_upper = pixels[(x + run_length) + (y * width)];
-                const engine_ColorRgba next_lower = pixels[(x + run_length) + ((y + 1) * width)];
-
-                // clang-format off
-                if (memcmp(&upper, &next_upper, sizeof(engine_ColorRgba)) != 0 ||
-                    memcmp(&lower, &next_lower, sizeof(engine_ColorRgba)) != 0) {
-                    break;
-                }
-                run_length++;
-            }
-
-            // Write ANSI color sequence
-            backend->buffer_size += sprintf(
-                backend->buffer + backend->buffer_size,
-                "\033[38;2;%d;%d;%d;48;2;%d;%d;%d;m",
-                upper.r, upper.g, upper.b,
-                lower.r, lower.g, lower.b
-            );
-            // clang-format on
-
-            // Append the block character '▀' runLength times
-            static const char* const block_char        = "▀"; // Multibyte character
-            static const usize       block_char_length = strlen(block_char);
-
-            // Write block characters for the run
-            for (usize i = 0; i < run_length; ++i) {
-                memcpy(backend->buffer + backend->buffer_size, block_char, block_char_length);
-                backend->buffer_size += block_char_length;
-            }
-            x += run_length - 1;
+    if (backend) {
+        if (backend->buffer) {
+            free(backend->buffer);
         }
-        backend->buffer[backend->buffer_size++] = '\n';
+        // Restore console state
+        if (!backend->cursor_visible) {
+            CONSOLE_CURSOR_INFO cursor_info = { 1, TRUE };
+            SetConsoleCursorInfo(backend->console_handle, &cursor_info);
+        }
+        free(backend);
     }
+    free(platform);
 
-    printf("\033[H"); // Reset cursor position
-    WriteConsoleA(backend->console_handle, backend->buffer, (DWORD)backend->buffer_size, NULL, NULL);
-} */
+    /* Reset cursor position */ {
+        static const char* const reset_cursor = "\033[H";
+        printf("%s", reset_cursor);
+        // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
+        // backend->buffer_size += strlen(reset_cursor);
+    }
+}
+
+static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
+    unused(platform);
+    // engine_Win32ConsoleBackend* backend      = (engine_Win32ConsoleBackend*)platform->backend;
+    // INPUT_RECORD                input_record = { 0 };
+    // DWORD                       events_read  = 0;
+
+    // while (PeekConsoleInput(backend->console_handle, &input_record, 1, &events_read) && events_read > 0) {
+    //     ReadConsoleInput(backend->console_handle, &input_record, 1, &events_read);
+
+    //     if (input_record.EventType == WINDOW_BUFFER_SIZE_EVENT) {
+    //         // Simply acknowledge window resize - buffer will adapt automatically
+    //         continue;
+    //     }
+    // }
+}
 
 static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height) {
-    engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
-    const Color*                pixels  = data;
+    debug_assert_nonnull(platform);
+    debug_assert_nonnull(data);
+    let backend = (engine_Win32ConsoleBackend*)platform->backend;
+    let pixels  = data;
 
     /* Reset buffer */ {
         backend->buffer_size = 0;
@@ -146,49 +134,58 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const C
     }
 }
 
-static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
+/* static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const anyptr data, u32 width, u32 height) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
-    if (backend) {
-        if (backend->buffer) {
-            free(backend->buffer);
+    const engine_ColorRgba*     pixels  = (const engine_ColorRgba*)data;
+
+    backend->buffer_size = 0;
+
+    // Process two rows at a time using block characters
+    for (usize y = 0; (y + 1) < height; y += 2) {
+        for (usize x = 0; x < width; ++x) {
+            const engine_ColorRgba upper = pixels[x + (y * width)];
+            const engine_ColorRgba lower = pixels[x + ((y + 1) * width)];
+
+            // Find run length of identical color pairs
+            usize run_length = 1;
+            while ((x + run_length) < width) {
+                const engine_ColorRgba next_upper = pixels[(x + run_length) + (y * width)];
+                const engine_ColorRgba next_lower = pixels[(x + run_length) + ((y + 1) * width)];
+
+                // clang-format off
+                if (memcmp(&upper, &next_upper, sizeof(engine_ColorRgba)) != 0 ||
+                    memcmp(&lower, &next_lower, sizeof(engine_ColorRgba)) != 0) {
+                    break;
+                }
+                run_length++;
+            }
+
+            // Write ANSI color sequence
+            backend->buffer_size += sprintf(
+                backend->buffer + backend->buffer_size,
+                "\033[38;2;%d;%d;%d;48;2;%d;%d;%d;m",
+                upper.r, upper.g, upper.b,
+                lower.r, lower.g, lower.b
+            );
+            // clang-format on
+
+            // Append the block character '▀' runLength times
+            static const char* const block_char        = "▀"; // Multibyte character
+            static const usize       block_char_length = strlen(block_char);
+
+            // Write block characters for the run
+            for (usize i = 0; i < run_length; ++i) {
+                memcpy(backend->buffer + backend->buffer_size, block_char, block_char_length);
+                backend->buffer_size += block_char_length;
+            }
+            x += run_length - 1;
         }
-        // Restore console state
-        if (!backend->cursor_visible) {
-            CONSOLE_CURSOR_INFO cursor_info = { 1, TRUE };
-            SetConsoleCursorInfo(backend->console_handle, &cursor_info);
-        }
-        free(backend);
+        backend->buffer[backend->buffer_size++] = '\n';
     }
-    free(platform);
 
-    /* Reset cursor position */ {
-        static const char* const reset_cursor = "\033[H";
-        printf("%s", reset_cursor);
-        // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
-        // backend->buffer_size += strlen(reset_cursor);
-    }
-}
-
-static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
-    unused(platform);
-    // engine_Win32ConsoleBackend* backend      = (engine_Win32ConsoleBackend*)platform->backend;
-    // INPUT_RECORD                input_record = { 0 };
-    // DWORD                       events_read  = 0;
-
-    // while (PeekConsoleInput(backend->console_handle, &input_record, 1, &events_read) && events_read > 0) {
-    //     ReadConsoleInput(backend->console_handle, &input_record, 1, &events_read);
-
-    //     if (input_record.EventType == WINDOW_BUFFER_SIZE_EVENT) {
-    //         // Simply acknowledge window resize - buffer will adapt automatically
-    //         continue;
-    //     }
-    // }
-
-    // Update input state
-    engine_Input_update();
-}
-
-impl_Err(engine_PlatformErr, AccessDenied);
+    printf("\033[H"); // Reset cursor position
+    WriteConsoleA(backend->console_handle, backend->buffer, (DWORD)backend->buffer_size, NULL, NULL);
+} */
 
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);
@@ -242,7 +239,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         SetConsoleCursorInfo(hConsole, &cursor_info);
 
         // Allocate string buffer for ANSI sequences
-        backend->buffer_capacity = (usize)DISPLAY_BUFFER_SIZE((usize)params->width, (usize)params->height);
+        backend->buffer_capacity = (usize)Win32ConsoleBackend_calculateBufferSize((usize)params->width, (usize)params->height);
         backend->buffer          = malloc(backend->buffer_capacity);
         if (!backend->buffer) {
             // CloseHandle(hConsole);
@@ -260,12 +257,11 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
 
         // Setup backend interface
         backend->base.type          = engine_RenderBackendType_vt100;
-        backend->base.presentBuffer = Win32ConsoleBackend_presentBuffer;
-        backend->base.processEvents = Win32ConsoleBackend_processEvents;
         backend->base.destroy       = Win32ConsoleBackend_destroy;
+        backend->base.processEvents = Win32ConsoleBackend_processEvents;
+        backend->base.presentBuffer = Win32ConsoleBackend_presentBuffer;
 
         platform->backend = &backend->base;
-
         return_ok(platform);
     }
 
@@ -273,6 +269,14 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
     case engine_RenderBackendType_directx:
         free(platform);
         return_err(engine_PlatformErr_err(engine_PlatformErrType_NotImplemented));
+
+    case engine_RenderBackendType_custom:
+        if (!params->custom_data) {
+            free(platform);
+            return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
+        }
+        platform->backend = params->custom_data;
+        return_ok(platform);
 
     default:
         free(platform);
@@ -282,7 +286,6 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
 
 void engine_Platform_destroy(engine_Platform* platform) {
     if (!platform) { return; }
-
     if (platform->backend && platform->backend->destroy) {
         platform->backend->destroy(platform);
     }

@@ -1,5 +1,5 @@
 #ifndef ENGINE_PLATFORM_BACKEND_INCLUDED
-#define ENGINE_PLATFORM_BACKEND_INCLUDED (10)
+#define ENGINE_PLATFORM_BACKEND_INCLUDED (1)
 
 #include "platform.h"
 #include "common.h"
@@ -7,11 +7,12 @@
 // Complete render backend interface
 struct engine_RenderBackend {
     engine_RenderBackendType type;
-    void (*presentBuffer)(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height);
-    void (*processEvents)(struct engine_Platform* platform);
-    void (*processInput)(void);
     void (*destroy)(struct engine_Platform* platform);
+    void (*processEvents)(struct engine_Platform* platform);
+    void (*presentBuffer)(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height);
 };
+using_Ptr$(engine_RenderBackend);
+using_Err$(engine_RenderBackend);
 
 #include <windows.h>
 

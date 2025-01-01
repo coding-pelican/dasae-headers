@@ -39,4 +39,4 @@ extern void                  engine_Canvas_resize(engine_Canvas* canvas, u32 wid
 extern void engine_Canvas_blit(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32 y);
 extern void engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32 y, f32 scale);
 
-#endif // ENGINE_CANVAS_INCLUDED
+#endif /* ENGINE_CANVAS_INCLUDED */
