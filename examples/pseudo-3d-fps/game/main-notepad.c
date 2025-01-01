@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "dh/main.h"
 #include "../engine/include/engine.h"
 #include "dh/time/Duration.h"
@@ -6,8 +8,6 @@
 #include "src/State.h"
 #include "src/Screen.h"
 #include "src/notepad_backend.h"
-
-#include <stdio.h>
 
 // D2CodingLigature Nerd Font
 
