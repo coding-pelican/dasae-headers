@@ -4,6 +4,113 @@
 #include "../include/engine/input.h"
 
 #define Win32ConsoleBackend_calculateBufferSize(width, height) ((width) * (height) * 32)
+static void Win32ConsoleBackend_destroy(engine_Platform* platform);
+static void Win32ConsoleBackend_processEvents(engine_Platform* platform);
+static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
+
+Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
+    reserveReturn(Err$Ptr$engine_Platform);
+    engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
+    if (!platform) {
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+    }
+
+    switch (params->backend_type) {
+    case engine_RenderBackendType_vt100: {
+        engine_Win32ConsoleBackend* const backend = (engine_Win32ConsoleBackend*)malloc(sizeof(engine_Win32ConsoleBackend));
+        if (!backend) {
+            free(platform);
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        }
+
+        // Initialize console backend
+        // HANDLE hConsole = CreateConsoleScreenBuffer(
+        //     GENERIC_READ | GENERIC_WRITE,
+        //     FILE_SHARE_READ | FILE_SHARE_WRITE,
+        //     null,
+        //     CONSOLE_TEXTMODE_BUFFER,
+        //     null
+        // );
+        // if (hConsole == INVALID_HANDLE_VALUE) {
+        //     free(backend);
+        //     free(platform);
+        //     return_err(engine_PlatformErr_err(engine_PlatformErrType_AccessDenied));
+        // }
+        HANDLE     hConsole          = GetStdHandle(STD_OUTPUT_HANDLE);
+        SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
+        SetConsoleWindowInfo(hConsole, TRUE, &windowSizeInitial);
+
+        // void SetConsoleScreenBuffer()
+        COORD dwSize = (COORD){ (SHORT)params->width, (SHORT)params->height };
+        SetConsoleScreenBufferSize(hConsole, dwSize);
+
+        SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)(params->width), (SHORT)(params->height) };
+        SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
+
+        // Configure console
+        SetConsoleOutputCP(CP_UTF8);
+        DWORD mode = 0;
+        GetConsoleMode(hConsole, &mode);
+        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
+        // mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_WINDOW_INPUT;
+        SetConsoleMode(hConsole, mode);
+
+        // Hide cursor
+        CONSOLE_CURSOR_INFO cursor_info = { 1, false };
+        SetConsoleCursorInfo(hConsole, &cursor_info);
+
+        // Allocate string buffer for ANSI sequences
+        backend->buffer_capacity = (usize)Win32ConsoleBackend_calculateBufferSize((usize)params->width, (usize)params->height);
+        backend->buffer          = malloc(backend->buffer_capacity);
+        if (!backend->buffer) {
+            // CloseHandle(hConsole);
+            free(backend);
+            free(platform);
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        }
+
+        backend->console_handle = hConsole;
+        backend->buffer_size    = 0;
+        backend->cursor_visible = false;
+
+        // Set active screen buffer
+        SetConsoleActiveScreenBuffer(hConsole);
+
+        // Setup backend interface
+        backend->base.type          = engine_RenderBackendType_vt100;
+        backend->base.presentBuffer = Win32ConsoleBackend_presentBuffer;
+        backend->base.processEvents = Win32ConsoleBackend_processEvents;
+        backend->base.destroy       = Win32ConsoleBackend_destroy;
+
+        platform->backend = &backend->base;
+        return_ok(platform);
+    }
+
+    case engine_RenderBackendType_win32_gdi:
+    case engine_RenderBackendType_directx:
+        free(platform);
+        return_err(engine_PlatformErr_err(engine_PlatformErrType_NotImplemented));
+
+    case engine_RenderBackendType_custom:
+        if (!params->custom_data) {
+            free(platform);
+            return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
+        }
+        platform->backend = params->custom_data;
+        return_ok(platform);
+
+    default:
+        free(platform);
+        return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
+    }
+}
+
+void engine_Platform_destroy(engine_Platform* platform) {
+    if (!platform) { return; }
+    if (platform->backend && platform->backend->destroy) {
+        platform->backend->destroy(platform);
+    }
+}
 
 static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
@@ -186,107 +293,3 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const C
     printf("\033[H"); // Reset cursor position
     WriteConsoleA(backend->console_handle, backend->buffer, (DWORD)backend->buffer_size, NULL, NULL);
 } */
-
-Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
-    reserveReturn(Err$Ptr$engine_Platform);
-    engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
-    if (!platform) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
-    }
-
-    switch (params->backend_type) {
-    case engine_RenderBackendType_vt100: {
-        engine_Win32ConsoleBackend* const backend = (engine_Win32ConsoleBackend*)malloc(sizeof(engine_Win32ConsoleBackend));
-        if (!backend) {
-            free(platform);
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
-        }
-
-        // Initialize console backend
-        // HANDLE hConsole = CreateConsoleScreenBuffer(
-        //     GENERIC_READ | GENERIC_WRITE,
-        //     FILE_SHARE_READ | FILE_SHARE_WRITE,
-        //     null,
-        //     CONSOLE_TEXTMODE_BUFFER,
-        //     null
-        // );
-        // if (hConsole == INVALID_HANDLE_VALUE) {
-        //     free(backend);
-        //     free(platform);
-        //     return_err(engine_PlatformErr_err(engine_PlatformErrType_AccessDenied));
-        // }
-        HANDLE     hConsole          = GetStdHandle(STD_OUTPUT_HANDLE);
-        SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
-        SetConsoleWindowInfo(hConsole, TRUE, &windowSizeInitial);
-
-        // void SetConsoleScreenBuffer()
-        COORD dwSize = (COORD){ (SHORT)params->width, (SHORT)params->height };
-        SetConsoleScreenBufferSize(hConsole, dwSize);
-
-        SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)(params->width), (SHORT)(params->height) };
-        SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
-
-        // Configure console
-        SetConsoleOutputCP(CP_UTF8);
-        DWORD mode = 0;
-        GetConsoleMode(hConsole, &mode);
-        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
-        // mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_WINDOW_INPUT;
-        SetConsoleMode(hConsole, mode);
-
-        // Hide cursor
-        CONSOLE_CURSOR_INFO cursor_info = { 1, false };
-        SetConsoleCursorInfo(hConsole, &cursor_info);
-
-        // Allocate string buffer for ANSI sequences
-        backend->buffer_capacity = (usize)Win32ConsoleBackend_calculateBufferSize((usize)params->width, (usize)params->height);
-        backend->buffer          = malloc(backend->buffer_capacity);
-        if (!backend->buffer) {
-            // CloseHandle(hConsole);
-            free(backend);
-            free(platform);
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
-        }
-
-        backend->console_handle = hConsole;
-        backend->buffer_size    = 0;
-        backend->cursor_visible = false;
-
-        // Set active screen buffer
-        SetConsoleActiveScreenBuffer(hConsole);
-
-        // Setup backend interface
-        backend->base.type          = engine_RenderBackendType_vt100;
-        backend->base.destroy       = Win32ConsoleBackend_destroy;
-        backend->base.processEvents = Win32ConsoleBackend_processEvents;
-        backend->base.presentBuffer = Win32ConsoleBackend_presentBuffer;
-
-        platform->backend = &backend->base;
-        return_ok(platform);
-    }
-
-    case engine_RenderBackendType_win32_gdi:
-    case engine_RenderBackendType_directx:
-        free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrType_NotImplemented));
-
-    case engine_RenderBackendType_custom:
-        if (!params->custom_data) {
-            free(platform);
-            return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
-        }
-        platform->backend = params->custom_data;
-        return_ok(platform);
-
-    default:
-        free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
-    }
-}
-
-void engine_Platform_destroy(engine_Platform* platform) {
-    if (!platform) { return; }
-    if (platform->backend && platform->backend->destroy) {
-        platform->backend->destroy(platform);
-    }
-}

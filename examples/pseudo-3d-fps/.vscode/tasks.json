@@ -70,6 +70,9 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": {
@@ -104,6 +107,9 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
@@ -135,6 +141,9 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
@@ -156,6 +165,9 @@
         "-Wextra",
         "-fdiagnostics-color=always",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
@@ -178,6 +190,9 @@
         "-Wextra",
         "-fdiagnostics-color=always",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
@@ -200,6 +215,9 @@
         "-Wextra",
         "-fdiagnostics-color=always",
         "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
