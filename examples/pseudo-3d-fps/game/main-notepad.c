@@ -20,16 +20,16 @@ Err$void dh_main(int argc, const char* argv[]) {
         &(engine_PlatformParams){
             .backend_type = engine_RenderBackendType_custom,
             .window_title = "Pseudo 3d FPS",
-            .width        = 80 * 2,
-            .height       = 50 * 2,
+            .width        = 80,
+            .height       = 50,
             .custom_data  = try(NotepadBackend_create()),
         }
     ));
     printf("engine initialized\n");
 
     // Create canvases
-    let game_canvas    = try(engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba));
-    let ui_canvas      = try(engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba));
+    let game_canvas    = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
+    let ui_canvas      = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
     let minimap_canvas = try(engine_Canvas_create(32, 32, engine_CanvasType_rgba));
     printf("canvas created\n");
 
@@ -39,9 +39,9 @@ Err$void dh_main(int argc, const char* argv[]) {
     printf("canvas cleared\n");
 
     // Add canvas views
-    engine_Window_addCanvasView(window, game_canvas, 0, 0, 80 * 2, 50 * 2);
-    engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80 * 2, 50 * 2);
-    engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 30, 30);
+    engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
+    engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80, 50);
+    engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 32, 32);
     printf("canvas views added\n");
 
     let state = try(game_State_create());
@@ -50,7 +50,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     var curr_time   = time_SysTime_now();
     var prev_time   = curr_time;
-    let target_time = time_Duration_fromSecs_f64(0.025f); // Assume 40 FPS for simplicity
+    let target_time = time_Duration_fromSecs_f64(0.03333f); // Assume 30 FPS for simplicity
 
     // Game loop
     while (state->is_running) {
@@ -72,7 +72,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Present to screen
         engine_Window_present(window);
 
-        // Sleep for the remaining time to maintain 40 FPS
+        // Sleep for the remaining time to maintain FPS
         time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));
         prev_time = curr_time;
     }
