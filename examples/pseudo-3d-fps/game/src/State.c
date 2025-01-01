@@ -47,15 +47,15 @@ void game_State_destroy(game_State* state) {
 }
 
 void game_State_update(game_State* state, f32 elapsed_time) {
-    if (engine_Key_pressed(engine_KeyCode_Escape)) {
+    if (engine_Key_pressed(engine_KeyCode_Esc)) {
         state->is_running = false;
         return;
     }
 
-    if (engine_Key_pressed(engine_KeyCode_A) || engine_Key_pressed(engine_KeyCode_Left)) {
+    if (engine_Key_held(engine_KeyCode_A) || engine_Key_held(engine_KeyCode_ArrowLt)) {
         state->player_angle -= 2.0f * elapsed_time;
     }
-    if (engine_Key_pressed(engine_KeyCode_D) || engine_Key_pressed(engine_KeyCode_Right)) {
+    if (engine_Key_held(engine_KeyCode_D) || engine_Key_held(engine_KeyCode_ArrowRt)) {
         state->player_angle += 2.0f * elapsed_time;
     }
 
@@ -63,7 +63,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
     const f32 cos_angle  = cosf(state->player_angle);
     const f32 sin_angle  = sinf(state->player_angle);
 
-    if (engine_Key_pressed(engine_KeyCode_W) || engine_Key_pressed(engine_KeyCode_Up)) {
+    if (engine_Key_held(engine_KeyCode_W) || engine_Key_held(engine_KeyCode_ArrowUp)) {
         const f32 new_x = state->player_x + cos_angle * move_speed;
         const f32 new_y = state->player_y + sin_angle * move_speed;
 
@@ -73,7 +73,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
             state->player_y = new_y;
         }
     }
-    if (engine_Key_pressed(engine_KeyCode_S) || engine_Key_pressed(engine_KeyCode_Down)) {
+    if (engine_Key_held(engine_KeyCode_S) || engine_Key_held(engine_KeyCode_ArrowDn)) {
         const f32 new_x = state->player_x - cos_angle * move_speed;
         const f32 new_y = state->player_y - sin_angle * move_speed;
 

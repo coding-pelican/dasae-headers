@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include "notepad_backend.h"
+#include "../../engine/include/engine/input.h"
 
 /*
 NOTE: 테스트해볼 솔루션을 찾았다!!!
@@ -36,7 +37,7 @@ impl_Err(
     FailedCreateNotepadProcess,
     FailedIncreaseNotepadWorkingSet,
     FailedFindNotepadWindow,
-    FailedGetNotepadEditControl,
+    FailedFindNotepadEditControl,
     CantSendTextToNotepad,
 );
 
@@ -89,20 +90,22 @@ static void NotepadBackend_destroy(engine_Platform* platform) {
     engine_NotepadBackend* backend = (engine_NotepadBackend*)platform->backend;
 
     if (backend->notepad_handle) {
-        // Get the process ID we stored
-        DWORD process_id = (DWORD)(DWORD_PTR)GetPropW(backend->notepad_handle, L"ProcessId");
-        if (process_id) {
-            // Get process handle and terminate it
-            HANDLE h_process = OpenProcess(PROCESS_TERMINATE, FALSE, process_id);
-            if (h_process) {
-                TerminateProcess(h_process, 0);
-                CloseHandle(h_process);
-            }
+        // Get the stored handles
+        HANDLE hProcess = (HANDLE)GetPropW(backend->notepad_handle, L"ProcessHandle");
+        HANDLE hThread  = (HANDLE)GetPropW(backend->notepad_handle, L"ThreadHandle");
+
+        if (hProcess) {
+            TerminateProcess(hProcess, 0);
+            CloseHandle(hProcess);
         }
-        RemovePropW(backend->notepad_handle, L"ProcessId");
+        if (hThread) {
+            CloseHandle(hThread);
+        }
+
+        RemovePropW(backend->notepad_handle, L"ProcessHandle");
+        RemovePropW(backend->notepad_handle, L"ThreadHandle");
     }
 
-    // Delete the output file
     _wremove(L"game_output.txt");
 
     if (backend->buffer) {
@@ -150,9 +153,31 @@ static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color*
         // Get console window handle
         HWND console = GetConsoleWindow();
 
-        // Brief focus switch to trigger Notepad refresh
-        SetForegroundWindow(backend->notepad_handle);
-        Sleep(10);
+        static engine_KeyCode input_key_list[] = {
+            engine_KeyCode_A,
+            engine_KeyCode_D,
+            engine_KeyCode_S,
+            engine_KeyCode_W,
+            engine_KeyCode_ArrowLt,
+            engine_KeyCode_ArrowUp,
+            engine_KeyCode_ArrowRt,
+            engine_KeyCode_ArrowDn
+        };
+        static const u32 input_key_count = sizeof(input_key_list) / sizeof(engine_KeyCode);
+
+        bool has_any_held_key = false;
+        for (u32 i = 0; i < input_key_count; ++i) {
+            if (engine_Key_held(input_key_list[i])) {
+                has_any_held_key = true;
+                break;
+            }
+        }
+
+        if (has_any_held_key) {
+            // Brief focus switch to trigger Notepad refresh
+            SetForegroundWindow(backend->notepad_handle);
+            Sleep(10);
+        }
         SetForegroundWindow(console);
     }
 }
@@ -167,121 +192,127 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
         ignore fclose(fp);
     }
 
-    // Launch Notepad
-    // ShellExecuteW(null, L"open", L"notepad.exe", L"game_output.txt", null, SW_SHOW);
-    // Sleep(500); // Wait for window creation
-
     // Create process
-    STARTUPINFOA        si = cleared();
+    STARTUPINFOW        si = cleared();
     PROCESS_INFORMATION pi = cleared();
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-    if (!CreateProcessA("C:\\Windows\\notepad.exe", NULL, NULL, NULL, FALSE,
-                        CREATE_SUSPENDED, // Start suspended so we can adjust
-                        NULL,
-                        NULL,
+    si.cb                  = sizeof(si);
+    si.dwFlags             = STARTF_USESHOWWINDOW;
+    si.wShowWindow         = SW_SHOW;
+
+    wchar cmd[MAX_PATH * 2] = cleared();
+    _snwprintf(cmd, MAX_PATH * 2, L"notepad.exe game_output.txt");
+
+    if (!CreateProcessW(null, cmd, null, null, false,
+                        CREATE_SUSPENDED, // Start suspended
+                        null,
+                        null,
                         &si,
                         &pi)) {
         printf("CreateProcess failed (%lu)\n", GetLastError());
         return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedCreateNotepadProcess));
     }
 
-    // Attempt to increase the Notepad process working set
+    // Increase working set
     let min_ws = 100ull * 1024ull * 1024ull; // 100 MB
     let max_ws = 500ull * 1024ull * 1024ull; // 500 MB
     if (!SetProcessWorkingSetSize(pi.hProcess, min_ws, max_ws)) {
         printf("SetProcessWorkingSetSize failed (%lu)\n", GetLastError());
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
         return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedIncreaseNotepadWorkingSet));
     }
 
-    // Now resume the Notepad process
+    // Resume the process
     ResumeThread(pi.hThread);
 
-    // Wait until Notepad exits
-    // WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+    // Wait for window creation
+    HWND  notepad   = null;
+    HWND  edit      = null;
+    DWORD startTime = GetTickCount();
 
-    // Find the window
-    HWND notepad = FindWindowW(L"Notepad", null);
-    if (!notepad) {
-        printf("try 1: failed to find notepad window (Notepad)\n");
-        notepad = FindWindowW(L"ApplicationFrameWindow", L"Notepad");
-    }
-    if (!notepad) {
-        printf("try 2: failed to find notepad window (ApplicationFrameWindow, Notepad)\n");
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedCreateNotepadProcess));
-    }
-    printf("Found notepad window\n");
+    printf("Waiting for notepad window...\n");
+    while (GetTickCount() - startTime < 5000) { // 5 second timeout
+        Sleep(100);
 
-    // Set up the font
-    HWND edit = FindWindowExW(notepad, null, L"Edit", null);
-    if (!edit) {
-        printf("try 1: failed to find edit control (Edit)\n");
-        edit = FindWindowExW(notepad, null, L"RichEditD2DPT", null);
-    }
-    if (!edit) {
-        printf("try 2: failed to find edit control (RichEditD2DPT)\n");
-        edit = FindWindowExW(notepad, null, L"RICHEDIT50W", null);
-    }
-    if (!edit) {
-        printf("try 3: failed to find edit control (RICHEDIT50W)\n");
-        edit = FindWindowExW(notepad, null, L"NotepadTextBox", null);
-    }
-    if (!edit) {
-        printf("try 4: failed to find edit control (NotepadTextBox)\n");
-    } else {
-        printf("Found edit control\n");
-        // Create font
-        HFONT hFont = CreateFontW(
-            14,                      // Height (4px)
-            0,                       // Width (auto)
-            0,                       // Escapement
-            0,                       // Orientation
-            FW_NORMAL,               // Weight
-            FALSE,                   // Italic
-            FALSE,                   // Underline
-            FALSE,                   // StrikeOut
-            DEFAULT_CHARSET,         // CharSet
-            OUT_DEFAULT_PRECIS,      // OutPrecision
-            CLIP_DEFAULT_PRECIS,     // ClipPrecision
-            DEFAULT_QUALITY,         // Quality
-            FIXED_PITCH | FF_MODERN, // Pitch and Family
-            L"Consolas"              // Face Name
-            // L"D2CodingLigature Nerd Font" // Face Name
-        );
-        if (hFont) {
-            SendMessageW(edit, WM_SETFONT, (WPARAM)hFont, TRUE);
-        } else {
-            printf("failed to create font\n");
+        if (!notepad) {
+            notepad = FindWindowW(L"Notepad", null);
+            if (!notepad) {
+                printf("try 1: failed to find notepad window (Notepad)\n");
+                notepad = FindWindowW(L"ApplicationFrameWindow", L"Notepad");
+            }
+            if (!notepad) {
+                printf("try 2: failed to find notepad window (ApplicationFrameWindow, Notepad)\n");
+                continue;
+            }
+            printf("Found notepad window\n");
         }
+
+        if (!edit) {
+            edit = FindWindowExW(notepad, null, L"Edit", null);
+            if (!edit) {
+                printf("try 1: failed to find edit control (Edit)\n");
+                edit = FindWindowExW(notepad, null, L"RichEditD2DPT", null);
+            }
+            if (!edit) {
+                printf("try 2: failed to find edit control (RichEditD2DPT)\n");
+                edit = FindWindowExW(notepad, null, L"RICHEDIT50W", null);
+            }
+            if (!edit) {
+                printf("try 3: failed to find edit control (RICHEDIT50W)\n");
+                edit = FindWindowExW(notepad, null, L"NotepadTextBox", null);
+            }
+            if (!edit) {
+                printf("try 4: failed to find edit control (NotepadTextBox)\n");
+                continue;
+            }
+            printf("Found edit control\n");
+        }
+
+        break;
     }
 
-    // Calculate window size based on font metrics
-    // HDC         hdc = GetDC(edit);
-    // TEXTMETRICW tm;
-    // GetTextMetricsW(hdc, &tm);
-    // ReleaseDC(edit, hdc);
+    if (!notepad) {
+        printf("Failed to find notepad window\n");
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedFindNotepadWindow));
+    }
 
-    // i32 char_width  = tm.tmAveCharWidth;
-    // i32 char_height = tm.tmHeight + tm.tmExternalLeading;
+    if (!edit) {
+        printf("Failed to find edit control\n");
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedFindNotepadEditControl));
+    }
 
-    // // Set window size to fit content (add margins for window borders)
-    // i32 window_width  = char_width * (80) * 2 + GetSystemMetrics(SM_CXFRAME) * 2;
-    // i32 window_height = char_height * (50) * 2 + GetSystemMetrics(SM_CYFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION);
-    // window_width /= 2;
-    // window_height /= 2;
-
-    // Position window and disable user input
+    // Set font
+    HFONT hFont = CreateFontW(
+        14,                      // Height
+        0,                       // Width (auto)
+        0,                       // Escapement
+        0,                       // Orientation
+        FW_NORMAL,               // Weight
+        false,                   // Italic
+        false,                   // Underline
+        false,                   // StrikeOut
+        DEFAULT_CHARSET,         // CharSet
+        OUT_DEFAULT_PRECIS,      // OutPrecision
+        CLIP_DEFAULT_PRECIS,     // ClipPrecision
+        DEFAULT_QUALITY,         // Quality
+        FIXED_PITCH | FF_MODERN, // Pitch and Family
+        L"Consolas"              // Face Name
+    );
+    if (hFont) {
+        SendMessageW(edit, WM_SETFONT, (WPARAM)hFont, true);
+    }
+    // Configure window
     SetWindowPos(notepad, HWND_TOPMOST, 100, 100, 800, 600, SWP_SHOWWINDOW);
-    ignore getchar(); // Wait for user input (Setup)
-    EnableWindow(notepad, FALSE);
+    ignore getchar(); // user setting step
+    // EnableWindow(notepad, false);
 
-    // Store process ID for cleanup
-    DWORD process_id = 0;
-    GetWindowThreadProcessId(notepad, &process_id);
-    SetPropW(notepad, L"ProcessId", (HANDLE)(DWORD_PTR)process_id); // NOLINT
+    // Store process handles for cleanup
+    SetPropW(notepad, L"ProcessHandle", (HANDLE)pi.hProcess);
+    SetPropW(notepad, L"ThreadHandle", (HANDLE)pi.hThread);
 
     return_ok(notepad);
 }
