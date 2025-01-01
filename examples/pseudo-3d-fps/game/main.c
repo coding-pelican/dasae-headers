@@ -1,12 +1,12 @@
+#include <stdio.h>
+
 #include "dh/main.h"
-#include "../engine/include/engine.h"
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
-#include "dh/time/SysTime.h"
+
+#include "../engine/include/engine.h"
 #include "src/State.h"
 #include "src/Screen.h"
-
-#include <stdio.h>
 
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
@@ -26,7 +26,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     // Create canvases
     let game_canvas    = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
     let ui_canvas      = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
-    let minimap_canvas = try(engine_Canvas_create(30, 30, engine_CanvasType_rgba));
+    let minimap_canvas = try(engine_Canvas_create(32, 32, engine_CanvasType_rgba));
     printf("canvas created\n");
 
     engine_Canvas_clear(game_canvas, Color_blank);
@@ -37,7 +37,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     // Add canvas views
     engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
     engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80, 50);
-    engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 30, 30);
+    engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 32, 32);
     printf("canvas views added\n");
 
     let state = try(game_State_create());
@@ -46,7 +46,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     var curr_time   = time_SysTime_now();
     var prev_time   = curr_time;
-    let target_time = time_Duration_fromSecs_f64(0.025f); // Assume 40 FPS for simplicity
+    let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
 
     // Game loop
     while (state->is_running) {
@@ -68,7 +68,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Present to screen
         engine_Window_present(window);
 
-        // Sleep for the remaining time to maintain 40 FPS
+        // Sleep for the remaining time to maintain FPS
         time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));
         prev_time = curr_time;
     }
