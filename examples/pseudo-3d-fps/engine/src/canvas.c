@@ -73,6 +73,21 @@ void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
     }
 }
 
+void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x, i32 y, i32 w, i32 h, Color color) {
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
+    if (x < 0 || as(i32, canvas->width) <= x) { return; }
+    if (y < 0 || as(i32, canvas->height) <= y) { return; }
+    if (w <= 0 || h <= 0) { return; }
+    if (x + w > as(i32, canvas->width)) { w = as(i32, canvas->width) - x; }
+    if (y + h > as(i32, canvas->height)) { h = as(i32, canvas->height) - y; }
+    for (i32 py = y; py < (y + h); ++py) {
+        for (i32 px = x; px < (x + w); ++px) {
+            engine_Canvas_drawPixel(canvas, px, py, color);
+        }
+    }
+}
+
 void engine_Canvas_resize(engine_Canvas* canvas, u32 width, u32 height) {
     debug_assert_nonnull(canvas);
     debug_assert_nonnull(canvas->buffer.ptr);

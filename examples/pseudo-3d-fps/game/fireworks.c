@@ -9,11 +9,7 @@
 #include "dh/Random.h"
 #include "dh/defer.h"
 
-#include "../pseudo-3d-fps/engine/include/engine.h"
-
-// TODO: Ensure that ArrayList will behave correctly
-// TODO: Implement errdefer
-// TODO: Ensure reserved_return value is properly reserved for defer
+#include "../engine/include/engine.h"
 
 #define Firework_effects_max        (25)
 #define Firework_effects_per_rocket (25)
@@ -352,7 +348,7 @@ Err$State State_init(mem_Allocator allocator, u32 width, u32 height) {
         ArrayList_append(
             &fireworks,
             meta_ptr(&(Firework){
-                .rocket            = null,
+                .rocket            = (Opt$Ptr$Particle)none(),
                 .effects           = (ArrayList$Particle)try(ArrayList_initCapacity(typeInfo(Particle), allocator, Firework_effects_per_rocket)),
                 .effect_base_color = Color_intoHsl(Color_white),
             })
