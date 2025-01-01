@@ -33,7 +33,7 @@ Err$ArrayList ArrayList_initCapacity(TypeInfo type, mem_Allocator allocator, usi
     return_ok(list);
 }
 
-void ArrayList_deinit(ArrayList* self) {
+void ArrayList_fini(ArrayList* self) {
     if (self->items.addr != null) {
         mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
     }
@@ -152,7 +152,7 @@ void ArrayList_expandToCapacity(ArrayList* self) {
     self->items.len = self->capacity;
 }
 
-Err$void ArrayList_append(ArrayList* self, meta_Sli item) {
+Err$void ArrayList_append(ArrayList* self, meta_Ptr item) {
     reserveReturn(Err$void);
     try(ArrayList_ensureUnusedCapacity(self, 1));
 
@@ -170,12 +170,12 @@ Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) {
     return_void();
 }
 
-Err$void ArrayList_appendNTimes(ArrayList* self, meta_Sli item, usize n) {
+Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) {
     reserveReturn(Err$void);
     try(ArrayList_ensureUnusedCapacity(self, n));
 
-    for (usize i = 0; i < n; i++) {
-        memcpy((u8*)self->items.addr + ((self->items.len + i) * self->items.type.size), item.addr, item.type.size);
+    for (usize i = 0; i < n; ++i) {
+        memcpy((u8*)self->items.addr + ((self->items.len + i) * self->items.type.size), value.addr, value.type.size);
     }
     self->items.len += n;
     return_void();

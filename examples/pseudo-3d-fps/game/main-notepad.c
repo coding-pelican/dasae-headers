@@ -9,8 +9,6 @@
 #include "src/Screen.h"
 #include "src/notepad_backend.h"
 
-// D2CodingLigature Nerd Font
-
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
     unused(argc), unused(argv);

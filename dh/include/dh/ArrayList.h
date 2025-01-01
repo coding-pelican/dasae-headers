@@ -23,7 +23,7 @@ extern ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator);
 extern Err$ArrayList ArrayList_initCapacity(TypeInfo type, mem_Allocator allocator, usize cap) must_check;
 
 // Free resources
-extern void ArrayList_deinit(ArrayList* self);
+extern void ArrayList_fini(ArrayList* self);
 
 // Return owned slice
 extern Err$meta_Sli ArrayList_toOwnedSlice(ArrayList* self) must_check;
@@ -48,9 +48,9 @@ extern void     ArrayList_shrinkRetainingCapacity(ArrayList* self, usize new_len
 extern void     ArrayList_expandToCapacity(ArrayList* self);
 
 // Add elements
-extern Err$void ArrayList_append(ArrayList* self, meta_Sli item) must_check;
+extern Err$void ArrayList_append(ArrayList* self, meta_Ptr item) must_check;
 extern Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) must_check;
-extern Err$void ArrayList_appendNTimes(ArrayList* self, meta_Sli item, usize n) must_check;
+extern Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) must_check;
 
 extern Err$meta_Ptr ArrayList_addOne(ArrayList* self) must_check;
 extern meta_Ptr     ArrayList_addOneAssumeCapacity(ArrayList* self) must_check;

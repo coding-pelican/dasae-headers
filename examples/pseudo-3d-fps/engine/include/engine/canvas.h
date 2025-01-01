@@ -33,6 +33,7 @@ extern Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_
 extern void                  engine_Canvas_destroy(engine_Canvas* canvas);
 extern void                  engine_Canvas_clear(engine_Canvas* canvas, Color color);
 extern void                  engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color);
+extern void                  engine_Canvas_fillRect(engine_Canvas* canvas, i32 x, i32 y, i32 w, i32 h, Color color);
 extern void                  engine_Canvas_resize(engine_Canvas* canvas, u32 width, u32 height);
 
 // Specialized canvas operations

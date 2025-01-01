@@ -4,6 +4,8 @@
 #include "notepad_backend.h"
 #include "../../engine/include/engine/input.h"
 
+// D2CodingLigature Nerd Font
+
 /*
 NOTE: 테스트해볼 솔루션을 찾았다!!!
     Windows 11에서는 Edit이 아닌 RichEdit 컨트롤을 사용해야한다는 점.
@@ -115,9 +117,28 @@ static void NotepadBackend_destroy(engine_Platform* platform) {
 }
 
 static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height) {
-    static const wchar shade_chars[] = L" .',:!*|+8#@"; // More granular shading
-    // static const wchar shade_chars[] = L" ░▒▓█"; // Using block elements for better spacing
-    static const u32   shade_levels  = (sizeof(shade_chars) / sizeof(wchar)) - 1;
+    // Option 1: Traditional ASCII art (22 levels)
+    static const wchar shade_chars[] = L" .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+
+    // // Option 2: Simple but effective (10 levels)
+    // static const wchar shade_chars[] = L" .:-=+*#%@";
+
+    // // Option 3: Dense shading (15 levels)
+    // static const wchar shade_chars[] = L" ░▒▓█▄▀■◤◥◢◣▲▼●";
+
+    // // Option 4: Mixed ASCII and blocks (16 levels)
+    // static const wchar shade_chars[] = L" .',:;+=xX$░▒▓█▀■";
+
+    // // Option 5: Detailed gradients (30 levels)
+    // static const wchar shade_chars[] = L" `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$MB%&QN@";
+
+    // // Option 6: Block-based only (8 levels)
+    // static const wchar shade_chars[] = L"  ░░▒▒▓▓██";
+
+    // // Option 7: Compact but readable (12 levels)
+    // static const wchar shade_chars[] = L" ._-=+*:|%#@$";
+
+    static const u32 shade_levels = (sizeof(shade_chars) / sizeof(wchar)) - 1;
 
     debug_assert_nonnull(platform);
     debug_assert_nonnull(data);
