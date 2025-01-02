@@ -47,15 +47,17 @@ extern Ptr           Ptr_constCast(PtrConst);
 typedef struct SliConst SliConst;
 typedef union Sli       Sli;
 extern Sli              Sli_constCast(SliConst);
-extern anyptr           Sli_rawAt(TypeInfo, anyptr, usize, usize);
-extern anyptr           Sli_rawSlice(TypeInfo, anyptr, usize, usize, usize);
+extern const anyptr     Sli_rawAt(TypeInfo, const anyptr, usize, usize);
+extern anyptr           Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
+extern const anyptr     Sli_rawSlice(TypeInfo, const anyptr, usize, usize, usize);
+extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
 #define Sli_from(var_ptr, val_len)                 IMPL_Sli_from(var_ptr, val_len)
 #define Sli_from$(T, var_ptr, val_len)             IMPL_Sli_from$(T, var_ptr, val_len)
 #define Sli_range(var_ptr, val_begin, val_end)     IMPL_Sli_range(var_ptr, val_begin, val_end)
 #define Sli_range$(T, var_ptr, val_begin, val_end) IMPL_Sli_range$(T, var_ptr, val_begin, val_end)
-#define Sli_arr(var_arr)                           IMPL_Sli_arr(var_arr)
-#define Sli_arr$(T, var_arr)                       IMPL_Sli_arr$(T, var_arr)
+#define Sli_arr(var_arr...)                        IMPL_Sli_arr(var_arr)
+#define Sli_arr$(T, var_arr...)                    IMPL_Sli_arr$(T, var_arr)
 #define Sli_at(var_sli, val_index)                 IMPL_Sli_at(var_sli, val_index)
 #define Sli_slice(var_sli, val_begin, val_end)     IMPL_Sli_slice(var_sli, val_begin, val_end)
 #define Sli_prefix(var_sli, val_end)               IMPL_Sli_prefix(var_sli, val_end)
@@ -65,8 +67,8 @@ extern anyptr           Sli_rawSlice(TypeInfo, anyptr, usize, usize, usize);
 #define for_slice(var_sli, var_item)     IMPL_for_slice(var_sli, var_item)
 #define for_slice_mut(var_sli, var_item) IMPL_for_slice_mut(var_sli, var_item)
 
-#define for_indexed_slice(var_sli, var_index, var_item)     IMPL_for_indexed_slice(var_sli, var_index, var_item)
-#define for_indexed_slice_mut(var_sli, var_index, var_item) IMPL_for_indexed_slice_mut(var_sli, var_index, var_item)
+#define for_indexed_slice(var_sli, var_item, var_index)     IMPL_for_indexed_slice(var_sli, var_item, var_index)
+#define for_indexed_slice_mut(var_sli, var_item, var_index) IMPL_for_indexed_slice_mut(var_sli, var_item, var_index)
 
 /* Any type */
 typedef struct AnyType AnyType;
@@ -165,14 +167,14 @@ union Sli {
         .len = _end - _begin                                                               \
     };                                                                                     \
 })
-#define IMPL_Sli_arr(var_arr)     { .ptr = (var_arr), .len = countOf(var_arr) }
-#define IMPL_Sli_arr$(T, var_arr) ({ \
-    let _arr = (var_arr);            \
-    claim_assert_nonnull(_arr);      \
-    (pp_join($, Sli, T)){            \
-        .ptr = _arr,                 \
-        .len = countOf(_arr)         \
-    };                               \
+#define IMPL_Sli_arr(var_arr...)     { .ptr = (var_arr), .len = countOf(var_arr) }
+#define IMPL_Sli_arr$(T, var_arr...) ({ \
+    let _arr = (var_arr);               \
+    claim_assert_nonnull(_arr);         \
+    (pp_join($, Sli, T)){               \
+        .ptr = _arr,                    \
+        .len = countOf(_arr)            \
+    };                                  \
 })
 
 #define IMPL_Sli_at(var_sli, val_index) ({                                                      \
@@ -208,10 +210,10 @@ union Sli {
     for (usize _i = 0; _i < (var_sli).len; ++_i) \
     scope_with(var var_item = Sli_at(var_sli, _i))
 
-#define IMPL_for_indexed_slice(var_sli, var_index, var_item)              \
+#define IMPL_for_indexed_slice(var_sli, var_item, var_index)              \
     for (usize var_index = 0; (var_index) < (var_sli).len; ++(var_index)) \
     scope_with(let var_item = Sli_at(var_sli, var_index))
-#define IMPL_for_indexed_slice_mut(var_sli, var_index, var_item)          \
+#define IMPL_for_indexed_slice_mut(var_sli, var_item, var_index)          \
     for (usize var_index = 0; (var_index) < (var_sli).len; ++(var_index)) \
     scope_with(var var_item = Sli_at(var_sli, var_index))
 

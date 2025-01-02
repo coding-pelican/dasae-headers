@@ -10,7 +10,7 @@
 
 #include "dh/TEST.h"
 
-#define ERR_RES_MAIN_NO_HIJACK (1)
+#define MAIN_NO_HIJACK (1)
 #include "dh/main.h"
 
 #include <stdio.h>

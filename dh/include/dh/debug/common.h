@@ -36,8 +36,8 @@ extern "C" {
 
 #else
 
-#define IMPL_debug_break()
-#define IMPL_debug_only(...)
+#define IMPL_debug_break() unused(0)
+#define IMPL_debug_only(...) unused(0)
 
 #endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
 

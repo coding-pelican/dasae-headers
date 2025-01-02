@@ -53,10 +53,10 @@ extern Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) must_chec
 extern Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) must_check;
 
 extern Err$meta_Ptr ArrayList_addOne(ArrayList* self) must_check;
-extern meta_Ptr     ArrayList_addOneAssumeCapacity(ArrayList* self) must_check;
+extern meta_Ptr     ArrayList_addOneAssumeCapacity(ArrayList* self);
 
 extern Err$meta_Sli ArrayList_addManyAsSlice(ArrayList* self, usize n) must_check;
-extern meta_Sli     ArrayList_addManyAsSliceAssumeCapacity(ArrayList* self, usize n) must_check;
+extern meta_Sli     ArrayList_addManyAsSliceAssumeCapacity(ArrayList* self, usize n);
 
 // Insert elements
 extern Err$void ArrayList_insert(ArrayList* self, usize index, meta_Ptr item) must_check;
@@ -76,9 +76,9 @@ extern void ArrayList_clearAndFree(ArrayList* self);
 extern usize         ArrayList_len(const ArrayList* self);
 extern usize         ArrayList_capacity(const ArrayList* self);
 extern meta_SliConst ArrayList_items(const ArrayList* self);
-extern meta_Sli      ArrayList_itemsMut(ArrayList* self);
+extern meta_Sli      ArrayList_items_mut(ArrayList* self);
 extern meta_PtrConst ArrayList_at(const ArrayList* self, usize index);
-extern meta_Ptr      ArrayList_atMut(ArrayList* self, usize index);
+extern meta_Ptr      ArrayList_at_mut(ArrayList* self, usize index);
 
 #if defined(__cplusplus)
 } /* extern "C" */

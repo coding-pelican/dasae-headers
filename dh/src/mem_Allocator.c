@@ -17,7 +17,7 @@ bool mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, us
 /* Free memory */
 void mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align) {
     debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(buf.ptr);
+    if (buf.ptr == null) { return; } // TODO: Change to not allow null pointers
     self.vt->free(self.ctx, buf, buf_align);
 }
 
@@ -25,7 +25,7 @@ void mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align) {
 Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
     reserveReturn(Err$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align);
-    if (isNone(opt)) {
+    if_none(opt) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
     return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
@@ -33,7 +33,7 @@ Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
 
 /* Free single-item */
 void mem_Allocator_destroy(mem_Allocator self, AnyType ptr) {
-    debug_assert_nonnull(ptr.ctx);
+    if (ptr.ctx == null) { return; } // TODO: Change to not allow null pointers
     mem_Allocator_rawFree(
         self,
         (Sli$u8){ .ptr = ((meta_Ptr*)ptr.ctx)->addr, .len = ptr.type.size },
@@ -45,7 +45,7 @@ void mem_Allocator_destroy(mem_Allocator self, AnyType ptr) {
 Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
     reserveReturn(Err$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align);
-    if (isNone(opt)) {
+    if_none(opt) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
     return_ok((meta_Sli){ .ptr = { .addr = unwrap(opt), .type = type }, .len = count });
@@ -64,7 +64,7 @@ bool mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) {
         return false;
     }
     /* Calculate new byte size - check for overflow */
-    if (SIZE_MAX / type.size < new_len) { return false; /* Would overflow */ }
+    if (usize_limit / type.size < new_len) { return false; /* Would overflow */ }
     const usize new_byte_size = new_len * type.size;
     /* Call raw resize with byte size */
     return mem_Allocator_rawResize(
@@ -88,13 +88,13 @@ Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
     }
 
     // Allocate new buffer
-    let new_slice = mem_Allocator_alloc(self, type, new_len);
-    if (new_slice.is_err) {
+    let new_slice = catch (mem_Allocator_alloc(self, type, new_len), err, {
+        unused(err);
         return_none();
-    }
+    });
 
     // Copy data and free old buffer
-    let result   = new_slice.ok;
+    let result   = new_slice;
     let copy_len = slice->len < new_len ? slice->len : new_len;
 
     memcpy(result.addr, slice->addr, copy_len * type.size);
@@ -108,7 +108,7 @@ Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
 
 /* Free slice */
 void mem_Allocator_free(mem_Allocator self, AnyType memory) {
-    debug_assert_nonnull(memory.ctx);
+    if (memory.ctx == null) { return; } // TODO: Change to not allow null pointers
     let slice = (meta_Sli*)memory.ctx;
     mem_Allocator_rawFree(
         self,

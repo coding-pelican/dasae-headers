@@ -74,19 +74,19 @@ void engine_Window_present(engine_Window* window) {
     for (u32 i = 0; i < window->view_count; ++i) {
         engine_CanvasView* const view = &window->views[i];
         if (view->visible && view->canvas) {
-            // engine_Canvas_blitScaled(
-            //     window->composite_buffer,
-            //     view->canvas,
-            //     view->x,
-            //     view->y,
-            //     as(f32, view->width) / as(f32, view->canvas->width)
-            // );
-            engine_Canvas_blit(
+            engine_Canvas_blitScaled(
                 window->composite_buffer,
                 view->canvas,
                 view->x,
-                view->y
+                view->y,
+                as(f32, view->width) / as(f32, view->canvas->width)
             );
+            // engine_Canvas_blit(
+            //     window->composite_buffer,
+            //     view->canvas,
+            //     view->x,
+            //     view->y
+            // );
         }
     }
 

@@ -179,8 +179,8 @@ void engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 
     const i32 start_x    = prim_max(0, x);
     const i32 start_y    = prim_max(0, y);
 
-    for (i32 dy = start_y; dy < dst_bottom; dy++) {
-        for (i32 dx = start_x; dx < dst_right; dx++) {
+    for (i32 dy = start_y; dy < dst_bottom; ++dy) {
+        for (i32 dx = start_x; dx < dst_right; ++dx) {
             // Calculate source pixel
             const i32 src_x = as(i32, as(f32, dx - x) / scale);
             const i32 src_y = as(i32, as(f32, dy - y) / scale);

@@ -34,7 +34,7 @@ extern "C" {
 #define alignOf(T) \
     IMPL_alignOf(T)
 
-#define countOf(var_arr) \
+#define countOf(var_arr...) \
     IMPL_countOf(var_arr)
 
 #define TypeOf(val) \
@@ -52,7 +52,7 @@ extern "C" {
     alignof(T)
 
 // NOLINTBEGIN
-#define IMPL_countOf(var_arr) \
+#define IMPL_countOf(var_arr...) \
     (sizeof(var_arr) / sizeof(var_arr[0]))
 // NOLINTEND
 

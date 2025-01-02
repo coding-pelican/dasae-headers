@@ -38,7 +38,7 @@ static u64 Random_next() {
 /*========== Extern Function Implementations ================================*/
 
 void Random_init() {
-    // return Random_withSeed(time_SysTime_toNanos(time_Instant_now()));
+    return Random_withSeed(time_SysTime_now().QuadPart);
 }
 
 void Random_withSeed(u64 seed) {

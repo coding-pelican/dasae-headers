@@ -10,6 +10,8 @@
 #include "dh/defer.h"
 
 #include "../engine/include/engine.h"
+#include "dh/debug.h"
+#include "log.h"
 
 #define Firework_effects_max        (25)
 #define Firework_effects_per_rocket (25)
@@ -77,49 +79,63 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     Random_init();
     scope_defer {
+        // Initialize logging to a file
+        scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
+            log_initWithFile(debug_file);
+            // Configure logging behavior
+            log_showTimestamp(true);
+            log_showLocation(true);
+            log_showLevel(true);
+            log_setLevel(log_Level_debug);
+        }
+        defer(log_fini());
+
         // Initialize platform with terminal backend
         let window = try(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Fireworks",
-                .width        = 80,
-                .height       = 50,
+                .width        = 80 * 2,
+                .height       = 50 * 2,
             }
         ));
         defer(engine_Window_destroy(window));
-        printf("engine initialized\n");
+        log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
+        let game_canvas = catch (engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba), err, {
+            log_error("Failed to create canvas: %s\n", err);
             defer_return;
             return_err(err);
         });
         defer(engine_Canvas_destroy(game_canvas));
-        printf("canvas created\n");
+        log_info("canvas created\n");
 
         engine_Canvas_clear(game_canvas, Color_blank);
-        printf("canvas cleared\n");
+        log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
-        printf("canvas views added\n");
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, 80 * 2, 50 * 2);
+        log_info("canvas views added\n");
 
         var heap      = (heap_Classic){};
         var allocator = heap_Classic_allocator(&heap);
-        var state     = catch (State_init(allocator, 80, 50), err, {
+        var state     = catch (State_init(allocator, 80 * 2, 50 * 2), err, {
+            log_error("Failed to create game state: %s\n", err);
             defer_return;
             return_err(err);
         });
         defer(State_fini(&state));
-        printf("game state created\n");
+        log_info("game state created\n");
         ignore getchar();
 
         var curr_time   = time_SysTime_now();
         var prev_time   = curr_time;
         let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        log_info("game loop started\n");
 
         // Game loop
-        while (state.is_running || !State_isDead(&state)) {
+        while (!State_isDead(&state)) {
             // const f64   real_delta_time = elapsed;
             // const usize update_step     = (usize)(Display_deltaTime() / real_delta_time);
             // for (usize step = 0; step < update_step; ++step) {
@@ -134,22 +150,26 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             // Update game state
             if (engine_Key_pressed(engine_KeyCode_Esc)) {
+                log_debug("pressed esc\n");
                 state.is_running = false;
                 break;
             }
             if (engine_Key_pressed(engine_KeyCode_Space)) {
+                log_debug("pressed space\n");
                 catch (State_spawnFirework(&state), err, {
+                    log_error("failed to spawn firework: %s\n", Err_message(err));
                     defer_return;
                     return_err(err);
                 });
             }
-            catch (State_update(&state, as(f32, dt)), err, {
+            catch (State_update(&state, 1), err, {
+                log_error("failed to update game state: %s\n", Err_message(err));
                 defer_return;
                 return_err(err);
             });
 
             // Render all views
-            State_render(&state, game_canvas, dt);
+            State_render(&state, game_canvas, 1);
 
             // Present to screen
             engine_Window_present(window);
@@ -226,14 +246,14 @@ void Particle_update(Particle* p, f64 dt) {
 void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(p);
     debug_assert_nonnull(c);
+    unused(dt);
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
-        as(u8, as(f64, p->color.r) * p->lifetime * dt),
-        as(u8, as(f64, p->color.g) * p->lifetime * dt),
-        as(u8, as(f64, p->color.b) * p->lifetime * dt)
+        as(u8, as(f64, p->color.r) * p->lifetime),
+        as(u8, as(f64, p->color.g) * p->lifetime),
+        as(u8, as(f64, p->color.b) * p->lifetime)
     );
-
     engine_Canvas_fillRect(
         c,
         as(i64, p->position[0]),
@@ -248,6 +268,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
     reserveReturn(Err$Ptr$Firework);
     debug_assert_nonnull(f);
 
+    log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
     f->allocator = allocator;
     scope_with(let rocket = meta_castPtr(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
         Particle_init(rocket, as(f64, rocket_x), as(f64, rocket_y), 1.0, 3.0, effect_base_color);
@@ -256,7 +277,9 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         f->rocket = (Opt$Ptr$Particle)some(rocket);
     }
     f->effects           = catch (ArrayList_initCapacity(typeInfo(Particle), f->allocator, Firework_effects_per_rocket), err, {
-        mem_Allocator_destroy(f->allocator, AnyType(unwrap(f->rocket)));
+        log_error("failed to create effects array: %s\n", Err_message(err));
+        let rocket = unwrap(f->rocket);
+        mem_Allocator_destroy(f->allocator, (AnyType){ .ctx = (void*)&rocket, .type = typeInfo(Particle) });
         return_err(err);
     });
     f->effect_base_color = Color_intoHsl(effect_base_color);
@@ -266,8 +289,10 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
 
 void Firework_fini(Firework* f) {
     debug_assert_nonnull(f);
+    log_debug("Destroying firework(%p)\n", f);
     if_some(f->rocket, rocket) {
-        mem_Allocator_destroy(f->allocator, AnyType(rocket));
+        log_debug("Destroying rocket(%p)\n", rocket);
+        mem_Allocator_destroy(f->allocator, (AnyType){ .ctx = (void*)&rocket, .type = typeInfo(Particle) });
     }
     ArrayList_fini(&f->effects);
 }
@@ -276,7 +301,8 @@ static bool Firework__deadsAllEffect(const Firework* f) {
     debug_assert_nonnull(f);
     let effects = meta_castSli(Sli$Particle, f->effects.items);
     for_slice(effects, effect) {
-        if (!Particle_isDead(effect)) { return false; }
+        if (Particle_isDead(effect)) { continue; }
+        return false;
     }
     return true;
 }
@@ -296,6 +322,12 @@ Err$void Firework_update(Firework* f, f64 dt) {
     if_some(f->rocket, rocket) {
         Particle_update(rocket, dt);
         if (-0.2 <= rocket->speed[1]) {
+            log_debug(
+                "Spawning %d effects at (%.2f, %.2f)",
+                Firework_effects_per_rocket,
+                rocket->position[0],
+                rocket->position[1]
+            );
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
                 scope_with(let particle = meta_castPtr(Particle*, try(ArrayList_addOne(&f->effects)))) {
@@ -314,7 +346,9 @@ Err$void Firework_update(Firework* f, f64 dt) {
                     Particle_initWithFading(particle, 0.01);
                 }
             }
-            mem_Allocator_destroy(f->allocator, AnyType(rocket));
+            log_debug("destroying rocket(%p)\n", rocket);
+            mem_Allocator_destroy(f->allocator, (AnyType){ .ctx = (void*)&rocket, .type = typeInfo(Particle) });
+            log_debug("rocket destroyed\n");
             f->rocket = (Opt$Ptr$Particle)none();
         }
     }
@@ -331,6 +365,7 @@ void Firework_render(const Firework* f, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(c);
 
     if_some(f->rocket, rocket) {
+        debug_assert_fmt(!Particle_isDead(rocket), "rocket must be alive");
         Particle_render(rocket, c, dt);
     }
     scope_with(let effects = meta_castSli(Sli$Particle, f->effects.items)) {
@@ -344,22 +379,6 @@ Err$State State_init(mem_Allocator allocator, u32 width, u32 height) {
     reserveReturn(Err$State);
 
     var fireworks = (ArrayList$Firework)try(ArrayList_initCapacity(typeInfo(Firework), allocator, Fireworks_max));
-    catch (
-        ArrayList_append(
-            &fireworks,
-            meta_ptr(&(Firework){
-                .rocket            = (Opt$Ptr$Particle)none(),
-                .effects           = (ArrayList$Particle)try(ArrayList_initCapacity(typeInfo(Particle), allocator, Firework_effects_per_rocket)),
-                .effect_base_color = Color_intoHsl(Color_white),
-            })
-        ),
-        err,
-        {
-            ArrayList_fini(&fireworks);
-            return_err(err);
-        }
-    );
-
     return_ok({
         .fireworks  = fireworks,
         .width      = width,
@@ -371,6 +390,7 @@ Err$State State_init(mem_Allocator allocator, u32 width, u32 height) {
 
 void State_fini(State* s) {
     debug_assert_nonnull(s);
+
     let fireworks = meta_castSli(Sli$Firework, s->fireworks.items);
     for_slice_mut(fireworks, firework) {
         Firework_fini(firework);
@@ -380,11 +400,12 @@ void State_fini(State* s) {
 
 bool State_isDead(const State* s) {
     debug_assert_nonnull(s);
-    let fireworks = meta_castSli(Sli$Firework, s->fireworks.items);
-    for_slice(fireworks, firework) {
-        if (!Firework_isDead(firework)) { return false; }
-    }
-    return true;
+    // let fireworks = meta_castSli(Sli$Firework, s->fireworks.items);
+    // for_slice(fireworks, firework) {
+    //     if (!Firework_isDead(firework)) { return false; }
+    // }
+    // return true;
+    return !s->is_running;
 }
 
 Err$void State_update(State* s, f64 dt) {
@@ -393,7 +414,12 @@ Err$void State_update(State* s, f64 dt) {
 
     // Add a new rocket with with 5% chance.
     if (Random_f64() < 0.05) {
-        try(State_spawnFirework(s));
+        debug_only(
+            if_some(try(State_spawnFirework(s)), firework) {
+                let rocket = unwrap(firework->rocket);
+                log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+            }
+        );
     }
 
     // Update all fireworks.
@@ -403,22 +429,13 @@ Err$void State_update(State* s, f64 dt) {
         }
     }
 
-    // Remove dead fireworks.
-    for (usize index = 0; index < ArrayList_len(&s->fireworks); ++index) {
-        scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
-            let firework = &fireworks.ptr[index];
-            if (!Firework_isDead(firework)) { continue; }
-            let removed = meta_castPtr(Firework*, ArrayList_swapRemove(&s->fireworks, index));
-            Firework_fini(removed);
-        }
-    }
-
     return_void();
 }
 
 void State_render(const State* s, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(s);
     debug_assert_nonnull(c);
+
     engine_Canvas_clear(c, Color_black);
     scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
         for_slice(fireworks, firework) {
@@ -431,9 +448,23 @@ Err$Opt$Ptr$Firework State_spawnFirework(State* s) {
     reserveReturn(Err$Opt$Ptr$Firework);
     debug_assert_nonnull(s);
 
-    if (s->fireworks.items.len <= s->fireworks.capacity) {
+    log_debug("Spawning new firework...");
+    log_debug("%d fireworks remaining: Removing dead fireworks...", s->fireworks.items.len);
+    // Remove dead fireworks.
+    for (usize index = 0; index < ArrayList_len(&s->fireworks); ++index) {
+        scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
+            let firework = &fireworks.ptr[index];
+            if (!Firework_isDead(firework)) { continue; }
+            let removed = meta_castPtr(Firework*, ArrayList_swapRemove(&s->fireworks, index--));
+            Firework_fini(removed);
+        }
+    }
+    log_debug("Removed dead fireworks: %d fireworks remaining", s->fireworks.items.len);
+
+    if (s->fireworks.capacity <= s->fireworks.items.len) {
         return_ok(none());
     }
+
     let firework = meta_castPtr(Firework*, try(ArrayList_addOne(&s->fireworks)));
     return_ok(some(try(Firework_init(
         firework,

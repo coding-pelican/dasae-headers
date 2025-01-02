@@ -9,7 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
+ * @brief   "Make C Great Again"
  * @details Some detailed explanation
  */
 
