@@ -4,7 +4,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-29 (date of creation)
- * @updated 2024-12-31 (date of last update)
+ * @updated 2025-01-02 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)/meta
  * @prefix
@@ -175,10 +175,10 @@ union Sli {
     };                               \
 })
 
-#define IMPL_Sli_at(var_sli, val_index) (({                                                     \
+#define IMPL_Sli_at(var_sli, val_index) ({                                                      \
     let _sli = var_sli;                                                                         \
     (TypeOf(_sli.ptr)) Sli_rawAt(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, val_index); \
-})[0])
+})
 
 #define IMPL_Sli_slice(var_sli, val_begin, val_end) ({                                        \
     let   _sli   = var_sli;                                                                   \
@@ -286,23 +286,23 @@ union meta_Sli {
     };
 };
 
-#define IMPL_meta_ptr(var_ptr...) ({ \
-    let _var_ptr = var_ptr;          \
-    (meta_Ptr){                      \
-        .addr = _var_ptr,            \
-        .type = typeInfo(*_var_ptr), \
-    };                               \
+#define IMPL_meta_ptr(var_ptr...) ({         \
+    let _var_ptr = var_ptr;                  \
+    (meta_Ptr){                              \
+        .addr = _var_ptr,                    \
+        .type = typeInfo(TypeOf(*_var_ptr)), \
+    };                                       \
 })
 
-#define IMPL_meta_sli(var_sli...) ({         \
-    let _var_sli = var_sli;                  \
-    (meta_Sli){                              \
-        .ptr = {                             \
-            .addr = _var_sli.ptr,            \
-            .type = typeInfo(*_var_sli.ptr), \
-        },                                   \
-        .len = _var_sli.len,                 \
-    };                                       \
+#define IMPL_meta_sli(var_sli...) ({                 \
+    let _var_sli = var_sli;                          \
+    (meta_Sli){                                      \
+        .ptr = {                                     \
+            .addr = _var_sli.ptr,                    \
+            .type = typeInfo(TypeOf(*_var_sli.ptr)), \
+        },                                           \
+        .len = _var_sli.len,                         \
+    };                                               \
 })
 
 #define IMPL_meta_castPtr(T, ptr...) ({ \

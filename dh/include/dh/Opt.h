@@ -115,13 +115,13 @@ extern "C" {
     })
 
 /* Optional payload capture (similar to Zig's if/while captures) */
-#define if_some(expr, var_name)                       \
+#define if_some(expr, var_capture)                    \
     scope_if(let _result = (expr), _result.has_value) \
-        scope_with(let var_name = _result.value)
+        scope_with(let var_capture = _result.value)
 
-#define if_some_mut(expr, var_name)                   \
+#define if_some_mut(expr, var_capture)                \
     scope_if(var _result = (expr), _result.has_value) \
-        scope_with(var var_name = _result.value)
+        scope_with(var var_capture = _result.value)
 
 #define if_none(expr) \
     scope_if(let _result = (expr), !_result.has_value)

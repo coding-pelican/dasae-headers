@@ -13,7 +13,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
     }
 
     // Create platform
-    Ptr$engine_Platform platform_result = catch (engine_Platform_create(params), err, {
+    engine_Platform* platform_result = catch (engine_Platform_create(params), err, {
         free(window);
         return_err(err);
     });

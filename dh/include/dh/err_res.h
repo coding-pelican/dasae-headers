@@ -23,6 +23,7 @@ extern "C" {
 
 #include "core.h"
 #include "Err.h"
+#include "scope.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -113,14 +114,27 @@ extern "C" {
     _result.is_err ? (val_default) : _result.ok; \
 })
 
-#define catch(expr, var_err, body...) ({ \
-    var _result = (expr);                \
-    if (_result.is_err) {                \
-        let var_err = _result.err;       \
-        body;                            \
-    }                                    \
-    _result.ok;                          \
+#define catch(expr, var_capture_err, body...) ({ \
+    var _result = (expr);                        \
+    if (_result.is_err) {                        \
+        let var_capture_err = _result.err;       \
+        body;                                    \
+    }                                            \
+    _result.ok;                                  \
 })
+
+/* Error result payload captures */
+#define if_ok(expr, var_capture)                    \
+    scope_if(let _result = (expr), !_result.is_err) \
+        scope_with(let var_capture = _result.ok)
+
+#define if_ok_mut(expr, var_capture)                \
+    scope_if(var _result = (expr), !_result.is_err) \
+        scope_with(var var_capture = _result.ok)
+
+#define if_err(expr, var_capture)                  \
+    scope_if(let _result = (expr), _result.is_err) \
+        scope_with(let var_capture = _result.err)
 
 /* Error void result (special case) */
 typedef struct Err$Void Err$Void;

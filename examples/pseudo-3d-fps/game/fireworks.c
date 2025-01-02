@@ -276,7 +276,7 @@ static bool Firework__deadsAllEffect(const Firework* f) {
     debug_assert_nonnull(f);
     let effects = meta_castSli(Sli$Particle, f->effects.items);
     for_slice(effects, effect) {
-        if (!Particle_isDead(&effect)) { return false; }
+        if (!Particle_isDead(effect)) { return false; }
     }
     return true;
 }
@@ -320,7 +320,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
     }
     scope_with(let effects = meta_castSli(Sli$Particle, f->effects.items)) {
         for_slice_mut(effects, effect) {
-            Particle_update(&effect, dt);
+            Particle_update(effect, dt);
         }
     }
     return_void();
@@ -335,7 +335,7 @@ void Firework_render(const Firework* f, engine_Canvas* c, f64 dt) {
     }
     scope_with(let effects = meta_castSli(Sli$Particle, f->effects.items)) {
         for_slice(effects, effect) {
-            Particle_render(&effect, c, dt);
+            Particle_render(effect, c, dt);
         }
     }
 }
@@ -373,7 +373,7 @@ void State_fini(State* s) {
     debug_assert_nonnull(s);
     let fireworks = meta_castSli(Sli$Firework, s->fireworks.items);
     for_slice_mut(fireworks, firework) {
-        Firework_fini(&firework);
+        Firework_fini(firework);
     }
     ArrayList_fini(&s->fireworks);
 }
@@ -382,7 +382,7 @@ bool State_isDead(const State* s) {
     debug_assert_nonnull(s);
     let fireworks = meta_castSli(Sli$Firework, s->fireworks.items);
     for_slice(fireworks, firework) {
-        if (!Firework_isDead(&firework)) { return false; }
+        if (!Firework_isDead(firework)) { return false; }
     }
     return true;
 }
@@ -399,7 +399,7 @@ Err$void State_update(State* s, f64 dt) {
     // Update all fireworks.
     scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
         for_slice_mut(fireworks, firework) {
-            try(Firework_update(&firework, dt));
+            try(Firework_update(firework, dt));
         }
     }
 
@@ -422,7 +422,7 @@ void State_render(const State* s, engine_Canvas* c, f64 dt) {
     engine_Canvas_clear(c, Color_black);
     scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
         for_slice(fireworks, firework) {
-            Firework_render(&firework, c, dt);
+            Firework_render(firework, c, dt);
         }
     }
 }
