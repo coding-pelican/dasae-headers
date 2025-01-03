@@ -8,6 +8,8 @@
 #include "src/State.h"
 #include "src/Screen.h"
 
+// TODO: Testing canvas blit scale behavior, breaking down canvas types and rendering methods
+
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
     unused(argc), unused(argv);

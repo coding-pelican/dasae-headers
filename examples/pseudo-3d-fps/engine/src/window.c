@@ -84,19 +84,19 @@ void engine_Window_present(engine_Window* window) {
         if (!view->visible) { continue; }
         if (!view->canvas) { continue; }
 
-        engine_Canvas_blitScaled(
+        /* engine_Canvas_blitScaled(
             window->composite_buffer,
             view->canvas,
             view->x,
             view->y,
             as(f32, view->width) / as(f32, view->canvas->width)
-        );
-        /* engine_Canvas_blit(
+        ); */
+        engine_Canvas_blit(
             window->composite_buffer,
             view->canvas,
             view->x,
             view->y
-        ); */
+        );
     }
 
     // Present to platform
