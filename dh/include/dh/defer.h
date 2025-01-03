@@ -28,11 +28,12 @@ extern "C" {
 #define scope_defer IMPL_scope_defer
 #define block_defer IMPL_block_defer
 
-#define defer_break  IMPL_defer_break
-#define defer_return IMPL_defer_return
+#define defer_break                 IMPL_defer_break
+#define defer_return(val_return...) IMPL_defer_return(val_return)
 
-#define block_deferred IMPL_block_deferred
-#define scope_deferred IMPL_scope_deferred
+#define block_deferred  IMPL_block_deferred
+#define scope_deferred  IMPL_scope_deferred
+#define return_deferred IMPL_return_deferred
 
 #define defer(_Statement...) IMPL_defer(_Statement)
 
@@ -43,25 +44,25 @@ extern "C" {
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN(bugprone-terminating-continue)
-#define IMPL_scope_defer   \
-    i32 _defer_return = 0; \
-    unused(_defer_return); \
-    i32 _defer_curr = 0;   \
-    _deferred:             \
-    switch (_defer_curr) { \
-    default:               \
-        break;             \
-    case 0:                \
+#define IMPL_scope_defer         \
+    bool _defer_returns = false; \
+    unused(_defer_returns);      \
+    i32 _defer_curr = 0;         \
+    _deferred:                   \
+    switch (_defer_curr) {       \
+    default:                     \
+        break;                   \
+    case 0:                      \
         _defer_curr = -1;
 
-#define IMPL_block_defer     \
-    do {                     \
-    scope_defer__snapshot(   \
-        if (_defer_return) { \
-            goto _deferred;  \
-        } else {             \
-            continue;        \
-        }                    \
+#define IMPL_block_defer      \
+    do {                      \
+    scope_defer__snapshot(    \
+        if (_defer_returns) { \
+            goto _deferred;   \
+        } else {              \
+            continue;         \
+        }                     \
     )
 
 #define IMPL_defer_break \
@@ -69,10 +70,11 @@ extern "C" {
         goto _deferred;  \
     }
 
-#define IMPL_defer_return  \
-    {                      \
-        _defer_return = 1; \
-        goto _deferred;    \
+#define IMPL_defer_return(val_return...) \
+    {                                    \
+        setReservedReturn(val_return);   \
+        _defer_returns = true;           \
+        goto _deferred;                  \
     }
 
 #define IMPL_block_deferred \
@@ -84,6 +86,13 @@ extern "C" {
     goto _deferred;         \
     }                       \
     while (false) {}
+
+#define IMPL_return_deferred                       \
+    scope_deferred;                                \
+    return eval(                                   \
+        debug_assert_nonnull(getReservedReturn()); \
+        eval_return getReservedReturn()[0];        \
+    )
 
 #define IMPL_defer(_Statement...) \
     scope_defer__snapshot(_Statement; goto _deferred)

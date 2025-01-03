@@ -72,25 +72,28 @@ extern "C" {
 
 /* Returns optional value */
 #define return_Opt$ \
-    return (TypeOf(getReservedReturn()))
+    return (TypeOf(getReservedReturn()[0]))
 
-#define return_some(val_opt...)            \
-    return ({                              \
-        setReservedReturn(                 \
-            (TypeOf(getReservedReturn())){ \
-                .has_value = true,         \
-                .value     = val_opt,      \
-            }                              \
-        );                                 \
+#define return_some(val_opt...)                                \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                                     \
+        .value     = val_opt,                                  \
     })
 
-#define return_none()                      \
-    return ({                              \
-        setReservedReturn(                 \
-            (TypeOf(getReservedReturn())){ \
-                .has_value = false,        \
-            }                              \
-        );                                 \
+#define return_none()                                          \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .has_value = false,                                    \
+    })
+
+#define defer_return_some(val_opt...)              \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                         \
+        .value     = val_opt,                      \
+    })
+
+#define defer_return_none()                        \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .has_value = false,                        \
     })
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
@@ -119,12 +122,11 @@ extern "C" {
     scope_if(let _result = (expr), _result.has_value) \
         scope_with(let var_capture = _result.value)
 
-#define if_some_mut(expr, var_capture)                \
-    scope_if(var _result = (expr), _result.has_value) \
-        scope_with(var var_capture = _result.value)
-
 #define if_none(expr) \
     scope_if(let _result = (expr), !_result.has_value)
+
+#define else_some(var_capture) \
+    scope_else(let var_capture = _result.value)
 
 #if defined(__cplusplus)
 } /* extern "C" */

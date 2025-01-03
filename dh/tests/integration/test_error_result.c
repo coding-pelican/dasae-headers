@@ -80,7 +80,7 @@ static must_check Err$void ArrayList_append(ArrayList* self, const anyptr item) 
 static Slice ArrayList_slice(const ArrayList* self) {
     return self->items;
 }
-
+// todo apply errdefer
 // Example usage in main
 Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);

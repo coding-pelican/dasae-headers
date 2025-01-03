@@ -85,19 +85,31 @@ extern "C" {
 
 /* Returns error result */
 #define return_Err$ \
-    return (TypeOf(getReservedReturn()))
+    return (TypeOf(getReservedReturn()[0]))
 
-#define return_err(val_err...)             \
-    return (TypeOf(getReservedReturn())) { \
-        .is_err = true,                    \
-        .err    = val_err,                 \
-    }
+#define return_err(val_err...)                                 \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .is_err = true,                                        \
+        .err    = val_err,                                     \
+    })
 
-#define return_ok(val_ok...)               \
-    return (TypeOf(getReservedReturn())) { \
-        .is_err = false,                   \
-        .ok     = val_ok,                  \
-    }
+#define return_ok(val_ok...)                                   \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                                       \
+        .ok     = val_ok,                                      \
+    })
+
+#define defer_return_err(val_err...)               \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .is_err = true,                            \
+        .err    = val_err,                         \
+    })
+
+#define defer_return_ok(val_ok...)                 \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                           \
+        .ok     = val_ok,                          \
+    })
 
 /* Propagates error (similar to Zig's try) */
 #define try(expr) ({             \
@@ -106,6 +118,14 @@ extern "C" {
         return_err(_result.err); \
     }                            \
     _result.ok;                  \
+})
+
+#define try_defer(expr) ({             \
+    let _result = (expr);              \
+    if (_result.is_err) {              \
+        defer_return_err(_result.err); \
+    }                                  \
+    _result.ok;                        \
 })
 
 /* Handles error (similar to Zig's catch) */
@@ -123,18 +143,27 @@ extern "C" {
     _result.ok;                                  \
 })
 
+#define errdefer(_Statements...)                                    \
+    {                                                               \
+        if (getReservedReturn() && getReservedReturn()[0].is_err) { \
+            defer(_Statements);                                     \
+        }                                                           \
+    }
+
 /* Error result payload captures */
 #define if_ok(expr, var_capture)                    \
     scope_if(let _result = (expr), !_result.is_err) \
         scope_with(let var_capture = _result.ok)
 
-#define if_ok_mut(expr, var_capture)                \
-    scope_if(var _result = (expr), !_result.is_err) \
-        scope_with(var var_capture = _result.ok)
+#define else_err(var_capture) \
+    scope_else(let var_capture = _result.err)
 
 #define if_err(expr, var_capture)                  \
     scope_if(let _result = (expr), _result.is_err) \
         scope_with(let var_capture = _result.err)
+
+#define else_ok(var_capture) \
+    scope_else(let var_capture = _result.ok)
 
 /* Error void result (special case) */
 typedef struct Err$Void Err$Void;
@@ -152,11 +181,17 @@ typedef Err$Void Err$void;
 #define return_Err$void \
     return (Err$void)
 
-#define return_void()                      \
-    return (TypeOf(getReservedReturn())) { \
-        .is_err = false,                   \
-        .ok     = (Void){},                \
-    }
+#define return_void()                                          \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                                       \
+        .ok     = (Void){},                                    \
+    })
+
+#define defer_return_void()                        \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                           \
+        .ok     = (Void){},                        \
+    })
 
 // #define ErrRes(TOk)  \
 //     struct {         \

@@ -64,11 +64,8 @@ extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 #define Sli_suffix(var_sli, val_begin)             IMPL_Sli_suffix(var_sli, val_begin)
 
 /* Iterator support with scope (similar to Zig's for loops over slices) */
-#define for_slice(var_sli, var_item)     IMPL_for_slice(var_sli, var_item)
-#define for_slice_mut(var_sli, var_item) IMPL_for_slice_mut(var_sli, var_item)
-
-#define for_indexed_slice(var_sli, var_item, var_index)     IMPL_for_indexed_slice(var_sli, var_item, var_index)
-#define for_indexed_slice_mut(var_sli, var_item, var_index) IMPL_for_indexed_slice_mut(var_sli, var_item, var_index)
+#define for_slice(var_sli, var_item)                    IMPL_for_slice(var_sli, var_item)
+#define for_slice_indexed(var_sli, var_item, var_index) IMPL_for_slice_indexed(var_sli, var_item, var_index)
 
 /* Any type */
 typedef struct AnyType AnyType;
@@ -206,16 +203,9 @@ union Sli {
     for (usize _i = 0; _i < (var_sli).len; ++_i) \
     scope_with(let var_item = Sli_at(var_sli, _i))
 
-#define IMPL_for_slice_mut(var_sli, var_item)    \
-    for (usize _i = 0; _i < (var_sli).len; ++_i) \
-    scope_with(var var_item = Sli_at(var_sli, _i))
-
-#define IMPL_for_indexed_slice(var_sli, var_item, var_index)              \
+#define IMPL_for_slice_indexed(var_sli, var_item, var_index)              \
     for (usize var_index = 0; (var_index) < (var_sli).len; ++(var_index)) \
     scope_with(let var_item = Sli_at(var_sli, var_index))
-#define IMPL_for_indexed_slice_mut(var_sli, var_item, var_index)          \
-    for (usize var_index = 0; (var_index) < (var_sli).len; ++(var_index)) \
-    scope_with(var var_item = Sli_at(var_sli, var_index))
 
 using_Opt$(PtrConst);
 using_Opt$(Ptr);

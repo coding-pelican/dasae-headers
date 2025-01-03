@@ -1,431 +1,2877 @@
-[21:01:23][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:103] engine initialized
+[23:24:22][INFO][dh_main] engine initialized
 
-[21:01:23][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:112] canvas created
+[23:24:22][INFO][dh_main] canvas created
 
-[21:01:23][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:115] canvas cleared
+[23:24:22][INFO][dh_main] canvas cleared
 
-[21:01:23][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:119] canvas views added
+[23:24:22][INFO][dh_main] canvas views added
 
-[21:01:23][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:129] game state created
+[23:24:22][INFO][dh_main] game state created
 
-[21:01:24][INFO][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:135] game loop started
+[23:24:24][INFO][dh_main] game loop started
 
-[21:01:24][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:24][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 0 fireworks remaining: Removing dead fireworks...
-[21:01:24][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 0 fireworks remaining
-[21:01:24][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F3176B8) at (11, 100)
+[23:24:24][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:24][DEBUG][State_spawnFirework] 0 fireworks remaining: Removing dead fireworks...
+[23:24:24][DEBUG][State_spawnFirework] Removed dead fireworks: 0 fireworks remaining
+[23:24:24][DEBUG][Firework_init] Initializing firework(00000253DF1076B8) at (11, 100)
 
-[21:01:24][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (11.00, 100.00)
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (11.00, 64.33)
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3198F8)
+[23:24:24][DEBUG][State_update] Spawning rocket at (11.00, 100.00)
+[23:24:24][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:24][DEBUG][State_spawnFirework] 1 fireworks remaining: Removing dead fireworks...
+[23:24:24][DEBUG][State_spawnFirework] Removed dead fireworks: 1 fireworks remaining
+[23:24:24][DEBUG][Firework_init] Initializing firework(00000253DF107720) at (87, 100)
 
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:24][DEBUG][State_update] Spawning rocket at (87.00, 100.00)
+[23:24:24][DEBUG][Firework_update] Spawning 25 effects at (11.00, 72.32)
+[23:24:24][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
 
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 1 fireworks remaining: Removing dead fireworks...
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 1 fireworks remaining
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317720) at (71, 100)
+[23:24:24][DEBUG][Firework_update] rocket destroyed
 
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (71.00, 100.00)
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (71.00, 72.78)
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3198F8)
+[23:24:24][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:24][DEBUG][State_spawnFirework] 2 fireworks remaining: Removing dead fireworks...
+[23:24:24][DEBUG][State_spawnFirework] Removed dead fireworks: 2 fireworks remaining
+[23:24:24][DEBUG][Firework_init] Initializing firework(00000253DF107788) at (103, 100)
 
-[21:01:25][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:24][DEBUG][State_update] Spawning rocket at (103.00, 100.00)
+[23:24:25][DEBUG][Firework_update] Spawning 25 effects at (87.00, 11.69)
+[23:24:25][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 2 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 2 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317788) at (105, 100)
+[23:24:25][DEBUG][Firework_update] rocket destroyed
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (105.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 3 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 3 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F3177F0) at (35, 100)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 3 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 3 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF1077F0) at (43, 100)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (35.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 4 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 4 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317858) at (113, 100)
+[23:24:25][DEBUG][State_update] Spawning rocket at (43.00, 100.00)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 4 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 4 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF107858) at (152, 100)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (113.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 5 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 5 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F3178C0) at (120, 100)
+[23:24:25][DEBUG][State_update] Spawning rocket at (152.00, 100.00)
+[23:24:25][DEBUG][Firework_update] Spawning 25 effects at (103.00, 41.16)
+[23:24:25][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (120.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 6 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 6 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317928) at (51, 100)
+[23:24:25][DEBUG][Firework_update] rocket destroyed
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (51.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (35.00, 62.90)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317D58)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 5 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][Firework_fini] Destroying firework(00000253DF107858)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:25][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 7 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 7 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317990) at (142, 100)
+[23:24:25][DEBUG][Firework_fini] effects destroyed
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (142.00, 100.00)
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 8 fireworks remaining: Removing dead fireworks...
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 8 fireworks remaining
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F3179F8) at (65, 100)
+[23:24:25][DEBUG][Firework_fini] firework destroyed
 
-[21:01:26][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (65.00, 100.00)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (105.00, 16.89)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3198F8)
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 4 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF107858) at (127, 100)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:25][DEBUG][State_update] Spawning rocket at (127.00, 100.00)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 5 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (93, 100)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (113.00, 54.40)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317DC8)
+[23:24:25][DEBUG][State_update] Spawning rocket at (93.00, 100.00)
+[23:24:25][DEBUG][Firework_update] Spawning 25 effects at (43.00, 66.29)
+[23:24:25][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:25][DEBUG][Firework_update] rocket destroyed
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (120.00, 51.36)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317E38)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (145, 100)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:25][DEBUG][State_update] Spawning rocket at (145.00, 100.00)
+[23:24:25][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:25][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:25][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:25][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (52, 100)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 9 fireworks remaining: Removing dead fireworks...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 9 fireworks remaining
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317A60) at (86, 100)
+[23:24:25][DEBUG][State_update] Spawning rocket at (52.00, 100.00)
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (152.00, 23.80)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (86.00, 100.00)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (51.00, 74.12)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F32F998)
+[23:24:26][DEBUG][Firework_update] rocket destroyed
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
 
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (142.00, 66.69)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317D58)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (65.00, 50.77)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3309E8)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 10 fireworks remaining: Removing dead fireworks...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 10 fireworks remaining
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317AC8) at (155, 100)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (155.00, 100.00)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 11 fireworks remaining: Removing dead fireworks...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 11 fireworks remaining
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317B30) at (108, 100)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (108.00, 100.00)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 12 fireworks remaining: Removing dead fireworks...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 12 fireworks remaining
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317B98) at (72, 100)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (72.00, 100.00)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (86.00, 55.78)
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3198F8)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 13 fireworks remaining: Removing dead fireworks...
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 13 fireworks remaining
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317C00) at (150, 100)
-
-[21:01:27][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (150.00, 100.00)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 14 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 14 fireworks remaining
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317C68) at (48, 100)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (48.00, 100.00)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (108.00, 59.47)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F32F998)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (155.00, 52.18)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3309E8)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 15 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 15 fireworks remaining
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:271] Initializing firework(000001732F317CD0) at (158, 100)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:420] Spawning rocket at (158.00, 100.00)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (72.00, 50.01)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317D58)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (150.00, 70.64)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3198F8)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (48.00, 36.83)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F317DC8)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:330] Spawning 25 effects at (158.00, 26.72)
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:349] destroying rocket(000001732F3309E8)
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:351] rocket destroyed
-
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:28][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:29][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:30][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:31][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:32][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:158] pressed space
-
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:33][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:451] Spawning new firework...
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:452] 16 fireworks remaining: Removing dead fireworks...
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:462] Removed dead fireworks: 16 fireworks remaining
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:153] pressed esc
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F3176B8)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317720)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317788)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F3177F0)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317858)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F3178C0)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317928)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317990)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F3179F8)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317A60)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317AC8)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317B30)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317B98)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317C00)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317C68)
-
-[21:01:34][DEBUG][C:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\examples\pseudo-3d-fps\game\fireworks.c:292] Destroying firework(000001732F317CD0)
+[23:24:26][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:26][DEBUG][Firework_fini] effects destroyed
+
+[23:24:26][DEBUG][Firework_fini] firework destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (138, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (138.00, 100.00)
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (127.00, 41.18)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (73, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (73.00, 100.00)
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (86, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (86.00, 100.00)
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (68, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (68.00, 100.00)
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (52.00, 42.77)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF120188)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (93.00, 24.44)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:26][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:26][DEBUG][Firework_fini] effects destroyed
+
+[23:24:26][DEBUG][Firework_fini] firework destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (100, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (100.00, 100.00)
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (20, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (20.00, 100.00)
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (145.00, 15.15)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (138.00, 58.08)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (86.00, 60.23)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF1211D8)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:26][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:26][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:26][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:26][DEBUG][Firework_fini] effects destroyed
+
+[23:24:26][DEBUG][Firework_fini] firework destroyed
+
+[23:24:26][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:26][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (113, 100)
+
+[23:24:26][DEBUG][State_update] Spawning rocket at (113.00, 100.00)
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (100.00, 72.29)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF120188)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:26][DEBUG][Firework_update] Spawning 25 effects at (73.00, 36.35)
+[23:24:26][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:26][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:27][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:27][DEBUG][State_spawnFirework] Removed dead fireworks: 12 fireworks remaining
+[23:24:27][DEBUG][Firework_init] Initializing firework(00000253DF107B98) at (66, 100)
+
+[23:24:27][DEBUG][State_update] Spawning rocket at (66.00, 100.00)
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (20.00, 62.04)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:27][DEBUG][State_spawnFirework] 13 fireworks remaining: Removing dead fireworks...
+[23:24:27][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:27][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (58, 100)
+
+[23:24:27][DEBUG][State_update] Spawning rocket at (58.00, 100.00)
+[23:24:27][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:27][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:27][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:27][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (88, 100)
+
+[23:24:27][DEBUG][State_update] Spawning rocket at (88.00, 100.00)
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (68.00, 4.58)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF121A38)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (113.00, 57.41)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF1211D8)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (66.00, 58.96)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF120188)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:27][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:27][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:27][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:27][DEBUG][Firework_fini] effects destroyed
+
+[23:24:27][DEBUG][Firework_fini] firework destroyed
+
+[23:24:27][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:27][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:27][DEBUG][Firework_fini] effects destroyed
+
+[23:24:27][DEBUG][Firework_fini] firework destroyed
+
+[23:24:27][DEBUG][Firework_fini] Destroying firework(00000253DF107B98)
+
+[23:24:27][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:27][DEBUG][Firework_fini] effects destroyed
+
+[23:24:27][DEBUG][Firework_fini] firework destroyed
+
+[23:24:27][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:27][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:27][DEBUG][Firework_fini] effects destroyed
+
+[23:24:27][DEBUG][Firework_fini] firework destroyed
+
+[23:24:27][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:27][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:27][DEBUG][Firework_fini] effects destroyed
+
+[23:24:27][DEBUG][Firework_fini] firework destroyed
+
+[23:24:27][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:27][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (118, 100)
+
+[23:24:27][DEBUG][State_update] Spawning rocket at (118.00, 100.00)
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (58.00, 55.85)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:27][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:27][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:27][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (21, 100)
+
+[23:24:27][DEBUG][State_update] Spawning rocket at (21.00, 100.00)
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (88.00, 42.15)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:27][DEBUG][Firework_update] Spawning 25 effects at (118.00, 72.78)
+[23:24:27][DEBUG][Firework_update] destroying rocket(00000253DF1211D8)
+
+[23:24:27][DEBUG][Firework_update] rocket destroyed
+
+[23:24:28][DEBUG][Firework_update] Spawning 25 effects at (21.00, 63.51)
+[23:24:28][DEBUG][Firework_update] destroying rocket(00000253DF121A38)
+
+[23:24:28][DEBUG][Firework_update] rocket destroyed
+
+[23:24:28][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:28][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:28][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (21, 100)
+
+[23:24:28][DEBUG][State_update] Spawning rocket at (21.00, 100.00)
+[23:24:28][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:28][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:28][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:28][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (71, 100)
+
+[23:24:28][DEBUG][State_update] Spawning rocket at (71.00, 100.00)
+[23:24:28][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:28][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:28][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (70, 100)
+
+[23:24:28][DEBUG][State_update] Spawning rocket at (70.00, 100.00)
+[23:24:28][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:28][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:28][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:28][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:28][DEBUG][Firework_fini] effects destroyed
+
+[23:24:28][DEBUG][Firework_fini] firework destroyed
+
+[23:24:28][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:28][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (148, 100)
+
+[23:24:28][DEBUG][State_update] Spawning rocket at (148.00, 100.00)
+[23:24:28][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:28][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:28][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:28][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (27, 100)
+
+[23:24:28][DEBUG][State_update] Spawning rocket at (27.00, 100.00)
+[23:24:28][DEBUG][Firework_update] Spawning 25 effects at (21.00, 33.40)
+[23:24:28][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:28][DEBUG][Firework_update] rocket destroyed
+
+[23:24:28][DEBUG][Firework_update] Spawning 25 effects at (71.00, 44.81)
+[23:24:28][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:28][DEBUG][Firework_update] rocket destroyed
+
+[23:24:29][DEBUG][Firework_update] Spawning 25 effects at (148.00, 54.82)
+[23:24:29][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:29][DEBUG][Firework_update] rocket destroyed
+
+[23:24:29][DEBUG][Firework_update] Spawning 25 effects at (27.00, 52.06)
+[23:24:29][DEBUG][Firework_update] destroying rocket(00000253DF124A48)
+
+[23:24:29][DEBUG][Firework_update] rocket destroyed
+
+[23:24:29][DEBUG][Firework_update] Spawning 25 effects at (70.00, 24.68)
+[23:24:29][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:29][DEBUG][Firework_update] rocket destroyed
+
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:29][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:29][DEBUG][Firework_fini] effects destroyed
+
+[23:24:29][DEBUG][Firework_fini] firework destroyed
+
+[23:24:29][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:29][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:29][DEBUG][Firework_fini] effects destroyed
+
+[23:24:29][DEBUG][Firework_fini] firework destroyed
+
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (99, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (99.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (30, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (30.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (71, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (71.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (79, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (79.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (6, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (6.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:29][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:29][DEBUG][Firework_fini] effects destroyed
+
+[23:24:29][DEBUG][Firework_fini] firework destroyed
+
+[23:24:29][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:29][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:29][DEBUG][Firework_fini] effects destroyed
+
+[23:24:29][DEBUG][Firework_fini] firework destroyed
+
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (126, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (126.00, 100.00)
+[23:24:29][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:29][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:29][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:29][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (139, 100)
+
+[23:24:29][DEBUG][State_update] Spawning rocket at (139.00, 100.00)
+[23:24:29][DEBUG][Firework_update] Spawning 25 effects at (99.00, 49.00)
+[23:24:29][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:29][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (69, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (69.00, 100.00)
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (79.00, 69.04)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (30.00, 33.16)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:30][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:30][DEBUG][Firework_fini] effects destroyed
+
+[23:24:30][DEBUG][Firework_fini] firework destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (120, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (120.00, 100.00)
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (71.00, 29.21)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (139.00, 71.33)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF11DA48)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (6.00, 33.15)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF121168)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:30][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:30][DEBUG][Firework_fini] effects destroyed
+
+[23:24:30][DEBUG][Firework_fini] firework destroyed
+
+[23:24:30][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:30][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:30][DEBUG][Firework_fini] effects destroyed
+
+[23:24:30][DEBUG][Firework_fini] firework destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (12, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (12.00, 100.00)
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (123, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (123.00, 100.00)
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (120.00, 68.57)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (126.00, 32.07)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF11D1E8)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (69.00, 52.26)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (85, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (85.00, 100.00)
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 12 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107B98) at (58, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (58.00, 100.00)
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (12.00, 75.21)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF121168)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 13 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (127, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (127.00, 100.00)
+[23:24:30][DEBUG][Firework_update] Spawning 25 effects at (123.00, 70.48)
+[23:24:30][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:30][DEBUG][Firework_update] rocket destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:30][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:30][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:30][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:30][DEBUG][Firework_fini] effects destroyed
+
+[23:24:30][DEBUG][Firework_fini] firework destroyed
+
+[23:24:30][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:30][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (41, 100)
+
+[23:24:30][DEBUG][State_update] Spawning rocket at (41.00, 100.00)
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107B98)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (123, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (123.00, 100.00)
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (127.00, 66.35)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF121168)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (85.00, 38.88)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF11D1E8)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (58.00, 23.43)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (111, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (111.00, 100.00)
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (28, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (28.00, 100.00)
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (41.00, 43.03)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (19, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (19.00, 100.00)
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (62, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (62.00, 100.00)
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:31][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:31][DEBUG][Firework_fini] effects destroyed
+
+[23:24:31][DEBUG][Firework_fini] firework destroyed
+
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (12, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (12.00, 100.00)
+[23:24:31][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:31][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:31][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:31][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (83, 100)
+
+[23:24:31][DEBUG][State_update] Spawning rocket at (83.00, 100.00)
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (123.00, 32.93)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:31][DEBUG][Firework_update] Spawning 25 effects at (28.00, 72.73)
+[23:24:31][DEBUG][Firework_update] destroying rocket(00000253DF11D9D8)
+
+[23:24:31][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (19.00, 68.13)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:32][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:32][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (11, 100)
+
+[23:24:32][DEBUG][State_update] Spawning rocket at (11.00, 100.00)
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (12.00, 72.74)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF124968)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:32][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:32][DEBUG][State_spawnFirework] Removed dead fireworks: 12 fireworks remaining
+[23:24:32][DEBUG][Firework_init] Initializing firework(00000253DF107B98) at (23, 100)
+
+[23:24:32][DEBUG][State_update] Spawning rocket at (23.00, 100.00)
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (62.00, 32.89)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (111.00, 9.44)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:32][DEBUG][State_spawnFirework] 13 fireworks remaining: Removing dead fireworks...
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107B98)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:32][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (73, 100)
+
+[23:24:32][DEBUG][State_update] Spawning rocket at (73.00, 100.00)
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (83.00, 38.29)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF1249D8)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (11.00, 68.65)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (73.00, 75.99)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][Firework_update] Spawning 25 effects at (23.00, 34.68)
+[23:24:32][DEBUG][Firework_update] destroying rocket(00000253DF124968)
+
+[23:24:32][DEBUG][Firework_update] rocket destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:32][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:32][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:32][DEBUG][Firework_fini] effects destroyed
+
+[23:24:32][DEBUG][Firework_fini] firework destroyed
+
+[23:24:32][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:32][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (125, 100)
+
+[23:24:32][DEBUG][State_update] Spawning rocket at (125.00, 100.00)
+[23:24:32][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:32][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:32][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:32][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (113, 100)
+
+[23:24:32][DEBUG][State_update] Spawning rocket at (113.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (104, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (104.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (46, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (46.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (115, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (115.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (0, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (0.00, 100.00)
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (125.00, 35.67)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF11E1C8)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (14, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (14.00, 100.00)
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (113.00, 23.10)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (110, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (110.00, 100.00)
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (104.00, 43.53)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (46.00, 75.51)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (46, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (46.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (7, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (7.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:33][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:33][DEBUG][Firework_fini] effects destroyed
+
+[23:24:33][DEBUG][Firework_fini] firework destroyed
+
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (102, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (102.00, 100.00)
+[23:24:33][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:33][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:33][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:33][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (69, 100)
+
+[23:24:33][DEBUG][State_update] Spawning rocket at (69.00, 100.00)
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (115.00, 43.62)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF107E38)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:33][DEBUG][Firework_update] Spawning 25 effects at (14.00, 72.48)
+[23:24:33][DEBUG][Firework_update] destroying rocket(00000253DF11D9D8)
+
+[23:24:33][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (110.00, 62.41)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF1098F8)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 12 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107B98) at (69, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (69.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (0.00, 4.58)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF123128)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 13 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (84, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (84.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (7.00, 34.06)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF107DC8)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (29, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (29.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (46.00, 17.37)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF107D58)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (69.00, 36.62)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF1249D8)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (71, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (71.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (102.00, 18.76)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF124968)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107B98)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 12 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107B98) at (28, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (28.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (69.00, 71.28)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 13 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (146, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (146.00, 100.00)
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (10, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (10.00, 100.00)
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (113, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (113.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (29.00, 73.86)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (84.00, 50.38)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF1205C8)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (3, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (3.00, 100.00)
+[23:24:34][DEBUG][Firework_update] Spawning 25 effects at (71.00, 75.92)
+[23:24:34][DEBUG][Firework_update] destroying rocket(00000253DF120398)
+
+[23:24:34][DEBUG][Firework_update] rocket destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:34][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:34][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:34][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:34][DEBUG][Firework_fini] effects destroyed
+
+[23:24:34][DEBUG][Firework_fini] firework destroyed
+
+[23:24:34][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:34][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (124, 100)
+
+[23:24:34][DEBUG][State_update] Spawning rocket at (124.00, 100.00)
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (122, 100)
+
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (81, 100)
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (3.00, 74.92)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF120558)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (28.00, 26.09)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF120408)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (146.00, 28.68)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (30, 100)
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (10.00, 33.63)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF1204E8)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (113.00, 36.57)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF120328)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (59, 100)
+
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (124.00, 40.04)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (61, 100)
+
+[23:24:35][DEBUG][State_update] Spawning rocket at (61.00, 100.00)
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (63, 100)
+
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (112, 100)
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (144, 100)
+
+[23:24:35][DEBUG][State_update] Spawning rocket at (144.00, 100.00)
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (122.00, 32.26)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF120398)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (81, 100)
+
+[23:24:35][DEBUG][State_update] Spawning rocket at (81.00, 100.00)
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:35][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:35][DEBUG][Firework_fini] effects destroyed
+
+[23:24:35][DEBUG][Firework_fini] firework destroyed
+
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:35][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (104, 100)
+
+[23:24:35][DEBUG][State_update] Spawning rocket at (104.00, 100.00)
+[23:24:35][DEBUG][Firework_update] Spawning 25 effects at (81.00, 45.87)
+[23:24:35][DEBUG][Firework_update] destroying rocket(00000253DF1206A8)
+
+[23:24:35][DEBUG][Firework_update] rocket destroyed
+
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:35][DEBUG][dh_main] pressed space
+
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:35][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:35][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:35][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (59.00, 54.03)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF1204E8)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (112.00, 73.79)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (61.00, 56.07)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120408)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (30.00, 4.61)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (39, 100)
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (148, 100)
+
+[23:24:36][DEBUG][State_update] Spawning rocket at (148.00, 100.00)
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (96, 100)
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (63.00, 14.40)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120718)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (144.00, 33.10)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF1202B8)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (137, 100)
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (40, 100)
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (81.00, 10.39)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (104.00, 15.62)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (83, 100)
+
+[23:24:36][DEBUG][dh_main] pressed space
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:36][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:36][DEBUG][Firework_fini] effects destroyed
+
+[23:24:36][DEBUG][Firework_fini] firework destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (101, 100)
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (148.00, 50.59)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120328)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (39.00, 41.93)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF120248)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:36][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (0, 100)
+
+[23:24:36][DEBUG][State_update] Spawning rocket at (0.00, 100.00)
+[23:24:36][DEBUG][Firework_update] Spawning 25 effects at (96.00, 41.27)
+[23:24:36][DEBUG][Firework_update] destroying rocket(00000253DF1204E8)
+
+[23:24:36][DEBUG][Firework_update] rocket destroyed
+
+[23:24:36][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:36][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:36][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:37][DEBUG][dh_main] pressed space
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (118, 100)
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (40.00, 63.88)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (137.00, 31.43)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120558)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][dh_main] pressed space
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (5, 100)
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (66, 100)
+
+[23:24:37][DEBUG][State_update] Spawning rocket at (66.00, 100.00)
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 15 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107CD0) at (152, 100)
+
+[23:24:37][DEBUG][State_update] Spawning rocket at (152.00, 100.00)
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (83.00, 48.93)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][dh_main] pressed space
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 16 fireworks remaining
+[23:24:37][DEBUG][dh_main] pressed space
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 16 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107CD0)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F370)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (56, 100)
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (101.00, 44.80)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120398)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 13 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107C00) at (10, 100)
+
+[23:24:37][DEBUG][State_update] Spawning rocket at (10.00, 100.00)
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 14 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 14 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107C68) at (79, 100)
+
+[23:24:37][DEBUG][State_update] Spawning rocket at (79.00, 100.00)
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (0.00, 31.33)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120638)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (118.00, 25.86)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120408)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (66.00, 45.08)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF1204E8)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:37][DEBUG][State_spawnFirework] 15 fireworks remaining: Removing dead fireworks...
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C68)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107C00)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107B98)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:37][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:37][DEBUG][Firework_fini] effects destroyed
+
+[23:24:37][DEBUG][Firework_fini] firework destroyed
+
+[23:24:37][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:37][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (99, 100)
+
+[23:24:37][DEBUG][State_update] Spawning rocket at (99.00, 100.00)
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (5.00, 5.08)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF1205C8)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:37][DEBUG][Firework_update] Spawning 25 effects at (152.00, 5.57)
+[23:24:37][DEBUG][Firework_update] destroying rocket(00000253DF120718)
+
+[23:24:37][DEBUG][Firework_update] rocket destroyed
+
+[23:24:38][DEBUG][Firework_update] Spawning 25 effects at (56.00, 29.98)
+[23:24:38][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:38][DEBUG][Firework_update] rocket destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (14, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (14.00, 100.00)
+[23:24:38][DEBUG][Firework_update] Spawning 25 effects at (10.00, 30.25)
+[23:24:38][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:38][DEBUG][Firework_update] rocket destroyed
+
+[23:24:38][DEBUG][Firework_update] Spawning 25 effects at (79.00, 32.61)
+[23:24:38][DEBUG][Firework_update] destroying rocket(00000253DF120558)
+
+[23:24:38][DEBUG][Firework_update] rocket destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (112, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (112.00, 100.00)
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (62, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (62.00, 100.00)
+[23:24:38][DEBUG][Firework_update] Spawning 25 effects at (99.00, 2.09)
+[23:24:38][DEBUG][Firework_update] destroying rocket(00000253DF120638)
+
+[23:24:38][DEBUG][Firework_update] rocket destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (117, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (117.00, 100.00)
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (9, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (9.00, 100.00)
+[23:24:38][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:38][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:38][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:38][DEBUG][Firework_fini] effects destroyed
+
+[23:24:38][DEBUG][Firework_fini] firework destroyed
+
+[23:24:38][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:38][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (157, 100)
+
+[23:24:38][DEBUG][State_update] Spawning rocket at (157.00, 100.00)
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (14.00, 2.01)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120328)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (112.00, 53.15)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:39][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:39][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:39][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:39][DEBUG][Firework_fini] effects destroyed
+
+[23:24:39][DEBUG][Firework_fini] firework destroyed
+
+[23:24:39][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:39][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (33, 100)
+
+[23:24:39][DEBUG][State_update] Spawning rocket at (33.00, 100.00)
+[23:24:39][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:39][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:39][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:39][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:39][DEBUG][Firework_fini] effects destroyed
+
+[23:24:39][DEBUG][Firework_fini] firework destroyed
+
+[23:24:39][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:39][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:39][DEBUG][Firework_fini] effects destroyed
+
+[23:24:39][DEBUG][Firework_fini] firework destroyed
+
+[23:24:39][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:39][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (127, 100)
+
+[23:24:39][DEBUG][State_update] Spawning rocket at (127.00, 100.00)
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (9.00, 75.66)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:39][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:39][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:39][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (157, 100)
+
+[23:24:39][DEBUG][State_update] Spawning rocket at (157.00, 100.00)
+[23:24:39][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:39][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:39][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:39][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (84, 100)
+
+[23:24:39][DEBUG][State_update] Spawning rocket at (84.00, 100.00)
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (62.00, 13.28)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:39][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:39][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:39][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (100, 100)
+
+[23:24:39][DEBUG][State_update] Spawning rocket at (100.00, 100.00)
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (117.00, 10.19)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (127.00, 62.44)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120948)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (157.00, 2.91)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (84.00, 69.20)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF1202B8)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (33.00, 9.04)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (100.00, 61.24)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF1204E8)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:39][DEBUG][Firework_update] Spawning 25 effects at (157.00, 41.48)
+[23:24:39][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:39][DEBUG][Firework_update] rocket destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (31, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (31.00, 100.00)
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (97, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (97.00, 100.00)
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (69, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (69.00, 100.00)
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (109, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (109.00, 100.00)
+[23:24:40][DEBUG][Firework_update] Spawning 25 effects at (31.00, 58.83)
+[23:24:40][DEBUG][Firework_update] destroying rocket(00000253DF120408)
+
+[23:24:40][DEBUG][Firework_update] rocket destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (20, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (20.00, 100.00)
+[23:24:40][DEBUG][Firework_update] Spawning 25 effects at (69.00, 41.73)
+[23:24:40][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:40][DEBUG][Firework_update] rocket destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:40][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:40][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:40][DEBUG][Firework_fini] effects destroyed
+
+[23:24:40][DEBUG][Firework_fini] firework destroyed
+
+[23:24:40][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:40][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (43, 100)
+
+[23:24:40][DEBUG][State_update] Spawning rocket at (43.00, 100.00)
+[23:24:40][DEBUG][Firework_update] Spawning 25 effects at (97.00, 23.87)
+[23:24:40][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:40][DEBUG][Firework_update] rocket destroyed
+
+[23:24:40][DEBUG][Firework_update] Spawning 25 effects at (109.00, 46.24)
+[23:24:40][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:40][DEBUG][Firework_update] rocket destroyed
+
+[23:24:41][DEBUG][Firework_update] Spawning 25 effects at (20.00, 31.43)
+[23:24:41][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:41][DEBUG][Firework_update] rocket destroyed
+
+[23:24:41][DEBUG][Firework_update] Spawning 25 effects at (43.00, 55.55)
+[23:24:41][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:41][DEBUG][Firework_update] rocket destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (109, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (109.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (117, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (117.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (145, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (145.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (77, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (77.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (140, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (140.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (22, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (22.00, 100.00)
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (33, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (33.00, 100.00)
+[23:24:41][DEBUG][Firework_update] Spawning 25 effects at (117.00, 75.61)
+[23:24:41][DEBUG][Firework_update] destroying rocket(00000253DF1206A8)
+
+[23:24:41][DEBUG][Firework_update] rocket destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:41][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:41][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:41][DEBUG][Firework_fini] effects destroyed
+
+[23:24:41][DEBUG][Firework_fini] firework destroyed
+
+[23:24:41][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:41][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (124, 100)
+
+[23:24:41][DEBUG][State_update] Spawning rocket at (124.00, 100.00)
+[23:24:41][DEBUG][Firework_update] Spawning 25 effects at (145.00, 50.82)
+[23:24:41][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:41][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (77.00, 69.09)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (109.00, 29.87)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF120328)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (140.00, 52.91)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF120948)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (33.00, 64.84)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (22.00, 31.22)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF120478)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:42][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:42][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:42][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:42][DEBUG][Firework_fini] effects destroyed
+
+[23:24:42][DEBUG][Firework_fini] firework destroyed
+
+[23:24:42][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:42][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:42][DEBUG][Firework_fini] effects destroyed
+
+[23:24:42][DEBUG][Firework_fini] firework destroyed
+
+[23:24:42][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:42][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (60, 100)
+
+[23:24:42][DEBUG][State_update] Spawning rocket at (60.00, 100.00)
+[23:24:42][DEBUG][Firework_update] Spawning 25 effects at (124.00, 65.20)
+[23:24:42][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:42][DEBUG][Firework_update] rocket destroyed
+
+[23:24:42][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:42][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:42][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:42][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (74, 100)
+
+[23:24:42][DEBUG][State_update] Spawning rocket at (74.00, 100.00)
+[23:24:42][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:42][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:42][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:42][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (41, 100)
+
+[23:24:42][DEBUG][State_update] Spawning rocket at (41.00, 100.00)
+[23:24:42][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:42][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:42][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:42][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (68, 100)
+
+[23:24:42][DEBUG][State_update] Spawning rocket at (68.00, 100.00)
+[23:24:42][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:42][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:42][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:42][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:42][DEBUG][Firework_fini] effects destroyed
+
+[23:24:42][DEBUG][Firework_fini] firework destroyed
+
+[23:24:42][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:42][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (61, 100)
+
+[23:24:42][DEBUG][State_update] Spawning rocket at (61.00, 100.00)
+[23:24:43][DEBUG][Firework_update] Spawning 25 effects at (60.00, 6.28)
+[23:24:43][DEBUG][Firework_update] destroying rocket(00000253DF120948)
+
+[23:24:43][DEBUG][Firework_update] rocket destroyed
+
+[23:24:43][DEBUG][Firework_update] Spawning 25 effects at (74.00, 14.71)
+[23:24:43][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:43][DEBUG][Firework_update] rocket destroyed
+
+[23:24:43][DEBUG][Firework_update] Spawning 25 effects at (41.00, 13.75)
+[23:24:43][DEBUG][Firework_update] destroying rocket(00000253DF1205C8)
+
+[23:24:43][DEBUG][Firework_update] rocket destroyed
+
+[23:24:43][DEBUG][Firework_update] Spawning 25 effects at (68.00, 32.28)
+[23:24:43][DEBUG][Firework_update] destroying rocket(00000253DF120638)
+
+[23:24:43][DEBUG][Firework_update] rocket destroyed
+
+[23:24:43][DEBUG][Firework_update] Spawning 25 effects at (61.00, 12.42)
+[23:24:43][DEBUG][Firework_update] destroying rocket(00000253DF120718)
+
+[23:24:43][DEBUG][Firework_update] rocket destroyed
+
+[23:24:43][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:43][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:43][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:43][DEBUG][Firework_fini] effects destroyed
+
+[23:24:43][DEBUG][Firework_fini] firework destroyed
+
+[23:24:43][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:43][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (22, 100)
+
+[23:24:43][DEBUG][State_update] Spawning rocket at (22.00, 100.00)
+[23:24:44][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:44][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:44][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:44][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (68, 100)
+
+[23:24:44][DEBUG][State_update] Spawning rocket at (68.00, 100.00)
+[23:24:44][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:44][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:44][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:44][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:44][DEBUG][Firework_fini] effects destroyed
+
+[23:24:44][DEBUG][Firework_fini] firework destroyed
+
+[23:24:44][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:44][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (96, 100)
+
+[23:24:44][DEBUG][State_update] Spawning rocket at (96.00, 100.00)
+[23:24:44][DEBUG][Firework_update] Spawning 25 effects at (22.00, 35.65)
+[23:24:44][DEBUG][Firework_update] destroying rocket(00000253DF120718)
+
+[23:24:44][DEBUG][Firework_update] rocket destroyed
+
+[23:24:44][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:44][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:44][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:44][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:44][DEBUG][Firework_fini] effects destroyed
+
+[23:24:44][DEBUG][Firework_fini] firework destroyed
+
+[23:24:44][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:44][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:44][DEBUG][Firework_fini] effects destroyed
+
+[23:24:44][DEBUG][Firework_fini] firework destroyed
+
+[23:24:44][DEBUG][Firework_fini] Destroying firework(00000253DF107858)
+
+[23:24:44][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:44][DEBUG][Firework_fini] effects destroyed
+
+[23:24:44][DEBUG][Firework_fini] firework destroyed
+
+[23:24:44][DEBUG][State_spawnFirework] Removed dead fireworks: 4 fireworks remaining
+[23:24:44][DEBUG][Firework_init] Initializing firework(00000253DF107858) at (130, 100)
+
+[23:24:44][DEBUG][State_update] Spawning rocket at (130.00, 100.00)
+[23:24:44][DEBUG][Firework_update] Spawning 25 effects at (96.00, 74.83)
+[23:24:44][DEBUG][Firework_update] destroying rocket(00000253DF120638)
+
+[23:24:44][DEBUG][Firework_update] rocket destroyed
+
+[23:24:44][DEBUG][Firework_update] Spawning 25 effects at (68.00, 33.67)
+[23:24:44][DEBUG][Firework_update] destroying rocket(00000253DF1205C8)
+
+[23:24:44][DEBUG][Firework_update] rocket destroyed
+
+[23:24:44][DEBUG][Firework_update] Spawning 25 effects at (130.00, 58.40)
+[23:24:44][DEBUG][Firework_update] destroying rocket(00000253DF1206A8)
+
+[23:24:44][DEBUG][Firework_update] rocket destroyed
+
+[23:24:44][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:44][DEBUG][State_spawnFirework] 5 fireworks remaining: Removing dead fireworks...
+[23:24:44][DEBUG][Firework_fini] Destroying firework(00000253DF107858)
+
+[23:24:44][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:44][DEBUG][Firework_fini] effects destroyed
+
+[23:24:44][DEBUG][Firework_fini] firework destroyed
+
+[23:24:44][DEBUG][State_spawnFirework] Removed dead fireworks: 4 fireworks remaining
+[23:24:44][DEBUG][Firework_init] Initializing firework(00000253DF107858) at (47, 100)
+
+[23:24:44][DEBUG][State_update] Spawning rocket at (47.00, 100.00)
+[23:24:44][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:44][DEBUG][State_spawnFirework] 5 fireworks remaining: Removing dead fireworks...
+[23:24:44][DEBUG][State_spawnFirework] Removed dead fireworks: 5 fireworks remaining
+[23:24:44][DEBUG][Firework_init] Initializing firework(00000253DF1078C0) at (75, 100)
+
+[23:24:44][DEBUG][State_update] Spawning rocket at (75.00, 100.00)
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 6 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (22, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (22.00, 100.00)
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:45][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:45][DEBUG][Firework_fini] effects destroyed
+
+[23:24:45][DEBUG][Firework_fini] firework destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (90, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (90.00, 100.00)
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:45][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:45][DEBUG][Firework_fini] effects destroyed
+
+[23:24:45][DEBUG][Firework_fini] firework destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (25, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (25.00, 100.00)
+[23:24:45][DEBUG][Firework_update] Spawning 25 effects at (47.00, 43.48)
+[23:24:45][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:45][DEBUG][Firework_update] rocket destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (122, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (122.00, 100.00)
+[23:24:45][DEBUG][Firework_update] Spawning 25 effects at (75.00, 44.04)
+[23:24:45][DEBUG][Firework_update] destroying rocket(00000253DF120328)
+
+[23:24:45][DEBUG][Firework_update] rocket destroyed
+
+[23:24:45][DEBUG][Firework_update] Spawning 25 effects at (22.00, 48.83)
+[23:24:45][DEBUG][Firework_update] destroying rocket(00000253DF1207F8)
+
+[23:24:45][DEBUG][Firework_update] rocket destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:45][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:45][DEBUG][Firework_fini] effects destroyed
+
+[23:24:45][DEBUG][Firework_fini] firework destroyed
+
+[23:24:45][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:45][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:45][DEBUG][Firework_fini] effects destroyed
+
+[23:24:45][DEBUG][Firework_fini] firework destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 6 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107928) at (10, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (10.00, 100.00)
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 7 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 7 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107990) at (11, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (11.00, 100.00)
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 8 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 8 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF1079F8) at (86, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (86.00, 100.00)
+[23:24:45][DEBUG][Firework_update] Spawning 25 effects at (90.00, 23.47)
+[23:24:45][DEBUG][Firework_update] destroying rocket(00000253DF120788)
+
+[23:24:45][DEBUG][Firework_update] rocket destroyed
+
+[23:24:45][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:45][DEBUG][State_spawnFirework] 9 fireworks remaining: Removing dead fireworks...
+[23:24:45][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:45][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (56, 100)
+
+[23:24:45][DEBUG][State_update] Spawning rocket at (56.00, 100.00)
+[23:24:45][DEBUG][Firework_update] Spawning 25 effects at (122.00, 72.36)
+[23:24:45][DEBUG][Firework_update] destroying rocket(00000253DF120868)
+
+[23:24:45][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (25.00, 41.83)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF1206A8)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:46][DEBUG][State_spawnFirework] 10 fireworks remaining: Removing dead fireworks...
+[23:24:46][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:46][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (1, 100)
+
+[23:24:46][DEBUG][State_update] Spawning rocket at (1.00, 100.00)
+[23:24:46][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:46][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:46][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:46][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (139, 100)
+
+[23:24:46][DEBUG][State_update] Spawning rocket at (139.00, 100.00)
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (86.00, 70.44)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF1202B8)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (56.00, 65.63)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF120718)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:46][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:46][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:46][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:46][DEBUG][Firework_fini] effects destroyed
+
+[23:24:46][DEBUG][Firework_fini] firework destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Removed dead fireworks: 11 fireworks remaining
+[23:24:46][DEBUG][Firework_init] Initializing firework(00000253DF107B30) at (83, 100)
+
+[23:24:46][DEBUG][State_update] Spawning rocket at (83.00, 100.00)
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (1.00, 59.56)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF120248)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (11.00, 27.31)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF1208D8)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (10.00, 6.23)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF120638)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:46][DEBUG][State_spawnFirework] 12 fireworks remaining: Removing dead fireworks...
+[23:24:46][DEBUG][Firework_fini] Destroying firework(00000253DF107B30)
+
+[23:24:46][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:46][DEBUG][Firework_fini] effects destroyed
+
+[23:24:46][DEBUG][Firework_fini] firework destroyed
+
+[23:24:46][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:46][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:46][DEBUG][Firework_fini] effects destroyed
+
+[23:24:46][DEBUG][Firework_fini] firework destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Removed dead fireworks: 10 fireworks remaining
+[23:24:46][DEBUG][Firework_init] Initializing firework(00000253DF107AC8) at (119, 100)
+
+[23:24:46][DEBUG][State_update] Spawning rocket at (119.00, 100.00)
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (139.00, 45.89)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF120558)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Spawning new firework...
+[23:24:46][DEBUG][State_spawnFirework] 11 fireworks remaining: Removing dead fireworks...
+[23:24:46][DEBUG][Firework_fini] Destroying firework(00000253DF107AC8)
+
+[23:24:46][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:46][DEBUG][Firework_fini] effects destroyed
+
+[23:24:46][DEBUG][Firework_fini] firework destroyed
+
+[23:24:46][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:46][DEBUG][Firework_fini] Destroying effects(0000005C1176F1C0)
+
+[23:24:46][DEBUG][Firework_fini] effects destroyed
+
+[23:24:46][DEBUG][Firework_fini] firework destroyed
+
+[23:24:46][DEBUG][State_spawnFirework] Removed dead fireworks: 9 fireworks remaining
+[23:24:46][DEBUG][Firework_init] Initializing firework(00000253DF107A60) at (117, 100)
+
+[23:24:46][DEBUG][State_update] Spawning rocket at (117.00, 100.00)
+[23:24:46][DEBUG][Firework_update] Spawning 25 effects at (83.00, 54.44)
+[23:24:46][DEBUG][Firework_update] destroying rocket(00000253DF120948)
+
+[23:24:46][DEBUG][Firework_update] rocket destroyed
+
+[23:24:47][DEBUG][dh_main] pressed esc
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF1076B8)
+
+[23:24:47][DEBUG][Firework_fini] Destroying rocket(00000253DF1205C8)
+
+[23:24:47][DEBUG][Firework_fini] rocket destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107720)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107788)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF1077F0)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107858)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF1078C0)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107928)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107990)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF1079F8)
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying firework(00000253DF107A60)
+
+[23:24:47][DEBUG][Firework_fini] Destroying rocket(00000253DF120788)
+
+[23:24:47][DEBUG][Firework_fini] rocket destroyed
+
+[23:24:47][DEBUG][Firework_fini] Destroying effects(0000005C1176F490)
+
+[23:24:47][DEBUG][Firework_fini] effects destroyed
+
+[23:24:47][DEBUG][Firework_fini] firework destroyed
 

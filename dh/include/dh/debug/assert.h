@@ -115,6 +115,7 @@ extern "C" {
 /*========== Macros Implementation ==========================================*/
 
 #if DEBUG_ENABLED
+#if COMP_TIME
 
 #define IMPL_debug_assert(_Expr) \
     ignore((!!(_Expr)) || (debug_assert__fail(#_Expr, __func__, __FILE__, __LINE__), 0))
@@ -136,6 +137,27 @@ extern "C" {
 #define IMPL_debug_assert_null_fmt(_Expr, ...)        IMPL_debug_assert_fmt((_Expr) == null, __VA_ARGS__)
 #define IMPL_debug_assert_nonnull_fmt(_Expr, ...)     IMPL_debug_assert_fmt((_Expr) != null, __VA_ARGS__)
 
+#else
+
+force_inline void IMPL_debug_assert(bool);
+
+force_inline void IMPL_debug_assert_true(bool);
+force_inline void IMPL_debug_assert_false(bool);
+force_inline void IMPL_debug_assert_eq(bool, bool);
+force_inline void IMPL_debug_assert_ne(bool, bool);
+force_inline void IMPL_debug_assert_null(bool);
+force_inline void IMPL_debug_assert_nonnull(bool);
+
+force_inline void IMPL_debug_assert_fmt(bool, const char*, ...);
+
+force_inline void IMPL_debug_assert_true_fmt(bool, const char*, ...);
+force_inline void IMPL_debug_assert_false_fmt(bool, const char*, ...);
+force_inline void IMPL_debug_assert_eq_fmt(bool, bool, const char*, ...);
+force_inline void IMPL_debug_assert_ne_fmt(bool, bool, const char*, ...);
+force_inline void IMPL_debug_assert_null_fmt(bool, const char*, ...);
+force_inline void IMPL_debug_assert_nonnull_fmt(bool, const char*, ...);
+
+#endif
 #else
 
 #define IMPL_debug_assert(_Expr) unused(0)

@@ -1,33 +1,38 @@
 #include "../include/engine/canvas.h"
+#include "dh/defer.h"
 
 #include <math.h>
 
 Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasType type) {
     reserveReturn(Err$Ptr$engine_Canvas);
+    scope_defer {
+        let canvas = (engine_Canvas*)malloc(sizeof(engine_Canvas));
+        if (!canvas) {
+            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        }
+        errdefer(free(canvas));
 
-    let canvas = (engine_Canvas*)malloc(sizeof(engine_Canvas));
-    if (!canvas) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        let len = as(usize, width) * as(usize, height);
+        let ptr = (Color*)malloc(len * sizeof(Color));
+        if (!ptr) {
+            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        }
+        errdefer(free(ptr));
+
+        canvas->buffer.len = len;
+        canvas->buffer.ptr = ptr;
+        canvas->width      = width;
+        canvas->height     = height;
+        canvas->type       = type;
+
+        // Initialize conversion functions based on type
+        canvas->pixelToColor = null; // Would be implemented based on type
+        canvas->colorToPixel = null; // Would be implemented based on type
+
+        engine_Canvas_clear(canvas, Color_blank);
+        defer_return_ok(canvas);
     }
-
-    let len = as(usize, width) * as(usize, height);
-    let ptr = (Color*)malloc(len * sizeof(Color));
-    if (!ptr) {
-        free(canvas);
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
-    }
-    canvas->buffer.len = len;
-    canvas->buffer.ptr = ptr;
-    canvas->width      = width;
-    canvas->height     = height;
-    canvas->type       = type;
-
-    // Initialize conversion functions based on type
-    canvas->pixelToColor = null; // Would be implemented based on type
-    canvas->colorToPixel = null; // Would be implemented based on type
-
-    engine_Canvas_clear(canvas, Color_blank);
-    return_ok(canvas);
+    return_deferred;
 }
 
 void engine_Canvas_destroy(engine_Canvas* canvas) {
@@ -79,8 +84,10 @@ void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x, i32 y, i32 w, i32 h, C
     if (x < 0 || as(i32, canvas->width) <= x) { return; }
     if (y < 0 || as(i32, canvas->height) <= y) { return; }
     if (w <= 0 || h <= 0) { return; }
-    if (x + w > as(i32, canvas->width)) { w = as(i32, canvas->width) - x; }
-    if (y + h > as(i32, canvas->height)) { h = as(i32, canvas->height) - y; }
+
+    if (as(i32, canvas->width) < x + w) { w = as(i32, canvas->width) - x; }
+    if (as(i32, canvas->height) < y + h) { h = as(i32, canvas->height) - y; }
+
     for (i32 py = y; py < (y + h); ++py) {
         for (i32 px = x; px < (x + w); ++px) {
             engine_Canvas_drawPixel(canvas, px, py, color);
@@ -95,6 +102,7 @@ void engine_Canvas_resize(engine_Canvas* canvas, u32 width, u32 height) {
     let new_len   = as(usize, width) * as(usize, height);
     let new_items = (Color*)realloc(canvas->buffer.ptr, new_len * sizeof(Color));
     if (!new_items) { return; }
+
     canvas->buffer.len = new_len;
     canvas->buffer.ptr = new_items;
     canvas->width      = width;

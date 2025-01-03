@@ -19,7 +19,7 @@ Err$void printPoints(const ArrayList* points) {
 
     printf("Points (%zu items):\n", ArrayList_len(points));
     scope_with(let items = meta_castSli(SliConst$Point, ArrayList_items(points))) {
-        for_indexed_slice(items, point, index) {
+        for_slice_indexed(items, point, index) {
             printf("  [%zu] = (%d, %d)\n", index, point->x, point->y);
         }
     }
@@ -96,8 +96,7 @@ Err$void example(void) {
         printf("\nCreated from owned slice:\n");
         try(printPoints(&from_slice));
     }
-    scope_deferred;
-    return_void();
+    return_deferred(ok({}));
 }
 
 Err$void dh_main(void) {

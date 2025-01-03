@@ -37,29 +37,14 @@ extern "C" {
 #define scope_if(_Init_Statement, _Condition) \
     IMPL_scope_if(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
-// #define scope_if_var(_Init_Statement, _Condition) \
-//     IMPL_scope_if_var(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
-
-// #define scope_if_let(_Init_Statement, _Condition) \
-//     IMPL_scope_if_let(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
+#define scope_else(_Init_Statement...) \
+    IMPL_scope_else(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
 
 #define scope_switch(_Init_Statement, _Condition) \
     IMPL_scope_switch(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
-// #define scope_switch_var(_Init_Statement, _Condition) \
-//     IMPL_scope_switch_var(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
-
-// #define scope_switch_let(_Init_Statement, _Condition) \
-//     IMPL_scope_switch_let(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
-
 #define scope_while(_Init_Statement, _Condition) \
     IMPL_scope_while(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
-
-// #define scope_while_var(_Init_Statement, _Condition) \
-//     IMPL_scope_while_var(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
-
-// #define scope_while_let(_Init_Statement, _Condition) \
-//     IMPL_scope_while_let(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
 
 #define scope_va_list(_Init_Statement) \
     /* TODO: Implement scope_va_list */
@@ -79,50 +64,18 @@ extern "C" {
     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
         for (let _Init_Statement; _init_once; _init_once = false)
 
-#define IMPL_scope_if(_run_once, _init_once, _Init_Statement, _Condition)        \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (_Init_Statement; _init_once; _init_once = false)                    \
-            if (_Condition)
+#define IMPL_scope_if(_run_once, _init_once, _Init_Statement, _Condition) \
+    IMPL_scope_with(_run_once, _init_once, _Init_Statement) if (_Condition)
 
-// #define IMPL_scope_if_var(_run_once, _init_once, _Init_Statement, _Condition)    \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-//         for (var _Init_Statement; _init_once; _init_once = false)                \
-//             if (_Condition)
+#define IMPL_scope_else(_run_once, _init_once, _Init_Statement...) \
+    else IMPL_scope_with(_run_once, _init_once, _Init_Statement)
 
-// #define IMPL_scope_if_let(_run_once, _init_once, _Init_Statement, _Condition)    \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-//         for (let _Init_Statement; _init_once; _init_once = false)                \
-//             if (_Condition)
+#define IMPL_scope_switch(_run_once, _init_once, _Init_Statement, _Condition) \
+    IMPL_scope_with(_run_once, _init_once, _Init_Statement) switch (_Condition)
 
-#define IMPL_scope_switch(_run_once, _init_once, _Init_Statement, _Condition)    \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (_Init_Statement; _init_once; _init_once = false)                    \
-            switch (_Condition)
+#define IMPL_scope_while(_run_once, _init_once, _Init_Statement, _Condition) \
+    IMPL_scope_with(_run_once, _init_once, _Init_Statement) while (_Condition)
 
-// #define IMPL_scope_switch_var(_run_once, _init_once, _Init_Statement, _Condition) \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false)  \
-//         for (var _Init_Statement; _init_once; _init_once = false)                 \
-//             switch (_Condition)
-
-// #define IMPL_scope_switch_let(_run_once, _init_once, _Init_Statement, _Condition) \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false)  \
-//         for (let _Init_Statement; _init_once; _init_once = false)                 \
-//             switch (_Condition)
-
-#define IMPL_scope_while(_run_once, _init_once, _Init_Statement, _Condition)     \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (_Init_Statement; _init_once; _init_once = false)                    \
-            while (_Condition)
-
-// #define IMPL_scope_while_var(_run_once, _init_once, _Init_Statement, _Condition) \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-//         for (var _Init_Statement; _init_once; _init_once = false)                \
-//             while (_Condition)
-
-// #define IMPL_scope_while_let(_run_once, _init_once, _Init_Statement, _Condition) \
-//     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-//         for (let _Init_Statement; _init_once; _init_once = false)                \
-//             while (_Condition)
 // NOLINTEND
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

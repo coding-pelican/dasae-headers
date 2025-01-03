@@ -1,13 +1,7 @@
 #include "../include/engine/color.h"
 
-force_inline f64 f64_min(f64 lhs, f64 rhs) {
-    return lhs < rhs ? lhs : rhs;
-}
-force_inline f64 f64_max(f64 lhs, f64 rhs) {
-    return lhs > rhs ? lhs : rhs;
-}
 force_inline f64 f64_clamp(f64 val, f64 low, f64 high) {
-    return f64_min(f64_max(low, val), high);
+    return prim_min(prim_max(low, val), high);
 }
 
 Rgb Rgb_from(u8 r, u8 g, u8 b) {
@@ -108,8 +102,8 @@ Hsl Hsl_fromRgb(Rgb rgb) {
     f64 g = rgb.g / as(f64, ColorChannel_max_value);
     f64 b = rgb.b / as(f64, ColorChannel_max_value);
 
-    f64 max  = f64_max(f64_max(r, g), b);
-    f64 min  = f64_min(f64_min(r, g), b);
+    f64 max  = prim_max(prim_max(r, g), b);
+    f64 min  = prim_min(prim_min(r, g), b);
     f64 diff = max - min;
 
     f64 h = f64_nan;

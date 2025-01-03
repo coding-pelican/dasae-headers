@@ -45,6 +45,15 @@ extern "C" {
 /* Must Check Definition */
 #define must_check BUILTIN_COMP_MUST_CHECK
 
+#define eval(expr...) ({ expr; })
+#define eval_return   /* just comment */
+
+#if !defined(COMP)
+#define COMP_TIME (0)
+#else
+#define COMP_TIME (1)
+#endif
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

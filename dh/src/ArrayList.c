@@ -1,5 +1,6 @@
 #include "dh/ArrayList.h"
 #include "dh/debug/assert.h"
+#include <malloc.h>
 
 // Utility functions
 static usize growCapacity(usize current, usize minimum) {
@@ -331,16 +332,38 @@ meta_Ptr ArrayList_swapRemove(ArrayList* self, usize index) {
     debug_assert_nonnull(self);
     debug_assert(index < self->items.len);
 
-    let result = (meta_Ptr){
-        .addr = (u8*)self->items.addr + (index * self->items.type.size),
+    meta_Ptr result = (meta_Ptr){
+        .addr = alloca(self->items.type.size),
         .type = self->items.type
     };
 
+    // Copy element to remove into result
+    memcpy(
+        result.addr,
+        (u8*)self->items.addr + (index * self->items.type.size),
+        self->items.type.size
+    );
+
+    // Swap with last element if not already last
     if (index < self->items.len - 1) {
-        memcpy((u8*)self->items.addr + (index * self->items.type.size), (u8*)self->items.addr + ((self->items.len - 1) * self->items.type.size), self->items.type.size);
+        memcpy(
+            (u8*)self->items.addr + (index * self->items.type.size),
+            (u8*)self->items.addr + ((self->items.len - 1) * self->items.type.size),
+            self->items.type.size
+        );
+        memcpy(
+            (u8*)self->items.addr + ((self->items.len - 1) * self->items.type.size),
+            result.addr,
+            self->items.type.size
+        );
     }
 
     self->items.len -= 1;
+    result = (meta_Ptr){
+        .addr = (u8*)self->items.addr + (self->items.len * self->items.type.size),
+        .type = self->items.type
+    };
+
     return result;
 }
 

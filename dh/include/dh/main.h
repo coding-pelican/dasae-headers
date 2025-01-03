@@ -40,11 +40,11 @@ extern "C" {
 
 #if !defined(MAIN_NO_ARGS)
 
-extern must_check Err$void dh_main(int argc, const char* argv[]);
+extern Err$void dh_main(int argc, const char* argv[]) must_check;
 
 int main(int argc, const char* argv[]) {
     const Err$void result = dh_main(argc, argv);
-    if (!result.is_err) { return 0; }
+    if (!isErr(result)) { return 0; }
     ignore fprintf(
         stderr,
         "Program failed: %s (type: %d)\n",

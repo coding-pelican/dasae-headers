@@ -87,69 +87,105 @@ extern "C" {
 
 /* Returns variant value */
 #define return_Err$Opt$ \
-    return (TypeOf(getReservedReturn()))
+    return (TypeOf(getReservedReturn()[0]))
 
 #define return_Opt$Err$ \
-    return (TypeOf(getReservedReturn()))
+    return (TypeOf(getReservedReturn()[0]))
 
-#define return_ok_some(val_variant...)     \
-    return (TypeOf(getReservedReturn())) { \
-        .is_err = false,                   \
-        .ok     = {                        \
-                .has_value = true,         \
-                .value     = val_variant   \
-        }                                  \
-    }
+#define return_ok_some(val_variant...)                         \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                                       \
+        .ok     = {                                            \
+                .has_value = true,                             \
+                .value     = val_variant,                      \
+        },                                                 \
+    })
 
-#define return_ok_none()                   \
-    return (TypeOf(getReservedReturn())) { \
-        .is_err = false,                   \
-        .ok     = {                        \
-                .has_value = false         \
-        }                                  \
-    }
+#define return_ok_none()                                       \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                                       \
+        .ok     = {                                            \
+                .has_value = false,                            \
+        },                                                 \
+    })
 
-#define return_some_ok(val_variant...)     \
-    return (TypeOf(getReservedReturn())) { \
-        .has_value = true,                 \
-        .value     = {                     \
-                .is_err = false,           \
-                .ok     = val_variant      \
-        }                                  \
-    }
+#define return_some_ok(val_variant...)                         \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                                     \
+        .value     = {                                         \
+                .is_err = false,                               \
+                .ok     = val_variant,                         \
+        },                                                 \
+    })
 
-#define return_some_err(val_variant...)    \
-    return (TypeOf(getReservedReturn())) { \
-        .has_value = true,                 \
-        .value     = {                     \
-                .is_err = true,            \
-                .err    = val_variant      \
-        }                                  \
-    }
+#define return_some_err(val_variant...)                        \
+    return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                                     \
+        .value     = {                                         \
+                .is_err = true,                                \
+                .err    = val_variant,                         \
+        },                                                 \
+    })
+
+#define defer_return_ok_some(val_variant...)       \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                           \
+        .ok     = {                                \
+                .has_value = true,                 \
+                .value     = val_variant,          \
+        },                                     \
+    })
+
+#define defer_return_ok_none()                     \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .is_err = false,                           \
+        .ok     = {                                \
+                .has_value = false,                \
+        },                                     \
+    })
+
+#define defer_return_some_ok(val_variant...)       \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                         \
+        .value     = {                             \
+                .is_err = false,                   \
+                .ok     = val_variant,             \
+        },                                     \
+    })
+
+#define defer_return_some_err(val_variant...)      \
+    defer_return((TypeOf(getReservedReturn()[0])){ \
+        .has_value = true,                         \
+        .value     = {                             \
+                .is_err = true,                    \
+                .err    = val_variant,             \
+        },                                     \
+    })
 
 /* Combined payload captures */
 #define if_ok_some(expr, var_capture)                                       \
     scope_if(let _result = (expr), !_result.is_err && _result.ok.has_value) \
         scope_with(let var_capture = _result.ok.value)
 
-#define if_ok_some_mut(expr, var_capture)                                   \
-    scope_if(var _result = (expr), !_result.is_err && _result.ok.has_value) \
-        scope_with(var var_capture = _result.ok.value)
-
 #define if_ok_none(expr) \
     scope_if(let _result = (expr), !_result.is_err && !_result.ok.has_value)
+
+#define else_ok_some(var_capture) \
+    scope_else(let var_capture = _result.ok.value)
 
 #define if_some_ok(expr, var_capture)                                          \
     scope_if(let _result = (expr), _result.has_value && !_result.value.is_err) \
         scope_with(let var_capture = _result.value.ok)
 
-#define if_some_ok_mut(expr, var_capture)                                      \
-    scope_if(var _result = (expr), _result.has_value && !_result.value.is_err) \
-        scope_with(var var_capture = _result.value.ok)
+#define else_some_err(var_capture) \
+    scope_else(let var_capture = _result.value.err)
 
 #define if_some_err(expr, var_capture)                                        \
     scope_if(let _result = (expr), _result.has_value && _result.value.is_err) \
         scope_with(let var_capture = _result.value.err)
+
+#define else_some_ok(var_capture) \
+    scope_else(let var_capture = _result.value.ok)
 
 #if defined(__cplusplus)
 } /* extern "C" */
