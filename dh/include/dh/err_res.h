@@ -22,8 +22,9 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core.h"
-#include "Err.h"
 #include "scope.h"
+#include "defer.h"
+#include "Err.h"
 
 /*========== Macros and Definitions =========================================*/
 

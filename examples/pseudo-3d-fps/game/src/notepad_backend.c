@@ -1,11 +1,11 @@
-#include <stdio.h>
 #include <windows.h>
 
 #include "notepad_backend.h"
 #include "../../engine/include/engine/input.h"
 
-// D2CodingLigature Nerd Font
+#include <stdio.h>
 
+// D2CodingLigature Nerd Font
 /*
 NOTE: 테스트해볼 솔루션을 찾았다!!!
     Windows 11에서는 Edit이 아닌 RichEdit 컨트롤을 사용해야한다는 점.

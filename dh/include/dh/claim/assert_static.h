@@ -41,7 +41,6 @@ extern "C" {
 /* Older versions - emulate static assert */
 
 #include "dh/core/pp.h"
-#include "dh/core/prim.h"
 
 #ifdef __COUNTER__
 #define IMPL_claim_assert_static(_Expr) \

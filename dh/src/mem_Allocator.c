@@ -1,6 +1,5 @@
 #include "dh/mem/Allocator.h"
 
-
 /* Raw allocation */
 Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
     debug_assert_nonnull(self.vt);

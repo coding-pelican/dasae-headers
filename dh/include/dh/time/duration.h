@@ -23,7 +23,6 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
-#include "dh/claim/assert.h"
 
 /*========== Macros and Definitions =========================================*/
 

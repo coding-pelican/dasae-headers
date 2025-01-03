@@ -1,7 +1,6 @@
 #include "dh/Range.h"
 #include "dh/debug/assert.h"
 
-
 Range Range_from(usize begin, usize end) {
     debug_assert(begin <= end);
     return make(Range, .begin = begin, .end = end);

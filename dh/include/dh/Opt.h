@@ -23,6 +23,7 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
+#include "defer.h"
 
 /*========== Macros and Definitions =========================================*/
 

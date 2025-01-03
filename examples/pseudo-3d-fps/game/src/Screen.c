@@ -1,8 +1,8 @@
 #include "Screen.h"
+
 #include <math.h>
 
 #define PI (3.14159265358979323846)
-
 
 void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
     for (usize x = 0; x < canvas->width; ++x) {

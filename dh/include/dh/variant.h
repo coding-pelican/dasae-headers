@@ -23,6 +23,7 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
+#include "defer.h"
 #include "opt.h"
 #include "err_res.h"
 

@@ -21,6 +21,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+
 #include <stdlib.h>
 
 /*========== Classic C Allocator ============================================*/
@@ -34,8 +35,8 @@ typedef struct heap_Classic {
 extern mem_Allocator heap_Classic_allocator(heap_Classic* self);
 
 // Lifecycle
-extern must_check Err$void heap_Classic_init(mem_Allocator self);
-extern void                heap_Classic_fini(mem_Allocator self);
+extern Err$void heap_Classic_init(mem_Allocator self) must_check;
+extern void     heap_Classic_fini(mem_Allocator self);
 
 /*========== Implementation =================================================*/
 

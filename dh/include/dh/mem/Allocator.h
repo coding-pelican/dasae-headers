@@ -28,8 +28,8 @@ extern "C" {
 /* Allocator vtable */
 typedef struct mem_AllocatorVT mem_AllocatorVT;
 struct mem_AllocatorVT {
-    must_check Opt$Ptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align);
-    must_check bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len);
+    Opt$Ptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align) must_check;
+    bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
     void (*free)(anyptr ctx, Sli$u8 buf, usize buf_align);
 };
 
@@ -43,26 +43,26 @@ struct mem_Allocator {
 /*========== Core Allocator Functions =======================================*/
 
 /* Raw allocation */
-extern must_check Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align);
+extern Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) must_check;
 /* Try to resize in-place */
-extern must_check bool       mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len);
+extern bool       mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len) must_check;
 /* Free memory */
-extern void                  mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align);
+extern void       mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align);
 
 /*========== High-level Allocator Functions =================================*/
 
 /* Single-item allocation */
-extern must_check Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type);
+extern Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) must_check;
 /* Free single-item */
-extern void                    mem_Allocator_destroy(mem_Allocator self, AnyType ptr);
+extern void         mem_Allocator_destroy(mem_Allocator self, AnyType ptr);
 /* Sli allocation */
-extern must_check Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count);
+extern Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) must_check;
 /* Try to resize slice in-place */
-extern must_check bool         mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len);
+extern bool         mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
 /* Reallocate slice with new size */
-extern must_check Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len);
+extern Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
 /* Free slice */
-extern void                    mem_Allocator_free(mem_Allocator self, AnyType memory);
+extern void         mem_Allocator_free(mem_Allocator self, AnyType memory);
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,6 +1,5 @@
 #include "dh/heap/Classic.h"
 
-
 mem_Allocator heap_Classic_allocator(heap_Classic* self) {
     /* VTable implementations */
     extern must_check Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align);

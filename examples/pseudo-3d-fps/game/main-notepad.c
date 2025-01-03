@@ -1,10 +1,11 @@
-#include <stdio.h>
-
 #include "dh/main.h"
-#include "../engine/include/engine.h"
-#include "dh/time/Duration.h"
-#include "dh/time/Instant.h"
+#include "dh/log.h"
+
 #include "dh/time/SysTime.h"
+#include "dh/time/Instant.h"
+#include "dh/time/Duration.h"
+
+#include "../engine/include/engine.h"
 #include "src/State.h"
 #include "src/Screen.h"
 #include "src/notepad_backend.h"
@@ -23,37 +24,37 @@ Err$void dh_main(int argc, const char* argv[]) {
             .custom_data  = try(NotepadBackend_create()),
         }
     ));
-    printf("engine initialized\n");
+    log_info("engine initialized\n");
 
     // Create canvases
     let game_canvas    = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
     let ui_canvas      = try(engine_Canvas_create(80, 50, engine_CanvasType_rgba));
     let minimap_canvas = try(engine_Canvas_create(32, 32, engine_CanvasType_rgba));
-    printf("canvas created\n");
+    log_info("canvas created\n");
 
     engine_Canvas_clear(game_canvas, Color_blank);
     engine_Canvas_clear(ui_canvas, Color_blank);
     engine_Canvas_clear(minimap_canvas, Color_blank);
-    printf("canvas cleared\n");
+    log_info("canvas cleared\n");
 
     // Add canvas views
     engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
     engine_Window_addCanvasView(window, ui_canvas, 0, 0, 80, 50);
     engine_Window_addCanvasView(window, minimap_canvas, 1, 1, 32, 32);
-    printf("canvas views added\n");
+    log_info("canvas views added\n");
 
     let state = try(game_State_create());
-    printf("game state created\n");
+    log_info("game state created\n");
     ignore getchar();
 
-    var curr_time   = time_SysTime_now();
+    var curr_time   = time_Instant_now();
     var prev_time   = curr_time;
     let target_time = time_Duration_fromSecs_f64(0.03333f); // Assume 30 FPS for simplicity
 
     // Game loop
     while (state->is_running) {
-        curr_time        = time_SysTime_now();
-        let elapsed_time = time_SysTime_durationSince(curr_time, prev_time);
+        curr_time        = time_Instant_now();
+        let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
         let dt           = time_Duration_asSecs_f64(elapsed_time);
 
         // Process events

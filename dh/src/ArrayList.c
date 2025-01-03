@@ -1,5 +1,6 @@
 #include "dh/ArrayList.h"
 #include "dh/debug/assert.h"
+
 #include <malloc.h>
 
 // Utility functions
@@ -68,7 +69,11 @@ Err$meta_Sli ArrayList_toOwnedSlice(ArrayList* self) {
 
     let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, self->items.len));
 
-    memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
+    memcpy(
+        new_mem.addr,
+        self->items.addr,
+        self->items.len * self->items.type.size
+    );
 
     mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
 
@@ -93,7 +98,11 @@ Err$ArrayList ArrayList_clone(const ArrayList* self) {
         self->allocator,
         self->capacity
     ));
-    memcpy(new_list.items.addr, self->items.addr, self->items.len * self->items.type.size);
+    memcpy(
+        new_list.items.addr,
+        self->items.addr,
+        self->items.len * self->items.type.size
+    );
     new_list.items.len = self->items.len;
     return_ok(new_list);
 }
@@ -119,7 +128,11 @@ Err$void ArrayList_ensureTotalCapacityPrecise(ArrayList* self, usize new_cap) {
         return_void();
     }
 
-    if (mem_Allocator_resize(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type }, new_cap)) {
+    if (mem_Allocator_resize(
+            self->allocator,
+            (AnyType){ .ctx = &self->items, .type = self->items.type },
+            new_cap
+        )) {
         self->capacity = new_cap;
         return_void();
     }
@@ -188,7 +201,11 @@ Err$void ArrayList_append(ArrayList* self, meta_Ptr item) {
 
     try(ArrayList_ensureUnusedCapacity(self, 1));
 
-    memcpy((u8*)self->items.addr + (self->items.len * self->items.type.size), item.addr, item.type.size);
+    memcpy(
+        (u8*)self->items.addr + (self->items.len * self->items.type.size),
+        item.addr,
+        item.type.size
+    );
     self->items.len += 1;
     return_void();
 }
@@ -199,7 +216,11 @@ Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) {
 
     try(ArrayList_ensureUnusedCapacity(self, items.len));
 
-    memcpy((u8*)self->items.addr + (self->items.len * self->items.type.size), items.addr, items.len * items.type.size);
+    memcpy(
+        (u8*)self->items.addr + (self->items.len * self->items.type.size),
+        items.addr,
+        items.len * items.type.size
+    );
     self->items.len += items.len;
     return_void();
 }
@@ -211,7 +232,11 @@ Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) {
     try(ArrayList_ensureUnusedCapacity(self, n));
 
     for (usize i = 0; i < n; ++i) {
-        memcpy((u8*)self->items.addr + ((self->items.len + i) * self->items.type.size), value.addr, value.type.size);
+        memcpy(
+            (u8*)self->items.addr + ((self->items.len + i) * self->items.type.size),
+            value.addr,
+            value.type.size
+        );
     }
     self->items.len += n;
     return_void();
@@ -265,10 +290,18 @@ Err$void ArrayList_insert(ArrayList* self, usize index, meta_Ptr item) {
     try(ArrayList_ensureUnusedCapacity(self, 1));
 
     if (index < self->items.len) {
-        memmove((u8*)self->items.addr + ((index + 1) * self->items.type.size), (u8*)self->items.addr + (index * self->items.type.size), (self->items.len - index) * self->items.type.size);
+        memmove(
+            (u8*)self->items.addr + ((index + 1) * self->items.type.size),
+            (u8*)self->items.addr + (index * self->items.type.size),
+            (self->items.len - index) * self->items.type.size
+        );
     }
 
-    memcpy((u8*)self->items.addr + (index * self->items.type.size), item.addr, self->items.type.size);
+    memcpy(
+        (u8*)self->items.addr + (index * self->items.type.size),
+        item.addr,
+        self->items.type.size
+    );
 
     self->items.len += 1;
     return_void();
@@ -282,10 +315,18 @@ Err$void ArrayList_insertSlice(ArrayList* self, usize index, meta_Sli items) {
     try(ArrayList_ensureUnusedCapacity(self, items.len));
 
     if (index < self->items.len) {
-        memmove((u8*)self->items.addr + ((index + items.len) * self->items.type.size), (u8*)self->items.addr + (index * self->items.type.size), (self->items.len - index) * self->items.type.size);
+        memmove(
+            (u8*)self->items.addr + ((index + items.len) * self->items.type.size),
+            (u8*)self->items.addr + (index * self->items.type.size),
+            (self->items.len - index) * self->items.type.size
+        );
     }
 
-    memcpy((u8*)self->items.addr + (index * self->items.type.size), items.addr, items.len * items.type.size);
+    memcpy(
+        (u8*)self->items.addr + (index * self->items.type.size),
+        items.addr,
+        items.len * items.type.size
+    );
 
     self->items.len += items.len;
     return_void();
@@ -321,7 +362,11 @@ meta_Ptr ArrayList_orderedRemove(ArrayList* self, usize index) {
     };
 
     if (index < self->items.len - 1) {
-        memmove((u8*)self->items.addr + (index * self->items.type.size), (u8*)self->items.addr + ((index + 1) * self->items.type.size), (self->items.len - index - 1) * self->items.type.size);
+        memmove(
+            (u8*)self->items.addr + (index * self->items.type.size),
+            (u8*)self->items.addr + ((index + 1) * self->items.type.size),
+            (self->items.len - index - 1) * self->items.type.size
+        );
     }
 
     self->items.len -= 1;

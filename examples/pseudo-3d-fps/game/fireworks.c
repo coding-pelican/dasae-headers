@@ -1,17 +1,18 @@
-#include <stdio.h>
-
 #include "dh/main.h"
+#include "dh/debug.h"
+#include "dh/log.h"
+
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrayList.h"
+#include "dh/defer.h"
+
+#include "dh/time/SysTime.h"
 #include "dh/time/Instant.h"
 #include "dh/time/Duration.h"
 #include "dh/Random.h"
-#include "dh/defer.h"
 
 #include "../engine/include/engine.h"
-#include "dh/debug.h"
-#include "log.h"
 
 // TODO: Ensure that ArrayList will behave correctly (v)
 // TODO: Implement errdefer (v)
@@ -84,7 +85,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         Random_init();
 
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
+        scope_if(let debug_file = fopen("firework-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
             // Configure logging behavior
             log_setLevel(log_Level_debug);
@@ -132,7 +133,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("game state created\n");
         ignore getchar();
 
-        var curr_time   = time_SysTime_now();
+        var curr_time   = time_Instant_now();
         var prev_time   = curr_time;
         let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
         log_info("game loop started\n");
@@ -144,8 +145,8 @@ Err$void dh_main(int argc, const char* argv[]) {
             // for (usize step = 0; step < update_step; ++step) {
             //     const f64 delta_time = (f64)step * real_delta_time;
 
-            curr_time        = time_SysTime_now();
-            let elapsed_time = time_SysTime_durationSince(curr_time, prev_time);
+            curr_time        = time_Instant_now();
+            let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
             let dt           = time_Duration_asSecs_f64(elapsed_time);
             unused(dt);
 
@@ -308,6 +309,7 @@ void Firework_fini(Firework* f) {
 
 static bool Firework__deadsAllEffect(const Firework* f) {
     debug_assert_nonnull(f);
+
     let effects = meta_castSli(Sli$Particle, f->effects.items);
     for_slice(effects, effect) {
         if (Particle_isDead(effect)) { continue; }
