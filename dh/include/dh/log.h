@@ -67,7 +67,7 @@ extern FILE*     log_getOutputFile(void);
 extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
 
 // Convenience macros for different log levels
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || defined(LOG_NO_DISABLE_RELEASE)
 #if COMP_TIME
 
 #define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)

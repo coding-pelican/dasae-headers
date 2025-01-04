@@ -43,26 +43,26 @@ extern Random* const Random_rng;
 /*========== Extern Function Prototypes =====================================*/
 
 // Core random functions
-extern void Random_init();
-extern void Random_withSeed(u64 seed);
+extern void Random_init(void);
+extern void Random_initWithSeed(u64 seed);
 extern void Random_setSeed(u64 seed);
 
 // Integer ranges
-extern u8    Random_u8();
-extern u16   Random_u16();
-extern u32   Random_u32();
-extern u64   Random_u64();
-extern usize Random_usize();
+extern u8    Random_u8(void);
+extern u16   Random_u16(void);
+extern u32   Random_u32(void);
+extern u64   Random_u64(void);
+extern usize Random_usize(void);
 
-extern i8    Random_i8();
-extern i16   Random_i16();
-extern i32   Random_i32();
-extern i64   Random_i64();
-extern isize Random_isize();
+extern i8    Random_i8(void);
+extern i16   Random_i16(void);
+extern i32   Random_i32(void);
+extern i64   Random_i64(void);
+extern isize Random_isize(void);
 
 // Float ranges [0,1)
-extern f32 Random_f32();
-extern f64 Random_f64();
+extern f32 Random_f32(void);
+extern f64 Random_f64(void);
 
 // Bounded ranges
 extern u64 Random_range_u64(u64 min, u64 max);

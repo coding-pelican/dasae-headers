@@ -1,5 +1,6 @@
 #include "dh/main.h"
 #include "dh/debug.h"
+#define LOG_NO_DISABLE_RELEASE (1)
 #include "dh/log.h"
 
 #include "dh/mem.h"
@@ -13,10 +14,6 @@
 #include "dh/Random.h"
 
 #include "../engine/include/engine.h"
-
-// TODO: Ensure that ArrayList will behave correctly (v)
-// TODO: Implement errdefer (v)
-// TODO: Ensure reserved_return value is properly reserved for defer (v)
 
 #define Firework_effects_max        (25)
 #define Firework_effects_per_rocket (25)
@@ -82,8 +79,6 @@ Err$void dh_main(int argc, const char* argv[]) {
     reserveReturn(Err$void);
     unused(argc), unused(argv);
     scope_defer {
-        Random_init();
-
         // Initialize logging to a file
         scope_if(let debug_file = fopen("firework-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -95,6 +90,13 @@ Err$void dh_main(int argc, const char* argv[]) {
             log_showFunction(true);
         }
         defer(log_fini());
+
+        // Random_init();
+        log_debug("Random value 1: %d", Random_i64());
+        log_debug("Random value 2: %d", Random_i64());
+        log_debug("Random value 3: %d", Random_i64());
+        log_debug("Random value 4: %d", Random_i64());
+        log_debug("Random value 5: %d", Random_i64());
 
         // Initialize platform with terminal backend
         let window = try(engine_Window_create(
@@ -148,31 +150,18 @@ Err$void dh_main(int argc, const char* argv[]) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
             let dt           = time_Duration_asSecs_f64(elapsed_time);
-            unused(dt);
 
             // Process events
             engine_Window_processEvents(window);
 
             // Update game state
-            if (engine_Key_pressed(engine_KeyCode_Esc)) {
-                log_debug("pressed esc\n");
-                state.is_running = false;
-                break;
-            }
-            if (engine_Key_pressed(engine_KeyCode_Space)) {
-                log_debug("pressed space\n");
-                catch (State_spawnFirework(&state), err, {
-                    log_error("failed to spawn firework: %s\n", Err_message(err));
-                    defer_return_err(err);
-                });
-            }
-            catch (State_update(&state, 1), err, {
+            catch (State_update(&state, dt), err, {
                 log_error("failed to update game state: %s\n", Err_message(err));
                 defer_return_err(err);
             });
 
             // Render all views
-            State_render(&state, game_canvas, 1);
+            State_render(&state, game_canvas, dt);
 
             // Present to screen
             engine_Window_present(window);
@@ -233,26 +222,28 @@ bool Particle_isDead(const Particle* p) {
 
 void Particle_update(Particle* p, f64 dt) {
     debug_assert_nonnull(p);
+    unused(dt);
     if (Particle_isDead(p)) { return; }
 
-    p->speed[0] += p->acceleration[0] * dt;
-    p->speed[1] += p->acceleration[1] * dt;
+    p->speed[0] += p->acceleration[0];
+    p->speed[1] += p->acceleration[1];
 
-    p->position[0] += p->speed[0] * dt;
-    p->position[1] += p->speed[1] * dt;
+    p->position[0] += p->speed[0];
+    p->position[1] += p->speed[1];
 
-    p->lifetime -= p->fading * dt;
+    p->lifetime -= p->fading;
 }
 
 void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(p);
     debug_assert_nonnull(c);
+    unused(dt);
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
-        as(u8, as(f64, p->color.r) * p->lifetime * dt),
-        as(u8, as(f64, p->color.g) * p->lifetime * dt),
-        as(u8, as(f64, p->color.b) * p->lifetime * dt)
+        as(u8, as(f64, p->color.r) * p->lifetime),
+        as(u8, as(f64, p->color.g) * p->lifetime),
+        as(u8, as(f64, p->color.b) * p->lifetime)
     );
     engine_Canvas_fillRect(
         c,
@@ -321,7 +312,7 @@ static bool Firework__deadsAllEffect(const Firework* f) {
 bool Firework_isDead(const Firework* f) {
     debug_assert_nonnull(f);
     if (f->rocket.has_value) { return false; }
-    /* Why isn't dead firework removed? (deallocate memory)
+    /* NOTE: Why isn't dead firework removed? (deallocate memory)
         Looking at the log, when fireworks are removed:
             1. Dead fireworks should be removed in `State_spawnFirework`
             2. The log shows firework count reaching and staying at 16 (max capacity)
@@ -340,6 +331,7 @@ bool Firework_isDead(const Firework* f) {
 Err$void Firework_update(Firework* f, f64 dt) {
     reserveReturn(Err$void);
     debug_assert_nonnull(f);
+    unused(dt);
 
     if_some(f->rocket, rocket) {
         Particle_update(rocket, dt);
@@ -370,8 +362,8 @@ Err$void Firework_update(Firework* f, f64 dt) {
             }
             log_debug("destroying rocket(%p)\n", rocket);
             mem_Allocator_destroy(f->allocator, (AnyType){ .ctx = (void*)&rocket, .type = typeInfo(Particle) });
-            log_debug("rocket destroyed\n");
             f->rocket = (Opt$Ptr$Particle)none();
+            log_debug("rocket destroyed\n");
         }
     }
     scope_with(let effects = meta_castSli(Sli$Particle, f->effects.items)) {
@@ -429,20 +421,44 @@ Err$void State_update(State* s, f64 dt) {
     reserveReturn(Err$void);
     debug_assert_nonnull(s);
 
-    // Add a new rocket with with 5% chance.
+    /* Add a new rocket with with 5% chance */
     if (Random_f64() < 0.05) {
-        debug_only(
-            if_some(try(State_spawnFirework(s)), firework) {
-                let rocket = unwrap(firework->rocket);
-                log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
-            }
-        );
+        /* NOTE: Rule #0 - Don't put code that causes side effects in debug code like assertions
+            What a stupid mistake...
+            This explains why the fireworks were automatically triggered in debug mode,
+            but not in release mode.
+         */
+        // debug_only(
+        if_some(try(State_spawnFirework(s)), firework) {
+            let rocket = unwrap(firework->rocket);
+            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+        }
+        // );
     }
 
-    // Update all fireworks.
+    /* Update all fireworks */
     scope_with(let fireworks = meta_castSli(Sli$Firework, s->fireworks.items)) {
         for_slice(fireworks, firework) {
             try(Firework_update(firework, dt));
+        }
+    }
+
+    // Input handling
+    if (engine_Key_pressed(engine_KeyCode_Esc)) {
+        log_debug("pressed esc\n");
+        s->is_running = false;
+        return_void();
+    }
+
+    if (engine_Key_pressed(engine_KeyCode_Space)) {
+        log_debug("pressed space\n");
+        let maybe_firework = catch (State_spawnFirework(s), err, {
+            log_error("failed to spawn firework: %s\n", Err_message(err));
+            return_err(err);
+        });
+        if_some(maybe_firework, firework) {
+            let rocket = unwrap(firework->rocket);
+            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
         }
     }
 
