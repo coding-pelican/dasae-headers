@@ -78,6 +78,31 @@ void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
     }
 }
 
+// Helper function to draw a line using Bresenham's algorithm
+void engine_Canvas_drawLine(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
+    const i32 dx  = abs(x2 - x1);
+    const i32 dy  = -abs(y2 - y1);
+    const i32 sx  = x1 < x2 ? 1 : -1;
+    const i32 sy  = y1 < y2 ? 1 : -1;
+    i32       err = dx + dy;
+
+    while (true) {
+        engine_Canvas_drawPixel(canvas, x1, y1, color);
+
+        if (x1 == x2 && y1 == y2) { break; }
+
+        let e2 = 2 * err;
+        if (dy <= e2) {
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
 void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x, i32 y, i32 w, i32 h, Color color) {
     debug_assert_nonnull(canvas);
     debug_assert_nonnull(canvas->buffer.ptr);
@@ -92,6 +117,59 @@ void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x, i32 y, i32 w, i32 h, C
         for (i32 px = x; px < (x + w); ++px) {
             engine_Canvas_drawPixel(canvas, px, py, color);
         }
+    }
+}
+
+void engine_Canvas_drawRing(
+    engine_Canvas* canvas,
+    i32            centerX,
+    i32            centerY,
+    f32            innerRadius,
+    f32            outerRadius,
+    f32            startAngle,
+    f32            endAngle,
+    i32            segments,
+    Color          color
+) {
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
+    debug_assert(0 <= innerRadius && innerRadius < outerRadius);
+    debug_assert(0 < segments);
+
+    const f32 step = (endAngle - startAngle) / (f32)segments;
+
+    // Convert angles from degrees to radians
+    startAngle = (f32)startAngle * ((f32)PI / 180.0f);
+    endAngle   = (f32)endAngle * ((f32)PI / 180.0f);
+
+    // Initialize previous points
+    i32 prev_x1 = centerX + (i32)(innerRadius * cosf(startAngle));
+    i32 prev_y1 = centerY + (i32)(innerRadius * sinf(startAngle));
+    i32 prev_x2 = centerX + (i32)(outerRadius * cosf(startAngle));
+    i32 prev_y2 = centerY + (i32)(outerRadius * sinf(startAngle));
+
+    for (i32 i = 1; i <= segments; ++i) {
+        f32 angle = startAngle + (step * (f32)i);
+        f32 cos_a = cosf(angle);
+        f32 sin_a = sinf(angle);
+
+        // Calculate points for both inner and outer radius
+        i32 x1 = centerX + (i32)(innerRadius * cos_a);
+        i32 y1 = centerY + (i32)(innerRadius * sin_a);
+        i32 x2 = centerX + (i32)(outerRadius * cos_a);
+        i32 y2 = centerY + (i32)(outerRadius * sin_a);
+
+        // Draw lines between inner and outer points
+        engine_Canvas_drawLine(canvas, x1, y1, x2, y2, color);
+
+        // Connect to previous points
+        engine_Canvas_drawLine(canvas, prev_x1, prev_y1, x1, y1, color);
+        engine_Canvas_drawLine(canvas, prev_x2, prev_y2, x2, y2, color);
+
+        prev_x1 = x1;
+        prev_y1 = y1;
+        prev_x2 = x2;
+        prev_y2 = y2;
     }
 }
 

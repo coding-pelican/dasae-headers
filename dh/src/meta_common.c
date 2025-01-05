@@ -42,6 +42,6 @@ meta_Ptr meta_Ptr_constCast(meta_PtrConst self) {
 }
 
 meta_Sli meta_Sli_constCast(meta_SliConst self) {
-    claim_assert_nonnull(self.ptr.addr);
+    claim_assert_nonnull(self.addr);
     return (meta_Sli){ .as_const = self };
 }

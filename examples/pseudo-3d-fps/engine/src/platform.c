@@ -1,12 +1,14 @@
 #include "../include/engine/platform.h"
 #include "../include/engine/platform_backend.h"
+#include "../include/engine/window.h"
 #include "../include/engine/canvas.h"
 #include "../include/engine/input.h"
 
 #define Win32ConsoleBackend_calculateBufferSize(width, height) ((width) * (height) * 32)
-static void Win32ConsoleBackend_destroy(engine_Platform* platform);
-static void Win32ConsoleBackend_processEvents(engine_Platform* platform);
-static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
+static void                     Win32ConsoleBackend_destroy(engine_Platform* platform);
+static void                     Win32ConsoleBackend_processEvents(engine_Platform* platform);
+static void                     Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
+static Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* platform);
 
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);
@@ -22,7 +24,6 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
             free(platform);
             return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
-
         // Initialize console backend
         // HANDLE hConsole = CreateConsoleScreenBuffer(
         //     GENERIC_READ | GENERIC_WRITE,
@@ -36,51 +37,79 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         //     free(platform);
         //     return_err(engine_PlatformErr_err(engine_PlatformErrType_AccessDenied));
         // }
-        HANDLE     hConsole          = GetStdHandle(STD_OUTPUT_HANDLE);
-        SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
-        SetConsoleWindowInfo(hConsole, TRUE, &windowSizeInitial);
 
-        // void SetConsoleScreenBuffer()
+        // Initialize console backend
+        HANDLE     hOutput           = GetStdHandle(STD_OUTPUT_HANDLE);
+        SMALL_RECT windowSizeInitial = (SMALL_RECT){ 0, 0, 1, 1 };
+        SetConsoleWindowInfo(hOutput, true, &windowSizeInitial);
+
+        // Get console window handle
+        backend->window_handle = GetConsoleWindow();
+
+        // Configure buffer size
         COORD dwSize = (COORD){ (SHORT)params->width, (SHORT)params->height };
-        SetConsoleScreenBufferSize(hConsole, dwSize);
+        SetConsoleScreenBufferSize(hOutput, dwSize);
 
         SMALL_RECT windowSize = (SMALL_RECT){ 0, 0, (SHORT)(params->width), (SHORT)(params->height) };
-        SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
+        SetConsoleWindowInfo(hOutput, true, &windowSize);
+
+        // Initialize last known metrics
+        backend->last_metrics = (engine_WindowMetrics){
+            .width         = params->width,
+            .height        = params->height,
+            .client_width  = params->width,
+            .client_height = params->height,
+            .x             = 0,
+            .y             = 0,
+            .is_focused    = true,
+            .is_minimized  = false,
+            .is_maximized  = false
+        };
 
         // Configure console
         SetConsoleOutputCP(CP_UTF8);
-        DWORD mode = 0;
-        GetConsoleMode(hConsole, &mode);
-        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
-        // mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_WINDOW_INPUT;
-        SetConsoleMode(hConsole, mode);
+
+        // Configure console output mode
+        DWORD out_mode = 0;
+        GetConsoleMode(hOutput, &out_mode);
+        out_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
+        SetConsoleMode(hOutput, out_mode);
+
+        // Get and configure input handle
+        HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+        if (hInput != INVALID_HANDLE_VALUE) {
+            DWORD in_mode = 0;
+            GetConsoleMode(hInput, &in_mode);
+            in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+            SetConsoleMode(hInput, in_mode);
+
+            // Store input handle in backend
+            backend->input_handle = hInput;
+        }
 
         // Hide cursor
         CONSOLE_CURSOR_INFO cursor_info = { 1, false };
-        SetConsoleCursorInfo(hConsole, &cursor_info);
+        SetConsoleCursorInfo(hOutput, &cursor_info);
 
         // Allocate string buffer for ANSI sequences
         backend->buffer_capacity = (usize)Win32ConsoleBackend_calculateBufferSize((usize)params->width, (usize)params->height);
         backend->buffer          = malloc(backend->buffer_capacity);
         if (!backend->buffer) {
-            // CloseHandle(hConsole);
             free(backend);
             free(platform);
             return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
 
-        backend->console_handle = hConsole;
+        backend->output_handle  = hOutput;
         backend->buffer_size    = 0;
         backend->cursor_visible = false;
 
-        // Set active screen buffer
-        SetConsoleActiveScreenBuffer(hConsole);
-
         // Setup backend interface
-        backend->base.type          = engine_RenderBackendType_vt100;
-        backend->base.presentBuffer = Win32ConsoleBackend_presentBuffer;
-        backend->base.processEvents = Win32ConsoleBackend_processEvents;
-        backend->base.destroy       = Win32ConsoleBackend_destroy;
+        backend->base.type             = engine_RenderBackendType_vt100;
+        backend->base.destroy          = Win32ConsoleBackend_destroy;
+        backend->base.processEvents    = Win32ConsoleBackend_processEvents;
+        backend->base.presentBuffer    = Win32ConsoleBackend_presentBuffer;
+        backend->base.getWindowMetrics = Win32ConsoleBackend_getWindowMetrics;
 
         platform->backend = &backend->base;
         return_ok(platform);
@@ -120,8 +149,8 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
         }
         // Restore console state
         if (!backend->cursor_visible) {
-            CONSOLE_CURSOR_INFO cursor_info = { 1, TRUE };
-            SetConsoleCursorInfo(backend->console_handle, &cursor_info);
+            CONSOLE_CURSOR_INFO cursor_info = { 1, true };
+            SetConsoleCursorInfo(backend->output_handle, &cursor_info);
         }
         free(backend);
     }
@@ -136,19 +165,25 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
 }
 
 static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
-    unused(platform);
-    // engine_Win32ConsoleBackend* backend      = (engine_Win32ConsoleBackend*)platform->backend;
-    // INPUT_RECORD                input_record = { 0 };
-    // DWORD                       events_read  = 0;
+    let backend = (engine_Win32ConsoleBackend*)platform->backend;
 
-    // while (PeekConsoleInput(backend->console_handle, &input_record, 1, &events_read) && events_read > 0) {
-    //     ReadConsoleInput(backend->console_handle, &input_record, 1, &events_read);
+    // Update window metrics
+    if_some(Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
+        // Check for changes in window state
+        if (engine_WindowMetrics_eq(&backend->last_metrics, &current_metrics)) { return; }
 
-    //     if (input_record.EventType == WINDOW_BUFFER_SIZE_EVENT) {
-    //         // Simply acknowledge window resize - buffer will adapt automatically
-    //         continue;
-    //     }
-    // }
+        // Handle window size changes
+        if (current_metrics.client_width != backend->last_metrics.client_width
+            || current_metrics.client_height != backend->last_metrics.client_height) {
+
+            COORD new_size = {
+                (SHORT)current_metrics.client_width,
+                (SHORT)current_metrics.client_height
+            };
+            SetConsoleScreenBufferSize(backend->output_handle, new_size);
+        }
+        backend->last_metrics = current_metrics;
+    }
 }
 
 static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height) {
@@ -232,11 +267,53 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const C
     /* Write to console */ {
         DWORD written = 0;
         WriteConsoleA(
-            backend->console_handle,
+            backend->output_handle,
             backend->buffer,
             (DWORD)backend->buffer_size,
             &written,
             null
         );
     }
+}
+
+Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* platform) {
+    reserveReturn(Opt$engine_WindowMetrics);
+    debug_assert_nonnull(platform);
+
+    let backend = (engine_Win32ConsoleBackend*)platform->backend;
+    if (!backend->window_handle) {
+        return_none();
+    }
+
+    // Get window placement info
+    WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT), .flags = 0 };
+    if (!GetWindowPlacement(backend->window_handle, &placement)) {
+        return_none();
+    }
+
+    // Get window rect for position and overall size
+    RECT windowRect = placement.rcNormalPosition;
+
+    // Get client rect for client area size
+    RECT clientRect = cleared();
+    if (!GetClientRect(backend->window_handle, &clientRect)) {
+        return_none();
+    }
+
+    // Update metrics
+    let metrics = (engine_WindowMetrics){
+        .x             = windowRect.left,
+        .y             = windowRect.top,
+        .width         = windowRect.right - windowRect.left,
+        .height        = windowRect.bottom - windowRect.top,
+        .client_width  = clientRect.right - clientRect.left,
+        .client_height = clientRect.bottom - clientRect.top,
+        .is_focused    = (GetForegroundWindow() == backend->window_handle),
+        .is_minimized  = (placement.showCmd == SW_SHOWMINIMIZED),
+        .is_maximized  = (placement.showCmd == SW_SHOWMAXIMIZED)
+    };
+
+    // Cache the metrics
+    backend->last_metrics = metrics;
+    return_some(metrics);
 }

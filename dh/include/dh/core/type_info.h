@@ -33,6 +33,21 @@ typedef struct TypeInfo {
 #define typeInfo(T) (                                    \
     (TypeInfo){ .size = sizeof(T), .align = alignof(T) } \
 )
+#if COMP_TIME
+#define TypeInfo_eq(val_lhs, val_rhs) eval(                \
+    let         lhs = val_lhs;                             \
+    let         rhs = val_rhs;                             \
+    eval_return memcmp(&lhs, &rhs, sizeof(TypeInfo)) == 0; \
+)
+#else
+force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
+#endif
+
+// For explicit materialization type representation of abstract generic types
+#define typed(TDest, val_src) eval( \
+    var src = val_src;              \
+    eval_return(*((TDest*)&src));   \
+)
 
 typedef struct Void {
     u8 unused_[0];

@@ -35,7 +35,7 @@ void mem_Allocator_destroy(mem_Allocator self, AnyType ptr) {
     if (ptr.ctx == null) { return; } // TODO: Change to not allow null pointers
     mem_Allocator_rawFree(
         self,
-        (Sli$u8){ .ptr = ((meta_Ptr*)ptr.ctx)->addr, .len = ptr.type.size },
+        (Sli$u8){ .ptr = ptr.ctx, .len = ptr.type.size },
         ptr.type.align
     );
 }
@@ -47,7 +47,7 @@ Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count)
     if_none(opt) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
-    return_ok((meta_Sli){ .ptr = { .addr = unwrap(opt), .type = type }, .len = count });
+    return_ok((meta_Sli){ .type = type, .addr = unwrap(opt), .len = count });
 }
 
 /* Try to resize slice in-place */

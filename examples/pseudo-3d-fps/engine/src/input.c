@@ -55,6 +55,90 @@ static void engine_Input_processKey(engine_KeyCode key, bool is_down) {
     }
 }
 
+static void engine_Input_processMouse(void) {
+    let state = engine_InputState_global;
+
+    // Save previous mouse position
+    state->mouse.prev_x = state->mouse.x;
+    state->mouse.prev_y = state->mouse.y;
+
+    // Get current mouse position
+    POINT cursor_pos = cleared();
+    GetCursorPos(&cursor_pos);
+
+    // Convert to client coordinates if we have a window
+    HWND foreground = GetForegroundWindow();
+    if (foreground) {
+        ScreenToClient(foreground, &cursor_pos);
+    }
+
+    // Update mouse position
+    state->mouse.x = cursor_pos.x;
+    state->mouse.y = cursor_pos.y;
+
+    // Create mouse move event if position changed
+    if (state->mouse.x != state->mouse.prev_x || state->mouse.y != state->mouse.prev_y) {
+        engine_MouseEvent event = {
+            .type = engine_MouseEventType_move,
+            .move = {
+                .x = state->mouse.x,
+                .y = state->mouse.y },
+            .timestamp = (f64)GetTickCount64() / 1000.0
+        };
+        engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+    }
+
+    // Save previous button states
+    memcpy(state->mouse.button_prev_states, state->mouse.button_curr_states, sizeof(state->mouse.button_curr_states));
+
+    // Process mouse buttons
+    static const i32 button_vks[] = {
+        VK_LBUTTON, // Left
+        VK_RBUTTON, // Right
+        VK_MBUTTON, // Middle
+    };
+
+    for (i32 i = 1; i < engine_MouseButton_count; ++i) {
+        bool is_down    = (GetAsyncKeyState(button_vks[i - 1]) & 0x8000) != 0;
+        let  curr_state = &state->mouse.button_curr_states[i];
+        let  prev_state = state->mouse.button_prev_states[i];
+
+        *curr_state = 0;
+
+        if (is_down) {
+            if (!(prev_state & engine_KeyStates_held)) {
+                *curr_state |= engine_KeyStates_pressed;
+
+                engine_MouseEvent event = {
+                    .type   = engine_MouseEventType_button,
+                    .button = {
+                        .button = i,
+                        .state  = engine_KeyStates_pressed },
+                    .timestamp = (f64)GetTickCount64() / 1000.0
+                };
+                engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            }
+            *curr_state |= engine_KeyStates_held;
+        } else if (prev_state & (engine_KeyStates_pressed | engine_KeyStates_held)) {
+            *curr_state |= engine_KeyStates_released;
+
+            engine_MouseEvent event = {
+                .type   = engine_MouseEventType_button,
+                .button = {
+                    .button = i,
+                    .state  = engine_KeyStates_released },
+                .timestamp = (f64)GetTickCount64() / 1000.0
+            };
+            engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+        }
+    }
+
+    // Process mouse wheel
+    // Note: This would ideally be handled in WM_MOUSEWHEEL message processing
+    // but for now I'll use a simpler approach
+    state->mouse.scroll_delta = 0; // Reset scroll delta each frame
+}
+
 void engine_Input_init(void) {
     if (engine_InputState_global) { return; }
 
@@ -62,6 +146,13 @@ void engine_Input_init(void) {
     if (!engine_InputState_global) { return; }
 
     memset(engine_InputState_global, 0, sizeof(engine_InputState));
+}
+
+void engine_Input_fini(void) {
+    if (!engine_InputState_global) { return; }
+
+    free(engine_InputState_global);
+    engine_InputState_global = null;
 }
 
 void engine_Input_update(void) {
@@ -79,13 +170,9 @@ void engine_Input_update(void) {
         bool  is_down   = (key_state & 0x8000) != 0;
         engine_Input_processKey(i, is_down);
     }
-}
 
-void engine_Input_fini(void) {
-    if (!engine_InputState_global) { return; }
-
-    free(engine_InputState_global);
-    engine_InputState_global = null;
+    // Process mouse input
+    engine_Input_processMouse();
 }
 
 // Event buffer implementation
@@ -134,69 +221,3 @@ void engine_InputEventBuffer_clear(void) {
     buffer->tail  = 0;
     buffer->count = 0;
 }
-
-// bool engine_Input_anyKeyState(engine_KeyStates state) {
-//     let buffer = &engine_InputState_global->event_buffer;
-
-//     // Check most recent events first (from head backwards)
-//     i32 idx = (buffer->head - 1 + engine_InputEventBuffer_size) % engine_InputEventBuffer_size;
-//     for (i32 i = 0; i < buffer->count; ++i) {
-//         if (buffer->events[idx].state & state) {
-//             return true;
-//         }
-//         idx = (idx - 1 + engine_InputEventBuffer_size) % engine_InputEventBuffer_size;
-//     }
-//     return false;
-// }
-
-// i32 engine_Input_countEvents(engine_KeyStates state) {
-//     let buffer = &engine_InputState_global->event_buffer;
-//     i32 count  = 0;
-
-//     i32 idx = buffer->tail;
-//     for (i32 i = 0; i < buffer->count; ++i) {
-//         if (buffer->events[idx].state & state) {
-//             count++;
-//         }
-//         idx = (idx + 1) % engine_InputEventBuffer_size;
-//     }
-//     return count;
-// }
-
-// i32 engine_Input_countEventsBetweenFrames(engine_KeyStates state) {
-//     let buffer      = &engine_InputState_global->event_buffer;
-//     let frame_start = engine_InputState_global->frame_info.prev_time;
-//     let frame_end   = engine_InputState_global->frame_info.curr_time;
-//     i32 count       = 0;
-
-//     i32 idx = buffer->tail;
-//     for (i32 i = 0; i < buffer->count; ++i) {
-//         let event_time = buffer->events[idx].timestamp;
-//         if ((buffer->events[idx].state & state) && event_time >= frame_start && event_time <= frame_end) {
-//             count++;
-//         }
-//         idx = (idx + 1) % engine_InputEventBuffer_size;
-//     }
-//     return count;
-// }
-
-// bool engine_Input_isEventRecent(engine_KeyCode key, engine_KeyStates state, f64 time_threshold) {
-//     let buffer    = &engine_InputState_global->event_buffer;
-//     let curr_time = engine_InputState_global->frame_info.curr_time;
-
-//     // Check from most recent events backwards
-//     i32 idx = (buffer->head - 1 + engine_InputEventBuffer_size) % engine_InputEventBuffer_size;
-//     for (i32 i = 0; i < buffer->count; ++i) {
-//         let event = &buffer->events[idx];
-//         if (event->key == key && (event->state & state)) {
-//             // Check if event occurred within the time threshold
-//             if (curr_time - event->timestamp <= time_threshold) {
-//                 return true;
-//             }
-//             // If we found the key but it's too old, we can stop searching
-//             break;
-//         }
-//         idx = (idx - 1 + engine_InputEventBuffer_size) % engine_InputEventBuffer_size;
-//     }
-//     return false;
-// }

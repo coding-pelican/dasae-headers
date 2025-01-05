@@ -69,9 +69,9 @@ extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
 /* Any type */
 typedef struct AnyType AnyType;
-#define AnyType(var_ptr...) IMPL_AnyType(var_ptr)
-#define AnyPtr(var_ptr...)  IMPL_AnyPtr(var_ptr)
-#define AnySli(var_sli...)  IMPL_AnySli(var_sli)
+// #define anyType(val_addr...) IMPL_anyType(val_addr)
+#define anyPtr(var_ptr...) IMPL_anyPtr(var_ptr)
+#define anySli(var_sli...) IMPL_anySli(var_sli)
 
 /* Meta types */
 typedef struct meta_PtrConst meta_PtrConst;
@@ -80,10 +80,16 @@ typedef struct meta_SliConst meta_SliConst;
 typedef union meta_Sli       meta_Sli;
 extern meta_Ptr              meta_Ptr_constCast(meta_PtrConst);
 extern meta_Sli              meta_Sli_constCast(meta_SliConst);
-#define meta_ptr(var_ptr...)    IMPL_meta_ptr(var_ptr)
-#define meta_sli(var_ptr...)    IMPL_meta_sli(var_ptr)
-#define meta_castPtr(T, ptr...) IMPL_meta_castPtr(T, ptr)
-#define meta_castSli(T, sli...) IMPL_meta_castSli(T, sli)
+#define meta_refPtr(var_ptr...)          IMPL_meta_refPtr(var_ptr)
+#define meta_refSli(var_ptr...)          IMPL_meta_refSli(var_ptr)
+#define meta_refPtrConst(var_ptr...)     IMPL_meta_refPtrConst(var_ptr)
+#define meta_refSliConst(var_ptr...)     IMPL_meta_refSliConst(var_ptr)
+#define meta_cast$(TDest, var_meta...)   IMPL_meta_cast$(TDest, var_meta)
+#define meta_castPtr$(TDest, var_ptr...) IMPL_meta_castPtr$(TDest, var_ptr)
+#define meta_castSli$(TDest, var_sli...) IMPL_meta_castSli$(TDest, var_sli)
+
+#define meta_copy
+#define meta_move
 
 /* Implementation generic type */
 
@@ -220,92 +226,134 @@ using_Err$(Sli);
 
 /* Implementation any type */
 struct AnyType {
-    anyptr   ctx;
     TypeInfo type;
+    anyptr   ctx;
+    usize    len;
 };
 
-#define IMPL_AnyType(var_ptr...) ({          \
-    let _var_ptr = var_ptr;                  \
-    claim_assert_nonnull(_var_ptr);          \
-    (AnyType){                               \
-        .ctx  = _var_ptr,                    \
-        .type = typeInfo(TypeOf(*_var_ptr)), \
+// #define IMPL_anyType(val_addr...) eval(   \
+//     var _addr = val_addr;                 \
+//     debug_assert_nonnull(_addr);          \
+//     eval_return(AnyType){                 \
+//         .ctx  = (void*)_addr,             \
+//         .len  = 1,                        \
+//         .type = typeInfo(TypeOf(*_addr)), \
+//     };                                    \
+// )
+
+#define IMPL_anyPtr(var_ptr...) eval(    \
+    var _ptr = var_ptr;                  \
+    debug_assert_nonnull(_ptr);          \
+    eval_return(AnyType){                \
+        .type = typeInfo(TypeOf(*_ptr)), \
+        .ctx  = (void*)_ptr,             \
+        .len  = 1,                       \
+    };                                   \
+)
+
+#define IMPL_anyPtr(var_ptr...) eval(    \
+    var _ptr = var_ptr;                  \
+    debug_assert_nonnull(_ptr);          \
+    eval_return(AnyType){                \
+        .type = typeInfo(TypeOf(*_ptr)), \
+        .ctx  = (void*)_ptr,             \
+        .len  = 1,                       \
+    };                                   \
+)
+
+#define IMPL_anySli(var_sli...) eval(        \
+    var _sli = var_sli;                      \
+    debug_assert_nonnull(_sli.ptr);          \
+    eval_return(AnyType){                    \
+        .type = typeInfo(TypeOf(*_sli.ptr)), \
+        .ctx  = (void*)_sli.ptr,             \
+        .len  = _sli.len,                    \
     };                                       \
-})
-
-#define IMPL_AnyPtr(var_ptr...) \
-    ((AnyType){ .ctx = &(var_ptr), .type = typeInfo(TypeOf(*(var_ptr))) })
-
-#define IMPL_AnySli(var_sli...) \
-    ((AnyType){ .ctx = &(var_sli), .type = typeInfo(TypeOf(*((var_sli).ptr))) })
+)
 
 /* Implementation meta types */
 struct meta_PtrConst {
-    const anyptr addr;
-    TypeInfo     type;
+    TypeInfo     type; // Type info first
+    const anyptr addr; // Then address
 };
 
 union meta_Ptr {
-    meta_PtrConst as_const;
     struct {
-        anyptr   addr;
-        TypeInfo type;
+        TypeInfo type; // Type info first
+        anyptr   addr; // Then address
     };
+    meta_PtrConst as_const;
 };
 
 struct meta_SliConst {
-    union {
-        meta_PtrConst ptr;
-        struct {
-            const anyptr addr;
-            TypeInfo     type;
-        };
-    };
-    usize len;
+    TypeInfo     type; // Type info first
+    const anyptr addr; // Then address
+    usize        len;  // Then length
 };
 
 union meta_Sli {
-    meta_SliConst as_const;
     struct {
-        union {
-            meta_Ptr ptr;
-            struct {
-                anyptr   addr;
-                TypeInfo type;
-            };
-        };
-        usize len;
+        TypeInfo type; // Type info first
+        anyptr   addr; // Then address
+        usize    len;  // Then length
     };
+    meta_SliConst as_const;
 };
 
-#define IMPL_meta_ptr(var_ptr...) ({         \
-    let _var_ptr = var_ptr;                  \
-    (meta_Ptr){                              \
-        .addr = _var_ptr,                    \
-        .type = typeInfo(TypeOf(*_var_ptr)), \
-    };                                       \
-})
+#define IMPL_meta_refPtr(var_ptr...) eval( \
+    let         _ptr = var_ptr;            \
+    eval_return make(                      \
+        meta_Ptr,                          \
+        .type = typeInfo(TypeOf(*_ptr)),   \
+        .addr = _ptr,                      \
+    );                                     \
+)
 
-#define IMPL_meta_sli(var_sli...) ({                 \
-    let _var_sli = var_sli;                          \
-    (meta_Sli){                                      \
-        .ptr = {                                     \
-            .addr = _var_sli.ptr,                    \
-            .type = typeInfo(TypeOf(*_var_sli.ptr)), \
-        },                                           \
-        .len = _var_sli.len,                         \
-    };                                               \
-})
+#define IMPL_meta_refSli(var_sli...) eval(   \
+    let         _sli = var_sli;              \
+    eval_return make(                        \
+        meta_Sli,                            \
+        .type = typeInfo(TypeOf(*_sli.ptr)), \
+        .addr = _sli.ptr,                    \
+        .len  = _sli.len,                    \
+    );                                       \
+)
 
-#define IMPL_meta_castPtr(T, ptr...) ({ \
-    let _ptr = ptr;                     \
-    (T)((_ptr).addr);                   \
-})
+#define IMPL_meta_refPtrConst(var_ptr...) eval( \
+    let         _ptr = var_ptr;                 \
+    eval_return make(                           \
+        meta_PtrConst,                          \
+        .type = typeInfo(TypeOf(*_ptr)),        \
+        .addr = _ptr,                           \
+    );                                          \
+)
 
-#define IMPL_meta_castSli(T, sli...) ({           \
-    let _sli = sli;                               \
-    (T){ .ptr = (_sli).addr, .len = (_sli).len }; \
-})
+#define IMPL_meta_refSliConst(var_sli...) eval(  \
+    let         _sli = var_sli;                  \
+    eval_return make(                            \
+        meta_SliConst,                           \
+        .ptr = {                                 \
+            .type = typeInfo(TypeOf(*_sli.ptr)), \
+            .addr = _sli.ptr,                    \
+        },                                       \
+        .len = _sli.len,                         \
+    );                                           \
+)
+
+#define IMPL_meta_cast$(TDest, var_meta...) eval( \
+    var _meta = var_meta;                         \
+    eval_return(*((TDest*)&_meta.addr));          \
+)
+
+#define IMPL_meta_castPtr$(TDest, var_ptr...) eval( \
+    let         _ptr = var_ptr;                     \
+    eval_return as(TDest, _ptr.addr);               \
+)
+
+#define IMPL_meta_castSli$(TDest, var_sli...) eval(                 \
+    let         _sli = var_sli;                                     \
+    eval_return make(TDest, .ptr = (_sli).addr, .len = (_sli).len); \
+)
 
 using_Opt$(meta_PtrConst);
 using_Opt$(meta_Ptr);

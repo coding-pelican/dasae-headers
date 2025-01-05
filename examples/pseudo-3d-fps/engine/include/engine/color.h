@@ -95,6 +95,7 @@ union Color {
         };
         u8 a; // Alpha channel in [0,255]
     };
+    u32 packed; // RGBA channel components in [0,255]
 };
 #define Color_(...) make(Color, __VA_ARGS__)
 extern Color Color_from(u8 r, u8 g, u8 b, u8 a);
