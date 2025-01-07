@@ -1,8 +1,18 @@
 /**
- * @copyright Copyright 2024. Your Name All rights reserved.
+ * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
  *
  * @file    log.h
- * @brief   Enhanced logging system with file output support
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2025-01-03 (date of creation)
+ * @updated 2025-01-04 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)
+ * @prefix  log
+ *
+ * @brief   logging header
+ * @details Provides logging functionality with configurable output destination,
+ *          log levels, and formatting options. Supports file and stderr output,
+ *          timestamps, log levels, source location, and function name display.
  */
 
 #ifndef LOG_INCLUDED

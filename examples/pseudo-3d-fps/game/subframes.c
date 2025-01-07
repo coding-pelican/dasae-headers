@@ -119,7 +119,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             let real_dt      = (f32)time_Duration_asSecs_f64(elapsed_time);
 
             try_defer(engine_Window_processEvents(window));
-            engine_Canvas_clear(game_canvas, (Color){ .packed = 0x181818FF });
+            engine_Canvas_clear(game_canvas, (Color){ .packed = 0xFF181818 });
 
             if (engine_Key_pressed(engine_KeyCode_Esc)) {
                 is_running = false;

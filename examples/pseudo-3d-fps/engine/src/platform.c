@@ -10,6 +10,12 @@ static void                     Win32ConsoleBackend_processEvents(engine_Platfor
 static void                     Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
 static Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* platform);
 
+static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer, HANDLE output_handle);
+static void  Win32ConsoleBackend_enableMouseInput(engine_Win32ConsoleBackend* backend);
+static void  Win32ConsoleBackend_disableMouseInput(engine_Win32ConsoleBackend* backend);
+static void  Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* backend, const MOUSE_EVENT_RECORD* mer);
+
+
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);
     engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
@@ -110,6 +116,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         backend->base.processEvents    = Win32ConsoleBackend_processEvents;
         backend->base.presentBuffer    = Win32ConsoleBackend_presentBuffer;
         backend->base.getWindowMetrics = Win32ConsoleBackend_getWindowMetrics;
+        Win32ConsoleBackend_enableMouseInput(backend);
 
         platform->backend = &backend->base;
         return_ok(platform);
@@ -144,6 +151,9 @@ void engine_Platform_destroy(engine_Platform* platform) {
 static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
     if (backend) {
+        // Disable mouse input
+        Win32ConsoleBackend_disableMouseInput(backend);
+        // Free buffer
         if (backend->buffer) {
             free(backend->buffer);
         }
@@ -152,8 +162,10 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
             CONSOLE_CURSOR_INFO cursor_info = { 1, true };
             SetConsoleCursorInfo(backend->output_handle, &cursor_info);
         }
+        // Free backend
         free(backend);
     }
+    // Free platform
     free(platform);
 
     /* Reset cursor position */ {
@@ -167,22 +179,39 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
 static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
 
-    // Update window metrics
+    // Process window metrics
     if_some(Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
-        // Check for changes in window state
-        if (engine_WindowMetrics_eq(&backend->last_metrics, &current_metrics)) { return; }
-
-        // Handle window size changes
-        if (current_metrics.client_width != backend->last_metrics.client_width
-            || current_metrics.client_height != backend->last_metrics.client_height) {
-
-            COORD new_size = {
-                (SHORT)current_metrics.client_width,
-                (SHORT)current_metrics.client_height
-            };
-            SetConsoleScreenBufferSize(backend->output_handle, new_size);
+        if (!engine_WindowMetrics_eq(&backend->last_metrics, &current_metrics)) {
+            if (current_metrics.client_width != backend->last_metrics.client_width
+                || current_metrics.client_height != backend->last_metrics.client_height) {
+                COORD new_size = {
+                    (SHORT)current_metrics.client_width,
+                    (SHORT)current_metrics.client_height
+                };
+                SetConsoleScreenBufferSize(backend->input_handle, new_size);
+            }
+            backend->last_metrics = current_metrics;
         }
-        backend->last_metrics = current_metrics;
+    }
+
+    // Process mouse and keyboard events
+    INPUT_RECORD input_record[32] = cleared();
+    DWORD        events_read      = 0;
+
+    while (PeekConsoleInput(backend->input_handle, input_record, 32, &events_read) && events_read > 0) {
+        ReadConsoleInput(backend->input_handle, input_record, events_read, &events_read);
+
+        for (DWORD i = 0; i < events_read; ++i) {
+            switch (input_record[i].EventType) {
+            case MOUSE_EVENT:
+                Win32ConsoleBackend_processMouseEvent(backend, &input_record[i].Event.MouseEvent);
+                break;
+
+            case WINDOW_BUFFER_SIZE_EVENT:
+                // Handle through metrics update
+                break;
+            }
+        }
     }
 }
 
@@ -316,4 +345,110 @@ Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* p
     // Cache the metrics
     backend->last_metrics = metrics;
     return_some(metrics);
+}
+
+static void Win32ConsoleBackend_enableMouseInput(engine_Win32ConsoleBackend* backend) {
+    DWORD prevMode = 0;
+    GetConsoleMode(backend->input_handle, &prevMode);
+
+    // Enable mouse input and disable QuickEdit
+    DWORD newMode = ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
+    newMode &= ~ENABLE_QUICK_EDIT_MODE;
+    SetConsoleMode(backend->input_handle, newMode);
+}
+
+static void Win32ConsoleBackend_disableMouseInput(engine_Win32ConsoleBackend* backend) {
+    DWORD prevMode = 0;
+    GetConsoleMode(backend->input_handle, &prevMode);
+
+    // Restore previous mode without mouse input
+    DWORD newMode = prevMode & ~ENABLE_MOUSE_INPUT;
+    newMode |= ENABLE_QUICK_EDIT_MODE;
+    SetConsoleMode(backend->input_handle, newMode);
+}
+
+static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* backend, const MOUSE_EVENT_RECORD* mer) {
+    // Get pixel position in double-height space
+    let pos = Win32ConsoleBackend_getPixelPosition(mer, backend->output_handle);
+
+    // Get console buffer info for bounds checking
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo = cleared();
+    GetConsoleScreenBufferInfo(backend->output_handle, &bufferInfo);
+
+    // Ensure coordinates are within bounds
+    if (pos.x >= 0 && pos.x < bufferInfo.dwSize.X && pos.y >= 0 && pos.y < bufferInfo.dwSize.Y * 2) {
+
+        engine_MouseEvent event = { 0 };
+        event.timestamp         = (f64)GetTickCount64() / 1000.0;
+
+        switch (mer->dwEventFlags) {
+        case 0: // Mouse clicks
+            event.type = engine_MouseEventType_button;
+
+            // Left button
+            if (mer->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
+                event.button.button = engine_MouseButton_Left;
+                event.button.state  = engine_KeyStates_pressed;
+                engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            }
+            // Right button
+            if (mer->dwButtonState & RIGHTMOST_BUTTON_PRESSED) {
+                event.button.button = engine_MouseButton_Right;
+                event.button.state  = engine_KeyStates_pressed;
+                engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            }
+            break;
+
+        case MOUSE_MOVED:
+            event.type   = engine_MouseEventType_move;
+            event.move.x = pos.x;
+            event.move.y = pos.y;
+            engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            break;
+
+        case MOUSE_WHEELED:
+            event.type         = engine_MouseEventType_scroll;
+            event.scroll.delta = ((i32)mer->dwButtonState > 0) ? 1 : -1;
+            engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            break;
+        }
+
+        // Update cached mouse position
+        if (engine_InputState_global) {
+            engine_InputState_global->mouse.prev_x = engine_InputState_global->mouse.x;
+            engine_InputState_global->mouse.prev_y = engine_InputState_global->mouse.y;
+            engine_InputState_global->mouse.x      = pos.x;
+            engine_InputState_global->mouse.y      = pos.y;
+        }
+    }
+}
+
+static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer, HANDLE output_handle) {
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo = cleared();
+    CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+
+    GetConsoleScreenBufferInfo(output_handle, &bufferInfo);
+    GetCurrentConsoleFontEx(output_handle, FALSE, &fontInfo);
+
+    // Get raw mouse position
+    POINT mousePos = cleared();
+    GetCursorPos(&mousePos);
+
+    // Get console window handle and position
+    HWND consoleWnd  = GetConsoleWindow();
+    RECT consoleRect = cleared();
+    GetWindowRect(consoleWnd, &consoleRect);
+
+    // Calculate relative position for double-height characters
+    i32 cellHeight    = fontInfo.dwFontSize.Y;
+    i32 relativeY     = mousePos.y - consoleRect.top;
+    i32 consoleY      = mer->dwMousePosition.Y;
+    i32 subCellOffset = (relativeY % cellHeight) >= (cellHeight / 2) ? 1 : 0;
+
+    return (Vec2i){
+        .scalars = {
+            mer->dwMousePosition.X,
+            (consoleY * 2) + subCellOffset // Convert to double-height space
+        }
+    };
 }
