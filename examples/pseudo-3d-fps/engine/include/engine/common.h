@@ -7,56 +7,56 @@
 #include "dh/mem/Allocator.h"
 #include "dh/time.h"
 
-typedef union engine_Vec2u32 {
+typedef union Vec2u {
     u32 scalars[2];
     struct {
         u32 x;
         u32 y;
     };
-} engine_Vec2u32;
+} Vec2u;
 
-typedef union engine_Vec3u32 {
+typedef union Vec3u {
     u32 scalars[3];
     struct {
         u32 x;
         u32 y;
         u32 z;
     };
-} engine_Vec3u32;
+} Vec3u;
 
-typedef union engine_Vec2i32 {
+typedef union Vec2i {
     i32 scalars[2];
     struct {
         i32 x;
         i32 y;
     };
-} engine_Vec2i32;
+} Vec2i;
 
-typedef union engine_Vec3i32 {
+typedef union Vec3i {
     i32 scalars[3];
     struct {
         i32 x;
         i32 y;
         i32 z;
     };
-} engine_Vec3i32;
+} Vec3i;
 
-typedef union engine_Vec2f32 {
+typedef union Vec2f {
     f32 scalars[2];
     struct {
         f32 x;
         f32 y;
     };
-} engine_Vec2f32;
+} Vec2f;
 
-typedef union engine_Vec3f32 {
+typedef union Vec3f {
     f32 scalars[3];
     struct {
         f32 x;
         f32 y;
         f32 z;
     };
-} engine_Vec3f32;
+} Vec3f;
 
 #define Vec_add(v_lhs, v_rhs) eval(                                 \
     var lhs = v_lhs;                                                \
@@ -101,9 +101,9 @@ typedef union engine_Vec3f32 {
 #define PI (3.14159265358979323846)
 
 typedef struct engine_Transform {
-    engine_Vec3f32 position;
-    engine_Vec3f32 rotation;
-    engine_Vec3f32 scale;
+    Vec3f position;
+    Vec3f rotation;
+    Vec3f scale;
 } engine_Transform;
 
 #endif /* ENGINE_COMMON_INCLUDED */

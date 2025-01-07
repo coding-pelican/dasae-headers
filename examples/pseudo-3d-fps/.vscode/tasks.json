@@ -45,8 +45,109 @@
     }
   ],
   "tasks": [
-    { // build C file (debug)
-      "label": "build C file (debug)",
+    { // engine>build C file (debug)
+      "label": "engine>build C file (debug)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "-DCOMP",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
+        "${input:libraries}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // engine>build C file (release)
+      "label": "engine>build C file (release)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DCOMP",
+        "-DNDEBUG",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // engine>build C file (optimize)
+      "label": "engine>build C file (optimize)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DCOMP",
+        "-DNDEBUG",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-static",
+        "-lgdi32",
+        "-luser32",
+        "-lkernel32",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // game>build C file (debug)
+      "label": "game>build C file (debug)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -84,8 +185,8 @@
         "$gcc"
       ]
     },
-    { // build C file (release)
-      "label": "build C file (release)",
+    { // game>build C file (release)
+      "label": "game>build C file (release)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -119,8 +220,8 @@
         "$gcc"
       ]
     },
-    { // build C file (optimize)
-      "label": "build C file (optimize)",
+    { // game>build C file (optimize)
+      "label": "game>build C file (optimize)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -143,83 +244,6 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // build C++ file (debug)
-      "label": "build C++ file (debug)",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=${input:cppStandard}",
-        "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug",
-        "-DCOMP",
-        "-g",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // build C++ file (release)
-      "label": "build C++ file (release)",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=${input:cppStandard}",
-        "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}",
-        "-DCOMP",
-        "-DNDEBUG",
-        "-O2",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // build C++ file (optimize)
-      "label": "build C++ file (optimize)",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=${input:cppStandard}",
-        "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}",
-        "-DCOMP",
-        "-DNDEBUG",
-        "-O3",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
         "-static",
         "-lgdi32",
         "-luser32",

@@ -9,7 +9,7 @@ typedef struct engine_WorldObject engine_WorldObject;
 struct engine_World {
     engine_WorldObject* objects;
     u32                 object_count;
-    engine_Vec3f32      world_bounds;
+    Vec3f               world_bounds;
 };
 using_Ptr$(engine_World);
 using_Err$(engine_World);
@@ -24,9 +24,9 @@ using_Ptr$(engine_WorldObject);
 using_Err$(engine_WorldObject);
 
 // Game World functions
-extern Err$Ptr$engine_World       engine_World_create(engine_Vec3f32 bounds) must_check;
+extern Err$Ptr$engine_World       engine_World_create(Vec3f bounds) must_check;
 extern void                       engine_World_destroy(engine_World* self);
-extern Err$Ptr$engine_WorldObject engine_World_spawnObject(engine_World* self, engine_Vec3f32 position) must_check;
+extern Err$Ptr$engine_WorldObject engine_World_spawnObject(engine_World* self, Vec3f position) must_check;
 extern void                       engine_World_update(engine_World* self, f32 delta_time);
 
 #if 0

@@ -25,30 +25,30 @@ extern "C" {
     /**                                         \
      * @brief fallthrough for `switch` internal \
      */                                         \
-    IMPL_fallthrough
+    ATTR_fallthrough
 
 #define case_return(_Expr)                      \
     /**                                         \
      * @brief case return for `switch` internal \
      */                                         \
-    IMPL_case_return(_Expr)
+    SYN_case_return(_Expr)
 
 #define default_return(_Expr)                      \
     /**                                            \
      * @brief default return for `switch` internal \
      */                                            \
-    IMPL_default_return(_Expr)
+    SYN_default_return(_Expr)
 
 /*========== Macro Implementations ==========================================*/
 
-#define IMPL_fallthrough
+#define ATTR_fallthrough /* fallthrough */
 
-#define IMPL_case_return(_Expr) \
-    case _Expr:                 \
+#define SYN_case_return(_Expr) \
+    case _Expr:                \
         return
 
-#define IMPL_default_return(_Expr) \
-    default:                       \
+#define SYN_default_return(_Expr) \
+    default:                      \
         return
 
 #if defined(__cplusplus)

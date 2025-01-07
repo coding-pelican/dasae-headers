@@ -15,14 +15,14 @@
 
 #include "../engine/include/engine.h"
 
-using_Sli$(engine_Vec2f32);
+using_Sli$(Vec2f);
 using_Sli$(Color);
-typedef ArrayList ArrayList$engine_Vec2f32;
+typedef ArrayList ArrayList$Vec2f;
 typedef ArrayList ArrayList$Color;
 
 typedef struct Control {
     engine_KeyCode key;
-    engine_Vec2f32 vec;
+    Vec2f          vec;
 } Control;
 using_Sli$(Control);
 
@@ -90,9 +90,9 @@ Err$void dh_main(int argc, const char* argv[]) {
         var heap      = (heap_Classic){};
         var allocator = heap_Classic_allocator(&heap);
 
-        var positions = (ArrayList$engine_Vec2f32)try_defer(ArrayList_initCapacity(typeInfo(engine_Vec2f32), allocator, 32));
+        var positions = (ArrayList$Vec2f)try_defer(ArrayList_initCapacity(typeInfo(Vec2f), allocator, 32));
         defer(ArrayList_fini(&positions));
-        var velocities = (ArrayList$engine_Vec2f32)try_defer(ArrayList_initCapacity(typeInfo(engine_Vec2f32), allocator, 32));
+        var velocities = (ArrayList$Vec2f)try_defer(ArrayList_initCapacity(typeInfo(Vec2f), allocator, 32));
         defer(ArrayList_fini(&velocities));
         var colors = (ArrayList$Color)try_defer(ArrayList_initCapacity(typeInfo(Color), allocator, 32));
         defer(ArrayList_fini(&colors));
@@ -109,9 +109,9 @@ Err$void dh_main(int argc, const char* argv[]) {
         let  target_time = time_Duration_fromSecs_f64(REAL_FPS / 1000.0f); // Assume 30 FPS for simplicity
         bool is_running  = true;
 
-        var prev_winpos = Vec_as(engine_Vec2f32, engine_Window_getPosition(window));
+        var prev_winpos = Vec_as(Vec2f, engine_Window_getPosition(window));
         while (is_running) {
-            let winpos  = Vec_as(engine_Vec2f32, engine_Window_getPosition(window));
+            let winpos  = Vec_as(Vec2f, engine_Window_getPosition(window));
             let dwinpos = Vec_sub(winpos, prev_winpos);
 
             curr_time        = time_Instant_now();
@@ -129,20 +129,20 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             if (engine_Mouse_pressed(engine_MouseButton_Left) || engine_Key_pressed(engine_KeyCode_Space)) {
                 log_debug("space pressed\n");
-                let pos = Vec_as(engine_Vec2f32, engine_Mouse_getPosition());
-                try_defer(ArrayList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(engine_Vec2f32) }));
+                let pos = Vec_as(Vec2f, engine_Mouse_getPosition());
+                try_defer(ArrayList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(Vec2f) }));
 
                 f32 angle = ((f32)PI / 180.0f) * as(f32, Random_range_i64(0, 360));
-                let dir   = (engine_Vec2f32){ .x = 50 * cosf(angle), .y = 50 * sinf(angle) };
-                try_defer(ArrayList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(engine_Vec2f32) }));
+                let dir   = (Vec2f){ .x = 50 * cosf(angle), .y = 50 * sinf(angle) };
+                try_defer(ArrayList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(Vec2f) }));
 
                 let color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
                 try_defer(ArrayList_append(&colors, (meta_Ptr){ .addr = (void*)&color, .type = typeInfo(Color) }));
             }
 
-            let pos_list   = meta_castSli(Sli$engine_Vec2f32, positions.items);
-            let vel_list   = meta_castSli(Sli$engine_Vec2f32, velocities.items);
-            let color_list = meta_castSli(Sli$Color, colors.items);
+            let pos_list   = meta_castSli$(Sli$Vec2f, positions.items);
+            let vel_list   = meta_castSli$(Sli$Vec2f, velocities.items);
+            let color_list = meta_castSli$(Sli$Color, colors.items);
 
             for (f32 t = 0.0f; t < real_dt; t += TARGET_DT) {
                 for (usize i = 0; i < pos_list.len; ++i) {

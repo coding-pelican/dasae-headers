@@ -218,16 +218,10 @@ force_inline Slice ptr_slice(SPtr ptr, usize start, usize end) {
 /*========== Type Information Helpers =====================================*/
 
 // Get sizeof type, with special handling for arrays
-#define TYPE_SIZE(T) _Generic((T*)0, \
-    char*:   sizeof(char), \
-    void*:   sizeof(void), \
-    default: sizeof(T))
+#define TYPE_SIZE(T) _Generic((T*)0, char*: sizeof(char), void*: sizeof(void), default: sizeof(T))
 
 // Get alignof type, with special handling for arrays
-#define TYPE_ALIGN(T) _Generic((T*)0, \
-    char*:   _Alignof(char), \
-    void*:   _Alignof(void), \
-    default: _Alignof(T))
+#define TYPE_ALIGN(T) _Generic((T*)0, char*: _Alignof(char), void*: _Alignof(void), default: _Alignof(T))
 
 /*========== Safe Pointer Creation =======================================*/
 
@@ -254,15 +248,12 @@ force_inline Slice ptr_slice(SPtr ptr, usize start, usize end) {
     slice_create(ptr, count, TYPE_SIZE(T), TYPE_ALIGN(T), true)
 
 // Create a sentinel-terminated slice with type safety
-#define Slice_newSentinel(T, ptr, count, sentinel_val) \
-    ({ \
-        __typeof__(sentinel_val) _sentinel = sentinel_val; \
-        sentinel_slice_create( \
-            ptr, count, \
-            TYPE_SIZE(T), TYPE_ALIGN(T), \
-            &_sentinel, sizeof(_sentinel), \
-            false \
-        ); \
+#define Slice_newSentinel(T, ptr, count, sentinel_val)                                    \
+    ({                                                                                    \
+        __typeof__(sentinel_val) _sentinel = sentinel_val;                                \
+        sentinel_slice_create(                                                            \
+            ptr, count, TYPE_SIZE(T), TYPE_ALIGN(T), &_sentinel, sizeof(_sentinel), false \
+        );                                                                                \
     })
 
 /*========== Safe Array List Creation ===================================*/
@@ -282,11 +273,11 @@ force_inline Slice ptr_slice(SPtr ptr, usize start, usize end) {
     (*(T*)slice_ptr_at(slice, index))
 
 // Set element in slice with type safety
-#define Slice_set(T, slice, index, value) \
-    do { \
-        T _tmp = value; \
-        *(T*)slice_ptr_at(slice, index) = _tmp; \
-    } while(0)
+#define Slice_set(T, slice, index, value)        \
+    do {                                         \
+        T _tmp                          = value; \
+        *(T*)slice_ptr_at(slice, index) = _tmp;  \
+    } while (0)
 
 // Get element from ArrayList with type safety
 #define ArrayList_get(T, list, index) \
@@ -298,7 +289,7 @@ force_inline Slice ptr_slice(SPtr ptr, usize start, usize end) {
 
 /*========== Example Usage =============================================*/
 
-#if 0  // Example usage code (not compiled)
+#if 0 // Example usage code (not compiled)
 
 void example_usage(void) {
     int numbers[] = {1, 2, 3, 4, 5};

@@ -49,10 +49,6 @@ force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
     eval_return(*((TDest*)&src));   \
 )
 
-typedef struct Void {
-    u8 unused_[0];
-} Void;
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

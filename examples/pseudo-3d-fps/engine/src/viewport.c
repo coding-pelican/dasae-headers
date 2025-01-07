@@ -19,8 +19,8 @@ Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) {
         }
 
         /* Initialize camera */ {
-            viewport->camera.position      = (engine_Vec3f32){ { 0.0f, 0.0f, -10.0f } };
-            viewport->camera.rotation      = (engine_Vec3f32){ { 0.0f, 0.0f, 0.0f } };
+            viewport->camera.position      = (Vec3f){ { 0.0f, 0.0f, -10.0f } };
+            viewport->camera.rotation      = (Vec3f){ { 0.0f, 0.0f, 0.0f } };
             viewport->camera.field_of_view = 60.0f * (3.14159f / 180.0f); // 60 degrees in radians
             viewport->camera.near_plane    = 0.1f;
             viewport->camera.far_plane     = 1000.0f;
@@ -66,16 +66,16 @@ void engine_Viewport_resize(engine_Viewport* viewport, f32 width, f32 height) {
     viewport->depth_buffer = new_buffer;
 }
 
-void engine_Camera_setPosition(engine_Camera* camera, engine_Vec3f32 position) {
+void engine_Camera_setPosition(engine_Camera* camera, Vec3f position) {
     debug_assert_nonnull(camera);
     camera->position = position;
 }
 
-void engine_Camera_lookAt(engine_Camera* camera, engine_Vec3f32 target) {
+void engine_Camera_lookAt(engine_Camera* camera, Vec3f target) {
     debug_assert_nonnull(camera);
 
     /* Calculate direction vector */
-    engine_Vec3f32 direction = cleared();
+    Vec3f direction = cleared();
     for (i32 i = 0; i < 3; ++i) {
         direction.scalars[i] = target.scalars[i] - camera->position.scalars[i];
     }

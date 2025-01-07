@@ -44,8 +44,7 @@ extern "C" {
         mem_Allocator allocator;      \
     }
 
-typedef 
-using_Err$(ArrayList);
+typedef using_Err$(ArrayList);
 
 /*========== Core Functions ================================================*/
 

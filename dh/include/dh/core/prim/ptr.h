@@ -28,62 +28,77 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-typedef void*     voidptr;
-typedef ptrdiff_t ptrdiff;
+typedef const void* voidptr_const;
+typedef void*       voidptr;
+typedef ptrdiff_t   ptrdiff;
+
+#define anyptr_const                            \
+    /**                                         \
+     * @brief Pointer to any type (const void*) \
+     */                                         \
+    TYPE_anyptr_const
 
 #define anyptr                            \
     /**                                   \
      * @brief Pointer to any type (void*) \
      */                                   \
-    IMPL_anyptr
+    TYPE_anyptr
+
+#define rawptr_const(TSrc)                  \
+    /**                                     \
+     * @brief Pointer to type (const TSrc*) \
+     */                                     \
+    TYPE_rawptr_const(TSrc)
 
 #define rawptr(TSrc)                  \
     /**                               \
      * @brief Pointer to type (TSrc*) \
      */                               \
-    IMPL_rawptr(TSrc)
+    TYPE_rawptr(TSrc)
 
 #define rawptrCast(TDestPtr, var)                        \
     /**                                                  \
      * @brief Convert anyptr to pointer of type TDestPtr \
      */                                                  \
-    IMPL_rawptrCast(TDestPtr, var)
+    FUNC_rawptrCast(TDestPtr, var)
 
 #define rawptrToInt(raw)                   \
     /**                                    \
      * @brief Convert rawptr to int(usize) \
      */                                    \
-    IMPL_rawptrToInt(raw)
+    FUNC_rawptrToInt(raw)
 
 #define intToRawptr(TDestRaw, val)  \
     /**                             \
      * @brief Convert int to rawptr \
      */                             \
-    IMPL_intToRawptr(TDestRaw, val)
+    FUNC_intToRawptr(TDestRaw, val)
 
 #define rawptrIsNull(var)              \
     /**                                \
      * @brief Check if pointer is null \
      */                                \
-    IMPL_rawptrIsNull(var)
+    FUNC_rawptrIsNull(var)
 
 #define rawptrIsNonnull(ptr)               \
     /**                                    \
      * @brief Check if pointer is non-null \
      */                                    \
-    IMPL_rawptrIsNonnull(ptr)
+    FUNC_rawptrIsNonnull(ptr)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_anyptr       void*
-#define IMPL_rawptr(TSrc) TSrc*
+#define TYPE_anyptr_const       const void*
+#define TYPE_anyptr             void*
+#define TYPE_rawptr_const(TSrc) const TSrc*
+#define TYPE_rawptr(TSrc)       TSrc*
 
-#define IMPL_rawptrCast(TDestPtr, var)  ((TDestPtr)(var))
-#define IMPL_rawptrToInt(raw)           ((usize)(raw))    // NOLINT
-#define IMPL_intToRawptr(TDestRaw, val) ((TDestRaw)(val)) // NOLINT
+#define FUNC_rawptrCast(TDestPtr, var)  ((TDestPtr)(var))
+#define FUNC_rawptrToInt(raw)           ((usize)(raw))    // NOLINT
+#define FUNC_intToRawptr(TDestRaw, val) ((TDestRaw)(val)) // NOLINT
 
-#define IMPL_rawptrIsNull(var)    ((var) == null)
-#define IMPL_rawptrIsNonnull(var) ((var) != null)
+#define FUNC_rawptrIsNull(var)    ((var) == null)
+#define FUNC_rawptrIsNonnull(var) ((var) != null)
 
 /*========== Validation Checks ==============================================*/
 

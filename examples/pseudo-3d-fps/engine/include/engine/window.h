@@ -52,8 +52,8 @@ extern void engine_Window_removeCanvasView(engine_Window* window, i32 view_id);
 extern void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height);
 
 // Window metrics queries
-force_inline engine_Vec2i32 engine_Window_getPosition(const engine_Window* window) {
-    return (engine_Vec2i32){
+force_inline Vec2i engine_Window_getPosition(const engine_Window* window) {
+    return (Vec2i){
         .scalars = {
             window->metrics.x,
             window->metrics.y,
@@ -61,8 +61,8 @@ force_inline engine_Vec2i32 engine_Window_getPosition(const engine_Window* windo
     };
 }
 
-force_inline engine_Vec2u32 engine_Window_getSize(const engine_Window* window) {
-    return (engine_Vec2u32){
+force_inline Vec2u engine_Window_getSize(const engine_Window* window) {
+    return (Vec2u){
         .scalars = {
             window->metrics.width,
             window->metrics.height,
@@ -70,8 +70,8 @@ force_inline engine_Vec2u32 engine_Window_getSize(const engine_Window* window) {
     };
 }
 
-force_inline engine_Vec2u32 engine_Window_getClientSize(const engine_Window* window) {
-    return (engine_Vec2u32){
+force_inline Vec2u engine_Window_getClientSize(const engine_Window* window) {
+    return (Vec2u){
         .scalars = {
             window->metrics.client_width,
             window->metrics.client_height,

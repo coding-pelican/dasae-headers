@@ -223,9 +223,9 @@ force_inline bool engine_Mouse_released(engine_MouseButton button) {
     return engine_Mouse_isState(button, engine_KeyStates_released);
 }
 
-force_inline engine_Vec2i32 engine_Mouse_getPosition(void) {
+force_inline Vec2i engine_Mouse_getPosition(void) {
     debug_assert_nonnull(engine_InputState_global);
-    return (engine_Vec2i32){
+    return (Vec2i){
         .scalars = {
             engine_InputState_global->mouse.x,
             engine_InputState_global->mouse.y,
@@ -233,9 +233,9 @@ force_inline engine_Vec2i32 engine_Mouse_getPosition(void) {
     };
 }
 
-force_inline engine_Vec2i32 engine_Mouse_getDelta(void) {
+force_inline Vec2i engine_Mouse_getDelta(void) {
     debug_assert_nonnull(engine_InputState_global);
-    return (engine_Vec2i32){
+    return (Vec2i){
         .scalars = {
             engine_InputState_global->mouse.x - engine_InputState_global->mouse.prev_x,
             engine_InputState_global->mouse.y - engine_InputState_global->mouse.prev_y,

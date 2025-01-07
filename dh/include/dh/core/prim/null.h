@@ -55,27 +55,27 @@ extern "C" {
 #endif
 
 /* Nullable-Nonnull attributes */
-#define nullable IMPL_nullable
-#define nonnull  IMPL_nonnull
+#define nullable ATTR_nullable
+#define nonnull  ATTR_nonnull
 
-#define Nullable(TPtr) IMPL_Nullable(TPtr)
-#define Nonnull(TPtr)  IMPL_Nonnull(TPtr)
+#define Nullable(TPtr) TYPE_Nullable(TPtr)
+#define Nonnull(TPtr)  TYPE_Nonnull(TPtr)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
-#define IMPL_nullable _Nullable
-#define IMPL_nonnull  _Nonnull
+#define ATTR_nullable _Nullable
+#define ATTR_nonnull  _Nonnull
 #elif defined(__GNUC__)
-#define IMPL_nullable __attribute__((nullable))
-#define IMPL_nonnull  __attribute__((nonnull))
+#define ATTR_nullable __attribute__((nullable))
+#define ATTR_nonnull  __attribute__((nonnull))
 #else
-#define IMPL_nullable
-#define IMPL_nonnull
+#define ATTR_nullable /* nullable */
+#define ATTR_nonnull  /* nonnull */
 #endif
 
-#define IMPL_Nullable(TPtr) TPtr nullable
-#define IMPL_Nonnull(TPtr)  TPtr nonnull
+#define TYPE_Nullable(TPtr) TPtr nullable
+#define TYPE_Nonnull(TPtr)  TPtr nonnull
 
 #if defined(__cplusplus)
 } /* extern "C" */
