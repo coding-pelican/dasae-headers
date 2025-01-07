@@ -45,25 +45,30 @@ extern "C" {
 
 // NOLINTBEGIN(bugprone-terminating-continue)
 #define IMPL_scope_defer                    \
-    bool _defer_returns = false;            \
-    unused(_defer_returns);                 \
-    i32 _defer_curr = 0;                    \
+    struct {                                \
+        i32  curr;                          \
+        bool returns;                       \
+    } _scope_defer = {                      \
+        .curr    = 0,                       \
+        .returns = false                    \
+    };                                      \
+    unused(_scope_defer);                   \
     _deferred:                              \
-    switch (_defer_curr) {                  \
+    switch (_scope_defer.curr) {            \
     default:                                \
         /* fallthrough if no valid label */ \
         break;                              \
     case 0:                                 \
-        _defer_curr = -1;
+        _scope_defer.curr = -1;
 
-#define IMPL_block_defer      \
-    do {                      \
-    scope_defer__snapshot(    \
-        if (_defer_returns) { \
-            goto _deferred;   \
-        } else {              \
-            continue;         \
-        }                     \
+#define IMPL_block_defer            \
+    do {                            \
+    scope_defer__snapshot(          \
+        if (_scope_defer.returns) { \
+            goto _deferred;         \
+        } else {                    \
+            continue;               \
+        }                           \
     )
 
 #define IMPL_defer_break \
@@ -74,7 +79,7 @@ extern "C" {
 #define IMPL_defer_return(val_return...) \
     {                                    \
         setReservedReturn(val_return);   \
-        _defer_returns = true;           \
+        _scope_defer.returns = true;     \
         goto _deferred;                  \
     }
 
@@ -86,7 +91,7 @@ extern "C" {
 #define IMPL_scope_deferred \
     goto _deferred;         \
     }                       \
-    while (false) {}
+    unused(0)
 
 #define IMPL_return_deferred                       \
     scope_deferred;                                \
@@ -98,15 +103,15 @@ extern "C" {
 #define IMPL_defer(_Statement...) \
     scope_defer__snapshot(_Statement; goto _deferred)
 
-#define IMPL_scope_defer__snapshot(_Statement...) \
-    {                                             \
-        i32 _defer_prev = _defer_curr;            \
-        _defer_curr     = __LINE__;               \
-        if (false) {                              \
-        case __LINE__:                            \
-            _defer_curr = _defer_prev;            \
-            _Statement;                           \
-        }                                         \
+#define IMPL_scope_defer__snapshot(_Statement...)  \
+    {                                              \
+        i32 _scope_defer_prev = _scope_defer.curr; \
+        _scope_defer.curr     = __LINE__;          \
+        if (false) {                               \
+        case __LINE__:                             \
+            _scope_defer.curr = _scope_defer_prev; \
+            _Statement;                            \
+        }                                          \
     }
 // NOLINTEND(bugprone-terminating-continue)
 
