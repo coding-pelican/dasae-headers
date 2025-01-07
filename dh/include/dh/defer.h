@@ -44,15 +44,16 @@ extern "C" {
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN(bugprone-terminating-continue)
-#define IMPL_scope_defer         \
-    bool _defer_returns = false; \
-    unused(_defer_returns);      \
-    i32 _defer_curr = 0;         \
-    _deferred:                   \
-    switch (_defer_curr) {       \
-    default:                     \
-        break;                   \
-    case 0:                      \
+#define IMPL_scope_defer                    \
+    bool _defer_returns = false;            \
+    unused(_defer_returns);                 \
+    i32 _defer_curr = 0;                    \
+    _deferred:                              \
+    switch (_defer_curr) {                  \
+    default:                                \
+        /* fallthrough if no valid label */ \
+        break;                              \
+    case 0:                                 \
         _defer_curr = -1;
 
 #define IMPL_block_defer      \
