@@ -52,7 +52,6 @@ extern "C" {
         .curr    = 0,                       \
         .returns = false                    \
     };                                      \
-    unused(_scope_defer);                   \
     _deferred:                              \
     switch (_scope_defer.curr) {            \
     default:                                \

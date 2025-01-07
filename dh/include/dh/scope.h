@@ -25,8 +25,13 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define scope_allows_reserved_return_with_defer (1)
+
 #define scope_with(_Init_Statement...) \
     IMPL_scope_with(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
+
+#define scope_with_fini(_Init_Statement, _Fini_Statement...) \
+    IMPL_scope_with_fini(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Fini_Statement)
 
 #define scope_var(_Init_Statement...) \
     IMPL_scope_var(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
@@ -49,11 +54,18 @@ extern "C" {
 #define scope_va_list(_Init_Statement) \
     /* TODO: Implement scope_va_list */
 
+#define scope_reserved_return(T) \
+    IMPL_scope_reserved_return(T)
+
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN
 #define IMPL_scope_with(_run_once, _init_once, _Init_Statement...)               \
     for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
+        for (_Init_Statement; _init_once; _init_once = false)
+
+#define IMPL_scope_with_fini(_run_once, _init_once, _Init_Statement, _Fini_Statement...)          \
+    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false, _Fini_Statement) \
         for (_Init_Statement; _init_once; _init_once = false)
 
 #define IMPL_scope_var(_run_once, _init_once, _Init_Statement...)                \
@@ -76,6 +88,34 @@ extern "C" {
 #define IMPL_scope_while(_run_once, _init_once, _Init_Statement, _Condition) \
     IMPL_scope_with(_run_once, _init_once, _Init_Statement) while (_Condition)
 
+#if scope_allows_reserved_return_with_defer
+
+#define IMPL_scope_reserved_return(T) \
+    reserveReturn(T);                 \
+    struct {                          \
+        bool has_defer;               \
+    } _scope = {                      \
+        .has_defer = false,           \
+    };                                \
+    scope_defer
+
+#else
+
+#define IMPL_scope_reserved_return(_run_once, _init_once, T) \
+    IMPL_scope_with(                                         \
+        _run_once,                                           \
+        _init_once,                                          \
+        struct {                                             \
+            T*   reserved_return;                            \
+            bool has_defer;                                  \
+        } _scope                                             \
+        = {                                                  \
+            .reserved_return = null,                         \
+            .has_defer       = false,                        \
+        }                                                    \
+    )
+
+#endif
 // NOLINTEND
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

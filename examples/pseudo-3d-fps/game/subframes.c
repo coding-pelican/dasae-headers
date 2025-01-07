@@ -47,7 +47,7 @@ static SliConst$Control Control_list(void) {
 #define GRAVITY           (1000.0f)
 #define COLLISION_DAMPING (0.8f)
 
-Err$void dh_main(int argc, const char* argv[]) {
+Err$void dh_main(int argc, const char* argv[]) { // NOLINT
     reserveReturn(Err$void);
     unused(argc), unused(argv);
     Random_init();
@@ -76,14 +76,18 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("engine initialized\n");
 
         // Create canvases
+        // let bg_canvas = try_defer(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
+        // defer(engine_Canvas_destroy(bg_canvas));
         let game_canvas = try_defer(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clear(game_canvas, Color_blank);
+        // engine_Canvas_clear(bg_canvas, Color_black);
+        engine_Canvas_clear(game_canvas, Color_black);
         log_info("canvas cleared\n");
 
         // Add canvas views
+        // engine_Window_addCanvasView(window, bg_canvas, 0, 0, 160, 100);
         engine_Window_addCanvasView(window, game_canvas, 0, 0, 160, 100);
         log_info("canvas views added\n");
 
@@ -99,7 +103,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         const f32 w      = 160.0f;
         const f32 h      = 100.0f;
-        const f32 radius = 2.0f;
+        const f32 radius = 2.5f;
 
         log_info("game state created\n");
         ignore getchar();
@@ -177,15 +181,12 @@ Err$void dh_main(int argc, const char* argv[]) {
                         pos_list.ptr[i].y = ny;
                     }
 
-                    engine_Canvas_drawRing(
+                    engine_Canvas_fillRingByScanlines(
                         game_canvas,
                         (i32)pos_list.ptr[i].x,
                         (i32)pos_list.ptr[i].y,
-                        radius * 0.8f,
-                        radius,
-                        0,
-                        360,
-                        100,
+                        (i32)(radius * 0.8f),
+                        (i32)radius,
                         eval(
                             var c = color_list.ptr[i];
                             c.a *= f;

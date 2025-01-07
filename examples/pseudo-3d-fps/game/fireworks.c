@@ -240,8 +240,8 @@ void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
         c,
         as(i64, p->position[0]),
         as(i64, p->position[1]),
-        as(u32, p->dimensions[0]),
-        as(u32, p->dimensions[1]),
+        as(u32, p->position[0] + (p->dimensions[0] - 1)),
+        as(u32, p->position[1] + (p->dimensions[1] - 1)),
         render_color
     );
 }

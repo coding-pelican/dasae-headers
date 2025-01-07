@@ -116,11 +116,11 @@ extern Color Hsl_intoColorTransparent(Hsl hsl);
 extern Color Hsl_intoColorOpaque(Hsl hsl);
 
 #define literal_Color_from(_r, _g, _b, _a) \
-    Color_(.channels = { _r, _g, _b, _a })
+    Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
 #define literal_Color_fromTransparent(_r, _g, _b) \
-    Color_(.channels = { _r, _g, _b, ColorChannel_min_value })
+    Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_min_value)
 #define literal_Color_fromOpaque(_r, _g, _b) \
-    Color_(.channels = { _r, _g, _b, ColorChannel_max_value })
+    Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_max_value)
 
 static const Color Color_transparent = literal_Color_from(0, 0, 0, ColorChannel_alpha_transparent);
 static const Color Color_blank       = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);

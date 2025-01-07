@@ -43,7 +43,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     let minimap_canvas = try(engine_Canvas_create(32, 32, engine_CanvasType_rgba));
     log_info("canvas created\n");
 
-    engine_Canvas_clear(game_canvas, Color_blank);
+    engine_Canvas_clear(game_canvas, Color_black);
     engine_Canvas_clear(ui_canvas, Color_blank);
     engine_Canvas_clear(minimap_canvas, Color_blank);
     log_info("canvas cleared\n");
@@ -76,6 +76,9 @@ Err$void dh_main(int argc, const char* argv[]) {
         game_State_update(state, as(f32, dt));
 
         // Render all views
+        engine_Canvas_clear(game_canvas, Color_black);
+        engine_Canvas_clear(ui_canvas, Color_blank);
+        engine_Canvas_clear(minimap_canvas, Color_blank);
         game_Screen_renderFirstPersonView(game_canvas, state);
         game_Screen_renderUi(ui_canvas, state);
         game_Screen_renderMinimap(minimap_canvas, state);
