@@ -77,7 +77,7 @@ void engine_Camera_lookAt(engine_Camera* camera, Vec3f target) {
     /* Calculate direction vector */
     Vec3f direction = cleared();
     for (i32 i = 0; i < 3; ++i) {
-        direction.scalars[i] = target.scalars[i] - camera->position.scalars[i];
+        direction.s[i] = target.s[i] - camera->position.s[i];
     }
 
     /* Calculate rotation angles */ {

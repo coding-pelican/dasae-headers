@@ -446,7 +446,7 @@ static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer,
     i32 subCellOffset = (relativeY % cellHeight) >= (cellHeight / 2) ? 1 : 0;
 
     return (Vec2i){
-        .scalars = {
+        .s = {
             mer->dwMousePosition.X,
             (consoleY * 2) + subCellOffset // Convert to double-height space
         }

@@ -23,10 +23,13 @@ typedef enum engine_KeyCode {
     engine_KeyCode_Space = 0x20,
 
     // Arrow keys
-    engine_KeyCode_ArrowLt = 0x25,
-    engine_KeyCode_ArrowUp = 0x26,
-    engine_KeyCode_ArrowRt = 0x27,
-    engine_KeyCode_ArrowDn = 0x28,
+    engine_KeyCode_ArrowLt    = 0x25,
+    engine_KeyCode_ArrowUp    = 0x26,
+    engine_KeyCode_ArrowRt    = 0x27,
+    engine_KeyCode_ArrowDn    = 0x28,
+    engine_KeyCode_ArrowLeft  = engine_KeyCode_ArrowLt,
+    engine_KeyCode_ArrowRight = engine_KeyCode_ArrowRt,
+    engine_KeyCode_ArrowDown  = engine_KeyCode_ArrowDn,
 
     // Number keys
     engine_KeyCode_N1 = 0x31,
@@ -226,7 +229,7 @@ force_inline bool engine_Mouse_released(engine_MouseButton button) {
 force_inline Vec2i engine_Mouse_getPosition(void) {
     debug_assert_nonnull(engine_InputState_global);
     return (Vec2i){
-        .scalars = {
+        .s = {
             engine_InputState_global->mouse.x,
             engine_InputState_global->mouse.y,
         }
@@ -236,7 +239,7 @@ force_inline Vec2i engine_Mouse_getPosition(void) {
 force_inline Vec2i engine_Mouse_getDelta(void) {
     debug_assert_nonnull(engine_InputState_global);
     return (Vec2i){
-        .scalars = {
+        .s = {
             engine_InputState_global->mouse.x - engine_InputState_global->mouse.prev_x,
             engine_InputState_global->mouse.y - engine_InputState_global->mouse.prev_y,
         }

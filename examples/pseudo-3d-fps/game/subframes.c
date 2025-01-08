@@ -28,10 +28,10 @@ using_Sli$(Control);
 
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {
-        { .key = engine_KeyCode_W, .vec = { .scalars = { 0, -1 } } },
-        { .key = engine_KeyCode_A, .vec = { .scalars = { -1, 0 } } },
-        { .key = engine_KeyCode_S, .vec = { .scalars = { 0, 1 } } },
-        { .key = engine_KeyCode_D, .vec = { .scalars = { 1, 0 } } },
+        { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
+        { .key = engine_KeyCode_A, .vec = math_Vec_lt$(Vec2f) },
+        { .key = engine_KeyCode_S, .vec = math_Vec_rt$(Vec2f) },
+        { .key = engine_KeyCode_D, .vec = math_Vec_dn$(Vec2f) },
     };
     static const usize controls_len = sizeof(controls) / sizeof(controls[0]);
     return (SliConst$Control){
@@ -113,10 +113,10 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         let  target_time = time_Duration_fromSecs_f64(REAL_FPS / 1000.0f); // Assume 30 FPS for simplicity
         bool is_running  = true;
 
-        var prev_winpos = Vec_as(Vec2f, engine_Window_getPosition(window));
+        var prev_winpos = Vec_as$(Vec2f, engine_Window_getPosition(window));
         while (is_running) {
-            let winpos  = Vec_as(Vec2f, engine_Window_getPosition(window));
-            let dwinpos = Vec_sub(winpos, prev_winpos);
+            let winpos  = Vec_as$(Vec2f, engine_Window_getPosition(window));
+            let dwinpos = math_Vec_sub(winpos, prev_winpos);
 
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
@@ -133,11 +133,14 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             if (engine_Mouse_pressed(engine_MouseButton_Left) || engine_Key_pressed(engine_KeyCode_Space)) {
                 log_debug("space pressed\n");
-                let pos = Vec_as(Vec2f, engine_Mouse_getPosition());
+                const Vec2f pos = Vec_as$(Vec2f, engine_Mouse_getPosition());
                 try_defer(ArrayList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(Vec2f) }));
 
-                f32 angle = ((f32)PI / 180.0f) * as(f32, Random_range_i64(0, 360));
-                let dir   = (Vec2f){ .x = 50 * cosf(angle), .y = 50 * sinf(angle) };
+                let         angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
+                const Vec2f dir   = eval(
+                    let         r = math_Vec2_sincos$(Vec2f, angle);
+                    eval_return math_Vec_scale(r, 50);
+                );
                 try_defer(ArrayList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(Vec2f) }));
 
                 let color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
@@ -152,7 +155,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 for (usize i = 0; i < pos_list.len; ++i) {
                     const f32 f = (f32)(t / real_dt);
 
-                    pos_list.ptr[i] = Vec_sub(pos_list.ptr[i], Vec_scale(dwinpos, TARGET_DT / real_dt));
+                    pos_list.ptr[i] = math_Vec_sub(pos_list.ptr[i], math_Vec_scale(dwinpos, TARGET_DT / real_dt));
                     vel_list.ptr[i].y += GRAVITY * TARGET_DT;
 
                     const f32 nx = pos_list.ptr[i].x + vel_list.ptr[i].x * TARGET_DT;

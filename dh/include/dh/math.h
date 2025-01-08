@@ -22,6 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "math/common.h"
+#include "math/vec_types.h"
 #include "math/vec.h"
 #include "math/mat.h"
 #include "math/quat.h"

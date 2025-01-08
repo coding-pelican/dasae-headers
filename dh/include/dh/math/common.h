@@ -41,6 +41,9 @@ impl_Err(
 #define math_inf          VAL_math_inf
 #define math_nan          VAL_math_nan
 
+#define math_limit_min$(TScalar) VAL_math_limit_min$(TScalar)
+#define math_limit_max$(TScalar) VAL_math_limit_max$(TScalar)
+
 #define math_f32_pi           VAL_math_f32_pi
 #define math_f32_tau          VAL_math_f32_tau
 #define math_f32_e            VAL_math_f32_e
@@ -69,25 +72,26 @@ impl_Err(
 #define isBool(Type)     FUNC_isBool(Type)
 
 /* Comparison operations */
-#define math_eq(val_lhs, val_rhs) OP_math_eq(val_lhs, val_rhs)
-#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs)
-#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs)
-#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs)
-#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs)
-#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs)
+#define math_eq(val_lhs, val_rhs) OP_math_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
+#define math_neg(val_x)                OP_math_neg(val_x)
 #define math_add(val_lhs, val_rhs)     OP_math_add(val_lhs, val_rhs)
 #define math_sub(val_lhs, val_rhs)     OP_math_sub(val_lhs, val_rhs)
 #define math_mul(val_lhs, val_rhs)     OP_math_mul(val_lhs, val_rhs)
-#define math_div(val_lhs, val_rhs)     OP_math_div(val_lhs, val_rhs)
-#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(val_lhs, val_rhs)
-#define math_mod(val_lhs, val_rhs)     OP_math_mod(val_lhs, val_rhs)
-#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(val_lhs, val_rhs)
+#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
+#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
+#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
+#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
 
 /* Basic functions */
-#define math_abs(val_x)                         FUNC_math_abs(val_x)
-#define math_sign(val_x)                        FUNC_math_sign(val_x)
+#define math_abs(val_x)                         FUNC_math_abs(pp_uniqueToken(_x), val_x)
+#define math_sign(val_x)                        FUNC_math_sign(pp_uniqueToken(_x), val_x)
 #define math_min(val_lhs, val_rhs)              FUNC_math_min(val_lhs, val_rhs)
 #define math_max(val_lhs, val_rhs)              FUNC_math_max(val_lhs, val_rhs)
 #define math_clamp(val_x, val_min, val_max)     FUNC_math_clamp(val_x, val_min, val_max)
@@ -158,6 +162,39 @@ impl_Err(
 #define VAL_math_inf          math_f64_inf
 #define VAL_math_nan          math_f64_nan
 
+#define VAL_math_limit_min$(TScalar) _Generic( \
+    (TScalar)0,                                \
+    u8: u8_limit_min,                          \
+    u16: u16_limit_min,                        \
+    u32: u32_limit_min,                        \
+    u64: u64_limit_min,                        \
+    usize: usize_limit_min,                    \
+    i8: i8_limit_min,                          \
+    i16: i16_limit_min,                        \
+    i32: i32_limit_min,                        \
+    i64: i64_limit_min,                        \
+    isize: isize_limit_min,                    \
+    f32: f32_limit_min,                        \
+    f64: f64_limit_min,                        \
+    default: 0                                 \
+)
+#define VAL_math_limit_max$(TScalar) _Generic( \
+    (TScalar)0,                                \
+    u8: u8_limit_max,                          \
+    u16: u16_limit_max,                        \
+    u32: u32_limit_max,                        \
+    u64: u64_limit_max,                        \
+    usize: usize_limit_max,                    \
+    i8: i8_limit_max,                          \
+    i16: i16_limit_max,                        \
+    i32: i32_limit_max,                        \
+    i64: i64_limit_max,                        \
+    isize: isize_limit_max,                    \
+    f32: f32_limit_max,                        \
+    f64: f64_limit_max,                        \
+    default: 0                                 \
+)
+
 #define VAL_math_f32_pi           as(f32, math_pi)
 #define VAL_math_f32_tau          as(f32, math_tau)
 #define VAL_math_f32_e            as(f32, math_e)
@@ -209,82 +246,53 @@ impl_Err(
 )
 
 /* Comparison operations */
-#define OP_math_eq(val_lhs, val_rhs) eval(          \
-    let  _lhs = (val_lhs);                          \
-    let  _rhs = (val_rhs);                          \
-    bool _ret = false;                              \
-    if (isFlt(TypeOf(_lhs))) {                      \
-        _ret = (math_abs(_lhs - _rhs) <= math_eps); \
-    } else {                                        \
-        _ret = (_lhs == _rhs);                      \
-    };                                              \
-    eval_return _ret;                               \
+#define OP_math_eq(_lhs, _rhs, val_lhs, val_rhs) eval(  \
+    let  _lhs = (val_lhs);                              \
+    let  _rhs = (val_rhs);                              \
+    bool _ret = false;                                  \
+    if (isFlt(TypeOf(_lhs))) {                          \
+        _ret = (math_abs((_lhs) - (_rhs)) <= math_eps); \
+    } else {                                            \
+        _ret = ((_lhs) == (_rhs));                      \
+    };                                                  \
+    eval_return _ret;                                   \
 )
-#define OP_math_ne(val_lhs, val_rhs) eval(  \
-    eval_return !math_eq(val_lhs, val_rhs); \
-)
-#define OP_math_lt(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);          \
-    let         _rhs = (val_rhs);          \
-    eval_return _lhs < _rhs;               \
-)
-#define OP_math_gt(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);          \
-    let         _rhs = (val_rhs);          \
-    eval_return _lhs > _rhs;               \
-)
-#define OP_math_le(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);          \
-    let         _rhs = (val_rhs);          \
-    eval_return _lhs <= _rhs;              \
-)
-#define OP_math_ge(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);          \
-    let         _rhs = (val_rhs);          \
-    eval_return _lhs >= _rhs;              \
-)
+#define OP_math_ne(val_lhs, val_rhs) (!math_eq(val_lhs, val_rhs))
+#define OP_math_lt(val_lhs, val_rhs) ((val_lhs) < (val_rhs))
+#define OP_math_gt(val_lhs, val_rhs) ((val_lhs) > (val_rhs))
+#define OP_math_le(val_lhs, val_rhs) ((val_lhs) <= (val_rhs))
+#define OP_math_ge(val_lhs, val_rhs) ((val_lhs) >= (val_rhs))
 
 /* Arithmetic operations */
-#define OP_math_add(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);           \
-    let         _rhs = (val_rhs);           \
-    eval_return _lhs + _rhs;                \
+#define OP_math_neg(val_x)                        (-(_val_x))
+#define OP_math_add(val_lhs, val_rhs)             ((val_lhs) + (val_rhs))
+#define OP_math_sub(val_lhs, val_rhs)             ((val_lhs) - (val_rhs))
+#define OP_math_mul(val_lhs, val_rhs)             ((val_lhs) * (val_rhs))
+#define OP_math_div(_lhs, _rhs, val_lhs, val_rhs) eval( \
+    let _lhs = (val_lhs);                               \
+    let _rhs = (val_rhs);                               \
+    var _ret = makeCleared(TypeOf(_lhs));               \
+    if ((_rhs) != 0) {                                  \
+        _ret = (_lhs) / (_rhs);                         \
+    };                                                  \
+    eval_return _ret;                                   \
 )
-#define OP_math_sub(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);           \
-    let         _rhs = (val_rhs);           \
-    eval_return _lhs - _rhs;                \
-)
-#define OP_math_mul(val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                   \
-    let _rhs = (val_rhs);                   \
-    eval_return _lhs * _rhs;                \
-)
-#define OP_math_div(val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                   \
-    let _rhs = (val_rhs);                   \
-    var _ret = makeCleared(TypeOf(_lhs));   \
-    if (_rhs != 0) {                        \
-        _ret = _lhs / _rhs;                 \
-    };                                      \
-    eval_return _ret;                       \
-)
-#define OP_math_divSafe(val_lhs, val_rhs) eval(                                            \
+#define OP_math_divSafe(_lhs, _rhs, val_lhs, val_rhs) eval(                                \
     let   _lhs = (val_lhs);                                                                \
     let   _rhs = (val_rhs);                                                                \
     void* _ret = null;                                                                     \
-    if (_rhs == 0) {                                                                       \
+    if ((_rhs) == 0) {                                                                     \
         _ret = (void*)&(Err$(TypeOf(_lhs)))err(math_Err_err(math_ErrType_DivisionByZero)); \
     } else {                                                                               \
-        _ret = (void*)&(Err$(TypeOf(_lhs)))ok(_lhs / _rhs);                                \
+        _ret = (void*)&(Err$(TypeOf(_lhs)))ok((_lhs) / (_rhs));                            \
     };                                                                                     \
     eval_return(*(Err$(TypeOf(_lhs))*)_ret);                                               \
 )
-#define OP_math_mod(val_lhs, val_rhs) eval(                              \
+#define OP_math_mod(_lhs, _rhs, val_lhs, val_rhs) eval(                  \
     let _lhs = (val_lhs);                                                \
     let _rhs = (val_rhs);                                                \
     var _ret = makeCleared(TypeOf(_lhs));                                \
-    if (_rhs != 0) {                                                     \
+    if ((_rhs) != 0) {                                                   \
         if (isFlt(TypeOf(_ret))) {                                       \
             _ret = as(TypeOf(_ret), fmod(as(f64, _lhs), as(f64, _rhs))); \
         } else {                                                         \
@@ -293,11 +301,11 @@ impl_Err(
     };                                                                   \
     eval_return _ret;                                                    \
 )
-#define OP_math_modSafe(val_lhs, val_rhs) eval(                                            \
+#define OP_math_modSafe(_lhs, _rhs, val_lhs, val_rhs) eval(                                \
     let   _lhs = (val_lhs);                                                                \
     let   _rhs = (val_rhs);                                                                \
     void* _ret = null;                                                                     \
-    if (_rhs == 0) {                                                                       \
+    if ((_rhs) == 0) {                                                                     \
         _ret = (void*)&(Err$(TypeOf(_lhs)))err(math_Err_err(math_ErrType_DivisionByZero)); \
     } else {                                                                               \
         if (isFlt(TypeOf(_ret))) {                                                         \
@@ -310,18 +318,18 @@ impl_Err(
 )
 
 /* Basic functions */
-#define FUNC_math_abs(val_x) eval(              \
-    var _x = (val_x);                           \
-    if (isFlt(TypeOf(_x))) {                    \
-        _x = as(TypeOf(_x), fabs(as(f64, _x))); \
-    } else {                                    \
-        _x = _x < 0 ? -_x : _x;                 \
-    };                                          \
-    eval_return _x;                             \
+#define FUNC_math_abs(_x, val_x) eval(            \
+    var _x = (val_x);                             \
+    if (isFlt(TypeOf(_x))) {                      \
+        (_x) = as(TypeOf(_x), fabs(as(f64, _x))); \
+    } else {                                      \
+        (_x) = (_x) < 0 ? -(_x) : (_x);           \
+    };                                            \
+    eval_return _x;                               \
 )
-#define FUNC_math_sign(val_x) eval(             \
-    let _x = (val_x);                           \
-    eval_return _x < 0 ? -1 : (_x > 0 ? 1 : 0); \
+#define FUNC_math_sign(_x, val_x) eval(           \
+    let _x = (val_x);                             \
+    eval_return _x < 0 ? -1 : ((_x) > 0 ? 1 : 0); \
 )
 #define FUNC_math_min(val_lhs, val_rhs) eval( \
     let _lhs = (val_lhs);                     \

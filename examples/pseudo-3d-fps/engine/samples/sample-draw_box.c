@@ -71,21 +71,21 @@ Err$void dh_main(int argc, const char* argv[]) {
             Vec2f rotation = { .x = (f32)cos(t), .y = (f32)sin(t) };
             Vec2f box_min  = { .x = -48.0f, .y = -24.0f };
             Vec2f box_max  = { .x = 48.0f, .y = 24.0f };
-            Vec2f offset   = Vec_scale(rotation, 20.0f);
-            box_min        = Vec_sub(box_min, offset);
-            box_max        = Vec_add(box_max, offset);
+            Vec2f offset   = math_Vec_scale(rotation, 20.0f);
+            box_min        = math_Vec_sub(box_min, offset);
+            box_max        = math_Vec_add(box_max, offset);
 
             // Render to canvas
             engine_Canvas_clear(game_canvas, Color_black);
             /* Transform World to Screen Coord */ {
                 const f32   canvas_scale  = 0.5f; // cuz logic based on 2x scale (160x100)
                 const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
-                box_min                   = Vec_scale(box_min, canvas_scale);
+                box_min                   = math_Vec_scale(box_min, canvas_scale);
                 box_min.y                 = -box_min.y;
-                box_min                   = Vec_add(box_min, canvas_center);
-                box_max                   = Vec_scale(box_max, canvas_scale);
+                box_min                   = math_Vec_add(box_min, canvas_center);
+                box_max                   = math_Vec_scale(box_max, canvas_scale);
                 box_max.y                 = -box_max.y;
-                box_max                   = Vec_add(box_max, canvas_center);
+                box_max                   = math_Vec_add(box_max, canvas_center);
             }
 
             engine_Canvas_drawRect(game_canvas, (i32)box_min.x, (i32)box_min.y, (i32)box_max.x, (i32)box_max.y, Color_white);

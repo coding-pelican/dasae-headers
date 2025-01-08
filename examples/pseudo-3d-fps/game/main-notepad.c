@@ -58,7 +58,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         let dt           = time_Duration_asSecs_f64(elapsed_time);
 
         // Process events
-        engine_Window_processEvents(window);
+        try(engine_Window_processEvents(window));
 
         // Update game state
         game_State_update(state, as(f32, dt));

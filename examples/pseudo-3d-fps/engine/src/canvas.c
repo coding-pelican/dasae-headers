@@ -1,5 +1,6 @@
 #include "../include/engine/canvas.h"
 #include "dh/defer.h"
+#include "dh/math/common.h"
 
 #include <math.h>
 
@@ -308,8 +309,8 @@ void engine_Canvas_drawRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_inner, 
 //         debug_assert(0 < segments);
 
 //         // Convert angles from degrees to radians
-//         start_angle = (f32)start_angle * ((f32)PI / 180.0f);
-//         end_angle   = (f32)end_angle * ((f32)PI / 180.0f);
+//         start_angle = (f32)start_angle * (math_f32_pi / 180.0f);
+//         end_angle   = (f32)end_angle * (math_f32_pi / 180.0f);
 
 //         const f32 step = (end_angle - start_angle) / (f32)segments;
 
@@ -347,11 +348,11 @@ void engine_Canvas_drawRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_inner, 
 // }
 
 // Convert degrees to radians
-force_inline f32  degToRad(f32 deg) { return (deg * (f32)PI) / 180.0f; }
+force_inline f32  degToRad(f32 deg) { return (deg * math_f32_pi) / 180.0f; }
 // Check if angle (in radians) is in [start_rad, end_rad]
 force_inline bool isAngleInRange(f32 angle, f32 start_rad, f32 end_rad) {
     // Normalize angle to [0, 2π) for easier comparison
-    if (angle < 0) { angle += 2.0f * (f32)PI; }
+    if (angle < 0) { angle += 2.0f * math_f32_pi; }
     // We assume startRad <= endRad
     return start_rad <= angle && angle <= end_rad;
 }
@@ -632,7 +633,7 @@ force_inline void drawHLineAngleClipped(engine_Canvas* canvas, i32 x1, i32 x2, i
 
         // Check if angle is in range
         if (angle < 0) {
-            angle += 2.0f * (f32)PI;
+            angle += 2.0f * math_f32_pi;
         }
         if (start_rad <= angle && angle <= end_rad) {
             engine_Canvas_drawPixel(canvas, x, y, color);
@@ -651,7 +652,7 @@ force_inline void drawVLineAngleClipped(engine_Canvas* canvas, i32 y1, i32 y2, i
 
         // Check if angle is in range
         if (angle < 0) {
-            angle += 2.0f * (f32)PI;
+            angle += 2.0f * math_f32_pi;
         }
         if (start_rad <= angle && angle <= end_rad) {
             engine_Canvas_drawPixel(canvas, x, y, color);

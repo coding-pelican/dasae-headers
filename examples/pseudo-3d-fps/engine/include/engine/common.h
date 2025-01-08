@@ -6,8 +6,37 @@
 #include "dh/err_res.h"
 #include "dh/mem/Allocator.h"
 #include "dh/time.h"
+#include "dh/math/common.h"
+#include "dh/math/vec.h"
 
-typedef union Vec2u {
+typedef math_Vec2f Vec2f;
+typedef math_Vec3f Vec3f;
+typedef math_Vec4f Vec4f;
+typedef math_Vec2d Vec2d;
+typedef math_Vec3d Vec3d;
+typedef math_Vec4d Vec4d;
+
+typedef math_Vec2i Vec2i;
+typedef math_Vec3i Vec3i;
+typedef math_Vec4i Vec4i;
+typedef math_Vec2l Vec2l;
+typedef math_Vec3l Vec3l;
+typedef math_Vec4l Vec4l;
+typedef math_Vec2z Vec2z;
+typedef math_Vec3z Vec3z;
+typedef math_Vec4z Vec4z;
+
+typedef math_Vec2u  Vec2u;
+typedef math_Vec3u  Vec3u;
+typedef math_Vec4u  Vec4u;
+typedef math_Vec2ul Vec2ul;
+typedef math_Vec3ul Vec3ul;
+typedef math_Vec4ul Vec4ul;
+typedef math_Vec2uz Vec2uz;
+typedef math_Vec3uz Vec3uz;
+typedef math_Vec4uz Vec4uz;
+
+/* typedef union Vec2u {
     u32 scalars[2];
     struct {
         u32 x;
@@ -110,19 +139,16 @@ typedef union Vec3f {
         lhs.scalars[i] *= rhs;        \
     };                                \
     eval_return lhs;                  \
-)
+) */
 
-#define Vec_as(T, v_self) eval(                                   \
-    let self = v_self;                                            \
-    let len  = countOf(self.scalars);                             \
-    T   ret  = { .scalars = { 0 } };                              \
-    for (usize i = 0; i < len; ++i) {                             \
-        ret.scalars[i] = (TypeOf(ret.scalars[i]))self.scalars[i]; \
-    };                                                            \
-    eval_return ret;                                              \
+#define Vec_as$(TVec, v_self) eval(                    \
+    let  _self = v_self;                               \
+    TVec _ret  = { .s = { 0 } };                       \
+    for (usize i = 0; i < countOf(_self.s); ++i) {     \
+        _ret.s[i] = as(TypeOf(_ret.s[i]), _self.s[i]); \
+    };                                                 \
+    eval_return _ret;                                  \
 )
-
-#define PI (3.14159265358979323846)
 
 typedef struct engine_Transform {
     Vec3f position;
