@@ -78,6 +78,30 @@ typedef union Vec3f {
     eval_return lhs;                                                \
 )
 
+#define Vec_mul(v_lhs, v_rhs) eval(                                 \
+    var lhs = v_lhs;                                                \
+    let rhs = v_rhs;                                                \
+    let len = prim_min(countOf(lhs.scalars), countOf(lhs.scalars)); \
+    for (usize i = 0; i < len; ++i) {                               \
+        lhs.scalars[i] *= rhs.scalars[i];                           \
+    };                                                              \
+    eval_return lhs;                                                \
+)
+
+#define Vec_div(v_lhs, v_rhs) eval(                                 \
+    var lhs = v_lhs;                                                \
+    let rhs = v_rhs;                                                \
+    let len = prim_min(countOf(lhs.scalars), countOf(lhs.scalars)); \
+    for (usize i = 0; i < len; ++i) {                               \
+        if (rhs.scalars[i] == 0.0f) {                               \
+            lhs = makeCleared(TypeOf(lhs));                         \
+            break;                                                  \
+        }                                                           \
+        lhs.scalars[i] /= rhs.scalars[i];                           \
+    };                                                              \
+    eval_return lhs;                                                \
+)
+
 #define Vec_scale(v_lhs, s_rhs) eval( \
     var lhs = v_lhs;                  \
     let rhs = s_rhs;                  \
