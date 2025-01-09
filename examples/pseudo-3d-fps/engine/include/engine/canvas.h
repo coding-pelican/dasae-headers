@@ -37,7 +37,7 @@ extern void                  engine_Canvas_drawPixel(engine_Canvas* canvas, i32 
 extern void                  engine_Canvas_drawLine(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color);
 extern void                  engine_Canvas_drawHLine(engine_Canvas* canvas, i32 x1, i32 x2, i32 y, Color color);
 extern void                  engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color color);
-void                         engine_Canvas_drawRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color);
+extern void                  engine_Canvas_drawRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color);
 extern void                  engine_Canvas_drawCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, Color color);
 extern void                  engine_Canvas_drawRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_inner, i32 r_outer, Color color);
 extern void                  engine_Canvas_drawArc(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, f32 start_angle, f32 end_angle, Color color);

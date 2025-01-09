@@ -100,7 +100,6 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         const f32 w      = 160.0f;
         const f32 h      = 100.0f;
         const f32 radius = 2.5f;
-
         log_info("game state created\n");
         ignore getchar();
 
