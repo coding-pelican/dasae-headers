@@ -10,29 +10,29 @@ struct Slice {
     usize  len;
 };
 
-typedef struct ArrayList ArrayList;
-decl_Err$(ArrayList);
+typedef struct ArrList ArrList;
+decl_Err$(ArrList);
 
-struct ArrayList {
+struct ArrList {
     mem_Allocator allocator;
     Slice         items;
     usize         capacity;
     usize         item_size;
 };
-static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator);
-static void                     ArrayList_fini(ArrayList* self);
-static must_check Err$void      ArrayList_append(ArrayList* self, const anyptr item);
-static Slice                    ArrayList_slice(const ArrayList* self);
+static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
+static void                   ArrList_fini(ArrList* self);
+static must_check Err$void    ArrList_append(ArrList* self, const anyptr item);
+static Slice                  ArrList_slice(const ArrList* self);
 
-impl_Err$(ArrayList);
-static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator) {
-    reserveReturn(Err$ArrayList);
+impl_Err$(ArrList);
+static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
+    reserveReturn(Err$ArrList);
 
     anyptr const ptr = unwrap(allocator.vt->alloc(allocator.ctx, type.size * 8, type.align)); // Initial capacity of 8
     if (!ptr) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
-    return_ok((ArrayList){
+    return_ok((ArrList){
         .allocator = allocator,
         .items     = {
                 .ptr = ptr,
@@ -43,7 +43,7 @@ static must_check Err$ArrayList ArrayList_init(TypeInfo type, mem_Allocator allo
     });
 }
 
-static void ArrayList_fini(ArrayList* self) {
+static void ArrList_fini(ArrList* self) {
     var memory = (Sli$u8){ .ptr = self->items.ptr, .len = self->capacity };
     mem_Allocator_free(self->allocator, AnySli(memory));
     self->items.ptr = null;
@@ -51,7 +51,7 @@ static void ArrayList_fini(ArrayList* self) {
     self->capacity  = 0;
 }
 
-static must_check Err$void ArrayList_append(ArrayList* self, const anyptr item) {
+static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
     reserveReturn(Err$void);
 
     if (self->items.len == 10) { // Note: Force error raising for exception checking
@@ -77,7 +77,7 @@ static must_check Err$void ArrayList_append(ArrayList* self, const anyptr item) 
     return_ok({});
 }
 
-static Slice ArrayList_slice(const ArrayList* self) {
+static Slice ArrList_slice(const ArrList* self) {
     return self->items;
 }
 // todo apply errdefer
@@ -95,26 +95,26 @@ Err$void dh_main(int argc, const char* argv[]) {
         return_err(err);
     });
 
-    // Create an ArrayList of integers
-    var list = catch (ArrayList_init(typeInfo(i32), allocator), err, {
-        ignore fprintf(stderr, "Failed to initialize ArrayList: %s, in %s:%d\n", Err_message(err), __FILE__, __LINE__);
+    // Create an ArrList of integers
+    var list = catch (ArrList_init(typeInfo(i32), allocator), err, {
+        ignore fprintf(stderr, "Failed to initialize ArrList: %s, in %s:%d\n", Err_message(err), __FILE__, __LINE__);
         heap_Classic_fini(allocator);
         return_err(err);
     });
 
     // Add some numbers
     for (usize i = 0; i < 10; ++i) {
-        catch (ArrayList_append(&list, &i), err, {
-            ignore fprintf(stderr, "Failed to append to ArrayList: %s, in %s:%d\n", Err_message(err), __FILE__, __LINE__);
+        catch (ArrList_append(&list, &i), err, {
+            ignore fprintf(stderr, "Failed to append to ArrList: %s, in %s:%d\n", Err_message(err), __FILE__, __LINE__);
             ignore fprintf(stderr, "index %zu\n", i);
-            ArrayList_fini(&list);
+            ArrList_fini(&list);
             heap_Classic_fini(allocator);
             return_err(err);
         });
     }
 
     // Get a slice of the data
-    let        slice = ArrayList_slice(&list);
+    let        slice = ArrList_slice(&list);
     int* const items = slice.ptr;
 
     // Print all numbers
@@ -124,7 +124,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     printf("\n");
 
     // Clean up
-    ArrayList_fini(&list);
+    ArrList_fini(&list);
     heap_Classic_fini(allocator);
 
     return_ok({});
@@ -135,26 +135,26 @@ Err$void dh_main(int argc, const char* argv[]) {
 //     heap_C heap      = {};
 //     let    allocator = heap_C_allocator(&heap);
 
-//     // Create an ArrayList of integers
-//     let list_result = ArrayList_init(sizeof(int), allocator);
+//     // Create an ArrList of integers
+//     let list_result = ArrList_init(sizeof(int), allocator);
 //     if (list_result.is_err) {
-//         printf("Failed to create ArrayList: out of memory\n");
+//         printf("Failed to create ArrList: out of memory\n");
 //         return;
 //     }
 //     var list = list_result.ok;
 
 //     // Add some numbers
 //     for (usize i = 0; i < 15; ++i) {
-//         let append_result = ArrayList_append(&list, &i);
+//         let append_result = ArrList_append(&list, &i);
 //         if (append_result.is_err) {
 //             printf("Failed to append item: out of memory\n");
-//             ArrayList_fini(&list);
+//             ArrList_fini(&list);
 //             return;
 //         }
 //     }
 
 //     // Get a slice of the data
-//     let        slice = ArrayList_slice(&list);
+//     let        slice = ArrList_slice(&list);
 //     int* const items = slice.ptr;
 
 //     // Print all numbers
@@ -164,5 +164,5 @@ Err$void dh_main(int argc, const char* argv[]) {
 //     printf("\n");
 
 //     // Clean up
-//     ArrayList_fini(&list);
+//     ArrList_fini(&list);
 // }

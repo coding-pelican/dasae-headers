@@ -72,12 +72,13 @@ impl_Err(
 #define isBool(Type)     FUNC_isBool(Type)
 
 /* Comparison operations */
-#define math_eq(val_lhs, val_rhs) OP_math_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs)                                             /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_eq(val_lhs, val_rhs)  OP_math_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
 #define math_neg(val_x)                OP_math_neg(val_x)
@@ -246,7 +247,8 @@ impl_Err(
 )
 
 /* Comparison operations */
-#define OP_math_eq(_lhs, _rhs, val_lhs, val_rhs) eval(  \
+#define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) /* TODO: Implement cmp function */
+#define OP_math_eq(_lhs, _rhs, val_lhs, val_rhs)  eval( \
     let  _lhs = (val_lhs);                              \
     let  _rhs = (val_rhs);                              \
     bool _ret = false;                                  \

@@ -56,12 +56,13 @@
 #define math_Vec2_sincos$(TVector, val_radians) FUNC_math_Vec2_sincos$(pp_uniqueToken(_radians), TVector, val_radians)
 
 /* Basic Vector-Vector Comparison Operations */
-#define math_Vec_eq(val_lhs, val_rhs) OP_math_Vec_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_ne(val_lhs, val_rhs) OP_math_Vec_ne(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_lt(val_lhs, val_rhs) OP_math_Vec_lt(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_gt(val_lhs, val_rhs) OP_math_Vec_gt(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_le(val_lhs, val_rhs) OP_math_Vec_le(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_ge(val_lhs, val_rhs) OP_math_Vec_ge(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_cmp(val_lhs, val_rhs) OP_math_Vec_cmp(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_eq(val_lhs, val_rhs)  OP_math_Vec_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_ne(val_lhs, val_rhs)  OP_math_Vec_ne(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_lt(val_lhs, val_rhs)  OP_math_Vec_lt(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_gt(val_lhs, val_rhs)  OP_math_Vec_gt(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_le(val_lhs, val_rhs)  OP_math_Vec_le(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_Vec_ge(val_lhs, val_rhs)  OP_math_Vec_ge(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Core Vector-Vector Arithmetic */
 #define math_Vec_neg(val_vec)          OP_math_Vec_neg(pp_uniqueToken(_vec), val_vec)
@@ -152,18 +153,7 @@
     };                                                     \
     eval_return _ret;                                      \
 )
-#define OP_math_Vec_ne(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let  _lhs = (val_lhs);                                 \
-    let  _rhs = (val_rhs);                                 \
-    bool _ret = false;                                     \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {          \
-        if (math_ne(_lhs.s[i], _rhs.s[i])) {               \
-            _ret = true;                                   \
-            break;                                         \
-        }                                                  \
-    };                                                     \
-    eval_return _ret;                                      \
-)
+#define OP_math_Vec_ne(val_lhs, val_rhs)             (!math_Vec_eq(val_lhs, val_rhs))
 #define OP_math_Vec_lt(_lhs, _rhs, val_lhs, val_rhs) eval( \
     let  _lhs = (val_lhs);                                 \
     let  _rhs = (val_rhs);                                 \
@@ -221,7 +211,6 @@
     };                                            \
     eval_return _vec;                             \
 )
-
 #define OP_math_Vec_add(_lhs, _rhs, val_lhs, val_rhs) eval( \
     let _lhs = (val_lhs);                                   \
     let _rhs = (val_rhs);                                   \

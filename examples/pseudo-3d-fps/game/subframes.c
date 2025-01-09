@@ -5,7 +5,7 @@
 
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
-#include "dh/ArrayList.h"
+#include "dh/ArrList.h"
 #include "dh/defer.h"
 
 #include "dh/time/SysTime.h"
@@ -17,8 +17,8 @@
 
 using_Sli$(Vec2f);
 using_Sli$(Color);
-typedef ArrayList ArrayList$Vec2f;
-typedef ArrayList ArrayList$Color;
+typedef ArrList ArrList$Vec2f;
+typedef ArrList ArrList$Color;
 
 typedef struct Control {
     engine_KeyCode key;
@@ -94,12 +94,12 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         var heap      = (heap_Classic){};
         var allocator = heap_Classic_allocator(&heap);
 
-        var positions = (ArrayList$Vec2f)try_defer(ArrayList_initCapacity(typeInfo(Vec2f), allocator, 32));
-        defer(ArrayList_fini(&positions));
-        var velocities = (ArrayList$Vec2f)try_defer(ArrayList_initCapacity(typeInfo(Vec2f), allocator, 32));
-        defer(ArrayList_fini(&velocities));
-        var colors = (ArrayList$Color)try_defer(ArrayList_initCapacity(typeInfo(Color), allocator, 32));
-        defer(ArrayList_fini(&colors));
+        var positions = (ArrList$Vec2f)try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32));
+        defer(ArrList_fini(&positions));
+        var velocities = (ArrList$Vec2f)try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32));
+        defer(ArrList_fini(&velocities));
+        var colors = (ArrList$Color)try_defer(ArrList_initCap(typeInfo(Color), allocator, 32));
+        defer(ArrList_fini(&colors));
 
         const f32 w      = 160.0f;
         const f32 h      = 100.0f;
@@ -134,17 +134,17 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             if (engine_Mouse_pressed(engine_MouseButton_Left) || engine_Key_pressed(engine_KeyCode_Space)) {
                 log_debug("space pressed\n");
                 const Vec2f pos = Vec_as$(Vec2f, engine_Mouse_getPosition());
-                try_defer(ArrayList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(Vec2f) }));
+                try_defer(ArrList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(Vec2f) }));
 
                 let         angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
                 const Vec2f dir   = eval(
                     let         r = math_Vec2_sincos$(Vec2f, angle);
                     eval_return math_Vec_scale(r, 50);
                 );
-                try_defer(ArrayList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(Vec2f) }));
+                try_defer(ArrList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(Vec2f) }));
 
                 let color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
-                try_defer(ArrayList_append(&colors, (meta_Ptr){ .addr = (void*)&color, .type = typeInfo(Color) }));
+                try_defer(ArrList_append(&colors, (meta_Ptr){ .addr = (void*)&color, .type = typeInfo(Color) }));
             }
 
             let pos_list   = meta_castSli$(Sli$Vec2f, positions.items);

@@ -1,4 +1,4 @@
-#include "dh/ArrayList.h"
+#include "dh/ArrList.h"
 #include "dh/debug/assert.h"
 
 #include <malloc.h>
@@ -17,25 +17,25 @@ static usize growCapacity(usize current, usize minimum) {
     return new_cap < minimum ? minimum : new_cap;
 }
 
-ArrayList ArrayList_init(TypeInfo type, mem_Allocator allocator) {
+ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
     debug_assert_nonnull_fmt(allocator.ctx, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
 
-    return (ArrayList){
+    return (ArrList){
         .items     = (meta_Sli){ .addr = null, .type = type, .len = 0 },
         .capacity  = 0,
         .allocator = allocator
     };
 }
 
-Err$ArrayList ArrayList_initCapacity(TypeInfo type, mem_Allocator allocator, usize cap) {
-    reserveReturn(Err$ArrayList);
+Err$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) {
+    reserveReturn(Err$ArrList);
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
     debug_assert_nonnull_fmt(allocator.ctx, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
 
-    var list = ArrayList_init(type, allocator);
+    var list = ArrList_init(type, allocator);
     if (cap == 0) {
         return_ok(list);
     }
@@ -49,7 +49,7 @@ Err$ArrayList ArrayList_initCapacity(TypeInfo type, mem_Allocator allocator, usi
     return_ok(list);
 }
 
-void ArrayList_fini(ArrayList* self) {
+void ArrList_fini(ArrList* self) {
     debug_assert_nonnull(self);
 
     if (self->items.addr == null) { return; }
@@ -57,13 +57,13 @@ void ArrayList_fini(ArrayList* self) {
 }
 
 
-Err$meta_Sli ArrayList_toOwnedSlice(ArrayList* self) {
+Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
     reserveReturn(Err$meta_Sli);
     debug_assert_nonnull(self);
 
     if (mem_Allocator_resize(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type }, self->items.len)) {
         let result = self->items;
-        *self      = ArrayList_init(self->items.type, self->allocator);
+        *self      = ArrList_init(self->items.type, self->allocator);
         return_ok(result);
     }
 
@@ -77,23 +77,23 @@ Err$meta_Sli ArrayList_toOwnedSlice(ArrayList* self) {
 
     mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
 
-    *self = ArrayList_init(self->items.type, self->allocator);
+    *self = ArrList_init(self->items.type, self->allocator);
     return_ok(new_mem);
 }
 
-ArrayList ArrayList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice) {
-    return (ArrayList){
+ArrList ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice) {
+    return (ArrList){
         .items     = slice,
         .capacity  = slice.len,
         .allocator = allocator
     };
 }
 
-Err$ArrayList ArrayList_clone(const ArrayList* self) {
-    reserveReturn(Err$ArrayList);
+Err$ArrList ArrList_clone(const ArrList* self) {
+    reserveReturn(Err$ArrList);
     debug_assert_nonnull(self);
 
-    var new_list = try(ArrayList_initCapacity(
+    var new_list = try(ArrList_initCap(
         self->items.type,
         self->allocator,
         self->capacity
@@ -107,7 +107,7 @@ Err$ArrayList ArrayList_clone(const ArrayList* self) {
     return_ok(new_list);
 }
 
-Err$void ArrayList_ensureTotalCapacity(ArrayList* self, usize new_cap) {
+Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
@@ -116,11 +116,11 @@ Err$void ArrayList_ensureTotalCapacity(ArrayList* self, usize new_cap) {
     }
 
     let better_cap = growCapacity(self->capacity, new_cap);
-    try(ArrayList_ensureTotalCapacityPrecise(self, better_cap));
+    try(ArrList_ensureTotalCapPrecise(self, better_cap));
     return_void();
 }
 
-Err$void ArrayList_ensureTotalCapacityPrecise(ArrayList* self, usize new_cap) {
+Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
@@ -148,29 +148,29 @@ Err$void ArrayList_ensureTotalCapacityPrecise(ArrayList* self, usize new_cap) {
     return_void();
 }
 
-Err$void ArrayList_ensureUnusedCapacity(ArrayList* self, usize additional) {
+Err$void ArrList_ensureUnusedCap(ArrList* self, usize additional) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureTotalCapacity(self, self->items.len + additional));
+    try(ArrList_ensureTotalCap(self, self->items.len + additional));
     return_void();
 }
 
-Err$void ArrayList_resize(ArrayList* self, usize new_len) {
+Err$void ArrList_resize(ArrList* self, usize new_len) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureTotalCapacity(self, new_len));
+    try(ArrList_ensureTotalCap(self, new_len));
     self->items.len = new_len;
     return_void();
 }
 
-void ArrayList_shrinkAndFree(ArrayList* self, usize new_len) {
+void ArrList_shrinkAndFree(ArrList* self, usize new_len) {
     debug_assert_nonnull(self);
     debug_assert(new_len <= self->items.len);
 
     if (new_len == 0) {
-        ArrayList_clearAndFree(self);
+        ArrList_clearAndFree(self);
         return;
     }
 
@@ -180,26 +180,26 @@ void ArrayList_shrinkAndFree(ArrayList* self, usize new_len) {
     self->items.len = new_len;
 }
 
-void ArrayList_shrinkRetainingCapacity(ArrayList* self, usize new_len) {
+void ArrList_shrinkRetainingCap(ArrList* self, usize new_len) {
     debug_assert_nonnull(self);
     debug_assert(new_len <= self->items.len);
 
     self->items.len = new_len;
 }
 
-void ArrayList_expandToCapacity(ArrayList* self) {
+void ArrList_expandToCap(ArrList* self) {
     debug_assert_nonnull(self);
 
     self->items.len = self->capacity;
 }
 
-Err$void ArrayList_append(ArrayList* self, meta_Ptr item) {
+Err$void ArrList_append(ArrList* self, meta_Ptr item) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
 
-    try(ArrayList_ensureUnusedCapacity(self, 1));
+    try(ArrList_ensureUnusedCap(self, 1));
 
     memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
@@ -210,11 +210,11 @@ Err$void ArrayList_append(ArrayList* self, meta_Ptr item) {
     return_void();
 }
 
-Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) {
+Err$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureUnusedCapacity(self, items.len));
+    try(ArrList_ensureUnusedCap(self, items.len));
 
     memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
@@ -225,11 +225,11 @@ Err$void ArrayList_appendSlice(ArrayList* self, meta_Sli items) {
     return_void();
 }
 
-Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) {
+Err$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureUnusedCapacity(self, n));
+    try(ArrList_ensureUnusedCap(self, n));
 
     for (usize i = 0; i < n; ++i) {
         memcpy(
@@ -242,15 +242,88 @@ Err$void ArrayList_appendNTimes(ArrayList* self, meta_Ptr value, usize n) {
     return_void();
 }
 
-Err$meta_Ptr ArrayList_addOne(ArrayList* self) {
+Err$void ArrList_prepend(ArrList* self, meta_Ptr item) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+    debug_assert_nonnull(item.addr);
+    debug_assert(item.type.size == self->items.type.size);
+
+    try(ArrList_ensureUnusedCap(self, 1));
+
+    if (0 < self->items.len) {
+        memmove(
+            (u8*)self->items.addr + self->items.type.size,
+            self->items.addr,
+            self->items.len * self->items.type.size
+        );
+    }
+
+    memcpy(
+        self->items.addr,
+        item.addr,
+        item.type.size
+    );
+    self->items.len += 1;
+    return_void();
+}
+
+Err$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+
+    try(ArrList_ensureUnusedCap(self, items.len));
+
+    if (0 < self->items.len) {
+        memmove(
+            (u8*)self->items.addr + (items.len * self->items.type.size),
+            self->items.addr,
+            self->items.len * self->items.type.size
+        );
+    }
+
+    memcpy(
+        self->items.addr,
+        items.addr,
+        items.len * items.type.size
+    );
+    self->items.len += items.len;
+    return_void();
+}
+
+Err$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+
+    try(ArrList_ensureUnusedCap(self, n));
+
+    if (0 < self->items.len) {
+        memmove(
+            (u8*)self->items.addr + (n * self->items.type.size),
+            self->items.addr,
+            self->items.len * self->items.type.size
+        );
+    }
+
+    for (usize i = 0; i < n; ++i) {
+        memcpy(
+            (u8*)self->items.addr + (i * self->items.type.size),
+            value.addr,
+            value.type.size
+        );
+    }
+    self->items.len += n;
+    return_void();
+}
+
+Err$meta_Ptr ArrList_addBackOne(ArrList* self) {
     reserveReturn(Err$meta_Ptr);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureUnusedCapacity(self, 1));
-    return_ok(ArrayList_addOneAssumeCapacity(self));
+    try(ArrList_ensureUnusedCap(self, 1));
+    return_ok(ArrList_addBackOneAssumeCap(self));
 }
 
-meta_Ptr ArrayList_addOneAssumeCapacity(ArrayList* self) {
+meta_Ptr ArrList_addBackOneAssumeCap(ArrList* self) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len < self->capacity);
 
@@ -261,15 +334,15 @@ meta_Ptr ArrayList_addOneAssumeCapacity(ArrayList* self) {
     };
 }
 
-Err$meta_Sli ArrayList_addManyAsSlice(ArrayList* self, usize n) {
+Err$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
     reserveReturn(Err$meta_Sli);
     debug_assert_nonnull(self);
 
-    try(ArrayList_ensureUnusedCapacity(self, n));
-    return_ok(ArrayList_addManyAsSliceAssumeCapacity(self, n));
+    try(ArrList_ensureUnusedCap(self, n));
+    return_ok(ArrList_addBackManyAsSliceAssumeCap(self, n));
 }
 
-meta_Sli ArrayList_addManyAsSliceAssumeCapacity(ArrayList* self, usize n) {
+meta_Sli ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len + n <= self->capacity);
 
@@ -282,12 +355,67 @@ meta_Sli ArrayList_addManyAsSliceAssumeCapacity(ArrayList* self, usize n) {
     };
 }
 
-Err$void ArrayList_insert(ArrayList* self, usize index, meta_Ptr item) {
+Err$meta_Ptr ArrList_addFrontOne(ArrList* self) {
+    reserveReturn(Err$meta_Ptr);
+    debug_assert_nonnull(self);
+
+    try(ArrList_ensureUnusedCap(self, 1));
+    return_ok(ArrList_addFrontOneAssumeCap(self));
+}
+
+meta_Ptr ArrList_addFrontOneAssumeCap(ArrList* self) {
+    debug_assert_nonnull(self);
+    debug_assert(self->items.len < self->capacity);
+
+    if (0 < self->items.len) {
+        memmove(
+            (u8*)self->items.addr + self->items.type.size,
+            self->items.addr,
+            self->items.len * self->items.type.size
+        );
+    }
+
+    self->items.len += 1;
+    return (meta_Ptr){
+        .addr = self->items.addr,
+        .type = self->items.type
+    };
+}
+
+Err$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
+    reserveReturn(Err$meta_Sli);
+    debug_assert_nonnull(self);
+
+    try(ArrList_ensureUnusedCap(self, n));
+    return_ok(ArrList_addFrontManyAsSliceAssumeCap(self, n));
+}
+
+meta_Sli ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n) {
+    debug_assert_nonnull(self);
+    debug_assert(self->items.len + n <= self->capacity);
+
+    if (0 < self->items.len) {
+        memmove(
+            (u8*)self->items.addr + (n * self->items.type.size),
+            self->items.addr,
+            self->items.len * self->items.type.size
+        );
+    }
+
+    self->items.len += n;
+    return (meta_Sli){
+        .addr = self->items.addr,
+        .type = self->items.type,
+        .len  = n
+    };
+}
+
+Err$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
-    try(ArrayList_ensureUnusedCapacity(self, 1));
+    try(ArrList_ensureUnusedCap(self, 1));
 
     if (index < self->items.len) {
         memmove(
@@ -307,12 +435,12 @@ Err$void ArrayList_insert(ArrayList* self, usize index, meta_Ptr item) {
     return_void();
 }
 
-Err$void ArrayList_insertSlice(ArrayList* self, usize index, meta_Sli items) {
+Err$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
-    try(ArrayList_ensureUnusedCapacity(self, items.len));
+    try(ArrList_ensureUnusedCap(self, items.len));
 
     if (index < self->items.len) {
         memmove(
@@ -332,14 +460,14 @@ Err$void ArrayList_insertSlice(ArrayList* self, usize index, meta_Sli items) {
     return_void();
 }
 
-void ArrayList_pop(ArrayList* self) {
+void ArrList_pop(ArrList* self) {
     debug_assert_nonnull(self);
-    debug_assert(self->items.len > 0);
+    debug_assert(0 < self->items.len);
 
     self->items.len -= 1;
 }
 
-Opt$meta_Ptr ArrayList_popOrNull(ArrayList* self) {
+Opt$meta_Ptr ArrList_popOrNull(ArrList* self) {
     reserveReturn(Opt$meta_Ptr);
     debug_assert_nonnull(self);
 
@@ -352,7 +480,45 @@ Opt$meta_Ptr ArrayList_popOrNull(ArrayList* self) {
         .type = self->items.type });
 }
 
-meta_Ptr ArrayList_orderedRemove(ArrayList* self, usize index) {
+void ArrList_shift(ArrList* self) {
+    debug_assert_nonnull(self);
+    debug_assert(0 < self->items.len);
+
+    if (1 < self->items.len) {
+        memmove(
+            self->items.addr,
+            (u8*)self->items.addr + self->items.type.size,
+            (self->items.len - 1) * self->items.type.size
+        );
+    }
+    self->items.len -= 1;
+}
+
+Opt$meta_Ptr ArrList_shiftOrNull(ArrList* self) {
+    reserveReturn(Opt$meta_Ptr);
+    debug_assert_nonnull(self);
+
+    if (self->items.len == 0) {
+        return_none();
+    }
+
+    meta_Ptr result = {
+        .addr = self->items.addr,
+        .type = self->items.type
+    };
+
+    if (1 < self->items.len) {
+        memmove(
+            self->items.addr,
+            (u8*)self->items.addr + self->items.type.size,
+            (self->items.len - 1) * self->items.type.size
+        );
+    }
+    self->items.len -= 1;
+    return_some(result);
+}
+
+meta_Ptr ArrList_removeOrdered(ArrList* self, usize index) {
     debug_assert_nonnull(self);
     debug_assert(index < self->items.len);
 
@@ -373,7 +539,7 @@ meta_Ptr ArrayList_orderedRemove(ArrayList* self, usize index) {
     return result;
 }
 
-meta_Ptr ArrayList_swapRemove(ArrayList* self, usize index) {
+meta_Ptr ArrList_removeSwap(ArrList* self, usize index) {
     debug_assert_nonnull(self);
     debug_assert(index < self->items.len);
 
@@ -412,12 +578,12 @@ meta_Ptr ArrayList_swapRemove(ArrayList* self, usize index) {
     return result;
 }
 
-void ArrayList_clearRetainingCapacity(ArrayList* self) {
+void ArrList_clearRetainingCap(ArrList* self) {
     debug_assert_nonnull(self);
     self->items.len = 0;
 }
 
-void ArrayList_clearAndFree(ArrayList* self) {
+void ArrList_clearAndFree(ArrList* self) {
     debug_assert_nonnull(self);
     if (self->items.addr != null) {
         mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
@@ -428,42 +594,4 @@ void ArrayList_clearAndFree(ArrayList* self) {
         };
         self->capacity = 0;
     }
-}
-
-usize ArrayList_len(const ArrayList* self) {
-    debug_assert_nonnull(self);
-    return self->items.len;
-}
-
-usize ArrayList_capacity(const ArrayList* self) {
-    debug_assert_nonnull(self);
-    return self->capacity;
-}
-
-meta_SliConst ArrayList_items(const ArrayList* self) {
-    debug_assert_nonnull(self);
-    return self->items.as_const;
-}
-
-meta_Sli ArrayList_items_mut(ArrayList* self) {
-    debug_assert_nonnull(self);
-    return self->items;
-}
-
-meta_PtrConst ArrayList_at(const ArrayList* self, usize index) {
-    debug_assert_nonnull(self);
-    debug_assert(index < self->items.len);
-    return (meta_PtrConst){
-        .addr = (u8*)self->items.addr + (index * self->items.type.size),
-        .type = self->items.type
-    };
-}
-
-meta_Ptr ArrayList_at_mut(ArrayList* self, usize index) {
-    debug_assert_nonnull(self);
-    debug_assert(index < self->items.len);
-    return (meta_Ptr){
-        .addr = (u8*)self->items.addr + (index * self->items.type.size),
-        .type = self->items.type
-    };
 }
