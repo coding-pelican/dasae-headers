@@ -2,8 +2,8 @@
 
 mem_Allocator heap_Classic_allocator(heap_Classic* self) {
     /* VTable implementations */
-    extern must_check Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align);
-    extern must_check bool       heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len);
+    extern Opt$Ptr$u8            heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) must_check;
+    extern bool                  heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
     extern void                  heap_Classic_free(anyptr ctx, Sli$u8 buf, usize buf_align);
     /* VTable for Classic allocator */
     static const mem_AllocatorVT vt[1] = { {

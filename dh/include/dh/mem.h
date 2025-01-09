@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    mem.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2024-12-07 (date of last update)
- * @version v0.1.1
+ * @updated 2025-01-09 (date of last update)
+ * @version v0.1.2
  * @ingroup dasae-headers(dh)
  * @prefix  mem
  *
@@ -23,6 +23,7 @@ extern "C" {
 
 #include "mem/cfg.h"
 #include "mem/common.h"
+#include "mem/Tracker.h"
 #include "mem/Allocator.h"
 
 #if defined(__cplusplus)
