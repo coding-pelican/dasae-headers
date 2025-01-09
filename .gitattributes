@@ -1,0 +1,12 @@
+﻿# Set the default behavior for all files.
+* text=auto eol=lf
+
+# Normalized and converts to native line endings on checkout.
+*.c text
+*.cc text
+*.cxx text
+*.cpp text
+*.h text
+*.hh text
+*.hxx text
+*.hpp text

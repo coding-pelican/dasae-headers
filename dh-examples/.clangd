@@ -47,6 +47,7 @@ CompileFlags:
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include,
     ]
 ---
 # Header Configs

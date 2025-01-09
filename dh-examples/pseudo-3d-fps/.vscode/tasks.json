@@ -18,19 +18,6 @@
       ],
       "default": "c17"
     },
-    { // cppStandard
-      "id": "cppStandard",
-      "type": "pickString",
-      "description": "Select C++ standard:",
-      "options": [
-        "c++20",
-        "c++17",
-        "c++14",
-        "c++11",
-        "c++98"
-      ],
-      "default": "c++20"
-    },
     { // libraries
       "id": "libraries",
       "type": "promptString",
@@ -45,15 +32,16 @@
     }
   ],
   "tasks": [
-    { // engine>build C file (debug)
-      "label": "engine>build C file (debug)",
+    { // pseudo-3d-fps/build C file (debug)
+      "label": "pseudo-3d-fps/build C file (debug)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/pseudo-3d-fps/game/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}-debug",
         "-DCOMP",
@@ -63,13 +51,11 @@
         "-fdiagnostics-color=always",
         "-fblocks",
         "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
         "${input:libraries}"
       ],
       "group": {
@@ -80,15 +66,16 @@
         "$gcc"
       ]
     },
-    { // engine>build C file (release)
-      "label": "engine>build C file (release)",
+    { // pseudo-3d-fps/build C file (release)
+      "label": "pseudo-3d-fps/build C file (release)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/pseudo-3d-fps/game/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}",
         "-DCOMP",
@@ -99,13 +86,11 @@
         "-fdiagnostics-color=always",
         "-fblocks",
         "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
@@ -113,15 +98,16 @@
         "$gcc"
       ]
     },
-    { // engine>build C file (optimize)
-      "label": "engine>build C file (optimize)",
+    { // pseudo-3d-fps/build C file (optimize)
+      "label": "pseudo-3d-fps/build C file (optimize)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/pseudo-3d-fps/game/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}",
         "-DCOMP",
@@ -132,220 +118,17 @@
         "-fdiagnostics-color=always",
         "-fblocks",
         "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
         "${input:libraries}"
       ],
       "group": "build",
       "problemMatcher": [
         "$gcc"
       ]
-    },
-    { // game>build C file (debug)
-      "label": "game>build C file (debug)",
-      "type": "shell",
-      "command": "clang",
-      "args": [
-        "-std=${input:cStandard}",
-        "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src/*.c",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug",
-        "-DCOMP",
-        "-g",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-fblocks",
-        "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // game>build C file (release)
-      "label": "game>build C file (release)",
-      "type": "shell",
-      "command": "clang",
-      "args": [
-        "-std=${input:cStandard}",
-        "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src/*.c",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}",
-        "-DCOMP",
-        "-DNDEBUG",
-        "-O2",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-fblocks",
-        "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // game>build C file (optimize)
-      "label": "game>build C file (optimize)",
-      "type": "shell",
-      "command": "clang",
-      "args": [
-        "-std=${input:cStandard}",
-        "${file}",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src/*.c",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}",
-        "-DCOMP",
-        "-DNDEBUG",
-        "-O3",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-fblocks",
-        "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/dh/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/engine/include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/examples/pseudo-3d-fps/game/src",
-        "-static",
-        "-lgdi32",
-        "-luser32",
-        "-lkernel32",
-        "${input:libraries}"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // execute debug build
-      "label": "execute debug build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute release/optimize build
-      "label": "execute release/optimize build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute and cleanup debug build
-      "label": "execute and cleanup debug build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs} && del /f ${fileBasenameNoExtension}-debug.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}-debug"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute and cleanup release/optimize build
-      "label": "execute and cleanup release/optimize build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs} && del /f ${fileBasenameNoExtension}.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
     }
   ]
 }

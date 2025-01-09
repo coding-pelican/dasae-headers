@@ -1,8 +1,8 @@
 {
   "version": "0.2.0",
   "configurations": [
-    { // C/C++ - Debug Single File
-      "name": "Debug Single File",
+    { // pseudo-32-fps>C/C++: Debug Single File
+      "name": "pseudo-32-fps>C/C++: Debug Single File",
       "type": "lldb",
       "request": "launch",
       "args": [
@@ -11,8 +11,8 @@
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug"
     },
-    { // C - Debug Single File with Build
-      "name": "C: Debug Single File with Build",
+    { // pseudo-32-fps>C: Debug Single File with Build
+      "name": "pseudo-32-fps>C: Debug Single File with Build",
       "type": "lldb",
       "request": "launch",
       "args": [
@@ -20,10 +20,10 @@
       ],
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "preLaunchTask": "build C file (debug)"
+      "preLaunchTask": "pseudo-32-fps>build C file (debug)"
     },
-    { // C++ - Debug Single File with Build
-      "name": "C++: Debug Single File with Build",
+    { // pseudo-32-fps>C: Debug Project with Build
+      "name": "pseudo-32-fps>C: Debug Project with Build",
       "type": "lldb",
       "request": "launch",
       "args": [
@@ -31,29 +31,7 @@
       ],
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "preLaunchTask": "build C++ file (debug)"
-    },
-    { // C - Debug Project with Build
-      "name": "C: Debug Project with Build",
-      "type": "lldb",
-      "request": "launch",
-      "args": [
-        "${input:userArgs}"
-      ],
-      "cwd": "${fileDirname}",
-      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "preLaunchTask": "build C project (debug)"
-    },
-    { // C++ - Debug Project with Build
-      "name": "C++: Debug Project with Build",
-      "type": "lldb",
-      "request": "launch",
-      "args": [
-        "${input:userArgs}"
-      ],
-      "cwd": "${fileDirname}",
-      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "preLaunchTask": "build C++ project (debug)"
+      "preLaunchTask": "pseudo-32-fps>build C project (debug)"
     }
   ],
   "inputs": [

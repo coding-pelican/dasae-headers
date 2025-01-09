@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "dh"
+    },
+    {
+      "path": "dh-examples"
+    },
+    {
+      "path": "dh-examples/engine"
+    },
+    {
+      "path": "dh-examples/pseudo-3d-fps"
+    },
+    {
+      "path": "dh-examples/fireworks"
+    },
+    {
+      "path": "dh-examples/subframes"
+    },
+    {
+      "path": "dh-examples/voxel-space"
+    }
+  ],
+  "settings": {
+    "discord.enabled": true,
+    "yaml.schemas": {
+      "https://json.schemastore.org/clangd.json": "file:///c%3A/dasae-storage/dev/source/c-cpp-workspace/projects/tests/test_terminal/.clangd"
+    }
+  }
+}

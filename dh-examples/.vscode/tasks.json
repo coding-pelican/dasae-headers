@@ -18,19 +18,6 @@
       ],
       "default": "c17"
     },
-    { // cppStandard
-      "id": "cppStandard",
-      "type": "pickString",
-      "description": "Select C++ standard:",
-      "options": [
-        "c++20",
-        "c++17",
-        "c++14",
-        "c++11",
-        "c++98"
-      ],
-      "default": "c++20"
-    },
     { // libraries
       "id": "libraries",
       "type": "promptString",
@@ -45,14 +32,15 @@
     }
   ],
   "tasks": [
-    { // dh>build C file (debug)
-      "label": "dh>build C file (debug)",
+    { // engine>build C file (debug)
+      "label": "engine>build C file (debug)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}-debug",
         "-DCOMP",
@@ -65,7 +53,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
         "${input:libraries}"
       ],
@@ -77,14 +65,15 @@
         "$gcc"
       ]
     },
-    { // dh>build C file (release)
-      "label": "dh>build C file (release)",
+    { // engine>build C file (release)
+      "label": "engine>build C file (release)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}",
         "-DCOMP",
@@ -98,7 +87,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
         "${input:libraries}"
       ],
@@ -107,14 +96,15 @@
         "$gcc"
       ]
     },
-    { // dh>build C file (optimize)
-      "label": "dh>build C file (optimize)",
+    { // engine>build C file (optimize)
+      "label": "engine>build C file (optimize)",
       "type": "shell",
       "command": "clang",
       "args": [
         "-std=${input:cStandard}",
         "${file}",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}",
         "-DCOMP",
@@ -128,7 +118,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
         "-static",
         "${input:libraries}"
       ],
@@ -136,98 +126,6 @@
       "problemMatcher": [
         "$gcc"
       ]
-    },
-    { // execute debug build
-      "label": "execute debug build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute release/optimize build
-      "label": "execute release/optimize build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute and cleanup debug build
-      "label": "execute and cleanup debug build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs} && del /f ${fileBasenameNoExtension}-debug.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}-debug"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute and cleanup release/optimize build
-      "label": "execute and cleanup release/optimize build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs} && del /f ${fileBasenameNoExtension}.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
     }
   ]
 }
