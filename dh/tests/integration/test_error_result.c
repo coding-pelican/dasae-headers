@@ -16,7 +16,7 @@ decl_Err$(ArrList);
 struct ArrList {
     mem_Allocator allocator;
     Slice         items;
-    usize         capacity;
+    usize         cap;
     usize         item_size;
 };
 static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
@@ -38,17 +38,17 @@ static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocato
                 .ptr = ptr,
                 .len = 0,
         },
-        .capacity  = 8,
+        .cap       = 8,
         .item_size = type.size,
     });
 }
 
 static void ArrList_fini(ArrList* self) {
-    var memory = (Sli$u8){ .ptr = self->items.ptr, .len = self->capacity };
+    var memory = (Sli$u8){ .ptr = self->items.ptr, .len = self->cap };
     mem_Allocator_free(self->allocator, AnySli(memory));
     self->items.ptr = null;
     self->items.len = 0;
-    self->capacity  = 0;
+    self->cap       = 0;
 }
 
 static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
@@ -58,9 +58,9 @@ static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
     }
 
-    if (self->items.len >= self->capacity) {
-        let new_capacity = self->capacity * 2;
-        var memory       = (Sli$u8){ .ptr = self->items.ptr, .len = self->capacity };
+    if (self->items.len >= self->cap) {
+        let new_capacity = self->cap * 2;
+        var memory       = (Sli$u8){ .ptr = self->items.ptr, .len = self->cap };
         let reallocated  = mem_Allocator_realloc(self->allocator, AnySli(memory), new_capacity);
         if (!reallocated.has_value) {
             return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
@@ -68,7 +68,7 @@ static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
         let new_slice = unwrap(reallocated);
 
         self->items.ptr = new_slice.ptr.addr;
-        self->capacity  = new_capacity;
+        self->cap       = new_capacity;
     }
     anyptr const dest = (u8*)self->items.ptr + (self->items.len * self->item_size);
     memcpy(dest, item, self->item_size);

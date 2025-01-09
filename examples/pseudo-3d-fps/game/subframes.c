@@ -16,16 +16,17 @@
 #include "../engine/include/engine.h"
 
 using_Sli$(Vec2f);
+using_ArrList$(Vec2f);
+typedef ArrList$Vec2f Vec2fs;
 using_Sli$(Color);
-typedef ArrList ArrList$Vec2f;
-typedef ArrList ArrList$Color;
+using_ArrList$(Color);
+typedef ArrList$Color Colors;
 
 typedef struct Control {
     engine_KeyCode key;
     Vec2f          vec;
 } Control;
 using_Sli$(Control);
-
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {
         { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
@@ -33,10 +34,9 @@ static SliConst$Control Control_list(void) {
         { .key = engine_KeyCode_S, .vec = math_Vec_rt$(Vec2f) },
         { .key = engine_KeyCode_D, .vec = math_Vec_dn$(Vec2f) },
     };
-    static const usize controls_len = sizeof(controls) / sizeof(controls[0]);
     return (SliConst$Control){
         .ptr = controls,
-        .len = controls_len,
+        .len = countOf(controls),
     };
 }
 
@@ -76,30 +76,26 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         log_info("engine initialized\n");
 
         // Create canvases
-        // let bg_canvas = try_defer(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
-        // defer(engine_Canvas_destroy(bg_canvas));
         let game_canvas = try_defer(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        // engine_Canvas_clear(bg_canvas, Color_black);
         engine_Canvas_clear(game_canvas, Color_black);
         log_info("canvas cleared\n");
 
         // Add canvas views
-        // engine_Window_addCanvasView(window, bg_canvas, 0, 0, 160, 100);
         engine_Window_addCanvasView(window, game_canvas, 0, 0, 160, 100);
         log_info("canvas views added\n");
 
         var heap      = (heap_Classic){};
         var allocator = heap_Classic_allocator(&heap);
 
-        var positions = (ArrList$Vec2f)try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32));
-        defer(ArrList_fini(&positions));
-        var velocities = (ArrList$Vec2f)try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32));
-        defer(ArrList_fini(&velocities));
-        var colors = (ArrList$Color)try_defer(ArrList_initCap(typeInfo(Color), allocator, 32));
-        defer(ArrList_fini(&colors));
+        var positions = typed(Vec2fs, try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32)));
+        defer(ArrList_fini(&positions.base));
+        var velocities = typed(Vec2fs, try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32)));
+        defer(ArrList_fini(&velocities.base));
+        var colors = typed(Colors, try_defer(ArrList_initCap(typeInfo(Color), allocator, 32)));
+        defer(ArrList_fini(&colors.base));
 
         const f32 w      = 160.0f;
         const f32 h      = 100.0f;
@@ -133,65 +129,68 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             if (engine_Mouse_pressed(engine_MouseButton_Left) || engine_Key_pressed(engine_KeyCode_Space)) {
                 log_debug("space pressed\n");
-                const Vec2f pos = Vec_as$(Vec2f, engine_Mouse_getPosition());
-                try_defer(ArrList_append(&positions, (meta_Ptr){ .addr = (void*)&pos, .type = typeInfo(Vec2f) }));
+                scope_with(let pos = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&positions.base)))) {
+                    *pos = Vec_as$(Vec2f, engine_Mouse_getPosition());
+                }
 
-                let         angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
-                const Vec2f dir   = eval(
-                    let         r = math_Vec2_sincos$(Vec2f, angle);
-                    eval_return math_Vec_scale(r, 50);
-                );
-                try_defer(ArrList_append(&velocities, (meta_Ptr){ .addr = (void*)&dir, .type = typeInfo(Vec2f) }));
+                scope_with(let vel = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&velocities.base)))) {
+                    *vel = eval(
+                        let angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
+                        let r     = math_Vec2_sincos$(Vec2f, angle);
+                        eval_return(math_Vec_scale(r, 50));
+                    );
+                }
 
-                let color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
-                try_defer(ArrList_append(&colors, (meta_Ptr){ .addr = (void*)&color, .type = typeInfo(Color) }));
+                scope_with(let color = meta_castPtr$(Color*, try_defer(ArrList_addBackOne(&colors.base)))) {
+                    *color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
+                }
             }
 
-            let pos_list   = meta_castSli$(Sli$Vec2f, positions.items);
-            let vel_list   = meta_castSli$(Sli$Vec2f, velocities.items);
-            let color_list = meta_castSli$(Sli$Color, colors.items);
+            let ps = positions.items;
+            let vs = velocities.items;
+            let cs = colors.items;
 
             for (f32 t = 0.0f; t < real_dt; t += TARGET_DT) {
-                for (usize i = 0; i < pos_list.len; ++i) {
+                for (usize i = 0; i < ps.len; ++i) {
                     const f32 f = (f32)(t / real_dt);
 
-                    pos_list.ptr[i] = math_Vec_sub(pos_list.ptr[i], math_Vec_scale(dwinpos, TARGET_DT / real_dt));
-                    vel_list.ptr[i].y += GRAVITY * TARGET_DT;
+                    ps.ptr[i] = math_Vec_sub(ps.ptr[i], math_Vec_scale(dwinpos, TARGET_DT / real_dt));
+                    vs.ptr[i].y += GRAVITY * TARGET_DT;
 
-                    const f32 nx = pos_list.ptr[i].x + vel_list.ptr[i].x * TARGET_DT;
+                    const f32 nx = ps.ptr[i].x + vs.ptr[i].x * TARGET_DT;
                     if ((nx - radius) <= 0) {
-                        pos_list.ptr[i].x = radius;
-                        vel_list.ptr[i].x *= -COLLISION_DAMPING;
-                        vel_list.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
+                        ps.ptr[i].x = radius;
+                        vs.ptr[i].x *= -COLLISION_DAMPING;
+                        vs.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
                     } else if (w <= (nx + radius)) {
-                        pos_list.ptr[i].x = w - radius;
-                        vel_list.ptr[i].x *= -COLLISION_DAMPING;
-                        vel_list.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
+                        ps.ptr[i].x = w - radius;
+                        vs.ptr[i].x *= -COLLISION_DAMPING;
+                        vs.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
                     } else {
-                        pos_list.ptr[i].x = nx;
+                        ps.ptr[i].x = nx;
                     }
 
-                    const f32 ny = pos_list.ptr[i].y + vel_list.ptr[i].y * TARGET_DT;
+                    const f32 ny = ps.ptr[i].y + vs.ptr[i].y * TARGET_DT;
                     if ((ny - radius) <= 0) {
-                        pos_list.ptr[i].y = radius;
-                        vel_list.ptr[i].y *= -COLLISION_DAMPING;
-                        vel_list.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
+                        ps.ptr[i].y = radius;
+                        vs.ptr[i].y *= -COLLISION_DAMPING;
+                        vs.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
                     } else if (h <= (ny + radius)) {
-                        pos_list.ptr[i].y = h - radius;
-                        vel_list.ptr[i].y *= -COLLISION_DAMPING;
-                        vel_list.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
+                        ps.ptr[i].y = h - radius;
+                        vs.ptr[i].y *= -COLLISION_DAMPING;
+                        vs.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
                     } else {
-                        pos_list.ptr[i].y = ny;
+                        ps.ptr[i].y = ny;
                     }
 
                     engine_Canvas_fillRingByScanlines(
                         game_canvas,
-                        (i32)pos_list.ptr[i].x,
-                        (i32)pos_list.ptr[i].y,
+                        (i32)ps.ptr[i].x,
+                        (i32)ps.ptr[i].y,
                         (i32)(radius * 0.8f),
                         (i32)radius,
                         eval(
-                            var c = color_list.ptr[i];
+                            var c = cs.ptr[i];
                             c.a *= f;
                             eval_return c;
                         )

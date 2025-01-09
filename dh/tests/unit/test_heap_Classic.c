@@ -203,8 +203,8 @@ TEST_Result TEST_heap_Classic_Errors(void) {
         unused(err);
         TEST_condition(huge_res.is_err);
     });
-    var ptr = meta_castSli(Sli$u8, huge_res.ok);
-    mem_Allocator_free(allocator, AnySli(ptr));
+    var ptr = meta_castSli$(Sli$u8, huge_res.ok);
+    mem_Allocator_free(allocator, anySli(ptr));
 
     heap_Classic_fini(allocator);
     return TEST_completeResult(&result);

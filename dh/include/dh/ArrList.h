@@ -11,10 +11,14 @@ extern "C" {
 
 typedef struct ArrList {
     meta_Sli      items;
-    usize         capacity;
+    usize         cap;
     mem_Allocator allocator;
 } ArrList;
 using_Err$(ArrList);
+
+#define using_ArrList$(T) GEN_using_ArrList$(T)
+#define decl_ArrList$(T)  GEN_decl_ArrList$(T)
+#define impl_ArrList$(T)  GEN_impl_ArrList$(T)
 
 // Initialize empty list
 extern ArrList     ArrList_init(TypeInfo type, mem_Allocator allocator);
@@ -76,6 +80,24 @@ extern meta_Ptr     ArrList_removeSwap(ArrList* self, usize index);
 // Clear
 extern void ArrList_clearRetainingCap(ArrList* self);
 extern void ArrList_clearAndFree(ArrList* self);
+
+/*========== Implementations ================================================*/
+
+#define GEN_using_ArrList$(T) \
+    decl_ArrList$(T);         \
+    impl_ArrList$(T);
+#define GEN_decl_ArrList$(T) \
+    typedef union pp_join($, ArrList, T) pp_join($, ArrList, T)
+#define GEN_impl_ArrList$(T)          \
+    union pp_join($, ArrList, T) {    \
+        ArrList base;                 \
+        struct {                      \
+            TypeInfo type;            \
+            pp_join($, Sli, T) items; \
+            usize         cap;        \
+            mem_Allocator allocator;  \
+        };                            \
+    }
 
 #if defined(__cplusplus)
 } /* extern "C" */

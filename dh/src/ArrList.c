@@ -24,7 +24,7 @@ ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
 
     return (ArrList){
         .items     = (meta_Sli){ .addr = null, .type = type, .len = 0 },
-        .capacity  = 0,
+        .cap       = 0,
         .allocator = allocator
     };
 }
@@ -45,7 +45,7 @@ Err$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) {
     debug_assert_true(result.len == cap);
     list.items     = result;
     list.items.len = 0;
-    list.capacity  = cap;
+    list.cap       = cap;
     return_ok(list);
 }
 
@@ -84,7 +84,7 @@ Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
 ArrList ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice) {
     return (ArrList){
         .items     = slice,
-        .capacity  = slice.len,
+        .cap       = slice.len,
         .allocator = allocator
     };
 }
@@ -96,7 +96,7 @@ Err$ArrList ArrList_clone(const ArrList* self) {
     var new_list = try(ArrList_initCap(
         self->items.type,
         self->allocator,
-        self->capacity
+        self->cap
     ));
     memcpy(
         new_list.items.addr,
@@ -111,11 +111,11 @@ Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    if (new_cap <= self->capacity) {
+    if (new_cap <= self->cap) {
         return_void();
     }
 
-    let better_cap = growCapacity(self->capacity, new_cap);
+    let better_cap = growCapacity(self->cap, new_cap);
     try(ArrList_ensureTotalCapPrecise(self, better_cap));
     return_void();
 }
@@ -124,7 +124,7 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    if (new_cap <= self->capacity) {
+    if (new_cap <= self->cap) {
         return_void();
     }
 
@@ -133,7 +133,7 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
             (AnyType){ .ctx = &self->items, .type = self->items.type },
             new_cap
         )) {
-        self->capacity = new_cap;
+        self->cap = new_cap;
         return_void();
     }
 
@@ -144,7 +144,7 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
     mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
 
     self->items.addr = new_mem.addr;
-    self->capacity   = new_cap;
+    self->cap        = new_cap;
     return_void();
 }
 
@@ -175,7 +175,7 @@ void ArrList_shrinkAndFree(ArrList* self, usize new_len) {
     }
 
     if (mem_Allocator_resize(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type }, new_len)) {
-        self->capacity = new_len;
+        self->cap = new_len;
     }
     self->items.len = new_len;
 }
@@ -190,7 +190,7 @@ void ArrList_shrinkRetainingCap(ArrList* self, usize new_len) {
 void ArrList_expandToCap(ArrList* self) {
     debug_assert_nonnull(self);
 
-    self->items.len = self->capacity;
+    self->items.len = self->cap;
 }
 
 Err$void ArrList_append(ArrList* self, meta_Ptr item) {
@@ -325,7 +325,7 @@ Err$meta_Ptr ArrList_addBackOne(ArrList* self) {
 
 meta_Ptr ArrList_addBackOneAssumeCap(ArrList* self) {
     debug_assert_nonnull(self);
-    debug_assert(self->items.len < self->capacity);
+    debug_assert(self->items.len < self->cap);
 
     self->items.len += 1;
     return (meta_Ptr){
@@ -344,7 +344,7 @@ Err$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
 
 meta_Sli ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n) {
     debug_assert_nonnull(self);
-    debug_assert(self->items.len + n <= self->capacity);
+    debug_assert(self->items.len + n <= self->cap);
 
     let old_len = self->items.len;
     self->items.len += n;
@@ -365,7 +365,7 @@ Err$meta_Ptr ArrList_addFrontOne(ArrList* self) {
 
 meta_Ptr ArrList_addFrontOneAssumeCap(ArrList* self) {
     debug_assert_nonnull(self);
-    debug_assert(self->items.len < self->capacity);
+    debug_assert(self->items.len < self->cap);
 
     if (0 < self->items.len) {
         memmove(
@@ -392,7 +392,7 @@ Err$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
 
 meta_Sli ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n) {
     debug_assert_nonnull(self);
-    debug_assert(self->items.len + n <= self->capacity);
+    debug_assert(self->items.len + n <= self->cap);
 
     if (0 < self->items.len) {
         memmove(
@@ -592,6 +592,6 @@ void ArrList_clearAndFree(ArrList* self) {
             .type = self->items.type,
             .len  = 0
         };
-        self->capacity = 0;
+        self->cap = 0;
     }
 }
