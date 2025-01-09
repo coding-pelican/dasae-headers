@@ -1,5 +1,6 @@
 #include "dh/main.h"
 #include "dh/debug.h"
+#include "engine/input.h"
 #define LOG_NO_DISABLE_RELEASE (1)
 #include "dh/log.h"
 
@@ -32,7 +33,7 @@ Opt$TerrainData loadSample(const char* heightmap_file, const char* colormap_file
     i32 actualChannelsH = 0;
     u8* heightmapData   = stbi_load(heightmap_file, &widthH, &heightH, &actualChannelsH, 1); // request 1 channel
     if (!heightmapData) {
-        ignore fprintf(stderr, "Failed to load heightmap: %s\n", heightmap_file);
+        log_error("Failed to load heightmap: %s\n", heightmap_file);
         return_none();
     }
     printf("Heightmap: %s\n", heightmap_file);
@@ -46,7 +47,7 @@ Opt$TerrainData loadSample(const char* heightmap_file, const char* colormap_file
     i32 channelsC    = 0;
     u8* colormapData = stbi_load(colormap_file, &widthC, &heightC, &channelsC, 0); // 0 means "load as-is"
     if (!colormapData) {
-        ignore fprintf(stderr, "Failed to load colormap: %s\n", colormap_file);
+        log_error("Failed to load colormap: %s\n", colormap_file);
         stbi_image_free(heightmapData);
         return_none();
     }
@@ -82,125 +83,229 @@ Opt$TerrainData loadSample(const char* heightmap_file, const char* colormap_file
     });
 }
 
+typedef struct Control {
+    engine_KeyCode key;
+    Vec2f          vec;
+} Control;
+using_Sli$(Control);
+
+static SliConst$Control Control_list(void) {
+    static const Control controls[] = {
+        { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
+        { .key = engine_KeyCode_A, .vec = math_Vec_lt$(Vec2f) },
+        { .key = engine_KeyCode_S, .vec = math_Vec_dn$(Vec2f) },
+        { .key = engine_KeyCode_D, .vec = math_Vec_rt$(Vec2f) },
+    };
+    return (SliConst$Control){
+        .ptr = controls,
+        .len = countOf(controls),
+    };
+}
+
+#define window_width  (80)
+#define window_height (50)
+
 typedef struct State {
     TerrainData terrain;
-    Vec2i       camera_pos;
-    f32         camera_angle; // <== We'll use this as 'phi'
-    f32         height;       // camera height above ground
-    f32         horizon;
-    f32         scale_height;
-    f32         distance;
+    Vec2d       camera_pos;
+    f64         camera_angle; // <== We'll use this as 'phi'
+    f64         height;       // camera height above ground
+    f64         horizon;
+    f64         scale_height;
+    f64         distance;
     bool        is_running;
+    // Input state
+    struct {
+        f64   forward_backward;
+        f64   left_right;
+        f64   up_down;
+        bool  look_up;
+        bool  look_down;
+        f64   dist_up_down;
+        Vec2i mouse_position;
+        bool  mouse_active;
+    } input;
 } State;
 
-/* FIXME: 해상도 대응이 잘못됨. 스케일링이 필요함. 렌더링 과정 전 전달 값들의 사전 점검이 필요함 */
-void State_render(const State* self, engine_Canvas* canvas, f64 dt) {
-    debug_assert_nonnull(self);
+// Input handling
+void State_handleInputKey(State* self) {
+    // Reset input state
+    self->input.forward_backward = 0;
+    self->input.left_right       = 0;
+    self->input.up_down          = 0;
+    self->input.dist_up_down     = 0;
+
+    // WASD/Arrow key movement
+    if (engine_Key_held(engine_KeyCode_W) || engine_Key_held(engine_KeyCode_ArrowUp)) {
+        self->input.forward_backward = 3.0;
+    }
+    if (engine_Key_held(engine_KeyCode_S) || engine_Key_held(engine_KeyCode_ArrowDn)) {
+        self->input.forward_backward = -3.0;
+    }
+    if (engine_Key_held(engine_KeyCode_A) || engine_Key_held(engine_KeyCode_ArrowLt)) {
+        self->input.left_right = 1.0;
+    }
+    if (engine_Key_held(engine_KeyCode_D) || engine_Key_held(engine_KeyCode_ArrowRt)) {
+        self->input.left_right = -1.0;
+    }
+
+    // Space/Shift-Space for up/down
+    if (engine_Key_held(engine_KeyCode_Space)) {
+        if (!engine_Key_held(engine_KeyCode_Shift)) {
+            self->input.up_down = 2.0;
+        } else {
+            self->input.up_down = -2.0;
+        }
+    }
+
+    // Q/E for look up/down
+    self->input.look_up   = engine_Key_held(engine_KeyCode_Q);
+    self->input.look_down = engine_Key_held(engine_KeyCode_E);
+
+    // R/F for distance up/down
+    if (engine_Key_held(engine_KeyCode_R)) {
+        self->input.dist_up_down = 4.0;
+    }
+    if (engine_Key_held(engine_KeyCode_F)) {
+        self->input.dist_up_down = -4.0;
+    }
+
+    // ESC to quit
+    if (engine_Key_pressed(engine_KeyCode_Esc)) {
+        self->is_running = false;
+    }
+}
+
+void State_handleInputMouse(State* state) {
+    if (engine_Mouse_isState(engine_MouseButton_Left, engine_KeyStates_pressed)) {
+        state->input.mouse_active     = true;
+        state->input.mouse_position   = engine_Mouse_getPosition();
+        state->input.forward_backward = 3.0;
+    }
+    if (engine_Mouse_isState(engine_MouseButton_Left, engine_KeyStates_released)) {
+        state->input.mouse_active     = false;
+        state->input.forward_backward = 0;
+        state->input.left_right       = 0;
+        state->input.up_down          = 0;
+    }
+    /* 이걸 어케 바꾼담담 */
+    if (state->input.mouse_active) {
+        Vec2i delta             = engine_Mouse_getDelta();
+        state->input.left_right = (f64)delta.x / window_width * 2.0;
+        state->horizon          = 10.0 + (f64)delta.y / window_height * 50.0;
+        state->input.up_down    = (f64)delta.y / window_height * 10.0;
+    }
+}
+
+void State_updateCamera(State* self, f64 dt) {
+    // movement
+    if (self->input.left_right != 0) {
+        self->camera_angle += self->input.left_right * 0.1 * dt * 30.0;
+    }
+    if (self->input.forward_backward != 0) {
+        self->camera_pos.x -= self->input.forward_backward * sin(self->camera_angle) * dt * 30.0;
+        self->camera_pos.y -= self->input.forward_backward * cos(self->camera_angle) * dt * 30.0;
+    }
+
+    // up/down
+    if (self->input.up_down != 0) {
+        self->height += self->input.up_down * dt * 30.0;
+    }
+
+    // look up/down
+    if (self->input.look_up) {
+        self->horizon += 2.0 * dt * 30.0;
+    }
+    if (self->input.look_down) {
+        self->horizon -= 2.0 * dt * 30.0;
+    }
+
+    // distance up/down
+    if (self->input.dist_up_down != 0) {
+        self->distance += self->input.dist_up_down * dt * 30.0;
+    }
+
+    // Collision detection - don't fly below surface
+    i32 map_x      = (i32)((u32)self->camera_pos.x & (self->terrain.width - 1));
+    i32 map_y      = (i32)((u32)self->camera_pos.y & (self->terrain.height - 1));
+    i32 map_offset = map_y * (i32)self->terrain.width + map_x;
+
+    if (self->height < (self->terrain.heightmap[map_offset] + 10.0)) {
+        self->height = self->terrain.heightmap[map_offset] + 10.0;
+    }
+}
+
+void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
+    debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
     unused(dt);
 
-    // Short names
-    f32   phi      = self->camera_angle;
-    f32   sin_phi  = sinf(phi);
-    f32   cos_phi  = cosf(phi);
-    Vec2f cam_p    = Vec_as$(Vec2f, self->camera_pos); // (p.x, p.y)
-    f32   max_dist = self->distance;                   // 'distance'
-    f32   scale_h  = self->scale_height;
-    f32   horizon  = self->horizon;
-    f32   cam_h    = self->height; // 'height'
+    // Extract parameters from state
+    let phi          = state->camera_angle;
+    let sin_phi      = math_sin(phi);
+    let cos_phi      = math_cos(phi);
+    let p            = state->camera_pos;
+    let height       = state->height;
+    let horizon      = state->horizon;
+    let scale_height = state->scale_height;
+    let distance     = state->distance;
 
-    let heightmap = self->terrain.heightmap;
-    let colormap  = self->terrain.colormap;
-    i32 map_w     = (i32)self->terrain.width;
-    i32 map_h     = (i32)self->terrain.height;
+    i32 screen_width  = (i32)canvas->width;
+    i32 screen_height = (i32)canvas->height;
 
-    i32 scr_w = (i32)canvas->width;  // 'screen_width'
-    i32 scr_h = (i32)canvas->height; // 'screen_height'
+    // Get terrain data
+    const TerrainData* terrain    = &state->terrain;
+    const u8*          heightmap  = terrain->heightmap;
+    const Color*       colormap   = terrain->colormap;
+    i32                map_width  = (i32)terrain->width;
+    i32                map_height = (i32)terrain->height;
 
-    // ----------------------------------------------------------------
-    // y_buffer: array of the "topmost drawn pixel" for each column
-    // Initialize each entry to the bottom of the screen (scr_h).
-    // ----------------------------------------------------------------
-    let y_buffer = (f32*)malloc(sizeof(f32) * scr_w);
-    for (i32 i = 0; i < scr_w; ++i) {
-        y_buffer[i] = (f32)scr_h;
-    }
-
-    // We'll step forward in z from near (1.0) to far (max_dist).
-    // Like Python, start with z=1 and increment by dz each iteration.
-    // Also, after drawing each line, we do dz += 0.2
-    f32 z  = 1.0f;
-    f32 dz = 1.0f;
-
-    while (z < max_dist) {
-        // pleft, pright as in Python:
-        //   pleft = ( -cosphi*z - sinphi*z + camP.x,
-        //             sinphi*z - cosphi*z + camP.y )
-        //   pright= (  cosphi*z - sinphi*z + camP.x,
-        //            ( -sinphi*z - cosphi*z) + camP.y )
-        // => This creates a 90° field-of-view line from left to right
-        Vec2f p_left = {
-            .x = (-cos_phi * z - sin_phi * z) + cam_p.x,
-            .y = (sin_phi * z - cos_phi * z) + cam_p.y
-        };
-        Vec2f p_right = {
-            .x = (cos_phi * z - sin_phi * z) + cam_p.x,
-            .y = (-sin_phi * z - cos_phi * z) + cam_p.y
+    // Draw from back to front (high z to low z)
+    for (var z = distance; z > 1.0; z -= 1.0) {
+        // Calculate line endpoints on map (90° field of view)
+        var p_left = (Vec2d){
+            .x = (-cos_phi * z - sin_phi * z) + p.x,
+            .y = (sin_phi * z - cos_phi * z) + p.y
         };
 
-        // dx, dy for stepping across that line in screen columns
-        f32 dx = (p_right.x - p_left.x) / (f32)scr_w;
-        f32 dy = (p_right.y - p_left.y) / (f32)scr_w;
+        var p_right = (Vec2d){
+            .x = (cos_phi * z - sin_phi * z) + p.x,
+            .y = (-sin_phi * z - cos_phi * z) + p.y
+        };
 
-        // For each column on screen, sample the terrain.
-        for (i32 i = 0; i < scr_w; ++i) {
-            // Convert f32 pleft.(x,y) to integer map indices
-            // IMPORTANT: real code must clamp these to [0, map_w-1], [0, map_h-1]
-            i32 ix = (i32)p_left.x;
-            i32 iy = (i32)p_left.y;
-            if (ix < 0) { ix = 0; }
-            if (iy < 0) { iy = 0; }
-            if (ix >= map_w) { ix = map_w - 1; }
-            if (iy >= map_h) { iy = map_h - 1; }
+        // Calculate step sizes for line segment
+        let dx = (p_right.x - p_left.x) / (f64)screen_width;
+        let dy = (p_right.y - p_left.y) / (f64)screen_width;
 
-            // Index in arrays
-            i32 map_index = iy * map_w + ix;
+        // Raster line and draw vertical line for each segment
+        for (i32 i = 0; i < screen_width; ++i) {
+            // Convert and clamp coordinates to map bounds
+            i32 map_x = (i32)p_left.x;
+            i32 map_y = (i32)p_left.y;
 
-            // heightmap[mapIndex] = ground height at (ix, iy)
-            f32 ground_h = (f32)heightmap[map_index];
+            map_x = math_clamp(map_x, 0, map_width - 1);
+            map_y = math_clamp(map_y, 0, map_height - 1);
 
-            // same formula as Python:
-            //   height_on_screen = (cameraHeight - groundHeight)/z * scale_height + horizon
-            f32 height_on_screen = (cam_h - ground_h) / z * scale_h + horizon;
+            // Get height and color from maps
+            i32   map_index     = map_y * map_width + map_x;
+            f64   ground_height = (f64)heightmap[map_index];
+            Color color         = colormap[map_index];
 
-            // Draw a vertical line from height_on_screen up to whatever
-            // was stored in y_buffer[i]
-            // => In Python, it’s DrawVerticalLine(i, top, bottom, color).
-            //    We pass the color from colormap[mapIndex].
-            i32 top    = (i32)height_on_screen;
-            i32 bottom = (i32)y_buffer[i]; // previously drawn top
-            if (top < 0) { top = 0; };
-            if (bottom > scr_h) { bottom = scr_h; };
+            // Calculate height on screen
+            f64 height_on_screen = (height - ground_height) / z * scale_height + horizon;
 
+            // Clamp height to screen bounds
+            i32 screen_y = (i32)height_on_screen;
+            screen_y     = math_clamp(screen_y, 0, screen_height - 1);
 
-            // Only draw if top < bottom
-            // if (top < bottom) {
-            engine_Canvas_drawVLine(canvas, i, top, bottom, colormap[map_index]);
-            // update y_buffer to the new top
-            y_buffer[i] = (f32)top;
-            // }
+            // Draw vertical line
+            engine_Canvas_drawVLine(canvas, i, screen_y, screen_height, color);
 
-            // Step one column’s worth of x and y
+            // Step to next point on line
             p_left.x += dx;
             p_left.y += dy;
         }
-
-        // Next line in the distance
-        z += dz;
-        dz += 0.2f;
     }
-
-    free(y_buffer);
 }
 
 Err$void dh_main(i32 argc, const char* argv[]) {
@@ -209,7 +314,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
     scope_defer {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("voxel_space-debug.log", "w"), debug_file) {
+        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
             // Configure logging behavior
             log_setLevel(log_Level_debug);
@@ -225,15 +330,15 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Voxel Space",
-                .width        = 80 * 2,
-                .height       = 50 * 2,
+                .width        = window_width,
+                .height       = window_height,
             }
         ));
         defer(engine_Window_destroy(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba), err, {
+        let game_canvas = catch (engine_Canvas_create(window_width, window_height, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             defer_return_err(err);
         });
@@ -244,17 +349,17 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, 80 * 2, 50 * 2);
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_width, window_height);
         log_info("canvas views added\n");
 
         // Initialize rendering with camera parameters
         State state = {
-            .terrain      = unwrap(loadSample("assets/hmap.png", "assets/cmap.png")),
-            .camera_pos   = { .x = 512, .y = 512 },
-            .camera_angle = 0.5f,
-            .height       = 50.0f,
-            .horizon      = 120.0f,
-            .scale_height = 120.0f,
+            .terrain      = unwrap(loadSample("assets/C1W.png", "assets/D1.png")),
+            .camera_pos   = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
+            .camera_angle = 0.0f,                   // Starting angle (looking north)
+            .height       = 150.f / 2.0f,           // Height of camera above ground
+            .horizon      = window_height / 2.0f,   // Center of screen
+            .scale_height = window_height,          // Full screen height for scaling
             .distance     = 300.0f,
             .is_running   = true,
         };
@@ -265,33 +370,49 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         log_info("game state created\n");
         ignore getchar();
 
-        var  curr_time   = time_Instant_now();
-        var  prev_time   = curr_time;
-        let  target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
-        bool is_running  = true;
+        var curr_time   = time_Instant_now();
+        var prev_time   = curr_time;
+        let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
         log_info("game loop started\n");
 
         // Game loop
-        while (is_running) {
+        while (state.is_running) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
             let dt           = time_Duration_asSecs_f64(elapsed_time);
 
             // Process events
             try_defer(engine_Window_processEvents(window));
+            State_handleInputKey(&state);
+            // State_handleInputMouse(&state);
 
             // Update game state
-            if (engine_Key_pressed(engine_KeyCode_Esc)) {
-                is_running = false;
-            }
-            // try_defer(State_update(&state, dt));
+            State_updateCamera(&state, dt);
 
             // Render all views
-            engine_Canvas_clear(game_canvas, Color_black);
+            engine_Canvas_clear(game_canvas, Color_blank);
             State_render(&state, game_canvas, dt);
 
             // Present to screen
             engine_Window_present(window);
+            printf("\033[A"); // Move cursor up one line
+            printf("\033[A"); // Move cursor up one line
+            printf(
+                "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
+                1.0f / dt,
+                window_width,
+                window_height,
+                (i32)state.camera_pos.x,
+                (i32)state.camera_pos.y,
+                (i32)state.height,
+                state.scale_height
+            );
+            printf(
+                "\rANGLE: %6.2f DIST: %06.2f HORIZ: %06.2f",
+                state.camera_angle,
+                state.distance,
+                state.horizon
+            );
 
             // Sleep for the remaining time to maintain FPS
             time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));

@@ -126,12 +126,9 @@ using_Opt$(engine_InputEvent);
 typedef struct engine_MouseEvent {
     engine_MouseEventType type;
     union {
+        Vec2i move;
         struct {
-            i32 x;
-            i32 y;
-        } move;
-        struct {
-            engine_MouseButton button;
+            engine_MouseButton key;
             engine_KeyStates   state;
         } button;
         struct {

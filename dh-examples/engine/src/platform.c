@@ -387,14 +387,14 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
 
             // Left button
             if (mer->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
-                event.button.button = engine_MouseButton_Left;
-                event.button.state  = engine_KeyStates_pressed;
+                event.button.key   = engine_MouseButton_Left;
+                event.button.state = engine_KeyStates_pressed;
                 engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
             }
             // Right button
             if (mer->dwButtonState & RIGHTMOST_BUTTON_PRESSED) {
-                event.button.button = engine_MouseButton_Right;
-                event.button.state  = engine_KeyStates_pressed;
+                event.button.key   = engine_MouseButton_Right;
+                event.button.state = engine_KeyStates_pressed;
                 engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
             }
             break;

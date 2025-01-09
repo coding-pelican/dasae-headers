@@ -112,8 +112,8 @@ static void engine_Input_processMouse(void) {
                 engine_MouseEvent event = {
                     .type   = engine_MouseEventType_button,
                     .button = {
-                        .button = i,
-                        .state  = engine_KeyStates_pressed },
+                        .key   = i,
+                        .state = engine_KeyStates_pressed },
                     .timestamp = (f64)GetTickCount64() / 1000.0
                 };
                 engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
@@ -125,8 +125,8 @@ static void engine_Input_processMouse(void) {
             engine_MouseEvent event = {
                 .type   = engine_MouseEventType_button,
                 .button = {
-                    .button = i,
-                    .state  = engine_KeyStates_released },
+                    .key   = i,
+                    .state = engine_KeyStates_released },
                 .timestamp = (f64)GetTickCount64() / 1000.0
             };
             engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
