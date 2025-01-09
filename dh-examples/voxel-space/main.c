@@ -354,7 +354,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
         // Initialize rendering with camera parameters
         State state = {
-            .terrain      = unwrap(loadSample("assets/C1W.png", "assets/D1.png")),
+            .terrain      = unwrap(loadSample("assets/D1.png", "assets/C1W.png")),
             .camera_pos   = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
             .camera_angle = 0.0f,                   // Starting angle (looking north)
             .height       = 150.f / 2.0f,           // Height of camera above ground
