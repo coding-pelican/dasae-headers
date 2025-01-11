@@ -1,4 +1,5 @@
 #include "dh/main.h"
+#include "dh/Err.h"
 #include "dh/log.h"
 
 #include "dh/time/SysTime.h"

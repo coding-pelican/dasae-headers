@@ -58,8 +58,8 @@ extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 #define Sli_range$(T, var_ptr, val_begin, val_end) IMPL_Sli_range$(T, var_ptr, val_begin, val_end)
 #define Sli_arr(var_arr...)                        IMPL_Sli_arr(var_arr)
 #define Sli_arr$(T, var_arr...)                    IMPL_Sli_arr$(T, var_arr)
-#define Sli_at(var_sli, val_index)                 IMPL_Sli_at(var_sli, val_index)
-#define Sli_slice(var_sli, val_begin, val_end)     IMPL_Sli_slice(var_sli, val_begin, val_end)
+#define Sli_at(var_sli, usize_index)               IMPL_Sli_at(var_sli, usize_index)
+#define Sli_slice(var_sli, usize_begin, usize_end) IMPL_Sli_slice(var_sli, usize_begin, usize_end)
 #define Sli_prefix(var_sli, val_end)               IMPL_Sli_prefix(var_sli, val_end)
 #define Sli_suffix(var_sli, val_begin)             IMPL_Sli_suffix(var_sli, val_begin)
 
@@ -150,7 +150,7 @@ union Sli {
 
 #define IMPL_Sli_from(var_ptr, val_len)     { .ptr = (var_ptr), .len = (val_len) }
 #define IMPL_Sli_from$(T, var_ptr, val_len) ({ \
-    let IMPL__ptr = var_ptr;                   \
+    let _ptr = var_ptr;                        \
     claim_assert_nonnull(_ptr);                \
     (T){                                       \
         .ptr = _ptr,                           \
@@ -180,15 +180,17 @@ union Sli {
     };                                  \
 })
 
-#define IMPL_Sli_at(var_sli, val_index) ({                                                      \
-    let _sli = var_sli;                                                                         \
-    (TypeOf(_sli.ptr)) Sli_rawAt(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, val_index); \
-})
+#define IMPL_Sli_at(var_self, usize_index) eval( \
+    let   _self  = var_self;                     \
+    usize _index = usize_index;                  \
+    debug_assert(_index < _self.len);            \
+    eval_return(&_self.ptr[_index]);             \
+)
 
-#define IMPL_Sli_slice(var_sli, val_begin, val_end) ({                                        \
-    let   _sli   = var_sli;                                                                   \
-    usize _begin = val_begin;                                                                 \
-    usize _end   = val_end;                                                                   \
+#define IMPL_Sli_slice(var_self, usize_begin, usize_end) ({                                   \
+    let   _sli   = var_self;                                                                  \
+    usize _begin = usize_begin;                                                               \
+    usize _end   = usize_end;                                                                 \
     (TypeOf(_sli)){                                                                           \
         .ptr = Sli_rawSlice(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, _begin, _end), \
         .len = _end - _begin                                                                  \
