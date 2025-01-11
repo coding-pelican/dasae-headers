@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
  * @updated 2024-11-06 (date of last update)
- * @version v0.1
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/claim
  * @prefix  claim_assert_static
  *

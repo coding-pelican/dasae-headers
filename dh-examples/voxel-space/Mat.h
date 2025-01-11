@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-11 (date of creation)
  * @updated 2025-01-11 (date of last update)
- * @version v0.1
+ * @version v0.1-alpha
  * @ingroup voxel-space
  * @prefix  Mat
  */

@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-29 (date of creation)
  * @updated 2025-01-02 (date of last update)
- * @version v0.1
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/meta
  * @prefix
  *

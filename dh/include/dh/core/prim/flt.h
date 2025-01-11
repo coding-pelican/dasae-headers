@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
  * @updated 2024-10-27 (date of last update)
- * @version v0.1
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *

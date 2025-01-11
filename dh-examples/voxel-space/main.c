@@ -95,7 +95,7 @@ Opt$TerrainData loadSample(const char* heightmap_file, const char* colormap_file
     });
 }
 
-typedef struct Control {
+/* typedef struct Control {
     engine_KeyCode key;
     Vec2f          vec;
 } Control;
@@ -112,10 +112,10 @@ static SliConst$Control Control_list(void) {
         .ptr = controls,
         .len = countOf(controls),
     };
-}
+} */
 
-#define window_width  (80 * 3)
-#define window_height (50 * 3)
+#define window_width  (80 * 2)
+#define window_height (50 * 2)
 
 typedef struct State {
     TerrainData terrain;

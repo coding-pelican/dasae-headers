@@ -85,7 +85,7 @@ extern void ArrList_clearAndFree(ArrList* self);
 
 #define GEN_using_ArrList$(T) \
     decl_ArrList$(T);         \
-    impl_ArrList$(T);
+    impl_ArrList$(T)
 #define GEN_decl_ArrList$(T) \
     typedef union pp_join($, ArrList, T) pp_join($, ArrList, T)
 #define GEN_impl_ArrList$(T)          \

@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-08 (date of creation)
  * @updated 2025-01-08 (date of last update)
- * @version v0.1
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/math
  * @prefix  math
  *
@@ -63,13 +63,6 @@ impl_Err(
 #define math_f64_eps          VAL_math_f64_eps
 #define math_f64_inf          VAL_math_f64_inf
 #define math_f64_nan          VAL_math_f64_nan
-
-/* Type checking */
-#define isUnsigned(Type) FUNC_isUnsigned(Type)
-#define isSigned(Type)   FUNC_isSigned(Type)
-#define isInt(Type)      FUNC_isInt(Type)
-#define isFlt(Type)      FUNC_isFlt(Type)
-#define isBool(Type)     FUNC_isBool(Type)
 
 /* Comparison operations */
 #define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
@@ -215,36 +208,6 @@ impl_Err(
 #define VAL_math_f64_eps          (1e-6)
 #define VAL_math_f64_inf          (1.0 / 0.0)
 #define VAL_math_f64_nan          (0.0 / 0.0)
-
-/* Type checking */
-#define FUNC_isInt(Type)      (isUnsigned(Type) || isSigned(Type))
-#define FUNC_isUnsigned(Type) _Generic( \
-    (Type)0,                            \
-    u8: true,                           \
-    u16: true,                          \
-    u32: true,                          \
-    u64: true,                          \
-    default: false                      \
-)
-#define FUNC_isSigned(Type) _Generic( \
-    (Type)0,                          \
-    i8: true,                         \
-    i16: true,                        \
-    i32: true,                        \
-    i64: true,                        \
-    default: false                    \
-)
-#define FUNC_isFlt(Type) _Generic( \
-    (Type)0,                       \
-    f32: true,                     \
-    f64: true,                     \
-    default: false                 \
-)
-#define FUNC_isBool(Type) _Generic( \
-    (Type)0,                        \
-    bool: true,                     \
-    default: false                  \
-)
 
 /* Comparison operations */
 #define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) /* TODO: Implement cmp function */

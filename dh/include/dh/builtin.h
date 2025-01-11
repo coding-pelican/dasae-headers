@@ -4,8 +4,8 @@
  * @file    builtin.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1
+ * @updated 2025-01-11 (date of last update)
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  builtin
  *
