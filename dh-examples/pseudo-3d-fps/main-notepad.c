@@ -72,7 +72,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         engine_Window_present(window);
 
         // Sleep for the remaining time to maintain FPS
-        time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));
+        time_sleep(time_Duration_sub(target_time, elapsed_time));
         prev_time = curr_time;
     }
 

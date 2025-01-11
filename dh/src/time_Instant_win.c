@@ -1,6 +1,6 @@
-#if defined(_WIN32) || defined(_WIN64)
-
 #include "dh/time.h"
+
+#if BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT)
 
 /*========== Operations =================================================*/
 
@@ -64,8 +64,8 @@ time_Instant op_fnSubBy(time_Instant, time_Duration) {
 
 /*========== Comparison Operations ====================================*/
 
-cmp_Ord time_Instant_cmp(time_Instant self, time_Instant other) {
+cmp_fnCmp(time_Instant) {
     return time_SysTime_cmp(self.time_, other.time_);
 }
 
-#endif /* defined(_WIN32) || defined(_WIN64) */
+#endif /* BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT) */

@@ -63,13 +63,6 @@ cmp_fnGt_default(time_SysTime);
 cmp_fnLe_default(time_SysTime);
 cmp_fnGe_default(time_SysTime);
 
-/* Sleep */
-extern void time_SysTime_sleep(time_Duration duration);
-extern void time_SysTime_sleepSecs(u64 secs);
-extern void time_SysTime_sleepMillis(u64 millis);
-extern void time_SysTime_sleepMicros(u64 micros);
-extern void time_SysTime_sleepNanos(u32 nanos);
-
 // /* Constants for time conversion */
 // #define INTERVALS_PER_SEC       (10000000ULL)    /* 100ns intervals per second */
 // #define SECS_TO_UNIX_EPOCH      (11644473600ULL) /* seconds between Windows epoch (1601) and Unix epoch (1970) */

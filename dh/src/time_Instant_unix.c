@@ -29,23 +29,23 @@ u64 time_SysTime_toNanos(time_SysTime time) {
     return (u64)time.tv_sec * (u64)time_nanos_per_sec + (u64)time.tv_nsec;
 }
 
-void time_SysTime_sleep(Duration duration) {
-    time_SysTime_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
+void time_sleep(Duration duration) {
+    time_sleep_ns((duration.secs * time_nanos_per_sec) + duration.nanos);
 }
 
-void time_SysTime_sleep_s(f64 secs) {
-    time_SysTime_sleep_ns((u64)(secs * time_nanos_per_sec));
+void time_sleep_s(f64 secs) {
+    time_sleep_ns((u64)(secs * time_nanos_per_sec));
 }
 
-void time_SysTime_sleep_ms(f64 millis) {
-    time_SysTime_sleep_ns((u64)(millis * time_nanos_per_milli));
+void time_sleep_ms(f64 millis) {
+    time_sleep_ns((u64)(millis * time_nanos_per_milli));
 }
 
-void time_SysTime_sleep_us(f64 micros) {
-    time_SysTime_sleep_ns((u64)(micros * time_nanos_per_micro));
+void time_sleep_us(f64 micros) {
+    time_sleep_ns((u64)(micros * time_nanos_per_micro));
 }
 
-void time_SysTime_sleep_ns(u64 nanos) {
+void time_sleep_ns(u64 nanos) {
     if (nanos < 100) { return; }
 
     struct timespec req = make(struct timespec);

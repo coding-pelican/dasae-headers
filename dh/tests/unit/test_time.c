@@ -18,16 +18,16 @@ int main() {
     time_Duration elapsed = time_Instant_elapsed(begin);
     printf("elapsed: %llu %u\n", elapsed.secs_, elapsed.nanos_);
 
-    time_SysTime_sleep(time_Duration_fromSecs(1));
+    time_sleep(time_Duration_fromSecs(1));
     printf("sleep 1 sec\n");
 
-    time_SysTime_sleep(time_Duration_fromMillis(1000));
+    time_sleep(time_Duration_fromMillis(1000));
     printf("sleep 1,000 ms\n");
 
-    time_SysTime_sleep(time_Duration_fromMicros(1000000));
+    time_sleep(time_Duration_fromMicros(1000000));
     printf("sleep 1,000,000 us\n");
 
-    time_SysTime_sleep(time_Duration_fromNanos(1000000000));
+    time_sleep(time_Duration_fromNanos(1000000000));
     printf("sleep 1,000,000,000 ns\n");
 
     time_Instant now = time_Instant_now();
@@ -36,7 +36,7 @@ int main() {
     time_Duration duration = time_Instant_durationSince(now, begin);
     printf("duration: %llu %u\n", duration.secs_, duration.nanos_);
 
-    time_SysTime_sleepMillis((u64)(0.5 * (f64)time_millis_per_sec));
+    time_sleepMillis((u64)(0.5 * (f64)time_millis_per_sec));
     printf("sleep 0.5 sec\n");
 
     time_Instant now2 = time_Instant_now();

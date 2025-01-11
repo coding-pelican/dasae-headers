@@ -426,7 +426,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             );
 
             // Sleep for the remaining time to maintain FPS
-            time_SysTime_sleep(time_Duration_sub(target_time, elapsed_time));
+            time_sleep(time_Duration_sub(target_time, elapsed_time));
             prev_time = curr_time;
         }
         defer_return_void();
