@@ -90,25 +90,22 @@ Err$void engine_Window_processEvents(engine_Window* window) {
 
     let backend = window->platform->backend;
     if (!backend) { return_void(); }
+    debug_assert_nonnull(backend->processEvents);
+    debug_assert_nonnull(backend->getWindowMetrics);
 
-    if (backend->processEvents) {
-        backend->processEvents(window->platform);
-    }
+    backend->processEvents(window->platform);
+    if_some(backend->getWindowMetrics(window->platform), new_metrics) {
+        usize w        = window->metrics.width;
+        usize h        = window->metrics.height;
+        usize client_w = window->metrics.client_width;
+        usize client_h = window->metrics.client_height;
 
-    if (backend->getWindowMetrics) {
-        if_some(backend->getWindowMetrics(window->platform), new_metrics) {
-            usize w        = window->metrics.width;
-            usize h        = window->metrics.height;
-            usize client_w = window->metrics.client_width;
-            usize client_h = window->metrics.client_height;
+        window->metrics = new_metrics;
 
-            window->metrics = new_metrics;
-
-            window->metrics.width         = w;
-            window->metrics.height        = h;
-            window->metrics.client_width  = client_w;
-            window->metrics.client_height = client_h;
-        }
+        window->metrics.width         = w;
+        window->metrics.height        = h;
+        window->metrics.client_width  = client_w;
+        window->metrics.client_height = client_h;
     }
 
     return_void();
@@ -142,7 +139,7 @@ void engine_Window_present(engine_Window* window) {
     // Present to platform
     let backend = window->platform->backend;
     if (!backend) { return; }
-    if (!backend->presentBuffer) { return; }
+    debug_assert_nonnull(backend->presentBuffer);
 
     backend->presentBuffer(
         window->platform,

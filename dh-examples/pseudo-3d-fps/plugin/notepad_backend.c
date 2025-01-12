@@ -77,11 +77,13 @@ Err$Ptr$engine_RenderBackend NotepadBackend_create(void) {
     });
 
     // Set up backend interface
-    backend->base.type          = engine_RenderBackendType_custom;
-    backend->base.presentBuffer = NotepadBackend_presentBuffer;
-    backend->base.processEvents = null;
-    backend->base.destroy       = NotepadBackend_destroy;
-
+    backend->base = eval(
+        var vt           = engine_RenderBackend_createNoOp();
+        vt.type          = engine_RenderBackendType_custom;
+        vt.destroy       = NotepadBackend_destroy;
+        vt.presentBuffer = NotepadBackend_presentBuffer;
+        eval_return vt;
+    );
     return_ok(&backend->base);
 }
 

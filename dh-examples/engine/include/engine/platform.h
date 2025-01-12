@@ -6,6 +6,7 @@
 
 // engine_Platform-specific rendering backend types
 typedef enum engine_RenderBackendType {
+    engine_RenderBackendType_null  = 0,
     engine_RenderBackendType_vt100 = 0,
     engine_RenderBackendType_win32_gdi,
     engine_RenderBackendType_xwindow,

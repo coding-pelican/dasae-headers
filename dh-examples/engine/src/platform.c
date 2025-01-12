@@ -16,6 +16,7 @@ static void  Win32ConsoleBackend_disableMouseInput(engine_Win32ConsoleBackend* b
 static void  Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* backend, const MOUSE_EVENT_RECORD* mer);
 
 
+
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);
     engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
@@ -111,11 +112,15 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         backend->cursor_visible = false;
 
         // Setup backend interface
-        backend->base.type             = engine_RenderBackendType_vt100;
-        backend->base.destroy          = Win32ConsoleBackend_destroy;
-        backend->base.processEvents    = Win32ConsoleBackend_processEvents;
-        backend->base.presentBuffer    = Win32ConsoleBackend_presentBuffer;
-        backend->base.getWindowMetrics = Win32ConsoleBackend_getWindowMetrics;
+        backend->base = eval(
+            var vt              = engine_RenderBackend_createNoOp();
+            vt.type             = engine_RenderBackendType_vt100;
+            vt.destroy          = Win32ConsoleBackend_destroy;
+            vt.processEvents    = Win32ConsoleBackend_processEvents;
+            vt.presentBuffer    = Win32ConsoleBackend_presentBuffer;
+            vt.getWindowMetrics = Win32ConsoleBackend_getWindowMetrics;
+            eval_return vt;
+        );
         Win32ConsoleBackend_enableMouseInput(backend);
 
         platform->backend = &backend->base;
@@ -147,6 +152,8 @@ void engine_Platform_destroy(engine_Platform* platform) {
         platform->backend->destroy(platform);
     }
 }
+
+
 
 static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
     engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)platform->backend;
@@ -305,7 +312,7 @@ static void Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const C
     }
 }
 
-Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* platform) {
+static Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Platform* platform) {
     reserveReturn(Opt$engine_WindowMetrics);
     debug_assert_nonnull(platform);
 
@@ -451,4 +458,37 @@ static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer,
             (consoleY * 2) + subCellOffset // Convert to double-height space
         }
     };
+}
+
+
+
+engine_RenderBackend engine_RenderBackend_createNoOp(void) {
+    return (engine_RenderBackend){
+        .type             = engine_RenderBackendType_null,
+        .destroy          = engine_RenderBackend_noDestroy,
+        .processEvents    = engine_RenderBackend_noProcessEvents,
+        .presentBuffer    = engine_RenderBackend_noPresentBuffer,
+        .getWindowMetrics = engine_RenderBackend_noGetWindowMetrics
+    };
+}
+
+void engine_RenderBackend_noDestroy(struct engine_Platform* platform) {
+    unused(platform);
+}
+
+void engine_RenderBackend_noProcessEvents(struct engine_Platform* platform) {
+    unused(platform);
+}
+
+void engine_RenderBackend_noPresentBuffer(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height) {
+    unused(platform);
+    unused(buffer);
+    unused(width);
+    unused(height);
+}
+
+Opt$engine_WindowMetrics engine_RenderBackend_noGetWindowMetrics(struct engine_Platform* platform) {
+    unused(platform);
+    reserveReturn(Opt$engine_WindowMetrics);
+    return_none();
 }

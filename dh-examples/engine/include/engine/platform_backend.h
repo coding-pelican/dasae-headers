@@ -15,6 +15,11 @@ struct engine_RenderBackend {
 };
 using_Ptr$(engine_RenderBackend);
 using_Err$(engine_RenderBackend);
+extern engine_RenderBackend     engine_RenderBackend_createNoOp(void);
+extern void                     engine_RenderBackend_noDestroy(struct engine_Platform* platform);
+extern void                     engine_RenderBackend_noProcessEvents(struct engine_Platform* platform);
+extern void                     engine_RenderBackend_noPresentBuffer(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height);
+extern Opt$engine_WindowMetrics engine_RenderBackend_noGetWindowMetrics(struct engine_Platform* platform);
 
 #include <windows.h>
 
