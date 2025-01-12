@@ -55,7 +55,7 @@ typedef enum cmp_Ord {
 /* Binary operators default implementation */
 // clang-format off
 #define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_equal; }
-#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
+#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return pp_join(_, TSelf, eq)(self, other) !=  cmp_Ord_equal; }
 #define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_less; }
 #define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_greater; }
 #define cmp_fnLe_default(TSelf) force_inline cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }

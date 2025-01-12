@@ -65,27 +65,27 @@ impl_Err(
 #define math_f64_nan          VAL_math_f64_nan
 
 /* Comparison operations */
-#define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_eq(val_lhs, val_rhs)  OP_math_eq(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)  /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                              /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqueToken(cmp_lhs), pp_uniqueToken(cmp_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_eq(val_lhs, val_rhs)  OP_math_eq(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                                    /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
 #define math_neg(val_x)                OP_math_neg(val_x)
 #define math_add(val_lhs, val_rhs)     OP_math_add(val_lhs, val_rhs)
 #define math_sub(val_lhs, val_rhs)     OP_math_sub(val_lhs, val_rhs)
 #define math_mul(val_lhs, val_rhs)     OP_math_mul(val_lhs, val_rhs)
-#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
-#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
-#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
-#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqueToken(_lhs), pp_uniqueToken(_rhs), val_lhs, val_rhs)
+#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqueToken(div_lhs), pp_uniqueToken(div_rhs), val_lhs, val_rhs)
+#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqueToken(divSafe_lhs), pp_uniqueToken(divSafe_rhs), val_lhs, val_rhs)
+#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqueToken(mod_lhs), pp_uniqueToken(mod_rhs), val_lhs, val_rhs)
+#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqueToken(modSafe_lhs), pp_uniqueToken(modSafe_rhs), val_lhs, val_rhs)
 
 /* Basic functions */
-#define math_abs(val_x)                         FUNC_math_abs(pp_uniqueToken(_x), val_x)
-#define math_sign(val_x)                        FUNC_math_sign(pp_uniqueToken(_x), val_x)
+#define math_abs(val_x)                         FUNC_math_abs(pp_uniqueToken(abs_x), val_x)
+#define math_sign(val_x)                        FUNC_math_sign(pp_uniqueToken(sign_x), val_x)
 #define math_min(val_lhs, val_rhs)              FUNC_math_min(val_lhs, val_rhs)
 #define math_max(val_lhs, val_rhs)              FUNC_math_max(val_lhs, val_rhs)
 #define math_clamp(val_x, val_min, val_max)     FUNC_math_clamp(val_x, val_min, val_max)
@@ -162,12 +162,10 @@ impl_Err(
     u16: u16_limit_min,                        \
     u32: u32_limit_min,                        \
     u64: u64_limit_min,                        \
-    usize: usize_limit_min,                    \
     i8: i8_limit_min,                          \
     i16: i16_limit_min,                        \
     i32: i32_limit_min,                        \
     i64: i64_limit_min,                        \
-    isize: isize_limit_min,                    \
     f32: f32_limit_min,                        \
     f64: f64_limit_min,                        \
     default: 0                                 \
@@ -178,12 +176,10 @@ impl_Err(
     u16: u16_limit_max,                        \
     u32: u32_limit_max,                        \
     u64: u64_limit_max,                        \
-    usize: usize_limit_max,                    \
     i8: i8_limit_max,                          \
     i16: i16_limit_max,                        \
     i32: i32_limit_max,                        \
     i64: i64_limit_max,                        \
-    isize: isize_limit_max,                    \
     f32: f32_limit_max,                        \
     f64: f64_limit_max,                        \
     default: 0                                 \
@@ -210,23 +206,35 @@ impl_Err(
 #define VAL_math_f64_nan          (0.0 / 0.0)
 
 /* Comparison operations */
-#define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) /* TODO: Implement cmp function */
-#define OP_math_eq(_lhs, _rhs, val_lhs, val_rhs)  eval( \
-    let  _lhs = (val_lhs);                              \
-    let  _rhs = (val_rhs);                              \
-    bool _ret = false;                                  \
+#define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) eval( \
+    let _lhs = (val_lhs);                               \
+    let _rhs = (val_rhs);                               \
+    var _ret = cmp_Ord_equal;                           \
     if (isFlt(TypeOf(_lhs))) {                          \
-        _ret = (math_abs((_lhs) - (_rhs)) <= math_eps); \
+        if (math_abs((_lhs) - (_rhs)) <= math_eps) {    \
+            _ret = cmp_Ord_equal;                       \
+        } else if ((_lhs) < (_rhs)) {                   \
+            _ret = cmp_Ord_less;                        \
+        } else {                                        \
+            _ret = cmp_Ord_greater;                     \
+        }                                               \
     } else {                                            \
-        _ret = ((_lhs) == (_rhs));                      \
+        if ((_lhs) < (_rhs)) {                          \
+            _ret = cmp_Ord_less;                        \
+        } else if ((_lhs) > (_rhs)) {                   \
+            _ret = cmp_Ord_greater;                     \
+        } else {                                        \
+            _ret = cmp_Ord_equal;                       \
+        }                                               \
     };                                                  \
     eval_return _ret;                                   \
 )
-#define OP_math_ne(val_lhs, val_rhs) (!math_eq(val_lhs, val_rhs))
-#define OP_math_lt(val_lhs, val_rhs) ((val_lhs) < (val_rhs))
-#define OP_math_gt(val_lhs, val_rhs) ((val_lhs) > (val_rhs))
-#define OP_math_le(val_lhs, val_rhs) ((val_lhs) <= (val_rhs))
-#define OP_math_ge(val_lhs, val_rhs) ((val_lhs) >= (val_rhs))
+#define OP_math_eq(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_equal)
+#define OP_math_ne(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) != cmp_Ord_equal)
+#define OP_math_lt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_less)
+#define OP_math_gt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_greater)
+#define OP_math_le(val_lhs, val_rhs) (!math_gt(val_lhs, val_rhs))
+#define OP_math_ge(val_lhs, val_rhs) (!math_lt(val_lhs, val_rhs))
 
 /* Arithmetic operations */
 #define OP_math_neg(val_x)                        (-(_val_x))

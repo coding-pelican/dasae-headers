@@ -99,4 +99,44 @@ typedef math_Vec3$f64 math_Vec3d;
 typedef math_Vec4$f32 math_Vec4f;
 typedef math_Vec4$f64 math_Vec4d;
 
+#define math_Vec2_Match(T) TypeOf(_Generic( \
+    (T)0,                                   \
+    u8: ((math_Vec2ub){ 0 }),               \
+    u16: ((math_Vec2us){ 0 }),              \
+    u32: ((math_Vec2u){ 0 }),               \
+    u64: ((math_Vec2ul){ 0 }),              \
+    i8: ((math_Vec2b){ 0 }),                \
+    i16: ((math_Vec2s){ 0 }),               \
+    i32: ((math_Vec2i){ 0 }),               \
+    i64: ((math_Vec2l){ 0 }),               \
+    f32: ((math_Vec2f){ 0 }),               \
+    f64: ((math_Vec2d){ 0 })                \
+))
+#define math_Vec3_Match(T) TypeOf(_Generic( \
+    (T){ 0 },                               \
+    u8: ((math_Vec3ub){ 0 }),               \
+    u16: ((math_Vec3us){ 0 }),              \
+    u32: ((math_Vec3u){ 0 }),               \
+    u64: ((math_Vec3ul){ 0 }),              \
+    i8: ((math_Vec3b){ 0 }),                \
+    i16: ((math_Vec3s){ 0 }),               \
+    i32: ((math_Vec3i){ 0 }),               \
+    i64: ((math_Vec3l){ 0 }),               \
+    f32: ((math_Vec3f){ 0 }),               \
+    f64: ((math_Vec3d{ 0 }))                \
+))
+#define math_Vec4_Match(T) TypeOf(_Generic( \
+    (T){ 0 },                               \
+    u8: ((math_Vec4ub){ 0 }),               \
+    u16: ((math_Vec4us){ 0 }),              \
+    u32: ((math_Vec4u){ 0 }),               \
+    u64: ((math_Vec4ul){ 0 }),              \
+    i8: ((math_Vec4b){ 0 }),                \
+    i16: ((math_Vec4s){ 0 }),               \
+    i32: ((math_Vec4i){ 0 }),               \
+    i64: ((math_Vec4l){ 0 }),               \
+    f32: ((math_Vec4f){ 0 }),               \
+    f64: ((math_Vec4d){ 0 })                \
+))
+
 #endif /* MATH_VEC_TYPES_INCLUDED */
