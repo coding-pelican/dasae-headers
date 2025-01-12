@@ -89,8 +89,10 @@ impl_Err(
 #define math_min(val_lhs, val_rhs)              FUNC_math_min(val_lhs, val_rhs)
 #define math_max(val_lhs, val_rhs)              FUNC_math_max(val_lhs, val_rhs)
 #define math_clamp(val_x, val_min, val_max)     FUNC_math_clamp(val_x, val_min, val_max)
+// #define math_clamp01(val_x)                     FUNC_math_clamp01(val_x)
 #define math_clampSafe(val_x, val_min, val_max) FUNC_math_clampSafe(val_x, val_min, val_max) /* TODO: make safety */
 #define math_wrap(val_x, val_min, val_max)      FUNC_math_wrap(val_x, val_min, val_max)
+// #define math_wrap01(val_x)                      FUNC_math_wrap01(val_x)
 #define math_wrapSafe(val_x, val_min, val_max)  FUNC_math_wrapSafe(val_x, val_min, val_max) /* TODO: make safety */
 
 /* Rounding functions */

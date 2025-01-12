@@ -4,8 +4,8 @@
  * @file    vec.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-08 (date of creation)
- * @updated 2025-01-08 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-12 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/math
  * @prefix  math
  *
@@ -19,613 +19,694 @@
 #include "common.h"
 #include "vec_types.h"
 
+/*========== Float32 (f32) Vector Functions ================================*/
+
+/* Vec2f functions */
 /* Constants */
-#define math_Vec_zero$(TVec)      VAL_math_Vec_zero$(TVec)
-#define math_Vec2_one$(TVec)      VAL_math_Vec2_one$(TVec)
-#define math_Vec3_one$(TVec)      VAL_math_Vec3_one$(TVec)
-#define math_Vec4_one$(TVec)      VAL_math_Vec4_one$(TVec)
-#define math_Vec_lt$(TVec)        VAL_math_Vec_lt$(TVec)
-#define math_Vec_up$(TVec)        VAL_math_Vec_up$(TVec)
-#define math_Vec_rt$(TVec)        VAL_math_Vec_rt$(TVec)
-#define math_Vec_dn$(TVec)        VAL_math_Vec_dn$(TVec)
-#define math_Vec3_fwd$(TVec)      VAL_math_Vec3_fwd$(TVec)
-#define math_Vec3_bwd$(TVec)      VAL_math_Vec3_bwd$(TVec)
-#define math_Vec_left$(TVec)      math_Vec_lt$(TVec)
-#define math_Vec_right$(TVec)     math_Vec_rt$(TVec)
-#define math_Vec_down$(TVec)      math_Vec_dn$(TVec)
-#define math_Vec3_forward$(TVec)  math_Vec3_fwd$(TVec)
-#define math_Vec3_backward$(TVec) math_Vec3_bwd$(TVec)
+static const math_Vec2f math_Vec2f_zero  = { .x = 0.0f, .y = 0.0f };
+static const math_Vec2f math_Vec2f_one   = { .x = 1.0f, .y = 1.0f };
+static const math_Vec2f math_Vec2f_left  = { .x = -1.0f, .y = 0.0f };
+static const math_Vec2f math_Vec2f_up    = { .x = 0.0f, .y = 1.0f };
+static const math_Vec2f math_Vec2f_right = { .x = 1.0f, .y = 0.0f };
+static const math_Vec2f math_Vec2f_down  = { .x = 0.0f, .y = -1.0f };
+static const math_Vec2f math_Vec2f_eps   = { .x = f32_eps, .y = f32_eps };
+static const math_Vec2f math_Vec2f_inf   = { .x = f32_inf, .y = f32_inf };
+static const math_Vec2f math_Vec2f_nan   = { .x = f32_nan, .y = f32_nan };
 
-// #define math_Vec2_eps$(TVec) VAL_math_Vec2_eps$(TVec)
-// #define math_Vec3_eps$(TVec) VAL_math_Vec3_eps$(TVec)
-// #define math_Vec4_eps$(TVec) VAL_math_Vec4_eps$(TVec)
-// #define math_Vec2_inf$(TVec) VAL_math_Vec2_inf$(TVec)
-// #define math_Vec3_inf$(TVec) VAL_math_Vec3_inf$(TVec)
-// #define math_Vec4_inf$(TVec) VAL_math_Vec4_inf$(TVec)
-// #define math_Vec2_nan$(TVec) VAL_math_Vec2_nan$(TVec)
-// #define math_Vec3_nan$(TVec) VAL_math_Vec3_nan$(TVec)
-// #define math_Vec4_nan$(TVec) VAL_math_Vec4_nan$(TVec)
+/* Construction */
+force_inline math_Vec2f math_Vec2f_create(f32 x, f32 y);
+force_inline math_Vec2f math_Vec2f_fill(f32 scalar);
+force_inline math_Vec2f math_Vec2f_from3(math_Vec3f v);
+force_inline math_Vec2f math_Vec2f_from4(math_Vec4f v);
+force_inline math_Vec2f math_Vec2f_sincos(f32 radians);
 
-// #define math_Vec2_limit_min$(TVec) VAL_math_Vec2_limit_min$(TVec)
-// #define math_Vec3_limit_min$(TVec) VAL_math_Vec3_limit_min$(TVec)
-// #define math_Vec4_limit_min$(TVec) VAL_math_Vec4_limit_min$(TVec)
-// #define math_Vec2_limit_max$(TVec) VAL_math_Vec2_limit_max$(TVec)
-// #define math_Vec3_limit_max$(TVec) VAL_math_Vec3_limit_max$(TVec)
-// #define math_Vec4_limit_max$(TVec) VAL_math_Vec4_limit_max$(TVec)
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec2f);
+cmp_fnEq_default(math_Vec2f);
+cmp_fnNe_default(math_Vec2f);
+cmp_fnLt_default(math_Vec2f);
+cmp_fnGt_default(math_Vec2f);
+cmp_fnLe_default(math_Vec2f);
+cmp_fnGe_default(math_Vec2f);
 
-/* Vector construction */
-#define math_Vec2$(TVec, val_x, val_y)               VAL_math_Vec2$(TVec, val_x, val_y)
-#define math_Vec3$(TVec, val_x, val_y, val_z)        VAL_math_Vec3$(TVec, val_x, val_y, val_z)
-#define math_Vec4$(TVec, val_x, val_y, val_z, val_w) VAL_math_Vec4$(TVec, val_x, val_y, val_z, val_w)
+/* Arithmetic */
+force_inline math_Vec2f math_Vec2f_neg(math_Vec2f v);
+force_inline math_Vec2f math_Vec2f_add(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_sub(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_mul(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_div(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_mod(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_scale(math_Vec2f v, f32 scalar);
 
-/* Scalar expansion constructors */
-#define math_Vec2_fill$(TVec, val_scalar) FUNC_math_Vec2_fill$(pp_uniqueToken(Vec2_fill$_scalar), TVec, val_scalar)
-#define math_Vec3_fill$(TVec, val_scalar) FUNC_math_Vec3_fill$(pp_uniqueToken(Vec3_fill$_scalar), TVec, val_scalar)
-#define math_Vec4_fill$(TVec, val_scalar) FUNC_math_Vec4_fill$(pp_uniqueToken(Vec4_fill$_scalar), TVec, val_scalar)
-#define math_Vec2_fill(val_scalar)        FUNC_math_Vec2_fill(pp_uniqueToken(Vec2_fill_scalar), val_scalar)
-#define math_Vec3_fill(val_scalar)        FUNC_math_Vec3_fill(pp_uniqueToken(Vec3_fill_scalar), val_scalar)
-#define math_Vec4_fill(val_scalar)        FUNC_math_Vec4_fill(pp_uniqueToken(Vec4_fill_scalar), val_scalar)
+/* Range Operations */
+force_inline math_Vec2f math_Vec2f_min(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_max(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_clamp(math_Vec2f v, math_Vec2f min, math_Vec2f max);
+force_inline math_Vec2f math_Vec2f_clamp01(math_Vec2f v);
+force_inline math_Vec2f math_Vec2f_wrap(math_Vec2f v, math_Vec2f min, math_Vec2f max);
+force_inline math_Vec2f math_Vec2f_wrap01(math_Vec2f v);
 
-/* Dimension conversion */
-#define math_Vec2_from$(TVec, val_vec) FUNC_math_Vec2_from$(pp_uniqueToken(Vec2_from$_vec), TVec, val_vec)
-#define math_Vec3_from$(TVec, val_vec) FUNC_math_Vec3_from$(pp_uniqueToken(Vec3_from$_vec), TVec, val_vec)
-#define math_Vec4_from$(TVec, val_vec) FUNC_math_Vec4_from$(pp_uniqueToken(Vec4_from$_vec), TVec, val_vec)
-#define math_Vec2_from(val_vec)        FUNC_math_Vec2_from(pp_uniqueToken(Vec2_from_vec), val_vec)
-#define math_Vec3_from(val_vec)        FUNC_math_Vec3_from(pp_uniqueToken(Vec3_from_vec), val_vec)
-#define math_Vec4_from(val_vec)        FUNC_math_Vec4_from(pp_uniqueToken(Vec4_from_vec), val_vec)
+/* Geometric Operations */
+force_inline f32        math_Vec2f_lenSq(math_Vec2f v);
+force_inline f32        math_Vec2f_len(math_Vec2f v);
+force_inline f32        math_Vec2f_distSq(math_Vec2f lhs, math_Vec2f rhs);
+force_inline f32        math_Vec2f_dist(math_Vec2f lhs, math_Vec2f rhs);
+force_inline f32        math_Vec2f_dot(math_Vec2f lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_norm(math_Vec2f v);
+force_inline math_Vec2f math_Vec2f_project(math_Vec2f v, math_Vec2f onto);
+force_inline math_Vec2f math_Vec2f_reject(math_Vec2f v, math_Vec2f from);
+force_inline math_Vec2f math_Vec2f_reflect(math_Vec2f v, math_Vec2f normal);
+force_inline math_Vec2f math_Vec2f_rotate(math_Vec2f v, f32 angle);
+force_inline math_Vec2f math_Vec2f_perp(math_Vec2f v);
 
-/* Swizzle helpers */
-#define math_Vec_xy(val_vec)   math_Vec2_from(val_vec)
-#define math_Vec_xyz(val_vec)  math_Vec3_from(val_vec)
-#define math_Vec_xyzw(val_vec) math_Vec4_from(val_vec)
-
-/* Vector type conversion */
-#define math_Vec_as$(TDest, val_vec) FUNC_math_Vec_as$(TDest, val_vec)
-
-/* Vector construction for rotation */
-#define math_Vec2_sincos$(TVec, val_radians) FUNC_math_Vec2_sincos$(pp_uniqueToken(Vec2_sincos$_radians), TVec, val_radians)
-
-/* Basic Vector-Vector Comparison Operations */
-#define math_Vec_cmp(val_lhs, val_rhs) OP_math_Vec_cmp(pp_uniqueToken(Vec_cmp_lhs), pp_uniqueToken(Vec_cmp_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_eq(val_lhs, val_rhs)  OP_math_Vec_eq(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_ne(val_lhs, val_rhs)  OP_math_Vec_ne(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_lt(val_lhs, val_rhs)  OP_math_Vec_lt(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_gt(val_lhs, val_rhs)  OP_math_Vec_gt(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_le(val_lhs, val_rhs)  OP_math_Vec_le(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_Vec_ge(val_lhs, val_rhs)  OP_math_Vec_ge(val_lhs, val_rhs)                                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-
-/* Core Vector-Vector Arithmetic */
-#define math_Vec_neg(val_vec)          OP_math_Vec_neg(pp_uniqueToken(Vec_neq_vec), val_vec)
-#define math_Vec_add(val_lhs, val_rhs) OP_math_Vec_add(pp_uniqueToken(Vec_add_lhs), pp_uniqueToken(Vec_add_rhs), val_lhs, val_rhs)
-#define math_Vec_sub(val_lhs, val_rhs) OP_math_Vec_sub(pp_uniqueToken(Vec_sub_lhs), pp_uniqueToken(Vec_sub_rhs), val_lhs, val_rhs)
-#define math_Vec_mul(val_lhs, val_rhs) OP_math_Vec_mul(pp_uniqueToken(Vec_mul_lhs), pp_uniqueToken(Vec_mul_rhs), val_lhs, val_rhs)
-#define math_Vec_div(val_lhs, val_rhs) OP_math_Vec_div(pp_uniqueToken(Vec_div_lhs), pp_uniqueToken(Vec_div_rhs), val_lhs, val_rhs)
-#define math_Vec_mod(val_lhs, val_rhs) OP_math_Vec_mod(pp_uniqueToken(Vec_mod_lhs), pp_uniqueToken(Vec_mod_rhs), val_lhs, val_rhs)
-
-/* Vector-Scalar Operations */
-#define math_Vec_scale(val_vec, val_scalar) OP_math_Vec_scale(pp_uniqueToken(Vec_scale_lhs_vec), pp_uniqueToken(Vec_scale_scalar), val_vec, val_scalar)
-
-// /* Range Operations */
-// #define math_Vec_min(val_lhs, val_rhs)          FUNC_math_Vec_min(val_lhs, val_rhs)
-// #define math_Vec_max(val_lhs, val_rhs)          FUNC_math_Vec_max(val_lhs, val_rhs)
-// #define math_Vec_clamp(val_x, val_min, val_max) FUNC_math_Vec_clamp(val_x, val_min, val_max)
-// #define math_Vec_wrap(val_x, val_min, val_max)  FUNC_math_Vec_wrap(val_x, val_min, val_max)
-
-// /* Magnitude and Distance Operations */
-// #define math_Vec_lenSq(val_vec)           FUNC_math_Vec_lenSq(val_vec)
-// #define math_Vec_len(val_vec)             FUNC_math_Vec_len(val_vec)
-// #define math_Vec_magSq(val_vec)           FUNC_math_Vec_magSq(val_vec)
-// #define math_Vec_mag(val_vec)             FUNC_math_Vec_mag(val_vec)
-// #define math_Vec_normSq(val_vec)          FUNC_math_Vec_normSq(val_vec)
-// #define math_Vec_norm(val_vec)            FUNC_math_Vec_norm(val_vec)
-// #define math_Vec_distSq(val_lhs, val_rhs) FUNC_math_Vec_distSq(val_lhs, val_rhs)
-// #define math_Vec_dist(val_lhs, val_rhs)   FUNC_math_Vec_dist(val_lhs, val_rhs)
-
-// /* Angular Operations */
-// #define math_Vec_angle(val_lhs, val_rhs)               FUNC_math_Vec_angle(val_lhs, val_rhs)
-// #define math_Vec_shortestArc(val_lhs, val_rhs)         FUNC_math_Vec_shortestArc(val_lhs, val_rhs)
-// #define math_Vec2_rotate(val_vec, val_angle)           FUNC_math_Vec2_rotate(val_vec, val_angle)
-// #define math_Vec3_rotate(val_vec, val_axis, val_angle) FUNC_math_Vec3_rotate(val_vec, val_axis, val_angle)
-
-// /* Projection and Reflection Operations */
-// #define math_Vec_dot(val_lhs, val_rhs)                 FUNC_math_Vec_dot(val_lhs, val_rhs)
-// #define math_Vec_project(val_vec, val_onto)            FUNC_math_Vec_project(val_vec, val_onto)
-// #define math_Vec_reject(val_vec, val_onto)             FUNC_math_Vec_reject(val_vec, val_onto)
-// #define math_Vec_reflect(val_vec, val_normal)          FUNC_math_Vec_reflect(val_vec, val_normal)
-// #define math_Vec_refract(val_vec, val_normal, val_eta) FUNC_math_Vec_refract(val_vec, val_normal, val_eta)
-
-// /* Cross Product and Perpendicular Operations */
-// #define math_Vec_cross(val_lhs, val_rhs)  FUNC_math_Vec_cross(pp_uniqueToken(Vec_cross_lhs), pp_uniqueToken(Vec_cross_rhs), val_lhs, val_rhs)
-// #define math_Vec3_cross(val_lhs, val_rhs) FUNC_math_Vec3_cross(val_lhs, val_rhs)
-// #define math_Vec_ccw(val_lhs, val_rhs)    FUNC_math_Vec_ccw(val_lhs, val_rhs)
-// #define math_Vec_cw(val_lhs, val_rhs)     FUNC_math_Vec_cw(val_lhs, val_rhs)
-// #define math_Vec2_perp(val_vec)           FUNC_math_Vec2_perp(val_vec)
-// #define math_Vec3_perp(val_vec)           FUNC_math_Vec3_perp(val_vec)
-
-// /* Vector Relationship Tests */
-// #define math_Vec_isCCW(val_lhs, val_rhs)      FUNC_math_Vec_isCCW(val_lhs, val_rhs)
-// #define math_Vec_isCW(val_lhs, val_rhs)       FUNC_math_Vec_isCW(val_lhs, val_rhs)
-// #define math_Vec_isColinear(val_lhs, val_rhs) FUNC_math_Vec_isColinear(val_lhs, val_rhs)
-// #define math_Vec_isParallel(val_lhs, val_rhs) FUNC_math_Vec_isParallel(val_lhs, val_rhs)
-
-// /* Basis Vectors */
-// #define math_Vec2_basis(val_index) FUNC_math_Vec2_basis(val_index)
-// #define math_Vec3_basis(val_index) FUNC_math_Vec3_basis(val_index)
-
-/*========== Implementations ================================================*/
-
+/* Vec3f functions */
 /* Constants */
-#define VAL_math_Vec_zero$(TVec) ((TVec){ 0.0 })
-#define VAL_math_Vec2_one$(TVec) ((TVec){ .x = 1, .y = 1 })
-#define VAL_math_Vec3_one$(TVec) ((TVec){ .x = 1, .y = 1, .z = 1 })
-#define VAL_math_Vec4_one$(TVec) ((TVec){ .x = 1, .y = 1, .z = 1, .w = 1 })
-#define VAL_math_Vec_lt$(TVec)   ((TVec){ .x = -1, .y = 0 })
-#define VAL_math_Vec_up$(TVec)   ((TVec){ .x = 0, .y = 1 })
-#define VAL_math_Vec_rt$(TVec)   ((TVec){ .x = 1, .y = 0 })
-#define VAL_math_Vec_dn$(TVec)   ((TVec){ .x = 0, .y = -1 })
-#define VAL_math_Vec3_fwd$(TVec) ((TVec){ .x = 0, .y = 0, .z = 1 })
-#define VAL_math_Vec3_bwd$(TVec) ((TVec){ .x = 0, .y = 0, .z = -1 })
+static const math_Vec3f math_Vec3f_zero     = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+static const math_Vec3f math_Vec3f_one      = { .x = 1.0f, .y = 1.0f, .z = 1.0f };
+static const math_Vec3f math_Vec3f_left     = { .x = -1.0f, .y = 0.0f, .z = 0.0f };
+static const math_Vec3f math_Vec3f_up       = { .x = 0.0f, .y = 1.0f, .z = 0.0f };
+static const math_Vec3f math_Vec3f_right    = { .x = 1.0f, .y = 0.0f, .z = 0.0f };
+static const math_Vec3f math_Vec3f_down     = { .x = 0.0f, .y = -1.0f, .z = 0.0f };
+static const math_Vec3f math_Vec3f_forward  = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+static const math_Vec3f math_Vec3f_backward = { .x = 0.0f, .y = 0.0f, .z = -1.0f };
+static const math_Vec3f math_Vec3f_eps      = { .x = f32_eps, .y = f32_eps, .z = f32_eps };
+static const math_Vec3f math_Vec3f_inf      = { .x = f32_inf, .y = f32_inf, .z = f32_inf };
+static const math_Vec3f math_Vec3f_nan      = { .x = f32_nan, .y = f32_nan, .z = f32_nan };
 
-/* Vector construction */
-#define VAL_math_Vec2$(TVec, val_x, val_y)               ((TVec){ .x = val_x, .y = val_y })
-#define VAL_math_Vec3$(TVec, val_x, val_y, val_z)        ((TVec){ .x = val_x, .y = val_y, .z = val_z })
-#define VAL_math_Vec4$(TVec, val_x, val_y, val_z, val_w) ((TVec){ .x = val_x, .y = val_y, .z = val_z, .w = val_w })
+/* Construction */
+force_inline math_Vec3f math_Vec3f_create(f32 x, f32 y, f32 z);
+force_inline math_Vec3f math_Vec3f_fill(f32 scalar);
+force_inline math_Vec3f math_Vec3f_from2(math_Vec2f v);
+force_inline math_Vec3f math_Vec3f_from4(math_Vec4f v);
 
-/* Scalar expansion constructors */
-#define FUNC_math_Vec2_fill$(_scalar, TVec, val_scalar) eval( \
-    let _scalar = val_scalar;                                 \
-    eval_return((TVec){ .s = { _scalar, _scalar } });         \
-)
-#define FUNC_math_Vec3_fill$(_scalar, TVec, val_scalar) eval(  \
-    let _scalar = val_scalar;                                  \
-    eval_return((TVec){ .s = { _scalar, _scalar, _scalar } }); \
-)
-#define FUNC_math_Vec4_fill$(_scalar, TVec, val_scalar) eval(           \
-    let _scalar = val_scalar;                                           \
-    eval_return((TVec){ .s = { _scalar, _scalar, _scalar, _scalar } }); \
-)
-#define FUNC_math_Vec2_fill(_scalar, val_scalar) eval(                      \
-    let         _scalar = val_scalar;                                       \
-    eval_return math_Vec2_fill$(math_Vec2_Match(TypeOf(_scalar)), _scalar); \
-)
-#define FUNC_math_Vec3_fill(_scalar, val_scalar) eval(                      \
-    let         _scalar = val_scalar;                                       \
-    eval_return math_Vec3_fill$(math_Vec3_Match(TypeOf(_scalar)), _scalar); \
-)
-#define FUNC_math_Vec4_fill(_scalar, val_scalar) eval(                      \
-    let         _scalar = val_scalar;                                       \
-    eval_return math_Vec4_fill$(math_Vec4_Match(TypeOf(_scalar)), _scalar); \
-)
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec3f);
+cmp_fnEq_default(math_Vec3f);
+cmp_fnNe_default(math_Vec3f);
+cmp_fnLt_default(math_Vec3f);
+cmp_fnGt_default(math_Vec3f);
+cmp_fnLe_default(math_Vec3f);
+cmp_fnGe_default(math_Vec3f);
 
-/* Dimension conversion */
-#define FUNC_math_Vec2_from$(_vec, TVec, val_vec) eval( \
-    let _vec = (val_vec);                               \
-    var _ret = makeCleared(TVec);                       \
-    _ret.x   = (_vec).s[0];                             \
-    _ret.y   = countOf((_vec).s) > 1 ? (_vec).s[1] : 0; \
-    eval_return _ret;                                   \
-)
-#define FUNC_math_Vec3_from$(_vec, TVec, val_vec) eval( \
-    let _vec = (val_vec);                               \
-    var _ret = makeCleared(TVec);                       \
-    _ret.x   = (_vec).s[0];                             \
-    _ret.y   = countOf((_vec).s) > 1 ? (_vec).s[1] : 0; \
-    _ret.z   = countOf((_vec).s) > 2 ? (_vec).s[2] : 0; \
-    eval_return _ret;                                   \
-)
-#define FUNC_math_Vec4_from$(_vec, TVec, val_vec) eval( \
-    let _vec = (val_vec);                               \
-    var _ret = makeCleared(TVec);                       \
-    _ret.x   = (_vec).s[0];                             \
-    _ret.y   = countOf((_vec).s) > 1 ? (_vec).s[1] : 0; \
-    _ret.z   = countOf((_vec).s) > 2 ? (_vec).s[2] : 0; \
-    _ret.w   = countOf((_vec).s) > 3 ? (_vec).s[3] : 1; \
-    eval_return _ret;                                   \
-)
-#define FUNC_math_Vec2_from(_vec, val_vec) eval(                             \
-    let         _vec = (val_vec);                                            \
-    eval_return math_Vec2_from$(math_Vec2_Match(TypeOf((_vec).s[0])), _vec); \
-)
-#define FUNC_math_Vec3_from(_vec, val_vec) eval(                             \
-    let         _vec = (val_vec);                                            \
-    eval_return math_Vec3_from$(math_Vec3_Match(TypeOf((_vec).s[0])), _vec); \
-)
-#define FUNC_math_Vec4_from(_vec, val_vec) eval(                             \
-    let         _vec = (val_vec);                                            \
-    eval_return math_Vec4_from$(math_Vec4_Match(TypeOf((_vec).s[0])), _vec); \
-)
+/* Arithmetic */
+force_inline math_Vec3f math_Vec3f_neg(math_Vec3f v);
+force_inline math_Vec3f math_Vec3f_add(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_sub(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_mul(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_div(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_mod(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_scale(math_Vec3f v, f32 scalar);
 
-/* Vector type conversion */
-#define FUNC_math_Vec_as$(TDest, val_vec) eval(           \
-    let _vec = (val_vec);                                 \
-    var _ret = makeCleared(TDest);                        \
-    for (usize i = 0; i < countOf(_ret.s); ++i) {         \
-        if (i < countOf(_vec.s)) {                        \
-            _ret.s[i] = as(TypeOf(_ret.s[0]), _vec.s[i]); \
-        }                                                 \
-    };                                                    \
-    eval_return _ret;                                     \
-)
+/* Range Operations */
+force_inline math_Vec3f math_Vec3f_min(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_max(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_clamp(math_Vec3f v, math_Vec3f min, math_Vec3f max);
+force_inline math_Vec3f math_Vec3f_clamp01(math_Vec3f v);
+force_inline math_Vec3f math_Vec3f_wrap(math_Vec3f v, math_Vec3f min, math_Vec3f max);
+force_inline math_Vec3f math_Vec3f_wrap01(math_Vec3f v);
 
-/* Vector construction for rotation */
-#define FUNC_math_Vec2_sincos$(_radians, TVec, val_radians) eval(            \
-    let _radians = (val_radians);                                            \
-    eval_return((TVec){ .x = math_cos(_radians), .y = math_sin(_radians) }); \
-)
+/* Geometric Operations */
+force_inline f32        math_Vec3f_lenSq(math_Vec3f v);
+force_inline f32        math_Vec3f_len(math_Vec3f v);
+force_inline f32        math_Vec3f_distSq(math_Vec3f lhs, math_Vec3f rhs);
+force_inline f32        math_Vec3f_dist(math_Vec3f lhs, math_Vec3f rhs);
+force_inline f32        math_Vec3f_dot(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_cross(math_Vec3f lhs, math_Vec3f rhs);
+force_inline math_Vec3f math_Vec3f_norm(math_Vec3f v);
+force_inline math_Vec3f math_Vec3f_project(math_Vec3f v, math_Vec3f onto);
+force_inline math_Vec3f math_Vec3f_reject(math_Vec3f v, math_Vec3f from);
+force_inline math_Vec3f math_Vec3f_reflect(math_Vec3f v, math_Vec3f normal);
+force_inline math_Vec3f math_Vec3f_rotate(math_Vec3f v, math_Vec3f axis, f32 angle);
+force_inline math_Vec3f math_Vec3f_perp(math_Vec3f v);
 
-/* Comparison operations */
-/* Comparison operations based on component-wise comparison */
-#define OP_math_Vec_cmp(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = cmp_Ord_equal;                               \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        if (math_lt(_lhs.s[i], _rhs.s[i])) {                \
-            _ret = cmp_Ord_less;                            \
-            break;                                          \
-        } else if (math_gt(_lhs.s[i], _rhs.s[i])) {         \
-            _ret = cmp_Ord_greater;                         \
-            break;                                          \
-        } else {                                            \
-            continue;                                       \
-        }                                                   \
-    };                                                      \
-    eval_return _ret;                                       \
-)
-/* Redefine other comparison operations in terms of cmp */
-#define OP_math_Vec_eq(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_equal)
-#define OP_math_Vec_ne(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) != cmp_Ord_equal)
-#define OP_math_Vec_lt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_less)
-#define OP_math_Vec_gt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_greater)
-#define OP_math_Vec_le(val_lhs, val_rhs) (!math_Vec_gt(val_lhs, val_rhs))
-#define OP_math_Vec_ge(val_lhs, val_rhs) (!math_Vec_lt(val_lhs, val_rhs))
+/* Vec4f functions */
+/* Constants */
+static const math_Vec4f math_Vec4f_zero     = { .x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_one      = { .x = 1.0f, .y = 1.0f, .z = 1.0f, .w = 1.0f };
+static const math_Vec4f math_Vec4f_left     = { .x = -1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_up       = { .x = 0.0f, .y = 1.0f, .z = 0.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_right    = { .x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_down     = { .x = 0.0f, .y = -1.0f, .z = 0.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_forward  = { .x = 0.0f, .y = 0.0f, .z = 1.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_backward = { .x = 0.0f, .y = 0.0f, .z = -1.0f, .w = 0.0f };
+static const math_Vec4f math_Vec4f_eps      = { .x = f32_eps, .y = f32_eps, .z = f32_eps, .w = f32_eps };
+static const math_Vec4f math_Vec4f_inf      = { .x = f32_inf, .y = f32_inf, .z = f32_inf, .w = f32_inf };
+static const math_Vec4f math_Vec4f_nan      = { .x = f32_nan, .y = f32_nan, .z = f32_nan, .w = f32_nan };
 
-/* Arithmetic operations */
-#define OP_math_Vec_neg(_vec, val_vec) eval(      \
-    let _vec = (val_vec);                         \
-    for (usize i = 0; i < countOf(_vec.s); ++i) { \
-        _vec.s[i] = math_neg(_vec.s[i]);          \
-    };                                            \
-    eval_return _vec;                             \
-)
-#define OP_math_Vec_add(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                   \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        _ret.s[i] = math_add(_lhs.s[i], _rhs.s[i]);         \
-    };                                                      \
-    eval_return _ret;                                       \
-)
-#define OP_math_Vec_sub(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                   \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        _ret.s[i] = math_sub(_lhs.s[i], _rhs.s[i]);         \
-    };                                                      \
-    eval_return _ret;                                       \
-)
-#define OP_math_Vec_mul(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                   \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        _ret.s[i] = math_mul(_lhs.s[i], _rhs.s[i]);         \
-    };                                                      \
-    eval_return _ret;                                       \
-)
-#define OP_math_Vec_div(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                   \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        _ret.s[i] = math_div(_lhs.s[i], _rhs.s[i]);         \
-    };                                                      \
-    eval_return _ret;                                       \
-)
-#define OP_math_Vec_mod(_lhs, _rhs, val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                                   \
-    let _rhs = (val_rhs);                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                   \
-    for (usize i = 0; i < countOf(_lhs.s); ++i) {           \
-        _ret.s[i] = math_mod(_lhs.s[i], _rhs.s[i]);         \
-    };                                                      \
-    eval_return _ret;                                       \
-)
+/* Construction */
+force_inline math_Vec4f math_Vec4f_create(f32 x, f32 y, f32 z, f32 w);
+force_inline math_Vec4f math_Vec4f_fill(f32 scalar);
+force_inline math_Vec4f math_Vec4f_from2(math_Vec2f v);
+force_inline math_Vec4f math_Vec4f_from3(math_Vec3f v);
 
-/* Vector-scalar operation */
-#define OP_math_Vec_scale(_vec, _scalar, val_vec, val_scalar) eval( \
-    let _vec    = (val_vec);                                        \
-    let _scalar = (val_scalar);                                     \
-    var _ret    = makeCleared(TypeOf(_vec));                        \
-    for (usize i = 0; i < countOf(_vec.s); ++i) {                   \
-        _ret.s[i] = math_mul(_vec.s[i], _scalar);                   \
-    };                                                              \
-    eval_return _ret;                                               \
-)
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec4f);
+cmp_fnEq_default(math_Vec4f);
+cmp_fnNe_default(math_Vec4f);
+cmp_fnLt_default(math_Vec4f);
+cmp_fnGt_default(math_Vec4f);
+cmp_fnLe_default(math_Vec4f);
+cmp_fnGe_default(math_Vec4f);
 
-// /* Range Operations */
-// #define FUNC_math_Vec_min(val_lhs, val_rhs) eval(   \
-//     let _lhs = (val_lhs);                           \
-//     let _rhs = (val_rhs);                           \
-//     var _ret = makeCleared(TypeOf(_lhs));           \
-//     for (usize i = 0; i < countOf(_lhs.s); ++i) {   \
-//         _ret.s[i] = math_min(_lhs.s[i], _rhs.s[i]); \
-//     };                                              \
-//     eval_return _ret;                               \
-// )
-// #define FUNC_math_Vec_max(val_lhs, val_rhs) eval(   \
-//     let _lhs = (val_lhs);                           \
-//     let _rhs = (val_rhs);                           \
-//     var _ret = makeCleared(TypeOf(_lhs));           \
-//     for (usize i = 0; i < countOf(_lhs.s); ++i) {   \
-//         _ret.s[i] = math_max(_lhs.s[i], _rhs.s[i]); \
-//     };                                              \
-//     eval_return _ret;                               \
-// )
-// #define FUNC_math_Vec_clamp(val_x, val_min, val_max) eval(     \
-//     let _x   = (val_x);                                        \
-//     let _min = (val_min);                                      \
-//     let _max = (val_max);                                      \
-//     var _ret = makeCleared(TypeOf(_x));                        \
-//     for (usize i = 0; i < countOf(_x.s); ++i) {                \
-//         _ret.s[i] = math_clamp(_x.s[i], _min.s[i], _max.s[i]); \
-//     };                                                         \
-//     eval_return _ret;                                          \
-// )
-// #define FUNC_math_Vec_wrap(val_x, val_min, val_max) eval(     \
-//     let _x   = (val_x);                                       \
-//     let _min = (val_min);                                     \
-//     let _max = (val_max);                                     \
-//     var _ret = makeCleared(TypeOf(_x));                       \
-//     for (usize i = 0; i < countOf(_x.s); ++i) {               \
-//         _ret.s[i] = math_wrap(_x.s[i], _min.s[i], _max.s[i]); \
-//     };                                                        \
-//     eval_return _ret;                                         \
-// )
+/* Arithmetic */
+force_inline math_Vec4f math_Vec4f_neg(math_Vec4f v);
+force_inline math_Vec4f math_Vec4f_add(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_sub(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_mul(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_div(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_mod(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_scale(math_Vec4f v, f32 scalar);
 
-// /* Magnitude and Distance Operations */
-// #define FUNC_math_Vec_lenSq(val_vec) eval(                     \
-//     let _vec = (val_vec);                                      \
-//     var _ret = makeCleared(TypeOf(_vec.s[0]));                 \
-//     for (usize i = 0; i < countOf(_vec.s); ++i) {              \
-//         _ret = math_add(_ret, math_mul(_vec.s[i], _vec.s[i])); \
-//     };                                                         \
-//     eval_return _ret;                                          \
-// )
-// #define FUNC_math_Vec_len(val_vec)    math_sqrt(math_Vec_lenSq(val_vec))
-// #define FUNC_math_Vec_magSq(val_vec)  math_Vec_lenSq(val_vec)
-// #define FUNC_math_Vec_mag(val_vec)    math_Vec_len(val_vec)
-// #define FUNC_math_Vec_normSq(val_vec) math_Vec_lenSq(_vec)
-// #define FUNC_math_Vec_norm(val_vec)   eval(             \
-//     let _vec = (val_vec);                               \
-//     let _len = math_Vec_len(_vec);                      \
-//     var _ret = makeCleared(TypeOf(_vec));               \
-//     if (!math_eq(_len, 0)) {                            \
-//         _ret = math_Vec_scale(_vec, math_div(1, _len)); \
-//     };                                                  \
-//     eval_return _ret;                                   \
-// )
-// #define FUNC_math_Vec_distSq(val_lhs, val_rhs) eval(    \
-//     let         _diff = math_Vec_sub(val_lhs, val_rhs); \
-//     var         _ret  = math_Vec_lenSq(_diff);          \
-//     eval_return _ret;                                   \
-// )
-// #define FUNC_math_Vec_dist(val_lhs, val_rhs) math_sqrt(math_Vec_distSq(val_lhs, val_rhs))
+/* Range Operations */
+force_inline math_Vec4f math_Vec4f_min(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_max(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_clamp(math_Vec4f v, math_Vec4f min, math_Vec4f max);
+force_inline math_Vec4f math_Vec4f_clamp01(math_Vec4f v);
+force_inline math_Vec4f math_Vec4f_wrap(math_Vec4f v, math_Vec4f min, math_Vec4f max);
+force_inline math_Vec4f math_Vec4f_wrap01(math_Vec4f v);
 
-// /* Angular Operations */
-// #define FUNC_math_Vec_angle(val_lhs, val_rhs) eval(  \
-//     let _lhs      = (val_lhs);                       \
-//     let _rhs      = (val_rhs);                       \
-//     let _dot      = math_Vec_dot(_lhs, _rhs);        \
-//     let _len_prod = math_mul(                        \
-//         math_Vec_len(_lhs),                          \
-//         math_Vec_len(_rhs)                           \
-//     );                                               \
-//     var _ret = makeCleared(TypeOf(_dot));            \
-//     if (!math_eq(_len_prod, 0)) {                    \
-//         _ret = math_acos(math_div(_dot, _len_prod)); \
-//     };                                               \
-//     eval_return _ret;                                \
-// )
-// #define FUNC_math_Vec_shortestArc(val_lhs, val_rhs) eval(                                      \
-//     let         _lhs   = (val_lhs);                                                            \
-//     let         _rhs   = (val_rhs);                                                            \
-//     let         _angle = math_Vec_angle(_lhs, _rhs);                                           \
-//     var         _ret   = math_mul(_angle, math_sign(math_Vec_dot(math_Vec_perp(_lhs), _rhs))); \
-//     eval_return _ret;                                                                          \
-// )
+/* Geometric Operations */
+force_inline f32        math_Vec4f_lenSq(math_Vec4f v);
+force_inline f32        math_Vec4f_len(math_Vec4f v);
+force_inline f32        math_Vec4f_distSq(math_Vec4f lhs, math_Vec4f rhs);
+force_inline f32        math_Vec4f_dist(math_Vec4f lhs, math_Vec4f rhs);
+force_inline f32        math_Vec4f_dot(math_Vec4f lhs, math_Vec4f rhs);
+force_inline math_Vec4f math_Vec4f_norm(math_Vec4f v);
+force_inline math_Vec4f math_Vec4f_project(math_Vec4f v, math_Vec4f onto);
+force_inline math_Vec4f math_Vec4f_reject(math_Vec4f v, math_Vec4f from);
+force_inline math_Vec4f math_Vec4f_reflect(math_Vec4f v, math_Vec4f normal);
 
-// /* Projection Operations */
-// #define FUNC_math_Vec_project(val_vec, val_onto) eval(                 \
-//     let _vec        = (val_vec);                                       \
-//     let _onto       = (val_onto);                                      \
-//     let _onto_lenSq = math_Vec_lenSq(_onto);                           \
-//     var _ret        = makeCleared(TypeOf(_vec));                       \
-//     if (!math_eq(_onto_lenSq, 0)) {                                    \
-//         let _dot = math_Vec_dot(_vec, _onto);                          \
-//         _ret     = math_Vec_scale(_onto, math_div(_dot, _onto_lenSq)); \
-//     };                                                                 \
-//     eval_return _ret;                                                  \
-// )
-// #define FUNC_math_Vec_reject(val_vec, val_onto) eval(     \
-//     let         _vec  = (val_vec);                        \
-//     let         _proj = math_Vec_project(_vec, val_onto); \
-//     var         _ret  = math_Vec_sub(_vec, _proj);        \
-//     eval_return _ret;                                     \
-// )
-// #define FUNC_math_Vec_reflect(val_vec, val_normal) eval(                          \
-//     let         _vec = (val_vec);                                                 \
-//     let         _n   = math_Vec_norm(val_normal);                                 \
-//     let         _dot = math_Vec_dot(_vec, _n);                                    \
-//     var         _ret = math_Vec_sub(_vec, math_Vec_scale(_n, math_mul(2, _dot))); \
-//     eval_return _ret;                                                             \
-// )
-// #define FUNC_math_Vec_refract(val_vec, val_normal, val_eta) eval(                              \
-//     let _vec = (val_vec);                                                                      \
-//     let _n   = math_Vec_norm(val_normal);                                                      \
-//     let _eta = (val_eta);                                                                      \
-//     let _dot = math_Vec_dot(_vec, _n);                                                         \
-//     let _k   = math_sub(1, math_mul(_eta, math_mul(_eta, math_sub(1, math_mul(_dot, _dot))))); \
-//     var _ret = makeCleared(TypeOf(_vec));                                                      \
-//     if (math_ge(_k, 0)) {                                                                      \
-//         _ret = math_Vec_sub(                                                                   \
-//             math_Vec_scale(_vec, _eta),                                                        \
-//             math_Vec_scale(_n, math_add(math_mul(_eta, _dot), math_sqrt(_k)))                  \
-//         );                                                                                     \
-//     };                                                                                         \
-//     eval_return _ret;                                                                          \
-// )
+/*========== Float64 (f64) Vector Functions ================================*/
 
-// #define likely(x)   __builtin_expect(!!(x), 1)
-// #define unlikely(x) __builtin_expect(!!(x), 0)
+/* Vec2d functions */
+/* Constants */
+static const math_Vec2d math_Vec2d_zero  = { .x = 0.0, .y = 0.0 };
+static const math_Vec2d math_Vec2d_one   = { .x = 1.0, .y = 1.0 };
+static const math_Vec2d math_Vec2d_left  = { .x = -1.0, .y = 0.0 };
+static const math_Vec2d math_Vec2d_up    = { .x = 0.0, .y = 1.0 };
+static const math_Vec2d math_Vec2d_right = { .x = 1.0, .y = 0.0 };
+static const math_Vec2d math_Vec2d_down  = { .x = 0.0, .y = -1.0 };
+static const math_Vec2d math_Vec2d_eps   = { .x = f64_eps, .y = f64_eps };
+static const math_Vec2d math_Vec2d_inf   = { .x = f64_inf, .y = f64_inf };
+static const math_Vec2d math_Vec2d_nan   = { .x = f64_nan, .y = f64_nan };
 
-// /* Cross Product and Perpendicular Operations */
-// #define FUNC_math_Vec_cross(_lhs, _rhs, val_lhs, val_rhs) eval(                          \
-//     let         _lhs = val_lhs;                                                          \
-//     let         _rhs = val_rhs;                                                          \
-//     eval_return math_Vec3_cross(                                                         \
-//         __builtin_choose_expr(likely(countOf(_lhs.s) == 3), _lhs, math_Vec3_from(_lhs)), \
-//         __builtin_choose_expr(likely(countOf(_rhs.s) == 3), _rhs, math_Vec3_from(_rhs))  \
-//     );                                                                                   \
-// )
-// #define FUNC_math_Vec3_cross(val_lhs, val_rhs) eval( \
-//     let _lhs = (val_lhs);                            \
-//     let _rhs = (val_rhs);                            \
-//     var _ret = makeCleared(TypeOf(_lhs));            \
-//     _ret.x   = math_sub(                             \
-//         math_mul(_lhs.y, _rhs.z),                  \
-//         math_mul(_lhs.z, _rhs.y)                   \
-//     );                                             \
-//     _ret.y = math_sub(                               \
-//         math_mul(_lhs.z, _rhs.x),                    \
-//         math_mul(_lhs.x, _rhs.z)                     \
-//     );                                               \
-//     _ret.z = math_sub(                               \
-//         math_mul(_lhs.x, _rhs.y),                    \
-//         math_mul(_lhs.y, _rhs.x)                     \
-//     );                                               \
-//     eval_return _ret;                                \
-// )
-// #define FUNC_math_Vec2_perp(val_vec) eval( \
-//     let _vec = (val_vec);                  \
-//     var _ret = makeCleared(TypeOf(_vec));  \
-//     _ret.x   = -_vec.y;                    \
-//     _ret.y   = _vec.x;                     \
-//     eval_return _ret;                      \
-// )
-// #define FUNC_math_Vec3_perp(val_vec) eval(             \
-//     let _vec   = (val_vec);                            \
-//     let _abs_x = math_abs(_vec.x);                     \
-//     let _abs_y = math_abs(_vec.y);                     \
-//     let _abs_z = math_abs(_vec.z);                     \
-//     var _ret   = makeCleared(TypeOf(_vec));            \
-//     if (_abs_x <= _abs_y && _abs_x <= _abs_z) {        \
-//         _ret = (TypeOf(_vec)){                         \
-//             .x = 0,                                    \
-//             .y = -_vec.z,                              \
-//             .z = _vec.y                                \
-//         };                                             \
-//     } else if (_abs_y <= _abs_x && _abs_y <= _abs_z) { \
-//         _ret = (TypeOf(_vec)){                         \
-//             .x = -_vec.z,                              \
-//             .y = 0,                                    \
-//             .z = _vec.x                                \
-//         };                                             \
-//     } else {                                           \
-//         _ret = (TypeOf(_vec)){                         \
-//             .x = -_vec.y,                              \
-//             .y = _vec.x,                               \
-//             .z = 0                                     \
-//         };                                             \
-//     };                                                 \
-//     eval_return _ret;                                  \
-// )
+/* Construction */
+force_inline math_Vec2d math_Vec2d_create(f64 x, f64 y);
+force_inline math_Vec2d math_Vec2d_fill(f64 scalar);
+force_inline math_Vec2d math_Vec2d_from3(math_Vec3d v);
+force_inline math_Vec2d math_Vec2d_from4(math_Vec4d v);
+force_inline math_Vec2d math_Vec2d_sincos(f64 radians);
 
-// /* CCW/CW operations for 2D vectors */
-// #define FUNC_math_Vec_ccw(val_lhs, val_rhs) eval( \
-//     let _lhs = (val_lhs);                         \
-//     let _rhs = (val_rhs);                         \
-//     var _ret = math_sub(                          \
-//         math_mul(_lhs.x, _rhs.y),                 \
-//         math_mul(_lhs.y, _rhs.x)                  \
-//     );                                            \
-//     eval_return _ret;                             \
-// )
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec2d);
+cmp_fnEq_default(math_Vec2d);
+cmp_fnNe_default(math_Vec2d);
+cmp_fnLt_default(math_Vec2d);
+cmp_fnGt_default(math_Vec2d);
+cmp_fnLe_default(math_Vec2d);
+cmp_fnGe_default(math_Vec2d);
 
-// #define FUNC_math_Vec_cw(val_lhs, val_rhs) eval( \
-//     let _lhs = (val_lhs);                        \
-//     let _rhs = (val_rhs);                        \
-//     var _ret = math_sub(                         \
-//         math_mul(_lhs.y, _rhs.x),                \
-//         math_mul(_lhs.x, _rhs.y)                 \
-//     );                                           \
-//     eval_return _ret;                            \
-// )
+/* Arithmetic */
+force_inline math_Vec2d math_Vec2d_neg(math_Vec2d v);
+force_inline math_Vec2d math_Vec2d_add(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_sub(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_mul(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_div(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_mod(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_scale(math_Vec2d v, f64 scalar);
 
-// /* Perpendicular operations split by dimension */
-// #define math_Vec_perp(val_vec) _Generic((val_vec), Vec2f: math_Vec2_perp, Vec3f: math_Vec3_perp)(val_vec)
+/* Range Operations */
+force_inline math_Vec2d math_Vec2d_min(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_max(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_clamp(math_Vec2d v, math_Vec2d min, math_Vec2d max);
+force_inline math_Vec2d math_Vec2d_clamp01(math_Vec2d v);
+force_inline math_Vec2d math_Vec2d_wrap(math_Vec2d v, math_Vec2d min, math_Vec2d max);
+force_inline math_Vec2d math_Vec2d_wrap01(math_Vec2d v);
 
-// /* Vector tests redefined for 2D vectors */
-// #define FUNC_math_Vec_isCCW(val_lhs, val_rhs) eval(                \
-//     var         _ret = math_gt(math_Vec_ccw(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                              \
-// )
+/* Geometric Operations */
+force_inline f64        math_Vec2d_lenSq(math_Vec2d v);
+force_inline f64        math_Vec2d_len(math_Vec2d v);
+force_inline f64        math_Vec2d_distSq(math_Vec2d lhs, math_Vec2d rhs);
+force_inline f64        math_Vec2d_dist(math_Vec2d lhs, math_Vec2d rhs);
+force_inline f64        math_Vec2d_dot(math_Vec2d lhs, math_Vec2d rhs);
+force_inline math_Vec2d math_Vec2d_norm(math_Vec2d v);
+force_inline math_Vec2d math_Vec2d_project(math_Vec2d v, math_Vec2d onto);
+force_inline math_Vec2d math_Vec2d_reject(math_Vec2d v, math_Vec2d from);
+force_inline math_Vec2d math_Vec2d_reflect(math_Vec2d v, math_Vec2d normal);
+force_inline math_Vec2d math_Vec2d_rotate(math_Vec2d v, f64 angle);
+force_inline math_Vec2d math_Vec2d_perp(math_Vec2d v);
 
-// #define FUNC_math_Vec_isCW(val_lhs, val_rhs) eval(                \
-//     var         _ret = math_gt(math_Vec_cw(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                             \
-// )
+/* Vec3d functions */
+/* Constants */
+static const math_Vec3d math_Vec3d_zero     = { .x = 0.0, .y = 0.0, .z = 0.0 };
+static const math_Vec3d math_Vec3d_one      = { .x = 1.0, .y = 1.0, .z = 1.0 };
+static const math_Vec3d math_Vec3d_left     = { .x = -1.0, .y = 0.0, .z = 0.0 };
+static const math_Vec3d math_Vec3d_up       = { .x = 0.0, .y = 1.0, .z = 0.0 };
+static const math_Vec3d math_Vec3d_right    = { .x = 1.0, .y = 0.0, .z = 0.0 };
+static const math_Vec3d math_Vec3d_down     = { .x = 0.0, .y = -1.0, .z = 0.0 };
+static const math_Vec3d math_Vec3d_forward  = { .x = 0.0, .y = 0.0, .z = 1.0 };
+static const math_Vec3d math_Vec3d_backward = { .x = 0.0, .y = 0.0, .z = -1.0 };
+static const math_Vec3d math_Vec3d_eps      = { .x = f64_eps, .y = f64_eps, .z = f64_eps };
+static const math_Vec3d math_Vec3d_inf      = { .x = f64_inf, .y = f64_inf, .z = f64_inf };
+static const math_Vec3d math_Vec3d_nan      = { .x = f64_nan, .y = f64_nan, .z = f64_nan };
 
-// #define FUNC_math_Vec_isColinear(val_lhs, val_rhs) eval(           \
-//     var         _ret = math_eq(math_Vec_ccw(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                              \
-// )
+/* Construction */
+force_inline math_Vec3d math_Vec3d_create(f64 x, f64 y, f64 z);
+force_inline math_Vec3d math_Vec3d_fill(f64 scalar);
+force_inline math_Vec3d math_Vec3d_from2(math_Vec2d v);
+force_inline math_Vec3d math_Vec3d_from4(math_Vec4d v);
 
-// /* ShortestArc redefined correctly for 2D */
-// #define FUNC_math_Vec_shortestArc(val_lhs, val_rhs) eval(                       \
-//     let         _lhs   = (val_lhs);                                             \
-//     let         _rhs   = (val_rhs);                                             \
-//     let         _angle = math_Vec_angle(_lhs, _rhs);                            \
-//     var         _ret   = math_mul(_angle, math_sign(math_Vec_ccw(_lhs, _rhs))); \
-//     eval_return _ret;                                                           \
-// )
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec3d);
+cmp_fnEq_default(math_Vec3d);
+cmp_fnNe_default(math_Vec3d);
+cmp_fnLt_default(math_Vec3d);
+cmp_fnGt_default(math_Vec3d);
+cmp_fnLe_default(math_Vec3d);
+cmp_fnGe_default(math_Vec3d);
 
-// /* Vector Tests */
-// #define FUNC_math_Vec_isCCW(val_lhs, val_rhs) eval(                  \
-//     var         _ret = math_gt(math_Vec_cross(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                                \
-// )
-// #define FUNC_math_Vec_isCW(val_lhs, val_rhs) eval(                   \
-//     var         _ret = math_lt(math_Vec_cross(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                                \
-// )
-// #define FUNC_math_Vec_isColinear(val_lhs, val_rhs) eval(             \
-//     var         _ret = math_eq(math_Vec_cross(val_lhs, val_rhs), 0); \
-//     eval_return _ret;                                                \
-// )
-// #define FUNC_math_Vec_isParallel(val_lhs, val_rhs) eval(      \
-//     var         _ret = math_Vec_isColinear(val_lhs, val_rhs); \
-//     eval_return _ret;                                         \
-// )
+/* Arithmetic */
+force_inline math_Vec3d math_Vec3d_neg(math_Vec3d v);
+force_inline math_Vec3d math_Vec3d_add(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_sub(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_mul(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_div(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_mod(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_scale(math_Vec3d v, f64 scalar);
 
-// /* Basis Vectors */
-// #define FUNC_math_Vec2_basis(val_index) eval( \
-//     let _index = (val_index);                 \
-//     var _ret   = makeCleared(Vec2f);          \
-//     if (0 <= _index && _index < 2) {          \
-//         _ret.s[_index] = 1;                   \
-//     };                                        \
-//     eval_return _ret;                         \
-// )
-// #define FUNC_math_Vec3_basis(val_index) eval( \
-//     let _index = (val_index);                 \
-//     var _ret   = makeCleared(Vec3f);          \
-//     if (0 <= _index && _index < 3) {          \
-//         _ret.s[_index] = 1;                   \
-//     };                                        \
-//     eval_return _ret;                         \
-// )
+/* Range Operations */
+force_inline math_Vec3d math_Vec3d_min(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_max(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_clamp(math_Vec3d v, math_Vec3d min, math_Vec3d max);
+force_inline math_Vec3d math_Vec3d_clamp01(math_Vec3d v);
+force_inline math_Vec3d math_Vec3d_wrap(math_Vec3d v, math_Vec3d min, math_Vec3d max);
+force_inline math_Vec3d math_Vec3d_wrap01(math_Vec3d v);
+
+/* Geometric Operations */
+force_inline f64        math_Vec3d_lenSq(math_Vec3d v);
+force_inline f64        math_Vec3d_len(math_Vec3d v);
+force_inline f64        math_Vec3d_distSq(math_Vec3d lhs, math_Vec3d rhs);
+force_inline f64        math_Vec3d_dist(math_Vec3d lhs, math_Vec3d rhs);
+force_inline f64        math_Vec3d_dot(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_cross(math_Vec3d lhs, math_Vec3d rhs);
+force_inline math_Vec3d math_Vec3d_norm(math_Vec3d v);
+force_inline math_Vec3d math_Vec3d_project(math_Vec3d v, math_Vec3d onto);
+force_inline math_Vec3d math_Vec3d_reject(math_Vec3d v, math_Vec3d from);
+force_inline math_Vec3d math_Vec3d_reflect(math_Vec3d v, math_Vec3d normal);
+force_inline math_Vec3d math_Vec3d_rotate(math_Vec3d v, math_Vec3d axis, f64 angle);
+force_inline math_Vec3d math_Vec3d_perp(math_Vec3d v);
+
+/* Vec4d functions */
+/* Constants */
+static const math_Vec4d math_Vec4d_zero     = { .x = 0.0, .y = 0.0, .z = 0.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_one      = { .x = 1.0, .y = 1.0, .z = 1.0, .w = 1.0 };
+static const math_Vec4d math_Vec4d_left     = { .x = -1.0, .y = 0.0, .z = 0.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_up       = { .x = 0.0, .y = 1.0, .z = 0.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_right    = { .x = 1.0, .y = 0.0, .z = 0.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_down     = { .x = 0.0, .y = -1.0, .z = 0.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_forward  = { .x = 0.0, .y = 0.0, .z = 1.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_backward = { .x = 0.0, .y = 0.0, .z = -1.0, .w = 0.0 };
+static const math_Vec4d math_Vec4d_eps      = { .x = f64_eps, .y = f64_eps, .z = f64_eps, .w = f64_eps };
+static const math_Vec4d math_Vec4d_inf      = { .x = f64_inf, .y = f64_inf, .z = f64_inf, .w = f64_inf };
+static const math_Vec4d math_Vec4d_nan      = { .x = f64_nan, .y = f64_nan, .z = f64_nan, .w = f64_nan };
+
+/* Construction */
+force_inline math_Vec4d math_Vec4d_create(f64 x, f64 y, f64 z, f64 w);
+force_inline math_Vec4d math_Vec4d_fill(f64 scalar);
+force_inline math_Vec4d math_Vec4d_from2(math_Vec2d v);
+force_inline math_Vec4d math_Vec4d_from3(math_Vec3d v);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec4d);
+cmp_fnEq_default(math_Vec4d);
+cmp_fnNe_default(math_Vec4d);
+cmp_fnLt_default(math_Vec4d);
+cmp_fnGt_default(math_Vec4d);
+cmp_fnLe_default(math_Vec4d);
+cmp_fnGe_default(math_Vec4d);
+
+/* Arithmetic */
+force_inline math_Vec4d math_Vec4d_neg(math_Vec4d v);
+force_inline math_Vec4d math_Vec4d_add(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_sub(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_mul(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_div(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_mod(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_scale(math_Vec4d v, f64 scalar);
+
+/* Range Operations */
+force_inline math_Vec4d math_Vec4d_min(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_max(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_clamp(math_Vec4d v, math_Vec4d min, math_Vec4d max);
+force_inline math_Vec4d math_Vec4d_clamp01(math_Vec4d v);
+force_inline math_Vec4d math_Vec4d_wrap(math_Vec4d v, math_Vec4d min, math_Vec4d max);
+force_inline math_Vec4d math_Vec4d_wrap01(math_Vec4d v);
+
+/* Geometric Operations */
+force_inline f64        math_Vec4d_lenSq(math_Vec4d v);
+force_inline f64        math_Vec4d_len(math_Vec4d v);
+force_inline f64        math_Vec4d_distSq(math_Vec4d lhs, math_Vec4d rhs);
+force_inline f64        math_Vec4d_dist(math_Vec4d lhs, math_Vec4d rhs);
+force_inline f64        math_Vec4d_dot(math_Vec4d lhs, math_Vec4d rhs);
+force_inline math_Vec4d math_Vec4d_norm(math_Vec4d v);
+force_inline math_Vec4d math_Vec4d_project(math_Vec4d v, math_Vec4d onto);
+force_inline math_Vec4d math_Vec4d_reject(math_Vec4d v, math_Vec4d from);
+force_inline math_Vec4d math_Vec4d_reflect(math_Vec4d v, math_Vec4d normal);
+
+/*========== Int32 (i32) Vector Functions ================================*/
+
+/* Vec2i functions */
+/* Constants */
+static const math_Vec2i math_Vec2i_zero      = { .x = 0, .y = 0 };
+static const math_Vec2i math_Vec2i_one       = { .x = 1, .y = 1 };
+static const math_Vec2i math_Vec2i_left      = { .x = -1, .y = 0 };
+static const math_Vec2i math_Vec2i_up        = { .x = 0, .y = 1 };
+static const math_Vec2i math_Vec2i_right     = { .x = 1, .y = 0 };
+static const math_Vec2i math_Vec2i_down      = { .x = 0, .y = -1 };
+static const math_Vec2i math_Vec2i_limit_min = { .x = i32_limit_min, .y = i32_limit_min };
+static const math_Vec2i math_Vec2i_limit_max = { .x = i32_limit_max, .y = i32_limit_max };
+
+/* Construction */
+force_inline math_Vec2i math_Vec2i_create(i32 x, i32 y);
+force_inline math_Vec2i math_Vec2i_fill(i32 scalar);
+force_inline math_Vec2i math_Vec2i_from3(math_Vec3i v);
+force_inline math_Vec2i math_Vec2i_from4(math_Vec4i v);
+force_inline math_Vec2i math_Vec2i_sincos(i32 radians);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec2i);
+cmp_fnEq_default(math_Vec2i);
+cmp_fnNe_default(math_Vec2i);
+cmp_fnLt_default(math_Vec2i);
+cmp_fnGt_default(math_Vec2i);
+cmp_fnLe_default(math_Vec2i);
+cmp_fnGe_default(math_Vec2i);
+
+/* Arithmetic */
+force_inline math_Vec2i math_Vec2i_neg(math_Vec2i v);
+force_inline math_Vec2i math_Vec2i_add(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_sub(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_mul(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_div(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_mod(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_scale(math_Vec2i v, i32 scalar);
+
+/* Range Operations */
+force_inline math_Vec2i math_Vec2i_min(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_max(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_clamp(math_Vec2i v, math_Vec2i min, math_Vec2i max);
+force_inline math_Vec2i math_Vec2i_wrap(math_Vec2i v, math_Vec2i min, math_Vec2i max);
+
+/* Geometric Operations */
+force_inline i32        math_Vec2i_lenSq(math_Vec2i v);
+force_inline i32        math_Vec2i_len(math_Vec2i v);
+force_inline i32        math_Vec2i_distSq(math_Vec2i lhs, math_Vec2i rhs);
+force_inline i32        math_Vec2i_dist(math_Vec2i lhs, math_Vec2i rhs);
+force_inline i32        math_Vec2i_dot(math_Vec2i lhs, math_Vec2i rhs);
+force_inline math_Vec2i math_Vec2i_norm(math_Vec2i v);
+force_inline math_Vec2i math_Vec2i_project(math_Vec2i v, math_Vec2i onto);
+force_inline math_Vec2i math_Vec2i_reject(math_Vec2i v, math_Vec2i from);
+force_inline math_Vec2i math_Vec2i_reflect(math_Vec2i v, math_Vec2i normal);
+force_inline math_Vec2i math_Vec2i_rotate(math_Vec2i v, i32 angle);
+force_inline math_Vec2i math_Vec2i_perp(math_Vec2i v);
+
+/* Vec3i functions */
+/* Constants */
+static const math_Vec3i math_Vec3i_zero      = { .x = 0, .y = 0, .z = 0 };
+static const math_Vec3i math_Vec3i_one       = { .x = 1, .y = 1, .z = 1 };
+static const math_Vec3i math_Vec3i_left      = { .x = -1, .y = 0, .z = 0 };
+static const math_Vec3i math_Vec3i_up        = { .x = 0, .y = 1, .z = 0 };
+static const math_Vec3i math_Vec3i_right     = { .x = 1, .y = 0, .z = 0 };
+static const math_Vec3i math_Vec3i_down      = { .x = 0, .y = -1, .z = 0 };
+static const math_Vec3i math_Vec3i_forward   = { .x = 0, .y = 0, .z = 1 };
+static const math_Vec3i math_Vec3i_backward  = { .x = 0, .y = 0, .z = -1 };
+static const math_Vec3i math_Vec3i_limit_min = { .x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min };
+static const math_Vec3i math_Vec3i_limit_max = { .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max };
+
+/* Construction */
+force_inline math_Vec3i math_Vec3i_create(i32 x, i32 y, i32 z);
+force_inline math_Vec3i math_Vec3i_fill(i32 scalar);
+force_inline math_Vec3i math_Vec3i_from2(math_Vec2i v);
+force_inline math_Vec3i math_Vec3i_from4(math_Vec4i v);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec3i);
+cmp_fnEq_default(math_Vec3i);
+cmp_fnNe_default(math_Vec3i);
+cmp_fnLt_default(math_Vec3i);
+cmp_fnGt_default(math_Vec3i);
+cmp_fnLe_default(math_Vec3i);
+cmp_fnGe_default(math_Vec3i);
+
+/* Arithmetic */
+force_inline math_Vec3i math_Vec3i_neg(math_Vec3i v);
+force_inline math_Vec3i math_Vec3i_add(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_sub(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_mul(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_div(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_mod(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_scale(math_Vec3i v, i32 scalar);
+
+/* Range Operations */
+force_inline math_Vec3i math_Vec3i_min(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_max(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_clamp(math_Vec3i v, math_Vec3i min, math_Vec3i max);
+force_inline math_Vec3i math_Vec3i_wrap(math_Vec3i v, math_Vec3i min, math_Vec3i max);
+
+/* Geometric Operations */
+force_inline i32        math_Vec3i_lenSq(math_Vec3i v);
+force_inline i32        math_Vec3i_len(math_Vec3i v);
+force_inline i32        math_Vec3i_distSq(math_Vec3i lhs, math_Vec3i rhs);
+force_inline i32        math_Vec3i_dist(math_Vec3i lhs, math_Vec3i rhs);
+force_inline i32        math_Vec3i_dot(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_cross(math_Vec3i lhs, math_Vec3i rhs);
+force_inline math_Vec3i math_Vec3i_norm(math_Vec3i v);
+force_inline math_Vec3i math_Vec3i_project(math_Vec3i v, math_Vec3i onto);
+force_inline math_Vec3i math_Vec3i_reject(math_Vec3i v, math_Vec3i from);
+force_inline math_Vec3i math_Vec3i_reflect(math_Vec3i v, math_Vec3i normal);
+force_inline math_Vec3i math_Vec3i_rotate(math_Vec3i v, math_Vec3i axis, i32 angle);
+force_inline math_Vec3i math_Vec3i_perp(math_Vec3i v);
+
+/* Vec4i functions */
+/* Constants */
+static const math_Vec4i math_Vec4i_zero      = { .x = 0, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4i math_Vec4i_one       = { .x = 1, .y = 1, .z = 1, .w = 1 };
+static const math_Vec4i math_Vec4i_left      = { .x = -1, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4i math_Vec4i_up        = { .x = 0, .y = 1, .z = 0, .w = 0 };
+static const math_Vec4i math_Vec4i_right     = { .x = 1, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4i math_Vec4i_down      = { .x = 0, .y = -1, .z = 0, .w = 0 };
+static const math_Vec4i math_Vec4i_forward   = { .x = 0, .y = 0, .z = 1, .w = 0 };
+static const math_Vec4i math_Vec4i_backward  = { .x = 0, .y = 0, .z = -1, .w = 0 };
+static const math_Vec4i math_Vec4i_limit_min = { .x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min, .w = i32_limit_min };
+static const math_Vec4i math_Vec4i_limit_max = { .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max, .w = i32_limit_max };
+
+/* Construction */
+force_inline math_Vec4i math_Vec4i_create(i32 x, i32 y, i32 z, i32 w);
+force_inline math_Vec4i math_Vec4i_fill(i32 scalar);
+force_inline math_Vec4i math_Vec4i_from2(math_Vec2i v);
+force_inline math_Vec4i math_Vec4i_from3(math_Vec3i v);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec4i);
+cmp_fnEq_default(math_Vec4i);
+cmp_fnNe_default(math_Vec4i);
+cmp_fnLt_default(math_Vec4i);
+cmp_fnGt_default(math_Vec4i);
+cmp_fnLe_default(math_Vec4i);
+cmp_fnGe_default(math_Vec4i);
+
+/* Arithmetic */
+force_inline math_Vec4i math_Vec4i_neg(math_Vec4i v);
+force_inline math_Vec4i math_Vec4i_add(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_sub(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_mul(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_div(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_mod(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_scale(math_Vec4i v, i32 scalar);
+
+/* Range Operations */
+force_inline math_Vec4i math_Vec4i_min(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_max(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_clamp(math_Vec4i v, math_Vec4i min, math_Vec4i max);
+force_inline math_Vec4i math_Vec4i_wrap(math_Vec4i v, math_Vec4i min, math_Vec4i max);
+
+/* Geometric Operations */
+force_inline i32        math_Vec4i_lenSq(math_Vec4i v);
+force_inline i32        math_Vec4i_len(math_Vec4i v);
+force_inline i32        math_Vec4i_distSq(math_Vec4i lhs, math_Vec4i rhs);
+force_inline i32        math_Vec4i_dist(math_Vec4i lhs, math_Vec4i rhs);
+force_inline i32        math_Vec4i_dot(math_Vec4i lhs, math_Vec4i rhs);
+force_inline math_Vec4i math_Vec4i_norm(math_Vec4i v);
+force_inline math_Vec4i math_Vec4i_project(math_Vec4i v, math_Vec4i onto);
+force_inline math_Vec4i math_Vec4i_reject(math_Vec4i v, math_Vec4i from);
+force_inline math_Vec4i math_Vec4i_reflect(math_Vec4i v, math_Vec4i normal);
+
+/*========== Int64 (i64) Vector Functions ================================*/
+
+/* Vec2l functions */
+/* Constants */
+static const math_Vec2l math_Vec2l_zero      = { .x = 0, .y = 0 };
+static const math_Vec2l math_Vec2l_one       = { .x = 1, .y = 1 };
+static const math_Vec2l math_Vec2l_left      = { .x = -1, .y = 0 };
+static const math_Vec2l math_Vec2l_up        = { .x = 0, .y = 1 };
+static const math_Vec2l math_Vec2l_right     = { .x = 1, .y = 0 };
+static const math_Vec2l math_Vec2l_down      = { .x = 0, .y = -1 };
+static const math_Vec2l math_Vec2l_limit_min = { .x = i64_limit_min, .y = i64_limit_min };
+static const math_Vec2l math_Vec2l_limit_max = { .x = i64_limit_max, .y = i64_limit_max };
+
+/* Construction */
+force_inline math_Vec2l math_Vec2l_create(i64 x, i64 y);
+force_inline math_Vec2l math_Vec2l_fill(i64 scalar);
+force_inline math_Vec2l math_Vec2l_from3(math_Vec3l v);
+force_inline math_Vec2l math_Vec2l_from4(math_Vec4l v);
+force_inline math_Vec2l math_Vec2l_sincos(i64 radians);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec2l);
+cmp_fnEq_default(math_Vec2l);
+cmp_fnNe_default(math_Vec2l);
+cmp_fnLt_default(math_Vec2l);
+cmp_fnGt_default(math_Vec2l);
+cmp_fnLe_default(math_Vec2l);
+cmp_fnGe_default(math_Vec2l);
+
+/* Arithmetic */
+force_inline math_Vec2l math_Vec2l_neg(math_Vec2l v);
+force_inline math_Vec2l math_Vec2l_add(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_sub(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_mul(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_div(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_mod(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_scale(math_Vec2l v, i64 scalar);
+
+/* Range Operations */
+force_inline math_Vec2l math_Vec2l_min(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_max(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_clamp(math_Vec2l v, math_Vec2l min, math_Vec2l max);
+force_inline math_Vec2l math_Vec2l_wrap(math_Vec2l v, math_Vec2l min, math_Vec2l max);
+
+/* Geometric Operations */
+force_inline i64        math_Vec2l_lenSq(math_Vec2l v);
+force_inline i64        math_Vec2l_len(math_Vec2l v);
+force_inline i64        math_Vec2l_distSq(math_Vec2l lhs, math_Vec2l rhs);
+force_inline i64        math_Vec2l_dist(math_Vec2l lhs, math_Vec2l rhs);
+force_inline i64        math_Vec2l_dot(math_Vec2l lhs, math_Vec2l rhs);
+force_inline math_Vec2l math_Vec2l_norm(math_Vec2l v);
+force_inline math_Vec2l math_Vec2l_project(math_Vec2l v, math_Vec2l onto);
+force_inline math_Vec2l math_Vec2l_reject(math_Vec2l v, math_Vec2l from);
+force_inline math_Vec2l math_Vec2l_reflect(math_Vec2l v, math_Vec2l normal);
+force_inline math_Vec2l math_Vec2l_rotate(math_Vec2l v, i64 angle);
+force_inline math_Vec2l math_Vec2l_perp(math_Vec2l v);
+
+/* Vec3l functions */
+/* Constants */
+static const math_Vec3l math_Vec3l_zero      = { .x = 0, .y = 0, .z = 0 };
+static const math_Vec3l math_Vec3l_one       = { .x = 1, .y = 1, .z = 1 };
+static const math_Vec3l math_Vec3l_left      = { .x = -1, .y = 0, .z = 0 };
+static const math_Vec3l math_Vec3l_up        = { .x = 0, .y = 1, .z = 0 };
+static const math_Vec3l math_Vec3l_right     = { .x = 1, .y = 0, .z = 0 };
+static const math_Vec3l math_Vec3l_down      = { .x = 0, .y = -1, .z = 0 };
+static const math_Vec3l math_Vec3l_forward   = { .x = 0, .y = 0, .z = 1 };
+static const math_Vec3l math_Vec3l_backward  = { .x = 0, .y = 0, .z = -1 };
+static const math_Vec3l math_Vec3l_limit_min = { .x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min };
+static const math_Vec3l math_Vec3l_limit_max = { .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max };
+
+/* Construction */
+force_inline math_Vec3l math_Vec3l_create(i64 x, i64 y, i64 z);
+force_inline math_Vec3l math_Vec3l_fill(i64 scalar);
+force_inline math_Vec3l math_Vec3l_from2(math_Vec2l v);
+force_inline math_Vec3l math_Vec3l_from4(math_Vec4l v);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec3l);
+cmp_fnEq_default(math_Vec3l);
+cmp_fnNe_default(math_Vec3l);
+cmp_fnLt_default(math_Vec3l);
+cmp_fnGt_default(math_Vec3l);
+cmp_fnLe_default(math_Vec3l);
+cmp_fnGe_default(math_Vec3l);
+
+/* Arithmetic */
+force_inline math_Vec3l math_Vec3l_neg(math_Vec3l v);
+force_inline math_Vec3l math_Vec3l_add(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_sub(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_mul(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_div(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_mod(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_scale(math_Vec3l v, i64 scalar);
+
+/* Range Operations */
+force_inline math_Vec3l math_Vec3l_min(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_max(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_clamp(math_Vec3l v, math_Vec3l min, math_Vec3l max);
+force_inline math_Vec3l math_Vec3l_wrap(math_Vec3l v, math_Vec3l min, math_Vec3l max);
+
+/* Geometric Operations */
+force_inline i64        math_Vec3l_lenSq(math_Vec3l v);
+force_inline i64        math_Vec3l_len(math_Vec3l v);
+force_inline i64        math_Vec3l_distSq(math_Vec3l lhs, math_Vec3l rhs);
+force_inline i64        math_Vec3l_dist(math_Vec3l lhs, math_Vec3l rhs);
+force_inline i64        math_Vec3l_dot(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_cross(math_Vec3l lhs, math_Vec3l rhs);
+force_inline math_Vec3l math_Vec3l_norm(math_Vec3l v);
+force_inline math_Vec3l math_Vec3l_project(math_Vec3l v, math_Vec3l onto);
+force_inline math_Vec3l math_Vec3l_reject(math_Vec3l v, math_Vec3l from);
+force_inline math_Vec3l math_Vec3l_reflect(math_Vec3l v, math_Vec3l normal);
+force_inline math_Vec3l math_Vec3l_rotate(math_Vec3l v, math_Vec3l axis, i64 angle);
+force_inline math_Vec3l math_Vec3l_perp(math_Vec3l v);
+
+/* Vec4l functions */
+/* Constants */
+static const math_Vec4l math_Vec4l_zero      = { .x = 0, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4l math_Vec4l_one       = { .x = 1, .y = 1, .z = 1, .w = 1 };
+static const math_Vec4l math_Vec4l_left      = { .x = -1, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4l math_Vec4l_up        = { .x = 0, .y = 1, .z = 0, .w = 0 };
+static const math_Vec4l math_Vec4l_right     = { .x = 1, .y = 0, .z = 0, .w = 0 };
+static const math_Vec4l math_Vec4l_down      = { .x = 0, .y = -1, .z = 0, .w = 0 };
+static const math_Vec4l math_Vec4l_forward   = { .x = 0, .y = 0, .z = 1, .w = 0 };
+static const math_Vec4l math_Vec4l_backward  = { .x = 0, .y = 0, .z = -1, .w = 0 };
+static const math_Vec4l math_Vec4l_limit_min = { .x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min, .w = i64_limit_min };
+static const math_Vec4l math_Vec4l_limit_max = { .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max, .w = i64_limit_max };
+
+/* Construction */
+force_inline math_Vec4l math_Vec4l_create(i64 x, i64 y, i64 z, i64 w);
+force_inline math_Vec4l math_Vec4l_fill(i64 scalar);
+force_inline math_Vec4l math_Vec4l_from2(math_Vec2l v);
+force_inline math_Vec4l math_Vec4l_from3(math_Vec3l v);
+
+/* Comparison */
+force_inline cmp_fnCmp(math_Vec4l);
+cmp_fnEq_default(math_Vec4l);
+cmp_fnNe_default(math_Vec4l);
+cmp_fnLt_default(math_Vec4l);
+cmp_fnGt_default(math_Vec4l);
+cmp_fnLe_default(math_Vec4l);
+cmp_fnGe_default(math_Vec4l);
+
+/* Arithmetic */
+force_inline math_Vec4l math_Vec4l_neg(math_Vec4l v);
+force_inline math_Vec4l math_Vec4l_add(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_sub(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_mul(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_div(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_mod(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_scale(math_Vec4l v, i64 scalar);
+
+/* Range Operations */
+force_inline math_Vec4l math_Vec4l_min(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_max(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_clamp(math_Vec4l v, math_Vec4l min, math_Vec4l max);
+force_inline math_Vec4l math_Vec4l_wrap(math_Vec4l v, math_Vec4l min, math_Vec4l max);
+
+/* Geometric Operations */
+force_inline i64        math_Vec4l_lenSq(math_Vec4l v);
+force_inline i64        math_Vec4l_len(math_Vec4l v);
+force_inline i64        math_Vec4l_distSq(math_Vec4l lhs, math_Vec4l rhs);
+force_inline i64        math_Vec4l_dist(math_Vec4l lhs, math_Vec4l rhs);
+force_inline i64        math_Vec4l_dot(math_Vec4l lhs, math_Vec4l rhs);
+force_inline math_Vec4l math_Vec4l_norm(math_Vec4l v);
+force_inline math_Vec4l math_Vec4l_project(math_Vec4l v, math_Vec4l onto);
+force_inline math_Vec4l math_Vec4l_reject(math_Vec4l v, math_Vec4l from);
+force_inline math_Vec4l math_Vec4l_reflect(math_Vec4l v, math_Vec4l normal);
 
 #endif /* MATH_VEC_INCLUDED */
