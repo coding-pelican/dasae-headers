@@ -67,12 +67,12 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             // Process events
             try_defer(engine_Window_processEvents(window));
-            if (engine_Key_pressed(engine_KeyCode_Esc)) {
+            if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
             }
 
             // Update with render to canvas
-            let   r = math_Vec2_sincos$(Vec2f, t * 0.05);
+            let   r = math_Vec2f_sincos((f32)t * 0.05f);
             Vec2f o = cleared();
             Vec2f p = { .x = 50.0f, .y = 0.0f };
 
@@ -84,13 +84,13 @@ Err$void dh_main(int argc, const char* argv[]) {
                     const f32   canvas_scale  = 0.25f; // cuz logic based on 4x scale (320x200)
                     const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
 
-                    draw_origin   = math_Vec_scale(draw_origin, canvas_scale);
+                    draw_origin   = math_Vec2f_scale(draw_origin, canvas_scale);
                     draw_origin.y = -draw_origin.y;
-                    draw_origin   = math_Vec_add(draw_origin, canvas_center);
+                    draw_origin   = math_Vec2f_add(draw_origin, canvas_center);
 
-                    draw_point   = math_Vec_scale(draw_point, canvas_scale);
+                    draw_point   = math_Vec2f_scale(draw_point, canvas_scale);
                     draw_point.y = -draw_point.y;
-                    draw_point   = math_Vec_add(draw_point, canvas_center);
+                    draw_point   = math_Vec2f_add(draw_point, canvas_center);
                 }
                 engine_Canvas_drawLine(game_canvas, (i32)draw_origin.x, (i32)draw_origin.y, (i32)draw_point.x, (i32)draw_point.y, Color_white);
 

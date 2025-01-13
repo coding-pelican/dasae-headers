@@ -9,67 +9,87 @@ typedef enum engine_KeyCode {
     engine_KeyCode_none = 0,
 
     // Special keys
-    engine_KeyCode_Backspace = 0x08,
-    engine_KeyCode_Tab       = 0x09,
-    engine_KeyCode_Enter     = 0x0D,
+    engine_KeyCode_backspace = 0x08,
+    engine_KeyCode_tab       = 0x09,
+    engine_KeyCode_enter     = 0x0D,
 
     // Modifiers
-    engine_KeyCode_Shift = 0x10,
-    engine_KeyCode_Ctrl  = 0x11,
-    engine_KeyCode_Alt   = 0x12,
+    engine_KeyCode_shift_left  = 0xA0,
+    engine_KeyCode_shift_right = 0xA1,
+    engine_KeyCode_shift       = engine_KeyCode_shift_left,
+    engine_KeyCode_ctrl_left   = 0xA2,
+    engine_KeyCode_ctrl_right  = 0xA3,
+    engine_KeyCode_ctrl        = engine_KeyCode_ctrl_left,
+    engine_KeyCode_alt_left    = 0xA4,
+    engine_KeyCode_alt_right   = 0xA5,
+    engine_KeyCode_alt         = engine_KeyCode_alt_left,
 
     // Special Keys
-    engine_KeyCode_Esc   = 0x1B,
-    engine_KeyCode_Space = 0x20,
+    engine_KeyCode_esc   = 0x1B,
+    engine_KeyCode_space = 0x20,
 
     // Arrow keys
-    engine_KeyCode_ArrowLt    = 0x25,
-    engine_KeyCode_ArrowUp    = 0x26,
-    engine_KeyCode_ArrowRt    = 0x27,
-    engine_KeyCode_ArrowDn    = 0x28,
-    engine_KeyCode_ArrowLeft  = engine_KeyCode_ArrowLt,
-    engine_KeyCode_ArrowRight = engine_KeyCode_ArrowRt,
-    engine_KeyCode_ArrowDown  = engine_KeyCode_ArrowDn,
+    engine_KeyCode_arrow_left  = 0x25,
+    engine_KeyCode_arrow_up    = 0x26,
+    engine_KeyCode_arrow_right = 0x27,
+    engine_KeyCode_arrow_down  = 0x28,
 
     // Number keys
-    engine_KeyCode_N1 = 0x31,
-    engine_KeyCode_N2 = 0x32,
-    engine_KeyCode_N3 = 0x33,
-    engine_KeyCode_N4 = 0x34,
-    engine_KeyCode_N5 = 0x35,
-    engine_KeyCode_N6 = 0x36,
-    engine_KeyCode_N7 = 0x37,
-    engine_KeyCode_N8 = 0x38,
-    engine_KeyCode_N9 = 0x39,
-    engine_KeyCode_N0 = 0x30,
+    engine_KeyCode_n1 = 0x31,
+    engine_KeyCode_n2 = 0x32,
+    engine_KeyCode_n3 = 0x33,
+    engine_KeyCode_n4 = 0x34,
+    engine_KeyCode_n5 = 0x35,
+    engine_KeyCode_n6 = 0x36,
+    engine_KeyCode_n7 = 0x37,
+    engine_KeyCode_n8 = 0x38,
+    engine_KeyCode_n9 = 0x39,
+    engine_KeyCode_n0 = 0x30,
 
     // Alphabetical keys
-    engine_KeyCode_A = 0x41,
-    engine_KeyCode_B = 0x42,
-    engine_KeyCode_C = 0x43,
-    engine_KeyCode_D = 0x44,
-    engine_KeyCode_E = 0x45,
-    engine_KeyCode_F = 0x46,
-    engine_KeyCode_G = 0x47,
-    engine_KeyCode_H = 0x48,
-    engine_KeyCode_I = 0x49,
-    engine_KeyCode_J = 0x4A,
-    engine_KeyCode_K = 0x4B,
-    engine_KeyCode_L = 0x4C,
-    engine_KeyCode_M = 0x4D,
-    engine_KeyCode_N = 0x4E,
-    engine_KeyCode_O = 0x4F,
-    engine_KeyCode_P = 0x50,
-    engine_KeyCode_Q = 0x51,
-    engine_KeyCode_R = 0x52,
-    engine_KeyCode_S = 0x53,
-    engine_KeyCode_T = 0x54,
-    engine_KeyCode_U = 0x55,
-    engine_KeyCode_V = 0x56,
-    engine_KeyCode_W = 0x57,
-    engine_KeyCode_X = 0x58,
-    engine_KeyCode_Y = 0x59,
-    engine_KeyCode_Z = 0x5A,
+    engine_KeyCode_a = 0x41,
+    engine_KeyCode_b = 0x42,
+    engine_KeyCode_c = 0x43,
+    engine_KeyCode_d = 0x44,
+    engine_KeyCode_e = 0x45,
+    engine_KeyCode_f = 0x46,
+    engine_KeyCode_g = 0x47,
+    engine_KeyCode_h = 0x48,
+    engine_KeyCode_i = 0x49,
+    engine_KeyCode_j = 0x4A,
+    engine_KeyCode_k = 0x4B,
+    engine_KeyCode_l = 0x4C,
+    engine_KeyCode_m = 0x4D,
+    engine_KeyCode_n = 0x4E,
+    engine_KeyCode_o = 0x4F,
+    engine_KeyCode_p = 0x50,
+    engine_KeyCode_q = 0x51,
+    engine_KeyCode_r = 0x52,
+    engine_KeyCode_s = 0x53,
+    engine_KeyCode_t = 0x54,
+    engine_KeyCode_u = 0x55,
+    engine_KeyCode_v = 0x56,
+    engine_KeyCode_w = 0x57,
+    engine_KeyCode_x = 0x58,
+    engine_KeyCode_y = 0x59,
+    engine_KeyCode_z = 0x5A,
+
+    // Numpad keys
+    engine_KeyCode_kp_n0      = 0x60,
+    engine_KeyCode_kp_n1      = 0x61,
+    engine_KeyCode_kp_n2      = 0x62,
+    engine_KeyCode_kp_n3      = 0x63,
+    engine_KeyCode_kp_n4      = 0x64,
+    engine_KeyCode_kp_n5      = 0x65,
+    engine_KeyCode_kp_n6      = 0x66,
+    engine_KeyCode_kp_n7      = 0x67,
+    engine_KeyCode_kp_n8      = 0x68,
+    engine_KeyCode_kp_n9      = 0x69,
+    engine_KeyCode_kp_mul     = 0x6A,
+    engine_KeyCode_kp_add     = 0x6B,
+    engine_KeyCode_kp_sub     = 0x6D,
+    engine_KeyCode_kp_decimal = 0x6E,
+    engine_KeyCode_kp_div     = 0x6F,
 
     engine_KeyCode_count = 256
 } engine_KeyCode;
@@ -80,27 +100,29 @@ typedef enum engine_KeyStates {
     engine_KeyStates_none     = 0,
     engine_KeyStates_pressed  = 1 << 0, // Key was just pressed this frame
     engine_KeyStates_held     = 1 << 1, // Key is being held down
-    engine_KeyStates_released = 1 << 2, // Key was just released this frame
+    engine_KeyStates_released = 1 << 2  // Key was just released this frame
 } engine_KeyStates;
 using_Opt$(engine_KeyStates);
 
 // Mouse button identifiers
 typedef enum engine_MouseButton {
-    engine_MouseButton_none   = 0,
-    engine_MouseButton_Left   = 1,
-    engine_MouseButton_Right  = 2,
-    engine_MouseButton_Middle = 3,
-    engine_MouseButton_X1     = 4,
-    engine_MouseButton_X2     = 5,
+    engine_MouseButton_none = 0,
+
+    engine_MouseButton_left,
+    engine_MouseButton_right,
+    engine_MouseButton_middle,
+    engine_MouseButton_x1,
+    engine_MouseButton_x2,
+
     engine_MouseButton_count
 } engine_MouseButton;
 
 // Mouse event types
 typedef enum engine_MouseEventType {
-    engine_MouseEventType_none   = 0,
-    engine_MouseEventType_move   = 1,
-    engine_MouseEventType_button = 2,
-    engine_MouseEventType_scroll = 3
+    engine_MouseEventType_none = 0,
+    engine_MouseEventType_move,
+    engine_MouseEventType_button,
+    engine_MouseEventType_scroll
 } engine_MouseEventType;
 
 // Mouse state structure
@@ -181,7 +203,9 @@ extern void                  engine_InputEventBuffer_clear(void);
 // Input state queries
 force_inline bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state) {
     debug_assert_nonnull(engine_InputState_global);
+    debug_assert_true(engine_KeyStates_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
+    debug_assert_true(engine_KeyStates_none <= state);
     return (engine_InputState_global->curr_states[key] & state) != engine_KeyStates_none;
 }
 
@@ -200,6 +224,7 @@ force_inline bool engine_Key_released(engine_KeyCode key) {
 // Get all current states for a key
 force_inline u8 engine_Key_getState(engine_KeyCode key) {
     debug_assert_nonnull(engine_InputState_global);
+    debug_assert_true(engine_KeyStates_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     return engine_InputState_global->curr_states[key];
 }
@@ -207,7 +232,9 @@ force_inline u8 engine_Key_getState(engine_KeyCode key) {
 // Mouse state queries
 force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStates state) {
     debug_assert_nonnull(engine_InputState_global);
+    debug_assert_true(engine_KeyStates_none <= button);
     debug_assert_true(button < engine_MouseButton_count);
+    debug_assert_true(engine_KeyStates_none <= state);
     return (engine_InputState_global->mouse.button_curr_states[button] & state) != engine_KeyStates_none;
 }
 

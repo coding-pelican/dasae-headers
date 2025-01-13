@@ -148,22 +148,22 @@ void State_handleInputKey(State* self) {
     self->input.dist_up_down     = 0;
 
     // WASD/Arrow key movement
-    if (engine_Key_held(engine_KeyCode_W) || engine_Key_held(engine_KeyCode_ArrowUp)) {
+    if (engine_Key_held(engine_KeyCode_w) || engine_Key_held(engine_KeyCode_arrow_up)) {
         self->input.forward_backward = 3.0;
     }
-    if (engine_Key_held(engine_KeyCode_S) || engine_Key_held(engine_KeyCode_ArrowDn)) {
+    if (engine_Key_held(engine_KeyCode_s) || engine_Key_held(engine_KeyCode_arrow_down)) {
         self->input.forward_backward = -3.0;
     }
-    if (engine_Key_held(engine_KeyCode_A) || engine_Key_held(engine_KeyCode_ArrowLt)) {
+    if (engine_Key_held(engine_KeyCode_a) || engine_Key_held(engine_KeyCode_arrow_left)) {
         self->input.left_right = 1.0;
     }
-    if (engine_Key_held(engine_KeyCode_D) || engine_Key_held(engine_KeyCode_ArrowRt)) {
+    if (engine_Key_held(engine_KeyCode_d) || engine_Key_held(engine_KeyCode_arrow_right)) {
         self->input.left_right = -1.0;
     }
 
     // Space/Shift-Space for up/down
-    if (engine_Key_held(engine_KeyCode_Space)) {
-        if (!engine_Key_held(engine_KeyCode_Shift)) {
+    if (engine_Key_held(engine_KeyCode_space)) {
+        if (!engine_Key_held(engine_KeyCode_shift)) {
             self->input.up_down = 2.0;
         } else {
             self->input.up_down = -2.0;
@@ -171,30 +171,30 @@ void State_handleInputKey(State* self) {
     }
 
     // Q/E for look up/down
-    self->input.look_up   = engine_Key_held(engine_KeyCode_Q);
-    self->input.look_down = engine_Key_held(engine_KeyCode_E);
+    self->input.look_up   = engine_Key_held(engine_KeyCode_q);
+    self->input.look_down = engine_Key_held(engine_KeyCode_e);
 
     // R/F for distance up/down
-    if (engine_Key_held(engine_KeyCode_R)) {
+    if (engine_Key_held(engine_KeyCode_r)) {
         self->input.dist_up_down = 4.0;
     }
-    if (engine_Key_held(engine_KeyCode_F)) {
+    if (engine_Key_held(engine_KeyCode_f)) {
         self->input.dist_up_down = -4.0;
     }
 
     // ESC to quit
-    if (engine_Key_pressed(engine_KeyCode_Esc)) {
+    if (engine_Key_pressed(engine_KeyCode_esc)) {
         self->is_running = false;
     }
 }
 
 void State_handleInputMouse(State* state) {
-    if (engine_Mouse_isState(engine_MouseButton_Left, engine_KeyStates_pressed)) {
+    if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_pressed)) {
         state->input.mouse_active     = true;
         state->input.mouse_position   = engine_Mouse_getPosition();
         state->input.forward_backward = 3.0;
     }
-    if (engine_Mouse_isState(engine_MouseButton_Left, engine_KeyStates_released)) {
+    if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_released)) {
         state->input.mouse_active     = false;
         state->input.forward_backward = 0;
         state->input.left_right       = 0;

@@ -29,10 +29,10 @@ using_Sli$(Control);
 
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {
-        { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
-        { .key = engine_KeyCode_A, .vec = math_Vec_lt$(Vec2f) },
-        { .key = engine_KeyCode_S, .vec = math_Vec_rt$(Vec2f) },
-        { .key = engine_KeyCode_D, .vec = math_Vec_dn$(Vec2f) },
+        { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
+        { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
+        { .key = engine_KeyCode_s, .vec = math_Vec2f_right },
+        { .key = engine_KeyCode_d, .vec = math_Vec2f_down },
     };
     return (SliConst$Control){
         .ptr = controls,
@@ -108,10 +108,10 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         let  target_time = time_Duration_fromSecs_f64(REAL_FPS / 1000.0f); // Assume 30 FPS for simplicity
         bool is_running  = true;
 
-        var prev_winpos = Vec_as$(Vec2f, engine_Window_getPosition(window));
+        var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
         while (is_running) {
-            let winpos  = Vec_as$(Vec2f, engine_Window_getPosition(window));
-            let dwinpos = math_Vec_sub(winpos, prev_winpos);
+            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
+            let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
 
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
@@ -120,23 +120,23 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             try_defer(engine_Window_processEvents(window));
             engine_Canvas_clear(game_canvas, (Color){ .packed = 0xFF181818 });
 
-            if (engine_Key_pressed(engine_KeyCode_Esc)) {
+            if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
                 log_debug("esc pressed\n");
                 break;
             }
 
-            if (engine_Mouse_pressed(engine_MouseButton_Left) || engine_Key_pressed(engine_KeyCode_Space)) {
+            if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Key_pressed(engine_KeyCode_space)) {
                 log_debug("space pressed\n");
                 scope_with(let pos = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&positions.base)))) {
-                    *pos = Vec_as$(Vec2f, engine_Mouse_getPosition());
+                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPosition());
                 }
 
                 scope_with(let vel = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval(
                         let angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
-                        let r     = math_Vec2_sincos$(Vec2f, angle);
-                        eval_return(math_Vec_scale(r, 50));
+                        let r     = math_Vec2f_sincos(angle);
+                        eval_return(math_Vec2f_scale(r, 50));
                     );
                 }
 
@@ -153,7 +153,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 for (usize i = 0; i < ps.len; ++i) {
                     const f32 f = (f32)(t / real_dt);
 
-                    ps.ptr[i] = math_Vec_sub(ps.ptr[i], math_Vec_scale(dwinpos, TARGET_DT / real_dt));
+                    ps.ptr[i] = math_Vec2f_sub(ps.ptr[i], math_Vec2f_scale(dwinpos, TARGET_DT / real_dt));
                     vs.ptr[i].y += GRAVITY * TARGET_DT;
 
                     const f32 nx = ps.ptr[i].x + vs.ptr[i].x * TARGET_DT;

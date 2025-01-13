@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    flt.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-10-27 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-13 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
@@ -32,7 +32,9 @@ extern "C" {
 // typedef _Float16 f16;
 // #define f16_limit_min (FLT16_MIN)
 // #define f16_limit_max (FLT16_MAX)
-// #define f16_eps      (FLT16_EPSILON)
+// #define f16_eps       (FLT16_EPSILON)
+// #define f16_nan       (NAN)
+// #define f16_inf       (INFINITY)
 
 typedef float_t f32;
 #define f32_limit_min (FLT_MIN)
@@ -51,12 +53,16 @@ typedef double_t f64;
 // typedef long double f80;
 // #define f80_limit_min (LDBL_MIN)
 // #define f80_limit_max (LDBL_MAX)
-// #define f80_eps      (LDBL_EPSILON)
+// #define f80_eps       (LDBL_EPSILON)
+// #define f80_nan       (NAN)
+// #define f80_inf       (INFINITY)
 
 // typedef __float128 f128;
 // #define f128_limit_min (FLT128_MIN)
 // #define f128_limit_max (FLT128_MAX)
-// #define f128_eps      (FLT128_EPSILON)
+// #define f128_eps       (FLT128_EPSILON)
+// #define f128_nan       (NAN)
+// #define f128_inf       (INFINITY)
 
 #if defined(__cplusplus)
 } /* extern "C" */

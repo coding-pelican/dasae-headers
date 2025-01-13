@@ -426,13 +426,13 @@ Err$void State_update(State* s, f64 dt) {
     }
 
     // Input handling
-    if (engine_Key_pressed(engine_KeyCode_Esc)) {
+    if (engine_Key_pressed(engine_KeyCode_esc)) {
         log_debug("pressed esc\n");
         s->is_running = false;
         return_void();
     }
 
-    if (engine_Key_pressed(engine_KeyCode_Space)) {
+    if (engine_Key_pressed(engine_KeyCode_space)) {
         log_debug("pressed space\n");
         let maybe_firework = catch (State_spawnFirework(s), err, {
             log_error("failed to spawn firework: %s\n", Err_message(err));

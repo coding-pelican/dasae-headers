@@ -4,8 +4,8 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-08 (date of creation)
- * @updated 2025-01-08 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-13 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/math
  * @prefix  math
  *
@@ -38,8 +38,8 @@ impl_Err(
 #define math_sqrt_2       VAL_math_sqrt_2
 #define math_sqrt_3       VAL_math_sqrt_3
 #define math_eps          VAL_math_eps
-#define math_inf          VAL_math_inf
 #define math_nan          VAL_math_nan
+#define math_inf          VAL_math_inf
 
 #define math_limit_min$(TScalar) VAL_math_limit_min$(TScalar)
 #define math_limit_max$(TScalar) VAL_math_limit_max$(TScalar)
@@ -51,8 +51,8 @@ impl_Err(
 #define math_f32_sqrt_2       VAL_math_f32_sqrt_2
 #define math_f32_sqrt_3       VAL_math_f32_sqrt_3
 #define math_f32_eps          VAL_math_f32_eps
-#define math_f32_inf          VAL_math_f32_inf
 #define math_f32_nan          VAL_math_f32_nan
+#define math_f32_inf          VAL_math_f32_inf
 
 #define math_f64_pi           VAL_math_f64_pi
 #define math_f64_tau          VAL_math_f64_tau
@@ -61,8 +61,8 @@ impl_Err(
 #define math_f64_sqrt_2       VAL_math_f64_sqrt_2
 #define math_f64_sqrt_3       VAL_math_f64_sqrt_3
 #define math_f64_eps          VAL_math_f64_eps
-#define math_f64_inf          VAL_math_f64_inf
 #define math_f64_nan          VAL_math_f64_nan
+#define math_f64_inf          VAL_math_f64_inf
 
 /* Comparison operations */
 #define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqueToken(cmp_lhs), pp_uniqueToken(cmp_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
@@ -99,6 +99,7 @@ impl_Err(
 #define math_floor(val_x) FUNC_math_floor(val_x)
 #define math_ceil(val_x)  FUNC_math_ceil(val_x)
 #define math_round(val_x) FUNC_math_round(val_x)
+// TODO: add more rounding functions
 #define math_trunc(val_x) FUNC_math_trunc(val_x)
 
 /* Exponential/logarithmic functions */
@@ -155,8 +156,8 @@ impl_Err(
 #define VAL_math_sqrt_2       math_f64_sqrt_2
 #define VAL_math_sqrt_3       math_f64_sqrt_3
 #define VAL_math_eps          math_f64_eps
-#define VAL_math_inf          math_f64_inf
 #define VAL_math_nan          math_f64_nan
+#define VAL_math_inf          math_f64_inf
 
 #define VAL_math_limit_min$(TScalar) _Generic( \
     (TScalar)0,                                \
@@ -193,9 +194,9 @@ impl_Err(
 #define VAL_math_f32_golden_ratio as(f32, math_golden_ratio)
 #define VAL_math_f32_sqrt_2       as(f32, math_sqrt_2)
 #define VAL_math_f32_sqrt_3       as(f32, math_sqrt_3)
-#define VAL_math_f32_eps          as(f32, math_eps)
-#define VAL_math_f32_inf          as(f32, math_inf)
-#define VAL_math_f32_nan          as(f32, math_nan)
+#define VAL_math_f32_eps          f32_eps
+#define VAL_math_f32_nan          f32_nan
+#define VAL_math_f32_inf          f32_inf
 
 #define VAL_math_f64_pi           (3.14159265358979323846)
 #define VAL_math_f64_tau          (2.0 * math_f64_pi)
@@ -203,9 +204,9 @@ impl_Err(
 #define VAL_math_f64_golden_ratio (1.61803398874989484820)
 #define VAL_math_f64_sqrt_2       (1.41421356237309504880)
 #define VAL_math_f64_sqrt_3       (1.73205080756887729352)
-#define VAL_math_f64_eps          (1e-6)
-#define VAL_math_f64_inf          (1.0 / 0.0)
-#define VAL_math_f64_nan          (0.0 / 0.0)
+#define VAL_math_f64_nan          f64_nan
+#define VAL_math_f64_eps          f64_eps
+#define VAL_math_f64_inf          f64_inf
 
 /* Comparison operations */
 #define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) eval( \

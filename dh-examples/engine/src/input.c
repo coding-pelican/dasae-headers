@@ -16,7 +16,7 @@ static void engine_Input_processKey(engine_KeyCode key, bool is_down) {
     let prev_state = engine_InputState_global->prev_states[key];
 
     // Clear previous state flags
-    *curr_state = 0;
+    *curr_state = engine_KeyStates_none;
 
     if (is_down) {
         if (!(prev_state & engine_KeyStates_held)) {
@@ -93,15 +93,17 @@ static void engine_Input_processMouse(void) {
 
     // Process mouse buttons
     static const i32 button_vks[] = {
+        0,          // None
         VK_LBUTTON, // Left
         VK_RBUTTON, // Right
         VK_MBUTTON, // Middle
     };
 
-    for (i32 i = 1; i < engine_MouseButton_count; ++i) {
-        bool is_down    = (GetAsyncKeyState(button_vks[i - 1]) & 0x8000) != 0;
-        let  curr_state = &state->mouse.button_curr_states[i];
-        let  prev_state = state->mouse.button_prev_states[i];
+    for (engine_MouseButton button = engine_MouseButton_none + 1; button < engine_MouseButton_count; ++button) {
+        SHORT button_state = GetAsyncKeyState(button_vks[button]);
+        bool  is_down      = (button_state & 0x8000) != 0;
+        let   curr_state   = &state->mouse.button_curr_states[button];
+        let   prev_state   = state->mouse.button_prev_states[button];
 
         *curr_state = 0;
 
@@ -112,7 +114,7 @@ static void engine_Input_processMouse(void) {
                 engine_MouseEvent event = {
                     .type   = engine_MouseEventType_button,
                     .button = {
-                        .key   = i,
+                        .key   = button,
                         .state = engine_KeyStates_pressed },
                     .timestamp = (f64)GetTickCount64() / 1000.0
                 };
@@ -125,7 +127,7 @@ static void engine_Input_processMouse(void) {
             engine_MouseEvent event = {
                 .type   = engine_MouseEventType_button,
                 .button = {
-                    .key   = i,
+                    .key   = button,
                     .state = engine_KeyStates_released },
                 .timestamp = (f64)GetTickCount64() / 1000.0
             };
@@ -165,10 +167,10 @@ void engine_Input_update(void) {
     memcpy(engine_InputState_global->prev_states, engine_InputState_global->curr_states, sizeof(engine_InputState_global->curr_states));
 
     // Process each key
-    for (i32 i = 0; i < engine_KeyCode_count; ++i) {
-        SHORT key_state = GetAsyncKeyState(i);
+    for (engine_KeyCode key = engine_KeyCode_none + 1; key < engine_KeyCode_count; ++key) {
+        SHORT key_state = GetAsyncKeyState(key);
         bool  is_down   = (key_state & 0x8000) != 0;
-        engine_Input_processKey(i, is_down);
+        engine_Input_processKey(key, is_down);
     }
 
     // Process mouse input
