@@ -35,7 +35,7 @@ extern "C" {
 #define static_inline SYN_static_inline
 #define extern_inline SYN_extern_inline
 #define force_inline  SYN_force_inline
-#define must_check    SYN_must_check
+#define must_check    ATTR_must_check
 
 #define used(_Expr...)                                                    \
     /**                                                                   \
