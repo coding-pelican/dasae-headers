@@ -53,7 +53,12 @@ void ArrList_fini(ArrList* self) {
     debug_assert_nonnull(self);
 
     if (self->items.addr == null) { return; }
-    mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
+    let actual_mem = (meta_Sli){
+        .type = self->items.type,
+        .addr = self->items.addr,
+        .len  = self->cap
+    };
+    mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
 }
 
 
@@ -61,7 +66,12 @@ Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
     reserveReturn(Err$meta_Sli);
     debug_assert_nonnull(self);
 
-    if (mem_Allocator_resize(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type }, self->items.len)) {
+    let actual_mem = (meta_Sli){
+        .type = self->items.type,
+        .addr = self->items.addr,
+        .len  = self->cap
+    };
+    if (mem_Allocator_resize(self->allocator, meta_sliToAny(actual_mem), self->items.len)) {
         let result = self->items;
         *self      = ArrList_init(self->items.type, self->allocator);
         return_ok(result);
@@ -75,7 +85,7 @@ Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
         self->items.len * self->items.type.size
     );
 
-    mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
+    mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
 
     *self = ArrList_init(self->items.type, self->allocator);
     return_ok(new_mem);
@@ -128,9 +138,14 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
         return_void();
     }
 
+    let actual_mem = (meta_Sli){
+        .type = self->items.type,
+        .addr = self->items.addr,
+        .len  = self->cap
+    };
     if (mem_Allocator_resize(
             self->allocator,
-            (AnyType){ .ctx = &self->items, .type = self->items.type },
+            meta_sliToAny(actual_mem),
             new_cap
         )) {
         self->cap = new_cap;
@@ -141,7 +156,7 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
 
     memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
 
-    mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
+    mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
 
     self->items.addr = new_mem.addr;
     self->cap        = new_cap;
@@ -173,8 +188,12 @@ void ArrList_shrinkAndFree(ArrList* self, usize new_len) {
         ArrList_clearAndFree(self);
         return;
     }
-
-    if (mem_Allocator_resize(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type }, new_len)) {
+    let actual_mem = (meta_Sli){
+        .type = self->items.type,
+        .addr = self->items.addr,
+        .len  = self->cap,
+    };
+    if (mem_Allocator_resize(self->allocator, meta_sliToAny(actual_mem), new_len)) {
         self->cap = new_len;
     }
     self->items.len = new_len;
@@ -586,7 +605,12 @@ void ArrList_clearRetainingCap(ArrList* self) {
 void ArrList_clearAndFree(ArrList* self) {
     debug_assert_nonnull(self);
     if (self->items.addr != null) {
-        mem_Allocator_free(self->allocator, (AnyType){ .ctx = &self->items, .type = self->items.type });
+        let actual_mem = (meta_Sli){
+            .addr = self->items.addr,
+            .type = self->items.type,
+            .len  = self->items.len
+        };
+        mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
         self->items = (meta_Sli){
             .addr = null,
             .type = self->items.type,

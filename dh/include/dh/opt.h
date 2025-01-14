@@ -23,7 +23,6 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
-#include "defer.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -71,10 +70,12 @@ extern "C" {
 #define isNone(opt) \
     (!isSome(opt))
 
-/* Returns optional value */
-#define return_Opt$ \
-    return (TypeOf(getReservedReturn()[0]))
+// #define return_Opt$ \
+//     return (TypeOf(getReservedReturn()[0]))
 
+#if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
+
+/* Returns optional value */
 #define return_some(val_opt...)                                \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                                     \
@@ -86,16 +87,21 @@ extern "C" {
         .has_value = false,                                    \
     })
 
-#define defer_return_some(val_opt...)              \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
+
+/* Returns error result */
+#define return_some(val_opt...)                    \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                         \
         .value     = val_opt,                      \
     })
 
-#define defer_return_none()                        \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#define return_none()                              \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .has_value = false,                        \
     })
+
+#endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
 #define orelse(expr, body...) ({ \
@@ -114,7 +120,7 @@ extern "C" {
 #define unwrap(expr)                                                 \
     ({                                                               \
         var _result = (expr);                                        \
-        debug_assert_fmt(_result.has_value, "Unwrap of null value"); \
+        debug_assert_fmt(_result.has_value, "Unwrap of none value"); \
         _result.value;                                               \
     })
 

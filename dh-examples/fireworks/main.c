@@ -5,11 +5,8 @@
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
-#include "dh/defer.h"
 
-#include "dh/time/SysTime.h"
-#include "dh/time/Instant.h"
-#include "dh/time/Duration.h"
+#include "dh/time.h"
 #include "dh/Random.h"
 
 #include "engine.h"
@@ -75,10 +72,10 @@ extern Err$Opt$Ptr$Firework State_spawnFirework(State* s) must_check;
 
 
 Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
     unused(argc), unused(argv);
-    Random_init();
-    scope_defer {
+    scope_reserveReturn(Err$void) {
+        Random_init();
+
         // Initialize logging to a file
         scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -92,7 +89,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(log_fini());
 
         // Initialize platform with terminal backend
-        let window = try_defer(engine_Window_create(
+        let window = try(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Fireworks",
@@ -106,7 +103,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Create canvases
         let game_canvas = catch (engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
-            defer_return_err(err);
+            return_err(err);
         });
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
@@ -122,7 +119,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         var allocator = heap_Classic_allocator(&heap);
         var state     = catch (State_init(allocator, 80 * 2, 50 * 2), err, {
             log_error("Failed to create game state: %s\n", err);
-            defer_return_err(err);
+            return_err(err);
         });
         defer(State_fini(&state));
         log_info("game state created\n");
@@ -145,10 +142,10 @@ Err$void dh_main(int argc, const char* argv[]) {
             let dt           = time_Duration_asSecs_f64(elapsed_time);
 
             // Process events
-            try_defer(engine_Window_processEvents(window));
+            try(engine_Window_processEvents(window));
 
             // Update game state
-            try_defer(State_update(&state, dt));
+            try(State_update(&state, dt));
 
             // Render all views
             State_render(&state, game_canvas, dt);
@@ -160,9 +157,9 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_sleep(time_Duration_sub(target_time, elapsed_time));
             prev_time = curr_time;
         }
-        defer_return_void();
+        return_void();
     }
-    return_deferred;
+    scope_returnReserved;
 }
 
 
@@ -246,13 +243,13 @@ void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
 }
 
 Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color) {
-    reserveReturn(Err$Ptr$Firework);
-    debug_assert_nonnull(f);
-    scope_defer {
+    scope_reserveReturn(Err$Ptr$Firework) {
+        debug_assert_nonnull(f);
+
         log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
         f->allocator = allocator;
 
-        scope_with(let rocket = meta_castPtr$(Particle*, try_defer(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
+        scope_with(let rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
             errdefer(mem_Allocator_destroy(f->allocator, anyPtr(rocket)));
             Particle_init(rocket, as(f64, rocket_x), as(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
@@ -260,14 +257,14 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
             f->rocket = (Opt$Ptr$Particle)some(rocket);
         }
 
-        f->effects = typed(ArrList$Particle, try_defer(ArrList_initCap(typeInfo(Particle), f->allocator, Firework_effects_per_rocket)));
+        f->effects = typed(ArrList$Particle, try(ArrList_initCap(typeInfo(Particle), f->allocator, Firework_effects_per_rocket)));
         errdefer(ArrList_fini(&f->effects.base));
 
         f->effect_base_color = Color_intoHsl(effect_base_color);
 
-        defer_return_ok(f);
+        return_ok(f);
     }
-    return_deferred;
+    scope_returnReserved;
 }
 
 void Firework_fini(Firework* f) {
@@ -358,6 +355,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
     for_slice(f->effects.items, effect) {
         Particle_update(effect, dt);
     }
+
     return_void();
 }
 

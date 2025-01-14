@@ -8,10 +8,8 @@
 #include "engine.h"
 
 Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
     unused(argc), unused(argv);
-
-    scope_defer {
+    scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("sample-draw_box-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -25,7 +23,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(log_fini());
 
         // Initialize platform with terminal backend
-        let window = try_defer(engine_Window_create(
+        let window = try(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Draw Box",
@@ -39,7 +37,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Create canvases
         let game_canvas = catch (engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
-            defer_return_err(err);
+            return_err(err);
         });
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
@@ -64,7 +62,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             let t            = time_Duration_asSecs_f64(time_Instant_durationSince(curr_time, zero_time));
 
             // Process events
-            try_defer(engine_Window_processEvents(window));
+            try(engine_Window_processEvents(window));
             if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
             }
@@ -99,7 +97,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_sleep(time_Duration_sub(target_time, elapsed_time));
             prev_time = curr_time;
         }
-        defer_return_void();
+        return_void();
     }
-    return_deferred;
+    scope_returnReserved;
 }

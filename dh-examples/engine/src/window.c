@@ -21,17 +21,18 @@ bool engine_WindowMetrics_eq(const engine_WindowMetrics* lhs, const engine_Windo
 }
 
 Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) {
-    reserveReturn(Err$Ptr$engine_Window);
-    scope_defer {
+    scope_reserveReturn(Err$Ptr$engine_Window) {
+        debug_assert_nonnull(params);
+
         /* Create window */
         let window = (engine_Window*)malloc(sizeof(engine_Window));
         if (!window) {
-            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
         errdefer(free(window));
 
         /* Create platform */
-        scope_with(let platform = try_defer(engine_Platform_create(params))) {
+        scope_with(let platform = try(engine_Platform_create(params))) {
             errdefer(engine_Platform_destroy(platform));
             window->platform = platform;
 
@@ -50,7 +51,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
         }
 
         /* Create composite buffer */
-        let composite_buffer = try_defer(engine_Canvas_create(
+        let composite_buffer = try(engine_Canvas_create(
             window->metrics.client_width,
             window->metrics.client_height,
             engine_CanvasType_rgba
@@ -62,9 +63,9 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
         engine_Input_init();
 
         /* Created successfully */
-        defer_return_ok(window);
+        return_ok(window);
     }
-    return_deferred;
+    scope_returnReserved;
 }
 
 void engine_Window_destroy(engine_Window* window) {
@@ -115,7 +116,6 @@ void engine_Window_present(engine_Window* window) {
     debug_assert_nonnull(window);
     debug_assert_nonnull(window->platform);
     debug_assert_nonnull(window->composite_buffer);
-
     // Skip presentation if window is minimized
     if (window->metrics.is_minimized) { return; }
 
@@ -152,7 +152,6 @@ void engine_Window_present(engine_Window* window) {
 i32 engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, i32 width, i32 height) {
     debug_assert_nonnull(window);
     debug_assert_nonnull(canvas);
-
     if (engine_Window_max_canvases <= window->view_count) { return -1; }
 
     let view      = &window->views[window->view_count];

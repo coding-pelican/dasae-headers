@@ -80,13 +80,15 @@ typedef struct meta_SliConst meta_SliConst;
 typedef union meta_Sli       meta_Sli;
 extern meta_Ptr              meta_Ptr_constCast(meta_PtrConst);
 extern meta_Sli              meta_Sli_constCast(meta_SliConst);
-#define meta_refPtr(var_ptr...)          IMPL_meta_refPtr(var_ptr)
-#define meta_refSli(var_ptr...)          IMPL_meta_refSli(var_ptr)
-#define meta_refPtrConst(var_ptr...)     IMPL_meta_refPtrConst(var_ptr)
-#define meta_refSliConst(var_ptr...)     IMPL_meta_refSliConst(var_ptr)
-#define meta_cast$(TDest, var_meta...)   IMPL_meta_cast$(TDest, var_meta)
-#define meta_castPtr$(TDest, var_ptr...) IMPL_meta_castPtr$(TDest, var_ptr)
-#define meta_castSli$(TDest, var_sli...) IMPL_meta_castSli$(TDest, var_sli)
+#define meta_refPtr(var_ptr...)               IMPL_meta_refPtr(var_ptr)
+#define meta_refSli(var_ptr...)               IMPL_meta_refSli(var_ptr)
+#define meta_refPtrConst(var_ptr...)          IMPL_meta_refPtrConst(var_ptr)
+#define meta_refSliConst(var_ptr...)          IMPL_meta_refSliConst(var_ptr)
+#define meta_cast$(TDest, var_meta...)        IMPL_meta_cast$(TDest, var_meta)
+#define meta_castPtr$(TDest, var_meta_ptr...) IMPL_meta_castPtr$(TDest, var_meta_ptr)
+#define meta_castSli$(TDest, var_meta_sli...) IMPL_meta_castSli$(TDest, var_meta_sli)
+#define meta_ptrToAny(var_meta_ptr...)        IMPL_meta_ptrToAny(var_meta_ptr)
+#define meta_sliToAny(var_meta_sli...)        IMPL_meta_sliToAny(var_meta_sli)
 
 #define meta_copy
 #define meta_move
@@ -253,16 +255,6 @@ struct AnyType {
     };                                   \
 )
 
-#define IMPL_anyPtr(var_ptr...) eval(    \
-    var _ptr = var_ptr;                  \
-    debug_assert_nonnull(_ptr);          \
-    eval_return(AnyType){                \
-        .type = typeInfo(TypeOf(*_ptr)), \
-        .ctx  = (void*)_ptr,             \
-        .len  = 1,                       \
-    };                                   \
-)
-
 #define IMPL_anySli(var_sli...) eval(        \
     var _sli = var_sli;                      \
     debug_assert_nonnull(_sli.ptr);          \
@@ -342,19 +334,34 @@ union meta_Sli {
     );                                           \
 )
 
-#define IMPL_meta_cast$(TDest, var_meta...) eval( \
-    var _meta = var_meta;                         \
-    eval_return(*((TDest*)&_meta.addr));          \
+#define IMPL_meta_cast$(TDest, var_meta...) eval(                                                                             \
+    var _meta = var_meta;                                                                                                     \
+    claim_assert_static_msg(isSameType(TypeOf(_meta), meta_Ptr) || isSameType(TypeOf(_meta), meta_Sli), "Invalid meta type"); \
+    eval_return(*((TDest*)&_meta.addr));                                                                                      \
 )
 
-#define IMPL_meta_castPtr$(TDest, var_ptr...) eval( \
-    let         _ptr = var_ptr;                     \
-    eval_return as(TDest, _ptr.addr);               \
+#define IMPL_meta_castPtr$(TDest, var_meta_ptr...) eval(                              \
+    let _ptr = var_meta_ptr;                                                          \
+    claim_assert_static_msg(isSameType(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
+    eval_return as(TDest, _ptr.addr);                                                 \
 )
 
-#define IMPL_meta_castSli$(TDest, var_sli...) eval(                 \
-    let         _sli = var_sli;                                     \
-    eval_return make(TDest, .ptr = (_sli).addr, .len = (_sli).len); \
+#define IMPL_meta_castSli$(TDest, var_meta_sli...) eval(                              \
+    let _sli = var_meta_sli;                                                          \
+    claim_assert_static_msg(isSameType(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
+    eval_return((TDest){ .ptr = _sli.addr, .len = _sli.len });                        \
+)
+
+#define IMPL_meta_ptrToAny(var_meta_ptr) eval(                                        \
+    let _ptr = var_meta_ptr;                                                          \
+    claim_assert_static_msg(isSameType(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
+    eval_return(AnyType){ .type = _ptr.type, .ctx = _ptr.addr, .len = 1 };            \
+)
+
+#define IMPL_meta_sliToAny(var_meta_sli) eval(                                        \
+    let _sli = var_meta_sli;                                                          \
+    claim_assert_static_msg(isSameType(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
+    eval_return(*(AnyType*)&_sli);                                                    \
 )
 
 using_Opt$(meta_PtrConst);

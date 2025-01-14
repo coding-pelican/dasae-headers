@@ -38,38 +38,6 @@ extern "C" {
 #define createCleared(T)       IMPL_createCleared(T)
 #define createFrom(T, _var...) IMPL_createFrom(T, _var)
 
-#define getContainer(var_ptr_member, TContainer)                      \
-    /**                                                               \
-     * Get struct pointer from member pointer.                        \
-     * this for var_ptr_member same as _MemberName.                   \
-     *                                                                \
-     * var_ptr_member: the pointer that point struct's member.        \
-     *            it's the member address offset from struct address. \
-     */                                                               \
-    IMPL_getContainer(var_ptr_member, TContainer)
-
-#define getContainerByFieldName(var_ptr_member, TContainer, _MemberName) \
-    /**                                                                  \
-     * Get struct pointer from member pointer with _MemberName.          \
-     * this for var_ptr_member not same as _MemberName.                  \
-     *                                                                   \
-     * var_ptr_member: the pointer that point struct's member.           \
-     *            it's the member address offset from struct address.    \
-     */                                                                  \
-    IMPL_getContainerByFieldName(var_ptr_member, TContainer, _MemberName)
-
-#define reserveReturn(T) \
-    IMPL_reserveReturn(T)
-
-#define getReservedReturn() \
-    IMPL_getReservedReturn()
-
-#define setReservedReturn(val_return...) \
-    IMPL_setReservedReturn(val_return)
-
-#define returnReserved() \
-    IMPL_returnReserved()
-
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_initial(_Inital...) \
@@ -94,32 +62,6 @@ extern "C" {
 #define IMPL_createFrom(T, _var...) \
     ((T[1]){ _var })
 // NOLINTEND(bugprone-macro-parentheses)
-
-#define IMPL_getContainer(var_ptr_member, TContainer) \
-    ((TContainer*)((u8*)(var_ptr_member) - offsetof(TContainer, var_ptr_member)))
-
-#define IMPL_getContainerByFieldName(var_ptr_member, TContainer, _MemberName) \
-    ((TContainer*)((u8*)(var_ptr_member) - offsetof(TContainer, _MemberName)))
-
-// #define IMPL_reserveReturn(T)               \
-//     T* _reserved_return = createCleared(T); \
-//     unused(_reserved_return)
-
-#define IMPL_reserveReturn(T)   \
-    T* _reserved_return = null; \
-    unused(_reserved_return)
-
-#define IMPL_getReservedReturn() \
-    (_reserved_return)
-
-#define IMPL_setReservedReturn(val_return...) eval( \
-    (getReservedReturn() = &val_return);            \
-    eval_return getReservedReturn()[0];             \
-)
-
-#define IMPL_returnReserved() \
-    return getReservedReturn()[0]
-
 
 #if defined(__cplusplus)
 } /* extern "C" */

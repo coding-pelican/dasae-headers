@@ -2,6 +2,7 @@
 #define ENGINE_COMMON_INCLUDED (1)
 
 #include "dh/core.h"
+#include "dh/scope.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 #include "dh/mem/Allocator.h"

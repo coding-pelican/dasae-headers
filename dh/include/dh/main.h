@@ -22,6 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/scope.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 #include "dh/variant.h"

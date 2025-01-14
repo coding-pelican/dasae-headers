@@ -19,6 +19,7 @@ static void  Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* b
 
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);
+
     engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
     if (!platform) {
         return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));

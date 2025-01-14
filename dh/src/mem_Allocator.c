@@ -162,7 +162,7 @@ Err$meta_Sli mem_Allocator_alloc_debug(
 #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 bool mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) {
     debug_assert_nonnull(old_mem.ctx);
-    let slice = (meta_Sli*)old_mem.ctx;
+    let slice = (meta_Sli*)&old_mem;
     let type  = slice->type;
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
@@ -192,7 +192,7 @@ bool mem_Allocator_resize_debug(
     const char*   func
 ) {
     debug_assert_nonnull(old_mem.ctx);
-    let slice = (meta_Sli*)old_mem.ctx;
+    let slice = (meta_Sli*)&old_mem;
     let type  = slice->type;
 
     if (new_len == 0) {
@@ -223,7 +223,7 @@ bool mem_Allocator_resize_debug(
 Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) {
     reserveReturn(Opt$meta_Sli);
     debug_assert_nonnull(old_mem.ctx);
-    let slice = (meta_Sli*)old_mem.ctx;
+    let slice = (meta_Sli*)&old_mem;
     let type  = slice->type;
 
     // Try resize in place first
@@ -260,7 +260,7 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
 ) {
     reserveReturn(Opt$meta_Sli);
     debug_assert_nonnull(old_mem.ctx);
-    let slice = (meta_Sli*)old_mem.ctx;
+    let slice = (meta_Sli*)&old_mem;
     let type  = slice->type;
 
     // Try resize in place first
@@ -298,7 +298,7 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
 #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 void mem_Allocator_free(mem_Allocator self, AnyType memory) {
     if (memory.ctx == null) { return; } // TODO: Change to not allow null pointers
-    let slice = (meta_Sli*)memory.ctx;
+    let slice = (meta_Sli*)&memory;
     mem_Allocator_rawFree(
         self,
         (Sli$u8){ .ptr = slice->addr, .len = slice->len * slice->type.size },
@@ -314,7 +314,7 @@ void mem_Allocator_free_debug(
     const char*   func
 ) {
     if (memory.ctx == null) { return; }
-    let slice = (meta_Sli*)memory.ctx;
+    let slice = (meta_Sli*)&memory;
     mem_Allocator_rawFree_debug(
         self,
         (Sli$u8){ .ptr = slice->addr, .len = slice->len * slice->type.size },

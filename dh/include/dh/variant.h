@@ -23,7 +23,6 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
-#include "defer.h"
 #include "opt.h"
 #include "err_res.h"
 
@@ -86,13 +85,15 @@ extern "C" {
         }                             \
     }
 
+// #define return_Err$Opt$ \
+//     return (TypeOf(getReservedReturn()[0]))
+
+// #define return_Opt$Err$ \
+//     return (TypeOf(getReservedReturn()[0]))
+
+#if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
+
 /* Returns variant value */
-#define return_Err$Opt$ \
-    return (TypeOf(getReservedReturn()[0]))
-
-#define return_Opt$Err$ \
-    return (TypeOf(getReservedReturn()[0]))
-
 #define return_ok_some(val_variant...)                         \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                                       \
@@ -128,8 +129,10 @@ extern "C" {
         },                                                 \
     })
 
-#define defer_return_ok_some(val_variant...)       \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
+
+#define return_ok_some(val_variant...)             \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = {                                \
                 .has_value = true,                 \
@@ -137,16 +140,16 @@ extern "C" {
         },                                     \
     })
 
-#define defer_return_ok_none()                     \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#define return_ok_none()                           \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = {                                \
                 .has_value = false,                \
         },                                     \
     })
 
-#define defer_return_some_ok(val_variant...)       \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#define return_some_ok(val_variant...)             \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                         \
         .value     = {                             \
                 .is_err = false,                   \
@@ -154,14 +157,16 @@ extern "C" {
         },                                     \
     })
 
-#define defer_return_some_err(val_variant...)      \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#define return_some_err(val_variant...)            \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                         \
         .value     = {                             \
                 .is_err = true,                    \
                 .err    = val_variant,             \
         },                                     \
     })
+
+#endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 /* Combined payload captures */
 #define if_ok_some(expr, var_capture)                                       \

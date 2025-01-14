@@ -31,22 +31,24 @@ typedef struct TypeInfo {
     usize align : 12;
 } TypeInfo;
 #define typeInfo(T) (                                    \
-    (TypeInfo){ .size = sizeof(T), .align = alignof(T) } \
+    (TypeInfo){ .size = sizeOf(T), .align = alignOf(T) } \
 )
 #if COMP_TIME
-#define TypeInfo_eq(val_lhs, val_rhs) eval(                \
-    let         lhs = val_lhs;                             \
-    let         rhs = val_rhs;                             \
-    eval_return memcmp(&lhs, &rhs, sizeof(TypeInfo)) == 0; \
+#define TypeInfo_eq(val_lhs, val_rhs) eval(                  \
+    let         _lhs = val_lhs;                              \
+    let         _rhs = val_rhs;                              \
+    eval_return memcmp(&_lhs, &_rhs, sizeOf(TypeInfo)) == 0; \
 )
 #else
 force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
 #endif
 
 // For explicit materialization type representation of abstract generic types
-#define typed(TDest, val_src) eval( \
-    var src = val_src;              \
-    eval_return(*((TDest*)&src));   \
+#define typed(TDest, val_src) eval(                                                                                                  \
+    var _src = val_src;                                                                                                              \
+    claim_assert_static_msg(!isSameType(TypeOf(_src), meta_Ptr), "`meta_Ptr` is not compatible with `typed`. Use `meta_castPtr$`."); \
+    claim_assert_static_msg(!isSameType(TypeOf(_src), meta_Sli), "`meta_Sli` is not compatible with `typed`. Use `meta_castSli$`."); \
+    eval_return(*((TDest*)&_src));                                                                                                   \
 )
 
 #if defined(__cplusplus)

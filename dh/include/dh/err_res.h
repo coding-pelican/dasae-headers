@@ -23,7 +23,6 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
-#include "defer.h"
 #include "Err.h"
 
 /*========== Macros and Definitions =========================================*/
@@ -84,10 +83,12 @@ extern "C" {
 #define isOk(val_err_res) \
     (!isErr(val_err_res))
 
-/* Returns error result */
-#define return_Err$ \
-    return (TypeOf(getReservedReturn()[0]))
+// #define return_Err$ \
+//     return (TypeOf(getReservedReturn()[0]))
 
+#if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
+
+/* Returns error result */
 #define return_err(val_err...)                                 \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                                        \
@@ -100,14 +101,26 @@ extern "C" {
         .ok     = val_ok,                                      \
     })
 
-#define defer_return_err(val_err...)               \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+/* Propagates error (similar to Zig's try) */
+#define try(expr) ({             \
+    let _result = (expr);        \
+    if (_result.is_err) {        \
+        return_err(_result.err); \
+    }                            \
+    _result.ok;                  \
+})
+
+#else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
+
+/* Returns error result */
+#define return_err(val_err...)                     \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                            \
         .err    = val_err,                         \
     })
 
-#define defer_return_ok(val_ok...)                 \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#define return_ok(val_ok...)                       \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = val_ok,                          \
     })
@@ -121,13 +134,7 @@ extern "C" {
     _result.ok;                  \
 })
 
-#define try_defer(expr) ({             \
-    let _result = (expr);              \
-    if (_result.is_err) {              \
-        defer_return_err(_result.err); \
-    }                                  \
-    _result.ok;                        \
-})
+#endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 /* Handles error (similar to Zig's catch) */
 #define catch_default(expr, val_default...) ({   \
@@ -144,12 +151,13 @@ extern "C" {
     _result.ok;                                  \
 })
 
+/* Defers when error */
 #define errdefer(_Statements...)                                    \
-    {                                                               \
+    defer(                                                          \
         if (getReservedReturn() && getReservedReturn()[0].is_err) { \
-            defer(_Statements);                                     \
+            _Statements;                                            \
         }                                                           \
-    }
+    )
 
 /* Error result payload captures */
 #define if_ok(expr, var_capture)                    \
@@ -175,12 +183,14 @@ struct Err$Void {
         Void ok;
     };
 };
-#define return_Err$Void \
-    return (Err$Void)
+// #define return_Err$Void \
+//     return (Err$Void)
 
 typedef Err$Void Err$void;
-#define return_Err$void \
-    return (Err$void)
+// #define return_Err$void \
+//     return (Err$void)
+
+#if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
 #define return_void()                                          \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
@@ -188,11 +198,15 @@ typedef Err$Void Err$void;
         .ok     = (Void){},                                    \
     })
 
-#define defer_return_void()                        \
-    defer_return((TypeOf(getReservedReturn()[0])){ \
+#else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
+
+#define return_void()                              \
+    scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = (Void){},                        \
     })
+
+#endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 // #define ErrRes(TOk)  \
 //     struct {         \

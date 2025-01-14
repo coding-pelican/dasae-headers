@@ -1,22 +1,20 @@
 #include "engine/canvas.h"
-#include "dh/defer.h"
 #include "dh/math/common.h"
 
 #include <math.h>
 
 Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasType type) {
-    reserveReturn(Err$Ptr$engine_Canvas);
-    scope_defer {
+    scope_reserveReturn(Err$Ptr$engine_Canvas) {
         let canvas = (engine_Canvas*)malloc(sizeof(engine_Canvas));
         if (!canvas) {
-            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
         errdefer(free(canvas));
 
         let len = as(usize, width) * as(usize, height);
         let ptr = (Color*)malloc(len * sizeof(Color));
         if (!ptr) {
-            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
         errdefer(free(ptr));
 
@@ -31,9 +29,9 @@ Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasT
         canvas->colorToPixel = null; // Would be implemented based on type
 
         engine_Canvas_clear(canvas, Color_blank);
-        defer_return_ok(canvas);
+        return_ok(canvas);
     }
-    return_deferred;
+    scope_returnReserved;
 }
 
 void engine_Canvas_destroy(engine_Canvas* canvas) {

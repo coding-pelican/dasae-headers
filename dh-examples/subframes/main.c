@@ -5,11 +5,8 @@
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
-#include "dh/defer.h"
 
-#include "dh/time/SysTime.h"
-#include "dh/time/Instant.h"
-#include "dh/time/Duration.h"
+#include "dh/time.h"
 #include "dh/Random.h"
 
 #include "engine.h"
@@ -48,10 +45,10 @@ static SliConst$Control Control_list(void) {
 #define COLLISION_DAMPING (0.8f)
 
 Err$void dh_main(int argc, const char* argv[]) { // NOLINT
-    reserveReturn(Err$void);
     unused(argc), unused(argv);
-    Random_init();
-    scope_defer {
+    scope_reserveReturn(Err$void) {
+        Random_init();
+
         // Initialize logging to a file
         scope_if(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -64,7 +61,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         }
 
         // Initialize platform with terminal backend
-        let window = try_defer(engine_Window_create(
+        let window = try(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Subframes",
@@ -76,7 +73,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = try_defer(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
+        let game_canvas = try(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
@@ -90,11 +87,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         var heap      = (heap_Classic){};
         var allocator = heap_Classic_allocator(&heap);
 
-        var positions = typed(Vec2fs, try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32)));
+        var positions = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, 256)));
         defer(ArrList_fini(&positions.base));
-        var velocities = typed(Vec2fs, try_defer(ArrList_initCap(typeInfo(Vec2f), allocator, 32)));
+        var velocities = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, 256)));
         defer(ArrList_fini(&velocities.base));
-        var colors = typed(Colors, try_defer(ArrList_initCap(typeInfo(Color), allocator, 32)));
+        var colors = typed(Colors, try(ArrList_initCap(typeInfo(Color), allocator, 256)));
         defer(ArrList_fini(&colors.base));
 
         const f32 w      = 160.0f;
@@ -117,7 +114,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
             let real_dt      = (f32)time_Duration_asSecs_f64(elapsed_time);
 
-            try_defer(engine_Window_processEvents(window));
+            try(engine_Window_processEvents(window));
             engine_Canvas_clear(game_canvas, (Color){ .packed = 0xFF181818 });
 
             if (engine_Key_pressed(engine_KeyCode_esc)) {
@@ -128,11 +125,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Key_pressed(engine_KeyCode_space)) {
                 log_debug("space pressed\n");
-                scope_with(let pos = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&positions.base)))) {
+                scope_with(let pos = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPosition());
                 }
 
-                scope_with(let vel = meta_castPtr$(Vec2f*, try_defer(ArrList_addBackOne(&velocities.base)))) {
+                scope_with(let vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval(
                         let angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
@@ -140,7 +137,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                     );
                 }
 
-                scope_with(let color = meta_castPtr$(Color*, try_defer(ArrList_addBackOne(&colors.base)))) {
+                scope_with(let color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
                     *color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
                 }
             }
@@ -206,7 +203,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             prev_winpos = winpos;
         }
-        defer_return_ok({});
+        return_ok({});
     }
-    return_deferred;
+    scope_returnReserved;
 }

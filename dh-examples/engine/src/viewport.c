@@ -1,15 +1,13 @@
 #include "engine/viewport.h"
-#include "dh/defer.h"
 
 #include <math.h>
 
 Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) {
-    reserveReturn(Err$Ptr$engine_Viewport);
-    scope_defer {
+    scope_reserveReturn(Err$Ptr$engine_Viewport) {
         /* Create viewport */
         let viewport = (engine_Viewport*)malloc(sizeof(engine_Viewport));
         if (!viewport) {
-            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
         errdefer(free(viewport));
 
@@ -29,15 +27,15 @@ Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) {
         /* Allocate depth buffer */
         let depth_buffer = malloc(sizeof(f32) * as(usize, width * height));
         if (!depth_buffer) {
-            defer_return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
         errdefer(free(depth_buffer));
         viewport->depth_buffer = depth_buffer;
 
         /* Created successfully */
-        defer_return_ok(viewport);
+        return_ok(viewport);
     }
-    return_deferred;
+    scope_returnReserved;
 }
 
 void engine_Viewport_destroy(engine_Viewport* viewport) {
