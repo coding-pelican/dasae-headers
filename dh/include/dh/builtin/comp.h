@@ -4,8 +4,8 @@
  * @file    comp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-03 (date of creation)
- * @updated 2025-01-13 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-01-15 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
@@ -32,10 +32,10 @@ extern "C" {
 #define COMP_TIME (1)
 #endif
 
-#define static_inline SYN_static_inline
-#define extern_inline SYN_extern_inline
-#define force_inline  SYN_force_inline
-#define must_check    ATTR_must_check
+#define static_inline SYN__static_inline
+#define extern_inline SYN__extern_inline
+#define force_inline  SYN__force_inline
+#define must_check    ATTR__must_check
 
 #define used(_Expr...)                                                    \
     /**                                                                   \
@@ -44,7 +44,7 @@ extern "C" {
      * @details In macro functions, the arguments are marked as used      \
      * @param _Expr... Variable number of arguments to be marked as used  \
      */                                                                   \
-    ATTR_used(_Expr)
+    ATTR__used(_Expr)
 
 #define unused(_Expr...)                                                   \
     /**                                                                    \
@@ -52,14 +52,14 @@ extern "C" {
     to suppress compiler warnings                                          \
      * @param _Expr... Variable number of arguments to be marked as unused \
      */                                                                    \
-    ATTR_unused(_Expr)
+    ATTR__unused(_Expr)
 
 #define ignore                                                           \
     /**                                                                  \
      * @brief Attribute explicitly ignores an expression or return value \
      * @details Used to suppress compiler warnings about unused values   \
      */                                                                  \
-    ATTR_ignore
+    ATTR__ignore
 
 #define as(_T, _val) \
     FUNC_as(_T, _val)
@@ -71,9 +71,9 @@ extern "C" {
         initialized with { } This is called aggregate initialization (C++11) \
      * @note MSVC C++ compiler does not support compound literals (C99)      \
      */                                                                      \
-    SYN_literal(_T, _Inital)
+    SYN__literal(_T, _Inital)
 
-#define eval(expr...) SYN_eval(expr)
+#define eval(expr...) SYN__eval(expr)
 #define eval_return   /* just comment */
 
 /*========== Macro Implementations ==========================================*/
@@ -81,23 +81,23 @@ extern "C" {
 /* Inline Definitions Based on Language Mode */
 #if BUILTIN_LANG_MODE_CPP
 /* C++ always supports 'inline' */
-#define SYN_static_inline static inline
-#define SYN_extern_inline inline
+#define SYN__static_inline static inline
+#define SYN__extern_inline inline
 #elif BUILTIN_LANG_C_99
 /* C99 or later */
-#define SYN_static_inline static inline
-#define SYN_extern_inline inline
+#define SYN__static_inline static inline
+#define SYN__extern_inline inline
 #else
 /* Use compiler-specific inline directives */
-#define SYN_static_inline BUILTIN_COMP_INLINE static
-#define SYN_extern_inline BUILTIN_COMP_INLINE
+#define SYN__static_inline BUILTIN_COMP_INLINE static
+#define SYN__extern_inline BUILTIN_COMP_INLINE
 #endif
-#define SYN_force_inline BUILTIN_COMP_FORCE_INLINE
-#define ATTR_must_check  BUILTIN_COMP_MUST_CHECK
+#define SYN__force_inline BUILTIN_COMP_FORCE_INLINE
+#define ATTR__must_check  BUILTIN_COMP_MUST_CHECK
 
-#define ATTR_used(_Expr...)   _Expr
-#define ATTR_unused(_Expr...) ((void)(_Expr))
-#define ATTR_ignore           (void)
+#define ATTR__used(_Expr...)   _Expr
+#define ATTR__unused(_Expr...) ((void)(_Expr))
+#define ATTR__ignore           (void)
 
 #if defined(__cplusplus)
 #define FUNC_as(_T, _val) static_cast<_T>(_val)
@@ -106,14 +106,14 @@ extern "C" {
 #endif
 
 #if defined(__cplusplus)
-#define SYN_literal(_T, _Inital...) \
+#define SYN__literal(_T, _Inital...) \
     _T { _Inital }
 #else
-#define SYN_literal(_T, _Inital...) \
+#define SYN__literal(_T, _Inital...) \
     (_T) { _Inital }
 #endif
 
-#define SYN_eval(expr...) ({ expr; })
+#define SYN__eval(expr...) ({ expr })
 
 #if defined(__cplusplus)
 } /* extern "C" */

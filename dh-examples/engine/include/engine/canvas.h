@@ -25,8 +25,8 @@ typedef struct engine_Canvas {
     Color (*pixelToColor)(const Color* buffer, u32 x, u32 y);
     void (*colorToPixel)(Color* buffer, u32 x, u32 y, Color color);
 } engine_Canvas;
-using_Ptr$(engine_Canvas);
-using_Err$(engine_Canvas);
+use_Ptr$(engine_Canvas);
+use_Err$(engine_Canvas);
 
 // Canvas creation with specific type
 extern Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasType type) must_check;

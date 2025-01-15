@@ -20,8 +20,8 @@ typedef struct engine_Viewport {
     engine_Camera camera;
     f32*          depth_buffer;
 } engine_Viewport;
-using_Ptr$(engine_Viewport);
-using_Err$(engine_Viewport);
+use_Ptr$(engine_Viewport);
+use_Err$(engine_Viewport);
 
 // Viewport and Camera functions
 extern Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) must_check;

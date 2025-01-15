@@ -93,7 +93,7 @@ typedef enum engine_KeyCode {
 
     engine_KeyCode_count = 256
 } engine_KeyCode;
-using_Opt$(engine_KeyCode);
+use_Opt$(engine_KeyCode);
 
 // Key code states
 typedef enum engine_KeyStates {
@@ -102,7 +102,7 @@ typedef enum engine_KeyStates {
     engine_KeyStates_held     = 1 << 1, // Key is being held down
     engine_KeyStates_released = 1 << 2  // Key was just released this frame
 } engine_KeyStates;
-using_Opt$(engine_KeyStates);
+use_Opt$(engine_KeyStates);
 
 // Mouse button identifiers
 typedef enum engine_MouseButton {
@@ -142,7 +142,7 @@ typedef struct engine_InputEvent {
     engine_KeyStates state;
     f64              timestamp; // Time when the event occurred
 } engine_InputEvent;
-using_Opt$(engine_InputEvent);
+use_Opt$(engine_InputEvent);
 
 // Mouse event structure
 typedef struct engine_MouseEvent {
@@ -159,7 +159,7 @@ typedef struct engine_MouseEvent {
     };
     f64 timestamp;
 } engine_MouseEvent;
-using_Opt$(engine_MouseEvent);
+use_Opt$(engine_MouseEvent);
 
 // Circular buffer for input event stack
 #define engine_InputEventBuffer_size (64)

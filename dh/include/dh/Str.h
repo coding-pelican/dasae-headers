@@ -27,10 +27,10 @@ extern "C" {
 
 typedef SliConst$u8 StrConst; // Unmodifiable string (const byte slice)
 typedef Sli$u8      Str;      // Modifiable string (byte slice)
-using_Opt$(StrConst);
-using_Opt$(Str);
-using_Err$(StrConst);
-using_Err$(Str);
+use_Opt$(StrConst);
+use_Opt$(Str);
+use_Err$(StrConst);
+use_Err$(Str);
 
 /*========== String Creation ==============================================*/
 

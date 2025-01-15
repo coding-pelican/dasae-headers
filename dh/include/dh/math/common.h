@@ -20,7 +20,7 @@
 #include "dh/err_res.h"
 
 /* Common error types */
-impl_Err(
+use_Err(
     math_Err,
     Overflow,
     Underflow,

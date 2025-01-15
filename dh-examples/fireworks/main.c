@@ -24,9 +24,9 @@ typedef struct Particle {
     Color color;
     u32   dimensions[2];
 } Particle;
-using_Opt$(Particle);
-using_Err$(Particle);
-using_Sli$(Particle);
+use_Opt$(Particle);
+use_Err$(Particle);
+use_Sli$(Particle);
 extern Particle  Particle_new(f64 x, f64 y, f64 width, f64 height, Color color);
 extern Particle* Particle_init(Particle* p, f64 x, f64 y, f64 width, f64 height, Color color);
 extern Particle* Particle_initWithSpeed(Particle* p, f64 x, f64 y);
@@ -36,24 +36,24 @@ extern bool      Particle_isDead(const Particle* p);
 extern void      Particle_update(Particle* p, f64 dt);
 extern void      Particle_render(const Particle* p, engine_Canvas* c, f64 dt);
 
-using_ArrList$(Particle);
+use_ArrList$(Particle);
 typedef struct Firework {
     Opt$Ptr$Particle rocket;
     ArrList$Particle effects;
     Hsl              effect_base_color;
     mem_Allocator    allocator;
 } Firework;
-using_Opt$(Firework);
-using_Err$(Firework);
-using_Err$(Opt$Ptr$Firework);
-using_Sli$(Firework);
+use_Opt$(Firework);
+use_Err$(Firework);
+use_Err$(Opt$Ptr$Firework);
+use_Sli$(Firework);
 extern Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color) must_check;
 extern void             Firework_fini(Firework* f);
 extern bool             Firework_isDead(const Firework* f);
 extern Err$void         Firework_update(Firework* f, f64 dt) must_check;
 extern void             Firework_render(const Firework* f, engine_Canvas* c, f64 dt);
 
-using_ArrList$(Firework);
+use_ArrList$(Firework);
 typedef struct State {
     ArrList$Firework fireworks;
     u32              width;
@@ -61,7 +61,7 @@ typedef struct State {
     mem_Allocator    allocator;
     bool             is_running;
 } State;
-using_Err$(State);
+use_Err$(State);
 extern Err$State            State_init(mem_Allocator allocator, u32 width, u32 height) must_check;
 extern void                 State_fini(State* s);
 extern bool                 State_isDead(const State* s);

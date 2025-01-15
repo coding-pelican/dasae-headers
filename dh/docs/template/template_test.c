@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
  *
  * @file    template_test.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-11-20 (date of last update)
- * @version v1.0.1
+ * @updated 2025-01-15 (date of last update)
+ * @version v1.0.3
  * @ingroup UNIT_TEST_IMPLEMENTATION
  * @prefix  TEST
  *
@@ -20,10 +20,10 @@
 
 /*========== Setup and Teardown =============================================*/
 
-void setUp(void) {
+void TEST_setUp(void) {
 }
 
-void tearDown(void) {
+void TEST_tearDown(void) {
 }
 
 /*========== Test Cases =====================================================*/

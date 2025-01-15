@@ -50,11 +50,11 @@ force_inline ErrType     Err_type(Err self) { return self.vt->type(self.ctx); }
 force_inline const char* Err_message(Err self) { return self.vt->message(self.ctx); }
 force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(self.ctx) == type; }
 
-#define impl_Err(Name, members...)  \
+#define use_Err(Name, members...)   \
     /* Implement error interface */ \
-    IMPL_impl_Err(Name, members)
+    IMPL_use_Err(Name, members)
 
-/* impl_Err(
+/* use_Err(
     io_FileErr,
     NotFound,
     AccessDenied,
@@ -63,7 +63,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
     WriteFailed
 ); */
 
-/* impl_Err(
+/* use_Err(
     io_ParseErr,
     InvalidArgument,
     UnexpectedEOF,
@@ -73,21 +73,21 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
     UnexpectedTokenValue
 ); */
 
-/* impl_Err(
+/* use_Err(
     math_Err,
     DivisionByZero,
     Overflow,
     Underflow
 ); */
 
-/* impl_Err(
+/* use_Err(
     mem_AllocErr,
     OutOfMemory
 ); */
 
 /*========== Implementations ================================================*/
 
-#define IMPL_impl_Err(Name, ...)                                                                             \
+#define IMPL_use_Err(Name, ...)                                                                              \
     typedef enum pp_cat(Name, Type) {                                                                        \
         IMPL_impl_Err_genEnumValues(Name, pp_foreach(IMPL_impl_Err_genEnumValue, Name, __VA_ARGS__))         \
     } pp_cat(Name, Type);                                                                                    \

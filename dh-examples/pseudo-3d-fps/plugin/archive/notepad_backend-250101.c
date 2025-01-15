@@ -14,7 +14,7 @@ NOTE: 테스트해볼 솔루션을 찾았다!!!
     Windows 11에서 텍스트를 메모장에 덤프하는 SendMessageByString API가 작동하지 않음-VBForums - https://www.vbforums.com/showthread.php?906994-SendMessageByString-API-to-dump-text-to-Notepad-not-working-in-Windows-11&s=bcd22b6cd77376c846df6ed31c584277
 */
 
-impl_Err(
+use_Err(
     engine_NotepadBackendErr,
     FailedCreateNotepadWindow,
     NotFoundNotepadWindow,

@@ -14,9 +14,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "libs/stb_image.h"
 
-using_Mat$(u8);
-using_Sli$(Color);
-using_Mat$(Color);
+use_Mat$(u8);
+use_Sli$(Color);
+use_Mat$(Color);
 
 typedef struct TerrainData {
     Mat$u8    heightmap; // grayscale
@@ -24,9 +24,10 @@ typedef struct TerrainData {
     u32       width;
     u32       height;
 } TerrainData;
-using_Err$(TerrainData);
+use_Opt$(TerrainData);
+use_Err$(TerrainData);
 
-impl_Err(
+use_Err(
     TerrainDataErr,
     FailedToLoadHeightMap,
     FailedToLoadColorMap,
@@ -112,7 +113,7 @@ Err$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, 
     engine_KeyCode key;
     Vec2f          vec;
 } Control;
-using_Sli$(Control);
+use_Sli$(Control);
 
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {

@@ -11,8 +11,8 @@
 typedef struct Point {
     i32 x, y;
 } Point;
-using_Sli$(Point);
-using_ArrList$(Point);
+use_Sli$(Point);
+use_ArrList$(Point);
 
 Err$void printPoints(const ArrList$Point* points) {
     reserveReturn(Err$void);

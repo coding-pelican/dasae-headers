@@ -4,8 +4,8 @@
  * @file    container_info.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-11 (date of creation)
- * @updated 2025-01-11 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-15 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
@@ -35,7 +35,7 @@ extern "C" {
      * @param _field The field name within the container               \
      * @return usize Byte offset of the field                          \
      */                                                                \
-    FUNC_offsetTo(_Type, _field)
+    FUNC__offsetTo(_Type, _field)
 
 #define containerOf(_ptr, _Type, _field)                           \
     /**                                                            \
@@ -49,7 +49,7 @@ extern "C" {
      * @param _field Name of the member field                      \
      * @return Pointer to the containing struct                    \
      */                                                            \
-    FUNC_containerOf(_ptr, _Type, _field)
+    FUNC__containerOf(_ptr, _Type, _field)
 
 #define safeContainerOf(_ptr, _Type, _field)                    \
     /**                                                         \
@@ -63,7 +63,7 @@ extern "C" {
      * @param _field Name of the member field                   \
      * @return Pointer to the containing struct                 \
      */                                                         \
-    FUNC_safeContainerOf(_ptr, _Type, _field)
+    FUNC__safeContainerOf(_ptr, _Type, _field)
 
 /* Field Type Operations */
 #define FieldTypeOf(_Type, _field)                            \
@@ -74,7 +74,7 @@ extern "C" {
      * @param _field The field name                           \
      * @return The type of the specified field                \
      */                                                       \
-    FUNC_FieldTypeOf(_Type, _field)
+    FUNC__FieldTypeOf(_Type, _field)
 
 /* Field Validation */
 #define hasField(_Type, _field)                                    \
@@ -85,7 +85,7 @@ extern "C" {
      * @param _field The field name to look for                    \
      * @return bool True if the field exists                       \
      */                                                            \
-    FUNC_hasField(_Type, _field)
+    FUNC__hasField(_Type, _field)
 
 #define validateField(_Type, _field, _ExpectedType)                  \
     /**                                                              \
@@ -96,7 +96,7 @@ extern "C" {
      * @param _ExpectedType The type to compare against              \
      * @return bool True if types match                              \
      */                                                              \
-    FUNC_validateField(_Type, _field, _ExpectedType)
+    FUNC__validateField(_Type, _field, _ExpectedType)
 
 /* Field Access Utilities */
 #define fieldPtrFrom(_container_ptr, _field)            \
@@ -107,7 +107,7 @@ extern "C" {
      * @param _field Name of the field to access        \
      * @return Pointer to the field                     \
      */                                                 \
-    FUNC_fieldPtrFrom(_container_ptr, _field)
+    FUNC__fieldPtrFrom(_container_ptr, _field)
 
 #define fieldPadding(_Type, _field)                           \
     /**                                                       \
@@ -117,45 +117,43 @@ extern "C" {
      * @param _field The field to check                       \
      * @return usize Number of padding bytes before the field \
      */                                                       \
-    FUNC_fieldPadding(_Type, _field)
+    FUNC__fieldPadding(_Type, _field)
 
 /*========== Implementation Macros =========================================*/
 
 /* Core operations implementations */
-#define FUNC_offsetTo(Type, field) \
+#define FUNC__offsetTo(Type, field) \
     __builtin_offsetof(Type, field)
 
-#define FUNC_containerOf(ptr, Type, field) eval(               \
+#define FUNC__containerOf(ptr, Type, field) eval(              \
     const TypeOf(((Type*)0)->field)* __mptr = (ptr);           \
     eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
 )
 
-#define FUNC_safeContainerOf(ptr, Type, field) eval(           \
+#define FUNC__safeContainerOf(ptr, Type, field) eval(          \
     TypeOf(ptr) __ptr                 = (ptr);                 \
     TypeOf(((Type*)0)->field)* __mptr = __ptr;                 \
     eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
 )
 
 /* Field operations implementations */
-#define FUNC_FieldTypeOf(Type, field) \
+#define FUNC__FieldTypeOf(Type, field) \
     TypeOf(((Type*)0)->field)
 
-#define FUNC_hasField(Type, field) eval(                     \
-    eval_return(                                             \
-        _Generic(                                            \
-            (Type){ 0 },                                     \
-            default: (isConstantExpr(offsetTo(Type, field))) \
-        )                                                    \
-    );                                                       \
+#define FUNC__hasField(Type, field) eval(                               \
+    _Generic(                                                           \
+        (Type){ 0 },                                                    \
+        default: (isConstantExpr(offsetTo(TypeOf((Type){ 0 }), field))) \
+    );                                                                  \
 )
 
-#define FUNC_validateField(Type, field, ExpectedType) \
+#define FUNC__validateField(Type, field, ExpectedType) \
     isSameType(FieldTypeOf(Type, field), ExpectedType)
 
-#define FUNC_fieldPtrFrom(container_ptr, field) \
+#define FUNC__fieldPtrFrom(container_ptr, field) \
     (&(container_ptr)->field)
 
-#define FUNC_fieldPadding(Type, field) eval(                  \
+#define FUNC__fieldPadding(Type, field) eval(                 \
     const usize __offset = offsetTo(Type, field);             \
     const usize __align  = alignOf(FieldTypeOf(Type, field)); \
     eval_return(__offset - (__offset & ~(__align - 1)));      \
@@ -163,7 +161,9 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0  /* Example Usage */
+#if 0 /* Example Usage */
+#include "dh/core.h"
+
 struct Data {
     i32 id;
     u8  name[32];
@@ -176,18 +176,16 @@ struct Container {
 };
 
 void example_usage(void) {
-    struct Container cont = {0};
-    struct Data* data_ptr = &cont.data;
+    struct Container cont     = { 0 };
+    struct Data*     data_ptr = &cont.data;
 
     /* Container operations */
     struct Container* cont_ptr = containerOf(data_ptr, struct Container, data);
     struct Container* safe_ptr = safeContainerOf(data_ptr, struct Container, data);
 
     /* Field validation */
-    claim_assert_static(hasField(struct Data, value),
-                  "Data must have 'value' field");
-    claim_assert_static(validateField(struct Data, id, i32),
-                  "Data.id must be of type i32");
+    claim_assert_static_msg(hasField(struct Data, value), "Data must have 'value' field");
+    claim_assert_static_msg(validateField(struct Data, id, i32), "Data.id must be of type i32");
 
     /* Field analysis */
     usize name_padding = fieldPadding(struct Data, name);

@@ -22,7 +22,7 @@ NOTE: 테스트해볼 솔루션을 찾았다!!!
 static void NotepadBackend_destroy(engine_Platform* platform);
 static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
 
-using_Err$(HWND);
+use_Err$(HWND);
 static void          DebugWindowInfo(HWND hwnd);
 static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
 static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
@@ -36,7 +36,7 @@ force_inline u8      NotepadBackend_getGrayscale(const Color* color) {
     return (u8)((color->r * 77 + color->g * 150 + color->b * 29) >> 8);
 }
 
-impl_Err(
+use_Err(
     NotepadBackendErr,
     OutOfMemoryNotepadBacked,
     OutOfMemoryNotepadBackendBuffer,

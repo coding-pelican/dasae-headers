@@ -40,7 +40,7 @@ extern "C" {
 /*========== Memory Error ===================================================*/
 
 /* Allocation Error type */
-impl_Err(
+use_Err(
     mem_AllocErr,
     OutOfMemory
 );

@@ -29,10 +29,10 @@ static void     NotepadBackend_presentBuffer(engine_Platform* platform, const Co
 force_inline u8 NotepadBackend_getGrayscale(const Color* color) {
     return (u8)((color->r * 77 + color->g * 150 + color->b * 29) >> 8);
 }
-using_Err$(HWND);
+use_Err$(HWND);
 static Err$HWND NotepadBackend_launchNotepad(void);
 
-impl_Err(
+use_Err(
     NotepadBackendErr,
     OutOfMemoryNotepadBacked,
     OutOfMemoryNotepadBackendBuffer,

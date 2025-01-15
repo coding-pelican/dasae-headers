@@ -27,7 +27,7 @@ extern "C" {
 
 #include <stdio.h>
 
-impl_Err(
+use_Err(
     io_FileErr,
     NotFound,
     AccessDenied,

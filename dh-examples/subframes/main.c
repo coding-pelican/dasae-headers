@@ -11,18 +11,18 @@
 
 #include "engine.h"
 
-using_Sli$(Vec2f);
-using_ArrList$(Vec2f);
+use_Sli$(Vec2f);
+use_ArrList$(Vec2f);
 typedef ArrList$Vec2f Vec2fs;
-using_Sli$(Color);
-using_ArrList$(Color);
+use_Sli$(Color);
+use_ArrList$(Color);
 typedef ArrList$Color Colors;
 
 typedef struct Control {
     engine_KeyCode key;
     Vec2f          vec;
 } Control;
-using_Sli$(Control);
+use_Sli$(Control);
 
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {

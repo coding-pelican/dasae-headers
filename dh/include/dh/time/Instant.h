@@ -29,7 +29,7 @@ extern "C" {
 struct time_Instant {
     time_SysTime time_;
 };
-using_Opt$(time_Instant);
+use_Opt$(time_Instant);
 
 /* Operations */
 extern time_Instant  time_Instant_now(void);

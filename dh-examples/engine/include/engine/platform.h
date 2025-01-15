@@ -25,11 +25,11 @@ typedef struct engine_PlatformParams {
     u32                      height;
     anyptr                   custom_data; // Optional, platform-specific
 } engine_PlatformParams;
-using_Ptr$(engine_PlatformParams);
-using_Err$(engine_PlatformParams);
+use_Ptr$(engine_PlatformParams);
+use_Err$(engine_PlatformParams);
 
 // engine_Platform-specific error types
-impl_Err(
+use_Err(
     engine_PlatformErr,
     AccessDenied
 );
@@ -41,8 +41,8 @@ typedef struct engine_RenderBackend engine_RenderBackend;
 typedef struct engine_Platform {
     engine_RenderBackend* backend;
 } engine_Platform;
-using_Ptr$(engine_Platform);
-using_Err$(engine_Platform);
+use_Ptr$(engine_Platform);
+use_Err$(engine_Platform);
 
 // Create platform instance with specific backend
 extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;

@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    lambda.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-11 (date of creation)
- * @updated 2024-11-11 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-15 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
@@ -22,18 +22,18 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define lambda(_Return_T, _name, _Paren_Args...) IMPL_lambda(_Return_T, _name, _Paren_Args)
+#define lambda(_Return_T, _name, _Paren_Args...) SYN__lambda(_Return_T, _name, _Paren_Args)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__cplusplus)
 /* C++11 */
-#define IMPL_lambda(_Return_T, _name, _Paren_Args...) auto _name = [] _Paren_Args
+#define SYN__lambda(_Return_T, _name, _Paren_Args...) auto _name = [] _Paren_Args
 #elif defined(__clang_major__)
 /* Needs compile flag `-fblocks` */
-#define IMPL_lambda(_Return_T, _name, _Paren_Args...) _Return_T(^_name) _Paren_Args = ^_Return_T _Paren_Args
+#define SYN__lambda(_Return_T, _name, _Paren_Args...) _Return_T(^_name) _Paren_Args = ^_Return_T _Paren_Args
 #elif defined(__GNUC__) || defined(__GNUG__)
-#define IMPL_lambda(_Return_T, _name, _Paren_Args...) _Return_T _name _Paren_Args
+#define SYN__lambda(_Return_T, _name, _Paren_Args...) _Return_T _name _Paren_Args
 #else
 /* TODO: Add other compilers */
 #endif

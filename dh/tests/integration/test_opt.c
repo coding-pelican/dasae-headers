@@ -1,7 +1,7 @@
 #include "dh/core/prim/struct.h"
 #include "dh/opt.h"
 
-using_Opt$(i32);
+use_Opt$(i32);
 Opt$i32 getValueIfPositive(i32 value) {
     reserveReturn(Opt$i32);
     if (value <= 0) {
@@ -10,7 +10,7 @@ Opt$i32 getValueIfPositive(i32 value) {
     return_some(value);
 }
 
-using_Opt$(u8);
+use_Opt$(u8);
 Opt$u8 getCharIfNumeric(u8 value) {
     reserveReturn(Opt$u8);
     if ('0' <= value && value <= '9') {

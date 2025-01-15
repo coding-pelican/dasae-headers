@@ -16,8 +16,8 @@ struct engine_WindowMetrics {
     bool is_minimized;                // Window minimized state
     bool is_maximized;                // Window maximized state
 };
-using_Ptr$(engine_WindowMetrics);
-using_Opt$(engine_WindowMetrics);
+use_Ptr$(engine_WindowMetrics);
+use_Opt$(engine_WindowMetrics);
 
 extern bool engine_WindowMetrics_eq(const engine_WindowMetrics* lhs, const engine_WindowMetrics* rhs);
 
@@ -27,8 +27,8 @@ struct engine_CanvasView {
     engine_Canvas* canvas;        // Associated canvas
     bool           visible;       // Visibility flag
 };
-using_Ptr$(engine_CanvasView);
-using_Err$(engine_CanvasView);
+use_Ptr$(engine_CanvasView);
+use_Err$(engine_CanvasView);
 
 struct engine_Window {
     engine_Platform*     platform;
@@ -37,8 +37,8 @@ struct engine_Window {
     u32                  view_count;
     engine_Canvas*       composite_buffer; // Final composition buffer
 };
-using_Ptr$(engine_Window);
-using_Err$(engine_Window);
+use_Ptr$(engine_Window);
+use_Err$(engine_Window);
 
 // Window management
 extern Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;

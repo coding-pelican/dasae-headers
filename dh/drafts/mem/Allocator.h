@@ -3,7 +3,7 @@
 #include "dh/err_res.h"
 #include "dh/meta/common.h"
 
-// using_Opt$(u8);
+// use_Opt$(u8);
 // typedef struct Sli$u8 Sli$u8;
 
 /* Allocator vtable */
@@ -22,7 +22,7 @@ struct mem_Allocator {
 };
 
 /* Allocation Error type */
-impl_Err(
+use_Err(
     mem_AllocErr,
     OutOfMemory
 );

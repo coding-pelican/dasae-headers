@@ -14,11 +14,12 @@ typedef struct ArrList {
     usize         cap;
     mem_Allocator allocator;
 } ArrList;
-using_Err$(ArrList);
+use_Opt$(ArrList);
+use_Err$(ArrList);
 
-#define using_ArrList$(T) GEN_using_ArrList$(T)
-#define decl_ArrList$(T)  GEN_decl_ArrList$(T)
-#define impl_ArrList$(T)  GEN_impl_ArrList$(T)
+#define use_ArrList$(T)  GEN__use_ArrList$(T)
+#define decl_ArrList$(T) GEN__decl_ArrList$(T)
+#define impl_ArrList$(T) GEN__impl_ArrList$(T)
 
 // Initialize empty list
 extern ArrList     ArrList_init(TypeInfo type, mem_Allocator allocator);
@@ -83,12 +84,12 @@ extern void ArrList_clearAndFree(ArrList* self);
 
 /*========== Implementations ================================================*/
 
-#define GEN_using_ArrList$(T) \
-    decl_ArrList$(T);         \
+#define GEN__use_ArrList$(T) \
+    decl_ArrList$(T);        \
     impl_ArrList$(T)
-#define GEN_decl_ArrList$(T) \
+#define GEN__decl_ArrList$(T) \
     typedef union pp_join($, ArrList, T) pp_join($, ArrList, T)
-#define GEN_impl_ArrList$(T)          \
+#define GEN__impl_ArrList$(T)         \
     union pp_join($, ArrList, T) {    \
         ArrList base;                 \
         struct {                      \
