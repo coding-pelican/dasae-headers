@@ -385,7 +385,6 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
 
     // Ensure coordinates are within bounds
     if (pos.x >= 0 && pos.x < bufferInfo.dwSize.X && pos.y >= 0 && pos.y < bufferInfo.dwSize.Y * 2) {
-
         engine_MouseEvent event = { 0 };
         event.timestamp         = (f64)GetTickCount64() / 1000.0;
 
@@ -422,11 +421,11 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
         }
 
         // Update cached mouse position
-        if (engine_InputState_global) {
-            engine_InputState_global->mouse.prev_x = engine_InputState_global->mouse.x;
-            engine_InputState_global->mouse.prev_y = engine_InputState_global->mouse.y;
-            engine_InputState_global->mouse.x      = pos.x;
-            engine_InputState_global->mouse.y      = pos.y;
+        scope_with(let input = engine_Input_instance()) {
+            input->mouse.prev_x = input->mouse.x;
+            input->mouse.prev_y = input->mouse.y;
+            input->mouse.x      = pos.x;
+            input->mouse.y      = pos.y;
         }
     }
 }

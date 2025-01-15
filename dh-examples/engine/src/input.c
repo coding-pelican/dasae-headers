@@ -2,18 +2,108 @@
 
 #include "engine/input.h"
 
-engine_InputState* engine_InputState_global = null;
+static engine_InputState engine_Input_s_instance = cleared();
 
+static void engine_Input_updateFrameInfo(void);
+static void engine_Input_processKey(engine_KeyCode key, bool is_down);
+static void engine_Input_processMouse(void);
+
+// Core input system functions
+void engine_Input_init(void) {
+    memset(&engine_Input_s_instance, 0, sizeof(engine_InputState));
+}
+
+void engine_Input_fini(void) {
+    memset(&engine_Input_s_instance, 0, sizeof(engine_InputState));
+}
+
+void engine_Input_update(void) {
+    let input = &engine_Input_s_instance;
+
+    // Update frame timing
+    engine_Input_updateFrameInfo();
+
+    // Save previous state
+    memcpy(input->prev_states, input->curr_states, sizeof(input->curr_states));
+
+    // Process each key
+    for (engine_KeyCode key = engine_KeyCode_none + 1; key < engine_KeyCode_count; ++key) {
+        SHORT key_state = GetAsyncKeyState(key);
+        bool  is_down   = (key_state & 0x8000) != 0;
+        engine_Input_processKey(key, is_down);
+    }
+
+    // Process mouse input
+    engine_Input_processMouse();
+}
+
+// Event buffer management
+void engine_InputEventBuffer_push(engine_InputEvent event) {
+    let input  = &engine_Input_s_instance;
+    let buffer = &input->event_buffer;
+    if (engine_InputEventBuffer_size <= buffer->count) {
+        // Buffer is full, remove oldest event
+        buffer->tail = (buffer->tail + 1) % engine_InputEventBuffer_size;
+        buffer->count--;
+    }
+
+    buffer->events[buffer->head] = event;
+    buffer->head                 = (buffer->head + 1) % engine_InputEventBuffer_size;
+    buffer->count++;
+}
+
+Opt$engine_InputEvent engine_InputEventBuffer_pop(void) {
+    reserveReturn(Opt$engine_InputEvent);
+
+    let input  = &engine_Input_s_instance;
+    let buffer = &input->event_buffer;
+    if (buffer->count == 0) {
+        return_none();
+    }
+
+    let event    = buffer->events[buffer->tail];
+    buffer->tail = (buffer->tail + 1) % engine_InputEventBuffer_size;
+    buffer->count--;
+
+    return_some(event);
+}
+
+Opt$engine_InputEvent engine_InputEventBuffer_peek(void) {
+    reserveReturn(Opt$engine_InputEvent);
+
+    let input  = &engine_Input_s_instance;
+    let buffer = &input->event_buffer;
+    if (buffer->count == 0) {
+        return_none();
+    }
+
+    return_some(buffer->events[buffer->tail]);
+}
+
+void engine_InputEventBuffer_clear(void) {
+    let input     = &engine_Input_s_instance;
+    let buffer    = &input->event_buffer;
+    buffer->head  = 0;
+    buffer->tail  = 0;
+    buffer->count = 0;
+}
+
+engine_InputState* engine_Input_instance(void) {
+    return &engine_Input_s_instance;
+}
+
+// Input event processing
 static void engine_Input_updateFrameInfo(void) {
-    let state                    = engine_InputState_global;
-    state->frame_info.prev_time  = state->frame_info.curr_time;
-    state->frame_info.curr_time  = (f64)GetTickCount64() / 1000.0;
-    state->frame_info.delta_time = state->frame_info.curr_time - state->frame_info.prev_time;
+    let input                    = &engine_Input_s_instance;
+    input->frame_info.prev_time  = input->frame_info.curr_time;
+    input->frame_info.curr_time  = (f64)GetTickCount64() / 1000.0;
+    input->frame_info.delta_time = input->frame_info.curr_time - input->frame_info.prev_time;
 }
 
 static void engine_Input_processKey(engine_KeyCode key, bool is_down) {
-    let curr_state = &engine_InputState_global->curr_states[key];
-    let prev_state = engine_InputState_global->prev_states[key];
+    let input      = &engine_Input_s_instance;
+    let curr_state = &input->curr_states[key];
+    let prev_state = input->prev_states[key];
 
     // Clear previous state flags
     *curr_state = engine_KeyStates_none;
@@ -56,11 +146,11 @@ static void engine_Input_processKey(engine_KeyCode key, bool is_down) {
 }
 
 static void engine_Input_processMouse(void) {
-    let state = engine_InputState_global;
+    let input = &engine_Input_s_instance;
 
     // Save previous mouse position
-    state->mouse.prev_x = state->mouse.x;
-    state->mouse.prev_y = state->mouse.y;
+    input->mouse.prev_x = input->mouse.x;
+    input->mouse.prev_y = input->mouse.y;
 
     // Get current mouse position
     POINT cursor_pos = cleared();
@@ -73,23 +163,23 @@ static void engine_Input_processMouse(void) {
     }
 
     // Update mouse position
-    state->mouse.x = cursor_pos.x;
-    state->mouse.y = cursor_pos.y;
+    input->mouse.x = cursor_pos.x;
+    input->mouse.y = cursor_pos.y;
 
     // Create mouse move event if position changed
-    if (state->mouse.x != state->mouse.prev_x || state->mouse.y != state->mouse.prev_y) {
+    if (input->mouse.x != input->mouse.prev_x || input->mouse.y != input->mouse.prev_y) {
         engine_MouseEvent event = {
             .type = engine_MouseEventType_move,
             .move = {
-                .x = state->mouse.x,
-                .y = state->mouse.y },
+                .x = input->mouse.x,
+                .y = input->mouse.y },
             .timestamp = (f64)GetTickCount64() / 1000.0
         };
         engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
     }
 
     // Save previous button states
-    memcpy(state->mouse.button_prev_states, state->mouse.button_curr_states, sizeof(state->mouse.button_curr_states));
+    memcpy(input->mouse.button_prev_states, input->mouse.button_curr_states, sizeof(input->mouse.button_curr_states));
 
     // Process mouse buttons
     static const i32 button_vks[] = {
@@ -102,8 +192,8 @@ static void engine_Input_processMouse(void) {
     for (engine_MouseButton button = engine_MouseButton_none + 1; button < engine_MouseButton_count; ++button) {
         SHORT button_state = GetAsyncKeyState(button_vks[button]);
         bool  is_down      = (button_state & 0x8000) != 0;
-        let   curr_state   = &state->mouse.button_curr_states[button];
-        let   prev_state   = state->mouse.button_prev_states[button];
+        let   curr_state   = &input->mouse.button_curr_states[button];
+        let   prev_state   = input->mouse.button_prev_states[button];
 
         *curr_state = 0;
 
@@ -138,88 +228,5 @@ static void engine_Input_processMouse(void) {
     // Process mouse wheel
     // Note: This would ideally be handled in WM_MOUSEWHEEL message processing
     // but for now I'll use a simpler approach
-    state->mouse.scroll_delta = 0; // Reset scroll delta each frame
-}
-
-void engine_Input_init(void) {
-    if (engine_InputState_global) { return; }
-
-    engine_InputState_global = (engine_InputState*)malloc(sizeof(engine_InputState));
-    if (!engine_InputState_global) { return; }
-
-    memset(engine_InputState_global, 0, sizeof(engine_InputState));
-}
-
-void engine_Input_fini(void) {
-    if (!engine_InputState_global) { return; }
-
-    free(engine_InputState_global);
-    engine_InputState_global = null;
-}
-
-void engine_Input_update(void) {
-    if (!engine_InputState_global) { return; }
-
-    // Update frame timing
-    engine_Input_updateFrameInfo();
-
-    // Save previous state
-    memcpy(engine_InputState_global->prev_states, engine_InputState_global->curr_states, sizeof(engine_InputState_global->curr_states));
-
-    // Process each key
-    for (engine_KeyCode key = engine_KeyCode_none + 1; key < engine_KeyCode_count; ++key) {
-        SHORT key_state = GetAsyncKeyState(key);
-        bool  is_down   = (key_state & 0x8000) != 0;
-        engine_Input_processKey(key, is_down);
-    }
-
-    // Process mouse input
-    engine_Input_processMouse();
-}
-
-// Event buffer implementation
-void engine_InputEventBuffer_push(engine_InputEvent event) {
-    let buffer = &engine_InputState_global->event_buffer;
-    if (engine_InputEventBuffer_size <= buffer->count) {
-        // Buffer is full, remove oldest event
-        buffer->tail = (buffer->tail + 1) % engine_InputEventBuffer_size;
-        buffer->count--;
-    }
-
-    buffer->events[buffer->head] = event;
-    buffer->head                 = (buffer->head + 1) % engine_InputEventBuffer_size;
-    buffer->count++;
-}
-
-Opt$engine_InputEvent engine_InputEventBuffer_pop(void) {
-    reserveReturn(Opt$engine_InputEvent);
-
-    let buffer = &engine_InputState_global->event_buffer;
-    if (buffer->count == 0) {
-        return_none();
-    }
-
-    let event    = buffer->events[buffer->tail];
-    buffer->tail = (buffer->tail + 1) % engine_InputEventBuffer_size;
-    buffer->count--;
-
-    return_some(event);
-}
-
-Opt$engine_InputEvent engine_InputEventBuffer_peek(void) {
-    reserveReturn(Opt$engine_InputEvent);
-
-    let buffer = &engine_InputState_global->event_buffer;
-    if (buffer->count == 0) {
-        return_none();
-    }
-
-    return_some(buffer->events[buffer->tail]);
-}
-
-void engine_InputEventBuffer_clear(void) {
-    let buffer    = &engine_InputState_global->event_buffer;
-    buffer->head  = 0;
-    buffer->tail  = 0;
-    buffer->count = 0;
+    input->mouse.scroll_delta = 0; // Reset scroll delta each frame
 }

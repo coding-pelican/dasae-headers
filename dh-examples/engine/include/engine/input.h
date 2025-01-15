@@ -178,7 +178,7 @@ typedef struct engine_InputFrameInfo {
     f64 delta_time; // Time between frames
 } engine_InputFrameInfo;
 
-// Add to engine_InputState struct
+// Input state structure
 typedef struct engine_InputState {
     engine_InputEventBuffer event_buffer;
     u8                      curr_states[engine_KeyCode_count]; // Bitfield of current key states
@@ -186,8 +186,6 @@ typedef struct engine_InputState {
     engine_MouseState       mouse;
     engine_InputFrameInfo   frame_info;
 } engine_InputState;
-
-extern engine_InputState* engine_InputState_global;
 
 // Core input system functions
 extern void engine_Input_init(void);
@@ -200,13 +198,16 @@ extern Opt$engine_InputEvent engine_InputEventBuffer_pop();
 extern Opt$engine_InputEvent engine_InputEventBuffer_peek();
 extern void                  engine_InputEventBuffer_clear(void);
 
+// Get input system singleton instance
+extern engine_InputState* engine_Input_instance(void);
+
 // Input state queries
 force_inline bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state) {
-    debug_assert_nonnull(engine_InputState_global);
     debug_assert_true(engine_KeyStates_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     debug_assert_true(engine_KeyStates_none <= state);
-    return (engine_InputState_global->curr_states[key] & state) != engine_KeyStates_none;
+    let input = engine_Input_instance();
+    return (input->curr_states[key] & state) != engine_KeyStates_none;
 }
 
 force_inline bool engine_Key_pressed(engine_KeyCode key) {
@@ -223,19 +224,19 @@ force_inline bool engine_Key_released(engine_KeyCode key) {
 
 // Get all current states for a key
 force_inline u8 engine_Key_getState(engine_KeyCode key) {
-    debug_assert_nonnull(engine_InputState_global);
     debug_assert_true(engine_KeyStates_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
-    return engine_InputState_global->curr_states[key];
+    let input = engine_Input_instance();
+    return input->curr_states[key];
 }
 
 // Mouse state queries
 force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStates state) {
-    debug_assert_nonnull(engine_InputState_global);
     debug_assert_true(engine_KeyStates_none <= button);
     debug_assert_true(button < engine_MouseButton_count);
     debug_assert_true(engine_KeyStates_none <= state);
-    return (engine_InputState_global->mouse.button_curr_states[button] & state) != engine_KeyStates_none;
+    let input = engine_Input_instance();
+    return (input->mouse.button_curr_states[button] & state) != engine_KeyStates_none;
 }
 
 force_inline bool engine_Mouse_pressed(engine_MouseButton button) {
@@ -251,28 +252,28 @@ force_inline bool engine_Mouse_released(engine_MouseButton button) {
 }
 
 force_inline Vec2i engine_Mouse_getPosition(void) {
-    debug_assert_nonnull(engine_InputState_global);
+    let input = engine_Input_instance();
     return (Vec2i){
         .s = {
-            engine_InputState_global->mouse.x,
-            engine_InputState_global->mouse.y,
+            input->mouse.x,
+            input->mouse.y,
         }
     };
 }
 
 force_inline Vec2i engine_Mouse_getDelta(void) {
-    debug_assert_nonnull(engine_InputState_global);
+    let input = engine_Input_instance();
     return (Vec2i){
         .s = {
-            engine_InputState_global->mouse.x - engine_InputState_global->mouse.prev_x,
-            engine_InputState_global->mouse.y - engine_InputState_global->mouse.prev_y,
+            input->mouse.x - input->mouse.prev_x,
+            input->mouse.y - input->mouse.prev_y,
         }
     };
 }
 
 force_inline i32 engine_Mouse_getScrollDelta(void) {
-    debug_assert_nonnull(engine_InputState_global);
-    return engine_InputState_global->mouse.scroll_delta;
+    let input = engine_Input_instance();
+    return input->mouse.scroll_delta;
 }
 
 #endif /* ENGINE_INPUT_INCLUDED */
