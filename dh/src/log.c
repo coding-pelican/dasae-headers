@@ -103,8 +103,7 @@ void log_message(log_Level level, const char* file, int line, const char* func, 
             level_str = "ERROR";
             break;
         default:
-            claim_unreachable();
-            break;
+            claim_unreachable;
         }
         ignore fprintf(output, "[%s]", level_str);
     }

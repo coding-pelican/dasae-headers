@@ -140,11 +140,7 @@ extern "C" {
     };                                  \
     eval_return _result.value;          \
 )
-#define OP__unwrap(expr) eval(                                   \
-    var _result = (expr);                                        \
-    debug_assert_fmt(_result.has_value, "Unwrap of none value"); \
-    eval_return _result.value;                                   \
-)
+#define OP__unwrap(expr) orelse(expr, claim_unreachable)
 
 #define SYN__if_some(expr, var_capture)               \
     scope_if(let _result = (expr), _result.has_value) \

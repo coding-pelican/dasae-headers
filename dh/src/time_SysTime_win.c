@@ -16,7 +16,7 @@ static bool         s_initialized           = false;
 /* Initialize performance counter frequency */
 static void __attribute__((constructor)) init(void) {
     if (!QueryPerformanceFrequency(&s_performance_frequency)) {
-        return claim_unreachable();
+        claim_unreachable_msg("Failed to query performance frequency");
     }
     s_frequency_inverse = 1.0 / as(f64, s_performance_frequency.QuadPart);
     QueryPerformanceCounter(&s_offset_value);

@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    unreachable.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2024-11-21 (date of last update)
- * @version v1.0.0
+ * @updated 2025-01-15 (date of last update)
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/claim
  * @prefix  claim_unreachable
  *
@@ -21,23 +21,23 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/claim/assert.h"
+#include "dh/debug/assert.h"
 
 #include <stdnoreturn.h>
 
-/*========== Macros and Definitions =========================================*/
+/*========== Definitions ====================================================*/
 
 // Compiler-specific macros for optimization hints
 #if defined(__GNUC__) || defined(__clang__)
-#define CLAIM_UNREACHABLE_BUILTIN __builtin_unreachable()
+#define BUILTIN_UNREACHABLE __builtin_unreachable()
 #elif defined(_MSC_VER)
-#define CLAIM_UNREACHABLE_BUILTIN __assume(0)
+#define BUILTIN_UNREACHABLE __assume(0)
 #else
 /* TODO: Add support for other compilers */
-#define CLAIM_UNREACHABLE_BUILTIN unused(0)
+#define BUILTIN_UNREACHABLE unused(0)
 #endif
 
-#define claim_unreachable()                                                                  \
+#define claim_unreachable                                                                    \
     /**                                                                                      \
      * @brief Runtime unreachable - analogous to Rust's unreachable!() macro                 \
      *                                                                                       \
@@ -47,24 +47,7 @@ extern "C" {
      * In debug builds, this will trigger an assertion.                                      \
      * In release builds, this tells the compiler the code is unreachable for optimization.  \
      */                                                                                      \
-    (claim_assert_fmt(false, "Reached unreachable code"), CLAIM_UNREACHABLE_BUILTIN)
-
-#define claim_unreachable_static()                                                         \
-    /**                                                                                    \
-     * @brief Compile-time unreachable check - analogous to Zig's unreachable              \
-     *                                                                                     \
-     * This version is intended for use in compile-time constant evaluation contexts,      \
-     * like switch statements where you know all cases are covered.                        \
-     *                                                                                     \
-     * @note This is safer than unreachable() as it will fail at compile time if reachable \
-     */                                                                                    \
-    do {                                                                                   \
-        switch (0) {                                                                       \
-        case 0:                                                                            \
-        case 0:                                                                            \
-        }                                                                                  \
-        claim_unreachable();                                                               \
-    } while (false)
+    SYN__claim_unreachable
 
 #define claim_unreachable_msg(_msg)                                                  \
     /**                                                                              \
@@ -72,7 +55,7 @@ extern "C" {
      *                                                                               \
      * @param _msg The message to display if this is reached in debug mode           \
      */                                                                              \
-    (claim_assert_fmt(false, _msg), CLAIM_UNREACHABLE_BUILTIN)
+    FUNC__claim_unreachable_msg(_msg)
 
 #define claim_unreachable_fmt(_msg, _fmt...)                                                   \
     /**                                                                                        \
@@ -81,7 +64,7 @@ extern "C" {
      * @param _msg The message to display if this is reached in debug mode                     \
      * @param _fmt The format string and arguments for the message                             \
      */                                                                                        \
-    (claim_assert_fmt(false, _msg, _fmt), CLAIM_UNREACHABLE_BUILTIN)
+    FUNC__claim_unreachable_fmt(_msg, _fmt)
 
 #define claim_unreachable_val(_T)                                                   \
     /**                                                                             \
@@ -93,33 +76,25 @@ extern "C" {
      * @param _T The type to "return" (only used for type checking)                 \
      * @return Value of type _T (never actually returns)                            \
      */                                                                             \
-    ((_T)(claim_unreachable(), literal(_T, 0)))
+    FUNC__claim_unreachable_val(_T)
 
-#define claim_unreachable_switch(_T, _val)                          \
-    /**                                                             \
-     * @brief Verify at compile-time that a switch covers all cases \
-     *                                                              \
-     * @param _T The type of the value                              \
-     * @param _val The value being switched on                      \
-     */                                                             \
-    IMPL_claim_unreachable_switch(pp_uniqueToken(unreachable_tmp), _T, _val)
+/*========== Implementations ================================================*/
 
-#define IMPL_claim_unreachable_switch(_unreachable_tmp, _T, _val) \
-    do {                                                          \
-        _T _unreachable_tmp = (_val);                             \
-        unused(_unreachable_tmp);                                 \
-        claim_unreachable_static();                               \
-    } while (false)
+#define SYN__claim_unreachable \
+    (debug_assert_fmt(false, "Reached unreachable code"), BUILTIN_UNREACHABLE)
 
-/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+#define FUNC__claim_unreachable_msg(_msg) \
+    (debug_assert_fmt(false, _msg), BUILTIN_UNREACHABLE)
 
-#ifdef UNIT_TEST
-#endif /* UNIT_TEST */
+#define FUNC__claim_unreachable_fmt(_msg, _fmt...) \
+    (debug_assert_fmt(false, _msg, _fmt), BUILTIN_UNREACHABLE)
+
+#define FUNC__claim_unreachable_val(_T) \
+    ((_T)(claim_unreachable, literal(_T, 0)))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0 /* Example Usage */
-
+#if 0  /* Example Usage */
 typedef enum Status {
     Status_OK,
     Status_ERROR
@@ -131,9 +106,9 @@ int exampleFunction(Status status) {
         return 1;
     case Status_ERROR:
         return 0;
+    default:
+        claim_unreachable;
     }
-    // Compiler knows all cases are handled
-    claim_unreachable_switch(Status, status);
 }
 
 int unsafeDivide(int a, int b) {
@@ -149,7 +124,6 @@ int getPositive(int x) {
     }
     return x;
 }
-
 #endif /* Example Usage */
 
 #if defined(__cplusplus)

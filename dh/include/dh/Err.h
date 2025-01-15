@@ -132,7 +132,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
         __VA_ARGS__                           \
         return self;                          \
     default:                                  \
-        return claim_unreachable_fmt("Unknown error type (err: %d)", self), ErrType_Unknown;
+        claim_unreachable_fmt("Unknown error type (err: %d)", self);
 
 // Helper macro to generate case statements for message function
 #define IMPL_impl_Err_genMessageCases(Name, ...) \
@@ -146,7 +146,7 @@ force_inline bool        Err_is(Err self, ErrType type) { return self.vt->type(s
         return "None";                           \
         __VA_ARGS__                              \
     default:                                     \
-        return claim_unreachable_fmt("Unknown error type (err: %d)", self), "UnknownError";
+        claim_unreachable_fmt("Unknown error type (err: %d)", self);
 
 // Helper macros for generating individual cases
 #define IMPL_impl_Err_genEnumValue(Name, Value) \
