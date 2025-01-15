@@ -26,19 +26,17 @@ extern "C" {
 /*========== Allocator Interface ============================================*/
 
 /* Allocator vtable */
-typedef struct mem_AllocatorVT mem_AllocatorVT;
-struct mem_AllocatorVT {
+typedef struct mem_AllocatorVT {
     Opt$Ptr$u8 (*alloc)(anyptr ctx, usize len, usize ptr_align) must_check;
     bool (*resize)(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
     void (*free)(anyptr ctx, Sli$u8 buf, usize buf_align);
-};
+} mem_AllocatorVT;
 
 /* Allocator instance */
-typedef struct mem_Allocator mem_Allocator;
-struct mem_Allocator {
+typedef struct mem_Allocator {
     anyptr                 ctx; /* Context pointer with type info */
     const mem_AllocatorVT* vt;  /* Virtual table */
-};
+} mem_Allocator;
 
 /*========== Core Allocator Functions =======================================*/
 

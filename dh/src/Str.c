@@ -107,7 +107,7 @@ bool StrUtf8_isValid(StrConst str) {
             return false;
         }
 
-        for (usize j = 1; j < seq_len; j++) {
+        for (usize j = 1; j < seq_len; ++j) {
             if ((str.ptr[i + j] & StrUtf8_cont_mask) != StrUtf8_cont_pattern) {
                 return false;
             }

@@ -66,7 +66,7 @@ extern "C" {
      */                                                                                        \
     FUNC__claim_unreachable_fmt(_msg, _fmt)
 
-#define claim_unreachable_val(_T)                                                   \
+#define claim_unreachable_val$(_T)                                                  \
     /**                                                                             \
      * @brief Function implementation of unreachable for use in expression contexts \
      *                                                                              \
@@ -76,7 +76,7 @@ extern "C" {
      * @param _T The type to "return" (only used for type checking)                 \
      * @return Value of type _T (never actually returns)                            \
      */                                                                             \
-    FUNC__claim_unreachable_val(_T)
+    FUNC__claim_unreachable_val$(_T)
 
 /*========== Implementations ================================================*/
 
@@ -89,8 +89,8 @@ extern "C" {
 #define FUNC__claim_unreachable_fmt(_msg, _fmt...) \
     (debug_assert_fmt(false, _msg, _fmt), BUILTIN_UNREACHABLE)
 
-#define FUNC__claim_unreachable_val(_T) \
-    ((_T)(claim_unreachable, literal(_T, 0)))
+#define FUNC__claim_unreachable_val$(_T) \
+    ((_T)(claim_unreachable, literal$(_T, 0)))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

@@ -40,7 +40,7 @@ extern "C" {
 #if SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
 #define SYN__scope_reserveReturn(T)                   \
-    rawptr(T) _reserved_return = null;                \
+    rawptr$(T) _reserved_return = null;               \
     struct {                                          \
         i32  curr;                                    \
         bool returns;                                 \

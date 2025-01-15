@@ -18,7 +18,7 @@ static void __attribute__((constructor)) init(void) {
     if (!QueryPerformanceFrequency(&s_performance_frequency)) {
         claim_unreachable_msg("Failed to query performance frequency");
     }
-    s_frequency_inverse = 1.0 / as(f64, s_performance_frequency.QuadPart);
+    s_frequency_inverse = 1.0 / as$(f64, s_performance_frequency.QuadPart);
     QueryPerformanceCounter(&s_offset_value);
     s_initialized = true;
 }
@@ -63,25 +63,25 @@ time_Duration time_SysTime_elapsed(time_SysTime self) {
 
     u64 diff = current.QuadPart - self.QuadPart;
     return time_Duration_fromNanos(
-        as(u64, as(f64, diff) * as(f64, time_nanos_per_sec) * s_frequency_inverse)
+        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * s_frequency_inverse)
     );
 }
 
 time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier) {
     debug_assert_fmt(s_initialized, "SysTime not initialized");
 
-    // Calculate epsilon (1 tick) as in Rust implementation
+    // Calculate epsilon (1 tick) as$ in Rust implementation
     time_Duration epsilon = time_Duration_fromNanos(
         time_nanos_per_sec / s_performance_frequency.QuadPart
     );
 
-    if (earlier.QuadPart > self.QuadPart && as(u64, earlier.QuadPart - self.QuadPart) <= as(u64, epsilon.nanos_ / s_frequency_inverse)) {
+    if (earlier.QuadPart > self.QuadPart && as$(u64, earlier.QuadPart - self.QuadPart) <= as$(u64, epsilon.nanos_ / s_frequency_inverse)) {
         return time_Duration_zero;
     }
 
     u64 diff = self.QuadPart - earlier.QuadPart;
     return time_Duration_fromNanos(
-        as(u64, as(f64, diff) * as(f64, time_nanos_per_sec) * s_frequency_inverse)
+        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * s_frequency_inverse)
     );
 }
 
@@ -90,7 +90,7 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
 Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
     reserveReturn(Opt$time_SysTime);
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
+    u64 ticks = as$(u64, as$(f64, nanos) * s_frequency_inverse);
     if (ticks > (u64_limit - self.QuadPart)) {
         return_none();
     }
@@ -100,8 +100,8 @@ Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duratio
 Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
     reserveReturn(Opt$time_SysTime);
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as(u64, as(f64, nanos) * s_frequency_inverse);
-    if (ticks > as(u64, self.QuadPart)) {
+    u64 ticks = as$(u64, as$(f64, nanos) * s_frequency_inverse);
+    if (ticks > as$(u64, self.QuadPart)) {
         return_none();
     }
     return_some(make(time_SysTime, .QuadPart = (LONGLONG)(self.QuadPart - ticks)));

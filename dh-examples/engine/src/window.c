@@ -162,15 +162,15 @@ i32 engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i3
     view->canvas  = canvas;
     view->visible = true;
 
-    return as(i32, window->view_count++);
+    return as$(i32, window->view_count++);
 }
 
 void engine_Window_removeCanvasView(engine_Window* window, i32 view_id) {
     debug_assert_nonnull(window);
-    if (view_id < 0 || window->view_count <= as(u32, view_id)) { return; }
+    if (view_id < 0 || window->view_count <= as$(u32, view_id)) { return; }
 
     // Shift remaining views down
-    for (i32 id = view_id; id < as(i32, window->view_count) - 1; ++id) {
+    for (i32 id = view_id; id < as$(i32, window->view_count) - 1; ++id) {
         window->views[id] = window->views[id + 1];
     }
     window->view_count--;
@@ -178,7 +178,7 @@ void engine_Window_removeCanvasView(engine_Window* window, i32 view_id) {
 
 void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height) {
     debug_assert_nonnull(window);
-    if (view_id < 0 || window->view_count <= as(u32, view_id)) { return; }
+    if (view_id < 0 || window->view_count <= as$(u32, view_id)) { return; }
 
     let view     = &window->views[view_id];
     view->x      = x;

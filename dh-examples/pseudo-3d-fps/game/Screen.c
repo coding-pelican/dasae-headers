@@ -5,7 +5,7 @@
 void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* state) {
     for (usize x = 0; x < canvas->width; ++x) {
         // Calculate ray angle - matches original implementation
-        const f32 ray_angle = (state->player_angle - state->fov * 0.5f) + (as(f32, x) / as(f32, canvas->width)) * state->fov;
+        const f32 ray_angle = (state->player_angle - state->fov * 0.5f) + (as$(f32, x) / as$(f32, canvas->width)) * state->fov;
 
         // Use sin/cos matching the original implementation
         const f32 eye_x = cosf(ray_angle);
@@ -17,8 +17,8 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
         // Ray casting
         while (!hits_wall && distance_to_wall < state->depth) {
             distance_to_wall += 0.1f; // Match original step size
-            const i32 test_x = as(i32, state->player_x + eye_x * distance_to_wall);
-            const i32 test_y = as(i32, state->player_y + eye_y * distance_to_wall);
+            const i32 test_x = as$(i32, state->player_x + eye_x * distance_to_wall);
+            const i32 test_y = as$(i32, state->player_y + eye_y * distance_to_wall);
 
             // Bounds checking
             if (test_x < 0 || state->map_width <= test_x || test_y < 0 || state->map_height <= test_y) {
@@ -33,24 +33,24 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
         }
 
         // Calculate wall height - note the y-axis inversion handling
-        const i32 ceiling = as(i32, (as(f32, canvas->height) / 2.0f) - (as(f32, canvas->height) / distance_to_wall));
-        const i32 floor   = as(i32, canvas->height) - ceiling;
+        const i32 ceiling = as$(i32, (as$(f32, canvas->height) / 2.0f) - (as$(f32, canvas->height) / distance_to_wall));
+        const i32 floor   = as$(i32, canvas->height) - ceiling;
 
         // Draw vertical slice
         for (usize y = 0; y < canvas->height; ++y) {
             Color color = Color_transparent;
 
             // Ceiling (sky)
-            if (as(i32, y) <= ceiling) {
+            if (as$(i32, y) <= ceiling) {
                 // Sky gradient - darker at top, lighter at horizon
-                f32 t   = 1.0f - (as(f32, y) / as(f32, ceiling));
-                color.r = as(u8, 50 * t);
-                color.g = as(u8, 100 * t);
-                color.b = as(u8, 200 * t);
+                f32 t   = 1.0f - (as$(f32, y) / as$(f32, ceiling));
+                color.r = as$(u8, 50 * t);
+                color.g = as$(u8, 100 * t);
+                color.b = as$(u8, 200 * t);
                 color.a = ColorChannel_max_value;
             }
             // Walls
-            else if (ceiling < as(i32, y) && as(i32, y) <= floor) {
+            else if (ceiling < as$(i32, y) && as$(i32, y) <= floor) {
                 if (distance_to_wall < state->depth) {
                     // Match original shading logic but with RGB values
                     f32 brightness = 0.0f;
@@ -66,16 +66,16 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
                         brightness = 0.2f; // Distant walls
                     }
 
-                    color.r = as(u8, brightness * ColorChannel_max_value);
-                    color.g = as(u8, brightness * ColorChannel_max_value);
-                    color.b = as(u8, brightness * ColorChannel_max_value);
+                    color.r = as$(u8, brightness * ColorChannel_max_value);
+                    color.g = as$(u8, brightness * ColorChannel_max_value);
+                    color.b = as$(u8, brightness * ColorChannel_max_value);
                     color.a = ColorChannel_max_value;
                 }
             }
             // Floor
             else {
                 // Match original floor shading logic
-                f32 b = 1.0f - (as(f32, y) - as(f32, canvas->height / 2.0)) / (as(f32, canvas->height / 2.0));
+                f32 b = 1.0f - (as$(f32, y) - as$(f32, canvas->height / 2.0)) / (as$(f32, canvas->height / 2.0));
 
                 f32 brightness = 0.0f;
                 if (b < 0.25f) {
@@ -90,15 +90,15 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
                     brightness = 0.1f; // Distant floor
                 }
 
-                color.r = as(u8, brightness * ColorChannel_max_value);
-                color.g = as(u8, (brightness * 0.8f) * ColorChannel_max_value); // Slight color tint
-                color.b = as(u8, (brightness * 0.6f) * ColorChannel_max_value);
+                color.r = as$(u8, brightness * ColorChannel_max_value);
+                color.g = as$(u8, (brightness * 0.8f) * ColorChannel_max_value); // Slight color tint
+                color.b = as$(u8, (brightness * 0.6f) * ColorChannel_max_value);
                 color.a = ColorChannel_max_value;
             }
 
             // Draw pixel with y-coordinate properly inverted for screen space
-            const i32 screen_y = as(i32, canvas->height) - 1 - as(i32, y);
-            engine_Canvas_drawPixel(canvas, as(i32, x), screen_y, color);
+            const i32 screen_y = as$(i32, canvas->height) - 1 - as$(i32, y);
+            engine_Canvas_drawPixel(canvas, as$(i32, x), screen_y, color);
         }
     }
 }
@@ -116,8 +116,8 @@ void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
         }
     };
 
-    const f32 center_x       = as(f32, canvas->width) / 2.0f;
-    const f32 center_y       = as(f32, canvas->height) / 2.0f;
+    const f32 center_x       = as$(f32, canvas->width) / 2.0f;
+    const f32 center_y       = as$(f32, canvas->height) / 2.0f;
     const f32 crosshair_size = 3.0f;
     const f32 thickness      = 1.0f;
 
@@ -126,8 +126,8 @@ void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
         for (f32 x = -crosshair_size; x < crosshair_size; x += 0.5f) {
             engine_Canvas_drawPixel(
                 canvas,
-                as(i32, center_x + x),
-                as(i32, center_y + y),
+                as$(i32, center_x + x),
+                as$(i32, center_y + y),
                 ui_color
             );
         }
@@ -138,8 +138,8 @@ void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
         for (f32 y = -crosshair_size; y < crosshair_size; y += 0.5f) {
             engine_Canvas_drawPixel(
                 canvas,
-                as(i32, center_x + x),
-                as(i32, center_y + y),
+                as$(i32, center_x + x),
+                as$(i32, center_y + y),
                 ui_color
             );
         }
@@ -148,17 +148,17 @@ void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
 
 void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
     // Calculate scaling factors
-    const f32 scale_x = as(f32, canvas->width) / as(f32, state->map_width);
-    const f32 scale_y = as(f32, canvas->height) / as(f32, state->map_height);
+    const f32 scale_x = as$(f32, canvas->width) / as$(f32, state->map_width);
+    const f32 scale_y = as$(f32, canvas->height) / as$(f32, state->map_height);
 
     // Draw map tiles
     for (i32 y = 0; y < state->map_height; ++y) {
         for (i32 x = 0; x < state->map_width; ++x) {
             // Calculate pixel ranges for this tile
-            i32 start_px = as(i32, as(f32, x) * scale_x);
-            i32 end_px   = as(i32, as(f32, x + 1) * scale_x);
-            i32 start_py = as(i32, as(f32, y) * scale_y);
-            i32 end_py   = as(i32, as(f32, y + 1) * scale_y);
+            i32 start_px = as$(i32, as$(f32, x) * scale_x);
+            i32 end_px   = as$(i32, as$(f32, x + 1) * scale_x);
+            i32 start_py = as$(i32, as$(f32, y) * scale_y);
+            i32 end_py   = as$(i32, as$(f32, y + 1) * scale_y);
 
             Color color = Color_blank;
             if (state->map[x + (y * state->map_width)] == '#') {
@@ -174,7 +174,7 @@ void game_Screen_renderMinimap(engine_Canvas* canvas, const game_State* state) {
             // Fill entire tile area
             for (i32 py = start_py; py < end_py; ++py) {
                 for (i32 px = start_px; px < end_px; ++px) {
-                    if (px < as(i32, canvas->width) && py < as(i32, canvas->height)) {
+                    if (px < as$(i32, canvas->width) && py < as$(i32, canvas->height)) {
                         engine_Canvas_drawPixel(canvas, px, py, color);
                     }
                 }

@@ -40,16 +40,16 @@ extern "C" {
 #define decl_Sli$(T) GEN__decl_Sli$(T)
 #define impl_Sli$(T) GEN__impl_Sli$(T)
 
-typedef const anyptr PtrConst;
+typedef anyptr_const PtrConst;
 typedef anyptr       Ptr;
 extern Ptr           Ptr_constCast(PtrConst);
 
 typedef struct SliConst SliConst;
 typedef union Sli       Sli;
 extern Sli              Sli_constCast(SliConst);
-extern const anyptr     Sli_rawAt(TypeInfo, const anyptr, usize, usize);
+extern anyptr_const     Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
 extern anyptr           Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
-extern const anyptr     Sli_rawSlice(TypeInfo, const anyptr, usize, usize, usize);
+extern anyptr_const     Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
 extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
 #define Sli_asNamed$(TNamedSli, var_unnamed_sli)   OP__Sli_asNamed$(TNamedSli, var_unnamed_sli)
@@ -254,30 +254,34 @@ struct AnyType {
 //     };                                    \
 // )
 
-#define OP__anyPtr(var_ptr...) eval(     \
-    var _ptr = var_ptr;                  \
-    debug_assert_nonnull(_ptr);          \
-    eval_return((AnyType){               \
-        .type = typeInfo(TypeOf(*_ptr)), \
-        .ctx  = (void*)_ptr,             \
-        .len  = 1,                       \
-    });                                  \
+#define OP__anyPtr(var_ptr...) eval(                                                                                                  \
+    var _ptr = var_ptr;                                                                                                               \
+    claim_assert_static_msg(!isSameType(TypeOf(_ptr), meta_Sli), "`meta_Sli` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
+    claim_assert_static_msg(!isSameType(TypeOf(_ptr), meta_Ptr), "`meta_Ptr` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
+    debug_assert_nonnull(_ptr);                                                                                                       \
+    eval_return((AnyType){                                                                                                            \
+        .type = typeInfo(TypeOf(*_ptr)),                                                                                              \
+        .ctx  = (void*)_ptr,                                                                                                          \
+        .len  = 1,                                                                                                                    \
+    });                                                                                                                               \
 )
 
-#define OP__anySli(var_sli...) eval(         \
-    var _sli = var_sli;                      \
-    debug_assert_nonnull(_sli.ptr);          \
-    eval_return((AnyType){                   \
-        .type = typeInfo(TypeOf(*_sli.ptr)), \
-        .ctx  = (void*)_sli.ptr,             \
-        .len  = _sli.len,                    \
-    });                                      \
+#define OP__anySli(var_sli...) eval(                                                                                                  \
+    var _sli = var_sli;                                                                                                               \
+    claim_assert_static_msg(!isSameType(TypeOf(_sli), meta_Ptr), "`meta_Ptr` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
+    claim_assert_static_msg(!isSameType(TypeOf(_sli), meta_Sli), "`meta_Sli` is not compatible with `anySli`. Use `meta_sliToAny`."); \
+    debug_assert_nonnull(_sli.ptr);                                                                                                   \
+    eval_return((AnyType){                                                                                                            \
+        .type = typeInfo(TypeOf(*_sli.ptr)),                                                                                          \
+        .ctx  = (void*)_sli.ptr,                                                                                                      \
+        .len  = _sli.len,                                                                                                             \
+    });                                                                                                                               \
 )
 
 /* Implementation meta types */
 struct meta_PtrConst {
     TypeInfo     type; // Type info first
-    const anyptr addr; // Then address
+    anyptr_const addr; // Then address
 };
 
 union meta_Ptr {
@@ -290,7 +294,7 @@ union meta_Ptr {
 
 struct meta_SliConst {
     TypeInfo     type; // Type info first
-    const anyptr addr; // Then address
+    anyptr_const addr; // Then address
     usize        len;  // Then length
 };
 
@@ -348,7 +352,7 @@ union meta_Sli {
 #define OP__meta_castPtr$(TDest, var_meta_ptr...) eval(                               \
     let _ptr = var_meta_ptr;                                                          \
     claim_assert_static_msg(isSameType(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
-    eval_return as(TDest, _ptr.addr);                                                 \
+    eval_return((TDest)_ptr.addr);                                                    \
 )
 
 #define OP__meta_castSli$(TDest, var_meta_sli...) eval(                               \

@@ -131,9 +131,9 @@ typedef struct Void {
     eval_return((_rhs == 0) ? 0 : (_lhs % _rhs == 0)); \
 )
 
-#define FUNC_prim_sign(val_scalar) eval(                                       \
-    let         _scalar = (val_scalar);                                        \
-    eval_return as(TypeOf(_scalar), _scalar < 0 ? -1 : (_scalar > 0 ? 1 : 0)); \
+#define FUNC_prim_sign(val_scalar) eval(                                        \
+    let         _scalar = (val_scalar);                                         \
+    eval_return as$(TypeOf(_scalar), _scalar < 0 ? -1 : (_scalar > 0 ? 1 : 0)); \
 )
 
 

@@ -68,7 +68,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
         const f32 new_y = state->player_y + sin_angle * move_speed;
 
         // Collision check
-        if (state->map[as(i32, new_x) + as(i32, new_y) * state->map_width] != '#') {
+        if (state->map[as$(i32, new_x) + as$(i32, new_y) * state->map_width] != '#') {
             state->player_x = new_x;
             state->player_y = new_y;
         }
@@ -77,7 +77,7 @@ void game_State_update(game_State* state, f32 elapsed_time) {
         const f32 new_x = state->player_x - cos_angle * move_speed;
         const f32 new_y = state->player_y - sin_angle * move_speed;
 
-        if (state->map[as(i32, new_x) + as(i32, new_y) * state->map_width] != '#') {
+        if (state->map[as$(i32, new_x) + as$(i32, new_y) * state->map_width] != '#') {
             state->player_x = new_x;
             state->player_y = new_y;
         }

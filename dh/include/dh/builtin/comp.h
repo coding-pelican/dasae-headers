@@ -61,20 +61,20 @@ extern "C" {
      */                                                                  \
     ATTR__ignore
 
-#define as(_T, _val) \
-    FUNC_as(_T, _val)
+#define as$(TDest, val_src) \
+    FUNC__as$(TDest, val_src)
 
-#define literal(_T, _Inital...)                                              \
+#define literal$(TLit, _Inital...)                                           \
     /**                                                                      \
      * @brief Literal macro for creating a compound literal                  \
      * @details Plain structures in C++ (without constructors) can be        \
         initialized with { } This is called aggregate initialization (C++11) \
      * @note MSVC C++ compiler does not support compound literals (C99)      \
      */                                                                      \
-    SYN__literal(_T, _Inital)
+    SYN__literal$(TLit, _Inital)
 
-#define eval(expr...) SYN__eval(expr)
-#define eval_return   /* just comment */
+#define eval(_Expr...) SYN__eval(_Expr)
+#define eval_return    /* just comment */
 
 /*========== Macro Implementations ==========================================*/
 
@@ -100,20 +100,20 @@ extern "C" {
 #define ATTR__ignore           (void)
 
 #if defined(__cplusplus)
-#define FUNC_as(_T, _val) static_cast<_T>(_val)
+#define FUNC__as$(TDest, val_src) static_cast<TDest>(val_src)
 #else
-#define FUNC_as(_T, _val) ((_T)(_val))
+#define FUNC__as$(TDest, val_src) ((TDest)(val_src))
 #endif
 
 #if defined(__cplusplus)
-#define SYN__literal(_T, _Inital...) \
-    _T { _Inital }
+#define SYN__literal$(TLit, _Inital...) \
+    TLit { _Inital }
 #else
-#define SYN__literal(_T, _Inital...) \
-    (_T) { _Inital }
+#define SYN__literal$(TLit, _Inital...) \
+    (TLit) { _Inital }
 #endif
 
-#define SYN__eval(expr...) ({ expr })
+#define SYN__eval(_Expr...) ({ _Expr })
 
 #if defined(__cplusplus)
 } /* extern "C" */

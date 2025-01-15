@@ -188,12 +188,12 @@ use_Err(
     default: 0                                 \
 )
 
-#define VAL_math_f32_pi           as(f32, math_pi)
-#define VAL_math_f32_tau          as(f32, math_tau)
-#define VAL_math_f32_e            as(f32, math_e)
-#define VAL_math_f32_golden_ratio as(f32, math_golden_ratio)
-#define VAL_math_f32_sqrt_2       as(f32, math_sqrt_2)
-#define VAL_math_f32_sqrt_3       as(f32, math_sqrt_3)
+#define VAL_math_f32_pi           as$(f32, math_pi)
+#define VAL_math_f32_tau          as$(f32, math_tau)
+#define VAL_math_f32_e            as$(f32, math_e)
+#define VAL_math_f32_golden_ratio as$(f32, math_golden_ratio)
+#define VAL_math_f32_sqrt_2       as$(f32, math_sqrt_2)
+#define VAL_math_f32_sqrt_3       as$(f32, math_sqrt_3)
 #define VAL_math_f32_eps          f32_eps
 #define VAL_math_f32_nan          f32_nan
 #define VAL_math_f32_inf          f32_inf
@@ -264,18 +264,18 @@ use_Err(
     };                                                                                     \
     eval_return(*(Err$(TypeOf(_lhs))*)_ret);                                               \
 )
-#define OP_math_mod(_lhs, _rhs, val_lhs, val_rhs) eval(                  \
-    let _lhs = (val_lhs);                                                \
-    let _rhs = (val_rhs);                                                \
-    var _ret = makeCleared(TypeOf(_lhs));                                \
-    if ((_rhs) != 0) {                                                   \
-        if (isFlt(TypeOf(_ret))) {                                       \
-            _ret = as(TypeOf(_ret), fmod(as(f64, _lhs), as(f64, _rhs))); \
-        } else {                                                         \
-            _ret = as(TypeOf(_ret), as(i64, _lhs) % as(i64, _rhs));      \
-        }                                                                \
-    };                                                                   \
-    eval_return _ret;                                                    \
+#define OP_math_mod(_lhs, _rhs, val_lhs, val_rhs) eval(                     \
+    let _lhs = (val_lhs);                                                   \
+    let _rhs = (val_rhs);                                                   \
+    var _ret = makeCleared(TypeOf(_lhs));                                   \
+    if ((_rhs) != 0) {                                                      \
+        if (isFlt(TypeOf(_ret))) {                                          \
+            _ret = as$(TypeOf(_ret), fmod(as$(f64, _lhs), as$(f64, _rhs))); \
+        } else {                                                            \
+            _ret = as$(TypeOf(_ret), as$(i64, _lhs) % as$(i64, _rhs));      \
+        }                                                                   \
+    };                                                                      \
+    eval_return _ret;                                                       \
 )
 #define OP_math_modSafe(_lhs, _rhs, val_lhs, val_rhs) eval(                                \
     let   _lhs = (val_lhs);                                                                \
@@ -285,23 +285,23 @@ use_Err(
         _ret = (void*)&(Err$(TypeOf(_lhs)))err(math_Err_err(math_ErrType_DivisionByZero)); \
     } else {                                                                               \
         if (isFlt(TypeOf(_ret))) {                                                         \
-            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(fmod(as(f64, _lhs), as(f64, _rhs)));     \
+            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(fmod(as$(f64, _lhs), as$(f64, _rhs)));   \
         } else {                                                                           \
-            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(as(i64, _lhs) % as(i64, _rhs));          \
+            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(as$(i64, _lhs) % as$(i64, _rhs));        \
         }                                                                                  \
     };                                                                                     \
     eval_return(*(Err$(TypeOf(_lhs))*)_ret);                                               \
 )
 
 /* Basic functions */
-#define FUNC_math_abs(_x, val_x) eval(            \
-    var _x = (val_x);                             \
-    if (isFlt(TypeOf(_x))) {                      \
-        (_x) = as(TypeOf(_x), fabs(as(f64, _x))); \
-    } else {                                      \
-        (_x) = (_x) < 0 ? -(_x) : (_x);           \
-    };                                            \
-    eval_return _x;                               \
+#define FUNC_math_abs(_x, val_x) eval(              \
+    var _x = (val_x);                               \
+    if (isFlt(TypeOf(_x))) {                        \
+        (_x) = as$(TypeOf(_x), fabs(as$(f64, _x))); \
+    } else {                                        \
+        (_x) = (_x) < 0 ? -(_x) : (_x);             \
+    };                                              \
+    eval_return _x;                                 \
 )
 #define FUNC_math_sign(_x, val_x) eval(           \
     let _x = (val_x);                             \
@@ -343,31 +343,31 @@ use_Err(
 )
 
 /* Rounding functions */
-#define FUNC_math_floor(val_x) eval(                \
-    let         _x = (val_x);                       \
-    eval_return as(TypeOf(_x), floor(as(f64, _x))); \
+#define FUNC_math_floor(val_x) eval(                  \
+    let         _x = (val_x);                         \
+    eval_return as$(TypeOf(_x), floor(as$(f64, _x))); \
 )
-#define FUNC_math_ceil(val_x) eval(                \
-    let         _x = (val_x);                      \
-    eval_return as(TypeOf(_x), ceil(as(f64, _x))); \
+#define FUNC_math_ceil(val_x) eval(                  \
+    let         _x = (val_x);                        \
+    eval_return as$(TypeOf(_x), ceil(as$(f64, _x))); \
 )
-#define FUNC_math_round(val_x) eval(                \
-    let         _x = (val_x);                       \
-    eval_return as(TypeOf(_x), round(as(f64, _x))); \
+#define FUNC_math_round(val_x) eval(                  \
+    let         _x = (val_x);                         \
+    eval_return as$(TypeOf(_x), round(as$(f64, _x))); \
 )
-#define FUNC_math_trunc(val_x) eval(                \
-    let         _x = (val_x);                       \
-    eval_return as(TypeOf(_x), trunc(as(f64, _x))); \
+#define FUNC_math_trunc(val_x) eval(                  \
+    let         _x = (val_x);                         \
+    eval_return as$(TypeOf(_x), trunc(as$(f64, _x))); \
 )
 
 /* Exponential/logarithmic functions */
-#define FUNC_math_sqrt(val_x) eval(                 \
-    let _x   = (val_x);                             \
-    var _ret = makeCleared(TypeOf(_x));             \
-    if (0 <= _x) {                                  \
-        _ret = as(TypeOf(_ret), sqrt(as(f64, _x))); \
-    };                                              \
-    eval_return _ret;                               \
+#define FUNC_math_sqrt(val_x) eval(                   \
+    let _x   = (val_x);                               \
+    var _ret = makeCleared(TypeOf(_x));               \
+    if (0 <= _x) {                                    \
+        _ret = as$(TypeOf(_ret), sqrt(as$(f64, _x))); \
+    };                                                \
+    eval_return _ret;                                 \
 )
 #define FUNC_math_sqrtSafe(val_x) eval(                                                 \
     let   _x   = (val_x);                                                               \
@@ -376,63 +376,63 @@ use_Err(
         /* Square root of negative number */                                            \
         _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain)); \
     } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(as(TypeOf(_ret), sqrt(as(f64, _x))));       \
+        _ret = (void*)&(Err$(TypeOf(_x)))ok(as$(TypeOf(_ret), sqrt(as$(f64, _x))));     \
     };                                                                                  \
     eval_return(*(Err$(TypeOf(_x))*)_ret);                                              \
 )
-#define FUNC_math_pow(val_base, val_exp) eval(                       \
-    let _base = (val_base);                                          \
-    let _exp  = (val_exp);                                           \
-    var _ret  = makeCleared(TypeOf(_base));                          \
-    if (_base != 0 || 0 < _exp) {                                    \
-        _ret = as(TypeOf(_ret), pow(as(f64, _base), as(f64, _exp))); \
-    };                                                               \
-    eval_return _ret;                                                \
+#define FUNC_math_pow(val_base, val_exp) eval(                          \
+    let _base = (val_base);                                             \
+    let _exp  = (val_exp);                                              \
+    var _ret  = makeCleared(TypeOf(_base));                             \
+    if (_base != 0 || 0 < _exp) {                                       \
+        _ret = as$(TypeOf(_ret), pow(as$(f64, _base), as$(f64, _exp))); \
+    };                                                                  \
+    eval_return _ret;                                                   \
 )
-#define FUNC_math_powSafe(val_base, val_exp) eval(                                                    \
-    let   _base = (val_base);                                                                         \
-    let   _exp  = (val_exp);                                                                          \
-    void* _ret  = null;                                                                               \
-    if (_base == 0 && _exp <= 0) {                                                                    \
-        /* Invalid base/exponent combination */                                                       \
-        _ret = (void*)&(Err$(TypeOf(_base)))err(math_Err_err(math_ErrType_InvalidDomain));            \
-    } else {                                                                                          \
-        _ret = (void*)&(Err$(TypeOf(_base)))ok(as(TypeOf(_ret), pow(as(f64, _base), as(f64, _exp)))); \
-    };                                                                                                \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                                            \
+#define FUNC_math_powSafe(val_base, val_exp) eval(                                                       \
+    let   _base = (val_base);                                                                            \
+    let   _exp  = (val_exp);                                                                             \
+    void* _ret  = null;                                                                                  \
+    if (_base == 0 && _exp <= 0) {                                                                       \
+        /* Invalid base/exponent combination */                                                          \
+        _ret = (void*)&(Err$(TypeOf(_base)))err(math_Err_err(math_ErrType_InvalidDomain));               \
+    } else {                                                                                             \
+        _ret = (void*)&(Err$(TypeOf(_base)))ok(as$(TypeOf(_ret), pow(as$(f64, _base), as$(f64, _exp)))); \
+    };                                                                                                   \
+    eval_return(*(Err$(TypeOf(_x))*)_ret);                                                               \
 )
-#define FUNC_math_rsqrt(val_x) eval(                      \
-    let _x   = (val_x);                                   \
-    var _ret = makeCleared(TypeOf(_x));                   \
-    if (0 < _x) {                                         \
-        _ret = as(TypeOf(_ret), 1.0 / sqrt(as(f64, _x))); \
-    };                                                    \
-    eval_return _ret;                                     \
+#define FUNC_math_rsqrt(val_x) eval(                        \
+    let _x   = (val_x);                                     \
+    var _ret = makeCleared(TypeOf(_x));                     \
+    if (0 < _x) {                                           \
+        _ret = as$(TypeOf(_ret), 1.0 / sqrt(as$(f64, _x))); \
+    };                                                      \
+    eval_return _ret;                                       \
 )
-#define FUNC_math_rsqrtSafe(val_x) eval(                                                \
-    let   _x   = (val_x);                                                               \
-    void* _ret = null;                                                                  \
-    if (_x <= 0) {                                                                      \
-        /* Invalid input for inverse square root */                                     \
-        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain)); \
-    } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(as(TypeOf(_ret), 1.0 / sqrt(as(f64, _x)))); \
-    };                                                                                  \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                              \
+#define FUNC_math_rsqrtSafe(val_x) eval(                                                  \
+    let   _x   = (val_x);                                                                 \
+    void* _ret = null;                                                                    \
+    if (_x <= 0) {                                                                        \
+        /* Invalid input for inverse square root */                                       \
+        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain));   \
+    } else {                                                                              \
+        _ret = (void*)&(Err$(TypeOf(_x)))ok(as$(TypeOf(_ret), 1.0 / sqrt(as$(f64, _x)))); \
+    };                                                                                    \
+    eval_return(*(Err$(TypeOf(_x))*)_ret);                                                \
 )
 
 /* Trigonometric functions */
-#define FUNC_math_sin(val_x) eval(                \
-    let         _x = (val_x);                     \
-    eval_return as(TypeOf(_x), sin(as(f64, _x))); \
+#define FUNC_math_sin(val_x) eval(                  \
+    let         _x = (val_x);                       \
+    eval_return as$(TypeOf(_x), sin(as$(f64, _x))); \
 )
-#define FUNC_math_cos(val_x) eval(                \
-    let         _x = (val_x);                     \
-    eval_return as(TypeOf(_x), cos(as(f64, _x))); \
+#define FUNC_math_cos(val_x) eval(                  \
+    let         _x = (val_x);                       \
+    eval_return as$(TypeOf(_x), cos(as$(f64, _x))); \
 )
-#define FUNC_math_tan(val_x) eval(                \
-    let         _x = (val_x);                     \
-    eval_return as(TypeOf(_x), tan(as(f64, _x))); \
+#define FUNC_math_tan(val_x) eval(                  \
+    let         _x = (val_x);                       \
+    eval_return as$(TypeOf(_x), tan(as$(f64, _x))); \
 )
 #define FUNC_math_asin(val_x) eval(     \
     let _x   = (val_x);                 \

@@ -72,11 +72,11 @@ extern "C" {
 #define GEN__impl_Opt$(T)                \
     struct pp_join($, Opt$PtrConst, T) { \
         bool has_value;                  \
-        const rawptr(T) value;           \
+        rawptr_const$(T) value;          \
     };                                   \
     struct pp_join($, Opt$Ptr, T) {      \
         bool has_value;                  \
-        rawptr(T) value;                 \
+        rawptr$(T) value;                \
     };                                   \
     struct pp_join($, Opt, T) {          \
         bool has_value;                  \

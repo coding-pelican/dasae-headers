@@ -11,7 +11,7 @@ Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasT
         }
         errdefer(free(canvas));
 
-        let len = as(usize, width) * as(usize, height);
+        let len = as$(usize, width) * as$(usize, height);
         let ptr = (Color*)malloc(len * sizeof(Color));
         if (!ptr) {
             return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
@@ -46,7 +46,7 @@ void engine_Canvas_resize(engine_Canvas* canvas, u32 width, u32 height) {
     debug_assert_nonnull(canvas);
     debug_assert_nonnull(canvas->buffer.ptr);
 
-    let new_len   = as(usize, width) * as(usize, height);
+    let new_len   = as$(usize, width) * as$(usize, height);
     let new_items = (Color*)realloc(canvas->buffer.ptr, new_len * sizeof(Color));
     if (!new_items) { return; }
 
@@ -92,9 +92,9 @@ force_inline Color Color_blendAlpha(Color src, Color dst) {
     // out.rgb = (src.rgb * src.a) + (dst.rgb * dst.a * (1 - src.a)) / outA
     // (We do the division by outA at the end so that final alpha is correct.)
 
-    f32 out_r = (as(f32, src.r) * s_a + as(f32, dst.r) * d_a * (1.0f - s_a)) / out_a;
-    f32 out_g = (as(f32, src.g) * s_a + as(f32, dst.g) * d_a * (1.0f - s_a)) / out_a;
-    f32 out_b = (as(f32, src.b) * s_a + as(f32, dst.b) * d_a * (1.0f - s_a)) / out_a;
+    f32 out_r = (as$(f32, src.r) * s_a + as$(f32, dst.r) * d_a * (1.0f - s_a)) / out_a;
+    f32 out_g = (as$(f32, src.g) * s_a + as$(f32, dst.g) * d_a * (1.0f - s_a)) / out_a;
+    f32 out_b = (as$(f32, src.b) * s_a + as$(f32, dst.b) * d_a * (1.0f - s_a)) / out_a;
 
     // Convert back to [0..255] range
     return literal_Color_from(
@@ -132,11 +132,11 @@ void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
     // void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
     //     debug_assert_nonnull(canvas);
     //     debug_assert_nonnull(canvas->buffer.ptr);
-    //     if (x < 0 || as(i32, canvas->width) <= x) { return; }
-    //     if (y < 0 || as(i32, canvas->height) <= y) { return; }
+    //     if (x < 0 || as$(i32, canvas->width) <= x) { return; }
+    //     if (y < 0 || as$(i32, canvas->height) <= y) { return; }
     //     if (color.a == 0) { return; }
 
-    //     const usize index         = as(usize, x) + (as(usize, y) * canvas->width);
+    //     const usize index         = as$(usize, x) + (as$(usize, y) * canvas->width);
     //     canvas->buffer.ptr[index] = color;
     //     switch (canvas->type) {
     //     case engine_CanvasType_rgba: {
@@ -185,9 +185,9 @@ void engine_Canvas_drawHLine(engine_Canvas* canvas, i32 x1, i32 x2, i32 y, Color
     }
 
     // Clip to canvas bounds
-    if (y < 0 || as(i32, canvas->height) <= y) { return; }
+    if (y < 0 || as$(i32, canvas->height) <= y) { return; }
     x1 = prim_max(0, x1);
-    x2 = prim_min(as(i32, canvas->width) - 1, x2);
+    x2 = prim_min(as$(i32, canvas->width) - 1, x2);
 
     // Draw the horizontal line
     for (i32 x = x1; x <= x2; ++x) {
@@ -205,9 +205,9 @@ void engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color
     }
 
     // Clip to canvas bounds
-    if (x < 0 || as(i32, canvas->width) <= x) { return; }
+    if (x < 0 || as$(i32, canvas->width) <= x) { return; }
     y1 = prim_max(0, y1);
-    y2 = prim_min(as(i32, canvas->height) - 1, y2);
+    y2 = prim_min(as$(i32, canvas->height) - 1, y2);
 
     // Draw the vertical line
     for (i32 y = y1; y <= y2; ++y) {
@@ -730,8 +730,8 @@ void engine_Canvas_blit(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32
     debug_assert_nonnull(src->buffer.ptr);
 
     // Calculate intersection rectangle
-    const i32 src_right  = prim_min(x + as(i32, src->width), as(i32, dst->width));
-    const i32 src_bottom = prim_min(y + as(i32, src->height), as(i32, dst->height));
+    const i32 src_right  = prim_min(x + as$(i32, src->width), as$(i32, dst->width));
+    const i32 src_bottom = prim_min(y + as$(i32, src->height), as$(i32, dst->height));
     const i32 start_x    = prim_max(0, x);
     const i32 start_y    = prim_max(0, y);
 
@@ -770,23 +770,23 @@ void engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 
     debug_assert_nonnull(src->buffer.ptr);
     debug_assert(0 < scale);
 
-    const i32 scaled_width  = as(i32, as(f32, src->width) * scale);
-    const i32 scaled_height = as(i32, as(f32, src->height) * scale);
+    const i32 scaled_width  = as$(i32, as$(f32, src->width) * scale);
+    const i32 scaled_height = as$(i32, as$(f32, src->height) * scale);
 
     // Calculate destination bounds
-    const i32 dst_right  = prim_min(x + scaled_width, as(i32, dst->width));
-    const i32 dst_bottom = prim_min(y + scaled_height, as(i32, dst->height));
+    const i32 dst_right  = prim_min(x + scaled_width, as$(i32, dst->width));
+    const i32 dst_bottom = prim_min(y + scaled_height, as$(i32, dst->height));
     const i32 start_x    = prim_max(0, x);
     const i32 start_y    = prim_max(0, y);
 
     for (i32 dy = start_y; dy < dst_bottom; ++dy) {
         for (i32 dx = start_x; dx < dst_right; ++dx) {
             // Calculate source pixel
-            const i32 src_x = as(i32, as(f32, dx - x) / scale);
-            const i32 src_y = as(i32, as(f32, dy - y) / scale);
+            const i32 src_x = as$(i32, as$(f32, dx - x) / scale);
+            const i32 src_y = as$(i32, as$(f32, dy - y) / scale);
 
-            if (as(i32, src->width) <= src_x || as(i32, src->height) <= src_y) { continue; }
-            const usize src_idx = as(usize, src_x) + (as(usize, src_y) * src->width);
+            if (as$(i32, src->width) <= src_x || as$(i32, src->height) <= src_y) { continue; }
+            const usize src_idx = as$(usize, src_x) + (as$(usize, src_y) * src->width);
 
             Color color = cleared();
             color       = src->buffer.ptr[src_idx];

@@ -74,7 +74,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         try(engine_Window_processEvents(window));
 
         // Update game state
-        game_State_update(state, as(f32, dt));
+        game_State_update(state, as$(f32, dt));
 
         // Render all views
         engine_Canvas_clear(game_canvas, Color_black);

@@ -25,7 +25,7 @@ Err$Ptr$engine_Viewport engine_Viewport_create(f32 width, f32 height) {
         }
 
         /* Allocate depth buffer */
-        let depth_buffer = malloc(sizeof(f32) * as(usize, width * height));
+        let depth_buffer = malloc(sizeof(f32) * as$(usize, width * height));
         if (!depth_buffer) {
             return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
         }
@@ -57,7 +57,7 @@ void engine_Viewport_resize(engine_Viewport* viewport, f32 width, f32 height) {
     /* Reallocate depth buffer */
     let new_buffer = (f32*)realloc(
         viewport->depth_buffer,
-        sizeof(f32) * as(usize, width * height)
+        sizeof(f32) * as$(usize, width * height)
     );
     if (!new_buffer) { return; }
 

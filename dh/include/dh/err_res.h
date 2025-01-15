@@ -96,14 +96,14 @@ typedef Err$Void Err$void;
         bool is_err;                       \
         union {                            \
             Err err;                       \
-            const rawptr(TOk) ok;          \
+            rawptr_const$(TOk) ok;         \
         };                                 \
     };                                     \
     struct pp_join($, Err$Ptr, TOk) {      \
         bool is_err;                       \
         union {                            \
             Err err;                       \
-            rawptr(TOk) ok;                \
+            rawptr$(TOk) ok;               \
         };                                 \
     };                                     \
     struct pp_join($, Err, TOk) {          \

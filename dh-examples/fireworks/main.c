@@ -172,7 +172,7 @@ Particle Particle_new(f64 x, f64 y, f64 width, f64 height, Color color) {
         .fading       = 0.0,
         .lifetime     = 1.0,
         .color        = color,
-        .dimensions   = { as(i64, width), as(i64, height) }
+        .dimensions   = { as$(i64, width), as$(i64, height) }
     };
 }
 
@@ -228,16 +228,16 @@ void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
-        as(u8, as(f64, p->color.r) * p->lifetime),
-        as(u8, as(f64, p->color.g) * p->lifetime),
-        as(u8, as(f64, p->color.b) * p->lifetime)
+        as$(u8, as$(f64, p->color.r) * p->lifetime),
+        as$(u8, as$(f64, p->color.g) * p->lifetime),
+        as$(u8, as$(f64, p->color.b) * p->lifetime)
     );
     engine_Canvas_fillRect(
         c,
-        as(i64, p->position[0]),
-        as(i64, p->position[1]),
-        as(u32, p->position[0] + (p->dimensions[0] - 1)),
-        as(u32, p->position[1] + (p->dimensions[1] - 1)),
+        as$(i64, p->position[0]),
+        as$(i64, p->position[1]),
+        as$(u32, p->position[0] + (p->dimensions[0] - 1)),
+        as$(u32, p->position[1] + (p->dimensions[1] - 1)),
         render_color
     );
 }
@@ -251,7 +251,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
 
         scope_with(let rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
             errdefer(mem_Allocator_destroy(f->allocator, anyPtr(rocket)));
-            Particle_init(rocket, as(f64, rocket_x), as(f64, rocket_y), 1.0, 3.0, effect_base_color);
+            Particle_init(rocket, as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
             Particle_initWithAcceleration(rocket, 0.0, 0.02);
             f->rocket = (Opt$Ptr$Particle)some(rocket);
@@ -478,7 +478,7 @@ Err$Opt$Ptr$Firework State_spawnFirework(State* s) {
     return_ok(some(try(Firework_init(
         firework,
         s->allocator,
-        as(i64, Random_u32() % s->width),
+        as$(i64, Random_u32() % s->width),
         s->height,
         Color_fromOpaque(Random_u8(), Random_u8(), Random_u8())
     ))));

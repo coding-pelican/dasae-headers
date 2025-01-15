@@ -4,6 +4,7 @@
 
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
+#include "dh/heap/Page.h"
 #include "dh/ArrList.h"
 
 #include "dh/time.h"
@@ -84,8 +85,10 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         engine_Window_addCanvasView(window, game_canvas, 0, 0, 160, 100);
         log_info("canvas views added\n");
 
-        var heap      = (heap_Classic){};
-        var allocator = heap_Classic_allocator(&heap);
+        // var allocator = heap_Classic_allocator(&(heap_Classic){});
+        var allocator = heap_Page_allocator(&(heap_Page){});
+        try(heap_Page_init(allocator));
+        defer(heap_Page_fini(allocator));
 
         var positions = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, 256)));
         defer(ArrList_fini(&positions.base));
@@ -131,7 +134,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
                 scope_with(let vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval(
-                        let angle = (math_f32_pi / 180.0f) * as(f32, Random_range_i64(0, 360));
+                        let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
                         eval_return(math_Vec2f_scale(r, 50));
                     );

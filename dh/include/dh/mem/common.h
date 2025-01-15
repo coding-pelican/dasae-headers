@@ -27,13 +27,13 @@ extern "C" {
 
 // Fixed page size (may be different per platform)
 #if defined(__wasm32__) || defined(__wasm64__)
-#define mem_page_size (64 * 1024)
+#define mem_page_size (64ull * 1024ull)
 #elif defined(__aarch64__)
-#define mem_page_size (16 * 1024)
+#define mem_page_size (16ull * 1024ull)
 #elif defined(__sparc64__)
-#define mem_page_size (8 * 1024)
+#define mem_page_size (8ull * 1024ull)
 #else
-#define mem_page_size (4 * 1024)
+#define mem_page_size (4ull * 1024ull)
 #endif
 
 /*========== Memory Utilities ===============================================*/
