@@ -35,6 +35,12 @@ static const u32 time_nanos_per_micro = 1000u;
 static const u32 time_millis_per_sec  = 1000u;
 static const u32 time_micros_per_sec  = 1000u * 1000u;
 
+// static const u32 time_ns_per_s  = time_nanos_per_sec;
+// static const u32 time_ns_per_ms = time_nanos_per_milli;
+// static const u32 time_ns_per_us = time_nanos_per_micro;
+// static const u32 time_ms_per_s  = time_millis_per_sec;
+// static const u32 time_us_per_s  = time_micros_per_sec;
+
 static const u64 time_secs_per_min  = 60ull;
 static const u64 time_mins_per_hour = 60ull;
 static const u64 time_hours_per_day = 24ull;

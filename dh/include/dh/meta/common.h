@@ -54,7 +54,7 @@ extern anyptr           Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
 #define Sli_asNamed$(TNamedSli, var_unnamed_sli)   OP__Sli_asNamed$(TNamedSli, var_unnamed_sli)
 #define Sli_from(var_ptr, val_len)                 OP__Sli_from(var_ptr, val_len)
-#define Sli_from$(T, var_ptr, val_len)             OP__Sli_from$(T, var_ptr, val_len)
+#define Sli_from$(T, var_ptr, val_len...)          OP__Sli_from$(T, var_ptr, val_len)
 #define Sli_range(var_ptr, val_begin, val_end)     OP__Sli_range(var_ptr, val_begin, val_end)
 #define Sli_range$(T, var_ptr, val_begin, val_end) OP__Sli_range$(T, var_ptr, val_begin, val_end)
 #define Sli_arr(var_arr...)                        OP__Sli_arr(var_arr)
@@ -162,14 +162,14 @@ union Sli {
     eval_return(*(TNamedSli*)&_unnamed_sli);                                                              \
 )
 
-#define OP__Sli_from(var_ptr, val_len)     { .ptr = (var_ptr), .len = (val_len) }
-#define OP__Sli_from$(T, var_ptr, val_len) ({ \
-    let _ptr = var_ptr;                       \
-    debug_assert_nonnull(_ptr);               \
-    (T){                                      \
-        .ptr = _ptr,                          \
-        .len = (val_len)                      \
-    };                                        \
+#define OP__Sli_from(var_ptr, val_len)        { .ptr = (var_ptr), .len = (val_len) }
+#define OP__Sli_from$(T, var_ptr, val_len...) ({ \
+    let _ptr = var_ptr;                          \
+    debug_assert_nonnull(_ptr);                  \
+    (T){                                         \
+        .ptr = _ptr,                             \
+        .len = (val_len)                         \
+    };                                           \
 })
 
 #define OP__Sli_range(var_ptr, val_begin, val_end)     { .ptr = (var_ptr) + (val_begin), .len = (val_end) - (val_begin) }

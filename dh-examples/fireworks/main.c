@@ -349,7 +349,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
             log_debug("destroying rocket(%p)\n", rocket);
             mem_Allocator_destroy(f->allocator, anyPtr(rocket));
             f->rocket = (Opt$Ptr$Particle)none();
-            // log_debug("rocket destroyed\n");
+            log_debug("rocket destroyed\n");
         }
     }
     for_slice(f->effects.items, effect) {

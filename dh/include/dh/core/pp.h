@@ -53,6 +53,14 @@ extern "C" {
 #define pp_uniqueToken(_Token...) \
     IMPL_pp_uniqueToken(_Token)
 
+#define pp_countArgs(_Args...) \
+    IMPL_pp_countArgs(_Args, pp_countArgs__rseqN())
+#define pp_countArgs__rseqN() \
+    16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+#define pp_countArgs__argN(                                                        \
+    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
+) _N
+
 // pp_foreach macro implementation (handles up to 8 arguments)
 #define pp_foreach(macro, name, ...) \
     IMPL_pp_foreach_(IMPL_pp_foreach_NARG(__VA_ARGS__), macro, name, __VA_ARGS__)
@@ -84,6 +92,8 @@ extern "C" {
 
 #define IMPL_pp_uniqueToken(_Token...) \
     pp_cat(pp_cat3(_, __LINE__, _), _Token)
+
+#define IMPL_pp_countArgs(_Args...) pp_countArgs__argN(_Args)
 
 // pp_foreach macro implementation (handles up to 8 arguments)
 #define IMPL_pp_foreach_(N, macro, name, ...) pp_cat(IMPL_pp_foreach_, N)(macro, name, __VA_ARGS__)

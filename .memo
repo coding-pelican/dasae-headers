@@ -1,0 +1,2 @@
+# Search exclusion files
+.clang*, .archive/*, .draft/*, libs/*

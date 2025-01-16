@@ -30,36 +30,29 @@ extern "C" {
     typedef struct Alias Alias; \
     struct Alias
 
-#define initial(_Inital...)    IMPL_initial(_Inital)
-#define cleared()              IMPL_cleared()
-#define make(T, _Inital...)    IMPL_make(T, _Inital)
-#define makeCleared(T)         IMPL_makeCleared(T)
-#define create(T, _Initial...) IMPL_create(T, _Initial)
-#define createCleared(T)       IMPL_createCleared(T)
-#define createFrom(T, _var...) IMPL_createFrom(T, _var)
+/* Scheduled to be deprecated */
+#define make(T, _Inital...)    deprecated_IMPL_make(T, _Inital)
+#define makeCleared(T)         deprecated_IMPL_makeCleared(T)
+#define create(T, _Initial...) deprecated_IMPL_create(T, _Initial)
+#define createCleared(T)       deprecated_IMPL_createCleared(T)
+#define createFrom(T, _var...) deprecated_IMPL_createFrom(T, _var)
 
 /*========== Macros Implementation ==========================================*/
 
-#define IMPL_initial(_Inital...) \
-    { _Inital }
-
-#define IMPL_cleared() \
-    { 0 }
-
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define IMPL_make(T, _Inital...) \
+#define deprecated_IMPL_make(T, _Inital...) \
     ((T){ _Inital })
 
-#define IMPL_makeCleared(T) \
+#define deprecated_IMPL_makeCleared(T) \
     ((T){ 0 })
 
-#define IMPL_create(T, _Inital...) \
+#define deprecated_IMPL_create(T, _Inital...) \
     ((T[1]){ (T){ _Inital } })
 
-#define IMPL_createCleared(T) \
+#define deprecated_IMPL_createCleared(T) \
     ((T[1]){ (T){ 0 } })
 
-#define IMPL_createFrom(T, _var...) \
+#define deprecated_IMPL_createFrom(T, _var...) \
     ((T[1]){ _var })
 // NOLINTEND(bugprone-macro-parentheses)
 

@@ -8,48 +8,48 @@
 const time_SysTime time_SysTime_unix_epoch = { .QuadPart = intervals_to_unix_epoch };
 
 /* Static variables for performance counter */
-static time_SysTime s_performance_frequency = make(time_SysTime);
-static f64          s_frequency_inverse     = 0.0;
-static time_SysTime s_offset_value          = make(time_SysTime);
-static bool         s_initialized           = false;
+static time_SysTime time_SysTime_s_performance_frequency = make$(time_SysTime);
+static f64          time_SysTime_s_frequency_inverse     = 0.0;
+static time_SysTime time_SysTime_s_offset_value          = make$(time_SysTime);
+static bool         time_SysTime_s_initialized           = false;
 
 /* Initialize performance counter frequency */
-static void __attribute__((constructor)) init(void) {
-    if (!QueryPerformanceFrequency(&s_performance_frequency)) {
+static void __attribute__((constructor)) time_SysTime_init(void) {
+    if (!QueryPerformanceFrequency(&time_SysTime_s_performance_frequency)) {
         claim_unreachable_msg("Failed to query performance frequency");
     }
-    s_frequency_inverse = 1.0 / as$(f64, s_performance_frequency.QuadPart);
-    QueryPerformanceCounter(&s_offset_value);
-    s_initialized = true;
+    time_SysTime_s_frequency_inverse = 1.0 / as$(f64, time_SysTime_s_performance_frequency.QuadPart);
+    QueryPerformanceCounter(&time_SysTime_s_offset_value);
+    time_SysTime_s_initialized = true;
 }
 
 /*========== Core Functions ============================================*/
 
 time_SysTime time_SysTime_frequency(void) {
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
-    return s_performance_frequency;
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
+    return time_SysTime_s_performance_frequency;
 }
 
 f64 time_SysTime_frequencyInv(void) {
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
-    return s_frequency_inverse;
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
+    return time_SysTime_s_frequency_inverse;
 }
 
 time_SysTime time_SysTime_value(void) {
     time_SysTime current = cleared();
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
     QueryPerformanceCounter(&current);
     return current;
 }
 
 time_SysTime time_SysTime_offset(void) {
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
-    return s_offset_value;
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
+    return time_SysTime_s_offset_value;
 }
 
 time_SysTime time_SysTime_now(void) {
     time_SysTime current = cleared();
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
     QueryPerformanceCounter(&current);
     return current;
 }
@@ -58,30 +58,32 @@ time_SysTime time_SysTime_now(void) {
 
 time_Duration time_SysTime_elapsed(time_SysTime self) {
     time_SysTime current = cleared();
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
     QueryPerformanceCounter(&current);
 
     u64 diff = current.QuadPart - self.QuadPart;
     return time_Duration_fromNanos(
-        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * s_frequency_inverse)
+        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * time_SysTime_s_frequency_inverse)
     );
 }
 
 time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier) {
-    debug_assert_fmt(s_initialized, "SysTime not initialized");
+    debug_assert_fmt(time_SysTime_s_initialized, "SysTime not initialized");
 
-    // Calculate epsilon (1 tick) as$ in Rust implementation
+    // Calculate epsilon (1 tick) as in Rust implementation
     time_Duration epsilon = time_Duration_fromNanos(
-        time_nanos_per_sec / s_performance_frequency.QuadPart
+        time_nanos_per_sec / time_SysTime_s_performance_frequency.QuadPart
     );
 
-    if (earlier.QuadPart > self.QuadPart && as$(u64, earlier.QuadPart - self.QuadPart) <= as$(u64, epsilon.nanos_ / s_frequency_inverse)) {
+    if (earlier.QuadPart > self.QuadPart
+        && as$(u64, earlier.QuadPart - self.QuadPart)
+               <= as$(u64, epsilon.nanos_ / time_SysTime_s_frequency_inverse)) {
         return time_Duration_zero;
     }
 
     u64 diff = self.QuadPart - earlier.QuadPart;
     return time_Duration_fromNanos(
-        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * s_frequency_inverse)
+        as$(u64, as$(f64, diff) * as$(f64, time_nanos_per_sec) * time_SysTime_s_frequency_inverse)
     );
 }
 
@@ -90,21 +92,21 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
 Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
     reserveReturn(Opt$time_SysTime);
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as$(u64, as$(f64, nanos) * s_frequency_inverse);
+    u64 ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
     if (ticks > (u64_limit - self.QuadPart)) {
         return_none();
     }
-    return_some(make(time_SysTime, .QuadPart = (LONGLONG)(self.QuadPart + ticks)));
+    return_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
 }
 
 Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
     reserveReturn(Opt$time_SysTime);
     u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as$(u64, as$(f64, nanos) * s_frequency_inverse);
+    u64 ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
     if (ticks > as$(u64, self.QuadPart)) {
         return_none();
     }
-    return_some(make(time_SysTime, .QuadPart = (LONGLONG)(self.QuadPart - ticks)));
+    return_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/

@@ -38,7 +38,7 @@ Opt$time_Instant time_Instant_addDurationChecked(time_Instant self, time_Duratio
     reserveReturn(Opt$time_Instant);
     let result = time_SysTime_addDurationChecked(self.time_, other);
     if_some(result, opt) {
-        return_some(make(time_Instant, opt));
+        return_some((time_Instant){ opt });
     }
     return_none();
 }
@@ -47,7 +47,7 @@ Opt$time_Instant time_Instant_subDurationChecked(time_Instant self, time_Duratio
     reserveReturn(Opt$time_Instant);
     let result = time_SysTime_subDurationChecked(self.time_, other);
     if_some(result, opt) {
-        return_some(make(time_Instant, opt));
+        return_some((time_Instant){ opt });
     }
     return_none();
 }

@@ -73,6 +73,14 @@ extern "C" {
      */                                                                      \
     SYN__literal$(TLit, _Inital)
 
+#define initial(_Inital...)        SYN__initial(_Inital)
+#define cleared()                  SYN__cleared()
+#define make$(T, _Inital...)       FUNC__make$(T, _Inital)
+#define makeCleared$(T)            FUNC__makeCleared$(T)
+#define create$(T, _Initial...)    FUNC__create$(T, _Initial)
+#define createCleared$(T)          FUNC__createCleared$(T)
+#define createFrom$(T, var_src...) FUNC__createFrom$(T, var_src)
+
 #define eval(_Expr...) SYN__eval(_Expr)
 #define eval_return    /* just comment */
 
@@ -112,6 +120,29 @@ extern "C" {
 #define SYN__literal$(TLit, _Inital...) \
     (TLit) { _Inital }
 #endif
+
+#define SYN__initial(_Inital...) \
+    { _Inital }
+
+#define SYN__cleared() \
+    { 0 }
+
+#define FUNC__make$(T, _Inital...) \
+    (literal$(T, _Inital))
+
+#define FUNC__makeCleared$(T) \
+    (literal$(T, 0))
+
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define FUNC__create$(T, _Inital...) \
+    (literal$(T[1], make$(T, _Inital)))
+
+#define FUNC__createCleared$(T) \
+    (literal$(T[1], makeCleared$(T)))
+
+#define FUNC__createFrom$(T, var_src...) \
+    (literal$(T[1], var_src))
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define SYN__eval(_Expr...) ({ _Expr })
 

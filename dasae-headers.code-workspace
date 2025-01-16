@@ -23,6 +23,9 @@
     },
     {
       "path": "dh-examples/voxel-space"
+    },
+    {
+      "path": "dh-examples/game-of-life"
     }
   ],
   "settings": {

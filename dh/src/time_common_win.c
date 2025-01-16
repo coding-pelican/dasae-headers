@@ -11,13 +11,12 @@ void time_sleep(time_Duration duration) {
         CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
         TIMER_ALL_ACCESS
     );
-
     if (timer == null) {
         Sleep((DWORD)((duration.secs_ * time_millis_per_sec) + (duration.nanos_ / time_nanos_per_milli)));
         return;
     }
 
-    LARGE_INTEGER li = make(LARGE_INTEGER);
+    LARGE_INTEGER li = cleared();
     // Convert to negative 100-nanosecond intervals for relative time
     li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs_ * time_intervals_per_sec + (duration.nanos_ / 100)));
 

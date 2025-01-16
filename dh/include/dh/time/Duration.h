@@ -75,31 +75,31 @@ cmp_fnGe_default(time_Duration);
 
 /* Literal */
 #define literal_time_Duration_from(_secs, _nanos) \
-    make(                                         \
+    make$(                                        \
         time_Duration,                            \
         .secs_  = (_secs),                        \
         .nanos_ = (_nanos)                        \
     )
 #define literal_time_Duration_fromSecs(_secs) \
-    make(                                     \
+    make$(                                    \
         time_Duration,                        \
         .secs_  = (_secs) == 0 ? 0 : (_secs), \
         .nanos_ = 0                           \
     )
 #define literal_time_Duration_fromMillis(_millis)                                               \
-    make(                                                                                       \
+    make$(                                                                                      \
         time_Duration,                                                                          \
         .secs_  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
         .nanos_ = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
     )
 #define literal_time_Duration_fromMicros(_micros)                                               \
-    make(                                                                                       \
+    make$(                                                                                      \
         time_Duration,                                                                          \
         .secs_  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
         .nanos_ = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
     )
 #define literal_time_Duration_fromNanos(_nanos)                      \
-    make(                                                            \
+    make$(                                                           \
         time_Duration,                                               \
         .secs_  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
         .nanos_ = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec  \
