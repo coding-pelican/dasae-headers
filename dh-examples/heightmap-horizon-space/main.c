@@ -276,6 +276,7 @@ void State_updateCamera(State* self, f64 dt) {
     }
 }
 
+// heightmap-based horizon renderer
 void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
     debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
@@ -368,7 +369,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         let window = try(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
-                .window_title = "Voxel Space",
+                .window_title = "Heightmap Horizon Space",
                 .width        = window_width,
                 .height       = window_height,
             }
