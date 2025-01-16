@@ -12,6 +12,7 @@
 
 #include "engine.h"
 #include "Mat.h"
+#include "engine/input.h"
 
 use_Mat$(i8);
 
@@ -32,9 +33,9 @@ use_Mat$(i8);
 #define target_fps__50_00 /* template value */ (50.00)
 #define target_fps__31_25 /* template value */ (31.25)
 
-#define target_fps (target_fps__31_25)
+#define target_fps (target_fps__62_50)
 
-#define GameOfLife_default_tick_threshold (6ull)
+#define GameOfLife_default_tick_threshold (6ull * 5ull)
 
 typedef struct GameOfLife GameOfLife;
 struct GameOfLife {
@@ -126,20 +127,17 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
         // Initialize timing variables
         let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
-        var prev_time_frame   = time_Instant_now(); // Start-of-frame time
-        // var prev_time_update  = prev_time_frame;
-        // var prev_time_sleep   = prev_time_frame;
+        var prev_frame_time   = time_Instant_now();
         log_info("game loop started\n");
 
         // Game loop
         while (state.is_running) {
             // 1) Capture the start of the frame (and capture the end-of-frame time of prev iteration’s dt includes sleep)
-            var frame_start = time_Instant_now();
+            let curr_frame_time = time_Instant_now();
 
             // 2) Compute how long since last frame (purely for your dt usage)
-            var real_elapsed = time_Instant_durationSince(frame_start, prev_time_frame);
-            f64 dt           = time_Duration_asSecs_f64(real_elapsed);
-            prev_time_frame  = frame_start;
+            let elapsed = time_Instant_durationSince(curr_frame_time, prev_frame_time);
+            let dt      = time_Duration_asSecs_f64(elapsed);
 
             // 3) Process input/events
             try(engine_Window_processEvents(window));
@@ -169,28 +167,89 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             );
 
             // 7) Measure how long the update+render actually took
-            var now        = time_Instant_now();
-            var frame_used = time_Instant_durationSince(now, frame_start);
+            let now        = time_Instant_now();
+            let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target; clamp to zero if negative
-            var  leftover             = time_Duration_sub(target_frame_time, frame_used);
-            bool leftover_is_positive = 0 < leftover.secs_ || 0 < leftover.nanos_;
+            let leftover = time_Duration_sub(target_frame_time, frame_used);
+
+            const bool leftover_is_positive = 0 < leftover.secs_ || 0 < leftover.nanos_;
             if (leftover_is_positive) {
-                // debug_only(
-                //     log_debug("Sleeping for %ld ns\n", leftover.nanos_);
-                //     var before_sleep = time_Instant_now();
-                // );
                 time_sleep(leftover);
-                // debug_only(
-                //     var after_sleep  = time_Instant_now();
-                //     var actual_sleep = time_Instant_durationSince(after_sleep, before_sleep);
-                //     log_debug("Actually slept for %ld ns\n", actual_sleep.nanos_);
-                // );
             }
+            prev_frame_time = curr_frame_time;
         }
         return_void();
     }
     scope_returnReserved;
+}
+
+
+Err$State State_init(mem_Allocator allocator, usize states_width, usize states_height) {
+    scope_reserveReturn(Err$State) {
+        const usize buffer_width    = states_width + 2;
+        const usize buffer_height   = states_height + 2;
+        const usize buffer_size     = buffer_width * buffer_height;
+        let         mem_curr_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
+        errdefer(mem_Allocator_free(allocator, anySli(mem_curr_states)));
+        memset(mem_curr_states.ptr, 0, buffer_size);
+        let mem_next_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
+        errdefer(mem_Allocator_free(allocator, anySli(mem_next_states)));
+        memset(mem_next_states.ptr, 0, buffer_size);
+        return_ok((State){
+            .cells = {
+                .curr_states    = mem_curr_states,
+                .next_states    = mem_next_states,
+                .width          = buffer_width,
+                .height         = buffer_height,
+                .tick_current   = 0,
+                .tick_threshold = GameOfLife_default_tick_threshold,
+            },
+            .is_running = true,
+            .allocator  = allocator,
+        });
+    }
+    scope_returnReserved;
+}
+void State_update(State* self, f64 dt) {
+    debug_assert_nonnull(self);
+
+    /* Quit on Escape */
+    if (engine_Key_pressed(engine_KeyCode_esc)) {
+        self->is_running = false;
+    }
+
+    /* Simple mouse input  */
+    if (engine_Mouse_held(engine_MouseButton_left)) {
+        let mouse_pos = engine_Mouse_getPosition();
+        GameOfLife_setCell(&self->cells, mouse_pos.x, mouse_pos.y, 1);
+    }
+    if (engine_Mouse_held(engine_MouseButton_right)) {
+        let mouse_pos = engine_Mouse_getPosition();
+        GameOfLife_setCell(&self->cells, mouse_pos.x, mouse_pos.y, 0);
+    }
+
+    /* Simulate game of life tick */
+    GameOfLife_update(&self->cells, dt);
+}
+void State_render(const State* self, engine_Canvas* canvas, f64 dt) {
+    debug_assert_nonnull(self);
+    debug_assert_nonnull(canvas);
+
+    let states = GameOfLife_getCellMatrix(&self->cells);
+    unused(dt);
+    for (usize y = 0; y < canvas->height; ++y) {
+        for (usize x = 0; x < canvas->width; ++x) {
+            let cell_state = *Mat_at(states, x + 1, y + 1);
+            engine_Canvas_drawPixel(canvas, (i32)x, (i32)y, cell_state ? Color_white : Color_black);
+        }
+    }
+}
+void State_fini(State* self) {
+    debug_assert_nonnull(self);
+
+    mem_Allocator_free(self->allocator, anySli(self->cells.curr_states));
+    mem_Allocator_free(self->allocator, anySli(self->cells.next_states));
 }
 
 
@@ -358,66 +417,6 @@ void GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_
         }
     }
 }
-
-Err$State State_init(mem_Allocator allocator, usize states_width, usize states_height) {
-    scope_reserveReturn(Err$State) {
-        const usize buffer_width    = states_width + 2;
-        const usize buffer_height   = states_height + 2;
-        const usize buffer_size     = buffer_width * buffer_height;
-        let         mem_curr_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
-        errdefer(mem_Allocator_free(allocator, anySli(mem_curr_states)));
-        memset(mem_curr_states.ptr, 0, buffer_size);
-        let mem_next_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
-        errdefer(mem_Allocator_free(allocator, anySli(mem_next_states)));
-        memset(mem_next_states.ptr, 0, buffer_size);
-        return_ok((State){
-            .cells = {
-                .curr_states    = mem_curr_states,
-                .next_states    = mem_next_states,
-                .width          = buffer_width,
-                .height         = buffer_height,
-                .tick_current   = 0,
-                .tick_threshold = GameOfLife_default_tick_threshold,
-            },
-            .is_running = true,
-            .allocator  = allocator,
-        });
-    }
-    scope_returnReserved;
-}
-void State_update(State* self, f64 dt) {
-    debug_assert_nonnull(self);
-
-    if (engine_Key_pressed(engine_KeyCode_esc)) {
-        self->is_running = false;
-    }
-
-    GameOfLife_update(&self->cells, dt);
-}
-void State_render(const State* self, engine_Canvas* canvas, f64 dt) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(canvas);
-
-    let states = GameOfLife_getCellMatrix(&self->cells);
-    unused(dt);
-    for (usize y = 0; y < canvas->height; ++y) {
-        for (usize x = 0; x < canvas->width; ++x) {
-            let cell_state = *Mat_at(states, x + 1, y + 1);
-            engine_Canvas_drawPixel(canvas, (i32)x, (i32)y, cell_state ? Color_white : Color_black);
-        }
-    }
-}
-void State_fini(State* self) {
-    debug_assert_nonnull(self);
-
-    mem_Allocator_free(self->allocator, anySli(self->cells.curr_states));
-    mem_Allocator_free(self->allocator, anySli(self->cells.next_states));
-}
-
-// Err$GameOfLife GameOfLife_init(mem_Allocator allocator, usize states_width, usize states_height) {
-// }
-// void GameOfLife_update(GameOfLife* self, f64 dt);
-// void GameOfLife_fini(GameOfLife* self);
 
 // void GameOfLife_Init() {
 //     const int size = Display_Size;
