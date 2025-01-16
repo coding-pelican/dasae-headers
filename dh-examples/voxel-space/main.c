@@ -128,8 +128,24 @@ static SliConst$Control Control_list(void) {
     };
 } */
 
-#define window_width  (80 * 2)
-#define window_height (50 * 2)
+#define window_width__320x200  /* template value */ (320)
+#define window_height__320x200 /* template value */ (200)
+#define window_width__160x100  /* template value */ (160)
+#define window_height__160x100 /* template value */ (100)
+#define window_width__80x50    /* template value */ (80)
+#define window_height__80x50   /* template value */ (50)
+#define window_width__40x25    /* template value */ (40)
+#define window_height__40x25   /* template value */ (25)
+
+#define window_width  (window_width__160x100)
+#define window_height (window_height__160x100)
+
+/* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
+#define target_fps__62_50 /* template value */ (62.50)
+#define target_fps__50_00 /* template value */ (50.00)
+#define target_fps__31_25 /* template value */ (31.25)
+
+#define target_fps (target_fps__62_50)
 
 typedef struct State {
     TerrainData terrain;
@@ -393,16 +409,16 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         log_info("game state created\n");
         ignore getchar();
 
-        var curr_time   = time_Instant_now();
-        var prev_time   = curr_time;
-        let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
+        var prev_frame_time   = time_Instant_now();
         log_info("game loop started\n");
 
         // Game loop
         while (state.is_running) {
-            curr_time        = time_Instant_now();
-            let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let dt           = time_Duration_asSecs_f64(elapsed_time);
+            let curr_frame_time = time_Instant_now();
+            let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
+            let dt              = time_Duration_asSecs_f64(elapsed_time);
+            prev_frame_time     = curr_frame_time;
 
             // Process events
             try(engine_Window_processEvents(window));
@@ -418,11 +434,12 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
             // Present to screen
             engine_Window_present(window);
+            const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
             printf("\033[A"); // Move cursor up one line
             printf("\033[A"); // Move cursor up one line
             printf(
                 "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
-                1.0f / dt,
+                fps,
                 window_width,
                 window_height,
                 (i32)state.camera_pos.x,
@@ -436,10 +453,27 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 state.distance,
                 state.horizon
             );
+            debug_only(
+                // log frame every 1s
+                static f64 total_game_time_for_timestamp = 0.0;
+                static f64 logging_after_duration        = 0.0;
+                total_game_time_for_timestamp += dt;
+                logging_after_duration += dt;
+                if (1.0 < logging_after_duration) {
+                    logging_after_duration = 0.0;
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
+                }
+            );
 
-            // Sleep for the remaining time to maintain FPS
-            time_sleep(time_Duration_sub(target_time, elapsed_time));
-            prev_time = curr_time;
+            let now        = time_Instant_now();
+            let frame_used = time_Instant_durationSince(now, curr_frame_time);
+
+            let leftover = time_Duration_sub(target_frame_time, frame_used);
+
+            const bool leftover_is_positive = 0 < leftover.secs_ || 0 < leftover.nanos_;
+            if (leftover_is_positive) {
+                time_sleep(leftover);
+            }
         }
         return_void();
     }

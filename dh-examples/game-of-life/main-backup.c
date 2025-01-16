@@ -34,7 +34,7 @@ use_Mat$(i8);
 
 #define target_fps (target_fps__62_50)
 
-#define GameOfLife_default_tick_threshold (6 * 5)
+#define GameOfLife_default_tick_threshold (6ull * 5ull)
 
 typedef struct GameOfLife GameOfLife;
 struct GameOfLife {
@@ -127,14 +127,14 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         // Initialize timing variables
         let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
         var prev_time_frame   = time_Instant_now(); // Start-of-frame time
-        var prev_time_update  = prev_time_frame;
-        var prev_time_sleep   = prev_time_update;
+        // var prev_time_update  = prev_time_frame;
+        // var prev_time_sleep   = prev_time_frame;
         log_info("game loop started\n");
 
         // Game loop
         while (state.is_running) {
-            // 1) Capture the start of the frame
-            var frame_start = prev_time_sleep;
+            // 1) Capture the start of the frame (and capture the end-of-frame time of prev iteration’s dt includes sleep)
+            var frame_start = time_Instant_now();
 
             // 2) Compute how long since last frame (purely for your dt usage)
             var real_elapsed = time_Instant_durationSince(frame_start, prev_time_frame);
@@ -153,7 +153,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             engine_Window_present(window);
 
             // 6) (Optional) Display instantaneous FPS
-            f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
+            const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
             printf("\033[A"); // move cursor up again if want to keep overwriting
             printf("\rFPS: %6.2f   \n", fps);
             debug_only(
@@ -164,14 +164,13 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 logging_after_duration += dt;
                 if (1.0 < logging_after_duration) {
                     logging_after_duration = 0.0;
-                    log_debug("[t=%6.2g] dt: %6.2g, fps %6.2g\n", total_game_time_for_timestamp, dt, 1.0 / dt);
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
                 }
             );
 
             // 7) Measure how long the update+render actually took
-            var now          = time_Instant_now();
-            var frame_used   = time_Instant_durationSince(now, prev_time_frame);
-            prev_time_update = now;
+            var now        = time_Instant_now();
+            var frame_used = time_Instant_durationSince(now, frame_start);
 
             // 8) Subtract from our target; clamp to zero if negative
             var  leftover             = time_Duration_sub(target_frame_time, frame_used);
@@ -188,9 +187,6 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 //     log_debug("Actually slept for %ld ns\n", actual_sleep.nanos_);
                 // );
             }
-
-            // 9) Now capture the end-of-frame time so next iteration’s dt includes sleep
-            prev_time_sleep = time_Instant_now();
         }
         return_void();
     }

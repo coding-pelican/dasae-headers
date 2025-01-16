@@ -32,9 +32,9 @@ use_Mat$(i8);
 #define target_fps__50_00 /* template value */ (50.00)
 #define target_fps__31_25 /* template value */ (31.25)
 
-#define target_fps (target_fps__62_50)
+#define target_fps (target_fps__31_25)
 
-#define GameOfLife_default_tick_threshold (6 * 5)
+#define GameOfLife_default_tick_threshold (6ull)
 
 typedef struct GameOfLife GameOfLife;
 struct GameOfLife {
@@ -164,7 +164,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 logging_after_duration += dt;
                 if (1.0 < logging_after_duration) {
                     logging_after_duration = 0.0;
-                    log_debug("[t=%6.2g] dt: %6.2g, fps %6.2g\n", total_game_time_for_timestamp, dt, 1.0 / dt);
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
                 }
             );
 
