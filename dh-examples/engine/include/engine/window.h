@@ -39,6 +39,7 @@ struct engine_Window {
 };
 use_Ptr$(engine_Window);
 use_Err$(engine_Window);
+#define engine_Window_composite_buffer_default_color ((Color){ .r = 0x18, .g = 0x18, .b = 0x18, .a = 0xFF })
 
 // Window management
 extern Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;

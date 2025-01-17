@@ -25,10 +25,10 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* Core type information */
+/* Core type information (kept minimal - 8 bytes) */
 typedef struct TypeInfo {
-    usize size;
-    usize align;
+    u32 size;
+    u32 align;
 } TypeInfo;
 #define typeInfo(T) (                                    \
     (TypeInfo){ .size = sizeOf(T), .align = alignOf(T) } \

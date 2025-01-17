@@ -11,6 +11,7 @@
 #include "dh/Random.h"
 
 #include "engine.h"
+#include "engine/canvas.h"
 
 use_Sli$(Vec2f);
 use_ArrList$(Vec2f);
@@ -78,7 +79,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clear(game_canvas, Color_black);
+        engine_Canvas_clearDefaultColor(game_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views

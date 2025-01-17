@@ -57,6 +57,10 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
             engine_CanvasType_rgba
         ));
         errdefer(engine_Canvas_destroy(composite_buffer));
+        composite_buffer->default_color = params->default_color;
+        if (composite_buffer->default_color.a != ColorChannel_alpha_opaque) {
+            composite_buffer->default_color = engine_Window_composite_buffer_default_color;
+        }
         window->composite_buffer = composite_buffer;
 
         /* Initialize input */
@@ -119,8 +123,8 @@ void engine_Window_present(engine_Window* window) {
     // Skip presentation if window is minimized
     if (window->metrics.is_minimized) { return; }
 
-    // Clear composite buffer
-    engine_Canvas_clear(window->composite_buffer, Color_blue);
+    // Clear composite buffer.
+    engine_Canvas_clearDefaultColor(window->composite_buffer);
 
     // Compose all visible canvas views
     for (usize id = 0; id < window->view_count; ++id) {

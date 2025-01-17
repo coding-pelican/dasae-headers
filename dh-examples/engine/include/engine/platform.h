@@ -23,7 +23,8 @@ typedef struct engine_PlatformParams {
     const char*              window_title;
     u32                      width;
     u32                      height;
-    anyptr                   custom_data; // Optional, platform-specific
+    Color                    default_color; // if alpha is not 0xFF, it will be used default color
+    anyptr                   custom_data;   // Optional, platform-specific
 } engine_PlatformParams;
 use_Ptr$(engine_PlatformParams);
 use_Err$(engine_PlatformParams);

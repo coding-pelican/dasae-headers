@@ -12,6 +12,7 @@
 
 #include "engine.h"
 #include "Mat.h"
+#include "engine/canvas.h"
 #include "engine/input.h"
 
 use_Mat$(i8);
@@ -86,10 +87,11 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         // Initialize platform with terminal backend
         let window = try(engine_Window_create(
             &(engine_PlatformParams){
-                .backend_type = engine_RenderBackendType_vt100,
-                .window_title = "Voxel Space",
-                .width        = window_width,
-                .height       = window_height,
+                .backend_type  = engine_RenderBackendType_vt100,
+                .window_title  = "Game of Life",
+                .width         = window_width,
+                .height        = window_height,
+                .default_color = Color_blue,
             }
         ));
         defer(engine_Window_destroy(window));
@@ -103,7 +105,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clear(game_canvas, Color_black);
+        engine_Canvas_clearDefaultColor(game_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views
@@ -146,7 +148,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             State_update(&state, dt);
 
             // 5) Render all views
-            engine_Canvas_clear(game_canvas, Color_blank);
+            engine_Canvas_clearDefaultColor(game_canvas);
             State_render(&state, game_canvas, dt);
             engine_Window_present(window);
 
