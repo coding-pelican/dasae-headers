@@ -1,0 +1,134 @@
+{
+  "version": "2.0.0",
+  "runner": "terminal",
+  "echoCommand": true,
+  "presentation": {
+    "reveal": "always",
+    "clear": false
+  },
+  "inputs": [
+    { // cStandard
+      "id": "cStandard",
+      "type": "pickString",
+      "description": "Select C standard:",
+      "options": [
+        "c17",
+        "c11",
+        "c99"
+      ],
+      "default": "c17"
+    },
+    { // libraries
+      "id": "libraries",
+      "type": "promptString",
+      "description": "Enter libraries to link (space-separated):",
+      "default": ""
+    },
+    { // userArgs
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:",
+      "default": ""
+    }
+  ],
+  "tasks": [
+    { // workspace(engine)>build C file (debug)
+      "label": "workspace(engine)>build C file (debug)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "-DCOMP",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-workspace",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // workspace(engine)>build C file (release)
+      "label": "workspace(engine)>build C file (release)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DCOMP",
+        "-DNDEBUG",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-workspace",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { // workspace(engine)>build C file (optimize)
+      "label": "workspace(engine)>build C file (optimize)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-DCOMP",
+        "-DNDEBUG",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-workspace",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ]
+}

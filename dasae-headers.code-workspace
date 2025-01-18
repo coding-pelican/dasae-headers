@@ -1,30 +1,43 @@
 {
   "folders": [
     {
+      "name": "dasae-headers",
       "path": "."
     },
     {
+      "name": "dh",
       "path": "dh"
     },
     {
+      "name": "dh-workspace",
+      "path": "dh-workspace"
+    },
+    {
+      "name": "dh-examples",
       "path": "dh-examples"
     },
     {
+      "name": "engine",
       "path": "dh-examples/engine"
     },
     {
+      "name": "pseudo-3d-fps",
       "path": "dh-examples/pseudo-3d-fps"
     },
     {
+      "name": "fireworks",
       "path": "dh-examples/fireworks"
     },
     {
+      "name": "subframes",
       "path": "dh-examples/subframes"
     },
     {
+      "name": "heightmap-horizon-space",
       "path": "dh-examples/heightmap-horizon-space"
     },
     {
+      "name": "game-of-life",
       "path": "dh-examples/game-of-life"
     }
   ],

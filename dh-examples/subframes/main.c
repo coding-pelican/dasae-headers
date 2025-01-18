@@ -12,6 +12,30 @@
 
 #include "engine.h"
 #include "engine/canvas.h"
+#include "engine/window.h"
+
+#define window_res_width__320x200  /* template value */ (320)
+#define window_res_height__320x200 /* template value */ (200)
+#define window_res_width__160x100  /* template value */ (160)
+#define window_res_height__160x100 /* template value */ (100)
+#define window_res_width__80x50    /* template value */ (80)
+#define window_res_height__80x50   /* template value */ (50)
+#define window_res_width__40x25    /* template value */ (40)
+#define window_res_height__40x25   /* template value */ (25)
+
+#define window_res_width  (window_res_width__160x100)
+#define window_res_height (window_res_height__160x100)
+#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+
+/* (1.0 / render_target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
+#define render_target_fps__125_0 /* template value */ (125.0)
+#define render_target_fps__62_50 /* template value */ (62.50)
+#define render_target_fps__50_00 /* template value */ (50.00)
+#define render_target_fps__31_25 /* template value */ (31.25)
+
+#define render_target_fps (render_target_fps__31_25)
+#define render_target_spf (1.0 / render_target_fps)
+
 
 use_Sli$(Vec2f);
 use_ArrList$(Vec2f);
@@ -39,18 +63,18 @@ static SliConst$Control Control_list(void) {
     };
 }
 
-#define PLAYER_SPEED      (1000)
-#define REAL_FPS          (30)
-#define TARGET_FPS        (480)
-#define TARGET_DT         (1.0f / (f32)TARGET_FPS)
-#define GRAVITY           (1000.0f)
-#define COLLISION_DAMPING (0.8f)
+#define update_target_fps (480.0f)
+#define update_target_spf (1.0f / update_target_fps)
+
+#define state_player_speed       (1000.0f)
+#define state_gravity            (1000.0f)
+#define state_collision_damping  (0.8f)
+#define state_objects_cap_inital (256)
 
 Err$void dh_main(int argc, const char* argv[]) { // NOLINT
     unused(argc), unused(argv);
+    Random_init();
     scope_reserveReturn(Err$void) {
-        Random_init();
-
         // Initialize logging to a file
         scope_if(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -65,61 +89,72 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         // Initialize platform with terminal backend
         let window = try(engine_Window_create(
             &(engine_PlatformParams){
-                .backend_type = engine_RenderBackendType_vt100,
-                .window_title = "Subframes",
-                .width        = 160,
-                .height       = 100,
+                .backend_type  = engine_RenderBackendType_vt100,
+                .window_title  = "Subframes",
+                .width         = window_res_width,
+                .height        = window_res_height,
+                .default_color = (Color){ .packed = 0x181818FF },
             }
         ));
         defer(engine_Window_destroy(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = try(engine_Canvas_create(160, 100, engine_CanvasType_rgba));
+        let game_canvas = try(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba));
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clearDefaultColor(game_canvas);
+        engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, 160, 100);
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
         log_info("canvas views added\n");
 
-        // var allocator = heap_Classic_allocator(&(heap_Classic){});
+        // Create game state
         var allocator = heap_Page_allocator(&(heap_Page){});
         try(heap_Page_init(allocator));
         defer(heap_Page_fini(allocator));
 
-        var positions = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, 256)));
+        var positions = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&positions.base));
-        var velocities = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, 256)));
+        var velocities = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&velocities.base));
-        var colors = typed(Colors, try(ArrList_initCap(typeInfo(Color), allocator, 256)));
+        var colors = typed(Colors, try(ArrList_initCap(typeInfo(Color), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&colors.base));
 
-        const f32 w      = 160.0f;
-        const f32 h      = 100.0f;
+        const f32 w      = window_res_width;
+        const f32 h      = window_res_height;
         const f32 radius = 2.5f;
         log_info("game state created\n");
         ignore getchar();
 
-        var  curr_time   = time_Instant_now();
-        var  prev_time   = curr_time;
-        let  target_time = time_Duration_fromSecs_f64(REAL_FPS / 1000.0f); // Assume 30 FPS for simplicity
-        bool is_running  = true;
+        // Initialize timing variables
+        let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
+        var time_frame_prev   = time_Instant_now();
+        log_info("game loop started\n");
 
+        // Initialize window variables
         var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
+
+        bool is_running = true;
         while (is_running) {
+            // 1) Capture the start of the frame (and capture the end-of-frame time of prev iteration’s dt includes sleep)
+            let time_frame_curr = time_Instant_now();
+
+            // 2) Compute how long since last frame (purely for your dt usage)
+            let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
+            let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
+
+            // 3) Check for window movement
             let winpos  = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
             let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
 
-            curr_time        = time_Instant_now();
-            let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let real_dt      = (f32)time_Duration_asSecs_f64(elapsed_time);
-
+            // 4) Process input/events
             try(engine_Window_processEvents(window));
-            engine_Canvas_clear(game_canvas, (Color){ .packed = 0xFF181818 });
+
+            // 5) Update game state and Render all views
+            engine_Canvas_clearDefault(game_canvas);
 
             if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
@@ -150,35 +185,35 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             let vs = velocities.items;
             let cs = colors.items;
 
-            for (f32 t = 0.0f; t < real_dt; t += TARGET_DT) {
+            for (f32 t = 0.0f; t < time_dt; t += update_target_spf) {
                 for (usize i = 0; i < ps.len; ++i) {
-                    const f32 f = (f32)(t / real_dt);
+                    const f32 f = as$(f32, t / time_dt);
 
-                    ps.ptr[i] = math_Vec2f_sub(ps.ptr[i], math_Vec2f_scale(dwinpos, TARGET_DT / real_dt));
-                    vs.ptr[i].y += GRAVITY * TARGET_DT;
+                    ps.ptr[i] = math_Vec2f_sub(ps.ptr[i], math_Vec2f_scale(dwinpos, update_target_spf / time_dt));
+                    vs.ptr[i].y += state_gravity * update_target_spf;
 
-                    const f32 nx = ps.ptr[i].x + vs.ptr[i].x * TARGET_DT;
+                    const f32 nx = ps.ptr[i].x + vs.ptr[i].x * update_target_spf;
                     if ((nx - radius) <= 0) {
                         ps.ptr[i].x = radius;
-                        vs.ptr[i].x *= -COLLISION_DAMPING;
-                        vs.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
+                        vs.ptr[i].x *= -state_collision_damping;
+                        vs.ptr[i].x += dwinpos.x * update_target_spf / time_dt * 30.0f;
                     } else if (w <= (nx + radius)) {
                         ps.ptr[i].x = w - radius;
-                        vs.ptr[i].x *= -COLLISION_DAMPING;
-                        vs.ptr[i].x += dwinpos.x * TARGET_DT / real_dt * 30.0f;
+                        vs.ptr[i].x *= -state_collision_damping;
+                        vs.ptr[i].x += dwinpos.x * update_target_spf / time_dt * 30.0f;
                     } else {
                         ps.ptr[i].x = nx;
                     }
 
-                    const f32 ny = ps.ptr[i].y + vs.ptr[i].y * TARGET_DT;
+                    const f32 ny = ps.ptr[i].y + vs.ptr[i].y * update_target_spf;
                     if ((ny - radius) <= 0) {
                         ps.ptr[i].y = radius;
-                        vs.ptr[i].y *= -COLLISION_DAMPING;
-                        vs.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
+                        vs.ptr[i].y *= -state_collision_damping;
+                        vs.ptr[i].y += dwinpos.y * update_target_spf / time_dt * 30.0f;
                     } else if (h <= (ny + radius)) {
                         ps.ptr[i].y = h - radius;
-                        vs.ptr[i].y *= -COLLISION_DAMPING;
-                        vs.ptr[i].y += dwinpos.y * TARGET_DT / real_dt * 30.0f;
+                        vs.ptr[i].y *= -state_collision_damping;
+                        vs.ptr[i].y += dwinpos.y * update_target_spf / time_dt * 30.0f;
                     } else {
                         ps.ptr[i].y = ny;
                     }
@@ -197,17 +232,38 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                     );
                 }
             }
-
-            // Present to screen
             engine_Window_present(window);
 
-            // Sleep for the remaining time to maintain FPS
-            time_sleep(time_Duration_sub(target_time, elapsed_time));
-            prev_time = curr_time;
+            // 6) (Optional) Display instantaneous FPS
+            const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
+            printf("\033[H"); // Move cursor to top left
+            printf("\rFPS: %6.2f", time_fps);
+            debug_only(
+                // log frame every 1s
+                static f64 total_game_time_for_timestamp = 0.0;
+                static f64 logging_after_duration        = 0.0;
+                total_game_time_for_timestamp += time_dt;
+                logging_after_duration += time_dt;
+                if (1.0 < logging_after_duration) {
+                    logging_after_duration = 0.0;
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                }
+            );
 
-            prev_winpos = winpos;
+            // 7) Measure how long the update+render actually took
+            let time_now        = time_Instant_now();
+            let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
+
+            // 8) Subtract from our target; clamp to zero if negative
+            let time_leftover = time_Duration_sub(time_frame_target, time_frame_used);
+
+            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
+            if (is_positive_time_leftover) {
+                time_sleep(time_leftover);
+            }
+            time_frame_prev = time_frame_curr;
         }
-        return_ok({});
+        return_void();
     }
     scope_returnReserved;
 }

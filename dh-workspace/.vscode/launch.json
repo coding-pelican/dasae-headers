@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { // workspace(engine)>C/C++: Debug Single File
+      "name": "workspace(engine)>C/C++: Debug Single File",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug"
+    },
+    { // workspace(engine)>C: Debug Single File with Build
+      "name": "workspace(engine)>C: Debug Single File with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "engine>build C file (debug)"
+    },
+    { // workspace(engine)>C: Debug Project with Build
+      "name": "workspace(engine)>C: Debug Project with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "engine>build C project (debug)"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:",
+      "default": ""
+    }
+  ]
+}

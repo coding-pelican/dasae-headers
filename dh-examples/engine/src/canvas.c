@@ -29,13 +29,13 @@ Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasT
         canvas->pixelToColor = null; // Would be implemented based on type
         canvas->colorToPixel = null; // Would be implemented based on type
 
-        engine_Canvas_clearDefaultColor(canvas);
+        engine_Canvas_clearDefault(canvas);
         return_ok(canvas);
     }
     scope_returnReserved;
 }
 
-Err$Ptr$engine_Canvas engine_Canvas_createWithDefaultColor(u32 width, u32 height, engine_CanvasType type, Color default_color) {
+Err$Ptr$engine_Canvas engine_Canvas_createWithDefault(u32 width, u32 height, engine_CanvasType type, Color default_color) {
     reserveReturn(Err$Ptr$engine_Canvas);
     let canvas            = try(engine_Canvas_create(width, height, type));
     canvas->default_color = default_color;
@@ -85,7 +85,7 @@ void engine_Canvas_clear(engine_Canvas* canvas, Color color) {
     } */
 }
 
-void engine_Canvas_clearDefaultColor(engine_Canvas* canvas) {
+void engine_Canvas_clearDefault(engine_Canvas* canvas) {
     debug_assert_nonnull(canvas);
     debug_assert_nonnull(canvas->buffer.ptr);
     engine_Canvas_clear(canvas, canvas->default_color);

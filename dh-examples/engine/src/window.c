@@ -124,7 +124,7 @@ void engine_Window_present(engine_Window* window) {
     if (window->metrics.is_minimized) { return; }
 
     // Clear composite buffer.
-    engine_Canvas_clearDefaultColor(window->composite_buffer);
+    engine_Canvas_clearDefault(window->composite_buffer);
 
     // Compose all visible canvas views
     for (usize id = 0; id < window->view_count; ++id) {

@@ -11,6 +11,29 @@
 
 #include "engine.h"
 
+#define window_res_width__320x200  /* template value */ (320)
+#define window_res_height__320x200 /* template value */ (200)
+#define window_res_width__160x100  /* template value */ (160)
+#define window_res_height__160x100 /* template value */ (100)
+#define window_res_width__80x50    /* template value */ (80)
+#define window_res_height__80x50   /* template value */ (50)
+#define window_res_width__40x25    /* template value */ (40)
+#define window_res_height__40x25   /* template value */ (25)
+
+#define window_res_width  (window_res_width__160x100)
+#define window_res_height (window_res_height__160x100)
+#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+
+/* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
+#define target_fps__125_0 /* template value */ (125.0)
+#define target_fps__62_50 /* template value */ (62.50)
+#define target_fps__50_00 /* template value */ (50.00)
+#define target_fps__31_25 /* template value */ (31.25)
+
+#define target_fps (target_fps__125_0)
+#define target_spf (1.0 / target_fps)
+
+
 #define Firework_effects_max        (25)
 #define Firework_effects_per_rocket (25)
 #define Fireworks_max               (16)
@@ -91,17 +114,18 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Initialize platform with terminal backend
         let window = try(engine_Window_create(
             &(engine_PlatformParams){
-                .backend_type = engine_RenderBackendType_vt100,
-                .window_title = "Fireworks",
-                .width        = 80 * 2,
-                .height       = 50 * 2,
+                .backend_type  = engine_RenderBackendType_vt100,
+                .window_title  = "Fireworks",
+                .width         = window_res_width,
+                .height        = window_res_height,
+                .default_color = Color_black,
             }
         ));
         defer(engine_Window_destroy(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(80 * 2, 50 * 2, engine_CanvasType_rgba), err, {
+        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
@@ -112,12 +136,12 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, 80 * 2, 50 * 2);
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
         log_info("canvas views added\n");
 
-        var heap      = (heap_Classic){};
-        var allocator = heap_Classic_allocator(&heap);
-        var state     = catch (State_init(allocator, 80 * 2, 50 * 2), err, {
+        // Create game state
+        var allocator = heap_Classic_allocator(&(heap_Classic){});
+        var state     = catch (State_init(allocator, window_res_width, window_res_height), err, {
             log_error("Failed to create game state: %s\n", err);
             return_err(err);
         });
@@ -125,37 +149,59 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("game state created\n");
         ignore getchar();
 
-        var curr_time   = time_Instant_now();
-        var prev_time   = curr_time;
-        let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        // Initialize timing variables
+        let time_frame_target = time_Duration_fromSecs_f64(target_spf);
+        var time_frame_prev   = time_Instant_now();
         log_info("game loop started\n");
 
         // Game loop
         while (!State_isDead(&state)) {
-            // const f64   real_delta_time = elapsed;
-            // const usize update_step     = (usize)(Display_deltaTime() / real_delta_time);
-            // for (usize step = 0; step < update_step; ++step) {
-            //     const f64 delta_time = (f64)step * real_delta_time;
+            // 1) Capture the start of the frame (and capture the end-of-frame time of prev iteration’s dt includes sleep)
+            let time_frame_curr = time_Instant_now();
 
-            curr_time        = time_Instant_now();
-            let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let dt           = time_Duration_asSecs_f64(elapsed_time);
+            // 2) Compute how long since last frame (purely for your dt usage)
+            let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
+            let time_dt      = time_Duration_asSecs_f64(time_elapsed);
 
-            // Process events
+            // 3) Process input/events
             try(engine_Window_processEvents(window));
 
-            // Update game state
-            try(State_update(&state, dt));
+            // 4) Update game state
+            try(State_update(&state, time_dt));
 
-            // Render all views
-            State_render(&state, game_canvas, dt);
-
-            // Present to screen
+            // 5) Render all views
+            engine_Canvas_clearDefault(game_canvas);
+            State_render(&state, game_canvas, time_dt);
             engine_Window_present(window);
 
-            // Sleep for the remaining time to maintain FPS
-            time_sleep(time_Duration_sub(target_time, elapsed_time));
-            prev_time = curr_time;
+            // 6) (Optional) Display instantaneous FPS
+            const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
+            printf("\033[H\033[40;37m"); // Move cursor to top left
+            printf("\rFPS: %6.2f", time_fps);
+            debug_only(
+                // log frame every 1s
+                static f64 total_game_time_for_timestamp = 0.0;
+                static f64 logging_after_duration        = 0.0;
+                total_game_time_for_timestamp += time_dt;
+                logging_after_duration += time_dt;
+                if (1.0 < logging_after_duration) {
+                    logging_after_duration = 0.0;
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                }
+            );
+
+            // 7) Measure how long the update+render actually took
+            let time_now        = time_Instant_now();
+            let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
+
+            // 8) Subtract from our target; clamp to zero if negative
+            let time_leftover = time_Duration_sub(time_frame_target, time_frame_used);
+
+            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
+            if (is_positive_time_leftover) {
+                time_sleep(time_leftover);
+            }
+            time_frame_prev = time_frame_curr;
         }
         return_void();
     }
@@ -439,6 +485,22 @@ Err$void State_update(State* s, f64 dt) {
         if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+        }
+    }
+
+    if (engine_Mouse_pressed(engine_MouseButton_left)) {
+        log_debug("pressed left mouse button\n");
+        let maybe_firework = catch (State_spawnFirework(s), err, {
+            log_error("failed to spawn firework: %s\n", Err_message(err));
+            return_err(err);
+        });
+        if_some(maybe_firework, firework) {
+            let rocket    = unwrap(firework->rocket);
+            let mouse_pos = engine_Mouse_getPosition();
+            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+            Particle_init(rocket, mouse_pos.x, mouse_pos.y, 1, 1, rocket->color);
+            Particle_initWithFading(rocket, 0.0);
+            try(Firework_update(firework, 0.0));
         }
     }
 

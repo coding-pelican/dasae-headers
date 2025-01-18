@@ -37,6 +37,7 @@ enum ColorChannel {
 
 typedef union Rgb   Rgb;
 typedef union Hsl   Hsl;
+// typedef union Hsv   Hsv;
 typedef union Color Color;
 
 union Rgb {
@@ -47,7 +48,8 @@ union Rgb {
         u8 b; // Blue channel in [0,255]
     };
 };
-#define Rgb_(...) make(Rgb, __VA_ARGS__)
+#define Rgb_(...)                    make$(Rgb, __VA_ARGS__)
+#define literal_Rgb_from(_r, _g, _b) Rgb_(.r = (_r), .g = (_g), .b = (_b))
 extern Rgb Rgb_from(u8 r, u8 g, u8 b);
 
 extern Rgb Rgb_fromHsl(Hsl hsl);
@@ -57,9 +59,6 @@ extern Rgb Color_intoRgb(Color color);
 extern Rgb Hsl_asRgb(Hsl hsl);
 extern Rgb Color_asRgb(Color color);
 
-#define literal_Rgb_from(_r, _g, _b) \
-    Rgb_(.r = (_r), .g = (_g), .b = (_b))
-
 union Hsl {
     f64 channels[3]; // Hsl color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
     struct {
@@ -68,7 +67,8 @@ union Hsl {
         f64 l; // Lightness in [0,100]
     };
 };
-#define Hsl_(...) make(Hsl, __VA_ARGS__)
+#define Hsl_(...)                    make$(Hsl, __VA_ARGS__)
+#define literal_Hsl_from(_h, _s, _l) Hsl_(.h = (_h), .s = (_s), .l = (_l))
 extern Hsl Hsl_from(f64 h, f64 s, f64 l);
 extern f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
 
@@ -78,9 +78,6 @@ extern Hsl Hsl_fromColor(Color color);
 extern Hsl Color_intoHsl(Color color);
 extern Hsl Rgb_asHsl(Rgb rgb);
 extern Hsl Color_asHsl(Color color);
-
-#define literal_Hsl_from(_h, _s, _l) \
-    Hsl_(.h = (_h), .s = (_s), .l = (_l))
 
 union Color {
     u8 channels[4]; // RGBA channel components in [0,255]
@@ -97,7 +94,10 @@ union Color {
     };
     u32 packed; // RGBA channel components in [0,255]
 };
-#define Color_(...) make(Color, __VA_ARGS__)
+#define Color_(...)                               make$(Color, __VA_ARGS__)
+#define literal_Color_from(_r, _g, _b, _a)        Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
+#define literal_Color_fromTransparent(_r, _g, _b) Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_min_value)
+#define literal_Color_fromOpaque(_r, _g, _b)      Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_max_value)
 extern Color Color_from(u8 r, u8 g, u8 b, u8 a);
 extern Color Color_fromTransparent(u8 r, u8 g, u8 b);
 extern Color Color_fromOpaque(u8 r, u8 g, u8 b);
@@ -114,13 +114,6 @@ extern Color Color_fromHslOpaque(Hsl hsl);
 extern Color Hsl_intoColor(Hsl hsl, u8 a);
 extern Color Hsl_intoColorTransparent(Hsl hsl);
 extern Color Hsl_intoColorOpaque(Hsl hsl);
-
-#define literal_Color_from(_r, _g, _b, _a) \
-    Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
-#define literal_Color_fromTransparent(_r, _g, _b) \
-    Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_min_value)
-#define literal_Color_fromOpaque(_r, _g, _b) \
-    Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_max_value)
 
 static const Color Color_transparent = literal_Color_from(0, 0, 0, ColorChannel_alpha_transparent);
 static const Color Color_blank       = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);

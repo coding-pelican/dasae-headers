@@ -4,8 +4,8 @@
  * @file    vec.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-08 (date of creation)
- * @updated 2025-01-13 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-01-18 (date of last update)
+ * @version v0.1-alpha.3
  * @ingroup dasae-headers(dh)/math
  * @prefix  math
  *
@@ -38,10 +38,11 @@
 #define math_Vec2f_limit_max ((math_Vec2f){ .x = f32_limit_max, .y = f32_limit_max })
 
 /* Construction */
-force_inline math_Vec2f math_Vec2f_create(f32 x, f32 y);
-force_inline math_Vec2f math_Vec2f_fill(f32 scalar);
+#define literal_math_Vec2f_from(f32_x, f32_y) ((math_Vec2f){ .x = (f32_x), .y = (f32_y) })
+force_inline math_Vec2f math_Vec2f_from(f32 x, f32 y);
 force_inline math_Vec2f math_Vec2f_from3(math_Vec3f v);
 force_inline math_Vec2f math_Vec2f_from4(math_Vec4f v);
+force_inline math_Vec2f math_Vec2f_fill(f32 scalar);
 force_inline math_Vec2f math_Vec2f_sincos(f32 radians);
 
 /* Comparison */
@@ -107,10 +108,11 @@ force_inline math_Vec2f math_Vec2f_perp(math_Vec2f v);
 #define math_Vec3f_limit_max ((math_Vec3f){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max })
 
 /* Construction */
-force_inline math_Vec3f math_Vec3f_create(f32 x, f32 y, f32 z);
-force_inline math_Vec3f math_Vec3f_fill(f32 scalar);
+#define literal_math_Vec3f_from(f32_x, f32_y, f32_z) ((math_Vec3f){ .x = (f32_x), .y = (f32_y), .z = (f32_z) })
+force_inline math_Vec3f math_Vec3f_from(f32 x, f32 y, f32 z);
 force_inline math_Vec3f math_Vec3f_from2(math_Vec2f v);
 force_inline math_Vec3f math_Vec3f_from4(math_Vec4f v);
+force_inline math_Vec3f math_Vec3f_fill(f32 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec3f);
@@ -173,10 +175,11 @@ force_inline math_Vec3f math_Vec3f_perp(math_Vec3f v);
 #define math_Vec4f_limit_max ((math_Vec4f){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max, .w = f32_limit_max })
 
 /* Construction */
-force_inline math_Vec4f math_Vec4f_create(f32 x, f32 y, f32 z, f32 w);
-force_inline math_Vec4f math_Vec4f_fill(f32 scalar);
+#define literal_math_Vec4f_from(f32_x, f32_y, f32_z, f32_w) ((math_Vec3f){ .x = (f32_x), .y = (f32_y), .z = (f32_z), .w = (f32_w) })
+force_inline math_Vec4f math_Vec4f_from(f32 x, f32 y, f32 z, f32 w);
 force_inline math_Vec4f math_Vec4f_from2(math_Vec2f v);
 force_inline math_Vec4f math_Vec4f_from3(math_Vec3f v);
+force_inline math_Vec4f math_Vec4f_fill(f32 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec4f);
@@ -234,10 +237,11 @@ force_inline math_Vec4f math_Vec4f_reflect(math_Vec4f v, math_Vec4f normal);
 #define math_Vec2d_limit_max ((math_Vec2d){ .x = f64_limit_max, .y = f64_limit_max })
 
 /* Construction */
-force_inline math_Vec2d math_Vec2d_create(f64 x, f64 y);
-force_inline math_Vec2d math_Vec2d_fill(f64 scalar);
+#define literal_math_Vec2d_from(f64_x, f64_y) ((math_Vec2d){ .x = (f64_x), .y = (f64_y) })
+force_inline math_Vec2d math_Vec2d_from(f64 x, f64 y);
 force_inline math_Vec2d math_Vec2d_from3(math_Vec3d v);
 force_inline math_Vec2d math_Vec2d_from4(math_Vec4d v);
+force_inline math_Vec2d math_Vec2d_fill(f64 scalar);
 force_inline math_Vec2d math_Vec2d_sincos(f64 radians);
 
 /* Comparison */
@@ -301,10 +305,11 @@ force_inline math_Vec2d math_Vec2d_perp(math_Vec2d v);
 #define math_Vec3d_inf      ((math_Vec3d){ .x = f64_inf, .y = f64_inf, .z = f64_inf })
 
 /* Construction */
-force_inline math_Vec3d math_Vec3d_create(f64 x, f64 y, f64 z);
-force_inline math_Vec3d math_Vec3d_fill(f64 scalar);
+#define literal_math_Vec3d_from(f64_x, f64_y, f64_z) ((math_Vec3d){ .x = (f64_x), .y = (f64_y), .z = (f64_z) })
+force_inline math_Vec3d math_Vec3d_from(f64 x, f64 y, f64 z);
 force_inline math_Vec3d math_Vec3d_from2(math_Vec2d v);
 force_inline math_Vec3d math_Vec3d_from4(math_Vec4d v);
+force_inline math_Vec3d math_Vec3d_fill(f64 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec3d);
@@ -367,10 +372,11 @@ force_inline math_Vec3d math_Vec3d_perp(math_Vec3d v);
 #define math_Vec4d_limit_max ((math_Vec4d){ .x = f64_limit_max, .y = f64_limit_max, .z = f64_limit_max, .w = f64_limit_max })
 
 /* Construction */
-force_inline math_Vec4d math_Vec4d_create(f64 x, f64 y, f64 z, f64 w);
-force_inline math_Vec4d math_Vec4d_fill(f64 scalar);
+#define literal_math_Vec4d_from(f64_x, f64_y, f64_z, f64_w) ((math_Vec4d){ .x = (f64_x), .y = (f64_y), .z = (f64_z), .w = (f64_w) })
+force_inline math_Vec4d math_Vec4d_from(f64 x, f64 y, f64 z, f64 w);
 force_inline math_Vec4d math_Vec4d_from2(math_Vec2d v);
 force_inline math_Vec4d math_Vec4d_from3(math_Vec3d v);
+force_inline math_Vec4d math_Vec4d_fill(f64 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec4d);
@@ -425,10 +431,11 @@ force_inline math_Vec4d math_Vec4d_reflect(math_Vec4d v, math_Vec4d normal);
 #define math_Vec2i_limit_max ((math_Vec2i){ .x = i32_limit_max, .y = i32_limit_max })
 
 /* Construction */
-force_inline math_Vec2i math_Vec2i_create(i32 x, i32 y);
-force_inline math_Vec2i math_Vec2i_fill(i32 scalar);
+#define literal_math_Vec2i_from(i32_x, i32_y) ((math_Vec2i){ .x = (i32_x), .y = (i32_y) })
+force_inline math_Vec2i math_Vec2i_from(i32 x, i32 y);
 force_inline math_Vec2i math_Vec2i_from3(math_Vec3i v);
 force_inline math_Vec2i math_Vec2i_from4(math_Vec4i v);
+force_inline math_Vec2i math_Vec2i_fill(i32 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec2i);
@@ -481,10 +488,11 @@ force_inline math_Vec2i math_Vec2i_perp(math_Vec2i v);
 #define math_Vec3i_limit_max ((math_Vec3i){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max })
 
 /* Construction */
-force_inline math_Vec3i math_Vec3i_create(i32 x, i32 y, i32 z);
-force_inline math_Vec3i math_Vec3i_fill(i32 scalar);
+#define literal_math_Vec3i_from(i32_x, i32_y, i32_z) ((math_Vec3i){ .x = (i32_x), .y = (i32_y), .z = (i32_z) })
+force_inline math_Vec3i math_Vec3i_from(i32 x, i32 y, i32 z);
 force_inline math_Vec3i math_Vec3i_from2(math_Vec2i v);
 force_inline math_Vec3i math_Vec3i_from4(math_Vec4i v);
+force_inline math_Vec3i math_Vec3i_fill(i32 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec3i);
@@ -535,10 +543,11 @@ force_inline math_Vec3i math_Vec3i_perp(math_Vec3i v);
 #define math_Vec4i_limit_max ((math_Vec4i){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max, .w = i32_limit_max })
 
 /* Construction */
-force_inline math_Vec4i math_Vec4i_create(i32 x, i32 y, i32 z, i32 w);
-force_inline math_Vec4i math_Vec4i_fill(i32 scalar);
+#define literal_math_Vec4i_from(i32_x, i32_y, i32_z, i32_w) ((math_Vec4i){ .x = (i32_x), .y = (i32_y), .z = (i32_z), .w = (i32_w) })
+force_inline math_Vec4i math_Vec4i_from(i32 x, i32 y, i32 z, i32 w);
 force_inline math_Vec4i math_Vec4i_from2(math_Vec2i v);
 force_inline math_Vec4i math_Vec4i_from3(math_Vec3i v);
+force_inline math_Vec4i math_Vec4i_fill(i32 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec4i);
@@ -585,10 +594,11 @@ force_inline i32 math_Vec4i_dot(math_Vec4i lhs, math_Vec4i rhs);
 #define math_Vec2l_limit_max ((math_Vec2l){ .x = i64_limit_max, .y = i64_limit_max })
 
 /* Construction */
-force_inline math_Vec2l math_Vec2l_create(i64 x, i64 y);
-force_inline math_Vec2l math_Vec2l_fill(i64 scalar);
+#define literal_math_Vec2l_from(i64_x, i64_y) ((math_Vec2l){ .x = (i64_x), .y = (i64_y) })
+force_inline math_Vec2l math_Vec2l_from(i64 x, i64 y);
 force_inline math_Vec2l math_Vec2l_from3(math_Vec3l v);
 force_inline math_Vec2l math_Vec2l_from4(math_Vec4l v);
+force_inline math_Vec2l math_Vec2l_fill(i64 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec2l);
@@ -641,10 +651,11 @@ force_inline math_Vec2l math_Vec2l_perp(math_Vec2l v);
 #define math_Vec3l_limit_max ((math_Vec3l){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max })
 
 /* Construction */
-force_inline math_Vec3l math_Vec3l_create(i64 x, i64 y, i64 z);
-force_inline math_Vec3l math_Vec3l_fill(i64 scalar);
+#define literal_math_Vec3l_from(i64_x, i64_y, i64_z) ((math_Vec3l){ .x = (i64_x), .y = (i64_y), .z = (i64_z) })
+force_inline math_Vec3l math_Vec3l_from(i64 x, i64 y, i64 z);
 force_inline math_Vec3l math_Vec3l_from2(math_Vec2l v);
 force_inline math_Vec3l math_Vec3l_from4(math_Vec4l v);
+force_inline math_Vec3l math_Vec3l_fill(i64 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec3l);
@@ -695,10 +706,11 @@ force_inline math_Vec3l math_Vec3l_perp(math_Vec3l v);
 #define math_Vec4l_limit_max ((math_Vec4l){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max, .w = i64_limit_max })
 
 /* Construction */
-force_inline math_Vec4l math_Vec4l_create(i64 x, i64 y, i64 z, i64 w);
-force_inline math_Vec4l math_Vec4l_fill(i64 scalar);
+#define literal_math_Vec4l_from(i64_x, i64_y, i64_z, i64_w) ((math_Vec4l){ .x = (i64_x), .y = (i64_y), .z = (i64_z), .w = (i64_w) })
+force_inline math_Vec4l math_Vec4l_from(i64 x, i64 y, i64 z, i64 w);
 force_inline math_Vec4l math_Vec4l_from2(math_Vec2l v);
 force_inline math_Vec4l math_Vec4l_from3(math_Vec3l v);
+force_inline math_Vec4l math_Vec4l_fill(i64 scalar);
 
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec4l);
@@ -733,20 +745,20 @@ force_inline i64 math_Vec4l_dot(math_Vec4l lhs, math_Vec4l rhs);
 
 /* Vec2f functions */
 /* Construction */
-force_inline math_Vec2f math_Vec2f_create(f32 x, f32 y) {
+force_inline math_Vec2f math_Vec2f_from(f32 x, f32 y) {
     return (math_Vec2f){ .x = x, .y = y };
 }
-force_inline math_Vec2f math_Vec2f_fill(f32 scalar) {
-    return math_Vec2f_create(scalar, scalar);
-}
 force_inline math_Vec2f math_Vec2f_from3(math_Vec3f v) {
-    return math_Vec2f_create(v.x, v.y);
+    return math_Vec2f_from(v.x, v.y);
 }
 force_inline math_Vec2f math_Vec2f_from4(math_Vec4f v) {
-    return math_Vec2f_create(v.x, v.y);
+    return math_Vec2f_from(v.x, v.y);
+}
+force_inline math_Vec2f math_Vec2f_fill(f32 scalar) {
+    return math_Vec2f_from(scalar, scalar);
 }
 force_inline math_Vec2f math_Vec2f_sincos(f32 radians) {
-    return math_Vec2f_create(math_cos(radians), math_sin(radians));
+    return math_Vec2f_from(math_cos(radians), math_sin(radians));
 }
 
 /* Comparison */
@@ -764,39 +776,39 @@ force_inline cmp_fnCmp(math_Vec2f) {
 
 /* Arithmetic */
 force_inline math_Vec2f math_Vec2f_neg(math_Vec2f v) {
-    return math_Vec2f_create(-v.x, -v.y);
+    return math_Vec2f_from(-v.x, -v.y);
 }
 force_inline math_Vec2f math_Vec2f_add(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(lhs.x + rhs.x, lhs.y + rhs.y);
+    return math_Vec2f_from(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 force_inline math_Vec2f math_Vec2f_sub(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(lhs.x - rhs.x, lhs.y - rhs.y);
+    return math_Vec2f_from(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 force_inline math_Vec2f math_Vec2f_mul(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(lhs.x * rhs.x, lhs.y * rhs.y);
+    return math_Vec2f_from(lhs.x * rhs.x, lhs.y * rhs.y);
 }
 force_inline math_Vec2f math_Vec2f_div(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(lhs.x / rhs.x, lhs.y / rhs.y);
+    return math_Vec2f_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 force_inline math_Vec2f math_Vec2f_mod(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(
+    return math_Vec2f_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y)
     );
 }
 force_inline math_Vec2f math_Vec2f_scale(math_Vec2f v, f32 scalar) {
-    return math_Vec2f_create(v.x * scalar, v.y * scalar);
+    return math_Vec2f_from(v.x * scalar, v.y * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec2f math_Vec2f_min(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(
+    return math_Vec2f_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y)
     );
 }
 force_inline math_Vec2f math_Vec2f_max(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_create(
+    return math_Vec2f_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y)
     );
@@ -808,7 +820,7 @@ force_inline math_Vec2f math_Vec2f_clamp01(math_Vec2f v) {
     return math_Vec2f_clamp(v, math_Vec2f_zero, math_Vec2f_one);
 }
 force_inline math_Vec2f math_Vec2f_wrap(math_Vec2f v, math_Vec2f min, math_Vec2f max) {
-    return math_Vec2f_create(
+    return math_Vec2f_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y)
     );
@@ -851,28 +863,28 @@ force_inline math_Vec2f math_Vec2f_reflect(math_Vec2f v, math_Vec2f normal) {
 }
 force_inline math_Vec2f math_Vec2f_rotate(math_Vec2f v, f32 radians) {
     const math_Vec2f r = math_Vec2f_sincos(radians);
-    return math_Vec2f_create(
+    return math_Vec2f_from(
         v.x * r.x - v.y * r.y,
         v.x * r.y + v.y * r.x
     );
 }
 force_inline math_Vec2f math_Vec2f_perp(math_Vec2f v) {
-    return math_Vec2f_create(-v.y, v.x);
+    return math_Vec2f_from(-v.y, v.x);
 }
 
 /* Vec3f functions */
 /* Construction */
-force_inline math_Vec3f math_Vec3f_create(f32 x, f32 y, f32 z) {
+force_inline math_Vec3f math_Vec3f_from(f32 x, f32 y, f32 z) {
     return (math_Vec3f){ .x = x, .y = y, .z = z };
 }
-force_inline math_Vec3f math_Vec3f_fill(f32 scalar) {
-    return math_Vec3f_create(scalar, scalar, scalar);
-}
 force_inline math_Vec3f math_Vec3f_from2(math_Vec2f v) {
-    return math_Vec3f_create(v.x, v.y, 0.0f);
+    return math_Vec3f_from(v.x, v.y, 0.0f);
 }
 force_inline math_Vec3f math_Vec3f_from4(math_Vec4f v) {
-    return math_Vec3f_create(v.x, v.y, v.z);
+    return math_Vec3f_from(v.x, v.y, v.z);
+}
+force_inline math_Vec3f math_Vec3f_fill(f32 scalar) {
+    return math_Vec3f_from(scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -890,37 +902,37 @@ force_inline cmp_fnCmp(math_Vec3f) {
 
 /* Arithmetic */
 force_inline math_Vec3f math_Vec3f_neg(math_Vec3f v) {
-    return math_Vec3f_create(-v.x, -v.y, -v.z);
+    return math_Vec3f_from(-v.x, -v.y, -v.z);
 }
 force_inline math_Vec3f math_Vec3f_add(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    return math_Vec3f_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 force_inline math_Vec3f math_Vec3f_sub(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    return math_Vec3f_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 force_inline math_Vec3f math_Vec3f_mul(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+    return math_Vec3f_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
 force_inline math_Vec3f math_Vec3f_div(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
+    return math_Vec3f_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 force_inline math_Vec3f math_Vec3f_mod(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y), math_mod(lhs.z, rhs.z));
+    return math_Vec3f_from(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y), math_mod(lhs.z, rhs.z));
 }
 force_inline math_Vec3f math_Vec3f_scale(math_Vec3f v, f32 scalar) {
-    return math_Vec3f_create(v.x * scalar, v.y * scalar, v.z * scalar);
+    return math_Vec3f_from(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec3f math_Vec3f_min(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(
+    return math_Vec3f_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3f math_Vec3f_max(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(
+    return math_Vec3f_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z)
@@ -933,7 +945,7 @@ force_inline math_Vec3f math_Vec3f_clamp01(math_Vec3f v) {
     return math_Vec3f_clamp(v, math_Vec3f_zero, math_Vec3f_one);
 }
 force_inline math_Vec3f math_Vec3f_wrap(math_Vec3f v, math_Vec3f min, math_Vec3f max) {
-    return math_Vec3f_create(
+    return math_Vec3f_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z)
@@ -960,7 +972,7 @@ force_inline f32 math_Vec3f_dot(math_Vec3f lhs, math_Vec3f rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 force_inline math_Vec3f math_Vec3f_cross(math_Vec3f lhs, math_Vec3f rhs) {
-    return math_Vec3f_create(
+    return math_Vec3f_from(
         lhs.y * rhs.z - lhs.z * rhs.y,
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
@@ -996,23 +1008,23 @@ force_inline math_Vec3f math_Vec3f_rotate(const math_Vec3f v, const math_Vec3f a
 }
 force_inline math_Vec3f math_Vec3f_perp(const math_Vec3f v) {
     return v.x != 0.0f || v.y != 0.0f
-             ? math_Vec3f_create(-v.y, v.x, 0.0f)
-             : math_Vec3f_create(0.0f, -v.z, v.y);
+             ? math_Vec3f_from(-v.y, v.x, 0.0f)
+             : math_Vec3f_from(0.0f, -v.z, v.y);
 }
 
 /* Vec4f functions */
 /* Construction */
-force_inline math_Vec4f math_Vec4f_create(f32 x, f32 y, f32 z, f32 w) {
+force_inline math_Vec4f math_Vec4f_from(f32 x, f32 y, f32 z, f32 w) {
     return (math_Vec4f){ .x = x, .y = y, .z = z, .w = w };
 }
 force_inline math_Vec4f math_Vec4f_fill(f32 scalar) {
-    return math_Vec4f_create(scalar, scalar, scalar, scalar);
+    return math_Vec4f_from(scalar, scalar, scalar, scalar);
 }
 force_inline math_Vec4f math_Vec4f_from2(math_Vec2f v) {
-    return math_Vec4f_create(v.x, v.y, 0.0f, 0.0f);
+    return math_Vec4f_from(v.x, v.y, 0.0f, 0.0f);
 }
 force_inline math_Vec4f math_Vec4f_from3(math_Vec3f v) {
-    return math_Vec4f_create(v.x, v.y, v.z, 0.0f);
+    return math_Vec4f_from(v.x, v.y, v.z, 0.0f);
 }
 
 /* Comparison */
@@ -1030,22 +1042,22 @@ force_inline cmp_fnCmp(math_Vec4f) {
 
 /* Arithmetic */
 force_inline math_Vec4f math_Vec4f_neg(math_Vec4f v) {
-    return math_Vec4f_create(-v.x, -v.y, -v.z, -v.w);
+    return math_Vec4f_from(-v.x, -v.y, -v.z, -v.w);
 }
 force_inline math_Vec4f math_Vec4f_add(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    return math_Vec4f_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 force_inline math_Vec4f math_Vec4f_sub(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
+    return math_Vec4f_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 force_inline math_Vec4f math_Vec4f_mul(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+    return math_Vec4f_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 force_inline math_Vec4f math_Vec4f_div(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+    return math_Vec4f_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 force_inline math_Vec4f math_Vec4f_mod(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(
+    return math_Vec4f_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z),
@@ -1053,12 +1065,12 @@ force_inline math_Vec4f math_Vec4f_mod(math_Vec4f lhs, math_Vec4f rhs) {
     );
 }
 force_inline math_Vec4f math_Vec4f_scale(math_Vec4f v, f32 scalar) {
-    return math_Vec4f_create(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+    return math_Vec4f_from(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec4f math_Vec4f_min(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(
+    return math_Vec4f_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z),
@@ -1066,7 +1078,7 @@ force_inline math_Vec4f math_Vec4f_min(math_Vec4f lhs, math_Vec4f rhs) {
     );
 }
 force_inline math_Vec4f math_Vec4f_max(math_Vec4f lhs, math_Vec4f rhs) {
-    return math_Vec4f_create(
+    return math_Vec4f_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z),
@@ -1080,7 +1092,7 @@ force_inline math_Vec4f math_Vec4f_clamp01(math_Vec4f v) {
     return math_Vec4f_clamp(v, math_Vec4f_zero, math_Vec4f_one);
 }
 force_inline math_Vec4f math_Vec4f_wrap(math_Vec4f v, math_Vec4f min, math_Vec4f max) {
-    return math_Vec4f_create(
+    return math_Vec4f_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z),
@@ -1123,20 +1135,20 @@ force_inline math_Vec4f math_Vec4f_reflect(math_Vec4f v, math_Vec4f normal) {
 
 /* Vec2d functions */
 /* Construction */
-force_inline math_Vec2d math_Vec2d_create(f64 x, f64 y) {
+force_inline math_Vec2d math_Vec2d_from(f64 x, f64 y) {
     return (math_Vec2d){ .x = x, .y = y };
 }
-force_inline math_Vec2d math_Vec2d_fill(f64 scalar) {
-    return math_Vec2d_create(scalar, scalar);
-}
 force_inline math_Vec2d math_Vec2d_from3(math_Vec3d v) {
-    return math_Vec2d_create(v.x, v.y);
+    return math_Vec2d_from(v.x, v.y);
 }
 force_inline math_Vec2d math_Vec2d_from4(math_Vec4d v) {
-    return math_Vec2d_create(v.x, v.y);
+    return math_Vec2d_from(v.x, v.y);
+}
+force_inline math_Vec2d math_Vec2d_fill(f64 scalar) {
+    return math_Vec2d_from(scalar, scalar);
 }
 force_inline math_Vec2d math_Vec2d_sincos(f64 radians) {
-    return math_Vec2d_create(math_cos(radians), math_sin(radians));
+    return math_Vec2d_from(math_cos(radians), math_sin(radians));
 }
 
 /* Comparison */
@@ -1154,33 +1166,33 @@ force_inline cmp_fnCmp(math_Vec2d) {
 
 /* Arithmetic */
 force_inline math_Vec2d math_Vec2d_neg(math_Vec2d v) {
-    return math_Vec2d_create(-v.x, -v.y);
+    return math_Vec2d_from(-v.x, -v.y);
 }
 force_inline math_Vec2d math_Vec2d_add(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(lhs.x + rhs.x, lhs.y + rhs.y);
+    return math_Vec2d_from(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 force_inline math_Vec2d math_Vec2d_sub(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(lhs.x - rhs.x, lhs.y - rhs.y);
+    return math_Vec2d_from(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 force_inline math_Vec2d math_Vec2d_mul(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(lhs.x * rhs.x, lhs.y * rhs.y);
+    return math_Vec2d_from(lhs.x * rhs.x, lhs.y * rhs.y);
 }
 force_inline math_Vec2d math_Vec2d_div(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(lhs.x / rhs.x, lhs.y / rhs.y);
+    return math_Vec2d_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 force_inline math_Vec2d math_Vec2d_mod(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
+    return math_Vec2d_from(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
 }
 force_inline math_Vec2d math_Vec2d_scale(math_Vec2d v, f64 scalar) {
-    return math_Vec2d_create(v.x * scalar, v.y * scalar);
+    return math_Vec2d_from(v.x * scalar, v.y * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec2d math_Vec2d_min(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
+    return math_Vec2d_from(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
 }
 force_inline math_Vec2d math_Vec2d_max(math_Vec2d lhs, math_Vec2d rhs) {
-    return math_Vec2d_create(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
+    return math_Vec2d_from(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
 }
 force_inline math_Vec2d math_Vec2d_clamp(math_Vec2d v, math_Vec2d min, math_Vec2d max) {
     return math_Vec2d_min(math_Vec2d_max(v, min), max);
@@ -1189,7 +1201,7 @@ force_inline math_Vec2d math_Vec2d_clamp01(math_Vec2d v) {
     return math_Vec2d_clamp(v, math_Vec2d_zero, math_Vec2d_one);
 }
 force_inline math_Vec2d math_Vec2d_wrap(math_Vec2d v, math_Vec2d min, math_Vec2d max) {
-    return math_Vec2d_create(math_wrap(v.x, min.x, max.x), math_wrap(v.y, min.y, max.y));
+    return math_Vec2d_from(math_wrap(v.x, min.x, max.x), math_wrap(v.y, min.y, max.y));
 }
 force_inline math_Vec2d math_Vec2d_wrap01(math_Vec2d v) {
     return math_Vec2d_wrap(v, math_Vec2d_zero, math_Vec2d_one);
@@ -1229,28 +1241,28 @@ force_inline math_Vec2d math_Vec2d_reflect(math_Vec2d v, math_Vec2d normal) {
 }
 force_inline math_Vec2d math_Vec2d_rotate(math_Vec2d v, f64 radians) {
     const math_Vec2d r = math_Vec2d_sincos(radians);
-    return math_Vec2d_create(
+    return math_Vec2d_from(
         v.x * r.x - v.y * r.y,
         v.x * r.y + v.y * r.x
     );
 }
 force_inline math_Vec2d math_Vec2d_perp(math_Vec2d v) {
-    return math_Vec2d_create(-v.y, v.x);
+    return math_Vec2d_from(-v.y, v.x);
 }
 
 /* Vec3d functions */
 /* Construction */
-force_inline math_Vec3d math_Vec3d_create(f64 x, f64 y, f64 z) {
+force_inline math_Vec3d math_Vec3d_from(f64 x, f64 y, f64 z) {
     return (math_Vec3d){ .x = x, .y = y, .z = z };
 }
-force_inline math_Vec3d math_Vec3d_fill(f64 scalar) {
-    return math_Vec3d_create(scalar, scalar, scalar);
-}
 force_inline math_Vec3d math_Vec3d_from2(math_Vec2d v) {
-    return math_Vec3d_create(v.x, v.y, 0.0);
+    return math_Vec3d_from(v.x, v.y, 0.0);
 }
 force_inline math_Vec3d math_Vec3d_from4(math_Vec4d v) {
-    return math_Vec3d_create(v.x, v.y, v.z);
+    return math_Vec3d_from(v.x, v.y, v.z);
+}
+force_inline math_Vec3d math_Vec3d_fill(f64 scalar) {
+    return math_Vec3d_from(scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -1268,41 +1280,41 @@ force_inline cmp_fnCmp(math_Vec3d) {
 
 /* Arithmetic */
 force_inline math_Vec3d math_Vec3d_neg(math_Vec3d v) {
-    return math_Vec3d_create(-v.x, -v.y, -v.z);
+    return math_Vec3d_from(-v.x, -v.y, -v.z);
 }
 force_inline math_Vec3d math_Vec3d_add(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    return math_Vec3d_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 force_inline math_Vec3d math_Vec3d_sub(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    return math_Vec3d_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 force_inline math_Vec3d math_Vec3d_mul(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+    return math_Vec3d_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
 force_inline math_Vec3d math_Vec3d_div(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
+    return math_Vec3d_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 force_inline math_Vec3d math_Vec3d_mod(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(
+    return math_Vec3d_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3d math_Vec3d_scale(math_Vec3d v, f64 scalar) {
-    return math_Vec3d_create(v.x * scalar, v.y * scalar, v.z * scalar);
+    return math_Vec3d_from(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec3d math_Vec3d_min(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(
+    return math_Vec3d_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3d math_Vec3d_max(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(
+    return math_Vec3d_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z)
@@ -1315,7 +1327,7 @@ force_inline math_Vec3d math_Vec3d_clamp01(math_Vec3d v) {
     return math_Vec3d_clamp(v, math_Vec3d_zero, math_Vec3d_one);
 }
 force_inline math_Vec3d math_Vec3d_wrap(math_Vec3d v, math_Vec3d min, math_Vec3d max) {
-    return math_Vec3d_create(
+    return math_Vec3d_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z)
@@ -1342,7 +1354,7 @@ force_inline f64 math_Vec3d_dot(math_Vec3d lhs, math_Vec3d rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 force_inline math_Vec3d math_Vec3d_cross(math_Vec3d lhs, math_Vec3d rhs) {
-    return math_Vec3d_create(
+    return math_Vec3d_from(
         lhs.y * rhs.z - lhs.z * rhs.y,
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
@@ -1378,23 +1390,23 @@ force_inline math_Vec3d math_Vec3d_rotate(math_Vec3d v, math_Vec3d axis, f64 ang
 }
 force_inline math_Vec3d math_Vec3d_perp(math_Vec3d v) {
     return v.x != 0.0 || v.y != 0.0
-             ? math_Vec3d_create(-v.y, v.x, 0.0)
-             : math_Vec3d_create(0.0, -v.z, v.y);
+             ? math_Vec3d_from(-v.y, v.x, 0.0)
+             : math_Vec3d_from(0.0, -v.z, v.y);
 }
 
 /* Vec4d functions */
 /* Construction */
-force_inline math_Vec4d math_Vec4d_create(f64 x, f64 y, f64 z, f64 w) {
+force_inline math_Vec4d math_Vec4d_from(f64 x, f64 y, f64 z, f64 w) {
     return (math_Vec4d){ .x = x, .y = y, .z = z, .w = w };
 }
 force_inline math_Vec4d math_Vec4d_fill(f64 scalar) {
-    return math_Vec4d_create(scalar, scalar, scalar, scalar);
+    return math_Vec4d_from(scalar, scalar, scalar, scalar);
 }
 force_inline math_Vec4d math_Vec4d_from2(math_Vec2d v) {
-    return math_Vec4d_create(v.x, v.y, 0.0, 0.0);
+    return math_Vec4d_from(v.x, v.y, 0.0, 0.0);
 }
 force_inline math_Vec4d math_Vec4d_from3(math_Vec3d v) {
-    return math_Vec4d_create(v.x, v.y, v.z, 0.0);
+    return math_Vec4d_from(v.x, v.y, v.z, 0.0);
 }
 
 /* Comparison */
@@ -1412,22 +1424,22 @@ force_inline cmp_fnCmp(math_Vec4d) {
 
 /* Arithmetic */
 force_inline math_Vec4d math_Vec4d_neg(math_Vec4d v) {
-    return math_Vec4d_create(-v.x, -v.y, -v.z, -v.w);
+    return math_Vec4d_from(-v.x, -v.y, -v.z, -v.w);
 }
 force_inline math_Vec4d math_Vec4d_add(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    return math_Vec4d_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 force_inline math_Vec4d math_Vec4d_sub(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
+    return math_Vec4d_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 force_inline math_Vec4d math_Vec4d_mul(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+    return math_Vec4d_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 force_inline math_Vec4d math_Vec4d_div(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+    return math_Vec4d_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 force_inline math_Vec4d math_Vec4d_mod(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(
+    return math_Vec4d_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z),
@@ -1435,12 +1447,12 @@ force_inline math_Vec4d math_Vec4d_mod(math_Vec4d lhs, math_Vec4d rhs) {
     );
 }
 force_inline math_Vec4d math_Vec4d_scale(math_Vec4d v, f64 scalar) {
-    return math_Vec4d_create(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+    return math_Vec4d_from(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec4d math_Vec4d_min(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(
+    return math_Vec4d_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z),
@@ -1448,7 +1460,7 @@ force_inline math_Vec4d math_Vec4d_min(math_Vec4d lhs, math_Vec4d rhs) {
     );
 }
 force_inline math_Vec4d math_Vec4d_max(math_Vec4d lhs, math_Vec4d rhs) {
-    return math_Vec4d_create(
+    return math_Vec4d_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z),
@@ -1462,7 +1474,7 @@ force_inline math_Vec4d math_Vec4d_clamp01(math_Vec4d v) {
     return math_Vec4d_clamp(v, math_Vec4d_zero, math_Vec4d_one);
 }
 force_inline math_Vec4d math_Vec4d_wrap(math_Vec4d v, math_Vec4d min, math_Vec4d max) {
-    return math_Vec4d_create(
+    return math_Vec4d_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z),
@@ -1505,17 +1517,17 @@ force_inline math_Vec4d math_Vec4d_reflect(math_Vec4d v, math_Vec4d normal) {
 
 /* Vec2i functions */
 /* Construction */
-force_inline math_Vec2i math_Vec2i_create(i32 x, i32 y) {
+force_inline math_Vec2i math_Vec2i_from(i32 x, i32 y) {
     return (math_Vec2i){ .x = x, .y = y };
 }
-force_inline math_Vec2i math_Vec2i_fill(i32 scalar) {
-    return math_Vec2i_create(scalar, scalar);
-}
 force_inline math_Vec2i math_Vec2i_from3(math_Vec3i v) {
-    return math_Vec2i_create(v.x, v.y);
+    return math_Vec2i_from(v.x, v.y);
 }
 force_inline math_Vec2i math_Vec2i_from4(math_Vec4i v) {
-    return math_Vec2i_create(v.x, v.y);
+    return math_Vec2i_from(v.x, v.y);
+}
+force_inline math_Vec2i math_Vec2i_fill(i32 scalar) {
+    return math_Vec2i_from(scalar, scalar);
 }
 
 /* Comparison */
@@ -1533,39 +1545,39 @@ force_inline cmp_fnCmp(math_Vec2i) {
 
 /* Arithmetic */
 force_inline math_Vec2i math_Vec2i_neg(math_Vec2i v) {
-    return math_Vec2i_create(-v.x, -v.y);
+    return math_Vec2i_from(-v.x, -v.y);
 }
 force_inline math_Vec2i math_Vec2i_add(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(lhs.x + rhs.x, lhs.y + rhs.y);
+    return math_Vec2i_from(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 force_inline math_Vec2i math_Vec2i_sub(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(lhs.x - rhs.x, lhs.y - rhs.y);
+    return math_Vec2i_from(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 force_inline math_Vec2i math_Vec2i_mul(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(lhs.x * rhs.x, lhs.y * rhs.y);
+    return math_Vec2i_from(lhs.x * rhs.x, lhs.y * rhs.y);
 }
 force_inline math_Vec2i math_Vec2i_div(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(lhs.x / rhs.x, lhs.y / rhs.y);
+    return math_Vec2i_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 force_inline math_Vec2i math_Vec2i_mod(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
+    return math_Vec2i_from(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
 }
 force_inline math_Vec2i math_Vec2i_scale(math_Vec2i v, i32 scalar) {
-    return math_Vec2i_create(v.x * scalar, v.y * scalar);
+    return math_Vec2i_from(v.x * scalar, v.y * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec2i math_Vec2i_min(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
+    return math_Vec2i_from(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
 }
 force_inline math_Vec2i math_Vec2i_max(math_Vec2i lhs, math_Vec2i rhs) {
-    return math_Vec2i_create(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
+    return math_Vec2i_from(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
 }
 force_inline math_Vec2i math_Vec2i_clamp(math_Vec2i v, math_Vec2i min, math_Vec2i max) {
     return math_Vec2i_min(math_Vec2i_max(v, min), max);
 }
 force_inline math_Vec2i math_Vec2i_wrap(math_Vec2i v, math_Vec2i min, math_Vec2i max) {
-    return math_Vec2i_create(
+    return math_Vec2i_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y)
     );
@@ -1585,22 +1597,22 @@ force_inline i32 math_Vec2i_cross(math_Vec2i lhs, math_Vec2i rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 force_inline math_Vec2i math_Vec2i_perp(math_Vec2i v) {
-    return math_Vec2i_create(-v.y, v.x);
+    return math_Vec2i_from(-v.y, v.x);
 }
 
 /* Vec3i functions */
 /* Construction */
-force_inline math_Vec3i math_Vec3i_create(i32 x, i32 y, i32 z) {
+force_inline math_Vec3i math_Vec3i_from(i32 x, i32 y, i32 z) {
     return (math_Vec3i){ .x = x, .y = y, .z = z };
 }
-force_inline math_Vec3i math_Vec3i_fill(i32 scalar) {
-    return math_Vec3i_create(scalar, scalar, scalar);
-}
 force_inline math_Vec3i math_Vec3i_from2(math_Vec2i v) {
-    return math_Vec3i_create(v.x, v.y, 0);
+    return math_Vec3i_from(v.x, v.y, 0);
 }
 force_inline math_Vec3i math_Vec3i_from4(math_Vec4i v) {
-    return math_Vec3i_create(v.x, v.y, v.z);
+    return math_Vec3i_from(v.x, v.y, v.z);
+}
+force_inline math_Vec3i math_Vec3i_fill(i32 scalar) {
+    return math_Vec3i_from(scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -1618,41 +1630,41 @@ force_inline cmp_fnCmp(math_Vec3i) {
 
 /* Arithmetic */
 force_inline math_Vec3i math_Vec3i_neg(math_Vec3i v) {
-    return math_Vec3i_create(-v.x, -v.y, -v.z);
+    return math_Vec3i_from(-v.x, -v.y, -v.z);
 }
 force_inline math_Vec3i math_Vec3i_add(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    return math_Vec3i_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 force_inline math_Vec3i math_Vec3i_sub(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    return math_Vec3i_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 force_inline math_Vec3i math_Vec3i_mul(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+    return math_Vec3i_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
 force_inline math_Vec3i math_Vec3i_div(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
+    return math_Vec3i_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 force_inline math_Vec3i math_Vec3i_mod(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(
+    return math_Vec3i_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3i math_Vec3i_scale(math_Vec3i v, i32 scalar) {
-    return math_Vec3i_create(v.x * scalar, v.y * scalar, v.z * scalar);
+    return math_Vec3i_from(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec3i math_Vec3i_min(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(
+    return math_Vec3i_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3i math_Vec3i_max(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(
+    return math_Vec3i_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z)
@@ -1662,7 +1674,7 @@ force_inline math_Vec3i math_Vec3i_clamp(math_Vec3i v, math_Vec3i min, math_Vec3
     return math_Vec3i_min(math_Vec3i_max(v, min), max);
 }
 force_inline math_Vec3i math_Vec3i_wrap(math_Vec3i v, math_Vec3i min, math_Vec3i max) {
-    return math_Vec3i_create(
+    return math_Vec3i_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z)
@@ -1680,7 +1692,7 @@ force_inline i32 math_Vec3i_dot(math_Vec3i lhs, math_Vec3i rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 force_inline math_Vec3i math_Vec3i_cross(math_Vec3i lhs, math_Vec3i rhs) {
-    return math_Vec3i_create(
+    return math_Vec3i_from(
         lhs.y * rhs.z - lhs.z * rhs.y,
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
@@ -1688,23 +1700,23 @@ force_inline math_Vec3i math_Vec3i_cross(math_Vec3i lhs, math_Vec3i rhs) {
 }
 force_inline math_Vec3i math_Vec3i_perp(math_Vec3i v) {
     return v.x != 0 || v.y != 0
-             ? math_Vec3i_create(-v.y, v.x, 0)
-             : math_Vec3i_create(0, -v.z, v.y);
+             ? math_Vec3i_from(-v.y, v.x, 0)
+             : math_Vec3i_from(0, -v.z, v.y);
 }
 
 /* Vec4i functions */
 /* Construction */
-force_inline math_Vec4i math_Vec4i_create(i32 x, i32 y, i32 z, i32 w) {
+force_inline math_Vec4i math_Vec4i_from(i32 x, i32 y, i32 z, i32 w) {
     return (math_Vec4i){ .x = x, .y = y, .z = z, .w = w };
 }
-force_inline math_Vec4i math_Vec4i_fill(i32 scalar) {
-    return math_Vec4i_create(scalar, scalar, scalar, scalar);
-}
 force_inline math_Vec4i math_Vec4i_from2(math_Vec2i v) {
-    return math_Vec4i_create(v.x, v.y, 0, 0);
+    return math_Vec4i_from(v.x, v.y, 0, 0);
 }
 force_inline math_Vec4i math_Vec4i_from3(math_Vec3i v) {
-    return math_Vec4i_create(v.x, v.y, v.z, 0);
+    return math_Vec4i_from(v.x, v.y, v.z, 0);
+}
+force_inline math_Vec4i math_Vec4i_fill(i32 scalar) {
+    return math_Vec4i_from(scalar, scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -1722,22 +1734,22 @@ force_inline cmp_fnCmp(math_Vec4i) {
 
 /* Arithmetic */
 force_inline math_Vec4i math_Vec4i_neg(math_Vec4i v) {
-    return math_Vec4i_create(-v.x, -v.y, -v.z, -v.w);
+    return math_Vec4i_from(-v.x, -v.y, -v.z, -v.w);
 }
 force_inline math_Vec4i math_Vec4i_add(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    return math_Vec4i_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 force_inline math_Vec4i math_Vec4i_sub(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
+    return math_Vec4i_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 force_inline math_Vec4i math_Vec4i_mul(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+    return math_Vec4i_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 force_inline math_Vec4i math_Vec4i_div(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+    return math_Vec4i_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 force_inline math_Vec4i math_Vec4i_mod(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(
+    return math_Vec4i_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z),
@@ -1745,12 +1757,12 @@ force_inline math_Vec4i math_Vec4i_mod(math_Vec4i lhs, math_Vec4i rhs) {
     );
 }
 force_inline math_Vec4i math_Vec4i_scale(math_Vec4i v, i32 scalar) {
-    return math_Vec4i_create(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+    return math_Vec4i_from(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec4i math_Vec4i_min(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(
+    return math_Vec4i_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z),
@@ -1758,7 +1770,7 @@ force_inline math_Vec4i math_Vec4i_min(math_Vec4i lhs, math_Vec4i rhs) {
     );
 }
 force_inline math_Vec4i math_Vec4i_max(math_Vec4i lhs, math_Vec4i rhs) {
-    return math_Vec4i_create(
+    return math_Vec4i_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z),
@@ -1769,7 +1781,7 @@ force_inline math_Vec4i math_Vec4i_clamp(math_Vec4i v, math_Vec4i min, math_Vec4
     return math_Vec4i_min(math_Vec4i_max(v, min), max);
 }
 force_inline math_Vec4i math_Vec4i_wrap(math_Vec4i v, math_Vec4i min, math_Vec4i max) {
-    return math_Vec4i_create(
+    return math_Vec4i_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z),
@@ -1790,17 +1802,17 @@ force_inline i32 math_Vec4i_dot(math_Vec4i lhs, math_Vec4i rhs) {
 
 /* Vec2l functions */
 /* Construction */
-force_inline math_Vec2l math_Vec2l_create(i64 x, i64 y) {
+force_inline math_Vec2l math_Vec2l_from(i64 x, i64 y) {
     return (math_Vec2l){ .x = x, .y = y };
 }
-force_inline math_Vec2l math_Vec2l_fill(i64 scalar) {
-    return math_Vec2l_create(scalar, scalar);
-}
 force_inline math_Vec2l math_Vec2l_from3(math_Vec3l v) {
-    return math_Vec2l_create(v.x, v.y);
+    return math_Vec2l_from(v.x, v.y);
 }
 force_inline math_Vec2l math_Vec2l_from4(math_Vec4l v) {
-    return math_Vec2l_create(v.x, v.y);
+    return math_Vec2l_from(v.x, v.y);
+}
+force_inline math_Vec2l math_Vec2l_fill(i64 scalar) {
+    return math_Vec2l_from(scalar, scalar);
 }
 
 /* Comparison */
@@ -1818,39 +1830,39 @@ force_inline cmp_fnCmp(math_Vec2l) {
 
 /* Arithmetic */
 force_inline math_Vec2l math_Vec2l_neg(math_Vec2l v) {
-    return math_Vec2l_create(-v.x, -v.y);
+    return math_Vec2l_from(-v.x, -v.y);
 }
 force_inline math_Vec2l math_Vec2l_add(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(lhs.x + rhs.x, lhs.y + rhs.y);
+    return math_Vec2l_from(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 force_inline math_Vec2l math_Vec2l_sub(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(lhs.x - rhs.x, lhs.y - rhs.y);
+    return math_Vec2l_from(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 force_inline math_Vec2l math_Vec2l_mul(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(lhs.x * rhs.x, lhs.y * rhs.y);
+    return math_Vec2l_from(lhs.x * rhs.x, lhs.y * rhs.y);
 }
 force_inline math_Vec2l math_Vec2l_div(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(lhs.x / rhs.x, lhs.y / rhs.y);
+    return math_Vec2l_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 force_inline math_Vec2l math_Vec2l_mod(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(
+    return math_Vec2l_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y)
     );
 }
 force_inline math_Vec2l math_Vec2l_scale(math_Vec2l v, i64 scalar) {
-    return math_Vec2l_create(v.x * scalar, v.y * scalar);
+    return math_Vec2l_from(v.x * scalar, v.y * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec2l math_Vec2l_min(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(
+    return math_Vec2l_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y)
     );
 }
 force_inline math_Vec2l math_Vec2l_max(math_Vec2l lhs, math_Vec2l rhs) {
-    return math_Vec2l_create(
+    return math_Vec2l_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y)
     );
@@ -1859,7 +1871,7 @@ force_inline math_Vec2l math_Vec2l_clamp(math_Vec2l v, math_Vec2l min, math_Vec2
     return math_Vec2l_min(math_Vec2l_max(v, min), max);
 }
 force_inline math_Vec2l math_Vec2l_wrap(math_Vec2l v, math_Vec2l min, math_Vec2l max) {
-    return math_Vec2l_create(
+    return math_Vec2l_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y)
     );
@@ -1879,22 +1891,22 @@ force_inline i64 math_Vec2l_cross(math_Vec2l lhs, math_Vec2l rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 force_inline math_Vec2l math_Vec2l_perp(math_Vec2l v) {
-    return math_Vec2l_create(-v.y, v.x);
+    return math_Vec2l_from(-v.y, v.x);
 }
 
 /* Vec3l functions */
 /* Construction */
-force_inline math_Vec3l math_Vec3l_create(i64 x, i64 y, i64 z) {
+force_inline math_Vec3l math_Vec3l_from(i64 x, i64 y, i64 z) {
     return (math_Vec3l){ .x = x, .y = y, .z = z };
 }
-force_inline math_Vec3l math_Vec3l_fill(i64 scalar) {
-    return math_Vec3l_create(scalar, scalar, scalar);
-}
 force_inline math_Vec3l math_Vec3l_from2(math_Vec2l v) {
-    return math_Vec3l_create(v.x, v.y, 0);
+    return math_Vec3l_from(v.x, v.y, 0);
 }
 force_inline math_Vec3l math_Vec3l_from4(math_Vec4l v) {
-    return math_Vec3l_create(v.x, v.y, v.z);
+    return math_Vec3l_from(v.x, v.y, v.z);
+}
+force_inline math_Vec3l math_Vec3l_fill(i64 scalar) {
+    return math_Vec3l_from(scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -1912,41 +1924,41 @@ force_inline cmp_fnCmp(math_Vec3l) {
 
 /* Arithmetic */
 force_inline math_Vec3l math_Vec3l_neg(math_Vec3l v) {
-    return math_Vec3l_create(-v.x, -v.y, -v.z);
+    return math_Vec3l_from(-v.x, -v.y, -v.z);
 }
 force_inline math_Vec3l math_Vec3l_add(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    return math_Vec3l_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 force_inline math_Vec3l math_Vec3l_sub(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    return math_Vec3l_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 force_inline math_Vec3l math_Vec3l_mul(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+    return math_Vec3l_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
 force_inline math_Vec3l math_Vec3l_div(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
+    return math_Vec3l_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 force_inline math_Vec3l math_Vec3l_mod(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(
+    return math_Vec3l_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3l math_Vec3l_scale(math_Vec3l v, i64 scalar) {
-    return math_Vec3l_create(v.x * scalar, v.y * scalar, v.z * scalar);
+    return math_Vec3l_from(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec3l math_Vec3l_min(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(
+    return math_Vec3l_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z)
     );
 }
 force_inline math_Vec3l math_Vec3l_max(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(
+    return math_Vec3l_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z)
@@ -1956,7 +1968,7 @@ force_inline math_Vec3l math_Vec3l_clamp(math_Vec3l v, math_Vec3l min, math_Vec3
     return math_Vec3l_min(math_Vec3l_max(v, min), max);
 }
 force_inline math_Vec3l math_Vec3l_wrap(math_Vec3l v, math_Vec3l min, math_Vec3l max) {
-    return math_Vec3l_create(
+    return math_Vec3l_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z)
@@ -1974,7 +1986,7 @@ force_inline i64 math_Vec3l_dot(math_Vec3l lhs, math_Vec3l rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 force_inline math_Vec3l math_Vec3l_cross(math_Vec3l lhs, math_Vec3l rhs) {
-    return math_Vec3l_create(
+    return math_Vec3l_from(
         lhs.y * rhs.z - lhs.z * rhs.y,
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
@@ -1982,23 +1994,23 @@ force_inline math_Vec3l math_Vec3l_cross(math_Vec3l lhs, math_Vec3l rhs) {
 }
 force_inline math_Vec3l math_Vec3l_perp(math_Vec3l v) {
     return v.x != 0 || v.y != 0
-             ? math_Vec3l_create(-v.y, v.x, 0)
-             : math_Vec3l_create(0, -v.z, v.y);
+             ? math_Vec3l_from(-v.y, v.x, 0)
+             : math_Vec3l_from(0, -v.z, v.y);
 }
 
 /* Vec4l functions */
 /* Construction */
-force_inline math_Vec4l math_Vec4l_create(i64 x, i64 y, i64 z, i64 w) {
+force_inline math_Vec4l math_Vec4l_from(i64 x, i64 y, i64 z, i64 w) {
     return (math_Vec4l){ .x = x, .y = y, .z = z, .w = w };
 }
-force_inline math_Vec4l math_Vec4l_fill(i64 scalar) {
-    return math_Vec4l_create(scalar, scalar, scalar, scalar);
-}
 force_inline math_Vec4l math_Vec4l_from2(math_Vec2l v) {
-    return math_Vec4l_create(v.x, v.y, 0, 0);
+    return math_Vec4l_from(v.x, v.y, 0, 0);
 }
 force_inline math_Vec4l math_Vec4l_from3(math_Vec3l v) {
-    return math_Vec4l_create(v.x, v.y, v.z, 0);
+    return math_Vec4l_from(v.x, v.y, v.z, 0);
+}
+force_inline math_Vec4l math_Vec4l_fill(i64 scalar) {
+    return math_Vec4l_from(scalar, scalar, scalar, scalar);
 }
 
 /* Comparison */
@@ -2016,22 +2028,22 @@ force_inline cmp_fnCmp(math_Vec4l) {
 
 /* Arithmetic */
 force_inline math_Vec4l math_Vec4l_neg(math_Vec4l v) {
-    return math_Vec4l_create(-v.x, -v.y, -v.z, -v.w);
+    return math_Vec4l_from(-v.x, -v.y, -v.z, -v.w);
 }
 force_inline math_Vec4l math_Vec4l_add(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    return math_Vec4l_from(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 force_inline math_Vec4l math_Vec4l_sub(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
+    return math_Vec4l_from(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 force_inline math_Vec4l math_Vec4l_mul(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+    return math_Vec4l_from(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 force_inline math_Vec4l math_Vec4l_div(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+    return math_Vec4l_from(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 force_inline math_Vec4l math_Vec4l_mod(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(
+    return math_Vec4l_from(
         math_mod(lhs.x, rhs.x),
         math_mod(lhs.y, rhs.y),
         math_mod(lhs.z, rhs.z),
@@ -2039,12 +2051,12 @@ force_inline math_Vec4l math_Vec4l_mod(math_Vec4l lhs, math_Vec4l rhs) {
     );
 }
 force_inline math_Vec4l math_Vec4l_scale(math_Vec4l v, i64 scalar) {
-    return math_Vec4l_create(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+    return math_Vec4l_from(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
 
 /* Range Operations */
 force_inline math_Vec4l math_Vec4l_min(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(
+    return math_Vec4l_from(
         math_min(lhs.x, rhs.x),
         math_min(lhs.y, rhs.y),
         math_min(lhs.z, rhs.z),
@@ -2052,7 +2064,7 @@ force_inline math_Vec4l math_Vec4l_min(math_Vec4l lhs, math_Vec4l rhs) {
     );
 }
 force_inline math_Vec4l math_Vec4l_max(math_Vec4l lhs, math_Vec4l rhs) {
-    return math_Vec4l_create(
+    return math_Vec4l_from(
         math_max(lhs.x, rhs.x),
         math_max(lhs.y, rhs.y),
         math_max(lhs.z, rhs.z),
@@ -2063,7 +2075,7 @@ force_inline math_Vec4l math_Vec4l_clamp(math_Vec4l v, math_Vec4l min, math_Vec4
     return math_Vec4l_min(math_Vec4l_max(v, min), max);
 }
 force_inline math_Vec4l math_Vec4l_wrap(math_Vec4l v, math_Vec4l min, math_Vec4l max) {
-    return math_Vec4l_create(
+    return math_Vec4l_from(
         math_wrap(v.x, min.x, max.x),
         math_wrap(v.y, min.y, max.y),
         math_wrap(v.z, min.z, max.z),

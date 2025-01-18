@@ -129,24 +129,27 @@ static SliConst$Control Control_list(void) {
     };
 } */
 
-#define window_width__320x200  /* template value */ (320)
-#define window_height__320x200 /* template value */ (200)
-#define window_width__160x100  /* template value */ (160)
-#define window_height__160x100 /* template value */ (100)
-#define window_width__80x50    /* template value */ (80)
-#define window_height__80x50   /* template value */ (50)
-#define window_width__40x25    /* template value */ (40)
-#define window_height__40x25   /* template value */ (25)
+#define window_res_width__320x200  /* template value */ (320)
+#define window_res_height__320x200 /* template value */ (200)
+#define window_res_width__160x100  /* template value */ (160)
+#define window_res_height__160x100 /* template value */ (100)
+#define window_res_width__80x50    /* template value */ (80)
+#define window_res_height__80x50   /* template value */ (50)
+#define window_res_width__40x25    /* template value */ (40)
+#define window_res_height__40x25   /* template value */ (25)
 
-#define window_width  (window_width__160x100)
-#define window_height (window_height__160x100)
+#define window_res_width  (window_res_width__80x50)
+#define window_res_height (window_res_height__80x50)
+#define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
+#define target_fps__125_0 /* template value */ (125.0)
 #define target_fps__62_50 /* template value */ (62.50)
 #define target_fps__50_00 /* template value */ (50.00)
 #define target_fps__31_25 /* template value */ (31.25)
 
-#define target_fps (target_fps__62_50)
+#define target_fps (target_fps__125_0)
+#define target_spf (1.0 / target_fps)
 
 typedef struct State {
     TerrainData terrain;
@@ -234,9 +237,9 @@ void State_handleInputMouse(State* state) {
     /* 이걸 어케 바꾼담담 */
     if (state->input.mouse_active) {
         Vec2i delta             = engine_Mouse_getDelta();
-        state->input.left_right = (f64)delta.x / window_width * 2.0;
-        state->horizon          = 10.0 + (f64)delta.y / window_height * 50.0;
-        state->input.up_down    = (f64)delta.y / window_height * 10.0;
+        state->input.left_right = (f64)delta.x / window_res_width * 2.0;
+        state->horizon          = 10.0 + (f64)delta.y / window_res_height * 50.0;
+        state->input.up_down    = (f64)delta.y / window_res_height * 10.0;
     }
 }
 
@@ -371,8 +374,8 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Heightmap Horizon Space",
-                .width         = window_width,
-                .height        = window_height,
+                .width         = window_res_width,
+                .height        = window_res_height,
                 .default_color = Color_blue,
             }
         ));
@@ -380,18 +383,18 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(window_width, window_height, engine_CanvasType_rgba), err, {
+        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clearDefaultColor(game_canvas);
+        engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_width, window_height);
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
         log_info("canvas views added\n");
 
         // Initialize rendering with camera parameters
@@ -399,11 +402,11 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         var   allocator = heap_Classic_allocator(&heap);
         State state     = {
                 .terrain      = try(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-                .camera_pos   = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
-                .camera_angle = 0.0f,                   // Starting angle (looking north)
-                .height       = 150.f / 2.0f,           // Height of camera above ground
-                .horizon      = window_height / 2.0f,   // Center of screen
-                .scale_height = window_height,          // Full screen height for scaling
+                .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
+                .camera_angle = 0.0f,                     // Starting angle (looking north)
+                .height       = 150.f / 2.0f,             // Height of camera above ground
+                .horizon      = window_res_height / 2.0f, // Center of screen
+                .scale_height = window_res_height,        // Full screen height for scaling
                 .distance     = 300.0f,
                 .is_running   = true,
         };
@@ -432,19 +435,18 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             State_updateCamera(&state, dt);
 
             // Render all views
-            engine_Canvas_clearDefaultColor(game_canvas);
+            engine_Canvas_clearDefault(game_canvas);
             State_render(&state, game_canvas, dt);
 
             // Present to screen
             engine_Window_present(window);
             const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-            printf("\033[A"); // Move cursor up one line
-            printf("\033[A"); // Move cursor up one line
+            printf("\033[H"); // Move cursor to top left
             printf(
                 "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
                 fps,
-                window_width,
-                window_height,
+                window_res_width,
+                window_res_height,
                 (i32)state.camera_pos.x,
                 (i32)state.camera_pos.y,
                 (i32)state.height,

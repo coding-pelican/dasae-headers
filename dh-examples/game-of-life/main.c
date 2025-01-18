@@ -17,17 +17,18 @@
 
 use_Mat$(i8);
 
-#define window_width__320x200  /* template value */ (320)
-#define window_height__320x200 /* template value */ (200)
-#define window_width__160x100  /* template value */ (160)
-#define window_height__160x100 /* template value */ (100)
-#define window_width__80x50    /* template value */ (80)
-#define window_height__80x50   /* template value */ (50)
-#define window_width__40x25    /* template value */ (40)
-#define window_height__40x25   /* template value */ (25)
+#define window_res_width__320x200  /* template value */ (320)
+#define window_res_height__320x200 /* template value */ (200)
+#define window_res_width__160x100  /* template value */ (160)
+#define window_res_height__160x100 /* template value */ (100)
+#define window_res_width__80x50    /* template value */ (80)
+#define window_res_height__80x50   /* template value */ (50)
+#define window_res_width__40x25    /* template value */ (40)
+#define window_res_height__40x25   /* template value */ (25)
 
-#define window_width  (window_width__80x50)
-#define window_height (window_height__80x50)
+#define window_res_width  (window_res_width__80x50)
+#define window_res_height (window_res_height__80x50)
+#define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
 #define target_fps__62_50 /* template value */ (62.50)
@@ -35,6 +36,7 @@ use_Mat$(i8);
 #define target_fps__31_25 /* template value */ (31.25)
 
 #define target_fps (target_fps__62_50)
+#define target_spf (1.0 / target_fps)
 
 #define GameOfLife_default_tick_threshold (6ull * 5ull)
 
@@ -89,8 +91,8 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Game of Life",
-                .width         = window_width,
-                .height        = window_height,
+                .width         = window_res_width,
+                .height        = window_res_height,
                 .default_color = Color_blue,
             }
         ));
@@ -98,28 +100,28 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(window_width, window_height, engine_CanvasType_rgba), err, {
+        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
-        engine_Canvas_clearDefaultColor(game_canvas);
+        engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_width, window_height);
+        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
         log_info("canvas views added\n");
 
         // Initialize game state
         var allocator = heap_Page_allocator(&(heap_Page){});
-        var state     = try(State_init(allocator, window_width, window_height));
+        var state     = try(State_init(allocator, window_res_width, window_res_height));
         defer(State_fini(&state));
         // R-Pentomino
         {
-            let x = (window_width - 5) / 2;
-            let y = (window_height - 3) / 2;
+            let x = (window_res_width - 5) / 2;
+            let y = (window_res_height - 3) / 2;
             GameOfLife_setCellSlice(&state.cells, x, y + 0, (Sli$i8)Sli_from(((i8[]){ 0, 0, 1, 1, 0 }), 5));
             GameOfLife_setCellSlice(&state.cells, x, y + 1, (Sli$i8)Sli_from(((i8[]){ 0, 1, 1, 0, 0 }), 5));
             GameOfLife_setCellSlice(&state.cells, x, y + 2, (Sli$i8)Sli_from(((i8[]){ 0, 0, 1, 0, 0 }), 5));
@@ -148,14 +150,14 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             State_update(&state, dt);
 
             // 5) Render all views
-            engine_Canvas_clearDefaultColor(game_canvas);
+            engine_Canvas_clearDefault(game_canvas);
             State_render(&state, game_canvas, dt);
             engine_Window_present(window);
 
             // 6) (Optional) Display instantaneous FPS
             const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-            printf("\033[A"); // move cursor up again if want to keep overwriting
-            printf("\rFPS: %6.2f   \n", fps);
+            printf("\033[H"); // Move cursor to top left
+            printf("\rFPS: %6.2f\n", fps);
             debug_only(
                 // log frame every 1s
                 static f64 total_game_time_for_timestamp = 0.0;
