@@ -6,7 +6,7 @@
  * @date    2025-01-11 (date of creation)
  * @updated 2025-01-18 (date of last update)
  * @version v0.1-alpha.1
- * @ingroup
+ * @ingroup dasae-headers(dh)
  * @prefix  Mat
  */
 
@@ -23,18 +23,31 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+typedef struct MatConst MatConst;
+typedef union Mat       Mat;
 
 #define use_Mat$(T)  GEN__use_Mat$(T)
 #define decl_Mat$(T) GEN__decl_Mat$(T)
 #define impl_Mat$(T) GEN__impl_Mat$(T)
 
-typedef struct MatConst MatConst;
-typedef union Mat       Mat;
-
 #define Mat_fromSli$(TMat, var_sli, u32_width, u32_height) OP__Mat_fromSli$(TMat, var_sli, u32_width, u32_height)
 #define Mat_at(var_self, u32_x, u32_y)                     OP__Mat_at(pp_uniqueToken(_self), pp_uniqueToken(_x), pp_uniqueToken(_y), var_self, u32_x, u32_y)
 
 /*========== Implementations ================================================*/
+
+struct MatConst {
+    SliConst items;
+    u32      width;
+    u32      height;
+};
+union Mat {
+    MatConst as_const;
+    struct {
+        Sli items;
+        u32 width;
+        u32 height;
+    };
+};
 
 #define GEN__use_Mat$(T) \
     decl_Mat$(T);        \
@@ -56,20 +69,6 @@ typedef union Mat       Mat;
             u32 height;                   \
         };                                \
     }
-
-struct MatConst {
-    SliConst items;
-    u32      width;
-    u32      height;
-};
-union Mat {
-    MatConst as_const;
-    struct {
-        Sli items;
-        u32 width;
-        u32 height;
-    };
-};
 
 #define OP__Mat_fromSli$(TMat, var_sli, u32_width, u32_height) eval( \
     let       _sli    = var_sli;                                     \

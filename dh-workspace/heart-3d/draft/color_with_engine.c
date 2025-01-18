@@ -35,9 +35,8 @@
 
 // #define render_depth_steps (24)     // Increased for smoother rendering
 // #define render_step_size   (0.005f) // Smaller steps for higher resolution
-#define render_depth_steps   (12)
-#define render_step_size     (0.01f)
-#define heart_beat_frequency (6.0f)
+#define render_depth_steps (12)
+#define render_step_size   (0.01f)
 
 use_Mat$(f32);
 typedef struct RenderBuffer {
@@ -45,27 +44,11 @@ typedef struct RenderBuffer {
     Sli$f32        z_buffer;
 } RenderBuffer;
 
-// Helper function to scale colors
-force_inline Color Color_scale(Color color, f32 factor) {
-    return Color_fromOpaque(
-        as$(u8, as$(f32, color.r) * factor),
-        as$(u8, as$(f32, color.g) * factor),
-        as$(u8, as$(f32, color.b) * factor)
-    );
-}
-// Blend two colors based on factor
-force_inline Color Color_blend(Color lhs, Color rhs, f32 factor) {
-    return Color_fromOpaque(
-        as$(u8, lhs.r * (1.0f - factor) + rhs.r * factor),
-        as$(u8, lhs.g * (1.0f - factor) + rhs.g * factor),
-        as$(u8, lhs.b * (1.0f - factor) + rhs.b * factor)
-    );
-}
-
 // Rotation angles and scaling factor
-static Vec3f angle           = math_Vec3f_zero;
-static f32   scale           = 1.0f;
-static f32   scale_direction = 0.001f;
+static Vec3f angle  = math_Vec3f_zero;
+f32          angleX = 0, angleY = 0, angleZ = 0;
+static f32   scale          = 1.0f;
+static f32   scaleDirection = 0.001f;
 
 // Light position and properties
 static Vec3f light_pos      = literal_math_Vec3f_from(2.0f, 2.0f, -2.0f);
@@ -73,159 +56,169 @@ static Color heart_color    = literal_Color_fromOpaque(220, 20, 60); // Crimson 
 static Color specular_color = literal_Color_fromOpaque(255, 255, 255);
 
 // Calculate surface normal for the heart at a given point
-Vec3f calculateHeartNormal(Vec2f point, f32 radius) {
-    unused(radius); // Unused parameter
+Vec3f calculateHeartNormal(f32 x, f32 y, f32 r) {
+    unused(r); // Unused parameter
+
     // Partial derivatives of the heart equation
-    const Vec3f dp = {
-        .x = -2.0f * point.x,
-        .y = -2.0f * (1.2f * point.y - fabsf(point.x) * 2.0f / 3.0f) * 1.2f,
-        .z = 1.0f
-    };
-    return math_Vec3f_norm(dp);
+    f32 dx = -2 * x;
+    f32 dy = -2 * (1.2f * y - fabsf(x) * 2.0f / 3.0f) * 1.2f;
+    f32 dz = 1.0f;
+
+    return math_Vec3f_norm(math_Vec3f_from(dx, dy, dz));
 }
 
-// Calculate the radius of the heart at a given y value
-f32 calculateHeartRadius(f32 t, f32 y) {
-    return 0.4f + 0.05f * powf(0.5f + 0.5f * sinf(t * heart_beat_frequency + y * 2), 8);
+void rotate3D(f32 x, f32 y, f32 z, f32* nx, f32* ny, f32* nz) {
+    // Same rotation function as before
+    f32 y1 = y * cosf(angleX) - z * sinf(angleX);
+    f32 z1 = y * sinf(angleX) + z * cosf(angleX);
+
+    f32 x2 = x * cosf(angleY) - z1 * sinf(angleY);
+    f32 z2 = x * sinf(angleY) + z1 * cosf(angleY);
+
+    *nx = x2 * cosf(angleZ) - y1 * sinf(angleZ);
+    *ny = x2 * sinf(angleZ) + y1 * cosf(angleZ);
+    *nz = z2;
 }
 
-// Calculate heart surface z value for a given x,y point (determins shape)
-f32 calculateHeartZ(Vec2f point, f32 radius) {
-    const f32 z = -point.x * point.x - powf(1.2f * point.y - fabsf(point.x) * 2.0f / 3.0f, 2) + radius * radius;
-    /*
-    const f32 z = -math_Vec2f_lenSq(point)
-                - powf(1.2f * point.y - math_abs(point.x) * 2.0f / 3.0f, 2)
-                + radius * radius;
-     */
-    if (z < 0.0f) { return -1.0f; /* Invalid point */ }
-    return sqrtf(z) / (2.0f - point.y);
-}
-
-// Apply rotation to a point
-Vec3f applyRotation(Vec3f point, Vec3f angles) {
-    Vec3f rotated = math_Vec3f_rotate(point, math_Vec3f_unit_x, angles.x);
-    rotated       = math_Vec3f_rotate(rotated, math_Vec3f_unit_y, angles.y);
-    rotated       = math_Vec3f_rotate(rotated, math_Vec3f_unit_z, angles.z);
-    return rotated;
+// Blend two colors based on factor
+Color blendColors(Color a, Color b, f32 factor) {
+    return Color_fromOpaque(
+        as$(u8, a.r * (1 - factor) + b.r * factor),
+        as$(u8, a.g * (1 - factor) + b.g * factor),
+        as$(u8, a.b * (1 - factor) + b.b * factor)
+    );
 }
 
 // Calculate lighting for a point
-Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos) {
-    // Calculate lighting vectors
-    const Vec3f light_dir = math_Vec3f_norm(math_Vec3f_sub(light_pos, frag_pos));
-    const Vec3f view_dir  = math_Vec3f_norm(math_Vec3f_sub(view_pos, frag_pos));
+Color calculateHeartLighting(Vec3f normal, Vec3f viewPos, Vec3f fragPos) {
+    // Normalize vectors
+    Vec3f lightDir = math_Vec3f_norm(math_Vec3f_from(
+        light_pos.x - fragPos.x,
+        light_pos.y - fragPos.y,
+        light_pos.z - fragPos.z
+    ));
+    Vec3f viewDir  = math_Vec3f_norm(math_Vec3f_from(
+        viewPos.x - fragPos.x,
+        viewPos.y - fragPos.y,
+        viewPos.z - fragPos.z
+    ));
+
+    // Ambient light (constant background illumination)
+    f32   ambientStrength = 0.1f;
+    Color ambient         = Color_fromOpaque(
+        as$(u8, as$(f32, heart_color.r) * ambientStrength),
+        as$(u8, as$(f32, heart_color.g) * ambientStrength),
+        as$(u8, as$(f32, heart_color.b) * ambientStrength)
+    );
 
     // Calculate light angle
-    const f32 ambient_strength = 0.1f;
-    const f32 n_dot_l          = math_Vec3f_dot(normal, light_dir);
-    // Early exit if surface faces away from light
-    if (n_dot_l <= 0.0f) { return Color_scale(heart_color, ambient_strength); /* Ambient only */ }
+    f32 ndotl = math_Vec3f_dot(normal, lightDir);
 
-    // Ambient light
-    const Color ambient  = Color_scale(heart_color, ambient_strength);
-    // Diffuse light
-    const Color diffuse  = Color_scale(heart_color, n_dot_l);
-    // Specular light using Blinn-Phong
-    const Color specular = Color_scale(
-        specular_color,
-        eval(
-            const Vec3f halfway_dir = math_Vec3f_norm(
-                math_Vec3f_add(light_dir, view_dir)
-            );
-            const f32 spec = powf(
-                prim_max(math_Vec3f_dot(normal, halfway_dir), 0.0f),
-                64.0f
-            );
-            const f32   spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
-            eval_return spec_mod_by_light_angle;
-        )
+    // Early exit if surface faces away from light
+    if (ndotl <= 0.0f) {
+        return ambient; // Return only ambient light
+    }
+
+    // Diffuse lighting
+    f32   diff    = ndotl; // We already checked it's positive
+    Color diffuse = Color_fromOpaque(
+        as$(u8, as$(f32, heart_color.r) * diff),
+        as$(u8, as$(f32, heart_color.g) * diff),
+        as$(u8, as$(f32, heart_color.b) * diff)
+    );
+
+    // Specular lighting using Blinn-Phong model
+    Vec3f halfwayDir = math_Vec3f_norm(math_Vec3f_from(
+        lightDir.x + viewDir.x,
+        lightDir.y + viewDir.y,
+        lightDir.z + viewDir.z
+    ));
+
+    f32 spec = powf(fmaxf(math_Vec3f_dot(normal, halfwayDir), 0.0f), 64.0f);
+
+    // Modulate specular intensity based on light angle
+    spec *= ndotl;
+
+    Color specular = Color_fromOpaque(
+        as$(u8, specular_color.r * spec),
+        as$(u8, specular_color.g * spec),
+        as$(u8, specular_color.b * spec)
     );
 
     // Combine components
     return Color_fromOpaque(
-        as$(u8, prim_min(ambient.r + diffuse.r + specular.r, 255)),
-        as$(u8, prim_min(ambient.g + diffuse.g + specular.g, 255)),
-        as$(u8, prim_min(ambient.b + diffuse.b + specular.b, 255))
+        as$(u8, math_min(ambient.r + diffuse.r + specular.r, 255)),
+        as$(u8, math_min(ambient.g + diffuse.g + specular.g, 255)),
+        as$(u8, math_min(ambient.b + diffuse.b + specular.b, 255))
     );
 }
 
 // Previous functions remain the same up to renderHeart
 void renderHeart(RenderBuffer* buffer, f32 t) {
-    // Clear buffers
+    // Clear canvas with black color
     engine_Canvas_clearDefault(buffer->canvas);
 
-    let z_buffer = Mat_fromSli$(Mat$f32, buffer->z_buffer, window_res_width, window_res_height);
-    for_slice(z_buffer.items, depth) {
-        *depth = -math_f32_inf;
+    // Clear z-buffer
+    for (usize i = 0; i < window_res_size; ++i) {
+        *Sli_at(buffer->z_buffer, i) = -math_f32_inf;
     }
 
     // Update scale with pulsing effect
-    scale += scale_direction;
-    if (scale < 0.8f || 1.2f < scale) {
-        scale_direction = -scale_direction;
-    }
+    scale += scaleDirection;
+    if (scale < 0.8f || 1.2f < scale) { scaleDirection = -scaleDirection; }
 
-    const Vec3f view_pos = math_Vec3f_scale(math_Vec3f_backward, 5.0f);
+    Vec3f viewPos = math_Vec3f_from(0.0f, 0.0f, -5.0f);
 
     // Render the heart
-    for (f32 py = -0.5f; py <= 0.5f; py += render_step_size) {
-        const f32 radius = calculateHeartRadius(t, py);
+    let z_buffer = Mat_fromSli$(Mat$f32, buffer->z_buffer, window_res_width, window_res_height);
+    for (f32 y = -0.5f; y <= 0.5f; y += render_step_size) {
+        f32 radius = 0.4f + 0.05f * powf(0.5f + 0.5f * sinf(t * 6.0f + y * 2), 8);
 
-        for (f32 px = -0.5f; px <= 0.5f; px += render_step_size) {
-            const Vec2f point = math_Vec2f_from(px, py);
-            const f32   pz    = calculateHeartZ(point, radius);
-            if (pz < 0.0f) { continue; }
+        for (f32 x = -0.5f; x <= 0.5f; x += render_step_size) {
+            f32 z = -x * x - powf(1.2f * y - fabsf(x) * 2.0f / 3.0f, 2) + radius * radius;
+            if (z < 0) { continue; }
+            z = math_sqrt(z) / (2.0f - y);
 
-            const Vec3f normal = calculateHeartNormal(point, radius);
-            const f32   step_z = pz / render_depth_steps;
-            for (isize i = 0; i <= (render_depth_steps * 2LL); ++i) {
-                const f32 tz = -pz + ((f32)i * step_z);
+            Vec3f normal = calculateHeartNormal(x, y, radius);
+            for (f32 tz = -z; tz <= z; tz += z / render_depth_steps) {
+                f32 sx = x * scale;
+                f32 sy = y * scale;
+                f32 sz = tz * scale;
 
-                // Scale and rotate point
-                const Vec3f pos = eval(
-                    let         scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
-                    let         rotated = applyRotation(scaled, angle);
-                    eval_return rotated;
+                f32 rotX = 0;
+                f32 rotY = 0;
+                f32 rotZ = 0;
+                rotate3D(sx, sy, sz, &rotX, &rotY, &rotZ);
+
+                f32 normalX = 0;
+                f32 normalY = 0;
+                f32 normalZ = 0;
+                rotate3D(normal.x, normal.y, normal.z, &normalX, &normalY, &normalZ);
+                Vec3f transformedNormal = math_Vec3f_norm(math_Vec3f_from(normalX, normalY, normalZ));
+
+                f32 perspective = 1.0f + rotZ * 0.5f; // ~ rotZ/2
+                i32 screenX     = lroundf(
+                    (rotX * perspective + 0.5f) * (window_res_width - 20) + 10
+                );
+                i32 screenY = lroundf(
+                    (-rotY * perspective + 0.5f) * (window_res_height - 1) + 2
                 );
 
-                // Transform normal
-                // const Vec3f transformed_normal = applyRotation(normal, angle);
-                const Vec3f transformed_normal = math_Vec3f_norm(applyRotation(normal, angle));
+                if (0 <= screenX && screenX < window_res_width && 0 <= screenY && screenY < window_res_height) {
+                    let cell = Mat_at(z_buffer, screenX, screenY);
+                    if (*cell < rotZ) {
+                        *cell = rotZ;
 
-                // Project to screen space
-                const f32 perspective = prim_max(0.01f, 1.0f + pos.z * 0.5f);
-                const i32 screen_x    = lroundf((pos.x * perspective + 0.5f) * (window_res_width - 20) + 10);
-                const i32 screen_y    = lroundf((-pos.y * perspective + 0.5f) * (window_res_height - 1) + 2);
+                        Vec3f fragPos    = math_Vec3f_from(rotX, rotY, rotZ);
+                        Color pixelColor = calculateHeartLighting(transformedNormal, viewPos, fragPos);
 
-                if (screen_x < 0 || window_res_width <= screen_x) { continue; }
-                if (screen_y < 0 || window_res_height <= screen_y) { continue; }
-
-                scope_if(
-                    let cell = Mat_at(z_buffer, screen_x, screen_y),
-                    *cell < pos.z
-                ) {
-                    *cell = pos.z;
-                    engine_Canvas_drawPixel(
-                        buffer->canvas,
-                        screen_x,
-                        screen_y,
-                        calculateHeartLighting(
-                            transformed_normal,
-                            view_pos,
-                            pos
-                        )
-                    );
+                        // Use the engine's canvas drawing function
+                        engine_Canvas_drawPixel(buffer->canvas, screenX, screenY, pixelColor);
+                    }
                 }
             }
         }
     }
-
-    // for next frame
-    // Update rotation angles for smooth 360-degree rotation
-    // Keep angles in range [0, 2π]
-    angle.x = math_wrap(angle.x + 0.02f, 0, math_tau);
-    angle.y = math_wrap(angle.y + 0.03f, 0, math_tau);
-    angle.z = math_wrap(angle.z + 0.01f, 0, math_tau);
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
@@ -311,6 +304,16 @@ Err$void dh_main(int argc, const char* argv[]) {
             if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
             }
+
+            // Update rotation angles for smooth 360-degree rotation
+            angleX += 0.02f;
+            angleY += 0.03f;
+            angleZ += 0.01f;
+
+            // Keep angles in range [0, 2π]
+            angleX = fmodf(angleX, 2.0f * math_f32_pi);
+            angleY = fmodf(angleY, 2.0f * math_f32_pi);
+            angleZ = fmodf(angleZ, 2.0f * math_f32_pi);
             time_total += 0.003f;
 
             // 5) Render all views

@@ -19,6 +19,9 @@
 #include "dh/core.h"
 #include "dh/err_res.h"
 
+// TODO: Provide specialized inline functions per type.
+// `math_f64_pi` vs `math_pi_f64`
+
 /* Common error types */
 use_Err(
     math_Err,

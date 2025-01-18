@@ -1,17 +1,17 @@
 #include "dh/main.h"
 #include "dh/debug.h"
-#include "dh/meta/common.h"
-#include "engine/canvas.h"
-#include "engine/input.h"
 #define LOG_NO_DISABLE_RELEASE (1)
 #include "dh/log.h"
 
 #include "dh/mem.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
+#include "dh/meta/common.h"
+#include "dh/Mat.h"
 
 #include "engine.h"
-#include "Mat.h"
+#include "engine/canvas.h"
+#include "engine/input.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "libs/stb_image.h"
 
