@@ -289,7 +289,7 @@ void flipZBuffer(Mat$f32 z_buffer) {
 }
 
 static const char g_ascii_shading[]   = " .,-~:;=!*#$@";
-// ^ from dark to bright, feel free to reorder or expand
+// ^ from dark to bright
 static const i32  g_ascii_shading_len = countOf(g_ascii_shading) - 1;
 
 // asciiMat has dimensions [width, height/2]
@@ -322,7 +322,7 @@ void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
                 continue;
             }
 
-            // pick the max so we get whichever is in front
+            // pick the max: get whichever is in front
             f32 zVal = fmaxf(zTop, zBot);
 
             // map zVal -> [0 .. shadingLen-1]
@@ -339,7 +339,7 @@ void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
     }
 }
 
-void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
+void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
     let pixels  = Mat_fromSli$(
         Mat$Color,
@@ -369,8 +369,6 @@ void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
     /* Reset cursor position */ {
         static const char* const reset_cursor = "\033[H";
         printf("%s", reset_cursor);
-        // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
-        // backend->buffer_size += strlen(reset_cursor);
     }
     /* Write to console */ {
         DWORD written = 0;
@@ -383,20 +381,105 @@ void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
         );
     }
 }
-// void asciiPrint(Mat$u8 asciiMat) {
-//     // Usually we reset cursor to top-left:
-//     printf("\033[H");
 
-//     for (u32 y = 0; y < asciiMat.height; ++y) {
-//         for (u32 x = 0; x < asciiMat.width; ++x) {
-//             putchar(*Mat_at(asciiMat, x, y));
-//         }
-//         putchar('\n');
-//     }
-//     ignore fflush(stdout);
-// }
+static const f32 ascii_on_time   = 07.21f; // full ASCII
+static const f32 transition_time = 03.22f; // to go from ASCII to pixels
+static const f32 firework_time   = 10.27f; // to go from pixels to firework
 
-Err$void dh_main(int argc, const char* argv[]) {
+// Store whether each ASCII cell is "off" (pixel) or "on" (ASCII).
+// For 80x25 = 2000 cells if window_res_width=80, window_res_height=50 => 80*(50/2)=2000
+static bool ascii_disabled[window_res_size / 2];
+static i32  total_cells      = 0; // total ASCII cells
+static i32  disabled_count   = 0; // how many we have disabled so far
+static bool overlay_complete = false;
+
+static void disableSomeCellsLinear(i32 n) {
+    // linear approach: from left->right, top->bottom
+    // or keep a static “cursor” from last time we searched
+    static i32 cursor = 0;
+
+    i32 found = 0;
+    while (found < n) {
+        if (ascii_disabled[cursor] == false) {
+            ascii_disabled[cursor] = true;
+            found++;
+        }
+        cursor++;
+        if (cursor >= total_cells) {
+            // we've disabled everything
+            break;
+        }
+    }
+}
+static i32  disable_cell_order[countOf(ascii_disabled)]; // Will store each cell index in random order
+static i32  disable_cursor = 0;                          // "next index to disable" in cellOrder
+static void disableSomeCellsRandom(i32 n) {
+    i32 found = 0;
+    while (found < n && disable_cursor < total_cells) {
+        i32 index             = disable_cell_order[disable_cursor++];
+        // mark that ASCII cell as disabled
+        ascii_disabled[index] = true;
+        found++;
+    }
+}
+
+static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
+    let backend = (engine_Win32ConsoleBackend*)platform->backend;
+    let pixels  = Mat_fromSli$(
+        Mat$Color,
+        Sli_asNamed$(Sli$Color, canvas->buffer),
+        as$(u32, canvas->width),
+        as$(u32, canvas->height)
+    );
+    /* Reset buffer */ {
+        backend->buffer_size = 0;
+    }
+    for (u32 y = 0; y < pixels.height; y += 2) {
+        for (u32 x = 0; x < pixels.width; ++x) {
+            if (ascii_disabled[x + (y / 2) * pixels.width]) {
+                // Standard half-block color mode
+                const Color upper = *Mat_at(pixels, x, y);
+                const Color lower = *Mat_at(pixels, x, (y + 1));
+                backend->buffer_size += sprintf(
+                    backend->buffer + backend->buffer_size,
+                    "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀",
+                    upper.r,
+                    upper.g,
+                    upper.b,
+                    lower.r,
+                    lower.g,
+                    lower.b
+                );
+            } else {
+                // Character mode
+                let ch = *Mat_at(asciiMat, x, y / 2);
+                backend->buffer_size += sprintf(
+                    backend->buffer + backend->buffer_size,
+                    "\033[38;2;255;255;255;48;2;0;0;0m%c",
+                    ch ? ch : ' ' // Space for empty cells
+                );
+            }
+        }
+        backend->buffer[backend->buffer_size++] = '\n';
+    }
+    backend->buffer[--backend->buffer_size] = '\0';
+    /* Reset cursor position */ {
+        static const char* const reset_cursor = "\033[H";
+        printf("%s", reset_cursor);
+    }
+    /* Write to console */ {
+        DWORD written = 0;
+        WriteConsoleA(
+            backend->output_handle,
+            backend->buffer,
+            (DWORD)backend->buffer_size,
+            &written,
+            null
+        );
+    }
+}
+
+Err$void dh_main(i32 argc, const char* argv[]) {
     unused(argc), unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
@@ -466,8 +549,22 @@ Err$void dh_main(int argc, const char* argv[]) {
         };
         defer(mem_Allocator_free(allocator, anySli(overlay.ascii.items)));
         // memset(overlay.ascii.items.ptr, 0, window_res_size / 2);
-        bool overlay_enabled  = true;
-        f32  overlay_duration = 1.00f; // seconds after which we switch to pixel rendering
+
+        memset(ascii_disabled, 0, sizeof(ascii_disabled));
+        total_cells = (i32)(window_res_size / 2);
+        // Fill cellOrder with 0..(totalCells-1)
+        for (i32 i = 0; i < total_cells; ++i) {
+            disable_cell_order[i] = i;
+        }
+        // Fisher-Yates shuffle (or any shuffle)
+        for (i32 i = total_cells - 1; i > 0; i--) {
+            i32 j = rand() % (i + 1);
+            // swap cellOrder[i], cellOrder[j]
+            prim_swap(disable_cell_order[i], disable_cell_order[j]);
+        }
+        disable_cursor   = 0; // start at beginning
+        disabled_count   = 0;
+        overlay_complete = false;
         log_info("game state created\n");
         ignore getchar();
 
@@ -482,9 +579,9 @@ Err$void dh_main(int argc, const char* argv[]) {
             // 1) Capture the start of the frame (and capture the end-of-frame time of prev iteration’s dt includes sleep)
             let time_frame_curr = time_Instant_now();
 
-            // 2) Compute how long since last frame (purely for your dt usage)
+            // 2) Compute how long since last frame
             let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt      = time_Duration_asSecs_f64(time_elapsed);
+            let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Process input/events
             try(engine_Window_processEvents(window));
@@ -493,29 +590,67 @@ Err$void dh_main(int argc, const char* argv[]) {
             if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
             }
-            time_total += 0.003f;
-            // Once we pass overlay_duration, switch off the ASCII overlay
-            if (overlay_enabled && time_total > overlay_duration) {
-                overlay_enabled = false;
+            // time_total += 0.003f;
+            time_total += time_dt;
+
+            if (!overlay_complete) {
+                if (time_total < ascii_on_time) {
+                    // do nothing; all ASCII cells are enabled
+                } else {
+                    // in the transition window:
+                    // e.g. from time=3s to time=5s if transition_time=2.
+                    f32 phaseTime = time_total - ascii_on_time;
+
+                    // clamp phaseTime to [0, transition_time]
+                    if (phaseTime < 0.0f) {
+                        phaseTime = 0.0f;
+                    }
+                    if (phaseTime > transition_time) {
+                        phaseTime = transition_time;
+                    }
+
+                    // "progress" in [0..1], where 0 means "no cells disabled"
+                    // and 1 means "all cells disabled"
+                    f32 progress = phaseTime / transition_time;
+
+                    // For slow->fast acceleration, square it:
+                    f32 accel = progress * progress;
+
+                    // The desired total number of disabled cells by now:
+                    i32 desiredDisabled = (i32)(accel * (f32)total_cells);
+                    // How many new cells disable this frame
+                    i32 newDisabled     = desiredDisabled - disabled_count;
+                    if (newDisabled < 0) {
+                        newDisabled = 0; // should never happen if logic is correct
+                    }
+
+                    // If need to disable more cells, do it
+                    if (newDisabled > 0) {
+                        disableSomeCellsRandom(newDisabled);
+                        disabled_count += newDisabled;
+                    }
+
+                    // If progress==1, hit the end of the transition:
+                    if (progress >= 1.0f) {
+                        overlay_complete = true;
+                    }
+                }
             }
 
             // 5) Render all views
             engine_Canvas_clearDefault(game_canvas);
             renderHeart(&buffer, time_total);
+            flipCanvasBuffer(game_canvas);
             // Present the pixel canvas
-            if (overlay_enabled) {
+            if (!overlay_complete) {
                 // (A) ASCII overlay path
                 flipZBuffer(Mat_fromSli$(Mat$f32, buffer.z_buffer, window_res_width, window_res_height));
                 asciiFromZBuffer(&buffer, overlay.ascii);
-                asciiPrint(window->platform, game_canvas, overlay.ascii);
+                printAsciiWithColor(window->platform, game_canvas, overlay.ascii);
             } else {
                 // (B) Pixel path
-                flipCanvasBuffer(game_canvas);
                 engine_Window_present(window);
             }
-
-            // The canvas is already updated through engine_Canvas_drawPixel calls
-            // Add any additional engine-specific frame handling here
 
             // 6) (Optional) Display instantaneous FPS
             const f64 fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
