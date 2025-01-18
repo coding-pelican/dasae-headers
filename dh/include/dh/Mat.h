@@ -8,6 +8,9 @@
  * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  Mat
+ *
+ * @brief   Using one-dimensional slice as two-dimensional matrix
+ * @details
  */
 
 #ifndef MAT_INCLUDED

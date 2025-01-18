@@ -1,6 +1,6 @@
 #include "dh/main.h"
 #include "dh/core.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Classic.h"
 #include "dh/log.h"
 
 #include "dh/debug.h"
@@ -10,6 +10,7 @@
 #include "dh/Mat.h"
 
 #include "engine.h"
+#include "engine/platform_backend.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -39,11 +40,20 @@
 #define render_step_size     (0.01f)
 #define heart_beat_frequency (6.0f)
 
+use_Mat$(u8);
 use_Mat$(f32);
+use_Sli$(Color);
+use_Mat$(Color);
+
 typedef struct RenderBuffer {
     engine_Canvas* canvas;
     Sli$f32        z_buffer;
 } RenderBuffer;
+
+typedef struct CanvasAscii {
+    const engine_Canvas* color; /* using RenderBuffer's canvas: pixel upper(0,2,4...) as fg, lower(1,3,5...) as bg */
+    Mat$u8               ascii;
+} CanvasAscii;
 
 // Helper function to scale colors
 force_inline Color Color_scale(Color color, f32 factor) {
@@ -68,7 +78,9 @@ static f32   scale           = 1.0f;
 static f32   scale_direction = 0.001f;
 
 // Light position and properties
-static Vec3f light_pos      = literal_math_Vec3f_from(2.0f, 2.0f, -2.0f);
+// static Vec3f light_pos      = literal_math_Vec3f_from(2.0f, 2.0f, -2.0f);
+// Make this truly static and pointing from "top-right" to bottom-left, for instance:
+static Vec3f g_light_dir    = { { -1.0f, 1.0f, -1.0f } };
 static Color heart_color    = literal_Color_fromOpaque(220, 20, 60); // Crimson red
 static Color specular_color = literal_Color_fromOpaque(255, 255, 255);
 
@@ -112,7 +124,9 @@ Vec3f applyRotation(Vec3f point, Vec3f angles) {
 // Calculate lighting for a point
 Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos) {
     // Calculate lighting vectors
-    const Vec3f light_dir = math_Vec3f_norm(math_Vec3f_sub(light_pos, frag_pos));
+    // const Vec3f light_dir = math_Vec3f_norm(math_Vec3f_sub(light_pos, frag_pos));
+    // Ensure length=1
+    const Vec3f light_dir = math_Vec3f_norm(g_light_dir);
     const Vec3f view_dir  = math_Vec3f_norm(math_Vec3f_sub(view_pos, frag_pos));
 
     // Calculate light angle
@@ -193,9 +207,19 @@ void renderHeart(RenderBuffer* buffer, f32 t) {
                 const Vec3f transformed_normal = math_Vec3f_norm(applyRotation(normal, angle));
 
                 // Project to screen space
-                const f32 perspective = prim_max(0.01f, 1.0f + pos.z * 0.5f);
-                const i32 screen_x    = lroundf((pos.x * perspective + 0.5f) * (window_res_width - 20) + 10);
-                const i32 screen_y    = lroundf((-pos.y * perspective + 0.5f) * (window_res_height - 1) + 2);
+                const f32 perspective = fmaxf(0.01f, 1.0f + pos.z * 0.5f);
+
+                const f32 half_w = as$(f32, window_res_width) * 0.5f;
+                const f32 half_h = as$(f32, window_res_height) * 0.5f;
+
+                const f32 sx = (pos.x * perspective) * half_w + half_w;
+                const f32 sy = (-pos.y * perspective) * half_h + half_h;
+
+                const i32 screen_x = lroundf(sx);
+                const i32 screen_y = lroundf(sy);
+                // const f32 perspective = prim_max(0.01f, 1.0f + pos.z * 0.5f);
+                // const i32 screen_x    = lroundf((pos.x * perspective + 0.5f) * (window_res_width - 20) + 10);
+                // const i32 screen_y    = lroundf((-pos.y * perspective + 0.5f) * (window_res_height - 1) + 2);
 
                 if (screen_x < 0 || window_res_width <= screen_x) { continue; }
                 if (screen_y < 0 || window_res_height <= screen_y) { continue; }
@@ -226,6 +250,123 @@ void renderHeart(RenderBuffer* buffer, f32 t) {
     angle.x = math_wrap(angle.x + 0.02f, 0, math_tau);
     angle.y = math_wrap(angle.y + 0.03f, 0, math_tau);
     angle.z = math_wrap(angle.z + 0.01f, 0, math_tau);
+}
+
+void flipCanvasBuffer(engine_Canvas* canvas) {
+    let       sli         = Sli_asNamed$(Sli$Color, canvas->buffer);
+    let       mat         = Mat_fromSli$(Mat$Color, sli, canvas->width, canvas->height);
+    const i32 width       = as$(i32, canvas->width);
+    const i32 height      = as$(i32, canvas->height);
+    const i32 half_height = height / 2;
+
+    for (i32 y = 0; y < half_height; ++y) {
+        for (i32 x = 0; x < width; ++x) {
+            const i32 top_y    = y;
+            const i32 bottom_y = height - 1 - y;
+
+            prim_swap(
+                *Mat_at(mat, x, top_y),
+                *Mat_at(mat, x, bottom_y)
+            );
+        }
+    }
+}
+
+static const char g_ascii_shading[] = " .,-~:;=!*#$@";
+// ^ from dark to bright, feel free to reorder or expand
+
+void asciiFromCanvas(
+    const engine_Canvas* canvas,
+    Mat$u8               asciiMat // same width/height as canvas
+) {
+    // We assume canvas->buffer is an Sli$Color of length (width*height)
+    let sli = Sli_asNamed$(Sli$Color, canvas->buffer);
+    let mat = Mat_fromSli$(Mat$Color, sli, canvas->width, canvas->height);
+
+    const i32 width  = as$(i32, canvas->width);
+    const i32 height = as$(i32, canvas->height);
+
+    for (i32 y = 0; y < height; y += 2) {
+        for (i32 x = 0; x < width; ++x) {
+            // get the color of pixel (x,y)
+            const Color upper = *Mat_at(mat, x, y);
+            const Color lower = *Mat_at(mat, x, y + 1);
+
+            // approximate brightness in [0..255] for both upper and lower pixels
+            const f32 upperBrightness = 0.299f * as$(f32, upper.r) + 0.587f * as$(f32, upper.g) + 0.114f * as$(f32, upper.b);
+            const f32 lowerBrightness = 0.299f * as$(f32, lower.r) + 0.587f * as$(f32, lower.g) + 0.114f * as$(f32, lower.b);
+
+            // calculate average brightness
+            const f32 brightness = (upperBrightness + lowerBrightness) * 0.5f;
+
+            // map brightness to shading index
+            // if shading array has n characters, index = brightness*(n-1)/255
+            const i32 shading_count     = as$(i32, countOf(g_ascii_shading) - 2);
+            const i32 idx               = math_clamp(as$(i32, (brightness / 255.0f) * shading_count), 0, shading_count);
+            // assign the character
+            *Mat_at(asciiMat, x, y / 2) = g_ascii_shading[idx];
+        }
+    }
+}
+
+void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
+    let backend = (engine_Win32ConsoleBackend*)platform->backend;
+    let pixels  = Mat_fromSli$(
+        Mat$Color,
+        Sli_asNamed$(Sli$Color, canvas->buffer),
+        as$(u32, canvas->width),
+        as$(u32, canvas->height)
+    );
+
+    /* Reset buffer */ {
+        backend->buffer_size = 0;
+    }
+
+    // Optimized text path - no need to check for runs
+    // Each cell is processed individually since it's at character resolution
+    for (u32 y = 0; y < pixels.height; y += 2) {
+        for (u32 x = 0; x < pixels.width; ++x) {
+            const Color upper = *Mat_at(pixels, x, y);
+            const Color lower = *Mat_at(pixels, x, y + 1);
+            const Color fg    = {
+                   .r = as$(u8, (as$(u32, upper.r) + lower.r / 2)),
+                   .g = as$(u8, (as$(u32, upper.g) + lower.g / 2)),
+                   .b = as$(u8, (as$(u32, upper.b) + lower.b / 2))
+            };
+            const Color bg = Color_black; // black background
+            const u8    ch = *Mat_at(asciiMat, x, y / 2);
+
+            backend->buffer_size += sprintf(
+                backend->buffer + backend->buffer_size,
+                "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm%c",
+                fg.r,
+                fg.g,
+                fg.b,
+                bg.r,
+                bg.g,
+                bg.b,
+                ch ? ch : ' ' // Space for empty cells
+            );
+        }
+        backend->buffer[backend->buffer_size++] = '\n';
+    }
+    backend->buffer[--backend->buffer_size] = '\0';
+    /* Reset cursor position */ {
+        static const char* const reset_cursor = "\033[H";
+        printf("%s", reset_cursor);
+        // memcpy(backend->buffer + backend->buffer_size, reset_cursor, strlen(reset_cursor));
+        // backend->buffer_size += strlen(reset_cursor);
+    }
+    /* Write to console */ {
+        DWORD written = 0;
+        WriteConsoleA(
+            backend->output_handle,
+            backend->buffer,
+            (DWORD)backend->buffer_size,
+            &written,
+            null
+        );
+    }
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
@@ -280,12 +421,26 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("canvas views added\n");
 
         // Create render buffer with engine canvas
-        var allocator = heap_Page_allocator(&(heap_Page){});
+        var allocator = heap_Classic_allocator(&(heap_Classic){});
         var buffer    = (RenderBuffer){
                .canvas   = game_canvas,
                .z_buffer = meta_cast$(Sli$f32, try(mem_Allocator_alloc(allocator, typeInfo(f32), window_res_size)))
         };
         defer(mem_Allocator_free(allocator, anySli(buffer.z_buffer)));
+        // memset(buffer.z_buffer.ptr, 0, window_res_size * sizeof(f32));
+        var overlay = (CanvasAscii){
+            .color = buffer.canvas,
+            .ascii = Mat_fromSli$(
+                Mat$u8,
+                meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))),
+                window_res_width,
+                window_res_height / 2
+            ),
+        };
+        defer(mem_Allocator_free(allocator, anySli(overlay.ascii.items)));
+        // memset(overlay.ascii.items.ptr, 0, window_res_size / 2);
+        bool overlay_enabled  = true;
+        f32  overlay_duration = 1.00f; // seconds after which we switch to pixel rendering
         log_info("game state created\n");
         ignore getchar();
 
@@ -312,11 +467,24 @@ Err$void dh_main(int argc, const char* argv[]) {
                 is_running = false;
             }
             time_total += 0.003f;
+            // Once we pass overlay_duration, switch off the ASCII overlay
+            if (overlay_enabled && time_total > overlay_duration) {
+                overlay_enabled = false;
+            }
 
             // 5) Render all views
             engine_Canvas_clearDefault(game_canvas);
             renderHeart(&buffer, time_total);
-            engine_Window_present(window);
+            flipCanvasBuffer(game_canvas);
+            // Present the pixel canvas
+            if (overlay_enabled) {
+                // (A) ASCII overlay path
+                asciiFromCanvas(game_canvas, overlay.ascii);
+                asciiPrint(window->platform, game_canvas, overlay.ascii);
+            } else {
+                // (B) Pixel path
+                engine_Window_present(window);
+            }
 
             // The canvas is already updated through engine_Canvas_drawPixel calls
             // Add any additional engine-specific frame handling here

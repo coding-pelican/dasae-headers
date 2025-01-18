@@ -4,7 +4,7 @@
 #include "engine/canvas.h"
 #include "engine/input.h"
 
-#define Win32ConsoleBackend_calculateBufferSize(width, height) ((width) * (height) * 32)
+#define Win32ConsoleBackend_calculateBufferSize(width, height) ((width) * (height) * 40)
 static void                     Win32ConsoleBackend_destroy(engine_Platform* platform);
 static void                     Win32ConsoleBackend_processEvents(engine_Platform* platform);
 static void                     Win32ConsoleBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
@@ -15,7 +15,7 @@ static void  Win32ConsoleBackend_enableMouseInput(engine_Win32ConsoleBackend* ba
 static void  Win32ConsoleBackend_disableMouseInput(engine_Win32ConsoleBackend* backend);
 static void  Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* backend, const MOUSE_EVENT_RECORD* mer);
 
-
+const var test = Win32ConsoleBackend_calculateBufferSize(80, 50);
 
 Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) {
     reserveReturn(Err$Ptr$engine_Platform);

@@ -30,6 +30,7 @@ struct time_Duration {
     u64 secs_;
     u32 nanos_;
 };
+use_Opt$(time_Duration);
 
 /* Constructors */
 extern time_Duration time_Duration_from(u64 secs, u32 nanos);
@@ -53,10 +54,12 @@ extern time_Duration time_Duration_fromSecs_f64(f64 secs);
 extern f64           time_Duration_asSecs_f64(time_Duration self);
 
 /* Arithmetic */
-extern time_Duration op_fnAdd(time_Duration);
-extern time_Duration op_fnSub(time_Duration);
-extern time_Duration op_fnMulBy(time_Duration, u64);
-extern time_Duration op_fnDivBy(time_Duration, u64);
+extern Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs);
+extern time_Duration     op_fnAdd(time_Duration);
+extern time_Duration     op_fnSub(time_Duration);
+extern time_Duration     op_fnMulBy(time_Duration, u64);
+extern time_Duration     op_fnDivBy(time_Duration, u64);
 
 /* Comparison */
 force_inline cmp_fnCmp(time_Duration) {
