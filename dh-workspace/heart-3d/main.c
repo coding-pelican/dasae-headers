@@ -272,39 +272,69 @@ void flipCanvasBuffer(engine_Canvas* canvas) {
     }
 }
 
-static const char g_ascii_shading[] = " .,-~:;=!*#$@";
-// ^ from dark to bright, feel free to reorder or expand
-
-void asciiFromCanvas(
-    const engine_Canvas* canvas,
-    Mat$u8               asciiMat // same width/height as canvas
-) {
-    // We assume canvas->buffer is an Sli$Color of length (width*height)
-    let sli = Sli_asNamed$(Sli$Color, canvas->buffer);
-    let mat = Mat_fromSli$(Mat$Color, sli, canvas->width, canvas->height);
-
-    const i32 width  = as$(i32, canvas->width);
-    const i32 height = as$(i32, canvas->height);
-
-    for (i32 y = 0; y < height; y += 2) {
+void flipZBuffer(Mat$f32 z_buffer) {
+    const i32 width       = (i32)z_buffer.width;
+    const i32 height      = (i32)z_buffer.height;
+    const i32 half_height = height / 2;
+    for (i32 y = 0; y < half_height; ++y) {
         for (i32 x = 0; x < width; ++x) {
-            // get the color of pixel (x,y)
-            const Color upper = *Mat_at(mat, x, y);
-            const Color lower = *Mat_at(mat, x, y + 1);
+            const i32 top_y    = y;
+            const i32 bottom_y = height - 1 - y;
+            prim_swap(
+                *Mat_at(z_buffer, x, top_y),
+                *Mat_at(z_buffer, x, bottom_y)
+            );
+        }
+    }
+}
 
-            // approximate brightness in [0..255] for both upper and lower pixels
-            const f32 upperBrightness = 0.299f * as$(f32, upper.r) + 0.587f * as$(f32, upper.g) + 0.114f * as$(f32, upper.b);
-            const f32 lowerBrightness = 0.299f * as$(f32, lower.r) + 0.587f * as$(f32, lower.g) + 0.114f * as$(f32, lower.b);
+static const char g_ascii_shading[]   = " .,-~:;=!*#$@";
+// ^ from dark to bright, feel free to reorder or expand
+static const i32  g_ascii_shading_len = countOf(g_ascii_shading) - 1;
 
-            // calculate average brightness
-            const f32 brightness = (upperBrightness + lowerBrightness) * 0.5f;
+// asciiMat has dimensions [width, height/2]
+void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
+    const i32 width  = (i32)buffer->canvas->width;
+    const i32 height = (i32)buffer->canvas->height;
 
-            // map brightness to shading index
-            // if shading array has n characters, index = brightness*(n-1)/255
-            const i32 shading_count     = as$(i32, countOf(g_ascii_shading) - 2);
-            const i32 idx               = math_clamp(as$(i32, (brightness / 255.0f) * shading_count), 0, shading_count);
-            // assign the character
-            *Mat_at(asciiMat, x, y / 2) = g_ascii_shading[idx];
+    // 1) Find max Z so we can normalize
+    f32 max_z = 0.0f;
+    for (usize i = 0; i < buffer->z_buffer.len; ++i) {
+        f32 z = buffer->z_buffer.ptr[i];
+        // skip negative-infinity or unfilled
+        if (max_z < z && -math_f32_inf < z) { max_z = z; }
+    }
+    if (max_z < 1e-6f) { max_z = 1.0f; }
+
+    // 2) For each pair of rows => 1 ASCII row
+    for (i32 y = 0; y < height; y += 2) {
+        i32 asciiY = y / 2;
+
+        for (i32 x = 0; x < width; ++x) {
+            // top pixel's depth
+            f32 zTop = buffer->z_buffer.ptr[x + y * width];
+            // bottom pixel's depth, or same if y+1 is out of bounds
+            f32 zBot = (y + 1 < height) ? buffer->z_buffer.ptr[x + (y + 1) * width] : zTop;
+
+            // if both are -∞, it means nothing was drawn there => ' '
+            if (zTop <= -math_f32_inf && zBot <= -math_f32_inf) {
+                *Mat_at(asciiMat, x, asciiY) = ' ';
+                continue;
+            }
+
+            // pick the max so we get whichever is in front
+            f32 zVal = fmaxf(zTop, zBot);
+
+            // map zVal -> [0 .. shadingLen-1]
+            i32 idx = (i32)((zVal / max_z) * (f32)(g_ascii_shading_len - 1));
+            if (idx < 0) {
+                idx = 0;
+            }
+            if (idx >= g_ascii_shading_len) {
+                idx = g_ascii_shading_len - 1;
+            }
+
+            *Mat_at(asciiMat, x, asciiY) = g_ascii_shading[idx];
         }
     }
 }
@@ -326,25 +356,10 @@ void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
     // Each cell is processed individually since it's at character resolution
     for (u32 y = 0; y < pixels.height; y += 2) {
         for (u32 x = 0; x < pixels.width; ++x) {
-            const Color upper = *Mat_at(pixels, x, y);
-            const Color lower = *Mat_at(pixels, x, y + 1);
-            const Color fg    = {
-                   .r = as$(u8, (as$(u32, upper.r) + lower.r / 2)),
-                   .g = as$(u8, (as$(u32, upper.g) + lower.g / 2)),
-                   .b = as$(u8, (as$(u32, upper.b) + lower.b / 2))
-            };
-            const Color bg = Color_black; // black background
-            const u8    ch = *Mat_at(asciiMat, x, y / 2);
-
+            let ch = *Mat_at(asciiMat, x, y / 2);
             backend->buffer_size += sprintf(
                 backend->buffer + backend->buffer_size,
-                "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm%c",
-                fg.r,
-                fg.g,
-                fg.b,
-                bg.r,
-                bg.g,
-                bg.b,
+                "\033[40;37m%c",
                 ch ? ch : ' ' // Space for empty cells
             );
         }
@@ -368,6 +383,18 @@ void asciiPrint(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
         );
     }
 }
+// void asciiPrint(Mat$u8 asciiMat) {
+//     // Usually we reset cursor to top-left:
+//     printf("\033[H");
+
+//     for (u32 y = 0; y < asciiMat.height; ++y) {
+//         for (u32 x = 0; x < asciiMat.width; ++x) {
+//             putchar(*Mat_at(asciiMat, x, y));
+//         }
+//         putchar('\n');
+//     }
+//     ignore fflush(stdout);
+// }
 
 Err$void dh_main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
@@ -475,14 +502,15 @@ Err$void dh_main(int argc, const char* argv[]) {
             // 5) Render all views
             engine_Canvas_clearDefault(game_canvas);
             renderHeart(&buffer, time_total);
-            flipCanvasBuffer(game_canvas);
             // Present the pixel canvas
             if (overlay_enabled) {
                 // (A) ASCII overlay path
-                asciiFromCanvas(game_canvas, overlay.ascii);
+                flipZBuffer(Mat_fromSli$(Mat$f32, buffer.z_buffer, window_res_width, window_res_height));
+                asciiFromZBuffer(&buffer, overlay.ascii);
                 asciiPrint(window->platform, game_canvas, overlay.ascii);
             } else {
                 // (B) Pixel path
+                flipCanvasBuffer(game_canvas);
                 engine_Window_present(window);
             }
 
