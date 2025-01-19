@@ -12,10 +12,14 @@
 #include "dh/Mat.h"
 
 #include "dh/Random.h"
+#include "dh/Str.h"
 
 #include "engine.h"
 #include "engine/color.h"
 #include "engine/platform_backend.h"
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "libs/stb_truetype.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -38,6 +42,8 @@
 
 #define target_fps (target_fps__62_50)
 #define target_spf (1.0 / target_fps)
+
+#define font_size (22)
 
 use_Mat$(u8);
 use_Mat$(f32);
@@ -72,6 +78,242 @@ force_inline Color Color_lerp(Color begin, Color end, f32 t) {
     result.b = (u8)((1.0f - t) * (f32)begin.b + t * (f32)end.b);
     result.a = 255; // or blend alpha if you want
     return result;
+}
+
+// ========== Font Data Structures ==========
+typedef struct KoreanFont {
+    stbtt_fontinfo info;
+    Sli$u8         font_buffer;
+    f32            scale;
+    i32            ascent;
+    i32            descent;
+    i32            line_gap;
+    mem_Allocator  allocator;
+} KoreanFont;
+use_Opt$(KoreanFont);
+use_Err$(KoreanFont);
+use_Sli$(KoreanFont);
+use_Mat$(KoreanFont);
+
+typedef struct Glyph {
+    Mat$u8 bitmap; // alpha values
+    i32    width;
+    i32    height;
+    i32    x_offset;
+    i32    y_offset;
+    i32    advance;
+} Glyph;
+use_Opt$(Glyph);
+use_Err$(Glyph);
+use_Sli$(Glyph);
+use_Mat$(Glyph);
+use_ArrList$(Glyph);
+
+// ========== Font Errors / Declarations (unchanged) ==========
+use_Err(
+    FontSystemErr,
+    FailedToOpenFontFile,
+    FailedToLoadFontInfo,
+    FailedToInitFontInfo,
+    FailedToLoadGlyph,
+    FailedToRenderGlyph
+);
+
+// ========== FontSystem_init / fini (unchanged, except we read .ttf) ==========
+must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* filename, f32 size_pixels) {
+    scope_reserveReturn(Err$KoreanFont) {
+        FILE* font_file = fopen(filename, "rb");
+        if (!font_file) {
+            return_err(FontSystemErr_err(FontSystemErrType_FailedToOpenFontFile));
+        }
+        defer(ignore fclose(font_file));
+
+        ignore fseek(font_file, 0, SEEK_END);
+        long   file_size = ftell(font_file);
+        ignore fseek(font_file, 0, SEEK_SET);
+
+        let font_buffer = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), file_size)));
+        errdefer(mem_Allocator_free(allocator, anySli(font_buffer)));
+        if (fread(font_buffer.ptr, 1, (size_t)file_size, font_file) != (size_t)file_size) {
+            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadFontInfo));
+        }
+
+        KoreanFont font = {
+            .font_buffer = font_buffer,
+            .allocator   = allocator
+        };
+
+        if (!stbtt_InitFont(&font.info, font_buffer.ptr, 0)) {
+            return_err(FontSystemErr_err(FontSystemErrType_FailedToInitFontInfo));
+        }
+
+        font.scale = stbtt_ScaleForPixelHeight(&font.info, size_pixels);
+
+        stbtt_GetFontVMetrics(&font.info, &font.ascent, &font.descent, &font.line_gap);
+        return_ok(font);
+    }
+    scope_returnReserved;
+}
+
+void FontSystem_fini(KoreanFont* font) {
+    if (font->font_buffer.ptr) {
+        mem_Allocator_free(font->allocator, anySli(font->font_buffer));
+    }
+}
+
+// ========== Updated FontSystem_renderGlyph using stbtt_GetGlyphBitmapBox ==========
+// 1) Use bounding-box approach with stbtt_GetGlyphBitmapBox
+// 2) Allocate raw bytes with typeInfo(u8)
+// 3) Remove the old bounding logic based on x0,y0 from stbtt_GetGlyphBox
+must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoint, f32 scale_factor) {
+    scope_reserveReturn(Err$Glyph) {
+        // 1) Find glyph index
+        i32 glyph_index = stbtt_FindGlyphIndex(&font->info, codepoint);
+        if (glyph_index == 0) {
+            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadGlyph));
+        }
+
+        // 2) Horizontal metrics (for advance)
+        i32 advance = 0;
+        i32 lsb     = 0;
+        stbtt_GetGlyphHMetrics(&font->info, glyph_index, &advance, &lsb);
+
+        // 3) bounding box in pixel coords
+        f32 final_scale = font->scale * scale_factor;
+        i32 ix0         = 0;
+        i32 iy0         = 0;
+        i32 ix1         = 0;
+        i32 iy1         = 0;
+        stbtt_GetGlyphBitmapBox(
+            &font->info, glyph_index, final_scale, final_scale, &ix0, &iy0, &ix1, &iy1
+        );
+
+        i32 w = ix1 - ix0;
+        i32 h = iy1 - iy0;
+        if (w <= 0 || h <= 0) {
+            // blank or empty glyph, return a zero-bitmap
+            Glyph gBlank = {
+                .bitmap   = Mat_fromSli$(Mat$u8, meta_cast$(Sli$u8, try(mem_Allocator_alloc(font->allocator, typeInfo(u8), 1))), 1, 1),
+                .width    = 0,
+                .height   = 0,
+                .x_offset = 0,
+                .y_offset = 0,
+                .advance  = (i32)((f32)advance * final_scale)
+            };
+            return_ok(gBlank);
+        }
+
+        // 4) Allocate memory for the bitmap
+        usize  size = (usize)w * h;
+        Sli$u8 mem  = meta_cast$(
+            Sli$u8,
+            try(mem_Allocator_alloc(font->allocator, typeInfo(u8), size))
+        );
+        let bitmap = Mat_fromSli$(Mat$u8, mem, w, h);
+
+        // 5) Render via stbtt_GetGlyphBitmap
+        i32 outW     = 0;
+        i32 outH     = 0;
+        u8* stb_data = stbtt_GetGlyphBitmap(
+            &font->info,
+            final_scale,
+            final_scale,
+            glyph_index,
+            &outW,
+            &outH,
+            0,
+            0
+        );
+        if (!stb_data) {
+            mem_Allocator_free(font->allocator, anySli(bitmap.items));
+            return_err(FontSystemErr_err(FontSystemErrType_FailedToRenderGlyph));
+        }
+        defer(stbtt_FreeBitmap(stb_data, null));
+
+        // 6) copy
+        if (outW != w || outH != h) {
+            log_warn("Warning: bounding box mismatch: box(%d,%d), out(%d,%d)\n", w, h, outW, outH);
+        }
+        memcpy(bitmap.items.ptr, stb_data, (usize)outW * outH);
+
+        // 7) Build final glyph
+        Glyph glyph = {
+            .bitmap   = bitmap,
+            .width    = w,
+            .height   = h,
+            .x_offset = ix0, // subpixel offset from bounding box
+            .y_offset = iy0,
+            .advance  = (i32)((f32)advance * final_scale)
+        };
+        return_ok(glyph);
+    }
+    scope_returnReserved;
+}
+
+// ========== Render glyph to canvas (unchanged) ==========
+void FontSystem_renderGlyphToCanvas(const Glyph* glyph, engine_Canvas* canvas, i32 x, i32 y, Color color) {
+    for (i32 dy = 0; dy < glyph->height; ++dy) {
+        for (i32 dx = 0; dx < glyph->width; ++dx) {
+            u8 alpha = *Mat_at(glyph->bitmap, dx, dy);
+            if (alpha <= 0) { continue; }
+            // scale color
+            Color pixel_color = Color_fromOpaque(
+                (u8)((u32)color.r * alpha / 255),
+                (u8)((u32)color.g * alpha / 255),
+                (u8)((u32)color.b * alpha / 255)
+            );
+            engine_Canvas_drawPixel(
+                canvas,
+                x + glyph->x_offset + dx,
+                y + glyph->y_offset + dy,
+                pixel_color
+            );
+        }
+    }
+}
+
+// ========== Remove utf8_decode() and use StrUtf8Iter instead ==========
+// This function now takes StrConst instead of const char* for text input.
+must_check Err$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
+    scope_reserveReturn(Err$void) {
+        var        allocator = heap_Classic_allocator(&(heap_Classic){});
+        // 1) Init font
+        KoreanFont font      = try(FontSystem_init(allocator, "assets/Galmuri11-Bold.ttf", size_pixels));
+        defer(FontSystem_fini(&font));
+
+        i32 cursor_x = x;
+        i32 cursor_y = y;
+
+        // 2) Create an iterator over code points
+        StrUtf8Iter iter = StrUtf8_iter(text);
+        Opt$u32     cp   = { 0 };
+        // 3) For each codepoint
+        while (StrUtf8Iter_next(&iter, &cp)) {
+            if (isNone(cp)) {
+                // Invalid codepoint or end
+                continue;
+            }
+            i32 codepoint = (i32)cp.value;
+
+            // 4) Render glyph
+            scope_with(let glyph = try(FontSystem_renderGlyph(&font, codepoint, 1.0f))) {
+                FontSystem_renderGlyphToCanvas(
+                    &glyph,
+                    canvas,
+                    cursor_x,
+                    cursor_y,
+                    Color_fromOpaque(255, 255, 255)
+                );
+                // move X
+                cursor_x += glyph.advance;
+
+                // release glyph memory
+                mem_Allocator_free(allocator, anySli(glyph.bitmap.items));
+            }
+        }
+        return_ok({});
+    }
+    scope_returnReserved;
 }
 
 /*========== Fireworks ======================================================*/
@@ -153,12 +395,7 @@ Err$void Firework_createEffectsAt(Firework* f, f64 x, f64 y, f64 scale, Color ba
             let width  = 1.0 * scale;
             let height = 1.0 * scale;
 
-            // Mix between heart-based colors and general pastels
-            Color color = Random_f64() < 0.6
-                            ? generateHeartBasedColor() // 60% heart-based colors
-                            : generatePastelColor();    // 40% general pastels
-
-            Particle_init(particle, x, y, width, height, color);
+            Particle_init(particle, x, y, width, height, base_color);
 
             // More varied and slightly slower particle movement
             f32 angle = (f32)Random_f64() * math_f32_tau;
@@ -250,6 +487,18 @@ static const f32 pink_to_firework_transition_end      = pink_to_firework_transit
 
 static bool  fireworks_started = false;
 static State state             = cleared(); // For fireworks
+
+static const f32 firework_on_time                                = 6.572f / 2;                                         // time
+static const f32 firework_with_msg_1st_printing_fade_in_begin    = pink_to_firework_transition_end + firework_on_time; // time (seconds) when fade starts
+static const f32 firework_with_msg_1st_printing_fade_in_duration = 2.00f;
+static const f32 firework_with_msg_1st_printing_fade_in_end      = firework_with_msg_1st_printing_fade_in_begin + firework_with_msg_1st_printing_fade_in_duration;
+static const f32 firework_with_msg_1st_on_time                   = 2.00f;
+static const f32 msg_1st_next_2st_printing_fade_in_begin         = firework_with_msg_1st_printing_fade_in_end + firework_with_msg_1st_on_time; // time (seconds) when fade starts
+static const f32 msg_1st_next_2st_printing_fade_in_duration      = 2.00f;
+static const f32 msg_1st_next_2st_printing_fade_in_end           = msg_1st_next_2st_printing_fade_in_begin + msg_1st_next_2st_printing_fade_in_duration;
+
+static const StrConst msg_1st = strL("안뇽 유니!");
+static const StrConst msg_2nd = strL("사랑한다구 ㅎㅎ");
 
 // static const f32 firework_on_time      = 6.572f;                        // time (seconds) when fade starts
 // static const f32 firework = red_to_pink_transition_end + ; // to go from pixels to firework
@@ -688,6 +937,150 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
     }
 }
 
+// measureKoreanTextWidth: returns the total pixel width of the text at the chosen font size
+// Using the same logic as renderKoreanText but skipping the drawing.
+must_check i32 measureKoreanTextWidth(StrConst text, usize size_pixels) {
+    // Use a temp font here. We re-init each time for simplicity.
+    // If performance is a concern, cache the font + glyphs.
+    var allocator   = heap_Classic_allocator(&(heap_Classic){});
+    i32 total_width = 0;
+
+    if_ok(FontSystem_init(allocator, "assets/Galmuri11-Bold.ttf", (f32)size_pixels), font) {
+        // Iterate codepoints
+        StrUtf8Iter iter = StrUtf8_iter(text);
+        Opt$u32     cp   = { 0 };
+
+        while (StrUtf8Iter_next(&iter, &cp)) {
+            if (isNone(cp)) {
+                continue;
+            }
+            i32 codepoint = (i32)cp.value;
+
+            // Render glyph only to measure
+            if_ok(FontSystem_renderGlyph(&font, codepoint, 1.0f), glyph) {
+                total_width += glyph.advance;
+                // clean glyph memory
+                mem_Allocator_free(allocator, anySli(glyph.bitmap.items));
+            }
+        }
+        // finish
+        FontSystem_fini((void*)&font);
+    }
+
+    return total_width;
+}
+
+static f32 fadeInFactor(f32 t, f32 start, f32 duration) {
+    if (t < start) {
+        return 0.0f;
+    }
+    f32 end = start + duration;
+    if (t > end) {
+        return 1.0f;
+    }
+    f32 ratio = (t - start) / duration;
+    if (ratio < 0.0f) {
+        ratio = 0.0f;
+    }
+    if (ratio > 1.0f) {
+        ratio = 1.0f;
+    }
+    return ratio;
+}
+
+must_check Err$void renderKoreanTextFade(
+    StrConst       text,
+    engine_Canvas* canvas,
+    i32            x,
+    i32            y,
+    usize          size_pixels,
+    f32            alpha_factor // in [0..1]
+) {
+    scope_reserveReturn(Err$void) {
+        var        allocator = heap_Classic_allocator(&(heap_Classic){});
+        // 1) init font
+        KoreanFont font      = try(FontSystem_init(allocator, "assets/Galmuri11.ttf", (f32)size_pixels));
+        defer(FontSystem_fini(&font));
+
+        i32 cursor_x = x;
+        i32 cursor_y = y;
+
+        // 2) codepoint iteration
+        StrUtf8Iter iter = StrUtf8_iter(text);
+        Opt$u32     cp   = { 0 };
+        while (StrUtf8Iter_next(&iter, &cp)) {
+            if (isNone(cp)) { continue; }
+            i32 codepoint = (i32)cp.value;
+
+            scope_with(let glyph = try(FontSystem_renderGlyph(&font, codepoint, 1.0f))) {
+                // We'll draw in e.g. white * alpha
+                Color c = Color_from(
+                    255,
+                    255,
+                    255,
+                    (u8)(255.0f * alpha_factor)
+                );
+                FontSystem_renderGlyphToCanvas(
+                    &glyph,
+                    canvas,
+                    cursor_x,
+                    cursor_y,
+                    c
+                );
+                cursor_x += glyph.advance;
+                mem_Allocator_free(allocator, anySli(glyph.bitmap.items));
+            }
+        }
+        return_ok({});
+    }
+    scope_returnReserved;
+}
+
+Err$void renderMessagesIfTimeAllows(f32 t, engine_Canvas* canvas) {
+    reserveReturn(Err$void);
+
+    // 1) Check if it’s time to do fade in for msg_1st
+    f32 factor1 = fadeInFactor(
+        t,
+        firework_with_msg_1st_printing_fade_in_begin,
+        firework_with_msg_1st_printing_fade_in_duration
+    );
+    // After fade in, msg_1st is fully visible for up to (firework_with_msg_1st_on_time)
+
+    // 2) Check if it’s time to do fade in for msg_2nd
+    f32 factor2 = fadeInFactor(
+        t,
+        msg_1st_next_2st_printing_fade_in_begin,
+        msg_1st_next_2st_printing_fade_in_duration
+    );
+
+    if (factor1 > 0.0f) {
+        // We want alpha= factor1
+        // measure text
+        i32 w1 = measureKoreanTextWidth(msg_1st, font_size);
+        // center
+        i32 x1 = (i32)(canvas->width - w1) / 2;
+        i32 y1 = (i32)((f32)canvas->height * 0.35f); // pick some Y near top or middle
+
+        // render with alpha factor1
+        // We'll use a version of renderKoreanText that can do alpha
+        try(renderKoreanTextFade(msg_1st, canvas, x1, y1, font_size, factor1));
+    }
+
+    if (factor2 > 0.0f) {
+        // measure text
+        i32 w2 = measureKoreanTextWidth(msg_2nd, font_size);
+        i32 x2 = (i32)(canvas->width - w2) / 2;
+        // place below or above the first message
+        i32 y2 = (i32)((f32)canvas->height * 0.5f);
+
+        try(renderKoreanTextFade(msg_2nd, canvas, x2, y2 + font_size / 2, font_size, factor2));
+    }
+
+    return_ok({});
+}
+
+
 /*========== main ===========================================================*/
 
 Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
@@ -733,13 +1126,28 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
             }
         );
         defer(engine_Canvas_destroy(game_canvas));
+        let text_canvas = catch (
+            engine_Canvas_create(
+                window_res_width,
+                window_res_height,
+                engine_CanvasType_rgba
+            ),
+            err,
+            {
+                log_error("Failed to create canvas: %s\n", err);
+                return_err(err);
+            }
+        );
+        defer(engine_Canvas_destroy(text_canvas));
         log_info("canvas created\n");
 
         engine_Canvas_clearDefault(game_canvas);
+        engine_Canvas_clearDefault(text_canvas);
         log_info("canvas cleared\n");
 
         // Add canvas views
         engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
+        engine_Window_addCanvasView(window, text_canvas, 0, 0, window_res_width, window_res_height);
         log_info("canvas views added\n");
 
         // Create render buffer with engine canvas
@@ -906,8 +1314,8 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
                             state.allocator,
                             center_x,
                             center_y,
-                            2.0,                // Double size
-                            color_heart_pinkish // Use the heart's pink color
+                            2.0,               // Double size
+                            color_heart_normal // Use the heart's pink color
                         ));
                     }
                 } else {
@@ -941,6 +1349,9 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
                 try(State_update(&state, time_dt));
                 engine_Canvas_clear(game_canvas, color_bg_white);
                 State_render(&state, game_canvas, time_dt);
+                if (pink_to_firework_transition_end < time_total) {
+                    renderMessagesIfTimeAllows(time_total, text_canvas);
+                }
                 engine_Window_present(window);
             }
 
@@ -1095,12 +1506,8 @@ void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
             Color bg = color_bg_white; // Using white background
             Color fg = p->color;
 
-            // Screen blend formula: 1 - (1-a)(1-b)
-            Color blended = Color_fromOpaque(
-                as$(u8, 255.0f - (255.0f - fg.r) * (255.0f - bg.r) / 255.0f),
-                as$(u8, 255.0f - (255.0f - fg.g) * (255.0f - bg.g) / 255.0f),
-                as$(u8, 255.0f - (255.0f - fg.b) * (255.0f - bg.b) / 255.0f)
-            );
+            var blended = Color_lerp(fg, bg, (f32)p->lifetime);
+            blended.a   = 192;
 
             // Blend with alpha
             Color final = Color_lerp(bg, blended, alpha);
@@ -1198,21 +1605,19 @@ Err$void Firework_update(Firework* f, f64 dt) { // NOLINT
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
                 scope_with(let particle = meta_castPtr$(Particle*, try(ArrList_addBackOne(&f->effects.base)))) {
-                    let x             = rocket->position[0];
-                    let y             = rocket->position[1];
-                    let width         = 1.0;
-                    let height        = 1.0;
-                    let color         = Hsl_intoColorOpaque(Hsl_from(
-                        f->effect_base_color.h,
-                        f->effect_base_color.s + (Random_f64() - 0.5) * 20.0,
-                        f->effect_base_color.l + (Random_f64() - 0.5) * 40.0
-                    ));
-                    let wrapped_color = Color_fromOpaque(
-                        math_wrap(color.r, 192u, 255u),
-                        math_wrap(color.g, 192u, 255u),
-                        math_wrap(color.b, 192u, 255u)
+                    let x      = rocket->position[0];
+                    let y      = rocket->position[1];
+                    let width  = 1.0;
+                    let height = 1.0;
+                    let color  = Hsl_intoColor(
+                        Hsl_from(
+                            f->effect_base_color.h,
+                            f->effect_base_color.s + (Random_f64() - 0.5) * 20.0,
+                            f->effect_base_color.l + (Random_f64() - 0.5) * 40.0
+                        ),
+                        192
                     );
-                    Particle_init(particle, x, y, width, height, wrapped_color);
+                    Particle_init(particle, x, y, width, height, color);
                     Particle_initWithSpeed(particle, (Random_f64() - 0.5) * 1.0, (Random_f64() - 0.9) * 1.0);
                     Particle_initWithAcceleration(particle, 0.0, 0.02);
                     Particle_initWithFading(particle, 0.01);
@@ -1367,10 +1772,11 @@ Err$Opt$Ptr$Firework State_spawnFirework(State* s) {
         s->allocator,
         as$(i64, Random_u32() % s->width),
         s->height,
-        Color_fromOpaque(
-            math_wrap(Random_u8(), 192u, 255u),
-            math_wrap(Random_u8(), 192u, 255u),
-            math_wrap(Random_u8(), 192u, 255u)
+        Color_from(
+            Random_u8(),
+            Random_u8(),
+            Random_u8(),
+            192
         )
     ))));
 }
