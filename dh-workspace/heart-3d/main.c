@@ -21,8 +21,8 @@
 #define window_res_width__40x25    /* template value */ (40)
 #define window_res_height__40x25   /* template value */ (25)
 
-#define window_res_width  (window_res_width__80x50)
-#define window_res_height (window_res_height__80x50)
+#define window_res_width  (window_res_width__160x100)
+#define window_res_height (window_res_height__160x100)
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
@@ -71,6 +71,19 @@ force_inline Color Color_blend(Color lhs, Color rhs, f32 factor) {
         as$(u8, lhs.b * (1.0f - factor) + rhs.b * factor)
     );
 }
+force_inline Color Color_lerp(Color begin, Color end, f32 t) {
+    // clamp t in [0..1]
+    if (t < 0.0f) { t = 0.0f; }
+    if (t > 1.0f) { t = 1.0f; }
+
+    // linear interpolation per channel
+    Color result;
+    result.r = (u8)((1.0f - t) * (f32)begin.r + t * (f32)end.r);
+    result.g = (u8)((1.0f - t) * (f32)begin.g + t * (f32)end.g);
+    result.b = (u8)((1.0f - t) * (f32)begin.b + t * (f32)end.b);
+    result.a = 255; // or blend alpha if you want
+    return result;
+}
 
 // Rotation angles and scaling factor
 static Vec3f angle           = math_Vec3f_zero;
@@ -80,9 +93,31 @@ static f32   scale_direction = 0.001f;
 // Light position and properties
 // static Vec3f light_pos      = literal_math_Vec3f_from(2.0f, 2.0f, -2.0f);
 // Make this truly static and pointing from "top-right" to bottom-left, for instance:
-static Vec3f g_light_dir    = { { -1.0f, 1.0f, -1.0f } };
-static Color heart_color    = literal_Color_fromOpaque(220, 20, 60); // Crimson red
-static Color specular_color = literal_Color_fromOpaque(255, 255, 255);
+static Vec3f       g_light_dir    = { { -1.0f, 1.0f, -1.0f } };
+static const Color heart_color    = literal_Color_fromOpaque(220, 20, 60); // Crimson red
+static const Color specular_color = literal_Color_fromOpaque(255, 255, 255);
+
+static const f32 ascii_on_time   = 07.21f; // full ASCII
+static const f32 transition_time = 03.22f; // to go from ASCII to pixels
+
+static const f32 color_transition_start    = ascii_on_time + transition_time + 10.07f; // time (seconds) when fade starts
+static const f32 color_transition_duration = 3.0f;                                     // how many seconds the fade lasts
+
+static const f32 firework_time = color_transition_start + color_transition_duration; // to go from pixels to firework
+
+// The original heart color (crimson).
+static const Color color_heart_normal  = { { 220, 20, 60, 255 } };
+// The “soft strawberry milk pink” color?
+// static Color color_heart_pinkish = { { 255, 210, 220, 255 } };
+static const Color color_heart_pinkish = { { 255, 108, 140, 255 } };
+
+static const Color color_bg_normal = { { 0, 0, 0, 255 } };                                                                // black
+static const Color color_bg_white  = { { as$(u8, 255.0f * 0.9f), as$(u8, 255.0f * 0.9f), as$(u8, 255.0f * 0.9f), 255 } }; // white
+
+// Instead of a float ambientStrength, define:
+static const Color color_ambient_begin = { { 25, 25, 25, 255 } };
+static const Color color_ambient_end   = color_bg_white;
+static Color       color_ambient_curr  = color_bg_white;
 
 // Calculate surface normal for the heart at a given point
 Vec3f calculateHeartNormal(Vec2f point, f32 radius) {
@@ -122,23 +157,37 @@ Vec3f applyRotation(Vec3f point, Vec3f angles) {
 }
 
 // Calculate lighting for a point
-Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos) {
-    // Calculate lighting vectors
-    // const Vec3f light_dir = math_Vec3f_norm(math_Vec3f_sub(light_pos, frag_pos));
+Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color color) {
+    // // Calculate lighting vectors
+    // // const Vec3f light_dir = math_Vec3f_norm(math_Vec3f_sub(light_pos, frag_pos));
     // Ensure length=1
     const Vec3f light_dir = math_Vec3f_norm(g_light_dir);
     const Vec3f view_dir  = math_Vec3f_norm(math_Vec3f_sub(view_pos, frag_pos));
 
-    // Calculate light angle
-    const f32 ambient_strength = 0.1f;
-    const f32 n_dot_l          = math_Vec3f_dot(normal, light_dir);
-    // Early exit if surface faces away from light
-    if (n_dot_l <= 0.0f) { return Color_scale(heart_color, ambient_strength); /* Ambient only */ }
+    // // Calculate light angle
+    // const f32 ambient_strength = 0.1f;
+    // const f32 n_dot_l          = math_Vec3f_dot(normal, light_dir);
+    // // Early exit if surface faces away from light
+    // if (n_dot_l <= 0.0f) { return Color_scale(color, ambient_strength); /* Ambient only */ }
+
+    const f32 n_dot_l = math_Vec3f_dot(normal, light_dir);
+    if (n_dot_l <= 0.0f) {
+        return Color_fromOpaque(
+            (u8)prim_min(color.r * (color_ambient_curr.r / 255.0f), 255),
+            (u8)prim_min(color.g * (color_ambient_curr.g / 255.0f), 255),
+            (u8)prim_min(color.b * (color_ambient_curr.b / 255.0f), 255)
+        );
+    }
 
     // Ambient light
-    const Color ambient  = Color_scale(heart_color, ambient_strength);
+    // const Color ambient  = Color_scale(color, ambient_strength);
+    const Color ambient = Color_fromOpaque(
+        (u8)prim_min(color.r * (color_ambient_curr.r / 255.0f), 255),
+        (u8)prim_min(color.g * (color_ambient_curr.g / 255.0f), 255),
+        (u8)prim_min(color.b * (color_ambient_curr.b / 255.0f), 255)
+    );
     // Diffuse light
-    const Color diffuse  = Color_scale(heart_color, n_dot_l);
+    const Color diffuse  = Color_scale(color, n_dot_l);
     // Specular light using Blinn-Phong
     const Color specular = Color_scale(
         specular_color,
@@ -164,10 +213,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos) {
 }
 
 // Previous functions remain the same up to renderHeart
-void renderHeart(RenderBuffer* buffer, f32 t) {
-    // Clear buffers
-    engine_Canvas_clearDefault(buffer->canvas);
-
+void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
     let z_buffer = Mat_fromSli$(Mat$f32, buffer->z_buffer, window_res_width, window_res_height);
     for_slice(z_buffer.items, depth) {
         *depth = -math_f32_inf;
@@ -236,7 +282,8 @@ void renderHeart(RenderBuffer* buffer, f32 t) {
                         calculateHeartLighting(
                             transformed_normal,
                             view_pos,
-                            pos
+                            pos,
+                            color
                         )
                     );
                 }
@@ -382,10 +429,6 @@ void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
     }
 }
 
-static const f32 ascii_on_time   = 07.21f; // full ASCII
-static const f32 transition_time = 03.22f; // to go from ASCII to pixels
-static const f32 firework_time   = 10.27f; // to go from pixels to firework
-
 // Store whether each ASCII cell is "off" (pixel) or "on" (ASCII).
 // For 80x25 = 2000 cells if window_res_width=80, window_res_height=50 => 80*(50/2)=2000
 static bool ascii_disabled[window_res_size / 2];
@@ -479,6 +522,7 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
     }
 }
 
+
 Err$void dh_main(i32 argc, const char* argv[]) {
     unused(argc), unused(argv);
     scope_reserveReturn(Err$void) {
@@ -557,7 +601,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             disable_cell_order[i] = i;
         }
         // Fisher-Yates shuffle (or any shuffle)
-        for (i32 i = total_cells - 1; i > 0; i--) {
+        for (i32 i = total_cells - 1; i > 0; --i) {
             i32 j = rand() % (i + 1);
             // swap cellOrder[i], cellOrder[j]
             prim_swap(disable_cell_order[i], disable_cell_order[j]);
@@ -588,58 +632,81 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
             // 4) Update game state
             if (engine_Key_pressed(engine_KeyCode_esc)) {
+                log_debug("esc pressed\n");
                 is_running = false;
             }
             // time_total += 0.003f;
             time_total += time_dt;
 
-            if (!overlay_complete) {
-                if (time_total < ascii_on_time) {
-                    // do nothing; all ASCII cells are enabled
-                } else {
-                    // in the transition window:
-                    // e.g. from time=3s to time=5s if transition_time=2.
-                    f32 phaseTime = time_total - ascii_on_time;
+            /* Overlay ascii */ {
+                if (!overlay_complete) {
+                    let t = time_total;
+                    if (t < ascii_on_time) {
+                        // do nothing; all ASCII cells are enabled
+                    } else {
+                        // in the transition window:
+                        // e.g. from time=3s to time=5s if transition_time=2.
+                        f32 time_phase = t - ascii_on_time;
 
-                    // clamp phaseTime to [0, transition_time]
-                    if (phaseTime < 0.0f) {
-                        phaseTime = 0.0f;
-                    }
-                    if (phaseTime > transition_time) {
-                        phaseTime = transition_time;
-                    }
+                        // clamp phaseTime to [0, transition_time]
+                        if (time_phase < 0.0f) { time_phase = 0.0f; }
+                        if (time_phase > transition_time) { time_phase = transition_time; }
 
-                    // "progress" in [0..1], where 0 means "no cells disabled"
-                    // and 1 means "all cells disabled"
-                    f32 progress = phaseTime / transition_time;
+                        // "progress" in [0..1], where 0 means "no cells disabled"
+                        // and 1 means "all cells disabled"
+                        f32 progress = time_phase / transition_time;
 
-                    // For slow->fast acceleration, square it:
-                    f32 accel = progress * progress;
+                        // For slow->fast acceleration, square it:
+                        f32 accel = progress * progress;
 
-                    // The desired total number of disabled cells by now:
-                    i32 desiredDisabled = (i32)(accel * (f32)total_cells);
-                    // How many new cells disable this frame
-                    i32 newDisabled     = desiredDisabled - disabled_count;
-                    if (newDisabled < 0) {
-                        newDisabled = 0; // should never happen if logic is correct
-                    }
+                        // The desired total number of disabled cells by now:
+                        i32 desired_disabled = (i32)(accel * (f32)total_cells);
+                        // How many new cells disable this frame
+                        i32 new_disabled     = desired_disabled - disabled_count;
+                        if (new_disabled < 0) {
+                            new_disabled = 0; // should never happen if logic is correct
+                        }
 
-                    // If need to disable more cells, do it
-                    if (newDisabled > 0) {
-                        disableSomeCellsRandom(newDisabled);
-                        disabled_count += newDisabled;
-                    }
+                        // If need to disable more cells, do it
+                        if (new_disabled > 0) {
+                            disableSomeCellsRandom(new_disabled);
+                            disabled_count += new_disabled;
+                        }
 
-                    // If progress==1, hit the end of the transition:
-                    if (progress >= 1.0f) {
-                        overlay_complete = true;
+                        // If progress==1, hit the end of the transition:
+                        if (progress >= 1.0f) {
+                            overlay_complete = true;
+                            log_debug("overlay complete\n");
+                        }
                     }
                 }
             }
 
             // 5) Render all views
-            engine_Canvas_clearDefault(game_canvas);
-            renderHeart(&buffer, time_total);
+            /* Transition color */ {
+                // top of the frame
+                let t = time_total;
+
+                // compute colorFactor
+                f32 color_factor = 0.0f;
+                if (t > color_transition_start) {
+                    f32 d = (t - color_transition_start) / color_transition_duration;
+                    if (d < 0.0f) { d = 0.0f; }
+                    if (d > 1.0f) { d = 1.0f; }
+                    color_factor = d;
+                }
+
+                // build the actual colors
+                let color_bg       = Color_lerp(color_bg_normal, color_bg_white, color_factor);
+                let color_fg       = Color_lerp(color_heart_normal, color_heart_pinkish, color_factor);
+                color_ambient_curr = Color_lerp(color_ambient_begin, color_ambient_end, color_factor);
+
+                // Clear with the new BG color
+                engine_Canvas_clear(game_canvas, color_bg);
+
+                // Then either pass "heartCol" into renderHeart or store it in a global, e.g.
+                renderHeart(&buffer, t, color_fg);
+            }
             flipCanvasBuffer(game_canvas);
             // Present the pixel canvas
             if (!overlay_complete) {
