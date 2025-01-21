@@ -39,6 +39,9 @@
     {
       "name": "game-of-life",
       "path": "dh-examples/game-of-life"
+    },
+    {
+      "path": "dh-examples/barnes-hut"
     }
   ],
   "settings": {

@@ -37,8 +37,8 @@ use_Mat$(Color);
 #define window_res_width__40x25    /* template value */ (40)
 #define window_res_height__40x25   /* template value */ (25)
 
-#define window_res_width  (window_res_width__160x100)
-#define window_res_height (window_res_height__160x100)
+#define window_res_width  (window_res_width__320x200)
+#define window_res_height (window_res_height__320x200)
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
@@ -248,7 +248,7 @@ must_check Err$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x
     scope_reserveReturn(Err$void) {
         var        allocator = heap_Classic_allocator(&(heap_Classic){});
         // 1) Init font
-        KoreanFont font      = try(FontSystem_init(allocator, "assets/Galmuri9.ttf", size_pixels));
+        KoreanFont font      = try(FontSystem_init(allocator, "../assets/Galmuri9.ttf", size_pixels));
         defer(FontSystem_fini(&font));
 
         i32 cursor_x = x;

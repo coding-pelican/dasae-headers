@@ -4,8 +4,8 @@
  * @file    Arr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-17 (date of creation)
- * @updated 2025-01-18 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-01-21 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
  * @prefix  Arr
  */
@@ -30,6 +30,9 @@ extern "C" {
 #define Arr_asNamed$(TNamedArr, var_unnamed_arr) OP__Arr_asNamed$(TNamedArr, var_unnamed_arr)
 
 #define Arr_at(var_self, usize_index) OP__Arr_at(pp_uniqueToken(_self), pp_uniqueToken(_index), var_self, usize_index)
+
+#define for_array(var_arr, var_item)                    SYN__for_array(var_arr, var_item)
+#define for_array_indexed(var_arr, var_item, var_index) SYN__for_array_indexed(var_arr, var_item, var_index)
 
 /*========== Implementations ================================================*/
 
@@ -62,6 +65,15 @@ extern "C" {
     debug_assert((_index) < countOf((_self)->items));          \
     eval_return(&(_self)->items[_index]);                      \
 )
+
+#define SYN__for_array(var_arr, var_item)                   \
+    for (usize _i = 0; _i < countOf((var_arr).items); ++_i) \
+    scope_with(let var_item = Arr_at(var_arr, _i))
+
+#define SYN__for_array_indexed(var_arr, var_item, var_index)                         \
+    for (usize var_index = 0; (var_index) < countOf((var_arr).items); ++(var_index)) \
+    scope_with(let var_item = Arr_at(var_arr, var_index))
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

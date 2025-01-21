@@ -218,6 +218,44 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                         ps.ptr[i].y = ny;
                     }
 
+                    // Add circle-circle collision detection
+                    for (usize j = i + 1; j < ps.len; ++j) {
+                        Vec2f dist_vec = math_Vec2f_sub(ps.ptr[j], ps.ptr[i]);
+                        f32   distance = math_Vec2f_len(dist_vec);
+
+                        if (distance < radius * 2) {
+                            // Normalize the distance vector
+                            Vec2f normal  = math_Vec2f_scale(dist_vec, 1.0f / distance);
+                            Vec2f tangent = { { -normal.y, normal.x } };
+
+                            // Project velocities
+                            f32 dp_tan_1  = math_Vec2f_dot(vs.ptr[i], tangent);
+                            f32 dp_tan_2  = math_Vec2f_dot(vs.ptr[j], tangent);
+                            f32 dp_norm_1 = math_Vec2f_dot(vs.ptr[i], normal);
+                            f32 dp_norm_2 = math_Vec2f_dot(vs.ptr[j], normal);
+
+                            // Calculate new velocities (assuming equal mass)
+                            f32 momentum_1 = dp_norm_2;
+                            f32 momentum_2 = dp_norm_1;
+
+                            // Update velocities
+                            vs.ptr[i] = math_Vec2f_add(
+                                math_Vec2f_scale(tangent, dp_tan_1),
+                                math_Vec2f_scale(normal, momentum_1 * state_collision_damping)
+                            );
+                            vs.ptr[j] = math_Vec2f_add(
+                                math_Vec2f_scale(tangent, dp_tan_2),
+                                math_Vec2f_scale(normal, momentum_2 * state_collision_damping)
+                            );
+
+                            // Separate the circles
+                            f32   overlap    = radius * 2 - distance;
+                            Vec2f separation = math_Vec2f_scale(normal, overlap * 0.5f);
+                            ps.ptr[i]        = math_Vec2f_sub(ps.ptr[i], separation);
+                            ps.ptr[j]        = math_Vec2f_add(ps.ptr[j], separation);
+                        }
+                    }
+
                     engine_Canvas_fillRingByScanlines(
                         game_canvas,
                         (i32)ps.ptr[i].x,
