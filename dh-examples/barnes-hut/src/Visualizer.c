@@ -4,10 +4,15 @@
 #include "dh/log.h"
 #include "engine/color.h"
 
+#define color_body    (literal_Color_fromOpaque(192, 192, 192))
+#define color_vel_vec (literal_Color_fromOpaque(0, 0, 192))
+#define color_acc_vec (literal_Color_fromOpaque(192, 0, 0))
+
 // Static helper functions
 force_inline f32  Visualizer_invScale(Visualizer* self) { return 1.0f / self->scale; }
-static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos);
+static Vec2f      Visualizer_screenToWorld(Visualizer* self, engine_Window* window, Vec2i screen_pos);
 static Vec2i      Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos);
+static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos);
 static void       Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color);
 
 Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
@@ -21,7 +26,7 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
         .shows_bodies_acc_vec = false,
         .shows_quad_tree      = false,
 
-        .body_color = Color_fromOpaque(192, 192, 192),
+        .body_color = color_body,
 
         .depth_range = {
             .min = 0,
@@ -186,58 +191,84 @@ Err$void Visualizer_update(Visualizer* self) {
     return_void();
 }
 
-Err$void Visualizer_render(Visualizer* self) { // NOLINT
+force_inline void Visualizer_renderBodies(Visualizer* self) {
+    for_slice(self->bodies.items, body) {
+        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_radius = as$(i32, body->radius * Visualizer_invScale(self));
+        engine_Canvas_fillCircle(
+            self->canvas,
+            screen_pos.s[0],
+            screen_pos.s[1],
+            screen_radius,
+            self->body_color
+        );
+    }
+}
+
+force_inline void Visualizer_renderBodiesWithVelVec(Visualizer* self) {
+    for_slice(self->bodies.items, body) {
+        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_radius = as$(i32, body->radius * Visualizer_invScale(self));
+        engine_Canvas_fillCircle(
+            self->canvas,
+            screen_pos.s[0],
+            screen_pos.s[1],
+            screen_radius,
+            self->body_color
+        );
+
+        // Draw velocity vector
+        if (0.0f < math_Vec2f_lenSq(body->vel)) {
+            let vel_end_world  = math_Vec2f_add(body->pos, body->vel);
+            let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
+            engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], color_vel_vec);
+        }
+    }
+}
+
+force_inline void Visualizer_renderBodiesWithAccVec(Visualizer* self) {
+    for_slice(self->bodies.items, body) {
+        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_radius = as$(i32, body->radius * Visualizer_invScale(self));
+        engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], screen_radius, self->body_color);
+
+        // Draw acceleration vector
+        if (0.0f < math_Vec2f_lenSq(body->acc)) {
+            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, body->acc);
+            const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
+            engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], color_acc_vec);
+        }
+    }
+}
+
+force_inline void Visualizer_renderBodiesWithVelAccVec(Visualizer* self) {
+    debug_assert_nonnull(self);
+    for_slice(self->bodies.items, body) {
+        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_radius = as$(i32, body->radius * Visualizer_invScale(self));
+        engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], screen_radius, self->body_color);
+
+        // Velocity vector
+        if (0.0f < math_Vec2f_lenSq(body->vel)) {
+            const Vec2f vel_end_world  = math_Vec2f_add(body->pos, body->vel);
+            const Vec2i vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
+            engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], color_vel_vec);
+        }
+
+        // Acceleration vector
+        if (0.0f < math_Vec2f_lenSq(body->acc)) {
+            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, body->acc);
+            const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
+            engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], color_acc_vec);
+        }
+    }
+}
+
+force_inline Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    // Clear canvas
-    engine_Canvas_clearDefault(self->canvas);
-
-    // Draw bodies
-    if (self->shows_bodies) {
-        if (self->shows_bodies_vel_vec && self->shows_bodies_acc_vec) { // NOLINT
-            // TODO: Draw velocity and acceleration vectors
-        } else if (self->shows_bodies_vel_vec && !self->shows_bodies_acc_vec) {
-            for_slice(self->bodies.items, body) {
-                // Convert world coordinates to screen coordinates correctly
-                let screen_pos_ndc = math_Vec2f_scale(math_Vec2f_sub(body->pos, self->pos), 1.0f / self->scale);
-                i32 screen_x       = as$(i32, screen_pos_ndc.x * (as$(f32, self->canvas->width) / 2.0f) + (as$(f32, self->canvas->width) / 2.0f));
-                i32 screen_y       = as$(i32, screen_pos_ndc.y * (as$(f32, self->canvas->height) / 2.0f) + (as$(f32, self->canvas->height) / 2.0f));
-                let screen_radius  = as$(i32, body->radius / self->scale);
-
-                engine_Canvas_fillCircle(self->canvas, screen_x, screen_y, screen_radius, self->body_color);
-
-                // Draw velocity vector
-                if (0.0f < math_Vec2f_lenSq(body->vel)) {
-                    let vel_end     = math_Vec2f_add(body->pos, body->vel);
-                    let vel_end_ndc = math_Vec2f_scale(math_Vec2f_sub(vel_end, self->pos), 1.0f / self->scale);
-                    i32 vel_end_x   = as$(i32, vel_end_ndc.x * (as$(f32, self->canvas->width) / 2.0f) + (as$(f32, self->canvas->width) / 2.0f));
-                    i32 vel_end_y   = as$(i32, vel_end_ndc.y * (as$(f32, self->canvas->height) / 2.0f) + (as$(f32, self->canvas->height) / 2.0f));
-
-                    engine_Canvas_drawLine(self->canvas, screen_x, screen_y, vel_end_x, vel_end_y, self->body_color);
-                }
-            }
-        } else if (!self->shows_bodies_vel_vec && self->shows_bodies_acc_vec) {
-            // TODO: Draw acceleration vector correctly
-        } else {
-            for_slice(self->bodies.items, body) {
-                let screen_pos = math_Vec2f_scale(
-                    math_Vec2f_sub(body->pos, self->pos),
-                    1.0f / self->scale
-                );
-
-                engine_Canvas_fillCircle(
-                    self->canvas,
-                    as$(i32, screen_pos.x * as$(f32, self->canvas->width) / 2.0f + as$(i32, self->canvas->width) / 2.0f),
-                    as$(i32, screen_pos.y * as$(f32, self->canvas->height) / 2.0f + as$(i32, self->canvas->height) / 2.0f),
-                    as$(i32, body->radius / self->scale),
-                    self->body_color
-                );
-            }
-        }
-    }
-
-    if (self->shows_quad_tree && 0 < self->nodes.items.len) {
+    if (0 < self->nodes.items.len) {
         var depth_range = self->depth_range;
         if (depth_range.max <= depth_range.min) {
             /* init */ var stack = eval(
@@ -361,23 +392,67 @@ Err$void Visualizer_render(Visualizer* self) { // NOLINT
     return_void();
 }
 
-static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
+Err$void Visualizer_render(Visualizer* self) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+
+    // Clear canvas
+    engine_Canvas_clearDefault(self->canvas);
+
+    // Draw bodies
+    if (self->shows_bodies) {
+        let render_bodies_type = self->shows_bodies_vel_vec | self->shows_bodies_acc_vec << 1;
+        switch (render_bodies_type) {
+        case (0 | 0 << 1):
+            Visualizer_renderBodies(self);
+            break;
+        case (1 | 0 << 1):
+            Visualizer_renderBodiesWithVelVec(self);
+            break;
+        case (0 | 1 << 1):
+            Visualizer_renderBodiesWithAccVec(self);
+            break;
+        case (1 | 1 << 1):
+            Visualizer_renderBodiesWithVelAccVec(self);
+            break;
+        default:
+            claim_unreachable;
+            break;
+        }
+    }
+
+    // Draw quad-tree
+    if (self->shows_quad_tree) {
+        try(Visualizer_renderQuadTree(self));
+    }
+
+    return_void();
+}
+
+static math_Vec2f Visualizer_screenToWorld(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(window);
 
     let client_size = engine_Window_getClientSize(window);
+    // Avoid division by zero (unlikely but safer)
+    if (client_size.s[0] <= 0 || client_size.s[1] <= 0) { return math_Vec2f_zero; }
 
-    // Convert to normalized device coordinates
-    let mouse = math_Vec2f_from(
-        as$(f32, screen_pos.s[0]) * 2.0f / as$(f32, client_size.s[0]) - 1.0f,
-        1.0f - as$(f32, screen_pos.s[1]) * 2.0f / as$(f32, client_size.s[1])
-    );
+    // Convert screen coordinates to normalized device coordinates (NDC: [-1, 1])
+    let ndc_x = (2.0f * (f32)screen_pos.s[0] / (f32)client_size.s[0]) - 1.0f;
+    let ndc_y = 1.0f - (2.0f * (f32)screen_pos.s[1] / (f32)client_size.s[1]);
+    let ndc   = math_Vec2f_from(ndc_x, ndc_y);
 
-    // Convert to world space
+    // Apply camera transform: NDC * scale + position
     return math_Vec2f_add(
-        math_Vec2f_scale(mouse, self->scale),
+        math_Vec2f_scale(ndc, self->scale),
         self->pos
     );
+}
+
+static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
+    debug_assert_nonnull(self);
+    debug_assert_nonnull(window);
+    return Visualizer_screenToWorld(self, window, screen_pos);
 }
 
 static Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
