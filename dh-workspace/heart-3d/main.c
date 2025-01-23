@@ -361,7 +361,7 @@ extern Err$void         Firework_update(Firework* f, f64 dt) must_check;
 extern void             Firework_render(const Firework* f, engine_Canvas* c, f64 dt);
 
 use_ArrList$(Firework);
-typedef struct State {
+typedef struct Simulator {
     ArrList$Firework fireworks;
     u32              width;
     u32              height;

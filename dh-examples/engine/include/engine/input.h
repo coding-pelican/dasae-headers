@@ -134,6 +134,9 @@ typedef struct engine_MouseState {
     i32 prev_x;                                       // Previous X position
     i32 prev_y;                                       // Previous Y position
     i32 scroll_delta;                                 // Scroll wheel delta
+    f64 last_scroll_timestamp;                        // Time of the last scroll event
+    i32 accumulated_scroll_delta;                     // Accumulated delta since last speed calculation
+    f64 scroll_speed;                                 // Calculated scroll speed
 } engine_MouseState;
 
 // Input event structure
@@ -271,9 +274,20 @@ force_inline Vec2i engine_Mouse_getDelta(void) {
     };
 }
 
+force_inline f64 engine_Mouse_getScrollSpeed(void) {
+    let input = engine_Input_instance();
+    return input->mouse.scroll_speed;
+}
+
 force_inline i32 engine_Mouse_getScrollDelta(void) {
     let input = engine_Input_instance();
     return input->mouse.scroll_delta;
 }
+
+force_inline f64 engine_Mouse_getScrollDeltaAccumulated(void) {
+    let input = engine_Input_instance();
+    return input->mouse.accumulated_scroll_delta;
+}
+
 
 #endif /* ENGINE_INPUT_INCLUDED */

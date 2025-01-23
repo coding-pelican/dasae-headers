@@ -1,170 +1,204 @@
-/* TODO: Implement thrd */
-/* TODO: Implement thrd_mtx */
-/* TODO: Implement atomic */
-/* TODO: Implement coroutine */
-
-#include <pthread.h>
-#include <stdatomic.h>
-
-#include "Simulation.h"
-#include "State.h"
-#include "utils.h"
+#define MEM_NO_TRACE_ALLOC_AND_FREE (1)
+#include "dh/main.h"
+#include "dh/ArrList.h"
+#include "dh/debug.h"
+#include "dh/log.h"
 
 #include "dh/core.h"
-#include "dh/mem/Tracker.h"
+#include "dh/mem/Allocator.h"
+#include "dh/heap/Classic.h"
+#include "dh/heap/Page.h"
 
-#include "engine/window.h"
-#include "engine/input.h"
+#include "dh/scope/return.h"
+#include "engine.h"
 
-// Shared state between simulation and render threads
+#include "Simulation.h"
+#include "Visualizer.h"
+#include "utils.h"
+
+#define window_res_width__960x600  /* template value */ (960)
+#define window_res_height__960x600 /* template value */ (600)
+#define window_res_width__800x500  /* template value */ (800)
+#define window_res_height__800x500 /* template value */ (500)
+#define window_res_width__640x400  /* template value */ (640)
+#define window_res_height__640x400 /* template value */ (400)
+#define window_res_width__480x300  /* template value */ (480)
+#define window_res_height__480x300 /* template value */ (300)
+#define window_res_width__320x200  /* template value */ (320)
+#define window_res_height__320x200 /* template value */ (200)
+#define window_res_width__160x100  /* template value */ (160)
+#define window_res_height__160x100 /* template value */ (100)
+#define window_res_width__80x50    /* template value */ (80)
+#define window_res_height__80x50   /* template value */ (50)
+#define window_res_width__40x25    /* template value */ (40)
+#define window_res_height__40x25   /* template value */ (25)
+
+#define window_res_width  (window_res_width__160x100)
+#define window_res_height (window_res_height__160x100)
+#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+
+/* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
+#define target_fps__62_50 /* template value */ (62.50)
+#define target_fps__50_00 /* template value */ (50.00)
+#define target_fps__31_25 /* template value */ (31.25)
+
+#define target_fps (target_fps__62_50)
+#define target_spf (1.0 / target_fps)
+
+#define n_body (100)
+
+// Global state without thread synchronization
 static struct {
-    pthread_mutex_t mutex;
-    atomic_bool     paused;
-    atomic_bool     update_ready;
-
-    ArrList$Body     spawn_bodies;
-    ArrList$Body     bodies;
-    ArrList$QuadNode nodes;
-
+    bool          is_running;
+    bool          paused;
+    Visualizer*   viz;
+    Simulation*   sim;
+    ArrList$Body  spawn_bodies;
     mem_Allocator allocator;
-} g_shared_state = { 0 };
+} global_state = { 0 };
 
-// Simulation thread function
-static int simulation_thread_func(void* arg) {
-    unused(arg);
-
-    // Create simulation
-    var simulation = try_ptr(Simulation_create(g_shared_state.allocator));
-    defer(Simulation_destroy(simulation));
-
-    while (true) {
-        if (atomic_load(&g_shared_state.paused)) {
-            pthread_;
-            continue;
-        }
-
-        // Simulation step
-        try(Simulation_step(simulation));
-
-        // Update shared state
-        mtx_lock(&g_shared_state.mutex);
-        {
-            // Handle spawned bodies
-            for_array(g_shared_state.spawn_bodies.items, body) {
-                try(ArrList_append(&simulation->bodies.base, meta_refPtr(body)));
-            }
-            ArrList_clearAndFree(&g_shared_state.spawn_bodies.base);
-
-            // Update body and quadtree arrays
-            ArrList_clearAndFree(&g_shared_state.bodies.base);
-            try(ArrList_appendSlice(&g_shared_state.bodies.base, meta_refSli(simulation->bodies.items)));
-
-            ArrList_clearAndFree(&g_shared_state.nodes.base);
-            try(ArrList_appendSlice(&g_shared_state.nodes.base, meta_refSli(simulation->quad_tree.nodes.items)));
-
-            atomic_store(&g_shared_state.update_ready, true);
-        }
-        mtx_unlock(&g_shared_state.mutex);
+static void global_debug_printSimulationState(void) {
+    log_info("Global State:\n");
+    log_info("  paused: %s\n", global_state.paused ? "true" : "false");
+    log_info("  bodies: %d\n", global_state.spawn_bodies.items.len);
+    for_slice(global_state.spawn_bodies.items, body) {
+        log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->mass);
     }
-
-    return thrd_success;
+    log_info("Simulation state:\n");
+    log_info("  frame: %d\n", global_state.sim->frame);
+    log_info("  bodies: %d\n", global_state.sim->bodies.items.len);
+    for_slice(global_state.sim->bodies.items, body) {
+        log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->mass);
+    }
 }
 
-static void process_input(State* State, engine_Window* window) {
-    if (engine_Key_pressed(engine_KeyCode_space)) {
-        bool expected = atomic_load(&g_shared_state.paused);
-        atomic_store(&g_shared_state.paused, !expected);
-    }
-
-    State_processInput(State, window);
-}
-
-static Err$void update(State* State) {
+static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     reserveReturn(Err$void);
+    debug_assert_nonnull(viz);
+    debug_assert_nonnull(window);
 
-    // Check for simulation update
-    if (atomic_load(&g_shared_state.update_ready)) {
-        mtx_lock(&g_shared_state.mutex);
-        {
-            ArrList_clearAndFree(&State->bodies.base);
-            try(ArrList_appendSlice(&State->bodies.base, meta_refSli(g_shared_state.bodies.items)));
-
-            ArrList_clearAndFree(&State->nodes.base);
-            try(ArrList_appendSlice(&State->nodes.base, meta_refSli(g_shared_state.nodes.items)));
-
-            atomic_store(&g_shared_state.update_ready, false);
-        }
-        mtx_unlock(&g_shared_state.mutex);
+    if (engine_Key_pressed(engine_KeyCode_esc)) {
+        log_debug("esc pressed\n");
+        global_state.is_running = false;
     }
+    if (engine_Key_pressed(engine_KeyCode_space)) {
+        log_debug("space pressed\n");
+        global_state.paused = !global_state.paused;
+    }
+    debug_only({
+        if (engine_Key_pressed(engine_KeyCode_i)) {
+            log_debug("i pressed\n");
+            global_debug_printSimulationState();
+        }
+    });
+    try(Visualizer_processInput(viz, window));
+    return_ok({});
+}
 
-    State_update(State);
-    return_void();
+static Err$void global_update(Visualizer* viz, Simulation* sim) {
+    scope_reserveReturn(Err$void) {
+        debug_assert_nonnull(viz);
+        debug_assert_nonnull(sim);
+
+        // Handle spawned bodies
+        for_slice(global_state.spawn_bodies.items, body) {
+            try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
+        }
+        ArrList_clearAndFree(&global_state.spawn_bodies.base);
+
+        // Simulation step if not paused
+        if (!global_state.paused) {
+            try(Simulation_step(sim));
+        }
+
+        // Update state with current simulation data
+        ArrList_clearAndFree(&viz->bodies.base);
+        try(ArrList_appendSlice(&viz->bodies.base, meta_refSli(sim->bodies.items)));
+
+        ArrList_clearAndFree(&viz->nodes.base);
+        try(ArrList_appendSlice(&viz->nodes.base, meta_refSli(sim->quad_tree.nodes.items)));
+
+        try(Visualizer_update(viz));
+        return_void();
+    }
+    scope_returnReserved;
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
     unused(argc), unused(argv);
+    scope_reserveReturn(Err$void) {
+        // Initialize logging to a file
+        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
+            log_initWithFile(debug_file);
+            // Configure logging behavior
+            log_setLevel(log_Level_debug);
+            log_showTimestamp(true);
+            log_showLevel(true);
+            log_showLocation(false);
+            log_showFunction(true);
+        }
+        defer(log_fini());
 
-    // Create allocator for simulation
-    var allocator            = mem_Heap_allocator();
-    g_shared_state.allocator = allocator;
+        // Create window
+        var window = try(engine_Window_create(&(engine_PlatformParams){
+            .backend_type = engine_RenderBackendType_vt100,
+            .window_title = "Barnes-hut N-Body Simulation",
+            .width        = window_res_width,
+            .height       = window_res_height,
+        }));
+        defer(engine_Window_destroy(window));
+        log_info("engine initialized\n");
 
-    // Initialize shared state
-    if (mtx_init(&g_shared_state.mutex, mtx_plain) != thrd_success) {
-        claim_unreachable();
-    }
-    atomic_init(&g_shared_state.paused, false);
-    atomic_init(&g_shared_state.update_ready, false);
+        var canvas = try(engine_Canvas_createWithDefault(window_res_width, window_res_height, engine_CanvasType_rgba, Color_transparent));
+        defer(engine_Canvas_destroy(canvas));
+        log_info("canvas created\n");
 
-    g_shared_state.spawn_bodies = typed(ArrList$Body, ArrList_init(typeInfo(Body), allocator));
-    g_shared_state.bodies       = typed(ArrList$Body, ArrList_init(typeInfo(Body), allocator));
-    g_shared_state.nodes        = typed(ArrList$QuadNode, ArrList_init(typeInfo(QuadNode), allocator));
+        engine_Window_addCanvasView(window, canvas, 0, 0, window_res_width, window_res_height);
+        log_info("canvas views added\n");
 
-    // Create window
-    var window = try(engine_Window_create(&(engine_PlatformParams){
-        .window_title  = "N-Body Simulation",
-        .window_width  = 800,
-        .window_height = 600,
-    }));
-    defer(engine_Window_destroy(window));
+        // Create allocator
+        // var allocator = heap_Classic_allocator(&(heap_Classic){});
+        var allocator = heap_Page_allocator(&(heap_Page){});
+        try(heap_Classic_init(allocator));
+        defer(heap_Classic_fini(allocator));
+        global_state.allocator = allocator;
 
-    // Create State
-    var State = try(State_create(allocator));
-    defer(State_destroy(&State));
+        // Initialize state
+        global_state.is_running   = true;
+        global_state.paused       = false;
+        global_state.spawn_bodies = typed(ArrList$Body, ArrList_init(typeInfo(Body), allocator));
 
-    // Start simulation thread
-    thrd_t sim_thread;
-    if (thrd_create(&sim_thread, simulation_thread_func, null) != thrd_success) {
-        claim_unreachable();
-    }
+        // Create simulation and Visualizer
+        var sim          = try(Simulation_create(allocator, n_body));
+        global_state.sim = &sim;
+        defer(Simulation_destroy(&sim));
+        log_info("simulation created\n");
 
-    // Main loop
-    while (true) {
-        // Process window events
-        try(engine_Window_processEvents(window));
-        if (!engine_Window_isFocused(window)) {
-            thrd_yield();
-            continue;
+        var viz          = try(Visualizer_create(allocator, canvas));
+        global_state.viz = &viz;
+        defer(Visualizer_destroy(&viz));
+        log_info("visualizer created\n");
+
+        ignore getchar();
+
+        log_info("simulation loop started\n");
+        // Main loop
+        while (global_state.is_running) {
+            // Process input
+            try(engine_Window_processEvents(window));
+            try(global_processInput(&viz, window));
+
+            // Update simulation
+            try(global_update(&viz, &sim));
+
+            // Render frame
+            try(Visualizer_render(&viz));
+            engine_Window_present(window);
         }
 
-        // Handle input
-        process_input(&State, window);
-
-        // Update and render
-        try(update(&State));
-        try(State_render(&State));
-
-        // Present frame
-        engine_Window_present(window);
+        // Cleanup
+        ArrList_fini(&global_state.spawn_bodies.base);
+        return_void();
     }
-
-    // Cleanup
-    int thread_result;
-    thrd_join(sim_thread, &thread_result);
-    mtx_destroy(&g_shared_state.mutex);
-    ArrList_fini(&g_shared_state.spawn_bodies.base);
-    ArrList_fini(&g_shared_state.bodies.base);
-    ArrList_fini(&g_shared_state.nodes.base);
-
-    return_void();
+    scope_returnReserved;
 }

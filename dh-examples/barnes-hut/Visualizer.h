@@ -1,5 +1,5 @@
-#ifndef STATE_INCLUDED
-#define STATE_INCLUDED (1)
+#ifndef VISUALIZER_INCLUDED
+#define VISUALIZER_INCLUDED (1)
 
 #include "dh/core.h"
 #include "dh/meta.h"
@@ -13,15 +13,22 @@
 #include "engine/input.h"
 #include "engine/canvas.h"
 
-typedef struct State {
+typedef struct Visualizer {
     // View state
     math_Vec2f pos;
     f32        scale;
 
     // Display flags
-    bool settings_window_open;
-    bool show_bodies;
-    bool show_quad_tree;
+    // bool settings_window_open;
+    // bool shows_fps;
+    // bool shows_view_state;
+    bool shows_bodies;         // 1
+    bool shows_bodies_vel_vec; // 2
+    bool shows_bodies_acc_vec; // 3
+    bool shows_quad_tree;      // 0
+
+    // body visualization
+    Color body_color;
 
     // Quadtree visualization
     struct {
@@ -44,16 +51,16 @@ typedef struct State {
     // Platform resources
     engine_Canvas* canvas;
     mem_Allocator  allocator;
-} State;
-use_Err$(State);
+} Visualizer;
+use_Err$(Visualizer);
 
 // Core functions
-extern Err$State State_create(mem_Allocator allocator) must_check;
-extern void      State_destroy(State* self);
+extern Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) must_check;
+extern void           Visualizer_destroy(Visualizer* self);
 
 // Main loop functions
-extern Err$void State_processInput(State* self, engine_Window* window) must_check;
-extern Err$void State_update(State* self) must_check;
-extern Err$void State_render(State* self) must_check;
+extern Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) must_check;
+extern Err$void Visualizer_update(Visualizer* self) must_check;
+extern Err$void Visualizer_render(Visualizer* self) must_check;
 
-#endif /* STATE_INCLUDED */
+#endif /* VISUALIZER_INCLUDED */

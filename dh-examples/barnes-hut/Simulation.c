@@ -2,10 +2,10 @@
 #include "utils.h"
 #include "dh/math.h"
 
-Err$Simulation Simulation_create(mem_Allocator allocator) {
+Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
     scope_reserveReturn(Err$Simulation) {
         const f32   dt      = 0.05f;
-        const usize n       = 100000;
+        const usize n       = n_body; // 100000
         const f32   theta   = 1.0f;
         const f32   epsilon = 1.0f;
 

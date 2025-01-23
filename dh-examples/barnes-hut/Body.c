@@ -1,4 +1,4 @@
-#include "body.h"
+#include "Body.h"
 
 Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius) {
     return (Body){
@@ -11,6 +11,6 @@ Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius) {
 }
 
 void Body_update(Body* self, f32 dt) {
-    self->vel = math_Vec2f_scale(self->acc, dt);
-    self->pos = math_Vec2f_scale(self->vel, dt);
+    self->vel = math_Vec2f_add(self->vel, math_Vec2f_scale(self->acc, dt));
+    self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(self->vel, dt));
 }

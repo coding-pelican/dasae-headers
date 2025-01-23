@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    comp_cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2024-11-22 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-22 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  BUILTIN_COMP
  *
@@ -22,24 +22,24 @@ extern "C" {
 
 /*========== Compiler Type Detection ========================================*/
 #if defined(__clang__)
-#define BUILTIN_COMP_CLANG (1)
-#define BUILTIN_COMP_GCC   (0)
-#define BUILTIN_COMP_MSVC  (0)
+#define BUILTIN_COMP_CLANG 1
+#define BUILTIN_COMP_GCC   0
+#define BUILTIN_COMP_MSVC  0
 #define BUILTIN_COMP_NAME  "Clang"
 #elif defined(__GNUC__)
-#define BUILTIN_COMP_CLANG (0)
-#define BUILTIN_COMP_GCC   (1)
-#define BUILTIN_COMP_MSVC  (0)
+#define BUILTIN_COMP_CLANG 0
+#define BUILTIN_COMP_GCC   1
+#define BUILTIN_COMP_MSVC  0
 #define BUILTIN_COMP_NAME  "GCC"
 #elif defined(_MSC_VER)
-#define BUILTIN_COMP_CLANG (0)
-#define BUILTIN_COMP_GCC   (0)
-#define BUILTIN_COMP_MSVC  (1)
+#define BUILTIN_COMP_CLANG 0
+#define BUILTIN_COMP_GCC   0
+#define BUILTIN_COMP_MSVC  1
 #define BUILTIN_COMP_NAME  "MSVC"
 #else
-#define BUILTIN_COMP_CLANG (0)
-#define BUILTIN_COMP_GCC   (0)
-#define BUILTIN_COMP_MSVC  (0)
+#define BUILTIN_COMP_CLANG 0
+#define BUILTIN_COMP_GCC   0
+#define BUILTIN_COMP_MSVC  0
 #define BUILTIN_COMP_NAME  "Unknown"
 #warning "Unknown compiler detected. Please check your compiler settings."
 #endif
@@ -60,10 +60,10 @@ extern "C" {
 #define BUILTIN_COMP_VERSION_MINOR __clang_minor__
 #define BUILTIN_COMP_VERSION_PATCH __clang_patchlevel__
 #else
-#define BUILTIN_COMP_VERSION       (0)
-#define BUILTIN_COMP_VERSION_MAJOR (0)
-#define BUILTIN_COMP_VERSION_MINOR (0)
-#define BUILTIN_COMP_VERSION_PATCH (0)
+#define BUILTIN_COMP_VERSION       0
+#define BUILTIN_COMP_VERSION_MAJOR 0
+#define BUILTIN_COMP_VERSION_MINOR 0
+#define BUILTIN_COMP_VERSION_PATCH 0
 #endif
 
 /*========== Compiler-Specific Attributes ===================================*/

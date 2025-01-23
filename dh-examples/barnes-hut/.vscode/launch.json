@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { // barnes-hut>C/C++: Debug Single File
+      "name": "barnes-hut>C/C++: Debug Single File",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug"
+    },
+    { // barnes-hut>C: Debug Single File with Build
+      "name": "barnes-hut>C: Debug Single File with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "barnes-hut>build C file (debug)"
+    },
+    { // barnes-hut>C: Debug Project with Build
+      "name": "barnes-hut>C: Debug Project with Build",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "preLaunchTask": "barnes-hut>build C project (debug)"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "userArgs",
+      "type": "promptString",
+      "description": "Enter program arguments:",
+      "default": ""
+    }
+  ]
+}

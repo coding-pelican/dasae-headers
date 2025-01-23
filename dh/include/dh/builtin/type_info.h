@@ -26,6 +26,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Type Size and Alignment */
+#define sizeOf$(_T) sizeOf(_T)
 #define sizeOf(_T_or_val)                                 \
     /**                                                   \
      * @brief Get size of a type or value at compile time \

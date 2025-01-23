@@ -102,10 +102,10 @@ typedef ptrdiff_t   ptrdiff;
 
 /*========== Validation Checks ==============================================*/
 
-#if BUILTIN_PLTF_64BIT
+#if bti_plat_64bit
 /* 64-bit */
 claim_assert_static_msg(sizeof(anyptr) == 8, "pointer must be 8 bytes on 64-bit");
-#elif BUILTIN_PLTF_32BIT
+#elif bti_plat_32bit
 /* 32-bit */
 claim_assert_static_msg(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
 #endif

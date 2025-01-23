@@ -1,4 +1,5 @@
 #include "QuadTree.h"
+#include "dh/log.h"
 #include "dh/math.h"
 #include "dh/meta/common.h"
 
@@ -91,8 +92,11 @@ Err$void QuadTree_clear(QuadTree* self, Quad quad) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
+    // Clear and free the nodes and parents lists
     ArrList_clearAndFree(&self->nodes.base);
     ArrList_clearAndFree(&self->parents.base);
+
+    // Initialize the root node
     try(ArrList_append(
         &self->nodes.base,
         meta_refPtr(createFrom$(QuadNode, QuadNode_new(QuadTree_s_root, quad)))
@@ -105,15 +109,19 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
     reserveReturn(Err$usize);
     debug_assert_nonnull(self);
 
+    // Append the parent node index
     try(ArrList_append(
         &self->parents.base,
         meta_refPtr(&node)
     ));
 
+    // Get the current length of the nodes list
     let children = self->nodes.items.len;
 
+    // Update the children index of the current node
     Sli_at(self->nodes.items, node)->children = children;
 
+    // Create the next indices for the new nodes
     const Sli$usize nexts = Sli_arr(
         (usize[]){
             children + 1,
@@ -122,8 +130,11 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
             Sli_at(self->nodes.items, node)->next,
         }
     );
-    let quads = Quad_subdivide(&self->nodes.items.ptr[node].quad);
 
+    // Subdivide the current node's quad
+    let quads = Quad_subdivide(&Sli_at(self->nodes.items, node)->quad);
+
+    // Append the new nodes
     for_array_indexed(quads, quad, index) {
         try(ArrList_append(
             &self->nodes.base,

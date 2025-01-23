@@ -29,7 +29,7 @@ typedef struct Simulation {
 use_Err$(Simulation);
 
 // Core functions
-extern Err$Simulation Simulation_create(mem_Allocator allocator) must_check;
+extern Err$Simulation Simulation_create(mem_Allocator allocator, usize n) must_check;
 extern void           Simulation_destroy(Simulation* self);
 
 // Step functions

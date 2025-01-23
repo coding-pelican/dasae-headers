@@ -19,7 +19,7 @@ static usize growCapacity(usize current, usize minimum) {
 
 ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
-    debug_assert_nonnull_fmt(allocator.ctx, "Allocator context cannot be null");
+    debug_assert_nonnull_fmt(allocator.ptr, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
 
     return (ArrList){
@@ -32,7 +32,7 @@ ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
 Err$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) {
     reserveReturn(Err$ArrList);
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
-    debug_assert_nonnull_fmt(allocator.ctx, "Allocator context cannot be null");
+    debug_assert_nonnull_fmt(allocator.ptr, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
 
     var list = ArrList_init(type, allocator);
@@ -121,12 +121,17 @@ Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    if (new_cap <= self->cap) {
+    if (self->cap >= new_cap) {
         return_void();
     }
 
-    let better_cap = growCapacity(self->cap, new_cap);
-    try(ArrList_ensureTotalCapPrecise(self, better_cap));
+    // Handle the case where cap is 0
+    if (self->cap == 0) {
+        try(ArrList_ensureTotalCapPrecise(self, new_cap > 4 ? new_cap : 4));
+    } else {
+        try(ArrList_ensureTotalCapPrecise(self, new_cap));
+    }
+
     return_void();
 }
 
@@ -138,26 +143,29 @@ Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
         return_void();
     }
 
+    // Allocate memory if cap is 0
+    if (self->cap == 0) {
+        let new_mem      = try(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
+        self->items.addr = new_mem.addr;
+        self->cap        = new_cap;
+        return_void();
+    }
+
+    // Resize existing memory
     let actual_mem = (meta_Sli){
         .type = self->items.type,
         .addr = self->items.addr,
         .len  = self->cap
     };
-    if (mem_Allocator_resize(
-            self->allocator,
-            meta_sliToAny(actual_mem),
-            new_cap
-        )) {
+    if (mem_Allocator_resize(self->allocator, meta_sliToAny(actual_mem), new_cap)) {
         self->cap = new_cap;
         return_void();
     }
 
+    // Fallback to allocating new memory
     let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
-
     memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
-
     mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
-
     self->items.addr = new_mem.addr;
     self->cap        = new_cap;
     return_void();
@@ -604,6 +612,7 @@ void ArrList_clearRetainingCap(ArrList* self) {
 
 void ArrList_clearAndFree(ArrList* self) {
     debug_assert_nonnull(self);
+
     if (self->items.addr != null) {
         let actual_mem = (meta_Sli){
             .addr = self->items.addr,
@@ -611,11 +620,8 @@ void ArrList_clearAndFree(ArrList* self) {
             .len  = self->items.len
         };
         mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
-        self->items = (meta_Sli){
-            .addr = null,
-            .type = self->items.type,
-            .len  = 0
-        };
-        self->cap = 0;
+        self->items.addr = null;
+        self->items.len  = 0;
+        self->cap        = 0;
     }
 }

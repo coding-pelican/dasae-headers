@@ -4,7 +4,7 @@
  * @file    comp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-03 (date of creation)
- * @updated 2025-01-15 (date of last update)
+ * @updated 2025-01-22 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
@@ -22,7 +22,7 @@ extern "C" {
 #include "arch_cfg.h"
 #include "comp_cfg.h"
 #include "lang_cfg.h"
-#include "pltf_cfg.h"
+#include "plat_cfg.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -83,6 +83,9 @@ extern "C" {
 
 #define eval(_Expr...) SYN__eval(_Expr)
 #define eval_return    /* just comment */
+
+#define likely(_Expr...)   FUNC__likely(_Expr)
+#define unlikely(_Expr...) FUNC__unlikely(_Expr)
 
 /*========== Macro Implementations ==========================================*/
 
@@ -145,6 +148,9 @@ extern "C" {
 // NOLINTEND(bugprone-macro-parentheses)
 
 #define SYN__eval(_Expr...) ({ _Expr })
+
+#define FUNC__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
+#define FUNC__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 
 #if defined(__cplusplus)
 } /* extern "C" */

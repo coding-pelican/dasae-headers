@@ -34,9 +34,10 @@ typedef struct mem_AllocatorVT {
 
 /* Allocator instance */
 typedef struct mem_Allocator {
-    anyptr                 ctx; /* Context pointer with type info */
+    anyptr                 ptr; /* Context pointer with type info */
     const mem_AllocatorVT* vt;  /* Virtual table */
 } mem_Allocator;
+use_Opt$(mem_Allocator);
 
 /*========== Core Allocator Functions =======================================*/
 
@@ -51,9 +52,63 @@ extern void       mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize bu
 
 #else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || DEBUG_ENABLED)) */
 
-#define mem_Allocator_rawAlloc(mem_Allocator_self, usize_len, usize_ptr_align...)                  mem_Allocator_rawAlloc_debug(mem_Allocator_self, usize_len, usize_ptr_align, __FILE__, __LINE__, __func__)
-#define mem_Allocator_rawResize(mem_Allocator_self, Sli$u8_buf, usize_buf_align, usize_new_len...) mem_Allocator_rawResize_debug(mem_Allocator_self, Sli$u8_buf, usize_buf_align, usize_new_len, __FILE__, __LINE__, __func__)
-#define mem_Allocator_rawFree(mem_Allocator_self, Sli$u8_buf, usize_buf_align...)                  mem_Allocator_rawFree_debug(mem_Allocator_self, Sli$u8_buf, usize_buf_align, __FILE__, __LINE__, __func__)
+#define mem_Allocator_rawAlloc(mem_Allocator_self, usize_len, usize_ptr_align...) \
+    mem_Allocator_rawAlloc_callDebug(                                             \
+        mem_Allocator_self,                                                       \
+        usize_len,                                                                \
+        usize_ptr_align,                                                          \
+        __FILE__,                                                                 \
+        __LINE__,                                                                 \
+        __func__                                                                  \
+    )
+#define mem_Allocator_rawResize(mem_Allocator_self, Sli$u8_buf, usize_buf_align, usize_new_len...) \
+    mem_Allocator_rawResize_callDebug(                                                             \
+        mem_Allocator_self,                                                                        \
+        Sli$u8_buf,                                                                                \
+        usize_buf_align,                                                                           \
+        usize_new_len,                                                                             \
+        __FILE__,                                                                                  \
+        __LINE__,                                                                                  \
+        __func__                                                                                   \
+    )
+#define mem_Allocator_rawFree(mem_Allocator_self, Sli$u8_buf, usize_buf_align...) \
+    mem_Allocator_rawFree_callDebug(                                              \
+        mem_Allocator_self,                                                       \
+        Sli$u8_buf,                                                               \
+        usize_buf_align,                                                          \
+        __FILE__,                                                                 \
+        __LINE__,                                                                 \
+        __func__                                                                  \
+    )
+
+#define mem_Allocator_rawAlloc_callDebug(mem_Allocator_self, usize_len, usize_ptr_align, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_rawAlloc_debug(                                                                                                                 \
+        mem_Allocator_self,                                                                                                                       \
+        usize_len,                                                                                                                                \
+        usize_ptr_align,                                                                                                                          \
+        const_char_ptr_file,                                                                                                                      \
+        i32_line,                                                                                                                                 \
+        const_char_ptr_func                                                                                                                       \
+    )
+#define mem_Allocator_rawResize_callDebug(mem_Allocator_self, Sli$u8_buf, usize_buf_align, usize_new_len, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_rawResize_debug(                                                                                                                                 \
+        mem_Allocator_self,                                                                                                                                        \
+        Sli$u8_buf,                                                                                                                                                \
+        usize_buf_align,                                                                                                                                           \
+        usize_new_len,                                                                                                                                             \
+        const_char_ptr_file,                                                                                                                                       \
+        i32_line,                                                                                                                                                  \
+        const_char_ptr_func                                                                                                                                        \
+    )
+#define mem_Allocator_rawFree_callDebug(mem_Allocator_self, Sli$u8_buf, usize_buf_align, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_rawFree_debug(                                                                                                                  \
+        mem_Allocator_self,                                                                                                                       \
+        Sli$u8_buf,                                                                                                                               \
+        usize_buf_align,                                                                                                                          \
+        const_char_ptr_file,                                                                                                                      \
+        i32_line,                                                                                                                                 \
+        const_char_ptr_func                                                                                                                       \
+    )
 
 extern Opt$Ptr$u8 mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, usize ptr_align, const char* file, i32 line, const char* func) must_check;
 extern bool       mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len, const char* file, i32 line, const char* func) must_check;
@@ -80,12 +135,109 @@ extern void         mem_Allocator_free(mem_Allocator self, AnyType memory);
 
 #else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || DEBUG_ENABLED)) */
 
-#define mem_Allocator_create(mem_Allocator_self, TypeInfo_type...)                   mem_Allocator_create_debug(mem_Allocator_self, TypeInfo_type, __FILE__, __LINE__, __func__)
-#define mem_Allocator_destroy(mem_Allocator_self, AnyType_ptr...)                    mem_Allocator_destroy_debug(mem_Allocator_self, AnyType_ptr, __FILE__, __LINE__, __func__)
-#define mem_Allocator_alloc(mem_Allocator_self, TypeInfo_type, usize_count...)       mem_Allocator_alloc_debug(mem_Allocator_self, TypeInfo_type, usize_count, __FILE__, __LINE__, __func__)
-#define mem_Allocator_resize(mem_Allocator_self, AnyType_old_mem, usize_new_len...)  mem_Allocator_resize_debug(mem_Allocator_self, AnyType_old_mem, usize_new_len, __FILE__, __LINE__, __func__)
-#define mem_Allocator_realloc(mem_Allocator_self, AnyType_old_mem, usize_new_len...) mem_Allocator_realloc_debug(mem_Allocator_self, AnyType_old_mem, usize_new_len, __FILE__, __LINE__, __func__)
-#define mem_Allocator_free(mem_Allocator_self, AnyType_memory...)                    mem_Allocator_free_debug(mem_Allocator_self, AnyType_memory, __FILE__, __LINE__, __func__)
+#define mem_Allocator_create(mem_Allocator_self, TypeInfo_type...) \
+    mem_Allocator_create_callDebug(                                \
+        mem_Allocator_self,                                        \
+        TypeInfo_type,                                             \
+        __FILE__,                                                  \
+        __LINE__,                                                  \
+        __func__                                                   \
+    )
+#define mem_Allocator_destroy(mem_Allocator_self, AnyType_ptr...) \
+    mem_Allocator_destroy_callDebug(                              \
+        mem_Allocator_self,                                       \
+        AnyType_ptr,                                              \
+        __FILE__,                                                 \
+        __LINE__,                                                 \
+        __func__                                                  \
+    )
+#define mem_Allocator_alloc(mem_Allocator_self, TypeInfo_type, usize_count...) \
+    mem_Allocator_alloc_callDebug(                                             \
+        mem_Allocator_self,                                                    \
+        TypeInfo_type,                                                         \
+        usize_count,                                                           \
+        __FILE__,                                                              \
+        __LINE__,                                                              \
+        __func__                                                               \
+    )
+#define mem_Allocator_resize(mem_Allocator_self, AnyType_old_mem, usize_new_len...) \
+    mem_Allocator_resize_callDebug(                                                 \
+        mem_Allocator_self,                                                         \
+        AnyType_old_mem,                                                            \
+        usize_new_len,                                                              \
+        __FILE__,                                                                   \
+        __LINE__,                                                                   \
+        __func__                                                                    \
+    )
+#define mem_Allocator_realloc(mem_Allocator_self, AnyType_old_mem, usize_new_len...) \
+    mem_Allocator_realloc_callDebug(                                                 \
+        mem_Allocator_self,                                                          \
+        AnyType_old_mem,                                                             \
+        usize_new_len,                                                               \
+        __FILE__,                                                                    \
+        __LINE__,                                                                    \
+        __func__                                                                     \
+    )
+#define mem_Allocator_free(mem_Allocator_self, AnyType_memory...) \
+    mem_Allocator_free_callDebug(                                 \
+        mem_Allocator_self,                                       \
+        AnyType_memory,                                           \
+        __FILE__,                                                 \
+        __LINE__,                                                 \
+        __func__                                                  \
+    )
+
+#define mem_Allocator_create_callDebug(mem_Allocator_self, TypeInfo_type, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_create_debug(                                                                                                    \
+        mem_Allocator_self,                                                                                                        \
+        TypeInfo_type,                                                                                                             \
+        const_char_ptr_file,                                                                                                       \
+        i32_line,                                                                                                                  \
+        const_char_ptr_func                                                                                                        \
+    )
+#define mem_Allocator_destroy_callDebug(mem_Allocator_self, AnyType_ptr, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_destroy_debug(                                                                                                  \
+        mem_Allocator_self,                                                                                                       \
+        AnyType_ptr,                                                                                                              \
+        const_char_ptr_file,                                                                                                      \
+        i32_line,                                                                                                                 \
+        const_char_ptr_func                                                                                                       \
+    )
+#define mem_Allocator_alloc_callDebug(mem_Allocator_self, TypeInfo_type, usize_count, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_alloc_debug(                                                                                                                 \
+        mem_Allocator_self,                                                                                                                    \
+        TypeInfo_type,                                                                                                                         \
+        usize_count,                                                                                                                           \
+        const_char_ptr_file,                                                                                                                   \
+        i32_line,                                                                                                                              \
+        const_char_ptr_func                                                                                                                    \
+    )
+#define mem_Allocator_resize_callDebug(mem_Allocator_self, AnyType_old_mem, usize_new_len, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_resize_debug(                                                                                                                     \
+        mem_Allocator_self,                                                                                                                         \
+        AnyType_old_mem,                                                                                                                            \
+        usize_new_len,                                                                                                                              \
+        const_char_ptr_file,                                                                                                                        \
+        i32_line,                                                                                                                                   \
+        const_char_ptr_func                                                                                                                         \
+    )
+#define mem_Allocator_realloc_callDebug(mem_Allocator_self, AnyType_old_mem, usize_new_len, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_realloc_debug(                                                                                                                     \
+        mem_Allocator_self,                                                                                                                          \
+        AnyType_old_mem,                                                                                                                             \
+        usize_new_len,                                                                                                                               \
+        const_char_ptr_file,                                                                                                                         \
+        i32_line,                                                                                                                                    \
+        const_char_ptr_func                                                                                                                          \
+    )
+#define mem_Allocator_free_callDebug(mem_Allocator_self, AnyType_memory, const_char_ptr_file, i32_line, const_char_ptr_func, ...) \
+    mem_Allocator_free_debug(                                                                                                     \
+        mem_Allocator_self,                                                                                                       \
+        AnyType_memory,                                                                                                           \
+        const_char_ptr_file,                                                                                                      \
+        i32_line,                                                                                                                 \
+        const_char_ptr_func                                                                                                       \
+    )
 
 extern Err$meta_Ptr mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, const char* file, i32 line, const char* func) must_check;
 extern void         mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, const char* file, i32 line, const char* func);

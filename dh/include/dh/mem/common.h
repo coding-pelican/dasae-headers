@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-17 (date of creation)
- * @updated 2024-12-17 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-22 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
@@ -254,7 +254,7 @@ force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
 /*========== Endian Conversion ==============================================*/
 
 force_inline u16 mem_littleToNative16(u16 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap16(x);
@@ -262,7 +262,7 @@ force_inline u16 mem_littleToNative16(u16 x) {
 }
 
 force_inline u32 mem_littleToNative32(u32 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap32(x);
@@ -270,7 +270,7 @@ force_inline u32 mem_littleToNative32(u32 x) {
 }
 
 force_inline u64 mem_littleToNative64(u64 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap64(x);
@@ -278,7 +278,7 @@ force_inline u64 mem_littleToNative64(u64 x) {
 }
 
 force_inline u16 mem_bigToNative16(u16 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap16(x);
@@ -286,7 +286,7 @@ force_inline u16 mem_bigToNative16(u16 x) {
 }
 
 force_inline u32 mem_bigToNative32(u32 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap32(x);
@@ -294,7 +294,7 @@ force_inline u32 mem_bigToNative32(u32 x) {
 }
 
 force_inline u64 mem_bigToNative64(u64 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap64(x);
@@ -302,7 +302,7 @@ force_inline u64 mem_bigToNative64(u64 x) {
 }
 
 force_inline u16 mem_nativeToLittle16(u16 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap16(x);
@@ -310,7 +310,7 @@ force_inline u16 mem_nativeToLittle16(u16 x) {
 }
 
 force_inline u32 mem_nativeToLittle32(u32 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap32(x);
@@ -318,7 +318,7 @@ force_inline u32 mem_nativeToLittle32(u32 x) {
 }
 
 force_inline u64 mem_nativeToLittle64(u64 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_LITTLE_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
     return byteSwap64(x);
@@ -326,7 +326,7 @@ force_inline u64 mem_nativeToLittle64(u64 x) {
 }
 
 force_inline u16 mem_nativeToBig16(u16 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap16(x);
@@ -334,7 +334,7 @@ force_inline u16 mem_nativeToBig16(u16 x) {
 }
 
 force_inline u32 mem_nativeToBig32(u32 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap32(x);
@@ -342,7 +342,7 @@ force_inline u32 mem_nativeToBig32(u32 x) {
 }
 
 force_inline u64 mem_nativeToBig64(u64 x) {
-#if BUILTIN_PLTF_BYTE_ORDER == BUILTIN_PLTF_BYTE_ORDER_BIG_ENDIAN
+#if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
     return byteSwap64(x);

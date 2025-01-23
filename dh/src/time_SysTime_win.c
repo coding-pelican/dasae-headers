@@ -1,6 +1,6 @@
 #include "dh/time.h"
 
-#if BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT)
+#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
 
 #define intervals_per_sec       (10000000ULL)
 #define secs_to_unix_epoch      (11644473600ULL)
@@ -127,4 +127,4 @@ cmp_fnCmp(time_SysTime) {
     return cmp_Ord_equal;
 }
 
-#endif /* BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT) */
+#endif /* bti_plat_windows && (bti_plat_32BIT || bti_plat_64BIT) */

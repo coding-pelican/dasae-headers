@@ -1,11 +1,12 @@
-#include "dh/builtin/pltf_cfg.h"
-#if BUILTIN_PLTF_WINDOWS
+#include "dh/builtin/plat_cfg.h"
+#if bti_plat_windows
 #include <windows.h>
 #include <memoryapi.h>
 #else
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
+
 #include "dh/heap/Page.h"
 #include "dh/mem.h"
 
@@ -20,7 +21,7 @@ mem_Allocator heap_Page_allocator(heap_Page* self) {
         .free   = heap_Page_free,
     } };
     return (mem_Allocator){
-        .ctx = self,
+        .ptr = self,
         .vt  = vt,
     };
 }
@@ -29,14 +30,14 @@ mem_Allocator heap_Page_allocator(heap_Page* self) {
 
 Err$void heap_Page_init(mem_Allocator self) {
     reserveReturn(Err$void);
-    debug_assert_nonnull(self.ctx);
+    debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     unused(self);
     return_void();
 }
 
 void heap_Page_fini(mem_Allocator self) {
-    debug_assert_nonnull(self.ctx);
+    debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     unused(self);
 }
@@ -54,7 +55,7 @@ static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {
         return_none();
     }
 
-#if BUILTIN_PLTF_WINDOWS
+#if bti_plat_windows
     // Windows implementation
     let addr = VirtualAlloc(
         null,
@@ -104,7 +105,7 @@ static bool heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_
 
     const usize new_size_aligned = mem_alignForward(new_size, mem_page_size);
 
-#if BUILTIN_PLTF_WINDOWS
+#if bti_plat_windows
     if (new_size <= buf.len) {
         const usize base_addr    = as$(usize, buf.ptr);
         const usize old_addr_end = base_addr + buf.len;
@@ -150,7 +151,7 @@ static void heap_Page_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
     unused(ctx);
     unused(buf_align);
 
-#if BUILTIN_PLTF_WINDOWS
+#if bti_plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);
 #else
     const usize buf_aligned_len = mem_alignForward(buf.len, mem_page_size);

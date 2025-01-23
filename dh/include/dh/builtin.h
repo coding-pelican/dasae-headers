@@ -23,10 +23,12 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+// bt? bi? bti? uni? unf? ax?
+
 #include "builtin/arch_cfg.h"
 #include "builtin/comp_cfg.h"
 #include "builtin/lang_cfg.h"
-#include "builtin/pltf_cfg.h"
+#include "builtin/plat_cfg.h"
 #include "builtin/comp.h"
 #include "builtin/auto.h"
 #include "builtin/type_info.h"

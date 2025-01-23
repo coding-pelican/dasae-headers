@@ -151,7 +151,7 @@ static SliConst$Control Control_list(void) {
 #define target_fps (target_fps__125_0)
 #define target_spf (1.0 / target_fps)
 
-typedef struct State {
+typedef struct Simulator {
     TerrainData terrain;
     Vec2d       camera_pos;
     f64         camera_angle; // <== We'll use this as 'phi'

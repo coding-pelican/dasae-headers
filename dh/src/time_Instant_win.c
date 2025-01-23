@@ -1,6 +1,6 @@
 #include "dh/time.h"
 
-#if BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT)
+#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
 
 /*========== Operations =================================================*/
 
@@ -68,4 +68,4 @@ cmp_fnCmp(time_Instant) {
     return time_SysTime_cmp(self.time_, other.time_);
 }
 
-#endif /* BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT) */
+#endif /* bti_plat_windows && (bti_plat_32BIT || bti_plat_64BIT) */

@@ -389,7 +389,7 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
         event.timestamp         = (f64)GetTickCount64() / 1000.0;
 
         switch (mer->dwEventFlags) {
-        case 0: // Mouse clicks
+        case 0: { // Mouse clicks
             event.type = engine_MouseEventType_button;
 
             // Left button
@@ -404,19 +404,43 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
                 event.button.state = engine_KeyStates_pressed;
                 engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
             }
-            break;
+        } break;
 
-        case MOUSE_MOVED:
+        case MOUSE_MOVED: { // Mouse movement
             event.type   = engine_MouseEventType_move;
             event.move.x = pos.x;
             event.move.y = pos.y;
             engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
-            break;
+        } break;
 
-        case MOUSE_WHEELED:
+        case MOUSE_WHEELED: { // Mouse wheel scrolling
             event.type         = engine_MouseEventType_scroll;
             event.scroll.delta = ((i32)mer->dwButtonState > 0) ? 1 : -1;
             engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+
+            // Update cached scroll delta and calculate speed
+            scope_with(let input = engine_Input_instance()) {
+                input->mouse.scroll_delta = event.scroll.delta;
+
+                // Calculate time difference
+                f64 current_time = event.timestamp;
+                f64 delta_time   = current_time - input->mouse.last_scroll_timestamp;
+
+                // Accumulate scroll delta
+                input->mouse.accumulated_scroll_delta += input->mouse.scroll_delta;
+
+                // Calculate speed (only if delta_time is significant to avoid division by near-zero)
+                if (delta_time > 0.01) { // Adjust threshold as needed
+                    input->mouse.scroll_speed = (f64)input->mouse.accumulated_scroll_delta / delta_time;
+
+                    // Reset accumulated delta and update last scroll timestamp
+                    input->mouse.accumulated_scroll_delta = 0;
+                    input->mouse.last_scroll_timestamp    = current_time;
+                }
+            }
+        } break;
+
+        default:
             break;
         }
 

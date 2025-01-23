@@ -1,6 +1,6 @@
 #include "dh/time.h"
 
-#if BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT)
+#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
 
 #define time_intervals_per_sec (10000000ULL)
 
@@ -45,7 +45,7 @@ void time_sleepNanos(u32 nanos) {
     time_sleep(time_Duration_fromNanos(nanos));
 }
 
-#endif /* BUILTIN_PLTF_WINDOWS && (BUILTIN_PLTF_32BIT || BUILTIN_PLTF_64BIT) */
+#endif /* bti_plat_windows && (bti_plat_32BIT || bti_plat_64BIT) */
 
 // #define SUPPORT_BUSY_WAIT_LOOP
 // // Wait for some time (stop program execution)
