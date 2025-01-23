@@ -1,4 +1,5 @@
 #include "QuadTree.h"
+#include "dh/ArrList.h"
 #include "dh/log.h"
 #include "dh/math.h"
 #include "dh/meta/common.h"
@@ -7,10 +8,10 @@
 Quad Quad_newContaining(const Sli$Body bodies) {
     debug_assert_nonnull(bodies.ptr);
 
-    f32 min_x = f32_limit_max;
-    f32 min_y = f32_limit_max;
-    f32 max_x = f32_limit_min;
-    f32 max_y = f32_limit_min;
+    var min_x = f32_limit_max;
+    var min_y = f32_limit_max;
+    var max_x = f32_limit_min;
+    var max_y = f32_limit_min;
 
     for_slice(bodies, body) {
         min_x = fminf(min_x, body->pos.x);
@@ -19,8 +20,8 @@ Quad Quad_newContaining(const Sli$Body bodies) {
         max_y = fmaxf(max_y, body->pos.y);
     }
 
-    math_Vec2f center = math_Vec2f_scale(math_Vec2f_from(min_x + max_x, min_y + max_y), 0.5f);
-    f32        size   = fmaxf(max_x - min_x, max_y - min_y);
+    let center = math_Vec2f_scale(math_Vec2f_from(min_x + max_x, min_y + max_y), 0.5f);
+    let size   = fmaxf(max_x - min_x, max_y - min_y);
 
     return (Quad){
         .center = center,
@@ -30,13 +31,13 @@ Quad Quad_newContaining(const Sli$Body bodies) {
 
 usize Quad_findQuadrant(const Quad* self, math_Vec2f pos) {
     debug_assert_nonnull(self);
-    return ((pos.y > self->center.y) << 1) | (pos.x > self->center.x);
+    return (as$(usize, pos.y > self->center.y) << 1) | (as$(usize, pos.x > self->center.x));
 }
 
 Quad Quad_intoQuadrant(Quad self, usize quadrant) {
     self.size *= 0.5f;
-    self.center.x += ((f32)(quadrant & 1) - 0.5f) * self.size;
-    self.center.y += ((f32)(quadrant >> 1) - 0.5f) * self.size;
+    self.center.x += (as$(f32, quadrant & 1) - 0.5f) * self.size;
+    self.center.y += (as$(f32, quadrant >> 1) - 0.5f) * self.size;
     return self;
 }
 
@@ -93,9 +94,8 @@ Err$void QuadTree_clear(QuadTree* self, Quad quad) {
     debug_assert_nonnull(self);
 
     // Clear and free the nodes and parents lists
-    ArrList_clearAndFree(&self->nodes.base);
-    ArrList_clearAndFree(&self->parents.base);
-
+    ArrList_clearRetainingCap(&self->nodes.base);
+    ArrList_clearRetainingCap(&self->parents.base);
     // Initialize the root node
     try(ArrList_append(
         &self->nodes.base,

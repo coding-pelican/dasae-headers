@@ -1,6 +1,4 @@
-#define MEM_NO_TRACE_ALLOC_AND_FREE (1)
 #include "dh/main.h"
-#include "dh/ArrList.h"
 #include "dh/debug.h"
 #include "dh/log.h"
 
@@ -8,13 +6,13 @@
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Classic.h"
 #include "dh/heap/Page.h"
+#include "dh/ArrList.h"
 
-#include "dh/scope/return.h"
 #include "engine.h"
 
-#include "Simulation.h"
-#include "Visualizer.h"
-#include "utils.h"
+#include "src/Simulation.h"
+#include "src/Visualizer.h"
+#include "src/utils.h"
 
 #define window_res_width__960x600  /* template value */ (960)
 #define window_res_height__960x600 /* template value */ (600)
@@ -33,8 +31,8 @@
 #define window_res_width__40x25    /* template value */ (40)
 #define window_res_height__40x25   /* template value */ (25)
 
-#define window_res_width  (window_res_width__160x100)
-#define window_res_height (window_res_height__160x100)
+#define window_res_width  (window_res_width__320x200)
+#define window_res_height (window_res_height__320x200)
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
@@ -45,7 +43,7 @@
 #define target_fps (target_fps__62_50)
 #define target_spf (1.0 / target_fps)
 
-#define n_body (100)
+#define n_body (1000)
 
 // Global state without thread synchronization
 static struct {
@@ -57,6 +55,7 @@ static struct {
     mem_Allocator allocator;
 } global_state = { 0 };
 
+#if DEBUG_ENABLED
 static void global_debug_printSimulationState(void) {
     log_info("Global State:\n");
     log_info("  paused: %s\n", global_state.paused ? "true" : "false");
@@ -71,6 +70,7 @@ static void global_debug_printSimulationState(void) {
         log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->mass);
     }
 }
+#endif
 
 static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     reserveReturn(Err$void);

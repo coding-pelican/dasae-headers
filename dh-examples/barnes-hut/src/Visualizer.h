@@ -13,6 +13,7 @@
 #include "engine/input.h"
 #include "engine/canvas.h"
 
+use_ArrList$(u8);
 typedef struct Visualizer {
     // View state
     math_Vec2f pos;
@@ -22,26 +23,47 @@ typedef struct Visualizer {
     // bool settings_window_open;
     // bool shows_fps;
     // bool shows_view_state;
-    bool shows_bodies;         // 1
-    bool shows_bodies_vel_vec; // 2
-    bool shows_bodies_acc_vec; // 3
-    bool shows_quad_tree;      // 0
+    bool shows_bodies;         // toggle '1'
+    bool shows_bodies_vel_vec; // toggle '2'
+    bool shows_bodies_acc_vec; // toggle '3'
+    bool shows_quad_tree;      // toggle 'q'
 
     // body visualization
     Color body_color;
 
     // Quadtree visualization
+    union {
+        usize pair[2];
+        struct {
+            usize min;
+            usize max;
+        };
+        struct {
+            usize first;
+            usize second;
+        };
+    } depth_range; // Quadtree visualization render cache
     struct {
-        usize min_depth;
-        usize max_depth;
-    } depth_range;
+        union {
+            ArrList$usize pair[2];
+            struct {
+                ArrList$usize nodes;
+                ArrList$usize depths;
+            };
+            struct {
+                ArrList$usize first;
+                ArrList$usize second;
+            };
+        };
+        usize len;
+    } stack; // Quadtree visualization render cache
 
     // Body spawn state
     struct {
-        Body* body;      // Current spawn body
-        f32*  angle;     // Current spawn angle
-        f32*  total;     // Total angle rotated
-        Body* confirmed; // Confirmed spawn body
+        Opt$Body body;      // Current spawn body
+        Opt$f32  angle;     // Current spawn angle
+        Opt$f32  total;     // Total angle rotated
+        Opt$Body confirmed; // Confirmed spawn body
     } spawn;
 
     // Simulation state copies

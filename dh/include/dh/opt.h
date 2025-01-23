@@ -51,9 +51,12 @@ extern "C" {
 #define unwrap(expr)                         OP__unwrap(expr)
 
 /* Optional payload capture (similar to Zig's if/while captures) */
-#define if_some(expr, var_capture) SYN__if_some(expr, var_capture)
-#define if_none(expr)              SYN__if_none(expr)
-#define else_some(var_capture)     SYN__else_some(var_capture)
+#define if_some(expr, var_capture)     SYN__if_some(expr, var_capture)
+#define if_some_mut(expr, var_capture) SYN__if_some_mut(expr, var_capture)
+#define if_none(expr)                  SYN__if_none(expr)
+#define else_some(var_capture)         SYN__else_some(var_capture)
+#define else_some_mut(var_capture)     SYN__else_some_mut(var_capture)
+
 
 /*========== Implementations ================================================*/
 
@@ -145,10 +148,15 @@ extern "C" {
 #define SYN__if_some(expr, var_capture)               \
     scope_if(let _result = (expr), _result.has_value) \
         scope_with(let var_capture = _result.value)
+#define SYN__if_some_mut(expr, var_capture)             \
+    scope_if(let _result = &(expr), _result->has_value) \
+        scope_with(let var_capture = &_result->value)
 #define SYN__if_none(expr) \
     scope_if(let _result = (expr), !_result.has_value)
 #define SYN__else_some(var_capture) \
     scope_else(let var_capture = _result.value)
+#define SYN__else_some_mut(expr, var_capture) \
+    scope_else(let var_capture = &_result->value)
 
 #if defined(__cplusplus)
 } /* extern "C" */

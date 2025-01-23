@@ -133,7 +133,7 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     let r  = r1 + r2;
 
     // Early exit if not colliding
-    scope_if(const bool collides = math_Vec2f_lenSq(d) <= r * r, !collides) { return; }
+    scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
 
     // Get velocities and masses
     let v1 = b1->vel;
