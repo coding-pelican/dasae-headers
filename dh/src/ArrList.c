@@ -4,7 +4,7 @@
 #include <malloc.h>
 
 // Utility functions
-static usize growCapacity(usize current, usize minimum) {
+static usize ArrList_growCap(usize current, usize minimum) {
     debug_assert_fmt(0 < minimum, "Minimum capacity must be positive");
 
     if (usize_limit / 2 < minimum) {
@@ -129,7 +129,7 @@ Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
     if (self->cap == 0) {
         try(ArrList_ensureTotalCapPrecise(self, new_cap > 4 ? new_cap : 4));
     } else {
-        try(ArrList_ensureTotalCapPrecise(self, new_cap));
+        try(ArrList_ensureTotalCapPrecise(self, ArrList_growCap(self->cap, new_cap)));
     }
 
     return_void();

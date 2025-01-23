@@ -68,6 +68,41 @@
         "$gcc"
       ]
     },
+    { // barnes-hut>build C file (debug with mem-trace)
+      "label": "barnes-hut>build C file (debug with mem-trace)",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-std=${input:cStandard}",
+        "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/src/*.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/barnes-hut/src/*.c",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "-DCOMP",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-fdiagnostics-color=always",
+        "-fblocks",
+        "-I./include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include",
+        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/barnes-hut/src",
+        "-static",
+        "${input:libraries}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
     { // barnes-hut>build C file (release)
       "label": "barnes-hut>build C file (release)",
       "type": "shell",

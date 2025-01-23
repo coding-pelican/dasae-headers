@@ -20,6 +20,7 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
     return_ok((Visualizer){
         .pos   = math_Vec2f_zero,
         .scale = (f32)canvas->width / (f32)canvas->height,
+        // .scale = 3600,
 
         .shows_bodies         = true,
         .shows_bodies_vel_vec = false,
@@ -434,19 +435,17 @@ static math_Vec2f Visualizer_screenToWorld(Visualizer* self, engine_Window* wind
     debug_assert_nonnull(window);
 
     let client_size = engine_Window_getClientSize(window);
-    // Avoid division by zero (unlikely but safer)
     if (client_size.s[0] <= 0 || client_size.s[1] <= 0) { return math_Vec2f_zero; }
 
-    // Convert screen coordinates to normalized device coordinates (NDC: [-1, 1])
-    let ndc_x = (2.0f * (f32)screen_pos.s[0] / (f32)client_size.s[0]) - 1.0f;
+    var ndc_x = (2.0f * (f32)screen_pos.s[0] / (f32)client_size.s[0]) - 1.0f;
     let ndc_y = 1.0f - (2.0f * (f32)screen_pos.s[1] / (f32)client_size.s[1]);
-    let ndc   = math_Vec2f_from(ndc_x, ndc_y);
 
-    // Apply camera transform: NDC * scale + position
-    return math_Vec2f_add(
-        math_Vec2f_scale(ndc, self->scale),
-        self->pos
-    );
+    // Adjust for aspect ratio to maintain square aspect
+    let aspect_ratio = (f32)client_size.s[0] / (f32)client_size.s[1];
+    ndc_x *= aspect_ratio;
+
+    let ndc = math_Vec2f_from(ndc_x, ndc_y);
+    return math_Vec2f_add(math_Vec2f_scale(ndc, self->scale), self->pos);
 }
 
 static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
@@ -458,12 +457,18 @@ static math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window
 static Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
     debug_assert_nonnull(self);
 
-    let translated    = math_Vec2f_sub(world_pos, self->pos);
-    let scaled        = math_Vec2f_scale(translated, Visualizer_invScale(self));
+    var translated = math_Vec2f_sub(world_pos, self->pos);
+    let inv_scale  = Visualizer_invScale(self);
+
+    // Adjust for aspect ratio
+    let aspect_ratio = (f32)self->canvas->width / (f32)self->canvas->height;
+    translated.x *= inv_scale / aspect_ratio;
+    translated.y *= inv_scale;
+
     let canvas_half_w = as$(f32, self->canvas->width) / 2.0f;
     let canvas_half_h = as$(f32, self->canvas->height) / 2.0f;
-    let screen_x      = as$(i32, scaled.x * canvas_half_w + canvas_half_w);
-    let screen_y      = as$(i32, scaled.y * canvas_half_h + canvas_half_h);
+    let screen_x      = as$(i32, translated.x * canvas_half_w + canvas_half_w);
+    let screen_y      = as$(i32, translated.y * canvas_half_h + canvas_half_h);
 
     return math_Vec2i_from(screen_x, screen_y);
 }

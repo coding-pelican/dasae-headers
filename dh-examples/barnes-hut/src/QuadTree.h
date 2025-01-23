@@ -49,12 +49,12 @@ extern bool     QuadNode_isBranch(const QuadNode* self);
 extern bool     QuadNode_isEmpty(const QuadNode* self);
 
 // QuadTree functions
-Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon) must_check;
+Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n_body) must_check;
+void         QuadTree_destroy(QuadTree* self);
 Err$void     QuadTree_clear(QuadTree* self, Quad quad);
 Err$void     QuadTree_insert(QuadTree* self, math_Vec2f pos, f32 mass) must_check;
 void         QuadTree_propagate(QuadTree* self);
 math_Vec2f   QuadTree_calculateAcceleration(const QuadTree* self, math_Vec2f pos);
-void         QuadTree_destroy(QuadTree* self);
 
 static const usize QuadTree_s_root = 0;
 

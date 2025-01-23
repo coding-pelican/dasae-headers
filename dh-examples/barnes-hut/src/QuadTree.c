@@ -78,15 +78,21 @@ bool QuadNode_isEmpty(const QuadNode* self) {
 }
 
 // QuadTree implementation
-Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon) {
+Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n_body) {
     reserveReturn(Err$QuadTree);
     return_ok({
         .theta_squared   = theta * theta,
         .epsilon_squared = epsilon * epsilon,
-        .nodes           = typed(ArrList$QuadNode, ArrList_init(typeInfo(QuadNode), allocator)),
-        .parents         = typed(ArrList$usize, ArrList_init(typeInfo(usize), allocator)),
+        .nodes           = typed(ArrList$QuadNode, try(ArrList_initCap(typeInfo(QuadNode), allocator, n_body))),
+        .parents         = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, n_body))),
         .allocator       = allocator,
     });
+}
+
+void QuadTree_destroy(QuadTree* self) {
+    debug_assert_nonnull(self);
+    ArrList_fini(&self->nodes.base);
+    ArrList_fini(&self->parents.base);
 }
 
 Err$void QuadTree_clear(QuadTree* self, Quad quad) {
@@ -273,10 +279,4 @@ math_Vec2f QuadTree_calculateAcceleration(const QuadTree* self, math_Vec2f pos) 
     }
 
     return acc;
-}
-
-void QuadTree_destroy(QuadTree* self) {
-    debug_assert_nonnull(self);
-    ArrList_fini(&self->nodes.base);
-    ArrList_fini(&self->parents.base);
 }

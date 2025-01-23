@@ -22,7 +22,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
         errdefer(ArrList_fini(&rects.base));
 
         try(ArrList_resize(&rects.base, n));
-        var quad_tree = try(QuadTree_create(allocator, theta, epsilon));
+        var quad_tree = try(QuadTree_create(allocator, theta, epsilon, n_body));
         errdefer(QuadTree_destroy(&quad_tree));
 
         return_ok((Simulation){

@@ -60,10 +60,32 @@
 #define window_res_height__80x45     /* template value */ (45)
 #define window_res_width__40x22      /* template value */ (40)
 #define window_res_height__40x22     /* template value */ (22)
+/* 2:1 */
+#define window_res_width__1920x960   /* template value */ (1920)
+#define window_res_height__1920x960  /* template value */ (960)
+#define window_res_width__1600x800   /* template value */ (1600)
+#define window_res_height__1600x800  /* template value */ (800)
+#define window_res_width__1280x640   /* template value */ (1280)
+#define window_res_height__1280x640  /* template value */ (640)
+#define window_res_width__960x480    /* template value */ (960)
+#define window_res_height__960x480   /* template value */ (480)
+#define window_res_width__800x400    /* template value */ (800)
+#define window_res_height__800x400   /* template value */ (400)
+#define window_res_width__640x320    /* template value */ (640)
+#define window_res_height__640x320   /* template value */ (320)
+#define window_res_width__480x240    /* template value */ (480)
+#define window_res_height__480x240   /* template value */ (240)
+#define window_res_width__320x160    /* template value */ (320)
+#define window_res_height__320x160   /* template value */ (160)
+#define window_res_width__160x80     /* template value */ (160)
+#define window_res_height__160x80    /* template value */ (80)
+#define window_res_width__80x40      /* template value */ (80)
+#define window_res_height__80x40     /* template value */ (40)
+#define window_res_width__40x20      /* template value */ (40)
+#define window_res_height__40x20     /* template value */ (20)
 
-
-#define window_res_width  (window_res_width__640x360)
-#define window_res_height (window_res_height__640x360)
+#define window_res_width  (window_res_width__320x160)
+#define window_res_height (window_res_height__320x160)
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
@@ -76,7 +98,7 @@
 #define target_fps (target_fps__62_50)
 #define target_spf (1.0 / target_fps)
 
-#define n_body (1000)
+#define n_body (5000)
 
 // Global state without thread synchronization
 static struct {
@@ -94,12 +116,6 @@ static void global_debug_printSimulationState(void) {
     log_info("  paused: %s\n", global_state.paused ? "true" : "false");
     log_info("  bodies: %d\n", global_state.spawn_bodies.items.len);
     for_slice(global_state.spawn_bodies.items, body) {
-        log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->mass);
-    }
-    log_info("Simulation state:\n");
-    log_info("  frame: %d\n", global_state.sim->frame);
-    log_info("  bodies: %d\n", global_state.sim->bodies.items.len);
-    for_slice(global_state.sim->bodies.items, body) {
         log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->mass);
     }
 }
@@ -128,27 +144,33 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     return_ok({});
 }
 
-static Err$void global_update(Visualizer* viz, Simulation* sim) {
+Err$void global_update(Visualizer* viz, Simulation* sim) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(viz);
         debug_assert_nonnull(sim);
 
-        // Handle spawned bodies
+        // Transfer confirmed spawns from Visualizer to global_state
+        if_some_mut(viz->spawn.confirmed, confirmed_body) {
+            try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
+            viz->spawn.confirmed = (TypeOf(viz->spawn.confirmed))none();
+        }
+
+        // Add spawned bodies to simulation
         for_slice(global_state.spawn_bodies.items, body) {
             try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
         }
-        ArrList_clearAndFree(&global_state.spawn_bodies.base);
+        ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
 
         // Simulation step if not paused
         if (!global_state.paused) {
             try(Simulation_step(sim));
         }
 
-        // Update state with current simulation data
-        ArrList_clearAndFree(&viz->bodies.base);
+        // Update Visualizer's bodies and nodes from simulation
+        ArrList_clearRetainingCap(&viz->bodies.base);
         try(ArrList_appendSlice(&viz->bodies.base, meta_refSli(sim->bodies.items)));
 
-        ArrList_clearAndFree(&viz->nodes.base);
+        ArrList_clearRetainingCap(&viz->nodes.base);
         try(ArrList_appendSlice(&viz->nodes.base, meta_refSli(sim->quad_tree.nodes.items)));
 
         try(Visualizer_update(viz));
@@ -156,6 +178,7 @@ static Err$void global_update(Visualizer* viz, Simulation* sim) {
     }
     scope_returnReserved;
 }
+
 
 Err$void dh_main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
@@ -199,7 +222,8 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Initialize state
         global_state.is_running   = true;
         global_state.paused       = false;
-        global_state.spawn_bodies = typed(ArrList$Body, ArrList_init(typeInfo(Body), allocator));
+        global_state.spawn_bodies = typed(ArrList$Body, try(ArrList_initCap(typeInfo(Body), allocator, n_body)));
+        defer(ArrList_fini(&global_state.spawn_bodies.base));
 
         // Create simulation and Visualizer
         var sim          = try(Simulation_create(allocator, n_body));
@@ -214,9 +238,17 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         ignore getchar();
 
-        log_info("simulation loop started\n");
+        // Initialize timing variables
+        let time_frame_target = time_Duration_fromSecs_f64(target_spf);
+        var time_frame_prev   = time_Instant_now();
+        log_info("main loop started\n");
+
         // Main loop
         while (global_state.is_running) {
+            let time_frame_curr = time_Instant_now();
+            let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
+            let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+
             // Process input
             try(engine_Window_processEvents(window));
             try(global_processInput(&viz, window));
@@ -227,10 +259,32 @@ Err$void dh_main(int argc, const char* argv[]) {
             // Render frame
             try(Visualizer_render(&viz));
             engine_Window_present(window);
-        }
 
-        // Cleanup
-        ArrList_fini(&global_state.spawn_bodies.base);
+            const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
+            printf("\033[H\033[40;37m"); // Move cursor to top left
+            printf("\rFPS: %6.2f | RES: %dx%d", time_fps, window_res_width, window_res_height);
+            debug_only(
+                // log frame every 1s
+                static f64 total_game_time_for_timestamp = 0.0;
+                static f64 logging_after_duration        = 0.0;
+                total_game_time_for_timestamp += time_dt;
+                logging_after_duration += time_dt;
+                if (1.0 < logging_after_duration) {
+                    logging_after_duration = 0.0;
+                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                }
+            );
+
+            let time_now        = time_Instant_now();
+            let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
+            let time_leftover   = time_Duration_sub(time_frame_target, time_frame_used);
+
+            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
+            if (is_positive_time_leftover) {
+                time_sleep(time_leftover);
+            }
+            time_frame_prev = time_frame_curr;
+        }
         return_void();
     }
     scope_returnReserved;
