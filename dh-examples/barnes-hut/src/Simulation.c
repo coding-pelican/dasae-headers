@@ -1,6 +1,8 @@
 #include "Simulation.h"
+#include "dh/core/cmp.h"
 #include "utils.h"
 #include "dh/math.h"
+#include <stdlib.h>
 
 Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
     scope_reserveReturn(Err$Simulation) {
@@ -25,13 +27,18 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
         var quad_tree = try(QuadTree_create(allocator, theta, epsilon, n_body));
         errdefer(QuadTree_destroy(&quad_tree));
 
+        // Sort body indices based on their AABB's min.x to enable sweep and prune
+        var sort_cache = meta_cast$(Sli$usize, try(mem_Allocator_alloc(allocator, typeInfo(usize), n_body)));
+        errdefer(mem_Allocator_free(allocator, anySli(sort_cache)));
+
         return_ok((Simulation){
-            .dt        = dt,
-            .frame     = 0,
-            .bodies    = bodies,
-            .rects     = rects,
-            .quad_tree = quad_tree,
-            .allocator = allocator,
+            .dt         = dt,
+            .frame      = 0,
+            .bodies     = bodies,
+            .rects      = rects,
+            .quad_tree  = quad_tree,
+            .sort_cache = sort_cache,
+            .allocator  = allocator,
         });
     }
     scope_returnReserved;
@@ -42,6 +49,7 @@ void Simulation_destroy(Simulation* self) {
     ArrList_fini(&self->bodies.base);
     ArrList_fini(&self->rects.base);
     QuadTree_destroy(&self->quad_tree);
+    mem_Allocator_free(self->allocator, anySli(self->sort_cache));
 }
 
 Err$void Simulation_step(Simulation* self) {
@@ -88,7 +96,7 @@ void Simulation_iterate(Simulation* self) {
     }
 }
 
-Err$void Simulation_collide(Simulation* self) {
+/* Err$void Simulation_collide(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
@@ -112,6 +120,154 @@ Err$void Simulation_collide(Simulation* self) {
     }
 
     return_void();
+} */
+
+/// optimizations:
+///     Sweep and Prune Algorithm:
+///         Sorting: Bodies are sorted based on the minimum x-coordinate of their AABB. This allows efficient pruning of non-overlapping pairs.
+///         Early Exit: For each body, subsequent bodies are checked only until their AABB's minimum x exceeds the current body's maximum x, reducing the number of checks.
+///         Y-axis Overlap Check: After x-axis overlap is confirmed, a quick y-axis check further filters non-colliding pairs.
+///     AABB Checks Before Distance Calculation:
+///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
+/// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
+
+// Helper function to perform a safe multiplication, avoiding potential overflow
+use_Err(MulErr, Overflow);
+force_inline Err$usize mulSafe(usize lhs, usize rhs) {
+    reserveReturn(Err$usize);
+    if (0 < lhs && SIZE_MAX / lhs < rhs) {
+        // Multiplication would overflow
+        return_err(MulErr_err(MulErrType_Overflow));
+    }
+    return_ok(lhs * rhs);
+}
+// Modernized merge sort with temporary buffer (stable sort)
+static Err$void mergeSortWithTmpRecur( // NOLINT
+    anyptr base,
+    usize  num,
+    usize  size,
+    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr arg,
+    Sli$u8 temp_buffer
+) {
+    scope_reserveReturn(Err$void) {
+        if (num <= 1) { return_void(); /* Nothing to sort */ }
+
+        let mid        = num / 2;
+        let base_bytes = as$(u8*, base); // For pointer arithmetic
+        let temp_bytes = as$(u8*, temp_buffer.ptr);
+
+        // Sort each half recursively
+        try(mergeSortWithTmpRecur(base_bytes, mid, size, comp, arg, temp_buffer));
+        try(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
+
+        // Merge the sorted halves using the temporary buffer
+        usize left_index  = 0;
+        usize right_index = mid;
+        usize temp_index  = 0;
+
+        while (left_index < mid && right_index < num) {
+            if (comp(base_bytes + left_index * size, base_bytes + right_index * size, arg) <= 0) {
+                memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, size);
+                left_index++;
+            } else {
+                memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, size);
+                right_index++;
+            }
+            temp_index++;
+        }
+
+        // Copy any remaining elements from the left half
+        if (left_index < mid) {
+            memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, (mid - left_index) * size);
+        }
+
+        // Copy back from the temporary buffer to the original array
+        memcpy(base_bytes, temp_bytes, (num - (right_index - mid)) * size);
+
+        return_void();
+    }
+    scope_returnReserved;
+}
+// Modernized stable sort (using merge sort)
+static Err$void stableSort(
+    anyptr base,
+    usize  num,
+    usize  size,
+    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr        arg,
+    mem_Allocator allocator
+) {
+    scope_reserveReturn(Err$void) {
+        // Allocate temporary buffer using the provided allocator
+        let checked_size = try(mulSafe(num, size));
+        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
+        defer(mem_Allocator_free(allocator, anySli(temp_buffer))); // Ensure cleanup
+
+        // Perform merge sort
+        try(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
+        return_void();
+    }
+    scope_returnReserved;
+}
+// Comparison function for qsort (C-style)
+static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+    let self     = as$(const Simulation*, arg);
+    let idx_lhs  = *as$(const usize*, lhs);
+    let idx_rhs  = *as$(const usize*, rhs);
+    let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
+    let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
+    if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_less; }
+    if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_greater; }
+    return cmp_Ord_equal;
+}
+Err$void Simulation_collide(Simulation* self) {
+    scope_reserveReturn(Err$void) {
+        debug_assert_nonnull(self);
+
+        // Update collision rects for current frame
+        for_slice_indexed(self->bodies.items, body, index) {
+            let pos        = body->pos;
+            let radius     = body->radius;
+            let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+
+            let rect  = Sli_at(self->rects.items, index);
+            rect->min = math_Vec2f_sub(pos, radius_vec);
+            rect->max = math_Vec2f_add(pos, radius_vec);
+        }
+
+        let indices = self->sort_cache;
+        for_slice_indexed(indices, index, i) {
+            *index = i;
+        }
+
+        // Sort indices using qsort with the custom comparison function
+        try(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
+
+        // Sweep through sorted indices and check for AABB overlaps
+        for (usize current = 0; current < indices.len; ++current) {
+            let current_idx  = *Sli_at(indices, current);
+            let current_rect = Sli_at(self->rects.items, current_idx);
+            for (usize other = current + 1; other < indices.len; ++other) {
+                let other_idx  = *Sli_at(indices, other);
+                let other_rect = Sli_at(self->rects.items, other_idx);
+
+                // Exit early if no overlap in x-axis
+                if (current_rect->max.x < other_rect->min.x) { break; }
+
+                // Check for overlap in y-axis
+                const bool y_overlap = !(current_rect->max.y < other_rect->min.y || current_rect->min.y > other_rect->max.y);
+                if (!y_overlap) { continue; }
+
+                // Ensure each pair is checked only once (current_idx < other_idx)
+                if (other_idx <= current_idx) { continue; }
+                Simulation_resolve(self, current_idx, other_idx);
+            }
+        }
+
+        return_void();
+    }
+    scope_returnReserved;
 }
 
 void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {

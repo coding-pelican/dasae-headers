@@ -24,6 +24,7 @@ typedef struct Simulation {
     ArrList$Body  bodies;
     ArrList$Rect  rects; // Cache for collision rects
     QuadTree      quad_tree;
+    Sli$usize     sort_cache; // Cache for sorting bodies
     mem_Allocator allocator;
 } Simulation;
 use_Err$(Simulation);

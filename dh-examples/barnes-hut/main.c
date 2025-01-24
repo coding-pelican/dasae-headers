@@ -99,7 +99,7 @@
 #define target_fps (target_fps__62_50)
 #define target_spf (1.0 / target_fps)
 
-#define n_body (5000)
+#define n_body (10000)
 
 // Global state without thread synchronization
 static struct {

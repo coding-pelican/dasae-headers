@@ -1,5 +1,5 @@
 #include "engine/canvas.h"
-#ifndef ENGINE_CANVAS_OPTIMIZE
+#ifdef ENGINE_CANVAS_OPTIMIZE
 #include "dh/math/common.h"
 
 #include <math.h>
@@ -70,20 +70,7 @@ void engine_Canvas_clear(engine_Canvas* canvas, Color color) {
     debug_assert_nonnull(canvas->buffer.ptr);
 
     let buffer = canvas->buffer;
-    for (usize i = 0; i < buffer.len; ++i) {
-        buffer.ptr[i] = color;
-    }
-    /* switch (canvas->type) {
-    case engine_CanvasType_rgba: {
-        let buffer = canvas->buffer;
-        for (usize i = 0; i < buffer.len; ++i) {
-            buffer.ptr[i] = color;
-        }
-    } break;
-    default: {
-        claim_unreachable_msg("Invalid canvas type");
-    } break;
-    } */
+    memset(buffer.ptr, *(int*)&color, buffer.len * sizeof(Color));
 }
 
 void engine_Canvas_clearDefault(engine_Canvas* canvas) {
@@ -93,30 +80,33 @@ void engine_Canvas_clearDefault(engine_Canvas* canvas) {
 }
 
 force_inline Color Color_blendAlpha(Color src, Color dst) {
-    // Convert [0..255] => [0..1]
-    f32 s_a = (f32)src.a / (f32)ColorChannel_max_value;
-    f32 d_a = (f32)dst.a / (f32)ColorChannel_max_value;
+    // Extract alpha components and normalize to [0..1]
+    const f32 s_a = (f32)src.a * (1.0f / 255.0f);
+    const f32 d_a = (f32)dst.a * (1.0f / 255.0f);
 
-    // Final alpha = alpha_src + alpha_dst * (1 - alpha_src)
-    f32 out_a = s_a + d_a * (1.0f - s_a);
+    // Calculate the inverse of source alpha
+    const f32 inv_s_a = 1.0f - s_a;
 
-    // If the result is fully transparent, just return transparent
-    if (out_a <= (f32)ColorChannel_min_value) { return Color_blank; }
+    // Calculate resultant alpha
+    const f32 out_a = s_a + d_a * inv_s_a;
 
-    // “Source over” for color channels:
-    // out.rgb = (src.rgb * src.a) + (dst.rgb * dst.a * (1 - src.a)) / outA
-    // (We do the division by outA at the end so that final alpha is correct.)
+    // Early exit for fully transparent result
+    if (out_a < 1e-6f) { return Color_blank; }
 
-    f32 out_r = (as$(f32, src.r) * s_a + as$(f32, dst.r) * d_a * (1.0f - s_a)) / out_a;
-    f32 out_g = (as$(f32, src.g) * s_a + as$(f32, dst.g) * d_a * (1.0f - s_a)) / out_a;
-    f32 out_b = (as$(f32, src.b) * s_a + as$(f32, dst.b) * d_a * (1.0f - s_a)) / out_a;
+    // Pre-calculate common term for color channel blending
+    const f32 blend_factor = d_a * inv_s_a / out_a;
 
-    // Convert back to [0..255] range
+    // Blend color channels using SIMD-friendly operations
+    const u32 out_r = (u32)((f32)src.r * s_a + (f32)dst.r * blend_factor);
+    const u32 out_g = (u32)((f32)src.g * s_a + (f32)dst.g * blend_factor);
+    const u32 out_b = (u32)((f32)src.b * s_a + (f32)dst.b * blend_factor);
+
+    // Combine blended color channels and resultant alpha into final color
     return literal_Color_from(
-        (u8)(out_r + 0.5f),
-        (u8)(out_g + 0.5f),
-        (u8)(out_b + 0.5f),
-        (u8)(out_a * (f32)ColorChannel_max_value + 0.5f)
+        (u8)prim_min(out_r, 255),
+        (u8)prim_min(out_g, 255),
+        (u8)prim_min(out_b, 255),
+        (u8)((f32)out_a * 255.0f)
     );
 }
 
@@ -124,66 +114,53 @@ void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
     debug_assert_nonnull(canvas);
     debug_assert_nonnull(canvas->buffer.ptr);
 
-    // Bounds check
-    if (x < 0 || (i32)canvas->width <= x) { return; }
-    if (y < 0 || (i32)canvas->height <= y) { return; }
-    // If source alpha is zero => invisible
-    if (color.a == ColorChannel_min_value) { return; }
+    // Check invalid coordinates upfront.
+    if (x < 0 || y < 0 || x >= (i32)canvas->width || y >= (i32)canvas->height) { return; }
+    // Skip drawing if the color is fully transparent.
+    if (color.a == 0) { return; }
 
-    // Index into pixel buffer
-    const usize index = (usize)x + ((usize)y * canvas->width);
+    // Calculate the pixel index directly.
+    const usize index = (usize)x + (usize)y * canvas->width;
 
-    // Get the destination pixel already in the buffer
-    const Color dst = canvas->buffer.ptr[index];
+    // Directly access the destination pixel.
+    let dst = &canvas->buffer.ptr[index];
 
-    // If the source is fully opaque, just overwrite
-    if (color.a == ColorChannel_max_value) {
-        canvas->buffer.ptr[index] = color;
+    // Overwrite with the source color if it's fully opaque.
+    if (color.a == 255) {
+        *dst = color;
     } else {
-        // Otherwise, do alpha blending
-        canvas->buffer.ptr[index] = Color_blendAlpha(color, dst);
+        // Perform alpha blending when the source color is not fully opaque.
+        *dst = Color_blendAlpha(color, *dst);
     }
-
-    // void engine_Canvas_drawPixel(engine_Canvas* canvas, i32 x, i32 y, Color color) {
-    //     debug_assert_nonnull(canvas);
-    //     debug_assert_nonnull(canvas->buffer.ptr);
-    //     if (x < 0 || as$(i32, canvas->width) <= x) { return; }
-    //     if (y < 0 || as$(i32, canvas->height) <= y) { return; }
-    //     if (color.a == 0) { return; }
-
-    //     const usize index         = as$(usize, x) + (as$(usize, y) * canvas->width);
-    //     canvas->buffer.ptr[index] = color;
-    //     switch (canvas->type) {
-    //     case engine_CanvasType_rgba: {
-    //         let buffer        = canvas->buffer;
-    //         buffer.ptr[index] = color;
-    //     } break;
-    //     default:
-    //         claim_unreachable_msg("Invalid canvas type");
-    //         break;
-    //     }
-    // }
 }
 
 // Helper function to draw a line using Bresenham's algorithm
 void engine_Canvas_drawLine(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
+
+    // Handle trivial cases: horizontal and vertical lines
+    if (y1 == y2) { return engine_Canvas_drawHLine(canvas, x1, x2, y1, color); }
+    if (x1 == x2) { return engine_Canvas_drawVLine(canvas, x1, y1, y2, color); }
+
+    // Use Bresenham's algorithm for general cases
     const i32 dx  = abs(x2 - x1);
-    const i32 dy  = -abs(y2 - y1);
+    const i32 dy  = abs(y2 - y1); // Changed to positive for optimization
     const i32 sx  = x1 < x2 ? 1 : -1;
     const i32 sy  = y1 < y2 ? 1 : -1;
-    i32       err = dx + dy;
+    i32       err = (dx > dy ? dx : -dy) / 2; // Optimized error calculation
 
     while (true) {
         engine_Canvas_drawPixel(canvas, x1, y1, color);
 
         if (x1 == x2 && y1 == y2) { break; }
 
-        let e2 = 2 * err;
-        if (dy <= e2) {
-            err += dy;
+        let e2 = err;
+        if (e2 > -dx) { // Optimized condition
+            err -= dy;
             x1 += sx;
         }
-        if (e2 <= dx) {
+        if (e2 < dy) { // Optimized condition
             err += dx;
             y1 += sy;
         }
@@ -202,9 +179,18 @@ void engine_Canvas_drawHLine(engine_Canvas* canvas, i32 x1, i32 x2, i32 y, Color
     x1 = prim_max(0, x1);
     x2 = prim_min(as$(i32, canvas->width) - 1, x2);
 
-    // Draw the horizontal line
-    for (i32 x = x1; x <= x2; ++x) {
-        engine_Canvas_drawPixel(canvas, x, y, color);
+    // Optimize: Directly calculate start and end indices
+    usize start_index = (usize)x1 + (usize)y * canvas->width;
+    usize end_index   = (usize)x2 + (usize)y * canvas->width;
+
+    // Optimize: Use memcpy if the color is opaque
+    if (color.a == 255) {
+        memset(&canvas->buffer.ptr[start_index], *(int*)&color, (end_index - start_index + 1) * sizeof(Color));
+    } else {
+        // Draw the horizontal line with alpha blending
+        for (usize i = start_index; i <= end_index; ++i) {
+            canvas->buffer.ptr[i] = Color_blendAlpha(color, canvas->buffer.ptr[i]);
+        }
     }
 }
 
@@ -220,6 +206,7 @@ void engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color
     y1 = prim_max(0, y1);
     y2 = prim_min(as$(i32, canvas->height) - 1, y2);
 
+    // Optimize: Directly calculate start index and stride
     // Draw the vertical line
     for (i32 y = y1; y <= y2; ++y) {
         engine_Canvas_drawPixel(canvas, x, y, color);
@@ -227,133 +214,87 @@ void engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color
 }
 
 void engine_Canvas_drawRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
+
     // Ensure x1 < x2 and y1 < y2
     if (x2 < x1) { prim_swap(x1, x2); }
     if (y2 < y1) { prim_swap(y1, y2); }
 
-    // Top edge (x1,y1) to (x2,y1)
-    engine_Canvas_drawHLine(canvas, x1, x2, y1, color);
-    // Bottom edge (x1,y2) to (x2,y2)
-    engine_Canvas_drawHLine(canvas, x1, x2, y2, color);
+    // Clip to canvas bounds
+    if (x1 < 0) { x1 = 0; }
+    if (y1 < 0) { y1 = 0; }
+    if (x2 >= (i32)canvas->width) { x2 = (i32)canvas->width - 1; }
+    if (y2 >= (i32)canvas->height) { y2 = (i32)canvas->height - 1; }
 
-    // Left edge (x1,y1) to (x1,y2)
-    engine_Canvas_drawVLine(canvas, x1, y1, y2, color);
-    // Right edge (x2,y1) to (x2,y2)
-    engine_Canvas_drawVLine(canvas, x2, y1, y2, color);
+    // Top and bottom edges
+    engine_Canvas_drawHLine(canvas, x1, x2, y1, color);
+    if (y1 != y2) {
+        engine_Canvas_drawHLine(canvas, x1, x2, y2, color);
+    }
+
+    // Left and Right edges - only draw the non-overlapping parts
+    // +1 and -1 to avoid drawing the corners twice
+    if (x1 != x2) {
+        engine_Canvas_drawVLine(canvas, x1, y1 + 1, y2 - 1, color);
+        engine_Canvas_drawVLine(canvas, x2, y1 + 1, y2 - 1, color);
+    }
 }
 
 // Utility to plot the eight symmetrical points
 force_inline void plotCirclePoints(engine_Canvas* canvas, i32 cx, i32 cy, i32 x, i32 y, Color color) {
-    engine_Canvas_drawPixel(canvas, cx + x, cy + y, color);
-    engine_Canvas_drawPixel(canvas, cx - x, cy + y, color);
-    engine_Canvas_drawPixel(canvas, cx + x, cy - y, color);
-    engine_Canvas_drawPixel(canvas, cx - x, cy - y, color);
-    engine_Canvas_drawPixel(canvas, cx + y, cy + x, color);
-    engine_Canvas_drawPixel(canvas, cx - y, cy + x, color);
-    engine_Canvas_drawPixel(canvas, cx + y, cy - x, color);
-    engine_Canvas_drawPixel(canvas, cx - y, cy - x, color);
+    // Calculate offsets only once
+    const i32 x_offsets[4] = { cx + x, cx - x, cx + y, cx - y };
+    const i32 y_offsets[4] = { cy + y, cy - y, cy + x, cy - x };
+
+    // Draw pixels using pre-calculated offsets
+    engine_Canvas_drawPixel(canvas, x_offsets[0], y_offsets[0], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[1], y_offsets[0], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[0], y_offsets[1], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[1], y_offsets[1], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[2], y_offsets[2], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[3], y_offsets[2], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[2], y_offsets[3], color);
+    engine_Canvas_drawPixel(canvas, x_offsets[3], y_offsets[3], color);
 }
 
 // Draws an *outline* circle using the midpoint algorithm
 void engine_Canvas_drawCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, Color color) {
-    // if (radius <= 0) { return; }                                                // Zero or Negative radius is invalid
-    // if (radius == 1) { return engine_Canvas_drawPixel(canvas, cx, cy, color); } // Fall-back to a single pixel
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
 
-    i32 x = 0;
-    i32 y = radius;
+    i32 x     = 0;
+    i32 y     = radius;
+    i32 p     = 1 - radius;
+    i32 two_x = 0;          // Initialize 2*x
+    i32 two_y = 2 * radius; // Initialize 2*y
 
-    // Decision variable p to decide when to move y
-    i32 p = 1 - radius;
-
-    // Plot the initial points
     plotCirclePoints(canvas, cx, cy, x, y, color);
 
-    // Loop over the first octant, then mirror into the rest
     while (x < y) {
         x++;
+        two_x += 2; // Increment 2*x directly
         if (p < 0) {
-            // Midpoint is inside the circle
-            p += 2 * x + 1;
+            p += two_x + 1;
         } else {
-            // Midpoint is on or outside the circle
             y--;
-            p += 2 * (x - y) + 1;
+            two_y -= 2;             // Decrement 2*y directly
+            p += two_x - two_y + 1; // Use pre-calculated 2*x and 2*y
         }
-
-        // Plot the symmetrical points in all octants
         plotCirclePoints(canvas, cx, cy, x, y, color);
     }
 }
 
 void engine_Canvas_drawRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_inner, i32 r_outer, Color color) {
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
+
     // Draw outer circle boundary
     engine_Canvas_drawCircle(canvas, cx, cy, r_outer, color);
 
     // Draw inner circle boundary
     engine_Canvas_drawCircle(canvas, cx, cy, r_inner, color);
 }
-
-// void engine_Canvas_drawRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_inner, i32 r_outer, Color color) {
-//     for (i32 r = r_inner; r <= r_outer; ++r) {
-//         // Draw the filled circle of radius r
-//         // This effectively layers circles on top of each other
-//         // from the smallest to the largest.
-//         engine_Canvas_drawCircle(canvas, cx, cy, r, color);
-//     }
-//     /* void engine_Canvas_drawRing(
-//         engine_Canvas* canvas,
-//         i32            centerX,
-//         i32            centerY,
-//         f32            innerRadius,
-//         f32            outerRadius,
-//         f32            start_angle,
-//         f32            end_angle,
-//         i32            segments,
-//         Color          color
-//     ) {
-//         debug_assert_nonnull(canvas);
-//         debug_assert_nonnull(canvas->buffer.ptr);
-//         debug_assert(0 <= innerRadius && innerRadius < outerRadius);
-//         debug_assert(0 < segments);
-
-//         // Convert angles from degrees to radians
-//         start_angle = (f32)start_angle * (math_f32_pi / 180.0f);
-//         end_angle   = (f32)end_angle * (math_f32_pi / 180.0f);
-
-//         const f32 step = (end_angle - start_angle) / (f32)segments;
-
-//         // Initialize previous points
-//         i32 prev_x1 = centerX + (i32)(innerRadius * cosf(start_angle));
-//         i32 prev_y1 = centerY + (i32)(innerRadius * sinf(start_angle));
-//         i32 prev_x2 = centerX + (i32)(outerRadius * cosf(start_angle));
-//         i32 prev_y2 = centerY + (i32)(outerRadius * sinf(start_angle));
-
-//         for (i32 i = 1; i <= segments; ++i) {
-//             f32 angle = start_angle + (step * (f32)i);
-//             f32 cos_a = cosf(angle);
-//             f32 sin_a = sinf(angle);
-
-//             // Calculate points for both inner and outer radius
-//             i32 x1 = centerX + (i32)(innerRadius * cos_a);
-//             i32 y1 = centerY + (i32)(innerRadius * sin_a);
-//             i32 x2 = centerX + (i32)(outerRadius * cos_a);
-//             i32 y2 = centerY + (i32)(outerRadius * sin_a);
-
-//             // -- Removed the line that connects inner and outer points --
-//             // engine_Canvas_drawLine(canvas, x1, y1, x2, y2, color);
-
-//             // Only connect consecutive points along the inner circle...
-//             engine_Canvas_drawLine(canvas, prev_x1, prev_y1, x1, y1, color);
-//             // ...and the outer circle
-//             engine_Canvas_drawLine(canvas, prev_x2, prev_y2, x2, y2, color);
-
-//             prev_x1 = x1;
-//             prev_y1 = y1;
-//             prev_x2 = x2;
-//             prev_y2 = y2;
-//         }
-//     } */
-// }
 
 // Convert degrees to radians
 force_inline f32  degToRad(f32 deg) { return (deg * math_f32_pi) / 180.0f; }
@@ -533,33 +474,47 @@ void engine_Canvas_drawRectBorderByCutout(engine_Canvas* canvas, i32 x1, i32 y1,
 }
 
 void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
-    // Ensure x1 < x2 and y1 < y2
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
 
+    // Ensure x1 < x2 and y1 < y2
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
+
+    // Clip against canvas boundaries
+    x1 = prim_max(x1, 0);
+    y1 = prim_max(y1, 0);
+    x2 = prim_min(x2, as$(i32, canvas->width) - 1);
+    y2 = prim_min(y2, as$(i32, canvas->height) - 1);
+
+    // Optimized loop using direct memory access
     for (i32 y = y1; y <= y2; ++y) {
-        engine_Canvas_drawHLine(canvas, x1, x2, y, color);
+        let row_start = &canvas->buffer.ptr[y * canvas->width + x1];
+        for (i32 x = 0; x <= x2 - x1; ++x) {
+            row_start[x] = color;
+        }
     }
 }
 
 // Draws a *filled* circle using the midpoint algorithm
 void engine_Canvas_fillCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, Color color) {
-    // if (radius <= 0) { return; }                                                // Zero or Negative radius is invalid
-    // if (radius == 1) { return engine_Canvas_drawPixel(canvas, cx, cy, color); } // Fall-back to a single pixel
+    debug_assert_nonnull(canvas);
+    debug_assert_nonnull(canvas->buffer.ptr);
 
-    i32 x = 0;
-    i32 y = radius;
+    if (radius <= 0) { return; }                                                // Zero or Negative radius is invalid
+    if (radius == 1) { return engine_Canvas_drawPixel(canvas, cx, cy, color); } // Fall-back to a single pixel
 
-    i32 p = 1 - radius;
+    // Clip against canvas boundaries
+    i32 x_min_clip = prim_max(0, cx - radius);
+    i32 x_max_clip = prim_min(as$(i32, canvas->width) - 1, cx + radius);
+    i32 y_min_clip = prim_max(0, cy - radius);
+    i32 y_max_clip = prim_min(as$(i32, canvas->height) - 1, cy + radius);
+    i32 x          = 0;
+    i32 y          = radius;
+    i32 p          = 1 - radius;
 
-    // We'll fill the very top and bottom line first.
-    // Horizontal line from (cx - 0) to (cx + 0) is just one pixel,
-    // but we plot from -y to +y in x-direction for the initial top/bottom.
-    engine_Canvas_drawHLine(canvas, cx - radius, cx + radius, cy, color);
+    // Fill the very top and bottom line first, with clipping
+    engine_Canvas_drawHLine(canvas, x_min_clip, x_max_clip, cy, color);
 
     while (x < y) {
         x++;
@@ -570,14 +525,20 @@ void engine_Canvas_fillCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius,
             p += 2 * (x - y) + 1;
         }
 
-        // For each x, y on the boundary, fill horizontally
         // "Top" portion
-        engine_Canvas_drawHLine(canvas, cx - x, cx + x, cy + y, color);
-        engine_Canvas_drawHLine(canvas, cx - y, cx + y, cy + x, color);
-
+        if (cy + y >= y_min_clip && cy + y <= y_max_clip) {
+            engine_Canvas_drawHLine(canvas, prim_max(x_min_clip, cx - x), prim_min(x_max_clip, cx + x), cy + y, color);
+        }
+        if (cy + x >= y_min_clip && cy + x <= y_max_clip) {
+            engine_Canvas_drawHLine(canvas, prim_max(x_min_clip, cx - y), prim_min(x_max_clip, cx + y), cy + x, color);
+        }
         // "Bottom" portion (mirror in y)
-        engine_Canvas_drawHLine(canvas, cx - x, cx + x, cy - y, color);
-        engine_Canvas_drawHLine(canvas, cx - y, cx + y, cy - x, color);
+        if (cy - y >= y_min_clip && cy - y <= y_max_clip) {
+            engine_Canvas_drawHLine(canvas, prim_max(x_min_clip, cx - x), prim_min(x_max_clip, cx + x), cy - y, color);
+        }
+        if (cy - x >= y_min_clip && cy - x <= y_max_clip) {
+            engine_Canvas_drawHLine(canvas, prim_max(x_min_clip, cx - y), prim_min(x_max_clip, cx + y), cy - x, color);
+        }
     }
 }
 
@@ -728,34 +689,26 @@ void engine_Canvas_blit(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32
     const i32 start_x    = prim_max(0, x);
     const i32 start_y    = prim_max(0, y);
 
-    // Handle alpha blending for RGBA type
-    for (i32 py = start_y; py < src_bottom; ++py) {
-        for (i32 px = start_x; px < src_right; ++px) {
-            const i32   src_x     = px - x;
-            const i32   src_y     = py - y;
-            const Color src_color = src->buffer.ptr[src_x + (src_y * src->width)];
-            const Color dst_color = dst->buffer.ptr[px + (py * dst->width)];
+    // Calculate source start position relative to destination
+    const i32 src_start_x = start_x - x;
+    const i32 src_start_y = start_y - y;
 
-            // Alpha blending
-            dst->buffer.ptr[px + (py * dst->width)] = Color_blendAlpha(src_color, dst_color);
+    // Pre-calculate for performance
+    const usize dst_width = dst->width;
+    const usize src_width = src->width;
+
+    // Optimize for contiguous memory access
+    for (i32 py = start_y; py < src_bottom; ++py) {
+        Color* dst_row = &dst->buffer.ptr[py * dst_width + start_x];
+        Color* src_row = &src->buffer.ptr[(src_start_y + py - start_y) * src_width + src_start_x];
+
+        for (i32 px = start_x; px < src_right; ++px) {
+            *dst_row = Color_blendAlpha(*src_row, *dst_row);
+            ++dst_row;
+            ++src_row;
         }
     }
-
-    /* const bool same_rgba_type = (dst->type == engine_CanvasType_rgba && src->type == engine_CanvasType_rgba);
-    if (!same_rgba_type) {
-        // Fallback for other types
-        for (i32 py = start_y; py < src_bottom; ++py) {
-            for (i32 px = start_x; px < src_right; ++px) {
-                const i32   src_x     = px - x;
-                const i32   src_y     = py - y;
-                const Color src_color = src->buffer.ptr[src_x + (src_y * src->width)];
-                engine_Canvas_drawPixel(dst, px, py, src_color);
-            }
-        }
-        return;
-    } */
 }
-
 void engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32 y, f32 scale) {
     debug_assert_nonnull(dst);
     debug_assert_nonnull(src);
@@ -772,28 +725,31 @@ void engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 
     const i32 start_x    = prim_max(0, x);
     const i32 start_y    = prim_max(0, y);
 
+    // Pre-calculate for performance
+    const f32   inv_scale  = 1.0f / scale;
+    const usize dst_width  = dst->width;
+    const usize src_width  = src->width;
+    const usize src_height = src->height;
+
     for (i32 dy = start_y; dy < dst_bottom; ++dy) {
+        // Calculate source y outside inner loop
+        const i32 src_y = as$(i32, as$(f32, dy - y) * inv_scale);
+
+        // Optimize for contiguous memory access
+        Color* dst_row = &dst->buffer.ptr[dy * dst_width + start_x];
         for (i32 dx = start_x; dx < dst_right; ++dx) {
             // Calculate source pixel
-            const i32 src_x = as$(i32, as$(f32, dx - x) / scale);
-            const i32 src_y = as$(i32, as$(f32, dy - y) / scale);
+            const i32 src_x = as$(i32, as$(f32, dx - x) * inv_scale);
 
-            if (as$(i32, src->width) <= src_x || as$(i32, src->height) <= src_y) { continue; }
-            const usize src_idx = as$(usize, src_x) + (as$(usize, src_y) * src->width);
+            if (as$(i32, src_width) <= src_x || as$(i32, src_height) <= src_y) {
+                ++dst_row;
+                continue;
+            }
+            const usize src_idx = as$(usize, src_x) + (as$(usize, src_y) * src_width);
 
-            Color color = cleared();
-            color       = src->buffer.ptr[src_idx];
-            /* switch (src->type) {
-            case engine_CanvasType_rgba:
-                color = src->buffer.ptr[src_idx];
-                break;
-            default:
-                // color.indexed = ((engine_ColorIndexed*)src->buffer)[src_idx];
-                break;
-            } */
-            engine_Canvas_drawPixel(dst, dx, dy, color);
+            *dst_row = Color_blendAlpha(src->buffer.ptr[src_idx], *dst_row);
+            ++dst_row;
         }
     }
 }
-
 #endif /* ENGINE_CANVAS_OPTIMIZE */
