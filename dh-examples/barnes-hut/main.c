@@ -10,6 +10,7 @@
 
 #include "engine.h"
 
+#include "engine/window.h"
 #include "src/Simulation.h"
 #include "src/Visualizer.h"
 #include "src/utils.h"
@@ -126,6 +127,8 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(window);
 
+    if (!engine_Window_isFocused(window)) { return_void(); }
+
     if (engine_Key_pressed(engine_KeyCode_esc)) {
         log_debug("esc pressed\n");
         global_state.is_running = false;
@@ -141,7 +144,8 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
         }
     });
     try(Visualizer_processInput(viz, window));
-    return_ok({});
+
+    return_void();
 }
 
 Err$void global_update(Visualizer* viz, Simulation* sim) {

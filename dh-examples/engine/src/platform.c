@@ -218,6 +218,11 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
             case WINDOW_BUFFER_SIZE_EVENT:
                 // Handle through metrics update
                 break;
+
+            case FOCUS_EVENT:
+                // Handle focus event
+                backend->last_metrics.is_focused = input_record[i].Event.FocusEvent.bSetFocus;
+                break;
             }
         }
     }
@@ -345,7 +350,8 @@ static Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Plat
         .height        = windowRect.bottom - windowRect.top,
         .client_width  = clientRect.right - clientRect.left,
         .client_height = clientRect.bottom - clientRect.top,
-        .is_focused    = (GetForegroundWindow() == backend->window_handle),
+        // .is_focused    = (GetForegroundWindow() == backend->window_handle),
+        .is_focused    = backend->last_metrics.is_focused,
         .is_minimized  = (placement.showCmd == SW_SHOWMINIMIZED),
         .is_maximized  = (placement.showCmd == SW_SHOWMAXIMIZED)
     };
