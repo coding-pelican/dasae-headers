@@ -194,9 +194,7 @@ void engine_Canvas_drawHLine(engine_Canvas* canvas, i32 x1, i32 x2, i32 y, Color
     debug_assert_nonnull(canvas->buffer.ptr);
 
     // Ensure x1 is the leftmost point
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
 
     // Clip to canvas bounds
     if (y < 0 || as$(i32, canvas->height) <= y) { return; }
@@ -214,9 +212,7 @@ void engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color
     debug_assert_nonnull(canvas->buffer.ptr);
 
     // Ensure y1 is the topmost point
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     // Clip to canvas bounds
     if (x < 0 || as$(i32, canvas->width) <= x) { return; }
@@ -231,12 +227,8 @@ void engine_Canvas_drawVLine(engine_Canvas* canvas, i32 x, i32 y1, i32 y2, Color
 
 void engine_Canvas_drawRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
     // Ensure x1 < x2 and y1 < y2
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     // Top edge (x1,y1) to (x2,y1)
     engine_Canvas_drawHLine(canvas, x1, x2, y1, color);
@@ -263,6 +255,9 @@ force_inline void plotCirclePoints(engine_Canvas* canvas, i32 cx, i32 cy, i32 x,
 
 // Draws an *outline* circle using the midpoint algorithm
 void engine_Canvas_drawCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, Color color) {
+    // if (radius <= 0) { return; }                                                // Zero or Negative radius is invalid
+    // if (radius == 1) { return engine_Canvas_drawPixel(canvas, cx, cy, color); } // Fall-back to a single pixel
+
     i32 x = 0;
     i32 y = radius;
 
@@ -434,12 +429,8 @@ void engine_Canvas_drawAngleRing(engine_Canvas* canvas, i32 cx, i32 cy, i32 r_in
 }
 
 void engine_Canvas_drawCapsule(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     i32 height = y2 - y1;
     i32 r      = height / 2;
@@ -508,12 +499,8 @@ void engine_Canvas_drawLineThick(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, 
 }
 
 void engine_Canvas_drawRectThick(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, f32 thickness, Color color) {
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     // Top edge
     engine_Canvas_drawLineThick(canvas, x1, y1, x2, y1, thickness, color);
@@ -526,12 +513,8 @@ void engine_Canvas_drawRectThick(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, 
 }
 
 void engine_Canvas_drawRectBorderByCutout(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, i32 thickness, Color inner_color, Color border_color) {
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     // 1) Fill outer rectangle in the border color
     engine_Canvas_fillRect(canvas, x1, y1, x2, y2, border_color);
@@ -564,6 +547,9 @@ void engine_Canvas_fillRect(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y
 
 // Draws a *filled* circle using the midpoint algorithm
 void engine_Canvas_fillCircle(engine_Canvas* canvas, i32 cx, i32 cy, i32 radius, Color color) {
+    // if (radius <= 0) { return; }                                                // Zero or Negative radius is invalid
+    // if (radius == 1) { return engine_Canvas_drawPixel(canvas, cx, cy, color); } // Fall-back to a single pixel
+
     i32 x = 0;
     i32 y = radius;
 
@@ -635,9 +621,7 @@ void engine_Canvas_fillRingByScanlines(engine_Canvas* canvas, i32 cx, i32 cy, i3
 
 
 force_inline void drawHLineAngleClipped(engine_Canvas* canvas, i32 x1, i32 x2, i32 y, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
 
     for (i32 x = x1; x <= x2; ++x) {
         // Compute angle
@@ -654,9 +638,7 @@ force_inline void drawHLineAngleClipped(engine_Canvas* canvas, i32 x1, i32 x2, i
 }
 
 force_inline void drawVLineAngleClipped(engine_Canvas* canvas, i32 y1, i32 y2, i32 x, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     for (i32 y = y1; y <= y2; ++y) {
         // Compute angle
@@ -714,12 +696,8 @@ void engine_Canvas_fillAngleRingByCutout(engine_Canvas* canvas, i32 cx, i32 cy, 
 }
 
 void engine_Canvas_fillCapsule(engine_Canvas* canvas, i32 x1, i32 y1, i32 x2, i32 y2, Color color) {
-    if (x2 < x1) {
-        prim_swap(x1, x2);
-    }
-    if (y2 < y1) {
-        prim_swap(y1, y2);
-    }
+    if (x2 < x1) { prim_swap(x1, x2); }
+    if (y2 < y1) { prim_swap(y1, y2); }
 
     i32 height = y2 - y1;
     i32 r      = height / 2;

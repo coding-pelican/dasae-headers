@@ -317,19 +317,16 @@ Err$void        Visualizer_render(Visualizer* self) {
 
 // Modified circle rendering with alpha blending
 force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
-    if (Visualizer_min_render_radius <= screen_radius) {
-        return engine_Canvas_fillCircle(
-            self->canvas,
-            screen_pos.s[0],
-            screen_pos.s[1],
-            as$(i32, screen_radius),
-            Visualizer_color_body
-        );
+    if (1.0f < screen_radius) {
+        return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
+    }
+    if (Visualizer_min_render_radius < screen_radius) {
+        return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
     }
     // Calculate alpha based on coverage area
     let coverage = screen_radius * 2.0f;
     color.a      = as$(u8, 255.0f * coverage * Visualizer_alpha_scale);
-    engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
+    return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
 force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
     for_slice(self->bodies.items, body) {
