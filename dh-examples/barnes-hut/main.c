@@ -262,7 +262,16 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
             printf("\033[H\033[40;37m"); // Move cursor to top left
-            printf("\rFPS: %6.2f | RES: %dx%d", time_fps, window_res_width, window_res_height);
+            printf(
+                "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f",
+                time_fps,
+                window_res_width,
+                window_res_height,
+                viz.scale,
+                viz.pos.x,
+                viz.pos.y
+            );
+            printf("\033[0m"); // Reset color
             debug_only(
                 // log frame every 1s
                 static f64 total_game_time_for_timestamp = 0.0;

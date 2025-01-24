@@ -28,9 +28,6 @@ typedef struct Visualizer {
     bool shows_bodies_acc_vec; // toggle '3'
     bool shows_quad_tree;      // toggle 'q'
 
-    // body visualization
-    Color body_color;
-
     // Quadtree visualization
     union {
         usize pair[2];

@@ -414,9 +414,10 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
         } break;
 
         case MOUSE_WHEELED: { // Mouse wheel scrolling
-            event.type         = engine_MouseEventType_scroll;
-            event.scroll.delta = ((i32)mer->dwButtonState > 0) ? 1 : -1;
-            engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
+            event.type            = engine_MouseEventType_scroll;
+            // Proper scroll delta extraction for Windows
+            const i16 wheel_delta = HIWORD(mer->dwButtonState);
+            event.scroll.delta    = wheel_delta > 0 ? 1 : -1; // Use actual wheel delta
 
             // Update cached scroll delta and calculate speed
             scope_with(let input = engine_Input_instance()) {
