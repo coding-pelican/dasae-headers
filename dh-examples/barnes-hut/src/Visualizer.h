@@ -16,11 +16,21 @@
 use_ArrList$(u8);
 typedef struct Visualizer {
     // View state
-    math_Vec2f pos;
-    f32        scale;
+    math_Vec2f pos;   // Camera center in world coords
+    f32        scale; // Current zoom factor
+
+    // For panning:
+    Vec2i pan_screen_begin; // Mouse's screen-pixel coords when middle-click started
+    Vec2f pan_cam_begin;    // 'pos' captured at that same moment
+    bool  is_panning;       // is the mouse currently being dragged with middle-click?
+
+    // For zoom anchoring:
+    // (Optional if only want to store the 'mouse world' anchor for the duration
+    //  of a single scroll step, it can be stored in a local variable,
+    // but fields are handy if want more complex behaviour)
+    Vec2f zoom_anchor_world;
 
     // Display flags
-    // bool settings_window_open;
     // bool shows_fps;
     // bool shows_view_state;
     bool shows_bodies;         // toggle '1'
@@ -28,7 +38,7 @@ typedef struct Visualizer {
     bool shows_bodies_acc_vec; // toggle '3'
     bool shows_quad_tree;      // toggle 'q'
 
-    // Quadtree visualization
+    // QuadTree visualization
     union {
         usize pair[2];
         struct {
@@ -39,7 +49,7 @@ typedef struct Visualizer {
             usize first;
             usize second;
         };
-    } depth_range; // Quadtree visualization render cache
+    } depth_range; // QuadTree visualization render cache
     struct {
         union {
             ArrList$usize pair[2];
@@ -53,7 +63,7 @@ typedef struct Visualizer {
             };
         };
         usize len;
-    } stack; // Quadtree visualization render cache
+    } stack; // QuadTree visualization render cache
 
     // Body spawn state
     struct {
@@ -81,5 +91,42 @@ extern void           Visualizer_destroy(Visualizer* self);
 extern Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) must_check;
 extern Err$void Visualizer_update(Visualizer* self) must_check;
 extern Err$void Visualizer_render(Visualizer* self) must_check;
+
+/* /// Unified coordinate system transformations
+/// Screen Coordinates          World Coordinates
+/// (0,0)  --------- (w-1,0)    (-w/2*scale, +h/2*scale)
+///    |               |                ↑ y+
+///    |               |                |
+///    |    (CENTER)   |                +--→ x+
+///    |               |
+/// (0,h-1) -------- (w-1,h-1)  (-w/2*scale, -h/2*scale)
+force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
+    // Calculate screen center offsets (handles even/odd dimensions)
+    let center_x = as$(i32, (self->canvas->width - (~self->canvas->width & 1)) >> 1);
+    let center_y = as$(i32, (self->canvas->height - (~self->canvas->height & 1)) >> 1);
+    return math_Vec2i_from(center_x, center_y);
+}
+/// Unified coordinate system transformations
+/// screen_px == (world_px - screen_center_px) * scale
+/// screen_py == (screen_center_py - world_py) * scale
+force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+    let p_sub_center        = math_Vec2f_sub(world_pos, self->pos);
+    let p_sub_center_scaled = math_Vec2f_scale(p_sub_center, Visualizer_scale(self));
+    return math_Vec2i_from(
+        as$(i32, roundf(p_sub_center_scaled.x)),
+        as$(i32, roundf(p_sub_center_scaled.y))
+    );
+}
+/// Unified coordinate system transformations
+/// world_px == screen_center_px + (screen_px * 1/scale)
+/// world_py == screen_center_py - (screen_py * 1/scale)
+force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+    let p = math_Vec2f_from(
+        as$(f32, screen_pos.x),
+        as$(f32, -screen_pos.y)
+    );
+    let p_inv_scaled = math_Vec2f_scale(p, Visualizer_scaleInv(self));
+    return math_Vec2f_add(self->pos, p_inv_scaled);
+} */
 
 #endif /* VISUALIZER_INCLUDED */

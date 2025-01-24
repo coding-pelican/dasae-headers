@@ -1,6 +1,7 @@
 #include "Visualizer.h"
 #include "QuadTree.h"
 #include "dh/ArrList.h"
+#include "dh/debug/common.h"
 #include "dh/log.h"
 #include "engine/color.h"
 
@@ -12,8 +13,11 @@
 #define Visualizer_alpha_scale       (0.8f) // Alpha multiplier for blending
 
 /* Function to calculate the inverse scale factor for rendering nodes.  */
-force_inline f32   Visualizer_invScale(Visualizer* self) { return 1.0f / self->scale; }
-/// Unified coordinate system transformations
+force_inline f32   Visualizer_scale(Visualizer* self) { return self->scale; }
+force_inline f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
+///////////////////////////////////////////////////////////////////////////////
+/// Unified coordinate system transformations:
+///
 /// Screen Coordinates          World Coordinates
 /// (0,0)  --------- (w-1,0)    (-w/2*scale, +h/2*scale)
 ///    |               |                ↑ y+
@@ -21,80 +25,83 @@ force_inline f32   Visualizer_invScale(Visualizer* self) { return 1.0f / self->s
 ///    |    (CENTER)   |                +--→ x+
 ///    |               |
 /// (0,h-1) -------- (w-1,h-1)  (-w/2*scale, -h/2*scale)
-force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
-    let canvas = self->canvas;
-    let width  = canvas->width;
-    let height = canvas->height;
-
-    // Convert to camera-relative coordinates
-    var relative = math_Vec2f_sub(world_pos, self->pos);
-    relative     = math_Vec2f_scale(relative, Visualizer_invScale(self));
-
-    // // Aspect ratio compensation
-    // let aspect = as$(f32, width) / as$(f32, height);
-    // relative.x *= aspect;
-
-    // Calculate screen center offsets
-    let center_x = as$(f32, width - 1) / 2.0f;
-    let center_y = as$(f32, height - 1) / 2.0f;
-
-    // Convert to screen coordinates (Y-down)
-    return math_Vec2i_from(
-        as$(i32, roundf(relative.x + center_x)),
-        as$(i32, roundf(center_y - relative.y))
-    );
-}
-/// Unified coordinate system transformations
-/// // Example usage in body spawning:
-/// if (engine_Mouse_pressed(engine_MouseButton_right)) {
-///     let mouse_pos = engine_Mouse_getPosition();
-///     let world_mouse = Visualizer_screenToWorld(self, window, mouse_pos);
 ///
-///     // Spawn body at calculated world position
-///     self->spawn.body = some(Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-/// }
-force_inline math_Vec2f Visualizer_screenToWorld(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(window);
-
-    let client_size = engine_Window_getClientSize(window);
-    let width       = client_size.x;
-    let height      = client_size.y;
-
-    // Calculate screen center offsets (handles even/odd dimensions)
-    // let center_x = (width - (~width & 1)) >> 1;
-    // let center_y = (height - (~height & 1)) >> 1;
-    let center_x = as$(f32, width - 1) / 2.0f;
-    let center_y = as$(f32, height - 1) / 2.0f;
-
-    // Convert to centered coordinates (world-space oriented)
-    let screen_x = eval(
-        var x = as$(f32, screen_pos.x) - center_x;
-        // Aspect ratio compensation
-        // let aspect = as$(f32, width) / as$(f32, height);
-        // x /= aspect;
-        eval_return(x);
-    );
-    let screen_y = center_y - as$(f32, screen_pos.y);
-
-    // Apply inverse scale and camera offset
-    return math_Vec2f_add(
-        math_Vec2f_scale(math_Vec2f_from(screen_x, screen_y), Visualizer_invScale(self)),
-        self->pos
-    );
+///  We treat (self->pos) as our camera center in "world" coordinates.
+///  A larger 'self->scale' means we see more of the world (zoom out).
+///
+///  Let (cx, cy) = Visualizer_screenCenter(self)   // The 2D center of the screen in pixel coords
+///  Let (camx, camy) = self->pos                   // Camera center in world coords
+///  Let scale = self->scale                        // Zoom factor
+///
+///  Then for a world-space point (wx, wy) -> screen-space (sx, sy):
+///
+///    sx = cx + ( (wx - camx) / scale )
+///    sy = cy - ( (wy - camy) / scale )
+///
+///  Conversely, for a screen-space point (sx, sy) -> world-space (wx, wy):
+///
+///    wx = camx + ( (sx - cx) * scale )
+///    wy = camy - ( (sy - cy) * scale )
+///
+///////////////////////////////////////////////////////////////////////////////
+force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
+    // Return the middle pixel (handles even/odd dimensions by integer truncation)
+    let cx = (as$(i32, self->canvas->width) - 1) / 2;
+    let cy = (as$(i32, self->canvas->height) - 1) / 2;
+    return math_Vec2i_from(cx, cy);
 }
-force_inline math_Vec2f Visualizer_calculateWorldMouse(Visualizer* self, engine_Window* window, Vec2i screen_pos) {
-    return Visualizer_screenToWorld(self, window, screen_pos);
+/// @brief Convert a world-space position to screen-space (pixels).
+///
+/// Formula:
+///    screen_x = center_x + ( (world_x - camera_x) / scale )
+///    screen_y = center_y - ( (world_y - camera_y) / scale )
+///
+/// @param self      Pointer to the Visualizer (contains camera pos & scale).
+/// @param world_pos The (wx, wy) coordinates in world space.
+/// @return          The corresponding (sx, sy) on the screen in pixels.
+force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+    let center      = Visualizer_screenCenter(self);
+    let w_minus_cam = math_Vec2f_sub(world_pos, self->pos);
+    let divided     = math_Vec2f_scale(w_minus_cam, 1.0f / self->scale);
+
+    let sx = as$(i32, roundf(as$(f32, center.x) + divided.x));
+    let sy = as$(i32, roundf(as$(f32, center.y) - divided.y));
+    return math_Vec2i_from(sx, sy);
+}
+/// @brief Convert a screen-space pixel coordinate to world-space.
+///
+/// Formula:
+///    world_x = camera_x + ( (screen_x - center_x) * scale )
+///    world_y = camera_y - ( (screen_y - center_y) * scale )
+///
+/// @param self       Pointer to the Visualizer (contains camera pos & scale).
+/// @param screen_pos The (sx, sy) pixel coordinates on the screen.
+/// @return           The corresponding (wx, wy) in world space.
+force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+    let center     = Visualizer_screenCenter(self);
+    let dx         = as$(f32, screen_pos.x - center.x);
+    let dy         = as$(f32, center.y - screen_pos.y);
+    let multiplied = math_Vec2f_scale(math_Vec2f_from(dx, dy), self->scale);
+
+    return math_Vec2f_add(self->pos, multiplied);
+}
+/// Returns the current mouse position converted to world coords.
+force_inline Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
+    return Visualizer_screenToWorld(self, engine_Mouse_getPosition());
 }
 
 /* Core visualizer functions */
-
 Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
     reserveReturn(Err$Visualizer);
     return_ok((Visualizer){
-        .pos   = math_Vec2f_zero,
-        .scale = 2.0f,
+        .pos   = math_Vec2f_zero, // camera center pos
+        .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
         // .scale = 3600,
+
+        .pan_screen_begin = math_Vec2i_zero,
+        .pan_cam_begin    = math_Vec2f_zero,
+
+        .zoom_anchor_world = math_Vec2f_zero,
 
         .shows_bodies         = true,
         .shows_bodies_vel_vec = false,
@@ -151,55 +158,73 @@ force_inline void VisualizerInput_toggleVisualizationBodiesAccVec(Visualizer* se
 force_inline void VisualizerInput_toggleVisualizationQuadTree(Visualizer* self) {
     self->shows_quad_tree = !self->shows_quad_tree;
 }
-force_inline void VisualizerInput_handleZoom(Visualizer* self, engine_Window* window, i32 scroll_delta) {
+// Call this when the middle mouse button is first pressed:
+force_inline void VisualizerInput_onPanBegin(Visualizer* self) {
+    if (self->is_panning) { return; }
+    // Store screen coordinates & camera pos
+    self->pan_screen_begin = engine_Mouse_getPosition();
+    self->pan_cam_begin    = self->pos;
+    self->is_panning       = true;
+}
+// Call this each frame while the middle mouse is held:
+force_inline void VisualizerInput_handlePan(Visualizer* self) {
+    // Current mouse position in SCREEN space
+    let mouse_now_screen = engine_Mouse_getPosition();
+
+    // Convert BOTH the original "pan begin" screen coords
+    // and the new screen coords into world space
+    let old_mouse_world = Visualizer_screenToWorld(self, self->pan_screen_begin);
+    let new_mouse_world = Visualizer_screenToWorld(self, mouse_now_screen);
+
+    // The mouse has moved by (old_mouse_world - new_mouse_world) in world coords
+    // So shift the camera by that same difference (so the "under-mouse" point remains under mouse)
+    let diff_world = math_Vec2f_sub(old_mouse_world, new_mouse_world);
+
+    // Restore the camera to its position at the moment panning began,
+    // then offset it by diff_world
+    self->pos = math_Vec2f_add(self->pan_cam_begin, diff_world);
+}
+// Call this when the middle mouse button is released:
+force_inline void VisualizerInput_onPanEnd(Visualizer* self) {
+    self->is_panning = false;
+    // // Reset pan screen & cam begin to zero
+    // self->pan_screen_begin = math_Vec2f_zero;
+    // self->pan_cam_begin    = math_Vec2f_zero;
+}
+force_inline void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta) {
     if (scroll_delta == 0) { return; }
 
-    const f32 zoom_sensitivity = 0.1f;
+    // 1) Find the world coords under the mouse BEFORE changing scale
+    let mouse_screen       = engine_Mouse_getPosition();
+    let mouse_world_before = Visualizer_screenToWorld(self, mouse_screen);
 
-    var zoom = 1.0f - (f32)scroll_delta * zoom_sensitivity;
-    zoom     = fmaxf(zoom, zoom_sensitivity);
+    // 2) Choose a zoom factor
+    //    e.g. scrolling up => zoom in => "scale goes down" if you want
+    //    or scrolling up => zoom out => "scale goes up" - your choice
+    //    (Below code: scroll_delta > 0 => bigger scale => zoom out)
+    let zoom_sensitivity = 0.1f;
+    let zoom_factor      = ({
+        var factor = 1.0f + as$(f32, -scroll_delta) * zoom_sensitivity;
+        if (factor < 0.1f) { factor = 0.1f; }
+        eval_return factor;
+    });
 
-    let mouse_pos   = engine_Mouse_getPosition();
-    let world_mouse = Visualizer_calculateWorldMouse(self, window, mouse_pos);
+    // Apply the scale change
+    self->scale *= zoom_factor;
 
-    // Maintain focal point during zoom
-    self->pos = math_Vec2f_add(
-        self->pos,
-        math_Vec2f_scale(world_mouse, 1.0f - zoom)
-    );
-    self->scale *= zoom;
-}
-force_inline void VisualizerInput_handlePan(Visualizer* self, engine_Window* window) {
-    let mouse_delta = engine_Mouse_getDelta();
-    if (mouse_delta.s[0] == 0 && mouse_delta.s[1] == 0) { return; }
+    // 3) Find the world coords under the mouse AFTER changing scale
+    let mouse_world_after = Visualizer_screenToWorld(self, mouse_screen);
 
-    let client_size = engine_Window_getClientSize(window);
-    if (client_size.s[0] <= 0 || client_size.s[1] <= 0) { return; }
-
-    // Use double-precision for critical position calculations
-    let aspect_ratio = (f32)client_size.s[0] / (f32)client_size.s[1];
-
-    // Calculate movement in screen pixels
-    f64 world_per_pixel_x = (f64)self->scale * 2.0 / (f64)client_size.s[0];
-    f64 world_per_pixel_y = (f64)self->scale * 2.0 / (f64)client_size.s[1];
-
-    // Apply aspect ratio compensation only to horizontal axis
-    world_per_pixel_x /= aspect_ratio;
-
-    // Convert to world delta using proper coordinate system
-    math_Vec2d world_delta = {
-        .x = -(f64)mouse_delta.s[0] * world_per_pixel_x,
-        .y = (f64)mouse_delta.s[1] * world_per_pixel_y // Natural Y movement
-    };
-
-    // Update position with double-precision
-    self->pos.x += (f32)world_delta.x;
-    self->pos.y += (f32)world_delta.y;
+    // 4) Shift the camera so the "mouse_world_before" is still under the mouse
+    //    That is: new camera pos = old camera pos + (before - after)
+    //    Because (mouse_world_before - camera_pos) should remain the same
+    let diff  = math_Vec2f_sub(mouse_world_before, mouse_world_after);
+    self->pos = math_Vec2f_add(self->pos, diff);
 }
 Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-    debug_assert_nonnull(window);
+    unused(window);
 
     // Handle resets
     if (engine_Key_pressed(engine_KeyCode_r)) {
@@ -225,20 +250,29 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         VisualizerInput_toggleVisualizationQuadTree(self);
     }
 
-    // Handle zooming
-    scope_if(let scroll_delta = engine_Mouse_getScrollDelta(), scroll_delta != 0) {
-        VisualizerInput_handleZoom(self, window, scroll_delta);
-    }
     // Handle panning
+    if (engine_Mouse_pressed(engine_MouseButton_middle)) {
+        log_debug("mouse wheel down: pan begin\n");
+        VisualizerInput_onPanBegin(self);
+    }
     if (engine_Mouse_held(engine_MouseButton_middle)) {
-        VisualizerInput_handlePan(self, window);
+        VisualizerInput_handlePan(self);
+    }
+    if (engine_Mouse_released(engine_MouseButton_middle)) {
+        log_debug("mouse wheel up: pan end\n");
+        VisualizerInput_onPanEnd(self);
     }
 
-    // Handle body spawning
+    // Handle zooming
+    scope_if(let scroll_delta = engine_Mouse_getScrollDelta(), scroll_delta != 0) {
+        log_debug("mouse wheel scroll: zoom begin\n");
+        VisualizerInput_handleZoom(self, scroll_delta);
+    }
+
+    // FIXME: Handle body spawning
     if (engine_Mouse_pressed(engine_MouseButton_right)) {
         log_debug("right mouse button pressed");
-        let mouse_pos   = engine_Mouse_getPosition();
-        let world_mouse = Visualizer_calculateWorldMouse(self, window, mouse_pos);
+        let world_mouse = Visualizer_mousePosToWorld(self);
 
 
         self->spawn.body  = (TypeOf(self->spawn.body))some(Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
@@ -248,8 +282,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     } else if (engine_Mouse_held(engine_MouseButton_right)) {
         log_debug("right mouse button held");
         if_some_mut(self->spawn.body, body) {
-            let mouse_pos   = engine_Mouse_getPosition();
-            let world_mouse = Visualizer_calculateWorldMouse(self, window, mouse_pos);
+            let world_mouse = Visualizer_mousePosToWorld(self);
             let d           = math_Vec2f_sub(world_mouse, body->pos);
             if_some_mut(self->spawn.angle, angle) {
                 let angle2    = atan2f(d.y, d.x);
@@ -315,7 +348,6 @@ Err$void        Visualizer_render(Visualizer* self) {
     return_void();
 }
 
-// Modified circle rendering with alpha blending
 force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
     if (1.0f < screen_radius) {
         return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
@@ -331,30 +363,19 @@ force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 
 force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
     for_slice(self->bodies.items, body) {
         let screen_pos    = Visualizer_worldToScreen(self, body->pos);
-        let screen_radius = body->radius * Visualizer_invScale(self);
-        // if (1.0f <= screen_radius) {
-        //     engine_Canvas_fillCircle(
-        //         self->canvas,
-        //         screen_pos.s[0],
-        //         screen_pos.s[1],
-        //         as$(i32, screen_radius),
-        //         Visualizer_color_body
-        //     );
-        // } else {
-        //     Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
-        // }
+        let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
     }
 }
 force_inline void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
     for_slice(self->bodies.items, body) {
         let screen_pos    = Visualizer_worldToScreen(self, body->pos);
-        let screen_radius = body->radius * Visualizer_invScale(self);
+        let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw velocity vector
         if (0.0f < math_Vec2f_lenSq(body->vel)) {
-            let vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_invScale(self)));
+            let vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
             let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
@@ -363,12 +384,12 @@ force_inline void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
 force_inline void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
     for_slice(self->bodies.items, body) {
         let screen_pos    = Visualizer_worldToScreen(self, body->pos);
-        let screen_radius = body->radius * Visualizer_invScale(self);
+        let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw acceleration vector
         if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_invScale(self)));
+            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
             const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
@@ -378,19 +399,19 @@ force_inline void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
     debug_assert_nonnull(self);
     for_slice(self->bodies.items, body) {
         let screen_pos    = Visualizer_worldToScreen(self, body->pos);
-        let screen_radius = body->radius * Visualizer_invScale(self);
+        let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Velocity vector
         if (0.0f < math_Vec2f_lenSq(body->vel)) {
-            const Vec2f vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_invScale(self)));
+            const Vec2f vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
             const Vec2i vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
 
         // Acceleration vector
         if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_invScale(self)));
+            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
             const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }

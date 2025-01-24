@@ -137,12 +137,12 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
         log_debug("space pressed\n");
         global_state.paused = !global_state.paused;
     }
-    debug_only({
-        if (engine_Key_pressed(engine_KeyCode_i)) {
-            log_debug("i pressed\n");
-            global_debug_printSimulationState();
-        }
-    });
+#if DEBUG_ENABLED
+    if (engine_Key_pressed(engine_KeyCode_i)) {
+        log_debug("i pressed\n");
+        global_debug_printSimulationState();
+    }
+#endif
     try(Visualizer_processInput(viz, window));
 
     return_void();
