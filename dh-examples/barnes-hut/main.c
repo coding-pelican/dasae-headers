@@ -266,6 +266,18 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
             printf("\033[H\033[40;37m"); // Move cursor to top left
+#if DEBUG_ENABLED
+            printf(
+                "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f | COLLI: %llu",
+                time_fps,
+                window_res_width,
+                window_res_height,
+                viz.scale,
+                viz.pos.x,
+                viz.pos.y,
+                sim.collision_count
+            );
+#else
             printf(
                 "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f",
                 time_fps,
@@ -275,6 +287,7 @@ Err$void dh_main(int argc, const char* argv[]) {
                 viz.pos.x,
                 viz.pos.y
             );
+#endif
             printf("\033[0m"); // Reset color
             debug_only(
                 // log frame every 1s

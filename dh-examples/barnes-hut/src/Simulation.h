@@ -19,12 +19,15 @@ use_ArrList$(Rect);
 
 decl_ArrList$(ArrList$Body);
 typedef struct Simulation {
-    f32           dt;
-    usize         frame;
-    ArrList$Body  bodies;
-    ArrList$Rect  rects; // Cache for collision rects
-    QuadTree      quad_tree;
-    Sli$usize     sort_cache; // Cache for sorting bodies
+    f32          dt;
+    usize        frame;
+    ArrList$Body bodies;
+    ArrList$Rect rects; // Cache for collision rects
+    QuadTree     quad_tree;
+    Sli$usize    sort_cache; // Cache for sorting bodies
+#if DEBUG_ENABLED
+    usize collision_count;
+#endif
     mem_Allocator allocator;
 } Simulation;
 use_Err$(Simulation);

@@ -38,7 +38,10 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
             .rects      = rects,
             .quad_tree  = quad_tree,
             .sort_cache = sort_cache,
-            .allocator  = allocator,
+#if DEBUG_ENABLED
+            .collision_count = 0,
+#endif
+            .allocator = allocator,
         });
     }
     scope_returnReserved;
@@ -96,10 +99,14 @@ void Simulation_iterate(Simulation* self) {
     }
 }
 
-/* Err$void Simulation_collide(Simulation* self) {
+#define COLLIDE_TYPE 1
+#if COLLIDE_TYPE == 0
+Err$void Simulation_collide(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-
+#if DEBUG_ENABLED
+    self->collision_count = 0;
+#endif
     // Update collision rects for current frame
     for_slice_indexed(self->bodies.items, body, index) {
         let pos        = body->pos;
@@ -120,8 +127,10 @@ void Simulation_iterate(Simulation* self) {
     }
 
     return_void();
-} */
+}
+#endif // COLLIDE_TYPE == 0
 
+#if COLLIDE_TYPE == 1
 /// optimizations:
 ///     Sweep and Prune Algorithm:
 ///         Sorting: Bodies are sorted based on the minimum x-coordinate of their AABB. This allows efficient pruning of non-overlapping pairs.
@@ -181,6 +190,9 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
         if (left_index < mid) {
             memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, (mid - left_index) * size);
         }
+        if (right_index < num) {
+            memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, (num - right_index) * size);
+        }
 
         // Copy back from the temporary buffer to the original array
         memcpy(base_bytes, temp_bytes, (num - (right_index - mid)) * size);
@@ -224,7 +236,9 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(self);
-
+#if DEBUG_ENABLED
+        self->collision_count = 0;
+#endif
         // Update collision rects for current frame
         for_slice_indexed(self->bodies.items, body, index) {
             let pos        = body->pos;
@@ -269,6 +283,7 @@ Err$void Simulation_collide(Simulation* self) {
     }
     scope_returnReserved;
 }
+#endif // COLLIDE_TYPE == 1
 
 void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     debug_assert_nonnull(self);
@@ -290,6 +305,9 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
 
     // Early exit if not colliding
     scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
+#if DEBUG_ENABLED
+    self->collision_count++;
+#endif
 
     // Get velocities and masses
     let v1 = b1->vel;
