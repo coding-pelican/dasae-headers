@@ -89,6 +89,10 @@ extern "C" {
     getReservedReturn() = &val_return;                \
     eval_return getReservedReturn()[0];               \
 })
+/* #define FUNC__setReservedReturn(val_return...) eval({ \
+    getReservedReturn()[0] = val_return;              \
+    eval_return getReservedReturn()[0];               \
+}) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

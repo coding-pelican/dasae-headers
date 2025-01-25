@@ -38,7 +38,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
             .rects      = rects,
             .quad_tree  = quad_tree,
             .sort_cache = sort_cache,
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
             .collision_count = 0,
 #endif
             .allocator = allocator,
@@ -186,16 +186,20 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
             temp_index++;
         }
 
-        // Copy any remaining elements from the left half
+        // Copy remaining elements
         if (left_index < mid) {
-            memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, (mid - left_index) * size);
+            let remaining = mid - left_index;
+            memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, remaining * size);
+            temp_index += remaining;
         }
         if (right_index < num) {
-            memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, (num - right_index) * size);
+            let remaining = num - right_index;
+            memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, remaining * size);
+            temp_index += remaining;
         }
 
-        // Copy back from the temporary buffer to the original array
-        memcpy(base_bytes, temp_bytes, (num - (right_index - mid)) * size);
+        // Copy all merged elements back
+        memcpy(base_bytes, temp_bytes, temp_index * size);
 
         return_void();
     }
@@ -236,7 +240,7 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(self);
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
         self->collision_count = 0;
 #endif
         // Update collision rects for current frame
@@ -273,8 +277,8 @@ Err$void Simulation_collide(Simulation* self) {
                 const bool y_overlap = !(current_rect->max.y < other_rect->min.y || other_rect->max.y < current_rect->min.y);
                 if (!y_overlap) { continue; }
 
-                // Ensure each pair is checked only once (current_idx < other_idx)
-                if (other_idx <= current_idx) { continue; }
+                // // Ensure each pair is checked only once (current_idx < other_idx)
+                // if (other_idx <= current_idx) { continue; }
                 Simulation_resolve(self, current_idx, other_idx);
             }
         }
@@ -305,7 +309,7 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
 
     // Early exit if not colliding
     scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
     self->collision_count++;
 #endif
 

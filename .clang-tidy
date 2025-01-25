@@ -240,7 +240,7 @@ Checks: >
   cppcoreguidelines-explicit-virtual-functions,
   cppcoreguidelines-init-variables,
   cppcoreguidelines-interfaces-global-init,
-  cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-macro-usage,
   cppcoreguidelines-misleading-capture-default-by-value,
   cppcoreguidelines-missing-std-forward,
   cppcoreguidelines-narrowing-conversions,

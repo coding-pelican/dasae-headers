@@ -1,6 +1,10 @@
 #ifndef SIMULATION_INCLUDED
 #define SIMULATION_INCLUDED (1)
 
+#if !defined(CHECK_COLLISION_ENABLED)
+#define CHECK_COLLISION_ENABLED (1)
+#endif
+
 #include "dh/core.h"
 #include "dh/meta.h"
 #include "dh/mem/Allocator.h"
@@ -25,7 +29,7 @@ typedef struct Simulation {
     ArrList$Rect rects; // Cache for collision rects
     QuadTree     quad_tree;
     Sli$usize    sort_cache; // Cache for sorting bodies
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
     usize collision_count;
 #endif
     mem_Allocator allocator;

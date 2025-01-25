@@ -34,12 +34,12 @@ extern "C" {
 #endif /* MAIN_RETURNS_ERR_OR_VOID */
 
 /* Error handling root main */
-#if !defined(MAIN_NO_HIJACK)
+#if !defined(MAIN_NO_HIJACK) && !defined(main_no_hijack)
 #if !MAIN_RETURNS_ERR_OR_VOID
 #undef MAIN_RETURNS_ERR_OR_VOID
 #define MAIN_RETURNS_ERR_OR_VOID (1)
 
-#if !defined(MAIN_NO_ARGS)
+#if !defined(MAIN_NO_ARGS) && !defined(main_no_args)
 
 extern Err$void dh_main(int argc, const char* argv[]) must_check;
 

@@ -90,13 +90,17 @@
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
-#define target_fps__125_0 /* template value */ (125.00)
-#define target_fps__100_0 /* template value */ (100.00)
-#define target_fps__62_50 /* template value */ (62.50)
-#define target_fps__50_00 /* template value */ (50.00)
-#define target_fps__31_25 /* template value */ (31.25)
+#define target_fps__125_00 /* template value */ (125.00)
+#define target_fps__100_00 /* template value */ (100.00)
+#define target_fps__62_500 /* template value */ (62.500)
+#define target_fps__50_000 /* template value */ (50.000)
+#define target_fps__31_250 /* template value */ (31.250)
+#define target_fps__25_000 /* template value */ (25.000)
+#define target_fps__15_625 /* template value */ (15.625)
+#define target_fps__12_500 /* template value */ (12.500)
+#define target_fps__10_000 /* template value */ (10.000)
 
-#define target_fps (target_fps__31_25)
+#define target_fps (target_fps__31_250)
 #define target_spf (1.0 / target_fps)
 
 #define n_body (10000)
@@ -265,7 +269,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
             printf("\033[H\033[40;37m"); // Move cursor to top left
-#if DEBUG_ENABLED
+#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
             printf(
                 "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f | COLLI: %llu",
                 time_fps,
