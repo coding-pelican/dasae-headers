@@ -58,83 +58,83 @@ typedef struct Void {
 
 /*========== Macros Implementation ==========================================*/
 
-#define FUNC_prim_cmp(val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                     \
-    let _rhs = (val_rhs);                     \
-    eval_return(                              \
-        (_lhs < _rhs)   ? -1                  \
-        : (_lhs > _rhs) ? 1                   \
-                        : 0                   \
-    );                                        \
-)
+#define FUNC_prim_cmp(val_lhs, val_rhs) eval({ \
+    let _lhs = (val_lhs);                      \
+    let _rhs = (val_rhs);                      \
+    eval_return(                               \
+        (_lhs < _rhs)   ? -1                   \
+        : (_lhs > _rhs) ? 1                    \
+                        : 0                    \
+    );                                         \
+})
 
-#define FUNC_prim_eq(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs == _rhs;                \
-)
+#define FUNC_prim_eq(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs == _rhs;                 \
+})
 
-#define FUNC_prim_ne(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs != _rhs;                \
-)
+#define FUNC_prim_ne(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs != _rhs;                 \
+})
 
-#define FUNC_prim_lt(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs < _rhs;                 \
-)
+#define FUNC_prim_lt(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs < _rhs;                  \
+})
 
-#define FUNC_prim_gt(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs > _rhs;                 \
-)
+#define FUNC_prim_gt(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs > _rhs;                  \
+})
 
-#define FUNC_prim_le(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs <= _rhs;                \
-)
+#define FUNC_prim_le(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs <= _rhs;                 \
+})
 
-#define FUNC_prim_ge(val_lhs, val_rhs) eval( \
-    let         _lhs = (val_lhs);            \
-    let         _rhs = (val_rhs);            \
-    eval_return _lhs >= _rhs;                \
-)
+#define FUNC_prim_ge(val_lhs, val_rhs) eval({ \
+    let         _lhs = (val_lhs);             \
+    let         _rhs = (val_rhs);             \
+    eval_return _lhs >= _rhs;                 \
+})
 
-#define FUNC_prim_min(val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                     \
-    let _rhs = (val_rhs);                     \
-    eval_return _lhs < _rhs ? _lhs : _rhs;    \
-)
+#define FUNC_prim_min(val_lhs, val_rhs) eval({ \
+    let _lhs = (val_lhs);                      \
+    let _rhs = (val_rhs);                      \
+    eval_return _lhs < _rhs ? _lhs : _rhs;     \
+})
 
-#define FUNC_prim_max(val_lhs, val_rhs) eval( \
-    let _lhs = (val_lhs);                     \
-    let _rhs = (val_rhs);                     \
-    eval_return _lhs > _rhs ? _lhs : _rhs;    \
-)
+#define FUNC_prim_max(val_lhs, val_rhs) eval({ \
+    let _lhs = (val_lhs);                      \
+    let _rhs = (val_rhs);                      \
+    eval_return _lhs > _rhs ? _lhs : _rhs;     \
+})
 
-#define FUNC_prim_swap(val_lhs, val_rhs) eval( \
-    let _lhs = &(val_lhs);                     \
-    let _rhs = &(val_rhs);                     \
-    let _tmp = *_lhs;                          \
-    *_lhs    = *_rhs;                          \
-    *_rhs    = _tmp;                           \
-    eval_return{};                             \
-)
+#define FUNC_prim_swap(val_lhs, val_rhs) eval({ \
+    let _lhs = &(val_lhs);                      \
+    let _rhs = &(val_rhs);                      \
+    let _tmp = *_lhs;                           \
+    *_lhs    = *_rhs;                           \
+    *_rhs    = _tmp;                            \
+    eval_return{};                              \
+})
 
-#define FUNC_prim_divisible(val_lhs, val_rhs) eval(    \
+#define FUNC_prim_divisible(val_lhs, val_rhs) eval({   \
     let _lhs = (val_lhs);                              \
     let _rhs = (val_rhs);                              \
     eval_return((_rhs == 0) ? 0 : (_lhs % _rhs == 0)); \
-)
+})
 
-#define FUNC_prim_sign(val_scalar) eval(                                        \
+#define FUNC_prim_sign(val_scalar) eval({                                       \
     let         _scalar = (val_scalar);                                         \
     eval_return as$(TypeOf(_scalar), _scalar < 0 ? -1 : (_scalar > 0 ? 1 : 0)); \
-)
+})
 
 
 #if defined(__cplusplus)

@@ -125,27 +125,27 @@ extern "C" {
 #define FUNC__offsetTo(Type, field) \
     __builtin_offsetof(Type, field)
 
-#define FUNC__containerOf(ptr, Type, field) eval(              \
+#define FUNC__containerOf(ptr, Type, field) eval({             \
     const TypeOf(((Type*)0)->field)* __mptr = (ptr);           \
     eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
-)
+})
 
-#define FUNC__safeContainerOf(ptr, Type, field) eval(          \
+#define FUNC__safeContainerOf(ptr, Type, field) eval({         \
     TypeOf(ptr) __ptr                 = (ptr);                 \
     TypeOf(((Type*)0)->field)* __mptr = __ptr;                 \
     eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
-)
+})
 
 /* Field operations implementations */
 #define FUNC__FieldTypeOf(Type, field) \
     TypeOf(((Type*)0)->field)
 
-#define FUNC__hasField(Type, field) eval(                               \
+#define FUNC__hasField(Type, field) eval({                              \
     _Generic(                                                           \
         (Type){ 0 },                                                    \
         default: (isConstantExpr(offsetTo(TypeOf((Type){ 0 }), field))) \
     );                                                                  \
-)
+})
 
 #define FUNC__validateField(Type, field, ExpectedType) \
     isSameType(FieldTypeOf(Type, field), ExpectedType)
@@ -153,11 +153,11 @@ extern "C" {
 #define FUNC__fieldPtrFrom(container_ptr, field) \
     (&(container_ptr)->field)
 
-#define FUNC__fieldPadding(Type, field) eval(                 \
+#define FUNC__fieldPadding(Type, field) eval({                \
     const usize __offset = offsetTo(Type, field);             \
     const usize __align  = alignOf(FieldTypeOf(Type, field)); \
     eval_return(__offset - (__offset & ~(__align - 1)));      \
-)
+})
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

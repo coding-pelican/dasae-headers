@@ -50,7 +50,7 @@
 // #define math_bounceClamped(val_x, val_min, val_max, val_bounces)                        FUNC_math_bounceClamped(val_x, val_min, val_max, val_bounces)
 
 /* Interpolation functions */
-// #define FUNC_math_lerp(val_a, val_b, val_t) eval( \
+// #define FUNC_math_lerp(val_a, val_b, val_t) eval({\
 //     let _a = (val_a);                             \
 //     let _b = (val_b);                             \
 //     let _t = (val_t);                             \
@@ -58,8 +58,8 @@
 //         eval_return makeCleared(TypeOf(_a));      \
 //     };                                            \
 //     eval_return _a + (_b - _a) * _t;              \
-// )
-// #define FUNC_math_lerpSafe(val_a, val_b, val_t) eval(      \
+//})
+// #define FUNC_math_lerpSafe(val_a, val_b, val_t) eval({\
 //     let _a = (val_a);                                      \
 //     let _b = (val_b);                                      \
 //     let _t = (val_t);                                      \
@@ -68,8 +68,8 @@
 //         return_err(math_Err_err(math_ErrType_OutOfRange)); \
 //     };                                                     \
 //     return_ok(_a + (_b - _a) * _t);                        \
-// )
-// #define FUNC_math_smoothstep(val_x, val_edge0, val_edge1) eval(   \
+//})
+// #define FUNC_math_smoothstep(val_x, val_edge0, val_edge1) eval({\
 //     let _x     = (val_x);                                         \
 //     let _edge0 = (val_edge0);                                     \
 //     let _edge1 = (val_edge1);                                     \
@@ -78,8 +78,8 @@
 //     };                                                            \
 //     let _t = math_clamp((_x - _edge0) / (_edge1 - _edge0), 0, 1); \
 //     eval_return _t * _t * (3 - 2 * _t);                           \
-// )
-// #define FUNC_math_smoothstepSafe(val_x, val_edge0, val_edge1) eval( \
+//})
+// #define FUNC_math_smoothstepSafe(val_x, val_edge0, val_edge1) eval({\
 //     let _x     = (val_x);                                           \
 //     let _edge0 = (val_edge0);                                       \
 //     let _edge1 = (val_edge1);                                       \
@@ -89,4 +89,4 @@
 //     };                                                              \
 //     let _t = math_clamp((_x - _edge0) / (_edge1 - _edge0), 0, 1);   \
 //     eval_return _t * _t * (3 - 2 * _t);                             \
-// )
+//})

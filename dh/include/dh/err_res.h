@@ -38,6 +38,12 @@ extern "C" {
 #define err(val_err...) OP__err(val_err)
 #define ok(val_ok...)   OP__ok(val_ok)
 
+#define err$(TErr, val_err...) OP__err$(TErr, val_err)
+#define ok$(TOk, val_ok...)    OP__ok$(TOk, val_ok)
+
+#define assignErr(var_err_res, val_err...) OP__assignErr(var_err_res, val_err)
+#define assignOk(var_err_res, val_ok...)   OP__assignOk(var_err_res, val_ok)
+
 /* Checks error result */
 #define isErr(val_err_res) OP__isErr(val_err_res)
 #define isOk(val_err_res)  OP__isOk(val_err_res)
@@ -113,7 +119,7 @@ typedef Err$Void Err$void;
             TOk ok;                        \
         };                                 \
     }
-#define OP__Err_asNamed$(TNamedErr, var_unnamed_err) eval(                                              \
+#define OP__Err_asNamed$(TNamedErr, var_unnamed_err) eval({                                             \
     let _unnamed_err = var_unnamed_err;                                                                 \
     claim_assert_static(sizeOf(TypeOf(_unnamed_err)) == sizeOf(TNamedErr));                             \
     claim_assert_static(alignOf(TypeOf(_unnamed_err)) == alignOf(TNamedErr));                           \
@@ -127,10 +133,22 @@ typedef Err$Void Err$void;
     claim_assert_static(validateField(TypeOf(_unnamed_err), ok, FieldTypeOf(TNamedErr, ok)));           \
     claim_assert_static(fieldPadding(TypeOf(_unnamed_err), ok) == fieldPadding(TNamedErr, ok));         \
     eval_return(*(TNamedErr*)&_unnamed_err);                                                            \
-)
+})
 
 #define OP__err(val_err...) { .is_err = true, .err = val_err }
 #define OP__ok(val_ok...)   { .is_err = false, .ok = val_ok }
+
+#define OP__err$(TErr, val_err...) ((TErr)err(val_err))
+#define OP__ok$(TOk, val_ok)       ((TOk)ok(val_ok))
+
+#define OP__assignErr(var_err_res, val_err...) eval({        \
+    let _ptr_err_res = &var_err_res;                         \
+    *_ptr_err_res    = err$(TypeOf(*_ptr_err_res), val_err); \
+})
+#define OP__assignOk(var_err_res, val_ok...) eval({        \
+    let _ptr_err_res = &var_err_res;                       \
+    *_ptr_err_res    = ok$(TypeOf(*_ptr_err_res), val_ok); \
+})
 
 #define OP__isErr(val_err_res) ((val_err_res).is_err)
 #define OP__isOk(val_err_res)  (!isErr(val_err_res))
@@ -179,18 +197,18 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__catch_default(expr, val_default...) eval(        \
+#define OP__catch_default(expr, val_default...) eval({       \
     var _result = (expr);                                    \
     eval_return _result.is_err ? (val_default) : _result.ok; \
-)
-#define OP__catch(expr, var_capture_err, body...) eval( \
-    var _result = (expr);                               \
-    if (_result.is_err) {                               \
-        let var_capture_err = _result.err;              \
-        body;                                           \
-    };                                                  \
-    eval_return _result.ok;                             \
-)
+})
+#define OP__catch(expr, var_capture_err, body...) eval({ \
+    var _result = (expr);                                \
+    if (_result.is_err) {                                \
+        let var_capture_err = _result.err;               \
+        body;                                            \
+    };                                                   \
+    eval_return _result.ok;                              \
+})
 
 #define SYN__errdefer(_Statements...) defer(                    \
     if (getReservedReturn() && getReservedReturn()[0].is_err) { \

@@ -424,7 +424,7 @@ Err$Ptr$Firework Firework_createAt(Firework* f, mem_Allocator allocator, f64 x, 
         debug_assert_nonnull(f);
 
         f->allocator = allocator;
-        f->rocket    = (Opt$Ptr$Particle)none(); // No rocket
+        assignNone(f->rocket); // No rocket
 
         f->effects = typed(ArrList$Particle, try(ArrList_initCap(typeInfo(Particle), f->allocator, Firework_effects_per_rocket)));
         errdefer(ArrList_fini(&f->effects.base));
@@ -589,7 +589,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
     // Specular light using Blinn-Phong
     const Color specular = Color_scale(
         specular_color,
-        eval(
+        eval({
             const Vec3f halfway_dir = math_Vec3f_norm(
                 math_Vec3f_add(light_dir, view_dir)
             );
@@ -599,7 +599,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
             );
             const f32   spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
             eval_return spec_mod_by_light_angle;
-        )
+        })
     );
 
     // Combine components
@@ -618,7 +618,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
     }
 
     // Calculate final scale based on transitions
-    scale = eval(
+    scale = eval({
         var ret = 0.0f;
         if (t > pink_to_firework_transition_begin) {
             var final_scale         = scale;
@@ -638,7 +638,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
             ret = scale;
         };
         eval_return ret;
-    );
+    });
 
     const Vec3f view_pos = math_Vec3f_scale(math_Vec3f_backward, 5.0f);
 
@@ -657,11 +657,11 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
                 const f32 tz = -pz + ((f32)i * step_z);
 
                 // Scale and rotate point
-                const Vec3f pos = eval(
+                const Vec3f pos = eval({
                     let         scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
                     let         rotated = applyRotation(scaled, angle);
                     eval_return rotated;
-                );
+                });
 
                 // Transform normal
                 // const Vec3f transformed_normal = applyRotation(normal, angle);
@@ -1528,7 +1528,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
             Particle_init(rocket, as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
             Particle_initWithAcceleration(rocket, 0.0, 0.02);
-            f->rocket = (Opt$Ptr$Particle)some(rocket);
+            assignSome(f->rocket, rocket);
         }
 
         f->effects = typed(ArrList$Particle, try(ArrList_initCap(typeInfo(Particle), f->allocator, Firework_effects_per_rocket)));
@@ -1625,7 +1625,7 @@ Err$void Firework_update(Firework* f, f64 dt) { // NOLINT
             }
             log_debug("destroying rocket(%p)\n", rocket);
             mem_Allocator_destroy(f->allocator, anyPtr(rocket));
-            f->rocket = (Opt$Ptr$Particle)none();
+            assignNone(f->rocket);
             log_debug("rocket destroyed\n");
         }
     }

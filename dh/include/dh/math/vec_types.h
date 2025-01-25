@@ -100,16 +100,16 @@ typedef math_Vec4$f32 math_Vec4f;
 typedef math_Vec4$f64 math_Vec4d;
 
 #define math_Vec_as$(TDestVec, src_vec...)      FUNC_math_Vec_as$(TDestVec, src_vec)
-#define FUNC_math_Vec_as$(TDestVec, src_vec...) eval(       \
+#define FUNC_math_Vec_as$(TDestVec, src_vec...) eval({      \
     TDestVec    _dest = cleared();                          \
     let         _src  = (src_vec);                          \
     const usize _len  = countOf(_dest.s);                   \
     claim_assert_static(_len == countOf(_src.s));           \
     for (usize _i = 0; _i < _len; ++_i) {                   \
         _dest.s[_i] = as$(TypeOf(_dest.s[_i]), _src.s[_i]); \
-    };                                                      \
+    }                                                       \
     eval_return _dest;                                      \
-)
+})
 
 /* #define math_Vec2_Match(T) TypeOf(_Generic( \
     (T)0,                                   \

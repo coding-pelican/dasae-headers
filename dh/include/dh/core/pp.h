@@ -30,28 +30,28 @@ extern "C" {
      */                                                                          \
     IMPL_pp_func(_Statement)
 
-#define pp_stringify(_Token...) IMPL_pp_stringify(_Token)
+#define pp_stringify(_Tok...) IMPL_pp_stringify(_Tok)
 
-#define pp_cat(_Token_lhs, _Token_rhs...) \
-    IMPL_pp_cat(_Token_lhs, _Token_rhs)
+#define pp_cat(_Tok_lhs, _Tok_rhs...) \
+    IMPL_pp_cat(_Tok_lhs, _Tok_rhs)
 
-#define pp_cat2(_Token_lhs, _Token_rhs...) \
-    IMPL_pp_cat2(_Token_lhs, _Token_rhs)
+#define pp_cat2(_Tok_lhs, _Tok_rhs...) \
+    IMPL_pp_cat2(_Tok_lhs, _Tok_rhs)
 
-#define pp_cat3(_Token_lhs, _Token_mid, _Token_rhs...) \
-    IMPL_pp_cat3(_Token_lhs, _Token_mid, _Token_rhs)
+#define pp_cat3(_Tok_lhs, _Tok_mid, _Tok_rhs...) \
+    IMPL_pp_cat3(_Tok_lhs, _Tok_mid, _Tok_rhs)
 
-#define pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
-    IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs)
+#define pp_join(_Tok_sep, _Tok_lhs, _Tok_rhs...) \
+    IMPL_pp_join(_Tok_sep, _Tok_lhs, _Tok_rhs)
 
-#define pp_join2(_Token_sep, _Token_lhs, _Token_rhs...) \
-    IMPL_pp_join2(_Token_sep, _Token_lhs, _Token_rhs)
+#define pp_join2(_Tok_sep, _Tok_lhs, _Tok_rhs...) \
+    IMPL_pp_join2(_Tok_sep, _Tok_lhs, _Tok_rhs)
 
-#define pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs...) \
-    IMPL_pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs)
+#define pp_join3(_Tok_sep, _Tok_lhs, _Tok_mid, _Tok_rhs...) \
+    IMPL_pp_join3(_Tok_sep, _Tok_lhs, _Tok_mid, _Tok_rhs)
 
-#define pp_uniqueToken(_Token...) \
-    IMPL_pp_uniqueToken(_Token)
+#define pp_uniqTok(_Tok...) \
+    IMPL_pp_uniqTok(_Tok)
 
 #define pp_countArgs(_Args...) \
     IMPL_pp_countArgs(_Args, pp_countArgs__rseqN())
@@ -70,28 +70,28 @@ extern "C" {
 #define IMPL_pp_func(_Statement...) \
     ({ _Statement })
 
-#define IMPL_pp_stringify(_Token...) #_Token
+#define IMPL_pp_stringify(_Tok...) #_Tok
 
-#define IMPL_pp_cat(_Token_lhs, _Token_rhs...) \
-    _Token_lhs##_Token_rhs
+#define IMPL_pp_cat(_Tok_lhs, _Tok_rhs...) \
+    _Tok_lhs##_Tok_rhs
 
-#define IMPL_pp_cat2(_Token_lhs, _Token_rhs...) \
-    _Token_lhs##_Token_rhs
+#define IMPL_pp_cat2(_Tok_lhs, _Tok_rhs...) \
+    _Tok_lhs##_Tok_rhs
 
-#define IMPL_pp_cat3(_Token_lhs, _Token_mid, _Token_rhs...) \
-    _Token_lhs##_Token_mid##_Token_rhs
+#define IMPL_pp_cat3(_Tok_lhs, _Tok_mid, _Tok_rhs...) \
+    _Tok_lhs##_Tok_mid##_Tok_rhs
 
-#define IMPL_pp_join(_Token_sep, _Token_lhs, _Token_rhs...) \
-    _Token_lhs##_Token_sep##_Token_rhs
+#define IMPL_pp_join(_Tok_sep, _Tok_lhs, _Tok_rhs...) \
+    _Tok_lhs##_Tok_sep##_Tok_rhs
 
-#define IMPL_pp_join2(_Token_sep, _Token_lhs, _Token_rhs...) \
-    _Token_lhs##_Token_sep##_Token_rhs
+#define IMPL_pp_join2(_Tok_sep, _Tok_lhs, _Tok_rhs...) \
+    _Tok_lhs##_Tok_sep##_Tok_rhs
 
-#define IMPL_pp_join3(_Token_sep, _Token_lhs, _Token_mid, _Token_rhs...) \
-    _Token_lhs##_Token_sep##_Token_mid##_Token_sep##_Token_rhs
+#define IMPL_pp_join3(_Tok_sep, _Tok_lhs, _Tok_mid, _Tok_rhs...) \
+    _Tok_lhs##_Tok_sep##_Tok_mid##_Tok_sep##_Tok_rhs
 
-#define IMPL_pp_uniqueToken(_Token...) \
-    pp_cat(pp_cat3(_, __LINE__, _), _Token)
+#define IMPL_pp_uniqTok(_Tok...) \
+    pp_cat(pp_cat3(_, __LINE__, _), _Tok)
 
 #define IMPL_pp_countArgs(_Args...) pp_countArgs__argN(_Args)
 

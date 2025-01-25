@@ -270,7 +270,7 @@ Err$void Simulation_collide(Simulation* self) {
                 if (current_rect->max.x < other_rect->min.x) { break; }
 
                 // Check for overlap in y-axis
-                const bool y_overlap = !(current_rect->max.y < other_rect->min.y || current_rect->min.y > other_rect->max.y);
+                const bool y_overlap = !(current_rect->max.y < other_rect->min.y || other_rect->max.y < current_rect->min.y);
                 if (!y_overlap) { continue; }
 
                 // Ensure each pair is checked only once (current_idx < other_idx)

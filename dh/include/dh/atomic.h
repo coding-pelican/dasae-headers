@@ -71,7 +71,7 @@ typedef enum atomic_MemOrder {
         volatile T raw;                                                               \
     }                                                                                 \
     pp_join($, atomic_Value, T)
-#define atomic_Value_asNamed$(TNamedValue, var_unnamed_value) eval(                                   \
+#define atomic_Value_asNamed$(TNamedValue, var_unnamed_value) eval({                                  \
     let _unnamed_value = var_unnamed_value;                                                           \
     claim_assert_static(sizeOf(TypeOf(_unnamed_value)) == sizeOf(TNamedValue));                       \
     claim_assert_static(alignOf(TypeOf(_unnamed_value)) == alignOf(TNamedValue));                     \
@@ -79,7 +79,7 @@ typedef enum atomic_MemOrder {
     claim_assert_static(validateField(TypeOf(_unnamed_value), raw, FieldTypeOf(TNamedValue, raw)));   \
     claim_assert_static(fieldPadding(TypeOf(_unnamed_value), raw) == fieldPadding(TNamedValue, raw)); \
     eval_return(*(TNamedValue*)&_unnamed_value);                                                      \
-)
+})
 
 /*========== Value Operations ============================================*/
 

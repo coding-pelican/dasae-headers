@@ -77,13 +77,13 @@ Err$Ptr$engine_RenderBackend NotepadBackend_create(void) {
     });
 
     // Set up backend interface
-    backend->base = eval(
+    backend->base = eval({
         var vt           = engine_RenderBackend_createNoOp();
         vt.type          = engine_RenderBackendType_custom;
         vt.destroy       = NotepadBackend_destroy;
         vt.presentBuffer = NotepadBackend_presentBuffer;
         eval_return vt;
-    );
+    });
     return_ok(&backend->base);
 }
 
@@ -177,14 +177,14 @@ static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color*
         HWND console = GetConsoleWindow();
 
         static engine_KeyCode input_key_list[] = {
-            engine_KeyCode_A,
-            engine_KeyCode_D,
-            engine_KeyCode_S,
-            engine_KeyCode_W,
-            engine_KeyCode_ArrowLt,
-            engine_KeyCode_ArrowUp,
-            engine_KeyCode_ArrowRt,
-            engine_KeyCode_ArrowDn
+            engine_KeyCode_a,
+            engine_KeyCode_d,
+            engine_KeyCode_s,
+            engine_KeyCode_w,
+            engine_KeyCode_arrow_left,
+            engine_KeyCode_arrow_up,
+            engine_KeyCode_arrow_right,
+            engine_KeyCode_arrow_down
         };
         static const u32 input_key_count = sizeof(input_key_list) / sizeof(engine_KeyCode);
 

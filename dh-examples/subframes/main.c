@@ -169,11 +169,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 }
 
                 scope_with(let vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
-                    *vel = eval(
+                    *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
                         eval_return(math_Vec2f_scale(r, 50));
-                    );
+                    });
                 }
 
                 scope_with(let color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
@@ -262,11 +262,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                         (i32)ps.ptr[i].y,
                         (i32)(radius * 0.8f),
                         (i32)radius,
-                        eval(
+                        eval({
                             var c = cs.ptr[i];
-                            c.a *= f;
+                            c.a   = as$(u8, (as$(f32, c.a) * f));
                             eval_return c;
-                        )
+                        })
                     );
                 }
             }

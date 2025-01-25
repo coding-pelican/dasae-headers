@@ -163,7 +163,7 @@ Err$void QuadTree_insert(QuadTree* self, math_Vec2f pos, f32 mass) {
         node         = Sli_at(self->nodes.items, node)->children + quadrant;
     }
 
-    let phys_data = eval(
+    let phys_data = eval({
         let curr_node = Sli_at(self->nodes.items, node);
         // If node is empty, simply store the mass and position
         if (QuadNode_isEmpty(curr_node)) {
@@ -190,7 +190,7 @@ Err$void QuadTree_insert(QuadTree* self, math_Vec2f pos, f32 mass) {
             .p = p,
             .m = m
         );
-    );
+    });
 
     // Subdivide until particles can be separated
     while (true) {

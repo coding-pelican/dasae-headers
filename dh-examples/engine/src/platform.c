@@ -113,7 +113,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         backend->cursor_visible = false;
 
         // Setup backend interface
-        backend->base = eval(
+        backend->base = eval({
             var vt              = engine_RenderBackend_createNoOp();
             vt.type             = engine_RenderBackendType_vt100;
             vt.destroy          = Win32ConsoleBackend_destroy;
@@ -121,7 +121,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
             vt.presentBuffer    = Win32ConsoleBackend_presentBuffer;
             vt.getWindowMetrics = Win32ConsoleBackend_getWindowMetrics;
             eval_return vt;
-        );
+        });
         Win32ConsoleBackend_enableMouseInput(backend);
 
         platform->backend = &backend->base;

@@ -274,10 +274,9 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button pressed");
         let world_mouse = Visualizer_mousePosToWorld(self);
 
-
-        self->spawn.body  = (TypeOf(self->spawn.body))some(Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-        self->spawn.angle = (TypeOf(self->spawn.angle))some(0.0f);
-        self->spawn.total = (TypeOf(self->spawn.total))some(0.0f);
+        assignSome(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
+        assignSome(self->spawn.angle, 0.0f);
+        assignSome(self->spawn.total, 0.0f);
 
     } else if (engine_Mouse_held(engine_MouseButton_right)) {
         log_debug("right mouse button held");
@@ -296,7 +295,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
                 body->radius = cbrtf(body->mass);
             }
             else {
-                self->spawn.angle = (TypeOf(self->spawn.angle))some(atan2f(d.y, d.x));
+                assignSome(self->spawn.angle, atan2f(d.y, d.x));
             }
             body->vel = d;
         }
@@ -305,11 +304,11 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button released");
         if_some_mut(self->spawn.body, body) {
             if_none(self->spawn.confirmed) {
-                self->spawn.confirmed = (TypeOf(self->spawn.confirmed))some(*body);
+                assignSome(self->spawn.confirmed, *body);
             }
-            self->spawn.body  = (TypeOf(self->spawn.body))none();
-            self->spawn.angle = (TypeOf(self->spawn.angle))none();
-            self->spawn.total = (TypeOf(self->spawn.total))none();
+            assignNone(self->spawn.body);
+            assignNone(self->spawn.angle);
+            assignNone(self->spawn.total);
         }
     }
     return_void();
@@ -322,7 +321,7 @@ Err$void Visualizer_update(Visualizer* self) {
     // Handle spawned body confirmation
     if_some_mut(self->spawn.confirmed, confirmed) {
         try(ArrList_append(&self->bodies.base, meta_refPtr(confirmed)));
-        self->spawn.confirmed = (TypeOf(self->spawn.confirmed))none();
+        assignNone(self->spawn.confirmed);
     }
 
     return_void();
@@ -463,24 +462,24 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
     if (0 < self->nodes.items.len) {
         var depth_range = self->depth_range;
         if (depth_range.max <= depth_range.min) {
-            /* init */ var stack = eval(
+            /* init */ var stack = eval({
                 let stack = &self->stack;
                 ArrList_clearRetainingCap(&stack->pair[0].base);
                 ArrList_clearRetainingCap(&stack->pair[1].base);
                 stack->len = 0;
                 eval_return(stack);
-            );
-            /* push */ stack->len += eval(
+            });
+            /* push */ stack->len += eval({
                 try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, QuadTree_s_root))));
                 try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, 0))));
                 eval_return 1;
-            );
+            });
 
             var min_depth = usize_limit;
             var max_depth = 0ull;
             while (0 < stack->len) {
                 if_some(
-                    /* pop */ eval(
+                    /* pop */ eval({
                         let opt_node  = ArrList_popOrNull(&stack->nodes.base);
                         let opt_depth = ArrList_popOrNull(&stack->depths.base);
                         stack->len--;
@@ -495,7 +494,7 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
                                     .depth    = *meta_cast$(usize*, opt_depth.value),
                             }
                         );
-                    ),
+                    }),
                     item
                 ) {
                     let node = Sli_at(self->nodes.items, item.node_idx);
@@ -504,11 +503,11 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
                         max_depth = prim_max(max_depth, item.depth);
                     } else {
                         for (isize i = 0; i < 4; ++i) {
-                            /* push */ stack->len += eval(
+                            /* push */ stack->len += eval({
                                 try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, node->children + i))));
                                 try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, item.depth + 1))));
                                 eval_return 1;
-                            );
+                            });
                         }
                     }
                 }
@@ -518,21 +517,21 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
         let min_depth = depth_range.min;
         let max_depth = depth_range.max;
 
-        /* init */ var stack = eval(
+        /* init */ var stack = eval({
             let stack = &self->stack;
             ArrList_clearRetainingCap(&stack->pair[0].base);
             ArrList_clearRetainingCap(&stack->pair[1].base);
             stack->len = 0;
             eval_return(stack);
-        );
-        /* push */ stack->len += eval(
+        });
+        /* push */ stack->len += eval({
             try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, QuadTree_s_root))));
             try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, 0))));
             eval_return 1;
-        );
+        });
         while (0 < stack->len) {
             if_some(
-                /* pop */ eval(
+                /* pop */ eval({
                     let opt_node_idx = ArrList_popOrNull(&stack->nodes.base);
                     let opt_depth    = ArrList_popOrNull(&stack->depths.base);
                     stack->len--;
@@ -547,17 +546,17 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
                                 .depth    = *meta_cast$(usize*, opt_depth.value),
                         }
                     );
-                ),
+                }),
                 item
             ) {
                 let node = Sli_at(self->nodes.items, item.node_idx);
                 if (QuadNode_isBranch(node) && item.depth < max_depth) {
                     for (isize i = 0; i < 4; ++i) {
-                        /* push */ stack->len += eval(
+                        /* push */ stack->len += eval({
                             try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, node->children + i))));
                             try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, item.depth + 1))));
                             eval_return 1;
-                        );
+                        });
                     }
                 } else if (min_depth <= item.depth) {
                     let quad = node->quad;

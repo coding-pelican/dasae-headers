@@ -26,28 +26,28 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #define scope_with(_Init_Statement...) \
-    SYN__scope_with(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
+    SYN__scope_with(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement)
 
 #define scope_with_fini(_Init_Statement, _Fini_Statement...) \
-    SYN__scope_with_fini(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Fini_Statement)
+    SYN__scope_with_fini(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement, _Fini_Statement)
 
 #define scope_var(_Init_Statement...) \
-    SYN__scope_var(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
+    SYN__scope_var(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement)
 
 #define scope_let(_Init_Statement...) \
-    SYN__scope_let(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
+    SYN__scope_let(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement)
 
 #define scope_if(_Init_Statement, _Condition) \
-    SYN__scope_if(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
+    SYN__scope_if(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement, _Condition)
 
 #define scope_else(_Init_Statement...) \
-    SYN__scope_else(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement)
+    SYN__scope_else(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement)
 
 #define scope_switch(_Init_Statement, _Condition) \
-    SYN__scope_switch(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
+    SYN__scope_switch(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement, _Condition)
 
 #define scope_while(_Init_Statement, _Condition) \
-    SYN__scope_while(pp_uniqueToken(run_once), pp_uniqueToken(init_once), _Init_Statement, _Condition)
+    SYN__scope_while(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement, _Condition)
 
 #define scope_va_list(_Init_Statement) \
     /* TODO: Implement scope_va_list */

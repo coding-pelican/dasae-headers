@@ -37,6 +37,12 @@ extern "C" {
 #define some(val_opt...) OP__some(val_opt)
 #define none()           OP__none()
 
+#define some$(TOpt, val_opt...) OP__some$(TOpt, val_opt)
+#define none$(TOpt)             OP__none$(TOpt)
+
+#define assignSome(var_opt, val_opt...) OP__assignSome(var_opt, val_opt)
+#define assignNone(var_opt...)          OP__assignNone(var_opt)
+
 /* Checks optional value */
 #define isSome(opt) OP__isSome(opt)
 #define isNone(opt) OP__isNone(opt)
@@ -56,7 +62,6 @@ extern "C" {
 #define if_none(expr)                  SYN__if_none(expr)
 #define else_some(var_capture)         SYN__else_some(var_capture)
 #define else_some_mut(var_capture)     SYN__else_some_mut(var_capture)
-
 
 /*========== Implementations ================================================*/
 
@@ -85,7 +90,7 @@ extern "C" {
         bool has_value;                  \
         T    value;                      \
     }
-#define OP__Opt_asNamed$(TNamedOpt, var_unnamed_opt) eval(                                                    \
+#define OP__Opt_asNamed$(TNamedOpt, var_unnamed_opt) eval({                                                   \
     let _unnamed_opt = var_unnamed_opt;                                                                       \
     claim_assert_static(sizeOf(TypeOf(_unnamed_opt)) == sizeOf(TNamedOpt));                                   \
     claim_assert_static(alignOf(TypeOf(_unnamed_opt)) == alignOf(TNamedOpt));                                 \
@@ -96,10 +101,22 @@ extern "C" {
     claim_assert_static(validateField(TypeOf(_unnamed_opt), value, FieldTypeOf(TNamedOpt, value)));           \
     claim_assert_static(fieldPadding(TypeOf(_unnamed_opt), value) == fieldPadding(TNamedOpt, value));         \
     eval_return(*(TNamedOpt*)&_unnamed_opt);                                                                  \
-)
+})
 
 #define OP__some(val_opt...) { .has_value = true, .value = val_opt }
 #define OP__none()           { .has_value = false }
+
+#define OP__some$(TOpt, val_opt...) ((TOpt)some(val_opt))
+#define OP__none$(TOpt)             ((TOpt)none())
+
+#define OP__assignSome(var_opt, val_opt...) eval({    \
+    let _ptr_opt = &var_opt;                          \
+    *_ptr_opt    = some$(TypeOf(*_ptr_opt), val_opt); \
+})
+#define OP__assignNone(var_opt...) eval({    \
+    let _ptr_opt = &var_opt;                 \
+    *_ptr_opt    = none$(TypeOf(*_ptr_opt)); \
+})
 
 #define OP__isSome(opt) ((opt).has_value)
 #define OP__isNone(opt) (!isSome(opt))
@@ -132,17 +149,17 @@ extern "C" {
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__orelse_default(expr, val_default...) eval(             \
+#define OP__orelse_default(expr, val_default...) eval({            \
     var _result = (expr);                                          \
     eval_return _result.has_value ? _result.value : (val_default); \
-)
-#define OP__orelse(expr, body...) eval( \
-    var _result = (expr);               \
-    if (!_result.has_value) {           \
-        body;                           \
-    };                                  \
-    eval_return _result.value;          \
-)
+})
+#define OP__orelse(expr, body...) eval({ \
+    var _result = (expr);                \
+    if (!_result.has_value) {            \
+        body;                            \
+    }                                    \
+    eval_return _result.value;           \
+})
 #define OP__unwrap(expr) orelse(expr, claim_unreachable)
 
 #define SYN__if_some(expr, var_capture)               \

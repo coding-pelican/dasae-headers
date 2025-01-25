@@ -201,7 +201,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
     // Specular light using Blinn-Phong
     const Color specular = Color_scale(
         specular_color,
-        eval(
+        eval({
             const Vec3f halfway_dir = math_Vec3f_norm(
                 math_Vec3f_add(light_dir, view_dir)
             );
@@ -211,7 +211,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
             );
             const f32   spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
             eval_return spec_mod_by_light_angle;
-        )
+        })
     );
 
     // Combine components
@@ -230,7 +230,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
     }
 
     // Calculate final scale based on transitions
-    scale = eval(
+    scale = eval({
         var ret = 0.0f;
         if (t > pink_to_firework_transition_begin) {
             var final_scale         = scale;
@@ -250,7 +250,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
             ret = scale;
         };
         eval_return ret;
-    );
+    });
 
     const Vec3f view_pos = math_Vec3f_scale(math_Vec3f_backward, 5.0f);
 
@@ -269,11 +269,11 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
                 const f32 tz = -pz + ((f32)i * step_z);
 
                 // Scale and rotate point
-                const Vec3f pos = eval(
+                const Vec3f pos = eval({
                     let         scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
                     let         rotated = applyRotation(scaled, angle);
                     eval_return rotated;
-                );
+                });
 
                 // Transform normal
                 // const Vec3f transformed_normal = applyRotation(normal, angle);

@@ -96,7 +96,7 @@
 #define target_fps__50_00 /* template value */ (50.00)
 #define target_fps__31_25 /* template value */ (31.25)
 
-#define target_fps (target_fps__62_50)
+#define target_fps (target_fps__31_25)
 #define target_spf (1.0 / target_fps)
 
 #define n_body (10000)
@@ -156,7 +156,7 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            viz->spawn.confirmed = (TypeOf(viz->spawn.confirmed))none();
+            assignNone(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
@@ -182,7 +182,6 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
     }
     scope_returnReserved;
 }
-
 
 Err$void dh_main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
