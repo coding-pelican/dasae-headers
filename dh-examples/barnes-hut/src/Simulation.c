@@ -2,12 +2,11 @@
 #include "dh/core/cmp.h"
 #include "utils.h"
 #include "dh/math.h"
-#include <stdlib.h>
 
 Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
     scope_reserveReturn(Err$Simulation) {
         const f32   dt      = 0.05f;
-        const usize n       = n_body; // 100000
+        const usize n       = n_body; // target: 100000
         const f32   theta   = 1.0f;
         const f32   epsilon = 1.0f;
 
@@ -38,7 +37,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
             .rects      = rects,
             .quad_tree  = quad_tree,
             .sort_cache = sort_cache,
-#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
+#if DEBUG_ENABLED || Simulation_allows_record_collision_count
             .collision_count = 0,
 #endif
             .allocator = allocator,
@@ -140,6 +139,7 @@ Err$void Simulation_collide(Simulation* self) {
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
 
+#if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
 use_Err(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
@@ -226,6 +226,7 @@ static Err$void stableSort(
     }
     scope_returnReserved;
 }
+#endif // DEPRECATED_CODE
 // Comparison function for qsort (C-style)
 static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
     let self     = as$(const Simulation*, arg);
@@ -240,7 +241,7 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(self);
-#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
+#if DEBUG_ENABLED || Simulation_allows_record_collision_count
         self->collision_count = 0;
 #endif
         // Update collision rects for current frame
@@ -259,8 +260,9 @@ Err$void Simulation_collide(Simulation* self) {
             *index = i;
         }
 
-        // Sort indices using qsort with the custom comparison function
-        try(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
+        // Sort indices using stableSort with comparison function and self pointer
+        try(utils_stableSortWithArg(self->allocator, meta_refSli(indices), compareRects, self));
+        // try(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
 
         // Sweep through sorted indices and check for AABB overlaps
         for (usize current = 0; current < indices.len; ++current) {
@@ -277,8 +279,11 @@ Err$void Simulation_collide(Simulation* self) {
                 const bool y_overlap = !(current_rect->max.y < other_rect->min.y || other_rect->max.y < current_rect->min.y);
                 if (!y_overlap) { continue; }
 
+                // NOTE: 이것 때문에 충돌 처리 대부분이 스킵되어버림...
+                // vvv
                 // // Ensure each pair is checked only once (current_idx < other_idx)
-                // if (other_idx <= current_idx) { continue; }
+                // // if (other_idx <= current_idx) { continue; }
+
                 Simulation_resolve(self, current_idx, other_idx);
             }
         }
@@ -309,7 +314,7 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
 
     // Early exit if not colliding
     scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
-#if DEBUG_ENABLED || CHECK_COLLISION_ENABLED
+#if DEBUG_ENABLED || Simulation_allows_record_collision_count
     self->collision_count++;
 #endif
 

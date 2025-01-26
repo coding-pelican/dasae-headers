@@ -165,6 +165,14 @@ force_inline cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_
     unused(arg);
     return TestElem_cmp(*as$(const TestElem*, lhs), *as$(const TestElem*, rhs));
 }
+static bool isSorted(const TestElem* arr, usize size) {
+    for (usize i = 1; i < size; ++i) {
+        if (arr[i].value < arr[i - 1].value) {
+            return false;
+        }
+    }
+    return true;
+}
 static bool isStable(const TestElem* arr, usize size) {
     for (usize i = 1; i < size; ++i) {
         if (arr[i].value == arr[i - 1].value && arr[i].seq <= arr[i - 1].seq) {
@@ -207,8 +215,12 @@ BenchResult benchmark_stableSort(BenchParams params) {
     let avg_ms   = total_ms / as$(f64, params.iterations);
 
     // Verify stability for implementations
+    let sorted = isSorted(c_data.ptr, c_data.len);
     let stable = isStable(c_data.ptr, c_data.len);
     mem_Allocator_free(allocator, anySli(c_data));
+    if (!sorted) {
+        exit(1);
+    }
 
     return (BenchResult){
         .name     = "(dh)stableSort",
