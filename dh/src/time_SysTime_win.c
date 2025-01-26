@@ -122,9 +122,9 @@ time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
 /*========== Comparison Functions =====================================*/
 
 cmp_fnCmp(time_SysTime) {
-    if (self.QuadPart < other.QuadPart) { return cmp_Ord_less; }
-    if (self.QuadPart > other.QuadPart) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (self.QuadPart < other.QuadPart) { return cmp_Ord_lt; }
+    if (self.QuadPart > other.QuadPart) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 
 #endif /* bti_plat_windows && (bti_plat_32BIT || bti_plat_64BIT) */

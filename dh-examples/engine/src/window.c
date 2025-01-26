@@ -2,6 +2,7 @@
 #include "engine/platform_backend.h"
 #include "engine/canvas.h"
 #include "engine/input.h"
+#include "dh/log.h"
 
 #include <stdlib.h>
 
@@ -39,6 +40,10 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
             /* Initialize window metrics */
             window->metrics.width         = params->width;
             window->metrics.height        = params->height;
+            window->metrics.min_width     = engine_Window_min_width_default;
+            window->metrics.min_height    = engine_Window_min_height_default;
+            window->metrics.max_width     = engine_Window_max_width_default;
+            window->metrics.max_height    = engine_Window_max_height_default;
             window->metrics.client_width  = params->width;
             window->metrics.client_height = params->height;
             window->metrics.x             = 0;
@@ -99,6 +104,7 @@ Err$void engine_Window_processEvents(engine_Window* window) {
     debug_assert_nonnull(backend->getWindowMetrics);
 
     backend->processEvents(window->platform);
+
     if_some(backend->getWindowMetrics(window->platform), new_metrics) {
         usize w        = window->metrics.width;
         usize h        = window->metrics.height;
@@ -112,7 +118,50 @@ Err$void engine_Window_processEvents(engine_Window* window) {
         window->metrics.client_width  = client_w;
         window->metrics.client_height = client_h;
     }
+    /* if_some(backend->getWindowMetrics(window->platform), new_metrics) {
+        let applied = eval({
+            // Apply constraints
+            var m          = new_metrics;
+            m.client_width = prim_clamp(
+                m.client_width,
+                window->metrics.min_width,
+                window->metrics.max_width
+            );
+            m.client_height = prim_clamp(
+                m.client_height,
+                window->metrics.min_height,
+                window->metrics.max_height
+            );
+            log_debug(
+                "Applied constraints: client_width[%d,%d] = %d, client_height[%d,%d] = %d",
+                window->metrics.min_width,
+                window->metrics.max_width,
+                m.client_width,
+                window->metrics.min_height,
+                window->metrics.max_height,
+                m.client_height
+            );
+            eval_return m;
+        });
 
+        // Update metrics with constrained values
+        window->metrics.client_width  = applied.client_width;
+        window->metrics.client_height = applied.client_height;
+
+        // Force backend to use constrained size
+        if (window->platform->backend->type == engine_RenderBackendType_vt100) {
+            engine_Win32ConsoleBackend* backend = (engine_Win32ConsoleBackend*)window->platform->backend;
+            COORD                       size    = {
+                (SHORT)window->metrics.client_width,
+                (SHORT)window->metrics.client_height
+            };
+            SetConsoleScreenBufferSize(backend->output_handle, size);
+        }
+
+        if (window->composite_buffer->width != applied.client_width || window->composite_buffer->height != applied.client_height) {
+            engine_Canvas_resize(window->composite_buffer, applied.client_width, applied.client_height);
+        }
+    } */
     return_void();
 }
 
@@ -127,7 +176,7 @@ void engine_Window_present(engine_Window* window) {
     engine_Canvas_clearDefault(window->composite_buffer);
 
     // Compose all visible canvas views
-    for (usize id = 0; id < window->view_count; ++id) {
+    for (u32 id = 0; id < window->view_count; ++id) {
         let view = &window->views[id];
         if (!view->visible) { continue; }
         if (!view->canvas) { continue; }
@@ -153,36 +202,40 @@ void engine_Window_present(engine_Window* window) {
     );
 }
 
-i32 engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, i32 width, i32 height) {
+Opt$u32 engine_Window_addCanvasView(engine_Window* window, engine_Canvas* canvas, i32 x, i32 y, u32 width, u32 height) {
+    reserveReturn(Opt$u32);
     debug_assert_nonnull(window);
     debug_assert_nonnull(canvas);
-    if (engine_Window_max_canvases <= window->view_count) { return -1; }
 
-    let view      = &window->views[window->view_count];
-    view->x       = x;
-    view->y       = y;
-    view->width   = width;
-    view->height  = height;
-    view->canvas  = canvas;
-    view->visible = true;
-
-    return as$(i32, window->view_count++);
+    if (engine_Window_max_canvases <= window->view_count) { return_none(); }
+    return_some(eval({
+        let view      = &window->views[window->view_count++];
+        view->x       = x;
+        view->y       = y;
+        view->width   = width;
+        view->height  = height;
+        view->canvas  = canvas;
+        view->visible = true;
+        eval_return window->view_count;
+    }));
 }
 
-void engine_Window_removeCanvasView(engine_Window* window, i32 view_id) {
+void engine_Window_removeCanvasView(engine_Window* window, u32 view_id) {
     debug_assert_nonnull(window);
-    if (view_id < 0 || window->view_count <= as$(u32, view_id)) { return; }
+    debug_assert(0 <= view_id);
+    debug_assert(view_id < window->view_count);
 
     // Shift remaining views down
-    for (i32 id = view_id; id < as$(i32, window->view_count) - 1; ++id) {
+    for (u32 id = view_id; id < window->view_count - 1; ++id) {
         window->views[id] = window->views[id + 1];
     }
     window->view_count--;
 }
 
-void engine_Window_updateCanvasView(engine_Window* window, i32 view_id, i32 x, i32 y, i32 width, i32 height) {
+void engine_Window_updateCanvasView(engine_Window* window, u32 view_id, i32 x, i32 y, u32 width, u32 height) {
     debug_assert_nonnull(window);
-    if (view_id < 0 || window->view_count <= as$(u32, view_id)) { return; }
+    debug_assert(0 <= view_id);
+    debug_assert(view_id < window->view_count);
 
     let view     = &window->views[view_id];
     view->x      = x;

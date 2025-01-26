@@ -8,9 +8,9 @@ typedef struct {
 
 // Function to get console information
 void printConsoleMetrics() {
-    HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    CONSOLE_FONT_INFOEX        fontInfo = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+    HANDLE                     hConsole   = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
+    CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
 
     GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
     GetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo);
@@ -24,8 +24,8 @@ void printConsoleMetrics() {
 
 // Function to set up console for mouse input
 void enableMouseInput() {
-    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD  prevMode;
+    HANDLE hInput   = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD  prevMode = 0;
     GetConsoleMode(hInput, &prevMode);
 
     // Enable mouse input and disable QuickEdit
@@ -48,21 +48,21 @@ void disableMouseInput() {
 
 // Function to convert mouse event to pixel coordinates
 PIXEL_COORD getPixelPosition(MOUSE_EVENT_RECORD mer) {
-    PIXEL_COORD                pos;
-    HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    CONSOLE_FONT_INFOEX        fontInfo = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+    PIXEL_COORD                pos        = { 0 };
+    HANDLE                     hConsole   = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
+    CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
 
     GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
     GetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo);
 
     // Get raw mouse position
-    POINT mousePos;
+    POINT mousePos = { 0 };
     GetCursorPos(&mousePos);
 
     // Get console window handle and position
-    HWND consoleWnd = GetConsoleWindow();
-    RECT consoleRect;
+    HWND consoleWnd  = GetConsoleWindow();
+    RECT consoleRect = { 0 };
     GetWindowRect(consoleWnd, &consoleRect);
 
     // Calculate relative position
@@ -127,9 +127,9 @@ int main() {
     printf("Mouse input enabled. Click anywhere in the console window.\n");
     printf("Press Ctrl+C to exit.\n\n");
 
-    HANDLE       hInput = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD inBuffer[128];
-    DWORD        numEvents;
+    HANDLE       hInput        = GetStdHandle(STD_INPUT_HANDLE);
+    INPUT_RECORD inBuffer[128] = { 0 };
+    DWORD        numEvents     = 0;
 
     while (1) {
         ReadConsoleInput(hInput, inBuffer, 128, &numEvents);
@@ -139,9 +139,15 @@ int main() {
                 handleMouseEvent(inBuffer[i].Event.MouseEvent);
             }
         }
-        if (GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState('C')) {
+        if (GetAsyncKeyState('I')) {
+            printConsoleMetrics();
+        }
+        if (GetAsyncKeyState(VK_ESCAPE)) {
             break;
         }
+        // if (GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState('C')) {
+        //     break;
+        // }
     }
 
     disableMouseInput();

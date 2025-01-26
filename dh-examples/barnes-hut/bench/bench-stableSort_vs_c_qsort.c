@@ -13,7 +13,7 @@
 use_Err(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
-    if (0 < lhs && SIZE_MAX / lhs < rhs) {
+    if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
         return_err(MulErr_err(MulErrType_Overflow));
     }
@@ -21,6 +21,26 @@ force_inline Err$usize mulSafe(usize lhs, usize rhs) {
 }
 // Modernized merge sort with temporary buffer (stable sort)
 static Err$void mergeSortWithTmpRecur( // NOLINT
+    anyptr base,
+    usize  num,
+    usize  size,
+    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr arg,
+    Sli$u8 temp_buffer
+) must_check;
+// Modernized stable sort (using merge sort)
+static Err$void stableSort(
+    anyptr base,
+    usize  num,
+    usize  size,
+    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr        arg,
+    mem_Allocator allocator
+) must_check;
+
+/*========== Test Targets Implementation ====================================*/
+
+Err$void mergeSortWithTmpRecur( // NOLINT
     anyptr base,
     usize  num,
     usize  size,
@@ -74,8 +94,7 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
     }
     scope_returnReserved;
 }
-// Modernized stable sort (using merge sort)
-static Err$void stableSort(
+Err$void stableSort(
     anyptr base,
     usize  num,
     usize  size,
@@ -117,7 +136,7 @@ static mem_Allocator testAllocator(void) {
             const clock_t overhead_begin = clock();                                              \
             memcpy(WORK_ARR, SRC_ARR, (ARR_LEN) * sizeof(i32));                                  \
             overhead_time += (clock() - overhead_begin);                                         \
-            BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                                      \
+            ignore BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                               \
         }                                                                                        \
         const clock_t end      = clock();                                                        \
         const f64     total_ms = ((f64)(end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC; \
@@ -141,7 +160,7 @@ static i32 qsort_compareInts(const void* lhs, const void* rhs) {
     return (*as$(i32*, lhs) - *as$(i32*, rhs));
 }
 
-static cmp_Ord stableSort_compareInts(const void* lhs, const void* rhs, const void* arg) {
+force_inline cmp_Ord stableSort_compareInts(const void* lhs, const void* rhs, const void* arg) {
     unused(arg);
     return prim_cmp(*as$(i32*, lhs), *as$(i32*, rhs));
 }

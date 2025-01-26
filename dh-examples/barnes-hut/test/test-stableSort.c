@@ -111,7 +111,7 @@ static cmp_Ord compareInt(anyptr_const a, anyptr_const b, anyptr_const arg) {
     unused(arg);
     int ia = *(const int*)a;
     int ib = *(const int*)b;
-    return (ia < ib) ? cmp_Ord_less : ((ia > ib) ? cmp_Ord_greater : cmp_Ord_equal);
+    return (ia < ib) ? cmp_Ord_lt : ((ia > ib) ? cmp_Ord_gt : cmp_Ord_eq);
 }
 
 static bool isSorted(const int* arr, usize size) {
@@ -129,9 +129,9 @@ typedef struct {
 } TestElem;
 use_Sli$(TestElem);
 force_inline cmp_fnCmp(TestElem) {
-    if (self.value < other.value) { return cmp_Ord_less; }
-    if (self.value > other.value) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (self.value < other.value) { return cmp_Ord_lt; }
+    if (self.value > other.value) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 static cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
     unused(arg);

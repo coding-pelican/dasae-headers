@@ -50,6 +50,43 @@ f64 time_Duration_asSecs_f64(time_Duration self) {
     return as$(f64, self.secs_) + as$(f64, self.nanos_) / as$(f64, time_nanos_per_sec);
 }
 
+Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs) {
+    reserveReturn(Opt$time_Duration);
+    const u64 total_nanos = (lhs.secs_ * time_nanos_per_sec + lhs.nanos_)
+                          + (rhs.secs_ * time_nanos_per_sec + rhs.nanos_);
+
+    // Check for overflow in nanoseconds
+    if (total_nanos < lhs.nanos_ || total_nanos < rhs.nanos_
+        || (lhs.secs_ > 0 && rhs.secs_ > u64_limit - lhs.secs_)) {
+        return_none();
+    }
+
+    const u64 secs  = total_nanos / time_nanos_per_sec;
+    const u32 nanos = (u32)(total_nanos % time_nanos_per_sec);
+
+    return_some(literal_time_Duration_from(secs, nanos));
+}
+
+// time_Duration.c (55-75)
+Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs) {
+    reserveReturn(Opt$time_Duration);
+
+    const u64 lhs_total_nanos = lhs.secs_ * time_nanos_per_sec + lhs.nanos_;
+    const u64 rhs_total_nanos = rhs.secs_ * time_nanos_per_sec + rhs.nanos_;
+
+    // Check for underflow
+    if (rhs_total_nanos > lhs_total_nanos) {
+        return_none();
+    }
+
+    const u64 diff_nanos = lhs_total_nanos - rhs_total_nanos;
+
+    const u64 secs  = diff_nanos / time_nanos_per_sec;
+    const u32 nanos = (u32)(diff_nanos % time_nanos_per_sec);
+
+    return_some(literal_time_Duration_from(secs, nanos));
+}
+
 time_Duration op_fnAdd(time_Duration) {
     u64 total_nanos = as$(u64, self.nanos_) + other.nanos_;
     return (time_Duration){

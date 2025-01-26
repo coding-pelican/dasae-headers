@@ -233,9 +233,9 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
     let idx_rhs  = *as$(const usize*, rhs);
     let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
     let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
-    if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_less; }
-    if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
+    if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {

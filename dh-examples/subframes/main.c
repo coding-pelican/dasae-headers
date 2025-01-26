@@ -49,7 +49,6 @@ typedef struct Control {
     Vec2f          vec;
 } Control;
 use_Sli$(Control);
-
 static SliConst$Control Control_list(void) {
     static const Control controls[] = {
         { .key = engine_KeyCode_w, .vec = math_Vec2f_up },

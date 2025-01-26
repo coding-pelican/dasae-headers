@@ -765,13 +765,13 @@ force_inline math_Vec2f math_Vec2f_sincos(f32 radians) {
 force_inline cmp_fnCmp(math_Vec2f) {
     for (usize i = 0; i < 2; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -891,13 +891,13 @@ force_inline math_Vec3f math_Vec3f_fill(f32 scalar) {
 force_inline cmp_fnCmp(math_Vec3f) {
     for (usize i = 0; i < 3; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1031,13 +1031,13 @@ force_inline math_Vec4f math_Vec4f_from3(math_Vec3f v) {
 force_inline cmp_fnCmp(math_Vec4f) {
     for (usize i = 0; i < 4; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1155,13 +1155,13 @@ force_inline math_Vec2d math_Vec2d_sincos(f64 radians) {
 force_inline cmp_fnCmp(math_Vec2d) {
     for (usize i = 0; i < 2; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1269,13 +1269,13 @@ force_inline math_Vec3d math_Vec3d_fill(f64 scalar) {
 force_inline cmp_fnCmp(math_Vec3d) {
     for (usize i = 0; i < 3; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1413,13 +1413,13 @@ force_inline math_Vec4d math_Vec4d_from3(math_Vec3d v) {
 force_inline cmp_fnCmp(math_Vec4d) {
     for (usize i = 0; i < 4; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1534,13 +1534,13 @@ force_inline math_Vec2i math_Vec2i_fill(i32 scalar) {
 force_inline cmp_fnCmp(math_Vec2i) {
     for (usize i = 0; i < 2; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1619,13 +1619,13 @@ force_inline math_Vec3i math_Vec3i_fill(i32 scalar) {
 force_inline cmp_fnCmp(math_Vec3i) {
     for (usize i = 0; i < 3; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1723,13 +1723,13 @@ force_inline math_Vec4i math_Vec4i_fill(i32 scalar) {
 force_inline cmp_fnCmp(math_Vec4i) {
     for (usize i = 0; i < 4; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1819,13 +1819,13 @@ force_inline math_Vec2l math_Vec2l_fill(i64 scalar) {
 force_inline cmp_fnCmp(math_Vec2l) {
     for (usize i = 0; i < 2; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -1913,13 +1913,13 @@ force_inline math_Vec3l math_Vec3l_fill(i64 scalar) {
 force_inline cmp_fnCmp(math_Vec3l) {
     for (usize i = 0; i < 3; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */
@@ -2017,13 +2017,13 @@ force_inline math_Vec4l math_Vec4l_fill(i64 scalar) {
 force_inline cmp_fnCmp(math_Vec4l) {
     for (usize i = 0; i < 4; ++i) {
         if (self.s[i] < other.s[i]) {
-            return cmp_Ord_less;
+            return cmp_Ord_lt;
         }
         if (self.s[i] > other.s[i]) {
-            return cmp_Ord_greater;
+            return cmp_Ord_gt;
         }
     }
-    return cmp_Ord_equal;
+    return cmp_Ord_eq;
 }
 
 /* Arithmetic */

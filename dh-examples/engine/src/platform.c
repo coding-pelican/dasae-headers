@@ -1,4 +1,5 @@
 #include "engine/platform.h"
+#include "dh/log.h"
 #include "engine/platform_backend.h"
 #include "engine/window.h"
 #include "engine/canvas.h"
@@ -65,6 +66,8 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         backend->last_metrics = (engine_WindowMetrics){
             .width         = params->width,
             .height        = params->height,
+            .min_width     = params->width,
+            .min_height    = params->height,
             .client_width  = params->width,
             .client_height = params->height,
             .x             = 0,
@@ -355,9 +358,24 @@ static Opt$engine_WindowMetrics Win32ConsoleBackend_getWindowMetrics(engine_Plat
         .is_minimized  = (placement.showCmd == SW_SHOWMINIMIZED),
         .is_maximized  = (placement.showCmd == SW_SHOWMAXIMIZED)
     };
+    // log_debug("Window metrics x:%d y:%d w:%d h:%d", metrics.x, metrics.y, metrics.width, metrics.height);
+    // log_debug("Window metrics client w:%d h:%d", metrics.client_width, metrics.client_height);
 
     // Cache the metrics
     backend->last_metrics = metrics;
+    /* if (metrics.client_width == 0 || metrics.client_height == 0) {
+        HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+        if (GetConsoleScreenBufferInfo(hConsole, &bufferInfo)) {
+            // backend->last_metrics.client_width  = bufferInfo.srWindow.Right - bufferInfo.srWindow.Left + 1;
+            // backend->last_metrics.client_height = bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top + 1;
+            // log_debug("Client width and height cached from console buffer info: w:%d h:%d", backend->last_metrics.client_width, backend->last_metrics.client_height);
+            backend->last_metrics.client_width  = bufferInfo.dwSize.X;
+            backend->last_metrics.client_height = bufferInfo.dwSize.Y * 2;
+            // log_debug("Client width and height restored from console buffer info: w:%d h:%d", backend->last_metrics.client_width, backend->last_metrics.client_height);
+        }
+    } */
+
     return_some(metrics);
 }
 
@@ -460,6 +478,48 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
         }
     }
 }
+
+/* // Function to get the console window size in characters
+static void win32_get_console_size(i32* width, i32* height) {
+    HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+    if (GetConsoleScreenBufferInfo(hConsole, &bufferInfo)) {
+        *width  = bufferInfo.srWindow.Right - bufferInfo.srWindow.Left + 1;
+        *height = bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top + 1;
+    } else {
+        *width  = 80; // Default values
+        *height = 25;
+    }
+}
+
+// Function to get the console font size
+static void win32_get_font_size(i32* width, i32* height) {
+    HANDLE              hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_FONT_INFOEX fontInfo = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+    if (GetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo)) {
+        *width  = fontInfo.dwFontSize.X;
+        *height = fontInfo.dwFontSize.Y;
+    } else {
+        *width  = 8; // Default values
+        *height = 16;
+    }
+}
+
+void platform_get_client_size(i32* width, i32* height) {
+    // Get the size of the console window in characters
+    i32 console_width  = 0;
+    i32 console_height = 0;
+    win32_get_console_size(&console_width, &console_height);
+
+    // Get the size of the console font
+    i32 font_width  = 0;
+    i32 font_height = 0;
+    win32_get_font_size(&font_width, &font_height);
+
+    // Calculate client area size based on characters and font size
+    *width  = console_width * font_width;
+    *height = console_height * font_height / 2; // Adjust for double-height pixels
+} */
 
 static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer, HANDLE output_handle) {
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo = cleared();

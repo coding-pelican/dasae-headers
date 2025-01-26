@@ -85,8 +85,8 @@
 #define window_res_width__40x20      /* template value */ (40)
 #define window_res_height__40x20     /* template value */ (20)
 
-#define window_res_width  (window_res_width__320x160)
-#define window_res_height (window_res_height__320x160)
+#define window_res_width  (window_res_width__320x160 - 20)
+#define window_res_height (window_res_height__320x160 + 40)
 #define window_res_size   (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
@@ -103,7 +103,7 @@
 #define target_fps (target_fps__31_250)
 #define target_spf (1.0 / target_fps)
 
-#define n_body (10000)
+#define n_body (25000)
 
 // Global state without thread synchronization
 static struct {
@@ -258,6 +258,12 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             // Process input
             try(engine_Window_processEvents(window));
+            /* // log_debug("canvas view %d %d", window->views[0].width, window->views[0].height);
+            // let client_res = engine_Window_getClientSize(window);
+            // engine_Canvas_resize(window->composite_buffer, client_res.x, client_res.y);
+            // engine_Window_updateCanvasView(window, 0, 0, 0, client_res.x, client_res.y);
+            // engine_Canvas_resize(window->views[0].canvas, client_res.x, client_res.y);
+            // engine_Canvas_clearDefault(window->views[0].canvas); */
             try(global_processInput(&viz, window));
 
             // Update simulation
@@ -306,11 +312,9 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             let time_now        = time_Instant_now();
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
-            let time_leftover   = time_Duration_sub(time_frame_target, time_frame_used);
-
-            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
-            if (is_positive_time_leftover) {
-                time_sleep(time_leftover);
+            let time_leftover   = time_Duration_subChecked(time_frame_target, time_frame_used);
+            if_some(time_leftover, positive_time_leftover) {
+                time_sleep(positive_time_leftover);
             }
             time_frame_prev = time_frame_curr;
         }

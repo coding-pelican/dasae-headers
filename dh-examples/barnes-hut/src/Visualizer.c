@@ -143,6 +143,25 @@ void Visualizer_destroy(Visualizer* self) {
     ArrList_fini(&self->nodes.base);
 }
 
+typedef struct Control {
+    engine_KeyCode key;
+    Vec2f          vec;
+} Control;
+use_Sli$(Control);
+static SliConst$Control Control_list(void) {
+    static const Control controls[] = {
+        { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
+        { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
+        { .key = engine_KeyCode_s, .vec = math_Vec2f_down },
+        { .key = engine_KeyCode_d, .vec = math_Vec2f_right },
+    };
+    static const usize controls_len = countOf(controls);
+    return (SliConst$Control){
+        .ptr = controls,
+        .len = controls_len,
+    };
+}
+
 force_inline void VisualizerInput_resetPos(Visualizer* self) {
     self->pos = math_Vec2f_zero;
 }
@@ -248,6 +267,15 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     if (engine_Key_pressed(engine_KeyCode_q)) {
         log_debug("pressed 'q' to toggle quad-tree visualization\n");
         VisualizerInput_toggleVisualizationQuadTree(self);
+    }
+
+    // Handle moving
+    let controls = Control_list();
+    for_slice(controls, control) {
+        if (engine_Key_held(control->key)) {
+            log_debug("pressed '%c' to move\n", control->key);
+            self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5 * Visualizer_scaleInv(self)));
+        }
     }
 
     // Handle panning

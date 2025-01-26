@@ -13,14 +13,14 @@
 use_Err(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
-    if (0 < lhs && SIZE_MAX / lhs < rhs) {
+    if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
         return_err(MulErr_err(MulErrType_Overflow));
     }
     return_ok(lhs * rhs);
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static Err$void mergeSortWithTmpRecur( // NOLINT
+static must_check Err$void mergeSortWithTmpRecur( // NOLINT
     anyptr base,
     usize  num,
     usize  size,
@@ -75,7 +75,7 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
     scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
-static Err$void stableSort(
+static must_check Err$void stableSort(
     anyptr base,
     usize  num,
     usize  size,
@@ -108,15 +108,13 @@ static mem_Allocator testAllocator(void) {
 
 use_Sli$(TestElem);
 force_inline cmp_fnCmp(TestElem) {
-    if (self.value < other.value) { return cmp_Ord_less; }
-    if (self.value > other.value) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (self.value < other.value) { return cmp_Ord_lt; }
+    if (self.value > other.value) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
-static cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+force_inline cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
     unused(arg);
-    let self  = as$(const TestElem*, lhs);
-    let other = as$(const TestElem*, rhs);
-    return TestElem_cmp(*self, *other);
+    return TestElem_cmp(*as$(const TestElem*, lhs), *as$(const TestElem*, rhs));
 }
 static bool isStable(const TestElem* arr, usize size) {
     for (usize i = 1; i < size; ++i) {
@@ -153,7 +151,7 @@ BenchResult benchmark_stableSort(BenchParams params) {
         let overhead_begin = clock();
         memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
         overhead_time += (clock() - overhead_begin);
-        stableSort(c_data.ptr, c_data.len, sizeof(TestElem), compareTestElem, nullptr, allocator);
+        ignore stableSort(c_data.ptr, c_data.len, sizeof(TestElem), compareTestElem, nullptr, allocator);
     }
     let end      = clock();
     let total_ms = (as$(f64, end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC;

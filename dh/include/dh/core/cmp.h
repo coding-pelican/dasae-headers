@@ -26,9 +26,9 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 typedef enum cmp_Ord {
-    cmp_Ord_less    = -1,
-    cmp_Ord_equal   = 0,
-    cmp_Ord_greater = 1
+    cmp_Ord_lt = -1,
+    cmp_Ord_eq = 0,
+    cmp_Ord_gt = 1
 } cmp_Ord;
 
 /* Comparators */
@@ -43,8 +43,8 @@ typedef enum cmp_Ord {
 #define cmp_ge(TSelf) pp_join(_, TSelf, ge)
 
 /* Function-like macros */
-#define cmp_fnCmp(TSelf)        cmp_Ord pp_join(_, cmp, cmp)(TSelf)(TSelf self, TSelf other)
-#define cmp_fnOrd(fnCmp, TSelf) bool pp_join(_, cmp, fnCmp)(TSelf)(TSelf self, TSelf other)
+#define cmp_fnCmp(TSelf)        cmp_Ord pp_join(_, cmp, cmp)(TSelf)(const TSelf self, const TSelf other)
+#define cmp_fnOrd(fnCmp, TSelf) bool pp_join(_, cmp, fnCmp)(TSelf)(const TSelf self, const TSelf other)
 #define cmp_fnEq(TSelf)         cmp_fnOrd(eq, TSelf)
 #define cmp_fnNe(TSelf)         cmp_fnOrd(ne, TSelf)
 #define cmp_fnLt(TSelf)         cmp_fnOrd(lt, TSelf)
@@ -54,10 +54,10 @@ typedef enum cmp_Ord {
 
 /* Binary operators default implementation */
 // clang-format off
-#define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_equal; }
-#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return pp_join(_, TSelf, eq)(self, other) !=  cmp_Ord_equal; }
-#define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_less; }
-#define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_greater; }
+#define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_eq; }
+#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return pp_join(_, TSelf, eq)(self, other) !=  cmp_Ord_eq; }
+#define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_lt; }
+#define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_gt; }
 #define cmp_fnLe_default(TSelf) force_inline cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
 #define cmp_fnGe_default(TSelf) force_inline cmp_fnOrd(ge, TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
 // clang-format on
@@ -66,9 +66,9 @@ typedef enum cmp_Ord {
 
 #ifdef UNIT_TEST
 cmp_fnCmp(int) {
-    if (self < other) { return cmp_Ord_less; }
-    if (other < self) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (self < other) { return cmp_Ord_lt; }
+    if (other < self) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 // cmp_impl(int)
 #endif /* UNIT_TEST */

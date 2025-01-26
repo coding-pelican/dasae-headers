@@ -258,13 +258,13 @@
 #define OP_math_Vec_cmp(_lhs, _rhs, val_lhs, val_rhs) eval({ \
     let _lhs = (val_lhs);                                    \
     let _rhs = (val_rhs);                                    \
-    var _ret = cmp_Ord_equal;                                \
+    var _ret = cmp_Ord_eq;                                   \
     for (usize i = 0; i < countOf(_lhs.s); ++i) {            \
         if (math_lt(_lhs.s[i], _rhs.s[i])) {                 \
-            _ret = cmp_Ord_less;                             \
+            _ret = cmp_Ord_lt;                               \
             break;                                           \
         } else if (math_gt(_lhs.s[i], _rhs.s[i])) {          \
-            _ret = cmp_Ord_greater;                          \
+            _ret = cmp_Ord_gt;                               \
             break;                                           \
         } else {                                             \
             continue;                                        \
@@ -273,10 +273,10 @@
     eval_return _ret;                                        \
 })
 /* Redefine other comparison operations in terms of cmp */
-#define OP_math_Vec_eq(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_equal)
-#define OP_math_Vec_ne(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) != cmp_Ord_equal)
-#define OP_math_Vec_lt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_less)
-#define OP_math_Vec_gt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_greater)
+#define OP_math_Vec_eq(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_eq)
+#define OP_math_Vec_ne(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) != cmp_Ord_eq)
+#define OP_math_Vec_lt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_lt)
+#define OP_math_Vec_gt(val_lhs, val_rhs) (math_Vec_cmp(val_lhs, val_rhs) == cmp_Ord_gt)
 #define OP_math_Vec_le(val_lhs, val_rhs) (!math_Vec_gt(val_lhs, val_rhs))
 #define OP_math_Vec_ge(val_lhs, val_rhs) (!math_Vec_lt(val_lhs, val_rhs))
 

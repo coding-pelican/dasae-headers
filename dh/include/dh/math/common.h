@@ -215,30 +215,30 @@ use_Err(
 #define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) eval({ \
     let _lhs = (val_lhs);                                \
     let _rhs = (val_rhs);                                \
-    var _ret = cmp_Ord_equal;                            \
+    var _ret = cmp_Ord_eq;                               \
     if (isFlt(TypeOf(_lhs))) {                           \
         if (math_abs((_lhs) - (_rhs)) <= math_eps) {     \
-            _ret = cmp_Ord_equal;                        \
+            _ret = cmp_Ord_eq;                           \
         } else if ((_lhs) < (_rhs)) {                    \
-            _ret = cmp_Ord_less;                         \
+            _ret = cmp_Ord_lt;                           \
         } else {                                         \
-            _ret = cmp_Ord_greater;                      \
+            _ret = cmp_Ord_gt;                           \
         }                                                \
     } else {                                             \
         if ((_lhs) < (_rhs)) {                           \
-            _ret = cmp_Ord_less;                         \
+            _ret = cmp_Ord_lt;                           \
         } else if ((_lhs) > (_rhs)) {                    \
-            _ret = cmp_Ord_greater;                      \
+            _ret = cmp_Ord_gt;                           \
         } else {                                         \
-            _ret = cmp_Ord_equal;                        \
+            _ret = cmp_Ord_eq;                           \
         }                                                \
     };                                                   \
     eval_return _ret;                                    \
 })
-#define OP_math_eq(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_equal)
-#define OP_math_ne(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) != cmp_Ord_equal)
-#define OP_math_lt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_less)
-#define OP_math_gt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_greater)
+#define OP_math_eq(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_eq)
+#define OP_math_ne(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) != cmp_Ord_eq)
+#define OP_math_lt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_lt)
+#define OP_math_gt(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_gt)
 #define OP_math_le(val_lhs, val_rhs) (!math_gt(val_lhs, val_rhs))
 #define OP_math_ge(val_lhs, val_rhs) (!math_lt(val_lhs, val_rhs))
 

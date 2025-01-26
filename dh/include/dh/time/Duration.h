@@ -63,11 +63,11 @@ extern time_Duration     op_fnDivBy(time_Duration, u64);
 
 /* Comparison */
 force_inline cmp_fnCmp(time_Duration) {
-    if (self.secs_ < other.secs_) { return cmp_Ord_less; }
-    if (self.secs_ > other.secs_) { return cmp_Ord_greater; }
-    if (self.nanos_ < other.nanos_) { return cmp_Ord_less; }
-    if (self.nanos_ > other.nanos_) { return cmp_Ord_greater; }
-    return cmp_Ord_equal;
+    if (self.secs_ < other.secs_) { return cmp_Ord_lt; }
+    if (self.secs_ > other.secs_) { return cmp_Ord_gt; }
+    if (self.nanos_ < other.nanos_) { return cmp_Ord_lt; }
+    if (self.nanos_ > other.nanos_) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 cmp_fnEq_default(time_Duration);
 cmp_fnNe_default(time_Duration);
