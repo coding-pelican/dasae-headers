@@ -5,10 +5,11 @@
 
 Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
     scope_reserveReturn(Err$Simulation) {
-        const f32   dt    = 0.05f;
-        const usize n     = n_body; // target: 100000
-        const f32   theta = 1.0f;
-        const f32   eps   = 1.0f;
+        const f32   dt       = 0.05f;
+        const usize n        = n_body; // target: 100000
+        const f32   theta    = 1.0f;
+        const f32   eps      = 1.0f;
+        const usize leaf_cap = 16;
 
         var bodies = try(utils_uniformDisc(allocator, n));
         errdefer(ArrList_fini(&bodies.base));
@@ -22,8 +23,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
         );
         errdefer(ArrList_fini(&rects.base));
 
-        try(ArrList_resize(&rects.base, n));
-        var quad_tree = try(QuadTree_create(allocator, theta, eps, n));
+        var quad_tree = try(QuadTree_create(allocator, theta, eps, leaf_cap, n));
         errdefer(QuadTree_destroy(&quad_tree));
 
         // Sort body indices based on their AABB's min.x to enable sweep and prune
@@ -78,22 +78,11 @@ Err$void Simulation_step(Simulation* self) {
 Err$void Simulation_attract(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-
-    // Create quad tree for current frame
-    let quad = Quad_newContaining(self->bodies.items);
-    try(QuadTree_clear(&self->quad_tree, quad));
-
-    // Insert all bodies
-    for_slice(self->bodies.items, body) {
-        try(QuadTree_insert(&self->quad_tree, body->pos, body->mass));
-    }
-
-    // Propagate masses upward
-    QuadTree_propagate(&self->quad_tree);
+    try(QuadTree_build(&self->quad_tree, self->bodies.items));
 
     // Calculate accelerations
     for_slice(self->bodies.items, body) {
-        body->acc = QuadTree_accelerate(&self->quad_tree, body->pos);
+        body->acc = QuadTree_accelerate(&self->quad_tree, body->pos, self->bodies.items);
     }
 
     return_void();
@@ -253,6 +242,10 @@ Err$void Simulation_collide(Simulation* self) {
 #if DEBUG_ENABLED || Simulation_allows_record_collision_count
         self->collision_count = 0;
 #endif
+        if (self->rects.items.len == 0) {
+            return_void();
+        }
+
         // Update collision rects for current frame
         for_slice_indexed(self->bodies.items, body, index) {
             let pos        = body->pos;
@@ -381,3 +374,27 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     b1->pos = math_Vec2f_add(b1->pos, math_Vec2f_scale(v1_new, t));
     b2->pos = math_Vec2f_add(b2->pos, math_Vec2f_scale(v2_new, t));
 }
+
+/* Err$void Simulation_attract(Simulation* self) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+
+    // Create quad tree for current frame
+    let quad = Quad_newContaining(self->bodies.items);
+    try(QuadTree_clear(&self->quad_tree, quad));
+
+    // Insert all bodies
+    for_slice(self->bodies.items, body) {
+        try(QuadTree_insert(&self->quad_tree, body->pos, body->mass));
+    }
+
+    // Propagate masses upward
+    QuadTree_propagate(&self->quad_tree);
+
+    // Calculate accelerations
+    for_slice(self->bodies.items, body) {
+        body->acc = QuadTree_calculateAcceleration(&self->quad_tree, body->pos);
+    }
+
+    return_void();
+} */

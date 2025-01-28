@@ -1,14 +1,24 @@
 #include "utils.h"
 #include "dh/math.h"
 #include "dh/Random.h"
+#include "dh/mem/cfg.h"
 #include <malloc.h>
+
+void mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs) {
+    debug_assert_true(lhs.len == rhs.len);
+    let tmp_len = lhs.len;
+    let tmp_ptr = as$(u8*, alloca(tmp_len));
+    memcpy(tmp_ptr, lhs.ptr, lhs.len);
+    memcpy(lhs.ptr, rhs.ptr, rhs.len);
+    memcpy(rhs.ptr, tmp_ptr, tmp_len);
+}
 
 // Swap two elements of given size
 force_inline void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
-    let temp = as$(u8*, alloca(byte_len));
-    memcpy(temp, lhs, byte_len);
+    let tmp = as$(u8*, alloca(byte_len));
+    memcpy(tmp, lhs, byte_len);
     memcpy(lhs, rhs, byte_len);
-    memcpy(rhs, temp, byte_len);
+    memcpy(rhs, tmp, byte_len);
 }
 
 void utils_insertionSort(
@@ -19,13 +29,13 @@ void utils_insertionSort(
     let len  = base_slice.len;
     let size = base_slice.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
-        var current               = ptr + (unsorted_index * size);
+        var curr                  = ptr + (unsorted_index * size);
         var sorted_backward_index = unsorted_index;
         while (0 < sorted_backward_index) {
-            var prev = current - size;
-            if (compareFn(prev, current) <= cmp_Ord_eq) { break; }
-            utils_swapBytes(prev, current, size);
-            current = prev;
+            var prev = curr - size;
+            if (compareFn(prev, curr) <= cmp_Ord_eq) { break; }
+            utils_swapBytes(prev, curr, size);
+            curr = prev;
             sorted_backward_index--;
         }
     }
@@ -58,158 +68,154 @@ Err$void utils_mergeSortUsingTempRecur( // NOLINT
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) {
-    scope_reserveReturn(Err$void) {
-        if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
-            utils_insertionSort(base_slice, compareFn);
-            return_void();
-        }
-        let base_type  = base_slice.type;
-        let base_bytes = as$(u8*, base_slice.addr);
-        let base_len   = base_slice.len;
-        let base_size  = base_slice.type.size;
-        let mid_idx    = base_len / 2;
-
-        /* Sort each half recursively */
-        try(utils_mergeSortUsingTempRecur(
-            temp_buffer,
-            make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
-            compareFn
-        ));
-        try(utils_mergeSortUsingTempRecur(
-            temp_buffer,
-            make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
-            compareFn
-        ));
-
-        /* Check if merging is necessary */ {
-            let left_last   = base_bytes + ((mid_idx - 1) * base_size);
-            let right_first = base_bytes + (mid_idx * base_size);
-            if (compareFn(left_last, right_first) <= cmp_Ord_eq) {
-                return_void(); /* Already ordered, no merge needed */
-            }
-        }
-
-        /* Merge the sorted halves using the temporary buffer */
-        var left_ptr  = base_bytes;
-        var left_end  = left_ptr + mid_idx * base_size;
-        var right_ptr = base_bytes + mid_idx * base_size;
-        var right_end = base_bytes + base_len * base_size;
-        var temp_ptr  = temp_buffer.ptr;
-
-        while (left_ptr < left_end && right_ptr < right_end) {
-            if (compareFn(left_ptr, right_ptr) <= cmp_Ord_eq) {
-                memcpy(temp_ptr, left_ptr, base_size);
-                left_ptr += base_size;
-            } else {
-                memcpy(temp_ptr, right_ptr, base_size);
-                right_ptr += base_size;
-            }
-            temp_ptr += base_size;
-        }
-
-        /* Copy remaining elements */
-        if (left_ptr < left_end) {
-            temp_ptr += eval({
-                let bytes_left = left_end - left_ptr;
-                memcpy(temp_ptr, left_ptr, bytes_left);
-                eval_return bytes_left;
-            });
-        }
-        if (right_ptr < right_end) {
-            temp_ptr += eval({
-                let bytes_right = right_end - right_ptr;
-                memcpy(temp_ptr, right_ptr, bytes_right);
-                eval_return bytes_right;
-            });
-        }
-
-        /* Copy merged elements back to the original array */
-        let total_bytes = temp_ptr - temp_buffer.ptr;
-        memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    reserveReturn(Err$void);
+    if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
+        utils_insertionSort(base_slice, compareFn);
         return_void();
     }
-    scope_returnReserved;
+    let base_type  = base_slice.type;
+    let base_bytes = as$(u8*, base_slice.addr);
+    let base_len   = base_slice.len;
+    let base_size  = base_slice.type.size;
+    let mid_idx    = base_len / 2;
+
+    /* Sort each half recursively */
+    try(utils_mergeSortUsingTempRecur(
+        temp_buffer,
+        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
+        compareFn
+    ));
+    try(utils_mergeSortUsingTempRecur(
+        temp_buffer,
+        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
+        compareFn
+    ));
+
+    /* Check if merging is necessary */ {
+        let left_last   = base_bytes + ((mid_idx - 1) * base_size);
+        let right_first = base_bytes + (mid_idx * base_size);
+        if (compareFn(left_last, right_first) <= cmp_Ord_eq) {
+            return_void(); /* Already ordered, no merge needed */
+        }
+    }
+
+    /* Merge the sorted halves using the temporary buffer */
+    var left_ptr  = base_bytes;
+    var left_end  = left_ptr + mid_idx * base_size;
+    var right_ptr = base_bytes + mid_idx * base_size;
+    var right_end = base_bytes + base_len * base_size;
+    var temp_ptr  = temp_buffer.ptr;
+
+    while (left_ptr < left_end && right_ptr < right_end) {
+        if (compareFn(left_ptr, right_ptr) <= cmp_Ord_eq) {
+            memcpy(temp_ptr, left_ptr, base_size);
+            left_ptr += base_size;
+        } else {
+            memcpy(temp_ptr, right_ptr, base_size);
+            right_ptr += base_size;
+        }
+        temp_ptr += base_size;
+    }
+
+    /* Copy remaining elements */
+    if (left_ptr < left_end) {
+        temp_ptr += eval({
+            let bytes_left = left_end - left_ptr;
+            memcpy(temp_ptr, left_ptr, bytes_left);
+            eval_return bytes_left;
+        });
+    }
+    if (right_ptr < right_end) {
+        temp_ptr += eval({
+            let bytes_right = right_end - right_ptr;
+            memcpy(temp_ptr, right_ptr, bytes_right);
+            eval_return bytes_right;
+        });
+    }
+
+    /* Copy merged elements back to the original array */
+    let total_bytes = temp_ptr - temp_buffer.ptr;
+    memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    return_void();
 }
 
-Err$void utils_mergeSortUsingTempWithArgRecur( // NOLINT
+Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
     anyptr_const arg
 ) {
-    scope_reserveReturn(Err$void) {
-        if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
-            utils_insertionSortWithArg(base_slice, compareFn, arg);
-            return_void();
-        }
-        let base_type  = base_slice.type;
-        let base_bytes = as$(u8*, base_slice.addr);
-        let base_len   = base_slice.len;
-        let base_size  = base_slice.type.size;
-        let mid_idx    = base_len / 2;
-
-        /* Sort each half recursively */
-        try(utils_mergeSortUsingTempWithArgRecur(
-            temp_buffer,
-            make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
-            compareFn,
-            arg
-        ));
-        try(utils_mergeSortUsingTempWithArgRecur(
-            temp_buffer,
-            make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
-            compareFn,
-            arg
-        ));
-
-        /* Check if merging is necessary */ {
-            let left_last   = base_bytes + ((mid_idx - 1) * base_size);
-            let right_first = base_bytes + (mid_idx * base_size);
-            if (compareFn(left_last, right_first, arg) <= cmp_Ord_eq) {
-                return_void(); /* Already ordered, no merge needed */
-            }
-        }
-
-        /* Merge the sorted halves using the temporary buffer */
-        var left_ptr  = base_bytes;
-        var left_end  = left_ptr + mid_idx * base_size;
-        var right_ptr = base_bytes + mid_idx * base_size;
-        var right_end = base_bytes + base_len * base_size;
-        var temp_ptr  = temp_buffer.ptr;
-
-        while (left_ptr < left_end && right_ptr < right_end) {
-            if (compareFn(left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
-                memcpy(temp_ptr, left_ptr, base_size);
-                left_ptr += base_size;
-            } else {
-                memcpy(temp_ptr, right_ptr, base_size);
-                right_ptr += base_size;
-            }
-            temp_ptr += base_size;
-        }
-
-        /* Copy remaining elements */
-        if (left_ptr < left_end) {
-            temp_ptr += eval({
-                let bytes_left = left_end - left_ptr;
-                memcpy(temp_ptr, left_ptr, bytes_left);
-                eval_return bytes_left;
-            });
-        }
-        if (right_ptr < right_end) {
-            temp_ptr += eval({
-                let bytes_right = right_end - right_ptr;
-                memcpy(temp_ptr, right_ptr, bytes_right);
-                eval_return bytes_right;
-            });
-        }
-
-        /* Copy merged elements back to the original array */
-        let total_bytes = temp_ptr - temp_buffer.ptr;
-        memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    reserveReturn(Err$void);
+    if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
+        utils_insertionSortWithArg(base_slice, compareFn, arg);
         return_void();
     }
-    scope_returnReserved;
+    let base_type  = base_slice.type;
+    let base_bytes = as$(u8*, base_slice.addr);
+    let base_len   = base_slice.len;
+    let base_size  = base_slice.type.size;
+    let mid_idx    = base_len / 2;
+
+    /* Sort each half recursively */
+    try(utils_mergeSortWithArgUsingTempRecur(
+        temp_buffer,
+        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
+        compareFn,
+        arg
+    ));
+    try(utils_mergeSortWithArgUsingTempRecur(
+        temp_buffer,
+        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
+        compareFn,
+        arg
+    ));
+
+    /* Check if merging is necessary */ {
+        let left_last   = base_bytes + ((mid_idx - 1) * base_size);
+        let right_first = base_bytes + (mid_idx * base_size);
+        if (compareFn(left_last, right_first, arg) <= cmp_Ord_eq) {
+            return_void(); /* Already ordered, no merge needed */
+        }
+    }
+
+    /* Merge the sorted halves using the temporary buffer */
+    var left_ptr  = base_bytes;
+    var left_end  = left_ptr + mid_idx * base_size;
+    var right_ptr = base_bytes + mid_idx * base_size;
+    var right_end = base_bytes + base_len * base_size;
+    var temp_ptr  = temp_buffer.ptr;
+
+    while (left_ptr < left_end && right_ptr < right_end) {
+        if (compareFn(left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
+            memcpy(temp_ptr, left_ptr, base_size);
+            left_ptr += base_size;
+        } else {
+            memcpy(temp_ptr, right_ptr, base_size);
+            right_ptr += base_size;
+        }
+        temp_ptr += base_size;
+    }
+
+    /* Copy remaining elements */
+    if (left_ptr < left_end) {
+        temp_ptr += eval({
+            let bytes_left = left_end - left_ptr;
+            memcpy(temp_ptr, left_ptr, bytes_left);
+            eval_return bytes_left;
+        });
+    }
+    if (right_ptr < right_end) {
+        temp_ptr += eval({
+            let bytes_right = right_end - right_ptr;
+            memcpy(temp_ptr, right_ptr, bytes_right);
+            eval_return bytes_right;
+        });
+    }
+
+    /* Copy merged elements back to the original array */
+    let total_bytes = temp_ptr - temp_buffer.ptr;
+    memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    return_void();
 }
 
 Err$void utils_stableSort(
@@ -237,10 +243,39 @@ Err$void utils_stableSortWithArg(
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
         let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
-        try(utils_mergeSortUsingTempWithArgRecur(temp_buffer, base_slice, compareFn, arg));
+        try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
         return_void();
     }
     scope_returnReserved;
+}
+
+Err$void utils_stableSortUsingTemp(
+    Sli$u8   temp_buffer,
+    meta_Sli base_slice,
+    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+) {
+    reserveReturn(Err$void);
+    let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
+    if (temp_buffer.len < checked_size) {
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+    }
+    try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
+    return_void();
+}
+
+Err$void utils_stableSortWithArgUsingTemp(
+    Sli$u8   temp_buffer,
+    meta_Sli base_slice,
+    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr_const arg
+) {
+    reserveReturn(Err$void);
+    let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
+    if (temp_buffer.len < checked_size) {
+        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+    }
+    try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
+    return_void();
 }
 
 static void utils_sortBodiesByDistanceFromOrigin(Sli$Body bodies) {
@@ -266,8 +301,8 @@ static void utils_sortBodiesByDistanceFromOrigin(Sli$Body bodies) {
 Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
     reserveReturn(Err$ArrList$Body);
 
-    // // Initialize random seed
-    // Random_initWithSeed(0);
+    // Initialize random seed
+    Random_initWithSeed(0);
 
     // Set up parameters
     const f32 inner_radius = 25.0f;

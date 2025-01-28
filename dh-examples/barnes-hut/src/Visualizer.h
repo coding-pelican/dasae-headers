@@ -13,6 +13,13 @@
 #include "engine/input.h"
 #include "engine/canvas.h"
 
+typedef struct Visualizer_QuadCache {
+    usize node_idx;
+    usize depth;
+} Visualizer_QuadCache;
+use_Sli$(Visualizer_QuadCache);
+use_ArrList$(Visualizer_QuadCache);
+
 use_ArrList$(u8);
 typedef struct Visualizer {
     // View state
@@ -49,21 +56,8 @@ typedef struct Visualizer {
             usize first;
             usize second;
         };
-    } depth_range; // QuadTree visualization render cache
-    struct {
-        union {
-            ArrList$usize pair[2];
-            struct {
-                ArrList$usize nodes;
-                ArrList$usize depths;
-            };
-            struct {
-                ArrList$usize first;
-                ArrList$usize second;
-            };
-        };
-        usize len;
-    } stack; // QuadTree visualization render cache
+    } depth_range;                            // QuadTree visualization render cache
+    ArrList$Visualizer_QuadCache cache_stack; // QuadTree visualization render cache
 
     // Body spawn state
     struct {

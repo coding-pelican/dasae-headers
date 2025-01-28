@@ -112,11 +112,7 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
             .min = 0,
             .max = 0,
         },
-        .stack = {
-            .nodes  = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, 512))),
-            .depths = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, 512))),
-            .len    = 0,
-        },
+        .cache_stack = typed(ArrList$Visualizer_QuadCache, try(ArrList_initCap(typeInfo(Visualizer_QuadCache), allocator, 12500))),
 
         .spawn = {
             .body      = none(),
@@ -136,8 +132,7 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
 void Visualizer_destroy(Visualizer* self) {
     debug_assert_nonnull(self);
 
-    ArrList_fini(&self->stack.pair[0].base);
-    ArrList_fini(&self->stack.pair[1].base);
+    ArrList_fini(&self->cache_stack.base);
 
     ArrList_fini(&self->bodies.base);
     ArrList_fini(&self->nodes.base);
@@ -274,7 +269,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     for_slice(controls, control) {
         if (engine_Key_held(control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
-            self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5 * Visualizer_scaleInv(self)));
+            self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
         }
     }
 
@@ -388,7 +383,23 @@ force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 
     return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
 force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
+    let view_min = math_Vec2f_from(
+        self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
+        self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
+    );
+    let view_max = math_Vec2f_from(
+        self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
+        self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
+    );
     for_slice(self->bodies.items, body) {
+        let left   = body->pos.x - body->radius;
+        let right  = body->pos.x + body->radius;
+        let bottom = body->pos.y - body->radius;
+        let top    = body->pos.y + body->radius;
+
+        // If outside camera view, skip
+        if (right < view_min.x || view_max.x < left || top < view_min.y || view_max.y < bottom) { continue; }
+
         let screen_pos    = Visualizer_worldToScreen(self, body->pos);
         let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
@@ -416,8 +427,8 @@ force_inline void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
 
         // Draw acceleration vector
         if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
-            const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
+            let acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
+            let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
     }
@@ -431,15 +442,15 @@ force_inline void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
 
         // Velocity vector
         if (0.0f < math_Vec2f_lenSq(body->vel)) {
-            const Vec2f vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
-            const Vec2i vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
+            let vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
+            let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
 
         // Acceleration vector
         if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            const Vec2f acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
-            const Vec2i acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
+            let acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
+            let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
     }
@@ -463,7 +474,6 @@ static void Visualizer_renderBodies(Visualizer* self) {
         break;
     default:
         claim_unreachable;
-        break;
     }
 }
 
@@ -471,10 +481,10 @@ force_inline void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Co
     debug_assert_nonnull(self);
 
     // Convert world min/max to screen coordinates
-    var screen_min = Visualizer_worldToScreen(self, min);
-    var screen_max = Visualizer_worldToScreen(self, max);
+    let screen_min = Visualizer_worldToScreen(self, min);
+    let screen_max = Visualizer_worldToScreen(self, max);
 
-    engine_Canvas_drawRect(
+    engine_Canvas_fillRect(
         self->canvas,
         screen_min.s[0],
         screen_min.s[1],
@@ -483,129 +493,87 @@ force_inline void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Co
         color
     );
 }
-static Err$void Visualizer_renderQuadTree(Visualizer* self) { // NOLINT
+static Err$void Visualizer_renderQuadTree(Visualizer* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    if (0 < self->nodes.items.len) {
-        var depth_range = self->depth_range;
-        if (depth_range.max <= depth_range.min) {
-            /* init */ var stack = eval({
-                let stack = &self->stack;
-                ArrList_clearRetainingCap(&stack->pair[0].base);
-                ArrList_clearRetainingCap(&stack->pair[1].base);
-                stack->len = 0;
-                eval_return(stack);
-            });
-            /* push */ stack->len += eval({
-                try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, QuadTree_s_root))));
-                try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, 0))));
-                eval_return 1;
-            });
+    let depth_range = &self->depth_range;
+    if (depth_range->max <= depth_range->min) {
+        let stack = eval({
+            let cache = &self->cache_stack;
+            ArrList_clearRetainingCap(&cache->base);
+            eval_return cache;
+        });
+        try(ArrList_append(
+            &stack->base,
+            meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
+        ));
 
-            var min_depth = usize_limit;
-            var max_depth = 0ull;
-            while (0 < stack->len) {
-                if_some(
-                    /* pop */ eval({
-                        let opt_node  = ArrList_popOrNull(&stack->nodes.base);
-                        let opt_depth = ArrList_popOrNull(&stack->depths.base);
-                        stack->len--;
-                        eval_return make$(
-                            Opt$(struct {
-                                usize node_idx;
-                                usize depth;
-                            }),
-                            .has_value = opt_node.has_value && opt_depth.has_value,
-                            .value     = {
-                                    .node_idx = *meta_cast$(usize*, opt_node.value),
-                                    .depth    = *meta_cast$(usize*, opt_depth.value),
-                            }
-                        );
-                    }),
-                    item
-                ) {
-                    let node = Sli_at(self->nodes.items, item.node_idx);
-                    if (QuadNode_isLeaf(node)) {
-                        min_depth = prim_min(min_depth, item.depth);
-                        max_depth = prim_max(max_depth, item.depth);
-                    } else {
-                        for (isize i = 0; i < 4; ++i) {
-                            /* push */ stack->len += eval({
-                                try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, node->children + i))));
-                                try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, item.depth + 1))));
-                                eval_return 1;
-                            });
-                        }
-                    }
-                }
+        var min_depth = usize_limit;
+        var max_depth = 0ull;
+        while_some(ArrList_popOrNull(&stack->base), capture) {
+            let item = *meta_cast$(Visualizer_QuadCache*, capture);
+            let node = Sli_at(self->nodes.items, item.node_idx);
+
+            if (QuadNode_isLeaf(node)) {
+                min_depth = prim_min(min_depth, item.depth);
+                max_depth = prim_max(max_depth, item.depth);
+                continue;
             }
-            depth_range = make$(TypeOf(depth_range), .min = min_depth, .max = max_depth);
-        }
-        let min_depth = depth_range.min;
-        let max_depth = depth_range.max;
-
-        /* init */ var stack = eval({
-            let stack = &self->stack;
-            ArrList_clearRetainingCap(&stack->pair[0].base);
-            ArrList_clearRetainingCap(&stack->pair[1].base);
-            stack->len = 0;
-            eval_return(stack);
-        });
-        /* push */ stack->len += eval({
-            try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, QuadTree_s_root))));
-            try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, 0))));
-            eval_return 1;
-        });
-        while (0 < stack->len) {
-            if_some(
-                /* pop */ eval({
-                    let opt_node_idx = ArrList_popOrNull(&stack->nodes.base);
-                    let opt_depth    = ArrList_popOrNull(&stack->depths.base);
-                    stack->len--;
-                    eval_return make$(
-                        Opt$(struct {
-                            usize node_idx;
-                            usize depth;
-                        }),
-                        .has_value = opt_node_idx.has_value && opt_depth.has_value,
-                        .value     = {
-                                .node_idx = *meta_cast$(usize*, opt_node_idx.value),
-                                .depth    = *meta_cast$(usize*, opt_depth.value),
-                        }
-                    );
-                }),
-                item
-            ) {
-                let node = Sli_at(self->nodes.items, item.node_idx);
-                if (QuadNode_isBranch(node) && item.depth < max_depth) {
-                    for (isize i = 0; i < 4; ++i) {
-                        /* push */ stack->len += eval({
-                            try(ArrList_append(&stack->nodes.base, meta_refPtr(create$(usize, node->children + i))));
-                            try(ArrList_append(&stack->depths.base, meta_refPtr(create$(usize, item.depth + 1))));
-                            eval_return 1;
-                        });
-                    }
-                } else if (min_depth <= item.depth) {
-                    let quad = node->quad;
-                    let half = math_Vec2f_scale(math_Vec2f_scale(math_Vec2f_one, 0.5f), quad.size);
-                    let min  = math_Vec2f_sub(quad.center, half);
-                    let max  = math_Vec2f_add(quad.center, half);
-
-                    let t = as$(f32, item.depth - depth_range.min + as$(usize, !QuadNode_isEmpty(node))) / as$(f32, depth_range.max - depth_range.min + 1);
-
-                    let start_h = -100.0f;
-                    let end_h   = 80.0f;
-                    let h       = start_h + (end_h - start_h) * t;
-                    let s       = 100.0f;
-                    let l       = t * 100.0f;
-
-                    let hsl   = Hsl_from(h, s, l);
-                    let color = Hsl_intoColorOpaque(hsl);
-                    Visualizer_drawNode(self, min, max, color);
-                }
+            for (usize i = 0; i < 4; ++i) {
+                try(ArrList_append(
+                    &stack->base,
+                    meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
+                ));
             }
         }
+        *depth_range = make$(TypeOf(*depth_range), .min = min_depth, .max = max_depth);
+    }
+    let min_depth = depth_range->min;
+    let max_depth = depth_range->max;
+
+    let stack = eval({
+        let cache = &self->cache_stack;
+        ArrList_clearRetainingCap(&cache->base);
+        eval_return cache;
+    });
+    try(ArrList_append(
+        &stack->base,
+        meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
+    ));
+    while_some(ArrList_popOrNull(&stack->base), capture) {
+        let item = *meta_cast$(Visualizer_QuadCache*, capture);
+        let node = Sli_at(self->nodes.items, item.node_idx);
+
+        if (QuadNode_isBranch(node) && item.depth < max_depth) {
+            for (usize i = 0; i < 4; ++i) {
+                try(ArrList_append(
+                    &stack->base,
+                    meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
+                ));
+            }
+            continue;
+        }
+        if (item.depth < min_depth) { continue; }
+
+        let quad = node->quad;
+        let half = math_Vec2f_scale(math_Vec2f_scale(math_Vec2f_one, 0.5f), quad.size);
+        let min  = math_Vec2f_sub(quad.center, half);
+        let max  = math_Vec2f_add(quad.center, half);
+
+        let t = as$(f32, item.depth - min_depth + as$(usize, !QuadNode_isEmpty(node)))
+              / as$(f32, max_depth - min_depth + 1);
+
+        let start_h = -100.0f;
+        let end_h   = 80.0f;
+        let h       = start_h + (end_h - start_h) * t;
+        let s       = 100.0f;
+        let l       = t * 100.0f;
+
+        // TODO: Apply `HSLuv` color space
+        let hsl   = Hsl_from(h, s, l);
+        let color = Hsl_intoColorOpaque(hsl);
+        Visualizer_drawNode(self, min, max, color);
     }
 
     return_void();

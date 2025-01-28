@@ -34,7 +34,7 @@ typedef struct Range {
 
 extern Range Range_from(usize begin, usize end);
 // length == (end - begin + 1)
-extern usize Range_length(Range r);
+extern usize Range_len(Range r);
 extern bool  Range_isValid(Range r);
 // index must be in range [begin, end)
 extern bool  Range_contains(Range r, usize index);

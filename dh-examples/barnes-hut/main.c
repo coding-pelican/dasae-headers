@@ -27,12 +27,12 @@
 
 // Global state without thread synchronization
 static struct {
-    bool          is_running;
-    bool          paused;
-    Visualizer*   viz;
-    Simulation*   sim;
     ArrList$Body  spawn_bodies;
     mem_Allocator allocator;
+    Visualizer*   viz;
+    Simulation*   sim;
+    bool          paused;
+    bool          is_running;
 } global_state = { 0 };
 
 static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
@@ -107,10 +107,11 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         // Create window
         var window = try(engine_Window_create(&(engine_PlatformParams){
-            .backend_type = engine_RenderBackendType_vt100,
-            .window_title = "Barnes-hut N-Body Simulation",
-            .width        = window_res_width,
-            .height       = window_res_height,
+            .backend_type  = engine_RenderBackendType_vt100,
+            .window_title  = "Barnes-hut N-Body Simulation",
+            .width         = window_res_width,
+            .height        = window_res_height,
+            .default_color = Color_black,
         }));
         defer(engine_Window_destroy(window));
         log_info("engine initialized\n");
@@ -136,14 +137,14 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(ArrList_fini(&global_state.spawn_bodies.base));
 
         // Create simulation and Visualizer
-        var sim          = try(Simulation_create(allocator, n_body));
-        global_state.sim = &sim;
+        var sim = try(Simulation_create(allocator, n_body));
         defer(Simulation_destroy(&sim));
+        global_state.sim = &sim;
         log_info("simulation created\n");
 
-        var viz          = try(Visualizer_create(allocator, canvas));
-        global_state.viz = &viz;
+        var viz = try(Visualizer_create(allocator, canvas));
         defer(Visualizer_destroy(&viz));
+        global_state.viz = &viz;
         log_info("visualizer created\n");
 
         ignore getchar();

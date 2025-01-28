@@ -6,7 +6,7 @@ Range Range_from(usize begin, usize end) {
     return (Range){ .begin = begin, .end = end };
 }
 
-usize Range_length(Range r) {
+usize Range_len(Range r) {
     return r.end - r.begin + 1;
 }
 
@@ -19,9 +19,11 @@ bool Range_contains(Range r, usize index) {
 }
 
 bool Range_eq(Range lhs, Range rhs) {
-    return lhs.begin == rhs.begin && lhs.end == rhs.end;
+    return lhs.begin == rhs.begin
+        && lhs.end == rhs.end;
 }
 
 bool Range_ne(Range lhs, Range rhs) {
-    return lhs.begin != rhs.begin || lhs.end != rhs.end;
+    return lhs.begin != rhs.begin
+        || lhs.end != rhs.end;
 }

@@ -195,15 +195,15 @@ union Sli {
     eval_return(&_self.ptr[_index]);             \
 })
 
-#define OP__Sli_slice(var_self, usize_begin, usize_end) eval({                                \
-    let         _sli   = var_self;                                                            \
-    usize       _begin = usize_begin;                                                         \
-    usize       _end   = usize_end;                                                           \
-    eval_return make$(                                                                        \
-        TypeOf(_sli),                                                                         \
-        .ptr = Sli_rawSlice(typeInfo(TypeOf(*(_sli.ptr))), _sli.ptr, _sli.len, _begin, _end), \
-        .len = _end - _begin                                                                  \
-    );                                                                                        \
+#define OP__Sli_slice(var_self, usize_begin, usize_end) eval({                                       \
+    let         _sli   = &(var_self);                                                                \
+    usize       _begin = usize_begin;                                                                \
+    usize       _end   = usize_end;                                                                  \
+    eval_return make$(                                                                               \
+        TypeOf(*_sli),                                                                               \
+        .ptr = Sli_rawSlice_mut(typeInfo(TypeOf(*(_sli->ptr))), _sli->ptr, _sli->len, _begin, _end), \
+        .len = _end - _begin                                                                         \
+    );                                                                                               \
 })
 
 #define OP__Sli_prefix(var_sli, val_end) eval({ \

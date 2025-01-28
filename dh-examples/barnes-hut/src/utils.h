@@ -39,7 +39,7 @@ extern Err$void utils_mergeSortUsingTempRecur(
 ) must_check;
 
 // Modernized merge sort using temporary buffer with arg
-extern Err$void utils_mergeSortUsingTempWithArgRecur(
+extern Err$void utils_mergeSortWithArgUsingTempRecur(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
@@ -59,6 +59,21 @@ extern Err$void utils_stableSort(
 extern Err$void utils_stableSortWithArg(
     mem_Allocator allocator,
     meta_Sli      base_slice,
+    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
+    anyptr_const arg
+) must_check;
+
+// Modernized stable sort (using merge sort with insertion sort)
+extern Err$void utils_stableSortUsingTemp(
+    Sli$u8   temp_buffer,
+    meta_Sli base_slice,
+    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+) must_check;
+
+// Modernized stable sort with arg (using merge sort with insertion sort)
+extern Err$void utils_stableSortWithArgUsingTemp(
+    Sli$u8   temp_buffer,
+    meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
     anyptr_const arg
 ) must_check;

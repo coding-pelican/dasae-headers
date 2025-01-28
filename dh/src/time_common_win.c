@@ -12,18 +12,18 @@ void time_sleep(time_Duration duration) {
         TIMER_ALL_ACCESS
     );
     if (timer == null) {
-        Sleep((DWORD)((duration.secs_ * time_millis_per_sec) + (duration.nanos_ / time_nanos_per_milli)));
+        Sleep((DWORD)((duration.secs * time_millis_per_sec) + (duration.nanos / time_nanos_per_milli)));
         return;
     }
 
     LARGE_INTEGER li = cleared();
     // Convert to negative 100-nanosecond intervals for relative time
-    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs_ * time_intervals_per_sec + (duration.nanos_ / 100)));
+    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs * time_intervals_per_sec + (duration.nanos / 100)));
 
     if (SetWaitableTimer(timer, &li, 0, null, null, false)) {
         WaitForSingleObject(timer, INFINITE);
     } else {
-        Sleep((DWORD)((duration.secs_ * time_millis_per_sec) + (duration.nanos_ / time_nanos_per_milli)));
+        Sleep((DWORD)((duration.secs * time_millis_per_sec) + (duration.nanos / time_nanos_per_milli)));
     }
 
     CloseHandle(timer);

@@ -27,8 +27,8 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 struct time_Duration {
-    u64 secs_;
-    u32 nanos_;
+    u64 secs;
+    u32 nanos;
 };
 use_Opt$(time_Duration);
 
@@ -56,17 +56,20 @@ extern f64           time_Duration_asSecs_f64(time_Duration self);
 /* Arithmetic */
 extern Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs);
 extern Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs);
-extern time_Duration     op_fnAdd(time_Duration);
-extern time_Duration     op_fnSub(time_Duration);
-extern time_Duration     op_fnMulBy(time_Duration, u64);
-extern time_Duration     op_fnDivBy(time_Duration, u64);
+extern Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs);
+extern Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs);
+
+extern time_Duration op_fnAdd(time_Duration);
+extern time_Duration op_fnSub(time_Duration);
+extern time_Duration op_fnMulBy(time_Duration, u64);
+extern time_Duration op_fnDivBy(time_Duration, u64);
 
 /* Comparison */
 force_inline cmp_fnCmp(time_Duration) {
-    if (self.secs_ < other.secs_) { return cmp_Ord_lt; }
-    if (self.secs_ > other.secs_) { return cmp_Ord_gt; }
-    if (self.nanos_ < other.nanos_) { return cmp_Ord_lt; }
-    if (self.nanos_ > other.nanos_) { return cmp_Ord_gt; }
+    if (self.secs < other.secs) { return cmp_Ord_lt; }
+    if (self.secs > other.secs) { return cmp_Ord_gt; }
+    if (self.nanos < other.nanos) { return cmp_Ord_lt; }
+    if (self.nanos > other.nanos) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 }
 cmp_fnEq_default(time_Duration);
@@ -80,32 +83,32 @@ cmp_fnGe_default(time_Duration);
 #define literal_time_Duration_from(_secs, _nanos) \
     make$(                                        \
         time_Duration,                            \
-        .secs_  = (_secs),                        \
-        .nanos_ = (_nanos)                        \
+        .secs  = (_secs),                         \
+        .nanos = (_nanos)                         \
     )
 #define literal_time_Duration_fromSecs(_secs) \
     make$(                                    \
         time_Duration,                        \
-        .secs_  = (_secs) == 0 ? 0 : (_secs), \
-        .nanos_ = 0                           \
+        .secs  = (_secs) == 0 ? 0 : (_secs),  \
+        .nanos = 0                            \
     )
-#define literal_time_Duration_fromMillis(_millis)                                               \
-    make$(                                                                                      \
-        time_Duration,                                                                          \
-        .secs_  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
-        .nanos_ = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
+#define literal_time_Duration_fromMillis(_millis)                                              \
+    make$(                                                                                     \
+        time_Duration,                                                                         \
+        .secs  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
+        .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
     )
-#define literal_time_Duration_fromMicros(_micros)                                               \
-    make$(                                                                                      \
-        time_Duration,                                                                          \
-        .secs_  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
-        .nanos_ = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
+#define literal_time_Duration_fromMicros(_micros)                                              \
+    make$(                                                                                     \
+        time_Duration,                                                                         \
+        .secs  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
+        .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
     )
-#define literal_time_Duration_fromNanos(_nanos)                      \
-    make$(                                                           \
-        time_Duration,                                               \
-        .secs_  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
-        .nanos_ = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec  \
+#define literal_time_Duration_fromNanos(_nanos)                     \
+    make$(                                                          \
+        time_Duration,                                              \
+        .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
+        .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec  \
     )
 
 /* Constants */

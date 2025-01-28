@@ -75,9 +75,9 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
         time_nanos_per_sec / time_SysTime_s_performance_frequency.QuadPart
     );
 
-    if (earlier.QuadPart > self.QuadPart
+    if (self.QuadPart < earlier.QuadPart
         && as$(u64, earlier.QuadPart - self.QuadPart)
-               <= as$(u64, epsilon.nanos_ / time_SysTime_s_frequency_inverse)) {
+               <= as$(u64, epsilon.nanos / time_SysTime_s_frequency_inverse)) {
         return time_Duration_zero;
     }
 
@@ -89,24 +89,24 @@ time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier
 
 /*========== Safe Arithmetic Operations ================================*/
 
-Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other) {
+Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime lhs, time_Duration rhs) {
     reserveReturn(Opt$time_SysTime);
-    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
-    if (ticks > (u64_limit - self.QuadPart)) {
-        return_none();
+    let nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
+    let ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
+    if (ticks <= (u64_limit - lhs.QuadPart)) {
+        return_some((time_SysTime){ .QuadPart = (LONGLONG)(lhs.QuadPart + ticks) });
     }
-    return_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart + ticks) });
+    return_none();
 }
 
-Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other) {
+Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime lhs, time_Duration rhs) {
     reserveReturn(Opt$time_SysTime);
-    u64 nanos = other.secs_ * time_nanos_per_sec + other.nanos_;
-    u64 ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
-    if (ticks > as$(u64, self.QuadPart)) {
-        return_none();
+    let nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
+    let ticks = as$(u64, as$(f64, nanos) * time_SysTime_s_frequency_inverse);
+    if (ticks <= as$(u64, lhs.QuadPart)) {
+        return_some((time_SysTime){ .QuadPart = (LONGLONG)(lhs.QuadPart - ticks) });
     }
-    return_some((time_SysTime){ .QuadPart = (LONGLONG)(self.QuadPart - ticks) });
+    return_none();
 }
 
 /*========== Unsafe Arithmetic Operations ==============================*/

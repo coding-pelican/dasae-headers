@@ -57,11 +57,14 @@ extern "C" {
 #define unwrap(expr)                         OP__unwrap(expr)
 
 /* Optional payload capture (similar to Zig's if/while captures) */
-#define if_some(expr, var_capture)     SYN__if_some(expr, var_capture)
-#define if_some_mut(expr, var_capture) SYN__if_some_mut(expr, var_capture)
-#define if_none(expr)                  SYN__if_none(expr)
-#define else_some(var_capture)         SYN__else_some(var_capture)
-#define else_some_mut(var_capture)     SYN__else_some_mut(var_capture)
+#define if_some(expr, var_capture)        SYN__if_some(expr, var_capture)
+#define if_some_mut(expr, var_capture)    SYN__if_some_mut(expr, var_capture)
+#define if_none(expr)                     SYN__if_none(expr)
+#define else_some(var_capture)            SYN__else_some(var_capture)
+#define else_some_mut(var_capture)        SYN__else_some_mut(var_capture)
+#define while_some(expr, var_capture)     SYN__while_some(expr, var_capture)
+#define while_some_mut(expr, var_capture) SYN__while_some_mut(expr, var_capture)
+#define while_none(expr)                  SYN__while_none(expr)
 
 /*========== Implementations ================================================*/
 
@@ -174,6 +177,17 @@ extern "C" {
     scope_else(let var_capture = _result.value)
 #define SYN__else_some_mut(expr, var_capture) \
     scope_else(let var_capture = &_result->value)
+#define SYN__while_some(expr, var_capture)                          \
+    for (var _result = (expr); _result.has_value; _result = (expr)) \
+    scope_with(let var_capture = _result.value)
+// #define SYN__while_some(expr, var_capture)               \
+//     scope_while(var _result = (expr), _result.has_value) \
+//         scope_with_fini(let var_capture = _result.value, _result = (expr))
+#define SYN__while_some_mut(expr, var_capture)                         \
+    for (var _result = &(expr); _result->has_value; _result = &(expr)) \
+    scope_with(let var_capture = &_result->value)
+#define SYN__while_none(expr) \
+    scope_while(var _result = (expr), !_result.has_value)
 
 #if defined(__cplusplus)
 } /* extern "C" */

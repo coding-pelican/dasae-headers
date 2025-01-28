@@ -48,8 +48,8 @@ extern time_Duration time_SysTime_elapsed(time_SysTime self);
 extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
 
 /* Arithmetic */
-extern Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime self, time_Duration other);
-extern Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime self, time_Duration other);
+extern Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime lhs, time_Duration rhs);
+extern Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime lhs, time_Duration rhs);
 
 extern time_SysTime op_fnAddBy(time_SysTime, time_Duration);
 extern time_SysTime op_fnSubBy(time_SysTime, time_Duration);

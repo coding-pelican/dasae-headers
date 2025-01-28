@@ -47,6 +47,7 @@
         "-DCOMP",
         "-DMEM_NO_TRACE_ALLOC_AND_FREE",
         "-g",
+        "-O0",
         "-Wall",
         "-Wextra",
         "-fdiagnostics-color=always",
@@ -82,6 +83,7 @@
         "${fileDirname}/${fileBasenameNoExtension}-debug",
         "-DCOMP",
         "-g",
+        "-O0",
         "-Wall",
         "-Wextra",
         "-fdiagnostics-color=always",
@@ -170,56 +172,6 @@
       "problemMatcher": [
         "$gcc"
       ]
-    },
-    { // bench>compile C++ file (debug)
-      "label": "bench>compile C++ file (debug)",
-      "type": "shell",
-      "command": "clang++",
-      "args": [
-        "-std=c++17",
-        "-c",
-        "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug.o"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
-    { // bench>compile C file (debug)
-      "label": "bench>compile C file (debug)",
-      "type": "shell",
-      "command": "clang",
-      "args": [
-        "-c",
-        "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug.o",
-        "-std=${input:cStandard}",
-        "-DCOMP",
-        "-DMEM_NO_TRACE_ALLOC_AND_FREE",
-        "-I./include",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
-        "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include",
-        "-g",
-        "-Wall",
-        "-Wextra",
-        "-fdiagnostics-color=always",
-        "-fblocks",
-        "-static",
-        "${input:libraries}"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "problemMatcher": [
-        "$gcc"
-      ]
-    },
+    }
   ]
 }

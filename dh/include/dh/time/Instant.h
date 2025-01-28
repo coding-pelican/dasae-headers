@@ -27,7 +27,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 struct time_Instant {
-    time_SysTime time_;
+    time_SysTime point_;
 };
 use_Opt$(time_Instant);
 
@@ -43,8 +43,8 @@ extern bool time_Instant_isValid(time_Instant self);
 extern u64 time_Instant_toNanos(time_Instant self);
 
 /* Arithmetic */
-extern Opt$time_Instant time_Instant_addDurationChecked(time_Instant, time_Duration);
-extern Opt$time_Instant time_Instant_subDurationChecked(time_Instant, time_Duration);
+extern Opt$time_Instant time_Instant_addDurationChecked(time_Instant lhs, time_Duration rhs);
+extern Opt$time_Instant time_Instant_subDurationChecked(time_Instant lhs, time_Duration rhs);
 
 extern time_Instant op_fnAddBy(time_Instant, time_Duration);
 extern time_Instant op_fnSubBy(time_Instant, time_Duration);
