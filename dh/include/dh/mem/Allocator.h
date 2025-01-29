@@ -41,7 +41,7 @@ use_Opt$(mem_Allocator);
 
 /*========== Core Allocator Functions =======================================*/
 
-#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !DEBUG_ENABLED))
+#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled))
 
 /* Raw allocation */
 extern Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) must_check;
@@ -50,7 +50,7 @@ extern bool       mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize 
 /* Free memory */
 extern void       mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align);
 
-#else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || DEBUG_ENABLED)) */
+#else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || debug_comp_enabled)) */
 
 #define mem_Allocator_rawAlloc(mem_Allocator_self, usize_len, usize_ptr_align...) \
     mem_Allocator_rawAlloc_callDebug(                                             \
@@ -114,11 +114,11 @@ extern Opt$Ptr$u8 mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, us
 extern bool       mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len, const char* file, i32 line, const char* func) must_check;
 extern void       mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, usize buf_align, const char* file, i32 line, const char* func);
 
-#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !DEBUG_ENABLED)) */
+#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled)) */
 
 /*========== High-level Allocator Functions =================================*/
 
-#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !DEBUG_ENABLED))
+#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled))
 
 /* Single-item allocation */
 extern Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) must_check;
@@ -133,7 +133,7 @@ extern Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, u
 /* Free slice */
 extern void         mem_Allocator_free(mem_Allocator self, AnyType memory);
 
-#else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || DEBUG_ENABLED)) */
+#else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || debug_comp_enabled)) */
 
 #define mem_Allocator_create(mem_Allocator_self, TypeInfo_type...) \
     mem_Allocator_create_callDebug(                                \
@@ -246,7 +246,7 @@ extern bool         mem_Allocator_resize_debug(mem_Allocator self, AnyType old_m
 extern Opt$meta_Sli mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, const char* file, i32 line, const char* func) must_check;
 extern void         mem_Allocator_free_debug(mem_Allocator self, AnyType memory, const char* file, i32 line, const char* func);
 
-#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !DEBUG_ENABLED)) */
+#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled)) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

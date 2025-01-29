@@ -25,7 +25,7 @@ extern "C" {
 
 /* TODO: Add option 'trace alloc and free no disable release'  */
 
-#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !DEBUG_ENABLED
+#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
 
 /*========== Memory Tracking Types =========================================*/
@@ -78,7 +78,7 @@ extern void mem_Tracker_generateReportAndCleanup(void);
 // Get singleton instance
 extern mem_Tracker* mem_Tracker_instance(void);
 
-#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !DEBUG_ENABLED */
+#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

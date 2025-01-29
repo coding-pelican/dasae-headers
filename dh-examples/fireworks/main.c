@@ -194,12 +194,9 @@ Err$void dh_main(int argc, const char* argv[]) {
             let time_now        = time_Instant_now();
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
-            // 8) Subtract from our target; clamp to zero if negative
-            let time_leftover = time_Duration_sub(time_frame_target, time_frame_used);
-
-            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
-            if (is_positive_time_leftover) {
-                time_sleep(time_leftover);
+            // 8) Subtract from our target
+            if_some(time_Duration_subChecked(time_frame_target, time_frame_used), leftover) {
+                time_sleep(leftover);
             }
             time_frame_prev = time_frame_curr;
         }

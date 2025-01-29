@@ -13,13 +13,13 @@ extern "C" {
 #define debug_break() \
     /* Breakpoint. */ \
     IMPL_debug_break()
-#define debug_only(...)                   \
-    /* Used only when `DEBUG_ENABLED`. */ \
+#define debug_only(...)                        \
+    /* Used only when `debug_comp_enabled`. */ \
     IMPL_debug_only(__VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
-#if defined(DEBUG_ENABLED) && DEBUG_ENABLED
+#if defined(debug_comp_enabled) && debug_comp_enabled
 
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
@@ -36,10 +36,10 @@ extern "C" {
 
 #else
 
-#define IMPL_debug_break() unused(0)
+#define IMPL_debug_break()   unused(0)
 #define IMPL_debug_only(...) unused(0)
 
-#endif /* defined(DEBUG_ENABLED) && DEBUG_ENABLED */
+#endif /* defined(debug_comp_enabled) && debug_comp_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

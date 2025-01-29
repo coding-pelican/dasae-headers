@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h" /* For `DEBUG_ENABLED` */
+#include "cfg.h" /* For `debug_comp_enabled` */
 #include "dh/core/prim.h"
 #include "dh/core/pp.h"
 
@@ -114,7 +114,7 @@ extern "C" {
 
 /*========== Macros Implementation ==========================================*/
 
-#if DEBUG_ENABLED
+#if debug_comp_enabled
 #if COMP_TIME
 
 #define IMPL_debug_assert(_Expr) \
@@ -178,7 +178,7 @@ force_inline void IMPL_debug_assert_nonnull_fmt(bool, const char*, ...);
 #define IMPL_debug_assert_null_fmt(_Expr, ...)        unused(0)
 #define IMPL_debug_assert_nonnull_fmt(_Expr, ...)     unused(0)
 
-#endif /* DEBUG_ENABLED */
+#endif /* debug_comp_enabled */
 
 /*========== Extern Function Prototypes =====================================*/
 

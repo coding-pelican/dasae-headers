@@ -62,6 +62,28 @@ force_inline math_Vec2f math_Vec2f_mul(math_Vec2f lhs, math_Vec2f rhs);
 force_inline math_Vec2f math_Vec2f_div(math_Vec2f lhs, math_Vec2f rhs);
 force_inline math_Vec2f math_Vec2f_mod(math_Vec2f lhs, math_Vec2f rhs);
 force_inline math_Vec2f math_Vec2f_scale(math_Vec2f v, f32 scalar);
+force_inline math_Vec2f math_Vec2f_scaleInv(math_Vec2f v, f32 scalar);
+
+force_inline math_Vec2f math_Vec2f_addScalar(math_Vec2f lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_subScalar(math_Vec2f lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_mulScalar(math_Vec2f lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_divScalar(math_Vec2f lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_modScalar(math_Vec2f lhs, f32 rhs);
+
+force_inline math_Vec2f math_Vec2f_negTo(math_Vec2f* v);
+force_inline math_Vec2f math_Vec2f_addTo(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_subTo(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_mulTo(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_divTo(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_modTo(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f math_Vec2f_scaleTo(math_Vec2f* v, f32 scalar);
+force_inline math_Vec2f math_Vec2f_scaleInvTo(math_Vec2f* v, f32 scalar);
+
+force_inline math_Vec2f math_Vec2f_addScalarTo(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_subScalarTo(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_mulScalarTo(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_divScalarTo(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f math_Vec2f_modScalarTo(math_Vec2f* lhs, f32 rhs);
 
 /* Range Operations */
 force_inline math_Vec2f math_Vec2f_min(math_Vec2f lhs, math_Vec2f rhs);
@@ -791,27 +813,78 @@ force_inline math_Vec2f math_Vec2f_div(math_Vec2f lhs, math_Vec2f rhs) {
     return math_Vec2f_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 force_inline math_Vec2f math_Vec2f_mod(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_from(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
-    );
+    return math_Vec2f_from(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
 }
 force_inline math_Vec2f math_Vec2f_scale(math_Vec2f v, f32 scalar) {
     return math_Vec2f_from(v.x * scalar, v.y * scalar);
 }
+force_inline math_Vec2f math_Vec2f_scaleInv(math_Vec2f v, f32 scalar) {
+    return math_Vec2f_from(v.x / scalar, v.y / scalar);
+}
+
+force_inline math_Vec2f math_Vec2f_addScalar(math_Vec2f lhs, f32 rhs) {
+    return math_Vec2f_add(lhs, math_Vec2f_fill(rhs));
+}
+force_inline math_Vec2f math_Vec2f_subScalar(math_Vec2f lhs, f32 rhs) {
+    return math_Vec2f_sub(lhs, math_Vec2f_fill(rhs));
+}
+force_inline math_Vec2f math_Vec2f_mulScalar(math_Vec2f lhs, f32 rhs) {
+    return math_Vec2f_mul(lhs, math_Vec2f_fill(rhs));
+}
+force_inline math_Vec2f math_Vec2f_divScalar(math_Vec2f lhs, f32 rhs) {
+    return math_Vec2f_div(lhs, math_Vec2f_fill(rhs));
+}
+force_inline math_Vec2f math_Vec2f_modScalar(math_Vec2f lhs, f32 rhs) {
+    return math_Vec2f_mod(lhs, math_Vec2f_fill(rhs));
+}
+
+force_inline math_Vec2f math_Vec2f_negTo(math_Vec2f* v) {
+    return *v = math_Vec2f_neg(*v);
+}
+force_inline math_Vec2f math_Vec2f_addTo(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_add(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_subTo(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_sub(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_mulTo(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_mul(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_divTo(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_div(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_modTo(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_mod(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_scaleTo(math_Vec2f* v, f32 scalar) {
+    return *v = math_Vec2f_scale(*v, scalar);
+}
+force_inline math_Vec2f math_Vec2f_scaleInvTo(math_Vec2f* v, f32 scalar) {
+    return *v = math_Vec2f_scaleInv(*v, scalar);
+}
+
+force_inline math_Vec2f math_Vec2f_addScalarTo(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_addScalar(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_subScalarTo(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_subScalar(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_mulScalarTo(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_mulScalar(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_divScalarTo(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_divScalar(*lhs, rhs);
+}
+force_inline math_Vec2f math_Vec2f_modScalarTo(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_modScalar(*lhs, rhs);
+}
 
 /* Range Operations */
 force_inline math_Vec2f math_Vec2f_min(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_from(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
-    );
+    return math_Vec2f_from(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
 }
 force_inline math_Vec2f math_Vec2f_max(math_Vec2f lhs, math_Vec2f rhs) {
-    return math_Vec2f_from(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
-    );
+    return math_Vec2f_from(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
 }
 force_inline math_Vec2f math_Vec2f_clamp(math_Vec2f v, math_Vec2f min, math_Vec2f max) {
     return math_Vec2f_min(math_Vec2f_max(v, min), max);
@@ -820,10 +893,7 @@ force_inline math_Vec2f math_Vec2f_clamp01(math_Vec2f v) {
     return math_Vec2f_clamp(v, math_Vec2f_zero, math_Vec2f_one);
 }
 force_inline math_Vec2f math_Vec2f_wrap(math_Vec2f v, math_Vec2f min, math_Vec2f max) {
-    return math_Vec2f_from(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
-    );
+    return math_Vec2f_from(math_wrap(v.x, min.x, max.x), math_wrap(v.y, min.y, max.y));
 }
 force_inline math_Vec2f math_Vec2f_wrap01(math_Vec2f v) {
     return math_Vec2f_wrap(v, math_Vec2f_zero, math_Vec2f_one);
@@ -863,10 +933,7 @@ force_inline math_Vec2f math_Vec2f_reflect(math_Vec2f v, math_Vec2f normal) {
 }
 force_inline math_Vec2f math_Vec2f_rotate(math_Vec2f v, f32 radians) {
     const math_Vec2f r = math_Vec2f_sincos(radians);
-    return math_Vec2f_from(
-        v.x * r.x - v.y * r.y,
-        v.x * r.y + v.y * r.x
-    );
+    return math_Vec2f_from(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
 }
 force_inline math_Vec2f math_Vec2f_perp(math_Vec2f v) {
     return math_Vec2f_from(-v.y, v.x);

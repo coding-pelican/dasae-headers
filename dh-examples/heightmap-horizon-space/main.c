@@ -1,6 +1,6 @@
 #include "dh/main.h"
 #include "dh/debug.h"
-#define LOG_NO_DISABLE_RELEASE (1)
+#define log_comp_disabled_release_time (1)
 #include "dh/log.h"
 
 #include "dh/mem.h"
@@ -472,11 +472,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
             let now        = time_Instant_now();
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
-
-            let leftover = time_Duration_sub(target_frame_time, frame_used);
-
-            const bool leftover_is_positive = 0 < leftover.secs_ || 0 < leftover.nanos_;
-            if (leftover_is_positive) {
+            if_some(time_Duration_subChecked(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
         }

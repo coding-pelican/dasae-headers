@@ -79,11 +79,11 @@ bool QuadNode_isEmpty(const QuadNode* self) {
 }
 
 // QuadTree implementation
-Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n_body) {
+Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) {
     scope_reserveReturn(Err$QuadTree) {
-        var nodes = typed(ArrList$QuadNode, try(ArrList_initCap(typeInfo(QuadNode), allocator, n_body)));
+        var nodes = typed(ArrList$QuadNode, try(ArrList_initCap(typeInfo(QuadNode), allocator, n)));
         errdefer(ArrList_fini(&nodes.base));
-        var parents = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, n_body)));
+        var parents = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, n)));
         errdefer(ArrList_fini(&parents.base));
 
         return_ok((QuadTree){
@@ -245,9 +245,9 @@ void QuadTree_propagate(QuadTree* self) {
         // Calculate total mass and weighted position for all children
         curr->pos = eval({
             var p = math_Vec2f_scale(c0->pos, c0->mass);
-            p     = math_Vec2f_add(p, math_Vec2f_scale(c1->pos, c1->mass));
-            p     = math_Vec2f_add(p, math_Vec2f_scale(c2->pos, c2->mass));
-            p     = math_Vec2f_add(p, math_Vec2f_scale(c3->pos, c3->mass));
+            math_Vec2f_addTo(&p, math_Vec2f_scale(c1->pos, c1->mass));
+            math_Vec2f_addTo(&p, math_Vec2f_scale(c2->pos, c2->mass));
+            math_Vec2f_addTo(&p, math_Vec2f_scale(c3->pos, c3->mass));
             eval_return p;
         });
 
@@ -257,7 +257,7 @@ void QuadTree_propagate(QuadTree* self) {
                    + c3->mass;
 
         // Normalize position by total mass
-        curr->pos = math_Vec2f_scale(curr->pos, 1.0f / curr->mass);
+        math_Vec2f_scaleInvTo(&curr->pos, curr->mass);
     }
 }
 
@@ -281,7 +281,7 @@ math_Vec2f QuadTree_accelerate(const QuadTree* self, math_Vec2f pos) {
         }
         // Calculate gravitational force if node is a leaf or far enough away
         let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
-        acc       = math_Vec2f_add(acc, math_Vec2f_scale(d, fminf(n->mass / denom, f32_limit_max)));
+        math_Vec2f_addTo(&acc, math_Vec2f_scale(d, fminf(n->mass / denom, f32_limit_max)));
 
         if (n->next == 0) { break; }
         node = n->next;

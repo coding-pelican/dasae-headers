@@ -16,14 +16,19 @@
 #include "src/utils.h"
 #include "src/cfg_values.h"
 
-#define window_res_width  (window_res_width__320x160 - 20)
-#define window_res_height (window_res_height__320x160 + 40)
-#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+#if debug_comp_enabled
+#define main_window_res_width  (window_res_width__80x50)
+#define main_window_res_height (window_res_height__80x50)
+#else /* !debug_comp_enabled */
+#define main_window_res_width  (window_res_width__320x160 - 20)
+#define main_window_res_height (window_res_height__320x160 + 40)
+#endif /* debug_comp_enabled */
+#define main_window_res_size (as$(usize, main_window_res_width) * main_window_res_height)
 
-#define target_fps (target_fps__31_250)
-#define target_spf (1.0 / target_fps)
+#define main_target_fps (target_fps__31_250)
+#define main_target_spf (1.0 / main_target_fps)
 
-#define n_body (25000)
+#define main_simulation_n_body (25000)
 
 // Global state without thread synchronization
 static struct {
@@ -82,7 +87,7 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
         try(ArrList_appendSlice(&viz->bodies.base, meta_refSli(sim->bodies.items)));
 
         ArrList_clearRetainingCap(&viz->nodes.base);
-        try(ArrList_appendSlice(&viz->nodes.base, meta_refSli(sim->quad_tree.nodes.items)));
+        try(ArrList_appendSlice(&viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
 
         try(Visualizer_update(viz));
         return_void();
@@ -94,7 +99,7 @@ Err$void dh_main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
+        scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
             // Configure logging behavior
             log_setLevel(log_Level_debug);
@@ -109,18 +114,18 @@ Err$void dh_main(int argc, const char* argv[]) {
         var window = try(engine_Window_create(&(engine_PlatformParams){
             .backend_type  = engine_RenderBackendType_vt100,
             .window_title  = "Barnes-hut N-Body Simulation",
-            .width         = window_res_width,
-            .height        = window_res_height,
+            .width         = main_window_res_width,
+            .height        = main_window_res_height,
             .default_color = Color_black,
         }));
         defer(engine_Window_destroy(window));
         log_info("engine initialized\n");
 
-        var canvas = try(engine_Canvas_createWithDefault(window_res_width, window_res_height, engine_CanvasType_rgba, Color_transparent));
+        var canvas = try(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));
         defer(engine_Canvas_destroy(canvas));
         log_info("canvas created\n");
 
-        engine_Window_addCanvasView(window, canvas, 0, 0, window_res_width, window_res_height);
+        engine_Window_addCanvasView(window, canvas, 0, 0, main_window_res_width, main_window_res_height);
         log_info("canvas views added\n");
 
         // Create allocator
@@ -133,11 +138,11 @@ Err$void dh_main(int argc, const char* argv[]) {
         // Initialize state
         global_state.is_running   = true;
         global_state.paused       = false;
-        global_state.spawn_bodies = typed(ArrList$Body, try(ArrList_initCap(typeInfo(Body), allocator, n_body)));
+        global_state.spawn_bodies = typed(ArrList$Body, try(ArrList_initCap(typeInfo(Body), allocator, main_simulation_n_body)));
         defer(ArrList_fini(&global_state.spawn_bodies.base));
 
         // Create simulation and Visualizer
-        var sim = try(Simulation_create(allocator, n_body));
+        var sim = try(Simulation_create(allocator, main_simulation_n_body));
         defer(Simulation_destroy(&sim));
         global_state.sim = &sim;
         log_info("simulation created\n");
@@ -150,7 +155,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         ignore getchar();
 
         // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(target_spf);
+        let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
         var time_frame_prev   = time_Instant_now();
         log_info("main loop started\n");
 
@@ -173,30 +178,26 @@ Err$void dh_main(int argc, const char* argv[]) {
 
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
             printf("\033[H\033[40;37m"); // Move cursor to top left
-#if Simulation_allows_record_collision_count
             printf(
-                "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f | N-BODY: %d | COLLI: %llu",
+                "\rVIZ> FPS:%5.2f | RES:%dx%d | SCALE:%.2f | POS:%.2f,%.2f\n",
                 time_fps,
-                window_res_width,
-                window_res_height,
+                main_window_res_width,
+                main_window_res_height,
                 viz.scale,
                 viz.pos.x,
-                viz.pos.y,
-                n_body,
-                sim.collision_count
+                viz.pos.y
             );
-#else
             printf(
-                "\rFPS: %6.2f | RES: %dx%d | SCALE: %.2f | POS: %.2f,%.2f | N-BODY: %d",
-                time_fps,
-                window_res_width,
-                window_res_height,
-                viz.scale,
-                viz.pos.x,
-                viz.pos.y,
-                n_body
+                "\rSIM> N-BODY:%llu | COLLI:%5llu | RECTS:%llu\n",
+                sim.bodies.items.len,
+                sim.collision_count,
+                sim.rects.items.len
             );
-#endif
+            printf(
+                "\rQUADTREE> NODES: %llu | PARENTS:%llu\n",
+                sim.quadtree.nodes.items.len,
+                sim.quadtree.parents.items.len
+            );
             printf("\033[0m"); // Reset color
 
             debug_only( // log frame every 1s

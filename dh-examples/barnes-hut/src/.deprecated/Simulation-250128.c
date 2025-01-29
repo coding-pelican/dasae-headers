@@ -42,7 +42,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n_body) {
             .quad_tree                       = quad_tree,
             .sort_body_indices_cache         = sort_body_indices_cache,
             .sort_rect_indices_cache_as_temp = sort_rect_indices_cache,
-#if DEBUG_ENABLED || Simulation_allows_record_collision_count
+#if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
             .collision_count = 0,
 #endif
             .allocator = allocator,
@@ -57,7 +57,7 @@ void Simulation_destroy(Simulation* self) {
     ArrList_fini(&self->bodies.base);
     ArrList_fini(&self->rects.base);
 
-    QuadTree_destroy(&self->quad_tree);
+    QuadTree_destroy(&self->quadtree);
 
     mem_Allocator_free(self->allocator, anySli(self->sort_body_indices_cache));
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
@@ -78,11 +78,11 @@ Err$void Simulation_step(Simulation* self) {
 Err$void Simulation_attract(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-    try(QuadTree_build(&self->quad_tree, self->bodies.items));
+    try(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
     for_slice(self->bodies.items, body) {
-        body->acc = QuadTree_accelerate(&self->quad_tree, body->pos, self->bodies.items);
+        body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
     return_void();
@@ -101,7 +101,7 @@ void Simulation_iterate(Simulation* self) {
 Err$void Simulation_collide(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-#if DEBUG_ENABLED
+#if debug_comp_enabled
     self->collision_count = 0;
 #endif
     // Update collision rects for current frame
@@ -239,7 +239,7 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(self);
-#if DEBUG_ENABLED || Simulation_allows_record_collision_count
+#if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
         self->collision_count = 0;
 #endif
         if (self->rects.items.len == 0) {
@@ -316,7 +316,7 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
 
     // Early exit if not colliding
     scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
-#if DEBUG_ENABLED || Simulation_allows_record_collision_count
+#if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count++;
 #endif
 

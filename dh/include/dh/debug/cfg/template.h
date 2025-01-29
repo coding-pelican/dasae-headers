@@ -26,10 +26,10 @@ extern "C" {
 
 /* Debug enable/disable override
  * Example:
- *   #define DEBUG_ENABLED (1)  // Force debug mode on
- *   #define DEBUG_ENABLED (0)  // Force debug mode off
+ *   #define debug_comp_enabled (1)  // Force debug mode on
+ *   #define debug_comp_enabled (0)  // Force debug mode off
  */
-// #define DEBUG_ENABLED your_debug_setting
+// #define debug_comp_enabled your_debug_setting
 
 /* Custom output stream for debug messages
  * Examples:

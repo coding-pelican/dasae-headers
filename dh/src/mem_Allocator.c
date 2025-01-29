@@ -1,7 +1,7 @@
 #include "dh/mem/Allocator.h"
 #include "dh/mem/Tracker.h"
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
@@ -26,7 +26,7 @@ Opt$Ptr$u8 mem_Allocator_rawAlloc_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 bool mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
@@ -56,7 +56,7 @@ bool mem_Allocator_rawResize_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 void mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
@@ -83,7 +83,7 @@ void mem_Allocator_rawFree_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
     reserveReturn(Err$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align);
@@ -109,7 +109,7 @@ Err$meta_Ptr mem_Allocator_create_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 void mem_Allocator_destroy(mem_Allocator self, AnyType ptr) {
     if (ptr.ctx == null) { return; /* Cannot free unallocated memory */ }
     mem_Allocator_rawFree(
@@ -138,7 +138,7 @@ void mem_Allocator_destroy_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
     reserveReturn(Err$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align);
@@ -165,7 +165,7 @@ Err$meta_Sli mem_Allocator_alloc_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 bool mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) {
     if (old_mem.ctx == null) { return false; /* Cannot resize unallocated memory */ }
 
@@ -237,7 +237,7 @@ bool mem_Allocator_resize_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) {
     reserveReturn(Opt$meta_Sli);
 
@@ -313,7 +313,7 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
 }
 #endif
 
-#if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 void mem_Allocator_free(mem_Allocator self, AnyType memory) {
     if (memory.ctx == null) { return; /* Cannot free unallocated memory */ }
     if (memory.len == 0) { return; }

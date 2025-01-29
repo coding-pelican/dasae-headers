@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !DEBUG_ENABLED
+#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
 
-static const char* const mem_Tracker_default_log_file = "memory_trace.log";
+static const char* const mem_Tracker_default_log_file = "mem_trace.log";
 // static FILE*             mem_Tracker_fallbackLogFile(void) { return stderr; }
 
 static void __attribute__((constructor)) mem_Tracker_init(void) {
@@ -216,4 +216,4 @@ mem_Tracker* mem_Tracker_instance(void) {
     return &mem_Tracker_s_instance;
 }
 
-#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !DEBUG_ENABLED */
+#endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */

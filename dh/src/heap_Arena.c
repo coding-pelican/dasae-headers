@@ -36,7 +36,7 @@
 //     var it = self->state.first;
 //     while (it != null) {
 //         var next = it->next;
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //         mem_Allocator_rawFree(
 //             self->child,
 //             (Sli$u8){ .ptr = (u8*)it, .len = it->len },
@@ -116,7 +116,7 @@
 //             first = it;
 //             break;
 //         }
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //         mem_Allocator_rawFree(
 //             self->child,
 //             (Sli$u8){ .ptr = (u8*)it, .len = it->len },
@@ -145,7 +145,7 @@
 //         }
 
 //         // Try to resize the buffer
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //         if (mem_Allocator_rawResize(
 //                 self->child,
 //                 (Sli$u8){ .ptr = (u8*)first, .len = first->len },
@@ -168,7 +168,7 @@
 //         }
 
 // // Manual realloc
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //         let new_node = typed(heap_Arena_BufNode*, orelse_default(mem_Allocator_rawAlloc(self->child, total_size, align_bits), null));
 // #else
 //         let new_node = typed(heap_Arena_BufNode*, orelse_default(mem_Allocator_rawAlloc(self->child, total_size, align_bits, __FILE__, __LINE__, __func__), null));
@@ -177,7 +177,7 @@
 //             return false; // Failed to preheat
 //         }
 
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //         mem_Allocator_rawFree(
 //             self->child,
 //             (Sli$u8){ .ptr = (u8*)first, .len = first->len },
@@ -226,7 +226,7 @@
 //     const usize len             = big_enough_len + big_enough_len / 2;
 
 // // Allocate new buffer
-// #if !COMP_TIME || (COMP_TIME && !DEBUG_ENABLED) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+// #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
 //     let new_node = typed(heap_Arena_BufNode*, orelse_default(mem_Allocator_rawAlloc(self->child, len, alignOf(heap_Arena_BufNode)), null));
 // #else
 //     let new_node = typed(heap_Arena_BufNode*, orelse_default(mem_Allocator_rawAlloc(self->child, len, alignOf(heap_Arena_BufNode), __FILE__, __LINE__, __func__), null));

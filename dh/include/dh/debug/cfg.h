@@ -32,11 +32,9 @@ extern "C" {
 
 /* Synthesize configuration with fallbacks to defaults */
 
-#if !defined(DEBUG_ENABLED)
-#define DEBUG_ENABLED DEBUG_DEFAULT_ENABLED
-#endif /* !defined(DEBUG_ENABLED) */
-
-#define debug_enabled (DEBUG_ENABLED)
+#if !defined(debug_comp_enabled)
+#define debug_comp_enabled DEBUG_DEFAULT_ENABLED
+#endif /* !defined(debug_comp_enabled) */
 
 #if !defined(DEBUG_OUTPUT)
 #define DEBUG_OUTPUT DEBUG_DEFAULT_OUTPUT
