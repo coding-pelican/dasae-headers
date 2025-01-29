@@ -1,6 +1,6 @@
 #include "dh/main.h"
 #include "dh/debug.h"
-#define log_comp_disabled_release_time (1)
+#define log_comp_disabled_release_build (1)
 #include "dh/log.h"
 
 #include "dh/mem.h"

@@ -76,8 +76,12 @@ extern FILE*     log_getOutputFile(void);
 // Internal logging function
 extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
 
+#if !defined(log_comp_disabled_release_build)
+#define log_comp_disabled_release_build (0)
+#endif /* !defined(log_comp_disabled_release_build) */
+
 // Convenience macros for different log levels
-#if debug_comp_enabled || defined(log_comp_disabled_release_time)
+#if debug_comp_enabled || !log_comp_disabled_release_build
 #if COMP_TIME
 
 #define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)

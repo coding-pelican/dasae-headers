@@ -45,6 +45,9 @@ extern "C" {
 #define for_array(var_arr, var_item)                    SYN__for_array(var_arr, var_item)
 #define for_array_indexed(var_arr, var_item, var_index) SYN__for_array_indexed(var_arr, var_item, var_index)
 
+#define for_array_rev(var_arr, var_item)                    SYN__for_array_rev(var_arr, var_item)
+#define for_array_rev_indexed(var_arr, var_item, var_index) SYN__for_array_rev_indexed(var_arr, var_item, var_index)
+
 /*========== Implementations ================================================*/
 
 #define TYPE_UNNAMED__Arr$(N, T) \
@@ -150,6 +153,14 @@ extern "C" {
 
 #define SYN__for_array_indexed(var_arr, var_item, var_index)                         \
     for (usize var_index = 0; (var_index) < countOf((var_arr).items); ++(var_index)) \
+    scope_with(let var_item = Arr_at(var_arr, var_index))
+
+#define SYN__for_array_rev(var_arr, var_item)            \
+    for (usize _i = countOf((var_arr).items); _i-- > 0;) \
+    scope_with(let var_item = Arr_at(var_arr, _i))
+
+#define SYN__for_array_indexed_rev(var_arr, var_item, var_index)         \
+    for (usize var_index = countOf((var_arr).items); (var_index)-- > 0;) \
     scope_with(let var_item = Arr_at(var_arr, var_index))
 
 #if defined(__cplusplus)

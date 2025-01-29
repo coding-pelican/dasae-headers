@@ -63,8 +63,10 @@ extern anyptr       Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 #define Sli_suffix(var_sli, val_begin)             OP__Sli_suffix(var_sli, val_begin)
 
 /* Iterator support with scope (similar to Zig's for loops over slices) */
-#define for_slice(var_sli, var_item)                    SYN__for_slice(var_sli, var_item)
-#define for_slice_indexed(var_sli, var_item, var_index) SYN__for_slice_indexed(var_sli, var_item, var_index)
+#define for_slice(var_sli, var_item)                        SYN__for_slice(var_sli, var_item)
+#define for_slice_indexed(var_sli, var_item, var_index)     SYN__for_slice_indexed(var_sli, var_item, var_index)
+#define for_slice_rev(var_sli, var_item)                    SYN__for_slice_rev(var_sli, var_item)
+#define for_slice_rev_indexed(var_sli, var_item, var_index) SYN__for_slice_rev_indexed(var_sli, var_item, var_index)
 
 /* Any type */
 typedef struct AnyType AnyType;
@@ -188,11 +190,11 @@ union Sli {
     };                                     \
 })
 
-#define OP__Sli_at(var_self, usize_index) eval({ \
-    let         _self  = var_self;               \
-    const usize _index = usize_index;            \
-    debug_assert(_index < _self.len);            \
-    eval_return(&_self.ptr[_index]);             \
+#define OP__Sli_at(var_self, usize_index) eval({                            \
+    let         _self  = var_self;                                          \
+    const usize _index = usize_index;                                       \
+    debug_assert_fmt(_index < _self.len, "%llu < %llu", _index, _self.len); \
+    eval_return(&_self.ptr[_index]);                                        \
 })
 
 #define OP__Sli_slice(var_self, usize_begin, usize_end) eval({                                       \
@@ -222,6 +224,14 @@ union Sli {
 
 #define SYN__for_slice_indexed(var_sli, var_item, var_index)              \
     for (usize var_index = 0; (var_index) < (var_sli).len; ++(var_index)) \
+    scope_with(let var_item = Sli_at(var_sli, var_index))
+
+#define SYN__for_slice_rev(var_sli, var_item) \
+    for (usize _i = (var_sli).len; _i-- > 0;) \
+    scope_with(let var_item = Sli_at(var_sli, _i))
+
+#define SYN__for_slice_rev_indexed(var_sli, var_item, var_index) \
+    for (usize var_index = (var_sli).len; (var_index)-- > 0;)    \
     scope_with(let var_item = Sli_at(var_sli, var_index))
 
 // clang-format off

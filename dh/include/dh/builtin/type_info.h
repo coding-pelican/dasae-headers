@@ -84,6 +84,7 @@ extern "C" {
      */                                                    \
     FUNC__isConstantExpr(_Expr)
 
+#define isSameType$(T_lhs, T_rhs) isSameType(T_lhs, T_rhs)
 #define isSameType(T_lhs, T_rhs)               \
     /**                                        \
      * @brief Compare two types for equality   \
@@ -204,7 +205,7 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0 /* Example Usage */
+#if /* Example Usage */ 0
 #include "dh/core.h"
 
 void example_usage(void) {

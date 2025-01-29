@@ -30,11 +30,6 @@ Quad Quad_newContaining(const Sli$Body bodies) {
     };
 }
 
-usize Quad_findQuadrant(const Quad* self, math_Vec2f pos) {
-    debug_assert_nonnull(self);
-    return (as$(usize, pos.y > self->center.y) << 1) | (as$(usize, pos.x > self->center.x));
-}
-
 Quad Quad_intoQuadrant(Quad self, usize quadrant) {
     self.size *= 0.5f;
     self.center.x += (as$(f32, quadrant & 1) - 0.5f) * self.size;
@@ -53,13 +48,14 @@ Arr$4$Quad Quad_subdivide(const Quad* self) {
 }
 
 // QuadNode implementation
-QuadNode QuadNode_new(usize next, Quad quad) {
+QuadNode QuadNode_new(usize next, Quad quad, Range bodies) {
     return (QuadNode){
         .children = 0,
         .next     = next,
         .pos      = math_Vec2f_zero,
         .mass     = 0.0f,
-        .quad     = quad
+        .quad     = quad,
+        .bodies   = bodies
     };
 }
 
@@ -79,16 +75,17 @@ bool QuadNode_isEmpty(const QuadNode* self) {
 }
 
 // QuadTree implementation
-Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) {
+Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap, usize n) {
     scope_reserveReturn(Err$QuadTree) {
-        var nodes = typed(ArrList$QuadNode, try(ArrList_initCap(typeInfo(QuadNode), allocator, n)));
+        var nodes = type$(ArrList$QuadNode, try(ArrList_initCap(typeInfo$(QuadNode), allocator, n)));
         errdefer(ArrList_fini(&nodes.base));
-        var parents = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, n)));
+        var parents = type$(ArrList$usize, try(ArrList_initCap(typeInfo$(usize), allocator, n)));
         errdefer(ArrList_fini(&parents.base));
 
         return_ok((QuadTree){
             .theta_sq  = theta * theta,
-            .eps_sq    = epsilon * epsilon,
+            .eps_sq    = eps * eps,
+            .leaf_cap  = leaf_cap,
             .nodes     = nodes,
             .parents   = parents,
             .allocator = allocator,
@@ -104,31 +101,54 @@ void QuadTree_destroy(QuadTree* self) {
     ArrList_fini(&self->parents.base);
 }
 
-Err$void QuadTree_clear(QuadTree* self, Quad quad) {
-    reserveReturn(Err$void);
+void QuadTree_clear(QuadTree* self) {
     debug_assert_nonnull(self);
 
     // Clear and free the nodes and parents lists
     ArrList_clearRetainingCap(&self->nodes.base);
     ArrList_clearRetainingCap(&self->parents.base);
-    // Initialize the root node
-    try(ArrList_append(
-        &self->nodes.base,
-        meta_refPtr(createFrom$(QuadNode, QuadNode_new(QuadTree_root, quad)))
-    ));
-
-    return_void();
 }
 
-static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
-    reserveReturn(Err$usize);
+// Partition function
+static usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
+    if (self.len == 0) { return 0; }
+    usize lhs = 0;
+    usize rhs = self.len - 1;
+    while (true) {
+        while (lhs <= rhs && predFn(Sli_at(self, lhs), center)) { lhs++; }
+        while (lhs < rhs && !predFn(Sli_at(self, rhs), center)) { rhs--; }
+        if (rhs <= lhs) { break; }
+
+        prim_swap(*Sli_at(self, lhs), *Sli_at(self, rhs));
+        lhs++;
+        rhs--;
+    }
+    return lhs;
+}
+// Predicates
+static_inline bool predLtX(const Body* body, math_Vec2f center) {
+    return body->pos.x < center.x;
+}
+static_inline bool predLtY(const Body* body, math_Vec2f center) {
+    return body->pos.y < center.y;
+}
+
+static Err$void QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range range) {
+    reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
+    let   center  = Sli_at(self->nodes.items, node)->quad.center;
+    usize split[] = { range.begin, 0, 0, 0, range.end };
+
+    // predLtY
+    split[2] = split[0] + partition((Sli$Body)Sli_range(bodies.ptr, split[0], split[4]), predLtY, center);
+
+    // predLtX
+    split[1] = split[0] + partition((Sli$Body)Sli_range(bodies.ptr, split[0], split[2]), predLtX, center);
+    split[3] = split[2] + partition((Sli$Body)Sli_range(bodies.ptr, split[2], split[4]), predLtX, center);
+
     // Append the parent node index
-    try(ArrList_append(
-        &self->parents.base,
-        meta_refPtr(&node)
-    ));
+    try(ArrList_append(&self->parents.base, meta_refPtr(&node)));
 
     // Get the current length of the nodes list
     let children = self->nodes.items.len;
@@ -137,93 +157,25 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
     Sli_at(self->nodes.items, node)->children = children;
 
     // Create the next indices for the new nodes
-    const Sli$usize nexts = Sli_arr(
-        (usize[]){
-            children + 1,
-            children + 2,
-            children + 3,
-            Sli_at(self->nodes.items, node)->next,
-        }
-    );
-
+    usize nexts_arr[] = {
+        children + 1,
+        children + 2,
+        children + 3,
+        Sli_at(self->nodes.items, node)->next,
+    };
+    const Sli$usize nexts = Sli_arr(nexts_arr);
     // Subdivide the current node's quad
-    let quads = Quad_subdivide(&Sli_at(self->nodes.items, node)->quad);
-
+    let             quads = Quad_subdivide(&Sli_at(self->nodes.items, node)->quad);
     // Append the new nodes
-    for_array_indexed(quads, quad, index) {
+    for (isize index = 0; index < 4; ++index) {
+        let bodies = Range_from(split[index], split[index + 1]);
         try(ArrList_append(
             &self->nodes.base,
-            meta_refPtr(createFrom$(QuadNode, QuadNode_new(*Sli_at(nexts, index), *quad)))
+            meta_refPtr(createFrom$(
+                QuadNode, QuadNode_new(*Sli_at(nexts, index), *Arr_at(quads, index), bodies)
+            ))
         ));
     }
-
-    return_ok(children);
-}
-
-Err$void QuadTree_insert(QuadTree* self, math_Vec2f pos, f32 mass) {
-    reserveReturn(Err$void);
-    debug_assert_nonnull(self);
-
-    var node = QuadTree_root;
-
-    // Find the leaf node containing the position
-    while (QuadNode_isBranch(Sli_at(self->nodes.items, node))) {
-        let quadrant = Quad_findQuadrant(&Sli_at(self->nodes.items, node)->quad, pos);
-        node         = Sli_at(self->nodes.items, node)->children + quadrant;
-    }
-
-    let phys_data = eval({
-        let curr_node = Sli_at(self->nodes.items, node);
-        // If node is empty, simply store the mass and position
-        if (QuadNode_isEmpty(curr_node)) {
-            curr_node->pos  = pos;
-            curr_node->mass = mass;
-            return_void();
-        };
-
-        // Save existing node data
-        let p = curr_node->pos;
-        let m = curr_node->mass;
-
-        // Handle exact same position by adding masses
-        if (math_Vec2f_eq(pos, p)) {
-            curr_node->mass += mass;
-            return_void();
-        };
-
-        eval_return make$(
-            struct {
-                const TypeOf(p) p;
-                const TypeOf(m) m;
-            },
-            .p = p,
-            .m = m
-        );
-    });
-
-    // Subdivide until particles can be separated
-    while (true) {
-        let children  = try(QuadTree_subdivide(self, node));
-        let curr_node = Sli_at(self->nodes.items, node);
-
-        let q1 = Quad_findQuadrant(&curr_node->quad, phys_data.p);
-        let q2 = Quad_findQuadrant(&curr_node->quad, pos);
-
-        if (q1 == q2) {
-            node = children + q1;
-            continue;
-        }
-        // Store particles in their respective quadrants
-        let n1 = Sli_at(self->nodes.items, children + q1);
-        let n2 = Sli_at(self->nodes.items, children + q2);
-
-        n1->pos  = phys_data.p;
-        n1->mass = phys_data.m;
-        n2->pos  = pos;
-        n2->mass = mass;
-        break;
-    }
-
     return_void();
 }
 
@@ -231,12 +183,11 @@ void QuadTree_propagate(QuadTree* self) {
     debug_assert_nonnull(self);
 
     // Propagate masses and center of mass upward through the tree
-    for (isize i = as$(isize, self->parents.items.len) - 1; i >= 0; --i) {
-        let node = *Sli_at(self->parents.items, i);
-        let idx  = Sli_at(self->nodes.items, node)->children;
+    for_slice_rev(self->parents.items, node) {
+        let idx = Sli_at(self->nodes.items, *node)->children;
 
         // Get children nodes
-        let curr = Sli_at(self->nodes.items, node);
+        let curr = Sli_at(self->nodes.items, *node);
         let c0   = Sli_at(self->nodes.items, idx);
         let c1   = Sli_at(self->nodes.items, idx + 1);
         let c2   = Sli_at(self->nodes.items, idx + 2);
@@ -244,10 +195,10 @@ void QuadTree_propagate(QuadTree* self) {
 
         // Calculate total mass and weighted position for all children
         curr->pos = eval({
-            var p = math_Vec2f_scale(c0->pos, c0->mass);
-            math_Vec2f_addTo(&p, math_Vec2f_scale(c1->pos, c1->mass));
-            math_Vec2f_addTo(&p, math_Vec2f_scale(c2->pos, c2->mass));
-            math_Vec2f_addTo(&p, math_Vec2f_scale(c3->pos, c3->mass));
+            var p = c0->pos;
+            math_Vec2f_addTo(&p, c1->pos);
+            math_Vec2f_addTo(&p, c2->pos);
+            math_Vec2f_addTo(&p, c3->pos);
             eval_return p;
         });
 
@@ -255,37 +206,85 @@ void QuadTree_propagate(QuadTree* self) {
                    + c1->mass
                    + c2->mass
                    + c3->mass;
-
-        // Normalize position by total mass
-        math_Vec2f_scaleInvTo(&curr->pos, curr->mass);
+    }
+    for_slice(self->nodes.items, node) {
+        math_Vec2f_scaleInvTo(&node->pos, prim_max(node->mass, f32_limit_min));
     }
 }
 
-math_Vec2f QuadTree_accelerate(const QuadTree* self, math_Vec2f pos) {
+Err$void QuadTree_build(QuadTree* self, Sli$Body bodies) {
+    reserveReturn(Err$void);
+    debug_assert_nonnull(self);
+    QuadTree_clear(self);
+
+    let quad = Quad_newContaining(bodies);
+    try(ArrList_append(
+        &self->nodes.base,
+        meta_refPtr(createFrom$(
+            QuadNode, QuadNode_new(0, quad, Range_from(0, bodies.len))
+        ))
+    ));
+
+    usize node = 0;
+    while (node < self->nodes.items.len) {
+        let range = Sli_at(self->nodes.items, node)->bodies;
+        if (self->leaf_cap < Range_len(range)) {
+            QuadTree_subdivide(self, node, bodies, range);
+        } else {
+            for (usize idx = range.begin; idx < range.end; ++idx) {
+                math_Vec2f_addTo(
+                    &Sli_at(self->nodes.items, node)->pos,
+                    math_Vec2f_scale(Sli_at(bodies, idx)->pos, Sli_at(bodies, idx)->mass)
+                );
+                Sli_at(self->nodes.items, node)->mass += Sli_at(bodies, idx)->mass;
+            }
+        }
+        node++;
+    }
+
+    QuadTree_propagate(self);
+    return_void();
+}
+
+math_Vec2f QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies) {
     debug_assert_nonnull(self);
 
     var acc  = math_Vec2f_zero;
     var node = QuadTree_root;
-
     while (true) {
-        let n = Sli_at(self->nodes.items, node);
+        let n = *Sli_at(self->nodes.items, node);
 
-        let d    = math_Vec2f_sub(n->pos, pos);
+        let d    = math_Vec2f_sub(n.pos, pos);
         let d_sq = math_Vec2f_lenSq(d);
 
-        const bool is_leaf_or_far_enough_away = QuadNode_isLeaf(n) || n->quad.size * n->quad.size < d_sq * self->theta_sq;
-        if (!is_leaf_or_far_enough_away) {
-            // Traverse deeper into the tree
-            node = n->children;
-            continue;
+        const bool is_leaf            = QuadNode_isLeaf(&n);
+        const bool is_far_enough_away = (n.quad.size * n.quad.size) < (d_sq * self->theta_sq);
+
+        if (is_far_enough_away || is_leaf) {
+            // Node is either a leaf or is far enough to approximate by one mass
+            if (is_far_enough_away) {
+                // add force from the node's total mass
+                let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
+                math_Vec2f_addTo(&acc, math_Vec2f_scale(d, n.mass / denom));
+            } else {
+                // It's a leaf, sum contributions from the actual bodies
+                for (usize idx = n.bodies.begin; idx < n.bodies.end; ++idx) {
+                    let body = Sli_at(bodies, idx);
+                    let d    = math_Vec2f_sub(body->pos, pos);
+                    let d_sq = math_Vec2f_lenSq(d);
+
+                    let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
+                    math_Vec2f_addTo(&acc, math_Vec2f_scale(d, prim_min(body->mass / denom, f32_limit_max)));
+                }
+            }
+
+            if (n.next == QuadTree_root) { break; }
+            // Go sideways (to next sibling or parent's sibling)
+            node = n.next;
+        } else {
+            // Not leaf and not far enough → subdivide further
+            node = n.children;
         }
-        // Calculate gravitational force if node is a leaf or far enough away
-        let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
-        math_Vec2f_addTo(&acc, math_Vec2f_scale(d, fminf(n->mass / denom, f32_limit_max)));
-
-        if (n->next == 0) { break; }
-        node = n->next;
     }
-
     return acc;
 }

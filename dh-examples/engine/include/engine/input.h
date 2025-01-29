@@ -206,7 +206,7 @@ extern engine_InputState* engine_Input_instance(void);
 
 // Input state queries
 force_inline bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state) {
-    debug_assert_true(engine_KeyStates_none <= key);
+    debug_assert_true(engine_KeyCode_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     debug_assert_true(engine_KeyStates_none <= state);
     let input = engine_Input_instance();
@@ -227,7 +227,7 @@ force_inline bool engine_Key_released(engine_KeyCode key) {
 
 // Get all current states for a key
 force_inline u8 engine_Key_getState(engine_KeyCode key) {
-    debug_assert_true(engine_KeyStates_none <= key);
+    debug_assert_true(engine_KeyCode_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     let input = engine_Input_instance();
     return input->curr_states[key];
@@ -235,7 +235,7 @@ force_inline u8 engine_Key_getState(engine_KeyCode key) {
 
 // Mouse state queries
 force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStates state) {
-    debug_assert_true(engine_KeyStates_none <= button);
+    debug_assert_true(engine_MouseButton_none <= button);
     debug_assert_true(button < engine_MouseButton_count);
     debug_assert_true(engine_KeyStates_none <= state);
     let input = engine_Input_instance();

@@ -6,32 +6,26 @@
 // n target: 100000
 Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
     scope_reserveReturn(Err$Simulation) {
-        const f32 dt    = 0.05f;
-        const f32 theta = 1.0f;
-        const f32 eps   = 1.0f;
+        const f32   dt       = 0.05f;
+        const f32   theta    = 1.0f;
+        const f32   eps      = 1.0f;
+        const usize leaf_cap = 16;
 
         var bodies = try(utils_uniformDisc(allocator, n));
         errdefer(ArrList_fini(&bodies.base));
-        var rects = typed(
-            ArrList$Rect,
-            try(ArrList_initCap(
-                typeInfo(Rect),
-                allocator,
-                n
-            ))
-        );
+        var rects = type$(ArrList$Rect, try(ArrList_initCap(typeInfo$(Rect), allocator, n)));
         errdefer(ArrList_fini(&rects.base));
 
         try(ArrList_resize(&rects.base, n));
-        var quadtree = try(QuadTree_create(allocator, theta, eps, n));
+        var quadtree = try(QuadTree_create(allocator, theta, eps, leaf_cap, n));
         errdefer(QuadTree_destroy(&quadtree));
 
         // Sort body indices based on their AABB's min.x to enable sweep and prune
-        var sort_body_indices_cache = meta_cast$(Sli$usize, try(mem_Allocator_alloc(allocator, typeInfo(usize), n)));
+        var sort_body_indices_cache = meta_cast$(Sli$usize, try(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
         errdefer(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
 
         // Sort body rects based on their AABB's min.x to enable sweep and prune
-        var sort_rect_indices_cache = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), n * sizeOf$(usize))));
+        var sort_rect_indices_cache = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
         errdefer(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
         return_ok((Simulation){
@@ -83,8 +77,11 @@ void Simulation_iterate(Simulation* self) {
     }
 }
 
-#define COLLIDE_TYPE 1
-#if COLLIDE_TYPE == 0
+#define CollideMethod_simply_o_n_pow_2 (0)
+#define CollideMethod_sweep_and_prune  (1)
+#define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
+#if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
+#if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
 Err$void Simulation_collide(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
@@ -112,19 +109,9 @@ Err$void Simulation_collide(Simulation* self) {
 
     return_void();
 }
-#endif // COLLIDE_TYPE == 0
-
-#if COLLIDE_TYPE == 1
-/// optimizations:
-///     Sweep and Prune Algorithm:
-///         Sorting: Bodies are sorted based on the minimum x-coordinate of their AABB. This allows efficient pruning of non-overlapping pairs.
-///         Early Exit: For each body, subsequent bodies are checked only until their AABB's minimum x exceeds the current body's maximum x, reducing the number of checks.
-///         Y-axis Overlap Check: After x-axis overlap is confirmed, a quick y-axis check further filters non-colliding pairs.
-///     AABB Checks Before Distance Calculation:
-///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
-/// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-
-// Comparison function for qsort
+#endif /* CollideMethod_simply_o_n_pow_2 */
+#if COLLIDE_METHOD == CollideMethod_sweep_and_prune
+// Comparison function for qsort (C-style)
 static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
     let self     = as$(const Simulation*, arg);
     let idx_lhs  = *as$(const usize*, lhs);
@@ -135,12 +122,24 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
     if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 }
+/// optimizations:
+///     Sweep and Prune Algorithm:
+///         Sorting: Bodies are sorted based on the minimum x-coordinate of their AABB. This allows efficient pruning of non-overlapping pairs.
+///         Early Exit: For each body, subsequent bodies are checked only until their AABB's minimum x exceeds the current body's maximum x, reducing the number of checks.
+///         Y-axis Overlap Check: After x-axis overlap is confirmed, a quick y-axis check further filters non-colliding pairs.
+///     AABB Checks Before Distance Calculation:
+///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
+/// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
 Err$void Simulation_collide(Simulation* self) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
         self->collision_count = 0;
 #endif
+        if (self->rects.items.len == 0) {
+            return_void();
+        }
+
         // Update collision rects for current frame
         for_slice_indexed(self->bodies.items, body, index) {
             let pos        = body->pos;
@@ -189,27 +188,18 @@ Err$void Simulation_collide(Simulation* self) {
     }
     scope_returnReserved;
 }
-#endif // COLLIDE_TYPE == 1
+#endif /* CollideMethod_sweep_and_prune */
+#endif /* COLLIDE_METHOD */
 
 Err$void Simulation_attract(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    // Create quad tree for current frame
-    let quad = Quad_newContaining(self->bodies.items);
-    try(QuadTree_clear(&self->quadtree, quad));
-
-    // Insert all bodies
-    for_slice(self->bodies.items, body) {
-        try(QuadTree_insert(&self->quadtree, body->pos, body->mass));
-    }
-
-    // Propagate masses upward
-    QuadTree_propagate(&self->quadtree);
+    try(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
     for_slice(self->bodies.items, body) {
-        body->acc = QuadTree_accelerate(&self->quadtree, body->pos);
+        body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
     return_void();
@@ -252,10 +242,10 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     let weight2 = m1 / (m1 + m2);
 
     // Handle collision based on relative motion
-    if (0.0f <= d_dot_v && !math_Vec2f_eq(d, math_Vec2f_zero)) {
+    if (0.0f <= d_dot_v && math_Vec2f_ne(d, math_Vec2f_zero)) {
         let tmp = math_Vec2f_scale(d, r / math_Vec2f_len(d) - 1.0f);
-        b1->pos = math_Vec2f_sub(b1->pos, math_Vec2f_scale(tmp, weight1));
-        b2->pos = math_Vec2f_add(b2->pos, math_Vec2f_scale(tmp, weight2));
+        math_Vec2f_subTo(&b1->pos, math_Vec2f_scale(tmp, weight1));
+        math_Vec2f_addTo(&b2->pos, math_Vec2f_scale(tmp, weight2));
         return;
     }
 

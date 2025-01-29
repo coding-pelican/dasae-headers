@@ -32,7 +32,7 @@ typedef struct Simulation {
     Sli$u8       sort_rect_indices_cache_as_temp; // Cache for sorting bodies rects
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     usize collision_count;
-#endif
+#endif /* debug_comp_enabled || Simulation_comp_enabled_record_collision_count */
     mem_Allocator allocator;
 } Simulation;
 use_Err$(Simulation);
@@ -43,11 +43,9 @@ extern void           Simulation_destroy(Simulation* self);
 
 // Step functions
 extern Err$void Simulation_step(Simulation* self) must_check;
-extern Err$void Simulation_attract(Simulation* self) must_check;
 extern void     Simulation_iterate(Simulation* self);
 extern Err$void Simulation_collide(Simulation* self) must_check;
-
-// Private functions (declared for testing)
-extern void Simulation_resolve(Simulation* self, usize lhs, usize rhs);
+extern Err$void Simulation_attract(Simulation* self) must_check;
+extern void     Simulation_resolve(Simulation* self, usize lhs, usize rhs);
 
 #endif /* SIMULATION_INCLUDED */
