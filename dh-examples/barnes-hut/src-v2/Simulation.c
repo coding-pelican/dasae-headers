@@ -6,9 +6,10 @@
 // n target: 100000
 Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
     scope_reserveReturn(Err$Simulation) {
-        const f32 dt    = 0.05f;
-        const f32 theta = 1.0f;
-        const f32 eps   = 1.0f;
+        const f32   dt       = 0.05f;
+        const f32   theta    = 1.0f;
+        const f32   eps      = 1.0f;
+        const usize leaf_cap = 16;
 
         var bodies = try(utils_uniformDisc(allocator, n));
         errdefer(ArrList_fini(&bodies.base));
@@ -16,7 +17,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
         errdefer(ArrList_fini(&rects.base));
 
         try(ArrList_resize(&rects.base, n));
-        var quadtree = try(QuadTree_create(allocator, theta, eps, n));
+        var quadtree = try(QuadTree_create(allocator, theta, eps, leaf_cap, n));
         errdefer(QuadTree_destroy(&quadtree));
 
         // Sort body indices based on their AABB's min.x to enable sweep and prune
@@ -37,7 +38,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
             .sort_rect_indices_cache_as_temp = sort_rect_indices_cache,
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
             .collision_count = 0,
-#endif /* debug_comp_enabled || Simulation_comp_enabled_record_collision_count  */
+#endif
             .allocator = allocator,
         });
     }
@@ -194,21 +195,11 @@ Err$void Simulation_attract(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    // Create quad tree for current frame
-    let quad = Quad_newContaining(self->bodies.items);
-    try(QuadTree_clear(&self->quadtree, quad));
-
-    // Insert all bodies
-    for_slice(self->bodies.items, body) {
-        try(QuadTree_insert(&self->quadtree, body->pos, body->mass));
-    }
-
-    // Propagate masses upward
-    QuadTree_propagate(&self->quadtree);
+    try(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
     for_slice(self->bodies.items, body) {
-        body->acc = QuadTree_accelerate(&self->quadtree, body->pos);
+        body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
     return_void();

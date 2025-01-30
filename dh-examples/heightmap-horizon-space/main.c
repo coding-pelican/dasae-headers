@@ -1,6 +1,6 @@
 #include "dh/main.h"
 #include "dh/debug.h"
-#define log_comp_disabled_release_build (1)
+#define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/log.h"
 
 #include "dh/mem.h"
@@ -138,9 +138,14 @@ static SliConst$Control Control_list(void) {
 #define window_res_width__40x25    /* template value */ (40)
 #define window_res_height__40x25   /* template value */ (25)
 
+#if debug_comp_enabled
 #define window_res_width  (window_res_width__80x50)
 #define window_res_height (window_res_height__80x50)
-#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+#else /* !debug_comp_enabled */
+#define window_res_width  (window_res_width__320x200)
+#define window_res_height (window_res_height__320x200)
+#endif /* debug_comp_enabled */
+#define window_res_size (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
 #define target_fps__125_0 /* template value */ (125.0)

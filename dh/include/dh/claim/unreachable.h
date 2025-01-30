@@ -94,7 +94,7 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0  /* Example Usage */
+#if /* Example Usage */ 0
 typedef enum Status {
     Status_OK,
     Status_ERROR

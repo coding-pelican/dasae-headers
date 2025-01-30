@@ -17,9 +17,9 @@
 #include "engine.h"
 #include "engine/window.h"
 
-#include "src/Simulation.h"
-#include "src/Visualizer.h"
-#include "src/utils.h"
+#include "Simulation.h"
+#include "Visualizer.h"
+#include "utils.h"
 
 #include "cfg_values.h"
 

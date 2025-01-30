@@ -45,7 +45,7 @@ void time_sleepNanos(u32 nanos) {
     time_sleep(time_Duration_fromNanos(nanos));
 }
 
-#endif /* bti_plat_windows && (bti_plat_32BIT || bti_plat_64BIT) */
+#endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
 
 // #define SUPPORT_BUSY_WAIT_LOOP
 // // Wait for some time (stop program execution)

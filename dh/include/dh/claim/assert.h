@@ -135,6 +135,7 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
+#if COMP_TIME
 /**
  * @brief Logs an assertion failure with the given expression, function, file, and line.
  *
@@ -156,6 +157,7 @@ extern void claim_assert__fail(const char* /* expr */, const char* /* func */, c
  * @param ... The arguments for the formatted message.
  */
 extern void claim_assert__fail_fmt(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */, const char* /* fmt */, ...);
+#endif
 
 #if defined(__cplusplus)
 } /* extern "C" */

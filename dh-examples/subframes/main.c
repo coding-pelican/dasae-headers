@@ -23,9 +23,14 @@
 #define window_res_width__40x25    /* template value */ (40)
 #define window_res_height__40x25   /* template value */ (25)
 
-#define window_res_width  (window_res_width__160x100)
-#define window_res_height (window_res_height__160x100)
-#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+#if debug_comp_enabled
+#define window_res_width  (window_res_width__80x50)
+#define window_res_height (window_res_height__80x50)
+#else /* !debug_comp_enabled */
+#define window_res_width  (window_res_width__320x200)
+#define window_res_height (window_res_height__320x200)
+#endif /* debug_comp_enabled */
+#define window_res_size (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / render_target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
 #define render_target_fps__125_0 /* template value */ (125.0)
@@ -68,7 +73,7 @@ static SliConst$Control Control_list(void) {
 #define state_player_speed       (1000.0f)
 #define state_gravity            (1000.0f)
 #define state_collision_damping  (0.8f)
-#define state_objects_cap_inital (256)
+#define state_objects_cap_inital (512)
 
 Err$void dh_main(int argc, const char* argv[]) { // NOLINT
     unused(argc), unused(argv);
@@ -115,11 +120,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         try(heap_Page_init(allocator));
         defer(heap_Page_fini(allocator));
 
-        var positions = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, state_objects_cap_inital)));
+        var positions = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&positions.base));
-        var velocities = typed(Vec2fs, try(ArrList_initCap(typeInfo(Vec2f), allocator, state_objects_cap_inital)));
+        var velocities = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&velocities.base));
-        var colors = typed(Colors, try(ArrList_initCap(typeInfo(Color), allocator, state_objects_cap_inital)));
+        var colors = type$(Colors, try(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&colors.base));
 
         const f32 w      = window_res_width;
@@ -161,7 +166,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 break;
             }
 
-            if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Key_pressed(engine_KeyCode_space)) {
+            if (engine_Mouse_held(engine_MouseButton_left) || engine_Key_held(engine_KeyCode_space)) {
                 log_debug("space pressed\n");
                 scope_with(let pos = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPosition());

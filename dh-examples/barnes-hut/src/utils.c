@@ -278,26 +278,16 @@ Err$void utils_stableSortWithArgUsingTemp(
     return_void();
 }
 
-static void utils_sortBodiesByDistanceFromOrigin(Sli$Body bodies) {
-    debug_assert_nonnull(bodies.ptr);
-
-    // Simple selection sort - could be optimized with a better algorithm
-    for (usize lhs = 0; lhs < bodies.len; ++lhs) {
-        var min_idx  = lhs;
-        let dist_lhs = math_Vec2f_lenSq(Sli_at(bodies, lhs)->pos);
-
-        for (usize rhs = lhs + 1; rhs < bodies.len; ++rhs) {
-            let dist_rhs = math_Vec2f_lenSq(Sli_at(bodies, rhs)->pos);
-            if (dist_lhs <= dist_rhs) { continue; }
-            min_idx = rhs;
-        }
-
-        if (min_idx == lhs) { continue; }
-        prim_swap(*Sli_at(bodies, lhs), *Sli_at(bodies, min_idx));
-    }
+static_inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
+    let lhs_body = as$(const Body*, lhs);
+    let rhs_body = as$(const Body*, rhs);
+    let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
+    let rhs_dist = math_Vec2f_lenSq(rhs_body->pos);
+    if (lhs_dist < rhs_dist) { return cmp_Ord_lt; }
+    if (lhs_dist > rhs_dist) { return cmp_Ord_gt; }
+    return cmp_Ord_eq;
 }
 
-// TODO: Make use stableSort instead of O(n^2) sort (needs validation test)
 Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
     reserveReturn(Err$ArrList$Body);
 
@@ -346,7 +336,7 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
     }
 
     // Sort by distance from center and adjust velocities
-    utils_sortBodiesByDistanceFromOrigin(bodies.items);
+    try(utils_stableSort(allocator, meta_refSli(bodies.items), compareBodyDistance));
 
     // Adjust velocities based on enclosed mass
     var mass = 0.0f;
