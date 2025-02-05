@@ -8,7 +8,7 @@
 #include "Body.h"
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_ErrSet(utils_MulErr, Overflow);
+config_ErrSet(utils_MulErr, Overflow);
 use_ErrSet$(utils_MulErr, usize);
 force_inline utils_MulErr$usize utils_usize_mulSafe(usize lhs, usize rhs) must_check;
 
@@ -25,7 +25,7 @@ extern void utils_insertionSortWithArg(
     anyptr_const arg
 );
 
-use_ErrSet(
+config_ErrSet(
     utils_SortErr,
     utils_MulErr_Overflow,
     mem_Alloc_OutOfMemory

@@ -23,7 +23,7 @@
 // `math_f64_pi` vs `math_pi_f64`
 
 /* Common error types */
-use_ErrSet(
+config_ErrSet(
     math_Err,
     Overflow,
     Underflow,

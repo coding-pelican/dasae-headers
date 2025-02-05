@@ -32,7 +32,7 @@ force_inline u8 NotepadBackend_getGrayscale(const Color* color) {
 use_Err$(HWND);
 static Err$HWND NotepadBackend_launchNotepad(void);
 
-use_ErrSet(
+config_ErrSet(
     NotepadBackendErr,
     OutOfMemoryNotepadBacked,
     OutOfMemoryNotepadBackendBuffer,

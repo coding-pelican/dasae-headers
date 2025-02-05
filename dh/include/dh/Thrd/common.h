@@ -44,7 +44,7 @@ use_Err$(Thrd);
  */
 extern void Thrd_sleep(time_Duration duration);
 
-use_ErrSet(
+config_ErrSet(
     Thrd_SetNameErr,
     NameTooLong,
     Unsupported,
@@ -56,7 +56,7 @@ use_ErrSet(
 );
 extern Err$void Thrd_setName(Thrd self, SliConst$u8 name);
 
-use_ErrSet(
+config_ErrSet(
     Thrd_GetNameErr,
     Unsupported,
     Unexpected
@@ -80,7 +80,7 @@ extern Err$Opt$SliConst$u8 Thrd_getName(Thrd self, Arr$Thrd_max_name_len$u8* buf
  */
 extern ThrdId Thrd_getCurrentId(void);
 
-use_ErrSet(
+config_ErrSet(
     Thrd_CpuCountErr,
     PermissionDenied,
     SystemResources,
@@ -108,7 +108,7 @@ static const ThrdSpawnConfig ThrdSpawnConfig_default = {
     .stack_size = ThrdThrdSpawnConfig_default_stack_size,
     .allocator  = none()
 };
-use_ErrSet(
+config_ErrSet(
     Thrd_SpawnErr,
     /**
      * A system-imposed limit on the number of threads was encountered.
@@ -165,7 +165,7 @@ extern void Thrd_detach(Thrd self);
  */
 extern void Thrd_join(Thrd self);
 
-use_ErrSet(
+config_ErrSet(
     Thrd_YieldErr,
     /**
      * The system is not configured to allow yielding

@@ -110,7 +110,7 @@ use_Mat$(Glyph);
 use_ArrList$(Glyph);
 
 // ========== Font Errors / Declarations (unchanged) ==========
-use_ErrSet(
+config_ErrSet(
     FontSystemErr,
     FailedToOpenFontFile,
     FailedToLoadFontInfo,

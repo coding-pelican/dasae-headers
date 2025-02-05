@@ -1,7 +1,7 @@
 #include "dh/core.h"
 
 /* Current Approach: Interface-based */
-/* use_ErrSet(
+/* config_ErrSet(
     math_Err,
     DivisionByZero,
     Overflow,

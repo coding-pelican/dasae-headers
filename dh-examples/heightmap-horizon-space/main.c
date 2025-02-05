@@ -27,7 +27,7 @@ typedef struct TerrainData {
 } TerrainData;
 use_Opt$(TerrainData);
 
-use_ErrSet(
+config_ErrSet(
     TerrainDataErr,
     FailedToLoadHeightMap,
     FailedToLoadColorMap,

@@ -358,7 +358,7 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 
 #if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_ErrSet(MulErr, Overflow);
+config_ErrSet(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {

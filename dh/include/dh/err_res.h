@@ -352,7 +352,7 @@ typedef Err$Void Err$void;
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-use_ErrSet(
+config_ErrSet(
     math_Err,
     DivisionByZero,
     Overflow,
