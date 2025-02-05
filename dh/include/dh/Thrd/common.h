@@ -23,6 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "dh/time/common.h"
 
 /*========== Thread Types ===================================================*/
 
@@ -41,9 +42,9 @@ use_Err$(Thrd);
 /**
  * Spurious wakeups are possible and no precision of timing is guaranteed.
  */
-extern void Thrd_sleep(u64 nanos);
+extern void Thrd_sleep(time_Duration duration);
 
-use_Err(
+use_ErrSet(
     Thrd_SetNameErr,
     NameTooLong,
     Unsupported,
@@ -55,7 +56,7 @@ use_Err(
 );
 extern Err$void Thrd_setName(Thrd self, SliConst$u8 name);
 
-use_Err(
+use_ErrSet(
     Thrd_GetNameErr,
     Unsupported,
     Unexpected
@@ -79,7 +80,7 @@ extern Err$Opt$SliConst$u8 Thrd_getName(Thrd self, Arr$Thrd_max_name_len$u8* buf
  */
 extern ThrdId Thrd_getCurrentId(void);
 
-use_Err(
+use_ErrSet(
     Thrd_CpuCountErr,
     PermissionDenied,
     SystemResources,
@@ -107,7 +108,7 @@ static const ThrdSpawnConfig ThrdSpawnConfig_default = {
     .stack_size = ThrdThrdSpawnConfig_default_stack_size,
     .allocator  = none()
 };
-use_Err(
+use_ErrSet(
     Thrd_SpawnErr,
     /**
      * A system-imposed limit on the number of threads was encountered.
@@ -164,7 +165,7 @@ extern void Thrd_detach(Thrd self);
  */
 extern void Thrd_join(Thrd self);
 
-use_Err(
+use_ErrSet(
     Thrd_YieldErr,
     /**
      * The system is not configured to allow yielding

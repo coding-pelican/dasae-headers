@@ -22,7 +22,7 @@ struct mem_Allocator {
 };
 
 /* Allocation Error type */
-use_Err(
+use_ErrSet(
     mem_AllocErr,
     OutOfMemory
 );

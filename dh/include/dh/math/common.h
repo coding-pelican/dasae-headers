@@ -23,7 +23,7 @@
 // `math_f64_pi` vs `math_pi_f64`
 
 /* Common error types */
-use_Err(
+use_ErrSet(
     math_Err,
     Overflow,
     Underflow,
@@ -68,23 +68,23 @@ use_Err(
 #define math_f64_inf          VAL_math_f64_inf
 
 /* Comparison operations */
-#define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqTok(cmp_lhs), pp_uniqTok(cmp_rhs), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_eq(val_lhs, val_rhs)  OP_math_eq(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                            /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_eq(val_lhs, val_rhs)  OP_math_eq(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
 #define math_neg(val_x)                OP_math_neg(val_x)
 #define math_add(val_lhs, val_rhs)     OP_math_add(val_lhs, val_rhs)
 #define math_sub(val_lhs, val_rhs)     OP_math_sub(val_lhs, val_rhs)
 #define math_mul(val_lhs, val_rhs)     OP_math_mul(val_lhs, val_rhs)
-#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqTok(div_lhs), pp_uniqTok(div_rhs), val_lhs, val_rhs)
-#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqTok(divSafe_lhs), pp_uniqTok(divSafe_rhs), val_lhs, val_rhs)
-#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqTok(mod_lhs), pp_uniqTok(mod_rhs), val_lhs, val_rhs)
-#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqTok(modSafe_lhs), pp_uniqTok(modSafe_rhs), val_lhs, val_rhs)
+#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
+#define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
+#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
+#define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
 
 /* Basic functions */
 #define math_abs(val_x)                         FUNC_math_abs(pp_uniqTok(abs_x), val_x)
@@ -212,28 +212,28 @@ use_Err(
 #define VAL_math_f64_inf          f64_inf
 
 /* Comparison operations */
-#define OP_math_cmp(_lhs, _rhs, val_lhs, val_rhs) eval({ \
-    let _lhs = (val_lhs);                                \
-    let _rhs = (val_rhs);                                \
-    var _ret = cmp_Ord_eq;                               \
-    if (isFlt(TypeOf(_lhs))) {                           \
-        if (math_abs((_lhs) - (_rhs)) <= math_eps) {     \
-            _ret = cmp_Ord_eq;                           \
-        } else if ((_lhs) < (_rhs)) {                    \
-            _ret = cmp_Ord_lt;                           \
-        } else {                                         \
-            _ret = cmp_Ord_gt;                           \
-        }                                                \
-    } else {                                             \
-        if ((_lhs) < (_rhs)) {                           \
-            _ret = cmp_Ord_lt;                           \
-        } else if ((_lhs) > (_rhs)) {                    \
-            _ret = cmp_Ord_gt;                           \
-        } else {                                         \
-            _ret = cmp_Ord_eq;                           \
-        }                                                \
-    };                                                   \
-    eval_return _ret;                                    \
+#define OP_math_cmp(__lhs, __rhs, __ret, val_lhs, val_rhs) eval({ \
+    let __lhs = (val_lhs);                                        \
+    let __rhs = (val_rhs);                                        \
+    var __ret = cmp_Ord_eq;                                       \
+    if (isFlt(TypeOf(__lhs))) {                                   \
+        if (math_abs((__lhs) - (__rhs)) <= math_eps) {            \
+            (__ret) = cmp_Ord_eq;                                 \
+        } else if ((__lhs) < (__rhs)) {                           \
+            (__ret) = cmp_Ord_lt;                                 \
+        } else {                                                  \
+            (__ret) = cmp_Ord_gt;                                 \
+        }                                                         \
+    } else {                                                      \
+        if ((__lhs) < (__rhs)) {                                  \
+            (__ret) = cmp_Ord_lt;                                 \
+        } else if ((__lhs) > (__rhs)) {                           \
+            (__ret) = cmp_Ord_gt;                                 \
+        } else {                                                  \
+            (__ret) = cmp_Ord_eq;                                 \
+        }                                                         \
+    };                                                            \
+    eval_return __ret;                                            \
 })
 #define OP_math_eq(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_eq)
 #define OP_math_ne(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) != cmp_Ord_eq)
@@ -243,57 +243,61 @@ use_Err(
 #define OP_math_ge(val_lhs, val_rhs) (!math_lt(val_lhs, val_rhs))
 
 /* Arithmetic operations */
-#define OP_math_neg(val_x)                        (-(_val_x))
-#define OP_math_add(val_lhs, val_rhs)             ((val_lhs) + (val_rhs))
-#define OP_math_sub(val_lhs, val_rhs)             ((val_lhs) - (val_rhs))
-#define OP_math_mul(val_lhs, val_rhs)             ((val_lhs) * (val_rhs))
-#define OP_math_div(_lhs, _rhs, val_lhs, val_rhs) eval({ \
-    let _lhs = (val_lhs);                                \
-    let _rhs = (val_rhs);                                \
-    var _ret = makeCleared(TypeOf(_lhs));                \
-    if ((_rhs) != 0) {                                   \
-        _ret = (_lhs) / (_rhs);                          \
-    }                                                    \
-    eval_return _ret;                                    \
+#define OP_math_neg(val_x)                                 (-(_val_x))
+#define OP_math_add(val_lhs, val_rhs)                      ((val_lhs) + (val_rhs))
+#define OP_math_sub(val_lhs, val_rhs)                      ((val_lhs) - (val_rhs))
+#define OP_math_mul(val_lhs, val_rhs)                      ((val_lhs) * (val_rhs))
+#define OP_math_div(__lhs, __rhs, __ret, val_lhs, val_rhs) eval({ \
+    let __lhs = (val_lhs);                                        \
+    let __rhs = (val_rhs);                                        \
+    var __ret = makeCleared$(TypeOf(__lhs));                      \
+    if ((__rhs) != 0) {                                           \
+        (__ret) = (__lhs) / (__rhs);                              \
+    }                                                             \
+    eval_return __ret;                                            \
 })
-#define OP_math_divSafe(_lhs, _rhs, val_lhs, val_rhs) eval({                               \
-    let   _lhs = (val_lhs);                                                                \
-    let   _rhs = (val_rhs);                                                                \
-    void* _ret = null;                                                                     \
-    if ((_rhs) == 0) {                                                                     \
-        _ret = (void*)&(Err$(TypeOf(_lhs)))err(math_Err_err(math_ErrType_DivisionByZero)); \
-    } else {                                                                               \
-        _ret = (void*)&(Err$(TypeOf(_lhs)))ok((_lhs) / (_rhs));                            \
-    }                                                                                      \
-    eval_return(*(Err$(TypeOf(_lhs))*)_ret);                                               \
+#define OP_math_divSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) eval({                                \
+    let    __lhs = (val_lhs);                                                                        \
+    let    __rhs = (val_rhs);                                                                        \
+    anyptr __ret = null;                                                                             \
+    if ((__rhs) == 0) {                                                                              \
+        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero))); \
+    } else {                                                                                         \
+        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok((__lhs) / (__rhs)));                          \
+    }                                                                                                \
+    eval_return(                                                                                     \
+        *as$(Err$(TypeOf(__lhs))*, __ret)                                                            \
+    );                                                                                               \
 })
-#define OP_math_mod(_lhs, _rhs, val_lhs, val_rhs) eval({                    \
-    let _lhs = (val_lhs);                                                   \
-    let _rhs = (val_rhs);                                                   \
-    var _ret = makeCleared(TypeOf(_lhs));                                   \
-    if ((_rhs) != 0) {                                                      \
-        if (isFlt(TypeOf(_ret))) {                                          \
-            _ret = as$(TypeOf(_ret), fmod(as$(f64, _lhs), as$(f64, _rhs))); \
-        } else {                                                            \
-            _ret = as$(TypeOf(_ret), as$(i64, _lhs) % as$(i64, _rhs));      \
-        }                                                                   \
-    }                                                                       \
-    eval_return _ret;                                                       \
+#define OP_math_mod(__lhs, __rhs, __ret, val_lhs, val_rhs) eval({                 \
+    let __lhs = (val_lhs);                                                        \
+    let __rhs = (val_rhs);                                                        \
+    var __ret = makeCleared$(TypeOf(__lhs));                                      \
+    if ((__rhs) != 0) {                                                           \
+        if (isFlt(TypeOf(__ret))) {                                               \
+            (__ret) = as$(TypeOf(__ret), fmod(as$(f64, __lhs), as$(f64, __rhs))); \
+        } else {                                                                  \
+            (__ret) = as$(TypeOf(__ret), as$(i64, __lhs) % as$(i64, __rhs));      \
+        }                                                                         \
+    }                                                                             \
+    eval_return __ret;                                                            \
 })
-#define OP_math_modSafe(_lhs, _rhs, val_lhs, val_rhs) eval({                               \
-    let   _lhs = (val_lhs);                                                                \
-    let   _rhs = (val_rhs);                                                                \
-    void* _ret = null;                                                                     \
-    if ((_rhs) == 0) {                                                                     \
-        _ret = (void*)&(Err$(TypeOf(_lhs)))err(math_Err_err(math_ErrType_DivisionByZero)); \
-    } else {                                                                               \
-        if (isFlt(TypeOf(_ret))) {                                                         \
-            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(fmod(as$(f64, _lhs), as$(f64, _rhs)));   \
-        } else {                                                                           \
-            _ret = (void*)&(Err$(TypeOf(_lhs)))ok(as$(i64, _lhs) % as$(i64, _rhs));        \
-        }                                                                                  \
-    }                                                                                      \
-    eval_return(*(Err$(TypeOf(_lhs))*)_ret);                                               \
+#define OP_math_modSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) eval({                                \
+    let    __lhs = (val_lhs);                                                                        \
+    let    __rhs = (val_rhs);                                                                        \
+    anyptr __ret = null;                                                                             \
+    if ((__rhs) == 0) {                                                                              \
+        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero))); \
+    } else {                                                                                         \
+        if (isFlt(TypeOf(__ret))) {                                                                  \
+            (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok(fmod(as$(f64, __lhs), as$(f64, __rhs)))); \
+        } else {                                                                                     \
+            (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok(as$(i64, __lhs) % as$(i64, __rhs)));      \
+        }                                                                                            \
+    }                                                                                                \
+    eval_return(                                                                                     \
+        *as$(Err$(TypeOf(__lhs))*, __ret)                                                            \
+    );                                                                                               \
 })
 
 /* Basic functions */
@@ -311,14 +315,14 @@ use_Err(
     eval_return _x < 0 ? -1 : ((_x) > 0 ? 1 : 0); \
 })
 #define FUNC_math_min(val_lhs, val_rhs) eval({ \
-    let _lhs = (val_lhs);                      \
-    let _rhs = (val_rhs);                      \
-    eval_return _lhs < _rhs ? _lhs : _rhs;     \
+    let __lhs = (val_lhs);                     \
+    let __rhs = (val_rhs);                     \
+    eval_return __lhs < __rhs ? __lhs : __rhs; \
 })
 #define FUNC_math_max(val_lhs, val_rhs) eval({ \
-    let _lhs = (val_lhs);                      \
-    let _rhs = (val_rhs);                      \
-    eval_return _lhs > _rhs ? _lhs : _rhs;     \
+    let __lhs = (val_lhs);                     \
+    let __rhs = (val_rhs);                     \
+    eval_return __lhs > __rhs ? __lhs : __rhs; \
 })
 #define FUNC_math_clamp(val_x, val_min, val_max) eval({ \
     let         _x   = (val_x);                         \
@@ -364,64 +368,64 @@ use_Err(
 })
 
 /* Exponential/logarithmic functions */
-#define FUNC_math_sqrt(val_x) eval({                  \
-    let _x   = (val_x);                               \
-    var _ret = makeCleared(TypeOf(_x));               \
-    if (0 <= _x) {                                    \
-        _ret = as$(TypeOf(_ret), sqrt(as$(f64, _x))); \
-    }                                                 \
-    eval_return _ret;                                 \
+#define FUNC_math_sqrt(val_x) eval({                    \
+    let _x    = (val_x);                                \
+    var __ret = makeCleared$(TypeOf(_x));               \
+    if (0 <= _x) {                                      \
+        __ret = as$(TypeOf(__ret), sqrt(as$(f64, _x))); \
+    }                                                   \
+    eval_return __ret;                                  \
 })
-#define FUNC_math_sqrtSafe(val_x) eval({                                                \
-    let   _x   = (val_x);                                                               \
-    void* _ret = null;                                                                  \
-    if (_x < 0) {                                                                       \
-        /* Square root of negative number */                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain)); \
-    } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(as$(TypeOf(_ret), sqrt(as$(f64, _x))));     \
-    }                                                                                   \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                              \
+#define FUNC_math_sqrtSafe(val_x) eval({                                                    \
+    let    _x    = (val_x);                                                                 \
+    anyptr __ret = null;                                                                    \
+    if (_x < 0) {                                                                           \
+        /* Square root of negative number */                                                \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+    } else {                                                                                \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))ok(as$(TypeOf(__ret), sqrt(as$(f64, _x))));    \
+    }                                                                                       \
+    eval_return(*(Err$(TypeOf(_x))*)__ret);                                                 \
 })
-#define FUNC_math_pow(val_base, val_exp) eval({                         \
-    let _base = (val_base);                                             \
-    let _exp  = (val_exp);                                              \
-    var _ret  = makeCleared(TypeOf(_base));                             \
-    if (_base != 0 || 0 < _exp) {                                       \
-        _ret = as$(TypeOf(_ret), pow(as$(f64, _base), as$(f64, _exp))); \
-    }                                                                   \
-    eval_return _ret;                                                   \
+#define FUNC_math_pow(val_base, val_exp) eval({                           \
+    let _base = (val_base);                                               \
+    let _exp  = (val_exp);                                                \
+    var __ret = makeCleared$(TypeOf(_base));                              \
+    if (_base != 0 || 0 < _exp) {                                         \
+        __ret = as$(TypeOf(__ret), pow(as$(f64, _base), as$(f64, _exp))); \
+    }                                                                     \
+    eval_return __ret;                                                    \
 })
-#define FUNC_math_powSafe(val_base, val_exp) eval({                                                      \
-    let   _base = (val_base);                                                                            \
-    let   _exp  = (val_exp);                                                                             \
-    void* _ret  = null;                                                                                  \
-    if (_base == 0 && _exp <= 0) {                                                                       \
-        /* Invalid base/exponent combination */                                                          \
-        _ret = (void*)&(Err$(TypeOf(_base)))err(math_Err_err(math_ErrType_InvalidDomain));               \
-    } else {                                                                                             \
-        _ret = (void*)&(Err$(TypeOf(_base)))ok(as$(TypeOf(_ret), pow(as$(f64, _base), as$(f64, _exp)))); \
-    }                                                                                                    \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                                               \
+#define FUNC_math_powSafe(val_base, val_exp) eval({                                                           \
+    let    _base = (val_base);                                                                                \
+    let    _exp  = (val_exp);                                                                                 \
+    anyptr __ret = null;                                                                                      \
+    if (_base == 0 && _exp <= 0) {                                                                            \
+        /* Invalid base/exponent combination */                                                               \
+        __ret = (anyptr) & (Err$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain));                \
+    } else {                                                                                                  \
+        __ret = (anyptr) & (Err$(TypeOf(_base)))ok(as$(TypeOf(__ret), pow(as$(f64, _base), as$(f64, _exp)))); \
+    }                                                                                                         \
+    eval_return(*(Err$(TypeOf(_x))*)__ret);                                                                   \
 })
-#define FUNC_math_rsqrt(val_x) eval({                       \
-    let _x   = (val_x);                                     \
-    var _ret = makeCleared(TypeOf(_x));                     \
-    if (0 < _x) {                                           \
-        _ret = as$(TypeOf(_ret), 1.0 / sqrt(as$(f64, _x))); \
-    }                                                       \
-    eval_return _ret;                                       \
+#define FUNC_math_rsqrt(val_x) eval({                         \
+    let _x    = (val_x);                                      \
+    var __ret = makeCleared$(TypeOf(_x));                     \
+    if (0 < _x) {                                             \
+        __ret = as$(TypeOf(__ret), 1.0 / sqrt(as$(f64, _x))); \
+    }                                                         \
+    eval_return __ret;                                        \
 })
-#define FUNC_math_rsqrtSafe(val_x) eval({                                                 \
-    let   _x   = (val_x);                                                                 \
-    void* _ret = null;                                                                    \
-    if (_x <= 0) {                                                                        \
-        /* Invalid input for inverse square root */                                       \
-        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain));   \
-    } else {                                                                              \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(as$(TypeOf(_ret), 1.0 / sqrt(as$(f64, _x)))); \
-    }                                                                                     \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                                \
+#define FUNC_math_rsqrtSafe(val_x) eval({                                                      \
+    let    _x    = (val_x);                                                                    \
+    anyptr __ret = null;                                                                       \
+    if (_x <= 0) {                                                                             \
+        /* Invalid input for inverse square root */                                            \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain));    \
+    } else {                                                                                   \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))ok(as$(TypeOf(__ret), 1.0 / sqrt(as$(f64, _x)))); \
+    }                                                                                          \
+    eval_return(*(Err$(TypeOf(_x))*)__ret);                                                    \
 })
 
 /* Trigonometric functions */
@@ -437,68 +441,68 @@ use_Err(
     let         _x = (val_x);                       \
     eval_return as$(TypeOf(_x), tan(as$(f64, _x))); \
 })
-#define FUNC_math_asin(val_x) eval({    \
-    let _x   = (val_x);                 \
-    var _ret = makeCleared(TypeOf(_x)); \
-    if (-1 <= _x && _x <= 1) {          \
-        _ret = asin(_x);                \
-    }                                   \
-    eval_return _ret;                   \
+#define FUNC_math_asin(val_x) eval({      \
+    let _x    = (val_x);                  \
+    var __ret = makeCleared$(TypeOf(_x)); \
+    if (-1 <= _x && _x <= 1) {            \
+        __ret = asin(_x);                 \
+    }                                     \
+    eval_return __ret;                    \
 })
-#define FUNC_math_asinSafe(val_x) eval({                                                \
-    let   _x   = (val_x);                                                               \
-    void* _ret = null;                                                                  \
-    if (_x < -1 || 1 < _x) {                                                            \
-        /* Inverse sine domain error */                                                 \
-        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain)); \
-    } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(asin(_x));                                  \
-    }                                                                                   \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                              \
+#define FUNC_math_asinSafe(val_x) eval({                                                    \
+    let    _x    = (val_x);                                                                 \
+    anyptr __ret = null;                                                                    \
+    if (_x < -1 || 1 < _x) {                                                                \
+        /* Inverse sine domain error */                                                     \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+    } else {                                                                                \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))ok(asin(_x));                                  \
+    }                                                                                       \
+    eval_return(*(Err$(TypeOf(_x))*)__ret);                                                 \
 })
-#define FUNC_math_acos(val_x) eval({    \
-    let _x   = (val_x);                 \
-    var _ret = makeCleared(TypeOf(_x)); \
-    if (-1 <= _x && _x <= 1) {          \
-        _ret = acos(_x);                \
-    }                                   \
-    eval_return _ret;                   \
+#define FUNC_math_acos(val_x) eval({      \
+    let _x    = (val_x);                  \
+    var __ret = makeCleared$(TypeOf(_x)); \
+    if (-1 <= _x && _x <= 1) {            \
+        __ret = acos(_x);                 \
+    }                                     \
+    eval_return __ret;                    \
 })
-#define FUNC_math_acosSafe(val_x) eval({                                                \
-    let   _x   = (val_x);                                                               \
-    void* _ret = null;                                                                  \
-    if (_x < -1 || 1 < _x) {                                                            \
-        /* Inverse cosine domain error */                                               \
-        _ret = (void*)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrType_InvalidDomain)); \
-    } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_x)))ok(acos(_x));                                  \
-    }                                                                                   \
-    eval_return(*(Err$(TypeOf(_x))*)_ret);                                              \
+#define FUNC_math_acosSafe(val_x) eval({                                                    \
+    let    _x    = (val_x);                                                                 \
+    anyptr __ret = null;                                                                    \
+    if (_x < -1 || 1 < _x) {                                                                \
+        /* Inverse cosine domain error */                                                   \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+    } else {                                                                                \
+        __ret = (anyptr) & (Err$(TypeOf(_x)))ok(acos(_x));                                  \
+    }                                                                                       \
+    eval_return(*(Err$(TypeOf(_x))*)__ret);                                                 \
 })
 #define FUNC_math_atan(val_x) eval({ \
     let         _x = (val_x);        \
     eval_return atan(_x);            \
 })
 #define FUNC_math_atan2(val_y, val_x) eval({ \
-    let _y   = (val_y);                      \
-    let _x   = (val_x);                      \
-    var _ret = makeCleared(TypeOf(_y));      \
+    let _y    = (val_y);                     \
+    let _x    = (val_x);                     \
+    var __ret = makeCleared$(TypeOf(_y));    \
     if (_y != 0 || _x != 0) {                \
-        _ret = atan2(_y, _x);                \
+        __ret = atan2(_y, _x);               \
     }                                        \
-    eval_return _ret;                        \
+    eval_return __ret;                       \
 })
-#define FUNC_math_atan2Safe(val_y, val_x) eval({                                        \
-    let   _y   = (val_y);                                                               \
-    let   _x   = (val_x);                                                               \
-    void* _ret = null;                                                                  \
-    if (_x == 0 && _y == 0) {                                                           \
-        /* atan2(0, 0) is undefined */                                                  \
-        _ret = (void*)&(Err$(TypeOf(_y)))err(math_Err_err(math_ErrType_InvalidDomain)); \
-    } else {                                                                            \
-        _ret = (void*)&(Err$(TypeOf(_y)))ok(atan2(_y, _x));                             \
-    }                                                                                   \
-    eval_return(*(Err$(TypeOf(_y))*)_ret);                                              \
+#define FUNC_math_atan2Safe(val_y, val_x) eval({                                            \
+    let    _y    = (val_y);                                                                 \
+    let    _x    = (val_x);                                                                 \
+    anyptr __ret = null;                                                                    \
+    if (_x == 0 && _y == 0) {                                                               \
+        /* atan2(0, 0) is undefined */                                                      \
+        __ret = (anyptr) & (Err$(TypeOf(_y)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+    } else {                                                                                \
+        __ret = (anyptr) & (Err$(TypeOf(_y)))ok(atan2(_y, _x));                             \
+    }                                                                                       \
+    eval_return(*(Err$(TypeOf(_y))*)__ret);                                                 \
 })
 
 #endif /* MATH_COMMON_INCLUDED */

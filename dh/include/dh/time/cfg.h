@@ -21,9 +21,6 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/opt.h"
-
 #if defined(_WIN32) || defined(_WIN64)
 /* Windows */
 #ifndef WIN32_LEAN_AND_MEAN
@@ -38,6 +35,9 @@ extern "C" {
 #include <sys/time.h>
 #endif
 #include <time.h>
+
+#include "dh/core.h"
+#include "dh/opt.h"
 
 /*========== Macros and Definitions =========================================*/
 

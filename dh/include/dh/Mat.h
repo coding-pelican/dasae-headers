@@ -34,7 +34,7 @@ typedef union Mat       Mat;
 #define impl_Mat$(T) GEN__impl_Mat$(T)
 
 #define Mat_fromSli$(TMat, var_sli, u32_width, u32_height) OP__Mat_fromSli$(TMat, var_sli, u32_width, u32_height)
-#define Mat_at(var_self, u32_x, u32_y)                     OP__Mat_at(pp_uniqTok(_self), pp_uniqTok(_x), pp_uniqTok(_y), var_self, u32_x, u32_y)
+#define Mat_at(var_self, u32_x, u32_y)                     OP__Mat_at(pp_uniqTok(self), pp_uniqTok(x), pp_uniqTok(y), var_self, u32_x, u32_y)
 
 /*========== Implementations ================================================*/
 
@@ -84,13 +84,13 @@ union Mat {
         .height = _height,                                            \
     });                                                               \
 })
-#define OP__Mat_at(_self, _x, _y, var_self, u32_x, u32_y) eval({                            \
-    let       _self = &(var_self);                                                          \
-    const u32 _x    = u32_x;                                                                \
-    const u32 _y    = u32_y;                                                                \
-    debug_assert((_x) < (_self)->width);                                                    \
-    debug_assert((_y) < (_self)->height);                                                   \
-    eval_return Sli_at((_self)->items, as$(usize, _x) + (_y) * as$(usize, (_self)->width)); \
+#define OP__Mat_at(__self, __x, __y, var_self, u32_x, u32_y) eval({                           \
+    let       __self = &(var_self);                                                           \
+    const u32 __x    = u32_x;                                                                 \
+    const u32 __y    = u32_y;                                                                 \
+    debug_assert((__x) < (__self)->width);                                                    \
+    debug_assert((__y) < (__self)->height);                                                   \
+    eval_return Sli_at((__self)->items, as$(usize, __x) + as$(usize, __y) * (__self)->width); \
 })
 
 #if defined(__cplusplus)

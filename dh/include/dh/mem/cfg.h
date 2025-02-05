@@ -40,7 +40,7 @@ extern "C" {
 /*========== Memory Error ===================================================*/
 
 /* Allocation Error type */
-use_Err(
+use_ErrSet(
     mem_AllocErr,
     OutOfMemory
 );

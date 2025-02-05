@@ -8,15 +8,9 @@
 #include "Body.h"
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_Err(utils_MulErr, Overflow);
-force_inline Err$usize utils_usize_mulSafe(usize lhs, usize rhs) {
-    reserveReturn(Err$usize);
-    if (0 < lhs && usize_limit / lhs < rhs) {
-        // Multiplication would overflow
-        return_err(utils_MulErr_err(utils_MulErrType_Overflow));
-    }
-    return_ok(lhs * rhs);
-}
+use_ErrSet(utils_MulErr, Overflow);
+use_ErrSet$(utils_MulErr, usize);
+force_inline utils_MulErr$usize utils_usize_mulSafe(usize lhs, usize rhs) must_check;
 
 // Insertion sort for small arrays
 extern void utils_insertionSort(
@@ -31,15 +25,20 @@ extern void utils_insertionSortWithArg(
     anyptr_const arg
 );
 
+use_ErrSet(
+    utils_SortErr,
+    utils_MulErr_Overflow,
+    mem_Alloc_OutOfMemory
+);
 // Modernized merge sort using temporary buffer instead of allocating new memory
-extern Err$void utils_mergeSortUsingTempRecur(
+extern utils_SortErr$void utils_mergeSortUsingTempRecur(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) must_check;
 
 // Modernized merge sort using temporary buffer with arg
-extern Err$void utils_mergeSortWithArgUsingTempRecur(
+extern utils_SortErr$void utils_mergeSortWithArgUsingTempRecur(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
@@ -49,14 +48,14 @@ extern Err$void utils_mergeSortWithArgUsingTempRecur(
 #define utils_stableSort_threshold_merge_to_insertion 32
 
 // Modernized stable sort (using merge sort with insertion sort)
-extern Err$void utils_stableSort(
+extern utils_SortErr$void utils_stableSort(
     mem_Allocator allocator,
     meta_Sli      base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) must_check;
 
 // Modernized stable sort with arg (using merge sort with insertion sort)
-extern Err$void utils_stableSortWithArg(
+extern utils_SortErr$void utils_stableSortWithArg(
     mem_Allocator allocator,
     meta_Sli      base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
@@ -64,14 +63,14 @@ extern Err$void utils_stableSortWithArg(
 ) must_check;
 
 // Modernized stable sort (using merge sort with insertion sort)
-extern Err$void utils_stableSortUsingTemp(
+extern utils_SortErr$void utils_stableSortUsingTemp(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) must_check;
 
 // Modernized stable sort with arg (using merge sort with insertion sort)
-extern Err$void utils_stableSortWithArgUsingTemp(
+extern utils_SortErr$void utils_stableSortWithArgUsingTemp(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
@@ -79,7 +78,18 @@ extern Err$void utils_stableSortWithArgUsingTemp(
 ) must_check;
 
 decl_ArrList$(Body);
-decl_Err$(ArrList$Body);
-extern Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) must_check;
+use_ErrSet$(utils_SortErr, ArrList$Body);
+extern utils_SortErr$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) must_check;
+
+/*========== Implementations ================================================*/
+
+force_inline utils_MulErr$usize utils_usize_mulSafe(usize lhs, usize rhs) {
+    reserveReturn(utils_MulErr$usize);
+    if (0 < lhs && usize_limit / lhs < rhs) {
+        // Multiplication would overflow
+        return_err(utils_MulErr_Overflow());
+    }
+    return_ok(lhs * rhs);
+}
 
 #endif /* UTILS_INCLUDED */

@@ -84,26 +84,26 @@ void mem_Allocator_rawFree_debug(
 #endif
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
-    reserveReturn(Err$meta_Ptr);
+mem_AllocErr$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
+    reserveReturn(mem_AllocErr$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align);
     if_none(opt) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
 }
 #else
-Err$meta_Ptr mem_Allocator_create_debug(
+mem_AllocErr$meta_Ptr mem_Allocator_create_debug(
     mem_Allocator self,
     TypeInfo      type,
     const char*   file,
     int           line,
     const char*   func
 ) {
-    reserveReturn(Err$meta_Ptr);
+    reserveReturn(mem_AllocErr$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align, file, line, func);
     if_none(opt) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
 }
@@ -139,16 +139,16 @@ void mem_Allocator_destroy_debug(
 #endif
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
-    reserveReturn(Err$meta_Sli);
+mem_AllocErr$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
+    reserveReturn(mem_AllocErr$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align);
     if_none(opt) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
 }
 #else
-Err$meta_Sli mem_Allocator_alloc_debug(
+mem_AllocErr$meta_Sli mem_Allocator_alloc_debug(
     mem_Allocator self,
     TypeInfo      type,
     usize         count,
@@ -156,10 +156,10 @@ Err$meta_Sli mem_Allocator_alloc_debug(
     int           line,
     const char*   func
 ) {
-    reserveReturn(Err$meta_Sli);
+    reserveReturn(mem_AllocErr$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align, file, line, func);
     if_none(opt) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
 }

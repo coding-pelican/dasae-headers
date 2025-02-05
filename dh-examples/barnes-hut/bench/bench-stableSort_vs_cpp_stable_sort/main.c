@@ -12,12 +12,12 @@
 /*========== Test Targets ===================================================*/
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_Err(MulErr, Overflow);
+use_ErrSet(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrType_Overflow));
+        return_err(MulErr_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }
@@ -196,7 +196,7 @@ BenchResult benchmark_stableSort(BenchParams params) {
     // Copy test data
     let c_data = meta_cast$(
         Sli$TestElem, catch (mem_Allocator_alloc(allocator, typeInfo(TestElem), params.len), err, {
-            exit(Err_type(err));
+            exit(err.ctx);
         })
     );
     memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
@@ -278,19 +278,19 @@ int main(void) {
 
     printf("\n-- 1,000 elements --\n");
     catch (benchmark(1000, iterations), err, {
-        exit(Err_type(err));
+        exit(err.ctx);
     });
     printf("\n-- 10,000 elements --\n");
     catch (benchmark(10000, iterations), err, {
-        exit(Err_type(err));
+        exit(err.ctx);
     });
     printf("\n-- 100,000 elements --\n");
     catch (benchmark(100000, iterations), err, {
-        exit(Err_type(err));
+        exit(err.ctx);
     });
     printf("\n-- 1,000,000 elements --\n");
     catch (benchmark(1000000, iterations), err, {
-        exit(Err_type(err));
+        exit(err.ctx);
     });
 
     printf("\ndone.\n");

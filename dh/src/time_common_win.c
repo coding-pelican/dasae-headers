@@ -2,8 +2,6 @@
 
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
 
-#define time_intervals_per_sec (10000000ULL)
-
 void time_sleep(time_Duration duration) {
     HANDLE timer = CreateWaitableTimerExW(
         null,
@@ -18,7 +16,7 @@ void time_sleep(time_Duration duration) {
 
     LARGE_INTEGER li = cleared();
     // Convert to negative 100-nanosecond intervals for relative time
-    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs * time_intervals_per_sec + (duration.nanos / 100)));
+    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs * time_SysTime_intervals_per_sec + (duration.nanos / 100)));
 
     if (SetWaitableTimer(timer, &li, 0, null, null, false)) {
         WaitForSingleObject(timer, INFINITE);

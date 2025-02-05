@@ -476,7 +476,7 @@ Err$void State_update(State* s, f64 dt) {
     if (engine_Key_pressed(engine_KeyCode_space)) {
         log_debug("pressed space\n");
         let maybe_firework = catch (State_spawnFirework(s), err, {
-            log_error("failed to spawn firework: %s\n", Err_message(err));
+            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
         if_some(maybe_firework, firework) {
@@ -488,7 +488,7 @@ Err$void State_update(State* s, f64 dt) {
     if (engine_Mouse_pressed(engine_MouseButton_left)) {
         log_debug("pressed left mouse button\n");
         let maybe_firework = catch (State_spawnFirework(s), err, {
-            log_error("failed to spawn firework: %s\n", Err_message(err));
+            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
         if_some(maybe_firework, firework) {

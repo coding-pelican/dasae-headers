@@ -25,21 +25,20 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+/* Data Types */
 typedef struct time_Duration time_Duration;
-typedef struct time_Instant  time_Instant;
-typedef time_SysTimePlatform time_SysTime;
+decl_Opt$(time_Duration);
+typedef struct time_Instant time_Instant;
+decl_Opt$(time_Instant);
+typedef struct time_SysTime time_SysTime;
+decl_Opt$(time_SysTime);
 
-static const u32 time_nanos_per_sec   = 1000u * 1000u * 1000u;
-static const u32 time_nanos_per_milli = 1000u * 1000u;
-static const u32 time_nanos_per_micro = 1000u;
-static const u32 time_millis_per_sec  = 1000u;
-static const u32 time_micros_per_sec  = 1000u * 1000u;
-
-// static const u32 time_ns_per_s  = time_nanos_per_sec;
-// static const u32 time_ns_per_ms = time_nanos_per_milli;
-// static const u32 time_ns_per_us = time_nanos_per_micro;
-// static const u32 time_ms_per_s  = time_millis_per_sec;
-// static const u32 time_us_per_s  = time_micros_per_sec;
+/* Constants */
+static const u32 time_nanos_per_sec   = pp_literal_int(1, 000, 000, 000u);
+static const u32 time_nanos_per_milli = pp_literal_int(1, 000, 000);
+static const u32 time_nanos_per_micro = pp_literal_int(1, 000u);
+static const u32 time_millis_per_sec  = pp_literal_int(1, 000u);
+static const u32 time_micros_per_sec  = pp_literal_int(1, 000, 000u);
 
 static const u64 time_secs_per_min  = 60ull;
 static const u64 time_mins_per_hour = 60ull;

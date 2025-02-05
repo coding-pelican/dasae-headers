@@ -1,6 +1,7 @@
 #include "dh/time/Duration.h"
 #include "dh/core/prim/flt.h"
 #include "dh/debug/assert.h"
+#include "dh/time/common.h"
 
 
 time_Duration time_Duration_from(u64 secs, u32 nanos) {
@@ -48,6 +49,26 @@ time_Duration time_Duration_fromSecs_f64(f64 secs) {
 
 f64 time_Duration_asSecs_f64(time_Duration self) {
     return as$(f64, self.secs) + as$(f64, self.nanos) / as$(f64, time_nanos_per_sec);
+}
+
+time_Duration op_fnAdd(time_Duration) {
+    return unwrap(time_Duration_addChecked(self, other));
+}
+
+time_Duration op_fnSub(time_Duration) {
+    return unwrap(time_Duration_subChecked(self, other));
+}
+
+time_Duration op_fnMulBy(time_Duration, u64) {
+    return unwrap(time_Duration_mulChecked_u64(self, other));
+}
+
+time_Duration op_fnDivBy(time_Duration, u64) {
+    return unwrap(time_Duration_divChecked_u64(self, other));
+}
+
+bool time_Duration_isZero(time_Duration self) {
+    return time_Duration_eq(self, time_Duration_zero);
 }
 
 Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs) {
@@ -98,56 +119,4 @@ Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs) {
     let secs        = total_nanos / time_nanos_per_sec;
     let nanos       = as$(u32, total_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
-}
-
-time_Duration op_fnAdd(time_Duration) {
-    u64 total_nanos = as$(u64, self.nanos) + other.nanos;
-    return (time_Duration){
-        self.secs + other.secs + (total_nanos >= time_nanos_per_sec),
-        as$(u32,
-            time_nanos_per_sec <= total_nanos
-                ? total_nanos - time_nanos_per_sec
-                : total_nanos
-        )
-    };
-}
-
-time_Duration op_fnSub(time_Duration) {
-    return (time_Duration){
-        self.secs - other.secs - (self.nanos < other.nanos),
-        self.nanos < other.nanos
-            ? self.nanos + time_nanos_per_sec - other.nanos
-            : self.nanos - other.nanos
-    };
-}
-
-time_Duration op_fnMulBy(time_Duration, u64) {
-    u64 total_nanos = self.nanos * other;
-    return (time_Duration){
-        self.secs * other + total_nanos / time_nanos_per_sec,
-        as$(u32, total_nanos % time_nanos_per_sec)
-    };
-}
-
-time_Duration op_fnDivBy(time_Duration, u64) {
-    claim_assert_fmt(other != 0, "Division by zero");
-    // This logic only divides the nanos field by other and divides the secs field by other separately.
-    // That loses the fractional portion contributed by the secs.
-    // For example, if self = { secs = 1, nanos = 500_000_000 } (i.e. 1.5 s) and you divide by 2,
-    // you’d want 0.75 s. Instead, the above code returns 0.25 s,
-    // because it is ignoring the 1 second’s worth of nanoseconds during the division.
-
-    // Combine both secs and nanos into total nanoseconds before dividing
-    // Watch out for potential overflow if secs is very large,
-    // but for typical usage this is acceptable.
-    u64 total_nanos = as$(u64, self.secs) * as$(u64, time_nanos_per_sec) + as$(u64, self.nanos);
-    total_nanos /= other;
-    return (time_Duration){
-        .secs  = total_nanos / time_nanos_per_sec,
-        .nanos = as$(u32, total_nanos % time_nanos_per_sec)
-    };
-}
-
-bool time_Duration_isZero(time_Duration self) {
-    return self.secs == 0 && self.nanos == 0;
 }

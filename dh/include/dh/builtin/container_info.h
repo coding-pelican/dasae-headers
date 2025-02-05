@@ -161,7 +161,7 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0 /* Example Usage */
+#if EXAMPLE_USAGE
 #include "dh/core.h"
 
 struct Data {
@@ -190,7 +190,7 @@ void example_usage(void) {
     /* Field analysis */
     usize name_padding = fieldPadding(struct Data, name);
 }
-#endif /* Example Usage */
+#endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

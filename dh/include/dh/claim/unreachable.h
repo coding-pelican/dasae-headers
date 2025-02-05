@@ -94,7 +94,7 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if /* Example Usage */ 0
+#if EXAMPLE_USAGE
 typedef enum Status {
     Status_OK,
     Status_ERROR
@@ -124,7 +124,7 @@ int getPositive(int x) {
     }
     return x;
 }
-#endif /* Example Usage */
+#endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

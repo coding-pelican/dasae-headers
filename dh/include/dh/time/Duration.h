@@ -30,7 +30,7 @@ struct time_Duration {
     u64 secs;
     u32 nanos;
 };
-use_Opt$(time_Duration);
+impl_Opt$(time_Duration);
 
 /* Constructors */
 extern time_Duration time_Duration_from(u64 secs, u32 nanos);
@@ -54,15 +54,15 @@ extern time_Duration time_Duration_fromSecs_f64(f64 secs);
 extern f64           time_Duration_asSecs_f64(time_Duration self);
 
 /* Arithmetic */
-extern Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs);
-extern Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs);
-extern Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs);
-extern Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs);
-
 extern time_Duration op_fnAdd(time_Duration);
 extern time_Duration op_fnSub(time_Duration);
 extern time_Duration op_fnMulBy(time_Duration, u64);
 extern time_Duration op_fnDivBy(time_Duration, u64);
+
+extern Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs);
+extern Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs);
 
 /* Comparison */
 force_inline cmp_fnCmp(time_Duration) {
@@ -112,11 +112,11 @@ cmp_fnGe_default(time_Duration);
     )
 
 /* Constants */
-static const time_Duration time_Duration_zero        = literal_time_Duration_fromNanos(0);
-static const time_Duration time_Duration_second      = literal_time_Duration_fromSecs(1);
-static const time_Duration time_Duration_millisecond = literal_time_Duration_fromMillis(1);
-static const time_Duration time_Duration_microsecond = literal_time_Duration_fromMicros(1);
-static const time_Duration time_Duration_nanosecond  = literal_time_Duration_fromNanos(1);
+static const time_Duration time_Duration_zero   = literal_time_Duration_fromNanos(0);
+static const time_Duration time_Duration_secs   = literal_time_Duration_fromSecs(1);
+static const time_Duration time_Duration_millis = literal_time_Duration_fromMillis(1);
+static const time_Duration time_Duration_micros = literal_time_Duration_fromMicros(1);
+static const time_Duration time_Duration_nanos  = literal_time_Duration_fromNanos(1);
 
 #if defined(__cplusplus)
 } /* extern "C" */

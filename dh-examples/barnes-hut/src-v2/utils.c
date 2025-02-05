@@ -257,7 +257,7 @@ Err$void utils_stableSortUsingTemp(
     reserveReturn(Err$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
     return_void();
@@ -272,7 +272,7 @@ Err$void utils_stableSortWithArgUsingTemp(
     reserveReturn(Err$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
     try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
     return_void();
@@ -363,7 +363,7 @@ force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrType_Overflow));
+        return_err(MulErr_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }

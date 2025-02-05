@@ -23,7 +23,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
 
     engine_Platform* const platform = (engine_Platform*)malloc(sizeof(engine_Platform));
     if (!platform) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(mem_AllocErr_OutOfMemory());
     }
 
     switch (params->backend_type) {
@@ -31,7 +31,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         engine_Win32ConsoleBackend* const backend = (engine_Win32ConsoleBackend*)malloc(sizeof(engine_Win32ConsoleBackend));
         if (!backend) {
             free(platform);
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_OutOfMemory());
         }
         // Initialize console backend
         // HANDLE hConsole = CreateConsoleScreenBuffer(
@@ -44,7 +44,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         // if (hConsole == INVALID_HANDLE_VALUE) {
         //     free(backend);
         //     free(platform);
-        //     return_err(engine_PlatformErr_err(engine_PlatformErrType_AccessDenied));
+        //     return_err(engine_PlatformErr_err(engine_PlatformErrCode_AccessDenied));
         // }
 
         // Initialize console backend
@@ -108,7 +108,7 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
         if (!backend->buffer) {
             free(backend);
             free(platform);
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_OutOfMemory());
         }
 
         backend->output_handle  = hOutput;
@@ -134,19 +134,19 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
     case engine_RenderBackendType_win32_gdi:
     case engine_RenderBackendType_directx:
         free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrType_NotImplemented));
+        return_err(engine_PlatformErr_err(engine_PlatformErrCode_NotImplemented));
 
     case engine_RenderBackendType_custom:
         if (!params->custom_data) {
             free(platform);
-            return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
+            return_err(engine_PlatformErr_err(engine_PlatformErrCode_InvalidArgument));
         }
         platform->backend = params->custom_data;
         return_ok(platform);
 
     default:
         free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrType_InvalidArgument));
+        return_err(engine_PlatformErr_err(engine_PlatformErrCode_InvalidArgument));
     }
 }
 
@@ -225,6 +225,8 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
             case FOCUS_EVENT:
                 // Handle focus event
                 backend->last_metrics.is_focused = input_record[i].Event.FocusEvent.bSetFocus;
+                break;
+            default:
                 break;
             }
         }

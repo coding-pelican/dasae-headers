@@ -7,7 +7,7 @@ Err$Ptr$game_State game_State_create(void) {
     reserveReturn(Err$Ptr$game_State);
 
     let state = (game_State*)malloc(sizeof(game_State));
-    if (!state) { return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory)); }
+    if (!state) { return_err(mem_AllocErr_OutOfMemory()); }
 
     state->player_x     = 5.09f;
     state->player_y     = 14.7f;

@@ -4,7 +4,7 @@
 #include "dh/mem/cfg.h"
 #include <malloc.h>
 
-void mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs) {
+force_inline void mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
     let tmp_ptr = as$(u8*, alloca(tmp_len));
@@ -63,12 +63,12 @@ void utils_insertionSortWithArg(
 }
 
 // TODO: 와 큰일 날 뻔... 직접적인 meta_Sli 생성은 금지해야겠다. meta_Sli_slice 함수 작성이 시급하다.
-Err$void utils_mergeSortUsingTempRecur( // NOLINT
+utils_SortErr$void utils_mergeSortUsingTempRecur( // NOLINT
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(utils_SortErr$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
         utils_insertionSort(base_slice, compareFn);
         return_void();
@@ -139,13 +139,13 @@ Err$void utils_mergeSortUsingTempRecur( // NOLINT
     return_void();
 }
 
-Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
+utils_SortErr$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
     anyptr_const arg
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(utils_SortErr$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
         utils_insertionSortWithArg(base_slice, compareFn, arg);
         return_void();
@@ -218,12 +218,12 @@ Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     return_void();
 }
 
-Err$void utils_stableSort(
+utils_SortErr$void utils_stableSort(
     mem_Allocator allocator,
     meta_Sli      base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(utils_SortErr$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
         let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
@@ -233,13 +233,13 @@ Err$void utils_stableSort(
     scope_returnReserved;
 }
 
-Err$void utils_stableSortWithArg(
+utils_SortErr$void utils_stableSortWithArg(
     mem_Allocator allocator,
     meta_Sli      base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
     anyptr_const arg
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(utils_SortErr$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
         let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
@@ -249,30 +249,30 @@ Err$void utils_stableSortWithArg(
     scope_returnReserved;
 }
 
-Err$void utils_stableSortUsingTemp(
+utils_SortErr$void utils_stableSortUsingTemp(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(utils_SortErr$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(utils_SortErr_mem_Alloc_OutOfMemory());
     }
     try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
     return_void();
 }
 
-Err$void utils_stableSortWithArgUsingTemp(
+utils_SortErr$void utils_stableSortWithArgUsingTemp(
     Sli$u8   temp_buffer,
     meta_Sli base_slice,
     cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
     anyptr_const arg
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(utils_SortErr$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+        return_err(utils_SortErr_mem_Alloc_OutOfMemory());
     }
     try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
     return_void();
@@ -288,8 +288,8 @@ static_inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     return cmp_Ord_eq;
 }
 
-Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
-    reserveReturn(Err$ArrList$Body);
+utils_SortErr$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
+    reserveReturn(utils_SortErr$ArrList$Body);
 
     // Initialize random seed
     Random_initWithSeed(0);
@@ -358,17 +358,17 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 
 #if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_Err(MulErr, Overflow);
+use_ErrSet(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrType_Overflow));
+        return_err(MulErr_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static Err$void mergeSortWithTmpRecur( // NOLINT
+static utils_SortErr$void mergeSortWithTmpRecur( // NOLINT
     anyptr base,
     usize  num,
     usize  size,
@@ -376,7 +376,7 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
     anyptr arg,
     Sli$u8 temp_buffer
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(utils_SortErr$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }
 
         let mid        = num / 2;
@@ -424,7 +424,7 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
 }
 
 // Modernized stable sort (using merge sort)
-static Err$void stableSort(
+static utils_SortErr$void stableSort(
     anyptr base,
     usize  num,
     usize  size,
@@ -432,7 +432,7 @@ static Err$void stableSort(
     anyptr        arg,
     mem_Allocator allocator
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(utils_SortErr$void) {
         // Allocate temporary buffer using the provided allocator
         let checked_size = try(mulSafe(num, size));
         let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));

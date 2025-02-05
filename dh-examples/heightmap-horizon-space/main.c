@@ -26,19 +26,19 @@ typedef struct TerrainData {
     u32       height;
 } TerrainData;
 use_Opt$(TerrainData);
-use_Err$(TerrainData);
 
-use_Err(
+use_ErrSet(
     TerrainDataErr,
     FailedToLoadHeightMap,
     FailedToLoadColorMap,
     NotEqualMapsDimension
 );
+use_ErrSet$(TerrainDataErr, TerrainData);
 
 // Suppose "heightmap.png" is an 8-bit grayscale PNG,
 // and "colormap.png" is an 8-bit RGB or RGBA PNG.
-Err$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file) {
-    scope_reserveReturn(Err$TerrainData) {
+TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file) {
+    scope_reserveReturn(TerrainDataErr$TerrainData) {
         debug_assert_nonnull(heightmap_file);
         debug_assert_nonnull(colormap_file);
 
@@ -49,7 +49,7 @@ Err$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, 
         u8* heightmap_data            = stbi_load(heightmap_file, &width, &height, &heightmap_actual_channels, 1); // request 1 channel
         if (!heightmap_data) {
             log_error("Failed to load heightmap: %s\n", heightmap_file);
-            return_err(TerrainDataErr_err(TerrainDataErrType_FailedToLoadHeightMap));
+            return_err(TerrainDataErr_FailedToLoadHeightMap());
         }
         defer(stbi_image_free(heightmap_data));
 
@@ -70,7 +70,7 @@ Err$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, 
         u8* colormap_data     = stbi_load(colormap_file, &width, &height, &colormap_channels, 0); // 0 means "load as-is"
         if (!colormap_data) {
             log_error("Failed to load colormap: %s\n", colormap_file);
-            return_err(TerrainDataErr_err(TerrainDataErrType_FailedToLoadColorMap));
+            return_err(TerrainDataErr_err(TerrainDataErrCode_FailedToLoadColorMap));
         }
         defer(stbi_image_free(colormap_data));
         printf("Colormap: %s\n", colormap_file);
@@ -98,7 +98,7 @@ Err$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, 
 
         if (heightmap_mat.width != colormap_mat.width || heightmap_mat.height != colormap_mat.height) {
             log_error("Heightmap and colormap dimensions do not match!\n");
-            return_err(TerrainDataErr_err(TerrainDataErrType_NotEqualMapsDimension));
+            return_err(TerrainDataErr_err(TerrainDataErrCode_NotEqualMapsDimension));
         }
         return_ok({
             .heightmap = heightmap_mat,

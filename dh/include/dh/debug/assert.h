@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    assert.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-22 (date of creation)
- * @updated 2024-11-02 (date of last update)
- * @version v1.0.0
+ * @updated 2025-02-02 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/debug
  * @prefix  debug_assert
  *
@@ -31,153 +31,147 @@ extern "C" {
     /**                          \
      * @brief Assert expression. \
      */                          \
-    IMPL_debug_assert(_Expr)
+    comp_inline__debug_assert(_Expr)
 
 #define debug_assert_true(_Expr)              \
     /**                                       \
      * @brief Assert that expression is true. \
      */                                       \
-    IMPL_debug_assert_true(_Expr)
+    comp_inline__debug_assert_true(_Expr)
 
 #define debug_assert_false(_Expr)              \
     /**                                        \
      * @brief Assert that expression is false. \
      */                                        \
-    IMPL_debug_assert_false(_Expr)
+    comp_inline__debug_assert_false(_Expr)
 
 #define debug_assert_eq(_Expr1, _Expr2)              \
     /**                                              \
      * @brief Assert that two expressions are equal. \
      */                                              \
-    IMPL_debug_assert_eq(_Expr1, _Expr2)
+    comp_inline__debug_assert_eq(_Expr1, _Expr2)
 
 #define debug_assert_ne(_Expr1, _Expr2)                  \
     /**                                                  \
      * @brief Assert that two expressions are not equal. \
      */                                                  \
-    IMPL_debug_assert_ne(_Expr1, _Expr2)
+    comp_inline__debug_assert_ne(_Expr1, _Expr2)
 
 #define debug_assert_null(_Expr)               \
     /**                                        \
      * @brief Assert that expressions is null. \
      */                                        \
-    IMPL_debug_assert_null(_Expr)
+    comp_inline__debug_assert_null(_Expr)
 
 #define debug_assert_nonnull(_Expr)                \
     /**                                            \
      * @brief Assert that expressions is non null. \
      */                                            \
-    IMPL_debug_assert_nonnull(_Expr)
+    comp_inline__debug_assert_nonnull(_Expr)
 
 
 #define debug_assert_fmt(_Expr, _fmt...)                \
     /**                                                 \
      * @brief Assert expression with formatted message. \
      */                                                 \
-    IMPL_debug_assert_fmt(_Expr, _fmt)
+    comp_inline__debug_assert_fmt(_Expr, _fmt)
 
 #define debug_assert_true_fmt(_Expr, _fmt...)                        \
     /**                                                              \
      * @brief Assert that expression is true with formatted message. \
      */                                                              \
-    IMPL_debug_assert_true_fmt(_Expr, _fmt)
+    comp_inline__debug_assert_true_fmt(_Expr, _fmt)
 
 #define debug_assert_false_fmt(_Expr, _fmt...)                        \
     /**                                                               \
      * @brief Assert that expression is false with formatted message. \
      */                                                               \
-    IMPL_debug_assert_false_fmt(_Expr, _fmt)
+    comp_inline__debug_assert_false_fmt(_Expr, _fmt)
 
 #define debug_assert_eq_fmt(_Expr1, _Expr2, _fmt...)                        \
     /**                                                                     \
      * @brief Assert that two expressions are equal with formatted message. \
      */                                                                     \
-    IMPL_debug_assert_eq_fmt(_Expr1, _Expr2, _fmt)
+    comp_inline__debug_assert_eq_fmt(_Expr1, _Expr2, _fmt)
 
 #define debug_assert_ne_fmt(_Expr1, _Expr2, _fmt...)                            \
     /**                                                                         \
      * @brief Assert that two expressions are not equal with formatted message. \
      */                                                                         \
-    IMPL_debug_assert_ne_fmt(_Expr1, _Expr2, _fmt)
+    comp_inline__debug_assert_ne_fmt(_Expr1, _Expr2, _fmt)
 
 #define debug_assert_null_fmt(_Expr, _fmt...)                         \
     /**                                                               \
      * @brief Assert that expressions is null with formatted message. \
      */                                                               \
-    IMPL_debug_assert_null_fmt(_Expr, _fmt)
+    comp_inline__debug_assert_null_fmt(_Expr, _fmt)
 
 #define debug_assert_nonnull_fmt(_Expr, _fmt...)                   \
     /* Assert*                                                     \
      * @brief that expressions is non null with formatted message. \
      */                                                            \
-    IMPL_debug_assert_nonnull_fmt(_Expr, _fmt)
+    comp_inline__debug_assert_nonnull_fmt(_Expr, _fmt)
 
 /*========== Macros Implementation ==========================================*/
 
 #if debug_comp_enabled
 #if COMP_TIME
+#define comp_inline__debug_assert(_Expr) \
+    ignore((!!(_Expr)) || (debug_assert_fail(#_Expr, __func__, __FILE__, __LINE__), 0))
 
-#define IMPL_debug_assert(_Expr) \
-    ignore((!!(_Expr)) || (debug_assert__fail(#_Expr, __func__, __FILE__, __LINE__), 0))
+#define comp_inline__debug_assert_true(_Expr)        comp_inline__debug_assert_fmt((_Expr) == true, "%s is not true", #_Expr)
+#define comp_inline__debug_assert_false(_Expr)       comp_inline__debug_assert_fmt((_Expr) == false, "%s is not false", #_Expr)
+#define comp_inline__debug_assert_eq(_Expr1, _Expr2) comp_inline__debug_assert_fmt((_Expr1) == (_Expr2), "%s is not equal to %s", #_Expr1, #_Expr2)
+#define comp_inline__debug_assert_ne(_Expr1, _Expr2) comp_inline__debug_assert_fmt((_Expr1) != (_Expr2), "%s is equal to %s", #_Expr1, #_Expr2)
+#define comp_inline__debug_assert_null(_Expr)        comp_inline__debug_assert_fmt((_Expr) == null, "%s is non null", #_Expr)
+#define comp_inline__debug_assert_nonnull(_Expr)     comp_inline__debug_assert_fmt((_Expr) != null, "%s is null", #_Expr)
 
-#define IMPL_debug_assert_true(_Expr)        IMPL_debug_assert_fmt((_Expr) == true, "%s is not true", #_Expr)
-#define IMPL_debug_assert_false(_Expr)       IMPL_debug_assert_fmt((_Expr) == false, "%s is not false", #_Expr)
-#define IMPL_debug_assert_eq(_Expr1, _Expr2) IMPL_debug_assert_fmt((_Expr1) == (_Expr2), "%s is not equal to %s", #_Expr1, #_Expr2)
-#define IMPL_debug_assert_ne(_Expr1, _Expr2) IMPL_debug_assert_fmt((_Expr1) != (_Expr2), "%s is equal to %s", #_Expr1, #_Expr2)
-#define IMPL_debug_assert_null(_Expr)        IMPL_debug_assert_fmt((_Expr) == null, "%s is non null", #_Expr)
-#define IMPL_debug_assert_nonnull(_Expr)     IMPL_debug_assert_fmt((_Expr) != null, "%s is null", #_Expr)
+#define comp_inline__debug_assert_fmt(_Expr, ...) \
+    ignore((!!(_Expr)) || (debug_assert_fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
 
-#define IMPL_debug_assert_fmt(_Expr, ...) \
-    ignore((!!(_Expr)) || (debug_assert__fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
+#define comp_inline__debug_assert_true_fmt(_Expr, ...)        comp_inline__debug_assert_fmt((_Expr) == true, __VA_ARGS__)
+#define comp_inline__debug_assert_false_fmt(_Expr, ...)       comp_inline__debug_assert_fmt((_Expr) == false, __VA_ARGS__)
+#define comp_inline__debug_assert_eq_fmt(_Expr1, _Expr2, ...) comp_inline__debug_assert_fmt((_Expr1) == (_Expr2), __VA_ARGS__)
+#define comp_inline__debug_assert_ne_fmt(_Expr1, _Expr2, ...) comp_inline__debug_assert_fmt((_Expr1) != (_Expr2), __VA_ARGS__)
+#define comp_inline__debug_assert_null_fmt(_Expr, ...)        comp_inline__debug_assert_fmt((_Expr) == null, __VA_ARGS__)
+#define comp_inline__debug_assert_nonnull_fmt(_Expr, ...)     comp_inline__debug_assert_fmt((_Expr) != null, __VA_ARGS__)
+#else  /* !COMP_TIME */
+force_inline void comp_inline__debug_assert(bool);
 
-#define IMPL_debug_assert_true_fmt(_Expr, ...)        IMPL_debug_assert_fmt((_Expr) == true, __VA_ARGS__)
-#define IMPL_debug_assert_false_fmt(_Expr, ...)       IMPL_debug_assert_fmt((_Expr) == false, __VA_ARGS__)
-#define IMPL_debug_assert_eq_fmt(_Expr1, _Expr2, ...) IMPL_debug_assert_fmt((_Expr1) == (_Expr2), __VA_ARGS__)
-#define IMPL_debug_assert_ne_fmt(_Expr1, _Expr2, ...) IMPL_debug_assert_fmt((_Expr1) != (_Expr2), __VA_ARGS__)
-#define IMPL_debug_assert_null_fmt(_Expr, ...)        IMPL_debug_assert_fmt((_Expr) == null, __VA_ARGS__)
-#define IMPL_debug_assert_nonnull_fmt(_Expr, ...)     IMPL_debug_assert_fmt((_Expr) != null, __VA_ARGS__)
+force_inline void comp_inline__debug_assert_true(bool);
+force_inline void comp_inline__debug_assert_false(bool);
+force_inline void comp_inline__debug_assert_eq(bool, bool);
+force_inline void comp_inline__debug_assert_ne(bool, bool);
+force_inline void comp_inline__debug_assert_null(bool);
+force_inline void comp_inline__debug_assert_nonnull(bool);
 
-#else
+force_inline void comp_inline__debug_assert_fmt(bool, const char*, ...);
 
-force_inline void IMPL_debug_assert(bool);
+force_inline void comp_inline__debug_assert_true_fmt(bool, const char*, ...);
+force_inline void comp_inline__debug_assert_false_fmt(bool, const char*, ...);
+force_inline void comp_inline__debug_assert_eq_fmt(bool, bool, const char*, ...);
+force_inline void comp_inline__debug_assert_ne_fmt(bool, bool, const char*, ...);
+force_inline void comp_inline__debug_assert_null_fmt(bool, const char*, ...);
+force_inline void comp_inline__debug_assert_nonnull_fmt(bool, const char*, ...);
+#endif /* COMP_TIME */
+#else  /* !debug_comp_enabled */
+#define comp_inline__debug_assert(_Expr) unused(0)
 
-force_inline void IMPL_debug_assert_true(bool);
-force_inline void IMPL_debug_assert_false(bool);
-force_inline void IMPL_debug_assert_eq(bool, bool);
-force_inline void IMPL_debug_assert_ne(bool, bool);
-force_inline void IMPL_debug_assert_null(bool);
-force_inline void IMPL_debug_assert_nonnull(bool);
+#define comp_inline__debug_assert_true(_Expr)        unused(0)
+#define comp_inline__debug_assert_false(_Expr)       unused(0)
+#define comp_inline__debug_assert_eq(_Expr1, _Expr2) unused(0)
+#define comp_inline__debug_assert_ne(_Expr1, _Expr2) unused(0)
+#define comp_inline__debug_assert_null(_Expr)        unused(0)
+#define comp_inline__debug_assert_nonnull(_Expr)     unused(0)
 
-force_inline void IMPL_debug_assert_fmt(bool, const char*, ...);
+#define comp_inline__debug_assert_fmt(_Expr, ...) unused(0)
 
-force_inline void IMPL_debug_assert_true_fmt(bool, const char*, ...);
-force_inline void IMPL_debug_assert_false_fmt(bool, const char*, ...);
-force_inline void IMPL_debug_assert_eq_fmt(bool, bool, const char*, ...);
-force_inline void IMPL_debug_assert_ne_fmt(bool, bool, const char*, ...);
-force_inline void IMPL_debug_assert_null_fmt(bool, const char*, ...);
-force_inline void IMPL_debug_assert_nonnull_fmt(bool, const char*, ...);
-
-#endif
-#else
-
-#define IMPL_debug_assert(_Expr) unused(0)
-
-#define IMPL_debug_assert_true(_Expr)        unused(0)
-#define IMPL_debug_assert_false(_Expr)       unused(0)
-#define IMPL_debug_assert_eq(_Expr1, _Expr2) unused(0)
-#define IMPL_debug_assert_ne(_Expr1, _Expr2) unused(0)
-#define IMPL_debug_assert_null(_Expr)        unused(0)
-#define IMPL_debug_assert_nonnull(_Expr)     unused(0)
-
-#define IMPL_debug_assert_fmt(_Expr, ...) unused(0)
-
-#define IMPL_debug_assert_true_fmt(_Expr, ...)        unused(0)
-#define IMPL_debug_assert_false_fmt(_Expr, ...)       unused(0)
-#define IMPL_debug_assert_eq_fmt(_Expr1, _Expr2, ...) unused(0)
-#define IMPL_debug_assert_ne_fmt(_Expr1, _Expr2, ...) unused(0)
-#define IMPL_debug_assert_null_fmt(_Expr, ...)        unused(0)
-#define IMPL_debug_assert_nonnull_fmt(_Expr, ...)     unused(0)
-
+#define comp_inline__debug_assert_true_fmt(_Expr, ...)        unused(0)
+#define comp_inline__debug_assert_false_fmt(_Expr, ...)       unused(0)
+#define comp_inline__debug_assert_eq_fmt(_Expr1, _Expr2, ...) unused(0)
+#define comp_inline__debug_assert_ne_fmt(_Expr1, _Expr2, ...) unused(0)
+#define comp_inline__debug_assert_null_fmt(_Expr, ...)        unused(0)
+#define comp_inline__debug_assert_nonnull_fmt(_Expr, ...)     unused(0)
 #endif /* debug_comp_enabled */
 
 /*========== Extern Function Prototypes =====================================*/
@@ -191,8 +185,7 @@ force_inline void IMPL_debug_assert_nonnull_fmt(bool, const char*, ...);
  * @param file The file where the assertion failed.
  * @param line The line number where the assertion failed.
  */
-extern void debug_assert__fail(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */);
-
+extern void debug_assert_fail(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */);
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
  *
@@ -203,8 +196,8 @@ extern void debug_assert__fail(const char* /* expr */, const char* /* func */, c
  * @param fmt The formatted message to include in the assertion failure.
  * @param ... The arguments for the formatted message.
  */
-extern void debug_assert__fail_fmt(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */, const char* /* fmt */, ...);
-#endif
+extern void debug_assert_fail_fmt(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */, const char* /* fmt */, ...);
+#endif /* COMP_TIME */
 
 #if defined(__cplusplus)
 } /* extern "C" */

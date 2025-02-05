@@ -39,6 +39,9 @@ typedef struct mem_Allocator {
 } mem_Allocator;
 use_Opt$(mem_Allocator);
 
+use_ErrSet$(mem_AllocErr, meta_Ptr);
+use_ErrSet$(mem_AllocErr, meta_Sli);
+
 /*========== Core Allocator Functions =======================================*/
 
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled))
@@ -121,17 +124,17 @@ extern void       mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, us
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled))
 
 /* Single-item allocation */
-extern Err$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) must_check;
+extern mem_AllocErr$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) must_check;
 /* Free single-item */
-extern void         mem_Allocator_destroy(mem_Allocator self, AnyType ptr);
+extern void                  mem_Allocator_destroy(mem_Allocator self, AnyType ptr);
 /* Sli allocation */
-extern Err$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) must_check;
+extern mem_AllocErr$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) must_check;
 /* Try to resize slice in-place */
-extern bool         mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
+extern bool                  mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
 /* Reallocate slice with new size */
-extern Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
+extern Opt$meta_Sli          mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) must_check;
 /* Free slice */
-extern void         mem_Allocator_free(mem_Allocator self, AnyType memory);
+extern void                  mem_Allocator_free(mem_Allocator self, AnyType memory);
 
 #else /* !defined(MEM_NO_TRACE_ALLOC_AND_FREE) && (COMP_TIME && (!COMP_TIME || debug_comp_enabled)) */
 
@@ -239,12 +242,12 @@ extern void         mem_Allocator_free(mem_Allocator self, AnyType memory);
         const_char_ptr_func                                                                                                       \
     )
 
-extern Err$meta_Ptr mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, const char* file, i32 line, const char* func) must_check;
-extern void         mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, const char* file, i32 line, const char* func);
-extern Err$meta_Sli mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, const char* file, i32 line, const char* func) must_check;
-extern bool         mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, const char* file, i32 line, const char* func) must_check;
-extern Opt$meta_Sli mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, const char* file, i32 line, const char* func) must_check;
-extern void         mem_Allocator_free_debug(mem_Allocator self, AnyType memory, const char* file, i32 line, const char* func);
+extern mem_AllocErr$meta_Ptr mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, const char* file, i32 line, const char* func) must_check;
+extern void                  mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, const char* file, i32 line, const char* func);
+extern mem_AllocErr$meta_Sli mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, const char* file, i32 line, const char* func) must_check;
+extern bool                  mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, const char* file, i32 line, const char* func) must_check;
+extern Opt$meta_Sli          mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, const char* file, i32 line, const char* func) must_check;
+extern void                  mem_Allocator_free_debug(mem_Allocator self, AnyType memory, const char* file, i32 line, const char* func);
 
 #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || (!COMP_TIME || (COMP_TIME && !debug_comp_enabled)) */
 

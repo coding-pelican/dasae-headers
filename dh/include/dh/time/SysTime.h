@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    SysTime.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-05 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_SysTime
  *
@@ -23,38 +23,66 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
+#include "Duration.h"
 
 /*========== Macros and Definitions =========================================*/
-/*
- * // Static variables for performance counter
- * static time_SysTime time_SysTime_s_performance_frequency;
- * static f64          time_SysTime_s_frequency_inverse;
- * static time_SysTime time_SysTime_s_offset_value;
- * static bool         time_SysTime_s_initialized;
- * // Initialize performance counter frequency
- * static void __attribute__((constructor)) init(void);
- */
-use_Opt$(time_SysTime);
 
-/* Accessors */
+static const u64 time_SysTime_nanos_per_sec           = pp_literal_int(1, 000, 000, 000ull); // 1ns intervals per second
+static const u64 time_SysTime_intervals_per_sec       = time_SysTime_nanos_per_sec / 100ull; // 100ns intervals per second
+static const u64 time_SysTime_intervals_to_unix_epoch = pp_literal_int(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec;
+
+/*========== Structures =====================================================*/
+
+struct time_SysTime {
+    time_SysTimePlatform impl_;
+};
+impl_Opt$(time_SysTime);
+
+/*========== Accessors ======================================================*/
+
+/// Get the frequency of the performance counter in ticks per second.
 extern time_SysTime time_SysTime_frequency(void);
+/// Get the inverse of the performance counter frequency.
 extern f64          time_SysTime_frequencyInv(void);
+/// Get the current system time in high resolution.
 extern time_SysTime time_SysTime_value(void);
+/// Get the offset value of the performance counter (relative time).
 extern time_SysTime time_SysTime_offset(void);
 
-/* Operations */
-extern time_SysTime  time_SysTime_now(void);
-extern time_Duration time_SysTime_elapsed(time_SysTime self);
-extern time_Duration time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
+/*========== Operations =====================================================*/
 
-/* Arithmetic */
-extern Opt$time_SysTime time_SysTime_addDurationChecked(time_SysTime lhs, time_Duration rhs);
-extern Opt$time_SysTime time_SysTime_subDurationChecked(time_SysTime lhs, time_Duration rhs);
+/// Get the current time as a system time object.
+extern time_SysTime      time_SysTime_now(void);
+/// Get the elapsed duration from a given time.
+extern time_Duration     time_SysTime_elapsed(time_SysTime self);
+/// Get the duration since another time point.
+extern time_Duration     time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
+/// Get the duration since another time point with checked overflow.
+extern Opt$time_Duration time_SysTime_durationSinceChecked(time_SysTime self, time_SysTime earlier);
 
-extern time_SysTime op_fnAddBy(time_SysTime, time_Duration);
-extern time_SysTime op_fnSubBy(time_SysTime, time_Duration);
+/*========== Arithmetic Operations ==========================================*/
 
-/* Comparison */
+/// Add a duration to the time.
+extern time_SysTime       op_fnAddBy(time_SysTime, time_Duration);
+force_inline time_SysTime op_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
+/// Sub a duration from the time.
+extern time_SysTime       op_fnSubBy(time_SysTime, time_Duration);
+force_inline time_SysTime op_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
+/// Add a duration to the time with overflow checking.
+extern Opt$time_SysTime   time_SysTime_addDurationChecked(time_SysTime lhs, time_Duration rhs);
+/// Sub a duration from the time with underflow checking.
+extern Opt$time_SysTime   time_SysTime_subDurationChecked(time_SysTime lhs, time_Duration rhs);
+
+/*========== Time Conversion to/from Unix Epoch =============================*/
+
+/// Convert system time to Unix epoch time.
+extern time_SysTime time_SysTime_fromUnixEpoch(u64 secs);
+/// Convert system time to Unix epoch seconds (useful for comparisons).
+extern u64          time_SysTime_toUnixEpoch(time_SysTime self);
+
+/*========== Comparison =====================================================*/
+
+/// Compare two system times.
 extern cmp_fnCmp(time_SysTime);
 cmp_fnEq_default(time_SysTime);
 cmp_fnNe_default(time_SysTime);
@@ -63,17 +91,9 @@ cmp_fnGt_default(time_SysTime);
 cmp_fnLe_default(time_SysTime);
 cmp_fnGe_default(time_SysTime);
 
-// /* Constants for time conversion */
-// #define INTERVALS_PER_SEC       (10000000ULL)    /* 100ns intervals per second */
-// #define SECS_TO_UNIX_EPOCH      (11644473600ULL) /* seconds between Windows epoch (1601) and Unix epoch (1970) */
-// #define INTERVALS_TO_UNIX_EPOCH (SECS_TO_UNIX_EPOCH * INTERVALS_PER_SEC)
+/*========== Constants ======================================================*/
 
-// /* UNIX Epoch constant definition
-//  * Windows FILETIME is measured in 100-nanosecond intervals since January 1, 1601 UTC
-//  * Unix Epoch is January 1, 1970 UTC
-//  * We need to represent Unix Epoch in Windows FILETIME format
-//  */
-extern const time_SysTime time_SysTime_unix_epoch;
+static const time_SysTime time_SysTime_unix_epoch = { .impl_ = { .QuadPart = as$(LONGLONG, time_SysTime_intervals_to_unix_epoch) } };
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -272,7 +272,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         };
         if (!buffer.z_buffer) {
             log_error("Failed to allocate memory for z-buffer\n");
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_OutOfMemory());
         }
         defer(free(buffer.z_buffer));
         log_info("game state created\n");
@@ -341,10 +341,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target; clamp to zero if negative
-            let time_leftover = time_Duration_sub(time_frame_target, time_frame_used);
-
-            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
-            if (is_positive_time_leftover) {
+            if_some(time_Duration_subChecked(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;

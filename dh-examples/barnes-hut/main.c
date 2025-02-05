@@ -37,7 +37,6 @@
 
 #define main_simulation_n_body (100000)
 
-
 // Global state without thread synchronization
 static struct {
     ArrList$Body    spawn_bodies;
@@ -191,7 +190,14 @@ static void global_debug_logSimStateFrontBodiesN(usize n) {
     log_info("  bodies: %d\n", global_state.sim->bodies.items.len);
     for (usize i = 0; i < prim_min(n, global_state.sim->bodies.items.len); ++i) {
         let body = Sli_at(global_state.sim->bodies.items, i);
-        log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) acc(%.2f,%.2f) mess=(%.2f)", body->pos.x, body->pos.y, body->vel.x, body->vel.y, body->acc.x, body->acc.y, body->mass);
+        // clang-format off
+        log_info("    pos=(%.2f,%.2f) vel=(%.2f,%.2f) acc(%.2f,%.2f) mess=(%.2f)",
+            body->pos.x, body->pos.y,
+            body->vel.x, body->vel.y,
+            body->acc.x, body->acc.y,
+            body->mass
+        );
+        // clang-format on
     }
 }
 #endif
@@ -340,7 +346,7 @@ static anyptr Simulation_thread(anyptr arg) {
             // if it is shared with other threads.
             // log_info("sim_thread update\n");
             catch (Simulation_step(global_state.sim), err, {
-                log_error("Simulation_step failed: %s", Err_message(err));
+                log_error("Simulation_step failed: %s", Err_codeToCStr(err));
                 pthread_mutex_unlock(&global_state.sim_mutex);
                 break;
             });

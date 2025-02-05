@@ -52,8 +52,8 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0  /* Example Usage */
-#endif /* Example Usage */
+#if EXAMPLE_USAGE
+#endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

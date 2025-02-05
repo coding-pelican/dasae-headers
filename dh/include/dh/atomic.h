@@ -4,8 +4,8 @@
  * @file    atomic.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-22 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-01 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/atomic
  * @prefix  atomic
  *
@@ -28,32 +28,32 @@ extern "C" {
 /**
  * Memory ordering for atomic operations
  */
-typedef enum atomic_MemOrder {
+typedef enum atomic_MemOrd {
     /**
      * No ordering constraints. Only guarantees atomicity.
      */
-    atomic_MemOrder_unordered,
+    atomic_MemOrd_unordered = __ATOMIC_RELAXED,
     /**
      * Ensures that previous operations are complete before this operation.
      */
-    atomic_MemOrder_monotonic,
+    atomic_MemOrd_monotonic = __ATOMIC_RELAXED,
     /**
      * Acquires a memory fence from other threads' releases.
      */
-    atomic_MemOrder_acquire,
+    atomic_MemOrd_acquire   = __ATOMIC_ACQUIRE,
     /**
      * Releases a memory fence to other threads' acquires.
      */
-    atomic_MemOrder_release,
+    atomic_MemOrd_release   = __ATOMIC_RELEASE,
     /**
      * Both acquires and releases a memory fence.
      */
-    atomic_MemOrder_acq_rel,
+    atomic_MemOrd_acq_rel   = __ATOMIC_ACQ_REL,
     /**
      * All memory operations are sequentially consistent.
      */
-    atomic_MemOrder_seq_cst,
-} atomic_MemOrder;
+    atomic_MemOrd_seq_cst   = __ATOMIC_SEQ_CST
+} atomic_MemOrd;
 
 /*========== Atomic Value Type ============================================*/
 
@@ -69,8 +69,7 @@ typedef enum atomic_MemOrder {
 #define use_atomic_Value$(T)                                                          \
     typedef __attribute__((aligned(sizeOf$(T)))) struct pp_join($, atomic_Value, T) { \
         volatile T raw;                                                               \
-    }                                                                                 \
-    pp_join($, atomic_Value, T)
+    } pp_join($, atomic_Value, T)
 #define atomic_Value_asNamed$(TNamedValue, var_unnamed_value) eval({                                  \
     let _unnamed_value = var_unnamed_value;                                                           \
     claim_assert_static(sizeOf(TypeOf(_unnamed_value)) == sizeOf(TNamedValue));                       \
@@ -86,26 +85,40 @@ typedef enum atomic_MemOrder {
 /**
  * Initialize an atomic value
  */
-#define atomic_init$(T, _val) \
-    ((T){ .raw = (_val) })
+#define atomic_init$(TValue, val_raw) \
+    ((TValue){ .raw = (val_raw) })
+#define atomic_init(var_self, val_raw) \
+    ((var_self).raw = (val_raw))
 
 /**
  * Atomically load a value with specified memory ordering
  */
-#define atomic_load$(T, _ptr, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_load_n((_ptr), (_order)))
+#define atomic_load$(T, _ptr, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_load_n((_ptr), (val_order)))
+#define atomic_load(var_self, val_order) eval({                             \
+    let         __self = &(var_self);                                       \
+    eval_return atomic_load$(TypeOf(__self->raw), &__self->raw, val_order); \
+})
 
 /**
  * Atomically store a value with specified memory ordering
  */
-#define atomic_store$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_store_n((_ptr), (_val), (_order)))
+#define atomic_store$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_store_n((_ptr), (val_raw), (val_order)))
+#define atomic_store(var_self, val_raw, val_order) eval({                             \
+    let         __self = &(var_self);                                                 \
+    eval_return atomic_store$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
+})
 
 /**
  * Atomically exchange a value with specified memory ordering
  */
-#define atomic_swap$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_exchange_n((_ptr), (_val), (_order)))
+#define atomic_swap$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_exchange_n((_ptr), (val_raw), (val_order)))
+#define atomic_swap(var_self, val_raw, val_order) eval({                             \
+    let         __self = &(var_self);                                                \
+    eval_return atomic_swap$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
+})
 
 /**
  * Atomically compare and exchange value if expected matches
@@ -134,32 +147,32 @@ typedef enum atomic_MemOrder {
 /**
  * Atomically add a value and return previous value
  */
-#define atomic_fetchAdd$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_add((_ptr), (_val), (_order)))
+#define atomic_fetchAdd$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_add((_ptr), (val_raw), (val_order)))
 
 /**
  * Atomically subtract a value and return previous value
  */
-#define atomic_fetchSub$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_sub((_ptr), (_val), (_order)))
+#define atomic_fetchSub$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_sub((_ptr), (val_raw), (val_order)))
 
 /**
  * Atomically bitwise AND a value and return previous value
  */
-#define atomic_fetchAnd$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_and((_ptr), (_val), (_order)))
+#define atomic_fetchAnd$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_and((_ptr), (val_raw), (val_order)))
 
 /**
  * Atomically bitwise OR a value and return previous value
  */
-#define atomic_fetchOr$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_or((_ptr), (_val), (_order)))
+#define atomic_fetchOr$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_or((_ptr), (val_raw), (val_order)))
 
 /**
  * Atomically bitwise XOR a value and return previous value
  */
-#define atomic_fetchXor$(T, _ptr, _val, _order) \
-    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_xor((_ptr), (_val), (_order)))
+#define atomic_fetchXor$(T, _ptr, val_raw, val_order) \
+    _Generic((_ptr), volatile rawptr$(T): __atomic_fetch_xor((_ptr), (val_raw), (val_order)))
 
 /*======== spinLoopHint: Platform-specific CPU hints for spin-loops =========
  *

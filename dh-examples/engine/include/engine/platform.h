@@ -30,7 +30,7 @@ use_Ptr$(engine_PlatformParams);
 use_Err$(engine_PlatformParams);
 
 // engine_Platform-specific error types
-use_Err(
+use_ErrSet(
     engine_PlatformErr,
     AccessDenied
 );

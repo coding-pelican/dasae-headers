@@ -28,7 +28,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
         /* Create window */
         let window = (engine_Window*)malloc(sizeof(engine_Window));
         if (!window) {
-            return_err(mem_AllocErr_err(mem_AllocErrType_OutOfMemory));
+            return_err(mem_AllocErr_OutOfMemory());
         }
         errdefer(free(window));
 

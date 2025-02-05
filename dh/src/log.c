@@ -14,12 +14,12 @@ static log_Config log_s_config = {
     .shows_function  = true            // Show function name by default
 };
 
-Err$void log_init(const char* filename) {
-    reserveReturn(Err$void);
+io_FileErr$void log_init(const char* filename) {
+    reserveReturn(io_FileErr$void);
 
     FILE* file = fopen(filename, "w");
     if (!file) {
-        return_err(io_FileErr_err(io_FileErrType_OpenFailed));
+        return_err(io_FileErr_OpenFailed());
     }
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {

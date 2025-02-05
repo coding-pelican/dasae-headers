@@ -80,7 +80,7 @@ use_Mat$(Glyph);
 use_ArrList$(Glyph);
 
 // ========== Font Errors / Declarations (unchanged) ==========
-use_Err(
+use_ErrSet(
     FontSystemErr,
     FailedToOpenFontFile,
     FailedToLoadFontInfo,
@@ -94,7 +94,7 @@ must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* f
     scope_reserveReturn(Err$KoreanFont) {
         FILE* font_file = fopen(filename, "rb");
         if (!font_file) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToOpenFontFile));
+            return_err(FontSystemErr_err(FontSystemErrCode_FailedToOpenFontFile));
         }
         defer(ignore fclose(font_file));
 
@@ -105,7 +105,7 @@ must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* f
         let font_buffer = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), file_size)));
         errdefer(mem_Allocator_free(allocator, anySli(font_buffer)));
         if (fread(font_buffer.ptr, 1, (size_t)file_size, font_file) != (size_t)file_size) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadFontInfo));
+            return_err(FontSystemErr_err(FontSystemErrCode_FailedToLoadFontInfo));
         }
 
         KoreanFont font = {
@@ -114,7 +114,7 @@ must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* f
         };
 
         if (!stbtt_InitFont(&font.info, font_buffer.ptr, 0)) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToInitFontInfo));
+            return_err(FontSystemErr_err(FontSystemErrCode_FailedToInitFontInfo));
         }
 
         font.scale = stbtt_ScaleForPixelHeight(&font.info, size_pixels);
@@ -140,7 +140,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
         // 1) Find glyph index
         i32 glyph_index = stbtt_FindGlyphIndex(&font->info, codepoint);
         if (glyph_index == 0) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadGlyph));
+            return_err(FontSystemErr_err(FontSystemErrCode_FailedToLoadGlyph));
         }
 
         // 2) Horizontal metrics (for advance)
@@ -196,7 +196,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
         );
         if (!stb_data) {
             mem_Allocator_free(font->allocator, anySli(bitmap.items));
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToRenderGlyph));
+            return_err(FontSystemErr_err(FontSystemErrCode_FailedToRenderGlyph));
         }
         defer(stbtt_FreeBitmap(stb_data, null));
 
@@ -411,10 +411,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target; clamp to zero if negative
-            let leftover = time_Duration_sub(target_frame_time, frame_used);
-
-            const bool leftover_is_positive = 0 < leftover.secs_ || 0 < leftover.nanos_;
-            if (leftover_is_positive) {
+            if_some(time_Duration_subChecked(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
             prev_frame_time = curr_frame_time;

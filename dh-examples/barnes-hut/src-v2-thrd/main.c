@@ -340,7 +340,7 @@ static anyptr Simulation_thread(anyptr arg) {
             // if it is shared with other threads.
             // log_info("sim_thread update\n");
             catch (Simulation_step(global_state.sim), err, {
-                log_error("Simulation_step failed: %s", Err_message(err));
+                log_error("Simulation_step failed: %s", Err_codeToCStr(err));
                 pthread_mutex_unlock(&global_state.sim_mutex);
                 break;
             });

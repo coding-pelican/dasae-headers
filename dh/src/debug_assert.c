@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    debug_assert.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-02 (date of creation)
- * @updated 2024-11-21 (date of last update)
- * @version v1.0.0
+ * @updated 2025-02-02 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/debug
  * @prefix  debug_assert
  *
@@ -23,7 +23,7 @@
 
 /*========== Extern Function Implementations ================================*/
 
-void debug_assert__fail(const char* expr, const char* func, const char* file, i32 line) {
+void debug_assert_fail(const char* expr, const char* func, const char* file, i32 line) {
     ignore fprintf(
         DEBUG_OUTPUT,
         DEBUG_ASSERT_MSG_FORMAT,
@@ -36,7 +36,7 @@ void debug_assert__fail(const char* expr, const char* func, const char* file, i3
     DEBUG_BREAK();
 }
 
-void debug_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
+void debug_assert_fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
     ignore fprintf(
         DEBUG_OUTPUT,
         DEBUG_ASSERT_FMT_MSG_FORMAT,

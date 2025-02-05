@@ -4,8 +4,8 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-13 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-01 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/scope
  * @prefix  scope
  *
@@ -55,33 +55,33 @@ extern "C" {
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN
-#define SYN__scope_with(_run_once, _init_once, _Init_Statement...)               \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (_Init_Statement; _init_once; _init_once = false)
+#define SYN__scope_with(__run_once, __init_once, _Init_Statement...)                 \
+    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
+        for (_Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_with_fini(_run_once, _init_once, _Init_Statement, _Fini_Statement...)          \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false, _Fini_Statement) \
-        for (_Init_Statement; _init_once; _init_once = false)
+#define SYN__scope_with_fini(__run_once, __init_once, _Init_Statement, _Fini_Statement...)            \
+    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false, _Fini_Statement) \
+        for (_Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_var(_run_once, _init_once, _Init_Statement...)                \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (var _Init_Statement; _init_once; _init_once = false)
+#define SYN__scope_var(__run_once, __init_once, _Init_Statement...)                  \
+    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
+        for (var _Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_let(_run_once, _init_once, _Init_Statement...)                \
-    for (bool _run_once = true, _init_once = true; _run_once; _run_once = false) \
-        for (let _Init_Statement; _init_once; _init_once = false)
+#define SYN__scope_let(__run_once, __init_once, _Init_Statement...)                  \
+    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
+        for (let _Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_if(_run_once, _init_once, _Init_Statement, _Condition) \
-    SYN__scope_with(_run_once, _init_once, _Init_Statement) if (_Condition)
+#define SYN__scope_if(__run_once, __init_once, _Init_Statement, _Condition) \
+    SYN__scope_with(__run_once, __init_once, _Init_Statement) if (_Condition)
 
-#define SYN__scope_else(_run_once, _init_once, _Init_Statement...) \
-    else SYN__scope_with(_run_once, _init_once, _Init_Statement)
+#define SYN__scope_else(__run_once, __init_once, _Init_Statement...) \
+    else SYN__scope_with(__run_once, __init_once, _Init_Statement)
 
-#define SYN__scope_switch(_run_once, _init_once, _Init_Statement, _Condition) \
-    SYN__scope_with(_run_once, _init_once, _Init_Statement) switch (_Condition)
+#define SYN__scope_switch(__run_once, __init_once, _Init_Statement, _Condition) \
+    SYN__scope_with(__run_once, __init_once, _Init_Statement) switch (_Condition)
 
-#define SYN__scope_while(_run_once, _init_once, _Init_Statement, _Condition) \
-    SYN__scope_with(_run_once, _init_once, _Init_Statement) while (_Condition)
+#define SYN__scope_while(__run_once, __init_once, _Init_Statement, _Condition) \
+    SYN__scope_with(__run_once, __init_once, _Init_Statement) while (_Condition)
 // NOLINTEND
 
 #if defined(__cplusplus)

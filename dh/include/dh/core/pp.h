@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    pp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-05 (date of creation)
- * @updated 2024-11-05 (date of last update)
- * @version v1.0.0
+ * @updated 2025-02-01 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/core
  * @prefix  pp
  *
@@ -65,6 +65,10 @@ extern "C" {
 #define pp_foreach(macro, name, ...) \
     IMPL_pp_foreach_(IMPL_pp_foreach_NARG(__VA_ARGS__), macro, name, __VA_ARGS__)
 
+// pp_literal_int(11,644,473,600u) => 11644473600u
+#define pp_literal_int(...) \
+    IMPL_pp_literal_int(__VA_ARGS__)
+
 /*========== Macros Implementation ==========================================*/
 
 #define IMPL_pp_func(_Statement...) \
@@ -91,44 +95,47 @@ extern "C" {
     _Tok_lhs##_Tok_sep##_Tok_mid##_Tok_sep##_Tok_rhs
 
 #define IMPL_pp_uniqTok(_Tok...) \
-    pp_cat(pp_cat3(_, __LINE__, _), _Tok)
+    pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
 
 #define IMPL_pp_countArgs(_Args...) pp_countArgs__argN(_Args)
 
-// pp_foreach macro implementation (handles up to 8 arguments)
+// pp_foreach macro implementation (handles up to 16 arguments)
 #define IMPL_pp_foreach_(N, macro, name, ...) pp_cat(IMPL_pp_foreach_, N)(macro, name, __VA_ARGS__)
 
-#define IMPL_pp_foreach_NARG(...)                                     IMPL_pp_foreach_NARG_(__VA_ARGS__, IMPL_pp_foreach_RSEQ_N())
-#define IMPL_pp_foreach_NARG_(...)                                    IMPL_pp_foreach_ARG_N(__VA_ARGS__)
-#define IMPL_pp_foreach_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, N, ...) N
-#define IMPL_pp_foreach_RSEQ_N()                                      8, 7, 6, 5, 4, 3, 2, 1, 0
+#define IMPL_pp_foreach_NARG(...)  IMPL_pp_foreach_NARG_(__VA_ARGS__, IMPL_pp_foreach_RSEQ_N())
+#define IMPL_pp_foreach_NARG_(...) IMPL_pp_foreach_ARG_N(__VA_ARGS__)
+#define IMPL_pp_foreach_ARG_N(                                                     \
+    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
+) _N
+#define IMPL_pp_foreach_RSEQ_N() \
+    16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
 
-#define IMPL_pp_foreach_1(macro, name, x)      macro(name, x)
-#define IMPL_pp_foreach_2(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_1(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_3(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_2(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_4(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_3(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_5(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_4(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_6(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_5(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_7(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_6(macro, name, __VA_ARGS__)
-#define IMPL_pp_foreach_8(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_7(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_1(macro, name, x)       macro(name, x)
+#define IMPL_pp_foreach_2(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_1(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_3(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_2(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_4(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_3(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_5(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_4(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_6(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_5(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_7(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_6(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_8(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_7(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_9(macro, name, x, ...)  macro(name, x) IMPL_pp_foreach_8(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_10(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_9(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_11(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_10(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_12(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_11(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_13(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_12(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_14(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_13(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_15(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_14(macro, name, __VA_ARGS__)
+#define IMPL_pp_foreach_16(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_15(macro, name, __VA_ARGS__)
 
-// // FOR_EACH macro implementation(handles up to 8 arguments)
-// #define FOR_EACH_1(macro, name, x)      macro(name, x)
-// #define FOR_EACH_2(macro, name, x, ...) macro(name, x) FOR_EACH_1(macro, name, __VA_ARGS__)
-// #define FOR_EACH_3(macro, name, x, ...) macro(name, x) FOR_EACH_2(macro, name, __VA_ARGS__)
-// #define FOR_EACH_4(macro, name, x, ...) macro(name, x) FOR_EACH_3(macro, name, __VA_ARGS__)
-// #define FOR_EACH_5(macro, name, x, ...) macro(name, x) FOR_EACH_4(macro, name, __VA_ARGS__)
-// #define FOR_EACH_6(macro, name, x, ...) macro(name, x) FOR_EACH_5(macro, name, __VA_ARGS__)
-// #define FOR_EACH_7(macro, name, x, ...) macro(name, x) FOR_EACH_6(macro, name, __VA_ARGS__)
-// #define FOR_EACH_8(macro, name, x, ...) macro(name, x) FOR_EACH_7(macro, name, __VA_ARGS__)
-
-// #define FOR_EACH_NARG(...)                                     FOR_EACH_NARG_(__VA_ARGS__, FOR_EACH_RSEQ_N())
-// #define FOR_EACH_NARG_(...)                                    FOR_EACH_ARG_N(__VA_ARGS__)
-// #define FOR_EACH_ARG_N(_1, _2, _3, _4, _5, _6, _7, _8, N, ...) N
-// #define FOR_EACH_RSEQ_N()                                      8, 7, 6, 5, 4, 3, 2, 1, 0
-
-// #define FOR_EACH_(N, macro, name, ...) pp_cat(FOR_EACH_, N)(macro, name, __VA_ARGS__)
-// #define FOR_EACH(macro, name, ...)     FOR_EACH_(FOR_EACH_NARG(__VA_ARGS__), macro, name, __VA_ARGS__)
+#define IMPL_pp_literal_int(...) \
+    pp_cat(IMPL_pp_literal_int_, pp_countArgs(__VA_ARGS__))(__VA_ARGS__)
+/* Handle different numbers of arguments */
+#define IMPL_pp_literal_int_1(_Num1)                                    _Num1
+#define IMPL_pp_literal_int_2(_Num1, _Num2)                             pp_cat(_Num1, _Num2)
+#define IMPL_pp_literal_int_3(_Num1, _Num2, _Num3)                      pp_cat3(_Num1, _Num2, _Num3)
+#define IMPL_pp_literal_int_4(_Num1, _Num2, _Num3, _Num4)               pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
+#define IMPL_pp_literal_int_5(_Num1, _Num2, _Num3, _Num4, _Num5)        pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
+#define IMPL_pp_literal_int_6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
 
 #if defined(__cplusplus)
 } /* extern "C" */

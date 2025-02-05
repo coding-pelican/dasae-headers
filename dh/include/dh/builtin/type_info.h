@@ -4,8 +4,8 @@
  * @file    type_info.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-23 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-02 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
@@ -63,7 +63,7 @@ extern "C" {
      * @return usize Number of elements          \
      */                                          \
     FUNC__countOf(var_arr)
-#define safeCountOf(var_arr...) FUNC__safeCountOf(var_arr)
+#define safeCountOf(var_arr...) FUNC__safeCountOf(pp_uniqTok(arr_ptr), var_arr)
 
 /* Type Information */
 #define TypeOf(_Expr)                                   \
@@ -155,9 +155,9 @@ extern "C" {
 #define FUNC__countOf(var_arr...) \
     (sizeof(var_arr) / sizeof(var_arr[0]))
 
-#define FUNC__safeCountOf(var_arr...) eval({ \
-    let         _arr_ptr = &var_arr;         \
-    eval_return countOf(*_arr_ptr);          \
+#define FUNC__safeCountOf(__arr_ptr, var_arr...) eval({       \
+    let         __arr_ptr = &var_arr;                         \
+    eval_return sizeOf(*__arr_ptr) / sizeOf((*__arr_ptr)[0]); \
 })
 
 #define FUNC__TypeOf(val) \
@@ -205,7 +205,7 @@ extern "C" {
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if /* Example Usage */ 0
+#if EXAMPLE_USAGE
 #include "dh/core.h"
 
 void example_usage(void) {
@@ -231,7 +231,7 @@ void example_usage(void) {
     /* Type comparison */
     claim_assert_static_msg(isSameType(TypeOf(value), i32), "Types should match");
 }
-#endif /* Example Usage */
+#endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

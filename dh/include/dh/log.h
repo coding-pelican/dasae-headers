@@ -27,7 +27,7 @@ extern "C" {
 
 #include <stdio.h>
 
-use_Err(
+use_ErrSet(
     io_FileErr,
     NotFound,
     AccessDenied,
@@ -56,11 +56,11 @@ typedef struct log_Config {
 } log_Config;
 
 // Initialize logging with a file
-extern Err$void log_init(const char* filename) must_check;
+extern io_FileErr$void log_init(const char* filename) must_check;
 // Initialize logging with an existing file handle
-extern void     log_initWithFile(FILE* file);
+extern void            log_initWithFile(FILE* file);
 // Close logging
-extern void     log_fini(void);
+extern void            log_fini(void);
 
 // Configuration setters
 extern void log_setLevel(log_Level level);

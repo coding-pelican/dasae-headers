@@ -32,7 +32,7 @@ force_inline u8 NotepadBackend_getGrayscale(const Color* color) {
 use_Err$(HWND);
 static Err$HWND NotepadBackend_launchNotepad(void);
 
-use_Err(
+use_ErrSet(
     NotepadBackendErr,
     OutOfMemoryNotepadBacked,
     OutOfMemoryNotepadBackendBuffer,
@@ -44,47 +44,47 @@ use_Err(
 );
 
 Err$Ptr$engine_RenderBackend NotepadBackend_create(void) {
-    reserveReturn(Err$Ptr$engine_RenderBackend);
+    scope_reserveReturn(Err$Ptr$engine_RenderBackend) {
+        let backend = (engine_NotepadBackend*)malloc(sizeof(engine_NotepadBackend));
+        if (!backend) {
+            return_err(NotepadBackendErr_err(NotepadBackendErrCode_OutOfMemoryNotepadBacked));
+        }
+        errdefer(free(backend));
+        memset(backend, 0, sizeof(engine_NotepadBackend));
 
-    let backend = (engine_NotepadBackend*)malloc(sizeof(engine_NotepadBackend));
-    if (!backend) {
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_OutOfMemoryNotepadBacked));
+        let capacity = 160ull * 100ull;
+        let buffer   = (wchar*)malloc(capacity * sizeof(wchar));
+        if (!buffer) {
+            return_err(NotepadBackendErr_err(NotepadBackendErrCode_OutOfMemoryNotepadBackendBuffer));
+        }
+        errdefer(free(buffer));
+        memset(buffer, 0, capacity * sizeof(wchar));
+
+        backend->buffer          = buffer;
+        backend->buffer_capacity = capacity;
+        backend->buffer_size     = 0;
+
+        // Create test message
+        const wchar* test_msg = L"Hello, notepad!\n";
+        wcscpy(backend->buffer, test_msg);
+        backend->buffer_size = wcslen(test_msg);
+
+        // Launch notepad and store handle
+        backend->notepad_handle = catch (NotepadBackend_launchNotepad(), err, {
+            return_err(err);
+        });
+
+        // Set up backend interface
+        backend->base = eval({
+            var vt           = engine_RenderBackend_createNoOp();
+            vt.type          = engine_RenderBackendType_custom;
+            vt.destroy       = NotepadBackend_destroy;
+            vt.presentBuffer = NotepadBackend_presentBuffer;
+            eval_return vt;
+        });
+        return_ok(&backend->base);
     }
-    memset(backend, 0, sizeof(engine_NotepadBackend));
-
-    let capacity = 160ull * 100ull;
-    let buffer   = (wchar*)malloc(capacity * sizeof(wchar));
-    if (!buffer) {
-        free(backend);
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_OutOfMemoryNotepadBackendBuffer));
-    }
-    memset(buffer, 0, capacity * sizeof(wchar));
-
-    backend->buffer          = buffer;
-    backend->buffer_capacity = capacity;
-    backend->buffer_size     = 0;
-
-    // Create test message
-    const wchar* test_msg = L"Hello, notepad!\n";
-    wcscpy(backend->buffer, test_msg);
-    backend->buffer_size = wcslen(test_msg);
-
-    // Launch notepad and store handle
-    backend->notepad_handle = catch (NotepadBackend_launchNotepad(), err, {
-        free(buffer);
-        free(backend);
-        return_err(err);
-    });
-
-    // Set up backend interface
-    backend->base = eval({
-        var vt           = engine_RenderBackend_createNoOp();
-        vt.type          = engine_RenderBackendType_custom;
-        vt.destroy       = NotepadBackend_destroy;
-        vt.presentBuffer = NotepadBackend_presentBuffer;
-        eval_return vt;
-    });
-    return_ok(&backend->base);
+    scope_returnReserved;
 }
 
 static void NotepadBackend_destroy(engine_Platform* platform) {
@@ -232,7 +232,7 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
                         &si,
                         &pi)) {
         printf("CreateProcess failed (%lu)\n", GetLastError());
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedCreateNotepadProcess));
+        return_err(NotepadBackendErr_err(NotepadBackendErrCode_FailedCreateNotepadProcess));
     }
 
     // Increase working set
@@ -242,7 +242,7 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
         printf("SetProcessWorkingSetSize failed (%lu)\n", GetLastError());
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedIncreaseNotepadWorkingSet));
+        return_err(NotepadBackendErr_err(NotepadBackendErrCode_FailedIncreaseNotepadWorkingSet));
     }
 
     // Resume the process
@@ -298,14 +298,14 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
         printf("Failed to find notepad window\n");
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedFindNotepadWindow));
+        return_err(NotepadBackendErr_err(NotepadBackendErrCode_FailedFindNotepadWindow));
     }
 
     if (!edit) {
         printf("Failed to find edit control\n");
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-        return_err(NotepadBackendErr_err(NotepadBackendErrType_FailedFindNotepadEditControl));
+        return_err(NotepadBackendErr_err(NotepadBackendErrCode_FailedFindNotepadEditControl));
     }
 
     // Set font

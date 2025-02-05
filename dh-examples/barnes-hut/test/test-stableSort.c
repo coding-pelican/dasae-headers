@@ -11,12 +11,12 @@
 /*========== Test Targets ===================================================*/
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_Err(MulErr, Overflow);
+use_ErrSet(MulErr, Overflow);
 force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrType_Overflow));
+        return_err(MulErr_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }

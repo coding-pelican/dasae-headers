@@ -8,12 +8,12 @@
 #include "Body.h"
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
-use_Err(utils_MulErr, Overflow);
+use_ErrSet(utils_MulErr, Overflow);
 force_inline Err$usize utils_usize_mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
-        return_err(utils_MulErr_err(utils_MulErrType_Overflow));
+        return_err(utils_MulErr_err(utils_MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }

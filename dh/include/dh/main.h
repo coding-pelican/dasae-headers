@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    main.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-30 (date of creation)
- * @updated 2024-12-30 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-01 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -48,9 +48,10 @@ int main(int argc, const char* argv[]) {
     if (!isErr(result)) { return 0; }
     ignore fprintf(
         stderr,
-        "Program failed: %s (type: %d)\n",
-        Err_message(result.err),
-        Err_type(result.err)
+        "Program failed: [%s] %s(%d)\n",
+        Err_domainToCStr(result.err),
+        Err_codeToCStr(result.err),
+        result.err.ctx
     );
     return 1;
 }
@@ -74,7 +75,7 @@ int main(int argc, const char* argv[]) {
             return 0;
         }
 
-        log_error("Program failed: %s (type: %d)\n", Err_message(result.err), Err_type(result.err));
+        log_error("Program failed: %s (type: %d)\n", Err_codeToCStr(result.err), Err_type(result.err));
     }
     scope_deferred;
     return 1;
@@ -82,7 +83,7 @@ int main(int argc, const char* argv[]) {
 
 #else /* defined(MAIN_NO_ARGS) */
 
-extern must_check Err$void dh_main(void);
+extern Err$void dh_main(void) must_check;
 
 int main(int argc, const char* argv[]) {
     unused(argc), unused(argv);
@@ -90,9 +91,10 @@ int main(int argc, const char* argv[]) {
     if (!result.is_err) { return 0; }
     ignore fprintf(
         stderr,
-        "Program failed: %s (type: %d)\n",
-        Err_message(result.err),
-        Err_type(result.err)
+        "Program failed: [%s] %s(%d)\n",
+        Err_domainToCStr(result.err),
+        Err_codeToCStr(result.err),
+        result.err.ctx
     );
     return 1;
 }

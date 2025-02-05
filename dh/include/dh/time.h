@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    time.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-23 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-05 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  time
  *
@@ -26,18 +26,6 @@ extern "C" {
 #include "time/Duration.h"
 #include "time/Instant.h"
 #include "time/SysTime.h"
-
-/*========== Macros and Definitions =========================================*/
-
-force_inline time_SysTime op_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
-force_inline time_SysTime op_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
-force_inline time_Instant op_fnWrapAddBy(addDuration, time_Instant, time_Duration);
-force_inline time_Instant op_fnWrapSubBy(subDuration, time_Instant, time_Duration);
-
-/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
-
-#ifdef UNIT_TEST
-#endif /* UNIT_TEST */
 
 #if defined(__cplusplus)
 }

@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    claim_assert.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-21 (date of creation)
- * @updated 2024-11-21 (date of last update)
- * @version v1.0.0
+ * @updated 2025-02-02 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/claim
  * @prefix  claim_assert
  *
@@ -25,7 +25,7 @@
 
 /*========== Extern Function Implementations ================================*/
 
-void claim_assert__fail(const char* expr, const char* func, const char* file, i32 line) {
+void claim_assert_fail(const char* expr, const char* func, const char* file, i32 line) {
     ignore fprintf(
         CLAIM_OUTPUT,
         CLAIM_ASSERT_MSG_FORMAT,
@@ -39,7 +39,7 @@ void claim_assert__fail(const char* expr, const char* func, const char* file, i3
     abort();
 }
 
-void claim_assert__fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
+void claim_assert_fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
     ignore fprintf(
         CLAIM_OUTPUT,
         CLAIM_ASSERT_FMT_MSG_FORMAT,

@@ -16,59 +16,60 @@ typedef struct ArrList {
 } ArrList;
 use_Opt$(ArrList);
 use_Err$(ArrList);
+use_ErrSet$(mem_AllocErr, ArrList);
 
 #define use_ArrList$(T)  GEN__use_ArrList$(T)
 #define decl_ArrList$(T) GEN__decl_ArrList$(T)
 #define impl_ArrList$(T) GEN__impl_ArrList$(T)
 
 // Initialize empty list
-extern ArrList     ArrList_init(TypeInfo type, mem_Allocator allocator);
+extern ArrList              ArrList_init(TypeInfo type, mem_Allocator allocator);
 // Initialize with capacity
-extern Err$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) must_check;
+extern mem_AllocErr$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) must_check;
 // Free resources
-extern void        ArrList_fini(ArrList* self);
+extern void                 ArrList_fini(ArrList* self);
 
 // Return owned slice
-extern Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) must_check;
+extern mem_AllocErr$meta_Sli ArrList_toOwnedSlice(ArrList* self) must_check;
 // Create from owned slice
-extern ArrList      ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice);
+extern ArrList               ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice);
 // Clone list
-extern Err$ArrList  ArrList_clone(const ArrList* self) must_check;
+extern mem_AllocErr$ArrList  ArrList_clone(const ArrList* self) must_check;
 
 // Ensure total capacity
-extern Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) must_check;
-extern Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) must_check;
+extern mem_AllocErr$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) must_check;
+extern mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) must_check;
 // Ensure unused capacity
-extern Err$void ArrList_ensureUnusedCap(ArrList* self, usize additional) must_check;
+extern mem_AllocErr$void ArrList_ensureUnusedCap(ArrList* self, usize additional) must_check;
 
 // Modify size
-extern Err$void ArrList_resize(ArrList* self, usize new_len) must_check;
-extern void     ArrList_shrinkAndFree(ArrList* self, usize new_len);
-extern void     ArrList_shrinkRetainingCap(ArrList* self, usize new_len);
-extern void     ArrList_expandToCap(ArrList* self);
+extern mem_AllocErr$void ArrList_resize(ArrList* self, usize new_len) must_check;
+extern void              ArrList_shrinkAndFree(ArrList* self, usize new_len);
+extern void              ArrList_shrinkRetainingCap(ArrList* self, usize new_len);
+extern void              ArrList_expandToCap(ArrList* self);
 
 // Add elements
-extern Err$void ArrList_append(ArrList* self, meta_Ptr item) must_check;
-extern Err$void ArrList_appendSlice(ArrList* self, meta_Sli items) must_check;
-extern Err$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) must_check;
+extern mem_AllocErr$void ArrList_append(ArrList* self, meta_Ptr item) must_check;
+extern mem_AllocErr$void ArrList_appendSlice(ArrList* self, meta_Sli items) must_check;
+extern mem_AllocErr$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) must_check;
 
-extern Err$void ArrList_prepend(ArrList* self, meta_Ptr item) must_check;
-extern Err$void ArrList_prependSlice(ArrList* self, meta_Sli items) must_check;
-extern Err$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) must_check;
+extern mem_AllocErr$void ArrList_prepend(ArrList* self, meta_Ptr item) must_check;
+extern mem_AllocErr$void ArrList_prependSlice(ArrList* self, meta_Sli items) must_check;
+extern mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) must_check;
 
-extern Err$meta_Ptr ArrList_addBackOne(ArrList* self) must_check;
-extern meta_Ptr     ArrList_addBackOneAssumeCap(ArrList* self);
-extern Err$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) must_check;
-extern meta_Sli     ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n);
+extern mem_AllocErr$meta_Ptr ArrList_addBackOne(ArrList* self) must_check;
+extern meta_Ptr              ArrList_addBackOneAssumeCap(ArrList* self);
+extern mem_AllocErr$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) must_check;
+extern meta_Sli              ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n);
 
-extern Err$meta_Ptr ArrList_addFrontOne(ArrList* self) must_check;
-extern meta_Ptr     ArrList_addFrontOneAssumeCap(ArrList* self);
-extern Err$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) must_check;
-extern meta_Sli     ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n);
+extern mem_AllocErr$meta_Ptr ArrList_addFrontOne(ArrList* self) must_check;
+extern meta_Ptr              ArrList_addFrontOneAssumeCap(ArrList* self);
+extern mem_AllocErr$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) must_check;
+extern meta_Sli              ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n);
 
 // Insert elements
-extern Err$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) must_check;
-extern Err$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) must_check;
+extern mem_AllocErr$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) must_check;
+extern mem_AllocErr$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) must_check;
 
 // Remove elements
 extern void         ArrList_pop(ArrList* self);

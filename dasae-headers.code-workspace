@@ -42,6 +42,9 @@
     },
     {
       "path": "dh-examples/barnes-hut"
+    },
+    {
+      "path": "dh-examples/grid-path-finder"
     }
   ],
   "settings": {

@@ -4,8 +4,8 @@
  * @file    err_res.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-26 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-02 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -79,6 +79,11 @@ struct Err$Void {
 };
 typedef Err$Void Err$void;
 #define return_void() SYN__return_void()
+
+/* Error result specific */
+#define use_ErrSet$(TErr, TOk)  GEN__use_ErrSet$(TErr, TOk)
+#define decl_ErrSet$(TErr, TOk) GEN__decl_ErrSet$(TErr, TOk)
+#define impl_ErrSet$(TErr, TOk) GEN__impl_ErrSet$(TErr, TOk)
 
 /*========== Implementations ================================================*/
 
@@ -245,6 +250,36 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
+#define GEN__use_ErrSet$(TErr, TOk) \
+    decl_ErrSet$(TErr, TOk);        \
+    impl_ErrSet$(TErr, TOk)
+#define GEN__decl_ErrSet$(TErr, TOk)                                                  \
+    typedef struct pp_join3($, TErr, PtrConst, TOk) pp_join3($, TErr, PtrConst, TOk); \
+    typedef struct pp_join3($, TErr, Ptr, TOk) pp_join3($, TErr, Ptr, TOk);           \
+    typedef struct pp_join($, TErr, TOk) pp_join($, TErr, TOk)
+#define GEN__impl_ErrSet$(TErr, TOk)          \
+    struct pp_join3($, TErr, PtrConst, TOk) { \
+        bool is_err;                          \
+        union {                               \
+            TErr err;                         \
+            rawptr_const$(TOk) ok;            \
+        };                                    \
+    };                                        \
+    struct pp_join3($, TErr, Ptr, TOk) {      \
+        bool is_err;                          \
+        union {                               \
+            TErr err;                         \
+            rawptr$(TOk) ok;                  \
+        };                                    \
+    };                                        \
+    struct pp_join($, TErr, TOk) {            \
+        bool is_err;                          \
+        union {                               \
+            TErr err;                         \
+            TOk  ok;                          \
+        };                                    \
+    }
+
 // #define ErrRes(TOk)  \
 //     struct {         \
 //         bool is_err; \
@@ -316,8 +351,8 @@ typedef Err$Void Err$void;
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
-#if 0  /* Example Usage */
-use_Err(
+#if EXAMPLE_USAGE
+use_ErrSet(
     math_Err,
     DivisionByZero,
     Overflow,
@@ -328,7 +363,7 @@ use_Err$(i32);
 must_check static Err$i32 safeDivide(i32 lhs, i32 rhs) {
     reserveReturn(Err$i32);
     if (rhs == 0) {
-        return_err(math_Err_err(math_ErrType_DivisionByZero));
+        return_err(math_Err_err(math_ErrCode_DivisionByZero));
     }
     return_ok(lhs / rhs);
 }
@@ -339,13 +374,13 @@ Err$void test(void) {
     let result_invalid  = try(safeDivide(10, 0));
     let result_default  = catch_default(safeDivide(10, 0), 1);
     let result_handling = catch (safeDivide(10, 0), err, {
-        ignore fprintf(stderr, "Error: %s\n", Err_message(err));
+        ignore fprintf(stderr, "Error: %s\n", Err_codeToCStr(err));
         return_err(err);
     });
 
     return_ok({});
 }
-#endif /* Example Usage */
+#endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

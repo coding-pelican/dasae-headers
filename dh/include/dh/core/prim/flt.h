@@ -4,8 +4,8 @@
  * @file    flt.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-01-13 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-01 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
@@ -37,18 +37,30 @@ extern "C" {
 // #define f16_inf       (INFINITY)
 
 typedef float_t f32;
-#define f32_limit_min (FLT_MIN)
-#define f32_limit_max (FLT_MAX)
-#define f32_eps       (FLT_EPSILON)
-#define f32_nan       (NAN)
-#define f32_inf       (INFINITY)
+#define f32_limit_min      (FLT_MIN)
+#define f32_limit_max      (FLT_MAX)
+#define f32_limit_max_ngtv (-FLT_MAX)
+#define f32_limit_min_ngtv (-FLT_MIN)
+#define f32_limit_min_pstv (+FLT_MIN)
+#define f32_limit_max_pstv (+FLT_MAX)
+#define f32_eps            (FLT_EPSILON)
+#define f32_nan            (NAN)
+#define f32_inf            (INFINITY)
+#define f32_inf_ngtv       (-INFINITY)
+#define f32_inf_pstv       (+INFINITY)
 
 typedef double_t f64;
-#define f64_limit_min (FLT_MIN)
-#define f64_limit_max (DBL_MAX)
-#define f64_eps       (DBL_EPSILON)
-#define f64_nan       (NAN)
-#define f64_inf       (INFINITY)
+#define f64_limit_min      (FLT_MIN)
+#define f64_limit_max      (DBL_MAX)
+#define f64_limit_max_ngtv (-DBL_MAX)
+#define f64_limit_min_ngtv (-DBL_MIN)
+#define f64_limit_min_pstv (+DBL_MIN)
+#define f64_limit_max_pstv (+DBL_MAX)
+#define f64_eps            (DBL_EPSILON)
+#define f64_nan            (NAN)
+#define f64_inf            (INFINITY)
+#define f64_inf_ngtv       (-INFINITY)
+#define f64_inf_pstv       (+INFINITY)
 
 // typedef long double f80;
 // #define f80_limit_min (LDBL_MIN)

@@ -110,21 +110,23 @@ use_Mat$(Glyph);
 use_ArrList$(Glyph);
 
 // ========== Font Errors / Declarations (unchanged) ==========
-use_Err(
+use_ErrSet(
     FontSystemErr,
     FailedToOpenFontFile,
     FailedToLoadFontInfo,
     FailedToInitFontInfo,
     FailedToLoadGlyph,
-    FailedToRenderGlyph
+    FailedToRenderGlyph,
+    mem_AllocErr_OutOfMemory
 );
 
 // ========== FontSystem_init / fini (unchanged, except we read .ttf) ==========
-must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* filename, f32 size_pixels) {
-    scope_reserveReturn(Err$KoreanFont) {
+use_ErrSet$(FontSystemErr, KoreanFont);
+must_check FontSystemErr$KoreanFont FontSystem_init(mem_Allocator allocator, const char* filename, f32 size_pixels) {
+    scope_reserveReturn(FontSystemErr$KoreanFont) {
         FILE* font_file = fopen(filename, "rb");
         if (!font_file) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToOpenFontFile));
+            return_err(FontSystemErr_FailedToOpenFontFile());
         }
         defer(ignore fclose(font_file));
 
@@ -135,7 +137,7 @@ must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* f
         let font_buffer = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), file_size)));
         errdefer(mem_Allocator_free(allocator, anySli(font_buffer)));
         if (fread(font_buffer.ptr, 1, (size_t)file_size, font_file) != (size_t)file_size) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadFontInfo));
+            return_err(FontSystemErr_FailedToLoadFontInfo());
         }
 
         KoreanFont font = {
@@ -144,7 +146,7 @@ must_check Err$KoreanFont FontSystem_init(mem_Allocator allocator, const char* f
         };
 
         if (!stbtt_InitFont(&font.info, font_buffer.ptr, 0)) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToInitFontInfo));
+            return_err(FontSystemErr_FailedToInitFontInfo());
         }
 
         font.scale = stbtt_ScaleForPixelHeight(&font.info, size_pixels);
@@ -165,12 +167,13 @@ void FontSystem_fini(KoreanFont* font) {
 // 1) Use bounding-box approach with stbtt_GetGlyphBitmapBox
 // 2) Allocate raw bytes with typeInfo(u8)
 // 3) Remove the old bounding logic based on x0,y0 from stbtt_GetGlyphBox
-must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoint, f32 scale_factor) {
-    scope_reserveReturn(Err$Glyph) {
+use_ErrSet$(FontSystemErr, Glyph);
+must_check FontSystemErr$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoint, f32 scale_factor) {
+    scope_reserveReturn(FontSystemErr$Glyph) {
         // 1) Find glyph index
         i32 glyph_index = stbtt_FindGlyphIndex(&font->info, codepoint);
         if (glyph_index == 0) {
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToLoadGlyph));
+            return_err(FontSystemErr_FailedToLoadGlyph());
         }
 
         // 2) Horizontal metrics (for advance)
@@ -226,7 +229,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
         );
         if (!stb_data) {
             mem_Allocator_free(font->allocator, anySli(bitmap.items));
-            return_err(FontSystemErr_err(FontSystemErrType_FailedToRenderGlyph));
+            return_err(FontSystemErr_FailedToRenderGlyph());
         }
         defer(stbtt_FreeBitmap(stb_data, null));
 
@@ -274,8 +277,8 @@ void FontSystem_renderGlyphToCanvas(const Glyph* glyph, engine_Canvas* canvas, i
 
 // ========== Remove utf8_decode() and use StrUtf8Iter instead ==========
 // This function now takes StrConst instead of const char* for text input.
-must_check Err$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
-    scope_reserveReturn(Err$void) {
+must_check FontSystemErr$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
+    scope_reserveReturn(FontSystemErr$void) {
         var        allocator = heap_Classic_allocator(&(heap_Classic){});
         // 1) Init font
         KoreanFont font      = try(FontSystem_init(allocator, "assets/Galmuri11-Bold.ttf", size_pixels));
@@ -1376,10 +1379,7 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target; clamp to zero if negative
-            let time_leftover = time_Duration_sub(time_frame_target, time_frame_used);
-
-            const bool is_positive_time_leftover = 0 < time_leftover.secs_ || 0 < time_leftover.nanos_;
-            if (is_positive_time_leftover) {
+            if_some(time_Duration_subChecked(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;
@@ -1710,7 +1710,7 @@ Err$void State_update(State* s, f64 dt) {
     if (engine_Key_pressed(engine_KeyCode_space)) {
         log_debug("pressed space\n");
         let maybe_firework = catch (State_spawnFirework(s), err, {
-            log_error("failed to spawn firework: %s\n", Err_message(err));
+            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
         if_some(maybe_firework, firework) {
@@ -1722,7 +1722,7 @@ Err$void State_update(State* s, f64 dt) {
     if (engine_Mouse_pressed(engine_MouseButton_left)) {
         log_debug("pressed left mouse button\n");
         let maybe_firework = catch (State_spawnFirework(s), err, {
-            log_error("failed to spawn firework: %s\n", Err_message(err));
+            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
         if_some(maybe_firework, firework) {
