@@ -25,6 +25,16 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define with_(_Init_Statement...)                       scope_with(_Init_Statement)
+#define with_fini_(_Init_Statement, _Fini_Statement...) scope_with_fini(_Init_Statement, _Fini_Statement)
+#define var_(_Init_Statement...)                        scope_var(_Init_Statement)
+#define let_(_Init_Statement...)                        scope_let(_Init_Statement)
+#define if_(_Init_Statement, _Condition)                scope_if(_Init_Statement, _Condition)
+#define else_(_Init_Statement...)                       scope_else(_Init_Statement)
+#define switch_(_Init_Statement, _Condition)            scope_switch(_Init_Statement, _Condition)
+#define while_(_Init_Statement, _Condition)             scope_while(_Init_Statement, _Condition)
+// case, default, ...
+
 #define scope_with(_Init_Statement...) \
     SYN__scope_with(pp_uniqTok(run_once), pp_uniqTok(init_once), _Init_Statement)
 

@@ -64,10 +64,14 @@ extern Opt$time_Duration time_SysTime_chkdDurationSince(time_SysTime later, time
 
 /// Add a duration to the time.
 extern time_SysTime       op_fnAddBy(time_SysTime, time_Duration);
+extern time_SysTime       op_fnAddAsgBy(time_SysTime, time_Duration);
 force_inline time_SysTime op_fnWrapAddBy(addDuration, time_SysTime, time_Duration);
+force_inline time_SysTime op_fnWrapAddAsgBy(addAsgDuration, time_SysTime, time_Duration);
 /// Sub a duration from the time.
 extern time_SysTime       op_fnSubBy(time_SysTime, time_Duration);
+extern time_SysTime       op_fnSubAsgBy(time_SysTime, time_Duration);
 force_inline time_SysTime op_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
+force_inline time_SysTime op_fnWrapSubAsgBy(subAsgDuration, time_SysTime, time_Duration);
 /// Add a duration to the time with overflow checking.
 extern Opt$time_SysTime   time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs);
 /// Sub a duration from the time with underflow checking.

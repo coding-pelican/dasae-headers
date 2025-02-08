@@ -63,7 +63,6 @@ extern "C" {
      * @return usize Number of elements          \
      */                                          \
     FUNC__countOf(var_arr)
-#define safeCountOf(var_arr...) FUNC__safeCountOf(pp_uniqTok(arr_ptr), var_arr)
 
 /* Type Information */
 #define TypeOf(_Expr)                                   \
@@ -154,11 +153,6 @@ extern "C" {
 
 #define FUNC__countOf(var_arr...) \
     (sizeof(var_arr) / sizeof(var_arr[0]))
-
-#define FUNC__safeCountOf(__arr_ptr, var_arr...) eval({       \
-    let         __arr_ptr = &var_arr;                         \
-    eval_return sizeOf(*__arr_ptr) / sizeOf((*__arr_ptr)[0]); \
-})
 
 #define FUNC__TypeOf(val) \
     __typeof__(val)

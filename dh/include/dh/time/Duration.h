@@ -55,9 +55,13 @@ extern f64           time_Duration_asSecs_f64(time_Duration self);
 
 /* Arithmetic */
 extern time_Duration op_fnAdd(time_Duration);
+extern time_Duration op_fnAddAsg(time_Duration);
 extern time_Duration op_fnSub(time_Duration);
+extern time_Duration op_fnSubAsg(time_Duration);
 extern time_Duration op_fnMulBy(time_Duration, u64);
+extern time_Duration op_fnMulAsgBy(time_Duration, u64);
 extern time_Duration op_fnDivBy(time_Duration, u64);
+extern time_Duration op_fnDivAsgBy(time_Duration, u64);
 
 extern Opt$time_Duration time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs);
 extern Opt$time_Duration time_Duration_chkdSub(time_Duration lhs, time_Duration rhs);

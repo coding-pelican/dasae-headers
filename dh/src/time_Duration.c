@@ -1,3 +1,4 @@
+#include "dh/core/op.h"
 #include "dh/time/Duration.h"
 #include "dh/core/prim/flt.h"
 #include "dh/debug/assert.h"
@@ -40,6 +41,10 @@ u32 time_Duration_subsecNanos(time_Duration self) {
     return self.nanos;
 }
 
+bool time_Duration_isZero(time_Duration self) {
+    return time_Duration_eq(self, time_Duration_zero);
+}
+
 time_Duration time_Duration_fromSecs_f64(f64 secs) {
     return time_Duration_from(
         as$(u64, secs),
@@ -55,20 +60,32 @@ time_Duration op_fnAdd(time_Duration) {
     return unwrap(time_Duration_chkdAdd(self, other));
 }
 
+time_Duration op_fnAddAsg(time_Duration) {
+    return *self = op_add(time_Duration)(*self, other);
+}
+
 time_Duration op_fnSub(time_Duration) {
     return unwrap(time_Duration_chkdSub(self, other));
+}
+
+time_Duration op_fnSubAsg(time_Duration) {
+    return *self = op_sub(time_Duration)(*self, other);
 }
 
 time_Duration op_fnMulBy(time_Duration, u64) {
     return unwrap(time_Duration_chkdMul_u64(self, other));
 }
 
+time_Duration op_fnMulAsgBy(time_Duration, u64) {
+    return *self = op_mulBy(time_Duration, u64)(*self, other);
+}
+
 time_Duration op_fnDivBy(time_Duration, u64) {
     return unwrap(time_Duration_chkdDiv_u64(self, other));
 }
 
-bool time_Duration_isZero(time_Duration self) {
-    return time_Duration_eq(self, time_Duration_zero);
+time_Duration op_fnDivAsgBy(time_Duration, u64) {
+    return *self = op_divBy(time_Duration, u64)(*self, other);
 }
 
 Opt$time_Duration time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs) {

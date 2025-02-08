@@ -27,8 +27,16 @@ time_Instant op_fnAddBy(time_Instant, time_Duration) {
     return unwrap(time_Instant_chkdAddDuration(self, other));
 }
 
+time_Instant op_fnAddAsgBy(time_Instant, time_Duration) {
+    return *self = op_addBy(time_Instant, time_Duration)(*self, other);
+}
+
 time_Instant op_fnSubBy(time_Instant, time_Duration) {
     return unwrap(time_Instant_chkdSubDuration(self, other));
+}
+
+time_Instant op_fnSubAsgBy(time_Instant, time_Duration) {
+    return *self = op_subBy(time_Instant, time_Duration)(*self, other);
 }
 
 Opt$time_Instant time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs) {

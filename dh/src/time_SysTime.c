@@ -126,8 +126,16 @@ time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
     return unwrap(time_SysTime_chkdAddDuration(self, other));
 }
 
+time_SysTime op_fnAddAsgBy(time_SysTime, time_Duration) {
+    return *self = op_addBy(time_SysTime, time_Duration)(*self, other);
+}
+
 time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
     return unwrap(time_SysTime_chkdSubDuration(self, other));
+}
+
+time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
+    return *self = op_subBy(time_SysTime, time_Duration)(*self, other);
 }
 
 Opt$time_SysTime time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs) {

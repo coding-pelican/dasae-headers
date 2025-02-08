@@ -79,7 +79,7 @@ extern "C" {
     );                                                                                                 \
 })
 
-#define OP__Arr_len(var_self) safeCountOf((var_self).items)
+#define OP__Arr_len(var_self) countOf((var_self).items)
 
 #define OP__Arr_at(__self, __index, var_self, usize_index) eval({ \
     let         __self  = &(var_self);                            \
