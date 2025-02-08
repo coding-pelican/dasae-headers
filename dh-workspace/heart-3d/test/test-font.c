@@ -411,7 +411,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target; clamp to zero if negative
-            if_some(time_Duration_subChecked(target_frame_time, frame_used), leftover) {
+            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
             prev_frame_time = curr_frame_time;

@@ -477,7 +477,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
             let now        = time_Instant_now();
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
-            if_some(time_Duration_subChecked(target_frame_time, frame_used), leftover) {
+            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
         }

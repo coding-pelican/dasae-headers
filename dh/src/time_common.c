@@ -1,8 +1,7 @@
 #include "dh/time.h"
 
-#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
-
 void time_sleep(time_Duration duration) {
+#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     HANDLE timer = CreateWaitableTimerExW(
         null,
         null,
@@ -25,6 +24,9 @@ void time_sleep(time_Duration duration) {
     }
 
     CloseHandle(timer);
+#else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
+/* TODO: Implement sleep function for Unix platforms */
+#endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
 }
 
 void time_sleepSecs(u64 secs) {
@@ -42,8 +44,6 @@ void time_sleepMicros(u64 micros) {
 void time_sleepNanos(u32 nanos) {
     time_sleep(time_Duration_fromNanos(nanos));
 }
-
-#endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
 
 // #define SUPPORT_BUSY_WAIT_LOOP
 // // Wait for some time (stop program execution)

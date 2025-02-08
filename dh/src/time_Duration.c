@@ -52,26 +52,26 @@ f64 time_Duration_asSecs_f64(time_Duration self) {
 }
 
 time_Duration op_fnAdd(time_Duration) {
-    return unwrap(time_Duration_addChecked(self, other));
+    return unwrap(time_Duration_chkdAdd(self, other));
 }
 
 time_Duration op_fnSub(time_Duration) {
-    return unwrap(time_Duration_subChecked(self, other));
+    return unwrap(time_Duration_chkdSub(self, other));
 }
 
 time_Duration op_fnMulBy(time_Duration, u64) {
-    return unwrap(time_Duration_mulChecked_u64(self, other));
+    return unwrap(time_Duration_chkdMul_u64(self, other));
 }
 
 time_Duration op_fnDivBy(time_Duration, u64) {
-    return unwrap(time_Duration_divChecked_u64(self, other));
+    return unwrap(time_Duration_chkdDiv_u64(self, other));
 }
 
 bool time_Duration_isZero(time_Duration self) {
     return time_Duration_eq(self, time_Duration_zero);
 }
 
-Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs) {
+Opt$time_Duration time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs) {
     reserveReturn(Opt$time_Duration);
     let total_nanos = (lhs.secs * time_nanos_per_sec + lhs.nanos)
                     + (rhs.secs * time_nanos_per_sec + rhs.nanos);
@@ -85,7 +85,7 @@ Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs)
     return_some(literal_time_Duration_from(secs, nanos));
 }
 
-Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs) {
+Opt$time_Duration time_Duration_chkdSub(time_Duration lhs, time_Duration rhs) {
     reserveReturn(Opt$time_Duration);
     let lhs_total_nanos = lhs.secs * time_nanos_per_sec + lhs.nanos;
     let rhs_total_nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
@@ -99,7 +99,7 @@ Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs)
     return_some(literal_time_Duration_from(secs, nanos));
 }
 
-Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs) {
+Opt$time_Duration time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs) {
     reserveReturn(Opt$time_Duration);
     // Check for overflow
     if ((u32_limit - rhs) < lhs.nanos || (u64_limit / rhs) < lhs.secs) {
@@ -109,7 +109,7 @@ Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs) {
     return_some(literal_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
 }
 
-Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs) {
+Opt$time_Duration time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs) {
     reserveReturn(Opt$time_Duration);
     // Check for division by zero or overflow
     if (rhs == 0 || (u64_limit / rhs) < lhs.secs || (u32_limit / rhs) < lhs.nanos) {

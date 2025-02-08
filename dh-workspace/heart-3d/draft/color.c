@@ -341,7 +341,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target; clamp to zero if negative
-            if_some(time_Duration_subChecked(time_frame_target, time_frame_used), time_leftover) {
+            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;

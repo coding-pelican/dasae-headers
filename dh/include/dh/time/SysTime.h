@@ -4,8 +4,8 @@
  * @file    SysTime.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2025-02-05 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-08 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_SysTime
  *
@@ -41,13 +41,13 @@ impl_Opt$(time_SysTime);
 /*========== Accessors ======================================================*/
 
 /// Get the frequency of the performance counter in ticks per second.
-extern time_SysTime time_SysTime_frequency(void);
+extern time_SysTime time_SysTime_freq(void);
 /// Get the inverse of the performance counter frequency.
-extern f64          time_SysTime_frequencyInv(void);
-/// Get the current system time in high resolution.
-extern time_SysTime time_SysTime_value(void);
+extern f64          time_SysTime_freqInv(void);
 /// Get the offset value of the performance counter (relative time).
 extern time_SysTime time_SysTime_offset(void);
+/// Get the current system time in high resolution.
+extern time_SysTime time_SysTime_value(void);
 
 /*========== Operations =====================================================*/
 
@@ -56,9 +56,9 @@ extern time_SysTime      time_SysTime_now(void);
 /// Get the elapsed duration from a given time.
 extern time_Duration     time_SysTime_elapsed(time_SysTime self);
 /// Get the duration since another time point.
-extern time_Duration     time_SysTime_durationSince(time_SysTime self, time_SysTime earlier);
-/// Get the duration since another time point with checked overflow.
-extern Opt$time_Duration time_SysTime_durationSinceChecked(time_SysTime self, time_SysTime earlier);
+extern time_Duration     time_SysTime_durationSince(time_SysTime later, time_SysTime earlier);
+/// Get the duration since another time point with overflow checking.
+extern Opt$time_Duration time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier);
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -69,9 +69,9 @@ force_inline time_SysTime op_fnWrapAddBy(addDuration, time_SysTime, time_Duratio
 extern time_SysTime       op_fnSubBy(time_SysTime, time_Duration);
 force_inline time_SysTime op_fnWrapSubBy(subDuration, time_SysTime, time_Duration);
 /// Add a duration to the time with overflow checking.
-extern Opt$time_SysTime   time_SysTime_addDurationChecked(time_SysTime lhs, time_Duration rhs);
+extern Opt$time_SysTime   time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs);
 /// Sub a duration from the time with underflow checking.
-extern Opt$time_SysTime   time_SysTime_subDurationChecked(time_SysTime lhs, time_Duration rhs);
+extern Opt$time_SysTime   time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 
@@ -93,7 +93,16 @@ cmp_fnGe_default(time_SysTime);
 
 /*========== Constants ======================================================*/
 
-static const time_SysTime time_SysTime_unix_epoch = { .impl_ = { .QuadPart = as$(LONGLONG, time_SysTime_intervals_to_unix_epoch) } };
+static const time_SysTime time_SysTime_unix_epoch = {
+    .impl_ = {
+#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
+        .QuadPart = as$(LONGLONG, time_SysTime_intervals_to_unix_epoch),
+#else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
+        .tv_sec  = as$(time_t, time_SysTime_intervals_to_unix_epoch),
+        .tv_nsec = 0,
+#endif
+    }
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

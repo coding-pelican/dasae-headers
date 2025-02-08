@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    Duration.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-08 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Duration
  *
@@ -59,10 +59,10 @@ extern time_Duration op_fnSub(time_Duration);
 extern time_Duration op_fnMulBy(time_Duration, u64);
 extern time_Duration op_fnDivBy(time_Duration, u64);
 
-extern Opt$time_Duration time_Duration_addChecked(time_Duration lhs, time_Duration rhs);
-extern Opt$time_Duration time_Duration_subChecked(time_Duration lhs, time_Duration rhs);
-extern Opt$time_Duration time_Duration_mulChecked_u64(time_Duration lhs, u64 rhs);
-extern Opt$time_Duration time_Duration_divChecked_u64(time_Duration lhs, u64 rhs);
+extern Opt$time_Duration time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_chkdSub(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs);
+extern Opt$time_Duration time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs);
 
 /* Comparison */
 force_inline cmp_fnCmp(time_Duration) {
