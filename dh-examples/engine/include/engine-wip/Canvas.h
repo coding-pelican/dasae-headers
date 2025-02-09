@@ -1,8 +1,7 @@
 #ifndef ENGINE_CANVAS_INCLUDED
 #define ENGINE_CANVAS_INCLUDED (1)
 
-#include "platform.h"
-#include "color.h"
+#include "engine-wip/Color.h"
 
 typedef enum engine_CanvasType {
     engine_CanvasType_rgba,

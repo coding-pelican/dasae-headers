@@ -359,16 +359,16 @@ config_ErrSet(
     Underflow
 );
 
-use_Err$(i32);
-must_check static Err$i32 safeDivide(i32 lhs, i32 rhs) {
-    reserveReturn(Err$i32);
+use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
+static must_check math_Err$i32 safeDivide(i32 lhs, i32 rhs) {
+    reserveReturn(math_Err$i32);
     if (rhs == 0) {
-        return_err(math_Err_err(math_ErrCode_DivisionByZero));
+        return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
 }
 
-Err$void test(void) {
+static must_check Err$void test(void) {
     reserveReturn(Err$void);
 
     let result_invalid  = try(safeDivide(10, 0));
@@ -378,7 +378,7 @@ Err$void test(void) {
         return_err(err);
     });
 
-    return_ok({});
+    return_void();
 }
 #endif /* EXAMPLE_USAGE */
 

@@ -1,3 +1,4 @@
+// Scheduled to be DEPRECATED
 #ifndef ENGINE_PLATFORM_INCLUDED
 #define ENGINE_PLATFORM_INCLUDED (1)
 

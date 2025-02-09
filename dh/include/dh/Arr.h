@@ -23,10 +23,10 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define Arr$(N, T)                               TYPE_UNNAMED__Arr$(N, T)
-#define use_Arr$(N, T)                           GEN__use_Arr$(N, T)
-#define decl_Arr$(N, T)                          GEN__decl_Arr$(N, T)
-#define impl_Arr$(N, T)                          GEN__impl_Arr$(N, T)
+#define Arr$(N, T...)                            TYPE_UNNAMED__Arr$(N, T)
+#define use_Arr$(N, T...)                        GEN__use_Arr$(N, T)
+#define decl_Arr$(N, T...)                       GEN__decl_Arr$(N, T)
+#define impl_Arr$(N, T...)                       GEN__impl_Arr$(N, T)
 #define Arr_asNamed$(TNamedArr, var_unnamed_arr) OP__Arr_asNamed$(TNamedArr, var_unnamed_arr)
 
 /* Property */
@@ -50,19 +50,19 @@ extern "C" {
 
 /*========== Implementations ================================================*/
 
-#define TYPE_UNNAMED__Arr$(N, T) \
-    struct {                     \
-        T items[N];              \
+#define TYPE_UNNAMED__Arr$(N, T...) \
+    struct {                        \
+        T items[N];                 \
     }
 
-#define GEN__use_Arr$(N, T) \
-    decl_Arr$(N, T);        \
+#define GEN__use_Arr$(N, T...) \
+    decl_Arr$(N, T);           \
     impl_Arr$(N, T)
 
-#define GEN__decl_Arr$(N, T) \
+#define GEN__decl_Arr$(N, T...) \
     typedef struct pp_join3($, Arr, N, T) pp_join3($, Arr, N, T)
 
-#define GEN__impl_Arr$(N, T)        \
+#define GEN__impl_Arr$(N, T...)     \
     struct pp_join3($, Arr, N, T) { \
         T items[N];                 \
     }

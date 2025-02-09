@@ -1,3 +1,4 @@
+// Scheduled to be DEPRECATED
 #ifndef ENGINE_PLATFORM_BACKEND_INCLUDED
 #define ENGINE_PLATFORM_BACKEND_INCLUDED (1)
 
@@ -20,20 +21,5 @@ extern void                     engine_RenderBackend_noDestroy(struct engine_Pla
 extern void                     engine_RenderBackend_noProcessEvents(struct engine_Platform* platform);
 extern void                     engine_RenderBackend_noPresentBuffer(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height);
 extern Opt$engine_WindowMetrics engine_RenderBackend_noGetWindowMetrics(struct engine_Platform* platform);
-
-#include <windows.h>
-
-// Win32 console backend
-typedef struct engine_Win32ConsoleBackend {
-    engine_RenderBackend base;
-    HANDLE               output_handle; // Handle to console screen buffer
-    HANDLE               input_handle;  // Handle to console screen buffer
-    HWND                 window_handle; // Handle to console window
-    char*                buffer;
-    usize                buffer_size;
-    usize                buffer_capacity;
-    bool                 cursor_visible;
-    engine_WindowMetrics last_metrics; // Cache of last known metrics
-} engine_Win32ConsoleBackend;
 
 #endif // ENGINE_PLATFORM_BACKEND_INCLUDED
