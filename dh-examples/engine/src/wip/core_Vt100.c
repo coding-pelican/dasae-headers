@@ -34,8 +34,8 @@ struct engine_core_Vt100 {
 };
 config_ErrSet(engine_core_Vt100_Err);
 
-static void processEvents(anyptr ctx); /* TODO: validate */// processing events and updating properties
-static void presentBuffer(anyptr ctx); /* TODO: validate */// only present
+static void processEvents(anyptr ctx); /* TODO: validate */ // processing events and updating properties
+static void presentBuffer(anyptr ctx); /* TODO: validate */ // only present
 
 static Vec2u getWindowSize(anyptr ctx);
 
