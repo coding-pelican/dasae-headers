@@ -8,32 +8,31 @@ void Str_print(StrConst str) {
 
 void Str_println(StrConst str) {
     Str_print(str);
-    putchar('\n');
+    ignore putchar('\n');
 }
 
 void TEST_string_literals(void) {
     /* Test different string literal types */
-    StrConst str_readonly = strL("Readonly byte slice"); /* [*]const u8 */
-    Str      str_writable = strM("Writable byte slice"); /* []u8 */
+    StrConst str_readonly = Str_l("Readonly byte slice"); /* [*]const u8 */
+    Str      str_writable = Str_m("Writable byte slice"); /* []u8 */
 
     /* Print each string */
-
-    Str_println(strL("Readonly string:"));
+    Str_println(Str_l("Readonly string:"));
     Str_println(str_readonly);
 
-    Str_println(strL("Writable string:"));
+    Str_println(Str_l("Writable string:"));
     Str_println(str_writable.as_const);
 
     /* UTF-8 test */
-    StrConst utf8_str = strL("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
-    Str_println(strL("\nUTF-8 string:"));
+    StrConst utf8_str = Str_l("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
+    Str_println(Str_l("\nUTF-8 string:"));
     Str_println(utf8_str);
 
     printf("Byte length: %zu\n", Str_len(utf8_str));
     printf("Character count: %zu\n", StrUtf8_len(utf8_str));
 
     /* UTF-8 iteration test */
-    Str_println(strL("\nIterating UTF-8 characters:"));
+    Str_println(Str_l("\nIterating UTF-8 characters:"));
     {
         StrUtf8Iter iter      = StrUtf8_iter(utf8_str);
         Opt$u32     codepoint = cleared();
@@ -42,12 +41,12 @@ void TEST_string_literals(void) {
                 // Print the actual Unicode character
                 printf("%C", codepoint.value);
             }
-            Str_print(strL(" "));
+            Str_print(Str_l(" "));
         }
-        putchar('\n');
+        ignore putchar('\n');
     }
 
-    Str_println(strL("할아버지 보고싶어요"));
+    Str_println(Str_l("할아버지 보고싶어요"));
 }
 
 int main(void) {
