@@ -35,7 +35,7 @@ extern "C" {
 #define static_inline SYN__static_inline
 #define extern_inline SYN__extern_inline
 #define force_inline  SYN__force_inline
-#define must_check    ATTR__must_check
+#define no_inline     SYN__no_inline
 
 #define used(_Expr...)                                                    \
     /**                                                                   \
@@ -53,6 +53,8 @@ extern "C" {
      * @param _Expr... Variable number of arguments to be marked as unused \
      */                                                                    \
     ATTR__unused(_Expr)
+
+#define must_check ATTR__must_check
 
 #define ignore                                                           \
     /**                                                                  \
@@ -105,11 +107,13 @@ extern "C" {
 #define SYN__extern_inline BUILTIN_COMP_INLINE
 #endif
 #define SYN__force_inline BUILTIN_COMP_FORCE_INLINE
-#define ATTR__must_check  BUILTIN_COMP_MUST_CHECK
+#define ATTR__no_inline   BUILTIN_COMP_NOINLINE
 
 #define ATTR__used(_Expr...)   _Expr
 #define ATTR__unused(_Expr...) ((void)(_Expr))
-#define ATTR__ignore           (void)
+
+#define ATTR__must_check BUILTIN_COMP_MUST_CHECK
+#define ATTR__ignore     (void)
 
 #if defined(__cplusplus)
 #define FUNC__as$(TDest, val_src) static_cast<TDest>(val_src)
