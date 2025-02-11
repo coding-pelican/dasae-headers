@@ -169,7 +169,7 @@ static void engine_Input_processMouse(void) {
     // Create mouse move event if position changed
     if (input->mouse.x != input->mouse.prev_x || input->mouse.y != input->mouse.prev_y) {
         engine_MouseEvent event = {
-            .type = engine_MouseEventType_move,
+            .type = engine_MouseEventType_motion,
             .move = {
                 .x = input->mouse.x,
                 .y = input->mouse.y },
@@ -179,7 +179,7 @@ static void engine_Input_processMouse(void) {
     }
 
     // Save previous button states
-    memcpy(input->mouse.button_prev_states, input->mouse.button_curr_states, sizeof(input->mouse.button_curr_states));
+    memcpy(input->mouse.prev_button_states, input->mouse.curr_button_states, sizeof(input->mouse.curr_button_states));
 
     // Process mouse buttons
     static const i32 button_vks[] = {
@@ -192,8 +192,8 @@ static void engine_Input_processMouse(void) {
     for (engine_MouseButton button = engine_MouseButton_none + 1; button < engine_MouseButton_count; ++button) {
         SHORT button_state = GetAsyncKeyState(button_vks[button]);
         bool  is_down      = (button_state & 0x8000) != 0;
-        let   curr_state   = &input->mouse.button_curr_states[button];
-        let   prev_state   = input->mouse.button_prev_states[button];
+        let   curr_state   = &input->mouse.curr_button_states[button];
+        let   prev_state   = input->mouse.prev_button_states[button];
 
         *curr_state = 0;
 

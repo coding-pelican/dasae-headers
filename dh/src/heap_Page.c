@@ -26,22 +26,6 @@ mem_Allocator heap_Page_allocator(heap_Page* self) {
     };
 }
 
-/*========== Lifecycle Implementation =======================================*/
-
-Err$void heap_Page_init(mem_Allocator self) {
-    reserveReturn(Err$void);
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    unused(self);
-    return_void();
-}
-
-void heap_Page_fini(mem_Allocator self) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    unused(self);
-}
-
 /*========== Allocator Interface Implementation =============================*/
 
 static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {

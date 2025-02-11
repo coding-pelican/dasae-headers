@@ -59,7 +59,6 @@ extern u64          time_Instant_toUnixEpoch(time_Instant self);
 
 /*========== Comparison =====================================================*/
 
-/* Comparison */
 extern cmp_fnCmp(time_Instant);
 cmp_fnEq_default(time_Instant);
 cmp_fnNe_default(time_Instant);

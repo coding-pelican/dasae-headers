@@ -29,12 +29,12 @@ typedef struct heap_Page {
     Void unused_[0]; // Empty struct not allowed in C
 } heap_Page;
 
+// Lifecycle
+extern void heap_Page_init(heap_Page* self);
+extern void heap_Page_fini(heap_Page* self);
+
 // Get allocator interface for instance
 extern mem_Allocator heap_Page_allocator(heap_Page* self);
-
-// Lifecycle
-extern Err$void heap_Page_init(mem_Allocator self) must_check;
-extern void     heap_Page_fini(mem_Allocator self);
 
 /*========== Implementation Details =========================================*/
 

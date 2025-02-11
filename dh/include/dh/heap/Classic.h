@@ -34,10 +34,6 @@ typedef struct heap_Classic {
 // Get allocator interface for instance
 extern mem_Allocator heap_Classic_allocator(heap_Classic* self);
 
-// Lifecycle
-extern Err$void heap_Classic_init(mem_Allocator self) must_check;
-extern void     heap_Classic_fini(mem_Allocator self);
-
 /*========== Implementation =================================================*/
 
 // Get underlying malloc_size if available

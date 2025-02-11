@@ -10,9 +10,7 @@
 #include "dh/time.h"
 #include "dh/Random.h"
 
-#include "engine.h"
-#include "engine/canvas.h"
-#include "engine/window.h"
+#include "engine-wip.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -41,31 +39,10 @@
 #define render_target_fps (render_target_fps__31_25)
 #define render_target_spf (1.0 / render_target_fps)
 
-
-use_Sli$(Vec2f);
 use_ArrList$(Vec2f);
 typedef ArrList$Vec2f Vec2fs;
-use_Sli$(Color);
 use_ArrList$(Color);
 typedef ArrList$Color Colors;
-
-typedef struct Control {
-    engine_KeyCode key;
-    Vec2f          vec;
-} Control;
-use_Sli$(Control);
-static SliConst$Control Control_list(void) {
-    static const Control controls[] = {
-        { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
-        { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
-        { .key = engine_KeyCode_s, .vec = math_Vec2f_right },
-        { .key = engine_KeyCode_d, .vec = math_Vec2f_down },
-    };
-    return (SliConst$Control){
-        .ptr = controls,
-        .len = countOf(controls),
-    };
-}
 
 #define update_target_fps (480.0f)
 #define update_target_spf (1.0f / update_target_fps)
@@ -90,36 +67,56 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             log_showFunction(true);
         }
 
-        // Initialize platform with terminal backend
-        let window = try(engine_Window_create(
-            &(engine_PlatformParams){
-                .backend_type  = engine_RenderBackendType_vt100,
-                .window_title  = "Subframes",
-                .width         = window_res_width,
-                .height        = window_res_height,
-                .default_color = (Color){ .packed = 0x181818FF },
-            }
-        ));
-        defer(engine_Window_destroy(window));
-        log_info("engine initialized\n");
+        // Initialize heap allocator and page pool
+        var allocator = heap_Page_allocator(&(heap_Page){});
+        log_info("allocator reserved\n");
+
+        // Create window
+        let window = try(engine_Window_init(&(engine_WindowConfig){
+            .allocator = allocator,
+            .title     = strL("Subframes"),
+            .rect_size = {
+                .x = window_res_width,
+                .y = window_res_height,
+            },
+            .default_color = some({ .packed = 0x181818FF }),
+        }));
+        defer(engine_Window_fini(window));
+        log_info("window created\n");
 
         // Create canvases
-        let game_canvas = try(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba));
+        let game_canvas = try(engine_Canvas_create(
+            window_res_width,
+            window_res_height,
+            engine_CanvasType_rgba
+        ));
         defer(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
-
         engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
-        // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
+        // Append canvas views
+        engine_Window_appendCanvasView(
+            window,
+            game_canvas,
+            (Vec2u){ .x = 0, .y = 0 },
+            (Vec2u){ .x = window_res_width, .y = window_res_height },
+            (Vec2f){ .x = 1.0f, .y = 1.0f },
+            true
+        );
         log_info("canvas views added\n");
 
-        // Create game state
-        var allocator = heap_Page_allocator(&(heap_Page){});
-        try(heap_Page_init(allocator));
-        defer(heap_Page_fini(allocator));
+        // Bind engine core
+        let core = try(engine_core_Vt100_init(
+            &(engine_core_Vt100_Config){
+                .allocator = allocator,
+                .window    = window,
+            }
+        ));
+        defer(engine_core_Vt100_fini(core));
+        log_info("engine ready\n");
 
+        // Create game state
         var positions = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&positions.base));
         var velocities = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
@@ -139,7 +136,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         log_info("game loop started\n");
 
         // Initialize window variables
-        var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
+        var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
 
         bool is_running = true;
         while (is_running) {
@@ -151,28 +148,33 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Check for window movement
-            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
+            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
             let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
 
             // 4) Process input/events
-            try(engine_Window_processEvents(window));
+            try(engine_Window_update(window));
 
             // 5) Update game state and Render all views
             engine_Canvas_clearDefault(game_canvas);
 
-            if (engine_Key_pressed(engine_KeyCode_esc)) {
+            if (engine_Keyboard_pressed(engine_KeyCode_esc)) {
                 is_running = false;
                 log_debug("esc pressed\n");
-                break;
             }
 
-            if (engine_Mouse_held(engine_MouseButton_left) || engine_Key_held(engine_KeyCode_space)) {
-                log_debug("space pressed\n");
-                scope_with(let pos = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
-                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPosition());
+            const bool left_space[2] = {
+                engine_Mouse_held(engine_MouseButton_left),
+                engine_Keyboard_held(engine_KeyCode_space)
+            };
+            if (left_space[0] || left_space[1]) {
+                debug_only(if (left_space[0]) { log_debug("left mouse pressed\n"); });
+                debug_only(if (left_space[1]) { log_debug("space pressed\n"); });
+
+                let_(pos = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
+                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos());
                 }
 
-                scope_with(let vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
+                let_(vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
@@ -180,7 +182,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                     });
                 }
 
-                scope_with(let color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
+                let_(color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
                     *color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
                 }
             }
@@ -278,7 +280,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             // 6) (Optional) Display instantaneous FPS
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
-            printf("\033[H"); // Move cursor to top left
+            printf("\033[H\033[40;37m"); // Move cursor to top left
             printf("\rFPS: %6.2f", time_fps);
             debug_only(
                 // log frame every 1s

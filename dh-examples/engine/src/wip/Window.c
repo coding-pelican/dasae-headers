@@ -3,10 +3,9 @@
 #include "Backend_Internal.h"
 #include "dh/log.h"
 
-Err$Ptr$engine_Window engine_Window_create(const engine_WindowConfig* config) {
+Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
     scope_reserveReturn(Err$Ptr$engine_Window) {
         debug_assert_nonnull(config);
-
         /* Create window */
         let allocator = config->allocator;
         let window    = meta_cast$(engine_Window*, try(mem_Allocator_create(allocator, typeInfo$(engine_Window))));
@@ -44,7 +43,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_WindowConfig* config) {
     scope_returnReserved;
 }
 
-void engine_Window_destroy(engine_Window* self) {
+void engine_Window_fini(engine_Window* self) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->composite_buffer);
 
@@ -79,8 +78,8 @@ void engine_Window_present(engine_Window* self) {
         engine_Canvas_blit(
             self->composite_buffer,
             view->canvas,
-            as$(i32, view->pos_in_window.top_left.x),
-            as$(i32, view->pos_in_window.top_left.y)
+            as$(i32, view->pos_on_window.top_left.x),
+            as$(i32, view->pos_on_window.top_left.y)
         );
     }
 
@@ -97,7 +96,7 @@ Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canva
     return_some(eval({
         let view                     = Arr_at(self->views.list, self->views.count);
         view->canvas                 = canvas;
-        view->pos_in_window.top_left = pos;
+        view->pos_on_window.top_left = pos;
         view->rect.size              = size;
         view->rect.scale             = scale;
         view->visible                = visible;
@@ -119,29 +118,39 @@ void engine_Window_removeCanvasView(engine_Window* self, u32 view_id) {
     self->views.count--; */
 }
 
-Vec2u engine_Window_getSize(const engine_Window* self) {
+Vec2u engine_Window_getPos(const engine_Window* self) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowSize(unwrap(self->backend));
+    return engine_Backend_getWindowPos(unwrap(self->backend));
 }
 
-Vec2u engine_Window_getMinSize(const engine_Window* self) {
+Vec2u engine_Window_getDim(const engine_Window* self) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowMinSize(unwrap(self->backend));
+    return engine_Backend_getWindowDim(unwrap(self->backend));
 }
 
-Vec2u engine_Window_getMaxSize(const engine_Window* self) {
+Vec2u engine_Window_getRes(const engine_Window* self) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowMaxSize(unwrap(self->backend));
+    return engine_Backend_getWindowRes(unwrap(self->backend));
 }
 
-Err$void engine_Window_setMinSize(engine_Window* self, Vec2u size) {
+Vec2u engine_Window_getMinRes(const engine_Window* self) {
     debug_assert_nonnull(self);
-    return engine_Backend_setWindowMinSize(unwrap(self->backend), size);
+    return engine_Backend_getWindowMinRes(unwrap(self->backend));
 }
 
-Err$void engine_Window_setMaxSize(engine_Window* self, Vec2u size) {
+Vec2u engine_Window_getMaxRes(const engine_Window* self) {
     debug_assert_nonnull(self);
-    return engine_Backend_setWindowMaxSize(unwrap(self->backend), size);
+    return engine_Backend_getWindowMaxRes(unwrap(self->backend));
+}
+
+Err$void engine_Window_setMinRes(engine_Window* self, Vec2u size) {
+    debug_assert_nonnull(self);
+    return engine_Backend_setWindowMinRes(unwrap(self->backend), size);
+}
+
+Err$void engine_Window_setMaxRes(engine_Window* self, Vec2u size) {
+    debug_assert_nonnull(self);
+    return engine_Backend_setWindowMaxRes(unwrap(self->backend), size);
 }
 
 bool engine_Window_isFocused(const engine_Window* self) {

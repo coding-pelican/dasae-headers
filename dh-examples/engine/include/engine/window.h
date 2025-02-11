@@ -49,8 +49,8 @@ use_Err$(engine_Window);
 #define engine_Window_composite_buffer_default_color ((Color){ .r = 0x18, .g = 0x18, .b = 0x18, .a = 0xFF })
 
 // Window management
-extern Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) must_check;
-extern void                  engine_Window_destroy(engine_Window* window);
+extern Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) must_check;
+extern void                  engine_Window_fini(engine_Window* window);
 extern Err$void              engine_Window_processEvents(engine_Window* window) must_check;
 extern void                  engine_Window_present(engine_Window* window);
 
@@ -69,7 +69,7 @@ force_inline Vec2i engine_Window_getPosition(const engine_Window* window) {
     };
 }
 
-force_inline Vec2u engine_Window_getSize(const engine_Window* window) {
+force_inline Vec2u engine_Window_getDim(const engine_Window* window) {
     return (Vec2u){
         .s = {
             window->metrics.width,
@@ -87,12 +87,12 @@ force_inline Vec2u engine_Window_getClientSize(const engine_Window* window) {
     };
 }
 
-force_inline void engine_Window_setMinSize(engine_Window* window, u32 width, u32 height) {
+force_inline void engine_Window_setMinRes(engine_Window* window, u32 width, u32 height) {
     window->metrics.min_width  = prim_clamp(width, engine_Window_min_width_default, window->metrics.max_width);
     window->metrics.min_height = prim_clamp(height, engine_Window_min_height_default, window->metrics.max_height);
 }
 
-force_inline void engine_Window_setMaxSize(engine_Window* window, u32 width, u32 height) {
+force_inline void engine_Window_setMaxRes(engine_Window* window, u32 width, u32 height) {
     window->metrics.max_width  = prim_clamp(width, window->metrics.min_width, engine_Window_max_width_default);
     window->metrics.max_height = prim_clamp(height, window->metrics.min_height, engine_Window_max_height_default);
 }

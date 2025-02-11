@@ -11,21 +11,24 @@ typedef enum engine_CanvasType {
     // engine_CanvasType_indexed256
 } engine_CanvasType;
 
+use_Mat$(Color);
 typedef struct engine_Canvas {
-    struct {
-        Color* ptr;
-        usize  len;
-    } buffer;
-    u32 width;
-    u32 height;
-
+    union {
+        struct {
+            Sli$Color buffer;
+            u32       width;
+            u32       height;
+        };
+        Mat$Color colors;
+    };
     engine_CanvasType type;
     Color             default_color;
     // Canvas-specific conversion functions
     Color (*pixelToColor)(const Color* buffer, u32 x, u32 y);
     void (*colorToPixel)(Color* buffer, u32 x, u32 y, Color color);
 } engine_Canvas;
-use_Ptr$(engine_Canvas);
+use_Sli$(engine_Canvas);
+use_Opt$(engine_Canvas);
 use_Err$(engine_Canvas);
 
 // Canvas creation with specific type

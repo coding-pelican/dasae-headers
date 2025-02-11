@@ -21,7 +21,7 @@ bool engine_WindowMetrics_eq(const engine_WindowMetrics* lhs, const engine_Windo
         && lhs->is_maximized == rhs->is_maximized;
 }
 
-Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) {
+Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) {
     scope_reserveReturn(Err$Ptr$engine_Window) {
         debug_assert_nonnull(params);
 
@@ -77,7 +77,7 @@ Err$Ptr$engine_Window engine_Window_create(const engine_PlatformParams* params) 
     scope_returnReserved;
 }
 
-void engine_Window_destroy(engine_Window* window) {
+void engine_Window_fini(engine_Window* window) {
     if (!window) { return; }
 
     if (window->composite_buffer) {

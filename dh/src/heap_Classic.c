@@ -17,20 +17,6 @@ mem_Allocator heap_Classic_allocator(heap_Classic* self) {
     };
 }
 
-Err$void heap_Classic_init(mem_Allocator self) {
-    reserveReturn(Err$void);
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    unused(self);
-    return_void();
-}
-
-void heap_Classic_fini(mem_Allocator self) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    unused(self);
-}
-
 Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
     reserveReturn(Opt$Ptr$u8);
     unused(ctx);

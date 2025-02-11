@@ -87,7 +87,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         defer(log_fini());
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_create(
+        let window = try(engine_Window_init(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Game of Life",
@@ -96,7 +96,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 .default_color = Color_blue,
             }
         ));
-        defer(engine_Window_destroy(window));
+        defer(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         // Create canvases
@@ -156,7 +156,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
             // 6) (Optional) Display instantaneous FPS
             const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-            printf("\033[H"); // Move cursor to top left
+            printf("\033[H\033[40;37m"); // Move cursor to top left
             printf("\rFPS: %6.2f\n", fps);
             debug_only(
                 // log frame every 1s
@@ -222,11 +222,11 @@ void State_update(State* self, f64 dt) {
 
     /* Simple mouse input  */
     if (engine_Mouse_held(engine_MouseButton_left)) {
-        let mouse_pos = engine_Mouse_getPosition();
+        let mouse_pos = engine_Mouse_getPos();
         GameOfLife_setCell(&self->cells, mouse_pos.x, mouse_pos.y, 1);
     }
     if (engine_Mouse_held(engine_MouseButton_right)) {
-        let mouse_pos = engine_Mouse_getPosition();
+        let mouse_pos = engine_Mouse_getPos();
         GameOfLife_setCell(&self->cells, mouse_pos.x, mouse_pos.y, 0);
     }
 

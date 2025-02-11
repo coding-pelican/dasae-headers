@@ -82,14 +82,14 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(log_fini());
 
         // Create window
-        var window = try(engine_Window_create(&(engine_PlatformParams){
+        var window = try(engine_Window_init(&(engine_PlatformParams){
             .backend_type  = engine_RenderBackendType_vt100,
             .window_title  = "Barnes-hut N-Body Simulation",
             .width         = main_window_res_width,
             .height        = main_window_res_height,
             .default_color = Color_black,
         }));
-        defer(engine_Window_destroy(window));
+        defer(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         var canvas = try(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));

@@ -120,15 +120,15 @@ typedef enum engine_MouseButton {
 // Mouse event types
 typedef enum engine_MouseEventType {
     engine_MouseEventType_none = 0,
-    engine_MouseEventType_move,
+    engine_MouseEventType_motion,
     engine_MouseEventType_button,
     engine_MouseEventType_scroll
 } engine_MouseEventType;
 
 // Mouse state structure
-typedef struct engine_MouseState {
-    u8  button_curr_states[engine_MouseButton_count]; // Current button states
-    u8  button_prev_states[engine_MouseButton_count]; // Previous button states
+typedef struct engine_Mouse {
+    u8  curr_button_states[engine_MouseButton_count]; // Current button states
+    u8  prev_button_states[engine_MouseButton_count]; // Previous button states
     i32 x;                                            // Current X position
     i32 y;                                            // Current Y position
     i32 prev_x;                                       // Previous X position
@@ -239,7 +239,7 @@ force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStat
     debug_assert_true(button < engine_MouseButton_count);
     debug_assert_true(engine_KeyStates_none <= state);
     let input = engine_Input_instance();
-    return (input->mouse.button_curr_states[button] & state) != engine_KeyStates_none;
+    return (input->mouse.curr_button_states[button] & state) != engine_KeyStates_none;
 }
 
 force_inline bool engine_Mouse_pressed(engine_MouseButton button) {
@@ -254,7 +254,7 @@ force_inline bool engine_Mouse_released(engine_MouseButton button) {
     return engine_Mouse_isState(button, engine_KeyStates_released);
 }
 
-force_inline Vec2i engine_Mouse_getPosition(void) {
+force_inline Vec2i engine_Mouse_getPos(void) {
     let input = engine_Input_instance();
     return (Vec2i){
         .s = {
@@ -264,7 +264,7 @@ force_inline Vec2i engine_Mouse_getPosition(void) {
     };
 }
 
-force_inline Vec2i engine_Mouse_getDelta(void) {
+force_inline Vec2i engine_Mouse_getPosDelta(void) {
     let input = engine_Input_instance();
     return (Vec2i){
         .s = {
@@ -279,7 +279,7 @@ force_inline f64 engine_Mouse_getScrollSpeed(void) {
     return input->mouse.scroll_speed;
 }
 
-force_inline i32 engine_Mouse_getScrollDelta(void) {
+force_inline i32 engine_Mouse_getWheelScrollDelta(void) {
     let input = engine_Input_instance();
     return input->mouse.scroll_delta;
 }

@@ -19,7 +19,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "common.h"
+#include "engine-wip/common.h"
 
 enum ColorChannel {
     ColorChannel_red               = 0,
@@ -94,6 +94,10 @@ union Color {
     };
     u32 packed; // RGBA channel components in [0,255]
 };
+use_Sli$(Color);
+use_Opt$(Color);
+use_Err$(Color);
+
 #define Color_(...)                               make$(Color, __VA_ARGS__)
 #define literal_Color_from(_r, _g, _b, _a)        Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
 #define literal_Color_fromTransparent(_r, _g, _b) Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_min_value)

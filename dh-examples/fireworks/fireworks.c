@@ -112,7 +112,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(log_fini());
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_create(
+        let window = try(engine_Window_init(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Fireworks",
@@ -121,7 +121,7 @@ Err$void dh_main(int argc, const char* argv[]) {
                 .default_color = Color_black,
             }
         ));
-        defer(engine_Window_destroy(window));
+        defer(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         // Create canvases
@@ -493,7 +493,7 @@ Err$void State_update(State* s, f64 dt) {
         });
         if_some(maybe_firework, firework) {
             let rocket    = unwrap(firework->rocket);
-            let mouse_pos = engine_Mouse_getPosition();
+            let mouse_pos = engine_Mouse_getPos();
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
             Particle_init(rocket, mouse_pos.x, mouse_pos.y, 1, 1, rocket->color);
             Particle_initWithFading(rocket, 0.0);

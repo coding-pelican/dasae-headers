@@ -1,4 +1,4 @@
-#include "engine-wip/canvas.h"
+#include "engine-wip/Canvas.h"
 #include "dh/math/common.h"
 #include "dh/mem/cfg.h"
 

@@ -1,9 +1,7 @@
-#include "dh/core/op.h"
 #include "dh/time/Duration.h"
-#include "dh/core/prim/flt.h"
-#include "dh/debug/assert.h"
 #include "dh/time/common.h"
 
+/*========== Constructors ===================================================*/
 
 time_Duration time_Duration_from(u64 secs, u32 nanos) {
     return literal_time_Duration_from(secs, nanos);
@@ -25,6 +23,8 @@ time_Duration time_Duration_fromNanos(u64 nanos) {
     return literal_time_Duration_fromNanos(nanos);
 }
 
+/*========== Accessors ======================================================*/
+
 u64 time_Duration_asSecs(time_Duration self) {
     return self.secs;
 }
@@ -41,9 +41,13 @@ u32 time_Duration_subsecNanos(time_Duration self) {
     return self.nanos;
 }
 
+/*========== Validation =====================================================*/
+
 bool time_Duration_isZero(time_Duration self) {
     return time_Duration_eq(self, time_Duration_zero);
 }
+
+/*========== Conversion =====================================================*/
 
 time_Duration time_Duration_fromSecs_f64(f64 secs) {
     return time_Duration_from(
@@ -55,6 +59,8 @@ time_Duration time_Duration_fromSecs_f64(f64 secs) {
 f64 time_Duration_asSecs_f64(time_Duration self) {
     return as$(f64, self.secs) + as$(f64, self.nanos) / as$(f64, time_nanos_per_sec);
 }
+
+/*========== Arithmetic =====================================================*/
 
 time_Duration op_fnAdd(time_Duration) {
     return unwrap(time_Duration_chkdAdd(self, other));

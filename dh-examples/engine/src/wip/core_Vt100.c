@@ -1,4 +1,5 @@
 #include "engine-wip/core/Vt100.h"
+#include "engine-wip/input.h"
 #include "Backend_Internal.h"
 #include "dh/ArrList.h"
 
@@ -20,7 +21,7 @@ struct engine_core_Vt100 {
         } handle;
         struct {
             Vec2u top_left;
-        } pos_in_monitor;
+        } pos_on_display;
         struct {
             Vec2u min_size;
             Vec2u max_size;
@@ -37,40 +38,66 @@ config_ErrSet(engine_core_Vt100_Err);
 static void processEvents(anyptr ctx); /* TODO: validate */ // processing events and updating properties
 static void presentBuffer(anyptr ctx); /* TODO: validate */ // only present
 
-static Vec2u getWindowSize(anyptr ctx);
+static Vec2u getWindowPos(const anyptr ctx);
+static Vec2u getWindowDim(const anyptr ctx);
+static Vec2u getWindowRes(const anyptr ctx);
 
-static Vec2u    getWindowMinSize(anyptr ctx);
-static Vec2u    getWindowMaxSize(anyptr ctx);
-static Err$void setWindowMinSize(anyptr ctx, Vec2u size) must_check;
-static Err$void setWindowMaxSize(anyptr ctx, Vec2u size) must_check;
+static Vec2u    getWindowMinRes(const anyptr ctx);
+static Vec2u    getWindowMaxRes(const anyptr ctx);
+static Err$void setWindowMinRes(anyptr ctx, Vec2u size) must_check;
+static Err$void setWindowMaxREs(anyptr ctx, Vec2u size) must_check;
 
-static bool isWindowFocused(anyptr ctx);
-static bool isWindowMinimized(anyptr ctx);
-static bool isWindowMaximized(anyptr ctx);
+static bool isWindowFocused(const anyptr ctx);
+static bool isWindowMinimized(const anyptr ctx);
+static bool isWindowMaximized(const anyptr ctx);
 
-engine_Backend engine_core_Vt100_backend(void) {
-    static engine_core_Vt100 ctx[1] = cleared();
+static bool pressedKey(const anyptr ctx, engine_KeyCode code);
+static bool heldKey(const anyptr ctx, engine_KeyCode code);
+static bool releasedKey(const anyptr ctx, engine_KeyCode code);
 
+static bool pressedMouse(const anyptr ctx, engine_MouseButton button);
+static bool heldMouse(const anyptr ctx, engine_MouseButton button);
+static bool releasedMouse(const anyptr ctx, engine_MouseButton button);
+
+static Vec2i getMousePos(const anyptr ctx);
+static Vec2i getMouseDelta(const anyptr ctx);
+static i32   getMouseScrollDelta(const anyptr ctx);
+
+engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
     static const engine_BackendVT vt[1] = { {
         .processEvents = processEvents,
         .presentBuffer = presentBuffer,
     } };
 
     static const engine_BackendVT_Internal vt_internal[1] = { {
-        .getWindowSize = getWindowSize,
+        .getWindowPos = getWindowPos,
+        .getWindowDim = getWindowDim,
+        .getWindowRes = getWindowRes,
 
-        .getWindowMinSize = getWindowMinSize,
-        .getWindowMaxSize = getWindowMaxSize,
-        .setWindowMinSize = setWindowMinSize,
-        .setWindowMaxSize = setWindowMaxSize,
+        .getWindowMinRes = getWindowMinRes,
+        .getWindowMaxRes = getWindowMaxRes,
+        .setWindowMinRes = setWindowMinRes,
+        .setWindowMaxRes = setWindowMaxREs,
 
         .isWindowFocused   = isWindowFocused,
         .isWindowMinimized = isWindowMinimized,
         .isWindowMaximized = isWindowMaximized,
+
+        .pressedKey  = pressedKey,
+        .heldKey     = heldKey,
+        .releasedKey = releasedKey,
+
+        .pressedMouse  = pressedMouse,
+        .heldMouse     = heldMouse,
+        .releasedMouse = releasedMouse,
+
+        .getMousePos         = getMousePos,
+        .getMouseDelta       = getMouseDelta,
+        .getMouseScrollDelta = getMouseScrollDelta,
     } };
 
     return (engine_Backend){
-        .ptr         = ctx,
+        .ptr         = self,
         .vt          = vt,
         .vt_internal = vt_internal
     };
@@ -87,6 +114,7 @@ force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
 force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self); /* TODO: validate */
 static Err$void   resizeAbstractWindow(engine_core_Vt100* self);      /* TODO: validate */
+static void       syncWindowRect(engine_core_Vt100* self);
 
 static Err$void configureConsoleOutput(engine_core_Vt100* self) must_check;
 static Err$void configureConsoleInput(engine_core_Vt100* self) must_check;
@@ -238,7 +266,7 @@ static Err$void configureConsoleInput(engine_core_Vt100* self) {
         return_err(ConfigConsoleInputErr_FailedGetMode());
     }
     else {
-        in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+        in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT;
         if (!SetConsoleMode(handle, in_mode)) {
             return_err(ConfigConsoleInputErr_FailedSetMode());
         }
@@ -285,7 +313,8 @@ force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
         return_err(Err_Unspecified());
     }
     else {
-        in_mode |= ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
+        in_mode |= ENABLE_MOUSE_INPUT;
+        in_mode &= ~ENABLE_QUICK_EDIT_MODE;
         if (!SetConsoleMode(handle, in_mode)) {
             return_err(Err_Unspecified());
         }
@@ -302,6 +331,7 @@ force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
     }
     else {
         in_mode &= ~ENABLE_MOUSE_INPUT;
+        in_mode |= ENABLE_QUICK_EDIT_MODE;
         if (!SetConsoleMode(handle, in_mode)) {
             return_err(Err_Unspecified());
         }
@@ -342,43 +372,45 @@ config_ErrSet(
     FailedGetOutputHandle,
     FailedGetInputHandle
 );
-Err$void engine_core_Vt100_init(engine_Backend self, const engine_core_Vt100_Config* config) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(config->window);
+Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config* config) {
     debug_assert_nonnull(config->allocator.ptr);
     debug_assert_nonnull(config->allocator.vt);
+    debug_assert_nonnull(config->window);
 
-    scope_reserveReturn(Err$void) {
-        let core              = as$(engine_core_Vt100*, self.ptr);
-        core->allocator       = config->allocator;
-        core->abstract.window = eval({
+    scope_reserveReturn(Err$Ptr$engine_core_Vt100) {
+        let allocator = config->allocator;
+        let self      = meta_cast$(engine_core_Vt100*, try(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
+        errdefer(mem_Allocator_destroy(allocator, anyPtr(self)));
+
+        self->allocator       = allocator;
+        self->abstract.window = eval({
             let window = config->window;
-            assignSome(window->backend, self);
+            assignSome(window->backend, engine_core_Vt100_backend(self));
             eval_return window;
         });
-        core->abstract.buffer = eval({
-            let         allocator = core->allocator;
-            let         window    = core->abstract.window;
+        self->abstract.buffer = eval({
+            let         allocator = self->allocator;
+            let         window    = self->abstract.window;
             let         size      = calcAbstractBufferSize(window->composite_buffer->width, window->composite_buffer->height);
             eval_return type$(ArrList$u8, try(ArrList_initCap(typeInfo$(u8), allocator, size)));
         });
-        errdefer(ArrList_fini(&core->abstract.buffer.base));
-        core->client.handle.window = eval({
+        errdefer(ArrList_fini(&self->abstract.buffer.base));
+
+        self->client.handle.window = eval({
             let handle = GetConsoleWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetConsoleWindowHandle());
             }
             eval_return handle;
         });
-        core->client.handle.output = eval({
+        self->client.handle.output = eval({
             let handle = GetStdHandle(STD_OUTPUT_HANDLE);
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetOutputHandle());
             }
             eval_return handle;
         });
-        core->client.handle.input  = eval({
+        self->client.handle.input  = eval({
             let handle = GetStdHandle(STD_INPUT_HANDLE);
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetInputHandle());
@@ -386,22 +418,30 @@ Err$void engine_core_Vt100_init(engine_Backend self, const engine_core_Vt100_Con
             eval_return handle;
         });
 
-        try(configureConsoleOutput(core));
-        try(configureConsoleInput(core));
+        try(configureConsoleOutput(self));
+        try(configureConsoleInput(self));
 
-        // Hide cursor by default
-        try(hideConsoleCursor(core));
+        try(hideConsoleCursor(self));
+        try(enableConsoleMouse(self));
 
-        core->client.is_focused   = true;
-        core->client.is_minimized = false;
-        core->client.is_maximized = false;
+        self->client.is_focused   = true;
+        self->client.is_minimized = false;
+        self->client.is_maximized = false;
 
-        return_void();
+        return_ok(self);
     }
     scope_returnReserved;
 };
-void engine_Core_Vt100_fini(engine_Backend self) {
-    unused(self); /* TODO: Implement this function */ /* TODO: Remove unused self warning */
+void engine_core_Vt100_fini(engine_core_Vt100* self) {
+    debug_assert_nonnull(self);
+    debug_assert_nonnull(self);
+    debug_assert_nonnull(self);
+
+    catch_default(disableConsoleMouse(self), claim_unreachable);
+    catch_default(showConsoleCursor(self), claim_unreachable);
+
+    ArrList_fini(&self->abstract.buffer.base);
+    mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
 /*========== Interface Implementation =======================================*/
@@ -413,6 +453,8 @@ void engine_Core_Vt100_fini(engine_Backend self) {
 static void processEvents(anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
+
+    engine_Input_update();
 
     // Update window state
     WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) };
@@ -431,8 +473,6 @@ static void processEvents(anyptr ctx) {
     catch_default(processConsoleMouseEvents(self), claim_unreachable);
 }
 
-use_Sli$(Color);
-use_Mat$(Color);
 /// Presents the current buffer content to the console.
 /// For a text-based approach, you could simply write the stored data to the console.
 /// If you’re storing color/ANSI sequences, handle them accordingly.
@@ -452,7 +492,7 @@ static void presentBuffer(anyptr ctx) {
     let width  = rect.x;
     let pixels = eval({
         let         buffer = self->abstract.window->composite_buffer;
-        eval_return Mat_fromSli$(Mat$Color, Sli_asNamed$(Sli$Color, buffer->buffer), buffer->width, buffer->height);
+        eval_return Mat_fromSli$(Mat$Color, buffer->buffer, buffer->width, buffer->height);
     });
     for (u32 y = 0; (y + 1) < height; y += 2) {
         for (u32 x = 0; x < width; ++x) {
@@ -509,53 +549,53 @@ static void presentBuffer(anyptr ctx) {
     catch_default(resetConsoleCursorPos(self), claim_unreachable);
 }
 
-static Vec2u getWindowSize(anyptr ctx) {
+static Vec2u getWindowRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
     return clientWindowPixelRect(self);
 }
 
-static Vec2u getWindowMinSize(anyptr ctx) {
+static Vec2u getWindowMinRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
     return self->client.metrics.min_size;
 }
 
-static Vec2u getWindowMaxSize(anyptr ctx) {
+static Vec2u getWindowMaxRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
     return self->client.metrics.max_size;
 }
 
-static Err$void setWindowMinSize(anyptr ctx, Vec2u size) {
+static Err$void setWindowMinRes(anyptr ctx, Vec2u size) {
     reserveReturn(Err$void);
     debug_assert_nonnull(ctx);
     unused(ctx), unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 }
 
-static Err$void setWindowMaxSize(anyptr ctx, Vec2u size) {
+static Err$void setWindowMaxREs(anyptr ctx, Vec2u size) {
     reserveReturn(Err$void);
     debug_assert_nonnull(ctx);
     unused(ctx), unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 }
 
-static bool isWindowFocused(anyptr ctx) {
+static bool isWindowFocused(const anyptr ctx) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
     return self->client.is_focused;
 }
 
-static bool isWindowMinimized(anyptr ctx) {
+static bool isWindowMinimized(const anyptr ctx) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
     return self->client.is_minimized;
 }
 
-static bool isWindowMaximized(anyptr ctx) {
+static bool isWindowMaximized(const anyptr ctx) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
     return self->client.is_maximized;
 }
 

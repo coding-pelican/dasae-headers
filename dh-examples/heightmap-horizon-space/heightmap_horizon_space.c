@@ -230,7 +230,7 @@ void State_handleInputKey(State* self) {
 void State_handleInputMouse(State* state) {
     if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_pressed)) {
         state->input.mouse_active     = true;
-        state->input.mouse_position   = engine_Mouse_getPosition();
+        state->input.mouse_position   = engine_Mouse_getPos();
         state->input.forward_backward = 3.0;
     }
     if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_released)) {
@@ -241,7 +241,7 @@ void State_handleInputMouse(State* state) {
     }
     /* 이걸 어케 바꾼담담 */
     if (state->input.mouse_active) {
-        Vec2i delta             = engine_Mouse_getDelta();
+        Vec2i delta             = engine_Mouse_getPosDelta();
         state->input.left_right = (f64)delta.x / window_res_width * 2.0;
         state->horizon          = 10.0 + (f64)delta.y / window_res_height * 50.0;
         state->input.up_down    = (f64)delta.y / window_res_height * 10.0;
@@ -375,7 +375,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
         defer(log_fini());
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_create(
+        let window = try(engine_Window_init(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Heightmap Horizon Space",
@@ -384,7 +384,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 .default_color = Color_blue,
             }
         ));
-        defer(engine_Window_destroy(window));
+        defer(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         // Create canvases
@@ -446,7 +446,7 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             // Present to screen
             engine_Window_present(window);
             const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-            printf("\033[H"); // Move cursor to top left
+            printf("\033[H\033[40;37m"); // Move cursor to top left
             printf(
                 "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
                 fps,

@@ -449,7 +449,7 @@ static void Win32ConsoleBackend_processMouseEvent(engine_Win32ConsoleBackend* ba
         } break;
 
         case MOUSE_MOVED: { // Mouse movement
-            event.type   = engine_MouseEventType_move;
+            event.type   = engine_MouseEventType_motion;
             event.move.x = pos.x;
             event.move.y = pos.y;
             engine_InputEventBuffer_push(*(engine_InputEvent*)&event);

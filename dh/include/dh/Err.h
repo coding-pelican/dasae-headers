@@ -105,7 +105,7 @@ static_inline const char* GeneralErr_domainToCStr(ErrCode ctx) {
 }
 static_inline const char* GeneralErr_codeToCStr(ErrCode ctx) {
     let code = as$(ErrCode, ctx);
-    switch (ctx) {
+    switch (code) {
     case ErrCode_Unknown:
         return "Unknown";
     case ErrCode_Unexpected:

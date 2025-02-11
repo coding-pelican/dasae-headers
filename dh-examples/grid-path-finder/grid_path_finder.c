@@ -338,13 +338,13 @@ Err$void dh_main(i32 argc, const char* argv[]) {
 
         log_info("initializing...\n");
         // Create window
-        var window = try(engine_Window_create(&(engine_PlatformParams){
+        var window = try(engine_Window_init(&(engine_PlatformParams){
             .backend_type = engine_RenderBackendType_vt100,
             .window_title = "Grid Path Finder Simulation",
             .width        = main_window_res_width,
             .height       = main_window_res_height,
         }));
-        defer(engine_Window_destroy(window));
+        defer(engine_Window_fini(window));
         log_info("window created\n");
 
         var canvas = try(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));

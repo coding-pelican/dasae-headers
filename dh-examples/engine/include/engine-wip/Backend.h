@@ -9,18 +9,10 @@ typedef struct engine_BackendVT {
     void (*presentBuffer)(anyptr ctx);
 } engine_BackendVT;
 
-typedef struct engine_Backend_const {
-    const anyptr                     ptr;
+typedef struct engine_Backend {
+    anyptr                           ptr;
     const engine_BackendVT*          vt;
     const engine_BackendVT_Internal* vt_internal;
-} engine_Backend_const;
-typedef union engine_Backend {
-    struct {
-        anyptr                           ptr;
-        const engine_BackendVT*          vt;
-        const engine_BackendVT_Internal* vt_internal;
-    };
-    engine_Backend_const as_const;
 } engine_Backend;
 use_Opt$(engine_Backend);
 use_Err$(engine_Backend);
