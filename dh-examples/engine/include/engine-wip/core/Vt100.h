@@ -5,6 +5,7 @@
 #include "engine-wip/Window.h"
 #include "engine-wip/Backend.h"
 
+/* TODO: Supports multi-windows */
 typedef struct engine_core_Vt100_Config {
     engine_Window* window;
     mem_Allocator  allocator;

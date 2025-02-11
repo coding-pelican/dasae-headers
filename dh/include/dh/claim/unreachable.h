@@ -120,7 +120,7 @@ int unsafeDivide(int a, int b) {
 
 int getPositive(int x) {
     if (x <= 0) {
-        return claim_unreachable_val(int); // Use in expression context
+        return claim_unreachable_val$(int); // Use in expression context
     }
     return x;
 }

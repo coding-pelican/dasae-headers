@@ -83,7 +83,7 @@ force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self);   /* TODO: va
 force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self); /* TODO: validate */
 
 force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
-force_inline usize abstractBufferSize(engine_core_Vt100* self);
+force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
 force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self); /* TODO: validate */
 static Err$void   resizeAbstractWindow(engine_core_Vt100* self);      /* TODO: validate */
@@ -93,18 +93,18 @@ static Err$void configureConsoleInput(engine_core_Vt100* self) must_check;
 
 force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) must_check;
 force_inline Err$void showConsoleCursor(engine_core_Vt100* self) must_check;
+force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) must_check;
 
-force_inline Err$void enableMouse(void);
-force_inline Err$void disableMouse(void);
-static Err$void       processMouse(engine_core_Vt100* self); /* TODO: validate */
+force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) must_check;
+force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) must_check;
+static Err$void       processConsoleMouseEvents(engine_core_Vt100* self) must_check; /* TODO: validate */
 
 /*========== Implementations ================================================*/
 
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
 force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
-    RECT rect = cleared();
-    if (GetClientRect(self->client.handle.window, &rect)) {
+    if_(RECT rect = cleared(), GetClientRect(self->client.handle.window, &rect)) {
         // Update client metrics in sync
         self->client.metrics.current_size = (Vec2u){
             .x = as$(u32, rect.right - rect.left),
@@ -118,8 +118,7 @@ force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
 /// Returns the size (width, height) of the console screen buffer
 /// in character cells (columns and rows).
 force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
-    CONSOLE_SCREEN_BUFFER_INFO info = cleared();
-    if (GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
+    if_(CONSOLE_SCREEN_BUFFER_INFO info = cleared(), GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
         // Keep buffer size in sync with console
         self->client.metrics.current_size = (Vec2u){
             .x = as$(u32, info.dwSize.X),
@@ -142,18 +141,18 @@ force_inline Vec2u abstractWindowRect(engine_core_Vt100* self) {
 /// Returns the bytes-length of the internal "abstract" buffer,
 /// which you might use for storing render data before presenting.
 /// If you’re using ArrList$u8 as a text buffer only, adapt as needed.
-force_inline usize abstractBufferSize(engine_core_Vt100* self) {
+force_inline usize abstractBufferCapSize(engine_core_Vt100* self) {
     // If you store rows and columns separately in abstract.buffer, adapt accordingly.
     // For example, if you always keep a buffer big enough for (width * height * cellSize),
     // you could do something like the logic below or just re-return the window rect.
     // For demonstration, we’ll match the window’s dimension:
-    return self->abstract.buffer.items.len;
+    return self->abstract.buffer.cap;
 }
 
 /// Checks if the abstract buffer needs to be resized based on the
 /// latest window metrics or any other condition your engine considers.
 force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self) {
-    let current_size = abstractBufferSize(self);
+    let current_size = abstractBufferCapSize(self);
     // Compare with the expected size from your function
     let needed_size  = eval({
         let         rect = abstractWindowRect(self);
@@ -214,15 +213,15 @@ static Err$void configureConsoleOutput(engine_core_Vt100* self) {
     }
 
     // Set console output mode for processing terminal sequences
-    DWORD out_mode = 0;
-    if (!GetConsoleMode(handle, &out_mode)) {
+    if_(DWORD out_mode = 0, !GetConsoleMode(handle, &out_mode)) {
         return_err(ConfigConsoleOutputErr_FailedGetMode());
     }
-    out_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
-    if (!SetConsoleMode(handle, out_mode)) {
-        return_err(ConfigConsoleOutputErr_FailedSetMode());
+    else {
+        out_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
+        if (!SetConsoleMode(handle, out_mode)) {
+            return_err(ConfigConsoleOutputErr_FailedSetMode());
+        }
     }
-
     return_void();
 }
 
@@ -234,72 +233,78 @@ config_ErrSet(
 /// Function to configure console input mode
 static Err$void configureConsoleInput(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    let   handle  = self->client.handle.input;
-    DWORD in_mode = 0;
-    if (!GetConsoleMode(handle, &in_mode)) {
+    let handle = self->client.handle.input;
+    if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         return_err(ConfigConsoleInputErr_FailedGetMode());
     }
-    in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
-    if (!SetConsoleMode(handle, in_mode)) {
-        return_err(ConfigConsoleInputErr_FailedSetMode());
+    else {
+        in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+        if (!SetConsoleMode(handle, in_mode)) {
+            return_err(ConfigConsoleInputErr_FailedSetMode());
+        }
     }
     return_void();
 }
 
 config_ErrSet(
-    SetCursorErr,
+    ConsoleCursorErr,
     FailedHide,
-    FailedShow
+    FailedShow,
+    FailedResetPos
 );
 force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    if (!SetConsoleCursorInfo(self->client.handle.output, &(CONSOLE_CURSOR_INFO){ 1, false })) {
-        return_err(SetCursorErr_FailedHide());
+    let handle = self->client.handle.output;
+    if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, false })) {
+        return_err(ConsoleCursorErr_FailedHide());
     }
     return_void();
 }
 force_inline Err$void showConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    if (!SetConsoleCursorInfo(self->client.handle.output, &(CONSOLE_CURSOR_INFO){ 1, true })) {
-        return_err(SetCursorErr_FailedShow());
+    let handle = self->client.handle.output;
+    if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, true })) {
+        return_err(ConsoleCursorErr_FailedShow());
     }
+    return_void();
+}
+force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
+    reserveReturn(Err$void);
+    let handle = self->client.handle.output;
+    if (!WriteConsoleA(handle, "\033[H", 3, null, null)) {
+        return_err(ConsoleCursorErr_FailedResetPos());
+    };
     return_void();
 }
 
 /// Enable mouse input through the console.
-force_inline Err$void enableMouse(void) {
+force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-    if (hInput == INVALID_HANDLE_VALUE) {
-        return_err(Err_Unspecified()); // or your custom error
-    }
-
-    DWORD inMode = 0;
-    if (!GetConsoleMode(hInput, &inMode)) {
+    let handle = self->client.handle.input;
+    if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         return_err(Err_Unspecified());
     }
-    inMode |= ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
-    if (!SetConsoleMode(hInput, inMode)) {
-        return_err(Err_Unspecified());
+    else {
+        in_mode |= ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
+        if (!SetConsoleMode(handle, in_mode)) {
+            return_err(Err_Unspecified());
+        }
     }
     return_void();
 }
 
 /// Disable mouse input in the console.
-force_inline Err$void disableMouse(void) {
+force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-    if (hInput == INVALID_HANDLE_VALUE) {
+    let handle = self->client.handle.input;
+    if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         return_err(Err_Unspecified());
     }
-
-    DWORD inMode = 0;
-    if (!GetConsoleMode(hInput, &inMode)) {
-        return_err(Err_Unspecified());
-    }
-    inMode &= ~ENABLE_MOUSE_INPUT;
-    if (!SetConsoleMode(hInput, inMode)) {
-        return_err(Err_Unspecified());
+    else {
+        in_mode &= ~ENABLE_MOUSE_INPUT;
+        if (!SetConsoleMode(handle, in_mode)) {
+            return_err(Err_Unspecified());
+        }
     }
     return_void();
 }
@@ -307,17 +312,17 @@ force_inline Err$void disableMouse(void) {
 /// Read and process mouse-related events from the console input.
 /// In a real engine, you might dispatch these events into an input system
 /// or event queue. For simplicity, we’ll do minimal handling here.
-static Err$void processMouse(engine_core_Vt100* self) {
+static Err$void processConsoleMouseEvents(engine_core_Vt100* self) {
     reserveReturn(Err$void);
 
     // Example read
     INPUT_RECORD records[32] = cleared();
     DWORD        readCount   = 0;
-    HANDLE       hInput      = self->client.handle.input;
+    HANDLE       handle      = self->client.handle.input;
 
-    while (PeekConsoleInput(hInput, records, 32, &readCount) && readCount > 0) {
+    while (PeekConsoleInput(handle, records, 32, &readCount) && readCount > 0) {
         // Actually read them out
-        ReadConsoleInput(hInput, records, readCount, &readCount);
+        ReadConsoleInput(handle, records, readCount, &readCount);
         for (DWORD i = 0; i < readCount; ++i) {
             if (records[i].EventType == MOUSE_EVENT) {
                 // Here you can interpret records[i].Event.MouseEvent.
@@ -361,21 +366,21 @@ Err$void engine_core_Vt100_init(engine_Backend self, const engine_core_Vt100_Con
         errdefer(ArrList_fini(&core->abstract.buffer.base));
         core->client.handle.window = eval({
             let handle = GetConsoleWindow();
-            if (!handle) {
+            if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetConsoleWindowHandle());
             }
             eval_return handle;
         });
         core->client.handle.output = eval({
             let handle = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (!handle) {
+            if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetOutputHandle());
             }
             eval_return handle;
         });
         core->client.handle.input  = eval({
             let handle = GetStdHandle(STD_INPUT_HANDLE);
-            if (!handle) {
+            if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetInputHandle());
             }
             eval_return handle;
@@ -423,9 +428,11 @@ static void processEvents(anyptr ctx) {
     if (needsResizeAbstractWindow(self)) {
         catch_default(resizeAbstractWindow(self), claim_unreachable);
     }
-    catch_default(processMouse(self), claim_unreachable);
+    catch_default(processConsoleMouseEvents(self), claim_unreachable);
 }
 
+use_Sli$(Color);
+use_Mat$(Color);
 /// Presents the current buffer content to the console.
 /// For a text-based approach, you could simply write the stored data to the console.
 /// If you’re storing color/ANSI sequences, handle them accordingly.
@@ -438,21 +445,68 @@ static void presentBuffer(anyptr ctx) {
     if (needsResizeAbstractWindow(self)) {
         catch_default(resizeAbstractWindow(self), claim_unreachable);
     }
+    ArrList_clearRetainingCap(&self->abstract.buffer.base);
 
-    if (0 < self->abstract.buffer.items.len) {
-        // Reset cursor position
-        WriteConsoleA(self->client.handle.output, "\033[H", 3, NULL, NULL);
+    let rect   = abstractWindowRect(self);
+    let height = rect.y;
+    let width  = rect.x;
+    let pixels = eval({
+        let         buffer = self->abstract.window->composite_buffer;
+        eval_return Mat_fromSli$(Mat$Color, Sli_asNamed$(Sli$Color, buffer->buffer), buffer->width, buffer->height);
+    });
+    for (u32 y = 0; (y + 1) < height; y += 2) {
+        for (u32 x = 0; x < width; ++x) {
+            // Get upper and lower pixels
+            const Color upper = *Mat_at(pixels, x, y);
+            const Color lower = *Mat_at(pixels, x, y + 1);
 
-        // Write buffer content
-        DWORD written = 0;
-        WriteConsoleA(
-            self->client.handle.output,
-            self->abstract.buffer.items.ptr,
-            self->abstract.buffer.items.len,
-            &written,
-            NULL
-        );
+            // clang-format off
+            // Find run length of identical color pairs
+            usize run_length = 1;
+            while ((x + run_length) < width) {
+                const Color next_upper = *Mat_at(pixels, x + run_length, y);
+                const Color next_lower = *Mat_at(pixels, x + run_length, y + 1);
+
+                if (memcmp(&upper.channels, &next_upper.channels, sizeof(Color)) != 0
+                 || memcmp(&lower.channels, &next_lower.channels, sizeof(Color)) != 0) {
+                    break;
+                }
+                run_length++;
+            }
+
+            // Write color sequence
+            self->abstract.buffer.items.len += sprintf(
+                as$(char*, self->abstract.buffer.items.ptr + self->abstract.buffer.items.len),
+                "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm",
+                upper.r, upper.g, upper.b,
+                lower.r, lower.g, lower.b
+            );
+            // clang-format on
+
+            // Write half-blocks for the run
+            for (usize i = 0; i < run_length; ++i) {
+                memcpy(self->abstract.buffer.items.ptr + self->abstract.buffer.items.len, "▀", strlen("▀"));
+                self->abstract.buffer.items.len += strlen("▀");
+            }
+            x += run_length - 1; // -1 because loop will increment
+        }
+        self->abstract.buffer.items.ptr[self->abstract.buffer.items.len++] = '\n';
     }
+    self->abstract.buffer.items.ptr[--self->abstract.buffer.items.len] = '\0';
+
+    catch_default(resetConsoleCursorPos(self), claim_unreachable);
+    /* Write buffer content */ {
+        let handle = self->client.handle.output;
+        let ptr    = self->abstract.buffer.items.ptr;
+        let len    = self->abstract.buffer.items.len;
+        if_(DWORD written = 0,
+            !WriteConsoleA(handle, ptr, len, &written, null)
+                || written != len
+        ) {
+            claim_unreachable;
+        }
+    }
+    catch_default(resetConsoleCursorPos(self), claim_unreachable);
 }
 
 static Vec2u getWindowSize(anyptr ctx) {

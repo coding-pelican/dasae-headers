@@ -100,7 +100,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         Random_init();
 
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
+        if_(let debug_file = fopen("main-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
             // Configure logging behavior
             log_setLevel(log_Level_debug);
@@ -292,7 +292,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
         f->allocator = allocator;
 
-        scope_with(let rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
+        let_(rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
             errdefer(mem_Allocator_destroy(f->allocator, anyPtr(rocket)));
             Particle_init(rocket, as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
@@ -373,7 +373,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
             );
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
-                scope_with(let particle = meta_castPtr$(Particle*, try(ArrList_addBackOne(&f->effects.base)))) {
+                let_(particle = meta_castPtr$(Particle*, try(ArrList_addBackOne(&f->effects.base)))) {
                     let x      = rocket->position[0];
                     let y      = rocket->position[1];
                     let width  = 1.0;
