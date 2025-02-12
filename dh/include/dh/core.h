@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    core.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-12 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -27,6 +27,7 @@ extern "C" {
 #include "core/op.h"
 #include "core/cmp.h"
 #include "core/type_info.h"
+#include "core/src_loc.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

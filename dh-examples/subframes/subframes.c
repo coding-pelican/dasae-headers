@@ -57,7 +57,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
     Random_init();
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
+        if_(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
             // Configure logging behavior
             log_setLevel(log_Level_debug);

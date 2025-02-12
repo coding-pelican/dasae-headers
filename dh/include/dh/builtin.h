@@ -4,10 +4,10 @@
  * @file    builtin.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2025-01-11 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-12 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
- * @prefix  builtin
+ * @prefix  bti
  *
  * @brief   Builtin configurations and compiler-specific macros
  * @details Includes architecture, compiler, language and platform specific
@@ -23,17 +23,18 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-// bt? bi? bti? uni? unf? ax?
+// bt? bi? bti? uni? unf? ax? => "bti"
 
 #include "builtin/arch_cfg.h"
-#include "builtin/comp_cfg.h"
-#include "builtin/lang_cfg.h"
 #include "builtin/plat_cfg.h"
+#include "builtin/lang_cfg.h"
+#include "builtin/comp_cfg.h"
 #include "builtin/comp.h"
 #include "builtin/auto.h"
+#include "builtin/lambda.h"
 #include "builtin/type_info.h"
 #include "builtin/container_info.h"
-#include "builtin/lambda.h"
+#include "builtin/src_loc.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
