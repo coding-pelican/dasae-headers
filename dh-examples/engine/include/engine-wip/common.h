@@ -17,6 +17,9 @@
 
 #include "dh/time.h"
 
+#include "dh/Arr.h"
+#include "dh/Str.h"
+
 // clang-format off
 typedef math_Vec2f  Vec2f;  typedef math_Vec3f  Vec3f;  typedef math_Vec4f  Vec4f;
 typedef math_Vec2d  Vec2d;  typedef math_Vec3d  Vec3d;  typedef math_Vec4d  Vec4d;

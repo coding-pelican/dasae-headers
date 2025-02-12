@@ -3,12 +3,13 @@
 
 #include "engine-wip/common.h"
 #include "engine-wip/Window.h"
+#include "engine-wip/Input.h"
 #include "engine-wip/Backend.h"
 
-/* TODO: Supports multi-windows */
 typedef struct engine_core_Vt100_Config {
     mem_Allocator  allocator;
-    engine_Window* window;
+    engine_Window* window; /* TODO: Supports multi-windows */
+    engine_Input*  input;
 } engine_core_Vt100_Config;
 
 typedef struct engine_core_Vt100 engine_core_Vt100;

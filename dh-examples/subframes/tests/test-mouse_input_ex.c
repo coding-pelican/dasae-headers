@@ -20,6 +20,13 @@ void printConsoleMetrics() {
     printf("Window Size: %d x %d\n", bufferInfo.srWindow.Right - bufferInfo.srWindow.Left + 1, bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top + 1);
     printf("Font Size: %d x %d\n", fontInfo.dwFontSize.X, fontInfo.dwFontSize.Y);
     printf("Window Position: (%d,%d) to (%d,%d)\n", bufferInfo.srWindow.Left, bufferInfo.srWindow.Top, bufferInfo.srWindow.Right, bufferInfo.srWindow.Bottom);
+
+    // Get console window handle and position
+    HWND consoleWnd  = GetConsoleWindow();
+    RECT consoleRect = { 0 };
+    GetWindowRect(consoleWnd, &consoleRect);
+
+    printf("Console Window Position: (%ld,%ld) to (%ld,%ld)\n", consoleRect.left, consoleRect.top, consoleRect.right, consoleRect.bottom);
 }
 
 // Function to set up console for mouse input

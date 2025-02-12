@@ -1,5 +1,6 @@
+#include "dh/Err.h"
 #include "engine-wip/core/Vt100.h"
-#include "engine-wip/input.h"
+#include "engine-wip/Input.h"
 #include "Backend_Internal.h"
 #include "dh/ArrList.h"
 
@@ -13,6 +14,7 @@ struct engine_core_Vt100 {
         engine_Window* window;
         ArrList$u8     buffer;
     } abstract;
+    engine_Input* input;
     struct {
         struct {
             HWND   window; // Handle to console window
@@ -23,9 +25,12 @@ struct engine_core_Vt100 {
             Vec2u top_left;
         } pos_on_display;
         struct {
-            Vec2u min_size;
-            Vec2u max_size;
-            Vec2u current_size;
+            Vec2u dim;
+            struct {
+                Vec2u min;
+                Vec2u max;
+                Vec2u curr;
+            } res;
         } metrics;
         bool is_focused;
         bool is_minimized;
@@ -51,9 +56,15 @@ static bool isWindowFocused(const anyptr ctx);
 static bool isWindowMinimized(const anyptr ctx);
 static bool isWindowMaximized(const anyptr ctx);
 
-static bool pressedKey(const anyptr ctx, engine_KeyCode code);
-static bool heldKey(const anyptr ctx, engine_KeyCode code);
-static bool releasedKey(const anyptr ctx, engine_KeyCode code);
+static u8   getKeyboardState(const anyptr ctx, engine_KeyCode key);
+static bool isKeyboardState(const anyptr ctx, engine_KeyCode key, engine_KeyButtonStates state);
+
+static bool pressedKeyboard(const anyptr ctx, engine_KeyCode key);
+static bool heldKeyboard(const anyptr ctx, engine_KeyCode key);
+static bool releasedKeyboard(const anyptr ctx, engine_KeyCode key);
+
+static u8   getMouseState(const anyptr ctx, engine_MouseButton button);
+static bool isMouseState(const anyptr ctx, engine_MouseButton button, engine_KeyButtonStates state);
 
 static bool pressedMouse(const anyptr ctx, engine_MouseButton button);
 static bool heldMouse(const anyptr ctx, engine_MouseButton button);
@@ -61,7 +72,7 @@ static bool releasedMouse(const anyptr ctx, engine_MouseButton button);
 
 static Vec2i getMousePos(const anyptr ctx);
 static Vec2i getMouseDelta(const anyptr ctx);
-static i32   getMouseScrollDelta(const anyptr ctx);
+static Vec2f getMouseWheelScrollDelta(const anyptr ctx);
 
 engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
     static const engine_BackendVT vt[1] = { {
@@ -83,17 +94,23 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
         .isWindowMinimized = isWindowMinimized,
         .isWindowMaximized = isWindowMaximized,
 
-        .pressedKey  = pressedKey,
-        .heldKey     = heldKey,
-        .releasedKey = releasedKey,
+        .getKeyboardState = getKeyboardState,
+        .isKeyboardState  = isKeyboardState,
+
+        .pressedKeyboard  = pressedKeyboard,
+        .heldKeyboard     = heldKeyboard,
+        .releasedKeyboard = releasedKeyboard,
+
+        .getMouseState = getMouseState,
+        .isMouseState  = isMouseState,
 
         .pressedMouse  = pressedMouse,
         .heldMouse     = heldMouse,
         .releasedMouse = releasedMouse,
 
-        .getMousePos         = getMousePos,
-        .getMouseDelta       = getMouseDelta,
-        .getMouseScrollDelta = getMouseScrollDelta,
+        .getMousePos              = getMousePos,
+        .getMousePosDelta         = getMouseDelta,
+        .getMouseWheelScrollDelta = getMouseWheelScrollDelta,
     } };
 
     return (engine_Backend){
@@ -112,9 +129,9 @@ force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self); /* TODO: va
 force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
 force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
-force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self); /* TODO: validate */
-static Err$void   resizeAbstractWindow(engine_core_Vt100* self);      /* TODO: validate */
-static void       syncWindowRect(engine_core_Vt100* self);
+force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);       /* TODO: validate */
+static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check; /* TODO: validate */
+static Err$void   syncWindowMetrics(engine_core_Vt100* self) must_check;
 
 static Err$void configureConsoleOutput(engine_core_Vt100* self) must_check;
 static Err$void configureConsoleInput(engine_core_Vt100* self) must_check;
@@ -205,6 +222,23 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
     let needed = calcAbstractBufferSize(rect.x, rect.y);
     try(ArrList_resize(&self->abstract.buffer.base, needed));
 
+    return_void();
+}
+
+static Err$void syncWindowMetrics(engine_core_Vt100* self) {
+    reserveReturn(Err$void);
+    let                        handle      = self->client.handle.output;
+    CONSOLE_SCREEN_BUFFER_INFO buffer_info = cleared();
+    CONSOLE_FONT_INFOEX        fontInfo    = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+
+    if (!GetCurrentConsoleFontEx(handle, false, &fontInfo)) {
+        return_err(Err_Unspecified());
+    }
+    if (!GetConsoleScreenBufferInfo(handle, &buffer_info)) {
+        return_err(Err_Unspecified());
+    }
+
+    /* TODO: Process sync logic */
     return_void();
 }
 
@@ -395,6 +429,11 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
             eval_return type$(ArrList$u8, try(ArrList_initCap(typeInfo$(u8), allocator, size)));
         });
         errdefer(ArrList_fini(&self->abstract.buffer.base));
+        self->input = eval({
+            let input = config->input;
+            someAsg(input->backend, engine_core_Vt100_backend(self));
+            eval_return input;
+        });
 
         self->client.handle.window = eval({
             let handle = GetConsoleWindow();
@@ -454,7 +493,7 @@ static void processEvents(anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
 
-    engine_Input_update();
+    catch_default(engine_Input_update(self->input), claim_unreachable);
 
     // Update window state
     WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) };
@@ -549,22 +588,28 @@ static void presentBuffer(anyptr ctx) {
     catch_default(resetConsoleCursorPos(self), claim_unreachable);
 }
 
+static Vec2u getWindowDim(const anyptr ctx) {
+    debug_assert_nonnull(ctx);
+    let self = as$(engine_core_Vt100*, ctx);
+    return self->client.metrics.dim;
+}
+
 static Vec2u getWindowRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
-    return clientWindowPixelRect(self);
+    return self->client.metrics.res.curr;
 }
 
 static Vec2u getWindowMinRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(const engine_core_Vt100*, ctx);
-    return self->client.metrics.min_size;
+    return self->client.metrics.res.min;
 }
 
 static Vec2u getWindowMaxRes(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(const engine_core_Vt100*, ctx);
-    return self->client.metrics.max_size;
+    return self->client.metrics.res.max;
 }
 
 static Err$void setWindowMinRes(anyptr ctx, Vec2u size) {

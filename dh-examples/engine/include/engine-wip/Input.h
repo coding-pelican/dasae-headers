@@ -10,6 +10,8 @@
 #include "engine-wip/MouseButton.h"
 #include "engine-wip/Mouse.h"
 
+#include "engine-wip/Backend.h"
+
 typedef union engine_InputKeyModes {
     struct {
         u8 shift     : 1;
@@ -89,18 +91,21 @@ typedef struct engine_Input {
     engine_InputEventBuffer event_buffer;
     engine_Keyboard         keyboard;
     engine_Mouse            mouse;
+    Opt$engine_Backend      backend;
     mem_Allocator           allocator;
 } engine_Input;
 use_Sli$(engine_Input);
 use_Opt$(engine_Input);
 use_Err$(engine_Input);
 
-/// Core functions
+/* Input management */
+
 extern Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) must_check;
 extern void                 engine_Input_fini(engine_Input* self);
-extern void                 engine_Input_update(engine_Input* self);
+extern Err$void             engine_Input_update(engine_Input* self) must_check;
 
-/// Management event buffer
+/* Event buffer management */
+
 extern void                  engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event);
 extern Opt$engine_InputEvent engine_InputEventBuffer_pop(engine_Input* self);
 extern Opt$engine_InputEvent engine_InputEventBuffer_peek(engine_Input* self);

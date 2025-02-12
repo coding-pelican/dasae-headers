@@ -85,25 +85,53 @@ bool engine_Backend_isWindowMaximized(const engine_Backend self) {
     return self.vt_internal->isWindowMaximized(self.ptr);
 }
 
-bool engine_Backend_pressedKey(const engine_Backend self, engine_KeyCode code) {
+u8 engine_Backend_getKeyboardState(const engine_Backend self, engine_KeyCode key) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
-    return self.vt_internal->pressedKey(self.ptr, code);
+    return self.vt_internal->getKeyboardState(self.ptr, key);
 }
 
-bool engine_Backend_heldKey(const engine_Backend self, engine_KeyCode code) {
+bool engine_Backend_isKeyboardState(const engine_Backend self, engine_KeyCode key, engine_KeyButtonStates state) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
-    return self.vt_internal->heldKey(self.ptr, code);
+    return self.vt_internal->isKeyboardState(self.ptr, key, state);
 }
 
-bool engine_Backend_releasedKey(const engine_Backend self, engine_KeyCode code) {
+bool engine_Backend_pressedKeyboard(const engine_Backend self, engine_KeyCode key) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
-    return self.vt_internal->releasedKey(self.ptr, code);
+    return self.vt_internal->pressedKeyboard(self.ptr, key);
+}
+
+bool engine_Backend_heldKeyboard(const engine_Backend self, engine_KeyCode key) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt_internal);
+    return self.vt_internal->heldKeyboard(self.ptr, key);
+}
+
+bool engine_Backend_releasedKeyboard(const engine_Backend self, engine_KeyCode key) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt_internal);
+    return self.vt_internal->releasedKeyboard(self.ptr, key);
+}
+
+u8 engine_Backend_getMouseState(const engine_Backend self, engine_MouseButton button) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt_internal);
+    return self.vt_internal->getMouseState(self.ptr, button);
+}
+
+bool engine_Backend_isMouseState(const engine_Backend self, engine_MouseButton button, engine_KeyButtonStates state) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt_internal);
+    return self.vt_internal->isMouseState(self.ptr, button, state);
 }
 
 bool engine_Backend_pressedMouse(const engine_Backend self, engine_MouseButton button) {
@@ -134,16 +162,16 @@ Vec2i engine_Backend_getMousePos(const engine_Backend self) {
     return self.vt_internal->getMousePos(self.ptr);
 }
 
-Vec2i engine_Backend_getMouseDelta(const engine_Backend self) {
+Vec2i engine_Backend_getMousePosDelta(const engine_Backend self) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
-    return self.vt_internal->getMouseDelta(self.ptr);
+    return self.vt_internal->getMousePosDelta(self.ptr);
 }
 
-Vec2f engine_Backend_getMouseScrollDelta(const engine_Backend self) {
+Vec2f engine_Backend_getMouseWheelScrollDelta(const engine_Backend self) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
-    return self.vt_internal->getMouseScrollDelta(self.ptr);
+    return self.vt_internal->getMouseWheelScrollDelta(self.ptr);
 }

@@ -94,8 +94,9 @@ extern meta_Sli              meta_Sli_constCast(meta_SliConst);
 #define meta_ptrToAny(var_meta_ptr...)        OP__meta_ptrToAny(var_meta_ptr)
 #define meta_sliToAny(var_meta_sli...)        OP__meta_sliToAny(var_meta_sli)
 
-#define meta_copy
-#define meta_move
+// extern void meta_setSli(meta_Sli mem, meta_Ptr val);
+// extern void meta_copySli(meta_Sli dst, meta_Sli src);
+// extern void meta_moveSli(meta_Sli dst, meta_Sli src);
 
 /* Implementation generic type */
 

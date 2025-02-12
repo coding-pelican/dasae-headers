@@ -1,10 +1,11 @@
 #ifndef ENGINE_WINDOW_INCLUDED
 #define ENGINE_WINDOW_INCLUDED (1)
 
-#include "Backend.h"
-#include "Canvas.h"
-#include "dh/Arr.h"
-#include "dh/Str.h"
+#include "engine-wip/common.h"
+#include "engine-wip/Color.h"
+#include "engine-wip/Canvas.h"
+
+#include "engine-wip/Backend.h"
 
 typedef struct engine_WindowConfig {
     mem_Allocator allocator;
