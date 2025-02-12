@@ -35,7 +35,7 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
         window->views.count = 0;
 
         /* Reserve backend for init */
-        assignNone(window->backend);
+        noneAsg(window->backend);
 
         /* Created successfully */
         return_ok(window);

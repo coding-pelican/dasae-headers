@@ -297,9 +297,9 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button pressed");
         let world_mouse = Visualizer_mousePosToWorld(self);
 
-        assignSome(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-        assignSome(self->spawn.angle, 0.0f);
-        assignSome(self->spawn.total, 0.0f);
+        someAsg(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
+        someAsg(self->spawn.angle, 0.0f);
+        someAsg(self->spawn.total, 0.0f);
 
     } else if (engine_Mouse_held(engine_MouseButton_right)) {
         log_debug("right mouse button held");
@@ -318,7 +318,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
                 body->radius = cbrtf(body->mass);
             }
             else {
-                assignSome(self->spawn.angle, atan2f(d.y, d.x));
+                someAsg(self->spawn.angle, atan2f(d.y, d.x));
             }
             body->vel = d;
         }
@@ -327,11 +327,11 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button released");
         if_some_mut(self->spawn.body, body) {
             if_none(self->spawn.confirmed) {
-                assignSome(self->spawn.confirmed, *body);
+                someAsg(self->spawn.confirmed, *body);
             }
-            assignNone(self->spawn.body);
-            assignNone(self->spawn.angle);
-            assignNone(self->spawn.total);
+            noneAsg(self->spawn.body);
+            noneAsg(self->spawn.angle);
+            noneAsg(self->spawn.total);
         }
     }
     return_void();
@@ -344,7 +344,7 @@ Err$void Visualizer_update(Visualizer* self) {
     // Handle spawned body confirmation
     if_some_mut(self->spawn.confirmed, confirmed) {
         try(ArrList_append(&self->bodies.base, meta_refPtr(confirmed)));
-        assignNone(self->spawn.confirmed);
+        noneAsg(self->spawn.confirmed);
     }
 
     return_void();

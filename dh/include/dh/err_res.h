@@ -41,8 +41,8 @@ extern "C" {
 #define err$(TErr, val_err...) OP__err$(TErr, val_err)
 #define ok$(TOk, val_ok...)    OP__ok$(TOk, val_ok)
 
-#define assignErr(var_err_res, val_err...) OP__assignErr(var_err_res, val_err)
-#define assignOk(var_err_res, val_ok...)   OP__assignOk(var_err_res, val_ok)
+#define errAsg(var_err_res, val_err...) OP__errAsg(var_err_res, val_err)
+#define okAsg(var_err_res, val_ok...)   OP__okAsg(var_err_res, val_ok)
 
 /* Checks error result */
 #define isErr(val_err_res) OP__isErr(val_err_res)
@@ -146,11 +146,11 @@ typedef Err$Void Err$void;
 #define OP__err$(TErr, val_err...) ((TErr)err(val_err))
 #define OP__ok$(TOk, val_ok)       ((TOk)ok(val_ok))
 
-#define OP__assignErr(var_err_res, val_err...) eval({        \
+#define OP__errAsg(var_err_res, val_err...) eval({           \
     let _ptr_err_res = &var_err_res;                         \
     *_ptr_err_res    = err$(TypeOf(*_ptr_err_res), val_err); \
 })
-#define OP__assignOk(var_err_res, val_ok...) eval({        \
+#define OP__okAsg(var_err_res, val_ok...) eval({           \
     let _ptr_err_res = &var_err_res;                       \
     *_ptr_err_res    = ok$(TypeOf(*_ptr_err_res), val_ok); \
 })

@@ -40,8 +40,8 @@ extern "C" {
 #define some$(TOpt, val_opt...) OP__some$(TOpt, val_opt)
 #define none$(TOpt)             OP__none$(TOpt)
 
-#define assignSome(var_opt, val_opt...) OP__assignSome(var_opt, val_opt)
-#define assignNone(var_opt...)          OP__assignNone(var_opt)
+#define someAsg(var_opt, val_opt...) OP__someAsg(var_opt, val_opt)
+#define noneAsg(var_opt...)          OP__noneAsg(var_opt)
 
 /* Checks optional value */
 #define isSome(opt) OP__isSome(opt)
@@ -112,11 +112,11 @@ extern "C" {
 #define OP__some$(TOpt, val_opt...) ((TOpt)some(val_opt))
 #define OP__none$(TOpt)             ((TOpt)none())
 
-#define OP__assignSome(var_opt, val_opt...) eval({    \
+#define OP__someAsg(var_opt, val_opt...) eval({       \
     let _ptr_opt = &var_opt;                          \
     *_ptr_opt    = some$(TypeOf(*_ptr_opt), val_opt); \
 })
-#define OP__assignNone(var_opt...) eval({    \
+#define OP__noneAsg(var_opt...) eval({       \
     let _ptr_opt = &var_opt;                 \
     *_ptr_opt    = none$(TypeOf(*_ptr_opt)); \
 })

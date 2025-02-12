@@ -150,7 +150,7 @@ static must_check Err$void stableSort(
 static mem_Allocator testAllocator(void) {
     static Opt$mem_Allocator allocator = none();
     if_none(allocator) {
-        assignSome(allocator, heap_Classic_allocator(&(heap_Classic){}));
+        someAsg(allocator, heap_Classic_allocator(&(heap_Classic){}));
     }
     return unwrap(allocator);
 }

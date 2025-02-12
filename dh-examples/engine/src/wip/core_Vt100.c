@@ -385,7 +385,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->allocator       = allocator;
         self->abstract.window = eval({
             let window = config->window;
-            assignSome(window->backend, engine_core_Vt100_backend(self));
+            someAsg(window->backend, engine_core_Vt100_backend(self));
             eval_return window;
         });
         self->abstract.buffer = eval({

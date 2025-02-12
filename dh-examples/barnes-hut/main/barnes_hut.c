@@ -242,7 +242,7 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            assignNone(viz->spawn.confirmed);
+            noneAsg(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
