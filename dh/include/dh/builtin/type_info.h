@@ -140,7 +140,7 @@ extern "C" {
      */                                       \
     FUNC__isBool(T)
 
-/*========== Implementation Macros =========================================*/
+/*========== Macros and Implementations =====================================*/
 
 #define FUNC__sizeOf(T_or_val) \
     sizeof(T_or_val)

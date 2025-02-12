@@ -6,7 +6,7 @@
  * @date    2024-10-27 (date of creation)
  * @updated 2025-01-22 (date of last update)
  * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)/builtin
+ * @ingroup dasae-headers(dh)/bti
  * @prefix  bti_arch
  *
  * @brief   Architecture detection configuration
@@ -14,8 +14,8 @@
  *          Includes CPU family, SIMD support, and architecture-specific features.
  */
 
-#ifndef BUILTIN_ARCH_CFG_INCLUDED
-#define BUILTIN_ARCH_CFG_INCLUDED (1)
+#ifndef BTI_ARCH_CFG_INCLUDED
+#define BTI_ARCH_CFG_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -497,4 +497,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* BUILTIN_ARCH_CFG_INCLUDED */
+#endif /* BTI_ARCH_CFG_INCLUDED */

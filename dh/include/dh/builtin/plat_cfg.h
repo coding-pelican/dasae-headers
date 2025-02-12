@@ -6,7 +6,7 @@
  * @date    2024-11-22 (date of creation)
  * @updated 2025-01-22 (date of last update)
  * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)/builtin
+ * @ingroup dasae-headers(dh)/bti
  * @prefix  bti_plat
  *
  * @brief   Platform detection configuration

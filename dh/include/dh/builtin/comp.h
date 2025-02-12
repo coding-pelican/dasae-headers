@@ -19,6 +19,8 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "arch_cfg.h"
 #include "comp_cfg.h"
 #include "lang_cfg.h"
@@ -54,7 +56,13 @@ extern "C" {
      */                                                                    \
     ATTR__unused(_Expr)
 
-#define must_check ATTR__must_check
+#define must_check                                                                  \
+    /**                                                                             \
+     * @brief Attribute marks a function as returning a value that must be checked  \
+     to avoid potential errors or warnings                                          \
+     * @details This attribute can be used to ensure that a function's return value \
+     */                                                                             \
+    ATTR__must_check
 
 #define ignore                                                           \
     /**                                                                  \
@@ -83,14 +91,13 @@ extern "C" {
 #define createCleared$(T)          FUNC__createCleared$(T)
 #define createFrom$(T, var_src...) FUNC__createFrom$(T, var_src)
 
-// #define eval(_Expr...) SYN__eval(_Expr)
-#define eval        /* just comment */
-#define eval_return /* just comment */
+#define eval        /* just comment for expr stmt ({...}) */
+#define eval_return /* just comment for expr stmt ({...}) */
 
 #define likely(_Expr...)   FUNC__likely(_Expr)
 #define unlikely(_Expr...) FUNC__unlikely(_Expr)
 
-/*========== Macro Implementations ==========================================*/
+/*========== Macros and Implementations =====================================*/
 
 /* Inline Definitions Based on Language Mode */
 #if BUILTIN_LANG_MODE_CPP
@@ -151,8 +158,6 @@ extern "C" {
 #define FUNC__createFrom$(T, var_src...) \
     (literal$(T[1], var_src))
 // NOLINTEND(bugprone-macro-parentheses)
-
-// #define SYN__eval(_Expr...) (_Expr)
 
 #define FUNC__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define FUNC__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)

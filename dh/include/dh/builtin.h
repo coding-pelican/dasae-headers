@@ -30,6 +30,7 @@ extern "C" {
 #include "builtin/lang_cfg.h"
 #include "builtin/comp_cfg.h"
 #include "builtin/comp.h"
+#include "builtin/mem.h"
 #include "builtin/auto.h"
 #include "builtin/lambda.h"
 #include "builtin/type_info.h"

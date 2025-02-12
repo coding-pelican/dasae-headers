@@ -21,6 +21,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Compiler Type Detection ========================================*/
+
 #if defined(__clang__)
 #define BUILTIN_COMP_CLANG 1
 #define BUILTIN_COMP_GCC   0
@@ -45,6 +46,7 @@ extern "C" {
 #endif
 
 /*========== Compiler Version Information ===================================*/
+
 #if BUILTIN_COMP_MSVC
 #define BUILTIN_COMP_VERSION       _MSC_VER
 #define BUILTIN_COMP_VERSION_MAJOR (_MSC_VER / 100)
@@ -67,6 +69,7 @@ extern "C" {
 #endif
 
 /*========== Compiler-Specific Attributes ===================================*/
+
 #if BUILTIN_COMP_MSVC
 #define BUILTIN_COMP_INLINE       __inline
 #define BUILTIN_COMP_FORCE_INLINE __forceinline
@@ -94,6 +97,7 @@ extern "C" {
 #endif
 
 /*========== Calling Conventions ============================================*/
+
 #if BUILTIN_COMP_MSVC
 #define BUILTIN_COMP_CDECL      __cdecl
 #define BUILTIN_COMP_STDCALL    __stdcall

@@ -1,5 +1,5 @@
-#ifndef BUILTIN_AUTO_INCLUDED
-#define BUILTIN_AUTO_INCLUDED (1)
+#ifndef BTI_AUTO_INCLUDED
+#define BTI_AUTO_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -10,12 +10,11 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* Dynamically-typed variable definition */
 #define auto SYN__auto
 #define var  SYN__var
 #define let  SYN__let
 
-/*========== Macros Implementation ==========================================*/
+/*========== Macros and Implementations =====================================*/
 
 #if defined(__cplusplus)
 /* In C++, auto is a standard keyword since C++11 */
@@ -52,4 +51,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* BUILTIN_AUTO_INCLUDED */
+#endif /* BTI_AUTO_INCLUDED */
