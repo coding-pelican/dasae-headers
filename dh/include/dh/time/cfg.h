@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-02-13 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *
@@ -21,30 +21,23 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#if defined(_WIN32) || defined(_WIN64)
-/* Windows */
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#else
-/* Unix */
-#include <sys/time.h>
-#endif
-#include <time.h>
-
 #include "dh/core.h"
 #include "dh/opt.h"
 
+#include <time.h>
+
+#if bti_plat_windows
+#include "dh/os/windows.h"
+#else /* bti_plat_unix */
+#include <sys/time.h>
+#endif
+
 /*========== Macros and Definitions =========================================*/
 
-#if defined(_WIN32) || defined(_WIN64)
+#if bti_plat_windows
 typedef LARGE_INTEGER       time_SysTimeWindows;
 typedef time_SysTimeWindows time_SysTimePlatform;
-#else
+#else /* bti_plat_unix */
 typedef struct timespec  time_SysTimeUnix;
 typedef time_SysTimeUnix time_SysTimePlatform;
 #endif

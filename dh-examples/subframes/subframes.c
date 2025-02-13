@@ -106,11 +106,16 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         );
         log_info("canvas views added\n");
 
+        // Create input system
+        let input = try(engine_Input_init(allocator));
+        defer(engine_Input_fini(input));
+
         // Bind engine core
         let core = try(engine_core_Vt100_init(
             &(engine_core_Vt100_Config){
                 .allocator = allocator,
                 .window    = window,
+                .input     = input,
             }
         ));
         defer(engine_core_Vt100_fini(core));
@@ -170,11 +175,11 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 debug_only(if (left_space[0]) { log_debug("left mouse pressed\n"); });
                 debug_only(if (left_space[1]) { log_debug("space pressed\n"); });
 
-                let_(pos = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
+                let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos());
                 }
 
-                let_(vel = meta_castPtr$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
+                let_(vel = meta_cast$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);

@@ -50,7 +50,7 @@ static Vec2u getWindowRes(const anyptr ctx);
 static Vec2u    getWindowMinRes(const anyptr ctx);
 static Vec2u    getWindowMaxRes(const anyptr ctx);
 static Err$void setWindowMinRes(anyptr ctx, Vec2u size) must_check;
-static Err$void setWindowMaxREs(anyptr ctx, Vec2u size) must_check;
+static Err$void setWindowMaxRes(anyptr ctx, Vec2u size) must_check;
 
 static bool isWindowFocused(const anyptr ctx);
 static bool isWindowMinimized(const anyptr ctx);
@@ -88,7 +88,7 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
         .getWindowMinRes = getWindowMinRes,
         .getWindowMaxRes = getWindowMaxRes,
         .setWindowMinRes = setWindowMinRes,
-        .setWindowMaxRes = setWindowMaxREs,
+        .setWindowMaxRes = setWindowMaxRes,
 
         .isWindowFocused   = isWindowFocused,
         .isWindowMinimized = isWindowMinimized,
@@ -149,29 +149,33 @@ static Err$void       processConsoleMouseEvents(engine_core_Vt100* self) must_ch
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
 force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
-    if_(RECT rect = cleared(), GetClientRect(self->client.handle.window, &rect)) {
-        // Update client metrics in sync
-        self->client.metrics.current_size = (Vec2u){
-            .x = as$(u32, rect.right - rect.left),
-            .y = as$(u32, rect.bottom - rect.top)
-        };
-        return self->client.metrics.current_size;
-    }
-    return self->client.metrics.current_size; // Return cached size as fallback
+    // if_(RECT rect = cleared(), GetClientRect(self->client.handle.window, &rect)) {
+    //     // Update client metrics in sync
+    //     self->client.metrics.current_size = (Vec2u){
+    //         .x = as$(u32, rect.right - rect.left),
+    //         .y = as$(u32, rect.bottom - rect.top)
+    //     };
+    //     return self->client.metrics.res.curr;
+    // }
+    // return self->client.metrics.current_size; // Return cached size as fallback
+    unused(self);
+    return (Vec2u){ 0 };
 }
 
 /// Returns the size (width, height) of the console screen buffer
 /// in character cells (columns and rows).
 force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
-    if_(CONSOLE_SCREEN_BUFFER_INFO info = cleared(), GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
-        // Keep buffer size in sync with console
-        self->client.metrics.current_size = (Vec2u){
-            .x = as$(u32, info.dwSize.X),
-            .y = as$(u32, info.dwSize.Y)
-        };
-        return self->client.metrics.current_size;
-    }
-    return self->client.metrics.current_size;
+    // if_(CONSOLE_SCREEN_BUFFER_INFO info = cleared(), GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
+    //     // Keep buffer size in sync with console
+    //     self->client.metrics.current_size = (Vec2u){
+    //         .x = as$(u32, info.dwSize.X),
+    //         .y = as$(u32, info.dwSize.Y)
+    //     };
+    //     return self->client.metrics.res.curr;
+    // }
+    // return self->client.metrics.current_size;
+    unused(self);
+    return (Vec2u){ 0 };
 }
 
 /// Returns the current abstract window size from engine_WindowMetrics,
@@ -227,16 +231,42 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
 
 static Err$void syncWindowMetrics(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    let                        handle      = self->client.handle.output;
-    CONSOLE_SCREEN_BUFFER_INFO buffer_info = cleared();
-    CONSOLE_FONT_INFOEX        fontInfo    = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+    let handle = self->client.handle.output;
 
-    if (!GetCurrentConsoleFontEx(handle, false, &fontInfo)) {
-        return_err(Err_Unspecified());
-    }
-    if (!GetConsoleScreenBufferInfo(handle, &buffer_info)) {
-        return_err(Err_Unspecified());
-    }
+    let buffer_info = eval({
+        var info = makeCleared(CONSOLE_SCREEN_BUFFER_INFO);
+        if (!GetConsoleScreenBufferInfo(handle, &info)) {
+            return_err(Err_Unspecified());
+        }
+        eval_return info;
+    });
+
+    let font_info = eval({
+        var info = make(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
+        if (!GetCurrentConsoleFontEx(handle, false, &info)) {
+            return_err(Err_Unspecified());
+        }
+        if (info.dwFontSize.X == 0) {
+            info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
+        }
+        eval_return info;
+    });
+
+    let dim = eval({
+        self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
+        self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
+        eval_return self->client.metrics.dim;
+    });
+    unused(dim);
+
+    let res = eval({
+        self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+        self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
+        eval_return self->client.metrics.res.curr;
+    });
+
+    let needed = calcAbstractBufferSize(res.x, res.y);
+    try(ArrList_resize(&self->abstract.buffer.base, needed));
 
     /* TODO: Process sync logic */
     return_void();
@@ -619,7 +649,7 @@ static Err$void setWindowMinRes(anyptr ctx, Vec2u size) {
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 }
 
-static Err$void setWindowMaxREs(anyptr ctx, Vec2u size) {
+static Err$void setWindowMaxRes(anyptr ctx, Vec2u size) {
     reserveReturn(Err$void);
     debug_assert_nonnull(ctx);
     unused(ctx), unused(size);

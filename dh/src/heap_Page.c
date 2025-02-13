@@ -1,14 +1,13 @@
-#include "dh/builtin/plat_cfg.h"
+#include "dh/heap/Page.h"
+#include "dh/mem.h"
+
 #if bti_plat_windows
-#include <windows.h>
+#include "dh/os/windows.h"
 #include <memoryapi.h>
-#else
+#else /* bti_plat_unix */
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
-
-#include "dh/heap/Page.h"
-#include "dh/mem.h"
 
 static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) must_check;
 static bool       heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_size) must_check;

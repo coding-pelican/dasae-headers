@@ -1,8 +1,6 @@
 #include "dh/ArrList.h"
 #include "dh/debug/assert.h"
 
-#include <malloc.h>
-
 // Utility functions
 static usize ArrList_growCap(usize current, usize minimum) {
     debug_assert_fmt(0 < minimum, "Minimum capacity must be positive");
@@ -79,7 +77,7 @@ mem_AllocErr$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
 
     let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, self->items.len));
 
-    memcpy(
+    bti_memcpy(
         new_mem.addr,
         self->items.addr,
         self->items.len * self->items.type.size
@@ -108,7 +106,7 @@ mem_AllocErr$ArrList ArrList_clone(const ArrList* self) {
         self->allocator,
         self->cap
     ));
-    memcpy(
+    bti_memcpy(
         new_list.items.addr,
         self->items.addr,
         self->items.len * self->items.type.size
@@ -164,7 +162,7 @@ mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
 
     // Fallback to allocating new memory
     let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
-    memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
+    bti_memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
     mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
     self->items.addr = new_mem.addr;
     self->cap        = new_cap;
@@ -228,7 +226,7 @@ mem_AllocErr$void ArrList_append(ArrList* self, meta_Ptr item) {
 
     try(ArrList_ensureUnusedCap(self, 1));
 
-    memcpy(
+    bti_memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
         item.addr,
         item.type.size
@@ -243,7 +241,7 @@ mem_AllocErr$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
 
     try(ArrList_ensureUnusedCap(self, items.len));
 
-    memcpy(
+    bti_memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
         items.addr,
         items.len * items.type.size
@@ -259,7 +257,7 @@ mem_AllocErr$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
     try(ArrList_ensureUnusedCap(self, n));
 
     for (usize i = 0; i < n; ++i) {
-        memcpy(
+        bti_memcpy(
             (u8*)self->items.addr + ((self->items.len + i) * self->items.type.size),
             value.addr,
             value.type.size
@@ -278,14 +276,14 @@ mem_AllocErr$void ArrList_prepend(ArrList* self, meta_Ptr item) {
     try(ArrList_ensureUnusedCap(self, 1));
 
     if (0 < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + self->items.type.size,
             self->items.addr,
             self->items.len * self->items.type.size
         );
     }
 
-    memcpy(
+    bti_memcpy(
         self->items.addr,
         item.addr,
         item.type.size
@@ -301,14 +299,14 @@ mem_AllocErr$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
     try(ArrList_ensureUnusedCap(self, items.len));
 
     if (0 < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + (items.len * self->items.type.size),
             self->items.addr,
             self->items.len * self->items.type.size
         );
     }
 
-    memcpy(
+    bti_memcpy(
         self->items.addr,
         items.addr,
         items.len * items.type.size
@@ -324,7 +322,7 @@ mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) 
     try(ArrList_ensureUnusedCap(self, n));
 
     if (0 < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + (n * self->items.type.size),
             self->items.addr,
             self->items.len * self->items.type.size
@@ -332,7 +330,7 @@ mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) 
     }
 
     for (usize i = 0; i < n; ++i) {
-        memcpy(
+        bti_memcpy(
             (u8*)self->items.addr + (i * self->items.type.size),
             value.addr,
             value.type.size
@@ -395,7 +393,7 @@ meta_Ptr ArrList_addFrontOneAssumeCap(ArrList* self) {
     debug_assert(self->items.len < self->cap);
 
     if (0 < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + self->items.type.size,
             self->items.addr,
             self->items.len * self->items.type.size
@@ -422,7 +420,7 @@ meta_Sli ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n) {
     debug_assert(self->items.len + n <= self->cap);
 
     if (0 < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + (n * self->items.type.size),
             self->items.addr,
             self->items.len * self->items.type.size
@@ -445,14 +443,14 @@ mem_AllocErr$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
     try(ArrList_ensureUnusedCap(self, 1));
 
     if (index < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + ((index + 1) * self->items.type.size),
             (u8*)self->items.addr + (index * self->items.type.size),
             (self->items.len - index) * self->items.type.size
         );
     }
 
-    memcpy(
+    bti_memcpy(
         (u8*)self->items.addr + (index * self->items.type.size),
         item.addr,
         self->items.type.size
@@ -470,14 +468,14 @@ mem_AllocErr$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items
     try(ArrList_ensureUnusedCap(self, items.len));
 
     if (index < self->items.len) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + ((index + items.len) * self->items.type.size),
             (u8*)self->items.addr + (index * self->items.type.size),
             (self->items.len - index) * self->items.type.size
         );
     }
 
-    memcpy(
+    bti_memcpy(
         (u8*)self->items.addr + (index * self->items.type.size),
         items.addr,
         items.len * items.type.size
@@ -512,7 +510,7 @@ void ArrList_shift(ArrList* self) {
     debug_assert(0 < self->items.len);
 
     if (1 < self->items.len) {
-        memmove(
+        bti_memmove(
             self->items.addr,
             (u8*)self->items.addr + self->items.type.size,
             (self->items.len - 1) * self->items.type.size
@@ -535,7 +533,7 @@ Opt$meta_Ptr ArrList_shiftOrNull(ArrList* self) {
     };
 
     if (1 < self->items.len) {
-        memmove(
+        bti_memmove(
             self->items.addr,
             (u8*)self->items.addr + self->items.type.size,
             (self->items.len - 1) * self->items.type.size
@@ -555,7 +553,7 @@ meta_Ptr ArrList_removeOrdered(ArrList* self, usize index) {
     };
 
     if (index < self->items.len - 1) {
-        memmove(
+        bti_memmove(
             (u8*)self->items.addr + (index * self->items.type.size),
             (u8*)self->items.addr + ((index + 1) * self->items.type.size),
             (self->items.len - index - 1) * self->items.type.size
@@ -571,12 +569,12 @@ meta_Ptr ArrList_removeSwap(ArrList* self, usize index) {
     debug_assert(index < self->items.len);
 
     meta_Ptr result = (meta_Ptr){
-        .addr = alloca(self->items.type.size),
+        .addr = bti_alloca(self->items.type.size),
         .type = self->items.type
     };
 
     // Copy element to remove into result
-    memcpy(
+    bti_memcpy(
         result.addr,
         (u8*)self->items.addr + (index * self->items.type.size),
         self->items.type.size
@@ -584,12 +582,12 @@ meta_Ptr ArrList_removeSwap(ArrList* self, usize index) {
 
     // Swap with last element if not already last
     if (index < self->items.len - 1) {
-        memcpy(
+        bti_memcpy(
             (u8*)self->items.addr + (index * self->items.type.size),
             (u8*)self->items.addr + ((self->items.len - 1) * self->items.type.size),
             self->items.type.size
         );
-        memcpy(
+        bti_memcpy(
             (u8*)self->items.addr + ((self->items.len - 1) * self->items.type.size),
             result.addr,
             self->items.type.size
