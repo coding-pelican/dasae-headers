@@ -74,7 +74,7 @@ static bool heldMouse(const anyptr ctx, engine_MouseButton button);
 static bool releasedMouse(const anyptr ctx, engine_MouseButton button);
 
 static Vec2i getMousePos(const anyptr ctx);
-static Vec2i getMouseDelta(const anyptr ctx);
+static Vec2i getMousePosDelta(const anyptr ctx);
 static Vec2f getMouseWheelScrollDelta(const anyptr ctx);
 
 engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
@@ -112,7 +112,7 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
         .releasedMouse = releasedMouse,
 
         .getMousePos              = getMousePos,
-        .getMousePosDelta         = getMouseDelta,
+        .getMousePosDelta         = getMousePosDelta,
         .getMouseWheelScrollDelta = getMouseWheelScrollDelta,
     } };
 
@@ -713,68 +713,81 @@ static bool isWindowMaximized(const anyptr ctx) {
 }
 
 static u8 getKeyboardState(const anyptr ctx, engine_KeyCode key) {
-    unused(ctx), unused(key); /* TODO: Implement this function */
-    return (u8){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Keyboard_getState(&self->input->keyboard, key);
 }
 
 static bool isKeyboardState(const anyptr ctx, engine_KeyCode key, engine_KeyButtonStates state) {
-    unused(ctx), unused(key), unused(state); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Keyboard_isState(&self->input->keyboard, key, state);
 }
 
 static bool pressedKeyboard(const anyptr ctx, engine_KeyCode key) {
-    unused(ctx), unused(key); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Keyboard_pressed(&self->input->keyboard, key);
 }
 
 static bool heldKeyboard(const anyptr ctx, engine_KeyCode key) {
-    unused(ctx), unused(key); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Keyboard_held(&self->input->keyboard, key);
 }
 
 static bool releasedKeyboard(const anyptr ctx, engine_KeyCode key) {
-    unused(ctx), unused(key); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Keyboard_released(&self->input->keyboard, key);
 }
 
 static u8 getMouseState(const anyptr ctx, engine_MouseButton button) {
-    unused(ctx), unused(button); /* TODO: Implement this function */
-    return (u8){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_getState(&self->input->mouse, button);
 }
 
 static bool isMouseState(const anyptr ctx, engine_MouseButton button, engine_KeyButtonStates state) {
-    unused(ctx), unused(button), unused(state); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_isState(&self->input->mouse, button, state);
 }
 
 static bool pressedMouse(const anyptr ctx, engine_MouseButton button) {
-    unused(ctx), unused(button); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_pressed(&self->input->mouse, button);
 }
 
 static bool heldMouse(const anyptr ctx, engine_MouseButton button) {
-    unused(ctx), unused(button); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_held(&self->input->mouse, button);
 }
 
 static bool releasedMouse(const anyptr ctx, engine_MouseButton button) {
-    unused(ctx), unused(button); /* TODO: Implement this function */
-    return (bool){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_released(&self->input->mouse, button);
 }
 
 static Vec2i getMousePos(const anyptr ctx) {
-    unused(ctx); /* TODO: Implement this function */
-    return (Vec2i){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_getPos(&self->input->mouse);
 }
 
-static Vec2i getMouseDelta(const anyptr ctx) {
-    unused(ctx); /* TODO: Implement this function */
-    return (Vec2i){};
+static Vec2i getMousePosDelta(const anyptr ctx) {
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_getPosDelta(&self->input->mouse);
 }
 
 static Vec2f getMouseWheelScrollDelta(const anyptr ctx) {
-    unused(ctx); /* TODO: Implement this function */
-    return (Vec2f){};
+    debug_assert_nonnull(ctx);
+    let self = as$(const engine_core_Vt100*, ctx);
+    return engine_Mouse_getWheelScrollDelta(&self->input->mouse);
 }
 
 #else
