@@ -1,11 +1,10 @@
-#include "dh/Err.h"
 #include "engine-wip/core/Vt100.h"
 #include "engine-wip/Input.h"
 #include "Backend_Internal.h"
 #include "dh/ArrList.h"
 
 #if bti_plat_windows
-#include <windows.h>
+#include "dh/os/windows.h"
 
 /* structure */
 use_ArrList$(u8);
@@ -17,22 +16,26 @@ struct engine_core_Vt100 {
     engine_Input* input;
     struct {
         struct {
-            HWND   window; // Handle to console window
-            HANDLE output; // Handle to console screen buffer
-            HANDLE input;  // Handle to console screen buffer
+            HWND   window; // Handle to console(or console wrapper) window
+            HANDLE output; // Handle to console output
+            HANDLE input;  // Handle to console input
         } handle;
         struct {
-            Vec2u top_left;
+            Vec2u top_left_including_title_bar;
+            union {
+                Vec2u top_left_excluding_title_bar;
+                Vec2u top_left; // Default excluding title bar
+            };
         } pos_on_display;
         struct {
             Vec2u dim;
             struct {
-                Vec2u min;
-                Vec2u max;
+                Vec2u min; /* TODO: Add handling logic */
+                Vec2u max; /* TODO: Add handling logic */
                 Vec2u curr;
             } res;
-        } metrics;
-        bool is_focused;
+        } metrics;       // Based pos on display top left (default excluding title bar)
+        bool is_focused; // Change when gain focus or lose focus
         bool is_minimized;
         bool is_maximized;
     } client;
@@ -231,44 +234,79 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
 
 static Err$void syncWindowMetrics(engine_core_Vt100* self) {
     reserveReturn(Err$void);
-    let handle = self->client.handle.output;
+
+    let handle_window = self->client.handle.window;
+
+    let window_rect = eval({
+        var rect = makeCleared(RECT);
+        GetWindowRect(handle_window, &rect);
+        eval_return rect;
+    });
+    let client_rect = eval({
+        var rect = makeCleared(RECT);
+        GetClientRect(handle_window, &rect);
+        eval_return rect;
+    });
+
+    let handle_output = self->client.handle.output;
 
     let buffer_info = eval({
         var info = makeCleared(CONSOLE_SCREEN_BUFFER_INFO);
-        if (!GetConsoleScreenBufferInfo(handle, &info)) {
+        if (!GetConsoleScreenBufferInfo(handle_output, &info)) {
             return_err(Err_Unspecified());
         }
         eval_return info;
     });
-
-    let font_info = eval({
+    let font_info   = eval({
         var info = make(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
-        if (!GetCurrentConsoleFontEx(handle, false, &info)) {
+        if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
             return_err(Err_Unspecified());
         }
-        if (info.dwFontSize.X == 0) {
+        /* if (info.dwFontSize.X == 0) {
             info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
-        }
+        } */
         eval_return info;
     });
 
-    let dim = eval({
-        self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
-        self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
-        eval_return self->client.metrics.dim;
-    });
-    unused(dim);
+    let usable_font_info = font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0;
+    if (usable_font_info) {
+        let dim = eval({
+            self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
+            self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
+            eval_return self->client.metrics.dim;
+        });
+        unused(dim);
 
-    let res = eval({
-        self->client.metrics.res.curr.x = buffer_info.dwSize.X;
-        self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
-        eval_return self->client.metrics.res.curr;
-    });
+        let res = eval({
+            self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+            self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
+            eval_return self->client.metrics.res.curr;
+        });
 
-    let needed = calcAbstractBufferSize(res.x, res.y);
-    try(ArrList_resize(&self->abstract.buffer.base, needed));
+        let needed = calcAbstractBufferSize(res.x, res.y);
+        try(ArrList_resize(&self->abstract.buffer.base, needed));
 
-    /* TODO: Process sync logic */
+        /* TODO: Update logic this section */
+    } else {
+        self->client.metrics.dim.x = client_rect.right;
+        self->client.metrics.dim.y = client_rect.bottom;
+
+        self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
+        self->client.pos_on_display.top_left_including_title_bar.y = window_rect.top;
+
+        self->client.pos_on_display.top_left.x = window_rect.right - client_rect.right;
+        self->client.pos_on_display.top_left.y = window_rect.bottom - client_rect.bottom;
+
+        let res = eval({
+            self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+            self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
+            eval_return self->client.metrics.res.curr;
+        });
+
+        try(engine_Canvas_resize(self->abstract.window->composite_buffer, res.x, res.y));
+        let needed = calcAbstractBufferSize(res.x, res.y);
+        try(ArrList_resize(&self->abstract.buffer.base, needed));
+    }
     return_void();
 }
 
@@ -295,7 +333,7 @@ static Err$void configureConsoleOutput(engine_core_Vt100* self) {
     if (!SetConsoleScreenBufferSize(handle, (COORD){ as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
         return_err(ConfigConsoleOutputErr_FailedSetScreenBufferSize());
     }
-    if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
+    if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, as$(SHORT, rect.x - 1), as$(SHORT, rect.y - 1) })) {
         return_err(ConfigConsoleOutputErr_FailedSetWindowInfo());
     }
 
@@ -466,7 +504,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         });
 
         self->client.handle.window = eval({
-            let handle = GetConsoleWindow();
+            let handle = GetForegroundWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 return_err(engine_core_Vt100_InitErr_FailedGetConsoleWindowHandle());
             }
@@ -523,8 +561,6 @@ static void processEvents(anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
 
-    catch_default(engine_Input_update(self->input), claim_unreachable);
-
     // Update window state
     WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) };
     if (GetWindowPlacement(self->client.handle.window, &placement)) {
@@ -540,6 +576,8 @@ static void processEvents(anyptr ctx) {
         catch_default(resizeAbstractWindow(self), claim_unreachable);
     }
     catch_default(processConsoleMouseEvents(self), claim_unreachable);
+
+    catch_default(engine_Input_update(self->input), claim_unreachable);
 }
 
 /// Presents the current buffer content to the console.
@@ -672,6 +710,71 @@ static bool isWindowMaximized(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(const engine_core_Vt100*, ctx);
     return self->client.is_maximized;
+}
+
+static u8 getKeyboardState(const anyptr ctx, engine_KeyCode key) {
+    unused(ctx), unused(key); /* TODO: Implement this function */
+    return (u8){};
+}
+
+static bool isKeyboardState(const anyptr ctx, engine_KeyCode key, engine_KeyButtonStates state) {
+    unused(ctx), unused(key), unused(state); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool pressedKeyboard(const anyptr ctx, engine_KeyCode key) {
+    unused(ctx), unused(key); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool heldKeyboard(const anyptr ctx, engine_KeyCode key) {
+    unused(ctx), unused(key); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool releasedKeyboard(const anyptr ctx, engine_KeyCode key) {
+    unused(ctx), unused(key); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static u8 getMouseState(const anyptr ctx, engine_MouseButton button) {
+    unused(ctx), unused(button); /* TODO: Implement this function */
+    return (u8){};
+}
+
+static bool isMouseState(const anyptr ctx, engine_MouseButton button, engine_KeyButtonStates state) {
+    unused(ctx), unused(button), unused(state); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool pressedMouse(const anyptr ctx, engine_MouseButton button) {
+    unused(ctx), unused(button); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool heldMouse(const anyptr ctx, engine_MouseButton button) {
+    unused(ctx), unused(button); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static bool releasedMouse(const anyptr ctx, engine_MouseButton button) {
+    unused(ctx), unused(button); /* TODO: Implement this function */
+    return (bool){};
+}
+
+static Vec2i getMousePos(const anyptr ctx) {
+    unused(ctx); /* TODO: Implement this function */
+    return (Vec2i){};
+}
+
+static Vec2i getMouseDelta(const anyptr ctx) {
+    unused(ctx); /* TODO: Implement this function */
+    return (Vec2i){};
+}
+
+static Vec2f getMouseWheelScrollDelta(const anyptr ctx) {
+    unused(ctx); /* TODO: Implement this function */
+    return (Vec2f){};
 }
 
 #else
