@@ -243,8 +243,8 @@ void FontSystem_renderGlyphToCanvas(const Glyph* glyph, engine_Canvas* canvas, i
 }
 
 // ========== Remove utf8_decode() and use StrUtf8Iter instead ==========
-// This function now takes StrConst instead of const char* for text input.
-must_check Err$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
+// This function now takes Str_const instead of const char* for text input.
+must_check Err$void renderKoreanText(Str_const text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
     scope_reserveReturn(Err$void) {
         var        allocator = heap_Classic_allocator(&(heap_Classic){});
         // 1) Init font
@@ -287,7 +287,7 @@ must_check Err$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x
 }
 
 // ========== Example usage in dh_main() loop ==========
-// We call `renderKoreanText(strL("안녕하세요."), canvas, x, y)` instead of passing `const char*`.
+// We call `renderKoreanText(Str_l("안녕하세요."), canvas, x, y)` instead of passing `const char*`.
 Err$void dh_main(i32 argc, const char* argv[]) {
     unused(argc), unused(argv);
     scope_reserveReturn(Err$void) {
@@ -363,28 +363,28 @@ Err$void dh_main(i32 argc, const char* argv[]) {
                 log_debug("mouse left pressed\n");
                 let        pos           = engine_Mouse_getPosition();
                 static i32 pressed_count = 0;
-                StrConst   pressed_str   = strL("pressed_str");
+                Str_const  pressed_str   = Str_l("pressed_str");
                 switch (pressed_count) {
                 case 0:
-                    pressed_str = strL("안녕하세요.");
+                    pressed_str = Str_l("안녕하세요.");
                     break;
                 case 1:
-                    pressed_str = strL("안녕하세요, 한글.");
+                    pressed_str = Str_l("안녕하세요, 한글.");
                     break;
                 case 2:
-                    pressed_str = strL("안녕하세요, 한글 테스트입니다.");
+                    pressed_str = Str_l("안녕하세요, 한글 테스트입니다.");
                     break;
                 case 3:
-                    pressed_str = strL("안녕하세요, 한글 테스트입니다람쥐썬더!!");
+                    pressed_str = Str_l("안녕하세요, 한글 테스트입니다람쥐썬더!!");
                     break;
                 case 4:
                 default:
-                    pressed_str = strL("잘 출력되어라 제바아아아알.");
+                    pressed_str = Str_l("잘 출력되어라 제바아아아알.");
                     break;
                 }
                 try(renderKoreanText(pressed_str, game_canvas, pos.x, pos.y, font_size));
                 pressed_count++;
-                try(renderKoreanText(strL("안녕하세요, 스트로 처리중!"), game_canvas, 20, 50, font_size));
+                try(renderKoreanText(Str_l("안녕하세요, 스트로 처리중!"), game_canvas, 20, 50, font_size));
             }
 
             // 5) Render all views
