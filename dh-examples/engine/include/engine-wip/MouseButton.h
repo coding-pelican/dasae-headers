@@ -8,15 +8,15 @@ enum {
     engine_MouseButton_none = -1,
 
     /* Standard mouse buttons */
-    engine_MouseButton_left = 0,
-    engine_MouseButton_right,
-    engine_MouseButton_middle,
+    engine_MouseButton_left   = 0,
+    engine_MouseButton_right  = 1,
+    engine_MouseButton_middle = 2,
 
     /* Extended mouse buttons */
-    engine_MouseButton_x1,
-    engine_MouseButton_x2,
+    engine_MouseButton_x1 = 3,
+    engine_MouseButton_x2 = 4,
 
-    engine_MouseButton_count
+    engine_MouseButton_count = 5
 };
 typedef i8 engine_MouseButton;
 use_Sli$(engine_MouseButton);
