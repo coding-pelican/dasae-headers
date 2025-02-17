@@ -8,7 +8,7 @@ void Str_print(StrConst str) {
 
 void Str_println(StrConst str) {
     Str_print(str);
-    putchar('\n');
+    ignore putchar('\n');
 }
 
 void TEST_string_literals(void) {
@@ -44,7 +44,7 @@ void TEST_string_literals(void) {
             }
             Str_print(strL(" "));
         }
-        putchar('\n');
+        ignore putchar('\n');
     }
 
     Str_println(strL("할아버지 보고싶어요"));

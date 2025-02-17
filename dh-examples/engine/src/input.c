@@ -183,10 +183,12 @@ static void engine_Input_processMouse(void) {
 
     // Process mouse buttons
     static const i32 button_vks[] = {
-        0,          // None
-        VK_LBUTTON, // Left
-        VK_RBUTTON, // Right
-        VK_MBUTTON, // Middle
+        0,           // None
+        VK_LBUTTON,  // Left
+        VK_RBUTTON,  // Right
+        VK_MBUTTON,  // Middle
+        VK_XBUTTON1, // X1
+        VK_XBUTTON2, // X2
     };
 
     for (engine_MouseButton button = engine_MouseButton_none + 1; button < engine_MouseButton_count; ++button) {

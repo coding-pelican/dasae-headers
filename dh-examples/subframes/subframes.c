@@ -1,3 +1,4 @@
+#define main_no_args (1)
 #include "dh/main.h"
 #include "dh/debug.h"
 #include "dh/log.h"
@@ -52,10 +53,10 @@ typedef ArrList$Color Colors;
 #define state_collision_damping  (0.8f)
 #define state_objects_cap_inital (512)
 
-Err$void dh_main(int argc, const char* argv[]) { // NOLINT
-    unused(argc), unused(argv);
-    Random_init();
+Err$void dh_main(void) { // NOLINT
     scope_reserveReturn(Err$void) {
+        Random_init();
+
         // Initialize logging to a file
         if_(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -102,6 +103,8 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             (Vec2u){ .x = 0, .y = 0 },
             (Vec2u){ .x = window_res_width, .y = window_res_height },
             (Vec2f){ .x = 1.0f, .y = 1.0f },
+            true,
+            true,
             true
         );
         log_info("canvas views added\n");
@@ -129,8 +132,6 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         var colors = type$(Colors, try(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
         defer(ArrList_fini(&colors.base));
 
-        const f32 w      = window_res_width;
-        const f32 h      = window_res_height;
         const f32 radius = 2.5f;
         log_info("game state created\n");
         ignore getchar();
@@ -141,7 +142,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         log_info("game loop started\n");
 
         // Initialize window variables
-        var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+        // var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
 
         bool is_running = true;
         while (is_running) {
@@ -153,8 +154,9 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Check for window movement
-            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
-            let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
+            // let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+            // let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
+            let dwinpos = math_Vec2f_zero;
 
             // 4) Process input/events
             try(engine_Window_update(window));
@@ -162,33 +164,33 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             // 5) Update game state and Render all views
             engine_Canvas_clearDefault(game_canvas);
 
-            if (engine_Keyboard_pressed(engine_KeyCode_esc)) {
+            if (engine_Keyboard_pressed(&input->keyboard, engine_KeyCode_esc)) {
                 is_running = false;
                 log_debug("esc pressed\n");
             }
 
             const bool left_space[2] = {
-                engine_Mouse_held(engine_MouseButton_left),
-                engine_Keyboard_held(engine_KeyCode_space)
+                engine_Mouse_held(&input->mouse, engine_MouseButton_left),
+                engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
             };
             if (left_space[0] || left_space[1]) {
                 debug_only(if (left_space[0]) { log_debug("left mouse pressed\n"); });
                 debug_only(if (left_space[1]) { log_debug("space pressed\n"); });
 
                 let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
-                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos());
+                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
                 }
 
                 let_(vel = meta_cast$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
-                        eval_return(math_Vec2f_scale(r, 50));
+                        eval_return(math_Vec2f_scale(r, 50.0f));
                     });
                 }
 
                 let_(color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
-                    *color = Color_fromHslOpaque((Hsl){ .channels = { (f32)Random_range_i64(0, 360), 50.0, 80.0 } });
+                    *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
                 }
             }
 
@@ -198,6 +200,8 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
             for (f32 t = 0.0f; t < time_dt; t += update_target_spf) {
                 for (usize i = 0; i < ps.len; ++i) {
+                    const f32 w = as$(f32, engine_Window_getRes(window).x);
+                    const f32 h = as$(f32, engine_Window_getRes(window).y);
                     const f32 f = as$(f32, t / time_dt);
 
                     ps.ptr[i] = math_Vec2f_sub(ps.ptr[i], math_Vec2f_scale(dwinpos, update_target_spf / time_dt));
@@ -269,10 +273,10 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
                     engine_Canvas_fillRingByScanlines(
                         game_canvas,
-                        (i32)ps.ptr[i].x,
-                        (i32)ps.ptr[i].y,
-                        (i32)(radius * 0.8f),
-                        (i32)radius,
+                        as$(i32, ps.ptr[i].x),
+                        as$(i32, ps.ptr[i].y),
+                        as$(i32, radius * 0.8f),
+                        as$(i32, radius),
                         eval({
                             var c = cs.ptr[i];
                             c.a   = as$(u8, (as$(f32, c.a) * f));
@@ -281,12 +285,17 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                     );
                 }
             }
+            /* {
+                let win_res = engine_Window_getRes(window);
+                engine_Canvas_drawRect(game_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
+            } */
             engine_Window_present(window);
 
             // 6) (Optional) Display instantaneous FPS
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
+            let       win_res  = engine_Window_getRes(window);
             printf("\033[H\033[40;37m"); // Move cursor to top left
-            printf("\rFPS: %6.2f", time_fps);
+            printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
             debug_only(
                 // log frame every 1s
                 static f64 total_game_time_for_timestamp = 0.0;

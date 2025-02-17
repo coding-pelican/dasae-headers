@@ -1,6 +1,8 @@
 #include "engine-wip/core/Vt100.h"
 #include "engine-wip/Input.h"
 #include "Backend_Internal.h"
+
+#include "dh/mem/common.h"
 #include "dh/ArrList.h"
 
 #if bti_plat_windows
@@ -44,7 +46,7 @@ struct engine_core_Vt100 {
 config_ErrSet(engine_core_Vt100_Err);
 
 static void processEvents(anyptr ctx); /* TODO: validate */ // processing events and updating properties
-static void presentBuffer(anyptr ctx); /* TODO: validate */ // only present
+static void presentBuffer(anyptr ctx);
 
 static Vec2u getWindowPos(const anyptr ctx);
 static Vec2u getWindowDim(const anyptr ctx);
@@ -143,9 +145,13 @@ force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) must_check;
 force_inline Err$void showConsoleCursor(engine_core_Vt100* self) must_check;
 force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) must_check;
 
+static void processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool is_down);
+static void processConsoleKeyboardEvents(engine_core_Vt100* self);
+
 force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) must_check;
 force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) must_check;
-static Err$void       processConsoleMouseEvents(engine_core_Vt100* self) must_check; /* TODO: validate */
+static void           processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down);
+static void           processConsoleMouseEvents(engine_core_Vt100* self); /* TODO: validate */
 
 /*========== Implementations ================================================*/
 
@@ -303,9 +309,9 @@ static Err$void syncWindowMetrics(engine_core_Vt100* self) {
             eval_return self->client.metrics.res.curr;
         });
 
-        try(engine_Canvas_resize(self->abstract.window->composite_buffer, res.x, res.y));
         let needed = calcAbstractBufferSize(res.x, res.y);
         try(ArrList_resize(&self->abstract.buffer.base, needed));
+        try(engine_Canvas_resize(self->abstract.window->composite_buffer, res.x, res.y));
     }
     return_void();
 }
@@ -407,6 +413,63 @@ force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
     return_void();
 }
 
+static void processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool is_down) {
+    let input    = self->input;
+    let keyboard = &input->keyboard;
+
+    let curr_state = &keyboard->keys.curr_states[key];
+    let prev_state = keyboard->keys.prev_states[key];
+
+    // Clear previous state flags
+    *curr_state = engine_KeyButtonStates_none;
+
+    if (is_down) {
+        if (!(prev_state & engine_KeyButtonStates_held)) {
+            // Key was just pressed
+            *curr_state |= engine_KeyButtonStates_pressed;
+
+            // Create pressed event
+            engine_InputEvent event = {
+                .tag       = engine_InputEventTag_key_press,
+                .key_press = { .key = key }
+            };
+            engine_InputEventBuffer_push(input, event);
+        }
+        // Key is being held
+        *curr_state |= engine_KeyButtonStates_held;
+
+        // Create held event
+        engine_InputEvent event = {
+            .tag      = engine_InputEventTag_key_hold,
+            .key_hold = { .key = key }
+        };
+        engine_InputEventBuffer_push(input, event);
+    } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
+        // Key was just released
+        *curr_state |= engine_KeyButtonStates_released;
+
+        // Create released event
+        engine_InputEvent event = {
+            .tag         = engine_InputEventTag_key_release,
+            .key_release = { .key = key }
+        };
+        engine_InputEventBuffer_push(input, event);
+    }
+}
+static void processConsoleKeyboardEvents(engine_core_Vt100* self) {
+    let keyboard = &self->input->keyboard;
+
+    // Save previous state
+    memcpy(keyboard->keys.prev_states, keyboard->keys.curr_states, sizeOf(keyboard->keys.curr_states));
+
+    // Process each key
+    for (engine_KeyCode key = engine_KeyCode_none + 1; key < as$(engine_KeyCode, engine_KeyCode_count); ++key) {
+        let  key_state = GetAsyncKeyState(key);
+        bool is_down   = (key_state & 0x8000) != 0;
+        processConsoleKeyboardKey(self, key, is_down);
+    }
+}
+
 /// Enable mouse input through the console.
 force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
@@ -441,11 +504,73 @@ force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
     return_void();
 }
 
+static void processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down) {
+    let input = self->input;
+    let mouse = &input->mouse;
+
+    let curr_state = &mouse->buttons.curr_states[button];
+    let prev_state = mouse->buttons.prev_states[button];
+
+    // Clear previous state flags
+    *curr_state = engine_KeyButtonStates_none;
+
+    if (is_down) {
+        if (!(prev_state & engine_KeyButtonStates_held)) {
+            // Key was just pressed
+            *curr_state |= engine_KeyButtonStates_pressed;
+
+            // Create pressed event
+            engine_InputEvent event = {
+                .tag         = engine_InputEventTag_mouse_press,
+                .mouse_press = { .button = button }
+            };
+            engine_InputEventBuffer_push(input, event);
+        }
+        // Key is being held
+        *curr_state |= engine_KeyButtonStates_held;
+
+        // Create held event
+        engine_InputEvent event = {
+            .tag        = engine_InputEventTag_mouse_hold,
+            .mouse_hold = { .button = button }
+        };
+        engine_InputEventBuffer_push(input, event);
+    } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
+        // Key was just released
+        *curr_state |= engine_KeyButtonStates_released;
+
+        // Create released event
+        engine_InputEvent event = {
+            .tag           = engine_InputEventTag_mouse_release,
+            .mouse_release = { .button = button }
+        };
+        engine_InputEventBuffer_push(input, event);
+    }
+}
 /// Read and process mouse-related events from the console input.
 /// In a real engine, you might dispatch these events into an input system
 /// or event queue. For simplicity, we’ll do minimal handling here.
-static Err$void processConsoleMouseEvents(engine_core_Vt100* self) {
-    reserveReturn(Err$void);
+static void processConsoleMouseEvents(engine_core_Vt100* self) {
+    let mouse = &self->input->mouse;
+
+    // Save previous button states
+    memcpy(mouse->buttons.prev_states, mouse->buttons.curr_states, sizeOf(mouse->buttons.curr_states));
+
+    // Process mouse buttons
+    static const i32 button_vks[] = {
+        0,           // None
+        VK_LBUTTON,  // Left
+        VK_RBUTTON,  // Right
+        VK_MBUTTON,  // Middle
+        VK_XBUTTON1, // X1
+        VK_XBUTTON2, // X2
+    };
+
+    for (engine_MouseButton button = engine_MouseButton_none + 1; button < as$(engine_MouseButton, engine_MouseButton_count); ++button) {
+        let  button_state = GetAsyncKeyState(button_vks[button]);
+        bool is_down      = (button_state & 0x8000) != 0;
+        processConsoleMouseButton(self, button, is_down);
+    }
 
     // Example read
     INPUT_RECORD records[32] = cleared();
@@ -463,7 +588,6 @@ static Err$void processConsoleMouseEvents(engine_core_Vt100* self) {
             }
         }
     }
-    return_void();
 }
 
 /*========== Lifecycle Implementation =======================================*/
@@ -569,15 +693,10 @@ static void processEvents(anyptr ctx) {
         self->client.is_focused   = (GetForegroundWindow() == self->client.handle.window);
     }
 
-    // Update current size and check for resize
-    clientWindowPixelRect(self); // This updates metrics.current_size
-
-    if (needsResizeAbstractWindow(self)) {
-        catch_default(resizeAbstractWindow(self), claim_unreachable);
-    }
-    catch_default(processConsoleMouseEvents(self), claim_unreachable);
-
-    catch_default(engine_Input_update(self->input), claim_unreachable);
+    catch_default(syncWindowMetrics(self), claim_unreachable);
+    processConsoleKeyboardEvents(self);
+    processConsoleMouseEvents(self);
+    // catch_default(engine_Input_update(self->input), claim_unreachable);
 }
 
 /// Presents the current buffer content to the console.
@@ -588,11 +707,12 @@ static void presentBuffer(anyptr ctx) {
     let self = as$(engine_core_Vt100*, ctx);
     if (self->client.is_minimized) { return; }
 
-    // Ensure buffer size matches current window size
-    if (needsResizeAbstractWindow(self)) {
-        catch_default(resizeAbstractWindow(self), claim_unreachable);
-    }
-    ArrList_clearRetainingCap(&self->abstract.buffer.base);
+    // // Ensure buffer size matches current window size
+    // if (needsResizeAbstractWindow(self)) {
+    //     catch_default(resizeAbstractWindow(self), claim_unreachable);
+    // }
+    // ArrList_clearRetainingCap(&self->abstract.buffer.base);
+    mem_setBytes(self->abstract.buffer.items.ptr, 0, self->abstract.buffer.base.cap);
 
     let rect   = abstractWindowRect(self);
     let height = rect.y;
@@ -647,13 +767,24 @@ static void presentBuffer(anyptr ctx) {
         let ptr    = self->abstract.buffer.items.ptr;
         let len    = self->abstract.buffer.items.len;
         if_(DWORD written = 0,
-            !WriteConsoleA(handle, ptr, len, &written, null)
-                || written != len
+            !WriteConsoleA(
+                handle,
+                ptr,
+                len,
+                &written,
+                null
+            ) || written != len
         ) {
             claim_unreachable;
         }
     }
     catch_default(resetConsoleCursorPos(self), claim_unreachable);
+}
+
+static Vec2u getWindowPos(const anyptr ctx) {
+    debug_assert_nonnull(ctx);
+    let self = as$(engine_core_Vt100*, ctx);
+    return self->client.pos_on_display.top_left;
 }
 
 static Vec2u getWindowDim(const anyptr ctx) {
@@ -775,6 +906,12 @@ static bool releasedMouse(const anyptr ctx, engine_MouseButton button) {
 static Vec2i getMousePos(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(const engine_core_Vt100*, ctx);
+    // return eval({
+    //     var res = self->client.metrics.res;
+    //     res.curr.x /= 2;
+    //     res.curr.y /= 2;
+    //     eval_return math_Vec_as$(Vec2i, res.curr);
+    // });
     return engine_Mouse_getPos(&self->input->mouse);
 }
 

@@ -55,6 +55,25 @@ Err$void engine_Window_update(engine_Window* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
     engine_Backend_processEvents(unwrap(self->backend));
+
+    /* resize */
+    let res = engine_Window_getRes(self);
+    for (u32 id = 0; id < self->views.count; ++id) {
+        let view = Arr_at(self->views.list, id);
+        if (!view->visible) { continue; }
+        let size = eval({
+            var full = view->rect.size;
+            if (view->rect.resizable.x) { full.x = res.x; }
+            if (view->rect.resizable.y) { full.y = res.y; }
+            eval_return full;
+        });
+        try(engine_Canvas_resize(
+            view->canvas,
+            size.x,
+            size.y
+        ));
+        view->rect.size = size;
+    }
     return_void();
 }
 
@@ -87,7 +106,7 @@ void engine_Window_present(engine_Window* self) {
     engine_Backend_presentBuffer(unwrap(self->backend));
 }
 
-Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible) {
+Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y) {
     reserveReturn(Opt$u32);
     debug_assert_nonnull(self);
     debug_assert_nonnull(canvas);
@@ -99,6 +118,8 @@ Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canva
         view->pos_on_window.top_left = pos;
         view->rect.size              = size;
         view->rect.scale             = scale;
+        view->rect.resizable.x       = resizable_x;
+        view->rect.resizable.y       = resizable_y;
         view->visible                = visible;
         eval_return self->views.count++;
     }));

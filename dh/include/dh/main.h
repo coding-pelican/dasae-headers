@@ -4,8 +4,8 @@
  * @file    main.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-30 (date of creation)
- * @updated 2025-02-01 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-02-16 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -27,82 +27,85 @@ extern "C" {
 #include "dh/err_res.h"
 #include "dh/variant.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros =========================================================*/
 
-#ifndef MAIN_RETURNS_ERR_OR_VOID
-#define MAIN_RETURNS_ERR_OR_VOID (0)
-#endif /* MAIN_RETURNS_ERR_OR_VOID */
+#if !defined(main_no_hijack)
+#define main_no_hijack (0)
+#endif /* !defined(main_no_hijack) */
 
-/* Error handling root main */
-#if !defined(MAIN_NO_HIJACK) && !defined(main_no_hijack)
-#if !MAIN_RETURNS_ERR_OR_VOID
-#undef MAIN_RETURNS_ERR_OR_VOID
-#define MAIN_RETURNS_ERR_OR_VOID (1)
+#if !defined(main_no_args)
+#define main_no_args (0)
+#endif /* !defined(main_no_args) */
 
-#if !defined(MAIN_NO_ARGS) && !defined(main_no_args)
+#if !defined(main_no_returns_err)
+#define main_no_returns_err (0)
+#endif /* !defined(main_no_returns_err) */
 
-extern Err$void dh_main(int argc, const char* argv[]) must_check;
+/*========== Definitions ====================================================*/
 
-int main(int argc, const char* argv[]) {
-    const Err$void result = dh_main(argc, argv);
-    if (!isErr(result)) { return 0; }
-    ignore fprintf(
-        stderr,
-        "Program failed: [%s] %s(%d)\n",
-        Err_domainToCStr(result.err),
-        Err_codeToCStr(result.err),
-        result.err.ctx
-    );
-    return 1;
-}
+#if main_no_hijack
+/* No hijack, just call main as usual */
+#else /* !main_no_hijack */
 
-/* int main(int argc, const char* argv[]) {
-    scope_defer {
-        // Initialize logging to a file
-        scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
-            // Configure logging behavior
-            log_showTimestamp(true);
-            log_showLocation(true);
-            log_showLevel(true);
-            log_setLevel(log_Level_debug);
-        }
-        defer(log_fini());
-
-        const Err$void result = dh_main(argc, argv);
-        if (!result.is_err) {
-            defer_return;
-            return 0;
-        }
-
-        log_error("Program failed: %s (type: %d)\n", Err_codeToCStr(result.err), Err_type(result.err));
-    }
-    scope_deferred;
-    return 1;
-} */
-
-#else /* defined(MAIN_NO_ARGS) */
-
+#if main_no_args && main_no_returns_err
+extern void dh_main(void);
+#elif main_no_args && !main_no_returns_err
 extern Err$void dh_main(void) must_check;
+#elif !main_no_args && main_no_returns_err
+extern void dh_main(int argc, const char* argv[]);
+#else  /* !main_no_args && !main_no_returns_err */
+extern Err$void dh_main(int argc, const char* argv[]) must_check;
+#endif /* !main_no_args && !main_no_returns_err */
 
-int main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
-    const Err$void result = dh_main();
-    if (!result.is_err) { return 0; }
-    ignore fprintf(
-        stderr,
-        "Program failed: [%s] %s(%d)\n",
-        Err_domainToCStr(result.err),
-        Err_codeToCStr(result.err),
-        result.err.ctx
-    );
-    return 1;
+/*========== Root main ======================================================*/
+
+#ifndef MAIN_ROOT_INCLUDED
+#define MAIN_ROOT_INCLUDED (1)
+
+int main(
+#if main_no_args && main_no_returns_err
+    void
+#elif main_no_args && !main_no_returns_err
+    void
+#elif !main_no_args && main_no_returns_err
+    int argc, const char* argv[]
+#else  /* !main_no_args && !main_no_returns_err */
+    int argc, const char* argv[]
+#endif /* !main_no_args && !main_no_returns_err */
+) {
+#if main_no_args && main_no_returns_err
+    dh_main();
+#elif main_no_args && !main_no_returns_err
+    catch (dh_main(), err, {
+        ignore fprintf(
+            stderr,
+            "Program failed: [%s] %s(%d)\n",
+            Err_domainToCStr(err),
+            Err_codeToCStr(err),
+            err.ctx
+        );
+        claim_unreachable;
+    });
+#elif !main_no_args && main_no_returns_err
+    dh_main();
+#else  /* !main_no_args && !main_no_returns_err */
+    catch (dh_main(argc, argv), err, {
+        ignore fprintf(
+            stderr,
+            "Program failed: [%s] %s(%d)\n",
+            Err_domainToCStr(err),
+            Err_codeToCStr(err),
+            err.ctx
+        );
+        claim_unreachable;
+    });
+#endif /* !main_no_args && !main_no_returns_err */
+    return 0;
 }
 
-#endif /* !defined(MAIN_NO_ARGS) */
+#endif /* MAIN_ROOT_INCLUDED */
 
-#endif /* !MAIN_RETURNS_ERR_OR_VOID */
-#endif /* !defined(MAIN_NO_HIJACK) */
+#endif /* !main_no_hijack */
 
 #if defined(__cplusplus)
 } /* extern "C" */

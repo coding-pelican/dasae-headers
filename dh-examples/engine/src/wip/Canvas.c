@@ -55,14 +55,19 @@ Err$void engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.ptr);
 
-    let new_len   = as$(usize, width) * as$(usize, height);
+    if (width == self->width && height == self->height) { return_void(); }
+
+    let new_len   = as$(usize, width) * height;
     let new_items = (Color*)realloc(self->buffer.ptr, new_len * sizeof(Color));
     if (!new_items) { return_err(mem_AllocErr_OutOfMemory()); }
+
+    log_debug("canvas resized: %d x %d -> %d x %d", self->width, self->height, width, height);
 
     self->buffer.len = new_len;
     self->buffer.ptr = new_items;
     self->width      = width;
     self->height     = height;
+
     return_void();
 }
 

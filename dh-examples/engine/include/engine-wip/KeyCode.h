@@ -90,7 +90,7 @@ enum {
     engine_KeyCode_kp_decimal = 0x6E,
     engine_KeyCode_kp_div     = 0x6F,
 
-    engine_KeyCode_count = 256
+    engine_KeyCode_count = (i16)256
 };
 typedef i16 engine_KeyCode;
 use_Sli$(engine_KeyCode);

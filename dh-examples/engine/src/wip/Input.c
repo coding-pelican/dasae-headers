@@ -41,16 +41,32 @@ void engine_Input_fini(engine_Input* self) {
 }
 
 Err$void engine_Input_update(engine_Input* self) {
+    reserveReturn(Err$void);
+    unused(self);
+    return_err(Err_NotImplemented());
+    /* TODO: Implement this function */
 }
 
 void engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event) {
+    unused(self), unused(event);
+    /* TODO: Implement this function */
 }
 
 Opt$engine_InputEvent engine_InputEventBuffer_pop(engine_Input* self) {
+    reserveReturn(Opt$engine_InputEvent);
+    unused(self);
+    return_none();
+    /* TODO: Implement this function */
 }
 
 Opt$engine_InputEvent engine_InputEventBuffer_peek(engine_Input* self) {
+    reserveReturn(Opt$engine_InputEvent);
+    unused(self);
+    return_none();
+    /* TODO: Implement this function */
 }
 
 void engine_InputEventBuffer_clear(engine_Input* self) {
+    unused(self);
+    /* TODO: Implement this function */
 }

@@ -52,10 +52,12 @@ struct mem_Tracker {
 
 /*========== Memory Tracker Interface ======================================*/
 
-// Initialize memory tracker
+/// Initialize memory tracker
 extern void mem_Tracker_initWithFile(const char* log_path);
+/// Generate final report and cleanup
+extern void mem_Tracker_finiWithGenerateReportAndCleanup(void);
 
-// Register allocation
+/// Register allocation
 extern void mem_Tracker_registerAlloc(
     anyptr      ptr,
     usize       size,
@@ -63,8 +65,7 @@ extern void mem_Tracker_registerAlloc(
     i32         line,
     const char* func
 );
-
-// Register deallocation
+/// Register deallocation
 extern void mem_Tracker_registerFree(
     anyptr      ptr,
     const char* file,
@@ -72,10 +73,7 @@ extern void mem_Tracker_registerFree(
     const char* func
 );
 
-// Generate final report and cleanup
-extern void mem_Tracker_generateReportAndCleanup(void);
-
-// Get singleton instance
+/// Get singleton instance
 extern mem_Tracker* mem_Tracker_instance(void);
 
 #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */

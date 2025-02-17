@@ -11,9 +11,11 @@ static const char* const mem_Tracker_default_log_file = "mem_trace.log";
 
 static void __attribute__((constructor)) mem_Tracker_init(void) {
     mem_Tracker_initWithFile(mem_Tracker_default_log_file);
+    ignore atexit(mem_Tracker_finiWithGenerateReportAndCleanup);
 }
+
 static void __attribute__((destructor)) mem_Tracker_fini(void) {
-    mem_Tracker_generateReportAndCleanup();
+    mem_Tracker_finiWithGenerateReportAndCleanup();
 }
 
 static mem_Tracker mem_Tracker_s_instance = cleared();
@@ -112,7 +114,7 @@ typedef struct LeakSite {
     usize       count;
     usize       total_bytes;
 } LeakSite;
-void mem_Tracker_generateReportAndCleanup(void) {
+void mem_Tracker_finiWithGenerateReportAndCleanup(void) {
     if (!mem_Tracker_s_instance.log_file) { return; }
 
     ignore fprintf(mem_Tracker_s_instance.log_file, "\nMemory Leak Report\n");

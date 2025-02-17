@@ -31,6 +31,10 @@ typedef Arr$(engine_Window_max_canvases, struct engine_CanvasView {
         Vec2u size;  // Size in window coordinates
         Vec2f scale; // Scale in window coordinates
         /* TODO: Add options: stretch, crop, resizable, scalable, ... */
+        struct {
+            bool x;
+            bool y;
+        } resizable;
     } rect;
     bool visible; // Visibility flag
 }) engine_CanvasViews;
@@ -57,7 +61,7 @@ extern void                  engine_Window_present(engine_Window* self);
 
 /* Canvas view management */
 
-extern Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible);
+extern Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y);
 extern void    engine_Window_removeCanvasView(engine_Window* self, u32 view_id);
 
 /* Window metrics queries */
