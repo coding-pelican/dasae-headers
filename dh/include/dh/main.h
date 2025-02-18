@@ -24,6 +24,8 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/scope.h"
 #include "dh/opt.h"
+#include "dh/Err.h"
+#include "dh/ErrTrace.h"
 #include "dh/err_res.h"
 #include "dh/variant.h"
 
@@ -77,26 +79,16 @@ int main(
     dh_main();
 #elif main_no_args && !main_no_returns_err
     catch (dh_main(), err, {
-        ignore fprintf(
-            stderr,
-            "Program failed: [%s] %s(%d)\n",
-            Err_domainToCStr(err),
-            Err_codeToCStr(err),
-            err.ctx
-        );
+        Err_print(err);
+        ErrTrace_print();
         claim_unreachable;
     });
 #elif !main_no_args && main_no_returns_err
-    dh_main();
+    dh_main(argc, argv);
 #else  /* !main_no_args && !main_no_returns_err */
     catch (dh_main(argc, argv), err, {
-        ignore fprintf(
-            stderr,
-            "Program failed: [%s] %s(%d)\n",
-            Err_domainToCStr(err),
-            Err_codeToCStr(err),
-            err.ctx
-        );
+        Err_print(err);
+        ErrTrace_print();
         claim_unreachable;
     });
 #endif /* !main_no_args && !main_no_returns_err */

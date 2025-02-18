@@ -35,8 +35,17 @@ extern "C" {
 #define bti_arch_riscv64 VAL__bti_arch_riscv64
 #define bti_arch_powerpc VAL__bti_arch_powerpc
 
-#define bti_arch_name   VAL__bti_arch_name
-#define bti_arch_family VAL__bti_arch_family
+#define bti_arch_family_x86     VAL__bti_arch_family_x86
+#define bti_arch_family_arm     VAL__bti_arch_family_arm
+#define bti_arch_family_mips    VAL__bti_arch_family_mips
+#define bti_arch_family_systemz VAL__bti_arch_family_systemz
+#define bti_arch_family_m68k    VAL__bti_arch_family_m68k
+#define bti_arch_family_msp430  VAL__bti_arch_family_msp430
+#define bti_arch_family_riscv   VAL__bti_arch_family_riscv
+#define bti_arch_family_powerpc VAL__bti_arch_family_powerpc
+
+#define bti_arch_name        VAL__bti_arch_name
+#define bti_arch_family_name VAL__bti_arch_family_name
 
 /*========== Additional Feature Detection ===================================*/
 
@@ -111,12 +120,21 @@ extern "C" {
 #define VAL__bti_arch_riscv64 0
 #define VAL__bti_arch_powerpc 0
 
+#define VAL__bti_arch_family_x86     0
+#define VAL__bti_arch_family_arm     0
+#define VAL__bti_arch_family_mips    0
+#define VAL__bti_arch_family_systemz 0
+#define VAL__bti_arch_family_m68k    0
+#define VAL__bti_arch_family_msp430  0
+#define VAL__bti_arch_family_riscv   0
+#define VAL__bti_arch_family_powerpc 0
+
 #define VAL__bti_arch_has_armv6k      0
 #define VAL__bti_arch_has_armv6m      0
 #define VAL__bti_arch_has_zihintpause 0
 
-#define VAL__bti_arch_name   "Unknown"
-#define VAL__bti_arch_family "Unknown"
+#define VAL__bti_arch_name        "Unknown"
+#define VAL__bti_arch_family_name "Unknown"
 
 /* x86/AMD64 features */
 #define VAL__bti_arch_has_avx512f       0
@@ -173,78 +191,96 @@ extern "C" {
 #if defined(__x86_64__) || defined(_M_X64)
 #undef VAL__bti_arch_x64
 #define VAL__bti_arch_x64 1
+#undef VAL__bti_arch_family_x86
+#define VAL__bti_arch_family_x86 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "x86_64"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "x86"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "x86"
 
 #elif defined(__i386__) || defined(_M_IX86)
 #undef VAL__bti_arch_x86
 #define VAL__bti_arch_x86 1
+#undef VAL__bti_arch_family_x86
+#define VAL__bti_arch_family_x86 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "x86"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "x86"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "x86"
 
 /* Detect ARM64 / ARM32 */
 #elif defined(__aarch64__) || defined(_M_ARM64)
 #undef VAL__bti_arch_arm64
 #define VAL__bti_arch_arm64 1
+#undef VAL__bti_arch_family_arm
+#define VAL__bti_arch_family_arm 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "ARM64"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "ARM"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "ARM"
 
 #elif defined(__arm__) || defined(_M_ARM)
 #undef VAL__bti_arch_arm32
 #define VAL__bti_arch_arm32 1
+#undef VAL__bti_arch_family_arm
+#define VAL__bti_arch_family_arm 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "ARM"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "ARM"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "ARM"
 
 /* Detect MIPS (32 or 64) */
 #elif defined(__mips__)
 #if defined(__mips64) || defined(__mips64__)
 #undef VAL__bti_arch_mips64
 #define VAL__bti_arch_mips64 1
+#undef VAL__bti_arch_family_mips
+#define VAL__bti_arch_family_mips 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "MIPS64"
 #else
 #undef VAL__bti_arch_mips32
 #define VAL__bti_arch_mips32 1
+#undef VAL__bti_arch_family_mips
+#define VAL__bti_arch_family_mips 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "MIPS"
 #endif
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "MIPS"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "MIPS"
 
 /* Detect s390x */
 #elif defined(__s390x__)
 #undef VAL__bti_arch_s390x
 #define VAL__bti_arch_s390x 1
+#undef VAL__bti_arch_family_systemz
+#define VAL__bti_arch_family_systemz 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "s390x"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "SystemZ"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "SystemZ"
 
 /* Detect m68k */
 #elif defined(__m68k__)
 #undef VAL__bti_arch_m68k
 #define VAL__bti_arch_m68k 1
+#undef VAL__bti_arch_family_m68k
+#define VAL__bti_arch_family_m68k 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "m68k"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "m68k"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "m68k"
 
 /* Detect MSP430 (very uncommon in hosted environments) */
 #elif defined(__MSP430__)
 #undef VAL__bti_arch_msp430
 #define VAL__bti_arch_msp430 1
+#undef VAL__bti_arch_family_msp430
+#define VAL__bti_arch_family_msp430 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "MSP430"
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "MSP430"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "MSP430"
 
 /* Detect RISC-V (32 or 64).  For reference:
  *   __riscv_xlen = 32 or 64,
@@ -253,21 +289,27 @@ extern "C" {
 #if (__riscv_xlen == 64)
 #undef VAL__bti_arch_riscv64
 #define VAL__bti_arch_riscv64 1
+#undef VAL__bti_arch_family_riscv
+#define VAL__bti_arch_family_riscv 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "RISC-V64"
 #else
 #undef VAL__bti_arch_riscv32
 #define VAL__bti_arch_riscv32 1
+#undef VAL__bti_arch_family_riscv
+#define VAL__bti_arch_family_riscv 1
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "RISC-V32"
 #endif
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "RISC-V"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "RISC-V"
 
 /* PowerPC / Power Architecture */
 #elif defined(__powerpc__) || defined(__powerpc64__) || defined(_M_PPC)
 #undef VAL__bti_arch_powerpc
 #define VAL__bti_arch_powerpc 1
+#undef VAL__bti_arch_family_powerpc
+#define VAL__bti_arch_family_powerpc 1
 #if defined(__powerpc64__) || defined(__ppc64__)
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "PowerPC64"
@@ -275,8 +317,8 @@ extern "C" {
 #undef VAL__bti_arch_name
 #define VAL__bti_arch_name "PowerPC"
 #endif
-#undef VAL__bti_arch_family
-#define VAL__bti_arch_family "PowerPC"
+#undef VAL__bti_arch_family_name
+#define VAL__bti_arch_family_name "PowerPC"
 
 #else
 #warning "Unknown architecture detected. Please check your architecture settings."

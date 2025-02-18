@@ -668,8 +668,16 @@ void engine_core_Vt100_fini(engine_core_Vt100* self) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self);
 
-    catch_default(disableConsoleMouse(self), claim_unreachable);
-    catch_default(showConsoleCursor(self), claim_unreachable);
+    catch (disableConsoleMouse(self), err, {
+        Err_print(err);
+        ErrTrace_print();
+        claim_unreachable;
+    });
+    catch (showConsoleCursor(self), err, {
+        Err_print(err);
+        ErrTrace_print();
+        claim_unreachable;
+    });
 
     ArrList_fini(&self->abstract.buffer.base);
     mem_Allocator_destroy(self->allocator, anyPtr(self));

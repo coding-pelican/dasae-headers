@@ -48,6 +48,7 @@ struct Err {
 };
 force_inline const char* Err_domainToCStr(Err self);
 force_inline const char* Err_codeToCStr(Err self);
+extern void              Err_print(Err self);
 
 force_inline Err Err_Unknown(void);
 force_inline Err Err_Unexpected(void);

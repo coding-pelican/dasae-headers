@@ -24,6 +24,7 @@ extern "C" {
 #include "core.h"
 #include "scope.h"
 #include "Err.h"
+#include "ErrTrace.h"
 
 /*========== Definitions ====================================================*/
 
@@ -161,6 +162,7 @@ typedef Err$Void Err$void;
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
 #define SYN__return_err(val_err...)                            \
+    ErrTrace_captureFrame();                                   \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                                        \
         .err    = val_err,                                     \
@@ -182,6 +184,7 @@ typedef Err$Void Err$void;
 #else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 #define SYN__return_err(val_err...)                \
+    ErrTrace_captureFrame();                       \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                            \
         .err    = val_err,                         \
@@ -204,6 +207,7 @@ typedef Err$Void Err$void;
 
 #define OP__catch_default(expr, val_default...) eval({       \
     var _result = (expr);                                    \
+    ErrTrace_reset();                                        \
     eval_return _result.is_err ? (val_default) : _result.ok; \
 })
 #define OP__catch(expr, var_capture_err, body...) eval({ \
@@ -211,6 +215,7 @@ typedef Err$Void Err$void;
     if (_result.is_err) {                                \
         let var_capture_err = _result.err;               \
         body;                                            \
+        ErrTrace_reset();                                \
     };                                                   \
     eval_return _result.ok;                              \
 })
