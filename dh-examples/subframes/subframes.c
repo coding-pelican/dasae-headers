@@ -134,7 +134,7 @@ Err$void dh_main(void) { // NOLINT
 
         const f32 radius = 2.5f;
         log_info("game state created\n");
-        ignore getchar();
+        ignore engine_utils_getch();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
@@ -285,28 +285,28 @@ Err$void dh_main(void) { // NOLINT
                     );
                 }
             }
-            /* {
-                let win_res = engine_Window_getRes(window);
-                engine_Canvas_drawRect(game_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
-            } */
+            let win_res = engine_Window_getRes(window);
+            engine_Canvas_drawRect(game_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
             engine_Window_present(window);
 
             // 6) (Optional) Display instantaneous FPS
-            const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
-            let       win_res  = engine_Window_getRes(window);
-            printf("\033[H\033[40;37m"); // Move cursor to top left
-            printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
-            debug_only(
-                // log frame every 1s
-                static f64 total_game_time_for_timestamp = 0.0;
-                static f64 logging_after_duration        = 0.0;
-                total_game_time_for_timestamp += time_dt;
-                logging_after_duration += time_dt;
-                if (1.0 < logging_after_duration) {
-                    logging_after_duration = 0.0;
-                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
-                }
-            );
+            {
+                const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
+                let       win_res  = engine_Window_getRes(window);
+                printf("\033[H\033[40;37m"); // Move cursor to top left
+                printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
+                debug_only(
+                    // log frame every 1s
+                    static f64 total_game_time_for_timestamp = 0.0;
+                    static f64 logging_after_duration        = 0.0;
+                    total_game_time_for_timestamp += time_dt;
+                    logging_after_duration += time_dt;
+                    if (1.0 < logging_after_duration) {
+                        logging_after_duration = 0.0;
+                        log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                    }
+                );
+            }
 
             // 7) Measure how long the update+render actually took
             let time_now        = time_Instant_now();

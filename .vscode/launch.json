@@ -1,18 +1,8 @@
 {
   "version": "0.2.0",
   "configurations": [
-    { // dh>C/C++: Debug Single File
-      "name": "dh>C/C++: Debug Single File",
-      "type": "lldb",
-      "request": "launch",
-      "args": [
-        "${input:userArgs}"
-      ],
-      "cwd": "${fileDirname}",
-      "program": "${fileDirname}/${fileBasenameNoExtension}-debug"
-    },
-    { // dh>C: Debug Single File with Build
-      "name": "dh>C: Debug Single File with Build",
+    { // dh>C: Debug active file
+      "name": "dh>C: Debug active file",
       "type": "lldb",
       "request": "launch",
       "args": [
@@ -20,10 +10,33 @@
       ],
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "console": "integratedTerminal"
+    },
+    { // dh>C: Debug active file (in external terminal)
+      "name": "dh>C: Debug active file (in external terminal)",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "console": "externalTerminal"
+    },
+    { // dh>C: Build and Debug active file
+      "name": "dh>C: Build and Debug active file",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "console": "integratedTerminal",
       "preLaunchTask": "dh>build C file (debug)"
     },
-    { // dh>C: Debug Project with Build
-      "name": "dh>C: Debug Project with Build",
+    { // dh>C: Build and Debug active file (in external terminal)
+      "name": "dh>C: Build and Debug active file (in external terminal)",
       "type": "lldb",
       "request": "launch",
       "args": [
@@ -31,8 +44,9 @@
       ],
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "preLaunchTask": "dh>build C project (debug)"
-    }
+      "console": "externalTerminal",
+      "preLaunchTask": "dh>build C file (debug)"
+    },
   ],
   "inputs": [
     {

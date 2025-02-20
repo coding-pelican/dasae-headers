@@ -2,6 +2,7 @@
 #define ENGINE_INCLUDED (1)
 
 #include "engine-wip/common.h"
+#include "engine-wip/utils.h"
 #include "engine-wip/Color.h"
 #include "engine-wip/Canvas.h"
 

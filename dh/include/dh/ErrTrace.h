@@ -36,7 +36,8 @@ extern void ErrTrace_print(void);
         #define VAL__ErrTrace_max_frames (24)
     #elif bti_arch_family_riscv
         #define VAL__ErrTrace_max_frames (24)
-    #endif /* bti_arch_family_riscv */
+    #else /* others */
+    #endif /* others */
 #else /* bti_plat_32bit */
     #if bti_arch_family_x86
         #define VAL__ErrTrace_max_frames (16)
@@ -44,10 +45,11 @@ extern void ErrTrace_print(void);
         #define VAL__ErrTrace_max_frames (12)
     #elif bti_arch_family_riscv
         #define VAL__ErrTrace_max_frames (12)
-    #endif /* bti_arch_family_riscv */
+    #else /* others */
+    #endif /* others */
 #endif /* bti_plat_32bit */
 #if !defined(VAL__ErrTrace_max_frames)
-    #define VAL__ErrTrace_max_frames (8)
+#define VAL__ErrTrace_max_frames (8)
 #endif /* !defined(VAL__ErrTrace_max_frames) */
 // clang-format on
 
