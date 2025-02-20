@@ -10,36 +10,41 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define debug_point            \
+    /* breakpoint attribute */ \
+    ATTR__debug_point
 #define debug_break() \
     /* Breakpoint. */ \
-    IMPL_debug_break()
+    FUNC__debug_break()
 #define debug_only(...)                        \
     /* Used only when `debug_comp_enabled`. */ \
-    IMPL_debug_only(__VA_ARGS__)
+    SYN__debug_only(__VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
-#if defined(debug_comp_enabled) && debug_comp_enabled
+#define ATTR__debug_point debug_break(),
+
+#if !debug_comp_enabled
+
+#define FUNC__debug_break()  unused(0)
+#define SYN__debug_only(...) unused(0)
+
+#else /* debug_comp_enabled */
 
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#define IMPL_debug_break() __builtin_trap()
+#define FUNC__debug_break() __builtin_debugtrap()
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#define IMPL_debug_break() __debugbreak()
+#define FUNC__debug_break() __debugbreak()
 #else
 /* Fallback using signal */
 #include <signal.h>
-#define IMPL_debug_break() raise(SIGTRAP)
+#define FUNC__debug_break() raise(SIGTRAP)
 #endif
-#define IMPL_debug_only(...) __VA_ARGS__
+#define SYN__debug_only(...) __VA_ARGS__
 
-#else
-
-#define IMPL_debug_break()   unused(0)
-#define IMPL_debug_only(...) unused(0)
-
-#endif /* defined(debug_comp_enabled) && debug_comp_enabled */
+#endif /* debug_comp_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

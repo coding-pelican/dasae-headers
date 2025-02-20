@@ -25,6 +25,7 @@ extern "C" {
 #include "scope.h"
 #include "Err.h"
 #include "ErrTrace.h"
+#include "debug/common.h"
 
 /*========== Definitions ====================================================*/
 
@@ -162,7 +163,7 @@ typedef Err$Void Err$void;
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
 #define SYN__return_err(val_err...)                            \
-    ErrTrace_captureFrame();                                   \
+    debug_point ErrTrace_captureFrame();                       \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                                        \
         .err    = val_err,                                     \
@@ -184,7 +185,7 @@ typedef Err$Void Err$void;
 #else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
 #define SYN__return_err(val_err...)                \
-    ErrTrace_captureFrame();                       \
+    debug_point ErrTrace_captureFrame();           \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                            \
         .err    = val_err,                         \
