@@ -70,7 +70,7 @@ Err$void dh_main(void) { // NOLINT
 
         // Initialize heap allocator and page pool
         var allocator = heap_Page_allocator(&(heap_Page){});
-        log_info("allocator reserved\n");
+        log_info("allocator reserved");
 
         // Create window
         let window = try(engine_Window_init(&(engine_WindowConfig){
@@ -83,7 +83,7 @@ Err$void dh_main(void) { // NOLINT
             .default_color = some({ .packed = 0x181818FF }),
         }));
         defer(engine_Window_fini(window));
-        log_info("window created\n");
+        log_info("window created");
 
         // Create canvases
         let game_canvas = try(engine_Canvas_create(
@@ -92,9 +92,9 @@ Err$void dh_main(void) { // NOLINT
             engine_CanvasType_rgba
         ));
         defer(engine_Canvas_destroy(game_canvas));
-        log_info("canvas created\n");
+        log_info("canvas created");
         engine_Canvas_clearDefault(game_canvas);
-        log_info("canvas cleared\n");
+        log_info("canvas cleared");
 
         // Append canvas views
         engine_Window_appendCanvasView(
@@ -107,7 +107,7 @@ Err$void dh_main(void) { // NOLINT
             true,
             true
         );
-        log_info("canvas views added\n");
+        log_info("canvas views added");
 
         // Create input system
         let input = try(engine_Input_init(allocator));
@@ -122,7 +122,7 @@ Err$void dh_main(void) { // NOLINT
             }
         ));
         defer(engine_core_Vt100_fini(core));
-        log_info("engine ready\n");
+        log_info("engine ready");
 
         // Create game state
         var positions = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
@@ -133,13 +133,13 @@ Err$void dh_main(void) { // NOLINT
         defer(ArrList_fini(&colors.base));
 
         const f32 radius = 2.5f;
-        log_info("game state created\n");
+        log_info("game state created");
         ignore engine_utils_getch();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
         var time_frame_prev   = time_Instant_now();
-        log_info("game loop started\n");
+        log_info("game loop started");
 
         // Initialize window variables
         // var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
@@ -166,7 +166,7 @@ Err$void dh_main(void) { // NOLINT
 
             if (engine_Keyboard_pressed(&input->keyboard, engine_KeyCode_esc)) {
                 is_running = false;
-                log_debug("esc pressed\n");
+                log_debug("esc pressed");
             }
 
             const bool left_space[2] = {
@@ -174,8 +174,8 @@ Err$void dh_main(void) { // NOLINT
                 engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
             };
             if (left_space[0] || left_space[1]) {
-                debug_only(if (left_space[0]) { log_debug("left mouse pressed\n"); });
-                debug_only(if (left_space[1]) { log_debug("space pressed\n"); });
+                debug_only(if (left_space[0]) { log_debug("left mouse pressed"); });
+                debug_only(if (left_space[1]) { log_debug("space pressed"); });
 
                 let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
@@ -303,7 +303,7 @@ Err$void dh_main(void) { // NOLINT
                     logging_after_duration += time_dt;
                     if (1.0 < logging_after_duration) {
                         logging_after_duration = 0.0;
-                        log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                        log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
                     }
                 );
             }

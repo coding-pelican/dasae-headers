@@ -30,45 +30,45 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error result */
-#define Err$(TOk)                                TYPE_UNNAMED__Err$(TOk)
-#define use_Err$(TOk)                            GEN__use_Err$(TOk)
-#define decl_Err$(TOk)                           GEN__decl_Err$(TOk)
-#define impl_Err$(TOk)                           GEN__impl_Err$(TOk)
-#define Err_asNamed$(TNamedErr, var_unnamed_err) OP__Err_asNamed$(TNamedErr, var_unnamed_err)
+#define Err$(T_Ok)                                TYPE_UNNAMED__Err$(T_Ok)
+#define use_Err$(T_Ok)                            GEN__use_Err$(T_Ok)
+#define decl_Err$(T_Ok)                           GEN__decl_Err$(T_Ok)
+#define impl_Err$(T_Ok)                           GEN__impl_Err$(T_Ok)
+#define Err_asNamed$(T_NamedErr, var_unnamed_err) OP__Err_asNamed$(T_NamedErr, var_unnamed_err)
 
 /* Determines error result */
 #define err(val_err...) OP__err(val_err)
 #define ok(val_ok...)   OP__ok(val_ok)
 
-#define err$(TErr, val_err...) OP__err$(TErr, val_err)
-#define ok$(TOk, val_ok...)    OP__ok$(TOk, val_ok)
+#define err$(T_Err, val_err...) OP__err$(T_Err, val_err)
+#define ok$(T_Ok, val_ok...)    OP__ok$(T_Ok, val_ok)
 
-#define errAsg(var_err_res, val_err...) OP__errAsg(var_err_res, val_err)
-#define okAsg(var_err_res, val_ok...)   OP__okAsg(var_err_res, val_ok)
+#define errAsg(var_result, val_err...) OP__errAsg(var_result, val_err)
+#define okAsg(var_result, val_ok...)   OP__okAsg(var_result, val_ok)
 
 /* Checks error result */
-#define isErr(val_err_res) OP__isErr(val_err_res)
-#define isOk(val_err_res)  OP__isOk(val_err_res)
+#define isErr(val_result) OP__isErr(val_result)
+#define isOk(val_result)  OP__isOk(val_result)
 
 /* Returns error result */
 #define return_err(val_err...) SYN__return_err(val_err)
 #define return_ok(val_ok...)   SYN__return_ok(val_ok)
 
 /* Propagates error (similar to Zig's try) */
-#define try(expr) OP__try(expr)
+#define try(_Expr) OP__try(_Expr)
 
 /* Handles error (similar to Zig's catch) */
-#define catch_default(expr, val_default...)   OP__catch_default(expr, val_default)
-#define catch(expr, var_capture_err, body...) OP__catch(expr, var_capture_err, body)
+#define catch_default(_Expr, val_ok_default...)        OP__catch_default(_Expr, val_ok_default)
+#define catch(_Expr, _Payload_Capture, _Stmt_Block...) OP__catch(_Expr, _Payload_Capture, _Stmt_Block)
 
 /* Defers when error */
-#define errdefer(_Statements...) SYN__errdefer(_Statements)
+#define errdefer(_Stmt...) SYN__errdefer(_Stmt)
 
 /* Error result payload captures */
-#define if_ok(expr, var_capture)  SYN__if_ok(expr, var_capture)
-#define else_err(var_capture)     SYN__else_err(var_capture)
-#define if_err(expr, var_capture) SYN__if_err(expr, var_capture)
-#define else_ok(var_capture)      SYN__else_ok(var_capture)
+#define if_ok(val_result, _Payload_Capture)  SYN__if_ok(val_result, _Payload_Capture)
+#define else_err(_Payload_Capture)           SYN__else_err(_Payload_Capture)
+#define if_err(val_result, _Payload_Capture) SYN__if_err(val_result, _Payload_Capture)
+#define else_ok(_Payload_Capture)            SYN__else_ok(_Payload_Capture)
 
 /* Error void result (special case) */
 typedef struct Err$Void Err$Void;
@@ -83,82 +83,82 @@ typedef Err$Void Err$void;
 #define return_void() SYN__return_void()
 
 /* Error result specific */
-#define use_ErrSet$(TErr, TOk)  GEN__use_ErrSet$(TErr, TOk)
-#define decl_ErrSet$(TErr, TOk) GEN__decl_ErrSet$(TErr, TOk)
-#define impl_ErrSet$(TErr, TOk) GEN__impl_ErrSet$(TErr, TOk)
+#define use_ErrSet$(T_Err, T_Ok)  GEN__use_ErrSet$(T_Err, T_Ok)
+#define decl_ErrSet$(T_Err, T_Ok) GEN__decl_ErrSet$(T_Err, T_Ok)
+#define impl_ErrSet$(T_Err, T_Ok) GEN__impl_ErrSet$(T_Err, T_Ok)
 
 /*========== Implementations ================================================*/
 
-#define TYPE_UNNAMED__Err$(TOk) \
-    struct {                    \
-        bool is_err;            \
-        union {                 \
-            Err err;            \
-            TOk ok;             \
-        };                      \
+#define TYPE_UNNAMED__Err$(T_Ok) \
+    struct {                     \
+        bool is_err;             \
+        union {                  \
+            Err  err;            \
+            T_Ok ok;             \
+        };                       \
     }
-#define GEN__use_Err$(TOk) \
-    decl_Err$(TOk);        \
-    impl_Err$(TOk)
-#define GEN__decl_Err$(TOk)                                                     \
-    typedef struct pp_join($, Err$PtrConst, TOk) pp_join($, Err$PtrConst, TOk); \
-    typedef struct pp_join($, Err$Ptr, TOk) pp_join($, Err$Ptr, TOk);           \
-    typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
-#define GEN__impl_Err$(TOk)                \
-    struct pp_join($, Err$PtrConst, TOk) { \
-        bool is_err;                       \
-        union {                            \
-            Err err;                       \
-            rawptr_const$(TOk) ok;         \
-        };                                 \
-    };                                     \
-    struct pp_join($, Err$Ptr, TOk) {      \
-        bool is_err;                       \
-        union {                            \
-            Err err;                       \
-            rawptr$(TOk) ok;               \
-        };                                 \
-    };                                     \
-    struct pp_join($, Err, TOk) {          \
-        bool is_err;                       \
-        union {                            \
-            Err err;                       \
-            TOk ok;                        \
-        };                                 \
+#define GEN__use_Err$(T_Ok) \
+    decl_Err$(T_Ok);        \
+    impl_Err$(T_Ok)
+#define GEN__decl_Err$(T_Ok)                                                      \
+    typedef struct pp_join($, Err$PtrConst, T_Ok) pp_join($, Err$PtrConst, T_Ok); \
+    typedef struct pp_join($, Err$Ptr, T_Ok) pp_join($, Err$Ptr, T_Ok);           \
+    typedef struct pp_join($, Err, T_Ok) pp_join($, Err, T_Ok)
+#define GEN__impl_Err$(T_Ok)                \
+    struct pp_join($, Err$PtrConst, T_Ok) { \
+        bool is_err;                        \
+        union {                             \
+            Err err;                        \
+            rawptr_const$(T_Ok) ok;         \
+        };                                  \
+    };                                      \
+    struct pp_join($, Err$Ptr, T_Ok) {      \
+        bool is_err;                        \
+        union {                             \
+            Err err;                        \
+            rawptr$(T_Ok) ok;               \
+        };                                  \
+    };                                      \
+    struct pp_join($, Err, T_Ok) {          \
+        bool is_err;                        \
+        union {                             \
+            Err  err;                       \
+            T_Ok ok;                        \
+        };                                  \
     }
-#define OP__Err_asNamed$(TNamedErr, var_unnamed_err) eval({                                             \
-    let _unnamed_err = var_unnamed_err;                                                                 \
-    claim_assert_static(sizeOf(TypeOf(_unnamed_err)) == sizeOf(TNamedErr));                             \
-    claim_assert_static(alignOf(TypeOf(_unnamed_err)) == alignOf(TNamedErr));                           \
-    claim_assert_static(hasField(TypeOf(_unnamed_err), is_err));                                        \
-    claim_assert_static(validateField(TypeOf(_unnamed_err), is_err, FieldTypeOf(TNamedErr, is_err)));   \
-    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), is_err) == fieldPadding(TNamedErr, is_err)); \
-    claim_assert_static(hasField(TypeOf(_unnamed_err), err));                                           \
-    claim_assert_static(validateField(TypeOf(_unnamed_err), err, FieldTypeOf(TNamedErr, err)));         \
-    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), err) == fieldPadding(TNamedErr, err));       \
-    claim_assert_static(hasField(TypeOf(_unnamed_err), ok));                                            \
-    claim_assert_static(validateField(TypeOf(_unnamed_err), ok, FieldTypeOf(TNamedErr, ok)));           \
-    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), ok) == fieldPadding(TNamedErr, ok));         \
-    eval_return(*(TNamedErr*)&_unnamed_err);                                                            \
+#define OP__Err_asNamed$(T_NamedErr, var_unnamed_err) eval({                                             \
+    let _unnamed_err = var_unnamed_err;                                                                  \
+    claim_assert_static(sizeOf(TypeOf(_unnamed_err)) == sizeOf(T_NamedErr));                             \
+    claim_assert_static(alignOf(TypeOf(_unnamed_err)) == alignOf(T_NamedErr));                           \
+    claim_assert_static(hasField(TypeOf(_unnamed_err), is_err));                                         \
+    claim_assert_static(validateField(TypeOf(_unnamed_err), is_err, FieldTypeOf(T_NamedErr, is_err)));   \
+    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), is_err) == fieldPadding(T_NamedErr, is_err)); \
+    claim_assert_static(hasField(TypeOf(_unnamed_err), err));                                            \
+    claim_assert_static(validateField(TypeOf(_unnamed_err), err, FieldTypeOf(T_NamedErr, err)));         \
+    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), err) == fieldPadding(T_NamedErr, err));       \
+    claim_assert_static(hasField(TypeOf(_unnamed_err), ok));                                             \
+    claim_assert_static(validateField(TypeOf(_unnamed_err), ok, FieldTypeOf(T_NamedErr, ok)));           \
+    claim_assert_static(fieldPadding(TypeOf(_unnamed_err), ok) == fieldPadding(T_NamedErr, ok));         \
+    eval_return(*(T_NamedErr*)&_unnamed_err);                                                            \
 })
 
 #define OP__err(val_err...) { .is_err = true, .err = val_err }
 #define OP__ok(val_ok...)   { .is_err = false, .ok = val_ok }
 
-#define OP__err$(TErr, val_err...) ((TErr)err(val_err))
-#define OP__ok$(TOk, val_ok)       ((TOk)ok(val_ok))
+#define OP__err$(T_Err, val_err...) ((T_Err)err(val_err))
+#define OP__ok$(T_Ok, val_ok)       ((T_Ok)ok(val_ok))
 
-#define OP__errAsg(var_err_res, val_err...) eval({           \
-    let _ptr_err_res = &var_err_res;                         \
+#define OP__errAsg(var_result, val_err...) eval({            \
+    let _ptr_err_res = &var_result;                          \
     *_ptr_err_res    = err$(TypeOf(*_ptr_err_res), val_err); \
 })
-#define OP__okAsg(var_err_res, val_ok...) eval({           \
-    let _ptr_err_res = &var_err_res;                       \
+#define OP__okAsg(var_result, val_ok...) eval({            \
+    let _ptr_err_res = &var_result;                        \
     *_ptr_err_res    = ok$(TypeOf(*_ptr_err_res), val_ok); \
 })
 
-#define OP__isErr(val_err_res) ((val_err_res).is_err)
-#define OP__isOk(val_err_res)  (!isErr(val_err_res))
+#define OP__isErr(val_result) ((val_result).is_err)
+#define OP__isOk(val_result)  (!isErr(val_result))
 
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
@@ -174,8 +174,8 @@ typedef Err$Void Err$void;
         .ok     = val_ok,                                      \
     })
 
-#define OP__try(expr) ({         \
-    let _result = (expr);        \
+#define OP__try(_Expr) ({        \
+    let _result = (_Expr);       \
     if (_result.is_err) {        \
         return_err(_result.err); \
     }                            \
@@ -196,8 +196,8 @@ typedef Err$Void Err$void;
         .ok     = val_ok,                          \
     })
 
-#define OP__try(expr) ({         \
-    let _result = (expr);        \
+#define OP__try(_Expr) ({        \
+    let _result = (_Expr);       \
     if (_result.is_err) {        \
         return_err(_result.err); \
     }                            \
@@ -206,37 +206,37 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__catch_default(expr, val_default...) eval({       \
-    var _result = (expr);                                    \
-    ErrTrace_reset();                                        \
-    eval_return _result.is_err ? (val_default) : _result.ok; \
+#define OP__catch_default(_Expr, val_ok_default...) eval({      \
+    var _result = (_Expr);                                      \
+    ErrTrace_reset();                                           \
+    eval_return _result.is_err ? (val_ok_default) : _result.ok; \
 })
-#define OP__catch(expr, var_capture_err, body...) eval({ \
-    var _result = (expr);                                \
-    if (_result.is_err) {                                \
-        let var_capture_err = _result.err;               \
-        body;                                            \
-        ErrTrace_reset();                                \
-    };                                                   \
-    eval_return _result.ok;                              \
+#define OP__catch(_Expr, _Payload_Capture, _Stmt_Block...) eval({ \
+    var _result = (_Expr);                                        \
+    if (_result.is_err) {                                         \
+        let _Payload_Capture = _result.err;                       \
+        _Stmt_Block;                                              \
+        ErrTrace_reset();                                         \
+    };                                                            \
+    eval_return _result.ok;                                       \
 })
 
-#define SYN__errdefer(_Statements...) defer(                    \
+#define SYN__errdefer(_Stmt...) defer(                          \
     if (getReservedReturn() && getReservedReturn()[0].is_err) { \
-        _Statements;                                            \
+        _Stmt;                                                  \
     }                                                           \
 )
 
-#define SYN__if_ok(expr, var_capture)               \
-    scope_if(let _result = (expr), !_result.is_err) \
-        scope_with(let var_capture = _result.ok)
-#define SYN__else_err(var_capture) \
-    scope_else(let var_capture = _result.err)
-#define SYN__if_err(expr, var_capture)             \
-    scope_if(let _result = (expr), _result.is_err) \
-        scope_with(let var_capture = _result.err)
-#define SYN__else_ok(var_capture) \
-    scope_else(let var_capture = _result.ok)
+#define SYN__if_ok(val_result, _Payload_Capture)          \
+    scope_if(let _result = (val_result), !_result.is_err) \
+        scope_with(let _Payload_Capture = _result.ok)
+#define SYN__else_err(_Payload_Capture) \
+    scope_else(let _Payload_Capture = _result.err)
+#define SYN__if_err(val_result, _Payload_Capture)        \
+    scope_if(let _result = (val_result), _result.is_err) \
+        scope_with(let _Payload_Capture = _result.err)
+#define SYN__else_ok(_Payload_Capture) \
+    scope_else(let _Payload_Capture = _result.ok)
 
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
@@ -256,104 +256,35 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define GEN__use_ErrSet$(TErr, TOk) \
-    decl_ErrSet$(TErr, TOk);        \
-    impl_ErrSet$(TErr, TOk)
-#define GEN__decl_ErrSet$(TErr, TOk)                                                  \
-    typedef struct pp_join3($, TErr, PtrConst, TOk) pp_join3($, TErr, PtrConst, TOk); \
-    typedef struct pp_join3($, TErr, Ptr, TOk) pp_join3($, TErr, Ptr, TOk);           \
-    typedef struct pp_join($, TErr, TOk) pp_join($, TErr, TOk)
-#define GEN__impl_ErrSet$(TErr, TOk)          \
-    struct pp_join3($, TErr, PtrConst, TOk) { \
-        bool is_err;                          \
-        union {                               \
-            TErr err;                         \
-            rawptr_const$(TOk) ok;            \
-        };                                    \
-    };                                        \
-    struct pp_join3($, TErr, Ptr, TOk) {      \
-        bool is_err;                          \
-        union {                               \
-            TErr err;                         \
-            rawptr$(TOk) ok;                  \
-        };                                    \
-    };                                        \
-    struct pp_join($, TErr, TOk) {            \
-        bool is_err;                          \
-        union {                               \
-            TErr err;                         \
-            TOk  ok;                          \
-        };                                    \
+#define GEN__use_ErrSet$(T_Err, T_Ok) \
+    decl_ErrSet$(T_Err, T_Ok);        \
+    impl_ErrSet$(T_Err, T_Ok)
+#define GEN__decl_ErrSet$(T_Err, T_Ok)                                                    \
+    typedef struct pp_join3($, T_Err, PtrConst, T_Ok) pp_join3($, T_Err, PtrConst, T_Ok); \
+    typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok);           \
+    typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
+#define GEN__impl_ErrSet$(T_Err, T_Ok)          \
+    struct pp_join3($, T_Err, PtrConst, T_Ok) { \
+        bool is_err;                            \
+        union {                                 \
+            T_Err err;                          \
+            rawptr_const$(T_Ok) ok;             \
+        };                                      \
+    };                                          \
+    struct pp_join3($, T_Err, Ptr, T_Ok) {      \
+        bool is_err;                            \
+        union {                                 \
+            T_Err err;                          \
+            rawptr$(T_Ok) ok;                   \
+        };                                      \
+    };                                          \
+    struct pp_join($, T_Err, T_Ok) {            \
+        bool is_err;                            \
+        union {                                 \
+            T_Err err;                          \
+            T_Ok  ok;                           \
+        };                                      \
     }
-
-// #define ErrRes(TOk)  \
-//     struct {         \
-//         bool is_err; \
-//         union {      \
-//             Err err; \
-//             TOk ok;  \
-//         };           \
-//     }
-
-// #define using_ErrRes(TOk) \
-//     decl_ErrRes(TOk);     \
-//     impl_ErrRes(TOk)
-
-// #define decl_ErrRes(TOk) \
-//     typedef struct pp_join($, Err, TOk) pp_join($, Err, TOk)
-
-// #define impl_ErrRes(TOk)          \
-//     struct pp_join($, Err, TOk) { \
-//         bool is_err;              \
-//         union {                   \
-//             Err err;              \
-//             TOk ok;               \
-//         };                        \
-//     }
-
-// #define return_ErrRes \
-//     return (TypeOf(getReservedReturn()))
-
-// /* Enhanced catch macro that supports both statement blocks and default values */
-// #define catch(expr, val_default_or_var_err_with_body...)        \
-//     CATCH_MACRO_CHOOSER(expr, val_default_or_var_err_with_body) \
-//     (expr, val_default_or_var_err_with_body)
-
-// /* Helper macros to count and validate arguments */
-// #define CATCH_GET_ARG_COUNT(...) \
-//     CATCH_GET_ARG_COUNT_(__VA_ARGS__, 3, 2, 1, 0)
-
-// #define CATCH_GET_ARG_COUNT_(_1, _2, _3, count, ...) count
-
-// #define CATCH_CHECK_ARGS(...) \
-//     CATCH_CHECK_ARGS_(CATCH_GET_ARG_COUNT(__VA_ARGS__))
-
-// #define CATCH_CHECK_ARGS_(count) \
-//     CATCH_CHECK_ARGS__(count)
-
-// #define CATCH_MACRO_CHOOSER(...) \
-//     CATCH_MACRO_CHOOSER_(__VA_ARGS__, CATCH_WITH_STATEMENTS, CATCH_WITH_DEFAULT, )
-
-// #define CATCH_MACRO_CHOOSER_(_1, _2, _3, FUNC, ...) FUNC
-
-// /* Catch with default value (2 arguments version) */
-// #define CATCH_WITH_DEFAULT(expr, default_value...) ({ \
-//     var _result = (expr);                             \
-//     _result.is_err ? (default_value) : _result.ok;    \
-// })
-
-// /* Catch with statements (3 arguments version) */
-// #define CATCH_WITH_STATEMENTS(expr, var_err, body...) ({ \
-//     var _result = (expr);                                \
-//     if (_result.is_err) {                                \
-//         let var_err = _result.err;                       \
-//         body                                             \
-//     }                                                    \
-//     _result.ok;                                          \
-// })
-
-/* // Example usage:
- */
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

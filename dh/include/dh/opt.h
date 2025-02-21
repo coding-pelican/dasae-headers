@@ -27,44 +27,44 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Optional value */
-#define Opt$(T)                                  TYPE_UNNAMED__Opt$(T)
-#define use_Opt$(T)                              GEN__use_Opt$(T)
-#define decl_Opt$(T)                             GEN__decl_Opt$(T)
-#define impl_Opt$(T)                             GEN__impl_Opt$(T)
-#define Opt_asNamed$(TNamedOpt, var_unnamed_opt) OP__Opt_asNamed$(TNamedOpt, var_unnamed_opt)
+#define Opt$(T)                                   TYPE_UNNAMED__Opt$(T)
+#define use_Opt$(T)                               GEN__use_Opt$(T)
+#define decl_Opt$(T)                              GEN__decl_Opt$(T)
+#define impl_Opt$(T)                              GEN__impl_Opt$(T)
+#define Opt_asNamed$(T_NamedOpt, var_unnamed_opt) OP__Opt_asNamed$(T_NamedOpt, var_unnamed_opt)
 
 /* Determines optional value */
-#define some(val_opt...) OP__some(val_opt)
-#define none()           OP__none()
+#define some(val_some...) OP__some(val_some)
+#define none()            OP__none()
 
-#define some$(TOpt, val_opt...) OP__some$(TOpt, val_opt)
-#define none$(TOpt)             OP__none$(TOpt)
+#define some$(T_Opt, val_some...) OP__some$(T_Opt, val_some)
+#define none$(T_Opt)              OP__none$(T_Opt)
 
-#define someAsg(var_opt, val_opt...) OP__someAsg(var_opt, val_opt)
-#define noneAsg(var_opt...)          OP__noneAsg(var_opt)
+#define someAsg(var_opt, val_some...) OP__someAsg(var_opt, val_some)
+#define noneAsg(var_opt...)           OP__noneAsg(var_opt)
 
 /* Checks optional value */
-#define isSome(opt) OP__isSome(opt)
-#define isNone(opt) OP__isNone(opt)
+#define isSome(val_opt) OP__isSome(val_opt)
+#define isNone(val_opt) OP__isNone(val_opt)
 
 /* Returns optional value */
-#define return_some(val_opt...) SYN__return_some(val_opt)
-#define return_none()           SYN__return_none()
+#define return_some(val_some...) SYN__return_some(val_some)
+#define return_none()            SYN__return_none()
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
-#define orelse_default(expr, val_default...) OP__orelse_default(expr, val_default)
-#define orelse(expr, body...)                OP__orelse(expr, body)
-#define unwrap(expr)                         OP__unwrap(expr)
+#define orelse_default(_Expr, val_some_default...) OP__orelse_default(_Expr, val_some_default)
+#define orelse(_Expr, _Stmt_Block...)              OP__orelse(_Expr, _Stmt_Block)
+#define unwrap(_Expr)                              OP__unwrap(_Expr)
 
 /* Optional payload capture (similar to Zig's if/while captures) */
-#define if_some(expr, var_capture)        SYN__if_some(expr, var_capture)
-#define if_some_mut(expr, var_capture)    SYN__if_some_mut(expr, var_capture)
-#define if_none(expr)                     SYN__if_none(expr)
-#define else_some(var_capture)            SYN__else_some(var_capture)
-#define else_some_mut(var_capture)        SYN__else_some_mut(var_capture)
-#define while_some(expr, var_capture)     SYN__while_some(expr, var_capture)
-#define while_some_mut(expr, var_capture) SYN__while_some_mut(expr, var_capture)
-#define while_none(expr)                  SYN__while_none(expr)
+#define if_some(val_opt, _Payload_Capture)        SYN__if_some(val_opt, _Payload_Capture)
+#define if_some_mut(var_opt, _Payload_Capture)    SYN__if_some_mut(var_opt, _Payload_Capture)
+#define if_none(val_opt)                          SYN__if_none(val_opt)
+#define else_some(_Payload_Capture)               SYN__else_some(_Payload_Capture)
+#define else_some_mut(_Payload_Capture)           SYN__else_some_mut(_Payload_Capture)
+#define while_some(val_opt, _Payload_Capture)     SYN__while_some(val_opt, _Payload_Capture)
+#define while_some_mut(var_opt, _Payload_Capture) SYN__while_some_mut(var_opt, _Payload_Capture)
+#define while_none(val_opt)                       SYN__while_none(val_opt)
 
 /*========== Implementations ================================================*/
 
@@ -93,43 +93,43 @@ extern "C" {
         bool has_value;                  \
         T    value;                      \
     }
-#define OP__Opt_asNamed$(TNamedOpt, var_unnamed_opt) eval({                                                   \
-    let _unnamed_opt = var_unnamed_opt;                                                                       \
-    claim_assert_static(sizeOf(TypeOf(_unnamed_opt)) == sizeOf(TNamedOpt));                                   \
-    claim_assert_static(alignOf(TypeOf(_unnamed_opt)) == alignOf(TNamedOpt));                                 \
-    claim_assert_static(hasField(TypeOf(_unnamed_opt), has_value));                                           \
-    claim_assert_static(validateField(TypeOf(_unnamed_opt), has_value, FieldTypeOf(TNamedOpt, has_value)));   \
-    claim_assert_static(fieldPadding(TypeOf(_unnamed_opt), has_value) == fieldPadding(TNamedOpt, has_value)); \
-    claim_assert_static(hasField(TypeOf(_unnamed_opt), value));                                               \
-    claim_assert_static(validateField(TypeOf(_unnamed_opt), value, FieldTypeOf(TNamedOpt, value)));           \
-    claim_assert_static(fieldPadding(TypeOf(_unnamed_opt), value) == fieldPadding(TNamedOpt, value));         \
-    eval_return(*(TNamedOpt*)&_unnamed_opt);                                                                  \
+#define OP__Opt_asNamed$(T_NamedOpt, var_unnamed_opt) eval({                                                   \
+    let _unnamed_opt = var_unnamed_opt;                                                                        \
+    claim_assert_static(sizeOf(TypeOf(_unnamed_opt)) == sizeOf(T_NamedOpt));                                   \
+    claim_assert_static(alignOf(TypeOf(_unnamed_opt)) == alignOf(T_NamedOpt));                                 \
+    claim_assert_static(hasField(TypeOf(_unnamed_opt), has_value));                                            \
+    claim_assert_static(validateField(TypeOf(_unnamed_opt), has_value, FieldTypeOf(T_NamedOpt, has_value)));   \
+    claim_assert_static(fieldPadding(TypeOf(_unnamed_opt), has_value) == fieldPadding(T_NamedOpt, has_value)); \
+    claim_assert_static(hasField(TypeOf(_unnamed_opt), value));                                                \
+    claim_assert_static(validateField(TypeOf(_unnamed_opt), value, FieldTypeOf(T_NamedOpt, value)));           \
+    claim_assert_static(fieldPadding(TypeOf(_unnamed_opt), value) == fieldPadding(T_NamedOpt, value));         \
+    eval_return(*(T_NamedOpt*)&_unnamed_opt);                                                                  \
 })
 
-#define OP__some(val_opt...) { .has_value = true, .value = val_opt }
-#define OP__none()           { .has_value = false }
+#define OP__some(val_some...) { .has_value = true, .value = val_some }
+#define OP__none()            { .has_value = false }
 
-#define OP__some$(TOpt, val_opt...) ((TOpt)some(val_opt))
-#define OP__none$(TOpt)             ((TOpt)none())
+#define OP__some$(T_Opt, val_some...) ((T_Opt)some(val_some))
+#define OP__none$(T_Opt)              ((T_Opt)none())
 
-#define OP__someAsg(var_opt, val_opt...) eval({       \
-    let _ptr_opt = &var_opt;                          \
-    *_ptr_opt    = some$(TypeOf(*_ptr_opt), val_opt); \
+#define OP__someAsg(var_opt, val_some...) eval({       \
+    let _ptr_opt = &var_opt;                           \
+    *_ptr_opt    = some$(TypeOf(*_ptr_opt), val_some); \
 })
 #define OP__noneAsg(var_opt...) eval({       \
     let _ptr_opt = &var_opt;                 \
     *_ptr_opt    = none$(TypeOf(*_ptr_opt)); \
 })
 
-#define OP__isSome(opt) ((opt).has_value)
-#define OP__isNone(opt) (!isSome(opt))
+#define OP__isSome(val_opt) ((val_opt).has_value)
+#define OP__isNone(val_opt) (!isSome(val_opt))
 
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
-#define SYN__return_some(val_opt...)                           \
+#define SYN__return_some(val_some...)                          \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                                     \
-        .value     = val_opt,                                  \
+        .value     = val_some,                                 \
     })
 
 #define SYN__return_none()                                     \
@@ -139,10 +139,10 @@ extern "C" {
 
 #else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define SYN__return_some(val_opt...)               \
+#define SYN__return_some(val_some...)              \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .has_value = true,                         \
-        .value     = val_opt,                      \
+        .value     = val_some,                     \
     })
 
 #define SYN__return_none()                         \
@@ -152,42 +152,39 @@ extern "C" {
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__orelse_default(expr, val_default...) eval({            \
-    var _result = (expr);                                          \
-    eval_return _result.has_value ? _result.value : (val_default); \
+#define OP__orelse_default(_Expr, val_some_default...) eval({           \
+    var _result = (_Expr);                                              \
+    eval_return _result.has_value ? _result.value : (val_some_default); \
 })
-#define OP__orelse(expr, body...) eval({ \
-    var _result = (expr);                \
-    if (!_result.has_value) {            \
-        body;                            \
-    }                                    \
-    eval_return _result.value;           \
+#define OP__orelse(_Expr, _Stmt_Block...) eval({ \
+    var _result = (_Expr);                       \
+    if (!_result.has_value) {                    \
+        _Stmt_Block;                             \
+    }                                            \
+    eval_return _result.value;                   \
 })
-#define OP__unwrap(expr) orelse(expr, claim_unreachable)
+#define OP__unwrap(_Expr) orelse(_Expr, claim_unreachable)
 
-#define SYN__if_some(expr, var_capture)               \
-    scope_if(let _result = (expr), _result.has_value) \
-        scope_with(let var_capture = _result.value)
-#define SYN__if_some_mut(expr, var_capture)             \
-    scope_if(let _result = &(expr), _result->has_value) \
-        scope_with(let var_capture = &_result->value)
-#define SYN__if_none(expr) \
-    scope_if(let _result = (expr), !_result.has_value)
-#define SYN__else_some(var_capture) \
-    scope_else(let var_capture = _result.value)
-#define SYN__else_some_mut(expr, var_capture) \
-    scope_else(let var_capture = &_result->value)
-#define SYN__while_some(expr, var_capture)                          \
-    for (var _result = (expr); _result.has_value; _result = (expr)) \
-    scope_with(let var_capture = _result.value)
-// #define SYN__while_some(expr, var_capture)               \
-//     scope_while(var _result = (expr), _result.has_value) \
-//         scope_with_fini(let var_capture = _result.value, _result = (expr))
-#define SYN__while_some_mut(expr, var_capture)                         \
-    for (var _result = &(expr); _result->has_value; _result = &(expr)) \
-    scope_with(let var_capture = &_result->value)
-#define SYN__while_none(expr) \
-    scope_while(var _result = (expr), !_result.has_value)
+#define SYN__if_some(val_opt, _Payload_Capture)          \
+    scope_if(let _result = (val_opt), _result.has_value) \
+        scope_with(let _Payload_Capture = _result.value)
+#define SYN__if_some_mut(var_opt, _Payload_Capture)        \
+    scope_if(let _result = &(var_opt), _result->has_value) \
+        scope_with(let _Payload_Capture = &_result->value)
+#define SYN__if_none(val_opt) \
+    scope_if(let _result = (val_opt), !_result.has_value)
+#define SYN__else_some(_Payload_Capture) \
+    scope_else(let _Payload_Capture = _result.value)
+#define SYN__else_some_mut(var_opt, _Payload_Capture) \
+    scope_else(let _Payload_Capture = &_result->value)
+#define SYN__while_some(val_opt, _Payload_Capture)                        \
+    for (var _result = (val_opt); _result.has_value; _result = (val_opt)) \
+    scope_with(let _Payload_Capture = _result.value)
+#define SYN__while_some_mut(var_opt, _Payload_Capture)                       \
+    for (var _result = &(var_opt); _result->has_value; _result = &(var_opt)) \
+    scope_with(let _Payload_Capture = &_result->value)
+#define SYN__while_none(val_opt) \
+    scope_while(var _result = (val_opt), !_result.has_value)
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -338,43 +338,43 @@ static Err$void configureConsoleOutput(engine_core_Vt100* self) {
 
     // Initialize console window size to minimum, so ScreenBuffer can shrink
     if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, 1, 1 })) {
-        log_error("Failed to set console window info: %d\n", GetLastError());
+        log_error("Failed to set console window info: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetWindowInfo());
     }
 
     // Configure screen buffer size for the console
     let rect = abstractWindowRect(self);
     if (!SetConsoleScreenBufferSize(handle, (COORD){ as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
-        log_error("Failed to set console screen buffer size: %d\n", GetLastError());
+        log_error("Failed to set console screen buffer size: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetScreenBufferSize());
     }
     // Assign screen buffer to the console
     if (!SetConsoleActiveScreenBuffer(handle)) {
-        log_error("Failed to assign screen buffer to the console: %d\n", GetLastError());
+        log_error("Failed to assign screen buffer to the console: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedAssignScreenBuffer());
     }
     // Set physical console window size
     if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, as$(SHORT, rect.x - 1), as$(SHORT, rect.y - 1) })) {
-        log_error("Failed to set console window info: %d\n", GetLastError());
+        log_error("Failed to set console window info: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetWindowInfo());
     }
 
     // Configure console output code page to UTF-8
     if (!SetConsoleOutputCP(CP_UTF8)) {
-        log_error("Failed to set console output code page to UTF-8: %d\n", GetLastError());
+        log_error("Failed to set console output code page to UTF-8: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetCodePage());
     }
 
     // Set console output mode for processing terminal sequences
     debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD out_mode = 0, !GetConsoleMode(handle, &out_mode)) {
-        log_error("Failed to get console output mode: %d\n", GetLastError());
+        log_error("Failed to get console output mode: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetMode());
     }
     else {
         out_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT;
         if (!SetConsoleMode(handle, out_mode)) {
-            log_error("Failed to set console output mode: %d\n", GetLastError());
+            log_error("Failed to set console output mode: %d", GetLastError());
             return_err(ConfigConsoleOutputErr_FailedSetMode());
         }
     }
@@ -392,13 +392,13 @@ static Err$void configureConsoleInput(engine_core_Vt100* self) {
     let handle = self->client.handle.input;
     debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
-        log_error("Failed to get console input mode: %d\n", GetLastError());
+        log_error("Failed to get console input mode: %d", GetLastError());
         return_err(ConfigConsoleInputErr_FailedGetMode());
     }
     else {
         in_mode |= ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT;
         if (!SetConsoleMode(handle, in_mode)) {
-            log_error("Failed to set console input mode: %d\n", GetLastError());
+            log_error("Failed to set console input mode: %d", GetLastError());
             return_err(ConfigConsoleInputErr_FailedSetMode());
         }
     }
@@ -415,7 +415,7 @@ force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, false })) {
-        log_error("Failed to hide console cursor: %d\n", GetLastError());
+        log_error("Failed to hide console cursor: %d", GetLastError());
         return_err(ConfigConsoleCursorErr_FailedHide());
     }
     return_void();
@@ -424,7 +424,7 @@ force_inline Err$void showConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, true })) {
-        log_error("Failed to show console cursor: %d\n", GetLastError());
+        log_error("Failed to show console cursor: %d", GetLastError());
         return_err(ConfigConsoleCursorErr_FailedShow());
     }
     return_void();
@@ -441,7 +441,7 @@ force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
             &written,
             null
         ) || written != command.len) {
-        log_error("Failed to reset console cursor position: %d\n", GetLastError());
+        log_error("Failed to reset console cursor position: %d", GetLastError());
         return_err(ConfigConsoleCursorErr_FailedResetPos());
     };
     return_void();
@@ -517,14 +517,14 @@ force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
     let handle = self->client.handle.input;
     debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
-        log_error("Failed to get console mode: %d\n", GetLastError());
+        log_error("Failed to get console mode: %d", GetLastError());
         return_err(ConfigConsoleMouseErr_FailedEnableGetMode());
     }
     else {
         in_mode |= ENABLE_MOUSE_INPUT;
         in_mode &= ~ENABLE_QUICK_EDIT_MODE;
         if (!SetConsoleMode(handle, in_mode)) {
-            log_error("Failed to set console mode: %d\n", GetLastError());
+            log_error("Failed to set console mode: %d", GetLastError());
             return_err(ConfigConsoleMouseErr_FailedEnableSetMode());
         }
     }
@@ -536,14 +536,14 @@ force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
     let handle = self->client.handle.input;
     debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
-        log_error("Failed to get console mode: %d\n", GetLastError());
+        log_error("Failed to get console mode: %d", GetLastError());
         return_err(ConfigConsoleMouseErr_FailedDisableGetMode());
     }
     else {
         in_mode &= ~ENABLE_MOUSE_INPUT;
         in_mode |= ENABLE_QUICK_EDIT_MODE;
         if (!SetConsoleMode(handle, in_mode)) {
-            log_error("Failed to set console mode: %d\n", GetLastError());
+            log_error("Failed to set console mode: %d", GetLastError());
             return_err(ConfigConsoleMouseErr_FailedDisableSetMode());
         }
     }
@@ -676,7 +676,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->client.handle.window = eval({
             let handle = GetForegroundWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
-                log_error("Failed to get foreground window: %d\n", GetLastError());
+                log_error("Failed to get foreground window: %d", GetLastError());
                 return_err(InitErr_FailedGetConsoleWindowHandle());
             }
             eval_return handle;
@@ -686,7 +686,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->client.handle.output = eval({
             let handle = GetStdHandle(STD_OUTPUT_HANDLE);
             if (!handle || handle == INVALID_HANDLE_VALUE) {
-                log_error("Failed to get standard output handle: %d\n", GetLastError());
+                log_error("Failed to get standard output handle: %d", GetLastError());
                 return_err(InitErr_FailedGetConsoleOutputHandle());
             }
             eval_return handle;
@@ -702,7 +702,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
                 NULL                                // used by CONSOLE_GRAPHICS_BUFFER
             );
             if (!handle || handle == INVALID_HANDLE_VALUE) {
-                log_error("Failed to create console screen buffer: %d\n", GetLastError());
+                log_error("Failed to create console screen buffer: %d", GetLastError());
                 return_err(InitErr_FailedGetConsoleOutputHandle());
             }
             eval_return handle;
@@ -763,7 +763,7 @@ static void processEvents(anyptr ctx) {
 
     // Update window state
     if_(WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) }, !GetWindowPlacement(self->client.handle.window, &placement)) {
-        log_error("Failed to get window placement: %d\n", GetLastError());
+        log_error("Failed to get window placement: %d", GetLastError());
         claim_unreachable;
     }
     else {
@@ -772,7 +772,7 @@ static void processEvents(anyptr ctx) {
         const bool is_focused   = eval({
             let handle = GetForegroundWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
-                log_error("Failed to get foreground window: %d\n", GetLastError());
+                log_error("Failed to get foreground window: %d", GetLastError());
                 claim_unreachable;
             }
             eval_return handle == self->client.handle.window;
@@ -870,7 +870,7 @@ static void presentBuffer(anyptr ctx) {
                 null
             ) || written != len
         ) {
-            log_error("Failed to write console buffer content: %d\n", GetLastError());
+            log_error("Failed to write console buffer content: %d", GetLastError());
             claim_unreachable;
         }
     }

@@ -62,6 +62,8 @@ force_inline Err Err_None(void);
     /* Implement error interface */     \
     GEN__config_ErrSet(Name, members)
 
+/*========== Example Usage (Disabled to prevent compilation) ================*/
+
 #if EXAMPLE_USAGE
 config_ErrSet(
     io_FileErr,

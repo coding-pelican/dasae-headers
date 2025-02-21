@@ -28,6 +28,6 @@ extern "C" {
 #include "time/SysTime.h"
 
 #if defined(__cplusplus)
-}
+} /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* TIME_INCLUDED */
