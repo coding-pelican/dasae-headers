@@ -45,6 +45,9 @@
     },
     {
       "path": "dh-examples/grid-path-finder"
+    },
+    {
+      "path": "dh-examples/space-shooter"
     }
   ],
   "settings": {

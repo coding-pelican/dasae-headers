@@ -6,7 +6,7 @@ static engine_InputState engine_Input_s_instance = cleared();
 
 static void engine_Input_updateFrameInfo(void);
 static void engine_Input_processKey(engine_KeyCode key, bool is_down);
-static void engine_Input_processMouse(void);
+static void engine_Input_processMouseButton(void);
 
 // Core input system functions
 void engine_Input_init(void) {
@@ -34,7 +34,7 @@ void engine_Input_update(void) {
     }
 
     // Process mouse input
-    engine_Input_processMouse();
+    engine_Input_processMouseButton();
 }
 
 // Event buffer management
@@ -145,10 +145,13 @@ static void engine_Input_processKey(engine_KeyCode key, bool is_down) {
     }
 }
 
-static void engine_Input_processMouse(void) {
+static void engine_Input_processMouseButton(void) {
     let input = &engine_Input_s_instance;
 
-    // Save previous mouse position
+    input->mouse.prev_x = input->mouse.x;
+    input->mouse.prev_y = input->mouse.y;
+
+    /* // Save previous mouse position
     input->mouse.prev_x = input->mouse.x;
     input->mouse.prev_y = input->mouse.y;
 
@@ -163,8 +166,10 @@ static void engine_Input_processMouse(void) {
     }
 
     // Update mouse position
-    input->mouse.x = cursor_pos.x;
-    input->mouse.y = cursor_pos.y;
+    {
+        input->mouse.x = cursor_pos.x;
+        input->mouse.y = cursor_pos.y;
+    }
 
     // Create mouse move event if position changed
     if (input->mouse.x != input->mouse.prev_x || input->mouse.y != input->mouse.prev_y) {
@@ -176,7 +181,7 @@ static void engine_Input_processMouse(void) {
             .timestamp = (f64)GetTickCount64() / 1000.0
         };
         engine_InputEventBuffer_push(*(engine_InputEvent*)&event);
-    }
+    } */
 
     // Save previous button states
     memcpy(input->mouse.button_prev_states, input->mouse.button_curr_states, sizeof(input->mouse.button_curr_states));

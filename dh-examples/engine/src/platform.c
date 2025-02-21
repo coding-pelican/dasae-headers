@@ -187,6 +187,8 @@ static void Win32ConsoleBackend_destroy(engine_Platform* platform) {
     }
 }
 
+static i32  prev_mouse_x = 0;
+static i32  prev_mouse_y = 0;
 static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
 
@@ -209,6 +211,7 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     INPUT_RECORD input_record[32] = cleared();
     DWORD        events_read      = 0;
 
+    bool occurs_mouse_event = false;
     while (PeekConsoleInput(backend->input_handle, input_record, 32, &events_read) && events_read > 0) {
         ReadConsoleInput(backend->input_handle, input_record, events_read, &events_read);
 
@@ -216,6 +219,7 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
             switch (input_record[i].EventType) {
             case MOUSE_EVENT:
                 Win32ConsoleBackend_processMouseEvent(backend, &input_record[i].Event.MouseEvent);
+                occurs_mouse_event = true;
                 break;
 
             case WINDOW_BUFFER_SIZE_EVENT:
@@ -229,6 +233,117 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
             default:
                 break;
             }
+        }
+    }
+
+    /* static int prev_cell_y  = 0;
+    static int prev_subcell = 0;
+    if (!occurs_mouse_event) {
+        // 1) Get the actual console font size
+        CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
+        CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+
+        GetConsoleScreenBufferInfo(backend->output_handle, &bufferInfo);
+        GetCurrentConsoleFontEx(backend->output_handle, false, &fontInfo);
+
+        // 2) Get the absolute mouse position on screen
+        POINT mousePos = { 0 };
+        GetCursorPos(&mousePos);
+
+        // 3) Convert client-area origin to screen coordinates
+        HWND  consoleWnd   = GetConsoleWindow();
+        POINT clientOrigin = { 0, 0 };
+        ClientToScreen(consoleWnd, &clientOrigin); // now clientOrigin = screen coords of the text-area (0,0)
+
+        // 4) Compute relativeY = mouse’s Y coordinate minus client-top
+        int relativeY = mousePos.y - clientOrigin.y;
+
+        // 5) The total height of one cell in pixels
+        int cellHeight = fontInfo.dwFontSize.Y;
+
+        // 6) Which sub-cell are we in? (0 = upper, 1 = lower)
+        //    If cellHeight is e.g. 16, then row 0..7 is “upper half,” 8..15 “lower half.”
+        int subCell = (relativeY % cellHeight) >= (cellHeight / 2) ? 1 : 0;
+
+        // 7) Decide if we “bump” the console cell Y up or down.
+        //    Example: If we detect a transition from subCell=0 to subCell=1, and the mouse is moving downward, we do +1.
+        //    If from 1 to 0, and the mouse is moving upward, we do -1.
+        //    In other words:
+        int dy_screen = mousePos.y - prev_mouse_y; // how far did the mouse move in actual screen coords?
+
+        // Clone your logic:
+        //  if previous_subcell == 0 (upper pixel)
+        //      and dy_screen > 0 (moving down) -> y++ (transition upper->lower)
+        //  else if previous_subcell == 1 (lower pixel)
+        //      and dy_screen < 0 (moving up) -> y-- (transition lower->upper)
+
+        int new_cell_y = prev_cell_y;
+        if (prev_subcell == 0 && subCell == 1 && dy_screen > 0) {
+            new_cell_y = prev_cell_y + 1;
+        } else if (prev_subcell == 1 && subCell == 0 && dy_screen < 0) {
+            new_cell_y = prev_cell_y - 1;
+        }
+
+        // 8) Update our ‘input->mouse.y’ (in “double-height space,” if that’s how your engine wants it).
+        //    i.e. we store “row*2 + subCell” if you prefer a “pixel-like” coordinate,
+        //    or just store (row) plus a half offset.
+        scope_with(let input = engine_Input_instance()) {
+            input->mouse.prev_y = input->mouse.y;
+            input->mouse.y      = (new_cell_y * 2) + subCell;
+            // The X coordinate could be done similarly if you want 2-wide cells, etc.
+        }
+
+        // 9) Remember these for next time
+        prev_cell_y  = new_cell_y;
+        prev_subcell = subCell;
+        prev_mouse_y = mousePos.y;
+    }
+ */
+    if (!occurs_mouse_event) {
+        // 1) Get the actual console font size
+        CONSOLE_SCREEN_BUFFER_INFO bufferInfo = { 0 };
+        CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+
+        GetConsoleScreenBufferInfo(backend->output_handle, &bufferInfo);
+        GetCurrentConsoleFontEx(backend->output_handle, false, &fontInfo);
+
+        // 2) Get the absolute mouse position on screen
+        POINT mousePos = { 0 };
+        GetCursorPos(&mousePos);
+
+        // 3) Get console window rect
+        HWND consoleWnd  = GetConsoleWindow();
+        RECT consoleRect = { 0 };
+        GetWindowRect(consoleWnd, &consoleRect);
+
+        // 1. 커서 0,0이 위치하는 스크린 좌표와 Window rect 기준 0,0 사이의 오프셋을 구한다.
+        // 2. 콘솔 마우스 이벤트가 발생하지 않았으나, 마우스의 y좌표가 이전 마우스 y좌표와 다르다면 다음 과정을 수행한다.
+        //   if 이전 마우스 콘솔 커서 == upper pixel
+        //      이전 마우스 y와 현재 마우스 y 사이의 delta 값이 양수인 경우에만 +1 (upper->lower)
+        //   else
+        //      이전 마우스 y와 현재 마우스 y 사이의 delta 값이 음수인 경우에만 -1 (lower->upper)
+
+        // 4) Convert that to a 0-based “cell coordinate”
+        int cellHeight = fontInfo.dwFontSize.Y;
+        // Relative mouse coordinates inside the console window
+        int relativeY  = mousePos.y - consoleRect.top;
+        // Which console column/row is that? (integer division)
+        int consoleY   = prev_mouse_y;
+
+        // 5) Figure out top/bottom half
+        if (consoleY & 1) { // is odd
+
+        } else {
+
+        }
+        int yRemainder    = relativeY % cellHeight;
+        int subCellOffset = (yRemainder >= cellHeight / 2) ? 1 : 0;
+        int doubleHeightY = (consoleY * 2) + subCellOffset;
+
+        // 6) Update the input system
+        scope_with(let input = engine_Input_instance()) {
+            input->mouse.prev_y = input->mouse.y;
+            input->mouse.y      = doubleHeightY; // or clamp as needed
         }
     }
 }
@@ -498,7 +613,7 @@ static void win32_get_console_size(i32* width, i32* height) {
 static void win32_get_font_size(i32* width, i32* height) {
     HANDLE              hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_FONT_INFOEX fontInfo = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
-    if (GetCurrentConsoleFontEx(hConsole, FALSE, &fontInfo)) {
+    if (GetCurrentConsoleFontEx(hConsole, false, &fontInfo)) {
         *width  = fontInfo.dwFontSize.X;
         *height = fontInfo.dwFontSize.Y;
     } else {
@@ -528,7 +643,7 @@ static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer,
     CONSOLE_FONT_INFOEX        fontInfo   = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
 
     GetConsoleScreenBufferInfo(output_handle, &bufferInfo);
-    GetCurrentConsoleFontEx(output_handle, FALSE, &fontInfo);
+    GetCurrentConsoleFontEx(output_handle, false, &fontInfo);
 
     // Get raw mouse position
     POINT mousePos = cleared();
@@ -544,6 +659,9 @@ static Vec2i Win32ConsoleBackend_getPixelPosition(const MOUSE_EVENT_RECORD* mer,
     i32 relativeY     = mousePos.y - consoleRect.top;
     i32 consoleY      = mer->dwMousePosition.Y;
     i32 subCellOffset = (relativeY % cellHeight) >= (cellHeight / 2) ? 1 : 0;
+
+    prev_mouse_x = mer->dwMousePosition.X;
+    prev_mouse_y = mer->dwMousePosition.Y;
 
     return (Vec2i){
         .s = {
