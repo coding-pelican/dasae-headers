@@ -95,7 +95,7 @@ static void BallManager_fini(BallManager* self) {
 }
 
 static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
-    /* reserveReturn(Err$void);
+    reserveReturn(Err$void);
 
     ArrList_clearRetainingCap(&self->balls.base);
     for (u32 i = 0; i < count; ++i) {
@@ -121,11 +121,11 @@ static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
         ball->mass = ball->transform.radius * Ball_mass_scaler_by_radius;
     }
 
-    return_void(); */
+    return_void();
 }
 
 static Err$void BallManager_resolveCollisions(BallManager* self) {
-    /* reserveReturn(Err$void);
+    reserveReturn(Err$void);
 
     // Quick n^2 collision check between all balls
     for (usize i = 0; i < self->balls.items.len; ++i) {
@@ -185,11 +185,11 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
         }
     }
 
-    return_void(); */
+    return_void();
 }
 
 static void BallManager_update(BallManager* self, f32 dt) {
-    /* // Update physics
+    // Update physics
     for_slice(self->balls.items, ball) {
         // Apply drag
         ball->acc = math_Vec2f_scale(math_Vec2f_neg(ball->vel), Ball_drag_coefficient);
@@ -220,19 +220,19 @@ static void BallManager_update(BallManager* self, f32 dt) {
         if (math_Vec2f_lenSq(ball->vel) < Ball_velocity_tolerance) {
             ball->vel = math_Vec2f_zero;
         }
-    } */
+    }
 }
 
 // Convert world space to screen space for a ball
 force_inline Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
-    /* let scale  = window_res_scale;
+    let scale  = window_res_scale;
     let center = (Vec2f){
         .x = as$(f32, canvas->width) * 0.5f,
         .y = as$(f32, canvas->height) * 0.5f
     };
     var screen_pos = math_Vec2f_scale(pos, scale);
     screen_pos.y   = -screen_pos.y;
-    return math_Vec2f_add(screen_pos, center); */
+    return math_Vec2f_add(screen_pos, center);
 };
 static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     // Draw all balls
@@ -251,7 +251,7 @@ static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
 }
 
 force_inline Vec2f screenToWorld(Vec2i screen_pos) {
-    /* var pos = (Vec2f){
+    var pos = (Vec2f){
         .x = as$(f32, screen_pos.x),
         .y = as$(f32, screen_pos.y)
     };
@@ -262,10 +262,10 @@ force_inline Vec2f screenToWorld(Vec2i screen_pos) {
     };
     pos   = math_Vec2f_sub(pos, center);
     pos.y = -pos.y;
-    return math_Vec2f_scale(pos, scale); */
+    return math_Vec2f_scale(pos, scale);
 }
 static void BallManager_processInput(BallManager* self) {
-    /* // Ball selection
+    // Ball selection
     if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Mouse_pressed(engine_MouseButton_right)) {
         self->selected_ball = null;
         let world_pos       = screenToWorld(engine_Mouse_getPosition());
@@ -296,7 +296,7 @@ static void BallManager_processInput(BallManager* self) {
             self->selected_ball->vel = math_Vec2f_scale(launch_dir, 5.0f);
             self->selected_ball      = null;
         }
-    } */
+    }
 }
 
 Err$void dh_main(int argc, const char* argv[]) {

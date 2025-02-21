@@ -276,8 +276,8 @@ void FontSystem_renderGlyphToCanvas(const Glyph* glyph, engine_Canvas* canvas, i
 }
 
 // ========== Remove utf8_decode() and use StrUtf8Iter instead ==========
-// This function now takes StrConst instead of const char* for text input.
-must_check FontSystemErr$void renderKoreanText(StrConst text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
+// This function now takes Str_const instead of const char* for text input.
+must_check FontSystemErr$void renderKoreanText(Str_const text, engine_Canvas* canvas, i32 x, i32 y, usize size_pixels) {
     scope_reserveReturn(FontSystemErr$void) {
         var        allocator = heap_Classic_allocator(&(heap_Classic){});
         // 1) Init font
@@ -500,8 +500,8 @@ static const f32 msg_1st_next_2st_printing_fade_in_begin         = firework_with
 static const f32 msg_1st_next_2st_printing_fade_in_duration      = 2.00f;
 static const f32 msg_1st_next_2st_printing_fade_in_end           = msg_1st_next_2st_printing_fade_in_begin + msg_1st_next_2st_printing_fade_in_duration;
 
-static const StrConst msg_1st = strL("안뇽 유니!");
-static const StrConst msg_2nd = strL("사랑한다구 ㅎㅎ");
+static const Str_const msg_1st = Str_l("안뇽 유니!");
+static const Str_const msg_2nd = Str_l("사랑한다구 ㅎㅎ");
 
 // static const f32 firework_on_time      = 6.572f;                        // time (seconds) when fade starts
 // static const f32 firework = red_to_pink_transition_end + ; // to go from pixels to firework
@@ -942,7 +942,7 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
 
 // measureKoreanTextWidth: returns the total pixel width of the text at the chosen font size
 // Using the same logic as renderKoreanText but skipping the drawing.
-must_check i32 measureKoreanTextWidth(StrConst text, usize size_pixels) {
+must_check i32 measureKoreanTextWidth(Str_const text, usize size_pixels) {
     // Use a temp font here. We re-init each time for simplicity.
     // If performance is a concern, cache the font + glyphs.
     var allocator   = heap_Classic_allocator(&(heap_Classic){});
@@ -992,7 +992,7 @@ static f32 fadeInFactor(f32 t, f32 start, f32 duration) {
 }
 
 must_check Err$void renderKoreanTextFade(
-    StrConst       text,
+    Str_const      text,
     engine_Canvas* canvas,
     i32            x,
     i32            y,
