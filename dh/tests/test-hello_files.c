@@ -15,7 +15,7 @@ config_ErrSet(
 );
 
 use_Err$(Ptr$FILE);
-Err$Ptr$FILE loadFile(StrConst filename) {
+Err$Ptr$FILE loadFile(Str_const filename) {
     reserveReturn(Err$Ptr$FILE);
     if_(let file = fopen(as$(const char*, filename.ptr), "r"), file != null) {
         return_ok(file);
@@ -32,13 +32,13 @@ Err$Arr$4$Ptr$FILE loadFiles(void) {
         }
         errdefer(ignore fclose(fp1));
 
-        let fp2 = try(loadFile(strL("hello2.txt")));
+        let fp2 = try(loadFile(Str_l("hello2.txt")));
         errdefer(ignore fclose(fp2));
 
-        let fp3 = try(loadFile(strL("hello3.txt")));
+        let fp3 = try(loadFile(Str_l("hello3.txt")));
         errdefer(ignore fclose(fp3));
 
-        let fp4 = try(loadFile(strL("hello4.txt")));
+        let fp4 = try(loadFile(Str_l("hello4.txt")));
         errdefer(ignore fclose(fp4));
 
         return_ok({ fp1, fp2, fp3, fp4 });
