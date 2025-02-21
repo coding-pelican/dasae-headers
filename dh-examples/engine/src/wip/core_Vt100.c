@@ -432,7 +432,7 @@ force_inline Err$void showConsoleCursor(engine_core_Vt100* self) {
 force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle  = self->client.handle.output;
-    let command = strL("\033[H");
+    let command = Str_l("\033[H");
     if_(DWORD written = 0,
         !WriteConsoleA(
             handle,

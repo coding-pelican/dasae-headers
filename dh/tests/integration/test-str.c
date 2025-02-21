@@ -1,17 +1,20 @@
+#define main_no_args        (1)
+#define main_no_returns_err (1)
+#include "dh/main.h"
 #include "dh/Str.h"
 
-void Str_print(Str_const str) {
-    if (!str.ptr) { return; }
-    if (str.len <= 0) { return; }
-    printf("%.*s", (i32)str.len, str.ptr);
+static void Str_print(Str_const self) {
+    debug_assert_nonnull(self.ptr);
+    if (self.len <= 0) { return; }
+    printf("%.*s", as$(i32, self.len), self.ptr);
 }
 
-void Str_println(Str_const str) {
-    Str_print(str);
+static void Str_println(Str_const self) {
+    Str_print(self);
     ignore putchar('\n');
 }
 
-void TEST_string_literals(void) {
+static void TEST_string_literals(void) {
     /* Test different string literal types */
     let str_readonly = Str_l("Readonly byte slice"); /* [*]const u8 */
     let str_writable = Str_m("Writable byte slice"); /* []u8 */
@@ -23,8 +26,8 @@ void TEST_string_literals(void) {
     Str_println(Str_l("Writable string:"));
     Str_println(str_writable.as_const);
 
-    debug_assert(!Str_constCast(str_readonly).has_value);
-    debug_assert(Str_constCast(str_writable.as_const).has_value);
+    debug_assert(isNone(Str_constCast(str_readonly)));
+    debug_assert(isSome(Str_constCast(str_writable.as_const)));
 
     /* UTF-8 test */
     Str_const utf8_str = Str_l("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
@@ -37,8 +40,8 @@ void TEST_string_literals(void) {
     /* UTF-8 iteration test */
     Str_println(Str_l("\nIterating UTF-8 characters:"));
     {
-        StrUtf8Iter iter      = StrUtf8_iter(utf8_str);
-        Opt$u32     codepoint = cleared();
+        var iter      = StrUtf8_iter(utf8_str);
+        var codepoint = make$(Opt$u32);
         while (StrUtf8Iter_next(&iter, &codepoint)) {
             if (codepoint.has_value) {
                 // Print the actual Unicode character
@@ -52,7 +55,6 @@ void TEST_string_literals(void) {
     Str_println(Str_l("할아버지 보고싶어요"));
 }
 
-int main(void) {
+void dh_main(void) {
     TEST_string_literals();
-    return 0;
 }

@@ -1,11 +1,10 @@
-// ArrList example usage
-#define MAIN_NO_ARGS (1)
+#define main_no_args (1)
 #include "dh/main.h"
 #include "dh/core.h"
+#include "dh/scope.h"
 #include "dh/meta/common.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
-#include "dh/scope.h"
 
 typedef struct Point {
     i32 x, y;
@@ -13,10 +12,9 @@ typedef struct Point {
 use_Sli$(Point);
 use_ArrList$(Point);
 
-Err$void printPoints(const ArrList$Point* points) {
+static must_check Err$void printPoints(const ArrList$Point* points) {
     reserveReturn(Err$void);
     debug_assert_nonnull(points);
-
     printf("Points (%zu items):\n", points->items.len);
     for_slice_indexed(points->items, point, index) {
         printf("  [%zu] = (%d, %d)\n", index, point->x, point->y);
@@ -24,17 +22,13 @@ Err$void printPoints(const ArrList$Point* points) {
     return_void();
 }
 
-Err$void example(void) {
+static must_check Err$void example(void) {
     scope_reserveReturn(Err$void) {
         // Initialize allocator
-        heap_Classic heap      = {};
-        let          allocator = heap_Classic_allocator(&heap);
-        try(heap_Classic_init(allocator));
-        heap_Classic_fini(allocator);
-        defer(heap_Classic_fini(allocator));
+        let allocator = heap_Classic_allocator(&(heap_Classic){});
 
         // Create ArrList
-        var points = typed(ArrList$Point, ArrList_init(typeInfo(Point), allocator));
+        var points = type$(ArrList$Point, ArrList_init(typeInfo$(Point), allocator));
         defer(ArrList_fini(&points.base));
 
         // Append individual items
@@ -78,7 +72,7 @@ Err$void example(void) {
         try(printPoints(&points));
 
         // Clone the ArrList
-        var cloned = typed(ArrList$Point, try(ArrList_clone(&points.base)));
+        var cloned = type$(ArrList$Point, try(ArrList_clone(&points.base)));
         defer(ArrList_fini(&cloned.base));
         printf("\nCloned array:\n");
         try(printPoints(&cloned));
@@ -88,10 +82,11 @@ Err$void example(void) {
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
-        var from_slice = typed(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli(owned_slice)));
+        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli(owned_slice)));
         defer(ArrList_fini(&from_slice.base));
         printf("\nCreated from owned slice:\n");
         try(printPoints(&from_slice));
+
         return_void();
     }
     scope_returnReserved;

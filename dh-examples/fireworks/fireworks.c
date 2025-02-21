@@ -292,7 +292,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
         f->allocator = allocator;
 
-        let_(rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo(Particle))))) {
+        let_(rocket = meta_castPtr$(Particle*, try(mem_Allocator_create(f->allocator, typeInfo$(Particle))))) {
             errdefer(mem_Allocator_destroy(f->allocator, anyPtr(rocket)));
             Particle_init(rocket, as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
@@ -300,7 +300,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
             someAsg(f->rocket, rocket);
         }
 
-        f->effects = typed(ArrList$Particle, try(ArrList_initCap(typeInfo(Particle), f->allocator, Firework_effects_per_rocket)));
+        f->effects = type$(ArrList$Particle, try(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)));
         errdefer(ArrList_fini(&f->effects.base));
 
         f->effect_base_color = Color_intoHsl(effect_base_color);
@@ -418,7 +418,7 @@ void Firework_render(const Firework* f, engine_Canvas* c, f64 dt) {
 Err$State State_init(mem_Allocator allocator, u32 width, u32 height) {
     reserveReturn(Err$State);
 
-    var fireworks = typed(ArrList$Firework, try(ArrList_initCap(typeInfo(Firework), allocator, Fireworks_max)));
+    var fireworks = type$(ArrList$Firework, try(ArrList_initCap(typeInfo$(Firework), allocator, Fireworks_max)));
     return_ok({
         .fireworks  = fireworks,
         .width      = width,

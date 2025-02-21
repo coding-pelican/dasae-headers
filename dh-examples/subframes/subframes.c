@@ -75,7 +75,7 @@ Err$void dh_main(void) { // NOLINT
         // Create window
         let window = try(engine_Window_init(&(engine_WindowConfig){
             .allocator = allocator,
-            .title     = strL("Subframes"),
+            .title     = Str_l("Subframes"),
             .rect_size = {
                 .x = window_res_width,
                 .y = window_res_height,

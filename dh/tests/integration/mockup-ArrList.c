@@ -1,3 +1,5 @@
+#if UNUSED_CODE
+#define main_no_args (1)
 #include "dh/main.h"
 #include "dh/core.h"
 #include "dh/err_res.h"
@@ -80,89 +82,34 @@ static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
 static Slice ArrList_slice(const ArrList* self) {
     return self->items;
 }
-// todo apply errdefer
-// Example usage in main
-Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
-    unused(argc);
-    unused(argv);
 
+Err$void dh_main(void) {
+    scope_reserveReturn(Err$void);
     // Initialize the C heap allocator
-    var heap      = (heap_Classic){};
-    let allocator = heap_Classic_allocator(&heap);
-    catch (heap_Classic_init(allocator), err, {
-        ignore fprintf(stderr, "Failed to initialize heap: %s, in %s:%d\n", Err_codeToCStr(err), __FILE__, __LINE__);
-        return_err(err);
-    });
+    let allocator = heap_Classic_allocator(&(heap_Classic){});
 
     // Create an ArrList of integers
-    var list = catch (ArrList_init(typeInfo(i32), allocator), err, {
-        ignore fprintf(stderr, "Failed to initialize ArrList: %s, in %s:%d\n", Err_codeToCStr(err), __FILE__, __LINE__);
-        heap_Classic_fini(allocator);
-        return_err(err);
-    });
+    var list = try(ArrList_init(typeInfo$(i32), allocator));
+    defer(ArrList_fini(&list));
 
     // Add some numbers
     for (usize i = 0; i < 10; ++i) {
-        catch (ArrList_append(&list, &i), err, {
-            ignore fprintf(stderr, "Failed to append to ArrList: %s, in %s:%d\n", Err_codeToCStr(err), __FILE__, __LINE__);
-            ignore fprintf(stderr, "index %zu\n", i);
-            ArrList_fini(&list);
-            heap_Classic_fini(allocator);
-            return_err(err);
-        });
+        try(ArrList_append(&list, &i));
     }
 
     // Get a slice of the data
-    let        slice = ArrList_slice(&list);
-    int* const items = slice.ptr;
+    let slice = ArrList_slice(&list);
+    let items = as$(const i32*, slice.ptr);
 
     // Print all numbers
-    for (usize i = 0; i < slice.len; ++i) {
-        printf("%d ", items[i]);
+    {
+        for (usize i = 0; i < slice.len; ++i) {
+            printf("%d ", items[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 
-    // Clean up
-    ArrList_fini(&list);
-    heap_Classic_fini(allocator);
-
-    return_ok({});
+    return_void();
+    scope_returnReserved;
 }
-
-// void example(void) {
-//     // Initialize the C heap allocator
-//     heap_C heap      = {};
-//     let    allocator = heap_C_allocator(&heap);
-
-//     // Create an ArrList of integers
-//     let list_result = ArrList_init(sizeof(int), allocator);
-//     if (list_result.is_err) {
-//         printf("Failed to create ArrList: out of memory\n");
-//         return;
-//     }
-//     var list = list_result.ok;
-
-//     // Add some numbers
-//     for (usize i = 0; i < 15; ++i) {
-//         let append_result = ArrList_append(&list, &i);
-//         if (append_result.is_err) {
-//             printf("Failed to append item: out of memory\n");
-//             ArrList_fini(&list);
-//             return;
-//         }
-//     }
-
-//     // Get a slice of the data
-//     let        slice = ArrList_slice(&list);
-//     int* const items = slice.ptr;
-
-//     // Print all numbers
-//     for (usize i = 0; i < slice.len; ++i) {
-//         printf("%d ", items[i]);
-//     }
-//     printf("\n");
-
-//     // Clean up
-//     ArrList_fini(&list);
-// }
+#endif /* UNUSED_CODE */

@@ -10,7 +10,7 @@
 typedef struct engine_WindowConfig {
     mem_Allocator allocator;
     Vec2u         rect_size;
-    StrConst      title;
+    Str_const     title;
     Opt$Color     default_color;
 } engine_WindowConfig;
 typedef struct engine_Window engine_Window;
