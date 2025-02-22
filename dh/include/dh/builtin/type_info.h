@@ -74,6 +74,15 @@ extern "C" {
      */                                                 \
     FUNC__TypeOf(_Expr)
 
+#define TypeUnqualOf(_Expr)                                         \
+    /**                                                             \
+     * @brief Get unqualified type of an expression at compile time \
+     *                                                              \
+     * @param _Expr Value or expression to get type of              \
+     * @return Unqualified type of the expression                   \
+     */                                                             \
+    FUNC__TypeUnqualOf(_Expr)
+
 #define isConstantExpr(_Expr)                              \
     /**                                                    \
      * @brief Check if expression is compile-time constant \
@@ -154,8 +163,11 @@ extern "C" {
 #define FUNC__countOf(var_arr...) \
     (sizeof(var_arr) / sizeof(var_arr[0]))
 
-#define FUNC__TypeOf(val) \
-    __typeof__(val)
+#define FUNC__TypeOf(_Expr) \
+    __typeof__(_Expr)
+
+#define FUNC__TypeUnqualOf(_Expr) \
+    __typeof_unqual(_Expr)
 
 #define FUNC__isConstantExpr(_Expr) \
     __builtin_constant_p(_Expr)
