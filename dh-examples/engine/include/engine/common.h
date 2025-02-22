@@ -10,7 +10,7 @@
 
 #include "dh/mem/Allocator.h"
 #include "dh/meta/common.h"
-#include "dh/Mat.h"
+#include "dh/Grid.h"
 
 #include "dh/math/common.h"
 #include "dh/math/vec.h"
