@@ -28,24 +28,22 @@ extern "C" {
 /*========== Meta Utilities =================================================*/
 
 /* Generic type */
-typedef anyptr_const PtrConst;
+typedef anyptr_const Ptr_const;
 typedef anyptr       Ptr;
-#define PtrConst$(T) TYPE__PtrConst$(T)
-#define Ptr$(T)      TYPE__Ptr$(T)
-#define use_Ptr$(T)  GEN__use_Ptr$(T)
+#define Ptr_const$(T) TYPE__Ptr_const$(T)
+#define Ptr$(T)       TYPE__Ptr$(T)
+#define use_Ptr$(T)   GEN__use_Ptr$(T)
+extern Ptr Ptr_constCast(Ptr_const);
 
-extern Ptr Ptr_constCast(PtrConst);
-
-typedef struct SliConst SliConst;
-typedef union Sli       Sli;
-#define SliConst$(T)                             TYPE_UNNAMED__SliConst$(T)
-#define Sli$(T)                                  TYPE_UNNAMED__Sli$(T)
-#define use_Sli$(T)                              GEN__use_Sli$(T)
-#define decl_Sli$(T)                             GEN__decl_Sli$(T)
-#define impl_Sli$(T)                             GEN__impl_Sli$(T)
-#define Sli_asNamed$(TNamedSli, var_unnamed_sli) OP__Sli_asNamed$(TNamedSli, var_unnamed_sli)
-
-extern Sli          Sli_constCast(SliConst);
+typedef struct Sli_const Sli_const;
+typedef union Sli        Sli;
+#define Sli_const$(T)                             TYPE_UNNAMED__Sli_const$(T)
+#define Sli$(T)                                   TYPE_UNNAMED__Sli$(T)
+#define use_Sli$(T)                               GEN__use_Sli$(T)
+#define decl_Sli$(T)                              GEN__decl_Sli$(T)
+#define impl_Sli$(T)                              GEN__impl_Sli$(T)
+#define Sli_asNamed$(T_NamedSli, var_unnamed_sli) OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli)
+extern Sli          Sli_constCast(Sli_const);
 extern anyptr_const Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
 extern anyptr       Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
 extern anyptr_const Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
@@ -78,16 +76,16 @@ typedef struct AnyType AnyType;
 #define anySli(var_sli...) OP__anySli(var_sli)
 
 /* Meta types */
-typedef struct meta_PtrConst meta_PtrConst;
-typedef union meta_Ptr       meta_Ptr;
-typedef struct meta_SliConst meta_SliConst;
-typedef union meta_Sli       meta_Sli;
-extern meta_Ptr              meta_Ptr_constCast(meta_PtrConst);
-extern meta_Sli              meta_Sli_constCast(meta_SliConst);
+typedef struct meta_Ptr_const meta_Ptr_const;
+typedef union meta_Ptr        meta_Ptr;
+typedef struct meta_Sli_const meta_Sli_const;
+typedef union meta_Sli        meta_Sli;
+extern meta_Ptr               meta_Ptr_constCast(meta_Ptr_const);
+extern meta_Sli               meta_Sli_constCast(meta_Sli_const);
 #define meta_refPtr(var_ptr...)               OP__meta_refPtr(var_ptr)
 #define meta_refSli(var_ptr...)               OP__meta_refSli(var_ptr)
-#define meta_refPtrConst(var_ptr...)          OP__meta_refPtrConst(var_ptr)
-#define meta_refSliConst(var_ptr...)          OP__meta_refSliConst(var_ptr)
+#define meta_refPtr_const(var_ptr...)         OP__meta_refPtr_const(var_ptr)
+#define meta_refSli_const(var_ptr...)         OP__meta_refSli_const(var_ptr)
 #define meta_cast$(TDest, var_meta...)        OP__meta_cast$(TDest, var_meta)
 #define meta_castPtr$(TDest, var_meta_ptr...) OP__meta_castPtr$(TDest, var_meta_ptr)
 #define meta_castSli$(TDest, var_meta_sli...) OP__meta_castSli$(TDest, var_meta_sli)
@@ -100,64 +98,64 @@ extern meta_Sli              meta_Sli_constCast(meta_SliConst);
 
 /* Implementation generic type */
 
-#define TYPE__PtrConst$(T) const T*
-#define TYPE__Ptr$(T)      T*
-#define GEN__use_Ptr$(T)                          \
-    typedef PtrConst$(T) pp_join($, PtrConst, T); \
+#define TYPE__Ptr_const$(T) const T*
+#define TYPE__Ptr$(T)       T*
+#define GEN__use_Ptr$(T)                            \
+    typedef Ptr_const$(T) pp_join($, Ptr_const, T); \
     typedef Ptr$(T) pp_join($, Ptr, T)
 
-struct SliConst {
-    PtrConst ptr;
-    usize    len;
+struct Sli_const {
+    Ptr_const ptr;
+    usize     len;
 };
 union Sli {
-    SliConst as_const;
+    Sli_const as_const;
     struct {
         Ptr   ptr;
         usize len;
     };
 };
 
-#define TYPE_UNNAMED__SliConst$(T) \
-    struct {                       \
-        PtrConst$(T) ptr;          \
-        usize len;                 \
+#define TYPE_UNNAMED__Sli_const$(T) \
+    struct {                        \
+        Ptr_const$(T) ptr;          \
+        usize len;                  \
     }
-#define TYPE_UNNAMED__Sli$(T)  \
-    union {                    \
-        SliConst$(T) as_const; \
-        struct {               \
-            Ptr$(T) ptr;       \
-            usize len;         \
-        };                     \
+#define TYPE_UNNAMED__Sli$(T)   \
+    union {                     \
+        Sli_const$(T) as_const; \
+        struct {                \
+            Ptr$(T) ptr;        \
+            usize len;          \
+        };                      \
     }
 #define GEN__use_Sli$(T) \
     decl_Sli$(T);        \
     impl_Sli$(T)
-#define GEN__decl_Sli$(T)                                           \
-    typedef struct pp_join($, SliConst, T) pp_join($, SliConst, T); \
+#define GEN__decl_Sli$(T)                                             \
+    typedef struct pp_join($, Sli_const, T) pp_join($, Sli_const, T); \
     typedef union pp_join($, Sli, T) pp_join($, Sli, T)
-#define GEN__impl_Sli$(T)                 \
-    struct pp_join($, SliConst, T) {      \
-        PtrConst$(T) ptr;                 \
-        usize len;                        \
-    };                                    \
-    union pp_join($, Sli, T) {            \
-        pp_join($, SliConst, T) as_const; \
-        struct {                          \
-            Ptr$(T) ptr;                  \
-            usize len;                    \
-        };                                \
+#define GEN__impl_Sli$(T)                  \
+    struct pp_join($, Sli_const, T) {      \
+        Ptr_const$(T) ptr;                 \
+        usize len;                         \
+    };                                     \
+    union pp_join($, Sli, T) {             \
+        pp_join($, Sli_const, T) as_const; \
+        struct {                           \
+            Ptr$(T) ptr;                   \
+            usize len;                     \
+        };                                 \
     }
-#define OP__Sli_asNamed$(TNamedSli, var_unnamed_sli) eval({                                                \
-    let _unnamed_sli = var_unnamed_sli;                                                                    \
-    claim_assert_static(sizeOf(TNamedSli) == sizeOf(TypeOf(_unnamed_sli)));                                \
-    claim_assert_static(alignOf(TNamedSli) == alignOf(TypeOf(_unnamed_sli)));                              \
-    claim_assert_static(hasField(TypeOf(_unnamed_sli), len));                                              \
-    claim_assert_static(isSameType$(FieldTypeOf(TNamedSli, len), FieldTypeOf(TypeOf(_unnamed_sli), len))); \
-    claim_assert_static(hasField(TypeOf(_unnamed_sli), ptr));                                              \
-    claim_assert_static(isSameType$(FieldTypeOf(TNamedSli, ptr), FieldTypeOf(TypeOf(_unnamed_sli), ptr))); \
-    eval_return(*(TNamedSli*)&_unnamed_sli);                                                               \
+#define OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli) eval({                                                \
+    let _unnamed_sli = var_unnamed_sli;                                                                     \
+    claim_assert_static(sizeOf(T_NamedSli) == sizeOf(TypeOf(_unnamed_sli)));                                \
+    claim_assert_static(alignOf(T_NamedSli) == alignOf(TypeOf(_unnamed_sli)));                              \
+    claim_assert_static(hasField(TypeOf(_unnamed_sli), len));                                               \
+    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, len), FieldTypeOf(TypeOf(_unnamed_sli), len))); \
+    claim_assert_static(hasField(TypeOf(_unnamed_sli), ptr));                                               \
+    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, ptr), FieldTypeOf(TypeOf(_unnamed_sli), ptr))); \
+    eval_return(*(T_NamedSli*)&_unnamed_sli);                                                               \
 })
 
 #define OP__Sli_from(var_ptr, val_len)        { .ptr = (var_ptr), .len = (val_len) }
@@ -247,11 +245,11 @@ union Sli {
         scope_with(let _Iter_item = Sli_at(__sli, _Iter_index))
 
 // clang-format off
-use_Opt$(PtrConst); use_Opt$(Ptr);
-use_Err$(PtrConst); use_Err$(Ptr);
+use_Opt$(Ptr_const); use_Opt$(Ptr);
+use_Err$(Ptr_const); use_Err$(Ptr);
 
-use_Opt$(SliConst); use_Opt$(Sli);
-use_Err$(SliConst); use_Err$(Sli);
+use_Opt$(Sli_const); use_Opt$(Sli);
+use_Err$(Sli_const); use_Err$(Sli);
 // clang-format on
 
 /* Implementation any type */
@@ -297,7 +295,7 @@ struct AnyType {
 })
 
 /* Implementation meta types */
-struct meta_PtrConst {
+struct meta_Ptr_const {
     TypeInfo     type; // Type info first
     anyptr_const addr; // Then address
 };
@@ -307,10 +305,10 @@ union meta_Ptr {
         TypeInfo type; // Type info first
         anyptr   addr; // Then address
     };
-    meta_PtrConst as_const;
+    meta_Ptr_const as_const;
 };
 
-struct meta_SliConst {
+struct meta_Sli_const {
     TypeInfo     type; // Type info first
     anyptr_const addr; // Then address
     usize        len;  // Then length
@@ -322,7 +320,7 @@ union meta_Sli {
         anyptr   addr; // Then address
         usize    len;  // Then length
     };
-    meta_SliConst as_const;
+    meta_Sli_const as_const;
 };
 
 #define OP__meta_refPtr(var_ptr...) eval({ \
@@ -342,17 +340,17 @@ union meta_Sli {
     });                                       \
 })
 
-#define OP__meta_refPtrConst(var_ptr...) eval({ \
-    let _ptr = var_ptr;                         \
-    eval_return((meta_PtrConst){                \
-        .type = typeInfo$(TypeOf(*_ptr)),       \
-        .addr = _ptr,                           \
-    });                                         \
+#define OP__meta_refPtr_const(var_ptr...) eval({ \
+    let _ptr = var_ptr;                          \
+    eval_return((meta_Ptr_const){                \
+        .type = typeInfo$(TypeOf(*_ptr)),        \
+        .addr = _ptr,                            \
+    });                                          \
 })
 
-#define OP__meta_refSliConst(var_sli...) eval({   \
+#define OP__meta_refSli_const(var_sli...) eval({  \
     let _sli = var_sli;                           \
-    eval_return((meta_SliConst){                  \
+    eval_return((meta_Sli_const){                 \
         .ptr = {                                  \
             .type = typeInfo$(TypeOf(*_sli.ptr)), \
             .addr = _sli.ptr,                     \
@@ -392,11 +390,11 @@ union meta_Sli {
 })
 
 // clang-format off
-use_Opt$(meta_PtrConst); use_Opt$(meta_Ptr);
-use_Err$(meta_PtrConst); use_Err$(meta_Ptr);
+use_Opt$(meta_Ptr_const); use_Opt$(meta_Ptr);
+use_Err$(meta_Ptr_const); use_Err$(meta_Ptr);
 
-use_Opt$(meta_SliConst); use_Opt$(meta_Sli);
-use_Err$(meta_SliConst); use_Err$(meta_Sli);
+use_Opt$(meta_Sli_const); use_Opt$(meta_Sli);
+use_Err$(meta_Sli_const); use_Err$(meta_Sli);
 
 /* builtin types */
 use_Ptr$(u8); use_Ptr$(u16); use_Ptr$(u32); use_Ptr$(u64); use_Ptr$(usize);

@@ -40,10 +40,10 @@
 #define render_step_size     (0.01f)
 #define heart_beat_frequency (6.0f)
 
-use_Mat$(u8);
-use_Mat$(f32);
+use_Grid$(u8);
+use_Grid$(f32);
 use_Sli$(Color);
-use_Mat$(Color);
+use_Grid$(Color);
 
 typedef struct RenderBuffer {
     engine_Canvas* canvas;
@@ -52,7 +52,7 @@ typedef struct RenderBuffer {
 
 typedef struct CanvasAscii {
     const engine_Canvas* color; /* using RenderBuffer's canvas: pixel upper(0,2,4...) as fg, lower(1,3,5...) as bg */
-    Mat$u8               ascii;
+    Grid$u8              ascii;
 } CanvasAscii;
 
 // Helper function to scale colors
@@ -224,7 +224,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
 
 // Previous functions remain the same up to renderHeart
 void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
-    let z_buffer = Mat_fromSli$(Mat$f32, buffer->z_buffer, window_res_width, window_res_height);
+    let z_buffer = Grid_fromSli$(Grid$f32, buffer->z_buffer, window_res_width, window_res_height);
     for_slice(z_buffer.items, depth) {
         *depth = -math_f32_inf;
     }
@@ -298,7 +298,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
                 if (screen_y < 0 || window_res_height <= screen_y) { continue; }
 
                 scope_if(
-                    let cell = Mat_at(z_buffer, screen_x, screen_y),
+                    let cell = Grid_at(z_buffer, screen_x, screen_y),
                     *cell < pos.z
                 ) {
                     *cell = pos.z;
@@ -328,7 +328,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
 
 void flipCanvasBuffer(engine_Canvas* canvas) {
     let       sli         = Sli_asNamed$(Sli$Color, canvas->buffer);
-    let       mat         = Mat_fromSli$(Mat$Color, sli, canvas->width, canvas->height);
+    let       mat         = Grid_fromSli$(Grid$Color, sli, canvas->width, canvas->height);
     const i32 width       = as$(i32, canvas->width);
     const i32 height      = as$(i32, canvas->height);
     const i32 half_height = height / 2;
@@ -339,14 +339,14 @@ void flipCanvasBuffer(engine_Canvas* canvas) {
             const i32 bottom_y = height - 1 - y;
 
             prim_swap(
-                *Mat_at(mat, x, top_y),
-                *Mat_at(mat, x, bottom_y)
+                *Grid_at(mat, x, top_y),
+                *Grid_at(mat, x, bottom_y)
             );
         }
     }
 }
 
-void flipZBuffer(Mat$f32 z_buffer) {
+void flipZBuffer(Grid$f32 z_buffer) {
     const i32 width       = (i32)z_buffer.width;
     const i32 height      = (i32)z_buffer.height;
     const i32 half_height = height / 2;
@@ -355,8 +355,8 @@ void flipZBuffer(Mat$f32 z_buffer) {
             const i32 top_y    = y;
             const i32 bottom_y = height - 1 - y;
             prim_swap(
-                *Mat_at(z_buffer, x, top_y),
-                *Mat_at(z_buffer, x, bottom_y)
+                *Grid_at(z_buffer, x, top_y),
+                *Grid_at(z_buffer, x, bottom_y)
             );
         }
     }
@@ -367,7 +367,7 @@ static const char g_ascii_shading[]   = " .,-~:;=!*#$@";
 static const i32  g_ascii_shading_len = countOf(g_ascii_shading) - 1;
 
 // asciiMat has dimensions [width, height/2]
-void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
+void asciiFromZBuffer(const RenderBuffer* buffer, Grid$u8 asciiMat) {
     const i32 width  = (i32)buffer->canvas->width;
     const i32 height = (i32)buffer->canvas->height;
 
@@ -392,7 +392,7 @@ void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
 
             // if both are -∞, it means nothing was drawn there => ' '
             if (zTop <= -math_f32_inf && zBot <= -math_f32_inf) {
-                *Mat_at(asciiMat, x, asciiY) = ' ';
+                *Grid_at(asciiMat, x, asciiY) = ' ';
                 continue;
             }
 
@@ -408,15 +408,15 @@ void asciiFromZBuffer(const RenderBuffer* buffer, Mat$u8 asciiMat) {
                 idx = g_ascii_shading_len - 1;
             }
 
-            *Mat_at(asciiMat, x, asciiY) = g_ascii_shading[idx];
+            *Grid_at(asciiMat, x, asciiY) = g_ascii_shading[idx];
         }
     }
 }
 
-void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
+void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Grid$u8 asciiMat) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
-    let pixels  = Mat_fromSli$(
-        Mat$Color,
+    let pixels  = Grid_fromSli$(
+        Grid$Color,
         Sli_asNamed$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
@@ -430,7 +430,7 @@ void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 a
     // Each cell is processed individually since it's at character resolution
     for (u32 y = 0; y < pixels.height; y += 2) {
         for (u32 x = 0; x < pixels.width; ++x) {
-            let ch = *Mat_at(asciiMat, x, y / 2);
+            let ch = *Grid_at(asciiMat, x, y / 2);
             backend->buffer_size += sprintf(
                 backend->buffer + backend->buffer_size,
                 "\033[40;37m%c",
@@ -493,10 +493,10 @@ static void disableSomeCellsRandom(i32 n) {
     }
 }
 
-static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* canvas, Mat$u8 asciiMat) {
+static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* canvas, Grid$u8 asciiMat) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
-    let pixels  = Mat_fromSli$(
-        Mat$Color,
+    let pixels  = Grid_fromSli$(
+        Grid$Color,
         Sli_asNamed$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
@@ -508,8 +508,8 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
         for (u32 x = 0; x < pixels.width; ++x) {
             if (ascii_disabled[x + (y / 2) * pixels.width]) {
                 // Standard half-block color mode
-                const Color upper = *Mat_at(pixels, x, y);
-                const Color lower = *Mat_at(pixels, x, (y + 1));
+                const Color upper = *Grid_at(pixels, x, y);
+                const Color lower = *Grid_at(pixels, x, (y + 1));
                 backend->buffer_size += sprintf(
                     backend->buffer + backend->buffer_size,
                     "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm▀",
@@ -522,7 +522,7 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
                 );
             } else {
                 // Character mode
-                let ch = *Mat_at(asciiMat, x, y / 2);
+                let ch = *Grid_at(asciiMat, x, y / 2);
                 backend->buffer_size += sprintf(
                     backend->buffer + backend->buffer_size,
                     "\033[38;2;255;255;255;48;2;0;0;0m%c",
@@ -611,8 +611,8 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
         // memset(buffer.z_buffer.ptr, 0, window_res_size * sizeof(f32));
         var overlay = (CanvasAscii){
             .color = buffer.canvas,
-            .ascii = Mat_fromSli$(
-                Mat$u8,
+            .ascii = Grid_fromSli$(
+                Grid$u8,
                 meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))),
                 window_res_width,
                 window_res_height / 2
@@ -738,7 +738,7 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
             // Present the pixel canvas
             if (!overlay_complete) {
                 // (A) ASCII overlay path
-                flipZBuffer(Mat_fromSli$(Mat$f32, buffer.z_buffer, window_res_width, window_res_height));
+                flipZBuffer(Grid_fromSli$(Grid$f32, buffer.z_buffer, window_res_width, window_res_height));
                 asciiFromZBuffer(&buffer, overlay.ascii);
                 printAsciiWithColor(window->platform, game_canvas, overlay.ascii);
             } else {

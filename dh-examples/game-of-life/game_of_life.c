@@ -15,7 +15,7 @@
 #include "engine/canvas.h"
 #include "engine/input.h"
 
-use_Mat$(i8);
+use_Grid$(i8);
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -50,14 +50,14 @@ struct GameOfLife {
     usize  tick_threshold;
 };
 use_Err$(GameOfLife);
-void   GameOfLife_update(GameOfLife* self, f64 dt);
-Mat$i8 GameOfLife_getCellMatrix(const GameOfLife* self);
-void   GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state);
-void   GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells);
-void   GameOfLife_setCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Mat$i8 cells);
-void   GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state);
-void   GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells);
-void   GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Mat$i8 cells);
+void    GameOfLife_update(GameOfLife* self, f64 dt);
+Grid$i8 GameOfLife_getCellMatrix(const GameOfLife* self);
+void    GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state);
+void    GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells);
+void    GameOfLife_setCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells);
+void    GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state);
+void    GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells);
+void    GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells);
 
 typedef struct State {
     GameOfLife    cells;
@@ -241,7 +241,7 @@ void State_render(const State* self, engine_Canvas* canvas, f64 dt) {
     unused(dt);
     for (usize y = 0; y < canvas->height; ++y) {
         for (usize x = 0; x < canvas->width; ++x) {
-            let cell_state = *Mat_at(states, x + 1, y + 1);
+            let cell_state = *Grid_at(states, x + 1, y + 1);
             engine_Canvas_drawPixel(canvas, (i32)x, (i32)y, cell_state ? Color_white : Color_black);
         }
     }
@@ -266,26 +266,26 @@ void GameOfLife_update(GameOfLife* self, f64 dt) {
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let curr   = Mat_fromSli$(Mat$i8, self->curr_states, width, height);
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
 
     memcpy(self->curr_states.ptr, self->next_states.ptr, self->width * self->height * sizeof(i8));
 
     // Update reflection at edges cells
     for (i32 x = 1; x < width - 1; ++x) {
-        *Mat_at(curr, x, 0)          = *Mat_at(curr, x, height - 2); // Top edge
-        *Mat_at(curr, x, height - 1) = *Mat_at(curr, x, 1);          // Bottom edge
+        *Grid_at(curr, x, 0)          = *Grid_at(curr, x, height - 2); // Top edge
+        *Grid_at(curr, x, height - 1) = *Grid_at(curr, x, 1);          // Bottom edge
     }
     for (i32 y = 1; y < height - 1; ++y) {
-        *Mat_at(curr, 0, y)         = *Mat_at(curr, width - 2, y); // Left edge
-        *Mat_at(curr, width - 1, y) = *Mat_at(curr, 1, y);         // Right edge
+        *Grid_at(curr, 0, y)         = *Grid_at(curr, width - 2, y); // Left edge
+        *Grid_at(curr, width - 1, y) = *Grid_at(curr, 1, y);         // Right edge
     }
 
     // Update corner cells
-    *Mat_at(curr, 0, 0)                  = *Mat_at(curr, width - 2, height - 2); // Top-left
-    *Mat_at(curr, width - 1, 0)          = *Mat_at(curr, 1, height - 2);         // Top-right
-    *Mat_at(curr, 0, height - 1)         = *Mat_at(curr, width - 2, 1);          // Bottom-left
-    *Mat_at(curr, width - 1, height - 1) = *Mat_at(curr, 1, 1);                  // Bottom-right
+    *Grid_at(curr, 0, 0)                  = *Grid_at(curr, width - 2, height - 2); // Top-left
+    *Grid_at(curr, width - 1, 0)          = *Grid_at(curr, 1, height - 2);         // Top-right
+    *Grid_at(curr, 0, height - 1)         = *Grid_at(curr, width - 2, 1);          // Bottom-left
+    *Grid_at(curr, width - 1, height - 1) = *Grid_at(curr, 1, 1);                  // Bottom-right
 
     // Update inbounds cells
     for (i32 y = 1; y < height - 1; ++y) {
@@ -293,22 +293,22 @@ void GameOfLife_update(GameOfLife* self, f64 dt) {
             // clang-format off
             // The secret of artificial life =================================================
             i32 neighbors_num
-                = (*Mat_at(curr, x - 1, y - 1) + *Mat_at(curr, x, y - 1) + *Mat_at(curr, x + 1, y - 1))
-                + (*Mat_at(curr, x - 1, y)     + 0                       + *Mat_at(curr, x + 1, y))
-                + (*Mat_at(curr, x - 1, y + 1) + *Mat_at(curr, x, y + 1) + *Mat_at(curr, x + 1, y + 1));
+                = (*Grid_at(curr, x - 1, y - 1) + *Grid_at(curr, x, y - 1) + *Grid_at(curr, x + 1, y - 1))
+                + (*Grid_at(curr, x - 1, y)     + 0                       + *Grid_at(curr, x + 1, y))
+                + (*Grid_at(curr, x - 1, y + 1) + *Grid_at(curr, x, y + 1) + *Grid_at(curr, x + 1, y + 1));
             // clang-format on
 
-            if (*Mat_at(curr, x, y) == 1) {
-                *Mat_at(next, x, y) = as$(i8, neighbors_num == 2 || neighbors_num == 3);
+            if (*Grid_at(curr, x, y) == 1) {
+                *Grid_at(next, x, y) = as$(i8, neighbors_num == 2 || neighbors_num == 3);
             } else {
-                *Mat_at(next, x, y) = as$(i8, neighbors_num == 3);
+                *Grid_at(next, x, y) = as$(i8, neighbors_num == 3);
             }
         }
     }
 }
-Mat$i8 GameOfLife_getCellMatrix(const GameOfLife* self) {
+Grid$i8 GameOfLife_getCellMatrix(const GameOfLife* self) {
     debug_assert_nonnull(self);
-    return Mat_fromSli$(Mat$i8, self->curr_states, self->width, self->height);
+    return Grid_fromSli$(Grid$i8, self->curr_states, self->width, self->height);
 }
 void GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state) {
     debug_assert_nonnull(self);
@@ -318,10 +318,10 @@ void GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state) {
         return; // Silently fail
     }
 
-    let width                   = (i32)self->width;
-    let height                  = (i32)self->height;
-    let next                    = Mat_fromSli$(Mat$i8, self->next_states, width, height);
-    *Mat_at(next, x + 1, y + 1) = state;
+    let width                    = (i32)self->width;
+    let height                   = (i32)self->height;
+    let next                     = Grid_fromSli$(Grid$i8, self->next_states, width, height);
+    *Grid_at(next, x + 1, y + 1) = state;
 }
 void GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells) {
     debug_assert_nonnull(self);
@@ -333,14 +333,14 @@ void GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
     let len    = math_min(cells.len, as$(usize, width - left_top_x - 2)); // Fix: Adjust limit
 
     for (usize i = 0; i < len; ++i) {
-        *Mat_at(next, left_top_x + i + 1, left_top_y + 1) = cells.ptr[i];
+        *Grid_at(next, left_top_x + i + 1, left_top_y + 1) = cells.ptr[i];
     }
 }
-void GameOfLife_setCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Mat$i8 cells) {
+void GameOfLife_setCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells) {
     debug_assert_nonnull(self);
 
     // Add boundary checks
@@ -350,13 +350,13 @@ void GameOfLife_setCellMatrix(GameOfLife* self, usize left_top_x, usize left_top
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
     let area_w = math_min(cells.width, as$(usize, width - left_top_x - 1));
     let area_h = math_min(cells.height, as$(usize, height - left_top_y - 1));
 
     for (usize y = 0; y < area_h; ++y) {
         for (usize x = 0; x < area_w; ++x) {
-            *Mat_at(next, left_top_x + x + 1, left_top_y + y + 1) = *Mat_at(cells, x, y);
+            *Grid_at(next, left_top_x + x + 1, left_top_y + y + 1) = *Grid_at(cells, x, y);
         }
     }
 }
@@ -370,10 +370,10 @@ void GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state) {
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let curr   = Mat_fromSli$(Mat$i8, self->curr_states, width, height);
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
 
-    *Mat_at(next, x + 1, y + 1) = as$(i8, *Mat_at(curr, x + 1, y + 1) ^ state);
+    *Grid_at(next, x + 1, y + 1) = as$(i8, *Grid_at(curr, x + 1, y + 1) ^ state);
 }
 void GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells) {
     debug_assert_nonnull(self);
@@ -385,17 +385,17 @@ void GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_t
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let curr   = Mat_fromSli$(Mat$i8, self->curr_states, width, height);
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
     let len    = math_min(cells.len, as$(usize, width - left_top_x - 1));
 
     for (usize i = 0; i < len; ++i) {
-        let toggled = *Mat_at(curr, left_top_x + i + 1, left_top_y + 1) ^ *Sli_at(cells, i);
+        let toggled = *Grid_at(curr, left_top_x + i + 1, left_top_y + 1) ^ *Sli_at(cells, i);
 
-        *Mat_at(next, left_top_x + i + 1, left_top_y + 1) = (i8)toggled;
+        *Grid_at(next, left_top_x + i + 1, left_top_y + 1) = (i8)toggled;
     }
 }
-void GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Mat$i8 cells) {
+void GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells) {
     debug_assert_nonnull(self);
 
     // Add boundary checks
@@ -405,16 +405,16 @@ void GameOfLife_toggleCellMatrix(GameOfLife* self, usize left_top_x, usize left_
 
     let width  = (i32)self->width;
     let height = (i32)self->height;
-    let curr   = Mat_fromSli$(Mat$i8, self->curr_states, width, height);
-    let next   = Mat_fromSli$(Mat$i8, self->next_states, width, height);
+    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
     let area_w = math_min(cells.width, as$(usize, width - left_top_x - 1));
     let area_h = math_min(cells.height, as$(usize, height - left_top_y - 1));
 
     for (usize y = 0; y < area_h; ++y) {
         for (usize x = 0; x < area_w; ++x) {
-            let toggled = *Mat_at(curr, left_top_x + x + 1, left_top_y + y + 1) ^ *Mat_at(cells, x, y);
+            let toggled = *Grid_at(curr, left_top_x + x + 1, left_top_y + y + 1) ^ *Grid_at(cells, x, y);
 
-            *Mat_at(next, left_top_x + x + 1, left_top_y + y + 1) = (i8)toggled;
+            *Grid_at(next, left_top_x + x + 1, left_top_y + y + 1) = (i8)toggled;
         }
     }
 }

@@ -100,31 +100,31 @@ typedef Err$Void Err$void;
 #define GEN__use_Err$(T_Ok) \
     decl_Err$(T_Ok);        \
     impl_Err$(T_Ok)
-#define GEN__decl_Err$(T_Ok)                                                      \
-    typedef struct pp_join($, Err$PtrConst, T_Ok) pp_join($, Err$PtrConst, T_Ok); \
-    typedef struct pp_join($, Err$Ptr, T_Ok) pp_join($, Err$Ptr, T_Ok);           \
+#define GEN__decl_Err$(T_Ok)                                                        \
+    typedef struct pp_join($, Err$Ptr_const, T_Ok) pp_join($, Err$Ptr_const, T_Ok); \
+    typedef struct pp_join($, Err$Ptr, T_Ok) pp_join($, Err$Ptr, T_Ok);             \
     typedef struct pp_join($, Err, T_Ok) pp_join($, Err, T_Ok)
-#define GEN__impl_Err$(T_Ok)                \
-    struct pp_join($, Err$PtrConst, T_Ok) { \
-        bool is_err;                        \
-        union {                             \
-            Err err;                        \
-            rawptr_const$(T_Ok) ok;         \
-        };                                  \
-    };                                      \
-    struct pp_join($, Err$Ptr, T_Ok) {      \
-        bool is_err;                        \
-        union {                             \
-            Err err;                        \
-            rawptr$(T_Ok) ok;               \
-        };                                  \
-    };                                      \
-    struct pp_join($, Err, T_Ok) {          \
-        bool is_err;                        \
-        union {                             \
-            Err  err;                       \
-            T_Ok ok;                        \
-        };                                  \
+#define GEN__impl_Err$(T_Ok)                 \
+    struct pp_join($, Err$Ptr_const, T_Ok) { \
+        bool is_err;                         \
+        union {                              \
+            Err err;                         \
+            rawptr_const$(T_Ok) ok;          \
+        };                                   \
+    };                                       \
+    struct pp_join($, Err$Ptr, T_Ok) {       \
+        bool is_err;                         \
+        union {                              \
+            Err err;                         \
+            rawptr$(T_Ok) ok;                \
+        };                                   \
+    };                                       \
+    struct pp_join($, Err, T_Ok) {           \
+        bool is_err;                         \
+        union {                              \
+            Err  err;                        \
+            T_Ok ok;                         \
+        };                                   \
     }
 #define OP__Err_asNamed$(T_NamedErr, var_unnamed_err) eval({                                             \
     let _unnamed_err = var_unnamed_err;                                                                  \
@@ -259,31 +259,31 @@ typedef Err$Void Err$void;
 #define GEN__use_ErrSet$(T_Err, T_Ok) \
     decl_ErrSet$(T_Err, T_Ok);        \
     impl_ErrSet$(T_Err, T_Ok)
-#define GEN__decl_ErrSet$(T_Err, T_Ok)                                                    \
-    typedef struct pp_join3($, T_Err, PtrConst, T_Ok) pp_join3($, T_Err, PtrConst, T_Ok); \
-    typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok);           \
+#define GEN__decl_ErrSet$(T_Err, T_Ok)                                                      \
+    typedef struct pp_join3($, T_Err, Ptr_const, T_Ok) pp_join3($, T_Err, Ptr_const, T_Ok); \
+    typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok);             \
     typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
-#define GEN__impl_ErrSet$(T_Err, T_Ok)          \
-    struct pp_join3($, T_Err, PtrConst, T_Ok) { \
-        bool is_err;                            \
-        union {                                 \
-            T_Err err;                          \
-            rawptr_const$(T_Ok) ok;             \
-        };                                      \
-    };                                          \
-    struct pp_join3($, T_Err, Ptr, T_Ok) {      \
-        bool is_err;                            \
-        union {                                 \
-            T_Err err;                          \
-            rawptr$(T_Ok) ok;                   \
-        };                                      \
-    };                                          \
-    struct pp_join($, T_Err, T_Ok) {            \
-        bool is_err;                            \
-        union {                                 \
-            T_Err err;                          \
-            T_Ok  ok;                           \
-        };                                      \
+#define GEN__impl_ErrSet$(T_Err, T_Ok)           \
+    struct pp_join3($, T_Err, Ptr_const, T_Ok) { \
+        bool is_err;                             \
+        union {                                  \
+            T_Err err;                           \
+            rawptr_const$(T_Ok) ok;              \
+        };                                       \
+    };                                           \
+    struct pp_join3($, T_Err, Ptr, T_Ok) {       \
+        bool is_err;                             \
+        union {                                  \
+            T_Err err;                           \
+            rawptr$(T_Ok) ok;                    \
+        };                                       \
+    };                                           \
+    struct pp_join($, T_Err, T_Ok) {             \
+        bool is_err;                             \
+        union {                                  \
+            T_Err err;                           \
+            T_Ok  ok;                            \
+        };                                       \
     }
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
@@ -311,7 +311,8 @@ static must_check Err$void test(void) {
     let result_invalid  = try(safeDivide(10, 0));
     let result_default  = catch_default(safeDivide(10, 0), 1);
     let result_handling = catch (safeDivide(10, 0), err, {
-        ignore fprintf(stderr, "Error: %s\n", Err_codeToCStr(err));
+        Err_print(err);
+        ErrTrace_print();
         return_err(err);
     });
 

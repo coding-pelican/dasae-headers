@@ -23,10 +23,10 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../libs/stb_truetype.h"
 
-use_Mat$(u8);
-use_Mat$(f32);
+use_Grid$(u8);
+use_Grid$(f32);
 use_Sli$(Color);
-use_Mat$(Color);
+use_Grid$(Color);
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -63,20 +63,20 @@ typedef struct KoreanFont {
 use_Opt$(KoreanFont);
 use_Err$(KoreanFont);
 use_Sli$(KoreanFont);
-use_Mat$(KoreanFont);
+use_Grid$(KoreanFont);
 
 typedef struct Glyph {
-    Mat$u8 bitmap; // alpha values
-    i32    width;
-    i32    height;
-    i32    x_offset;
-    i32    y_offset;
-    i32    advance;
+    Grid$u8 bitmap; // alpha values
+    i32     width;
+    i32     height;
+    i32     x_offset;
+    i32     y_offset;
+    i32     advance;
 } Glyph;
 use_Opt$(Glyph);
 use_Err$(Glyph);
 use_Sli$(Glyph);
-use_Mat$(Glyph);
+use_Grid$(Glyph);
 use_ArrList$(Glyph);
 
 // ========== Font Errors / Declarations (unchanged) ==========
@@ -163,7 +163,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
         if (w <= 0 || h <= 0) {
             // blank or empty glyph, return a zero-bitmap
             Glyph gBlank = {
-                .bitmap   = Mat_fromSli$(Mat$u8, meta_cast$(Sli$u8, try(mem_Allocator_alloc(font->allocator, typeInfo(u8), 1))), 1, 1),
+                .bitmap   = Grid_fromSli$(Grid$u8, meta_cast$(Sli$u8, try(mem_Allocator_alloc(font->allocator, typeInfo(u8), 1))), 1, 1),
                 .width    = 0,
                 .height   = 0,
                 .x_offset = 0,
@@ -179,7 +179,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
             Sli$u8,
             try(mem_Allocator_alloc(font->allocator, typeInfo(u8), size))
         );
-        let bitmap = Mat_fromSli$(Mat$u8, mem, w, h);
+        let bitmap = Grid_fromSli$(Grid$u8, mem, w, h);
 
         // 5) Render via stbtt_GetGlyphBitmap
         i32 outW     = 0;
@@ -224,7 +224,7 @@ must_check Err$Glyph FontSystem_renderGlyph(const KoreanFont* font, i32 codepoin
 void FontSystem_renderGlyphToCanvas(const Glyph* glyph, engine_Canvas* canvas, i32 x, i32 y, Color color) {
     for (i32 dy = 0; dy < glyph->height; ++dy) {
         for (i32 dx = 0; dx < glyph->width; ++dx) {
-            u8 alpha = *Mat_at(glyph->bitmap, dx, dy);
+            u8 alpha = *Grid_at(glyph->bitmap, dx, dy);
             if (alpha <= 0) { continue; }
             // scale color
             Color pixel_color = Color_fromOpaque(

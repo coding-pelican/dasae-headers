@@ -810,20 +810,20 @@ static void presentBuffer(anyptr ctx) {
     let height = rect.y;
     let pixels = eval({
         let         buffer = self->abstract.window->composite_buffer;
-        eval_return Mat_fromSli$(Mat$Color, buffer->buffer, buffer->width, buffer->height);
+        eval_return Grid_fromSli$(Grid$Color, buffer->buffer, buffer->width, buffer->height);
     });
     for (u32 y = 0; (y + 1) < height; y += 2) {
         for (u32 x = 0; x < width; ++x) {
             // Get upper and lower pixels
-            const Color upper = *Mat_at(pixels, x, y);
-            const Color lower = *Mat_at(pixels, x, y + 1);
+            const Color upper = *Grid_at(pixels, x, y);
+            const Color lower = *Grid_at(pixels, x, y + 1);
 
             // clang-format off
             // Find run length of identical color pairs
             usize run_length = 1;
             while ((x + run_length) < width) {
-                const Color next_upper = *Mat_at(pixels, x + run_length, y);
-                const Color next_lower = *Mat_at(pixels, x + run_length, y + 1);
+                const Color next_upper = *Grid_at(pixels, x + run_length, y);
+                const Color next_lower = *Grid_at(pixels, x + run_length, y + 1);
 
                 if (memcmp(&upper.channels, &next_upper.channels, sizeof(Color)) != 0
                  || memcmp(&lower.channels, &next_lower.channels, sizeof(Color)) != 0) {

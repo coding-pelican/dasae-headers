@@ -15,15 +15,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "libs/stb_image.h"
 
-use_Mat$(u8);
+use_Grid$(u8);
 use_Sli$(Color);
-use_Mat$(Color);
+use_Grid$(Color);
 
 typedef struct TerrainData {
-    Mat$u8    heightmap; // grayscale
-    Mat$Color colormap;  // RGB format (based RGBA)
-    u32       width;
-    u32       height;
+    Grid$u8    heightmap; // grayscale
+    Grid$Color colormap;  // RGB format (based RGBA)
+    u32        width;
+    u32        height;
 } TerrainData;
 use_Opt$(TerrainData);
 
@@ -63,7 +63,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
         for_slice_indexed(heightmap_sli, item, i) {
             *item = heightmap_data[i];
         }
-        let heightmap_mat = Mat_fromSli$(Mat$u8, heightmap_sli, width, height);
+        let heightmap_mat = Grid_fromSli$(Grid$u8, heightmap_sli, width, height);
 
         // 2) Load colormap (could be 3 or 4 channels, but we’ll let stb_image decide)
         i32 colormap_channels = 0;
@@ -94,7 +94,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
                 .a = ColorChannel_max_value,
             };
         }
-        let colormap_mat = Mat_fromSli$(Mat$Color, colormap_sli, width, height);
+        let colormap_mat = Grid_fromSli$(Grid$Color, colormap_sli, width, height);
 
         if (heightmap_mat.width != colormap_mat.width || heightmap_mat.height != colormap_mat.height) {
             log_error("Heightmap and colormap dimensions do not match!\n");
@@ -116,14 +116,14 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
 } Control;
 use_Sli$(Control);
 
-static SliConst$Control Control_list(void) {
+static Sli_const$Control Control_list(void) {
     static const Control controls[] = {
         { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
         { .key = engine_KeyCode_A, .vec = math_Vec_lt$(Vec2f) },
         { .key = engine_KeyCode_S, .vec = math_Vec_dn$(Vec2f) },
         { .key = engine_KeyCode_D, .vec = math_Vec_rt$(Vec2f) },
     };
-    return (SliConst$Control){
+    return (Sli_const$Control){
         .ptr = controls,
         .len = countOf(controls),
     };
@@ -280,8 +280,8 @@ void State_updateCamera(State* self, f64 dt) {
     i32 map_x = (i32)((u32)self->camera_pos.x & (self->terrain.width - 1));
     i32 map_y = (i32)((u32)self->camera_pos.y & (self->terrain.height - 1));
 
-    if (self->height < (*Mat_at(self->terrain.heightmap, map_x, map_y) + 10.0)) {
-        self->height = *Mat_at(self->terrain.heightmap, map_x, map_y) + 10.0;
+    if (self->height < (*Grid_at(self->terrain.heightmap, map_x, map_y) + 10.0)) {
+        self->height = *Grid_at(self->terrain.heightmap, map_x, map_y) + 10.0;
     }
 }
 

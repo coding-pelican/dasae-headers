@@ -143,7 +143,7 @@ typedef struct Control {
     Vec2f          vec;
 } Control;
 use_Sli$(Control);
-static SliConst$Control Control_list(void) {
+static Sli_const$Control Control_list(void) {
     static const Control controls[] = {
         { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
         { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
@@ -151,7 +151,7 @@ static SliConst$Control Control_list(void) {
         { .key = engine_KeyCode_d, .vec = math_Vec2f_right },
     };
     static const usize controls_len = countOf(controls);
-    return (SliConst$Control){
+    return (Sli_const$Control){
         .ptr = controls,
         .len = controls_len,
     };

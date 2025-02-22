@@ -54,7 +54,7 @@ config_ErrSet(
     // || std.fs.File.OpenError
     // || std.fmt.BufPrintError
 );
-extern Err$void Thrd_setName(Thrd self, SliConst$u8 name);
+extern Err$void Thrd_setName(Thrd self, Sli_const$u8 name);
 
 config_ErrSet(
     Thrd_GetNameErr,
@@ -65,14 +65,14 @@ config_ErrSet(
     // || std.fs.File.OpenError
     // || std.fmt.BufPrintError
 );
-decl_Opt$(SliConst$u8);
-decl_Err$(Opt$SliConst$u8);
+decl_Opt$(Sli_const$u8);
+decl_Err$(Opt$Sli_const$u8);
 typedef Arr$(Thrd_max_name_len, u8) Arr$Thrd_max_name_len$u8;
 /**
  * On Windows, the result is encoded as [WTF-8](https://simonsapin.github.io/wtf-8/).
  * On other platforms, the result is an opaque sequence of bytes with no particular encoding.
  */
-extern Err$Opt$SliConst$u8 Thrd_getName(Thrd self, Arr$Thrd_max_name_len$u8* buffer_ptr);
+extern Err$Opt$Sli_const$u8 Thrd_getName(Thrd self, Arr$Thrd_max_name_len$u8* buffer_ptr);
 
 /**
  * Returns the platform ID of the callers thread.

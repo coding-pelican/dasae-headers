@@ -76,22 +76,22 @@ extern "C" {
 #define GEN__use_Opt$(T) \
     decl_Opt$(T);        \
     impl_Opt$(T)
-#define GEN__decl_Opt$(T)                                                   \
-    typedef struct pp_join($, Opt$PtrConst, T) pp_join($, Opt$PtrConst, T); \
-    typedef struct pp_join($, Opt$Ptr, T) pp_join($, Opt$Ptr, T);           \
+#define GEN__decl_Opt$(T)                                                     \
+    typedef struct pp_join($, Opt$Ptr_const, T) pp_join($, Opt$Ptr_const, T); \
+    typedef struct pp_join($, Opt$Ptr, T) pp_join($, Opt$Ptr, T);             \
     typedef struct pp_join($, Opt, T) pp_join($, Opt, T)
-#define GEN__impl_Opt$(T)                \
-    struct pp_join($, Opt$PtrConst, T) { \
-        bool has_value;                  \
-        rawptr_const$(T) value;          \
-    };                                   \
-    struct pp_join($, Opt$Ptr, T) {      \
-        bool has_value;                  \
-        rawptr$(T) value;                \
-    };                                   \
-    struct pp_join($, Opt, T) {          \
-        bool has_value;                  \
-        T    value;                      \
+#define GEN__impl_Opt$(T)                 \
+    struct pp_join($, Opt$Ptr_const, T) { \
+        bool has_value;                   \
+        rawptr_const$(T) value;           \
+    };                                    \
+    struct pp_join($, Opt$Ptr, T) {       \
+        bool has_value;                   \
+        rawptr$(T) value;                 \
+    };                                    \
+    struct pp_join($, Opt, T) {           \
+        bool has_value;                   \
+        T    value;                       \
     }
 #define OP__Opt_asNamed$(T_NamedOpt, var_unnamed_opt) eval({                                                   \
     let _unnamed_opt = var_unnamed_opt;                                                                        \

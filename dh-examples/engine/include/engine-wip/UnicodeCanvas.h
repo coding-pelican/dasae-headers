@@ -3,10 +3,10 @@
 
 #include "Canvas.h"
 
-use_Mat$(u8);
+use_Grid$(u8);
 typedef struct engine_UnicodeCanvas {
     engine_ColorCanvas color_canvas;
-    Mat$u8             unicode_buffer;
+    Grid$u8            unicode_buffer;
 } engine_UnicodeCanvas;
 use_Sli$(engine_UnicodeCanvas);
 use_Opt$(engine_UnicodeCanvas);

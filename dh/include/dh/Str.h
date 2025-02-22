@@ -27,9 +27,9 @@ extern "C" {
 /*========== String Types ===================================================*/
 
 /// Unmodifiable string (const byte slice)
-typedef SliConst$u8 Str_const;
+typedef Sli_const$u8 Str_const;
 /// Modifiable string (byte slice)
-typedef Sli$u8      Str;
+typedef Sli$u8       Str;
 use_Opt$(Str_const);
 use_Opt$(Str);
 use_Err$(Str_const);

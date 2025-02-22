@@ -11,7 +11,7 @@ typedef enum engine_CanvasType {
     // engine_CanvasType_indexed256
 } engine_CanvasType;
 
-use_Mat$(Color);
+use_Grid$(Color);
 typedef struct engine_Canvas {
     union {
         struct {
@@ -19,7 +19,7 @@ typedef struct engine_Canvas {
             u32       width;
             u32       height;
         };
-        Mat$Color colors;
+        Grid$Color colors;
     };
     engine_CanvasType type;
     Color             default_color;
