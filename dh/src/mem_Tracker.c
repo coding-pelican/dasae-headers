@@ -1,4 +1,5 @@
 #include "dh/mem/Tracker.h"
+#include "dh/fs/dir.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +7,7 @@
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
 
-static const char* const mem_Tracker_default_log_file = "mem_trace.log";
+static const char* const mem_Tracker_default_log_file = "log/mem.log";
 // static FILE*             mem_Tracker_fallbackLogFile(void) { return stderr; }
 
 static void __attribute__((constructor)) mem_Tracker_init(void) {
@@ -21,11 +22,31 @@ static void __attribute__((destructor)) mem_Tracker_fini(void) {
 static mem_Tracker mem_Tracker_s_instance = cleared();
 
 void mem_Tracker_initWithFile(const char* log_path) {
-    mem_Tracker_s_instance.log_file = fopen(log_path, "w");
-    if (!mem_Tracker_s_instance.log_file) {
-        ignore fprintf(stderr, "Failed to open memory tracker log file: %s\n", log_path);
-        exit(1);
+    char dir_path[256] = { 0 };
+    if_(let dir_last_slash = strrchr(log_path, '/'), dir_last_slash) {
+        let dir_len = dir_last_slash - log_path;
+        strncpy(dir_path, log_path, dir_len);
+        dir_path[dir_len] = '\0';
+
+        // Create directory
+        catch (fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, {
+            ignore fprintf(stderr, "Failed to create directory for memory tracker log: %s\n", log_path);
+            Err_print(err);
+            ErrTrace_print();
+            claim_unreachable;
+        });
     }
+
+    let log_file = fopen(log_path, "w");
+    if (!log_file) {
+        ignore fprintf(stderr, "Failed to open memory tracker log file: %s\n", log_path);
+        claim_unreachable;
+    }
+    if (mem_Tracker_s_instance.log_file) {
+        ignore fclose(mem_Tracker_s_instance.log_file);
+    }
+    mem_Tracker_s_instance.log_file = log_file;
+
     ignore fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized\n");
     ignore fprintf(mem_Tracker_s_instance.log_file, "================================\n");
 }

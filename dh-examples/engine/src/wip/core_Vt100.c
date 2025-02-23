@@ -681,7 +681,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
             }
             eval_return handle;
         });
-#define engine_core_Vt100_comp_using_screen_buffer 1
+#define engine_core_Vt100_comp_using_screen_buffer 0
 #if !engine_core_Vt100_comp_using_screen_buffer
         self->client.handle.output = eval({
             let handle = GetStdHandle(STD_OUTPUT_HANDLE);

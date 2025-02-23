@@ -58,8 +58,8 @@ Err$void dh_main(void) { // NOLINT
         Random_init();
 
         // Initialize logging to a file
-        if_(let debug_file = fopen("subframes-debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
+        try(log_init("log/debug.log"));
+        {
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -67,6 +67,7 @@ Err$void dh_main(void) { // NOLINT
             log_showLocation(false);
             log_showFunction(true);
         }
+        defer(log_fini());
 
         // Initialize heap allocator and page pool
         var allocator = heap_Page_allocator(&(heap_Page){});
@@ -142,7 +143,7 @@ Err$void dh_main(void) { // NOLINT
         log_info("game loop started");
 
         // Initialize window variables
-        // var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+        var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
 
         bool is_running = true;
         while (is_running) {
@@ -154,9 +155,9 @@ Err$void dh_main(void) { // NOLINT
             let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Check for window movement
-            // let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
-            // let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
-            let dwinpos = math_Vec2f_zero;
+            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+            let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
+            // let dwinpos = math_Vec2f_zero;
 
             // 4) Process input/events
             try(engine_Window_update(window));
@@ -295,6 +296,7 @@ Err$void dh_main(void) { // NOLINT
                 let       win_res  = engine_Window_getRes(window);
                 printf("\033[H\033[40;37m"); // Move cursor to top left
                 printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
+                printf(" POS: %6.2f,%6.2f", dwinpos.x, dwinpos.y);
                 debug_only(
                     // log frame every 1s
                     static f64 total_game_time_for_timestamp = 0.0;

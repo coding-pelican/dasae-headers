@@ -1,5 +1,5 @@
 #include "dh/log.h"
-#include "dh/claim/unreachable.h"
+#include "dh/fs/dir.h"
 
 #include <stdarg.h>
 #include <time.h>
@@ -15,19 +15,30 @@ static log_Config log_s_config = {
 };
 
 io_FileErr$void log_init(const char* filename) {
-    reserveReturn(io_FileErr$void);
+    scope_reserveReturn(io_FileErr$void);
 
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        return_err(io_FileErr_OpenFailed());
+    // Extract directory path
+    char dir_path[256] = { 0 };
+    if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
+        let dir_len = dir_last_slash - filename;
+        strncpy(dir_path, filename, dir_len);
+        dir_path[dir_len] = '\0';
+
+        // Create directory
+        try(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
     }
+
+    let file = fopen(filename, "w");
+    if (!file) { return_err(io_FileErr_OpenFailed()); }
+    errdefer(ignore fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
         ignore fclose(log_s_config.output_file);
     }
-
     log_s_config.output_file = file;
     return_void();
+
+    scope_returnReserved;
 }
 
 void log_initWithFile(FILE* file) {
