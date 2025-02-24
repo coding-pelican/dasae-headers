@@ -43,6 +43,7 @@ CompileFlags:
       -Werror,
       -Wno-header-ordering,
       -fblocks,
+      -funsigned-char,
       -I./include,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include,
