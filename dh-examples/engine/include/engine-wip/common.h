@@ -7,6 +7,7 @@
 #include "dh/scope.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
+#include "dh/union_enum.h"
 
 #include "dh/mem/Allocator.h"
 #include "dh/meta/common.h"

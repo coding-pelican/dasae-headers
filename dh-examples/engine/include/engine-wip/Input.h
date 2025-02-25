@@ -43,34 +43,17 @@ typedef struct engine_InputEvent_MouseScroll {
     Vec2f delta; /**< The amount the mouse wheel was scrolled */
 } engine_InputEvent_MouseScroll;
 
-enum {
-    engine_InputEventTag_none = -1,
-
-    engine_InputEventTag_key_press = 0,
-    engine_InputEventTag_key_hold,
-    engine_InputEventTag_key_release,
-    engine_InputEventTag_mouse_press,
-    engine_InputEventTag_mouse_hold,
-    engine_InputEventTag_mouse_release,
-    engine_InputEventTag_mouse_motion,
-    engine_InputEventTag_mouse_scroll,
-
-    engine_InputEventTag_count
-};
-typedef i8 engine_InputEventTag;
-
 typedef struct engine_InputEvent {
-    engine_InputEventTag tag; /**< The type of event */
-    union {
-        engine_InputEvent_KeyboardKey key_press;
-        engine_InputEvent_KeyboardKey key_hold;
-        engine_InputEvent_KeyboardKey key_release;
-        engine_InputEvent_MouseButton mouse_press;
-        engine_InputEvent_MouseButton mouse_hold;
-        engine_InputEvent_MouseButton mouse_release;
-        engine_InputEvent_MouseMotion mouse_motion;
-        engine_InputEvent_MouseScroll mouse_scroll;
-    };
+    config_UnionEnumAsField(
+        (engine_InputEvent_key_press, engine_InputEvent_KeyboardKey),
+        (engine_InputEvent_key_hold, engine_InputEvent_KeyboardKey),
+        (engine_InputEvent_key_release, engine_InputEvent_KeyboardKey),
+        (engine_InputEvent_mouse_press, engine_InputEvent_MouseButton),
+        (engine_InputEvent_mouse_hold, engine_InputEvent_MouseButton),
+        (engine_InputEvent_mouse_release, engine_InputEvent_MouseButton),
+        (engine_InputEvent_mouse_motion, engine_InputEvent_MouseMotion),
+        (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
+    );
 } engine_InputEvent;
 use_Sli$(engine_InputEvent);
 use_Opt$(engine_InputEvent);

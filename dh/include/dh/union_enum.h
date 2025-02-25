@@ -28,6 +28,7 @@ extern "C" {
 
 /* Union enum */
 #define config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...) GEN__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type)
+#define config_UnionEnumAsField(Pair_1Tag_2Type...)       OP__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
 #define tagUnion(E_UnionEnum_Tag, val_tagged...)               OP__tagUnion(E_UnionEnum_Tag, val_tagged)
@@ -51,14 +52,22 @@ extern "C" {
         } data;                                                             \
     } T_UnionEnum
 
-#define OP__tagUnion(E_UnionEnum_Tag, val_tagged...)                                   \
-    {                                                                                  \
-        .tag  = (E_UnionEnum_Tag),                                                     \
-        .data = {                                                                      \
-            .pp_cat(E_UnionEnum_Tag, Match) = (struct pp_cat(E_UnionEnum_Tag, Match)){ \
-                .value = val_tagged,                                                   \
-            }                                                                          \
-        }                                                                              \
+#define OP__config_UnionEnumAsField(Pair_1Tag_2Type...)       \
+    enum {                                                    \
+        GEN__config_UnionEnum__enumTags(~, Pair_1Tag_2Type)   \
+    } tag;                                                    \
+    union {                                                   \
+        GEN__config_UnionEnum__unionTypes(~, Pair_1Tag_2Type) \
+    } data;
+
+#define OP__tagUnion(E_UnionEnum_Tag, val_tagged...)                                             \
+    {                                                                                            \
+        .tag  = (E_UnionEnum_Tag),                                                               \
+        .data = {                                                                                \
+            .pp_join($, E_UnionEnum_Tag, Tagged) = (struct pp_join($, E_UnionEnum_Tag, Tagged)){ \
+                .value = val_tagged,                                                             \
+            }                                                                                    \
+        }                                                                                        \
     }
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
@@ -86,10 +95,10 @@ extern "C" {
     pp_foreach(GEN__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
 
 #define GEN__config_UnionEnum__unionType(T_UnionEnum, _Pair) \
-    struct pp_cat(FIRST_OF_PAIR(_Pair), Match) {             \
+    struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) {        \
         SECOND_OF_PAIR(_Pair)                                \
         value;                                               \
-    } pp_cat(FIRST_OF_PAIR(_Pair), Match);
+    } pp_join($, FIRST_OF_PAIR(_Pair), Tagged);
 
 #define FIRST_OF_PAIR(_Pair)           FIRST_OF_PAIR_IMPL _Pair
 #define FIRST_OF_PAIR_IMPL(_1st, _2nd) _1st
@@ -126,6 +135,15 @@ static f32 Shape_getArea(Shape shape) {
         }
         eval_return area;
     });
+    /* return eval_match(shape, {
+        pattern_case(Shape_Circ, s) {
+            match_return(math_f32_pi * s->radius * s->radius);
+        } break;
+        pattern_case(Shape_Rect, s) {
+            match_return(s->width * s->height);
+        } break;
+        pattern_default() claim_unreachable;
+    }) */
 }
 
 static void example_getArea(void) {

@@ -1,3 +1,4 @@
+#include "dh/math/vec.h"
 #define main_no_args (1)
 #include "dh/main.h"
 #include "dh/debug.h"
@@ -49,9 +50,14 @@ typedef ArrList$Color Colors;
 #define update_target_spf (1.0f / update_target_fps)
 
 #define state_player_speed       (1000.0f)
-#define state_gravity            (1000.0f)
+#define state_gravity            (100.0f)
 #define state_collision_damping  (0.8f)
 #define state_objects_cap_inital (512)
+
+/*
+ * World Scale = ratio of physical screen size to world space size
+ * World Space Size = Window Resolution Size (dimensions correspond to units of physical screen size)
+ */
 
 Err$void dh_main(void) { // NOLINT
     scope_reserveReturn(Err$void) {
@@ -155,9 +161,32 @@ Err$void dh_main(void) { // NOLINT
             let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Check for window movement
-            let winpos  = math_Vec_as$(Vec2f, engine_Window_getPos(window));
-            let dwinpos = math_Vec2f_sub(winpos, prev_winpos);
-            // let dwinpos = math_Vec2f_zero;
+            let winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+            debug_only(
+                if (math_Vec2f_ne(winpos, prev_winpos)) {
+                    log_info("window moved");
+                    log_info("old winpos: %.2f %.2f", prev_winpos.x, prev_winpos.y);
+                    log_info("new winpos: %.2f %.2f", winpos.x, winpos.y);
+                }
+            );
+            let dwinpos = eval({
+                // Calculate world scale (ratio of physical screen size to world space size)
+                let window_dim = math_Vec_as$(math_Vec2f, engine_Window_getDim(window)); // Physical screen dimensions
+                let window_res = math_Vec_as$(math_Vec2f, engine_Window_getRes(window)); // World space dimensions
+
+                // Calculate scale factors for each dimension
+                let world_scale = math_Vec2f_from(
+                    window_dim.x / window_res.x,
+                    window_dim.y / window_res.y
+                );
+
+                // Use world_scale to properly convert window position change to world space
+                eval_return math_Vec2f_div(
+                    math_Vec2f_sub(winpos, prev_winpos),
+                    world_scale
+                );
+            });
+            prev_winpos = winpos;
 
             // 4) Process input/events
             try(engine_Window_update(window));

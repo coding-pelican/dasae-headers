@@ -463,31 +463,19 @@ static void processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode ke
             *curr_state |= engine_KeyButtonStates_pressed;
 
             // Create pressed event
-            engine_InputEvent event = {
-                .tag       = engine_InputEventTag_key_press,
-                .key_press = { .key = key }
-            };
-            engine_InputEventBuffer_push(input, event);
+            engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_press, { .key = key }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
 
         // Create held event
-        engine_InputEvent event = {
-            .tag      = engine_InputEventTag_key_hold,
-            .key_hold = { .key = key }
-        };
-        engine_InputEventBuffer_push(input, event);
+        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_hold, { .key = key }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
 
         // Create released event
-        engine_InputEvent event = {
-            .tag         = engine_InputEventTag_key_release,
-            .key_release = { .key = key }
-        };
-        engine_InputEventBuffer_push(input, event);
+        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_release, { .key = key }));
     }
 }
 static void processConsoleKeyboardEvents(engine_core_Vt100* self) {
@@ -566,31 +554,19 @@ static void processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButto
             *curr_state |= engine_KeyButtonStates_pressed;
 
             // Create pressed event
-            engine_InputEvent event = {
-                .tag         = engine_InputEventTag_mouse_press,
-                .mouse_press = { .button = button }
-            };
-            engine_InputEventBuffer_push(input, event);
+            engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_press, { .button = button }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
 
         // Create held event
-        engine_InputEvent event = {
-            .tag        = engine_InputEventTag_mouse_hold,
-            .mouse_hold = { .button = button }
-        };
-        engine_InputEventBuffer_push(input, event);
+        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_hold, { .button = button }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
 
         // Create released event
-        engine_InputEvent event = {
-            .tag           = engine_InputEventTag_mouse_release,
-            .mouse_release = { .button = button }
-        };
-        engine_InputEventBuffer_push(input, event);
+        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_release, { .button = button }));
     }
 }
 /// Read and process mouse-related events from the console input.
