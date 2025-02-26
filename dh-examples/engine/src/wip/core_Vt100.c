@@ -162,8 +162,6 @@ static_inline usize calcAbstractBufferSize(u32 width, u32 height) {
          * (sizeof("\033[38;2;255;255;255;48;2;255;255;255m▀") - 1);
 }
 
-#if deprecated_reserved
-
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
 force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
@@ -246,8 +244,6 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
 
     return_void();
 }
-
-#endif /* deprecated_reserved */
 
 static Err$void syncWindowMetrics(engine_core_Vt100* self) {
     reserveReturn(Err$void);

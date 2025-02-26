@@ -27,7 +27,7 @@ extern "C" {
 #include <time.h>
 
 #if bti_plat_windows
-#include "dh/os/windows.h"
+#include "dh/os/windows/common.h"
 #else /* posix */
 #include <sys/time.h>
 #endif /* posix */

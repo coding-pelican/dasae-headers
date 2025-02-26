@@ -6,12 +6,11 @@
 #include <stdarg.h>
 
 #if bti_plat_windows
-#include <memoryapi.h>
-#include <winnt.h>
-#else
+#include "dh/os/windows/mem.h"
+#else /* posix */
 #include <sys/mman.h>
 #include <unistd.h>
-#endif
+#endif /* posix */
 
 static void __attribute__((constructor)) init(void) {
     static bool s_initialized = false;

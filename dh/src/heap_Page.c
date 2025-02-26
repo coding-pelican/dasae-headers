@@ -2,8 +2,7 @@
 #include "dh/mem.h"
 
 #if bti_plat_windows
-#include "dh/os/windows.h"
-#include <memoryapi.h>
+#include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
 #include <unistd.h>
