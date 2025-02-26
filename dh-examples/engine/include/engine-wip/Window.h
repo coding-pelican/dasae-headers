@@ -25,7 +25,7 @@ typedef struct engine_CanvasView engine_CanvasView;
 typedef Arr$(engine_Window_max_canvases, struct engine_CanvasView {
     engine_Canvas* canvas; // Associated canvas
     struct {
-        Vec2u top_left;
+        Vec2i top_left;
     } pos_on_window; // Position in window coordinates
     struct {
         Vec2u size;  // Size in window coordinates
@@ -61,13 +61,13 @@ extern void                  engine_Window_present(engine_Window* self);
 
 /* Canvas view management */
 
-extern Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y);
+extern Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2i pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y);
 extern void    engine_Window_removeCanvasView(engine_Window* self, u32 view_id);
 
 /* Window metrics queries */
 
 /// Returns position: top-left corner on display (ex: (10,10) pixels))
-extern Vec2u engine_Window_getPos(const engine_Window* self);
+extern Vec2i engine_Window_getPos(const engine_Window* self);
 /// Returns dimensions: physical display size (ex: 800x500 pixels))
 extern Vec2u engine_Window_getDim(const engine_Window* self);
 /// Returns resolution: logical grid size (ex: 80x50 units))

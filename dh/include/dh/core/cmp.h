@@ -32,15 +32,22 @@ typedef enum cmp_Ord {
 } cmp_Ord;
 
 /* Comparators */
-#define cmp_cmp(TSelf) pp_join(_, TSelf, cmp)
+#define cmp_cmp(TSelf)    pp_join(_, TSelf, cmp)
+#define cmp_cmpApx(TSelf) pp_join(_, TSelf, cmpApx)
 
 /* Relational operators */
-#define cmp_eq(TSelf) pp_join(_, TSelf, eq)
-#define cmp_ne(TSelf) pp_join(_, TSelf, ne)
-#define cmp_lt(TSelf) pp_join(_, TSelf, lt)
-#define cmp_gt(TSelf) pp_join(_, TSelf, gt)
-#define cmp_le(TSelf) pp_join(_, TSelf, le)
-#define cmp_ge(TSelf) pp_join(_, TSelf, ge)
+#define cmp_eq(TSelf)    pp_join(_, TSelf, eq)
+#define cmp_ne(TSelf)    pp_join(_, TSelf, ne)
+#define cmp_lt(TSelf)    pp_join(_, TSelf, lt)
+#define cmp_gt(TSelf)    pp_join(_, TSelf, gt)
+#define cmp_le(TSelf)    pp_join(_, TSelf, le)
+#define cmp_ge(TSelf)    pp_join(_, TSelf, ge)
+#define cmp_eqApx(TSelf) pp_join(_, TSelf, eqApx)
+#define cmp_neApx(TSelf) pp_join(_, TSelf, neApx)
+#define cmp_ltApx(TSelf) pp_join(_, TSelf, ltApx)
+#define cmp_gtApx(TSelf) pp_join(_, TSelf, gtApx)
+#define cmp_leApx(TSelf) pp_join(_, TSelf, leApx)
+#define cmp_geApx(TSelf) pp_join(_, TSelf, geApx)
 
 /* Function-like macros */
 #define cmp_fnCmp(TSelf)        cmp_Ord pp_join(_, cmp, cmp)(TSelf)(const TSelf self, const TSelf other)
@@ -52,14 +59,32 @@ typedef enum cmp_Ord {
 #define cmp_fnLe(TSelf)         cmp_fnOrd(le, TSelf)
 #define cmp_fnGe(TSelf)         cmp_fnOrd(ge, TSelf)
 
+#define cmp_fnCmpApx(TSelf)           cmp_Ord pp_join(_, cmp, cmpApx)(TSelf)(const TSelf self, const TSelf other, const TSelf threshold)
+#define cmp_fnOrdApx(fnCmpApx, TSelf) bool pp_join(_, cmp, fnCmpApx)(TSelf)(const TSelf self, const TSelf other, const TSelf threshold)
+#define cmp_fnEqApx(TSelf)            cmp_fnOrdApx(eqApx, TSelf)
+#define cmp_fnNeApx(TSelf)            cmp_fnOrdApx(neApx, TSelf)
+#define cmp_fnLtApx(TSelf)            cmp_fnOrdApx(ltApx, TSelf)
+#define cmp_fnGtApx(TSelf)            cmp_fnOrdApx(gtApx, TSelf)
+#define cmp_fnLeApx(TSelf)            cmp_fnOrdApx(leApx, TSelf)
+#define cmp_fnGeApx(TSelf)            cmp_fnOrdApx(geApx, TSelf)
+
 /* Binary operators default implementation */
 // clang-format off
 #define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_eq; }
-#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return pp_join(_, TSelf, eq)(self, other) !=  cmp_Ord_eq; }
+#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
 #define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_lt; }
 #define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_gt; }
 #define cmp_fnLe_default(TSelf) force_inline cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
 #define cmp_fnGe_default(TSelf) force_inline cmp_fnOrd(ge, TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
+// clang-format on
+
+// clang-format off
+#define cmp_fnEqApx_default(TSelf) force_inline cmp_fnOrdApx(eqApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_eq; }
+#define cmp_fnNeApx_default(TSelf) force_inline cmp_fnOrdApx(neApx, TSelf) { return !pp_join(_, TSelf, eqApx)(self, other, threshold); }
+#define cmp_fnLtApx_default(TSelf) force_inline cmp_fnOrdApx(ltApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_lt; }
+#define cmp_fnGtApx_default(TSelf) force_inline cmp_fnOrdApx(gtApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_gt; }
+#define cmp_fnLeApx_default(TSelf) force_inline cmp_fnOrdApx(leApx, TSelf) { return !pp_join(_, TSelf, gtApx)(self, other, threshold); }
+#define cmp_fnGeApx_default(TSelf) force_inline cmp_fnOrdApx(geApx, TSelf) { return !pp_join(_, TSelf, ltApx)(self, other, threshold); }
 // clang-format on
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

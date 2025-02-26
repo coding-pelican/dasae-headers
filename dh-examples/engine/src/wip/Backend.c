@@ -15,7 +15,7 @@ void engine_Backend_presentBuffer(engine_Backend self) {
     self.vt->presentBuffer(self.ptr);
 }
 
-Vec2u engine_Backend_getWindowPos(const engine_Backend self) {
+Vec2i engine_Backend_getWindowPos(const engine_Backend self) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);

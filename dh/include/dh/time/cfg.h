@@ -28,19 +28,19 @@ extern "C" {
 
 #if bti_plat_windows
 #include "dh/os/windows.h"
-#else /* bti_plat_unix */
+#else /* posix */
 #include <sys/time.h>
-#endif
+#endif /* posix */
 
 /*========== Macros and Definitions =========================================*/
 
 #if bti_plat_windows
 typedef LARGE_INTEGER       time_SysTimeWindows;
 typedef time_SysTimeWindows time_SysTimePlatform;
-#else /* bti_plat_unix */
+#else  /* posix */
 typedef struct timespec  time_SysTimeUnix;
 typedef time_SysTimeUnix time_SysTimePlatform;
-#endif
+#endif /* posix */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -106,7 +106,7 @@ void engine_Window_present(engine_Window* self) {
     engine_Backend_presentBuffer(unwrap(self->backend));
 }
 
-Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2u pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y) {
+Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canvas, Vec2i pos, Vec2u size, Vec2f scale, bool visible, bool resizable_x, bool resizable_y) {
     reserveReturn(Opt$u32);
     debug_assert_nonnull(self);
     debug_assert_nonnull(canvas);
@@ -139,7 +139,7 @@ void engine_Window_removeCanvasView(engine_Window* self, u32 view_id) {
     self->views.count--; */
 }
 
-Vec2u engine_Window_getPos(const engine_Window* self) {
+Vec2i engine_Window_getPos(const engine_Window* self) {
     debug_assert_nonnull(self);
     return engine_Backend_getWindowPos(unwrap(self->backend));
 }

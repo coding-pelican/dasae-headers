@@ -23,10 +23,10 @@ struct engine_core_Vt100 {
             HANDLE input;  // Handle to console input
         } handle;
         struct {
-            Vec2u top_left_including_title_bar;
+            Vec2i top_left_including_title_bar;
             union {
-                Vec2u top_left_excluding_title_bar;
-                Vec2u top_left; // Default excluding title bar
+                Vec2i top_left_excluding_title_bar;
+                Vec2i top_left; // Default excluding title bar
             };
         } pos_on_display;
         struct {
@@ -48,7 +48,7 @@ config_ErrSet(engine_core_Vt100_Err);
 static void processEvents(anyptr ctx); /* TODO: validate */ // processing events and updating properties
 static void presentBuffer(anyptr ctx);
 
-static Vec2u getWindowPos(const anyptr ctx);
+static Vec2i getWindowPos(const anyptr ctx);
 static Vec2u getWindowDim(const anyptr ctx);
 static Vec2u getWindowRes(const anyptr ctx);
 
@@ -127,16 +127,17 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
 
 /*========== Forward declarations ===========================================*/
 
-static_inline usize calcAbstractBufferSize(u32 width, u32 height);
-force_inline Vec2u  clientWindowPixelRect(engine_core_Vt100* self);   /* TODO: validate */
-force_inline Vec2u  clientOutputConsoleRect(engine_core_Vt100* self); /* TODO: validate */
+static_inline usize           calcAbstractBufferSize(u32 width, u32 height);
+deprecated force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self);
+deprecated force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self);
 
 force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
 force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
-force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);       /* TODO: validate */
-static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check; /* TODO: validate */
-static Err$void   syncWindowMetrics(engine_core_Vt100* self) must_check;
+deprecated force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);
+deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check;
+
+static Err$void syncWindowMetrics(engine_core_Vt100* self) must_check;
 
 static Err$void configureConsoleOutput(engine_core_Vt100* self) must_check;
 static Err$void configureConsoleInput(engine_core_Vt100* self) must_check;
@@ -160,6 +161,8 @@ static_inline usize calcAbstractBufferSize(u32 width, u32 height) {
          * (as$(usize, height) + 1)
          * (sizeof("\033[38;2;255;255;255;48;2;255;255;255m▀") - 1);
 }
+
+#if deprecated_reserved
 
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
@@ -244,32 +247,59 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
     return_void();
 }
 
+#endif /* deprecated_reserved */
+
 static Err$void syncWindowMetrics(engine_core_Vt100* self) {
     reserveReturn(Err$void);
 
     let handle_window = self->client.handle.window;
-
-    let window_rect = eval({
-        var rect = makeCleared(RECT);
+    let window_rect   = eval({
+        var rect = make$(RECT);
         GetWindowRect(handle_window, &rect);
         eval_return rect;
     });
-    let client_rect = eval({
-        var rect = makeCleared(RECT);
+    // log_debug("Window rect: %d,%d,%d,%d", window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
+    let client_rect   = eval({
+        var rect = make$(RECT);
         GetClientRect(handle_window, &rect);
+        rect.top += 40;
+        rect.top += 12;
+        rect.left += 12;
+        rect.right -= 12;
+        rect.bottom += 12;
         eval_return rect;
     });
+    // log_debug("Client rect: %d,%d,%d,%d", client_rect.left, client_rect.top, client_rect.right, client_rect.bottom);
+    let corner_point  = eval({
+        // Convert the client area (0,0) to screen coords
+        var point = make$(POINT);
+        ClientToScreen(handle_window, &point);
+        eval_return point;
+    });
+    // log_debug("Corner point: %d,%d", corner_point.x, corner_point.y);
 
-    let handle_output = self->client.handle.output;
+    // Now corner_point.x, corner_point.y is the client’s top-left in screen coords
+    // Border offset:
+    i32 border_x = corner_point.x - window_rect.left;
+    i32 border_y = corner_point.y - window_rect.top;
+    log_debug("Border offset: %d,%d", border_x, border_y);
 
-    let buffer_info = eval({
+    // Store them
+    self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
+    self->client.pos_on_display.top_left_including_title_bar.y = window_rect.top;
+
+    self->client.pos_on_display.top_left.x = corner_point.x + 12;      // i.e. window_rect.left + borderX
+    self->client.pos_on_display.top_left.y = corner_point.y + 40 + 12; // i.e. window_rect.top  + borderY
+
+    let handle_output    = self->client.handle.output;
+    let buffer_info      = eval({
         var info = makeCleared(CONSOLE_SCREEN_BUFFER_INFO);
         if (!GetConsoleScreenBufferInfo(handle_output, &info)) {
             return_err(Err_Unspecified());
         }
         eval_return info;
     });
-    let font_info   = eval({
+    let font_info        = eval({
         var info = make(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
         if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
             return_err(Err_Unspecified());
@@ -279,48 +309,117 @@ static Err$void syncWindowMetrics(engine_core_Vt100* self) {
         } */
         eval_return info;
     });
-
-    let usable_font_info = font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0;
+    let usable_font_info = make$(bool, font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0);
     if (usable_font_info) {
-        let dim = eval({
-            self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
-            self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
-            eval_return self->client.metrics.dim;
-        });
-        unused(dim);
+        self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
+        self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
 
-        let res = eval({
-            self->client.metrics.res.curr.x = buffer_info.dwSize.X;
-            self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
-            eval_return self->client.metrics.res.curr;
-        });
-
-        let needed = calcAbstractBufferSize(res.x, res.y);
-        try(ArrList_resize(&self->abstract.buffer.base, needed));
-
-        /* TODO: Update logic this section */
+        // 2 "rows" per console cell
+        self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+        self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
     } else {
+        // fallback for no font info
         self->client.metrics.dim.x = client_rect.right;
         self->client.metrics.dim.y = client_rect.bottom;
 
-        self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
-        self->client.pos_on_display.top_left_including_title_bar.y = window_rect.top;
-
-        self->client.pos_on_display.top_left.x = window_rect.right - client_rect.right;
-        self->client.pos_on_display.top_left.y = window_rect.bottom - client_rect.bottom;
-
-        let res = eval({
-            self->client.metrics.res.curr.x = buffer_info.dwSize.X;
-            self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
-            eval_return self->client.metrics.res.curr;
-        });
-
-        let needed = calcAbstractBufferSize(res.x, res.y);
-        try(ArrList_resize(&self->abstract.buffer.base, needed));
-        try(engine_Canvas_resize(self->abstract.window->composite_buffer, res.x, res.y));
+        self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+        self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
     }
+
+    // Resize abstract buffer
+    let needed = calcAbstractBufferSize(
+        self->client.metrics.res.curr.x,
+        self->client.metrics.res.curr.y
+    );
+    try(ArrList_resize(&self->abstract.buffer.base, needed));
+    try(engine_Canvas_resize(
+        self->abstract.window->composite_buffer,
+        self->client.metrics.res.curr.x,
+        self->client.metrics.res.curr.y
+    ));
+
     return_void();
 }
+
+// static Err$void syncWindowMetrics(engine_core_Vt100* self) {
+//     reserveReturn(Err$void);
+
+//     let handle_window = self->client.handle.window;
+//     let window_rect   = eval({
+//         var rect = makeCleared(RECT);
+//         GetWindowRect(handle_window, &rect);
+//         eval_return rect;
+//     });
+//     let client_rect   = eval({
+//         var rect = makeCleared(RECT);
+//         GetClientRect(handle_window, &rect);
+//         eval_return rect;
+//     });
+
+//     let handle_output = self->client.handle.output;
+//     let buffer_info   = eval({
+//         var info = makeCleared(CONSOLE_SCREEN_BUFFER_INFO);
+//         if (!GetConsoleScreenBufferInfo(handle_output, &info)) {
+//             return_err(Err_Unspecified());
+//         }
+//         eval_return info;
+//     });
+//     let font_info     = eval({
+//         var info = make(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
+//         if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
+//             return_err(Err_Unspecified());
+//         }
+//         /* if (info.dwFontSize.X == 0) {
+//             info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
+//         } */
+//         eval_return info;
+//     });
+
+//     let usable_font_info = font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0;
+//     if (usable_font_info) {
+//         // Use actual font metrics to compute total client dimension
+//         self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
+//         self->client.metrics.dim.y = buffer_info.dwSize.Y * font_info.dwFontSize.Y;
+
+//         // Logical resolution: 2 "pixels" per character cell vertically
+//         self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+//         self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
+
+//         // -- Update offsets for correct mouse transform
+//         self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
+//         self->client.pos_on_display.top_left_including_title_bar.y = window_rect.top;
+
+//         self->client.pos_on_display.top_left.x = window_rect.right - client_rect.right;
+//         self->client.pos_on_display.top_left.y = window_rect.bottom - client_rect.bottom;
+//     } else {
+//         // Fallback if cannot get font metrics
+//         self->client.metrics.dim.x = client_rect.right;
+//         self->client.metrics.dim.y = client_rect.bottom;
+
+//         self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
+//         self->client.pos_on_display.top_left_including_title_bar.y = window_rect.top;
+
+//         self->client.pos_on_display.top_left.x = window_rect.right - client_rect.right;
+//         self->client.pos_on_display.top_left.y = window_rect.bottom - client_rect.bottom;
+
+//         self->client.metrics.res.curr.x = buffer_info.dwSize.X;
+//         self->client.metrics.res.curr.y = buffer_info.dwSize.Y * 2;
+//     }
+
+//     // Resize abstract buffer
+//     let needed = calcAbstractBufferSize(
+//         self->client.metrics.res.curr.x,
+//         self->client.metrics.res.curr.y
+//     );
+//     try(ArrList_resize(&self->abstract.buffer.base, needed));
+//     try(engine_Canvas_resize(
+//         self->abstract.window->composite_buffer,
+//         self->client.metrics.res.curr.x,
+//         self->client.metrics.res.curr.y
+//     ));
+
+//     return_void();
+// }
 
 config_ErrSet(
     ConfigConsoleOutputErr,
@@ -578,22 +677,6 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
     // Save previous button states
     memcpy(mouse->buttons.prev_states, mouse->buttons.curr_states, sizeOf(mouse->buttons.curr_states));
 
-    // Process mouse buttons
-    static const i32 button_vks[] = {
-        0,           // None
-        VK_LBUTTON,  // Left
-        VK_RBUTTON,  // Right
-        VK_MBUTTON,  // Middle
-        VK_XBUTTON1, // X1
-        VK_XBUTTON2, // X2
-    };
-
-    for (engine_MouseButton button = engine_MouseButton_none + 1; button < as$(engine_MouseButton, engine_MouseButton_count); ++button) {
-        let  button_state = GetAsyncKeyState(button_vks[button]);
-        bool is_down      = (button_state & 0x8000) != 0;
-        processConsoleMouseButton(self, button, is_down);
-    }
-
     // Example read
     INPUT_RECORD records[32] = cleared();
     DWORD        readCount   = 0;
@@ -604,11 +687,141 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
         ReadConsoleInput(handle, records, readCount, &readCount);
         for (DWORD i = 0; i < readCount; ++i) {
             if (records[i].EventType == MOUSE_EVENT) {
-                // Here you can interpret records[i].Event.MouseEvent.
-                // e.g. handle clicks, movements, wheel, etc.
-                // ...
+                MOUSE_EVENT_RECORD mouseEvent = records[i].Event.MouseEvent;
+
+                // For mouse button events, you might want to check these flags
+                if (!(mouseEvent.dwEventFlags & (MOUSE_WHEELED | MOUSE_HWHEELED | MOUSE_MOVED))) {
+                    // Process button state changes
+                    if (mouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
+                        processConsoleMouseButton(self, engine_MouseButton_left, true);
+                    } else {
+                        processConsoleMouseButton(self, engine_MouseButton_left, false);
+                    }
+
+                    if (mouseEvent.dwButtonState & RIGHTMOST_BUTTON_PRESSED) {
+                        processConsoleMouseButton(self, engine_MouseButton_right, true);
+                    } else {
+                        processConsoleMouseButton(self, engine_MouseButton_right, false);
+                    }
+
+                    if (mouseEvent.dwButtonState & FROM_LEFT_2ND_BUTTON_PRESSED) {
+                        processConsoleMouseButton(self, engine_MouseButton_middle, true);
+                    } else {
+                        processConsoleMouseButton(self, engine_MouseButton_middle, false);
+                    }
+
+                    if (mouseEvent.dwButtonState & FROM_LEFT_3RD_BUTTON_PRESSED) {
+                        processConsoleMouseButton(self, engine_MouseButton_x1, true);
+                    } else {
+                        processConsoleMouseButton(self, engine_MouseButton_x1, false);
+                    }
+
+                    if (mouseEvent.dwButtonState & FROM_LEFT_4TH_BUTTON_PRESSED) {
+                        processConsoleMouseButton(self, engine_MouseButton_x2, true);
+                    } else {
+                        processConsoleMouseButton(self, engine_MouseButton_x2, false);
+                    }
+
+                    // Similar handling for other buttons
+                }
+
+                /* // Update mouse cursor position
+                self->input->mouse.cursor.prev_pos = self->input->mouse.cursor.curr_pos;
+                self->input->mouse.cursor.curr_pos = (Vec2i){
+                    .x = mouseEvent.dwMousePosition.X,
+                    .y = mouseEvent.dwMousePosition.Y
+                }; */
+
+                // Handle wheel events
+                if (mouseEvent.dwEventFlags & MOUSE_WHEELED) {
+                    // Get the wheel delta (high word of dwButtonState)
+                    SHORT wheel_delta = HIWORD(mouseEvent.dwButtonState);
+
+                    // Update mouse wheel data
+                    self->input->mouse.wheel.prev_scroll_amount = self->input->mouse.wheel.curr_scroll_amount;
+                    self->input->mouse.wheel.curr_scroll_amount.y += as$(f32, wheel_delta) / as$(f32, WHEEL_DELTA);
+
+                    // Create wheel event if needed
+                    engine_InputEventBuffer_push(
+                        self->input,
+                        tagUnion$(
+                            engine_InputEvent,
+                            engine_InputEvent_mouse_scroll,
+                            { .delta = math_Vec2f_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
+                        )
+                    );
+                }
+
+                // Handle horizontal wheel if needed
+                if (mouseEvent.dwEventFlags & MOUSE_HWHEELED) {
+                    SHORT wheel_delta = HIWORD(mouseEvent.dwButtonState);
+
+                    self->input->mouse.wheel.prev_scroll_amount = self->input->mouse.wheel.curr_scroll_amount;
+                    self->input->mouse.wheel.curr_scroll_amount.x += as$(f32, wheel_delta) / as$(f32, WHEEL_DELTA);
+
+                    engine_InputEventBuffer_push(
+                        self->input,
+                        tagUnion$(
+                            engine_InputEvent,
+                            engine_InputEvent_mouse_scroll,
+                            { .delta = math_Vec2f_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
+                        )
+                    );
+                }
             }
         }
+    }
+
+    {
+        POINT mouseScreenPos;
+        GetCursorPos(&mouseScreenPos);
+        ScreenToClient(self->client.handle.window, &mouseScreenPos);
+        mouseScreenPos.x += 0;
+        mouseScreenPos.y += 0;
+
+        // // Apply offsets we stored in syncWindowMetrics
+        // mouseScreenPos.x -= as$(i32, self->client.pos_on_display.top_left.x);
+        // mouseScreenPos.y -= as$(i32, self->client.pos_on_display.top_left.y);
+
+        // Grab the current font metrics for the console
+        CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+        GetConsoleScreenBufferInfo(self->client.handle.output, &bufferInfo);
+
+        CONSOLE_FONT_INFOEX fontInfo = { .cbSize = sizeof(CONSOLE_FONT_INFOEX) };
+        GetCurrentConsoleFontEx(self->client.handle.output, false, &fontInfo);
+
+        i32 fontWidth  = fontInfo.dwFontSize.X;
+        i32 fontHeight = fontInfo.dwFontSize.Y;
+        if (fontWidth <= 0 || fontHeight <= 0) {
+            // Fallback if cannot get the font size
+            fontWidth  = as$(i32, self->client.metrics.dim.x) / bufferInfo.dwSize.X;
+            fontHeight = as$(i32, self->client.metrics.dim.y) / bufferInfo.dwSize.Y;
+        }
+
+        // Protect against negative positions (mouse outside the client area).
+        i32 consoleX = prim_max(0, mouseScreenPos.x / fontWidth);
+        i32 consoleY = prim_max(0, mouseScreenPos.y / fontHeight);
+
+        // Check if the mouse is in the upper or lower half of the character cell.
+        bool isLowerHalf = (mouseScreenPos.y % fontHeight) > (fontHeight / 2);
+
+        // Because this engine uses two vertical “pixels” per cell,
+        // multiply consoleY by 2 and add 1 if in the lower half.
+        self->input->mouse.cursor.prev_pos = self->input->mouse.cursor.curr_pos;
+        self->input->mouse.cursor.curr_pos = (Vec2i){
+            .x = consoleX,
+            .y = consoleY * 2 + (isLowerHalf ? 1 : 0)
+        };
+
+        // Clamp to valid resolution
+        self->input->mouse.cursor.curr_pos.x = prim_min(
+            self->input->mouse.cursor.curr_pos.x,
+            as$(i32, self->client.metrics.res.curr.x) - 1
+        );
+        self->input->mouse.cursor.curr_pos.y = prim_min(
+            self->input->mouse.cursor.curr_pos.y,
+            as$(i32, self->client.metrics.res.curr.y) - 1
+        );
     }
 }
 
@@ -857,7 +1070,7 @@ static void presentBuffer(anyptr ctx) {
     });
 }
 
-static Vec2u getWindowPos(const anyptr ctx) {
+static Vec2i getWindowPos(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(engine_core_Vt100*, ctx);
     return self->client.pos_on_display.top_left;
@@ -982,12 +1195,6 @@ static bool releasedMouse(const anyptr ctx, engine_MouseButton button) {
 static Vec2i getMousePos(const anyptr ctx) {
     debug_assert_nonnull(ctx);
     let self = as$(const engine_core_Vt100*, ctx);
-    // return eval({
-    //     var res = self->client.metrics.res;
-    //     res.curr.x /= 2;
-    //     res.curr.y /= 2;
-    //     eval_return math_Vec_as$(Vec2i, res.curr);
-    // });
     return engine_Mouse_getPos(&self->input->mouse);
 }
 

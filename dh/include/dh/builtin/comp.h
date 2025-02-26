@@ -4,8 +4,8 @@
  * @file    comp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-03 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2025-02-26 (date of last update)
+ * @version v0.1-alpha.3
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  NONE
  *
@@ -34,10 +34,33 @@ extern "C" {
 #define COMP_TIME (1)
 #endif
 
-#define static_inline SYN__static_inline
-#define extern_inline SYN__extern_inline
-#define force_inline  SYN__force_inline
-#define no_inline     SYN__no_inline
+#define static_inline ATTR__static_inline
+#define extern_inline ATTR__extern_inline
+#define force_inline  ATTR__force_inline
+#define no_inline     ATTR__no_inline
+
+#define deprecated           ATTR__deprecated
+#define deprecated_msg(_Msg) ATTR__deprecated_msg(_Msg)
+
+#define must_check                                                                  \
+    /**                                                                             \
+     * @brief Attribute marks a function as returning a value that must be checked  \
+     to avoid potential errors or warnings                                          \
+     * @details This attribute can be used to ensure that a function's return value \
+     */                                                                             \
+    ATTR__must_check
+#define no_return \
+    /**           \
+     * @brief     \
+     *            \
+     */           \
+    ATTR__no_return
+#define ignore                                                           \
+    /**                                                                  \
+     * @brief Attribute explicitly ignores an expression or return value \
+     * @details Used to suppress compiler warnings about unused values   \
+     */                                                                  \
+    ATTR__ignore
 
 #define used(_Expr...)                                                    \
     /**                                                                   \
@@ -47,7 +70,6 @@ extern "C" {
      * @param _Expr... Variable number of arguments to be marked as used  \
      */                                                                   \
     ATTR__used(_Expr)
-
 #define unused(_Expr...)                                                   \
     /**                                                                    \
      * @brief Marks variables or expressions as intentionally unused       \
@@ -56,24 +78,8 @@ extern "C" {
      */                                                                    \
     ATTR__unused(_Expr)
 
-#define must_check                                                                  \
-    /**                                                                             \
-     * @brief Attribute marks a function as returning a value that must be checked  \
-     to avoid potential errors or warnings                                          \
-     * @details This attribute can be used to ensure that a function's return value \
-     */                                                                             \
-    ATTR__must_check
-
-#define ignore                                                           \
-    /**                                                                  \
-     * @brief Attribute explicitly ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values   \
-     */                                                                  \
-    ATTR__ignore
-
 #define as$(TDest, val_src) \
     FUNC__as$(TDest, val_src)
-
 #define literal$(TLit, _Inital...)                                           \
     /**                                                                      \
      * @brief Literal macro for creating a compound literal                  \
@@ -102,25 +108,30 @@ extern "C" {
 /* Inline Definitions Based on Language Mode */
 #if BUILTIN_LANG_MODE_CPP
 /* C++ always supports 'inline' */
-#define SYN__static_inline static inline
-#define SYN__extern_inline inline
+#define ATTR__static_inline static inline
+#define ATTR__extern_inline inline
 #elif BUILTIN_LANG_C_99
 /* C99 or later */
-#define SYN__static_inline static inline
-#define SYN__extern_inline inline
+#define ATTR__static_inline static inline
+#define ATTR__extern_inline inline
 #else
 /* Use compiler-specific inline directives */
-#define SYN__static_inline BUILTIN_COMP_INLINE static
-#define SYN__extern_inline BUILTIN_COMP_INLINE
+#define ATTR__static_inline BUILTIN_COMP_INLINE static
+#define ATTR__extern_inline BUILTIN_COMP_INLINE
 #endif
-#define SYN__force_inline BUILTIN_COMP_FORCE_INLINE
-#define ATTR__no_inline   BUILTIN_COMP_NOINLINE
+
+#define ATTR__force_inline BUILTIN_COMP_FORCE_INLINE
+#define ATTR__no_inline    BUILTIN_COMP_NO_INLINE
+
+#define ATTR__deprecated           BUILTIN_COMP_DEPRECATED
+#define ATTR__deprecated_msg(_Msg) BUILTIN_COMP_DEPRECATED_MSG(_Msg)
+
+#define ATTR__must_check BUILTIN_COMP_MUST_CHECK
+#define ATTR__no_return  BUILTIN_COMP_NO_RETURN
+#define ATTR__ignore     (void)
 
 #define ATTR__used(_Expr...)   _Expr
 #define ATTR__unused(_Expr...) ((void)(_Expr))
-
-#define ATTR__must_check BUILTIN_COMP_MUST_CHECK
-#define ATTR__ignore     (void)
 
 #if defined(__cplusplus)
 #define FUNC__as$(TDest, val_src) static_cast<TDest>(val_src)
@@ -150,13 +161,13 @@ extern "C" {
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define FUNC__create$(T, _Inital...) \
-    (literal$(T[1], make$(T, _Inital)))
+    (literal$(T[1], [0] = make$(T, _Inital)))
 
 #define FUNC__createCleared$(T) \
-    (literal$(T[1], makeCleared$(T)))
+    (literal$(T[1], [0] = makeCleared$(T)))
 
 #define FUNC__createFrom$(T, var_src...) \
-    (literal$(T[1], var_src))
+    (literal$(T[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
 
 #define FUNC__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)

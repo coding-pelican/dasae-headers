@@ -71,28 +71,31 @@ extern "C" {
 /*========== Compiler-Specific Attributes ===================================*/
 
 #if BUILTIN_COMP_MSVC
-#define BUILTIN_COMP_INLINE       __inline
-#define BUILTIN_COMP_FORCE_INLINE __forceinline
-#define BUILTIN_COMP_NOINLINE     __declspec(noinline)
-#define BUILTIN_COMP_ALIGN(x)     __declspec(align(x))
-#define BUILTIN_COMP_DEPRECATED   __declspec(deprecated)
-#define BUILTIN_COMP_NORETURN     __declspec(noreturn)
-#define BUILTIN_COMP_MUST_CHECK   _Must_inspect_result_
+#define BUILTIN_COMP_INLINE               __inline
+#define BUILTIN_COMP_FORCE_INLINE         __forceinline
+#define BUILTIN_COMP_NO_INLINE            __declspec(noinline)
+#define BUILTIN_COMP_ALIGN(_align)        __declspec(align(_align))
+#define BUILTIN_COMP_DEPRECATED           __declspec(deprecated)
+#define BUILTIN_COMP_DEPRECATED_MSG(_msg) __declspec(deprecated(_msg))
+#define BUILTIN_COMP_NO_RETURN            __declspec(noreturn)
+#define BUILTIN_COMP_MUST_CHECK           _Must_inspect_result_
 #elif BUILTIN_COMP_GCC || BUILTIN_COMP_CLANG
-#define BUILTIN_COMP_INLINE       inline
-#define BUILTIN_COMP_FORCE_INLINE __attribute__((always_inline)) inline
-#define BUILTIN_COMP_NOINLINE     __attribute__((noinline))
-#define BUILTIN_COMP_ALIGN(x)     __attribute__((aligned(x)))
-#define BUILTIN_COMP_DEPRECATED   __attribute__((deprecated))
-#define BUILTIN_COMP_NORETURN     __attribute__((noreturn))
-#define BUILTIN_COMP_MUST_CHECK   __attribute__((warn_unused_result))
+#define BUILTIN_COMP_INLINE               inline
+#define BUILTIN_COMP_FORCE_INLINE         __attribute__((always_inline)) inline
+#define BUILTIN_COMP_NO_INLINE            __attribute__((noinline))
+#define BUILTIN_COMP_ALIGN(_align)        __attribute__((aligned(_align)))
+#define BUILTIN_COMP_DEPRECATED           __attribute__((deprecated))
+#define BUILTIN_COMP_DEPRECATED_MSG(_msg) __attribute__((deprecated(_msg)))
+#define BUILTIN_COMP_NO_RETURN            __attribute__((noreturn))
+#define BUILTIN_COMP_MUST_CHECK           __attribute__((warn_unused_result))
 #else
 #define BUILTIN_COMP_INLINE
 #define BUILTIN_COMP_FORCE_INLINE
-#define BUILTIN_COMP_NOINLINE
-#define BUILTIN_COMP_ALIGN(x)
+#define BUILTIN_COMP_NO_INLINE
+#define BUILTIN_COMP_ALIGN(_align)
 #define BUILTIN_COMP_DEPRECATED
-#define BUILTIN_COMP_NORETURN
+#define BUILTIN_COMP_DEPRECATED_MSG(_msg)
+#define BUILTIN_COMP_NO_RETURN
 #define BUILTIN_COMP_MUST_CHECK
 #endif
 

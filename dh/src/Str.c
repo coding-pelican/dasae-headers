@@ -64,14 +64,13 @@ bool Str_constCastable(Str_const self) {
     MEMORY_BASIC_INFORMATION mbi = cleared();
     if (!VirtualQuery(self.ptr, &mbi, sizeOf(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;
-#else
-    // POSIX systems
+#else  /* posix */
     return !mprotect(
         intToRawptr$(anyptr, rawptrToInt(self.ptr) & ~(sysconf(_SC_PAGESIZE) - 1)),
         1,
         PROT_READ | PROT_WRITE
     );
-#endif
+#endif /* posix */
 }
 
 Opt$Str Str_constCast(Str_const self) {

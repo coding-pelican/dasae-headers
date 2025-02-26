@@ -54,6 +54,14 @@ cmp_fnGt_default(math_Vec2f);
 cmp_fnLe_default(math_Vec2f);
 cmp_fnGe_default(math_Vec2f);
 
+force_inline cmp_fnCmpApx(math_Vec2f);
+cmp_fnEqApx_default(math_Vec2f);
+cmp_fnNeApx_default(math_Vec2f);
+cmp_fnLtApx_default(math_Vec2f);
+cmp_fnGtApx_default(math_Vec2f);
+cmp_fnLeApx_default(math_Vec2f);
+cmp_fnGeApx_default(math_Vec2f);
+
 /* Arithmetic */
 force_inline math_Vec2f math_Vec2f_neg(math_Vec2f v);
 force_inline math_Vec2f math_Vec2f_add(math_Vec2f lhs, math_Vec2f rhs);
@@ -145,6 +153,14 @@ cmp_fnGt_default(math_Vec3f);
 cmp_fnLe_default(math_Vec3f);
 cmp_fnGe_default(math_Vec3f);
 
+force_inline cmp_fnCmpApx(math_Vec3f);
+cmp_fnEqApx_default(math_Vec3f);
+cmp_fnNeApx_default(math_Vec3f);
+cmp_fnLtApx_default(math_Vec3f);
+cmp_fnGtApx_default(math_Vec3f);
+cmp_fnLeApx_default(math_Vec3f);
+cmp_fnGeApx_default(math_Vec3f);
+
 /* Arithmetic */
 force_inline math_Vec3f math_Vec3f_neg(math_Vec3f v);
 force_inline math_Vec3f math_Vec3f_add(math_Vec3f lhs, math_Vec3f rhs);
@@ -211,6 +227,14 @@ cmp_fnLt_default(math_Vec4f);
 cmp_fnGt_default(math_Vec4f);
 cmp_fnLe_default(math_Vec4f);
 cmp_fnGe_default(math_Vec4f);
+
+force_inline cmp_fnCmpApx(math_Vec4f);
+cmp_fnEqApx_default(math_Vec4f);
+cmp_fnNeApx_default(math_Vec4f);
+cmp_fnLtApx_default(math_Vec4f);
+cmp_fnGtApx_default(math_Vec4f);
+cmp_fnLeApx_default(math_Vec4f);
+cmp_fnGeApx_default(math_Vec4f);
 
 /* Arithmetic */
 force_inline math_Vec4f math_Vec4f_neg(math_Vec4f v);
@@ -786,13 +810,23 @@ force_inline math_Vec2f math_Vec2f_sincos(f32 radians) {
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec2f) {
     for (usize i = 0; i < 2; ++i) {
-        if (self.s[i] < other.s[i]) {
-            return cmp_Ord_lt;
-        }
-        if (self.s[i] > other.s[i]) {
-            return cmp_Ord_gt;
-        }
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
     }
+    return cmp_Ord_eq;
+}
+
+force_inline cmp_fnCmpApx(math_Vec2f) {
+    for (usize i = 0; i < 2; ++i) {
+        // Calculate absolute difference
+        let diff = fabsf(self.s[i] - other.s[i]);
+        // Check if difference is greater than threshold
+        if (diff < threshold.s[i]) { continue; }
+        // If difference is significant, compare normally
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
+    }
+    // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
 
@@ -957,13 +991,23 @@ force_inline math_Vec3f math_Vec3f_fill(f32 scalar) {
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec3f) {
     for (usize i = 0; i < 3; ++i) {
-        if (self.s[i] < other.s[i]) {
-            return cmp_Ord_lt;
-        }
-        if (self.s[i] > other.s[i]) {
-            return cmp_Ord_gt;
-        }
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
     }
+    return cmp_Ord_eq;
+}
+
+force_inline cmp_fnCmpApx(math_Vec3f) {
+    for (usize i = 0; i < 3; ++i) {
+        // Calculate absolute difference
+        let diff = fabsf(self.s[i] - other.s[i]);
+        // Check if difference is greater than threshold
+        if (diff < threshold.s[i]) { continue; }
+        // If difference is significant, compare normally
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
+    }
+    // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
 
@@ -1097,13 +1141,23 @@ force_inline math_Vec4f math_Vec4f_from3(math_Vec3f v) {
 /* Comparison */
 force_inline cmp_fnCmp(math_Vec4f) {
     for (usize i = 0; i < 4; ++i) {
-        if (self.s[i] < other.s[i]) {
-            return cmp_Ord_lt;
-        }
-        if (self.s[i] > other.s[i]) {
-            return cmp_Ord_gt;
-        }
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
     }
+    return cmp_Ord_eq;
+}
+
+force_inline cmp_fnCmpApx(math_Vec4f) {
+    for (usize i = 0; i < 4; ++i) {
+        // Calculate absolute difference
+        let diff = fabsf(self.s[i] - other.s[i]);
+        // Check if difference is greater than threshold
+        if (diff < threshold.s[i]) { continue; }
+        // If difference is significant, compare normally
+        if (self.s[i] < other.s[i]) { return cmp_Ord_lt; }
+        if (self.s[i] > other.s[i]) { return cmp_Ord_gt; }
+    }
+    // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
 

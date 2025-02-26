@@ -31,6 +31,7 @@ extern "C" {
     IMPL_pp_func(_Statement)
 
 #define pp_stringify(_Tok...) IMPL_pp_stringify(_Tok)
+#define nameOf(_Tok...)       IMPL_nameOf(_Tok)
 
 #define pp_cat(_Tok_lhs, _Tok_rhs...) \
     IMPL_pp_cat(_Tok_lhs, _Tok_rhs)
@@ -75,6 +76,8 @@ extern "C" {
     ({ _Statement })
 
 #define IMPL_pp_stringify(_Tok...) #_Tok
+
+#define IMPL_nameOf(_Tok...) (unused(_Tok), #_Tok)
 
 #define IMPL_pp_cat(_Tok_lhs, _Tok_rhs...) \
     _Tok_lhs##_Tok_rhs

@@ -1,4 +1,3 @@
-#include "dh/math/vec.h"
 #define main_no_args (1)
 #include "dh/main.h"
 #include "dh/debug.h"
@@ -54,6 +53,8 @@ typedef ArrList$Color Colors;
 #define state_collision_damping  (0.8f)
 #define state_objects_cap_inital (512)
 
+#define state_vec2f_threshold ((Vec2f){ .x = 1e-4f, .y = 1e-4f })
+
 /*
  * World Scale = ratio of physical screen size to world space size
  * World Space Size = Window Resolution Size (dimensions correspond to units of physical screen size)
@@ -66,6 +67,7 @@ Err$void dh_main(void) { // NOLINT
         // Initialize logging to a file
         try(log_init("log/debug.log"));
         {
+            defer(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -73,7 +75,6 @@ Err$void dh_main(void) { // NOLINT
             log_showLocation(false);
             log_showFunction(true);
         }
-        defer(log_fini());
 
         // Initialize heap allocator and page pool
         var allocator = heap_Page_allocator(&(heap_Page){});
@@ -98,23 +99,45 @@ Err$void dh_main(void) { // NOLINT
             window_res_height,
             engine_CanvasType_rgba
         ));
-        defer(engine_Canvas_destroy(game_canvas));
-        log_info("canvas created");
-        engine_Canvas_clearDefault(game_canvas);
-        log_info("canvas cleared");
-
-        // Append canvas views
-        engine_Window_appendCanvasView(
-            window,
-            game_canvas,
-            (Vec2u){ .x = 0, .y = 0 },
-            (Vec2u){ .x = window_res_width, .y = window_res_height },
-            (Vec2f){ .x = 1.0f, .y = 1.0f },
-            true,
-            true,
-            true
-        );
-        log_info("canvas views added");
+        {
+            defer(engine_Canvas_destroy(game_canvas));
+            log_info("canvas created: %s", nameOf(game_canvas));
+            engine_Canvas_clearDefault(game_canvas);
+            log_info("canvas cleared: %s", nameOf(game_canvas));
+            engine_Window_appendCanvasView(
+                window,
+                game_canvas,
+                (Vec2i){ .x = 0, .y = 0 },
+                (Vec2u){ .x = window_res_width, .y = window_res_height },
+                (Vec2f){ .x = 1.0f, .y = 1.0f },
+                true,
+                true,
+                true
+            );
+            log_info("canvas views added: %s", nameOf(game_canvas));
+        }
+        let overlay_canvas = try(engine_Canvas_create(
+            window_res_width,
+            window_res_height,
+            engine_CanvasType_rgba
+        ));
+        {
+            defer(engine_Canvas_destroy(overlay_canvas));
+            log_info("canvas created: %s", nameOf(overlay_canvas));
+            engine_Canvas_clearDefault(overlay_canvas);
+            log_info("canvas cleared: %s", nameOf(overlay_canvas));
+            engine_Window_appendCanvasView(
+                window,
+                overlay_canvas,
+                (Vec2i){ .x = 0, .y = 0 },
+                (Vec2u){ .x = window_res_width, .y = window_res_height },
+                (Vec2f){ .x = 1.0f, .y = 1.0f },
+                true,
+                true,
+                true
+            );
+            log_info("canvas views added: %s", nameOf(overlay_canvas));
+        }
 
         // Create input system
         let input = try(engine_Input_init(allocator));
@@ -163,7 +186,7 @@ Err$void dh_main(void) { // NOLINT
             // 3) Check for window movement
             let winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
             debug_only(
-                if (math_Vec2f_ne(winpos, prev_winpos)) {
+                if (math_Vec2f_neApx(winpos, prev_winpos, state_vec2f_threshold)) {
                     log_info("window moved");
                     log_info("old winpos: %.2f %.2f", prev_winpos.x, prev_winpos.y);
                     log_info("new winpos: %.2f %.2f", winpos.x, winpos.y);
@@ -315,8 +338,14 @@ Err$void dh_main(void) { // NOLINT
                     );
                 }
             }
-            let win_res = engine_Window_getRes(window);
-            engine_Canvas_drawRect(game_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
+            with_(engine_Canvas_clearDefault(overlay_canvas)) {
+                let_(win_res = engine_Window_getRes(window)) {
+                    engine_Canvas_drawRect(overlay_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
+                }
+                let_(mouse_pos = engine_Mouse_getPos(&input->mouse)) {
+                    engine_Canvas_drawPixel(overlay_canvas, mouse_pos.x, mouse_pos.y, Color_white);
+                }
+            }
             engine_Window_present(window);
 
             // 6) (Optional) Display instantaneous FPS
@@ -325,7 +354,7 @@ Err$void dh_main(void) { // NOLINT
                 let       win_res  = engine_Window_getRes(window);
                 printf("\033[H\033[40;37m"); // Move cursor to top left
                 printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
-                printf(" POS: %6.2f,%6.2f", dwinpos.x, dwinpos.y);
+                printf(" DPOS: %6.2f,%6.2f", dwinpos.x, dwinpos.y);
                 debug_only(
                     // log frame every 1s
                     static f64 total_game_time_for_timestamp = 0.0;

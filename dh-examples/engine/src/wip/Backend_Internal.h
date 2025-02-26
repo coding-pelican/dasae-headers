@@ -8,7 +8,7 @@
 
 struct engine_BackendVT_Internal {
     /* Window Layer */
-    Vec2u (*getWindowPos)(const anyptr ctx);
+    Vec2i (*getWindowPos)(const anyptr ctx);
     Vec2u (*getWindowDim)(const anyptr ctx);
     Vec2u (*getWindowRes)(const anyptr ctx);
 
@@ -42,7 +42,7 @@ struct engine_BackendVT_Internal {
 };
 
 /* Window Layer */
-extern Vec2u engine_Backend_getWindowPos(const engine_Backend self);
+extern Vec2i engine_Backend_getWindowPos(const engine_Backend self);
 extern Vec2u engine_Backend_getWindowDim(const engine_Backend self);
 extern Vec2u engine_Backend_getWindowRes(const engine_Backend self);
 
