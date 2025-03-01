@@ -1,6 +1,17 @@
 {
   "version": "0.2.0",
   "configurations": [
+    { // dh>C: Debug active file (cppvsdbg)
+      "name": "dh>C: Debug active file (cppvsdbg)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "args": [
+        "${input:userArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "console": "integratedTerminal"
+    },
     { // dh>C: Debug active file
       "name": "dh>C: Debug active file",
       "type": "lldb",

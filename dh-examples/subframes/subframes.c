@@ -60,7 +60,7 @@ typedef ArrList$Color Colors;
  * World Space Size = Window Resolution Size (dimensions correspond to units of physical screen size)
  */
 
-Err$void dh_main(void) { // NOLINT
+Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
     scope_reserveReturn(Err$void) {
         Random_init();
 

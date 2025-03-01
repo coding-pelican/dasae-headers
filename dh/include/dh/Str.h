@@ -46,8 +46,10 @@ use_Opt$(StrHash);
 
 /// Create Str_const from const u8* with explicit length
 extern Str_const Str_view(const u8* ptr, usize len);
+extern Str_const Str_viewZ(const u8* ptr);
 /// Create Str from u8* with explicit length
 extern Str       Str_from(u8 ptr[], usize len);
+extern Str       Str_fromZ(u8 ptr[]);
 
 /*========== String Operations ==============================================*/
 

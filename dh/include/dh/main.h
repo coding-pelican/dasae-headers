@@ -28,6 +28,8 @@ extern "C" {
 #include "dh/ErrTrace.h"
 #include "dh/err_res.h"
 #include "dh/variant.h"
+#include "dh/union_enum.h"
+#include "dh/Str.h"
 
 /*========== Macros =========================================================*/
 
@@ -52,11 +54,13 @@ extern "C" {
 #if main_no_args && main_no_returns_err
 extern void dh_main(void);
 #elif main_no_args && !main_no_returns_err
-extern Err$void dh_main(void) must_check;
+extern must_check Err$void dh_main(void);
 #elif !main_no_args && main_no_returns_err
-extern void dh_main(int argc, const char* argv[]);
+use_Sli$(Str_const);
+extern void dh_main(Sli$Str_const args);
 #else  /* !main_no_args && !main_no_returns_err */
-extern Err$void dh_main(int argc, const char* argv[]) must_check;
+use_Sli$(Str_const);
+extern must_check Err$void dh_main(Sli$Str_const args);
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -84,9 +88,31 @@ int main(
         claim_unreachable;
     });
 #elif !main_no_args && main_no_returns_err
-    dh_main(argc, argv);
+    let args_buf = as$(Str_const*, bti_alloca(sizeOf$(Str_const) * argc));
+    let args     = eval({
+        for (i32 i = 0; i < argc; ++i) {
+            args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
+        }
+        eval_return make$(
+            Sli$Str_const,
+            .ptr = args_buf,
+            .len = argc
+        );
+    });
+    dh_main(args);
 #else  /* !main_no_args && !main_no_returns_err */
-    catch (dh_main(argc, argv), err, {
+    let args_buf = as$(Str_const*, bti_alloca(sizeOf$(Str_const) * argc));
+    let args     = eval({
+        for (i32 i = 0; i < argc; ++i) {
+            args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
+        }
+        eval_return make$(
+            Sli$Str_const,
+            .ptr = args_buf,
+            .len = argc
+        );
+    });
+    catch (dh_main(args), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;

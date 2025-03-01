@@ -4,9 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 
-Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     reserveReturn(Err$void);
+
+    printf("passed args:");
+    for_slice_indexed(args, arg, index) {
+        printf("  arg %llu: %s\n", index, arg->ptr);
+    }
+    printf("\n");
 
     char   buffer[32] = cleared();
     ignore fgets(buffer, 32, stdin);

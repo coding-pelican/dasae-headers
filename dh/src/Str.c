@@ -25,9 +25,19 @@ Str_const Str_view(const u8* ptr, usize len) {
     return (Str_const){ .ptr = ptr, .len = len };
 }
 
+Str_const Str_viewZ(const u8* ptr) {
+    debug_assert_nonnull(ptr);
+    return Str_view(ptr, strlen(as$(const char*, ptr)));
+}
+
 Str Str_from(u8 ptr[], usize len) {
     debug_assert_nonnull(ptr);
     return (Str){ .ptr = ptr, .len = len };
+}
+
+Str Str_fromZ(u8 ptr[]) {
+    debug_assert_nonnull(ptr);
+    return Str_from(ptr, strlen(as$(char*, ptr)));
 }
 
 usize Str_len(Str_const self) {
@@ -280,6 +290,28 @@ static u32 hashMurmur3(const u8* data, usize len) {
 StrHash Str_hash(Str_const self) {
     debug_assert_nonnull(self.ptr);
     return hashMurmur3(self.ptr, self.len);
+}
+
+cmp_fnCmp(Str_const) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(other.ptr);
+
+    let min_len = prim_min(self.len, other.len);
+    let cmp     = mem_cmp(self.ptr, other.ptr, min_len);
+    if (cmp != 0) { return cmp; }
+
+    return prim_cmp(self.len, self.len);
+}
+
+cmp_fnCmp(Str) {
+    debug_assert_nonnull(self.ptr);
+    debug_assert_nonnull(other.ptr);
+
+    let min_len = prim_min(self.len, other.len);
+    let cmp     = mem_cmp(self.ptr, other.ptr, min_len);
+    if (cmp != 0) { return cmp; }
+
+    return prim_cmp(self.len, self.len);
 }
 
 usize StrUtf8_len(Str_const self) {

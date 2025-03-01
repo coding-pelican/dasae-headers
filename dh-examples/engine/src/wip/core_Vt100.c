@@ -276,9 +276,9 @@ static Err$void syncWindowMetrics(engine_core_Vt100* self) {
 
     // Now corner_point.x, corner_point.y is the client’s top-left in screen coords
     // Border offset:
-    i32 border_x = corner_point.x - window_rect.left;
-    i32 border_y = corner_point.y - window_rect.top;
-    log_debug("Border offset: %d,%d", border_x, border_y);
+    // i32 border_x = corner_point.x - window_rect.left;
+    // i32 border_y = corner_point.y - window_rect.top;
+    // log_debug("Border offset: %d,%d", border_x, border_y);
 
     // Store them
     self->client.pos_on_display.top_left_including_title_bar.x = window_rect.left;
@@ -461,7 +461,7 @@ static Err$void configureConsoleOutput(engine_core_Vt100* self) {
     }
 
     // Set console output mode for processing terminal sequences
-    debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
+    // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD out_mode = 0, !GetConsoleMode(handle, &out_mode)) {
         log_error("Failed to get console output mode: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetMode());
@@ -485,7 +485,7 @@ config_ErrSet(
 static Err$void configureConsoleInput(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.input;
-    debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
+    // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         log_error("Failed to get console input mode: %d", GetLastError());
         return_err(ConfigConsoleInputErr_FailedGetMode());
@@ -598,7 +598,7 @@ config_ErrSet(
 force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.input;
-    debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
+    // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         log_error("Failed to get console mode: %d", GetLastError());
         return_err(ConfigConsoleMouseErr_FailedEnableGetMode());
@@ -617,7 +617,7 @@ force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
 force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.input;
-    debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
+    // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
         log_error("Failed to get console mode: %d", GetLastError());
         return_err(ConfigConsoleMouseErr_FailedDisableGetMode());
