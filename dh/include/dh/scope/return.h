@@ -28,6 +28,7 @@ extern "C" {
 #define scope_reserveReturn(T)      SYN__scope_reserveReturn(T)
 #define scope_returnReserved        SYN__scope_returnReserved
 #define scope_return(val_return...) SYN__scope_return(val_return)
+#define return_(val_return...)      SYN__return_(val_return)
 
 #define reserveReturn(T) SYN__reserveReturn(T)
 #define returnReserved   SYN__returnReserved
@@ -67,6 +68,9 @@ extern "C" {
         setReservedReturn(val_return);   \
         goto _returned_scope;            \
     }
+
+#define SYN__return_(val_return...) \
+    scope_return(*(TypeOf(getReservedReturn()[0])[1]){ [0] = val_return })
 
 #else
 #endif /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
