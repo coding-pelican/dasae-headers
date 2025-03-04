@@ -32,11 +32,12 @@
 
 /* example usage ============================================================*/
 
-use_ErrSet$(math_Err, isize);
-/* case 1: */
-pub fn_decl(math_divideSafe(i32 lhs, i32 rhs), math_Err$isize) must_check;
-/* case 2: */
-pub fn_impl(math_divideSafe(i32 lhs, i32 rhs), math_Err$isize, {
+/* declarations */
+use_ErrSet$(math_Err, i32);
+pub fn_decl(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) must_check;
+
+/* implementations */
+pub fn_impl(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32, {
     if (rhs == 0) {
         return_(err(math_Err_DivisionByZero()));
     }
@@ -49,6 +50,7 @@ pub fn_impl(dh_main(Sli$Str_const args), Err$void, {
     catch (math_divideSafe(10, 0), err, {
         let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
         debug_assert_true(Str_const_eq(err_code, Str_l("DivisionByZero")));
+        return_err(err);
     });
     return_(ok({}));
 })
