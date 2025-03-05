@@ -34,11 +34,15 @@ extern "C" {
 #define tagUnion(E_UnionEnum_Tag, val_tagged...)               OP__tagUnion(E_UnionEnum_Tag, val_tagged)
 #define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
 
+#define extract(val_union_enum, E_UnionEnum_Tag)     SYN__extract(val_union_enum, E_UnionEnum_Tag)
+#define extract_mut(var_union_enum, E_UnionEnum_Tag) SYN__extract_mut(var_union_enum, E_UnionEnum_Tag)
+
 /* Union enum match expr with payload captures */
-#define match(val_union_enum)                           SYN__match(val_union_enum)
-#define match_mut(var_union_enum)                       SYN__match_mut(var_union_enum)
-#define case_pattern(E_UnionEnum_Tag, _Payload_Capture) SYN__case_pattern(E_UnionEnum_Tag, _Payload_Capture)
-#define default_pattern()                               SYN__default_pattern()
+#define match_(val_union_enum)                          SYN__match_(val_union_enum)
+#define match_mut_(var_union_enum)                      SYN__match_mut_(var_union_enum)
+#define pattern_(E_UnionEnum_Tag, _Payload_Capture)     SYN__pattern_(E_UnionEnum_Tag, _Payload_Capture)
+#define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) SYN__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
+#define fallback_()                                     SYN__fallback_()
 
 /*========== Implementations ================================================*/
 
@@ -72,17 +76,33 @@ extern "C" {
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define SYN__match(val_union_enum) \
+#define SYN__extract(val_union_enum, E_UnionEnum_Tag) eval({                 \
+    let __union_enum = (val_union_enum);                                     \
+    debug_assert(_union_enum.tag == (E_UnionEnum_Tag));                      \
+    eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
+})
+
+#define SYN__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({                \
+    var __union_enum = &(var_union_enum);                                       \
+    debug_assert(_union_enum->tag == (E_UnionEnum_Tag));                        \
+    eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
+})
+
+#define SYN__match_(val_union_enum) \
     let_(_union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
 
-#define SYN__match_mut(var_union_enum) \
+#define SYN__match_mut_(var_union_enum) \
     let_(_union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
 
-#define SYN__case_pattern(E_UnionEnum_Tag, _Payload_Capture) \
+#define SYN__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
+    case E_UnionEnum_Tag:                                \
+        for (var _Payload_Capture = &as$(const struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
+
+#define SYN__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) \
     case E_UnionEnum_Tag:                                    \
         for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define SYN__default_pattern() \
+#define SYN__fallback_() \
     default:
 
 #define GEN__config_UnionEnum__enumTags(T_UnionEnum, ...) \
@@ -124,14 +144,14 @@ config_UnionEnum(Shape,
 static f32 Shape_getArea(Shape shape) {
     return eval({
         var area = f32_nan;
-        match(shape) {
-            case_pattern(Shape_Circ, s) {
+        match_(shape) {
+            pattern_(Shape_Circ, s) {
                 area = math_f32_pi * s->radius * s->radius;
             } break;
-            case_pattern(Shape_Rect, s) {
+            pattern_(Shape_Rect, s) {
                 area = s->width * s->height;
             } break;
-            default_pattern() claim_unreachable;
+            fallback_() claim_unreachable;
         }
         eval_return area;
     });
@@ -168,14 +188,14 @@ extern Opt$InputEvent pullInputEvent(void);
 
 static void example_handleEvent(void) {
     if_some(pullInputEvent(), event) {
-        match(event) {
-            case_pattern(InputEvent_press_key, on_pressed) {
+        match_(event) {
+            pattern_(InputEvent_press_key, on_pressed) {
                 debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
             } break;
-            case_pattern(InputEvent_release_button, on_released) {
+            pattern_(InputEvent_release_button, on_released) {
                 debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
             } break;
-            default_pattern() claim_unreachable;
+            fallback_() claim_unreachable;
         }
     }
 }
@@ -219,12 +239,12 @@ typedef struct Shape {
 void test(void) {
     Shape shape = union_enum$(Shape_Circ, .radius = 1.0f);
     with_(f32 area = 0) {
-        match(shape) {
-            case_pattern(Shape_Circ, s) {
+        match_(shape) {
+            pattern_(Shape_Circ, s) {
                 area = 3.1415926f * s->radius * s->radius;
             }
             break;
-            case_pattern(Shape_Rect, s) {
+            pattern_(Shape_Rect, s) {
                 area = s->width * s->height;
             }
             break;
