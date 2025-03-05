@@ -66,20 +66,20 @@ static void     global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
 static anyptr Simulation_thread(anyptr arg);
 
 // Main function
-Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
+        try(log_init("log/debug.log"));
+        {
+            defer(log_fini());
             // Configure logging behavior
-            log_setLevel(log_Level_info);
+            log_setLevel(log_Level_debug);
             log_showTimestamp(true);
             log_showLevel(true);
             log_showLocation(false);
             log_showFunction(true);
         }
-        defer(log_fini());
 
         // Create window
         var window = try(engine_Window_init(&(engine_PlatformParams){
@@ -101,14 +101,12 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         // Create allocator
         // var allocator = heap_Classic_allocator(&(heap_Classic){});
-        var allocator = heap_Page_allocator(&(heap_Page){});
-        try(heap_Classic_init(allocator));
-        defer(heap_Classic_fini(allocator));
+        var allocator          = heap_Page_allocator(&(heap_Page){});
         global_state.allocator = allocator;
 
         // Initialize state
         var spawn_bodies = type$(ArrList$Body, try(ArrList_initCap(typeInfo$(Body), allocator, main_simulation_n_body)));
-        defer(ArrList_fini(&global_state.spawn_bodies.base));
+        defer(ArrList_fini(global_state.spawn_bodies.base));
         global_state.spawn_bodies = spawn_bodies;
 
         // Create simulation and Visualizer
@@ -241,22 +239,22 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
 
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
-            try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
+            try(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
             noneAsg(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
         for_slice(global_state.spawn_bodies.items, body) {
-            try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
+            try(ArrList_append(sim->bodies.base, meta_refPtr(body)));
         }
-        ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
+        ArrList_clearRetainingCap(global_state.spawn_bodies.base);
 
         // Update Visualizer's bodies and nodes from simulation
-        ArrList_clearRetainingCap(&viz->bodies.base);
-        try(ArrList_appendSlice(&viz->bodies.base, meta_refSli(sim->bodies.items)));
+        ArrList_clearRetainingCap(viz->bodies.base);
+        try(ArrList_appendSlice(viz->bodies.base, meta_refSli(sim->bodies.items)));
 
-        ArrList_clearRetainingCap(&viz->nodes.base);
-        try(ArrList_appendSlice(&viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
+        ArrList_clearRetainingCap(viz->nodes.base);
+        try(ArrList_appendSlice(viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
 
         try(Visualizer_update(viz));
         return_void();

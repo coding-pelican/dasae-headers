@@ -6,7 +6,7 @@
 #include "dh/heap/Page.h"
 #include "dh/ArrList.h"
 #include "dh/meta/common.h"
-#include "dh/Mat.h"
+#include "dh/Grid.h"
 
 #include "dh/time/common.h"
 #include "dh/time/Duration.h"
@@ -71,12 +71,13 @@ void      State_render(const State* self, engine_Canvas* canvas, f64 dt);
 void      State_fini(State* self);
 
 
-Err$void dh_main(i32 argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
+        try(log_init("log/debug.log"));
+        {
+            defer(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -84,7 +85,6 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             log_showLocation(false);
             log_showFunction(true);
         }
-        defer(log_fini());
 
         // Initialize platform with terminal backend
         let window = try(engine_Window_init(
@@ -191,10 +191,10 @@ Err$State State_init(mem_Allocator allocator, usize states_width, usize states_h
         const usize buffer_width    = states_width + 2;
         const usize buffer_height   = states_height + 2;
         const usize buffer_size     = buffer_width * buffer_height;
-        let         mem_curr_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
+        let         mem_curr_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
         errdefer(mem_Allocator_free(allocator, anySli(mem_curr_states)));
         memset(mem_curr_states.ptr, 0, buffer_size);
-        let mem_next_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo(i8), buffer_size)));
+        let mem_next_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
         errdefer(mem_Allocator_free(allocator, anySli(mem_next_states)));
         memset(mem_next_states.ptr, 0, buffer_size);
         return_ok((State){

@@ -94,14 +94,15 @@ extern Err$Opt$Ptr$Firework State_spawnFirework(State* s) must_check;
 
 
 
-Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     scope_reserveReturn(Err$void) {
         Random_init();
 
         // Initialize logging to a file
-        if_(let debug_file = fopen("main-debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
+        try(log_init("log/debug.log"));
+        {
+            defer(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -109,7 +110,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             log_showLocation(false);
             log_showFunction(true);
         }
-        defer(log_fini());
 
         // Initialize platform with terminal backend
         let window = try(engine_Window_init(
@@ -301,7 +301,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         }
 
         f->effects = type$(ArrList$Particle, try(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)));
-        errdefer(ArrList_fini(&f->effects.base));
+        errdefer(ArrList_fini(f->effects.base));
 
         f->effect_base_color = Color_intoHsl(effect_base_color);
 
@@ -322,7 +322,7 @@ void Firework_fini(Firework* f) {
     }
 
     log_debug("Destroying effects(%p)\n", f->effects.items);
-    ArrList_fini(&f->effects.base);
+    ArrList_fini(f->effects.base);
     log_debug("effects destroyed\n");
 
     log_debug("firework destroyed\n");
@@ -373,7 +373,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
             );
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
-                let_(particle = meta_castPtr$(Particle*, try(ArrList_addBackOne(&f->effects.base)))) {
+                let_(particle = meta_castPtr$(Particle*, try(ArrList_addBackOne(f->effects.base)))) {
                     let x      = rocket->position[0];
                     let y      = rocket->position[1];
                     let width  = 1.0;
@@ -434,7 +434,7 @@ void State_fini(State* s) {
     for_slice(s->fireworks.items, firework) {
         Firework_fini(firework);
     }
-    ArrList_fini(&s->fireworks.base);
+    ArrList_fini(s->fireworks.base);
 }
 
 bool State_isDead(const State* s) {
@@ -524,7 +524,7 @@ Err$Opt$Ptr$Firework State_spawnFirework(State* s) {
     for (usize index = 0; index < s->fireworks.items.len; ++index) {
         let firework = &s->fireworks.items.ptr[index];
         if (!Firework_isDead(firework)) { continue; }
-        let removed = meta_castPtr$(Firework*, ArrList_removeSwap(&s->fireworks.base, index--));
+        let removed = meta_castPtr$(Firework*, ArrList_removeSwap(s->fireworks.base, index--));
         Firework_fini(removed);
     }
     log_debug("Removed dead fireworks: %d fireworks remaining", s->fireworks.items.len);
@@ -533,7 +533,7 @@ Err$Opt$Ptr$Firework State_spawnFirework(State* s) {
         return_ok(none());
     }
 
-    let firework = meta_castPtr$(Firework*, try(ArrList_addBackOne(&s->fireworks.base)));
+    let firework = meta_castPtr$(Firework*, try(ArrList_addBackOne(s->fireworks.base)));
     return_ok(some(try(Firework_init(
         firework,
         s->allocator,

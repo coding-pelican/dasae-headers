@@ -88,7 +88,7 @@ extern void ArrList_clearAndFree(ArrList* self);
 
 #define TYPE_UNNAMED__ArrList$(T)    \
     union {                          \
-        ArrList base;                \
+        ArrList base[1];             \
         struct {                     \
             TypeInfo type;           \
             Sli$(T) items;           \
@@ -106,7 +106,7 @@ extern void ArrList_clearAndFree(ArrList* self);
 
 #define GEN__impl_ArrList$(T)         \
     union pp_join($, ArrList, T) {    \
-        ArrList base;                 \
+        ArrList base[1];              \
         struct {                      \
             TypeInfo type;            \
             pp_join($, Sli, T) items; \

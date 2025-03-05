@@ -156,11 +156,11 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
 
         // Create game state
         var positions = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(&positions.base));
+        defer(ArrList_fini(positions.base));
         var velocities = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(&velocities.base));
+        defer(ArrList_fini(velocities.base));
         var colors = type$(Colors, try(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(&colors.base));
+        defer(ArrList_fini(colors.base));
 
         const f32 radius = 2.5f;
         log_info("game state created");
@@ -230,11 +230,11 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
                 debug_only(if (left_space[0]) { log_debug("left mouse pressed"); });
                 debug_only(if (left_space[1]) { log_debug("space pressed"); });
 
-                let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(&positions.base)))) {
+                let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
                 }
 
-                let_(vel = meta_cast$(Vec2f*, try(ArrList_addBackOne(&velocities.base)))) {
+                let_(vel = meta_cast$(Vec2f*, try(ArrList_addBackOne(velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
@@ -242,7 +242,7 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
                     });
                 }
 
-                let_(color = meta_castPtr$(Color*, try(ArrList_addBackOne(&colors.base)))) {
+                let_(color = meta_castPtr$(Color*, try(ArrList_addBackOne(colors.base)))) {
                     *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
                 }
             }

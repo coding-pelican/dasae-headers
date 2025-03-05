@@ -7,7 +7,7 @@
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
 #include "dh/meta/common.h"
-#include "dh/Mat.h"
+#include "dh/Grid.h"
 
 #include "engine.h"
 #include "engine/canvas.h"
@@ -58,7 +58,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
         // top-left pixel in heightmap
         printf("  Top-left gray value = %d\n", heightmap_data[0]);
 
-        let heightmap_sli = meta_castSli$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), (usize)width * height)));
+        let heightmap_sli = meta_castSli$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
         errdefer(mem_Allocator_free(allocator, anySli(heightmap_sli)));
         for_slice_indexed(heightmap_sli, item, i) {
             *item = heightmap_data[i];
@@ -84,7 +84,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             printf("  (Unexpected number of channels: %d)\n", colormap_channels);
         }
 
-        let colormap_sli = meta_castSli$(Sli$Color, try(mem_Allocator_alloc(allocator, typeInfo(Color), (usize)width * height)));
+        let colormap_sli = meta_castSli$(Sli$Color, try(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
         errdefer(mem_Allocator_free(allocator, anySli(colormap_sli)));
         for_slice_indexed(colormap_sli, item, i) {
             *item = (Color){
@@ -359,12 +359,13 @@ void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
     }
 }
 
-Err$void dh_main(i32 argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        scope_if(let debug_file = fopen("main-debug.log", "w"), debug_file) {
-            log_initWithFile(debug_file);
+        try(log_init("log/debug.log"));
+        {
+            defer(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -372,7 +373,6 @@ Err$void dh_main(i32 argc, const char* argv[]) {
             log_showLocation(false);
             log_showFunction(true);
         }
-        defer(log_fini());
 
         // Initialize platform with terminal backend
         let window = try(engine_Window_init(

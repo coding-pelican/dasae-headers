@@ -41,23 +41,23 @@ typedef struct Stack_Vec2i {
 Stack_Vec2i Stack_Vec2i_create(mem_Allocator allocator) {
     return (Stack_Vec2i){
         .list = {
-            .base = ArrList_init(typeInfo$(Vec2i), allocator) }
+            .base = { [0] = ArrList_init(typeInfo$(Vec2i), allocator) } }
     };
 }
 void Stack_Vec2i_destroy(Stack_Vec2i* self) {
-    ArrList_fini(&self->list.base);
+    ArrList_fini(self->list.base);
 }
 bool Stack_Vec2i_empty(const Stack_Vec2i* self) {
     return self->list.items.len == 0;
 }
 mem_AllocErr$void Stack_Vec2i_push(Stack_Vec2i* self, Vec2i item) {
-    return ArrList_append(&self->list.base, meta_refPtr(&item));
+    return ArrList_append(self->list.base, meta_refPtr(&item));
 }
 Vec2i Stack_Vec2i_top(const Stack_Vec2i* self) {
     return *Sli_at(self->list.items, self->list.items.len - 1);
 }
 void Stack_Vec2i_pop(Stack_Vec2i* self) {
-    ArrList_pop(&self->list.base);
+    ArrList_pop(self->list.base);
 }
 
 // Queue implementation using ArrList
@@ -67,23 +67,23 @@ typedef struct Queue_Vec2i {
 Queue_Vec2i Queue_Vec2i_create(mem_Allocator allocator) {
     return (Queue_Vec2i){
         .list = {
-            .base = ArrList_init(typeInfo$(Vec2i), allocator) }
+            .base = { [0] = ArrList_init(typeInfo$(Vec2i), allocator) } }
     };
 }
 void Queue_Vec2i_destroy(Queue_Vec2i* self) {
-    ArrList_fini(&self->list.base);
+    ArrList_fini(self->list.base);
 }
 bool Queue_Vec2i_empty(const Queue_Vec2i* self) {
     return self->list.items.len == 0;
 }
 mem_AllocErr$void Queue_Vec2i_push(Queue_Vec2i* self, Vec2i item) {
-    return ArrList_append(&self->list.base, meta_refPtr(&item));
+    return ArrList_append(self->list.base, meta_refPtr(&item));
 }
 Vec2i Queue_Vec2i_front(const Queue_Vec2i* self) {
     return *Sli_at(self->list.items, 0);
 }
 void Queue_Vec2i_pop(Queue_Vec2i* self) {
-    ArrList_shift(&self->list.base);
+    ArrList_shift(self->list.base);
 }
 
 
@@ -321,8 +321,8 @@ void DrawMaze(engine_Canvas* canvas) {
     pthread_mutex_unlock(&maze_mutex);
 }
 
-Err$void dh_main(i32 argc, const char* argv[]) {
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) {
+    unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
