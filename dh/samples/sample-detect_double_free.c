@@ -10,5 +10,4 @@ fn_ext_scope(dh_main(void), Err$void) {
     mem_Allocator_free(allocator, anySli(mem));
     mem_Allocator_free(allocator, anySli(mem)); // Double free
     return_void();
-}
-ext_unscoped;
+} ext_unscoped;

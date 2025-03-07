@@ -15,31 +15,27 @@ Opt$u8 getCharIfNumeric(u8 value) {
 }
 
 void dh_main(void) {
-    if_some(getValueIfPositive(10), value) {
+    if_some (getValueIfPositive(10), value) {
         printf("Value is %d\n", value);
-    }
-    else {
+    } else {
         printf("Value is not positive\n");
     }
 
-    if_some(getCharIfNumeric('a'), value) {
+    if_some (getCharIfNumeric('a'), value) {
         printf("Value is %c\n", value);
-    }
-    else {
+    } else {
         printf("Value is not numeric\n");
     }
 
-    if_some(getValueIfPositive(-10), value) {
+    if_some (getValueIfPositive(-10), value) {
         printf("Value is %d\n", value);
-    }
-    else {
+    } else {
         printf("Value is not positive\n");
     }
 
-    if_some(getCharIfNumeric('9'), value) {
+    if_some (getCharIfNumeric('9'), value) {
         printf("Value is %c\n", value);
-    }
-    else {
+    } else {
         printf("Value is not numeric\n");
     }
 }

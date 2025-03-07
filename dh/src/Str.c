@@ -165,7 +165,7 @@ Err$Str Str_upper(mem_Allocator allocator, Str_const str) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
-    for_slice_indexed(result, ch, i) {
+    for_slice_indexed (result, ch, i) {
         *ch = as$(u8, toupper(*Sli_at(str, i)));
     }
     return_ok(result);
@@ -176,7 +176,7 @@ Err$Str Str_lower(mem_Allocator allocator, Str_const str) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
-    for_slice_indexed(result, ch, i) {
+    for_slice_indexed (result, ch, i) {
         *ch = as$(u8, tolower(*Sli_at(str, i)));
     }
     return_ok(result);

@@ -93,8 +93,8 @@ void log_message(log_Level level, const char* file, int line, const char* func, 
         time_t     t            = time(null);
         struct tm* lt           = localtime(&t);
         char       time_str[16] = cleared();
-        ignore     strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        ignore     fprintf(output, "[%s]", time_str);
+        ignore strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
+        ignore fprintf(output, "[%s]", time_str);
     }
 
     // Add level if needed

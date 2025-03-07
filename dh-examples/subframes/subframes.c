@@ -373,7 +373,7 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target
-            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
+            if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
                 time_sleep(leftover);
             }
             time_frame_prev = time_frame_curr;

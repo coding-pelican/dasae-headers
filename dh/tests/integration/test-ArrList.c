@@ -16,7 +16,7 @@ static must_check Err$void printPoints(const ArrList$Point* points) {
     reserveReturn(Err$void);
     debug_assert_nonnull(points);
     printf("Points (%zu items):\n", points->items.len);
-    for_slice_indexed(points->items, point, index) {
+    for_slice_indexed (points->items, point, index) {
         printf("  [%zu] = (%d, %d)\n", index, point->x, point->y);
     }
     return_void();
@@ -58,7 +58,7 @@ static must_check Err$void example(void) {
         try_(printPoints(&points));
 
         // Pop last element
-        if_some(ArrList_popOrNull(points.base), item_last) {
+        if_some (ArrList_popOrNull(points.base), item_last) {
             let last = meta_castPtr$(Point*, item_last);
             printf("\nPopped last element: (%d, %d)\n", last->x, last->y);
             try_(printPoints(&points));

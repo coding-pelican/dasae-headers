@@ -10,7 +10,7 @@
 
 #include "dh/TEST.h"
 
-#define MAIN_NO_HIJACK (1)
+#define main_no_hijack (1)
 #include "dh/main.h"
 
 #include <stdio.h>
@@ -23,7 +23,6 @@ TEST_Result TEST_heap_Classic_Basic(void) {
     // Initialize allocator
     heap_Classic  heap_ctx  = {};
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
-    TEST_condition(!heap_Classic_init(allocator).is_err);
 
     // Test zero-size allocation
     TypeInfo zero_type    = { .size = 0, .align = 1 };
@@ -37,7 +36,7 @@ TEST_Result TEST_heap_Classic_Basic(void) {
     }
 
     // Test i32 allocation
-    TypeInfo i32_type = typeInfo(i32);
+    TypeInfo i32_type = typeInfo$(i32);
     let      i32_res  = mem_Allocator_create(allocator, i32_type);
     TEST_condition(!i32_res.is_err);
 
@@ -56,7 +55,6 @@ TEST_Result TEST_heap_Classic_Basic(void) {
         mem_Allocator_destroy(allocator, memory);
     }
 
-    heap_Classic_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -67,7 +65,6 @@ TEST_Result TEST_heap_Classic_Alignment(void) {
 
     heap_Classic  heap_ctx  = {};
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
-    TEST_condition(!heap_Classic_init(allocator).is_err);
 
     // Test various alignments
     for (usize align = 1; align <= 16; align *= 2) {
@@ -85,7 +82,6 @@ TEST_Result TEST_heap_Classic_Alignment(void) {
         }
     }
 
-    heap_Classic_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -96,10 +92,9 @@ TEST_Result TEST_heap_Classic_Slices(void) {
 
     heap_Classic  heap_ctx  = {};
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
-    TEST_condition(!heap_Classic_init(allocator).is_err);
 
     // Allocate slice of integers
-    TypeInfo i32_type  = typeInfo(i32);
+    TypeInfo i32_type  = typeInfo$(i32);
     let      slice_res = mem_Allocator_alloc(allocator, i32_type, 4);
     TEST_condition(!slice_res.is_err);
 
@@ -126,7 +121,6 @@ TEST_Result TEST_heap_Classic_Slices(void) {
         }
     }
 
-    heap_Classic_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -137,7 +131,6 @@ TEST_Result TEST_heap_Classic_Stress(void) {
 
     heap_Classic  heap_ctx  = {};
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
-    TEST_condition(!heap_Classic_init(allocator).is_err);
 
     const usize num_allocs   = 1000;
     meta_Sli    slices[1000] = { 0 };
@@ -176,7 +169,6 @@ TEST_Result TEST_heap_Classic_Stress(void) {
     TEST_condition(successful == count_correct_align);
     TEST_condition(successful == count_correct_len);
 
-    heap_Classic_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -187,26 +179,24 @@ TEST_Result TEST_heap_Classic_Errors(void) {
 
     // Test with invalid allocator
     // mem_Allocator invalid_allocator = { 0 }; // Null vtable and context
-    // TypeInfo      type              = typeInfo(i32);
+    // TypeInfo      type              = typeInfo$(i32);
     // let           null_ctx_res      = mem_Allocator_create(invalid_allocator, type);
     // TEST_condition(null_ctx_res.is_err);
 
     // Test with valid allocator but excessive size
     heap_Classic  heap_ctx  = {};
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
-    TEST_condition(!heap_Classic_init(allocator).is_err);
 
     // Try to allocate with maximum size which should fail
     TypeInfo huge_type = { .size = sizeof(i32), .align = alignof(i32) };
     let      huge_res  = mem_Allocator_alloc(allocator, huge_type, SIZE_MAX / sizeof(i32) + 1);
-    catch (huge_res, err, {
+    catch_from(huge_res, err, {
         unused(err);
         TEST_condition(huge_res.is_err);
     });
     var ptr = meta_castSli$(Sli$u8, huge_res.ok);
     mem_Allocator_free(allocator, anySli(ptr));
 
-    heap_Classic_fini(allocator);
     return TEST_completeResult(&result);
 }
 

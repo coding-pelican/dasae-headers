@@ -26,8 +26,7 @@ fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
         return_(err(math_Err_DivisionByZero()));
     }
     return_ok(lhs / rhs);
-}
-ext_unscoped;
+} ext_unscoped;
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     debug_assert_true(0 < args.len);
@@ -43,5 +42,4 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     });
     printf("Error handled!\n");
     return_(ok({}));
-}
-ext_unscoped;
+} ext_unscoped;

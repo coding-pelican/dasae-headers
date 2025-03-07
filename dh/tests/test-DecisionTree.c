@@ -18,20 +18,16 @@
 // Decision tree structures
 typedef struct TreeNode_Decision TreeNode_Decision;
 typedef struct TreeNode_Leaf     TreeNode_Leaf;
-// clang-format off
-config_UnionEnum(
-    TreeNode,
+
+config_UnionEnum(TreeNode,
     (TreeNode_decision, struct TreeNode_Decision {
         struct TreeNode* left;
         struct TreeNode* right;
         u32              feature_index;
         f32              threshold;
     }),
-    (TreeNode_leaf, struct TreeNode_Leaf {
-        i32 class_label;
-    })
+    (TreeNode_leaf, struct TreeNode_Leaf { i32 class_label; })
 );
-// clang-format on
 use_Ptr$(TreeNode);
 use_Err$(Ptr$TreeNode);
 
@@ -139,7 +135,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
             return_err(io_FileErr_OpenFailed());
         }
 
-        let    loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
+        let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
         ignore fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
@@ -165,10 +161,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     log_info("Decision tree application completed successfully");
     return_void();
-}
-ext_unscoped;
+} ext_unscoped;
 
-// clang-format off
 // Implementation of TreeNode functions
 fn_ext_scope(TreeNode_createLeaf(
     mem_Allocator allocator,
@@ -181,8 +175,7 @@ fn_ext_scope(TreeNode_createLeaf(
         .class_label = class_label,
     });
     return_ok(node);
-}
-ext_unscoped;
+} ext_unscoped;
 
 fn_ext_scope(TreeNode_createDecision(
     mem_Allocator allocator,
@@ -201,54 +194,50 @@ fn_ext_scope(TreeNode_createDecision(
         .right         = right,
     });
     return_ok(node);
-}
-ext_unscoped;
-// clang-format on
+} ext_unscoped;
 
 fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
-    // clang-format off
     match_(*node) {
-        pattern_(TreeNode_leaf, _) { unused(_); } break;
-        pattern_(TreeNode_decision, decision) {
-            TreeNode_destroyRecur(allocator, decision->left);
-            TreeNode_destroyRecur(allocator, decision->right);
-        } break;
-        fallback_() {
-            log_error("Invalid node type encountered during prediction");
-            claim_unreachable;
-        }
+    pattern_(TreeNode_leaf, _) {
+        unused(_);
+    } break;
+    pattern_(TreeNode_decision, decision) {
+        TreeNode_destroyRecur(allocator, decision->left);
+        TreeNode_destroyRecur(allocator, decision->right);
+    } break;
+    fallback_ {
+        log_error("Invalid node type encountered during prediction");
+        claim_unreachable;
+    } break;
     }
-    // clang-format on
     mem_Allocator_destroy(allocator, anyPtr(node));
 }
 
 fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32) {
     var current = node;
     while (true) {
-        // clang-format off
         match_(*current) {
-            pattern_(TreeNode_leaf, leaf) {
-                return leaf->class_label;
-            } break;
-            pattern_(TreeNode_decision, decision) {
-                if (decision->feature_index >= n_features) {
-                    log_error("Feature index out of bounds: %u >= %u", decision->feature_index, n_features);
-                    claim_unreachable;
-                }
-
-                if (features[decision->feature_index] <= decision->threshold) {
-                    current = decision->left;
-                } else {
-                    current = decision->right;
-                }
-            } break;
-            fallback_() {
-                log_error("Invalid node type encountered during prediction");
+        pattern_(TreeNode_leaf, leaf) {
+            return leaf->class_label;
+        } break;
+        pattern_(TreeNode_decision, decision) {
+            if (decision->feature_index >= n_features) {
+                log_error("Feature index out of bounds: %u >= %u", decision->feature_index, n_features);
                 claim_unreachable;
             }
+
+            if (features[decision->feature_index] <= decision->threshold) {
+                current = decision->left;
+            } else {
+                current = decision->right;
+            }
+        } break;
+        fallback_ {
+            log_error("Invalid node type encountered during prediction");
+            claim_unreachable;
+        } break;
         }
-        // clang-format on
     }
 }
 
@@ -261,24 +250,22 @@ fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-n
         strcat(indent, "  ");
     }
 
-    // clang-format off
     match_(*node) {
-        pattern_(TreeNode_leaf, leaf) {
-            log_info("%sClass: %d", indent, leaf->class_label);
-        } break;
-        pattern_(TreeNode_decision, decision) {
-            log_info("%sFeature %u <= %.2f", indent, decision->feature_index, decision->threshold);
-            TreeNode_printRecur(decision->left, depth + 1);
+    pattern_(TreeNode_leaf, leaf) {
+        log_info("%sClass: %d", indent, leaf->class_label);
+    } break;
+    pattern_(TreeNode_decision, decision) {
+        log_info("%sFeature %u <= %.2f", indent, decision->feature_index, decision->threshold);
+        TreeNode_printRecur(decision->left, depth + 1);
 
-            log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
-            TreeNode_printRecur(decision->right, depth + 1);
-        } break;
-        fallback_() {
-            log_error("%sInvalid node type", indent);
-            claim_unreachable;
-        }
+        log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
+        TreeNode_printRecur(decision->right, depth + 1);
+    } break;
+    fallback_ {
+        log_error("%sInvalid node type", indent);
+        claim_unreachable;
+    } break;
     }
-    // clang-format on
 }
 
 fn_ext_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) /* NOLINT(misc-no-recursion) */ {
@@ -287,31 +274,29 @@ fn_ext_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$voi
         return_err(io_FileErr_WriteFailed());
     }
 
-    // clang-format off
     match_(*node) {
-        pattern_(TreeNode_leaf, leaf) {
-            if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
-                log_error("Failed to write leaf data");
-                return_err(io_FileErr_WriteFailed());
-            }
-        } break;
-        pattern_(TreeNode_decision, decision) {
-            if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1 || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
-                log_error("Failed to write decision node data");
-                return_err(io_FileErr_WriteFailed());
-            }
-
-            // Recursively save children
-            try_(TreeNode_saveToFileRecur(decision->left, file));
-            try_(TreeNode_saveToFileRecur(decision->right, file));
-        } break;
-        fallback_() claim_unreachable;
+    pattern_(TreeNode_leaf, leaf) {
+        if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
+            log_error("Failed to write leaf data");
+            return_err(io_FileErr_WriteFailed());
+        }
+    } break;
+    pattern_(TreeNode_decision, decision) {
+        if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1
+            || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
+            log_error("Failed to write decision node data");
+            return_err(io_FileErr_WriteFailed());
+        }
+        // Recursively save children
+        try_(TreeNode_saveToFileRecur(decision->left, file));
+        try_(TreeNode_saveToFileRecur(decision->right, file));
+    } break;
+    fallback_
+        claim_unreachable;
     }
-    // clang-format on
 
     return_void();
-}
-ext_unscoped;
+} ext_unscoped;
 
 fn_ext_scope(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) /* NOLINT(misc-no-recursion) */ {
     let tag = eval({
@@ -348,13 +333,14 @@ fn_ext_scope(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Er
         log_error("Invalid node tag found in file: %d", tag);
         return_err(io_FileErr_ReadFailed());
     }
-}
-ext_unscoped;
+} ext_unscoped;
 
 // Implementation of Dataset functions
 fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), Err$Dataset) {
     // Convert Str_const to C string for compatibility with fopen
-    let filename_buf = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1)));
+    let filename_buf = meta_cast$(Sli$u8,
+        try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1))
+    );
     errdefer_(mem_Allocator_free(allocator, anySli(filename_buf)));
 
     mem_copy(filename_buf.ptr, filename.ptr, filename.len);
@@ -447,8 +433,7 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
     mem_Allocator_free(allocator, anySli(filename_buf));
 
     return_ok(dataset);
-}
-ext_unscoped;
+} ext_unscoped;
 
 fn_(Dataset_destroy(Dataset* dataset), void) {
     if (dataset == null) { return; }

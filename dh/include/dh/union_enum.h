@@ -39,7 +39,7 @@ extern "C" {
 #define match_(val_union_enum)                      SYN__match(val_union_enum)
 #define match_mut(var_union_enum)                   SYN__match_mut(var_union_enum)
 #define pattern_(E_UnionEnum_Tag, _Payload_Capture) SYN__case_pattern(E_UnionEnum_Tag, _Payload_Capture)
-#define fallback_()                                 SYN__default_pattern()
+#define fallback_                                   SYN__default_pattern()
 
 /*========== Implementations ================================================*/
 
@@ -89,13 +89,13 @@ extern "C" {
     default:
 
 #define GEN__config_UnionEnum__enumTags(T_UnionEnum, ...) \
-    pp_foreach(GEN__config_UnionEnum__enumTag, T_UnionEnum, __VA_ARGS__)
+    pp_foreach (GEN__config_UnionEnum__enumTag, T_UnionEnum, __VA_ARGS__)
 
 #define GEN__config_UnionEnum__enumTag(T_UnionEnum, _Pair) \
     FIRST_OF_PAIR(_Pair),
 
 #define GEN__config_UnionEnum__unionTypes(T_UnionEnum, ...) \
-    pp_foreach(GEN__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
+    pp_foreach (GEN__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
 
 #define GEN__config_UnionEnum__unionType(T_UnionEnum, _Pair) \
     struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) {        \
@@ -112,13 +112,16 @@ extern "C" {
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-// clang-format off
 #include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/math/common.h"
 
-typedef struct Circ { f32 radius; } Circ;
-typedef struct Rect { f32 width, height; } Rect;
+typedef struct Circ {
+    f32 radius;
+} Circ;
+typedef struct Rect {
+    f32 width, height;
+} Rect;
 
 config_UnionEnum(Shape,
     (Shape_Circ, Circ),
@@ -128,13 +131,14 @@ static f32 Shape_getArea(Shape shape) {
     return eval({
         var area = f32_nan;
         match_(shape) {
-            pattern_(Shape_Circ, s) {
-                area = math_f32_pi * s->radius * s->radius;
-            } break;
-            pattern_(Shape_Rect, s) {
-                area = s->width * s->height;
-            } break;
-            fallback_() claim_unreachable;
+        pattern_(Shape_Circ, s) {
+            area = math_f32_pi * s->radius * s->radius;
+        } break;
+        pattern_(Shape_Rect, s) {
+            area = s->width * s->height;
+        } break;
+        fallback_
+            claim_unreachable;
         }
         eval_return area;
     });
@@ -164,25 +168,25 @@ static void example_getArea(void) {
 
 config_UnionEnum(InputEvent,
     (InputEvent_press_key,      struct { i32 key; }),
-    (InputEvent_release_button, struct { i8  button; })
+    (InputEvent_release_button, struct { i8 button; })
 );
 use_Opt$(InputEvent);
 extern Opt$InputEvent pullInputEvent(void);
 
 static void example_handleEvent(void) {
-    if_some(pullInputEvent(), event) {
+    if_some (pullInputEvent(), event) {
         match_(event) {
-            pattern_(InputEvent_press_key, on_pressed) {
-                debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
-            } break;
-            pattern_(InputEvent_release_button, on_released) {
-                debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
-            } break;
-            fallback_() claim_unreachable;
+        pattern_(InputEvent_press_key, on_pressed) {
+            debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
+        } break;
+        pattern_(InputEvent_release_button, on_released) {
+            debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
+        } break;
+        fallback_
+            claim_unreachable;
         }
     }
 }
-// clang-format on
 #endif /* EXAMPLE_USAGE */
 
 #if MOCKUP_CODE
@@ -223,14 +227,12 @@ void test(void) {
     Shape shape = union_enum$(Shape_Circ, .radius = 1.0f);
     with_(f32 area = 0) {
         match_(shape) {
-            pattern_(Shape_Circ, s) {
-                area = 3.1415926f * s->radius * s->radius;
-            }
-            break;
-            pattern_(Shape_Rect, s) {
-                area = s->width * s->height;
-            }
-            break;
+        pattern_(Shape_Circ, s) {
+            area = 3.1415926f * s->radius * s->radius;
+        } break;
+        pattern_(Shape_Rect, s) {
+            area = s->width * s->height;
+        } break;
         }
         debug_assert(area == 3.1415926f);
     }
