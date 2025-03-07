@@ -78,7 +78,7 @@ void mem_Allocator_rawFree_debug(
     if (buf.ptr == null) { return; /* Cannot free unallocated memory */ }
     if (buf.len == 0) { return; /* Cannot free zero-length buffer */ }
     // Update tracking information for the freed allocation
-    mem_Tracker_registerFree(buf.ptr, file, line, func);
+    if (!mem_Tracker_registerFree(buf.ptr, file, line, func)) { return; /* Occurs double free */ };
     self.vt->free(self.ptr, buf, buf_align);
 }
 #endif

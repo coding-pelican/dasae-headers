@@ -83,7 +83,7 @@ int main(
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
-    catch (dh_main(), err, {
+    catch_from(dh_main(), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;

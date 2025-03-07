@@ -86,8 +86,8 @@ void mem_Tracker_registerAlloc(void* ptr, usize size, const char* file, int line
     // clang-format on
 }
 
-void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char* func) {
-    if (!ptr) { return; }
+bool mem_Tracker_registerFree(void* ptr, const char* file, int line, const char* func) {
+    if (!ptr) { return false; }
 
     mem_Allocation** curr = &mem_Tracker_s_instance.allocations;
 
@@ -104,7 +104,7 @@ void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
             ptr, file, line, func
         );
         // clang-format on
-        return;
+        return false;
     }
 
     // Get the original allocation size
@@ -126,6 +126,7 @@ void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
     mem_Allocation* to_free = *curr;
     *curr                   = to_free->next;
     free(to_free);
+    return true;
 }
 
 typedef struct LeakSite {
