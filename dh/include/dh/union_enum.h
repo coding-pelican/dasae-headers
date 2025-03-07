@@ -31,14 +31,15 @@ extern "C" {
 #define config_UnionEnumAsField(Pair_1Tag_2Type...)       OP__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
-#define tagUnion(E_UnionEnum_Tag, val_tagged...)               OP__tagUnion(E_UnionEnum_Tag, val_tagged)
-#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnion(E_UnionEnum_Tag, val_tagged...)                    OP__tagUnion(E_UnionEnum_Tag, val_tagged)
+#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)      OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged)
 
 /* Union enum match expr with payload captures */
-#define match(val_union_enum)                           SYN__match(val_union_enum)
-#define match_mut(var_union_enum)                       SYN__match_mut(var_union_enum)
-#define case_pattern(E_UnionEnum_Tag, _Payload_Capture) SYN__case_pattern(E_UnionEnum_Tag, _Payload_Capture)
-#define default_pattern()                               SYN__default_pattern()
+#define match_(val_union_enum)                      SYN__match(val_union_enum)
+#define match_mut(var_union_enum)                   SYN__match_mut(var_union_enum)
+#define pattern_(E_UnionEnum_Tag, _Payload_Capture) SYN__case_pattern(E_UnionEnum_Tag, _Payload_Capture)
+#define fallback_()                                 SYN__default_pattern()
 
 /*========== Implementations ================================================*/
 
@@ -71,6 +72,8 @@ extern "C" {
     }
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
+
+#define OP__tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged...) (val_union_enum = tagUnion$(TypeOf(val_union_enum), E_UnionEnum_Tag, val_tagged))
 
 #define SYN__match(val_union_enum) \
     let_(_union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
@@ -124,14 +127,14 @@ config_UnionEnum(Shape,
 static f32 Shape_getArea(Shape shape) {
     return eval({
         var area = f32_nan;
-        match(shape) {
-            case_pattern(Shape_Circ, s) {
+        match_(shape) {
+            pattern_(Shape_Circ, s) {
                 area = math_f32_pi * s->radius * s->radius;
             } break;
-            case_pattern(Shape_Rect, s) {
+            pattern_(Shape_Rect, s) {
                 area = s->width * s->height;
             } break;
-            default_pattern() claim_unreachable;
+            fallback_() claim_unreachable;
         }
         eval_return area;
     });
@@ -168,14 +171,14 @@ extern Opt$InputEvent pullInputEvent(void);
 
 static void example_handleEvent(void) {
     if_some(pullInputEvent(), event) {
-        match(event) {
-            case_pattern(InputEvent_press_key, on_pressed) {
+        match_(event) {
+            pattern_(InputEvent_press_key, on_pressed) {
                 debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
             } break;
-            case_pattern(InputEvent_release_button, on_released) {
+            pattern_(InputEvent_release_button, on_released) {
                 debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
             } break;
-            default_pattern() claim_unreachable;
+            fallback_() claim_unreachable;
         }
     }
 }
@@ -219,12 +222,12 @@ typedef struct Shape {
 void test(void) {
     Shape shape = union_enum$(Shape_Circ, .radius = 1.0f);
     with_(f32 area = 0) {
-        match(shape) {
-            case_pattern(Shape_Circ, s) {
+        match_(shape) {
+            pattern_(Shape_Circ, s) {
                 area = 3.1415926f * s->radius * s->radius;
             }
             break;
-            case_pattern(Shape_Rect, s) {
+            pattern_(Shape_Rect, s) {
                 area = s->width * s->height;
             }
             break;

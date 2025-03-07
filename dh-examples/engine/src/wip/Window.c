@@ -8,18 +8,18 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
         debug_assert_nonnull(config);
         /* Create window */
         let allocator = config->allocator;
-        let window    = meta_cast$(engine_Window*, try(mem_Allocator_create(allocator, typeInfo$(engine_Window))));
-        errdefer(mem_Allocator_destroy(allocator, anyPtr(window)));
+        let window    = meta_cast$(engine_Window*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Window))));
+        errdefer_(mem_Allocator_destroy(allocator, anyPtr(window)));
         window->allocator = allocator;
 
         /* Create composite buffer */
         let rect_size        = config->rect_size;
-        let composite_buffer = try(engine_Canvas_create(
+        let composite_buffer = try_(engine_Canvas_create(
             rect_size.x,
             rect_size.y,
             engine_CanvasType_rgba
         ));
-        errdefer(engine_Canvas_destroy(composite_buffer));
+        errdefer_(engine_Canvas_destroy(composite_buffer));
         window->composite_buffer = composite_buffer;
 
         /* Set default color */
@@ -67,7 +67,7 @@ Err$void engine_Window_update(engine_Window* self) {
             if (view->rect.resizable.y) { full.y = res.y; }
             eval_return full;
         });
-        try(engine_Canvas_resize(
+        try_(engine_Canvas_resize(
             view->canvas,
             size.x,
             size.y

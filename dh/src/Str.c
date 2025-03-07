@@ -94,7 +94,7 @@ Err$Str Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) {
     debug_assert_nonnull(rhs.ptr);
 
     let total_len = lhs.len + rhs.len;
-    let result    = meta_cast$(Str, try(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len)));
+    let result    = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len)));
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
@@ -104,11 +104,11 @@ Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
     scope_reserveReturn(Err$Str) {
         va_list args1 = {};
         va_start(args1, format);
-        defer(va_end(args1));
+        defer_(va_end(args1));
 
         va_list args2 = {};
         va_copy(args2, args1);
-        defer(va_end(args2));
+        defer_(va_end(args2));
 
         let len = eval({
             let res = vsnprintf(null, 0, format, args1);
@@ -116,8 +116,8 @@ Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
             eval_return as$(usize, res);
         });
 
-        var result = meta_cast$(Str, try(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
-        errdefer(mem_Allocator_free(allocator, anySli(result)));
+        var result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
+        errdefer_(mem_Allocator_free(allocator, anySli(result)));
         {
             ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
             result.len = len;
@@ -164,7 +164,7 @@ Err$Str Str_upper(mem_Allocator allocator, Str_const str) {
     reserveReturn(Err$Str);
     debug_assert_nonnull(str.ptr);
 
-    let result = meta_cast$(Str, try(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
+    let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
     for_slice_indexed(result, ch, i) {
         *ch = as$(u8, toupper(*Sli_at(str, i)));
     }
@@ -175,7 +175,7 @@ Err$Str Str_lower(mem_Allocator allocator, Str_const str) {
     reserveReturn(Err$Str);
     debug_assert_nonnull(str.ptr);
 
-    let result = meta_cast$(Str, try(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
+    let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
     for_slice_indexed(result, ch, i) {
         *ch = as$(u8, tolower(*Sli_at(str, i)));
     }

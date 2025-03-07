@@ -29,63 +29,63 @@ static must_check Err$void example(void) {
 
         // Create ArrList
         var points = type$(ArrList$Point, ArrList_init(typeInfo$(Point), allocator));
-        defer(ArrList_fini(points.base));
+        defer_(ArrList_fini(points.base));
 
         // Append individual items
         Point p1 = { .x = 10, .y = 20 };
-        try(ArrList_append(points.base, meta_refPtr(&p1)));
+        try_(ArrList_append(points.base, meta_refPtr(&p1)));
 
         // Append multiple items at once
         Sli$Point more_points = Sli_arr((Point[]){
             { .x = 30, .y = 40 },
             { .x = 50, .y = 60 },
         });
-        try(ArrList_appendSlice(points.base, meta_refSli(more_points)));
+        try_(ArrList_appendSlice(points.base, meta_refSli(more_points)));
 
         // Print current state
-        try(printPoints(&points));
+        try_(printPoints(&points));
 
         // Insert at specific position
         Point p4 = { .x = 70, .y = 80 };
-        try(ArrList_insert(points.base, 1, meta_refPtr(&p4)));
+        try_(ArrList_insert(points.base, 1, meta_refPtr(&p4)));
         printf("\nAfter insert at position 1:\n");
-        try(printPoints(&points));
+        try_(printPoints(&points));
 
         // Remove from middle
         printf("\nRemoved from index 1: ");
         let removed = meta_castPtr$(Point*, ArrList_removeOrdered(points.base, 1));
         printf("(%d, %d)\n", removed->x, removed->y);
-        try(printPoints(&points));
+        try_(printPoints(&points));
 
         // Pop last element
         if_some(ArrList_popOrNull(points.base), item_last) {
             let last = meta_castPtr$(Point*, item_last);
             printf("\nPopped last element: (%d, %d)\n", last->x, last->y);
-            try(printPoints(&points));
+            try_(printPoints(&points));
         }
 
         // Add many at once
-        let new_space         = meta_castSli$(Sli$Point, try(ArrList_addBackManyAsSlice(points.base, 2)));
+        let new_space         = meta_castSli$(Sli$Point, try_(ArrList_addBackManyAsSlice(points.base, 2)));
         *Sli_at(new_space, 0) = (Point){ .x = 90, .y = 100 };
         *Sli_at(new_space, 1) = (Point){ .x = 110, .y = 120 };
         printf("\nAfter adding two more points:\n");
-        try(printPoints(&points));
+        try_(printPoints(&points));
 
         // Clone the ArrList
-        var cloned = type$(ArrList$Point, try(ArrList_clone(points.base)));
-        defer(ArrList_fini(cloned.base));
+        var cloned = type$(ArrList$Point, try_(ArrList_clone(points.base)));
+        defer_(ArrList_fini(cloned.base));
         printf("\nCloned array:\n");
-        try(printPoints(&cloned));
+        try_(printPoints(&cloned));
 
         // Convert to owned slice
-        let owned_slice = meta_castSli$(Sli$Point, try(ArrList_toOwnedSlice(points.base)));
+        let owned_slice = meta_castSli$(Sli$Point, try_(ArrList_toOwnedSlice(points.base)));
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
         var from_slice = type$(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli(owned_slice)));
-        defer(ArrList_fini(from_slice.base));
+        defer_(ArrList_fini(from_slice.base));
         printf("\nCreated from owned slice:\n");
-        try(printPoints(&from_slice));
+        try_(printPoints(&from_slice));
 
         return_void();
     }
@@ -94,6 +94,6 @@ static must_check Err$void example(void) {
 
 Err$void dh_main(void) {
     reserveReturn(Err$void);
-    try(example());
+    try_(example());
     return_void();
 }

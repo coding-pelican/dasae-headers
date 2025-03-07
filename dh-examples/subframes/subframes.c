@@ -65,9 +65,9 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
         Random_init();
 
         // Initialize logging to a file
-        try(log_init("log/debug.log"));
+        try_(log_init("log/debug.log"));
         {
-            defer(log_fini());
+            defer_(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -81,7 +81,7 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
         log_info("allocator reserved");
 
         // Create window
-        let window = try(engine_Window_init(&(engine_WindowConfig){
+        let window = try_(engine_Window_init(&(engine_WindowConfig){
             .allocator = allocator,
             .title     = Str_l("Subframes"),
             .rect_size = {
@@ -90,17 +90,17 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
             },
             .default_color = some({ .packed = 0x181818FF }),
         }));
-        defer(engine_Window_fini(window));
+        defer_(engine_Window_fini(window));
         log_info("window created");
 
         // Create canvases
-        let game_canvas = try(engine_Canvas_create(
+        let game_canvas = try_(engine_Canvas_create(
             window_res_width,
             window_res_height,
             engine_CanvasType_rgba
         ));
         {
-            defer(engine_Canvas_destroy(game_canvas));
+            defer_(engine_Canvas_destroy(game_canvas));
             log_info("canvas created: %s", nameOf(game_canvas));
             engine_Canvas_clearDefault(game_canvas);
             log_info("canvas cleared: %s", nameOf(game_canvas));
@@ -116,13 +116,13 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
             );
             log_info("canvas views added: %s", nameOf(game_canvas));
         }
-        let overlay_canvas = try(engine_Canvas_create(
+        let overlay_canvas = try_(engine_Canvas_create(
             window_res_width,
             window_res_height,
             engine_CanvasType_rgba
         ));
         {
-            defer(engine_Canvas_destroy(overlay_canvas));
+            defer_(engine_Canvas_destroy(overlay_canvas));
             log_info("canvas created: %s", nameOf(overlay_canvas));
             engine_Canvas_clearDefault(overlay_canvas);
             log_info("canvas cleared: %s", nameOf(overlay_canvas));
@@ -140,27 +140,27 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
         }
 
         // Create input system
-        let input = try(engine_Input_init(allocator));
-        defer(engine_Input_fini(input));
+        let input = try_(engine_Input_init(allocator));
+        defer_(engine_Input_fini(input));
 
         // Bind engine core
-        let core = try(engine_core_Vt100_init(
+        let core = try_(engine_core_Vt100_init(
             &(engine_core_Vt100_Config){
                 .allocator = allocator,
                 .window    = window,
                 .input     = input,
             }
         ));
-        defer(engine_core_Vt100_fini(core));
+        defer_(engine_core_Vt100_fini(core));
         log_info("engine ready");
 
         // Create game state
-        var positions = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(positions.base));
-        var velocities = type$(Vec2fs, try(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(velocities.base));
-        var colors = type$(Colors, try(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
-        defer(ArrList_fini(colors.base));
+        var positions = type$(Vec2fs, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
+        defer_(ArrList_fini(positions.base));
+        var velocities = type$(Vec2fs, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
+        defer_(ArrList_fini(velocities.base));
+        var colors = type$(Colors, try_(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
+        defer_(ArrList_fini(colors.base));
 
         const f32 radius = 2.5f;
         log_info("game state created");
@@ -212,7 +212,7 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
             prev_winpos = winpos;
 
             // 4) Process input/events
-            try(engine_Window_update(window));
+            try_(engine_Window_update(window));
 
             // 5) Update game state and Render all views
             engine_Canvas_clearDefault(game_canvas);
@@ -230,11 +230,11 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
                 debug_only(if (left_space[0]) { log_debug("left mouse pressed"); });
                 debug_only(if (left_space[1]) { log_debug("space pressed"); });
 
-                let_(pos = meta_cast$(Vec2f*, try(ArrList_addBackOne(positions.base)))) {
+                let_(pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
                 }
 
-                let_(vel = meta_cast$(Vec2f*, try(ArrList_addBackOne(velocities.base)))) {
+                let_(vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
@@ -242,7 +242,7 @@ Err$void dh_main(void) { /* NOLINT(readability-function-cognitive-complexity) */
                     });
                 }
 
-                let_(color = meta_castPtr$(Color*, try(ArrList_addBackOne(colors.base)))) {
+                let_(color = meta_castPtr$(Color*, try_(ArrList_addBackOne(colors.base)))) {
                     *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
                 }
             }

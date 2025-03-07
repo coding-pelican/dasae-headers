@@ -30,16 +30,16 @@ Err$Arr$4$Ptr$FILE loadFiles(void) {
         if (fp1 == null) {
             return_err(LoadFileErr_FailedOpenFile());
         }
-        errdefer(ignore fclose(fp1));
+        errdefer_(ignore fclose(fp1));
 
-        let fp2 = try(loadFile(Str_l("hello2.txt")));
-        errdefer(ignore fclose(fp2));
+        let fp2 = try_(loadFile(Str_l("hello2.txt")));
+        errdefer_(ignore fclose(fp2));
 
-        let fp3 = try(loadFile(Str_l("hello3.txt")));
-        errdefer(ignore fclose(fp3));
+        let fp3 = try_(loadFile(Str_l("hello3.txt")));
+        errdefer_(ignore fclose(fp3));
 
-        let fp4 = try(loadFile(Str_l("hello4.txt")));
-        errdefer(ignore fclose(fp4));
+        let fp4 = try_(loadFile(Str_l("hello4.txt")));
+        errdefer_(ignore fclose(fp4));
 
         return_ok({ fp1, fp2, fp3, fp4 });
     }

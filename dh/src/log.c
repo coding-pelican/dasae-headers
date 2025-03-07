@@ -25,12 +25,12 @@ io_FileErr$void log_init(const char* filename) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        try(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
+        try_(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
     }
 
     let file = fopen(filename, "w");
     if (!file) { return_err(io_FileErr_OpenFailed()); }
-    errdefer(ignore fclose(file));
+    errdefer_(ignore fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
         ignore fclose(log_s_config.output_file);

@@ -240,7 +240,7 @@ static Err$void resizeAbstractWindow(engine_core_Vt100* self) {
 
     // 2. Re-size your ArrList if needed
     let needed = calcAbstractBufferSize(rect.x, rect.y);
-    try(ArrList_resize(&self->abstract.buffer.base, needed));
+    try_(ArrList_resize(self->abstract.buffer.base, needed));
 
     return_void();
 }
@@ -327,8 +327,8 @@ static Err$void syncWindowMetrics(engine_core_Vt100* self) {
         self->client.metrics.res.curr.x,
         self->client.metrics.res.curr.y
     );
-    try(ArrList_resize(&self->abstract.buffer.base, needed));
-    try(engine_Canvas_resize(
+    try_(ArrList_resize(self->abstract.buffer.base, needed));
+    try_(engine_Canvas_resize(
         self->abstract.window->composite_buffer,
         self->client.metrics.res.curr.x,
         self->client.metrics.res.curr.y
@@ -407,8 +407,8 @@ static Err$void syncWindowMetrics(engine_core_Vt100* self) {
 //         self->client.metrics.res.curr.x,
 //         self->client.metrics.res.curr.y
 //     );
-//     try(ArrList_resize(&self->abstract.buffer.base, needed));
-//     try(engine_Canvas_resize(
+//     try_(ArrList_resize(&self->abstract.buffer.base, needed));
+//     try_(engine_Canvas_resize(
 //         self->abstract.window->composite_buffer,
 //         self->client.metrics.res.curr.x,
 //         self->client.metrics.res.curr.y
@@ -836,8 +836,8 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
 
     scope_reserveReturn(Err$Ptr$engine_core_Vt100) {
         let allocator = config->allocator;
-        let self      = meta_cast$(engine_core_Vt100*, try(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
-        errdefer(mem_Allocator_destroy(allocator, anyPtr(self)));
+        let self      = meta_cast$(engine_core_Vt100*, try_(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
+        errdefer_(mem_Allocator_destroy(allocator, anyPtr(self)));
 
         self->allocator       = allocator;
         self->abstract.window = eval({
@@ -849,9 +849,9 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
             let         allocator = self->allocator;
             let         window    = self->abstract.window;
             let         size      = calcAbstractBufferSize(window->composite_buffer->width, window->composite_buffer->height);
-            eval_return type$(ArrList$u8, try(ArrList_initCap(typeInfo$(u8), allocator, size)));
+            eval_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
         });
-        errdefer(ArrList_fini(&self->abstract.buffer.base));
+        errdefer_(ArrList_fini(self->abstract.buffer.base));
         self->input = eval({
             let input = config->input;
             someAsg(input->backend, engine_core_Vt100_backend(self));
@@ -902,11 +902,11 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
             eval_return handle;
         });
 
-        try(configureConsoleOutput(self));
-        try(configureConsoleInput(self));
+        try_(configureConsoleOutput(self));
+        try_(configureConsoleInput(self));
 
-        try(hideConsoleCursor(self));
-        try(enableConsoleMouse(self));
+        try_(hideConsoleCursor(self));
+        try_(enableConsoleMouse(self));
 
         self->client.is_focused   = true;
         self->client.is_minimized = false;
@@ -921,18 +921,18 @@ void engine_core_Vt100_fini(engine_core_Vt100* self) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self);
 
-    catch (disableConsoleMouse(self), err, {
+    catch_from(disableConsoleMouse(self), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
     });
-    catch (showConsoleCursor(self), err, {
+    catch_from(showConsoleCursor(self), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
     });
 
-    ArrList_fini(&self->abstract.buffer.base);
+    ArrList_fini(self->abstract.buffer.base);
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
@@ -968,7 +968,7 @@ static void processEvents(anyptr ctx) {
         self->client.is_focused   = is_focused;
     }
 
-    catch (syncWindowMetrics(self), err, {
+    catch_from(syncWindowMetrics(self), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -987,8 +987,8 @@ static void presentBuffer(anyptr ctx) {
     if (self->client.is_minimized) { return; }
 
     // Clear buffer for draw a new content. This is a simple way to reset the console.
-    ArrList_clearRetainingCap(&self->abstract.buffer.base);
-    mem_setBytes(self->abstract.buffer.items.ptr, 0, self->abstract.buffer.base.cap);
+    ArrList_clearRetainingCap(self->abstract.buffer.base);
+    mem_setBytes(self->abstract.buffer.items.ptr, 0, self->abstract.buffer.cap);
 
     let rect   = abstractWindowRect(self);
     let width  = rect.x;
@@ -1037,7 +1037,7 @@ static void presentBuffer(anyptr ctx) {
     }
     self->abstract.buffer.items.ptr[--self->abstract.buffer.items.len] = '\0';
 
-    catch (resetConsoleCursorPos(self), err, {
+    catch_from(resetConsoleCursorPos(self), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -1059,7 +1059,7 @@ static void presentBuffer(anyptr ctx) {
             claim_unreachable;
         }
     }
-    catch (resetConsoleCursorPos(self), err, {
+    catch_from(resetConsoleCursorPos(self), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;

@@ -38,7 +38,7 @@ mem_AllocErr$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usi
         return_ok(list);
     }
 
-    let result = try(mem_Allocator_alloc(allocator, type, cap));
+    let result = try_(mem_Allocator_alloc(allocator, type, cap));
     debug_assert_nonnull_fmt(result.addr, "Allocator returned null pointer");
     debug_assert_true(result.len == cap);
     list.items     = result;
@@ -75,7 +75,7 @@ mem_AllocErr$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
         return_ok(result);
     }
 
-    let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, self->items.len));
+    let new_mem = try_(mem_Allocator_alloc(self->allocator, self->items.type, self->items.len));
 
     bti_memcpy(
         new_mem.addr,
@@ -101,7 +101,7 @@ mem_AllocErr$ArrList ArrList_clone(const ArrList* self) {
     reserveReturn(mem_AllocErr$ArrList);
     debug_assert_nonnull(self);
 
-    var new_list = try(ArrList_initCap(
+    var new_list = try_(ArrList_initCap(
         self->items.type,
         self->allocator,
         self->cap
@@ -125,9 +125,9 @@ mem_AllocErr$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
 
     // Handle the case where cap is 0
     if (self->cap == 0) {
-        try(ArrList_ensureTotalCapPrecise(self, new_cap > 4 ? new_cap : 4));
+        try_(ArrList_ensureTotalCapPrecise(self, new_cap > 4 ? new_cap : 4));
     } else {
-        try(ArrList_ensureTotalCapPrecise(self, ArrList_growCap(self->cap, new_cap)));
+        try_(ArrList_ensureTotalCapPrecise(self, ArrList_growCap(self->cap, new_cap)));
     }
 
     return_void();
@@ -143,7 +143,7 @@ mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
 
     // Allocate memory if cap is 0
     if (self->cap == 0) {
-        let new_mem      = try(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
+        let new_mem      = try_(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
         self->items.addr = new_mem.addr;
         self->cap        = new_cap;
         return_void();
@@ -161,7 +161,7 @@ mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
     }
 
     // Fallback to allocating new memory
-    let new_mem = try(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
+    let new_mem = try_(mem_Allocator_alloc(self->allocator, self->items.type, new_cap));
     bti_memcpy(new_mem.addr, self->items.addr, self->items.len * self->items.type.size);
     mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
     self->items.addr = new_mem.addr;
@@ -173,7 +173,7 @@ mem_AllocErr$void ArrList_ensureUnusedCap(ArrList* self, usize additional) {
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureTotalCap(self, self->items.len + additional));
+    try_(ArrList_ensureTotalCap(self, self->items.len + additional));
     return_void();
 }
 
@@ -181,7 +181,7 @@ mem_AllocErr$void ArrList_resize(ArrList* self, usize new_len) {
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureTotalCap(self, new_len));
+    try_(ArrList_ensureTotalCap(self, new_len));
     self->items.len = new_len;
     return_void();
 }
@@ -224,7 +224,7 @@ mem_AllocErr$void ArrList_append(ArrList* self, meta_Ptr item) {
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
 
-    try(ArrList_ensureUnusedCap(self, 1));
+    try_(ArrList_ensureUnusedCap(self, 1));
 
     bti_memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
@@ -239,7 +239,7 @@ mem_AllocErr$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, items.len));
+    try_(ArrList_ensureUnusedCap(self, items.len));
 
     bti_memcpy(
         (u8*)self->items.addr + (self->items.len * self->items.type.size),
@@ -254,7 +254,7 @@ mem_AllocErr$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, n));
+    try_(ArrList_ensureUnusedCap(self, n));
 
     for (usize i = 0; i < n; ++i) {
         bti_memcpy(
@@ -273,7 +273,7 @@ mem_AllocErr$void ArrList_prepend(ArrList* self, meta_Ptr item) {
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
 
-    try(ArrList_ensureUnusedCap(self, 1));
+    try_(ArrList_ensureUnusedCap(self, 1));
 
     if (0 < self->items.len) {
         bti_memmove(
@@ -296,7 +296,7 @@ mem_AllocErr$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, items.len));
+    try_(ArrList_ensureUnusedCap(self, items.len));
 
     if (0 < self->items.len) {
         bti_memmove(
@@ -319,7 +319,7 @@ mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) 
     reserveReturn(mem_AllocErr$void);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, n));
+    try_(ArrList_ensureUnusedCap(self, n));
 
     if (0 < self->items.len) {
         bti_memmove(
@@ -344,7 +344,7 @@ mem_AllocErr$meta_Ptr ArrList_addBackOne(ArrList* self) {
     reserveReturn(mem_AllocErr$meta_Ptr);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, 1));
+    try_(ArrList_ensureUnusedCap(self, 1));
     return_ok(ArrList_addBackOneAssumeCap(self));
 }
 
@@ -363,7 +363,7 @@ mem_AllocErr$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
     reserveReturn(mem_AllocErr$meta_Sli);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, n));
+    try_(ArrList_ensureUnusedCap(self, n));
     return_ok(ArrList_addBackManyAsSliceAssumeCap(self, n));
 }
 
@@ -384,7 +384,7 @@ mem_AllocErr$meta_Ptr ArrList_addFrontOne(ArrList* self) {
     reserveReturn(mem_AllocErr$meta_Ptr);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, 1));
+    try_(ArrList_ensureUnusedCap(self, 1));
     return_ok(ArrList_addFrontOneAssumeCap(self));
 }
 
@@ -411,7 +411,7 @@ mem_AllocErr$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
     reserveReturn(mem_AllocErr$meta_Sli);
     debug_assert_nonnull(self);
 
-    try(ArrList_ensureUnusedCap(self, n));
+    try_(ArrList_ensureUnusedCap(self, n));
     return_ok(ArrList_addFrontManyAsSliceAssumeCap(self, n));
 }
 
@@ -440,7 +440,7 @@ mem_AllocErr$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
-    try(ArrList_ensureUnusedCap(self, 1));
+    try_(ArrList_ensureUnusedCap(self, 1));
 
     if (index < self->items.len) {
         bti_memmove(
@@ -465,7 +465,7 @@ mem_AllocErr$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
-    try(ArrList_ensureUnusedCap(self, items.len));
+    try_(ArrList_ensureUnusedCap(self, items.len));
 
     if (index < self->items.len) {
         bti_memmove(

@@ -3,8 +3,8 @@
 
 Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) {
     scope_reserveReturn(Err$Ptr$engine_Input) {
-        let input = meta_cast$(engine_Input*, try(mem_Allocator_create(allocator, typeInfo$(engine_Input))));
-        errdefer(mem_Allocator_destroy(allocator, anyPtr(input)));
+        let input = meta_cast$(engine_Input*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Input))));
+        errdefer_(mem_Allocator_destroy(allocator, anyPtr(input)));
         input->allocator = allocator;
 
         /* event buffer */ {

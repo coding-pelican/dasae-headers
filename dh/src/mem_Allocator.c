@@ -250,7 +250,7 @@ Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
     }
 
     // Allocate new buffer
-    let new_slice = catch (mem_Allocator_alloc(self, type, new_len), err, {
+    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len), err, {
         unused(err);
         return_none();
     });
@@ -287,7 +287,7 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
     }
 
     // Allocate new buffer
-    let new_slice = catch (
+    let new_slice = catch_from(
         mem_Allocator_alloc(self, type, new_len, file, line, func),
         err,
         {

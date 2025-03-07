@@ -54,15 +54,15 @@ extern "C" {
 #define return_err(val_err...) SYN__return_err(val_err)
 #define return_ok(val_ok...)   SYN__return_ok(val_ok)
 
-/* Propagates error (similar to Zig's try) */
-#define try(_Expr) OP__try(_Expr)
+/* Propagates error (similar to Zig's try_) */
+#define try_(_Expr) OP__try(_Expr)
 
-/* Handles error (similar to Zig's catch) */
-#define catch_default(_Expr, val_ok_default...)        OP__catch_default(_Expr, val_ok_default)
-#define catch(_Expr, _Payload_Capture, _Stmt_Block...) OP__catch(_Expr, _Payload_Capture, _Stmt_Block)
+/* Handles error (similar to Zig's catch_from) */
+#define catch_(_Expr, val_ok_default...)        OP__catch_(_Expr, val_ok_default)
+#define catch_from(_Expr, _Payload_Capture, _Stmt_Block...) OP__catch(_Expr, _Payload_Capture, _Stmt_Block)
 
 /* Defers when error */
-#define errdefer(_Stmt...) SYN__errdefer(_Stmt)
+#define errdefer_(_Stmt...) SYN__errdefer(_Stmt)
 
 /* Error result payload captures */
 #define if_ok(val_result, _Payload_Capture)  SYN__if_ok(val_result, _Payload_Capture)
@@ -206,7 +206,7 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__catch_default(_Expr, val_ok_default...) eval({      \
+#define OP__catch_(_Expr, val_ok_default...) eval({      \
     var _result = (_Expr);                                      \
     ErrTrace_reset();                                           \
     eval_return _result.is_err ? (val_ok_default) : _result.ok; \
@@ -221,7 +221,7 @@ typedef Err$Void Err$void;
     eval_return _result.ok;                                       \
 })
 
-#define SYN__errdefer(_Stmt...) defer(                          \
+#define SYN__errdefer(_Stmt...) defer_(                          \
     if (getReservedReturn() && getReservedReturn()[0].is_err) { \
         _Stmt;                                                  \
     }                                                           \
@@ -308,9 +308,9 @@ static must_check math_Err$i32 safeDivide(i32 lhs, i32 rhs) {
 static must_check Err$void test(void) {
     reserveReturn(Err$void);
 
-    let result_invalid  = try(safeDivide(10, 0));
-    let result_default  = catch_default(safeDivide(10, 0), 1);
-    let result_handling = catch (safeDivide(10, 0), err, {
+    let result_invalid  = try_(safeDivide(10, 0));
+    let result_default  = catch_(safeDivide(10, 0), 1);
+    let result_handling = catch_from(safeDivide(10, 0), err, {
         Err_print(err);
         ErrTrace_print();
         return_err(err);

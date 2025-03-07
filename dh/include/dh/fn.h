@@ -23,24 +23,19 @@ extern "C" {
 
 #include "dh/scope.h"
 
+/*========== Macros and Declarations ========================================*/
+
+#define pub                                          comp_syn__pub
+#define pvt                                          comp_syn__pvt
+#define fn_(_Name_With_Params, T_Return...)          comp_syn__fn_(_Name_With_Params, T_Return)
+#define fn_ext_scope(_Name_With_Params, T_Return...) comp_syn__fn_ext_scope(_Name_With_Params, T_Return)
+
 /*========== Macros and Definitions =========================================*/
 
-#define pub                                            SYN__pub
-#define pvt                                            SYN__pvt
-#define fn_decl(_Name_With_Params, T_Return)           SYN__fn_decl(_Name_With_Params, T_Return)
-#define fn_impl(_Name_With_Params, T_Return, _Body...) SYN__fn_impl(_Name_With_Params, T_Return, _Body)
-
-/*========== Macros and Implementations =====================================*/
-
-#define SYN__pub                                       extern
-#define SYN__pvt                                       static
-#define SYN__fn_decl(_Name_With_Params, T_Return, ...) T_Return _Name_With_Params
-#define SYN__fn_impl(_Name_With_Params, T_Return, ...) \
-    T_Return _Name_With_Params {                       \
-        scope_reserveReturn(T_Return){                 \
-            __VA_ARGS__                                \
-        } scope_returnReserved;                        \
-    }
+#define comp_syn__pub                                          extern
+#define comp_syn__pvt                                          static
+#define comp_syn__fn_(_Name_With_Params, T_Return...)          T_Return _Name_With_Params
+#define comp_syn__fn_ext_scope(_Name_With_Params, T_Return...) fn_(_Name_With_Params, T_Return) ext_scope(T_Return)
 
 /*========== Example usage ==================================================*/
 

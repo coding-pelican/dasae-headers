@@ -51,15 +51,15 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             log_error("Failed to load heightmap: %s\n", heightmap_file);
             return_err(TerrainDataErr_FailedToLoadHeightMap());
         }
-        defer(stbi_image_free(heightmap_data));
+        defer_(stbi_image_free(heightmap_data));
 
         printf("Heightmap: %s\n", heightmap_file);
         printf("  Loaded w=%d, h=%d, channels in file=%d, forced to=1\n", width, height, heightmap_actual_channels);
         // top-left pixel in heightmap
         printf("  Top-left gray value = %d\n", heightmap_data[0]);
 
-        let heightmap_sli = meta_castSli$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
-        errdefer(mem_Allocator_free(allocator, anySli(heightmap_sli)));
+        let heightmap_sli = meta_castSli$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
+        errdefer_(mem_Allocator_free(allocator, anySli(heightmap_sli)));
         for_slice_indexed(heightmap_sli, item, i) {
             *item = heightmap_data[i];
         }
@@ -72,7 +72,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             log_error("Failed to load colormap: %s\n", colormap_file);
             return_err(TerrainDataErr_err(TerrainDataErrCode_FailedToLoadColorMap));
         }
-        defer(stbi_image_free(colormap_data));
+        defer_(stbi_image_free(colormap_data));
         printf("Colormap: %s\n", colormap_file);
         printf("  Loaded w=%d, h=%d, channels=%d\n", width, height, colormap_channels);
         // Print top-left color
@@ -84,8 +84,8 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             printf("  (Unexpected number of channels: %d)\n", colormap_channels);
         }
 
-        let colormap_sli = meta_castSli$(Sli$Color, try(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
-        errdefer(mem_Allocator_free(allocator, anySli(colormap_sli)));
+        let colormap_sli = meta_castSli$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
+        errdefer_(mem_Allocator_free(allocator, anySli(colormap_sli)));
         for_slice_indexed(colormap_sli, item, i) {
             *item = (Color){
                 .r = colormap_data[i * colormap_channels + 0],
@@ -363,9 +363,9 @@ Err$void dh_main(Sli$Str_const args) {
     unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        try(log_init("log/debug.log"));
+        try_(log_init("log/debug.log"));
         {
-            defer(log_fini());
+            defer_(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -375,7 +375,7 @@ Err$void dh_main(Sli$Str_const args) {
         }
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_init(
+        let window = try_(engine_Window_init(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Heightmap Horizon Space",
@@ -384,15 +384,15 @@ Err$void dh_main(Sli$Str_const args) {
                 .default_color = Color_blue,
             }
         ));
-        defer(engine_Window_fini(window));
+        defer_(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
+        let game_canvas = catch_from(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
-        defer(engine_Canvas_destroy(game_canvas));
+        defer_(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
         engine_Canvas_clearDefault(game_canvas);
@@ -406,7 +406,7 @@ Err$void dh_main(Sli$Str_const args) {
         var   heap      = (heap_Classic){};
         var   allocator = heap_Classic_allocator(&heap);
         State state     = {
-                .terrain      = try(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+                .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
                 .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
                 .camera_angle = 0.0f,                     // Starting angle (looking north)
                 .height       = 150.f / 2.0f,             // Height of camera above ground
@@ -415,8 +415,8 @@ Err$void dh_main(Sli$Str_const args) {
                 .distance     = 300.0f,
                 .is_running   = true,
         };
-        defer(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
-        defer(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
+        defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
+        defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
         log_info("game state created\n");
         ignore getchar();
 
@@ -432,7 +432,7 @@ Err$void dh_main(Sli$Str_const args) {
             prev_frame_time     = curr_frame_time;
 
             // Process events
-            try(engine_Window_processEvents(window));
+            try_(engine_Window_processEvents(window));
             State_handleInputKey(&state);
             // State_handleInputMouse(&state);
 
