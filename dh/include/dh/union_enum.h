@@ -4,8 +4,8 @@
  * @file    union_enum.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-02 (date of creation)
- * @updated 2025-02-21 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-03-09 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -31,8 +31,9 @@ extern "C" {
 #define config_UnionEnumAsField(Pair_1Tag_2Type...)       OP__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
-#define tagUnion(E_UnionEnum_Tag, val_tagged...)               OP__tagUnion(E_UnionEnum_Tag, val_tagged)
-#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnion(E_UnionEnum_Tag, val_tagged...)                         OP__tagUnion(E_UnionEnum_Tag, val_tagged)
+#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
 #define extract(val_union_enum, E_UnionEnum_Tag)     SYN__extract(val_union_enum, E_UnionEnum_Tag)
 #define extract_mut(var_union_enum, E_UnionEnum_Tag) SYN__extract_mut(var_union_enum, E_UnionEnum_Tag)
@@ -42,7 +43,7 @@ extern "C" {
 #define match_mut_(var_union_enum)                      SYN__match_mut_(var_union_enum)
 #define pattern_(E_UnionEnum_Tag, _Payload_Capture)     SYN__pattern_(E_UnionEnum_Tag, _Payload_Capture)
 #define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) SYN__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
-#define fallback_()                                     SYN__fallback_()
+#define fallback_                                       SYN__fallback_
 
 /*========== Implementations ================================================*/
 
@@ -76,6 +77,13 @@ extern "C" {
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
+#define OP__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) (*(eval({ \
+    var __addr_union_enum = var_addr_union_enum;                                                          \
+    debug_assert_nonnull(__addr_union_enum);                                                              \
+    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);              \
+    eval_return __addr_union_enum;                                                                        \
+})))
+
 #define SYN__extract(val_union_enum, E_UnionEnum_Tag) eval({                 \
     let __union_enum = (val_union_enum);                                     \
     debug_assert(_union_enum.tag == (E_UnionEnum_Tag));                      \
@@ -102,7 +110,7 @@ extern "C" {
     case E_UnionEnum_Tag:                                    \
         for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define SYN__fallback_() \
+#define SYN__fallback_ \
     default:
 
 #define GEN__config_UnionEnum__enumTags(T_UnionEnum, ...) \
