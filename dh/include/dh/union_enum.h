@@ -36,8 +36,8 @@ extern "C" {
 #define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
 #define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
-#define extract(val_union_enum, E_UnionEnum_Tag)     SYN__extract(val_union_enum, E_UnionEnum_Tag)
-#define extract_mut(var_union_enum, E_UnionEnum_Tag) SYN__extract_mut(var_union_enum, E_UnionEnum_Tag)
+#define extract(val_union_enum, E_UnionEnum_Tag)     OP__extract(val_union_enum, E_UnionEnum_Tag)
+#define extract_mut(var_union_enum, E_UnionEnum_Tag) OP__extract_mut(var_union_enum, E_UnionEnum_Tag)
 
 /* Union enum match expr with payload captures */
 #define match_(val_union_enum)                          SYN__match_(val_union_enum)
@@ -85,13 +85,13 @@ extern "C" {
     eval_return __addr_union_enum;                                                                        \
 })))
 
-#define SYN__extract(val_union_enum, E_UnionEnum_Tag) eval({                 \
+#define OP__extract(val_union_enum, E_UnionEnum_Tag) eval({                  \
     let __union_enum = (val_union_enum);                                     \
     debug_assert(_union_enum.tag == (E_UnionEnum_Tag));                      \
     eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
 })
 
-#define SYN__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({                \
+#define OP__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({                 \
     var __union_enum = &(var_union_enum);                                       \
     debug_assert(_union_enum->tag == (E_UnionEnum_Tag));                        \
     eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
