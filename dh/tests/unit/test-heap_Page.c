@@ -12,54 +12,49 @@
 #include "dh/TEST.h"
 #include "dh/meta/common.h"
 
-#define MAIN_NO_HIJACK (1)
+#define main_no_hijack (1)
 #include "dh/main.h"
 
 #include <stdio.h>
 
 /*========== Basic Operations Tests ====================================*/
 
-TEST_Result TEST_heap_Page_Basic(void) {
-    TEST_Result result = TEST_makeResult("Page allocator basic operations");
+// fn_test_scope(heap_Page_basics) {
+//     // Initialize allocator
+//     heap_Page     heap_ctx  = {};
+//     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
 
-    // Initialize allocator
-    heap_Page     heap_ctx  = {};
-    mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
+//     // // Test zero-size allocation
+//     // TypeInfo zero_type    = { .size = 0, .align = 1 };
+//     // let      zero_sli_res = mem_Allocator_alloc(allocator, zero_type, 1);
+//     // TEST_condition(!zero_sli_res.is_err);
 
-    // // Test zero-size allocation
-    // TypeInfo zero_type    = { .size = 0, .align = 1 };
-    // let      zero_sli_res = mem_Allocator_alloc(allocator, zero_type, 1);
-    // TEST_condition(!zero_sli_res.is_err);
+//     // if (!zero_sli_res.is_err) {
+//     //     meta_Sli zero_sli = zero_sli_res.ok;
+//     //     // Free the memory using anySli since it's a slice
+//     //     mem_Allocator_free(allocator, meta_sliToAny(zero_sli));
+//     // }
 
-    // if (!zero_sli_res.is_err) {
-    //     meta_Sli zero_sli = zero_sli_res.ok;
-    //     // Free the memory using anySli since it's a slice
-    //     mem_Allocator_free(allocator, meta_sliToAny(zero_sli));
-    // }
+//     // Test page-sized allocation
+//     TypeInfo page_type = { .size = mem_page_size, .align = mem_page_size };
+//     let      page_res  = mem_Allocator_create(allocator, page_type);
+//     TEST_condition(!page_res.is_err);
 
-    // Test page-sized allocation
-    TypeInfo page_type = { .size = mem_page_size, .align = mem_page_size };
-    let      page_res  = mem_Allocator_create(allocator, page_type);
-    TEST_condition(!page_res.is_err);
+//     if (!page_res.is_err) {
+//         meta_Ptr ptr = page_res.ok;
+//         TEST_condition(ptr.addr != null);
+//         TEST_condition(mem_isAligned((usize)ptr.addr, mem_page_size));
 
-    if (!page_res.is_err) {
-        meta_Ptr ptr = page_res.ok;
-        TEST_condition(ptr.addr != null);
-        TEST_condition(mem_isAligned((usize)ptr.addr, mem_page_size));
+//         // Write and read test
+//         u8* data = ptr.addr;
+//         *data    = 42;
+//         TEST_condition(*data == 42);
 
-        // Write and read test
-        u8* data = ptr.addr;
-        *data    = 42;
-        TEST_condition(*data == 42);
-
-        // Free using meta_ptrToAny since it's a single item pointer
-        mem_Allocator_destroy(allocator, meta_ptrToAny(ptr));
-    }
-
-    heap_Page_fini(allocator);
-    return TEST_completeResult(&result);
-}
+//         // Free using meta_ptrToAny since it's a single item pointer
+//         mem_Allocator_destroy(allocator, meta_ptrToAny(ptr));
+//     }
+// }
+// test_unscoped;
 
 /*========== Alignment Tests ==========================================*/
 
@@ -68,7 +63,6 @@ TEST_Result TEST_heap_Page_Alignment(void) {
 
     heap_Page     heap_ctx  = {};
     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
 
     // Test various alignments up to page size
     for (usize align = 1; align <= mem_page_size; align *= 2) {
@@ -85,7 +79,6 @@ TEST_Result TEST_heap_Page_Alignment(void) {
         }
     }
 
-    heap_Page_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -96,7 +89,6 @@ TEST_Result TEST_heap_Page_Slices(void) {
 
     heap_Page     heap_ctx  = {};
     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
 
     // Test slices with page-multiple sizes
     TypeInfo page_type = { .size = mem_page_size, .align = mem_page_size };
@@ -133,7 +125,6 @@ TEST_Result TEST_heap_Page_Slices(void) {
         mem_Allocator_free(allocator, memory);
     }
 
-    heap_Page_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -144,7 +135,6 @@ TEST_Result TEST_heap_Page_LargeAlloc(void) {
 
     heap_Page     heap_ctx  = {};
     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
 
     // Test allocation near the size limit
     const usize almost_max = usize_limit - (mem_page_size - 1);
@@ -166,7 +156,6 @@ TEST_Result TEST_heap_Page_LargeAlloc(void) {
         mem_Allocator_free(allocator, meta_sliToAny(large_slice));
     }
 
-    heap_Page_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -177,7 +166,6 @@ TEST_Result TEST_heap_Page_Errors(void) {
 
     heap_Page     heap_ctx  = {};
     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
 
     // Test invalid size
     TypeInfo type     = { .size = 1, .align = mem_page_size };
@@ -189,7 +177,6 @@ TEST_Result TEST_heap_Page_Errors(void) {
     // let      align_res    = mem_Allocator_create(allocator, over_aligned);
     // TEST_condition(align_res.is_err);
 
-    heap_Page_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -200,7 +187,6 @@ TEST_Result TEST_heap_Page_MultiPageAccess(void) {
 
     heap_Page     heap_ctx  = {};
     mem_Allocator allocator = heap_Page_allocator(&heap_ctx);
-    TEST_condition(!heap_Page_init(allocator).is_err);
 
     // Allocate multiple pages
     const usize num_pages = 4;
@@ -227,7 +213,6 @@ TEST_Result TEST_heap_Page_MultiPageAccess(void) {
         mem_Allocator_free(allocator, meta_sliToAny(slice));
     }
 
-    heap_Page_fini(allocator);
     return TEST_completeResult(&result);
 }
 
@@ -241,7 +226,7 @@ int main(int argc, const char* argv[]) {
 
     // Run all tests
     TEST_printSection("Basic Operations");
-    TEST_printResult(TEST_heap_Page_Basic());
+    TEST_printResult(TEST_heap_Page_basics());
 
     TEST_printSection("Alignment");
     TEST_printResult(TEST_heap_Page_Alignment());

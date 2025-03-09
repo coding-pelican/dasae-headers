@@ -43,8 +43,8 @@ extern "C" {
 #define err$(T_Err, val_err...) OP__err$(T_Err, val_err)
 #define ok$(T_Ok, val_ok...)    OP__ok$(T_Ok, val_ok)
 
-#define errAsg(var_result, val_err...) OP__errAsg(var_result, val_err)
-#define okAsg(var_result, val_ok...)   OP__okAsg(var_result, val_ok)
+#define errAsg(var_addr_result, val_err...) OP__errAsg(pp_uniqTok(addr_result), var_addr_result, val_err)
+#define okAsg(var_addr_result, val_ok...)   OP__okAsg(pp_uniqTok(addr_result), var_addr_result, val_ok)
 
 /* Checks error result */
 #define isErr(val_result) OP__isErr(val_result)
@@ -58,7 +58,7 @@ extern "C" {
 #define try_(_Expr) OP__try(_Expr)
 
 /* Handles error (similar to Zig's catch_from) */
-#define catch_(_Expr, val_ok_default...)        OP__catch_(_Expr, val_ok_default)
+#define catch_(_Expr, val_ok_default...)                    OP__catch_(_Expr, val_ok_default)
 #define catch_from(_Expr, _Payload_Capture, _Stmt_Block...) OP__catch(_Expr, _Payload_Capture, _Stmt_Block)
 
 /* Defers when error */
@@ -148,13 +148,15 @@ typedef Err$Void Err$void;
 #define OP__err$(T_Err, val_err...) ((T_Err)err(val_err))
 #define OP__ok$(T_Ok, val_ok)       ((T_Ok)ok(val_ok))
 
-#define OP__errAsg(var_result, val_err...) eval({            \
-    let _ptr_err_res = &var_result;                          \
-    *_ptr_err_res    = err$(TypeOf(*_ptr_err_res), val_err); \
+#define OP__errAsg(__addr_result, var_addr_result, val_err...) eval({ \
+    let __addr_result = var_addr_result;                              \
+    *__addr_result    = err$(TypeOf(*__addr_result), val_err);        \
+    eval_return __addr_result;                                        \
 })
-#define OP__okAsg(var_result, val_ok...) eval({            \
-    let _ptr_err_res = &var_result;                        \
-    *_ptr_err_res    = ok$(TypeOf(*_ptr_err_res), val_ok); \
+#define OP__okAsg(__addr_result, var_result, val_ok...) eval({ \
+    let __addr_result = var_result;                            \
+    *__addr_result    = ok$(TypeOf(*__addr_result), val_ok);   \
+    eval_return __addr_result;                                 \
 })
 
 #define OP__isErr(val_result) ((val_result).is_err)
@@ -206,7 +208,7 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__catch_(_Expr, val_ok_default...) eval({      \
+#define OP__catch_(_Expr, val_ok_default...) eval({             \
     var _result = (_Expr);                                      \
     ErrTrace_reset();                                           \
     eval_return _result.is_err ? (val_ok_default) : _result.ok; \
@@ -221,7 +223,7 @@ typedef Err$Void Err$void;
     eval_return _result.ok;                                       \
 })
 
-#define SYN__errdefer(_Stmt...) defer_(                          \
+#define SYN__errdefer(_Stmt...) defer_(                         \
     if (getReservedReturn() && getReservedReturn()[0].is_err) { \
         _Stmt;                                                  \
     }                                                           \

@@ -130,9 +130,34 @@ extern "C" {
 #define ATTR__no_return  BUILTIN_COMP_NO_RETURN
 #define ATTR__ignore     (void)
 
-#define ATTR__used(_Expr...)   _Expr
-#define ATTR__unused(_Expr...) ((void)(_Expr))
+#define ATTR__used(_Expr...) _Expr
+/* begin unused */
+#define ATTR__unused(...) \
+    ATTR__unused_IMPL(ATTR__unused_COUNT(__VA_ARGS__), __VA_ARGS__)
 
+#define ATTR__unused_IMPL(N, ...) pp_cat(ATTR__unused_, N)(__VA_ARGS__)
+
+#define ATTR__unused_COUNT(...) \
+    ATTR__unused_SELECT_COUNT(__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+#define ATTR__unused_SELECT_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
+
+#define ATTR__unused_1(x1)                                                                     (void)(x1)
+#define ATTR__unused_2(x1, x2)                                                                 (void)(x1), (void)(x2)
+#define ATTR__unused_3(x1, x2, x3)                                                             (void)(x1), (void)(x2), (void)(x3)
+#define ATTR__unused_4(x1, x2, x3, x4)                                                         (void)(x1), (void)(x2), (void)(x3), (void)(x4)
+#define ATTR__unused_5(x1, x2, x3, x4, x5)                                                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5)
+#define ATTR__unused_6(x1, x2, x3, x4, x5, x6)                                                 (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6)
+#define ATTR__unused_7(x1, x2, x3, x4, x5, x6, x7)                                             (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7)
+#define ATTR__unused_8(x1, x2, x3, x4, x5, x6, x7, x8)                                         (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8)
+#define ATTR__unused_9(x1, x2, x3, x4, x5, x6, x7, x8, x9)                                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9)
+#define ATTR__unused_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)                               (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10)
+#define ATTR__unused_11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)                          (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11)
+#define ATTR__unused_12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12)
+#define ATTR__unused_13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13)                (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13)
+#define ATTR__unused_14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)           (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14)
+#define ATTR__unused_15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)      (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15)
+#define ATTR__unused_16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15), (void)(x16)
+/* end unused */
 #if defined(__cplusplus)
 #define FUNC__as$(TDest, val_src) static_cast<TDest>(val_src)
 #else

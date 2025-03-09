@@ -11,22 +11,22 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
         const f32   eps      = 1.0f;
         const usize leaf_cap = 16;
 
-        var bodies = try(utils_uniformDisc(allocator, n));
-        errdefer(ArrList_fini(&bodies.base));
-        var rects = type$(ArrList$Rect, try(ArrList_initCap(typeInfo$(Rect), allocator, n)));
-        errdefer(ArrList_fini(&rects.base));
+        var bodies = try_(utils_uniformDisc(allocator, n));
+        errdefer_(ArrList_fini(bodies.base));
+        var rects = type$(ArrList$Rect, try_(ArrList_initCap(typeInfo$(Rect), allocator, n)));
+        errdefer_(ArrList_fini(rects.base));
 
-        try(ArrList_resize(&rects.base, n));
-        var quadtree = try(QuadTree_create(allocator, theta, eps, leaf_cap, n));
-        errdefer(QuadTree_destroy(&quadtree));
+        try_(ArrList_resize(rects.base, n));
+        var quadtree = try_(QuadTree_create(allocator, theta, eps, leaf_cap, n));
+        errdefer_(QuadTree_destroy(&quadtree));
 
         // Sort body indices based on their AABB's min.x to enable sweep and prune
-        var sort_body_indices_cache = meta_cast$(Sli$usize, try(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
-        errdefer(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
+        var sort_body_indices_cache = meta_cast$(Sli$usize, try_(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
+        errdefer_(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
 
         // Sort body rects based on their AABB's min.x to enable sweep and prune
-        var sort_rect_indices_cache = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
-        errdefer(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
+        var sort_rect_indices_cache = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
+        errdefer_(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
         return_ok((Simulation){
             .dt                              = dt,
@@ -48,8 +48,8 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
 void Simulation_destroy(Simulation* self) {
     debug_assert_nonnull(self);
 
-    ArrList_fini(&self->bodies.base);
-    ArrList_fini(&self->rects.base);
+    ArrList_fini(self->bodies.base);
+    ArrList_fini(self->rects.base);
 
     QuadTree_destroy(&self->quadtree);
 
@@ -62,8 +62,8 @@ Err$void Simulation_step(Simulation* self) {
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
-    try(Simulation_collide(self));
-    try(Simulation_attract(self));
+    try_(Simulation_collide(self));
+    try_(Simulation_attract(self));
     self->frame += 1;
 
     return_void();
@@ -72,7 +72,7 @@ Err$void Simulation_step(Simulation* self) {
 void Simulation_iterate(Simulation* self) {
     debug_assert_nonnull(self);
 
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         Body_update(body, self->dt);
     }
 }
@@ -89,7 +89,7 @@ Err$void Simulation_collide(Simulation* self) {
     self->collision_count = 0;
 #endif
     // Update collision rects for current frame
-    for_slice_indexed(self->bodies.items, body, index) {
+    for_slice_indexed (self->bodies.items, body, index) {
         let pos        = body->pos;
         let radius     = body->radius;
         let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
@@ -141,7 +141,7 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         // Update collision rects for current frame
-        for_slice_indexed(self->bodies.items, body, index) {
+        for_slice_indexed (self->bodies.items, body, index) {
             let pos        = body->pos;
             let radius     = body->radius;
             let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
@@ -152,13 +152,25 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         let indices = self->sort_body_indices_cache;
-        for_slice_indexed(indices, index, i) {
+        for_slice_indexed (indices, index, i) {
             *index = i;
         }
 
         // Sort indices using stableSort with comparison function and self pointer
-        try(utils_stableSortWithArgUsingTemp(self->sort_rect_indices_cache_as_temp, meta_refSli(indices), compareRects, self));
-        // try(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
+        try_(utils_stableSortUsingTemp(
+            self->sort_rect_indices_cache_as_temp,
+            meta_refSli(indices),
+            lambda((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+                let idx_lhs  = *as$(const usize*, lhs);
+                let idx_rhs  = *as$(const usize*, rhs);
+                let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
+                let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
+                if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
+                if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
+                return cmp_Ord_eq;
+            }
+        ));
+        // try_(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
 
         // Sweep through sorted indices and check for AABB overlaps
         for (usize current = 0; current < indices.len; ++current) {
@@ -195,10 +207,10 @@ Err$void Simulation_attract(Simulation* self) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
 
-    try(QuadTree_build(&self->quadtree, self->bodies.items));
+    try_(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 

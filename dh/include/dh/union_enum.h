@@ -34,7 +34,7 @@ extern "C" {
 /* Determines union enum tag */
 #define tagUnion(E_UnionEnum_Tag, val_tagged...)                         OP__tagUnion(E_UnionEnum_Tag, val_tagged)
 #define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
-#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
+#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(pp_uniqTok(addr_union_enum), var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
 #define extract(val_union_enum, E_UnionEnum_Tag)     OP__extract(val_union_enum, E_UnionEnum_Tag)
 #define extract_mut(var_union_enum, E_UnionEnum_Tag) OP__extract_mut(var_union_enum, E_UnionEnum_Tag)
@@ -78,12 +78,12 @@ extern "C" {
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define OP__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) (*(eval({ \
-    var __addr_union_enum = var_addr_union_enum;                                                          \
-    debug_assert_nonnull(__addr_union_enum);                                                              \
-    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);                \
-    eval_return __addr_union_enum;                                                                        \
-})))
+#define OP__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
+    let __addr_union_enum = var_addr_union_enum;                                                       \
+    debug_assert_nonnull(__addr_union_enum);                                                           \
+    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);             \
+    eval_return __addr_union_enum;                                                                     \
+})
 
 #define OP__extract(val_union_enum, E_UnionEnum_Tag) eval({                  \
     let __union_enum = (val_union_enum);                                     \
@@ -155,14 +155,14 @@ static f32 Shape_getArea(Shape shape) {
     return eval({
         var area = f32_nan;
         match_(shape) {
-            pattern_(Shape_Circ, s) {
+        pattern_(Shape_Circ, s) {
             area = math_f32_pi * s->radius * s->radius;
         } break;
-            pattern_(Shape_Rect, s) {
+        pattern_(Shape_Rect, s) {
             area = s->width * s->height;
         } break;
-            fallback_
-            () claim_unreachable;
+        fallback_
+            claim_unreachable;
         }
         eval_return area;
     });
@@ -201,13 +201,19 @@ static void example_handleEvent(void) {
     if_some (pullInputEvent(), event) {
         match_(event) {
         pattern_(InputEvent_press_key, on_pressed) {
-            debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
+            debug_assert_true_fmt(
+                -1 < on_pressed->key && on_pressed->key <= 255,
+                "key is out of range"
+            );
         } break;
         pattern_(InputEvent_release_button, on_released) {
-            debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
+            debug_assert_true_fmt(
+                -1 < on_released->button && on_released->button <= 5,
+                "button is out of range"
+            );
         } break;
         fallback_
-            () claim_unreachable;
+            claim_unreachable;
         }
     }
 }

@@ -40,8 +40,8 @@ extern "C" {
 #define some$(T_Opt, val_some...) OP__some$(T_Opt, val_some)
 #define none$(T_Opt)              OP__none$(T_Opt)
 
-#define someAsg(var_opt, val_some...) OP__someAsg(var_opt, val_some)
-#define noneAsg(var_opt...)           OP__noneAsg(var_opt)
+#define someAsg(var_addr_opt, val_some...) OP__someAsg(pp_uniqTok(addr_opt), var_addr_opt, val_some)
+#define noneAsg(var_addr_opt...)           OP__noneAsg(pp_uniqTok(addr_opt), var_addr_opt)
 
 /* Checks optional value */
 #define isSome(val_opt) OP__isSome(val_opt)
@@ -112,13 +112,17 @@ extern "C" {
 #define OP__some$(T_Opt, val_some...) ((T_Opt)some(val_some))
 #define OP__none$(T_Opt)              ((T_Opt)none())
 
-#define OP__someAsg(var_opt, val_some...) eval({       \
-    let _ptr_opt = &var_opt;                           \
-    *_ptr_opt    = some$(TypeOf(*_ptr_opt), val_some); \
+#define OP__someAsg(__addr_opt, var_addr_opt, val_some...) eval({ \
+    let __addr_opt = var_addr_opt;                                \
+    debug_assert_nonnull(__addr_opt);                             \
+    *__addr_opt = some$(TypeOf(*__addr_opt), val_some);           \
+    eval_return __addr_opt;                                       \
 })
-#define OP__noneAsg(var_opt...) eval({       \
-    let _ptr_opt = &var_opt;                 \
-    *_ptr_opt    = none$(TypeOf(*_ptr_opt)); \
+#define OP__noneAsg(__addr_opt, var_addr_opt...) eval({ \
+    let __addr_opt = var_addr_opt;                      \
+    debug_assert_nonnull(__addr_opt);                   \
+    *__addr_opt = none$(TypeOf(*__addr_opt));           \
+    eval_return __addr_opt;                             \
 })
 
 #define OP__isSome(val_opt) ((val_opt).has_value)

@@ -4,8 +4,8 @@
  * @file    lambda.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-11 (date of creation)
- * @updated 2025-03-07 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2025-03-09 (date of last update)
+ * @version v0.1-alpha.3
  * @ingroup dasae-headers(dh)/bti
  * @prefix  lambda
  *
@@ -46,12 +46,17 @@ extern "C" {
 
 #if BUILTIN_LANG_MODE_CPP
 /* C++11 */
-#define impl_comp_syn__lambda(_Parens_Params, T_Return...) [] _Parens_Params -> T_Return
+#define impl_comp_syn__lambda(_Parens_Params, T_Return...) \
+    [] _Parens_Params -> T_Return
 #elif BUILTIN_COMP_CLANG
 /* Needs compile flag `-fblocks -lBlocksRuntime` */
-#define impl_comp_syn__lambda(_Parens_Params, T_Return...) ^T_Return _Parens_Params
+#define impl_comp_syn__lambda__genBlockSyn(_Parens_Params, T_Return...) \
+    ^T_Return _Parens_Params
+#define impl_comp_syn__lambda(_Parens_Params, T_Return...) \
+    (T_Return(*) _Parens_Params) impl_comp_syn__lambda__genBlockSyn(_Parens_Params, T_Return)
 #elif BUILTIN_COMP_GCC
-#define impl_comp_syn__lambda(__lambda, _Parens_Params, T_Return...) T_Return __lambda _Parens_Params
+#define impl_comp_syn__lambda(__lambda, _Parens_Params, T_Return...) \
+    T_Return __lambda _Parens_Params
 #else  /* others */
 /* TODO: Add other compilers */
 #endif /* others */

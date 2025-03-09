@@ -41,8 +41,8 @@ use_Opt$(StrHash);
 
 /*========== String Creation ================================================*/
 
-#define Str_l(_literal_as_readonly...) /* For read-only string literals */ SYN__Str_l(_literal_as_readonly)
-#define Str_m(_literal_to_writable...) /* For writable string literals */ SYN__Str_m(_literal_to_writable)
+#define Str_l(_literal_as_readonly...) /* For read-only string literals */ comp_syn__Str_l(_literal_as_readonly)
+#define Str_m(_literal_to_writable...) /* For writable string literals */ comp_syn__Str_m(_literal_to_writable)
 
 /// Create Str_const from const u8* with explicit length
 extern Str_const Str_view(const u8* ptr, usize len);
@@ -168,9 +168,9 @@ extern Opt$Str_const StrTokenizer_next(StrTokenizer* self);
 
 /*========== Implementations ================================================*/
 
-#define SYN__Str_l(_literal_as_readonly...) \
+#define comp_syn__Str_l(_literal_as_readonly...) \
     ((Str_const){ .ptr = (const u8*)"" _literal_as_readonly, .len = sizeof(_literal_as_readonly) - 1 })
-#define SYN__Str_m(_literal_to_writable...) \
+#define comp_syn__Str_m(_literal_to_writable...) \
     ((Str){ .ptr = (u8[]){ "" _literal_to_writable }, .len = sizeof(_literal_to_writable) - 1 })
 
 #if defined(__cplusplus)

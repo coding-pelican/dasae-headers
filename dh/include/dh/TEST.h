@@ -27,6 +27,14 @@ extern "C" {
 
 /*========== Test Framework =================================================*/
 
+#define test_scope           comp_syn__test_scope
+#define test_unscoped        comp_syn__test_unscoped
+#define fn_test_scope(_Name) comp_syn__fn_test_scope(_Name)
+
+#define comp_syn__test_scope
+#define comp_syn__test_unscoped
+#define comp_syn__fn_test_scope(_Name) fn_(pp_join(_, TEST, _Name)(void), must_check TEST_Result)
+
 typedef struct TEST_Condition {
     const char* expr;
     bool        result;
