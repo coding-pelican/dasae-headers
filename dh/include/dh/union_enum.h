@@ -23,6 +23,7 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
+#include "fn.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -31,9 +32,9 @@ extern "C" {
 #define config_UnionEnumAsField(Pair_1Tag_2Type...)       OP__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
-#define tagUnion(E_UnionEnum_Tag, val_tagged...)                    OP__tagUnion(E_UnionEnum_Tag, val_tagged)
-#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)      OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
-#define tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged)
+#define tagUnion(E_UnionEnum_Tag, val_tagged...)                         OP__tagUnion(E_UnionEnum_Tag, val_tagged)
+#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
 /* Union enum match expr with payload captures */
 #define match_(val_union_enum)                      SYN__match(val_union_enum)
@@ -73,7 +74,11 @@ extern "C" {
 
 #define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define OP__tagUnionAsg(val_union_enum, E_UnionEnum_Tag, val_tagged...) (val_union_enum = tagUnion$(TypeOf(val_union_enum), E_UnionEnum_Tag, val_tagged))
+#define OP__tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({                         \
+    var __addr_union_enum         = var_addr_union_enum;                                                    \
+    deref(__addr_union_enum)      = tagUnion$(TypeOf(deref(__addr_union_enum)), E_UnionEnum_Tag, val_tagged); \
+    eval_return __addr_union_enum = __addr_union_enum;                                                      \
+})
 
 #define SYN__match(val_union_enum) \
     let_(_union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
@@ -116,12 +121,10 @@ extern "C" {
 #include "dh/opt.h"
 #include "dh/math/common.h"
 
-typedef struct Circ {
-    f32 radius;
-} Circ;
-typedef struct Rect {
-    f32 width, height;
-} Rect;
+// clang-format off
+typedef struct Circ { f32 radius; } Circ;
+typedef struct Rect { f32 width, height; } Rect;
+// clang-format on
 
 config_UnionEnum(Shape,
     (Shape_Circ, Circ),
@@ -171,16 +174,22 @@ config_UnionEnum(InputEvent,
     (InputEvent_release_button, struct { i8 button; })
 );
 use_Opt$(InputEvent);
-extern Opt$InputEvent pullInputEvent(void);
+extern fn_(pullInputEvent(void), InputEvent);
 
-static void example_handleEvent(void) {
+static fn_(example_handleEvent(void), void) {
     if_some (pullInputEvent(), event) {
         match_(event) {
         pattern_(InputEvent_press_key, on_pressed) {
-            debug_assert_true_fmt(-1 < on_pressed->key && on_pressed->key <= 255, "key is out of range");
+            debug_assert_true_fmt(
+                -1 < on_pressed->key && on_pressed->key <= 255,
+                "key is out of range"
+            );
         } break;
         pattern_(InputEvent_release_button, on_released) {
-            debug_assert_true_fmt(-1 < on_released->button && on_released->button <= 5, "button is out of range");
+            debug_assert_true_fmt(
+                -1 < on_released->button && on_released->button <= 5,
+                "button is out of range"
+            );
         } break;
         fallback_
             claim_unreachable;

@@ -36,69 +36,76 @@ typedef ptrdiff_t   ptrdiff;
     /**                                         \
      * @brief Pointer to any type (const void*) \
      */                                         \
-    TYPE_anyptr_const
+    TYPE__anyptr_const
 
 #define anyptr                            \
     /**                                   \
      * @brief Pointer to any type (void*) \
      */                                   \
-    TYPE_anyptr
+    TYPE__anyptr
 
 #define rawptr_const$(TSrc)                 \
     /**                                     \
      * @brief Pointer to type (const TSrc*) \
      */                                     \
-    TYPE_rawptr_const$(TSrc)
+    TYPE__rawptr_const$(TSrc)
 
 #define rawptr$(TSrc)                 \
     /**                               \
      * @brief Pointer to type (TSrc*) \
      */                               \
-    TYPE_rawptr$(TSrc)
+    TYPE__rawptr$(TSrc)
 
 #define rawptrCast$(TDestRawptr, var_rawptr)                \
     /**                                                     \
      * @brief Convert anyptr to pointer of type TDestRawptr \
      */                                                     \
-    FUNC_rawptrCast$(TDestRawptr, var_rawptr)
+    FUNC__rawptrCast$(TDestRawptr, var_rawptr)
 
 #define rawptrToInt(val_rawptr)            \
     /**                                    \
      * @brief Convert rawptr to int(usize) \
      */                                    \
-    FUNC_rawptrToInt(val_rawptr)
+    FUNC__rawptrToInt(val_rawptr)
 
 #define intToRawptr$(TDestRawptr, val_int) \
     /**                                    \
      * @brief Convert int to rawptr        \
      */                                    \
-    FUNC_intToRawptr$(TDestRawptr, val_int)
+    FUNC__intToRawptr$(TDestRawptr, val_int)
 
 #define rawptrIsNull(var_rawptr)       \
     /**                                \
      * @brief Check if pointer is null \
      */                                \
-    FUNC_rawptrIsNull(var_rawptr)
+    FUNC__rawptrIsNull(var_rawptr)
 
 #define rawptrIsNonnull(var_rawptr)        \
     /**                                    \
      * @brief Check if pointer is non-null \
      */                                    \
-    FUNC_rawptrIsNonnull(var_rawptr)
+    FUNC__rawptrIsNonnull(var_rawptr)
+
+#define deref(val_ptr...) comp_syn__deref(pp_uniqTok(ptr), val_ptr)
 
 /*========== Macros Implementation ==========================================*/
 
-#define TYPE_anyptr_const        const void*
-#define TYPE_anyptr              void*
-#define TYPE_rawptr_const$(TSrc) const TSrc*
-#define TYPE_rawptr$(TSrc)       TSrc*
+#define TYPE__anyptr_const        const void*
+#define TYPE__anyptr              void*
+#define TYPE__rawptr_const$(TSrc) const TSrc*
+#define TYPE__rawptr$(TSrc)       TSrc*
 
-#define FUNC_rawptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
-#define FUNC_rawptrToInt(val_rawptr)              ((usize)(val_rawptr))    // NOLINT
-#define FUNC_intToRawptr$(TDestRawptr, val_int)   ((TDestRawptr)(val_int)) // NOLINT
+#define FUNC__rawptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
+#define FUNC__rawptrToInt(val_rawptr)              ((usize)(val_rawptr))    // NOLINT
+#define FUNC__intToRawptr$(TDestRawptr, val_int)   ((TDestRawptr)(val_int)) // NOLINT
 
-#define FUNC_rawptrIsNull(var_rawptr)    ((var_rawptr) == null)
-#define FUNC_rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
+#define FUNC__rawptrIsNull(var_rawptr)    ((var_rawptr) == null)
+#define FUNC__rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
+
+#define comp_syn__deref(__ptr, val_ptr...) (*eval({ \
+    let __ptr = val_ptr;                            \
+    eval_return debug_assert_nonnull(__ptr), __ptr; \
+}))
 
 /*========== Validation Checks ==============================================*/
 

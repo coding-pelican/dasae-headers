@@ -100,13 +100,16 @@ Err$void dh_main(Sli$Str_const args) {
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch_from(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
+        let game_canvas = catch_from(engine_Canvas_create(
+            window_res_width,
+            window_res_height,
+            engine_CanvasType_rgba
+        ), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
         defer_(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
-
         engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
@@ -175,7 +178,7 @@ Err$void dh_main(Sli$Str_const args) {
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target
-            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+            if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
             prev_frame_time = curr_frame_time;

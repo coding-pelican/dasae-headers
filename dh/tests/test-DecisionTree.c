@@ -75,8 +75,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Load dataset if a filename was provided, otherwise create a demo tree
     if (1 < args.len) {
-        log_info("Loading dataset from %s", *Sli_at(args, 1)->ptr);
-        var dataset = try_(Dataset_loadFromCSV(allocator, *Sli_at(args, 1), true));
+        log_info("Loading dataset from %s", deref(Sli_at(args, 1)->ptr));
+        var dataset = try_(Dataset_loadFromCSV(allocator, deref(Sli_at(args, 1)), true));
         defer_(Dataset_destroy(&dataset));
 
         // Here normally build the tree from the dataset
@@ -171,7 +171,7 @@ fn_ext_scope(TreeNode_createLeaf(
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    tagUnionAsg(*node, TreeNode_leaf, {
+    tagUnionAsg(node, TreeNode_leaf, {
         .class_label = class_label,
     });
     return_ok(node);
@@ -187,7 +187,7 @@ fn_ext_scope(TreeNode_createDecision(
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    tagUnionAsg(*node, TreeNode_decision, {
+    tagUnionAsg(node, TreeNode_decision, {
         .feature_index = feature_index,
         .threshold     = threshold,
         .left          = left,
@@ -198,7 +198,7 @@ fn_ext_scope(TreeNode_createDecision(
 
 fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
-    match_(*node) {
+    match_(deref(node)) {
     pattern_(TreeNode_leaf, _) {
         unused(_);
     } break;
@@ -217,7 +217,7 @@ fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOL
 fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32) {
     var current = node;
     while (true) {
-        match_(*current) {
+        match_(deref(current)) {
         pattern_(TreeNode_leaf, leaf) {
             return leaf->class_label;
         } break;

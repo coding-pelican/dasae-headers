@@ -159,6 +159,16 @@ StatementAttributeLikeMacros:
   - used
   - ignore
   - eval_return
+  - try_
+  - catch_
+  - catch_from
+  - unwrap
+  - orelse
+  - type$
+  - make$
+  - create$
+  - initial
+  - cleated
 
 Macros:
   - ext_unscoped=/**/
@@ -214,3 +224,7 @@ WhitespaceSensitiveMacros:
   - meta_ptrToAny
   - meta_sliToAny
   - type$
+  - make$
+  - create$
+  - initial
+  - cleared
