@@ -59,7 +59,7 @@ static Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
 }
 
 static bool heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) {
-    unused(ctx);
+    unused(ctx, buf_align);
     // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
@@ -87,7 +87,7 @@ static bool heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize n
 }
 
 static void heap_Classic_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
-    unused(ctx);
+    unused(ctx, buf_align);
     // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment

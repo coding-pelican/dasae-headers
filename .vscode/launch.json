@@ -10,7 +10,8 @@
       ],
       "cwd": "${fileDirname}",
       "program": "${fileDirname}/${fileBasenameNoExtension}-debug",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "stopAtEntry": true,
     },
     { // dh>C: Debug active file
       "name": "dh>C: Debug active file",

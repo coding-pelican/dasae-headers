@@ -21,6 +21,8 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define pp_nothing(...) IMPL__pp_nothing(__VA_ARGS__)
+
 #define pp_func(_Statement...)                                                   \
     /**                                                                          \
      * @brief Creates a single statement block from multiple expressions         \
@@ -71,6 +73,8 @@ extern "C" {
     IMPL_pp_literal_int(__VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
+
+#define IMPL__pp_nothing(...)
 
 #define IMPL_pp_func(_Statement...) \
     ({ _Statement })

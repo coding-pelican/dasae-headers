@@ -28,7 +28,7 @@ mem_Allocator heap_Page_allocator(heap_Page* self) {
 
 static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {
     reserveReturn(Opt$Ptr$u8);
-    unused(ctx);
+    unused(ctx, ptr_align);
     // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(ptr_align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
@@ -81,7 +81,7 @@ static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {
 }
 
 static bool heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_size) {
-    unused(ctx);
+    unused(ctx, buf_align);
     // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
@@ -129,7 +129,7 @@ static bool heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_
 }
 
 static void heap_Page_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
-    unused(ctx);
+    unused(ctx, buf_align);
     // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");

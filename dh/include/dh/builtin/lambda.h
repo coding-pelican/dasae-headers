@@ -25,7 +25,7 @@ extern "C" {
 #include "lang_cfg.h"
 
 #if BUILTIN_COMP_CLANG
-#include <Block.h>
+#include "libs/BlocksRuntime/include/BlocksRuntime/Block.h"
 #endif /* BUILTIN_COMP_CLANG */
 
 /*========== Macros and Declarations ========================================*/
@@ -50,10 +50,8 @@ extern "C" {
     [] _Parens_Params -> T_Return
 #elif BUILTIN_COMP_CLANG
 /* Needs compile flag `-fblocks -lBlocksRuntime` */
-#define impl_comp_syn__lambda__genBlockSyn(_Parens_Params, T_Return...) \
-    ^T_Return _Parens_Params
 #define impl_comp_syn__lambda(_Parens_Params, T_Return...) \
-    (T_Return(*) _Parens_Params) impl_comp_syn__lambda__genBlockSyn(_Parens_Params, T_Return)
+    ^T_Return _Parens_Params
 #elif BUILTIN_COMP_GCC
 #define impl_comp_syn__lambda(__lambda, _Parens_Params, T_Return...) \
     T_Return __lambda _Parens_Params

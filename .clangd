@@ -38,16 +38,18 @@ CompileFlags:
     [
       -xc,
       -std=c17,
-      -Wall,
-      -Wextra,
-      -Werror,
-      -Wno-header-ordering,
-      -fblocks,
-      -funsigned-char,
       -I./include,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/include,
       -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples,
+      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include,
+      -Wall,
+      -Wextra,
+      -Werror,
+      -funsigned-char,
+      -fblocks,
+      -Wno-header-ordering,
     ]
 ---
 # Header Configs
