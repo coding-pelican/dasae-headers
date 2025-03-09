@@ -78,7 +78,7 @@ void mem_Allocator_rawFree_debug(
     if (buf.ptr == null) { return; /* Cannot free unallocated memory */ }
     if (buf.len == 0) { return; /* Cannot free zero-length buffer */ }
     // Update tracking information for the freed allocation
-    mem_Tracker_registerFree(buf.ptr, file, line, func);
+    if (!mem_Tracker_registerFree(buf.ptr, file, line, func)) { return; /* Occurs double free */ };
     self.vt->free(self.ptr, buf, buf_align);
 }
 #endif
@@ -87,7 +87,7 @@ void mem_Allocator_rawFree_debug(
 mem_AllocErr$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
     reserveReturn(mem_AllocErr$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align);
-    if_none(opt) {
+    if_none (opt) {
         return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
@@ -102,7 +102,7 @@ mem_AllocErr$meta_Ptr mem_Allocator_create_debug(
 ) {
     reserveReturn(mem_AllocErr$meta_Ptr);
     let opt = mem_Allocator_rawAlloc(self, type.size, type.align, file, line, func);
-    if_none(opt) {
+    if_none (opt) {
         return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
@@ -142,7 +142,7 @@ void mem_Allocator_destroy_debug(
 mem_AllocErr$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
     reserveReturn(mem_AllocErr$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align);
-    if_none(opt) {
+    if_none (opt) {
         return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
@@ -158,7 +158,7 @@ mem_AllocErr$meta_Sli mem_Allocator_alloc_debug(
 ) {
     reserveReturn(mem_AllocErr$meta_Sli);
     let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align, file, line, func);
-    if_none(opt) {
+    if_none (opt) {
         return_err(mem_AllocErr_OutOfMemory());
     }
     return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
@@ -250,7 +250,7 @@ Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
     }
 
     // Allocate new buffer
-    let new_slice = catch (mem_Allocator_alloc(self, type, new_len), err, {
+    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len), err, {
         unused(err);
         return_none();
     });
@@ -287,7 +287,7 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
     }
 
     // Allocate new buffer
-    let new_slice = catch (
+    let new_slice = catch_from(
         mem_Allocator_alloc(self, type, new_len, file, line, func),
         err,
         {

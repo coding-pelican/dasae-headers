@@ -10,14 +10,14 @@ Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasT
         if (!self) {
             return_err(mem_AllocErr_OutOfMemory());
         }
-        errdefer(free(self));
+        errdefer_(free(self));
 
         let len = as$(usize, width) * as$(usize, height);
         let ptr = (Color*)malloc(len * sizeof(Color));
         if (!ptr) {
             return_err(mem_AllocErr_OutOfMemory());
         }
-        errdefer(free(ptr));
+        errdefer_(free(ptr));
 
         self->buffer.len    = len;
         self->buffer.ptr    = ptr;
@@ -39,7 +39,7 @@ Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasT
 
 Err$Ptr$engine_Canvas engine_Canvas_createWithDefault(u32 width, u32 height, engine_CanvasType type, Color default_color) {
     reserveReturn(Err$Ptr$engine_Canvas);
-    let self            = try(engine_Canvas_create(width, height, type));
+    let self            = try_(engine_Canvas_create(width, height, type));
     self->default_color = default_color;
     return_ok(self);
 }

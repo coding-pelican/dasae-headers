@@ -40,8 +40,7 @@ extern "C" {
 /*========== Memory Error ===================================================*/
 
 /* Allocation Error type */
-config_ErrSet(
-    mem_AllocErr,
+config_ErrSet(mem_AllocErr,
     OutOfMemory
 );
 

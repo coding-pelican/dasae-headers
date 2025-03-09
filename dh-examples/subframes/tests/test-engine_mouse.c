@@ -46,8 +46,8 @@
 #define update_target_spf (1.0f / update_target_fps)
 
 
-Err$void dh_main(int argc, const char* argv[]) { // NOLINT
-    unused(argc), unused(argv);
+Err$void dh_main(Sli$Str_const args) { // NOLINT
+    unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("test-engine_mouse-debug.log", "w"), debug_file) {
@@ -61,7 +61,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
         }
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_create(
+        let window = try_(engine_Window_create(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "test-engine_mouse",
@@ -70,12 +70,12 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
                 .default_color = (Color){ .packed = 0x181818FF },
             }
         ));
-        defer(engine_Window_destroy(window));
+        defer_(engine_Window_destroy(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = try(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba));
-        defer(engine_Canvas_destroy(game_canvas));
+        let game_canvas = try_(engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba));
+        defer_(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
 
         engine_Canvas_clearDefault(game_canvas);
@@ -87,8 +87,6 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
 
         // Create game state
         var allocator = heap_Page_allocator(&(heap_Page){});
-        try(heap_Page_init(allocator));
-        defer(heap_Page_fini(allocator));
 
         log_info("game state created\n");
         ignore getchar();
@@ -108,7 +106,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
             // 3) Process input/events
-            try(engine_Window_processEvents(window));
+            try_(engine_Window_processEvents(window));
             if (engine_Key_pressed(engine_KeyCode_esc)) {
                 is_running = false;
                 log_debug("esc pressed\n");
@@ -116,7 +114,7 @@ Err$void dh_main(int argc, const char* argv[]) { // NOLINT
             }
 
             // 4) Check for window movement
-            let winpos      = math_Vec_as$(Vec2f, engine_Window_getPosition(window));
+            let winpos      = engine_Window_getPosition(window);
             let mouse       = engine_Mouse_getPosition();
             let mouse_delta = engine_Mouse_getDelta();
 

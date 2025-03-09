@@ -11,9 +11,9 @@ int TEST_func() {
     __builtin_unreachable();
 }
 
-Err$void dh_main(int argc, const char* argv[]) {
+Err$void dh_main(Sli$Str_const args) {
     reserveReturn(Err$void);
-    unused(argc), unused(argv);
+    unused(args);
     int value = TEST_func();
     debug_assert(value == 0);
     return_void();

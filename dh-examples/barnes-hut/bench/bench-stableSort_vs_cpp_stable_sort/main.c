@@ -50,7 +50,7 @@ static must_check Err$void insertionSort(
                 if (comp(prev, current, arg) <= 0) {
                     break;
                 }
-                try(swapElements(prev, current, size));
+                try_(swapElements(prev, current, size));
                 current = prev;
                 j--;
             }
@@ -77,8 +77,8 @@ static must_check Err$void mergeSortWithTmpRecur( // NOLINT
         usize mid        = num / 2;
 
         // Sort each half recursively
-        try(mergeSortWithTmpRecur(base_bytes, mid, size, comp, arg, temp_buffer));
-        try(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
+        try_(mergeSortWithTmpRecur(base_bytes, mid, size, comp, arg, temp_buffer));
+        try_(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
 
         // Check if merging is necessary
         u8* const left_last   = base_bytes + (mid - 1) * size;
@@ -135,11 +135,11 @@ static must_check Err$void stableSort(
     mem_Allocator allocator
 ) {
     scope_reserveReturn(Err$void) {
-        let checked_size = try(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
-        defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
+        let checked_size = try_(mulSafe(num, size));
+        let temp_buffer  = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        defer_(mem_Allocator_free(allocator, anySli(temp_buffer)));
 
-        try(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
+        try_(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
         return_void();
     }
     scope_returnReserved;
@@ -195,7 +195,7 @@ BenchResult benchmark_stableSort(BenchParams params) {
 
     // Copy test data
     let c_data = meta_cast$(
-        Sli$TestElem, catch (mem_Allocator_alloc(allocator, typeInfo(TestElem), params.len), err, {
+        Sli$TestElem, catch_from(mem_Allocator_alloc(allocator, typeInfo$(TestElem), params.len), err, {
             exit(err.ctx);
         })
     );
@@ -234,8 +234,8 @@ must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
     scope_reserveReturn(Err$void) {
         var allocator = testAllocator();
 
-        let data = meta_cast$(Sli$TestElem, try(mem_Allocator_alloc(allocator, typeInfo(TestElem), sample_data_count)));
-        defer(mem_Allocator_free(allocator, anySli(data)));
+        let data = meta_cast$(Sli$TestElem, try_(mem_Allocator_alloc(allocator, typeInfo$(TestElem), sample_data_count)));
+        defer_(mem_Allocator_free(allocator, anySli(data)));
         generateRandomTestElemArray(data.ptr, data.len);
 
         let params = (BenchParams){
@@ -277,19 +277,19 @@ int main(void) {
     printf("\nbenchmarking...\n");
 
     printf("\n-- 1,000 elements --\n");
-    catch (benchmark(1000, iterations), err, {
+    catch_from(benchmark(1000, iterations), err, {
         exit(err.ctx);
     });
     printf("\n-- 10,000 elements --\n");
-    catch (benchmark(10000, iterations), err, {
+    catch_from(benchmark(10000, iterations), err, {
         exit(err.ctx);
     });
     printf("\n-- 100,000 elements --\n");
-    catch (benchmark(100000, iterations), err, {
+    catch_from(benchmark(100000, iterations), err, {
         exit(err.ctx);
     });
     printf("\n-- 1,000,000 elements --\n");
-    catch (benchmark(1000000, iterations), err, {
+    catch_from(benchmark(1000000, iterations), err, {
         exit(err.ctx);
     });
 

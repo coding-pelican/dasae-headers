@@ -36,9 +36,38 @@ extern "C" {
 #define getReservedReturn()              FUNC__getReservedReturn()
 #define setReservedReturn(val_return...) FUNC__setReservedReturn(val_return)
 
+#define ext_scope(T_ReservedReturn) comp_syn__ext_scope(T_ReservedReturn)
+#define ext_unscoped                comp_syn__ext_unscoped
+
 /*========== Implementations ================================================*/
 
 #if SCOPE_RESERVE_RETURN_CONTAINS_DEFER
+
+// clang-format off
+#define comp_syn__ext_scope(T_ReservedReturn)              \
+    {                                                      \
+        rawptr$(T_ReservedReturn) _reserved_return = null; \
+        struct {                                           \
+            i32  curr;                                     \
+            bool returns;                                  \
+        } _scope_defer = { .curr = 0, .returns = false };  \
+        if (0) {                                           \
+        _returned_scope:                                   \
+            _scope_defer.returns = true;                   \
+            goto _deferred;                                \
+        }                                                  \
+    _deferred:                                             \
+        switch (_scope_defer.curr) {                       \
+        default:                                           \
+            break;                                         \
+        case 0:                                            \
+            _scope_defer.curr = -1;
+#define comp_syn__ext_unscoped                                                \
+            goto _returned_scope;                                             \
+        }                                                                     \
+        return (debug_assert_nonnull(_reserved_return), _reserved_return[0]); \
+    }
+// clang-format on
 
 #define SYN__scope_reserveReturn(T)                   \
     rawptr$(T) _reserved_return = null;               \

@@ -66,7 +66,7 @@ extern void mem_Tracker_registerAlloc(
     const char* func
 );
 /// Register deallocation
-extern void mem_Tracker_registerFree(
+extern bool mem_Tracker_registerFree(
     anyptr      ptr,
     const char* file,
     i32         line,

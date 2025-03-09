@@ -30,11 +30,11 @@ Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) {
         if (!window) {
             return_err(mem_AllocErr_OutOfMemory());
         }
-        errdefer(free(window));
+        errdefer_(free(window));
 
         /* Create platform */
-        scope_with(let platform = try(engine_Platform_create(params))) {
-            errdefer(engine_Platform_destroy(platform));
+        scope_with(let platform = try_(engine_Platform_create(params))) {
+            errdefer_(engine_Platform_destroy(platform));
             window->platform = platform;
 
             /* Initialize window metrics */
@@ -56,12 +56,12 @@ Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) {
         }
 
         /* Create composite buffer */
-        let composite_buffer = try(engine_Canvas_create(
+        let composite_buffer = try_(engine_Canvas_create(
             window->metrics.client_width,
             window->metrics.client_height,
             engine_CanvasType_rgba
         ));
-        errdefer(engine_Canvas_destroy(composite_buffer));
+        errdefer_(engine_Canvas_destroy(composite_buffer));
         composite_buffer->default_color = params->default_color;
         if (composite_buffer->default_color.a != ColorChannel_alpha_opaque) {
             composite_buffer->default_color = engine_Window_composite_buffer_default_color;
@@ -105,7 +105,7 @@ Err$void engine_Window_processEvents(engine_Window* window) {
 
     backend->processEvents(window->platform);
 
-    if_some(backend->getWindowMetrics(window->platform), new_metrics) {
+    if_some (backend->getWindowMetrics(window->platform), new_metrics) {
         usize w        = window->metrics.width;
         usize h        = window->metrics.height;
         usize client_w = window->metrics.client_width;

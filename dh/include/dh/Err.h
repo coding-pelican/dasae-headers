@@ -65,8 +65,7 @@ force_inline Err Err_None(void);
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-config_ErrSet(
-    io_FileErr,
+config_ErrSet(io_FileErr,
     NotFound,
     AccessDenied,
     OpenFailed,
@@ -74,8 +73,7 @@ config_ErrSet(
     WriteFailed
 );
 
-config_ErrSet(
-    io_ParseErr,
+config_ErrSet(io_ParseErr,
     InvalidArgument,
     UnexpectedEOF,
     UnexpectedChar,
@@ -84,15 +82,13 @@ config_ErrSet(
     UnexpectedTokenValue
 );
 
-config_ErrSet(
-    math_Err,
+config_ErrSet(math_Err,
     DivisionByZero,
     Overflow,
     Underflow
 );
 
-config_ErrSet(
-    mem_AllocErr,
+config_ErrSet(mem_AllocErr,
     OutOfMemory
 );
 #endif /* EXAMPLE_USAGE */
@@ -146,95 +142,58 @@ force_inline Err Err_NotImplemented(void) { return GeneralErr_err(ErrCode_NotImp
 force_inline Err Err_InvalidArgument(void) { return GeneralErr_err(ErrCode_InvalidArgument); }
 force_inline Err Err_None(void) { return GeneralErr_err(ErrCode_None); }
 
-#define GEN__config_ErrSet(Name, ...)                                                                                                \
-    typedef enum pp_cat(Name, Code) {                                                                                                \
-        GEN__config_ErrSet__ENUM__Code__members(Name, pp_foreach(GEN__config_ErrSet__ENUM__Code__member, Name, __VA_ARGS__))         \
-    } pp_cat(Name, Code);                                                                                                            \
-    typedef Err               Name;                                                                                                  \
-    static_inline const char* pp_join(_, Name, domainToCStr)(ErrCode ctx) {                                                          \
-        unused(ctx);                                                                                                                 \
-        return #Name;                                                                                                                \
-    }                                                                                                                                \
-    static_inline const char* pp_join(_, Name, codeToCStr)(ErrCode ctx) {                                                            \
-        let code = as$(pp_cat(Name, Code), ctx);                                                                                     \
-        switch (code) {                                                                                                              \
-            GEN__config_ErrSet__FN__codeToCStr__cases(Name, pp_foreach(GEN__config_ErrSet__FN__codeToCStr__case, Name, __VA_ARGS__)) \
-        }                                                                                                                            \
-    }                                                                                                                                \
-    static_inline Name pp_join(_, Name, err)(pp_cat(Name, Code) self) {                                                              \
-        static const ErrVT vt[1] = { {                                                                                               \
-            .domainToCStr = pp_join(_, Name, domainToCStr),                                                                          \
-            .codeToCStr   = pp_join(_, Name, codeToCStr),                                                                            \
-        } };                                                                                                                         \
-        return (Name){                                                                                                               \
-            .ctx = self,                                                                                                             \
-            .vt  = vt,                                                                                                               \
-        };                                                                                                                           \
-    }                                                                                                                                \
-    GEN__config_ErrSet__FN__ctorTemplates(Name, pp_foreach(GEN__config_ErrSet__FN__ctorTemplate, Name, __VA_ARGS__));                \
-    typedef struct pp_join($, Name, Void) {                                                                                          \
-        bool is_err;                                                                                                                 \
-        union {                                                                                                                      \
-            Name err;                                                                                                                \
-            Void ok;                                                                                                                 \
-        };                                                                                                                           \
-    } pp_join($, Name, Void);                                                                                                        \
+#define GEN__config_ErrSet(Name, ...)                                                                                                 \
+    typedef enum pp_cat(Name, Code) {                                                                                                 \
+        GEN__config_ErrSet__ENUM__Code__members(Name, pp_foreach (GEN__config_ErrSet__ENUM__Code__member, Name, __VA_ARGS__))         \
+    } pp_cat(Name, Code);                                                                                                             \
+    typedef Err               Name;                                                                                                   \
+    static_inline const char* pp_join(_, Name, domainToCStr)(ErrCode ctx) {                                                           \
+        unused(ctx);                                                                                                                  \
+        return #Name;                                                                                                                 \
+    }                                                                                                                                 \
+    static_inline const char* pp_join(_, Name, codeToCStr)(ErrCode ctx) {                                                             \
+        let code = as$(pp_cat(Name, Code), ctx);                                                                                      \
+        switch (code) {                                                                                                               \
+            GEN__config_ErrSet__FN__codeToCStr__cases(Name, pp_foreach (GEN__config_ErrSet__FN__codeToCStr__case, Name, __VA_ARGS__)) \
+        }                                                                                                                             \
+    }                                                                                                                                 \
+    static_inline Name pp_join(_, Name, err)(pp_cat(Name, Code) self) {                                                               \
+        static const ErrVT vt[1] = { {                                                                                                \
+            .domainToCStr = pp_join(_, Name, domainToCStr),                                                                           \
+            .codeToCStr   = pp_join(_, Name, codeToCStr),                                                                             \
+        } };                                                                                                                          \
+        return (Name){                                                                                                                \
+            .ctx = self,                                                                                                              \
+            .vt  = vt,                                                                                                                \
+        };                                                                                                                            \
+    }                                                                                                                                 \
+    GEN__config_ErrSet__FN__ctorTemplates(Name, pp_foreach (GEN__config_ErrSet__FN__ctorTemplate, Name, __VA_ARGS__));                \
+    typedef struct pp_join($, Name, Void) {                                                                                           \
+        bool is_err;                                                                                                                  \
+        union {                                                                                                                       \
+            Name err;                                                                                                                 \
+            Void ok;                                                                                                                  \
+        };                                                                                                                            \
+    } pp_join($, Name, Void);                                                                                                         \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
 
 
 // Helper macro to generate error type enum values
 #define GEN__config_ErrSet__ENUM__Code__members(Name, ...) \
-    pp_cat(Name, Code_Unknown)                      = -6,  \
-                 pp_cat(Name, Code_Unexpected)      = -5,  \
-                 pp_cat(Name, Code_Unspecified)     = -4,  \
-                 pp_cat(Name, Code_Unsupported)     = -3,  \
-                 pp_cat(Name, Code_NotImplemented)  = -2,  \
-                 pp_cat(Name, Code_InvalidArgument) = -1,  \
-                 pp_cat(Name, Code_None)            = 0,   \
-                 __VA_ARGS__
+    pp_cat(Name, Code_None) = 0, __VA_ARGS__
 
 // Helper macro to generate case statements for message function
 #define GEN__config_ErrSet__FN__codeToCStr__cases(Name, ...) \
-    case pp_cat(Name, Code_Unknown):                         \
-        return "Unknown";                                    \
-    case pp_cat(Name, Code_Unexpected):                      \
-        return "Unexpected";                                 \
-    case pp_cat(Name, Code_Unspecified):                     \
-        return "Unspecified";                                \
-    case pp_cat(Name, Code_Unsupported):                     \
-        return "Unsupported";                                \
-    case pp_cat(Name, Code_NotImplemented):                  \
-        return "NotImplemented";                             \
-    case pp_cat(Name, Code_InvalidArgument):                 \
-        return "InvalidArgument";                            \
     case pp_cat(Name, Code_None):                            \
         return "None";                                       \
         __VA_ARGS__                                          \
     default:                                                 \
         claim_unreachable_fmt("Unknown error code (code: %d)", code);
 
-#define GEN__config_ErrSet__FN__ctorTemplates(Name, ...)                  \
-    force_inline Name pp_cat(Name, _Unknown)(void) {                      \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_Unknown));         \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _Unexpected)(void) {                   \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_Unexpected));      \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _Unspecified)(void) {                  \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_Unspecified));     \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _Unsupported)(void) {                  \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_Unsupported));     \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _NotImplemented)(void) {               \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_NotImplemented));  \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _InvalidArgument)(void) {              \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_InvalidArgument)); \
-    }                                                                     \
-    force_inline Name pp_cat(Name, _None)(void) {                         \
-        return pp_join(_, Name, err)(pp_cat(Name, Code_None));            \
-    }                                                                     \
+#define GEN__config_ErrSet__FN__ctorTemplates(Name, ...)       \
+    force_inline Name pp_cat(Name, _None)(void) {              \
+        return pp_join(_, Name, err)(pp_cat(Name, Code_None)); \
+    }                                                          \
     __VA_ARGS__
 
 // Helper macros for generating individual cases

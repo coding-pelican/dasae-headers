@@ -1,5 +1,7 @@
+#include "dh/heap/Page.h"
 #include "dh/main.h"
 #include "dh/debug.h"
+#include "engine-wip/utils.h"
 #define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/log.h"
 
@@ -51,16 +53,16 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             log_error("Failed to load heightmap: %s\n", heightmap_file);
             return_err(TerrainDataErr_FailedToLoadHeightMap());
         }
-        defer(stbi_image_free(heightmap_data));
+        defer_(stbi_image_free(heightmap_data));
 
         printf("Heightmap: %s\n", heightmap_file);
         printf("  Loaded w=%d, h=%d, channels in file=%d, forced to=1\n", width, height, heightmap_actual_channels);
         // top-left pixel in heightmap
         printf("  Top-left gray value = %d\n", heightmap_data[0]);
 
-        let heightmap_sli = meta_castSli$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
-        errdefer(mem_Allocator_free(allocator, anySli(heightmap_sli)));
-        for_slice_indexed(heightmap_sli, item, i) {
+        let heightmap_sli = meta_castSli$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
+        errdefer_(mem_Allocator_free(allocator, anySli(heightmap_sli)));
+        for_slice_indexed (heightmap_sli, item, i) {
             *item = heightmap_data[i];
         }
         let heightmap_mat = Grid_fromSli$(Grid$u8, heightmap_sli, width, height);
@@ -72,7 +74,7 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             log_error("Failed to load colormap: %s\n", colormap_file);
             return_err(TerrainDataErr_err(TerrainDataErrCode_FailedToLoadColorMap));
         }
-        defer(stbi_image_free(colormap_data));
+        defer_(stbi_image_free(colormap_data));
         printf("Colormap: %s\n", colormap_file);
         printf("  Loaded w=%d, h=%d, channels=%d\n", width, height, colormap_channels);
         // Print top-left color
@@ -84,9 +86,9 @@ TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heigh
             printf("  (Unexpected number of channels: %d)\n", colormap_channels);
         }
 
-        let colormap_sli = meta_castSli$(Sli$Color, try(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
-        errdefer(mem_Allocator_free(allocator, anySli(colormap_sli)));
-        for_slice_indexed(colormap_sli, item, i) {
+        let colormap_sli = meta_castSli$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
+        errdefer_(mem_Allocator_free(allocator, anySli(colormap_sli)));
+        for_slice_indexed (colormap_sli, item, i) {
             *item = (Color){
                 .r = colormap_data[i * colormap_channels + 0],
                 .g = colormap_data[i * colormap_channels + 1],
@@ -359,129 +361,128 @@ void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
     }
 }
 
-Err$void dh_main(Sli$Str_const args) {
+fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     unused(args);
-    scope_reserveReturn(Err$void) {
-        // Initialize logging to a file
-        try(log_init("log/debug.log"));
-        {
-            defer(log_fini());
-            // Configure logging behavior
-            log_setLevel(log_Level_debug);
-            log_showTimestamp(true);
-            log_showLevel(true);
-            log_showLocation(false);
-            log_showFunction(true);
-        }
-
-        // Initialize platform with terminal backend
-        let window = try(engine_Window_init(
-            &(engine_PlatformParams){
-                .backend_type  = engine_RenderBackendType_vt100,
-                .window_title  = "Heightmap Horizon Space",
-                .width         = window_res_width,
-                .height        = window_res_height,
-                .default_color = Color_blue,
-            }
-        ));
-        defer(engine_Window_fini(window));
-        log_info("engine initialized\n");
-
-        // Create canvases
-        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
-            log_error("Failed to create canvas: %s\n", err);
-            return_err(err);
-        });
-        defer(engine_Canvas_destroy(game_canvas));
-        log_info("canvas created\n");
-
-        engine_Canvas_clearDefault(game_canvas);
-        log_info("canvas cleared\n");
-
-        // Add canvas views
-        engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
-        log_info("canvas views added\n");
-
-        // Initialize rendering with camera parameters
-        var   heap      = (heap_Classic){};
-        var   allocator = heap_Classic_allocator(&heap);
-        State state     = {
-                .terrain      = try(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-                .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
-                .camera_angle = 0.0f,                     // Starting angle (looking north)
-                .height       = 150.f / 2.0f,             // Height of camera above ground
-                .horizon      = window_res_height / 2.0f, // Center of screen
-                .scale_height = window_res_height,        // Full screen height for scaling
-                .distance     = 300.0f,
-                .is_running   = true,
-        };
-        defer(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
-        defer(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
-        log_info("game state created\n");
-        ignore getchar();
-
-        let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
-        var prev_frame_time   = time_Instant_now();
-        log_info("game loop started\n");
-
-        // Game loop
-        while (state.is_running) {
-            let curr_frame_time = time_Instant_now();
-            let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-            let dt              = time_Duration_asSecs_f64(elapsed_time);
-            prev_frame_time     = curr_frame_time;
-
-            // Process events
-            try(engine_Window_processEvents(window));
-            State_handleInputKey(&state);
-            // State_handleInputMouse(&state);
-
-            // Update game state
-            State_updateCamera(&state, dt);
-
-            // Render all views
-            engine_Canvas_clearDefault(game_canvas);
-            State_render(&state, game_canvas, dt);
-
-            // Present to screen
-            engine_Window_present(window);
-            const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-            printf("\033[H\033[40;37m"); // Move cursor to top left
-            printf(
-                "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
-                fps,
-                window_res_width,
-                window_res_height,
-                (i32)state.camera_pos.x,
-                (i32)state.camera_pos.y,
-                (i32)state.height,
-                state.scale_height
-            );
-            printf(
-                "\rANGLE: %6.2f DIST: %06.2f HORIZ: %06.2f",
-                state.camera_angle,
-                state.distance,
-                state.horizon
-            );
-            debug_only(
-                // log frame every 1s
-                static f64 total_game_time_for_timestamp = 0.0;
-                static f64 logging_after_duration        = 0.0;
-                total_game_time_for_timestamp += dt;
-                logging_after_duration += dt;
-                if (1.0 < logging_after_duration) {
-                    logging_after_duration = 0.0;
-                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
-                }
-            );
-
-            let now        = time_Instant_now();
-            let frame_used = time_Instant_durationSince(now, curr_frame_time);
-            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
-                time_sleep(leftover);
-            }
-        }
-        return_void();
+    // Initialize logging to a file
+    try_(log_init("log/debug.log"));
+    {
+        defer_(log_fini());
+        // Configure logging behavior
+        log_setLevel(log_Level_debug);
+        log_showTimestamp(true);
+        log_showLevel(true);
+        log_showLocation(false);
+        log_showFunction(true);
     }
-    scope_returnReserved;
-}
+
+    // Initialize platform with terminal backend
+    let window = try_(engine_Window_init(
+        &(engine_PlatformParams){
+            .backend_type  = engine_RenderBackendType_vt100,
+            .window_title  = "Heightmap Horizon Space",
+            .width         = window_res_width,
+            .height        = window_res_height,
+            .default_color = Color_blue,
+        }
+    ));
+    defer_(engine_Window_fini(window));
+    log_info("engine initialized\n");
+
+    // Create canvases
+    let game_canvas = catch_from(engine_Canvas_create(
+        window_res_width,
+        window_res_height,
+        engine_CanvasType_rgba
+    ), err, {
+        log_error("Failed to create canvas: %s\n", err);
+        return_err(err);
+    });
+    defer_(engine_Canvas_destroy(game_canvas));
+    log_info("canvas created\n");
+    engine_Canvas_clearDefault(game_canvas);
+    log_info("canvas cleared\n");
+
+    // Add canvas views
+    engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
+    log_info("canvas views added\n");
+
+    // Initialize rendering with camera parameters
+    var allocator = heap_Page_allocator(&(heap_Page){});
+    var state     = make$(State,
+        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
+        .camera_angle = 0.0f,                     // Starting angle (looking north)
+        .height       = 150.f / 2.0f,             // Height of camera above ground
+        .horizon      = window_res_height / 2.0f, // Center of screen
+        .scale_height = window_res_height,        // Full screen height for scaling
+        .distance     = 300.0f,
+        .is_running   = true,
+    );
+    defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
+    defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
+    log_info("game state created\n");
+    engine_utils_getch();
+
+    let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
+    var prev_frame_time   = time_Instant_now();
+    log_info("game loop started\n");
+
+    // Game loop
+    while (state.is_running) {
+        let curr_frame_time = time_Instant_now();
+        let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
+        let dt              = time_Duration_asSecs_f64(elapsed_time);
+        prev_frame_time     = curr_frame_time;
+
+        // Process events
+        try_(engine_Window_processEvents(window));
+        State_handleInputKey(&state);
+        // State_handleInputMouse(&state);
+
+        // Update game state
+        State_updateCamera(&state, dt);
+
+        // Render all views
+        engine_Canvas_clearDefault(game_canvas);
+        State_render(&state, game_canvas, dt);
+
+        // Present to screen
+        engine_Window_present(window);
+        const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
+        printf("\033[H\033[40;37m"); // Move cursor to top left
+        printf(
+            "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
+            fps,
+            window_res_width,
+            window_res_height,
+            (i32)state.camera_pos.x,
+            (i32)state.camera_pos.y,
+            (i32)state.height,
+            state.scale_height
+        );
+        printf(
+            "\rANGLE: %6.2f DIST: %06.2f HORIZ: %06.2f",
+            state.camera_angle,
+            state.distance,
+            state.horizon
+        );
+        debug_only(
+            // log frame every 1s
+            static f64 total_game_time_for_timestamp = 0.0;
+            static f64 logging_after_duration        = 0.0;
+            total_game_time_for_timestamp += dt;
+            logging_after_duration += dt;
+            if (1.0 < logging_after_duration) {
+                logging_after_duration = 0.0;
+                log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
+            }
+        );
+
+        let now        = time_Instant_now();
+        let frame_used = time_Instant_durationSince(now, curr_frame_time);
+        if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+            time_sleep(leftover);
+        }
+    }
+    return_void();
+} ext_unscoped;

@@ -70,9 +70,9 @@ Err$void dh_main(Sli$Str_const args) {
     unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        try(log_init("log/debug.log"));
+        try_(log_init("log/debug.log"));
         {
-            defer(log_fini());
+            defer_(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -82,18 +82,18 @@ Err$void dh_main(Sli$Str_const args) {
         }
 
         // Create window
-        var window = try(engine_Window_init(&(engine_PlatformParams){
+        var window = try_(engine_Window_init(&(engine_PlatformParams){
             .backend_type  = engine_RenderBackendType_vt100,
             .window_title  = "Barnes-hut N-Body Simulation",
             .width         = main_window_res_width,
             .height        = main_window_res_height,
             .default_color = Color_black,
         }));
-        defer(engine_Window_fini(window));
+        defer_(engine_Window_fini(window));
         log_info("engine initialized\n");
 
-        var canvas = try(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));
-        defer(engine_Canvas_destroy(canvas));
+        var canvas = try_(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));
+        defer_(engine_Canvas_destroy(canvas));
         log_info("canvas created\n");
 
         engine_Window_addCanvasView(window, canvas, 0, 0, main_window_res_width, main_window_res_height);
@@ -105,18 +105,18 @@ Err$void dh_main(Sli$Str_const args) {
         global_state.allocator = allocator;
 
         // Initialize state
-        var spawn_bodies = type$(ArrList$Body, try(ArrList_initCap(typeInfo$(Body), allocator, main_simulation_n_body)));
-        defer(ArrList_fini(global_state.spawn_bodies.base));
+        var spawn_bodies = type$(ArrList$Body, try_(ArrList_initCap(typeInfo$(Body), allocator, main_simulation_n_body)));
+        defer_(ArrList_fini(global_state.spawn_bodies.base));
         global_state.spawn_bodies = spawn_bodies;
 
         // Create simulation and Visualizer
-        var sim = try(Simulation_create(allocator, main_simulation_n_body));
-        defer(Simulation_destroy(&sim));
+        var sim = try_(Simulation_create(allocator, main_simulation_n_body));
+        defer_(Simulation_destroy(&sim));
         global_state.sim = &sim;
         log_info("simulation created\n");
 
-        var viz = try(Visualizer_create(allocator, canvas));
-        defer(Visualizer_destroy(&viz));
+        var viz = try_(Visualizer_create(allocator, canvas));
+        defer_(Visualizer_destroy(&viz));
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
@@ -125,13 +125,13 @@ Err$void dh_main(Sli$Str_const args) {
         // Create threads for simulation and visualization
         pthread_t sim_thread = 0;
         // Reserve destroy mutexes and cond vars
-        defer(pthread_mutex_destroy(&global_state.sim_mutex));
+        defer_(pthread_mutex_destroy(&global_state.sim_mutex));
         global_state.is_running = true;
 
         // Create threads
         pthread_create(&sim_thread, null, Simulation_thread, null);
         // Reserve wait for threads to finish
-        defer(pthread_join(sim_thread, null));
+        defer_(pthread_join(sim_thread, null));
         log_info("threads created\n");
 
         // Initialize timing variables
@@ -146,14 +146,14 @@ Err$void dh_main(Sli$Str_const args) {
             let time_dt         = time_Duration_asSecs_f64(time_elapsed);
 
             // 1) Process input
-            try(engine_Window_processEvents(window));
-            try(global_processInput(&viz, window));
+            try_(engine_Window_processEvents(window));
+            try_(global_processInput(&viz, window));
 
             // 2) Update
-            try(global_update(&viz, &sim));
+            try_(global_update(&viz, &sim));
 
             // 3) Render
-            try(Visualizer_render(global_state.viz));
+            try_(Visualizer_render(global_state.viz));
             engine_Window_present(window);
 
             // 4) FPS timing
@@ -228,7 +228,7 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     }
 #endif /* debug_comp_enabled */
 
-    try(Visualizer_processInput(viz, window));
+    try_(Visualizer_processInput(viz, window));
     return_void();
 }
 
@@ -239,24 +239,24 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
 
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
-            try(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
+            try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
             noneAsg(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
         for_slice(global_state.spawn_bodies.items, body) {
-            try(ArrList_append(sim->bodies.base, meta_refPtr(body)));
+            try_(ArrList_append(sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(global_state.spawn_bodies.base);
 
         // Update Visualizer's bodies and nodes from simulation
         ArrList_clearRetainingCap(viz->bodies.base);
-        try(ArrList_appendSlice(viz->bodies.base, meta_refSli(sim->bodies.items)));
+        try_(ArrList_appendSlice(viz->bodies.base, meta_refSli(sim->bodies.items)));
 
         ArrList_clearRetainingCap(viz->nodes.base);
-        try(ArrList_appendSlice(viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
+        try_(ArrList_appendSlice(viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
 
-        try(Visualizer_update(viz));
+        try_(Visualizer_update(viz));
         return_void();
     }
     scope_returnReserved;
@@ -343,7 +343,7 @@ static anyptr Simulation_thread(anyptr arg) {
             // In your code, you might also need to lock spawn_bodies
             // if it is shared with other threads.
             // log_info("sim_thread update\n");
-            catch (Simulation_step(global_state.sim), err, {
+            catch_from(Simulation_step(global_state.sim), err, {
                 log_error("Simulation_step failed: %s", Err_codeToCStr(err));
                 pthread_mutex_unlock(&global_state.sim_mutex);
                 break;

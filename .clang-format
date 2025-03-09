@@ -123,3 +123,108 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ## Specific settings for function calls and declarations
 # BreakAfterJavaFieldAnnotations: false
 # ExperimentalAutoDetectBinPacking: false
+
+# Macro handling configurations
+AttributeMacros:
+  - pub
+  - pvt
+  - static_inline
+  - extern_inline
+  - force_inline
+  - nullable
+  - nonnull
+  - alignAs
+  - must_check
+  - no_return
+
+ForEachMacros:
+  - pp_foreach
+  - for_slice
+  - for_slice_indexed
+  - for_slice_rev
+  - for_slice_rev_indexed
+  - for_array
+  - for_array_indexed
+  - for_array_rev
+  - for_array_rev_indexed
+
+IfMacros:
+  - if_ok
+  - if_err
+  - if_some
+  - if_none
+
+StatementAttributeLikeMacros:
+  - unused
+  - used
+  - ignore
+  - eval_return
+  - try_
+  - catch_
+  - catch_from
+  - unwrap
+  - orelse
+  - type$
+  - make$
+  - create$
+  - initial
+  - cleated
+
+Macros:
+  - ext_unscoped=/**/
+  - block_deferral=/**/
+  - match_=switch
+  - "pattern_(tag,capture)=case tag:"
+  - "fallback_=default:"
+
+TypeNames:
+  - var
+  - let
+  - anyptr
+  - anyptr_const
+  - rawptr_const$
+  - rawptr$
+  - Ptr_const$
+  - Ptr$
+  - Sli_const$
+  - Sli$
+  - Opt$
+  - Err$
+  - Arr$
+  - Grid$
+  - TypeOf
+  - TypeUnqualOf
+  - atomic_Value$
+
+WhitespaceSensitiveMacros:
+  - with_
+  - var_
+  - let_
+  - fn_
+  - fn_ext_scope
+  - config_ErrSet
+  - try_
+  - catch_
+  - catch_from
+  - unwrap
+  - orelse
+  - config_UnionEnum
+  - config_UnionEnumAsField
+  - tagUnion
+  - tagUnion$
+  - tagUnionAsg
+  - match_
+  - meta_refPtr
+  - meta_refSli
+  - meta_refPtr_const
+  - meta_refSli_const
+  - meta_castPtr$
+  - meta_castSli$
+  - meta_cast$
+  - meta_ptrToAny
+  - meta_sliToAny
+  - type$
+  - make$
+  - create$
+  - initial
+  - cleared

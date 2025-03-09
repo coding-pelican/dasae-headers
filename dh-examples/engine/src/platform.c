@@ -150,19 +150,19 @@ Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* para
     case engine_RenderBackendType_win32_gdi:
     case engine_RenderBackendType_directx:
         free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrCode_NotImplemented));
+        return_err(Err_NotImplemented());
 
     case engine_RenderBackendType_custom:
         if (!params->custom_data) {
             free(platform);
-            return_err(engine_PlatformErr_err(engine_PlatformErrCode_InvalidArgument));
+            return_err(Err_InvalidArgument());
         }
         platform->backend = params->custom_data;
         return_ok(platform);
 
     default:
         free(platform);
-        return_err(engine_PlatformErr_err(engine_PlatformErrCode_InvalidArgument));
+        return_err(Err_InvalidArgument());
     }
 }
 
@@ -209,7 +209,7 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
 
     // Process window metrics
-    if_some(Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
+    if_some (Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
         if (!engine_WindowMetrics_eq(&backend->last_metrics, &current_metrics)) {
             if (current_metrics.client_width != backend->last_metrics.client_width
                 || current_metrics.client_height != backend->last_metrics.client_height) {
@@ -350,7 +350,6 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
         if (consoleY & 1) { // is odd
 
         } else {
-
         }
         int yRemainder    = relativeY % cellHeight;
         int subCellOffset = (yRemainder >= cellHeight / 2) ? 1 : 0;

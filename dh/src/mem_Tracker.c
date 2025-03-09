@@ -29,7 +29,7 @@ void mem_Tracker_initWithFile(const char* log_path) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        catch (fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, {
+        catch_from(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, {
             ignore fprintf(stderr, "Failed to create directory for memory tracker log: %s\n", log_path);
             Err_print(err);
             ErrTrace_print();
@@ -86,8 +86,8 @@ void mem_Tracker_registerAlloc(void* ptr, usize size, const char* file, int line
     // clang-format on
 }
 
-void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char* func) {
-    if (!ptr) { return; }
+bool mem_Tracker_registerFree(void* ptr, const char* file, int line, const char* func) {
+    if (!ptr) { return false; }
 
     mem_Allocation** curr = &mem_Tracker_s_instance.allocations;
 
@@ -104,7 +104,7 @@ void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
             ptr, file, line, func
         );
         // clang-format on
-        return;
+        return false;
     }
 
     // Get the original allocation size
@@ -126,6 +126,7 @@ void mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
     mem_Allocation* to_free = *curr;
     *curr                   = to_free->next;
     free(to_free);
+    return true;
 }
 
 typedef struct LeakSite {

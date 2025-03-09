@@ -40,7 +40,7 @@ extern "C" {
 
 #else
 
-#define defer(_Statement...) SYN__defer(_Statement)
+#define defer_(_Statement...) SYN__defer(_Statement)
 
 #define block_defer    SYN__block_defer
 #define block_deferral SYN__block_deferral

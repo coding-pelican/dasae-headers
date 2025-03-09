@@ -75,9 +75,9 @@ Err$void dh_main(Sli$Str_const args) {
     unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
-        try(log_init("log/debug.log"));
+        try_(log_init("log/debug.log"));
         {
-            defer(log_fini());
+            defer_(log_fini());
             // Configure logging behavior
             log_setLevel(log_Level_debug);
             log_showTimestamp(true);
@@ -87,7 +87,7 @@ Err$void dh_main(Sli$Str_const args) {
         }
 
         // Initialize platform with terminal backend
-        let window = try(engine_Window_init(
+        let window = try_(engine_Window_init(
             &(engine_PlatformParams){
                 .backend_type  = engine_RenderBackendType_vt100,
                 .window_title  = "Game of Life",
@@ -96,17 +96,20 @@ Err$void dh_main(Sli$Str_const args) {
                 .default_color = Color_blue,
             }
         ));
-        defer(engine_Window_fini(window));
+        defer_(engine_Window_fini(window));
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(window_res_width, window_res_height, engine_CanvasType_rgba), err, {
+        let game_canvas = catch_from(engine_Canvas_create(
+            window_res_width,
+            window_res_height,
+            engine_CanvasType_rgba
+        ), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
-        defer(engine_Canvas_destroy(game_canvas));
+        defer_(engine_Canvas_destroy(game_canvas));
         log_info("canvas created\n");
-
         engine_Canvas_clearDefault(game_canvas);
         log_info("canvas cleared\n");
 
@@ -116,8 +119,8 @@ Err$void dh_main(Sli$Str_const args) {
 
         // Initialize game state
         var allocator = heap_Page_allocator(&(heap_Page){});
-        var state     = try(State_init(allocator, window_res_width, window_res_height));
-        defer(State_fini(&state));
+        var state     = try_(State_init(allocator, window_res_width, window_res_height));
+        defer_(State_fini(&state));
         // R-Pentomino
         {
             let x = (window_res_width - 5) / 2;
@@ -144,7 +147,7 @@ Err$void dh_main(Sli$Str_const args) {
             let dt      = time_Duration_asSecs_f64(elapsed);
 
             // 3) Process input/events
-            try(engine_Window_processEvents(window));
+            try_(engine_Window_processEvents(window));
 
             // 4) Update game state
             State_update(&state, dt);
@@ -175,7 +178,7 @@ Err$void dh_main(Sli$Str_const args) {
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target
-            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+            if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
             prev_frame_time = curr_frame_time;
@@ -191,11 +194,11 @@ Err$State State_init(mem_Allocator allocator, usize states_width, usize states_h
         const usize buffer_width    = states_width + 2;
         const usize buffer_height   = states_height + 2;
         const usize buffer_size     = buffer_width * buffer_height;
-        let         mem_curr_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-        errdefer(mem_Allocator_free(allocator, anySli(mem_curr_states)));
+        let         mem_curr_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
+        errdefer_(mem_Allocator_free(allocator, anySli(mem_curr_states)));
         memset(mem_curr_states.ptr, 0, buffer_size);
-        let mem_next_states = meta_cast$(Sli$i8, try(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-        errdefer(mem_Allocator_free(allocator, anySli(mem_next_states)));
+        let mem_next_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
+        errdefer_(mem_Allocator_free(allocator, anySli(mem_next_states)));
         memset(mem_next_states.ptr, 0, buffer_size);
         return_ok((State){
             .cells = {

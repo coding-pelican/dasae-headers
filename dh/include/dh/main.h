@@ -30,6 +30,7 @@ extern "C" {
 #include "dh/variant.h"
 #include "dh/union_enum.h"
 #include "dh/Str.h"
+#include "dh/fn.h"
 
 /*========== Macros =========================================================*/
 
@@ -52,15 +53,15 @@ extern "C" {
 #else /* !main_no_hijack */
 
 #if main_no_args && main_no_returns_err
-extern void dh_main(void);
+pub fn_(dh_main(void), void);
 #elif main_no_args && !main_no_returns_err
-extern must_check Err$void dh_main(void);
+pub fn_(dh_main(void), must_check Err$void);
 #elif !main_no_args && main_no_returns_err
 use_Sli$(Str_const);
-extern void dh_main(Sli$Str_const args);
+pub fn_(dh_main(Sli$Str_const args), void);
 #else  /* !main_no_args && !main_no_returns_err */
 use_Sli$(Str_const);
-extern must_check Err$void dh_main(Sli$Str_const args);
+pub fn_(dh_main(Sli$Str_const args), must_check Err$void);
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -82,7 +83,7 @@ int main(
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
-    catch (dh_main(), err, {
+    catch_from(dh_main(), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -112,7 +113,7 @@ int main(
             .len = argc
         );
     });
-    catch (dh_main(args), err, {
+    catch_from(dh_main(args), err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;

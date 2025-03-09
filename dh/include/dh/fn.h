@@ -23,24 +23,19 @@ extern "C" {
 
 #include "dh/scope.h"
 
+/*========== Macros and Declarations ========================================*/
+
+#define pub                                          comp_syn__pub
+#define pvt                                          comp_syn__pvt
+#define fn_(_Name_With_Params, T_Return...)          comp_syn__fn_(_Name_With_Params, T_Return)
+#define fn_ext_scope(_Name_With_Params, T_Return...) comp_syn__fn_ext_scope(_Name_With_Params, T_Return)
+
 /*========== Macros and Definitions =========================================*/
 
-#define pub                                            SYN__pub
-#define pvt                                            SYN__pvt
-#define fn_decl(_Name_With_Params, T_Return)           SYN__fn_decl(_Name_With_Params, T_Return)
-#define fn_impl(_Name_With_Params, T_Return, _Body...) SYN__fn_impl(_Name_With_Params, T_Return, _Body)
-
-/*========== Macros and Implementations =====================================*/
-
-#define SYN__pub                                       extern
-#define SYN__pvt                                       static
-#define SYN__fn_decl(_Name_With_Params, T_Return, ...) T_Return _Name_With_Params
-#define SYN__fn_impl(_Name_With_Params, T_Return, ...) \
-    T_Return _Name_With_Params {                       \
-        scope_reserveReturn(T_Return){                 \
-            __VA_ARGS__                                \
-        } scope_returnReserved;                        \
-    }
+#define comp_syn__pub                                          extern
+#define comp_syn__pvt                                          static
+#define comp_syn__fn_(_Name_With_Params, T_Return...)          T_Return _Name_With_Params
+#define comp_syn__fn_ext_scope(_Name_With_Params, T_Return...) fn_(_Name_With_Params, T_Return) ext_scope(T_Return)
 
 /*========== Example usage ==================================================*/
 
@@ -52,27 +47,29 @@ extern "C" {
 
 /* declarations */
 use_ErrSet$(math_Err, i32);
-pub fn_decl(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) must_check;
+pub fn_(math_divideSafe(i32 lhs, i32 rhs), must_check math_Err$i32);
 
 /* implementations */
-pub fn_impl(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32, {
+fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_(err(math_Err_DivisionByZero()));
     }
     return_ok(lhs / rhs);
-});
+}
+ext_unscoped;
 
 /* main */
-pub fn_impl(dh_main(Sli$Str_const args), Err$void, {
+fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try(math_divideSafe(10, 2)) == 5);
-    catch (math_divideSafe(10, 0), err, {
+    catch_from(math_divideSafe(10, 0), err, {
         let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
         debug_assert_true(Str_const_eq(err_code, Str_l("DivisionByZero")));
         return_err(err);
     });
     return_(ok({}));
-})
+}
+ext_unscoped;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
