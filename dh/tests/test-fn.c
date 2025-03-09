@@ -36,7 +36,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         // return_err(err);
     });
     printf("Error handled!\n");
-    let testLambda = ^i32(i32 lhs, i32 rhs) { return lhs + rhs; };
+    let testLambda = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
     printf("testLambda: %d\n", testLambda(10, 5));
     return_(ok({}));
 } ext_unscoped;

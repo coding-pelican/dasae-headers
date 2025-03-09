@@ -5,7 +5,7 @@
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-10 (date of creation)
  * @updated 2025-03-10 (date of last update)
- * @version v0.1-alpha
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
@@ -30,11 +30,11 @@ extern "C" {
 #define config_Callback(T_Callback, _Params, T_Return...) GEN__config_Callback(T_Callback, _Params, T_Return)
 
 /// Create a wrapper from a function pointer or block obj
-#define wrapFn(val_callbackFnPtr...)         comp_op__wrapFn(val_callbackFnPtr)
-#define wrapLambda(val_callbackLambdaObj...) comp_op__wrapLambda(val_callbackLambdaObj)
+#define wrapLam(val_callbackLamObj...) comp_op__wrapLam(val_callbackLamObj)
+#define wrapFn(val_callbackFnPtr...)   comp_op__wrapFn(val_callbackFnPtr)
 
-#define wrapFn$(T_Callback, val_callbackFnPtr...)         comp_op__wrapFn$(T_Callback, val_callbackFnPtr)
-#define wrapLambda$(T_Callback, val_callbackLambdaObj...) comp_op__wrapLambda$(T_Callback, val_callbackLambdaObj)
+#define wrapLam$(T_Callback, val_callbackLamObj...) comp_op__wrapLam$(T_Callback, val_callbackLamObj)
+#define wrapFn$(T_Callback, val_callbackFnPtr...)   comp_op__wrapFn$(T_Callback, val_callbackFnPtr)
 
 /// Invoke the callback wrapper with given arguments
 #define invoke(val_wrapper, _Args...) comp_op__invoke(pp_uniqTok(wrapper), val_wrapper, _Args)
@@ -44,42 +44,42 @@ extern "C" {
 #if BUILTIN_LANG_MODE_C && BUILTIN_COMP_CLANG
 #define GEN__config_Callback(T_Callback, _Params, T_Return...) \
     typedef struct T_Callback {                                \
-        bool is_lambda;                                        \
+        bool is_lam;                                           \
         union {                                                \
+            fn_((^lamObj)_Params, T_Return);                    \
             fn_((*fnPtr)_Params, T_Return);                     \
-            fn_((^lambdaObj)_Params, T_Return);                 \
         } callback;                                            \
     } T_Callback
 #else  /* others */
 typedef struct T_Callback {
-    bool is_lambda;
+    bool is_lam;
     union {
+        fn_((*lamObj)_Params, T_Return);
         fn_((*fnPtr)_Params, T_Return);
-        fn_((*lambdaObj)_Params, T_Return);
     } callback;
 } T_Callback
 #endif /* others */
 
-#define comp_op__wrapFn(val_callbackFnPtr...)      \
-    {                                              \
-        .is_lambda = false,                        \
-        .callback  = {.fnPtr = val_callbackFnPtr } \
+#define comp_op__wrapLam(val_callbackLamObj...)     \
+    {                                               \
+        .is_lam   = true,                           \
+        .callback = {.lamObj = val_callbackLamObj } \
     }
-#define comp_op__wrapLambda(val_callbackLambdaObj...)      \
-    {                                                      \
-        .is_lambda = true,                                 \
-        .callback  = {.lambdaObj = val_callbackLambdaObj } \
+#define comp_op__wrapFn(val_callbackFnPtr...)     \
+    {                                             \
+        .is_lam   = false,                        \
+        .callback = {.fnPtr = val_callbackFnPtr } \
     }
 
-#define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...)         ((T_Callback)wrapFn(val_callbackFnPtr))
-#define comp_op__wrapLambda$(T_Callback, val_callbackLambdaObj...) ((T_Callback)wrapLambda(val_callbackLambdaObj))
+#define comp_op__wrapLam$(T_Callback, val_callbackLamObj...) ((T_Callback)wrapLam(val_callbackLamObj))
+#define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...)   ((T_Callback)wrapFn(val_callbackFnPtr))
 
-#define comp_op__invoke(__wrapper, val_wrapper, _Args...) eval({      \
-    let __wrapper = val_wrapper;                                      \
-    eval_return(                                                      \
-        (__wrapper).is_lambda ? (__wrapper).callback.lambdaObj(_Args) \
-                              : (__wrapper).callback.fnPtr(_Args)     \
-    );                                                                \
+#define comp_op__invoke(__wrapper, val_wrapper, _Args...) eval({ \
+    let __wrapper = val_wrapper;                                 \
+    eval_return(                                                 \
+        (__wrapper).is_lam ? (__wrapper).callback.lamObj(_Args)  \
+                           : (__wrapper).callback.fnPtr(_Args)   \
+    );                                                           \
 })
 
 /*========== Example Usage ==================================================*/
@@ -129,19 +129,19 @@ fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
 // Example main function showing how to use the compatibility layer
 fn_ext_scope(dh_main(void), Err$void) {
     // Create a block/lambda
-    let lambdaAdd = lambda((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
+    let lambdaAdd = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
 
     // Using compatibility wrapper with function pointer
     IntBinOp_compat compatFn = wrapFn(funcAdd);
     printf("Function via compat: %d\n", invoke(compatFn, 10, 5));
 
     // Using compatibility wrapper with lambda/block
-    IntBinOp_compat compatLambda = wrapLambda(lambdaAdd);
+    IntBinOp_compat compatLambda = wrapLam(lambdaAdd);
     printf("Lambda via compat: %d\n", invoke(compatLambda, 10, 5));
 
     // Both function pointers and blocks work with the operate_compat function
     operateCompat(10, 5, (IntBinOp_compat)wrapFn(funcAdd));
-    operateCompat(10, 5, wrapLambda$(IntBinOp_compat, lambdaAdd));
+    operateCompat(10, 5, wrapLam$(IntBinOp_compat, lambdaAdd));
 
     // Only function pointers work with operate_fnptr
     operateFnptr(10, 5, funcAdd);

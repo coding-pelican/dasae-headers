@@ -78,20 +78,19 @@ force_inline math_Vec2f math_Vec2f_mulScalar(math_Vec2f lhs, f32 rhs);
 force_inline math_Vec2f math_Vec2f_divScalar(math_Vec2f lhs, f32 rhs);
 force_inline math_Vec2f math_Vec2f_modScalar(math_Vec2f lhs, f32 rhs);
 
-force_inline math_Vec2f math_Vec2f_negTo(math_Vec2f* v);
-force_inline math_Vec2f math_Vec2f_addTo(math_Vec2f* lhs, math_Vec2f rhs);
-force_inline math_Vec2f math_Vec2f_subTo(math_Vec2f* lhs, math_Vec2f rhs);
-force_inline math_Vec2f math_Vec2f_mulTo(math_Vec2f* lhs, math_Vec2f rhs);
-force_inline math_Vec2f math_Vec2f_divTo(math_Vec2f* lhs, math_Vec2f rhs);
-force_inline math_Vec2f math_Vec2f_modTo(math_Vec2f* lhs, math_Vec2f rhs);
-force_inline math_Vec2f math_Vec2f_scaleTo(math_Vec2f* v, f32 scalar);
-force_inline math_Vec2f math_Vec2f_scaleInvTo(math_Vec2f* v, f32 scalar);
+force_inline math_Vec2f* math_Vec2f_addAsg(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f* math_Vec2f_subAsg(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f* math_Vec2f_mulAsg(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f* math_Vec2f_divAsg(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f* math_Vec2f_modAsg(math_Vec2f* lhs, math_Vec2f rhs);
+force_inline math_Vec2f* math_Vec2f_scaleAsg(math_Vec2f* v, f32 scalar);
+force_inline math_Vec2f* math_Vec2f_scaleInvAsg(math_Vec2f* v, f32 scalar);
 
-force_inline math_Vec2f math_Vec2f_addScalarTo(math_Vec2f* lhs, f32 rhs);
-force_inline math_Vec2f math_Vec2f_subScalarTo(math_Vec2f* lhs, f32 rhs);
-force_inline math_Vec2f math_Vec2f_mulScalarTo(math_Vec2f* lhs, f32 rhs);
-force_inline math_Vec2f math_Vec2f_divScalarTo(math_Vec2f* lhs, f32 rhs);
-force_inline math_Vec2f math_Vec2f_modScalarTo(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f* math_Vec2f_addScalarAsg(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f* math_Vec2f_subScalarAsg(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f* math_Vec2f_mulScalarAsg(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f* math_Vec2f_divScalarAsg(math_Vec2f* lhs, f32 rhs);
+force_inline math_Vec2f* math_Vec2f_modScalarAsg(math_Vec2f* lhs, f32 rhs);
 
 /* Range Operations */
 force_inline math_Vec2f math_Vec2f_min(math_Vec2f lhs, math_Vec2f rhs);
@@ -307,6 +306,27 @@ force_inline math_Vec2d math_Vec2d_mul(math_Vec2d lhs, math_Vec2d rhs);
 force_inline math_Vec2d math_Vec2d_div(math_Vec2d lhs, math_Vec2d rhs);
 force_inline math_Vec2d math_Vec2d_mod(math_Vec2d lhs, math_Vec2d rhs);
 force_inline math_Vec2d math_Vec2d_scale(math_Vec2d v, f64 scalar);
+force_inline math_Vec2d math_Vec2d_scaleInv(math_Vec2d v, f64 scaler);
+
+force_inline math_Vec2d math_Vec2d_addScalar(math_Vec2d lhs, f64 rhs);
+force_inline math_Vec2d math_Vec2d_subScalar(math_Vec2d lhs, f64 rhs);
+force_inline math_Vec2d math_Vec2d_mulScalar(math_Vec2d lhs, f64 rhs);
+force_inline math_Vec2d math_Vec2d_divScalar(math_Vec2d lhs, f64 rhs);
+force_inline math_Vec2d math_Vec2d_modScalar(math_Vec2d lhs, f64 rhs);
+
+force_inline math_Vec2d* math_Vec2d_addAsg(math_Vec2d* lhs, math_Vec2d rhs);
+force_inline math_Vec2d* math_Vec2d_subAsg(math_Vec2d* lhs, math_Vec2d rhs);
+force_inline math_Vec2d* math_Vec2d_mulAsg(math_Vec2d* lhs, math_Vec2d rhs);
+force_inline math_Vec2d* math_Vec2d_divAsg(math_Vec2d* lhs, math_Vec2d rhs);
+force_inline math_Vec2d* math_Vec2d_modAsg(math_Vec2d* lhs, math_Vec2d rhs);
+force_inline math_Vec2d* math_Vec2d_scaleAsg(math_Vec2d* v, f64 scalar);
+force_inline math_Vec2d* math_Vec2d_scaleInvAsg(math_Vec2d* v, f64 scalar);
+
+force_inline math_Vec2d* math_Vec2d_addScalarAsg(math_Vec2d* lhs, f64 rhs);
+force_inline math_Vec2d* math_Vec2d_subScalarAsg(math_Vec2d* lhs, f64 rhs);
+force_inline math_Vec2d* math_Vec2d_mulScalarAsg(math_Vec2d* lhs, f64 rhs);
+force_inline math_Vec2d* math_Vec2d_divScalarAsg(math_Vec2d* lhs, f64 rhs);
+force_inline math_Vec2d* math_Vec2d_modScalarAsg(math_Vec2d* lhs, f64 rhs);
 
 /* Range Operations */
 force_inline math_Vec2d math_Vec2d_min(math_Vec2d lhs, math_Vec2d rhs);
@@ -872,45 +892,42 @@ force_inline math_Vec2f math_Vec2f_modScalar(math_Vec2f lhs, f32 rhs) {
     return math_Vec2f_mod(lhs, math_Vec2f_fill(rhs));
 }
 
-force_inline math_Vec2f math_Vec2f_negTo(math_Vec2f* v) {
-    return *v = math_Vec2f_neg(*v);
+force_inline math_Vec2f* math_Vec2f_addAsg(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_add(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_addTo(math_Vec2f* lhs, math_Vec2f rhs) {
-    return *lhs = math_Vec2f_add(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_subAsg(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_sub(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_subTo(math_Vec2f* lhs, math_Vec2f rhs) {
-    return *lhs = math_Vec2f_sub(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_mulAsg(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_mul(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_mulTo(math_Vec2f* lhs, math_Vec2f rhs) {
-    return *lhs = math_Vec2f_mul(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_divAsg(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_div(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_divTo(math_Vec2f* lhs, math_Vec2f rhs) {
-    return *lhs = math_Vec2f_div(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_modAsg(math_Vec2f* lhs, math_Vec2f rhs) {
+    return *lhs = math_Vec2f_mod(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_modTo(math_Vec2f* lhs, math_Vec2f rhs) {
-    return *lhs = math_Vec2f_mod(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_scaleAsg(math_Vec2f* v, f32 scalar) {
+    return *v = math_Vec2f_scale(*v, scalar), v;
 }
-force_inline math_Vec2f math_Vec2f_scaleTo(math_Vec2f* v, f32 scalar) {
-    return *v = math_Vec2f_scale(*v, scalar);
-}
-force_inline math_Vec2f math_Vec2f_scaleInvTo(math_Vec2f* v, f32 scalar) {
-    return *v = math_Vec2f_scaleInv(*v, scalar);
+force_inline math_Vec2f* math_Vec2f_scaleInvAsg(math_Vec2f* v, f32 scalar) {
+    return *v = math_Vec2f_scaleInv(*v, scalar), v;
 }
 
-force_inline math_Vec2f math_Vec2f_addScalarTo(math_Vec2f* lhs, f32 rhs) {
-    return *lhs = math_Vec2f_addScalar(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_addScalarAsg(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_addScalar(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_subScalarTo(math_Vec2f* lhs, f32 rhs) {
-    return *lhs = math_Vec2f_subScalar(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_subScalarAsg(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_subScalar(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_mulScalarTo(math_Vec2f* lhs, f32 rhs) {
-    return *lhs = math_Vec2f_mulScalar(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_mulScalarAsg(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_mulScalar(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_divScalarTo(math_Vec2f* lhs, f32 rhs) {
-    return *lhs = math_Vec2f_divScalar(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_divScalarAsg(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_divScalar(*lhs, rhs), lhs;
 }
-force_inline math_Vec2f math_Vec2f_modScalarTo(math_Vec2f* lhs, f32 rhs) {
-    return *lhs = math_Vec2f_modScalar(*lhs, rhs);
+force_inline math_Vec2f* math_Vec2f_modScalarAsg(math_Vec2f* lhs, f32 rhs) {
+    return *lhs = math_Vec2f_modScalar(*lhs, rhs), lhs;
 }
 
 /* Range Operations */
@@ -1306,6 +1323,63 @@ force_inline math_Vec2d math_Vec2d_mod(math_Vec2d lhs, math_Vec2d rhs) {
 }
 force_inline math_Vec2d math_Vec2d_scale(math_Vec2d v, f64 scalar) {
     return math_Vec2d_from(v.x * scalar, v.y * scalar);
+}
+force_inline math_Vec2d math_Vec2d_scaleInv(math_Vec2d v, f64 scaler) {
+    return math_Vec2d_from(v.x / scaler, v.y / scaler);
+}
+
+force_inline math_Vec2d math_Vec2d_addScalar(math_Vec2d lhs, f64 rhs) {
+    return math_Vec2d_add(lhs, math_Vec2d_fill(rhs));
+}
+force_inline math_Vec2d math_Vec2d_subScalar(math_Vec2d lhs, f64 rhs) {
+    return math_Vec2d_sub(lhs, math_Vec2d_fill(rhs));
+}
+force_inline math_Vec2d math_Vec2d_mulScalar(math_Vec2d lhs, f64 rhs) {
+    return math_Vec2d_mul(lhs, math_Vec2d_fill(rhs));
+}
+force_inline math_Vec2d math_Vec2d_divScalar(math_Vec2d lhs, f64 rhs) {
+    return math_Vec2d_div(lhs, math_Vec2d_fill(rhs));
+}
+force_inline math_Vec2d math_Vec2d_modScalar(math_Vec2d lhs, f64 rhs) {
+    return math_Vec2d_mod(lhs, math_Vec2d_fill(rhs));
+}
+
+force_inline math_Vec2d* math_Vec2d_addAsg(math_Vec2d* lhs, math_Vec2d rhs) {
+    return *lhs = math_Vec2d_add(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_subAsg(math_Vec2d* lhs, math_Vec2d rhs) {
+    return *lhs = math_Vec2d_sub(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_mulAsg(math_Vec2d* lhs, math_Vec2d rhs) {
+    return *lhs = math_Vec2d_mul(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_divAsg(math_Vec2d* lhs, math_Vec2d rhs) {
+    return *lhs = math_Vec2d_div(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_modAsg(math_Vec2d* lhs, math_Vec2d rhs) {
+    return *lhs = math_Vec2d_mod(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_scaleAsg(math_Vec2d* v, f64 scalar) {
+    return *v = math_Vec2d_scale(*v, scalar), v;
+}
+force_inline math_Vec2d* math_Vec2d_scaleInvAsg(math_Vec2d* v, f64 scalar) {
+    return *v = math_Vec2d_scaleInv(*v, scalar), v;
+}
+
+force_inline math_Vec2d* math_Vec2d_addScalarAsg(math_Vec2d* lhs, f64 rhs) {
+    return *lhs = math_Vec2d_addScalar(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_subScalarAsg(math_Vec2d* lhs, f64 rhs) {
+    return *lhs = math_Vec2d_subScalar(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_mulScalarAsg(math_Vec2d* lhs, f64 rhs) {
+    return *lhs = math_Vec2d_mulScalar(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_divScalarAsg(math_Vec2d* lhs, f64 rhs) {
+    return *lhs = math_Vec2d_divScalar(*lhs, rhs), lhs;
+}
+force_inline math_Vec2d* math_Vec2d_modScalarAsg(math_Vec2d* lhs, f64 rhs) {
+    return *lhs = math_Vec2d_modScalar(*lhs, rhs), lhs;
 }
 
 /* Range Operations */

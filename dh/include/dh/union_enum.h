@@ -28,45 +28,45 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Union enum */
-#define config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...) GEN__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type)
-#define config_UnionEnumAsField(Pair_1Tag_2Type...)       OP__config_UnionEnumAsField(Pair_1Tag_2Type)
+#define config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...) comp_gen__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type)
+#define config_UnionEnumAsField(Pair_1Tag_2Type...)       comp_gen__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
-#define tagUnion(E_UnionEnum_Tag, val_tagged...)                         OP__tagUnion(E_UnionEnum_Tag, val_tagged)
-#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
-#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) OP__tagUnionAsg(pp_uniqTok(addr_union_enum), var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
+#define tagUnion(E_UnionEnum_Tag, val_tagged...)                         comp_op__tagUnion(E_UnionEnum_Tag, val_tagged)
+#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) comp_op__tagUnionAsg(pp_uniqTok(addr_union_enum), var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
-#define extract(val_union_enum, E_UnionEnum_Tag)     OP__extract(val_union_enum, E_UnionEnum_Tag)
-#define extract_mut(var_union_enum, E_UnionEnum_Tag) OP__extract_mut(var_union_enum, E_UnionEnum_Tag)
+#define extract(val_union_enum, E_UnionEnum_Tag)     comp_op__extract(val_union_enum, E_UnionEnum_Tag)
+#define extract_mut(var_union_enum, E_UnionEnum_Tag) comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag)
 
 /* Union enum match expr with payload captures */
-#define match_(val_union_enum)                          SYN__match_(val_union_enum)
-#define match_mut_(var_union_enum)                      SYN__match_mut_(var_union_enum)
-#define pattern_(E_UnionEnum_Tag, _Payload_Capture)     SYN__pattern_(E_UnionEnum_Tag, _Payload_Capture)
-#define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) SYN__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
-#define fallback_                                       SYN__fallback_
+#define match_(val_union_enum)                          comp_syn__match_(val_union_enum)
+#define match_mut_(var_union_enum)                      comp_syn__match_mut_(var_union_enum)
+#define pattern_(E_UnionEnum_Tag, _Payload_Capture)     comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture)
+#define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
+#define fallback_                                       comp_syn__fallback_
 
 /*========== Implementations ================================================*/
 
-#define GEN__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...)              \
-    typedef struct T_UnionEnum {                                            \
-        enum {                                                              \
-            GEN__config_UnionEnum__enumTags(T_UnionEnum, Pair_1Tag_2Type)   \
-        } tag;                                                              \
-        union {                                                             \
-            GEN__config_UnionEnum__unionTypes(T_UnionEnum, Pair_1Tag_2Type) \
-        } data;                                                             \
+#define comp_gen__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...)              \
+    typedef struct T_UnionEnum {                                                 \
+        enum {                                                                   \
+            comp_gen__config_UnionEnum__enumTags(T_UnionEnum, Pair_1Tag_2Type)   \
+        } tag;                                                                   \
+        union {                                                                  \
+            comp_gen__config_UnionEnum__unionTypes(T_UnionEnum, Pair_1Tag_2Type) \
+        } data;                                                                  \
     } T_UnionEnum
 
-#define OP__config_UnionEnumAsField(Pair_1Tag_2Type...)       \
-    enum {                                                    \
-        GEN__config_UnionEnum__enumTags(~, Pair_1Tag_2Type)   \
-    } tag;                                                    \
-    union {                                                   \
-        GEN__config_UnionEnum__unionTypes(~, Pair_1Tag_2Type) \
+#define comp_gen__config_UnionEnumAsField(Pair_1Tag_2Type...)      \
+    enum {                                                         \
+        comp_gen__config_UnionEnum__enumTags(~, Pair_1Tag_2Type)   \
+    } tag;                                                         \
+    union {                                                        \
+        comp_gen__config_UnionEnum__unionTypes(~, Pair_1Tag_2Type) \
     } data;
 
-#define OP__tagUnion(E_UnionEnum_Tag, val_tagged...)                                             \
+#define comp_op__tagUnion(E_UnionEnum_Tag, val_tagged...)                                        \
     {                                                                                            \
         .tag  = (E_UnionEnum_Tag),                                                               \
         .data = {                                                                                \
@@ -76,57 +76,57 @@ extern "C" {
         }                                                                                        \
     }
 
-#define OP__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
+#define comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define OP__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
-    let __addr_union_enum = var_addr_union_enum;                                                       \
-    debug_assert_nonnull(__addr_union_enum);                                                           \
-    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);             \
-    eval_return __addr_union_enum;                                                                     \
+#define comp_op__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
+    let __addr_union_enum = var_addr_union_enum;                                                            \
+    debug_assert_nonnull(__addr_union_enum);                                                                \
+    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);                  \
+    eval_return __addr_union_enum;                                                                          \
 })
 
-#define OP__extract(val_union_enum, E_UnionEnum_Tag) eval({                  \
+#define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({             \
     let __union_enum = (val_union_enum);                                     \
     debug_assert(_union_enum.tag == (E_UnionEnum_Tag));                      \
     eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
 })
 
-#define OP__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({                 \
+#define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({            \
     var __union_enum = &(var_union_enum);                                       \
     debug_assert(_union_enum->tag == (E_UnionEnum_Tag));                        \
     eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
 })
 
-#define SYN__match_(val_union_enum) \
+#define comp_syn__match_(val_union_enum) \
     let_(_union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
 
-#define SYN__match_mut_(var_union_enum) \
+#define comp_syn__match_mut_(var_union_enum) \
     let_(_union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
 
-#define SYN__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
-    case E_UnionEnum_Tag:                                \
+#define comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
+    case E_UnionEnum_Tag:                                     \
         for (var _Payload_Capture = &as$(const struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define SYN__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) \
-    case E_UnionEnum_Tag:                                    \
+#define comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) \
+    case E_UnionEnum_Tag:                                         \
         for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define SYN__fallback_ \
+#define comp_syn__fallback_ \
     default:
 
-#define GEN__config_UnionEnum__enumTags(T_UnionEnum, ...) \
-    pp_foreach (GEN__config_UnionEnum__enumTag, T_UnionEnum, __VA_ARGS__)
+#define comp_gen__config_UnionEnum__enumTags(T_UnionEnum, ...) \
+    pp_foreach (comp_gen__config_UnionEnum__enumTag, T_UnionEnum, __VA_ARGS__)
 
-#define GEN__config_UnionEnum__enumTag(T_UnionEnum, _Pair) \
+#define comp_gen__config_UnionEnum__enumTag(T_UnionEnum, _Pair) \
     FIRST_OF_PAIR(_Pair),
 
-#define GEN__config_UnionEnum__unionTypes(T_UnionEnum, ...) \
-    pp_foreach (GEN__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
+#define comp_gen__config_UnionEnum__unionTypes(T_UnionEnum, ...) \
+    pp_foreach (comp_gen__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
 
-#define GEN__config_UnionEnum__unionType(T_UnionEnum, _Pair) \
-    struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) {        \
-        SECOND_OF_PAIR(_Pair)                                \
-        value;                                               \
+#define comp_gen__config_UnionEnum__unionType(T_UnionEnum, _Pair) \
+    struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) {             \
+        SECOND_OF_PAIR(_Pair)                                     \
+        value;                                                    \
     } pp_join($, FIRST_OF_PAIR(_Pair), Tagged);
 
 #define FIRST_OF_PAIR(_Pair)           FIRST_OF_PAIR_IMPL _Pair

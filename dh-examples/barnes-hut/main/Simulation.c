@@ -161,7 +161,7 @@ Err$void Simulation_collide(Simulation* self) {
         try_(sort_stableSortUsingTemp(
             self->sort_rect_indices_cache_as_temp,
             meta_refSli(indices),
-            wrapLambda$(sort_CmpFn, lambda((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+            wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
                 let idx_lhs  = *as$(const usize*, lhs);
                 let idx_rhs  = *as$(const usize*, rhs);
                 let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
@@ -257,8 +257,8 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     // Handle collision based on relative motion
     if (0.0f <= d_dot_v && math_Vec2f_ne(d, math_Vec2f_zero)) {
         let tmp = math_Vec2f_scale(d, r / math_Vec2f_len(d) - 1.0f);
-        math_Vec2f_subTo(&b1->pos, math_Vec2f_scale(tmp, weight1));
-        math_Vec2f_addTo(&b2->pos, math_Vec2f_scale(tmp, weight2));
+        math_Vec2f_subAsg(&b1->pos, math_Vec2f_scale(tmp, weight1));
+        math_Vec2f_addAsg(&b2->pos, math_Vec2f_scale(tmp, weight2));
         return;
     }
 
@@ -269,8 +269,8 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     let t = (d_dot_v + sqrtf(fmaxf(d_dot_v * d_dot_v - v_sq * (d_sq - r_sq), 0.0f))) / v_sq;
 
     // Move to collision point
-    math_Vec2f_subTo(&b1->pos, math_Vec2f_scale(v1, t));
-    math_Vec2f_subTo(&b2->pos, math_Vec2f_scale(v2, t));
+    math_Vec2f_subAsg(&b1->pos, math_Vec2f_scale(v1, t));
+    math_Vec2f_subAsg(&b2->pos, math_Vec2f_scale(v2, t));
 
     // Update distances post-collision
     let p1_new      = b1->pos;
@@ -287,6 +287,6 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     // Update velocities and positions
     b1->vel = v1_new;
     b2->vel = v2_new;
-    math_Vec2f_addTo(&b1->pos, math_Vec2f_scale(v1_new, t));
-    math_Vec2f_addTo(&b2->pos, math_Vec2f_scale(v2_new, t));
+    math_Vec2f_addAsg(&b1->pos, math_Vec2f_scale(v1_new, t));
+    math_Vec2f_addAsg(&b2->pos, math_Vec2f_scale(v2_new, t));
 }

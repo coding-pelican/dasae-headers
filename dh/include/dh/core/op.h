@@ -41,6 +41,7 @@ extern "C" {
 #define op_divBy(TSelf, TOther) pp_join3(_, TSelf, div, TOther)
 #define op_remBy(TSelf, TOther) pp_join3(_, TSelf, rem, TOther)
 
+#define op_asg(TSelf)              pp_join(_, TSelf, asg)
 #define op_addAsg(TSelf)           pp_join(_, TSelf, addAsg)
 #define op_subAsg(TSelf)           pp_join(_, TSelf, subAsg)
 #define op_mulAsg(TSelf)           pp_join(_, TSelf, mulAsg)
@@ -71,6 +72,7 @@ extern "C" {
 #define op_fnDivBy(TSelf, TOther) op_fnBinBy(divBy, TSelf, TOther)
 #define op_fnRemBy(TSelf, TOther) op_fnBinBy(remBy, TSelf, TOther)
 
+#define op_fnAsg(TSelf)              op_fnBinAsg(asg, TSelf)
 #define op_fnAddAsg(TSelf)           op_fnBinAsg(addAsg, TSelf)
 #define op_fnSubAsg(TSelf)           op_fnBinAsg(subAsg, TSelf)
 #define op_fnMulAsg(TSelf)           op_fnBinAsg(mulAsg, TSelf)
@@ -120,11 +122,12 @@ force_inline i32 op_fnMul(i32) { return self * other; }
 force_inline i32 op_fnDiv(i32) { return self / other; }
 force_inline i32 op_fnRem(i32) { return self % other; }
 
-force_inline i32 op_fnAddAsg(i32) { return *self = op_add(i32)(*self, other); }
-force_inline i32 op_fnSubAsg(i32) { return *self = op_sub(i32)(*self, other); }
-force_inline i32 op_fnMulAsg(i32) { return *self = op_mul(i32)(*self, other); }
-force_inline i32 op_fnDivAsg(i32) { return *self = op_div(i32)(*self, other); }
-force_inline i32 op_fnRemAsg(i32) { return *self = op_rem(i32)(*self, other); }
+force_inline i32* op_fnAsg(i32) { return *self = other, self; }
+force_inline i32* op_fnAddAsg(i32) { return *self = op_add(i32)(*self, other), self; }
+force_inline i32* op_fnSubAsg(i32) { return *self = op_sub(i32)(*self, other), self; }
+force_inline i32* op_fnMulAsg(i32) { return *self = op_mul(i32)(*self, other), self; }
+force_inline i32* op_fnDivAsg(i32) { return *self = op_div(i32)(*self, other), self; }
+force_inline i32* op_fnRemAsg(i32) { return *self = op_rem(i32)(*self, other), self; }
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

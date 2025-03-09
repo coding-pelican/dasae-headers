@@ -30,45 +30,45 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error result */
-#define Err$(T_Ok)                                TYPE_UNNAMED__Err$(T_Ok)
-#define use_Err$(T_Ok)                            GEN__use_Err$(T_Ok)
-#define decl_Err$(T_Ok)                           GEN__decl_Err$(T_Ok)
-#define impl_Err$(T_Ok)                           GEN__impl_Err$(T_Ok)
-#define Err_asNamed$(T_NamedErr, var_unnamed_err) OP__Err_asNamed$(T_NamedErr, var_unnamed_err)
+#define Err$(T_Ok)                                comp_type_unnamed__Err$(T_Ok)
+#define use_Err$(T_Ok)                            comp_gen__use_Err$(T_Ok)
+#define decl_Err$(T_Ok)                           comp_gen__decl_Err$(T_Ok)
+#define impl_Err$(T_Ok)                           comp_gen__impl_Err$(T_Ok)
+#define Err_asNamed$(T_NamedErr, var_unnamed_err) comp_op__Err_asNamed$(T_NamedErr, var_unnamed_err)
 
 /* Determines error result */
-#define err(val_err...) OP__err(val_err)
-#define ok(val_ok...)   OP__ok(val_ok)
+#define err(val_err...) comp_op__err(val_err)
+#define ok(val_ok...)   comp_op__ok(val_ok)
 
-#define err$(T_Err, val_err...) OP__err$(T_Err, val_err)
-#define ok$(T_Ok, val_ok...)    OP__ok$(T_Ok, val_ok)
+#define err$(T_Err, val_err...) comp_op__err$(T_Err, val_err)
+#define ok$(T_Ok, val_ok...)    comp_op__ok$(T_Ok, val_ok)
 
-#define errAsg(var_addr_result, val_err...) OP__errAsg(pp_uniqTok(addr_result), var_addr_result, val_err)
-#define okAsg(var_addr_result, val_ok...)   OP__okAsg(pp_uniqTok(addr_result), var_addr_result, val_ok)
+#define errAsg(var_addr_result, val_err...) comp_op__errAsg(pp_uniqTok(addr_result), var_addr_result, val_err)
+#define okAsg(var_addr_result, val_ok...)   comp_op__okAsg(pp_uniqTok(addr_result), var_addr_result, val_ok)
 
 /* Checks error result */
-#define isErr(val_result) OP__isErr(val_result)
-#define isOk(val_result)  OP__isOk(val_result)
+#define isErr(val_result) comp_op__isErr(val_result)
+#define isOk(val_result)  comp_op__isOk(val_result)
 
 /* Returns error result */
-#define return_err(val_err...) SYN__return_err(val_err)
-#define return_ok(val_ok...)   SYN__return_ok(val_ok)
+#define return_err(val_err...) comp_syn__return_err(val_err)
+#define return_ok(val_ok...)   comp_syn__return_ok(val_ok)
 
 /* Propagates error (similar to Zig's try_) */
-#define try_(_Expr) OP__try(_Expr)
+#define try_(_Expr) comp_op__try(_Expr)
 
 /* Handles error (similar to Zig's catch_from) */
-#define catch_(_Expr, val_ok_default...)                    OP__catch_(_Expr, val_ok_default)
-#define catch_from(_Expr, _Payload_Capture, _Stmt_Block...) OP__catch(_Expr, _Payload_Capture, _Stmt_Block)
+#define catch_(_Expr, val_ok_default...)                    comp_op__catch_(_Expr, val_ok_default)
+#define catch_from(_Expr, _Payload_Capture, _Stmt_Block...) comp_op__catch_from(_Expr, _Payload_Capture, _Stmt_Block)
 
 /* Defers when error */
-#define errdefer_(_Stmt...) SYN__errdefer(_Stmt)
+#define errdefer_(_Stmt...) comp_syn__errdefer(_Stmt)
 
 /* Error result payload captures */
-#define if_ok(val_result, _Payload_Capture)  SYN__if_ok(val_result, _Payload_Capture)
-#define else_err(_Payload_Capture)           SYN__else_err(_Payload_Capture)
-#define if_err(val_result, _Payload_Capture) SYN__if_err(val_result, _Payload_Capture)
-#define else_ok(_Payload_Capture)            SYN__else_ok(_Payload_Capture)
+#define if_ok(val_result, _Payload_Capture)  comp_syn__if_ok(val_result, _Payload_Capture)
+#define else_err(_Payload_Capture)           comp_syn__else_err(_Payload_Capture)
+#define if_err(val_result, _Payload_Capture) comp_syn__if_err(val_result, _Payload_Capture)
+#define else_ok(_Payload_Capture)            comp_syn__else_ok(_Payload_Capture)
 
 /* Error void result (special case) */
 typedef struct Err$Void Err$Void;
@@ -80,31 +80,31 @@ struct Err$Void {
     };
 };
 typedef Err$Void Err$void;
-#define return_void() SYN__return_void()
+#define return_void() comp_syn__return_void()
 
 /* Error result specific */
-#define use_ErrSet$(T_Err, T_Ok)  GEN__use_ErrSet$(T_Err, T_Ok)
-#define decl_ErrSet$(T_Err, T_Ok) GEN__decl_ErrSet$(T_Err, T_Ok)
-#define impl_ErrSet$(T_Err, T_Ok) GEN__impl_ErrSet$(T_Err, T_Ok)
+#define use_ErrSet$(T_Err, T_Ok)  comp_gen__use_ErrSet$(T_Err, T_Ok)
+#define decl_ErrSet$(T_Err, T_Ok) comp_gen__decl_ErrSet$(T_Err, T_Ok)
+#define impl_ErrSet$(T_Err, T_Ok) comp_gen__impl_ErrSet$(T_Err, T_Ok)
 
 /*========== Implementations ================================================*/
 
-#define TYPE_UNNAMED__Err$(T_Ok) \
-    struct {                     \
-        bool is_err;             \
-        union {                  \
-            Err  err;            \
-            T_Ok ok;             \
-        };                       \
+#define comp_type_unnamed__Err$(T_Ok) \
+    struct {                          \
+        bool is_err;                  \
+        union {                       \
+            Err  err;                 \
+            T_Ok ok;                  \
+        };                            \
     }
-#define GEN__use_Err$(T_Ok) \
-    decl_Err$(T_Ok);        \
+#define comp_gen__use_Err$(T_Ok) \
+    decl_Err$(T_Ok);             \
     impl_Err$(T_Ok)
-#define GEN__decl_Err$(T_Ok)                                                        \
+#define comp_gen__decl_Err$(T_Ok)                                                   \
     typedef struct pp_join($, Err$Ptr_const, T_Ok) pp_join($, Err$Ptr_const, T_Ok); \
     typedef struct pp_join($, Err$Ptr, T_Ok) pp_join($, Err$Ptr, T_Ok);             \
     typedef struct pp_join($, Err, T_Ok) pp_join($, Err, T_Ok)
-#define GEN__impl_Err$(T_Ok)                 \
+#define comp_gen__impl_Err$(T_Ok)            \
     struct pp_join($, Err$Ptr_const, T_Ok) { \
         bool is_err;                         \
         union {                              \
@@ -126,7 +126,7 @@ typedef Err$Void Err$void;
             T_Ok ok;                         \
         };                                   \
     }
-#define OP__Err_asNamed$(T_NamedErr, var_unnamed_err) eval({                                             \
+#define comp_op__Err_asNamed$(T_NamedErr, var_unnamed_err) eval({                                        \
     let _unnamed_err = var_unnamed_err;                                                                  \
     claim_assert_static(sizeOf(TypeOf(_unnamed_err)) == sizeOf(T_NamedErr));                             \
     claim_assert_static(alignOf(TypeOf(_unnamed_err)) == alignOf(T_NamedErr));                           \
@@ -142,41 +142,41 @@ typedef Err$Void Err$void;
     eval_return(*(T_NamedErr*)&_unnamed_err);                                                            \
 })
 
-#define OP__err(val_err...) { .is_err = true, .err = val_err }
-#define OP__ok(val_ok...)   { .is_err = false, .ok = val_ok }
+#define comp_op__err(val_err...) { .is_err = true, .err = val_err }
+#define comp_op__ok(val_ok...)   { .is_err = false, .ok = val_ok }
 
-#define OP__err$(T_Err, val_err...) ((T_Err)err(val_err))
-#define OP__ok$(T_Ok, val_ok)       ((T_Ok)ok(val_ok))
+#define comp_op__err$(T_Err, val_err...) ((T_Err)err(val_err))
+#define comp_op__ok$(T_Ok, val_ok)       ((T_Ok)ok(val_ok))
 
-#define OP__errAsg(__addr_result, var_addr_result, val_err...) eval({ \
-    let __addr_result = var_addr_result;                              \
-    *__addr_result    = err$(TypeOf(*__addr_result), val_err);        \
-    eval_return __addr_result;                                        \
+#define comp_op__errAsg(__addr_result, var_addr_result, val_err...) eval({ \
+    let __addr_result = var_addr_result;                                   \
+    *__addr_result    = err$(TypeOf(*__addr_result), val_err);             \
+    eval_return __addr_result;                                             \
 })
-#define OP__okAsg(__addr_result, var_result, val_ok...) eval({ \
-    let __addr_result = var_result;                            \
-    *__addr_result    = ok$(TypeOf(*__addr_result), val_ok);   \
-    eval_return __addr_result;                                 \
+#define comp_op__okAsg(__addr_result, var_result, val_ok...) eval({ \
+    let __addr_result = var_result;                                 \
+    *__addr_result    = ok$(TypeOf(*__addr_result), val_ok);        \
+    eval_return __addr_result;                                      \
 })
 
-#define OP__isErr(val_result) ((val_result).is_err)
-#define OP__isOk(val_result)  (!isErr(val_result))
+#define comp_op__isErr(val_result) ((val_result).is_err)
+#define comp_op__isOk(val_result)  (!isErr(val_result))
 
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
-#define SYN__return_err(val_err...)                            \
+#define comp_syn__return_err(val_err...)                       \
     debug_point ErrTrace_captureFrame();                       \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                                        \
         .err    = val_err,                                     \
     })
-#define SYN__return_ok(val_ok...)                              \
+#define comp_syn__return_ok(val_ok...)                         \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                                       \
         .ok     = val_ok,                                      \
     })
 
-#define OP__try(_Expr) ({        \
+#define comp_op__try(_Expr) ({   \
     let _result = (_Expr);       \
     if (_result.is_err) {        \
         return_err(_result.err); \
@@ -186,19 +186,19 @@ typedef Err$Void Err$void;
 
 #else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define SYN__return_err(val_err...)                \
+#define comp_syn__return_err(val_err...)           \
     debug_point ErrTrace_captureFrame();           \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = true,                            \
         .err    = val_err,                         \
     })
-#define SYN__return_ok(val_ok...)                  \
+#define comp_syn__return_ok(val_ok...)             \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = val_ok,                          \
     })
 
-#define OP__try(_Expr) ({        \
+#define comp_op__try(_Expr) ({   \
     let _result = (_Expr);       \
     if (_result.is_err) {        \
         return_err(_result.err); \
@@ -208,41 +208,41 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define OP__catch_(_Expr, val_ok_default...) eval({             \
+#define comp_op__catch_(_Expr, val_ok_default...) eval({        \
     var _result = (_Expr);                                      \
     ErrTrace_reset();                                           \
     eval_return _result.is_err ? (val_ok_default) : _result.ok; \
 })
-#define OP__catch(_Expr, _Payload_Capture, _Stmt_Block...) eval({ \
-    var _result = (_Expr);                                        \
-    if (_result.is_err) {                                         \
-        let _Payload_Capture = _result.err;                       \
-        _Stmt_Block;                                              \
-        ErrTrace_reset();                                         \
-    };                                                            \
-    eval_return _result.ok;                                       \
+#define comp_op__catch_from(_Expr, _Payload_Capture, _Stmt_Block...) eval({ \
+    var _result = (_Expr);                                                  \
+    if (isErr(_result)) {                                                   \
+        let _Payload_Capture = _result.err;                                 \
+        _Stmt_Block;                                                        \
+        ErrTrace_reset();                                                   \
+    };                                                                      \
+    eval_return _result.ok;                                                 \
 })
 
-#define SYN__errdefer(_Stmt...) defer_(                         \
+#define comp_syn__errdefer(_Stmt...) defer_(                    \
     if (getReservedReturn() && getReservedReturn()[0].is_err) { \
         _Stmt;                                                  \
     }                                                           \
 )
 
-#define SYN__if_ok(val_result, _Payload_Capture)          \
+#define comp_syn__if_ok(val_result, _Payload_Capture)     \
     scope_if(let _result = (val_result), !_result.is_err) \
         scope_with(let _Payload_Capture = _result.ok)
-#define SYN__else_err(_Payload_Capture) \
+#define comp_syn__else_err(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.err)
-#define SYN__if_err(val_result, _Payload_Capture)        \
+#define comp_syn__if_err(val_result, _Payload_Capture)   \
     scope_if(let _result = (val_result), _result.is_err) \
         scope_with(let _Payload_Capture = _result.err)
-#define SYN__else_ok(_Payload_Capture) \
+#define comp_syn__else_ok(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.ok)
 
 #if !SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
-#define SYN__return_void()                                     \
+#define comp_syn__return_void()                                \
     return setReservedReturn((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                                       \
         .ok     = (Void){},                                    \
@@ -250,7 +250,7 @@ typedef Err$Void Err$void;
 
 #else /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define SYN__return_void()                         \
+#define comp_syn__return_void()                    \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err = false,                           \
         .ok     = (Void){},                        \
@@ -258,14 +258,14 @@ typedef Err$Void Err$void;
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define GEN__use_ErrSet$(T_Err, T_Ok) \
-    decl_ErrSet$(T_Err, T_Ok);        \
+#define comp_gen__use_ErrSet$(T_Err, T_Ok) \
+    decl_ErrSet$(T_Err, T_Ok);             \
     impl_ErrSet$(T_Err, T_Ok)
-#define GEN__decl_ErrSet$(T_Err, T_Ok)                                                      \
+#define comp_gen__decl_ErrSet$(T_Err, T_Ok)                                                 \
     typedef struct pp_join3($, T_Err, Ptr_const, T_Ok) pp_join3($, T_Err, Ptr_const, T_Ok); \
     typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok);             \
     typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
-#define GEN__impl_ErrSet$(T_Err, T_Ok)           \
+#define comp_gen__impl_ErrSet$(T_Err, T_Ok)      \
     struct pp_join3($, T_Err, Ptr_const, T_Ok) { \
         bool is_err;                             \
         union {                                  \
