@@ -1,6 +1,7 @@
 #include "Simulation.h"
 #include "dh/core/cmp.h"
 #include "utils.h"
+#include "dh/sort.h"
 #include "dh/math.h"
 
 // n target: 100000
@@ -157,10 +158,10 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         // Sort indices using stableSort with comparison function and self pointer
-        try_(utils_stableSortUsingTemp(
+        try_(sort_stableSortUsingTemp(
             self->sort_rect_indices_cache_as_temp,
             meta_refSli(indices),
-            lambda((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+            wrapLambda$(sort_CmpFn, lambda((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
                 let idx_lhs  = *as$(const usize*, lhs);
                 let idx_rhs  = *as$(const usize*, rhs);
                 let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
@@ -168,7 +169,7 @@ Err$void Simulation_collide(Simulation* self) {
                 if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
                 if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
                 return cmp_Ord_eq;
-            }
+            })
         ));
         // try_(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
 

@@ -20,17 +20,17 @@ extern "C" {
 
 #include "dh/core.h"
 #include "dh/meta.h"
-#include "dh/fn.h"
+#include "dh/callback.h"
 #include "dh/mem/Allocator.h"
 
 /*========== Macros and Definitions =========================================*/
 
 #define sort_stableSort_threshold_merge_to_insertion (32)
 
-/// Function pointer types for sorting functions
-typedef fn_((*sort_CmpFn)(anyptr_const lhs, anyptr_const rhs), cmp_Ord);
-/// Function pointer types for sorting functions that take an argument
-typedef fn_((*sort_CmpWithArgFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord);
+/// Callback types for sorting functions
+config_Callback(sort_CmpFn, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
+/// Callback types for sorting functions that take an argument
+config_Callback(sort_CmpWithArgFn, (anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord);
 
 /*========== Function Prototypes ============================================*/
 

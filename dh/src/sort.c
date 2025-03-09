@@ -31,7 +31,7 @@ fn_(sort_insertionSort(
         var sorted_backward_index = unsorted_index;
         while (0 < sorted_backward_index) {
             var prev = curr - size;
-            if (cmpFn(prev, curr) <= cmp_Ord_eq) { break; }
+            if (invoke(cmpFn, prev, curr) <= cmp_Ord_eq) { break; }
             sort_swapBytes(prev, curr, size);
             curr = prev;
             sorted_backward_index--;
@@ -52,7 +52,7 @@ fn_(sort_insertionSortWithArg(
         var sorted_backward_index = unsorted_index;
         while (0 < sorted_backward_index) {
             var prev = current - size;
-            if (cmpFn(prev, current, arg) <= cmp_Ord_eq) { break; }
+            if (invoke(cmpFn, prev, current, arg) <= cmp_Ord_eq) { break; }
             sort_swapBytes(prev, current, size);
             current = prev;
             sorted_backward_index--;
@@ -99,7 +99,7 @@ fn_ext_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
     /* Check if merging is necessary */ {
         let left_last   = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
-        if (cmpFn(left_last, right_first) <= cmp_Ord_eq) {
+        if (invoke(cmpFn, left_last, right_first) <= cmp_Ord_eq) {
             return_void(); /* Already ordered, no merge needed */
         }
     }
@@ -112,7 +112,7 @@ fn_ext_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
     var temp_ptr  = temp_buf.ptr;
 
     while (left_ptr < left_end && right_ptr < right_end) {
-        if (cmpFn(left_ptr, right_ptr) <= cmp_Ord_eq) {
+        if (invoke(cmpFn, left_ptr, right_ptr) <= cmp_Ord_eq) {
             memcpy(temp_ptr, left_ptr, base_size);
             left_ptr += base_size;
         } else {
@@ -173,7 +173,7 @@ fn_ext_scope(sort_mergeSortWithArgUsingTempRecur( /* NOLINT(misc-no-recursion) *
     /* Check if merging is necessary */ {
         let left_last   = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
-        if (cmpFn(left_last, right_first, arg) <= cmp_Ord_eq) {
+        if (invoke(cmpFn, left_last, right_first, arg) <= cmp_Ord_eq) {
             return_void(); /* Already ordered, no merge needed */
         }
     }
@@ -186,7 +186,7 @@ fn_ext_scope(sort_mergeSortWithArgUsingTempRecur( /* NOLINT(misc-no-recursion) *
     var temp_ptr  = temp_buf.ptr;
 
     while (left_ptr < left_end && right_ptr < right_end) {
-        if (cmpFn(left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
+        if (invoke(cmpFn, left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
             memcpy(temp_ptr, left_ptr, base_size);
             left_ptr += base_size;
         } else {
