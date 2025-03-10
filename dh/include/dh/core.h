@@ -29,8 +29,8 @@ extern "C" {
 #include "core/type_info.h"
 #include "core/src_loc.h"
 
-#define op_asg(var_ptr, val)     OP__op_asg(var_ptr, val)
-#define OP__op_asg(var_ptr, val) (*(var_ptr) = type$(TypeOf(*(var_ptr)), val))
+// #define op_asg(var_ptr, val)     OP__op_asg(var_ptr, val)
+// #define OP__op_asg(var_ptr, val) (*(var_ptr) = type$(TypeOf(*(var_ptr)), val))
 
 #if defined(__cplusplus)
 } /* extern "C" */

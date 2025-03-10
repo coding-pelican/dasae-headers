@@ -224,7 +224,7 @@ WhitespaceSensitiveMacros:
   - meta_ptrToAny
   - meta_sliToAny
   - type$
-  - make$
-  - create$
-  - initial
-  - cleared
+  # - make$
+  # - create$
+  # - initial
+  # - cleared

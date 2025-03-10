@@ -27,7 +27,8 @@ extern "C" {
 /*========== Callback Wrapper ===============================================*/
 
 // Define the callback wrapper structure - contains both function pointer and block
-#define config_Callback(T_Callback, _Params, T_Return...) GEN__config_Callback(T_Callback, _Params, T_Return)
+#define Callback(_Params, T_Return...)                 comp_type_unnamed__Callback(_Params, T_Return)
+#define use_Callback(T_Callback, _Params, T_Return...) comp_gen__use_Callback(T_Callback, _Params, T_Return)
 
 /// Create a wrapper from a function pointer or block obj
 #define wrapLam(val_callbackLamObj...) comp_op__wrapLam(val_callbackLamObj)
@@ -42,15 +43,31 @@ extern "C" {
 /*========== Macros and Implementations =====================================*/
 
 #if BUILTIN_LANG_MODE_C && BUILTIN_COMP_CLANG
-#define GEN__config_Callback(T_Callback, _Params, T_Return...) \
-    typedef struct T_Callback {                                \
-        bool is_lam;                                           \
-        union {                                                \
-            fn_((^lamObj)_Params, T_Return);                    \
-            fn_((*fnPtr)_Params, T_Return);                     \
-        } callback;                                            \
+#define comp_type_unnamed__Callback(_Params, T_Return...) \
+    struct {                                              \
+        bool is_lam;                                      \
+        union {                                           \
+            fn_((^lamObj)_Params, T_Return);               \
+            fn_((*fnPtr)_Params, T_Return);                \
+        } callback;                                       \
+    }
+#define comp_gen__use_Callback(T_Callback, _Params, T_Return...) \
+    typedef struct T_Callback {                                  \
+        bool is_lam;                                             \
+        union {                                                  \
+            fn_((^lamObj)_Params, T_Return);                      \
+            fn_((*fnPtr)_Params, T_Return);                       \
+        } callback;                                              \
     } T_Callback
-#else  /* others */
+#else /* others */
+#define comp_type_unnamed__Callback(_Params, T_Return...) \
+    struct {                                              \
+        bool is_lam;                                      \
+        union {                                           \
+            fn_((*lamObj)_Params, T_Return);               \
+            fn_((*fnPtr)_Params, T_Return);                \
+        } callback;                                       \
+    }
 typedef struct T_Callback {
     bool is_lam;
     union {
@@ -113,7 +130,7 @@ fn_(sort_insertionSort_compat(
 // Original function pointer
 typedef fn_((*IntBinaryOp)(i32, i32), i32);
 // Compatible callback type that works with both function pointers and blocks
-config_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
+use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
 
 // Function that accepts only function pointers
 fn_(operateFnptr(i32 a, i32 b, IntBinaryOp op), void) {

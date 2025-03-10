@@ -28,9 +28,9 @@ extern "C" {
 #define sort_stableSort_threshold_merge_to_insertion (32)
 
 /// Callback types for sorting functions
-config_Callback(sort_CmpFn, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
+use_Callback(sort_CmpFn, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
 /// Callback types for sorting functions that take an argument
-config_Callback(sort_CmpWithArgFn, (anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord);
+use_Callback(sort_CmpWithArgFn, (anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord);
 
 /*========== Function Prototypes ============================================*/
 

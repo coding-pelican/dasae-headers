@@ -46,12 +46,12 @@ extern "C" {
 #else
 /* Pre-C++11 */
 #define nullptr NULL
-#define null    nullptr
+#define null    NULL
 #endif
 #else
 /* C */
 #define nullptr NULL
-#define null    nullptr
+#define null    NULL
 #endif
 
 /* Nullable-Nonnull attributes */

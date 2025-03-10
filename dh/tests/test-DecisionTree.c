@@ -384,10 +384,10 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
     dataset.n_features = actual_feature_count;
 
     // Allocate memory for features and labels
-    op_asg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$(usize, line_count) * actual_feature_count)));
+    typeAsg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$(usize, line_count) * actual_feature_count)));
     errdefer_(ArrList_fini(dataset.features.base));
 
-    op_asg(&dataset.labels, try_(ArrList_initCap(typeInfo$(i32), allocator, line_count)));
+    typeAsg(&dataset.labels, try_(ArrList_initCap(typeInfo$(i32), allocator, line_count)));
     errdefer_(ArrList_fini(dataset.labels.base));
 
     // Second pass: read data

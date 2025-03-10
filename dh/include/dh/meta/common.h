@@ -25,6 +25,8 @@ extern "C" {
 #include "dh/opt.h"
 #include "dh/err_res.h"
 
+#include "dh/sli.h"
+
 /*========== Meta Utilities =================================================*/
 
 /* Generic type */
@@ -37,31 +39,29 @@ extern Ptr Ptr_constCast(Ptr_const);
 
 typedef struct Sli_const Sli_const;
 typedef union Sli        Sli;
-#define Sli_const$(T)                             TYPE_UNNAMED__Sli_const$(T)
-#define Sli$(T)                                   TYPE_UNNAMED__Sli$(T)
-#define use_Sli$(T)                               GEN__use_Sli$(T)
-#define decl_Sli$(T)                              GEN__decl_Sli$(T)
-#define impl_Sli$(T)                              GEN__impl_Sli$(T)
-#define Sli_asNamed$(T_NamedSli, var_unnamed_sli) OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli)
-extern Sli          Sli_constCast(Sli_const);
-extern anyptr_const Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
-extern anyptr       Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
-extern anyptr_const Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
-extern anyptr       Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
+// #define Sli_const$(T)                             TYPE_UNNAMED__Sli_const$(T)
+// #define Sli$(T)                                   TYPE_UNNAMED__Sli$(T)
+// #define use_Sli$(T)                               GEN__use_Sli$(T)
+// #define decl_Sli$(T)                              GEN__decl_Sli$(T)
+// #define impl_Sli$(T)                              GEN__impl_Sli$(T)
+// #define Sli_asNamed$(T_NamedSli, var_unnamed_sli) OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli)
+extern Sli               Sli_constCast(Sli_const);
+extern anyptr_const      Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
+extern anyptr            Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
+extern anyptr_const      Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
+extern anyptr            Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
-#define Sli_from(var_ptr, val_len)                 OP__Sli_from(var_ptr, val_len)
-#define Sli_from$(T, var_ptr, val_len...)          OP__Sli_from$(T, var_ptr, val_len)
-#define Sli_range(var_ptr, val_begin, val_end)     OP__Sli_range(var_ptr, val_begin, val_end)
-#define Sli_range$(T, var_ptr, val_begin, val_end) OP__Sli_range$(T, var_ptr, val_begin, val_end)
-#define Sli_arr(var_arr...)                        OP__Sli_arr(var_arr)
-#define Sli_arr$(T, var_arr...)                    OP__Sli_arr$(T, var_arr)
+// #define Sli_from(var_ptr, val_len)        OP__Sli_from(var_ptr, val_len)
+// #define Sli_from$(T, var_ptr, val_len...) OP__Sli_from$(T, var_ptr, val_len)
+#define Sli_arr(var_arr...)     OP__Sli_arr(var_arr)
+#define Sli_arr$(T, var_arr...) OP__Sli_arr$(T, var_arr)
 
-#define Sli_assign(var_dst_ptr, var_src) OP__Sli_assign(pp_uniqTok(dst_ptr), pp_uniqTok(src), var_dst_ptr, var_src)
+// #define Sli_assign(var_dst_ptr, var_src) OP__Sli_assign(pp_uniqTok(dst_ptr), pp_uniqTok(src), var_dst_ptr, var_src)
 
-#define Sli_at(var_self, usize_index)               OP__Sli_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-#define Sli_slice(var_self, usize_begin, usize_end) OP__Sli_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), var_self, usize_begin, usize_end)
-#define Sli_prefix(var_self, usize_end)             OP__Sli_prefix(pp_uniqTok(self), var_self, usize_end)
-#define Sli_suffix(var_self, usize_begin)           OP__Sli_suffix(pp_uniqTok(self), var_self, usize_begin)
+// #define Sli_at(var_self, usize_index)               OP__Sli_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
+// #define Sli_slice(var_self, usize_begin, usize_end) OP__Sli_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), var_self, usize_begin, usize_end)
+// #define Sli_prefix(var_self, usize_end)             OP__Sli_prefix(pp_uniqTok(self), var_self, usize_end)
+// #define Sli_suffix(var_self, usize_begin)           OP__Sli_suffix(pp_uniqTok(self), var_self, usize_begin)
 
 /* Iterator support with scope (similar to Zig's for loops over slices) */
 #define for_slice(var_sli, _Iter_item)                          SYN__for_slice(pp_uniqTok(sli), pp_uniqTok(i), var_sli, _Iter_item)
@@ -169,19 +169,6 @@ union Sli {
     );                                               \
 })
 
-#define OP__Sli_range(var_ptr, val_begin, val_end)     { .ptr = (var_ptr) + (val_begin), .len = (val_end) - (val_begin) }
-#define OP__Sli_range$(T, var_ptr, val_begin, val_end) eval({                              \
-    let         _ptr   = var_ptr;                                                          \
-    const usize _begin = val_begin;                                                        \
-    const usize _end   = val_end;                                                          \
-    debug_assert_nonnull(_ptr);                                                            \
-    debug_assert_fmt(_begin < _end, "Invalid range (begin: %zu, end: %zu)", _begin, _end); \
-    eval_return make$(                                                                     \
-        T,                                                                                 \
-        .ptr = _ptr + _begin,                                                              \
-        .len = _end - _begin                                                               \
-    );                                                                                     \
-})
 #define OP__Sli_arr(var_arr...)     { .ptr = (var_arr), .len = countOf(var_arr) }
 #define OP__Sli_arr$(T, var_arr...) eval({ \
     let _arr = (var_arr);                  \
@@ -198,24 +185,6 @@ union Sli {
     (__dst_ptr)->ptr = (__src)->ptr;                                  \
     (__dst_ptr)->len = (__src)->len;                                  \
     eval_return*(__dst_ptr);                                          \
-})
-
-#define OP__Sli_at(__self, __index, var_self, usize_index) eval({                     \
-    let         __self  = var_self;                                                   \
-    const usize __index = usize_index;                                                \
-    debug_assert_fmt((__index) < (__self).len, "%llu < %llu", __index, (__self).len); \
-    eval_return(&(__self).ptr[__index]);                                              \
-})
-
-#define OP__Sli_slice(__self, __begin, __end, var_self, usize_begin, usize_end) eval({                              \
-    let   __self  = &(var_self);                                                                                    \
-    usize __begin = usize_begin;                                                                                    \
-    usize __end   = usize_end;                                                                                      \
-    eval_return make$(                                                                                              \
-        TypeOf(*_sli),                                                                                              \
-        .ptr = Sli_rawSlice_mut(typeInfo$(TypeOf(*((__self)->ptr))), (__self)->ptr, (__self)->len, __begin, __end), \
-        .len = _end - _begin                                                                                        \
-    );                                                                                                              \
 })
 
 #define OP__Sli_prefix(__self, var_sli, usize_end) eval({ \

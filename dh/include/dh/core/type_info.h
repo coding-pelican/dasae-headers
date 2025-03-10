@@ -40,16 +40,22 @@ force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
 #endif
 
 /// For explicit materialization type representation of abstract generic types
-#define type$(TDest, val_generic_src) FUNC__type$(TDest, val_generic_src)
+#define type$(TDest, val_generic_src)              FUNC__type$(TDest, val_generic_src)
+#define typeAsg(var_addr_dest, val_generic_src...) comp_op__typeAsg(var_addr_dest, val_generic_src)
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
+#define FUNC__typeInfo$(T)                                  ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
+#define comp_op__typeAsg(var_addr_dest, val_generic_src...) eval({   \
+    let __addr_dest = var_addr_dest;                                 \
+    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_generic_src); \
+    eval_return __addr_dest;                                         \
+})
 
 #if COMP_TIME
 #define comp_inline__TypeInfo_eq(val_lhs, val_rhs) eval({    \
-    let         _lhs = val_lhs;                              \
-    let         _rhs = val_rhs;                              \
+    let _lhs = val_lhs;                                      \
+    let _rhs = val_rhs;                                      \
     eval_return memcmp(&_lhs, &_rhs, sizeOf(TypeInfo)) == 0; \
 })
 #endif

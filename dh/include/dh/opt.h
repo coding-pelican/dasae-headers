@@ -56,7 +56,7 @@ extern "C" {
 #define orelse_default(_Expr, val_some_default...) comp_op__orelse_default(_Expr, val_some_default)
 #define orelse(_Expr, _Stmt_Block...)              comp_op__orelse(_Expr, _Stmt_Block)
 
-/* Optional payload capture (similar to Zig's if/while captures) */
+/* Optional value payload capture (similar to Zig's if/while captures) */
 #define if_some(val_opt, _Payload_Capture)        comp_syn__if_some(val_opt, _Payload_Capture)
 #define if_some_mut(var_opt, _Payload_Capture)    comp_syn__if_some_mut(var_opt, _Payload_Capture)
 #define if_none(val_opt)                          comp_syn__if_none(val_opt)
@@ -65,6 +65,45 @@ extern "C" {
 #define while_some(val_opt, _Payload_Capture)     comp_syn__while_some(val_opt, _Payload_Capture)
 #define while_some_mut(var_opt, _Payload_Capture) comp_syn__while_some_mut(var_opt, _Payload_Capture)
 #define while_none(val_opt)                       comp_syn__while_none(val_opt)
+
+/* Optional pointer */
+#define Optptr_const$(T)                                   comp_type_unnamed__Optptr_const$(T)
+#define Optptr$(T)                                         comp_type_unnamed__Optptr$(T)
+#define use_Optptr$(T)                                     comp_gen__use_Optptr$(T)
+#define decl_Optptr$(T)                                    comp_gen__decl_Optptr$(T)
+#define impl_Optptr$(T)                                    comp_gen__impl_Optptr$(T)
+#define Optptr_asNamed$(T_NamedOptptr, var_unnamed_optptr) comp_op__Optptr_asNamed$(T_NamedOptptr, var_unnamed_optptr)
+
+/* Determines optional pointer */
+#undef nullptr
+#define someptr(val_someptr...) comp_op__someptr(val_someptr)
+#define nullptr()               comp_op__nullptr()
+
+#define someptr$(T_Optptr, val_someptr...) comp_op__someptr$(T_Optptr, val_someptr)
+#define nullptr$(T_Optptr)                 comp_op__nullptr$(T_Optptr)
+
+#define someptrAsg(var_addr_optptr, val_someptr...) comp_op__someptrAsg(pp_uniqTok(addr_optptr), var_addr_optptr, val_someptr)
+#define nullptrAsg(var_addr_optptr...)              comp_op__nullptrAsg(pp_uniqTok(addr_optptr), var_addr_optptr)
+
+/* Checks optional pointer */
+#define isSomeptr(val_optptr) comp_op__isSomeptr(val_optptr)
+#define isNullptr(val_optptr) comp_op__isNullptr(val_optptr)
+
+/* Returns optional pointer */
+#define return_someptr(val_someptr...) comp_syn__return_someptr(val_someptr)
+#define return_nullptr()               comp_syn__return_nullptr()
+
+/* Unwraps optional pointer (similar to Zig's orelse and .?) */
+#define unwrapptr(_Expr)                                 comp_op__unwrapptr(_Expr)
+#define orelseptr_default(_Expr, val_someptr_default...) comp_op__orelseptr_default(_Expr, val_someptr_default)
+#define orelseptr(_Expr, _Stmt_Block...)                 comp_op__orelseptr(_Expr, _Stmt_Block)
+
+/* Optional pointer payload capture (similar to Zig's if/while captures) */
+#define if_someptr(val_optptr, _Payload_Capture)    comp_syn__if_someptr(val_optptr, _Payload_Capture)
+#define if_nullptr(val_optptr)                      comp_syn__if_nullptr(val_optptr)
+#define else_someptr(_Payload_Capture)              comp_syn__else_someptr(_Payload_Capture)
+#define while_someptr(val_optptr, _Payload_Capture) comp_syn__while_someptr(val_optptr, _Payload_Capture)
+#define while_nullptr(val_optptr)                   comp_syn__while_nullptr(val_optptr)
 
 /*========== Implementations ================================================*/
 
@@ -189,6 +228,58 @@ extern "C" {
     with_(let _Payload_Capture = &_result->value)
 #define comp_syn__while_none(val_opt) \
     while_(var _result = (val_opt), !_result.has_value)
+
+#define comp_type_unnamed__Optptr_const$(T) \
+    struct {                                \
+        rawptr_const$(T) ptr;               \
+    }
+#define comp_type_unnamed__Optptr$(T) \
+    union {                           \
+        Optptr_const$(T) as_const;    \
+        struct {                      \
+            rawptr$(T) ptr;           \
+        };                            \
+    }
+#define comp_gen__use_Optptr$(T) \
+    decl_Optptr$(T);             \
+    impl_Optptr$(T)
+#define comp_gen__decl_Optptr$(T)                                           \
+    typedef struct pp_join($, Optptr_const, T) pp_join($, Optptr_const, T); \
+    typedef union pp_join($, Optptr, T) pp_join($, Optptr, T)
+#define comp_gen__impl_Optptr$(T)             \
+    struct pp_join($, Optptr_const, T) {      \
+        rawptr_const$(T) ptr;                 \
+    };                                        \
+    union pp_join($, Optptr, T) {             \
+        pp_join($, Optptr_const, T) as_const; \
+        struct {                              \
+            rawptr$(T) ptr;                   \
+        };                                    \
+    }
+#define comp_op__Optptr_asNamed$(T_NamedOptptr, var_unnamed_optptr)
+
+#define comp_op__someptr(val_someptr...) { .ptr = val_someptr }
+#define comp_op__nullptr()               { .ptr = null }
+
+#define comp_op__someptr$(T_Optptr, val_someptr...) ((T_Optptr)someptr(val_someptr))
+#define comp_op__nullptr$(T_Optptr)                 ((T_Optptr) nullptr())
+
+#define comp_op__someptrAsg(__addr_optptr, var_addr_optptr, val_someptr) eval({ \
+    let __addr_optptr = var_addr_optptr;                                        \
+    debug_assert_nonnull(__addr_optptr);                                        \
+    *(__addr_optptr) = someptr$(TypeOf(*(__addr_optptr)), val_someptr);         \
+    eval_return __addr_optptr;                                                  \
+})
+
+#define comp_op__nullptrAsg(__addr_optptr, var_addr_optptr) eval({ \
+    let __addr_optptr = var_addr_optptr;                           \
+    debug_assert_nonnull(__addr_optptr);                           \
+    *(__addr_optptr) = nullptr$(TypeOf(*(__addr_optptr)));         \
+    eval_return __addr_optptr;                                     \
+})
+
+
+
 
 #if defined(__cplusplus)
 } /* extern "C" */

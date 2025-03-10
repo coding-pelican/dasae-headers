@@ -1,7 +1,47 @@
-#include "dh/core.h"
+#define main_no_args (1)
 #include "dh/main.h"
-#include "dh/fn.h"
-#include "dh/builtin/lambda.h"
+#include "dh/callback.h"
+#include <stdio.h>
+
+// Original function pointer
+typedef fn_((*IntBinaryOp)(i32, i32), i32);
+// Compatible callback type that works with both function pointers and blocks
+use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
+
+// Function that accepts only function pointers
+fn_(operateFnptr(i32 a, i32 b, IntBinaryOp op), void) {
+    printf("Result: %d\n", op(a, b));
+}
+// Function that accepts the compatible callback type
+fn_(operateCompat(i32 a, i32 b, IntBinOp_compat op), void) {
+    printf("Result: %d\n", invoke(op, a, b));
+}
+
+// Function that adds two integers
+fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
+// Example main function showing how to use the compatibility layer
+fn_ext_scope(dh_main(void), Err$void) {
+    // Create a block/lambda
+    let lambdaAdd = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
+
+    // Using compatibility wrapper with function pointer
+    IntBinOp_compat compatFn = wrapFn(funcAdd);
+    printf("Function via compat: %d\n", invoke(compatFn, 10, 5));
+
+    // Using compatibility wrapper with lambda/block
+    IntBinOp_compat compatLambda = wrapLam(lambdaAdd);
+    printf("Lambda via compat: %d\n", invoke(compatLambda, 10, 5));
+
+    // Both function pointers and blocks work with the operate_compat function
+    operateCompat(10, 5, (IntBinOp_compat)wrapFn(funcAdd));
+    operateCompat(10, 5, wrapLam$(IntBinOp_compat, lambdaAdd));
+
+    // Only function pointers work with operate_fnptr
+    operateFnptr(10, 5, funcAdd);
+    // operate_fnptr(10, 5, lambda_add); // This would fail!
+
+    return_(ok({}));
+} ext_unscoped;
 
 /* typedef fn_((^LambdaOp)(i32 lhs, i32 rhs), i32);
 fn_(add(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
