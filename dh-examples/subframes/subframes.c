@@ -81,23 +81,23 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
 
     // Create window
     let window = try_(engine_Window_init(&(engine_WindowConfig){
-            .allocator = allocator,
-            .title     = Str_l("Subframes"),
-            .rect_size = {
-                .x = window_res_width,
-                .y = window_res_height,
-            },
-            .default_color = some({ .packed = 0x181818FF }),
-        }));
+        .allocator = allocator,
+        .title     = Str_l("Subframes"),
+        .rect_size = {
+            .x = window_res_width,
+            .y = window_res_height,
+        },
+        .default_color = some({ .packed = 0x181818FF }),
+    }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
     let game_canvas = try_(engine_Canvas_create(
-            window_res_width,
-            window_res_height,
-            engine_CanvasType_rgba
-        ));
+        window_res_width,
+        window_res_height,
+        engine_CanvasType_rgba
+    ));
     {
         defer_(engine_Canvas_destroy(game_canvas));
         log_info("canvas created: %s", nameOf(game_canvas));
@@ -116,10 +116,10 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
     let overlay_canvas = try_(engine_Canvas_create(
-            window_res_width,
-            window_res_height,
-            engine_CanvasType_rgba
-        ));
+        window_res_width,
+        window_res_height,
+        engine_CanvasType_rgba
+    ));
     {
         defer_(engine_Canvas_destroy(overlay_canvas));
         log_info("canvas created: %s", nameOf(overlay_canvas));
@@ -144,12 +144,12 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
 
     // Bind engine core
     let core = try_(engine_core_Vt100_init(
-            &(engine_core_Vt100_Config){
-                .allocator = allocator,
-                .window    = window,
-                .input     = input,
-            }
-        ));
+        &(engine_core_Vt100_Config){
+            .allocator = allocator,
+            .window    = window,
+            .input     = input,
+        }
+    ));
     defer_(engine_core_Vt100_fini(core));
     log_info("engine ready");
 
