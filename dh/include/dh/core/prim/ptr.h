@@ -86,6 +86,8 @@ typedef ptrdiff_t   ptrdiff;
      */                                    \
     FUNC__rawptrIsNonnull(var_rawptr)
 
+#define ensureNonnull(val_ptr...) comp_op__ensureNonnull(val_ptr)
+
 #define deref(val_ptr...) comp_syn__deref(pp_uniqTok(ptr), val_ptr)
 
 /*========== Macros Implementation ==========================================*/
@@ -102,10 +104,12 @@ typedef ptrdiff_t   ptrdiff;
 #define FUNC__rawptrIsNull(var_rawptr)    ((var_rawptr) == null)
 #define FUNC__rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
 
-#define comp_syn__deref(__ptr, val_ptr...) (*eval({ \
+#define comp_op__ensureNonnull(val_ptr...) eval({   \
     let __ptr = val_ptr;                            \
     eval_return debug_assert_nonnull(__ptr), __ptr; \
-}))
+})
+
+#define comp_syn__deref(val_ptr...) (*ensureNonnull(val_ptr))
 
 /*========== Validation Checks ==============================================*/
 

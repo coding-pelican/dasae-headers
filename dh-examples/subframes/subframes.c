@@ -62,7 +62,6 @@ typedef ArrList$Color Colors;
 
 fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive-complexity) */
     Random_init();
-
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     {
