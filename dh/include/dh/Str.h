@@ -21,15 +21,36 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "meta/common.h"
+#include "sli.h"
 #include "mem/Allocator.h"
 
 /*========== String Types ===================================================*/
+
+/// Unmodifiable raw string (const byte null terminated slice)
+typedef SliZ_const$u8 StrZ_const;
+/// Modifiable raw string (byte null terminated slice)
+typedef SliZ$u8       StrZ;
+/// Using variant type for raw string */
+use_Opt$(StrZ_const);
+use_Opt$(StrZ);
+use_Err$(StrZ_const);
+use_Err$(StrZ);
+
+/// Unmodifiable sentinel string (const byte sentinel terminated slice)
+typedef SliS_const$u8 StrS_const;
+/// Modifiable sentinel string (byte sentinel terminated slice)
+typedef SliS$u8       StrS;
+/// Using variant type for sentinel string */
+use_Opt$(StrS_const);
+use_Opt$(StrS);
+use_Err$(StrS_const);
+use_Err$(StrS);
 
 /// Unmodifiable string (const byte slice)
 typedef Sli_const$u8 Str_const;
 /// Modifiable string (byte slice)
 typedef Sli$u8       Str;
+/// Using variant type for string */
 use_Opt$(Str_const);
 use_Opt$(Str);
 use_Err$(Str_const);
@@ -40,6 +61,12 @@ typedef u32 StrHash;
 use_Opt$(StrHash);
 
 /*========== String Creation ================================================*/
+
+#define StrZ_l(_literal_as_readonly...) /* For read-only raw string literals */ comp_syn__StrZ_l(_literal_as_readonly)
+#define StrZ_m(_literal_to_writable...) /* For writable raw string literals */ comp_syn__StrZ_m(_literal_to_writable)
+
+#define StrS_l(_literal_as_readonly...) /* For read-only sentinel string literals */ comp_syn__StrS_l(_literal_as_readonly)
+#define StrS_m(_literal_to_writable...) /* For writable sentinel string literals */ comp_syn__StrS_m(_literal_to_writable)
 
 #define Str_l(_literal_as_readonly...) /* For read-only string literals */ comp_syn__Str_l(_literal_as_readonly)
 #define Str_m(_literal_to_writable...) /* For writable string literals */ comp_syn__Str_m(_literal_to_writable)
@@ -168,10 +195,20 @@ extern Opt$Str_const StrTokenizer_next(StrTokenizer* self);
 
 /*========== Implementations ================================================*/
 
+#define comp_syn__StrZ_l(_literal_as_readonly...) \
+    ((StrZ_const){ .ptr = as$(const u8*, "" _literal_as_readonly) })
+#define comp_syn__StrZ_m(_literal_to_writable...) \
+    ((StrZ){ .ptr = literal$(u8[], "" _literal_to_writable) })
+
+#define comp_syn__StrS_l(_literal_as_readonly...) \
+    ((StrS_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .sentinel = '\0' })
+#define comp_syn__StrS_m(_literal_to_writable...) \
+    ((StrS){ .ptr = literal$(u8[], "" _literal_to_writable), .sentinel = '\0' })
+
 #define comp_syn__Str_l(_literal_as_readonly...) \
-    ((Str_const){ .ptr = (const u8*)"" _literal_as_readonly, .len = sizeof(_literal_as_readonly) - 1 })
+    ((Str_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .len = sizeOf(_literal_as_readonly) - 1 })
 #define comp_syn__Str_m(_literal_to_writable...) \
-    ((Str){ .ptr = (u8[]){ "" _literal_to_writable }, .len = sizeof(_literal_to_writable) - 1 })
+    ((Str){ .ptr = literal$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
 
 #if defined(__cplusplus)
 } /* extern "C" */

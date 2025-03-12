@@ -39,29 +39,14 @@ extern Ptr Ptr_constCast(Ptr_const);
 
 typedef struct Sli_const Sli_const;
 typedef union Sli        Sli;
-// #define Sli_const$(T)                             TYPE_UNNAMED__Sli_const$(T)
-// #define Sli$(T)                                   TYPE_UNNAMED__Sli$(T)
-// #define use_Sli$(T)                               GEN__use_Sli$(T)
-// #define decl_Sli$(T)                              GEN__decl_Sli$(T)
-// #define impl_Sli$(T)                              GEN__impl_Sli$(T)
-// #define Sli_asNamed$(T_NamedSli, var_unnamed_sli) OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli)
 extern Sli               Sli_constCast(Sli_const);
 extern anyptr_const      Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
 extern anyptr            Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
 extern anyptr_const      Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
 extern anyptr            Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
-// #define Sli_from(var_ptr, val_len)        OP__Sli_from(var_ptr, val_len)
-// #define Sli_from$(T, var_ptr, val_len...) OP__Sli_from$(T, var_ptr, val_len)
 #define Sli_arr(var_arr...)     OP__Sli_arr(var_arr)
 #define Sli_arr$(T, var_arr...) OP__Sli_arr$(T, var_arr)
-
-// #define Sli_assign(var_dst_ptr, var_src) OP__Sli_assign(pp_uniqTok(dst_ptr), pp_uniqTok(src), var_dst_ptr, var_src)
-
-// #define Sli_at(var_self, usize_index)               OP__Sli_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-// #define Sli_slice(var_self, usize_begin, usize_end) OP__Sli_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), var_self, usize_begin, usize_end)
-// #define Sli_prefix(var_self, usize_end)             OP__Sli_prefix(pp_uniqTok(self), var_self, usize_end)
-// #define Sli_suffix(var_self, usize_begin)           OP__Sli_suffix(pp_uniqTok(self), var_self, usize_begin)
 
 /* Iterator support with scope (similar to Zig's for loops over slices) */
 #define for_slice(var_sli, _Iter_item)                          SYN__for_slice(pp_uniqTok(sli), pp_uniqTok(i), var_sli, _Iter_item)
