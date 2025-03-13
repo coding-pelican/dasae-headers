@@ -37,22 +37,14 @@ typedef anyptr       Ptr;
 #define use_Ptr$(T)   GEN__use_Ptr$(T)
 extern Ptr Ptr_constCast(Ptr_const);
 
-typedef struct Sli_const Sli_const;
-typedef union Sli        Sli;
-extern Sli               Sli_constCast(Sli_const);
-extern anyptr_const      Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
-extern anyptr            Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
-extern anyptr_const      Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
-extern anyptr            Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
+extern Sli          Sli_constCast(Sli_const);
+extern anyptr_const Sli_rawAt(TypeInfo, anyptr_const, usize, usize);
+extern anyptr       Sli_rawAt_mut(TypeInfo, anyptr, usize, usize);
+extern anyptr_const Sli_rawSlice(TypeInfo, anyptr_const, usize, usize, usize);
+extern anyptr       Sli_rawSlice_mut(TypeInfo, anyptr, usize, usize, usize);
 
 #define Sli_arr(var_arr...)     OP__Sli_arr(var_arr)
 #define Sli_arr$(T, var_arr...) OP__Sli_arr$(T, var_arr)
-
-/* Iterator support with scope (similar to Zig's for loops over slices) */
-#define for_slice(var_sli, _Iter_item)                          SYN__for_slice(pp_uniqTok(sli), pp_uniqTok(i), var_sli, _Iter_item)
-#define for_slice_indexed(var_sli, _Iter_item, _Iter_index)     SYN__for_slice_indexed(pp_uniqTok(sli), var_sli, _Iter_item, _Iter_index)
-#define for_slice_rev(var_sli, _Iter_item)                      SYN__for_slice_rev(pp_uniqTok(sli), pp_uniqTok(i), var_sli, _Iter_item)
-#define for_slice_rev_indexed(var_sli, _Iter_item, _Iter_index) SYN__for_slice_rev_indexed(pp_uniqTok(sli), var_sli, _Iter_item, _Iter_index)
 
 /* Any type */
 typedef struct AnyType AnyType;
@@ -88,60 +80,6 @@ extern meta_Sli               meta_Sli_constCast(meta_Sli_const);
 #define GEN__use_Ptr$(T)                            \
     typedef Ptr_const$(T) pp_join($, Ptr_const, T); \
     typedef Ptr$(T) pp_join($, Ptr, T)
-
-struct Sli_const {
-    Ptr_const ptr;
-    usize     len;
-};
-union Sli {
-    Sli_const as_const;
-    struct {
-        Ptr   ptr;
-        usize len;
-    };
-};
-
-#define TYPE_UNNAMED__Sli_const$(T) \
-    struct {                        \
-        Ptr_const$(T) ptr;          \
-        usize len;                  \
-    }
-#define TYPE_UNNAMED__Sli$(T)   \
-    union {                     \
-        Sli_const$(T) as_const; \
-        struct {                \
-            Ptr$(T) ptr;        \
-            usize len;          \
-        };                      \
-    }
-#define GEN__use_Sli$(T) \
-    decl_Sli$(T);        \
-    impl_Sli$(T)
-#define GEN__decl_Sli$(T)                                             \
-    typedef struct pp_join($, Sli_const, T) pp_join($, Sli_const, T); \
-    typedef union pp_join($, Sli, T) pp_join($, Sli, T)
-#define GEN__impl_Sli$(T)                  \
-    struct pp_join($, Sli_const, T) {      \
-        Ptr_const$(T) ptr;                 \
-        usize len;                         \
-    };                                     \
-    union pp_join($, Sli, T) {             \
-        pp_join($, Sli_const, T) as_const; \
-        struct {                           \
-            Ptr$(T) ptr;                   \
-            usize len;                     \
-        };                                 \
-    }
-#define OP__Sli_asNamed$(T_NamedSli, var_unnamed_sli) eval({                                                \
-    let _unnamed_sli = var_unnamed_sli;                                                                     \
-    claim_assert_static(sizeOf(T_NamedSli) == sizeOf(TypeOf(_unnamed_sli)));                                \
-    claim_assert_static(alignOf(T_NamedSli) == alignOf(TypeOf(_unnamed_sli)));                              \
-    claim_assert_static(hasField(TypeOf(_unnamed_sli), len));                                               \
-    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, len), FieldTypeOf(TypeOf(_unnamed_sli), len))); \
-    claim_assert_static(hasField(TypeOf(_unnamed_sli), ptr));                                               \
-    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, ptr), FieldTypeOf(TypeOf(_unnamed_sli), ptr))); \
-    eval_return(*(T_NamedSli*)&_unnamed_sli);                                                               \
-})
 
 #define OP__Sli_from(var_ptr, val_len)        { .ptr = (var_ptr), .len = (val_len) }
 #define OP__Sli_from$(T, var_ptr, val_len...) eval({ \
@@ -181,22 +119,6 @@ union Sli {
     let __self = var_sli;                                     \
     eval_return Sli_slice(__self, usize_begin, (__self).len); \
 })
-
-#define SYN__for_slice(__sli, __i, var_sli, _Iter_item)                                 \
-    scope_with(let __sli = (var_sli)) for (usize __i = 0; (__i) < (__sli).len; ++(__i)) \
-        scope_with(let _Iter_item = Sli_at(__sli, __i))
-
-#define SYN__for_slice_indexed(__sli, var_sli, _Iter_item, _Iter_index)                                         \
-    scope_with(let __sli = (var_sli)) for (usize _Iter_index = 0; (_Iter_index) < (__sli).len; ++(_Iter_index)) \
-        scope_with(let _Iter_item = Sli_at(__sli, _Iter_index))
-
-#define SYN__for_slice_rev(__sli, __i, var_sli, _Iter_item)                       \
-    scope_with(let __sli = (var_sli)) for (usize __i = (__sli).len; (__i)-- > 0;) \
-        scope_with(let _Iter_item = Sli_at(__sli, __i))
-
-#define SYN__for_slice_rev_indexed(__sli, var_sli, _Iter_item, _Iter_index)                       \
-    scope_with(let __sli = (var_sli)) for (usize _Iter_index = (__sli).len; (_Iter_index)-- > 0;) \
-        scope_with(let _Iter_item = Sli_at(__sli, _Iter_index))
 
 // clang-format off
 use_Opt$(Ptr_const); use_Opt$(Ptr);

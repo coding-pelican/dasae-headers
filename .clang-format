@@ -128,8 +128,8 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 AttributeMacros:
   - pub
   - pvt
-  - static_inline
   - extern_inline
+  - static_inline
   - force_inline
   - nullable
   - nonnull
@@ -149,28 +149,38 @@ ForEachMacros:
   - for_array_rev_indexed
 
 IfMacros:
-  - if_ok
-  - if_err
   - if_some
   - if_none
+  - if_ok
+  - if_err
 
 StatementAttributeLikeMacros:
   - unused
   - used
   - ignore
+  - eval
   - eval_return
-  - try_
-  - catch_
-  - catch_from
-  - unwrap
-  - orelse
   - type$
   - make$
   - create$
   - initial
-  - cleated
+  - cleared
+  - unwrap
+  - orelse
+  - return_some
+  - return_none
+  - try_
+  - catch_
+  - catch_from
+  - return_ok
+  - return_err
 
 Macros:
+  - type$=/**/
+  - make$=/**/
+  - create$=/**/
+  - initial=/**/
+  - cleared=/**/
   - ext_unscoped=/**/
   - block_deferral=/**/
   - match_=switch
@@ -178,28 +188,35 @@ Macros:
   - "fallback_=default:"
 
 TypeNames:
-  - var
   - let
-  - anyptr
+  - var
   - anyptr_const
+  - anyptr
   - rawptr_const$
   - rawptr$
   - Ptr_const$
   - Ptr$
+  - SliZ_const$
+  - SliZ$
+  - SliS_const$
+  - SliS$
   - Sli_const$
   - Sli$
-  - Opt$
-  - Err$
-  - Arr$
+  - Grid_const$
   - Grid$
+  - Arr_const$
+  - Arr$
+  - Opt$
+  - Optptr$
+  - Err$
   - TypeOf
   - TypeUnqualOf
   - atomic_Value$
 
 WhitespaceSensitiveMacros:
   - with_
-  - var_
   - let_
+  - var_
   - fn_
   - fn_ext_scope
   - config_ErrSet
@@ -223,7 +240,7 @@ WhitespaceSensitiveMacros:
   - meta_cast$
   - meta_ptrToAny
   - meta_sliToAny
-  - type$
+  # - type$
   # - make$
   # - create$
   # - initial

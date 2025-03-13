@@ -172,7 +172,7 @@ Err$void dh_main(Sli$Str_const args) {
             // 5) sleep
             let time_now        = time_Instant_now();
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
-            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
+            if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;
@@ -240,11 +240,11 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            noneAsg(viz->spawn.confirmed);
+            noneAsg(&viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
-        for_slice(global_state.spawn_bodies.items, body) {
+        for_slice (global_state.spawn_bodies.items, body) {
             try_(ArrList_append(sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(global_state.spawn_bodies.base);

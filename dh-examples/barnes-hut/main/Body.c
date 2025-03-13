@@ -11,6 +11,6 @@ Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius) {
 }
 
 void Body_update(Body* self, f32 dt) {
-    math_Vec2f_addTo(&self->vel, math_Vec2f_scale(self->acc, dt));
-    math_Vec2f_addTo(&self->pos, math_Vec2f_scale(self->vel, dt));
+    math_Vec2f_addAsg(&self->vel, math_Vec2f_scale(self->acc, dt));
+    math_Vec2f_addAsg(&self->pos, math_Vec2f_scale(self->vel, dt));
 }

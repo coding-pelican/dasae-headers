@@ -89,13 +89,13 @@ force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) 
 }
 /// Returns the current mouse position converted to world coords.
 force_inline Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
-    return Visualizer_screenToWorld(self, engine_Mouse_getPosition());
+    return Visualizer_screenToWorld(self, engine_Mouse_getPos());
 }
 
 /* Core visualizer functions */
 Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
     reserveReturn(Err$Visualizer);
-    return_ok((Visualizer){
+    return_ok({
         .pos   = math_Vec2f_zero, // camera center pos
         .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
         // .scale = 3600,
@@ -114,7 +114,7 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
             .min = 0,
             .max = 0,
         },
-        .cache_stack = type$(ArrList$Visualizer_QuadCache, try(ArrList_initCap(typeInfo$(Visualizer_QuadCache), allocator, 12500))),
+        .cache_stack = type$(ArrList$Visualizer_QuadCache, try_(ArrList_initCap(typeInfo$(Visualizer_QuadCache), allocator, 12500))),
 
         .spawn = {
             .body      = none(),
@@ -134,10 +134,10 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
 void Visualizer_destroy(Visualizer* self) {
     debug_assert_nonnull(self);
 
-    ArrList_fini(&self->cache_stack.base);
+    ArrList_fini(self->cache_stack.base);
 
-    ArrList_fini(&self->bodies.base);
-    ArrList_fini(&self->nodes.base);
+    ArrList_fini(self->bodies.base);
+    ArrList_fini(self->nodes.base);
 }
 
 typedef struct Control {
@@ -178,14 +178,14 @@ force_inline void VisualizerInput_toggleVisualizationQuadTree(Visualizer* self) 
 force_inline void VisualizerInput_onPanBegin(Visualizer* self) {
     if (self->is_panning) { return; }
     // Store screen coordinates & camera pos
-    self->pan_screen_begin = engine_Mouse_getPosition();
+    self->pan_screen_begin = engine_Mouse_getPos();
     self->pan_cam_begin    = self->pos;
     self->is_panning       = true;
 }
 // Call this each frame while the middle mouse is held:
 force_inline void VisualizerInput_handlePan(Visualizer* self) {
     // Current mouse position in SCREEN space
-    let mouse_now_screen = engine_Mouse_getPosition();
+    let mouse_now_screen = engine_Mouse_getPos();
 
     // Convert BOTH the original "pan begin" screen coords
     // and the new screen coords into world space
@@ -211,7 +211,7 @@ force_inline void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta)
     if (scroll_delta == 0) { return; }
 
     // 1) Find the world coords under the mouse BEFORE changing scale
-    let mouse_screen       = engine_Mouse_getPosition();
+    let mouse_screen       = engine_Mouse_getPos();
     let mouse_world_before = Visualizer_screenToWorld(self, mouse_screen);
 
     // 2) Choose a zoom factor
@@ -289,9 +289,9 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     }
 
     // Handle zooming
-    scope_if(let scroll_delta = engine_Mouse_getScrollDelta(), scroll_delta != 0) {
+    scope_if(let scroll_delta = engine_Mouse_getScrollSpeed(), scroll_delta != 0) {
         log_debug("mouse wheel scroll: zoom begin\n");
-        VisualizerInput_handleZoom(self, scroll_delta);
+        VisualizerInput_handleZoom(self, as$(i32, scroll_delta));
     }
 
     // FIXME: Handle body spawning
@@ -299,9 +299,9 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button pressed");
         let world_mouse = Visualizer_mousePosToWorld(self);
 
-        someAsg(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-        someAsg(self->spawn.angle, 0.0f);
-        someAsg(self->spawn.total, 0.0f);
+        someAsg(&self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
+        someAsg(&self->spawn.angle, 0.0f);
+        someAsg(&self->spawn.total, 0.0f);
 
     } else if (engine_Mouse_held(engine_MouseButton_right)) {
         log_debug("right mouse button held");
@@ -320,7 +320,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
                 body->radius = cbrtf(body->mass);
             }
             else {
-                someAsg(self->spawn.angle, atan2f(d.y, d.x));
+                someAsg(&self->spawn.angle, atan2f(d.y, d.x));
             }
             body->vel = d;
         }
@@ -329,11 +329,11 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button released");
         if_some_mut(self->spawn.body, body) {
             if_none(self->spawn.confirmed) {
-                someAsg(self->spawn.confirmed, *body);
+                someAsg(&self->spawn.confirmed, *body);
             }
-            noneAsg(self->spawn.body);
-            noneAsg(self->spawn.angle);
-            noneAsg(self->spawn.total);
+            noneAsg(&self->spawn.body);
+            noneAsg(&self->spawn.angle);
+            noneAsg(&self->spawn.total);
         }
     }
     return_void();
@@ -345,8 +345,8 @@ Err$void Visualizer_update(Visualizer* self) {
 
     // Handle spawned body confirmation
     if_some_mut(self->spawn.confirmed, confirmed) {
-        try(ArrList_append(&self->bodies.base, meta_refPtr(confirmed)));
-        noneAsg(self->spawn.confirmed);
+        try_(ArrList_append(self->bodies.base, meta_refPtr(confirmed)));
+        noneAsg(&self->spawn.confirmed);
     }
 
     return_void();
@@ -367,7 +367,7 @@ Err$void        Visualizer_render(Visualizer* self) {
     }
     // Draw quad-tree
     if (self->shows_quad_tree) {
-        try(Visualizer_renderQuadTree(self));
+        try_(Visualizer_renderQuadTree(self));
     }
     /* let end_duration = time_Instant_elapsed(begin_instant);
     log_info("Render time: %lfms", time_Duration_asSecs_f64(end_duration)); */
@@ -551,17 +551,17 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
     if (depth_range->max <= depth_range->min) {
         let stack = eval({
             let cache = &self->cache_stack;
-            ArrList_clearRetainingCap(&cache->base);
+            ArrList_clearRetainingCap(cache->base);
             eval_return cache;
         });
-        try(ArrList_append(
-            &stack->base,
+        try_(ArrList_append(
+            stack->base,
             meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
         ));
 
         var min_depth = usize_limit;
         var max_depth = 0ull;
-        while_some(ArrList_popOrNull(&stack->base), capture) {
+        while_some(ArrList_popOrNull(stack->base), capture) {
             let item = *meta_cast$(Visualizer_QuadCache*, capture);
             let node = Sli_at(self->nodes.items, item.node_idx);
 
@@ -571,8 +571,8 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
                 continue;
             }
             for (usize i = 0; i < 4; ++i) {
-                try(ArrList_append(
-                    &stack->base,
+                try_(ArrList_append(
+                    stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
                 ));
             }
@@ -584,21 +584,21 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
 
     let stack = eval({
         let cache = &self->cache_stack;
-        ArrList_clearRetainingCap(&cache->base);
+        ArrList_clearRetainingCap(cache->base);
         eval_return cache;
     });
-    try(ArrList_append(
-        &stack->base,
+    try_(ArrList_append(
+        stack->base,
         meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
     ));
-    while_some(ArrList_popOrNull(&stack->base), capture) {
+    while_some(ArrList_popOrNull(stack->base), capture) {
         let item = *meta_cast$(Visualizer_QuadCache*, capture);
         let node = Sli_at(self->nodes.items, item.node_idx);
 
         if (QuadNode_isBranch(node) && item.depth < max_depth) {
             for (usize i = 0; i < 4; ++i) {
-                try(ArrList_append(
-                    &stack->base,
+                try_(ArrList_append(
+                    stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
                 ));
             }

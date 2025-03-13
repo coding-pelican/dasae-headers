@@ -1,80 +1,16 @@
-#include "dh/core.h"
-
-/* typedef struct SliZ_const$i32 {
-    const i32* ptr;
-} SliZ_const$i32;
-typedef union SliZ$i32 {
-    SliZ_const$i32 as_const;
-    struct {
-        i32* ptr;
-    };
-} SliZ$i32;
-
-typedef union Sli_const$i32 {
-    SliZ_const$i32 as_null_terminated;
-    struct {
-        const i32* ptr;
-        usize      len;
-    };
-} Sli_const$i32;
-typedef union Sli$i32 {
-    Sli_const$i32 as_const;
-    SliZ$i32      as_null_terminated;
-    struct {
-        i32*  ptr;
-        usize len;
-    };
-} Sli$i32;
-
-typedef struct SliS_const$i32 {
-    const i32* ptr;
-    i32        sentinel;
-} SliS_const$i32;
-typedef union SliS$i32 {
-    SliS_const$i32 as_const;
-    struct {
-        i32* ptr;
-        i32  sentinel;
-    };
-} SliS$i32;
-
-typedef union TestSli {
-    SliZ$i32 null_terminated;
-    SliS$i32 sentinel_terminated;
-    Sli$i32  normal;
-} TestSli;
-
-void test() {
-    let sli                 = (TestSli){ 0 };
-    let null_terminated     = sli.null_terminated;
-    let sentinel_terminated = sli.sentinel_terminated;
-    let normal              = sli.normal;
-    let unnamed_typed       = (TypeOf(sli.null_terminated)){};
-
-    ignore null_terminated;
-    ignore sentinel_terminated;
-    ignore normal;
-    ignore unnamed_typed;
-
-    // let     typed_please        = (TypeOf(eval({
-    //     let ensure_typed = sli.null_terminated;
-    //     eval_return ensure_typed;
-    // }))){ .ptr = 0 };
-    // FieldTypeOf(TypeOf(sli), null_terminated) abc = { 0 };
-    // SliZ$i32 d                                    = abc;
-    // SliS$i32 e                                    = abc;
-    // d.ptr                                         = 0;
-} */
-#include "dh/sli.h"
-
-static fn_(slice_example(void), void);
-
 #define main_no_args (1)
 #include "dh/main.h"
+
+#include "dh/core.h"
+#include "dh/sli.h"
+
+
+static fn_(slice_example(void), void);
 fn_ext_scope(dh_main(void), Err$void) {
     slice_example();
     return_ok({});
 } ext_unscoped;
+
 
 decl_Sli$(u8);
 decl_Sli$(i32);
@@ -108,6 +44,7 @@ static fn_(slice_example(void), void) {
     let str_z = SliZ_from$(SliZ$u8, str);
     let ch    = SliZ_getAt(str_z, 1); // 'e'
     // let hello_sli = SliZ_toSli$(Sli$u8, str_z); // Convert to regular slice
+    printf("%s\n", str_z.ptr);
 
     // Working with sentinel-terminated slices (SliS)
     i32 numbers_with_sentinel[] = { 1, 2, 3, 4, 5, -1, 6, 7 }; // -1 is sentinel
@@ -115,8 +52,22 @@ static fn_(slice_example(void), void) {
     // let s_len                   = SliS_len(nums_s);             // 5 (up to but not including -1)
     let num                     = SliS_getAt(nums_s, 2); // 3
     // let nums_sli                = SliS_toSli$(Sli$i32, nums_s); // Convert to regular slice
+    for (var iter = SliS_at(nums_s, 0); deref(iter) != nums_s.sentinel; ++iter) {
+        printf("%d ", deref(iter));
+    }
+    printf("\n");
 
     // Type casting example
     // Sli$u32 bytes = Sli_castS$(Sli$u8, slice);  // View as bytes (i32 -> u8)
     // Sli$i32 ints  = Sli_castL$(Sli$i32, bytes); // Convert back to ints
+
+    ignore third_ptr;
+    ignore value;
+    ignore length;
+    ignore middle;
+    ignore first_half;
+    ignore second_half;
+    ignore all;
+    ignore ch;
+    ignore num;
 }

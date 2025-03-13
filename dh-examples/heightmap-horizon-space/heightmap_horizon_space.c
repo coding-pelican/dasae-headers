@@ -1,135 +1,20 @@
-#include "dh/heap/Page.h"
 #include "dh/main.h"
-#include "dh/debug.h"
-#include "engine-wip/utils.h"
+#include "dh/core.h"
 #define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/log.h"
 
-#include "dh/mem.h"
-#include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
-#include "dh/meta/common.h"
+#include "dh/heap/Page.h"
 #include "dh/Grid.h"
 
 #include "engine.h"
 #include "engine/canvas.h"
 #include "engine/input.h"
+#include "engine-wip/utils.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "libs/stb_image.h"
 
-use_Grid$(u8);
-use_Sli$(Color);
-use_Grid$(Color);
 
-typedef struct TerrainData {
-    Grid$u8    heightmap; // grayscale
-    Grid$Color colormap;  // RGB format (based RGBA)
-    u32        width;
-    u32        height;
-} TerrainData;
-use_Opt$(TerrainData);
-
-config_ErrSet(
-    TerrainDataErr,
-    FailedToLoadHeightMap,
-    FailedToLoadColorMap,
-    NotEqualMapsDimension
-);
-use_ErrSet$(TerrainDataErr, TerrainData);
-
-// Suppose "heightmap.png" is an 8-bit grayscale PNG,
-// and "colormap.png" is an 8-bit RGB or RGBA PNG.
-TerrainDataErr$TerrainData loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file) {
-    scope_reserveReturn(TerrainDataErr$TerrainData) {
-        debug_assert_nonnull(heightmap_file);
-        debug_assert_nonnull(colormap_file);
-
-        // 1) Load heightmap (expecting 1 channel, but we can request 1 explicitly)
-        i32 width                     = 0;
-        i32 height                    = 0;
-        i32 heightmap_actual_channels = 0;
-        u8* heightmap_data            = stbi_load(heightmap_file, &width, &height, &heightmap_actual_channels, 1); // request 1 channel
-        if (!heightmap_data) {
-            log_error("Failed to load heightmap: %s\n", heightmap_file);
-            return_err(TerrainDataErr_FailedToLoadHeightMap());
-        }
-        defer_(stbi_image_free(heightmap_data));
-
-        printf("Heightmap: %s\n", heightmap_file);
-        printf("  Loaded w=%d, h=%d, channels in file=%d, forced to=1\n", width, height, heightmap_actual_channels);
-        // top-left pixel in heightmap
-        printf("  Top-left gray value = %d\n", heightmap_data[0]);
-
-        let heightmap_sli = meta_castSli$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
-        errdefer_(mem_Allocator_free(allocator, anySli(heightmap_sli)));
-        for_slice_indexed (heightmap_sli, item, i) {
-            *item = heightmap_data[i];
-        }
-        let heightmap_mat = Grid_fromSli$(Grid$u8, heightmap_sli, width, height);
-
-        // 2) Load colormap (could be 3 or 4 channels, but we’ll let stb_image decide)
-        i32 colormap_channels = 0;
-        u8* colormap_data     = stbi_load(colormap_file, &width, &height, &colormap_channels, 0); // 0 means "load as-is"
-        if (!colormap_data) {
-            log_error("Failed to load colormap: %s\n", colormap_file);
-            return_err(TerrainDataErr_err(TerrainDataErrCode_FailedToLoadColorMap));
-        }
-        defer_(stbi_image_free(colormap_data));
-        printf("Colormap: %s\n", colormap_file);
-        printf("  Loaded w=%d, h=%d, channels=%d\n", width, height, colormap_channels);
-        // Print top-left color
-        if (colormap_channels == 3) {
-            printf("  Top-left color = R=%d, G=%d, B=%d\n", colormap_data[0], colormap_data[1], colormap_data[2]);
-        } else if (colormap_channels == 4) {
-            printf("  Top-left color = R=%d, G=%d, B=%d, A=%d\n", colormap_data[0], colormap_data[1], colormap_data[2], colormap_data[3]);
-        } else {
-            printf("  (Unexpected number of channels: %d)\n", colormap_channels);
-        }
-
-        let colormap_sli = meta_castSli$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
-        errdefer_(mem_Allocator_free(allocator, anySli(colormap_sli)));
-        for_slice_indexed (colormap_sli, item, i) {
-            *item = (Color){
-                .r = colormap_data[i * colormap_channels + 0],
-                .g = colormap_data[i * colormap_channels + 1],
-                .b = colormap_data[i * colormap_channels + 2],
-                .a = ColorChannel_max_value,
-            };
-        }
-        let colormap_mat = Grid_fromSli$(Grid$Color, colormap_sli, width, height);
-
-        if (heightmap_mat.width != colormap_mat.width || heightmap_mat.height != colormap_mat.height) {
-            log_error("Heightmap and colormap dimensions do not match!\n");
-            return_err(TerrainDataErr_err(TerrainDataErrCode_NotEqualMapsDimension));
-        }
-        return_ok({
-            .heightmap = heightmap_mat,
-            .colormap  = colormap_mat,
-            .width     = width,
-            .height    = height,
-        });
-    }
-    scope_returnReserved;
-}
-
-/* typedef struct Control {
-    engine_KeyCode key;
-    Vec2f          vec;
-} Control;
-use_Sli$(Control);
-
-static Sli_const$Control Control_list(void) {
-    static const Control controls[] = {
-        { .key = engine_KeyCode_W, .vec = math_Vec_up$(Vec2f) },
-        { .key = engine_KeyCode_A, .vec = math_Vec_lt$(Vec2f) },
-        { .key = engine_KeyCode_S, .vec = math_Vec_dn$(Vec2f) },
-        { .key = engine_KeyCode_D, .vec = math_Vec_rt$(Vec2f) },
-    };
-    return (Sli_const$Control){
-        .ptr = controls,
-        .len = countOf(controls),
-    };
-} */
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -158,7 +43,28 @@ static Sli_const$Control Control_list(void) {
 #define target_fps (target_fps__125_0)
 #define target_spf (1.0 / target_fps)
 
-typedef struct Simulator {
+
+
+use_Grid$(u8);
+use_Sli$(Color);
+use_Grid$(Color);
+typedef struct TerrainData {
+    Grid$u8    heightmap; // grayscale
+    Grid$Color colormap;  // RGB format (based RGBA)
+    u32        width;
+    u32        height;
+} TerrainData;
+config_ErrSet(TerrainDataErr,
+    FailedToLoadHeightMap,
+    FailedToLoadColorMap,
+    NotEqualMapsDimension
+);
+use_ErrSet$(TerrainDataErr, TerrainData);
+/// Suppose "heightmap.png" is an 8-bit grayscale PNG,
+/// and "colormap.png" is an 8-bit RGB or RGBA PNG.
+pvt fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), must_check TerrainDataErr$TerrainData);
+
+typedef struct State {
     TerrainData terrain;
     Vec2d       camera_pos;
     f64         camera_angle; // <== We'll use this as 'phi'
@@ -179,9 +85,216 @@ typedef struct Simulator {
         bool  mouse_active;
     } input;
 } State;
+/// Key input handling
+pvt fn_(State_handleInputKey(State* self), void);
+/// Mouse input handling
+pvt fn_(State_handleInputMouse(State* state), void);
+/// Camera update logic
+pvt fn_(State_updateCamera(State* self, f64 dt), void);
+/// heightmap-based horizon renderer
+pvt fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void);
 
-// Input handling
-void State_handleInputKey(State* self) {
+
+
+fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+    unused(args);
+    // Initialize logging to a file
+    try_(log_init("log/debug.log"));
+    {
+        defer_(log_fini());
+        // Configure logging behavior
+        log_setLevel(log_Level_debug);
+        log_showTimestamp(true);
+        log_showLevel(true);
+        log_showLocation(false);
+        log_showFunction(true);
+    }
+
+    // Initialize platform with terminal backend
+    let window = try_(engine_Window_init(
+        &(engine_PlatformParams){
+            .backend_type  = engine_RenderBackendType_vt100,
+            .window_title  = "Heightmap Horizon Space",
+            .width         = window_res_width,
+            .height        = window_res_height,
+            .default_color = Color_blue,
+        }
+    ));
+    defer_(engine_Window_fini(window));
+    log_info("engine initialized\n");
+
+    // Create canvases
+    let game_canvas = catch_from(engine_Canvas_create(
+        window_res_width,
+        window_res_height,
+        engine_CanvasType_rgba
+    ), err, {
+        log_error("Failed to create canvas: %s\n", err);
+        return_err(err);
+    });
+    defer_(engine_Canvas_destroy(game_canvas));
+    log_info("canvas created\n");
+    engine_Canvas_clearDefault(game_canvas);
+    log_info("canvas cleared\n");
+
+    // Add canvas views
+    engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
+    log_info("canvas views added\n");
+
+    // Initialize rendering with camera parameters
+    var allocator = heap_Page_allocator(&(heap_Page){});
+    var state     = make$(State,
+        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
+        .camera_angle = 0.0f,                     // Starting angle (looking north)
+        .height       = 150.f / 2.0f,             // Height of camera above ground
+        .horizon      = window_res_height / 2.0f, // Center of screen
+        .scale_height = window_res_height,        // Full screen height for scaling
+        .distance     = 300.0f,
+        .is_running   = true
+    );
+    defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
+    defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
+    log_info("game state created\n");
+    engine_utils_getch();
+
+    let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
+    var prev_frame_time   = time_Instant_now();
+    log_info("game loop started\n");
+
+    // Game loop
+    while (state.is_running) {
+        let curr_frame_time = time_Instant_now();
+        let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
+        let dt              = time_Duration_asSecs_f64(elapsed_time);
+        prev_frame_time     = curr_frame_time;
+
+        // Process events
+        try_(engine_Window_processEvents(window));
+        State_handleInputKey(&state);
+        // State_handleInputMouse(&state);
+
+        // Update game state
+        State_updateCamera(&state, dt);
+
+        // Render all views
+        engine_Canvas_clearDefault(game_canvas);
+        State_render(&state, game_canvas, dt);
+
+        // Present to screen
+        engine_Window_present(window);
+        const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
+        printf("\033[H\033[40;37m"); // Move cursor to top left
+        printf(
+            "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
+            fps,
+            window_res_width,
+            window_res_height,
+            (i32)state.camera_pos.x,
+            (i32)state.camera_pos.y,
+            (i32)state.height,
+            state.scale_height
+        );
+        printf(
+            "\rANGLE: %6.2f DIST: %06.2f HORIZ: %06.2f",
+            state.camera_angle,
+            state.distance,
+            state.horizon
+        );
+        debug_only(
+            // log frame every 1s
+            static f64 total_game_time_for_timestamp = 0.0;
+            static f64 logging_after_duration        = 0.0;
+            total_game_time_for_timestamp += dt;
+            logging_after_duration += dt;
+            if (1.0 < logging_after_duration) {
+                logging_after_duration = 0.0;
+                log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
+            }
+        );
+
+        let now        = time_Instant_now();
+        let frame_used = time_Instant_durationSince(now, curr_frame_time);
+        if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+            time_sleep(leftover);
+        }
+    }
+    return_void();
+} ext_unscoped;
+
+
+
+fn_ext_scope(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), TerrainDataErr$TerrainData) {
+    debug_assert_nonnull(heightmap_file);
+    debug_assert_nonnull(colormap_file);
+
+    // 1) Load heightmap (expecting 1 channel, but we can request 1 explicitly)
+    i32 width                     = 0;
+    i32 height                    = 0;
+    i32 heightmap_actual_channels = 0;
+    u8* heightmap_data            = stbi_load(heightmap_file, &width, &height, &heightmap_actual_channels, 1); // request 1 channel
+    if (!heightmap_data) {
+        log_error("Failed to load heightmap: %s\n", heightmap_file);
+        return_err(TerrainDataErr_FailedToLoadHeightMap());
+    }
+    defer_(stbi_image_free(heightmap_data));
+
+    printf("Heightmap: %s\n", heightmap_file);
+    printf("  Loaded w=%d, h=%d, channels in file=%d, forced to=1\n", width, height, heightmap_actual_channels);
+    // top-left pixel in heightmap
+    printf("  Top-left gray value = %d\n", heightmap_data[0]);
+
+    let heightmap_sli = meta_castSli$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), (usize)width * height)));
+    errdefer_(mem_Allocator_free(allocator, anySli(heightmap_sli)));
+    for_slice_indexed (heightmap_sli, item, i) {
+        *item = heightmap_data[i];
+    }
+    let heightmap_mat = Grid_fromSli$(Grid$u8, heightmap_sli, width, height);
+
+    // 2) Load colormap (could be 3 or 4 channels, but we’ll let stb_image decide)
+    i32 colormap_channels = 0;
+    u8* colormap_data     = stbi_load(colormap_file, &width, &height, &colormap_channels, 0); // 0 means "load as-is"
+    if (!colormap_data) {
+        log_error("Failed to load colormap: %s\n", colormap_file);
+        return_err(TerrainDataErr_err(TerrainDataErrCode_FailedToLoadColorMap));
+    }
+    defer_(stbi_image_free(colormap_data));
+    printf("Colormap: %s\n", colormap_file);
+    printf("  Loaded w=%d, h=%d, channels=%d\n", width, height, colormap_channels);
+    // Print top-left color
+    if (colormap_channels == 3) {
+        printf("  Top-left color = R=%d, G=%d, B=%d\n", colormap_data[0], colormap_data[1], colormap_data[2]);
+    } else if (colormap_channels == 4) {
+        printf("  Top-left color = R=%d, G=%d, B=%d, A=%d\n", colormap_data[0], colormap_data[1], colormap_data[2], colormap_data[3]);
+    } else {
+        printf("  (Unexpected number of channels: %d)\n", colormap_channels);
+    }
+
+    let colormap_sli = meta_castSli$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), (usize)width * height)));
+    errdefer_(mem_Allocator_free(allocator, anySli(colormap_sli)));
+    for_slice_indexed (colormap_sli, item, i) {
+        *item = (Color){
+            .r = colormap_data[i * colormap_channels + 0],
+            .g = colormap_data[i * colormap_channels + 1],
+            .b = colormap_data[i * colormap_channels + 2],
+            .a = ColorChannel_max_value,
+        };
+    }
+    let colormap_mat = Grid_fromSli$(Grid$Color, colormap_sli, width, height);
+
+    if (heightmap_mat.width != colormap_mat.width || heightmap_mat.height != colormap_mat.height) {
+        log_error("Heightmap and colormap dimensions do not match!\n");
+        return_err(TerrainDataErr_err(TerrainDataErrCode_NotEqualMapsDimension));
+    }
+    return_ok({
+        .heightmap = heightmap_mat,
+        .colormap  = colormap_mat,
+        .width     = width,
+        .height    = height,
+    });
+} ext_unscoped;
+
+fn_(State_handleInputKey(State* self), void) {
     // Reset input state
     self->input.forward_backward = 0;
     self->input.left_right       = 0;
@@ -228,8 +341,7 @@ void State_handleInputKey(State* self) {
         self->is_running = false;
     }
 }
-
-void State_handleInputMouse(State* state) {
+fn_(State_handleInputMouse(State* state), void) {
     if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_pressed)) {
         state->input.mouse_active     = true;
         state->input.mouse_position   = engine_Mouse_getPos();
@@ -249,8 +361,7 @@ void State_handleInputMouse(State* state) {
         state->input.up_down    = (f64)delta.y / window_res_height * 10.0;
     }
 }
-
-void State_updateCamera(State* self, f64 dt) {
+fn_(State_updateCamera(State* self, f64 dt), void) {
     // movement
     if (self->input.left_right != 0) {
         self->camera_angle += self->input.left_right * 0.1 * dt * 30.0;
@@ -286,9 +397,7 @@ void State_updateCamera(State* self, f64 dt) {
         self->height = *Grid_at(self->terrain.heightmap, map_x, map_y) + 10.0;
     }
 }
-
-// heightmap-based horizon renderer
-void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
+fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
     debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
     unused(dt);
@@ -360,129 +469,3 @@ void State_render(const State* state, engine_Canvas* canvas, f64 dt) {
         }
     }
 }
-
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
-    // Initialize logging to a file
-    try_(log_init("log/debug.log"));
-    {
-        defer_(log_fini());
-        // Configure logging behavior
-        log_setLevel(log_Level_debug);
-        log_showTimestamp(true);
-        log_showLevel(true);
-        log_showLocation(false);
-        log_showFunction(true);
-    }
-
-    // Initialize platform with terminal backend
-    let window = try_(engine_Window_init(
-        &(engine_PlatformParams){
-            .backend_type  = engine_RenderBackendType_vt100,
-            .window_title  = "Heightmap Horizon Space",
-            .width         = window_res_width,
-            .height        = window_res_height,
-            .default_color = Color_blue,
-        }
-    ));
-    defer_(engine_Window_fini(window));
-    log_info("engine initialized\n");
-
-    // Create canvases
-    let game_canvas = catch_from(engine_Canvas_create(
-        window_res_width,
-        window_res_height,
-        engine_CanvasType_rgba
-    ), err, {
-        log_error("Failed to create canvas: %s\n", err);
-        return_err(err);
-    });
-    defer_(engine_Canvas_destroy(game_canvas));
-    log_info("canvas created\n");
-    engine_Canvas_clearDefault(game_canvas);
-    log_info("canvas cleared\n");
-
-    // Add canvas views
-    engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
-    log_info("canvas views added\n");
-
-    // Initialize rendering with camera parameters
-    var allocator = heap_Page_allocator(&(heap_Page){});
-    var state     = make$(State,
-        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
-        .camera_angle = 0.0f,                     // Starting angle (looking north)
-        .height       = 150.f / 2.0f,             // Height of camera above ground
-        .horizon      = window_res_height / 2.0f, // Center of screen
-        .scale_height = window_res_height,        // Full screen height for scaling
-        .distance     = 300.0f,
-        .is_running   = true,
-    );
-    defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
-    defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
-    log_info("game state created\n");
-    engine_utils_getch();
-
-    let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
-    var prev_frame_time   = time_Instant_now();
-    log_info("game loop started\n");
-
-    // Game loop
-    while (state.is_running) {
-        let curr_frame_time = time_Instant_now();
-        let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-        let dt              = time_Duration_asSecs_f64(elapsed_time);
-        prev_frame_time     = curr_frame_time;
-
-        // Process events
-        try_(engine_Window_processEvents(window));
-        State_handleInputKey(&state);
-        // State_handleInputMouse(&state);
-
-        // Update game state
-        State_updateCamera(&state, dt);
-
-        // Render all views
-        engine_Canvas_clearDefault(game_canvas);
-        State_render(&state, game_canvas, dt);
-
-        // Present to screen
-        engine_Window_present(window);
-        const f64 fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
-        printf("\033[H\033[40;37m"); // Move cursor to top left
-        printf(
-            "\rFPS: %6.2f RES: %dx%d POS: %4d,%4d H: %3d*%02.2f\n",
-            fps,
-            window_res_width,
-            window_res_height,
-            (i32)state.camera_pos.x,
-            (i32)state.camera_pos.y,
-            (i32)state.height,
-            state.scale_height
-        );
-        printf(
-            "\rANGLE: %6.2f DIST: %06.2f HORIZ: %06.2f",
-            state.camera_angle,
-            state.distance,
-            state.horizon
-        );
-        debug_only(
-            // log frame every 1s
-            static f64 total_game_time_for_timestamp = 0.0;
-            static f64 logging_after_duration        = 0.0;
-            total_game_time_for_timestamp += dt;
-            logging_after_duration += dt;
-            if (1.0 < logging_after_duration) {
-                logging_after_duration = 0.0;
-                log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
-            }
-        );
-
-        let now        = time_Instant_now();
-        let frame_used = time_Instant_durationSince(now, curr_frame_time);
-        if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
-            time_sleep(leftover);
-        }
-    }
-    return_void();
-} ext_unscoped;

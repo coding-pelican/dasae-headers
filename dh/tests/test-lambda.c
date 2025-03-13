@@ -19,6 +19,8 @@ fn_(operateCompat(i32 a, i32 b, IntBinOp_compat op), void) {
 
 // Function that adds two integers
 fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
+
+
 // Example main function showing how to use the compatibility layer
 fn_ext_scope(dh_main(void), Err$void) {
     // Create a block/lambda
