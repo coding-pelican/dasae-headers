@@ -153,6 +153,10 @@ IfMacros:
   - if_none
   - if_ok
   - if_err
+  - else_some
+  - else_none
+  - else_ok
+  - else_err
 
 StatementAttributeLikeMacros:
   - unused
@@ -176,12 +180,13 @@ StatementAttributeLikeMacros:
   - return_err
 
 Macros:
-  - type$=/**/
-  - make$=/**/
-  - create$=/**/
-  - initial=/**/
-  - cleared=/**/
+  # - type$=/**/
+  # - make$=/**/
+  # - create$=/**/
+  # - initial=/**/
+  # - cleared=/**/
   - ext_unscoped=/**/
+  - test_unscoped=/**/
   - block_deferral=/**/
   - match_=switch
   - "pattern_(tag,capture)=case tag:"
@@ -230,6 +235,7 @@ WhitespaceSensitiveMacros:
   - tagUnion
   - tagUnion$
   - tagUnionAsg
+  - bti_Generic_match_
   - match_
   - meta_refPtr
   - meta_refSli

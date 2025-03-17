@@ -7,14 +7,14 @@
 #undef auto
 #undef var
 #undef let
-#undef deprecated
+#undef warn_deprecated
 
 #include <memoryapi.h>
 
-#define auto       SYN__auto
-#define var        SYN__var
-#define let        SYN__let
-#define deprecated ATTR__deprecated
+#define auto            SYN__auto
+#define var             SYN__var
+#define let             SYN__let
+#define warn_deprecated ATTR__warn_deprecated
 #endif /* bti_plat_windows */
 
 #endif /* OS_WINDOWS_MEM_INCLUDED */

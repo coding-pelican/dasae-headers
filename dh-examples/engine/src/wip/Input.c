@@ -30,7 +30,7 @@ Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) {
             input->mouse.wheel.prev_scroll_amount = math_Vec2f_zero;
         }
 
-        noneAsg(input->backend);
+        noneAsg(&input->backend);
         return_ok(input);
     }
     scope_returnReserved;

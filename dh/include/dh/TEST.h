@@ -22,18 +22,25 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-
+#include "dh/Str.h"
 #include <stdio.h>
 
 /*========== Test Framework =================================================*/
 
-#define test_scope           comp_syn__test_scope
-#define test_unscoped        comp_syn__test_unscoped
-#define fn_test_scope(_Name) comp_syn__fn_test_scope(_Name)
+#define fn_test_scope(_Name...) comp_syn__fn_test_scope(pp_join(_, TEST, pp_uniqTok(Case_Id)), _Name)
+#define test_unscoped           comp_syn__test_unscoped
 
-#define comp_syn__test_scope
-#define comp_syn__test_unscoped
-#define comp_syn__fn_test_scope(_Name) fn_(pp_join(_, TEST, _Name)(void), must_check TEST_Result)
+#define comp_syn__fn_test_scope(__Case_Id, _Name...)     \
+    __attribute__((constructor))                         \
+    fn_(__Case_Id(void), must_check Err$Opt$TEST_Result) { \
+        static bool __s_is_bound = false;                  \
+        if (!__s_is_bound) {                               \
+            TEST_bindCase(__Case_Id, Str_l(_Name));      \
+            __s_is_bound = true;                           \
+            return_ok(none());                           \
+        }
+#define comp_syn__test_unscoped \
+    }
 
 typedef struct TEST_Condition {
     const char* expr;

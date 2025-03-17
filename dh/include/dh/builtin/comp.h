@@ -39,8 +39,9 @@ extern "C" {
 #define force_inline  ATTR__force_inline
 #define no_inline     ATTR__no_inline
 
-#define deprecated           ATTR__deprecated
-#define deprecated_msg(_Msg) ATTR__deprecated_msg(_Msg)
+#define warn_deprecated                             ATTR__warn_deprecated
+#define warn_deprecated_msg(_Msg)                   ATTR__warn_deprecated_msg(_Msg)
+#define warn_deprecated_instead(_Msg, _Replacement) ATTR__warn_deprecated_instead(_Msg, _Replacement)
 
 #define must_check                                                                  \
     /**                                                                             \
@@ -97,8 +98,12 @@ extern "C" {
 #define createCleared$(T)          FUNC__createCleared$(T)
 #define createFrom$(T, var_src...) FUNC__createFrom$(T, var_src)
 
-#define eval        /* just comment for expr stmt ({...}) */
-#define eval_return /* just comment for expr stmt ({...}) */
+#define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
+#define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
+#define bti_Generic_fallback$              comp_syn__bti_Generic_fallback$
+#define eval                               comp_syn__eval
+#define eval_return                        comp_syn__eval_return
+#define eval_return_(...)                  comp_syn__eval_return_(__VA_ARGS__)
 
 #define likely(_Expr...)   FUNC__likely(_Expr)
 #define unlikely(_Expr...) FUNC__unlikely(_Expr)
@@ -123,8 +128,9 @@ extern "C" {
 #define ATTR__force_inline BUILTIN_COMP_FORCE_INLINE
 #define ATTR__no_inline    BUILTIN_COMP_NO_INLINE
 
-#define ATTR__deprecated           BUILTIN_COMP_DEPRECATED
-#define ATTR__deprecated_msg(_Msg) BUILTIN_COMP_DEPRECATED_MSG(_Msg)
+#define ATTR__warn_deprecated                             BUILTIN_COMP_DEPRECATED
+#define ATTR__warn_deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
+#define ATTR__warn_deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
 
 #define ATTR__must_check BUILTIN_COMP_MUST_CHECK
 #define ATTR__no_return  BUILTIN_COMP_NO_RETURN
@@ -194,6 +200,17 @@ extern "C" {
 #define FUNC__createFrom$(T, var_src...) \
     (literal$(T[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
+
+#define comp_syn__bti_Generic_match$(T, _Pattern...) \
+    _Generic(T, _Pattern)
+#define comp_syn__bti_Generic_pattern$(T) \
+    T:
+#define comp_syn__bti_Generic_fallback$ \
+    default:
+
+#define comp_syn__eval              /* just comment for expr stmt ({...}) */
+#define comp_syn__eval_return       /* just comment for expr stmt ({...}) */
+#define comp_syn__eval_return_(...) __VA_ARGS__
 
 #define FUNC__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define FUNC__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)

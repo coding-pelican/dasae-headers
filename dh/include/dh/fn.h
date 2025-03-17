@@ -55,21 +55,19 @@ fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
         return_(err(math_Err_DivisionByZero()));
     }
     return_ok(lhs / rhs);
-}
-ext_unscoped;
+} ext_unscoped;
 
 /* main */
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     debug_assert_true(0 < args.len);
-    debug_assert_true(try(math_divideSafe(10, 2)) == 5);
+    debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
     catch_from(math_divideSafe(10, 0), err, {
         let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
         debug_assert_true(Str_const_eq(err_code, Str_l("DivisionByZero")));
         return_err(err);
     });
     return_(ok({}));
-}
-ext_unscoped;
+} ext_unscoped;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

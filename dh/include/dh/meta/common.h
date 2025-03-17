@@ -147,7 +147,7 @@ struct AnyType {
 //})
 
 #define OP__anyPtr(var_ptr...) eval({                                                                                                  \
-    var _ptr = var_ptr;                                                                                                                \
+    TypeOf(var_ptr) _ptr = var_ptr;                                                                                                    \
     claim_assert_static_msg(!isSameType$(TypeOf(_ptr), meta_Sli), "`meta_Sli` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(_ptr), meta_Ptr), "`meta_Ptr` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
     debug_assert_nonnull(_ptr);                                                                                                        \
@@ -159,7 +159,7 @@ struct AnyType {
 })
 
 #define OP__anySli(var_sli...) eval({                                                                                                  \
-    var _sli = var_sli;                                                                                                                \
+    TypeOf(var_sli) _sli = var_sli;                                                                                                    \
     claim_assert_static_msg(!isSameType$(TypeOf(_sli), meta_Ptr), "`meta_Ptr` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(_sli), meta_Sli), "`meta_Sli` is not compatible with `anySli`. Use `meta_sliToAny`."); \
     debug_assert_nonnull(_sli.ptr);                                                                                                    \
@@ -200,7 +200,7 @@ union meta_Sli {
 };
 
 #define OP__meta_refPtr(var_ptr...) eval({ \
-    let _ptr = var_ptr;                    \
+    const TypeOf(var_ptr) _ptr = var_ptr;  \
     eval_return((meta_Ptr){                \
         .type = typeInfo$(TypeOf(*_ptr)),  \
         .addr = _ptr,                      \
@@ -208,7 +208,7 @@ union meta_Sli {
 })
 
 #define OP__meta_refSli(var_sli...) eval({    \
-    let _sli = var_sli;                       \
+    const TypeOf(var_sli) _sli = var_sli;     \
     eval_return((meta_Sli){                   \
         .type = typeInfo$(TypeOf(*_sli.ptr)), \
         .addr = _sli.ptr,                     \
@@ -217,7 +217,7 @@ union meta_Sli {
 })
 
 #define OP__meta_refPtr_const(var_ptr...) eval({ \
-    let _ptr = var_ptr;                          \
+    const TypeOf(var_ptr) _ptr = var_ptr;        \
     eval_return((meta_Ptr_const){                \
         .type = typeInfo$(TypeOf(*_ptr)),        \
         .addr = _ptr,                            \
@@ -225,7 +225,7 @@ union meta_Sli {
 })
 
 #define OP__meta_refSli_const(var_sli...) eval({  \
-    let _sli = var_sli;                           \
+    const TypeOf(var_sli) _sli = var_sli;         \
     eval_return((meta_Sli_const){                 \
         .ptr = {                                  \
             .type = typeInfo$(TypeOf(*_sli.ptr)), \
@@ -236,31 +236,31 @@ union meta_Sli {
 })
 
 #define OP__meta_cast$(TDest, var_meta...) eval({                                                                               \
-    var _meta = var_meta;                                                                                                       \
+    TypeOf(var_meta) _meta = var_meta;                                                                                          \
     claim_assert_static_msg(isSameType$(TypeOf(_meta), meta_Ptr) || isSameType$(TypeOf(_meta), meta_Sli), "Invalid meta type"); \
     eval_return(*((TDest*)&_meta.addr));                                                                                        \
 })
 
 #define OP__meta_castPtr$(TDest, var_meta_ptr...) eval({                               \
-    let _ptr = var_meta_ptr;                                                           \
+    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr;                                    \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
     eval_return((TDest)_ptr.addr);                                                     \
 })
 
 #define OP__meta_castSli$(TDest, var_meta_sli...) eval({                               \
-    let _sli = var_meta_sli;                                                           \
+    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                    \
     claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
     eval_return((TDest){ .ptr = _sli.addr, .len = _sli.len });                         \
 })
 
 #define OP__meta_ptrToAny(var_meta_ptr) eval({                                         \
-    let _ptr = var_meta_ptr;                                                           \
+    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr;                                    \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
     eval_return(AnyType){ .type = _ptr.type, .ctx = _ptr.addr, .len = 1 };             \
 })
 
 #define OP__meta_sliToAny(var_meta_sli) eval({                                         \
-    let _sli = var_meta_sli;                                                           \
+    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                    \
     claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
     eval_return(*(AnyType*)&_sli);                                                     \
 })

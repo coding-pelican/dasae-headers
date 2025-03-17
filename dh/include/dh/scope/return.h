@@ -46,56 +46,56 @@ extern "C" {
 // clang-format off
 #define comp_syn__ext_scope(T_ReservedReturn)              \
     {                                                      \
-        rawptr$(T_ReservedReturn) _reserved_return = null; \
+        rawptr$(T_ReservedReturn) __reserved_return = null; \
         struct {                                           \
             i32  curr;                                     \
             bool returns;                                  \
-        } _scope_defer = { .curr = 0, .returns = false };  \
+        } __scope_defer = { .curr = 0, .returns = false };  \
         if (0) {                                           \
-        _returned_scope:                                   \
-            _scope_defer.returns = true;                   \
-            goto _deferred;                                \
+        __returned_scope:                                   \
+            __scope_defer.returns = true;                   \
+            goto __deferred;                                \
         }                                                  \
-    _deferred:                                             \
-        switch (_scope_defer.curr) {                       \
+    __deferred:                                             \
+        switch (__scope_defer.curr) {                       \
         default:                                           \
             break;                                         \
         case 0:                                            \
-            _scope_defer.curr = -1;
+            __scope_defer.curr = -1;
 #define comp_syn__ext_unscoped                                                \
-            goto _returned_scope;                                             \
+            goto __returned_scope;                                             \
         }                                                                     \
-        return (debug_assert_nonnull(_reserved_return), _reserved_return[0]); \
+        return (debug_assert_nonnull(__reserved_return), __reserved_return[0]); \
     }
 // clang-format on
 
-#define SYN__scope_reserveReturn(T)                   \
-    rawptr$(T) _reserved_return = null;               \
-    struct {                                          \
-        i32  curr;                                    \
-        bool returns;                                 \
-    } _scope_defer = { .curr = 0, .returns = false }; \
-    if (0) {                                          \
-    _returned_scope:                                  \
-        _scope_defer.returns = true;                  \
-        goto _deferred;                               \
-    }                                                 \
-    _deferred:                                        \
-    switch (_scope_defer.curr) {                      \
-    default:                                          \
-        break;                                        \
-    case 0:                                           \
-        _scope_defer.curr = -1;
+#define SYN__scope_reserveReturn(T)                    \
+    rawptr$(T) __reserved_return = null;               \
+    struct {                                           \
+        i32  curr;                                     \
+        bool returns;                                  \
+    } __scope_defer = { .curr = 0, .returns = false }; \
+    if (0) {                                           \
+    __returned_scope:                                  \
+        __scope_defer.returns = true;                  \
+        goto __deferred;                               \
+    }                                                  \
+    __deferred:                                        \
+    switch (__scope_defer.curr) {                      \
+    default:                                           \
+        break;                                         \
+    case 0:                                            \
+        __scope_defer.curr = -1;
 
 #define SYN__scope_returnReserved \
-    goto _returned_scope;         \
+    goto __returned_scope;        \
     }                             \
-    return (debug_assert_nonnull(_reserved_return), _reserved_return[0])
+    return (debug_assert_nonnull(__reserved_return), __reserved_return[0])
 
 #define SYN__scope_return(val_return...) \
     {                                    \
         setReservedReturn(val_return);   \
-        goto _returned_scope;            \
+        goto __returned_scope;           \
     }
 
 #define SYN__return_(val_return...) \
@@ -104,19 +104,19 @@ extern "C" {
 #else
 #endif /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define SYN__reserveReturn(T)                                                 \
-    T* _reserved_return = null;                                               \
-    if (0) {                                                                  \
-    _returned_scope:                                                          \
-        return (debug_assert_nonnull(_reserved_return), _reserved_return[0]); \
-    }                                                                         \
+#define SYN__reserveReturn(T)                                                   \
+    T* __reserved_return = null;                                                \
+    if (0) {                                                                    \
+    __returned_scope:                                                           \
+        return (debug_assert_nonnull(__reserved_return), __reserved_return[0]); \
+    }                                                                           \
     unused(0)
 
 #define SYN__returnReserved \
-    return (debug_assert_nonnull(_reserved_return), _reserved_return[0])
+    return (debug_assert_nonnull(__reserved_return), __reserved_return[0])
 
 #define FUNC__getReservedReturn() \
-    (_reserved_return)
+    (__reserved_return)
 
 #define FUNC__setReservedReturn(val_return...) eval({ \
     getReservedReturn() = &val_return;                \

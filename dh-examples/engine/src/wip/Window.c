@@ -14,28 +14,33 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
 
         /* Create composite buffer */
         let rect_size        = config->rect_size;
-        let composite_buffer = try_(engine_Canvas_create(
+        let composite_buffer = try_(engine_Canvas_init(
+            allocator,
             rect_size.x,
             rect_size.y,
-            engine_CanvasType_rgba
+            engine_CanvasType_rgba,
+            eval({
+                /* Set default color */
+                var color = config->default_color;
+                if_none (color) {
+                    someAsg(&color, engine_Window_composite_buffer_color_default);
+                }
+                else_some (color_cfg) {
+                    if (color_cfg.a != ColorChannel_alpha_opaque) {
+                        someAsg(&color, engine_Window_composite_buffer_color_default);
+                    }
+                }
+                eval_return color;
+            })
         ));
-        errdefer_(engine_Canvas_destroy(composite_buffer));
+        errdefer_(engine_Canvas_fini(composite_buffer));
         window->composite_buffer = composite_buffer;
-
-        /* Set default color */
-        composite_buffer->default_color = engine_Window_composite_buffer_color_default;
-        if_some(config->default_color, color) {
-            if (color.a == ColorChannel_alpha_opaque) {
-                composite_buffer->default_color = color;
-            }
-        }
-        engine_Canvas_clearDefault(composite_buffer);
 
         /* Init canvas views */
         window->views.count = 0;
 
         /* Reserve backend for init */
-        noneAsg(window->backend);
+        noneAsg(&window->backend);
 
         /* Created successfully */
         return_ok(window);
@@ -47,7 +52,7 @@ void engine_Window_fini(engine_Window* self) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->composite_buffer);
 
-    engine_Canvas_destroy(self->composite_buffer);
+    engine_Canvas_fini(self->composite_buffer);
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
@@ -86,7 +91,7 @@ void engine_Window_present(engine_Window* self) {
     if (engine_Window_isMinimized(self)) { return; }
 
     // Clear composite buffer
-    engine_Canvas_clearDefault(self->composite_buffer);
+    engine_Canvas_clear(self->composite_buffer, none$(Opt$Color));
 
     // Compose all visible canvas views
     for (u32 id = 0; id < self->views.count; ++id) {

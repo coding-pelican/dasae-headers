@@ -105,7 +105,7 @@
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/*.c",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "${fileDirname}/${fileBasenameNoExtension}",
         "-static",
         "${input:libraries}"
       ],
@@ -138,7 +138,7 @@
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/*.c",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}-debug",
+        "${fileDirname}/${fileBasenameNoExtension}",
         "-static",
         "${input:libraries}"
       ],

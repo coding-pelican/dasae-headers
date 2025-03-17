@@ -26,24 +26,24 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// @brief Range type for slice indexing operations
+/// Range type for slice indexing operations
 typedef struct Range {
     usize begin; ///< Beginning index (inclusive)
     usize end;   ///< Ending index (exclusive)
 } Range;
 
-/// @brief Create a Range from begin and end indices [begin..end] => [begin, end)
+/// Create a Range from begin and end indices [begin..end] => [begin, end)
 force_inline fn_(Range_from(usize begin, usize end), Range);
-/// @brief Get the length of a Range
+/// Get the length of a Range
 force_inline fn_(Range_len(Range self), usize);
-/// @brief Check if an index is within a Range
+/// Check if an index is within a Range
 force_inline fn_(Range_contains(Range self, usize index), bool);
-/// @brief Check if Range is valid (begin < end)
+/// Check if Range is valid (begin < end)
 force_inline fn_(Range_isValid(Range self), bool);
 
-/// @brief Compare two Ranges for equality
+/// Compare two Ranges for equality
 force_inline fn_(Range_eq(Range lhs, Range rhs), bool);
-/// @brief Compare two Ranges for inequality
+/// Compare two Ranges for inequality
 force_inline fn_(Range_ne(Range lhs, Range rhs), bool);
 
 /*========== Macros and Definitions =========================================*/

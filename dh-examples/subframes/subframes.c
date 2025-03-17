@@ -92,15 +92,17 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
     log_info("window created");
 
     // Create canvases
-    let game_canvas = try_(engine_Canvas_create(
+    let game_canvas = try_(engine_Canvas_init(
+        allocator,
         window_res_width,
         window_res_height,
-        engine_CanvasType_rgba
+        engine_CanvasType_rgba,
+        none$(Opt$Color)
     ));
     {
-        defer_(engine_Canvas_destroy(game_canvas));
+        defer_(engine_Canvas_fini(game_canvas));
         log_info("canvas created: %s", nameOf(game_canvas));
-        engine_Canvas_clearDefault(game_canvas);
+        engine_Canvas_clear(game_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendCanvasView(
             window,
@@ -114,15 +116,17 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
-    let overlay_canvas = try_(engine_Canvas_create(
+    let overlay_canvas = try_(engine_Canvas_init(
+        allocator,
         window_res_width,
         window_res_height,
-        engine_CanvasType_rgba
+        engine_CanvasType_rgba,
+        none$(Opt$Color)
     ));
     {
-        defer_(engine_Canvas_destroy(overlay_canvas));
+        defer_(engine_Canvas_fini(overlay_canvas));
         log_info("canvas created: %s", nameOf(overlay_canvas));
-        engine_Canvas_clearDefault(overlay_canvas);
+        engine_Canvas_clear(overlay_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
         engine_Window_appendCanvasView(
             window,
@@ -213,7 +217,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         try_(engine_Window_update(window));
 
         // 5) Update game state and Render all views
-        engine_Canvas_clearDefault(game_canvas);
+        engine_Canvas_clear(game_canvas, none$(Opt$Color));
 
         if (engine_Keyboard_pressed(&input->keyboard, engine_KeyCode_esc)) {
             is_running = false;
@@ -336,7 +340,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
                 );
             }
         }
-        with_(engine_Canvas_clearDefault(overlay_canvas)) {
+        with_(engine_Canvas_clear(overlay_canvas, none$(Opt$Color))) {
             let_(win_res = engine_Window_getRes(window)) {
                 engine_Canvas_drawRect(overlay_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
             }

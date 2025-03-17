@@ -7,7 +7,7 @@
 #undef auto
 #undef var
 #undef let
-#undef deprecated
+#undef warn_deprecated
 
 #if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
@@ -17,10 +17,10 @@
 #endif /* !defined(NOMINMAX) */
 #include <windows.h>
 
-#define auto       SYN__auto
-#define var        SYN__var
-#define let        SYN__let
-#define deprecated ATTR__deprecated
+#define auto            SYN__auto
+#define var             SYN__var
+#define let             SYN__let
+#define warn_deprecated ATTR__warn_deprecated
 #endif /* bti_plat_windows */
 
 #endif /* OS_WINDOWS_COMMON_INCLUDED */

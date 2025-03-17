@@ -14,8 +14,8 @@
      * - Jump to the user code                                    \
      * - Then define the 'cleanup' label which unwinds in reverse \
      */                                                           \
-    IMPL_scope_defer
-#define IMPL_scope_defer                             \
+    IMPL__scope_defer
+#define IMPL__scope_defer                            \
     /* store 1 label per 'defer(...)' call. */       \
     static void* _defer_labels[MAX_DEFER_PER_SCOPE]; \
     static int   _defer_count = 0;                   \
@@ -33,7 +33,7 @@
     goto _scope_end;                                 \
     _scope_body:
 
-#define scope_deferred                   \
+#define scope__deferred                  \
     /* End of scope: jump to cleanup. */ \
     goto _scope_cleanup;                 \
     _scope_end:                          \

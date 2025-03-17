@@ -159,6 +159,9 @@ extern "C" {
     eval_return(__offset - (__offset & ~(__align - 1)));      \
 })
 
+#define fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
+    isSameType(TypeOf(pp_join(_, T_FieldNamed, asNamed$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field))
+
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE

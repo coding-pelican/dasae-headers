@@ -28,7 +28,7 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/Range.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 typedef struct SliZ_const SliZ_const;
 typedef union SliZ        SliZ;
@@ -39,9 +39,9 @@ typedef union Sli         Sli;
 
 /* Slice ====================================================================*/
 
-#define Sli_const$(T)                             comp_type_unnamed__Sli_const$(T)
-#define Sli$(T)                                   comp_type_unnamed__Sli$(T)
-#define Sli_asNamed$(T_NamedSli, var_unnamed_sli) comp_op__Sli_asNamed$(pp_uniqTok(__unnamed_sli), T_NamedSli, var_unnamed_sli)
+#define Sli_const$(T)                 comp_type_anon__Sli_const$(T)
+#define Sli$(T)                       comp_type_anon__Sli$(T)
+#define Sli_asNamed$(T_Sli, var_anon) comp_op__Sli_asNamed$(pp_uniqTok(__anon), T_Sli, var_anon)
 
 #define use_Sli$(T)  comp_gen__use_Sli$(T)
 #define decl_Sli$(T) comp_gen__decl_Sli$(T)
@@ -88,9 +88,9 @@ typedef union Sli         Sli;
  * @brief Null-terminated slice (similar to C strings)
  * @tparam T Element type
  */
-#define SliZ_const$(T)                                comp_type_unnamed__SliZ_const$(T)
-#define SliZ$(T)                                      comp_type_unnamed__SliZ$(T)
-#define SliZ_asNamed$(T_NamedSliZ, var_unnamed_sli_z) comp_op__SliZ_asNamed$(T_NamedSliZ, var_unnamed_sli_z)
+#define SliZ_const$(T)                             comp_type_anon__SliZ_const$(T)
+#define SliZ$(T)                                   comp_type_anon__SliZ$(T)
+#define SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z) comp_op__SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z)
 
 #define SliZ_from(val_ptr...)              comp_op__SliZ_from(val_ptr)
 #define SliZ_from$(T_SliZ, val_ptr...)     comp_op__SliZ_from$(T_SliZ, val_ptr)
@@ -106,9 +106,9 @@ typedef union Sli         Sli;
  * @brief Sentinel-terminated slice (ends with a specific sentinel value)
  * @tparam T Element type
  */
-#define SliS_const$(T)                                comp_type_unnamed__SliS_const$(T)
-#define SliS$(T)                                      comp_type_unnamed__SliS$(T)
-#define SliS_asNamed$(T_NamedSliS, var_unnamed_sli_s) comp_op__SliS_asNamed$(T_NamedSliS, var_unnamed_sli_s)
+#define SliS_const$(T)                             comp_type_anon__SliS_const$(T)
+#define SliS$(T)                                   comp_type_anon__SliS$(T)
+#define SliS_asNamed$(T_NamedSliS, var_anon_sli_s) comp_op__SliS_asNamed$(T_NamedSliS, var_anon_sli_s)
 
 #define SliS_from(val_ptr, val_sentinel...)          comp_op__SliS_from(val_ptr, val_sentinel)
 #define SliS_from$(T_SliS, val_ptr, val_sentinel...) comp_op__SliS_from$(T_SliS, val_ptr, val_sentinel)
@@ -118,7 +118,7 @@ typedef union Sli         Sli;
 #define SliS_getAt(var_self, usize_index...)           comp_op__SliS_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define SliS_setAt(var_self, usize_index, val_item...) comp_op__SliS_setAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index, val_item)
 
-/*========== Macros and Implementations =====================================*/
+/*========== Macros and Definitions =========================================*/
 
 typedef struct __AssociationTypes_Sli_const
     __AssociationTypes_Sli_const;
@@ -191,27 +191,27 @@ union __AssociationTypes_Sli {
     __AssociationTypes_Sli_const as_const;
 };
 
-#define comp_type_unnamed__Sli_const$(T) \
-    struct {                             \
-        rawptr_const$(T) ptr;            \
-        usize      len;                  \
-        Sli_const* __base_type_hint[0];  \
+#define comp_type_anon__Sli_const$(T)   \
+    struct {                            \
+        rawptr_const$(T) ptr;           \
+        usize      len;                 \
+        Sli_const* __base_type_hint[0]; \
     }
-#define comp_type_unnamed__Sli$(T) \
+#define comp_type_anon__Sli$(T)    \
     struct {                       \
         rawptr$(T) ptr;            \
         usize len;                 \
         Sli*  __base_type_hint[0]; \
     }
-#define comp_op__Sli_asNamed$(__unnamed_sli, T_NamedSli, var_unnamed_sli) eval({                             \
-    let __unnamed_sli = var_unnamed_sli;                                                                     \
-    claim_assert_static(sizeOf(T_NamedSli) == sizeOf(TypeOf(__unnamed_sli)));                                \
-    claim_assert_static(alignOf(T_NamedSli) == alignOf(TypeOf(__unnamed_sli)));                              \
-    claim_assert_static(hasField(TypeOf(__unnamed_sli), len));                                               \
-    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, len), FieldTypeOf(TypeOf(__unnamed_sli), len))); \
-    claim_assert_static(hasField(TypeOf(__unnamed_sli), ptr));                                               \
-    claim_assert_static(isSameType$(FieldTypeOf(T_NamedSli, ptr), FieldTypeOf(TypeOf(__unnamed_sli), ptr))); \
-    eval_return(*(T_NamedSli*)&(__unnamed_sli));                                                             \
+#define comp_op__Sli_asNamed$(__anon, T_Sli, var_anon...) eval({                        \
+    const TypeOf(var_anon) __anon = var_anon;                                           \
+    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
+    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
+    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr)));   \
+    claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len)));   \
+    claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
+    claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
+    eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
 })
 
 #define comp_gen__use_Sli$(T) \
@@ -303,17 +303,16 @@ union __AssociationTypes_Sli {
 
 #define comp_op__Sli_from(val_ptr, val_len...)                 { .ptr = ensureNonnull(val_ptr), .len = val_len }
 #define comp_op__Sli_from$(T_Sli, val_ptr, val_len...)         ((T_Sli)Sli_from(val_ptr, val_len))
-#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({ \
-    let __addr_sli = var_addr_sli;                                    \
-    debug_assert_nonnull(__addr_sli);                                 \
-    *__addr_sli = TypeOf(*__addr_sli) val_sli;                        \
-    eval_return __addr_sli;                                           \
+#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({    \
+    const TypeOf(var_addr_sli) __addr_sli = var_addr_sli;                \
+    deref(__addr_sli)                     = TypeOf(*__addr_sli) val_sli; \
+    eval_return __addr_sli;                                              \
 })
 
 #define comp_op__Sli_len(var_self...)                              (var_self.len)
 #define comp_op__Sli_at(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                       \
-    const usize __index = usize_index;                                    \
+    const TypeOf(var_self) __self = var_self;                             \
+    const usize __index           = usize_index;                          \
     debug_assert_nonnull(__self.ptr);                                     \
     debug_assert_fmt(                                                     \
         __index < __self.len,                                             \
@@ -321,13 +320,11 @@ union __AssociationTypes_Sli {
         __index,                                                          \
         __self.len                                                        \
     );                                                                    \
-    eval_return(                                                          \
-        &__self.ptr[__index]                                              \
-    );                                                                    \
+    eval_return_(&__self.ptr[__index]);                                   \
 })
 #define comp_op__Sli_getAt(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                          \
-    const usize __index = usize_index;                                       \
+    const TypeOf(var_self) __self = var_self;                                \
+    const usize __index           = usize_index;                             \
     debug_assert_nonnull(__self.ptr);                                        \
     debug_assert_fmt(                                                        \
         __index < __self.len,                                                \
@@ -335,13 +332,11 @@ union __AssociationTypes_Sli {
         __index,                                                             \
         __self.len                                                           \
     );                                                                       \
-    eval_return(                                                             \
-        __self.ptr[__index]                                                  \
-    );                                                                       \
+    eval_return __self.ptr[__index];                                         \
 })
 #define comp_op__Sli_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
-    let         __self  = var_self;                                                    \
-    const usize __index = usize_index;                                                 \
+    const TypeOf(var_self) __self = var_self;                                          \
+    const usize __index           = usize_index;                                       \
     debug_assert_nonnull(__self.ptr);                                                  \
     debug_assert_fmt(                                                                  \
         __index < __self.len,                                                          \
@@ -354,8 +349,8 @@ union __AssociationTypes_Sli {
 })
 
 #define comp_op__Sli_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
-    let         __self  = var_self;                                                    \
-    const Range __range = Range_from range_index_begin_end;                            \
+    const TypeOf(var_self) __self = var_self;                                          \
+    const Range __range           = Range_from range_index_begin_end;                  \
     debug_assert_fmt(                                                                  \
         __range.begin < __range.end,                                                   \
         "Invalid slice range: begin(%zu) >= end(%zu)",                                 \
@@ -375,8 +370,8 @@ union __AssociationTypes_Sli {
     );                                                                                 \
 })
 #define comp_op__Sli_prefix(__self, __end, var_self, usize_index_end...) eval({ \
-    let         __self = var_self;                                              \
-    const usize __end  = usize_index_end;                                       \
+    const TypeOf(var_self) __self = var_self;                                   \
+    const usize __end             = usize_index_end;                            \
     debug_assert_fmt(                                                           \
         __end <= __self.len,                                                    \
         "Index out of bounds: %zu > %zu",                                       \
@@ -390,15 +385,15 @@ union __AssociationTypes_Sli {
     );                                                                          \
 })
 #define comp_op__Sli_prefixZ(__self, var_self...) eval({                  \
-    let __self = var_self;                                                \
+    const TypeOf(var_self) __self = var_self;                             \
     eval_return make$(                                                    \
         TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]), \
         .ptr = __self.ptr                                                 \
     );                                                                    \
 })
 #define comp_op__Sli_prefixS(__self, __sentinel, var_self, val_sentinel...) eval({ \
-    let __self     = var_self;                                                     \
-    let __sentinel = val_sentinel;                                                 \
+    const TypeOf(var_self) __self = var_self;                                      \
+    let __sentinel                = val_sentinel;                                  \
     eval_return make$(                                                             \
         TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),      \
         .ptr      = __self.ptr,                                                    \
@@ -406,8 +401,8 @@ union __AssociationTypes_Sli {
     );                                                                             \
 })
 #define comp_op__Sli_suffix(__self, __begin, var_self, usize_index_begin...) eval({ \
-    let         __self  = var_self;                                                 \
-    const usize __begin = usize_index_begin;                                        \
+    const TypeOf(var_self) __self = var_self;                                       \
+    const usize __begin           = usize_index_begin;                              \
     debug_assert_fmt(                                                               \
         __begin < __self.len,                                                       \
         "Index out of bounds: %zu > %zu",                                           \
@@ -421,8 +416,8 @@ union __AssociationTypes_Sli {
     );                                                                              \
 })
 #define comp_op__Sli_suffixZ(__self, __begin, var_self, usize_index_begin...) eval({ \
-    let         __self  = var_self;                                                  \
-    const usize __begin = usize_index_begin;                                         \
+    const TypeOf(var_self) __self = var_self;                                        \
+    const usize __begin           = usize_index_begin;                               \
     debug_assert_fmt(                                                                \
         __begin < __self.len,                                                        \
         "Index out of bounds: %zu > %zu",                                            \
@@ -435,9 +430,9 @@ union __AssociationTypes_Sli {
     );                                                                               \
 })
 #define comp_op__Sli_suffixS(__self, __begin, __sentinel, var_self, usize_index_begin, val_sentinel...) eval({ \
-    let         __self     = var_self;                                                                         \
-    const usize __begin    = usize_index_begin;                                                                \
-    let         __sentinel = val_sentinel;                                                                     \
+    const TypeOf(var_self) __self         = var_self;                                                          \
+    const usize __begin                   = usize_index_begin;                                                 \
+    const TypeOf(val_sentinel) __sentinel = val_sentinel;                                                      \
     debug_assert_fmt(                                                                                          \
         __begin < __self.len,                                                                                  \
         "Index out of bounds: %zu > %zu",                                                                      \
@@ -461,17 +456,17 @@ union __AssociationTypes_Sli {
     with_(let __sli = (var_sli)) for (usize _Iter_index = (__sli).len; (_Iter_index)-- > 0;) with_(let _Iter_item = Sli_at(__sli, _Iter_index))
 
 
-#define comp_type_unnamed__SliZ_const$(T) \
-    struct {                              \
-        rawptr_const$(T) ptr;             \
-        SliZ_const* __base_type_hint[0];  \
+#define comp_type_anon__SliZ_const$(T)   \
+    struct {                             \
+        rawptr_const$(T) ptr;            \
+        SliZ_const* __base_type_hint[0]; \
     }
-#define comp_type_unnamed__SliZ$(T) \
-    struct {                        \
-        rawptr$(T) ptr;             \
-        SliZ* __base_type_hint[0];  \
+#define comp_type_anon__SliZ$(T)   \
+    struct {                       \
+        rawptr$(T) ptr;            \
+        SliZ* __base_type_hint[0]; \
     }
-#define comp_op__SliZ_asNamed$(T_NamedSliZ, var_unnamed_sli_z)
+#define comp_op__SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z)
 
 #define comp_op__SliZ_from(val_ptr...)                          { .ptr = ensureNonnull(val_ptr) }
 #define comp_op__SliZ_from$(T_SliZ, val_ptr...)                 ((T_SliZ)SliZ_from(val_ptr))
@@ -486,17 +481,13 @@ union __AssociationTypes_Sli {
     let         __self  = var_self;                                        \
     const usize __index = usize_index;                                     \
     debug_assert_nonnull(__self.ptr);                                      \
-    eval_return(                                                           \
-        &__self.ptr[__index]                                               \
-    );                                                                     \
+    eval_return_(&__self.ptr[__index]);                                    \
 })
 #define comp_op__SliZ_getAt(__self, __index, var_self, usize_index...) eval({ \
     let         __self  = var_self;                                           \
     const usize __index = usize_index;                                        \
     debug_assert_nonnull(__self.ptr);                                         \
-    eval_return(                                                              \
-        __self.ptr[__index]                                                   \
-    );                                                                        \
+    eval_return __self.ptr[__index];                                          \
 })
 #define comp_op__SliZ_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
     let         __self  = var_self;                                                     \
@@ -507,19 +498,19 @@ union __AssociationTypes_Sli {
 })
 
 
-#define comp_type_unnamed__SliS_const$(T) \
-    struct {                              \
-        rawptr_const$(T) ptr;             \
-        T           sentinel;             \
-        SliS_const* __base_type_hint[0];  \
+#define comp_type_anon__SliS_const$(T)   \
+    struct {                             \
+        rawptr_const$(T) ptr;            \
+        T           sentinel;            \
+        SliS_const* __base_type_hint[0]; \
     }
-#define comp_type_unnamed__SliS$(T) \
-    struct {                        \
-        rawptr$(T) ptr;             \
-        T     sentinel;             \
-        SliS* __base_type_hint[0];  \
+#define comp_type_anon__SliS$(T)   \
+    struct {                       \
+        rawptr$(T) ptr;            \
+        T     sentinel;            \
+        SliS* __base_type_hint[0]; \
     }
-#define comp_op__SliS_asNamed$(T_NamedSliS, var_unnamed_sli_s)
+#define comp_op__SliS_asNamed$(T_NamedSliS, var_anon_sli_s)
 
 #define comp_op__SliS_from(val_ptr, val_sentinel...)            { .ptr = ensureNonnull(val_ptr), .sentinel = val_sentinel }
 #define comp_op__SliS_from$(T_SliS, val_ptr, val_sentinel...)   ((T_SliS)SliS_from(val_ptr, val_sentinel))
@@ -534,17 +525,13 @@ union __AssociationTypes_Sli {
     let         __self  = var_self;                                        \
     const usize __index = usize_index;                                     \
     debug_assert_nonnull(__self.ptr);                                      \
-    eval_return(                                                           \
-        &__self.ptr[__index]                                               \
-    );                                                                     \
+    eval_return_(&__self.ptr[__index]);                                    \
 })
 #define comp_op__SliS_getAt(__self, __index, var_self, usize_index...) eval({ \
     let         __self  = var_self;                                           \
     const usize __index = usize_index;                                        \
     debug_assert_nonnull(__self.ptr);                                         \
-    eval_return(                                                              \
-        __self.ptr[__index]                                                   \
-    );                                                                        \
+    eval_return __self.ptr[__index];                                          \
 })
 #define comp_op__SliS_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
     let         __self  = var_self;                                                     \

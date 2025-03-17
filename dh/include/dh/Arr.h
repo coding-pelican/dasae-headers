@@ -19,23 +19,23 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-#include "dh/meta.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define Arr_const$(N, T...)                       comp_type_unnamed__Arr_const$(N, T)
-#define Arr$(N, T...)                             comp_type_unnamed__Arr$(N, T)
-#define Arr_asNamed$(T_NamedArr, var_unnamed_arr) comp_op__Arr_asNamed$(T_NamedArr, var_unnamed_arr)
+#define Arr_const$(N, T...)              comp_type_anon__Arr_const$(N, T)
+#define Arr$(N, T...)                    comp_type_anon__Arr$(N, T)
+#define Arr_asNamed$(T_Arr, var_anon...) comp_op__Arr_asNamed$(pp_uniqTok(anon), T_Arr, var_anon)
+
+#define use_Arr$(N, T...)  comp_gen__use_Arr$(N, T)
+#define decl_Arr$(N, T...) comp_gen__decl_Arr$(N, T)
+#define impl_Arr$(N, T...) comp_gen__impl_Arr$(N, T)
 
 #define Arr_init()                    comp_op__Arr_init()
 #define Arr_init$(T_Arr)              comp_op__Arr_init$(T_Arr)
 #define Arr_from(_Initial...)         comp_op__Arr_from(_Initial)
 #define Arr_from$(T_Arr, _Initial...) comp_op__Arr_from$(T_Arr, _Initial)
+#define Arr_make$(T, _Initial...)     comp_op__Arr_make$(T, _Initial)
 #define Arr_asg()
-
-#define use_Arr$(N, T...)  comp_gen__use_Arr$(N, T)
-#define decl_Arr$(N, T...) comp_gen__decl_Arr$(N, T)
-#define impl_Arr$(N, T...) comp_gen__impl_Arr$(N, T)
 
 #define Arr_len(var_self...)                          comp_op__Arr_len(pp_uniqTok(self), var_self)
 #define Arr_at(var_self, usize_index...)              comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
@@ -55,30 +55,22 @@ extern "C" {
 
 /*========== Implementations ================================================*/
 
-#define comp_type_unnamed__Arr_const$(N, T...) \
-    struct {                                   \
-        const T items[N];                      \
+#define comp_type_anon__Arr_const$(N, T...) \
+    struct {                                \
+        const T items[N];                   \
     }
-#define comp_type_unnamed__Arr$(N, T...) \
-    struct {                             \
-        T items[N];                      \
+#define comp_type_anon__Arr$(N, T...) \
+    struct {                          \
+        T items[N];                   \
     }
-#define comp_op__Arr_asNamed$(T_NamedArr, var_unnamed_arr) eval({                                       \
-    let _unnamed_arr = &(var_unnamed_arr);                                                              \
-    claim_assert_static(sizeOf(TypeOf(*_unnamed_arr)) == sizeOf(T_NamedArr));                           \
-    claim_assert_static(alignOf(TypeOf(*_unnamed_arr)) == alignOf(T_NamedArr));                         \
-    claim_assert_static(hasField(TypeOf(*_unnamed_arr), items));                                        \
-    claim_assert_static(validateField(TypeOf(*_unnamed_arr), items, FieldTypeOf(T_NamedArr, items)));   \
-    claim_assert_static(fieldPadding(TypeOf(*_unnamed_arr), items) == fieldPadding(T_NamedArr, items)); \
-    eval_return(                                                                                        \
-        *as$(rawptr$(T_NamedArr), _unnamed_arr)                                                         \
-    );                                                                                                  \
+#define comp_op__Arr_asNamed$(__anon, T_Arr, var_anon...) eval({                             \
+    let __anon = &var_anon;                                                                  \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                           \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                         \
+    claim_assert_static(validateField(TypeOf(*__anon), items, FieldTypeOf(T_Arr, items)));   \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_Arr, items)); \
+    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                       \
 })
-
-#define comp_op__Arr_init()                    { .items = { 0 } }
-#define comp_op__Arr_init$(T_Arr)              ((T_Arr)Arr_init())
-#define comp_op__Arr_from(_Initial...)         { .items = _Initial }
-#define comp_op__Arr_from$(T_Arr, _Initial...) ((T_Arr)Arr_from(_Initial))
 
 #define comp_gen__use_Arr$(N, T...) \
     decl_Arr$(N, T);                \
@@ -97,6 +89,12 @@ extern "C" {
         pp_join3($, Arr_const, N, T) as_const; \
     }
 
+#define comp_op__Arr_init()                    { .items = { 0 } }
+#define comp_op__Arr_init$(T_Arr)              ((T_Arr)Arr_init())
+#define comp_op__Arr_from(_Initial...)         { .items = _Initial }
+#define comp_op__Arr_from$(T_Arr, _Initial...) ((T_Arr)Arr_from(_Initial))
+#define comp_op__Arr_make$(T, _Initial...)     ((Arr$(countOf((T[])_Initial), T)){ .items = _Initial })
+
 #define comp_op__Arr_len(__self, var_self...) eval({ \
     let __self = &var_self;                          \
     eval_return countOf(__self->items);              \
@@ -110,9 +108,7 @@ extern "C" {
         __index,                                                          \
         Arr_len(*__self)                                                  \
     );                                                                    \
-    eval_return(                                                          \
-        &__self->items[__index]                                           \
-    );                                                                    \
+    eval_return rawref(__self->items[__index]);                           \
 })
 #define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
     let         __self  = &var_self;                                         \
@@ -123,9 +119,7 @@ extern "C" {
         __index,                                                             \
         Arr_len(*__self)                                                     \
     );                                                                       \
-    eval_return(                                                             \
-        __self->items[__index]                                               \
-    );                                                                       \
+    eval_return __self->items[__index];                                      \
 })
 #define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
     let         __self  = &var_self;                                                    \

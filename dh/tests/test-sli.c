@@ -14,7 +14,7 @@ fn_ext_scope(dh_main(void), Err$void) {
 
 decl_Sli$(u8);
 decl_Sli$(i32);
-static fn_(slice_example(void), void) {
+fn_(slice_example(void), void) {
     // Create a slice from an array
     i32 numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     let slice     = Sli_from$(Sli$i32, numbers, 10);
@@ -26,9 +26,9 @@ static fn_(slice_example(void), void) {
     let length = Sli_len(slice);         // Get the length (10)
 
     // Range-based operations
-    let middle      = Sli_slice(slice, (2, 7)); // Elements 3 through 7
-    let first_half  = Sli_prefix(slice, 5);     // First 5 elements
-    let second_half = Sli_suffix(slice, 5);     // Last 5 elements
+    let middle      = Sli_slice(slice, (2, 7));
+    let first_half  = Sli_prefix(slice, 5); // First 5 elements
+    let second_half = Sli_suffix(slice, 5); // Last 5 elements
 
     let all           = Sli_prefixZ(slice);
     let terminated_10 = Sli_prefixS(slice, 10);

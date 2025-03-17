@@ -2,16 +2,16 @@
 #define scope_defer        \
     int _defer_return = 0; \
     int _defer_curr   = 0; \
-    _deferred:             \
+    __deferred:            \
     switch (_defer_curr) { \
     default:               \
         break;             \
     case 0:                \
         _defer_curr = -1;
 
-#define run_deferred() \
-    goto _deferred;    \
-    }                  \
+#define run__deferred() \
+    goto __deferred;    \
+    }                   \
     while (0)
 
 #define defer__snapshot(A)             \
@@ -26,27 +26,27 @@
     }
 
 #define defer(F) \
-    defer__snapshot(F; goto _deferred)
+    defer__snapshot(F; goto __deferred)
 
 #define block_defer          \
     do {                     \
     defer__snapshot(         \
         if (_defer_return) { \
-            goto _deferred;  \
+            goto __deferred; \
         } else {             \
             continue;        \
         }                    \
     )
 
-#define defer_break     \
-    {                   \
-        goto _deferred; \
+#define defer_break      \
+    {                    \
+        goto __deferred; \
     }
 
 #define defer_return       \
     {                      \
         _defer_return = 1; \
-        goto _deferred;    \
+        goto __deferred;   \
     }
 // NOLINTEND(bugprone-terminating-continue)
 
@@ -100,7 +100,7 @@ int main(void) {
             });
             printf("17\n");
         }
-        run_deferred();
+        run__deferred();
         printf("18\n");
 
         FILE* error_log_file = fopen("error_log.txt", "w");
@@ -116,7 +116,7 @@ int main(void) {
         });
         printf("22\n");
     }
-    run_deferred();
+    run__deferred();
     printf("23\n");
 
     return result;

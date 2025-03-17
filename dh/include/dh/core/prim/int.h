@@ -105,6 +105,9 @@ typedef uintptr_t usize;
 #define usize_limit_min (0)
 #define usize_limit_max (UINTPTR_MAX)
 
+typedef __int128_t u128;
+typedef __uint128_t i128;
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

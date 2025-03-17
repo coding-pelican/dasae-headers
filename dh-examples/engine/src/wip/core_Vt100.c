@@ -127,15 +127,15 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
 
 /*========== Forward declarations ===========================================*/
 
-static_inline usize           calcAbstractBufferSize(u32 width, u32 height);
-deprecated force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self);
-deprecated force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self);
+static_inline usize                calcAbstractBufferSize(u32 width, u32 height);
+warn_deprecated force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self);
+warn_deprecated force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self);
 
 force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
 force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
-deprecated force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);
-deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check;
+warn_deprecated force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);
+warn_deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check;
 
 static Err$void syncWindowMetrics(engine_core_Vt100* self) must_check;
 
@@ -198,8 +198,8 @@ force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
 /// typically used for high-level engine logic.
 force_inline Vec2u abstractWindowRect(engine_core_Vt100* self) {
     return (Vec2u){
-        .x = self->abstract.window->composite_buffer->width,
-        .y = self->abstract.window->composite_buffer->height
+        .x = Grid_width(self->abstract.window->composite_buffer->buffer),
+        .y = Grid_height(self->abstract.window->composite_buffer->buffer)
     };
 }
 
@@ -220,7 +220,7 @@ force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self) {
     let current_size = abstractBufferCapSize(self);
     // Compare with the expected size from your function
     let needed_size  = eval({
-        let         rect = abstractWindowRect(self);
+        let rect = abstractWindowRect(self);
         eval_return calcAbstractBufferSize(rect.x, rect.y);
     });
     return current_size != needed_size;
@@ -745,7 +745,7 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
                             engine_InputEvent_mouse_scroll,
                             { .delta = math_Vec2f_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
                         )
-                    );
+                            );
                 }
 
                 // Handle horizontal wheel if needed
@@ -762,7 +762,7 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
                             engine_InputEvent_mouse_scroll,
                             { .delta = math_Vec2f_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
                         )
-                    );
+                            );
                 }
             }
         }
@@ -842,19 +842,19 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->allocator       = allocator;
         self->abstract.window = eval({
             let window = config->window;
-            someAsg(window->backend, engine_core_Vt100_backend(self));
+            someAsg(&window->backend, engine_core_Vt100_backend(self));
             eval_return window;
         });
         self->abstract.buffer = eval({
-            let         allocator = self->allocator;
-            let         window    = self->abstract.window;
-            let         size      = calcAbstractBufferSize(window->composite_buffer->width, window->composite_buffer->height);
+            let allocator = self->allocator;
+            let window    = self->abstract.window;
+            let size      = calcAbstractBufferSize(Grid_width(window->composite_buffer->buffer), Grid_height(window->composite_buffer->buffer));
             eval_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
         });
         errdefer_(ArrList_fini(self->abstract.buffer.base));
         self->input = eval({
             let input = config->input;
-            someAsg(input->backend, engine_core_Vt100_backend(self));
+            someAsg(&input->backend, engine_core_Vt100_backend(self));
             eval_return input;
         });
 
@@ -993,10 +993,7 @@ static void presentBuffer(anyptr ctx) {
     let rect   = abstractWindowRect(self);
     let width  = rect.x;
     let height = rect.y;
-    let pixels = eval({
-        let         buffer = self->abstract.window->composite_buffer;
-        eval_return Grid_fromSli$(Grid$Color, buffer->buffer, buffer->width, buffer->height);
-    });
+    let pixels = self->abstract.window->composite_buffer->buffer;
     for (u32 y = 0; (y + 1) < height; y += 2) {
         for (u32 x = 0; x < width; ++x) {
             // Get upper and lower pixels
