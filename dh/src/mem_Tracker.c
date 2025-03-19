@@ -29,12 +29,12 @@ void mem_Tracker_initWithFile(const char* log_path) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        catch_from(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, {
+        catch_from(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, ({
             ignore fprintf(stderr, "Failed to create directory for memory tracker log: %s\n", log_path);
             Err_print(err);
             ErrTrace_print();
             claim_unreachable;
-        });
+        }));
     }
 
     let log_file = fopen(log_path, "w");

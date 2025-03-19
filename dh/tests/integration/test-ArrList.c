@@ -33,21 +33,25 @@ static must_check Err$void example(void) {
 
         // Append individual items
         Point p1 = { .x = 10, .y = 20 };
-        try_(ArrList_append(points.base, meta_refPtr(&p1)));
+        try_(ArrList_append(points.base, meta_refPtr_mut(&p1)));
 
         // Append multiple items at once
-        Sli$Point more_points = Sli_arr((Point[]){
-            { .x = 30, .y = 40 },
-            { .x = 50, .y = 60 },
-        });
-        try_(ArrList_appendSlice(points.base, meta_refSli(more_points)));
+        Sli$Point more_points = Sli_from(
+            make$(
+                Point[],
+                { .x = 30, .y = 40 },
+                { .x = 50, .y = 60 },
+            ),
+            2
+        );
+        try_(ArrList_appendSlice(points.base, meta_refSli_mut(more_points)));
 
         // Print current state
         try_(printPoints(&points));
 
         // Insert at specific position
         Point p4 = { .x = 70, .y = 80 };
-        try_(ArrList_insert(points.base, 1, meta_refPtr(&p4)));
+        try_(ArrList_insert(points.base, 1, meta_refPtr_mut(&p4)));
         printf("\nAfter insert at position 1:\n");
         try_(printPoints(&points));
 
@@ -82,14 +86,13 @@ static must_check Err$void example(void) {
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
-        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli(owned_slice)));
+        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli_mut(owned_slice)));
         defer_(ArrList_fini(from_slice.base));
         printf("\nCreated from owned slice:\n");
         try_(printPoints(&from_slice));
 
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 Err$void dh_main(void) {

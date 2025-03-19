@@ -36,61 +36,91 @@ extern "C" {
 #define getReservedReturn()              FUNC__getReservedReturn()
 #define setReservedReturn(val_return...) FUNC__setReservedReturn(val_return)
 
-#define ext_scope(T_ReservedReturn) comp_syn__ext_scope(T_ReservedReturn)
-#define ext_unscoped                comp_syn__ext_unscoped
+#define ext_scope(T_ReservedReturn...) comp_syn__ext_scope(T_ReservedReturn)
+#define ext_unscoped                   comp_syn__ext_unscoped
 
 /*========== Implementations ================================================*/
 
 #if SCOPE_RESERVE_RETURN_CONTAINS_DEFER
 
 // clang-format off
-#define comp_syn__ext_scope(T_ReservedReturn)              \
-    {                                                      \
+#define comp_syn__ext_scope(T_ReservedReturn...)            \
+    {                                                       \
         rawptr$(T_ReservedReturn) __reserved_return = null; \
-        struct {                                           \
-            i32  curr;                                     \
-            bool returns;                                  \
+        struct {                                            \
+            i32  curr;                                      \
+            bool returns;                                   \
         } __scope_defer = { .curr = 0, .returns = false };  \
-        if (0) {                                           \
+        if (0) {                                            \
         __returned_scope:                                   \
             __scope_defer.returns = true;                   \
             goto __deferred;                                \
-        }                                                  \
-    __deferred:                                             \
+        }                                                   \
+        __deferred:                                         \
         switch (__scope_defer.curr) {                       \
-        default:                                           \
-            break;                                         \
-        case 0:                                            \
+        default:                                            \
+            break;                                          \
+        case 0:                                             \
             __scope_defer.curr = -1;
-#define comp_syn__ext_unscoped                                                \
-            goto __returned_scope;                                             \
-        }                                                                     \
-        return (debug_assert_nonnull(__reserved_return), __reserved_return[0]); \
+#define comp_syn__ext_unscoped                      \
+            goto __returned_scope;                  \
+        }                                           \
+        return ensureNonnull(__reserved_return)[0]; \
     }
+/* #define comp_syn__ext_scope(T_ReservedReturn...)            \
+    {                                                       \
+        rawptr$(T_ReservedReturn) __reserved_return = null; \
+        struct {                                            \
+            i32  curr;                                      \
+            bool returns;                                   \
+        } __scope_defer = { .curr = 0, .returns = false };  \
+        if (0) {                                            \
+        __returned_scope:                                   \
+            goto __ext_unscoped;                            \
+        }                                                   \
+        __deferred:                                         \
+        switch (__scope_defer.curr) {                       \
+        default:                                            \
+            break;                                          \
+        case 0:                                             \
+            __scope_defer.curr = -1;
+#define comp_syn__ext_unscoped                      \
+            goto __returned_scope;                  \
+        }                                           \
+        if (0) {                                    \
+        __ext_unscoped:                             \
+            __scope_defer.returns = true;           \
+            goto __deferred;                        \
+        }                                           \
+        return ensureNonnull(__reserved_return)[0]; \
+    } */
 // clang-format on
 
-#define SYN__scope_reserveReturn(T)                    \
-    rawptr$(T) __reserved_return = null;               \
-    struct {                                           \
-        i32  curr;                                     \
-        bool returns;                                  \
-    } __scope_defer = { .curr = 0, .returns = false }; \
-    if (0) {                                           \
-    __returned_scope:                                  \
-        __scope_defer.returns = true;                  \
-        goto __deferred;                               \
-    }                                                  \
-    __deferred:                                        \
-    switch (__scope_defer.curr) {                      \
-    default:                                           \
-        break;                                         \
-    case 0:                                            \
+#define SYN__scope_reserveReturn(T_ReservedReturn)      \
+    rawptr$(T_ReservedReturn) __reserved_return = null; \
+    struct {                                            \
+        i32  curr;                                      \
+        bool returns;                                   \
+    } __scope_defer = { .curr = 0, .returns = false };  \
+    if (0) {                                            \
+    __returned_scope:                                   \
+        goto __ext_unscoped;                            \
+    }                                                   \
+    __deferred:                                         \
+    switch (__scope_defer.curr) {                       \
+    default:                                            \
+        break;                                          \
+    case 0:                                             \
         __scope_defer.curr = -1;
-
-#define SYN__scope_returnReserved \
-    goto __returned_scope;        \
-    }                             \
-    return (debug_assert_nonnull(__reserved_return), __reserved_return[0])
+#define SYN__scope_returnReserved     \
+    goto __returned_scope;            \
+    }                                 \
+    if (0) {                          \
+    __ext_unscoped:                   \
+        __scope_defer.returns = true; \
+        goto __deferred;              \
+    }                                 \
+    return ensureNonnull(__reserved_return)[0]
 
 #define SYN__scope_return(val_return...) \
     {                                    \

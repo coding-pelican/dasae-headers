@@ -250,10 +250,10 @@ Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
     }
 
     // Allocate new buffer
-    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len), err, {
+    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len), err, eval({
         unused(err);
         return_none();
-    });
+    }));
 
     // Copy data and free old buffer
     let result   = new_slice;
@@ -287,14 +287,10 @@ Opt$meta_Sli mem_Allocator_realloc_debug(
     }
 
     // Allocate new buffer
-    let new_slice = catch_from(
-        mem_Allocator_alloc(self, type, new_len, file, line, func),
-        err,
-        {
-            unused(err);
-            return_none();
-        }
-    );
+    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len, file, line, func), err, eval({
+        unused(err);
+        return_none();
+    }));
 
     // Copy data and free old buffer
     let result   = new_slice;

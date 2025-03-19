@@ -83,11 +83,11 @@ int main(
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
-    catch_from(dh_main(), err, {
+    catch_from(dh_main(), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
 #elif !main_no_args && main_no_returns_err
     let args_buf = as$(Str_const*, bti_alloca(sizeOf$(Str_const) * argc));
     let args     = eval({
@@ -113,11 +113,11 @@ int main(
             .len = argc
         );
     });
-    catch_from(dh_main(args), err, {
+    catch_from(dh_main(args), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
 #endif /* !main_no_args && !main_no_returns_err */
     return 0;
 }

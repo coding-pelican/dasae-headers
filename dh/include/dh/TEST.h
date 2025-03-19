@@ -22,25 +22,32 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/opt.h"
+#include "dh/err_res.h"
+#include "dh/fn.h"
 #include "dh/Str.h"
 #include <stdio.h>
 
 /*========== Test Framework =================================================*/
 
-#define fn_test_scope(_Name...) comp_syn__fn_test_scope(pp_join(_, TEST, pp_uniqTok(Case_Id)), _Name)
+#define fn_test_scope(_Name...) comp_syn__fn_test_scope(pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
 #define test_unscoped           comp_syn__test_unscoped
 
-#define comp_syn__fn_test_scope(__Case_Id, _Name...)     \
-    __attribute__((constructor))                         \
-    fn_(__Case_Id(void), must_check Err$Opt$TEST_Result) { \
-        static bool __s_is_bound = false;                  \
-        if (!__s_is_bound) {                               \
-            TEST_bindCase(__Case_Id, Str_l(_Name));      \
-            __s_is_bound = true;                           \
-            return_ok(none());                           \
-        }
+// clang-format off
+#define comp_syn__fn_test_scope(caseFn, _Name...)       \
+    __attribute__((constructor))                        \
+    fn_(caseFn(void), must_check Err$Opt$TEST_Result) { \
+        scope_reserveReturn(Err$Opt$TEST_Result) {      \
+            static bool __s_is_bound = false;           \
+            if (!__s_is_bound) {                        \
+                TEST_bindCase(caseFn, Str_l(_Name));    \
+                __s_is_bound = true;                    \
+                return_ok(none());                      \
+            }
 #define comp_syn__test_unscoped \
+        } scope_returnReserved; \
     }
+// clang-format on
 
 typedef struct TEST_Condition {
     const char* expr;

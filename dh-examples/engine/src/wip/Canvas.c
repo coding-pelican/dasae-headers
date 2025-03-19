@@ -13,7 +13,7 @@ fn_ext_scope(engine_Canvas_init(mem_Allocator allocator, u32 width, u32 height, 
     self->allocator     = allocator;
     self->buffer        = Grid_fromSli$(Grid$Color, buffer, width, height);
     self->type          = type;
-    self->default_color = orelse_default(default_color, Color_blank);
+    self->default_color = orelse(default_color, Color_blank);
 
     engine_Canvas_clear(self, none$(Opt$Color));
     return_ok(self);
@@ -48,7 +48,7 @@ fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 
-    let color = orelse_default(other_color, self->default_color);
+    let color = orelse(other_color, self->default_color);
     for_slice (self->buffer.items, item) {
         *item = color;
     }

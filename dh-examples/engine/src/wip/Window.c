@@ -44,8 +44,7 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
 
         /* Created successfully */
         return_ok(window);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 void engine_Window_fini(engine_Window* self) {

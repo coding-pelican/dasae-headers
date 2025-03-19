@@ -100,7 +100,7 @@ extern "C" {
 
 #define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
-#define bti_Generic_fallback$              comp_syn__bti_Generic_fallback$
+#define bti_Generic_fallback_              comp_syn__bti_Generic_fallback_
 #define eval                               comp_syn__eval
 #define eval_return                        comp_syn__eval_return
 #define eval_return_(...)                  comp_syn__eval_return_(__VA_ARGS__)
@@ -205,7 +205,7 @@ extern "C" {
     _Generic(T, _Pattern)
 #define comp_syn__bti_Generic_pattern$(T) \
     T:
-#define comp_syn__bti_Generic_fallback$ \
+#define comp_syn__bti_Generic_fallback_ \
     default:
 
 #define comp_syn__eval              /* just comment for expr stmt ({...}) */

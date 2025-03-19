@@ -26,8 +26,8 @@
 #define window_res_width  (window_res_width__80x50)
 #define window_res_height (window_res_height__80x50)
 #else /* !debug_comp_enabled */
-#define window_res_width  (window_res_width__320x200)
-#define window_res_height (window_res_height__320x200)
+#define window_res_width  (window_res_width__80x50)
+#define window_res_height (window_res_height__80x50)
 #endif /* debug_comp_enabled */
 #define window_res_size (as$(usize, window_res_width) * window_res_height)
 
@@ -41,9 +41,7 @@
 #define render_target_spf (1.0 / render_target_fps)
 
 use_ArrList$(Vec2f);
-typedef ArrList$Vec2f Vec2fs;
 use_ArrList$(Color);
-typedef ArrList$Color Colors;
 
 #define update_target_fps (480.0f)
 #define update_target_spf (1.0f / update_target_fps)
@@ -53,7 +51,7 @@ typedef ArrList$Color Colors;
 #define state_collision_damping  (0.8f)
 #define state_objects_cap_inital (512)
 
-#define state_vec2f_threshold ((Vec2f){ .x = 1e-4f, .y = 1e-4f })
+#define state_vec2f_threshold (make$(Vec2f, .x = 1e-4f, .y = 1e-4f))
 
 /*
  * World Scale = ratio of physical screen size to world space size
@@ -64,8 +62,8 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
     Random_init();
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
+    defer_(log_fini());
     {
-        defer_(log_fini());
         // Configure logging behavior
         log_setLevel(log_Level_debug);
         log_showTimestamp(true);
@@ -75,11 +73,11 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
     }
 
     // Initialize heap allocator and page pool
-    var allocator = heap_Page_allocator(&(heap_Page){});
+    var allocator = heap_Page_allocator(create$(heap_Page));
     log_info("allocator reserved");
 
     // Create window
-    let window = try_(engine_Window_init(&(engine_WindowConfig){
+    let window = try_(engine_Window_init(create$(engine_WindowConfig,
         .allocator = allocator,
         .title     = Str_l("Subframes"),
         .rect_size = {
@@ -87,7 +85,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             .y = window_res_height,
         },
         .default_color = some({ .packed = 0x181818FF }),
-    }));
+    )));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
@@ -99,17 +97,17 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         engine_CanvasType_rgba,
         none$(Opt$Color)
     ));
+    defer_(engine_Canvas_fini(game_canvas));
     {
-        defer_(engine_Canvas_fini(game_canvas));
         log_info("canvas created: %s", nameOf(game_canvas));
         engine_Canvas_clear(game_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendCanvasView(
             window,
             game_canvas,
-            (Vec2i){ .x = 0, .y = 0 },
-            (Vec2u){ .x = window_res_width, .y = window_res_height },
-            (Vec2f){ .x = 1.0f, .y = 1.0f },
+            make$(Vec2i, .x = 0, .y = 0),
+            make$(Vec2u, .x = window_res_width, .y = window_res_height),
+            make$(Vec2f, .x = 1.0f, .y = 1.0f),
             true,
             true,
             true
@@ -123,17 +121,17 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         engine_CanvasType_rgba,
         none$(Opt$Color)
     ));
+    defer_(engine_Canvas_fini(overlay_canvas));
     {
-        defer_(engine_Canvas_fini(overlay_canvas));
         log_info("canvas created: %s", nameOf(overlay_canvas));
         engine_Canvas_clear(overlay_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
         engine_Window_appendCanvasView(
             window,
             overlay_canvas,
-            (Vec2i){ .x = 0, .y = 0 },
-            (Vec2u){ .x = window_res_width, .y = window_res_height },
-            (Vec2f){ .x = 1.0f, .y = 1.0f },
+            make$(Vec2i, .x = 0, .y = 0),
+            make$(Vec2u, .x = window_res_width, .y = window_res_height),
+            make$(Vec2f, .x = 1.0f, .y = 1.0f),
             true,
             true,
             true
@@ -146,22 +144,22 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(
-        &(engine_core_Vt100_Config){
-            .allocator = allocator,
-            .window    = window,
-            .input     = input,
-        }
-    ));
+    let core = try_(engine_core_Vt100_init(create$(engine_core_Vt100_Config,
+        .allocator = allocator,
+        .window    = window,
+        .input     = input,
+    )));
     defer_(engine_core_Vt100_fini(core));
     log_info("engine ready");
 
     // Create game state
-    var positions = type$(Vec2fs, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
+    var positions = type$(ArrList$Vec2f, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
     defer_(ArrList_fini(positions.base));
-    var velocities = type$(Vec2fs, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
+
+    var velocities = type$(ArrList$Vec2f, try_(ArrList_initCap(typeInfo$(Vec2f), allocator, state_objects_cap_inital)));
     defer_(ArrList_fini(velocities.base));
-    var colors = type$(Colors, try_(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
+
+    var colors = type$(ArrList$Color, try_(ArrList_initCap(typeInfo$(Color), allocator, state_objects_cap_inital)));
     defer_(ArrList_fini(colors.base));
 
     const f32 radius = 2.5f;
@@ -187,13 +185,13 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
 
         // 3) Check for window movement
         let winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
-        debug_only(
+        debug_only({
             if (math_Vec2f_neApx(winpos, prev_winpos, state_vec2f_threshold)) {
                 log_info("window moved");
                 log_info("old winpos: %.2f %.2f", prev_winpos.x, prev_winpos.y);
                 log_info("new winpos: %.2f %.2f", winpos.x, winpos.y);
             }
-        );
+        });
         let dwinpos = eval({
             // Calculate world scale (ratio of physical screen size to world space size)
             let window_dim = math_Vec_as$(math_Vec2f, engine_Window_getDim(window)); // Physical screen dimensions
@@ -224,28 +222,29 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             log_debug("esc pressed");
         }
 
-        const bool left_space[2] = {
+        with_(const Arr_const$(2, bool) left_space = {
             engine_Mouse_held(&input->mouse, engine_MouseButton_left),
             engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
-        };
-        if (left_space[0] || left_space[1]) {
-            debug_only(if (left_space[0]) { log_debug("left mouse pressed"); });
-            debug_only(if (left_space[1]) { log_debug("space pressed"); });
+        }) {
+            if (Arr_getAt(left_space, 0) || Arr_getAt(left_space, 1)) {
+                debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
+                debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
 
-            let_(pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
-                *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
-            }
+                let_(pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
+                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
+                }
 
-            let_(vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
-                *vel = eval({
-                    let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
-                    let r     = math_Vec2f_sincos(angle);
-                    eval_return(math_Vec2f_scale(r, 50.0f));
-                });
-            }
+                let_(vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
+                    *vel = eval({
+                        let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
+                        let r     = math_Vec2f_sincos(angle);
+                        eval_return(math_Vec2f_scale(r, 50.0f));
+                    });
+                }
 
-            let_(color = meta_castPtr$(Color*, try_(ArrList_addBackOne(colors.base)))) {
-                *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
+                let_(color = meta_cast$(Color*, try_(ArrList_addBackOne(colors.base)))) {
+                    *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
+                }
             }
         }
 
@@ -357,8 +356,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             printf("\033[H\033[40;37m"); // Move cursor to top left
             printf("\rFPS: %6.2f RES: %dx%d", time_fps, win_res.x, win_res.y);
             printf(" DPOS: %6.2f,%6.2f", dwinpos.x, dwinpos.y);
-            debug_only(
-                // log frame every 1s
+            debug_only({ // log frame every 1s
                 static f64 total_game_time_for_timestamp = 0.0;
                 static f64 logging_after_duration        = 0.0;
                 total_game_time_for_timestamp += time_dt;
@@ -367,7 +365,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
                     logging_after_duration = 0.0;
                     log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
                 }
-            );
+            });
         }
 
         // 7) Measure how long the update+render actually took

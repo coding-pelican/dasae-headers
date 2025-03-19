@@ -171,13 +171,9 @@ StatementAttributeLikeMacros:
   - cleared
   - unwrap
   - orelse
-  - return_some
-  - return_none
   - try_
   - catch_
   - catch_from
-  - return_ok
-  - return_err
 
 Macros:
   # - type$=/**/
@@ -185,9 +181,10 @@ Macros:
   # - create$=/**/
   # - initial=/**/
   # - cleared=/**/
+  - scope_returnReserved=/**/
+  - block_deferral=/**/
   - ext_unscoped=/**/
   - test_unscoped=/**/
-  - block_deferral=/**/
   - match_=switch
   - "pattern_(tag,capture)=case tag:"
   - "fallback_=default:"
@@ -225,9 +222,13 @@ WhitespaceSensitiveMacros:
   - fn_
   - fn_ext_scope
   - config_ErrSet
+  - return_err
+  - return_ok
   - try_
   - catch_
   - catch_from
+  - return_some
+  - return_none
   - unwrap
   - orelse
   - config_UnionEnum
@@ -235,7 +236,6 @@ WhitespaceSensitiveMacros:
   - tagUnion
   - tagUnion$
   - tagUnionAsg
-  - bti_Generic_match_
   - match_
   - meta_refPtr
   - meta_refSli

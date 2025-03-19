@@ -32,8 +32,7 @@ Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) {
 
         noneAsg(&input->backend);
         return_ok(input);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 void engine_Input_fini(engine_Input* self) {

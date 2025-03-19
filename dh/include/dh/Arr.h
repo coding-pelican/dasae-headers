@@ -30,12 +30,10 @@ extern "C" {
 #define decl_Arr$(N, T...) comp_gen__decl_Arr$(N, T)
 #define impl_Arr$(N, T...) comp_gen__impl_Arr$(N, T)
 
-#define Arr_init()                    comp_op__Arr_init()
-#define Arr_init$(T_Arr)              comp_op__Arr_init$(T_Arr)
-#define Arr_from(_Initial...)         comp_op__Arr_from(_Initial)
-#define Arr_from$(T_Arr, _Initial...) comp_op__Arr_from$(T_Arr, _Initial)
-#define Arr_make$(T, _Initial...)     comp_op__Arr_make$(T, _Initial)
-#define Arr_asg()
+#define Arr_zero()                    comp_op__Arr_zero()
+#define Arr_zero$(T_Arr)              comp_op__Arr_zero$(T_Arr)
+#define Arr_init(_Initial...)         comp_op__Arr_init(_Initial)
+#define Arr_init$(T_Arr, _Initial...) comp_op__Arr_init$(T_Arr, _Initial)
 
 #define Arr_len(var_self...)                          comp_op__Arr_len(pp_uniqTok(self), var_self)
 #define Arr_at(var_self, usize_index...)              comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
@@ -89,19 +87,18 @@ extern "C" {
         pp_join3($, Arr_const, N, T) as_const; \
     }
 
-#define comp_op__Arr_init()                    { .items = { 0 } }
-#define comp_op__Arr_init$(T_Arr)              ((T_Arr)Arr_init())
-#define comp_op__Arr_from(_Initial...)         { .items = _Initial }
-#define comp_op__Arr_from$(T_Arr, _Initial...) ((T_Arr)Arr_from(_Initial))
-#define comp_op__Arr_make$(T, _Initial...)     ((Arr$(countOf((T[])_Initial), T)){ .items = _Initial })
+#define comp_op__Arr_zero()                    { .items = { 0 } }
+#define comp_op__Arr_zero$(T_Arr)              ((T_Arr)Arr_zero())
+#define comp_op__Arr_init(_Initial...)         { .items = _Initial }
+#define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
 
 #define comp_op__Arr_len(__self, var_self...) eval({ \
-    let __self = &var_self;                          \
+    const TypeOf(&var_self) __self = &var_self;      \
     eval_return countOf(__self->items);              \
 })
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = &var_self;                                      \
-    const usize __index = usize_index;                                    \
+    const TypeOf(&var_self) __self = &var_self;                           \
+    const usize __index            = usize_index;                         \
     debug_assert_fmt(                                                     \
         __index < Arr_len(*__self),                                       \
         "Index out of bounds: %zu >= %zu",                                \
@@ -111,8 +108,8 @@ extern "C" {
     eval_return rawref(__self->items[__index]);                           \
 })
 #define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = &var_self;                                         \
-    const usize __index = usize_index;                                       \
+    const TypeOf(&var_self) __self = &var_self;                              \
+    const usize __index            = usize_index;                            \
     debug_assert_fmt(                                                        \
         __index < Arr_len(*__self),                                          \
         "Index out of bounds: %zu >= %zu",                                   \
@@ -122,8 +119,8 @@ extern "C" {
     eval_return __self->items[__index];                                      \
 })
 #define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
-    let         __self  = &var_self;                                                    \
-    const usize __index = usize_index;                                                  \
+    const TypeOf(&var_self) __self = &var_self;                                         \
+    const usize __index            = usize_index;                                       \
     debug_assert_fmt(                                                                   \
         __index < Arr_len(*__self),                                                     \
         "Index out of bounds: %zu >= %zu",                                              \

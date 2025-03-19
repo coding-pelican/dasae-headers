@@ -32,10 +32,12 @@ extern "C" {
 
 typedef struct SliZ_const SliZ_const;
 typedef union SliZ        SliZ;
-typedef union SliS_const  SliS_const;
-typedef union SliS        SliS;
-typedef union Sli_const   Sli_const;
-typedef union Sli         Sli;
+
+typedef union SliS_const SliS_const;
+typedef union SliS       SliS;
+
+typedef union Sli_const  Sli_const;
+typedef union Sli        Sli;
 
 /* Slice ====================================================================*/
 
@@ -62,6 +64,10 @@ typedef union Sli         Sli;
 
 #define Sli_slice(var_self, range_index_begin_end...) /* sli[begin..end] */ \
     comp_op__Sli_slice(pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
+#define Sli_sliceZ(var_self, range_index_begin_end...) /* sli[begin..end] */ \
+    comp_op__Sli_sliceZ(pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
+#define Sli_sliceS(var_self, range_index_begin_end, val_sentinel...) /* sli[begin..end] */ \
+    comp_op__Sli_sliceS(pp_uniqTok(self), pp_uniqTok(range), pp_uniqTok(sentinel), var_self, range_index_begin_end, val_sentinel)
 #define Sli_prefix(var_self, usize_index_end...) /* sli[0..index] */ \
     comp_op__Sli_prefix(pp_uniqTok(self), pp_uniqTok(end), var_self, usize_index_end)
 #define Sli_prefixZ(var_self...) /* sli[0..*:null] */ \
@@ -369,6 +375,64 @@ union __AssociationTypes_Sli {
         .len = Range_len(__range)                                                      \
     );                                                                                 \
 })
+#define comp_op__Sli_sliceZ(__self, __range, var_self, range_index_begin_end...) eval({ \
+    const TypeOf(var_self) __self = var_self;                                           \
+    const Range __range           = Range_from range_index_begin_end;                   \
+    debug_assert_fmt(                                                                   \
+        __range.begin < __range.end,                                                    \
+        "Invalid slice range: begin(%zu) >= end(%zu)",                                  \
+        __range.begin,                                                                  \
+        __range.end                                                                     \
+    );                                                                                  \
+    debug_assert_fmt(                                                                   \
+        __range.end <= __self.len,                                                      \
+        "Index out of bounds: end(%zu) > len(%zu)",                                     \
+        __range.end,                                                                    \
+        __self.len                                                                      \
+    );                                                                                  \
+    debug_assert_fmt(                                                                   \
+        memcmp(                                                                         \
+            as$(u8*, &__self.ptr[__range.end]),                                         \
+            as$(u8*, &make$(TypeOf(*__self.ptr))),                                      \
+            sizeOf$(TypeOf(*__self.ptr))                                                \
+        ) == 0,                                                                         \
+        "The slice is not zero-terminated"                                              \
+    );                                                                                  \
+    eval_return make$(                                                                  \
+        TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]),               \
+        .ptr = __self.ptr + __range.begin                                               \
+    );                                                                                  \
+})
+#define comp_op__Sli_sliceS(__self, __range, __sentinel, var_self, range_index_begin_end, val_sentinel...) eval({ \
+    const TypeOf(var_self) __self         = var_self;                                                             \
+    const Range __range                   = Range_from range_index_begin_end;                                     \
+    const TypeOf(val_sentinel) __sentinel = val_sentinel;                                                         \
+    debug_assert_fmt(                                                                                             \
+        __range.begin < __range.end,                                                                              \
+        "Invalid slice range: begin(%zu) >= end(%zu)",                                                            \
+        __range.begin,                                                                                            \
+        __range.end                                                                                               \
+    );                                                                                                            \
+    debug_assert_fmt(                                                                                             \
+        __range.end <= __self.len,                                                                                \
+        "Index out of bounds: end(%zu) > len(%zu)",                                                               \
+        __range.end,                                                                                              \
+        __self.len                                                                                                \
+    );                                                                                                            \
+    debug_assert_fmt(                                                                                             \
+        memcmp(                                                                                                   \
+            as$(u8*, &__self.ptr[__range.end]),                                                                   \
+            as$(u8*, &__sentinel),                                                                                \
+            sizeOf$(TypeOf(*__self.ptr))                                                                          \
+        ) == 0,                                                                                                   \
+        "The slice is not sentinel-terminated"                                                                    \
+    );                                                                                                            \
+    eval_return make$(                                                                                            \
+        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),                                     \
+        .ptr      = __self.ptr + __range.begin,                                                                   \
+        .sentinel = __sentinel                                                                                    \
+    );                                                                                                            \
+})
 #define comp_op__Sli_prefix(__self, __end, var_self, usize_index_end...) eval({ \
     const TypeOf(var_self) __self = var_self;                                   \
     const usize __end             = usize_index_end;                            \
@@ -386,14 +450,30 @@ union __AssociationTypes_Sli {
 })
 #define comp_op__Sli_prefixZ(__self, var_self...) eval({                  \
     const TypeOf(var_self) __self = var_self;                             \
+    debug_assert_fmt(                                                     \
+        memcmp(                                                           \
+            as$(u8*, &__self.ptr[__self.len]),                            \
+            as$(u8*, &make$(TypeOf(*__self.ptr))),                        \
+            sizeOf$(TypeOf(*__self.ptr))                                  \
+        ) == 0,                                                           \
+        "The slice is not zero-terminated"                                \
+    );                                                                    \
     eval_return make$(                                                    \
         TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]), \
         .ptr = __self.ptr                                                 \
     );                                                                    \
 })
 #define comp_op__Sli_prefixS(__self, __sentinel, var_self, val_sentinel...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                      \
-    let __sentinel                = val_sentinel;                                  \
+    const TypeOf(var_self) __self         = var_self;                              \
+    const TypeOf(val_sentinel) __sentinel = val_sentinel;                          \
+    debug_assert_fmt(                                                              \
+        memcmp(                                                                    \
+            as$(u8*, &__self.ptr[__self.len]),                                     \
+            as$(u8*, &__sentinel),                                                 \
+            sizeOf$(TypeOf(*__self.ptr))                                           \
+        ) == 0,                                                                    \
+        "The slice is not sentinel-terminated"                                     \
+    );                                                                             \
     eval_return make$(                                                             \
         TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),      \
         .ptr      = __self.ptr,                                                    \
@@ -424,6 +504,14 @@ union __AssociationTypes_Sli {
         __begin,                                                                     \
         __self.len                                                                   \
     );                                                                               \
+    debug_assert_fmt(                                                                \
+        memcmp(                                                                      \
+            as$(u8*, &__self.ptr[__self.len]),                                       \
+            as$(u8*, &make$(TypeOf(*__self.ptr))),                                   \
+            sizeOf$(TypeOf(*__self.ptr))                                             \
+        ) == 0,                                                                      \
+        "The slice is not zero-terminated"                                           \
+    );                                                                               \
     eval_return make$(                                                               \
         TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]),            \
         .ptr = __self.ptr + __begin                                                  \
@@ -438,6 +526,14 @@ union __AssociationTypes_Sli {
         "Index out of bounds: %zu > %zu",                                                                      \
         __begin,                                                                                               \
         __self.len                                                                                             \
+    );                                                                                                         \
+    debug_assert_fmt(                                                                                          \
+        memcmp(                                                                                                \
+            as$(u8*, &__self.ptr[__self.len]),                                                                 \
+            as$(u8*, &__sentinel),                                                                             \
+            sizeOf$(TypeOf(*__self.ptr))                                                                       \
+        ) == 0,                                                                                                \
+        "The slice is not sentinel-terminated"                                                                 \
     );                                                                                                         \
     eval_return make$(                                                                                         \
         TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),                                  \
@@ -539,6 +635,14 @@ union __AssociationTypes_Sli {
     debug_assert_nonnull(__self.ptr);                                                   \
     __self.ptr[__index] = val_item;                                                     \
     eval_return __self;                                                                 \
+})
+
+#define OP__Sli_assign(__dst_ptr, __src, var_dst_ptr, var_src) eval({ \
+    let __dst_ptr    = var_dst_ptr;                                   \
+    let __src        = var_src;                                       \
+    (__dst_ptr)->ptr = (__src)->ptr;                                  \
+    (__dst_ptr)->len = (__src)->len;                                  \
+    eval_return*(__dst_ptr);                                          \
 })
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/

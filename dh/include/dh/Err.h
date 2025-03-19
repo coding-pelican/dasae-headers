@@ -173,7 +173,7 @@ force_inline Err Err_None(void) { return GeneralErr_err(ErrCode_None); }
         union {                                                                                                                       \
             Name err;                                                                                                                 \
             Void ok;                                                                                                                  \
-        };                                                                                                                            \
+        } data;                                                                                                                       \
     } pp_join($, Name, Void);                                                                                                         \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
 

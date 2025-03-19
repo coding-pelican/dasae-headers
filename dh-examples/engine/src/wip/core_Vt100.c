@@ -913,24 +913,23 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->client.is_maximized = false;
 
         return_ok(self);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 void engine_core_Vt100_fini(engine_core_Vt100* self) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self);
     debug_assert_nonnull(self);
 
-    catch_from(disableConsoleMouse(self), err, {
+    catch_from(disableConsoleMouse(self), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
-    catch_from(showConsoleCursor(self), err, {
+    }));
+    catch_from(showConsoleCursor(self), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
 
     ArrList_fini(self->abstract.buffer.base);
     mem_Allocator_destroy(self->allocator, anyPtr(self));
@@ -968,11 +967,11 @@ static void processEvents(anyptr ctx) {
         self->client.is_focused   = is_focused;
     }
 
-    catch_from(syncWindowMetrics(self), err, {
+    catch_from(syncWindowMetrics(self), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
     processConsoleKeyboardEvents(self);
     processConsoleMouseEvents(self);
     // catch_default(engine_Input_update(self->input), claim_unreachable);
@@ -1034,11 +1033,11 @@ static void presentBuffer(anyptr ctx) {
     }
     self->abstract.buffer.items.ptr[--self->abstract.buffer.items.len] = '\0';
 
-    catch_from(resetConsoleCursorPos(self), err, {
+    catch_from(resetConsoleCursorPos(self), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
     /* Write buffer content */ {
         let handle = self->client.handle.output;
         let ptr    = self->abstract.buffer.items.ptr;
@@ -1056,11 +1055,11 @@ static void presentBuffer(anyptr ctx) {
             claim_unreachable;
         }
     }
-    catch_from(resetConsoleCursorPos(self), err, {
+    catch_from(resetConsoleCursorPos(self), err, eval({
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
-    });
+    }));
 }
 
 static Vec2i getWindowPos(const anyptr ctx) {

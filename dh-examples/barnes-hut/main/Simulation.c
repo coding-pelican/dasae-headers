@@ -42,8 +42,7 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
 #endif
             .allocator = allocator,
         });
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 void Simulation_destroy(Simulation* self) {
@@ -198,8 +197,7 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
