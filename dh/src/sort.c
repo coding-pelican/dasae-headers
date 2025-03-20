@@ -250,7 +250,7 @@ fn_ext_scope(sort_stableSortUsingTemp(
 ), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_Allocator_Err_OutOfMemory());
     }
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
     return_void();
@@ -264,7 +264,7 @@ fn_ext_scope(sort_stableSortWithArgUsingTemp(
 ), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_Allocator_Err_OutOfMemory());
     }
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
     return_void();

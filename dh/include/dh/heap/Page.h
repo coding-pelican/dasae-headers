@@ -4,8 +4,8 @@
  * @file    Page.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-15 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-03-20 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Page
  *
@@ -24,13 +24,13 @@ extern "C" {
 
 /*========== Page Allocator =================================================*/
 
-/* Page allocator instance (minimal state, following Zig's pattern) */
+/// Page allocator instance (minimal state, following Zig's pattern)
 typedef struct heap_Page {
-    Void unused_[0]; // Empty struct not allowed in C
+    Void unused_[0]; /* Empty struct not allowed in C */
 } heap_Page;
 
-// Get allocator interface for instance
-extern mem_Allocator heap_Page_allocator(heap_Page* self);
+/// Get allocator interface for instance
+extern fn_(heap_Page_allocator(heap_Page* self), mem_Allocator);
 
 /*========== Implementation Details =========================================*/
 

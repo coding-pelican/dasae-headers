@@ -112,7 +112,7 @@ Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
 
         let len = eval({
             let res = vsnprintf(null, 0, format, args1);
-            if (res < 0) { return_err(mem_AllocErr_OutOfMemory()); }
+            if (res < 0) { return_err(mem_Allocator_Err_OutOfMemory()); }
             eval_return as$(usize, res);
         });
 
@@ -123,8 +123,7 @@ Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
             result.len = len;
         }
         return_ok(result);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 Str_const Str_slice(Str_const self, usize start, usize end) {

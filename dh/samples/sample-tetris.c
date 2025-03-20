@@ -241,7 +241,7 @@ pvt fn_ext_scope(tetris_Console_bootup(void), Err$void) {
     var screenSize               = tetris_screen_width * tetris_screen_height;
     tetris_Console_screen_buffer = calloc(screenSize, sizeof(wchar_t));
     if (tetris_Console_screen_buffer == null) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_Allocator_Err_OutOfMemory());
     }
     for (i32 i = 0; i < screenSize; ++i) {
         tetris_Console_screen_buffer[i] = L' ';

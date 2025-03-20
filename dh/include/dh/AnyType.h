@@ -32,30 +32,66 @@ extern "C" {
 
 config_UnionEnum(AnyType,
     (AnyType_Ptr, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         anyptr addr;
     }),
     (AnyType_SliZ, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         anyptr addr;
     }),
     (AnyType_SliS, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         anyptr addr;
         anyptr sentinel;
     }),
     (AnyType_Sli, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         anyptr addr;
         usize len;
     }),
     (AnyType_Opt, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         bool has_value;
         anyptr addr;
     }),
     (AnyType_ErrRes, struct {
-        TypeInfo type;
+        union {
+            TypeInfo type;
+            struct {
+                u32 size;
+                u32 align;
+            };
+        };
         bool is_err;
         union {
             Err err;

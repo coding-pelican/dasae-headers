@@ -20,7 +20,7 @@ typedef struct ArrList {
 } ArrList;
 use_Opt$(ArrList);
 use_Err$(ArrList);
-use_ErrSet$(mem_AllocErr, ArrList);
+use_ErrSet$(mem_Allocator_Err, ArrList);
 
 #define ArrList$(T)                              comp_type_anon__ArrList$(T)
 #define ArrList_asNamed$(T_ArrList, var_anon...) comp_op__ArrList_asNamed$(pp_uniqTok(anon), T_ArrList, var_anon)
@@ -34,51 +34,51 @@ use_ErrSet$(mem_AllocErr, ArrList);
 /// Initialize empty list
 extern fn_(ArrList_init(TypeInfo type, mem_Allocator allocator), ArrList);
 /// Initialize with capacity
-extern fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), must_check mem_AllocErr$ArrList);
+extern fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), must_check mem_Allocator_Err$ArrList);
 /// Free resources
 extern fn_(ArrList_fini(ArrList* self), void);
 
 /// Return owned slice
-extern fn_(ArrList_toOwnedSlice(ArrList* self), must_check mem_AllocErr$meta_Sli);
+extern fn_(ArrList_toOwnedSlice(ArrList* self), must_check mem_Allocator_Err$meta_Sli);
 /// Create from owned slice
 extern fn_(ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice), ArrList);
 /// Clone list
-extern fn_(ArrList_clone(const ArrList* self), must_check mem_AllocErr$ArrList);
+extern fn_(ArrList_clone(const ArrList* self), must_check mem_Allocator_Err$ArrList);
 
 /// Ensure total capacity
-extern fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), must_check mem_AllocErr$void);
-extern fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), must_check mem_AllocErr$void);
+extern fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), must_check mem_Allocator_Err$void);
 /// Ensure unused capacity
-extern fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), must_check mem_AllocErr$void);
+extern fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), must_check mem_Allocator_Err$void);
 
 /// Modify size
-extern fn_(ArrList_resize(ArrList* self, usize new_len), must_check mem_AllocErr$void);
+extern fn_(ArrList_resize(ArrList* self, usize new_len), must_check mem_Allocator_Err$void);
 extern fn_(ArrList_shrinkAndFree(ArrList* self, usize new_len), void);
 extern fn_(ArrList_shrinkRetainingCap(ArrList* self, usize new_len), void);
 extern fn_(ArrList_expandToCap(ArrList* self), void);
 
 /// Add elements
-extern fn_(ArrList_append(ArrList* self, meta_Ptr item), must_check mem_AllocErr$void);
-extern fn_(ArrList_appendSlice(ArrList* self, meta_Sli items), must_check mem_AllocErr$void);
-extern fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_AllocErr$void);
+extern fn_(ArrList_append(ArrList* self, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_appendSlice(ArrList* self, meta_Sli items), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_Allocator_Err$void);
 
-extern fn_(ArrList_prepend(ArrList* self, meta_Ptr item), must_check mem_AllocErr$void);
-extern fn_(ArrList_prependSlice(ArrList* self, meta_Sli items), must_check mem_AllocErr$void);
-extern fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_AllocErr$void);
+extern fn_(ArrList_prepend(ArrList* self, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_prependSlice(ArrList* self, meta_Sli items), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_Allocator_Err$void);
 
-extern fn_(ArrList_addBackOne(ArrList* self), must_check mem_AllocErr$meta_Ptr);
+extern fn_(ArrList_addBackOne(ArrList* self), must_check mem_Allocator_Err$meta_Ptr);
 extern fn_(ArrList_addBackOneAssumeCap(ArrList* self), meta_Ptr);
-extern fn_(ArrList_addBackManyAsSlice(ArrList* self, usize n), must_check mem_AllocErr$meta_Sli);
+extern fn_(ArrList_addBackManyAsSlice(ArrList* self, usize n), must_check mem_Allocator_Err$meta_Sli);
 extern fn_(ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n), meta_Sli);
 
-extern fn_(ArrList_addFrontOne(ArrList* self), must_check mem_AllocErr$meta_Ptr);
+extern fn_(ArrList_addFrontOne(ArrList* self), must_check mem_Allocator_Err$meta_Ptr);
 extern fn_(ArrList_addFrontOneAssumeCap(ArrList* self), meta_Ptr);
-extern fn_(ArrList_addFrontManyAsSlice(ArrList* self, usize n), must_check mem_AllocErr$meta_Sli);
+extern fn_(ArrList_addFrontManyAsSlice(ArrList* self, usize n), must_check mem_Allocator_Err$meta_Sli);
 extern fn_(ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n), meta_Sli);
 
 /// Insert elements
-extern fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), must_check mem_AllocErr$void);
-extern fn_(ArrList_insertSlice(ArrList* self, usize index, meta_Sli items), must_check mem_AllocErr$void);
+extern fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_insertSlice(ArrList* self, usize index, meta_Sli items), must_check mem_Allocator_Err$void);
 
 /// Remove elements
 extern fn_(ArrList_pop(ArrList* self), void);

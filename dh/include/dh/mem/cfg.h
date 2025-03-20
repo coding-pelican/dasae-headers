@@ -37,13 +37,6 @@ extern "C" {
 
 #define mem_trace_enabled (MEM_TRACE_ENABLED)
 
-/*========== Memory Error ===================================================*/
-
-/* Allocation Error type */
-config_ErrSet(mem_AllocErr,
-    OutOfMemory
-);
-
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */

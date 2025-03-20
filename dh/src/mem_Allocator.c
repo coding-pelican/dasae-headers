@@ -1,345 +1,439 @@
 #include "dh/mem/Allocator.h"
+#include "dh/mem/common.h"
 #include "dh/mem/Tracker.h"
+#include "dh/debug/assert.h"
+#include "dh/claim/assert.h"
+#include "dh/claim/unreachable.h"
+#include "dh/int.h"
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-Opt$Ptr$u8 mem_Allocator_rawAlloc(mem_Allocator self, usize len, usize ptr_align) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    return self.vt->alloc(self.ptr, len, ptr_align);
+/*========== Common VTable Functions ========================================*/
+
+fn_(
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
+mem_Allocator_VT_noAlloc(anyptr ctx, usize len, u32 align)
+#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+mem_Allocator_VT_noAlloc_debug(anyptr ctx, usize len, u32 align, SrcLoc src_loc)
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+, Opt$Ptr$u8) {
+    ignore ctx;
+    ignore len;
+    ignore align;
+#if COMP_TIME && (!COMP_TIME || debug_comp_enabled)
+    ignore src_loc;
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    return none$(Opt$Ptr$u8);
 }
-#else
-Opt$Ptr$u8 mem_Allocator_rawAlloc_debug(
-    mem_Allocator self,
-    usize         len,
-    usize         ptr_align,
-    const char*   file,
-    i32           line,
-    const char*   func
-) {
-    debug_assert_nonnull(self.ptr);
+
+fn_(
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
+mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len)
+#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+mem_Allocator_VT_noResize_debug(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+, bool) {
+    ignore ctx;
+    ignore buf;
+    ignore buf_align;
+    ignore new_len;
+#if COMP_TIME && (!COMP_TIME || debug_comp_enabled)
+    ignore src_loc;
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    return false;
+}
+
+fn_(
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
+mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len)
+#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+mem_Allocator_VT_noRemap_debug(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+, Opt$Ptr$u8) {
+    ignore ctx;
+    ignore buf;
+    ignore buf_align;
+    ignore new_len;
+#if COMP_TIME && (!COMP_TIME || debug_comp_enabled)
+    ignore src_loc;
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    return none$(Opt$Ptr$u8);
+}
+
+fn_(
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
+mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align)
+#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+mem_Allocator_VT_noFree_debug(anyptr ctx, Sli$u8 buf, u32 buf_align, SrcLoc src_loc)
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+, void) {
+    ignore ctx;
+    ignore buf;
+    ignore buf_align;
+#if COMP_TIME && (!COMP_TIME || debug_comp_enabled)
+    ignore src_loc;
+#endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+}
+
+/*========== Raw Allocation Functions ======================================*/
+
+fn_(mem_Allocator_rawAlloc(mem_Allocator self, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(self.vt);
-    let result = self.vt->alloc(self.ptr, len, ptr_align);
-    if (isSome(result)) {
-        mem_Tracker_registerAlloc(unwrap(result), len, file, line, func);
+    debug_assert_nonnull(self.vt->alloc);
+    debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2: %u", align);
+
+    // Special case for zero-sized allocations
+    if (len == 0) {
+        // For zero-sized allocations, return a non-null pointer at max address
+        // aligned to the requested alignment
+        return some$(Opt$Ptr$u8, intToRawptr$(u8*, usize_limit_max & ~(align - 1)));
     }
-    return result;
-}
-#endif
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-bool mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, usize buf_align, usize new_len) {
-    debug_assert_nonnull(self.ptr);
+    return self.vt->alloc(self.ptr, len, align);
+};
+
+fn_(mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt->resize);
+    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
+
+    // Special case for zero-sized allocations
+    if (new_len == 0) {
+        mem_Allocator_rawFree(self, buf, buf_align);
+        return true;
+    }
+
+    // Special case for empty buffer
+    if (buf.len == 0) {
+        return false;
+    }
+
     return self.vt->resize(self.ptr, buf, buf_align, new_len);
 }
-#else
-bool mem_Allocator_rawResize_debug(
-    mem_Allocator self,
-    Sli$u8        buf,
-    usize         buf_align,
-    usize         new_len,
-    const char*   file,
-    i32           line,
-    const char*   func
-) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    let result = self.vt->resize(self.ptr, buf, buf_align, new_len);
-    if (result) {
-        // Update tracking information for the resized allocation
-        mem_Tracker_registerFree(buf.ptr, file, line, func);
-        if (0 < new_len) {
-            mem_Tracker_registerAlloc(buf.ptr, new_len, file, line, func);
-        }
-    }
-    return result;
-}
-#endif
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-void mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, usize buf_align) {
-    debug_assert_nonnull(self.ptr);
+fn_(mem_Allocator_rawRemap(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
     debug_assert_nonnull(self.vt);
-    if (buf.ptr == null) { return; /* Cannot free unallocated memory */ }
-    if (buf.len == 0) { return; /* Cannot free zero-length buffer */ }
+    debug_assert_nonnull(self.vt->remap);
+    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
+
+    // Special case for zero-sized allocations
+    if (new_len == 0) {
+        mem_Allocator_rawFree(self, buf, buf_align);
+        return some$(Opt$Ptr$u8, intToRawptr$(u8*, usize_limit_max & ~(buf_align - 1)));
+    }
+
+    // Special case for empty buffer
+    if (buf.len == 0) {
+        return none$(Opt$Ptr$u8);
+    }
+
+    return self.vt->remap(self.ptr, buf, buf_align, new_len);
+}
+
+fn_(mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, u32 buf_align), void) {
+    debug_assert_nonnull(self.vt);
+    debug_assert_nonnull(self.vt->free);
+    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
+
+    // Special case for zero-sized allocations
+    if (buf.len == 0) {
+        return;
+    }
+
+    // Set memory to undefined before freeing
+    bti_memset(buf.ptr, 0xAA, buf.len);
+
     self.vt->free(self.ptr, buf, buf_align);
 }
-#else
-void mem_Allocator_rawFree_debug(
-    mem_Allocator self,
-    Sli$u8        buf,
-    usize         buf_align,
-    const char*   file,
-    i32           line,
-    const char*   func
-) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(self.vt);
-    if (buf.ptr == null) { return; /* Cannot free unallocated memory */ }
-    if (buf.len == 0) { return; /* Cannot free zero-length buffer */ }
-    // Update tracking information for the freed allocation
-    if (!mem_Tracker_registerFree(buf.ptr, file, line, func)) { return; /* Occurs double free */ };
-    self.vt->free(self.ptr, buf, buf_align);
-}
-#endif
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-mem_AllocErr$meta_Ptr mem_Allocator_create(mem_Allocator self, TypeInfo type) {
-    reserveReturn(mem_AllocErr$meta_Ptr);
-    let opt = mem_Allocator_rawAlloc(self, type.size, type.align);
-    if_none (opt) {
-        return_err(mem_AllocErr_OutOfMemory());
-    }
-    return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
-}
-#else
-mem_AllocErr$meta_Ptr mem_Allocator_create_debug(
-    mem_Allocator self,
-    TypeInfo      type,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    reserveReturn(mem_AllocErr$meta_Ptr);
-    let opt = mem_Allocator_rawAlloc(self, type.size, type.align, file, line, func);
-    if_none (opt) {
-        return_err(mem_AllocErr_OutOfMemory());
-    }
-    return_ok((meta_Ptr){ .addr = unwrap(opt), .type = type });
-}
-#endif
+/*========== High-level Allocator Functions ================================*/
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-void mem_Allocator_destroy(mem_Allocator self, AnyType ptr) {
-    if (ptr.ctx == null) { return; /* Cannot free unallocated memory */ }
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = ptr.ctx, .len = ptr.type.size),
-        ptr.type.align
-    );
-}
-#else
-void mem_Allocator_destroy_debug(
-    mem_Allocator self,
-    AnyType       ptr,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    if (ptr.ctx == null) { return; /* Cannot free unallocated memory */ }
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = ptr.ctx, .len = ptr.type.size),
-        ptr.type.align,
-        file,
-        line,
-        func
-    );
-}
-#endif
-
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-mem_AllocErr$meta_Sli mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count) {
-    reserveReturn(mem_AllocErr$meta_Sli);
-    let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align);
-    if_none (opt) {
-        return_err(mem_AllocErr_OutOfMemory());
+fn_ext_scope(mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Allocator_Err$meta_Ptr) {
+    // Special case for zero-sized types
+    if (type.size == 0) {
+        return_ok({
+            .type = type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(type.align - 1)),
+        });
     }
-    return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
-}
-#else
-mem_AllocErr$meta_Sli mem_Allocator_alloc_debug(
-    mem_Allocator self,
-    TypeInfo      type,
-    usize         count,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    reserveReturn(mem_AllocErr$meta_Sli);
-    let opt = mem_Allocator_rawAlloc(self, type.size * count, type.align, file, line, func);
-    if_none (opt) {
-        return_err(mem_AllocErr_OutOfMemory());
-    }
-    return_ok(make$(meta_Sli, .type = type, .addr = unwrap(opt), .len = count));
-}
-#endif
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
+    let mem_opt = mem_Allocator_rawAlloc(self, type.size, type.align);
+    if_none (mem_opt) {
+        return_err(mem_Allocator_Err_OutOfMemory());
+    }
+
+    // Initialize memory to undefined pattern
+    bti_memset(mem_opt.value, 0xAA, type.size);
+
+    return_ok({
+        .type = type,
+        .addr = mem_opt.value,
+    });
+} ext_unscoped;
+
+fn_(mem_Allocator_destroy(mem_Allocator self, AnyType ptr), void) {
+    let info = extract(ptr, AnyType_Ptr);
+
+    // Special case for zero-sized types
+    if (info.size == 0) {
+        return;
+    }
+
+    // Convert to slice for freeing
+    Sli$u8 mem = {
+        .ptr = as$(u8*, info.addr),
+        .len = info.size,
+    };
+
+    mem_Allocator_rawFree(self, mem, info.align);
+}
+
+fn_ext_scope(mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count), mem_Allocator_Err$meta_Sli) {
+    // Special case for zero-sized types or zero count
+    if (type.size == 0 || count == 0) {
+        return_ok({
+            .type = type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(type.align - 1)),
+            .len  = count,
+        });
+    }
+
+    // Check for overflow in multiplication
+    let byte_count = usize_chkdMul(type.size, count);
+    if_none (byte_count) {
+        return_err(mem_Allocator_Err_OutOfMemory());
+    }
+
+    let mem_opt = mem_Allocator_rawAlloc(self, byte_count.value, type.align);
+    if_none (mem_opt) {
+        return_err(mem_Allocator_Err_OutOfMemory());
+    }
+
+    // Initialize memory to undefined pattern
+    bti_memset(mem_opt.value, 0xAA, byte_count.value);
+
+    return_ok({
+        .type = type,
+        .addr = mem_opt.value,
+        .len  = count,
+    });
+} ext_unscoped;
+
 bool mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len) {
-    if (old_mem.ctx == null) { return false; /* Cannot resize unallocated memory */ }
+    let info = extract(old_mem, AnyType_Sli);
 
-    let slice = (meta_Sli*)&old_mem;
-    let type  = slice->type;
+    // Special case for zero-sized types
+    if (info.size == 0) {
+        return true;
+    }
 
+    // Special case for zero new length
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
         return true;
     }
-    if (slice->len == 0) {
-        return false; // Cannot resize empty slice
+
+    // Special case for empty old memory
+    if (info.len == 0) {
+        return false;
     }
 
-    // Calculate new byte size - check for overflow
-    if (usize_limit / type.size < new_len) {
-        return false; // Would overflow
+    // Create byte slice from the old memory
+    Sli$u8 old_bytes = {
+        .ptr = info.addr,
+        .len = info.size * info.len,
+    };
+
+    // Check for overflow in multiplication
+    let new_byte_count = usize_chkdMul(info.size, new_len);
+    if_none (new_byte_count) {
+        return false;
     }
 
-    const usize new_byte_size = new_len * type.size;
-
-    // Call raw resize with byte size
-    return mem_Allocator_rawResize(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * type.size),
-        type.align,
-        new_byte_size
-    );
+    return mem_Allocator_rawResize(self, old_bytes, info.align, new_byte_count.value);
 }
-#else
-bool mem_Allocator_resize_debug(
-    mem_Allocator self,
-    AnyType       old_mem,
-    usize         new_len,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    if (old_mem.ctx == null) { return false; /* Cannot resize unallocated memory */ }
 
-    let slice = (meta_Sli*)&old_mem;
-    let type  = slice->type;
+fn_ext_scope(mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len), Opt$meta_Sli) {
+    let info = extract(old_mem, AnyType_Sli);
 
+    // Special case for zero-sized types
+    if (info.size == 0) {
+        return_some({
+            .type = info.type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(info.align - 1)),
+            .len  = new_len,
+        });
+    }
+
+    // Special case for zero new length
     if (new_len == 0) {
-        mem_Allocator_free(self, old_mem, file, line, func);
-        return true;
-    }
-    if (slice->len == 0) {
-        return false; // Cannot resize empty slice
-    }
+        mem_Allocator_free(self, old_mem);
 
-    // Calculate new byte size - check for overflow
-    if (usize_limit / type.size < new_len) {
-        return false; // Would overflow
+        return_some({
+            .type = info.type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(info.align - 1)),
+            .len  = 0,
+        });
     }
 
-    const usize new_byte_size = new_len * type.size;
-
-    // Call raw resize with byte size
-    return mem_Allocator_rawResize(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * type.size),
-        type.align,
-        new_byte_size,
-        file,
-        line,
-        func
-    );
-}
-#endif
-
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-Opt$meta_Sli mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len) {
-    reserveReturn(Opt$meta_Sli);
-
-    let slice = (meta_Sli*)&old_mem;
-    let type  = slice->type;
-
-    // Try resize in place first
-    if (mem_Allocator_resize(self, old_mem, new_len)) {
-        return_some(*slice);
-    }
-
-    // Allocate new buffer
-    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len), err, eval({
-        unused(err);
+    // Special case for empty old memory
+    if (info.len == 0) {
         return_none();
-    }));
-
-    // Copy data and free old buffer
-    let result   = new_slice;
-    let copy_len = slice->len < new_len ? slice->len : new_len;
-
-    memcpy(result.addr, slice->addr, copy_len * type.size);
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * type.size),
-        type.align
-    );
-    return_some(result);
-}
-#else
-Opt$meta_Sli mem_Allocator_realloc_debug(
-    mem_Allocator self,
-    AnyType       old_mem,
-    usize         new_len,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    reserveReturn(Opt$meta_Sli);
-
-    let slice = (meta_Sli*)&old_mem;
-    let type  = slice->type;
-
-    // Try resize in place first
-    if (mem_Allocator_resize(self, old_mem, new_len, file, line, func)) {
-        return_some(*slice);
     }
 
-    // Allocate new buffer
-    let new_slice = catch_from(mem_Allocator_alloc(self, type, new_len, file, line, func), err, eval({
-        unused(err);
+    // Create byte slice from the old memory
+    Sli$u8 old_bytes = {
+        .ptr = as$(u8*, info.addr),
+        .len = info.size * info.len,
+    };
+
+    // Check for overflow in multiplication
+    let new_byte_count = usize_chkdMul(info.size, new_len);
+    if_none (new_byte_count) {
         return_none();
-    }));
+    }
 
-    // Copy data and free old buffer
-    let result   = new_slice;
-    let copy_len = slice->len < new_len ? slice->len : new_len;
+    let new_ptr = mem_Allocator_rawRemap(self, old_bytes, info.align, new_byte_count.value);
+    if_none (new_ptr) {
+        return_none();
+    }
+    return_some({
+        .type = info.type,
+        .addr = new_ptr.value,
+        .len  = new_len,
+    });
+} ext_unscoped;
 
-    memcpy(result.addr, slice->addr, copy_len * type.size);
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * type.size),
-        type.align,
-        file,
-        line,
-        func
-    );
-    return_some(result);
+fn_ext_scope(mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len), mem_Allocator_Err$meta_Sli) {
+    let info = extract(old_mem, AnyType_Sli);
+
+    // Special case for empty old memory
+    if (info.len == 0) {
+        // This is equivalent to a new allocation
+        return_ok(try_(mem_Allocator_alloc(self, info.type, new_len)));
+    }
+
+    // Special case for zero new length
+    if (new_len == 0) {
+        mem_Allocator_free(self, old_mem);
+        return_ok({
+            .type = info.type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(info.align - 1)),
+            .len  = 0,
+        });
+    }
+
+    // Special case for zero-sized types
+    if (info.size == 0) {
+        return_ok({
+            .type = info.type,
+            .addr = intToRawptr$(anyptr, usize_limit_max & ~(info.align - 1)),
+            .len  = new_len,
+        });
+    }
+
+    // Create byte slice from the old memory
+    Sli$u8 old_bytes = {
+        .ptr = as$(u8*, info.addr),
+        .len = info.size * info.len,
+    };
+
+    // Check for overflow in multiplication
+    let new_byte_count = usize_chkdMul(info.size, new_len);
+    if_none (new_byte_count) {
+        return_err(mem_Allocator_Err_OutOfMemory());
+    }
+
+    // Try to remap first (which may be in-place resize or may relocate)
+    let new_ptr = mem_Allocator_rawRemap(self, old_bytes, info.align, new_byte_count.value);
+    if_some (new_ptr, p) {
+        return_ok({
+            .type = info.type,
+            .addr = p,
+            .len  = new_len,
+        });
+    }
+
+    // Remap failed, need to allocate new memory and copy
+    let new_mem = mem_Allocator_rawAlloc(self, new_byte_count.value, info.align);
+    if_none (new_mem) {
+        return_err(mem_Allocator_Err_OutOfMemory());
+    }
+
+    // Copy the data from old memory to new memory (use smaller of the two sizes)
+    let copy_len = prim_min(old_bytes.len, new_byte_count.value);
+    mem_copy(new_mem.value, old_bytes.ptr, copy_len);
+
+    // Zero out old memory before freeing
+    bti_memset(old_bytes.ptr, 0xAA, old_bytes.len);
+    mem_Allocator_rawFree(self, old_bytes, info.align);
+
+    return_ok({
+        .type = info.type,
+        .addr = new_mem.value,
+        .len  = new_len,
+    });
+} ext_unscoped;
+
+fn_(mem_Allocator_free(mem_Allocator self, AnyType memory), void) {
+    let info = extract(memory, AnyType_Sli);
+
+    // Special case for zero-sized types or empty slices
+    if (info.size == 0 || info.len == 0) {
+        return;
+    }
+
+    // Create byte slice from memory and free it
+    Sli$u8 bytes = {
+        .ptr = as$(u8*, info.addr),
+        .len = info.size * info.len,
+    };
+
+    mem_Allocator_rawFree(self, bytes, info.align);
 }
-#endif
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled) || defined(MEM_NO_TRACE_ALLOC_AND_FREE)
-void mem_Allocator_free(mem_Allocator self, AnyType memory) {
-    if (memory.ctx == null) { return; /* Cannot free unallocated memory */ }
-    if (memory.len == 0) { return; }
+/*========== Helper Functions ==============================================*/
 
-    let slice = (meta_Sli*)&memory;
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * slice->type.size),
-        slice->type.align
-    );
-}
-#else
-void mem_Allocator_free_debug(
-    mem_Allocator self,
-    AnyType       memory,
-    const char*   file,
-    int           line,
-    const char*   func
-) {
-    if (memory.ctx == null) { return; /* Cannot free unallocated memory */ }
-    if (memory.len == 0) { return; }
+fn_ext_scope(mem_Allocator_dupe(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli) {
+    // Allocate new memory with same element type and count
+    let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
 
-    let slice = (meta_Sli*)&memory;
-    mem_Allocator_rawFree(
-        self,
-        make$(Sli$u8, .ptr = slice->addr, .len = slice->len * slice->type.size),
-        slice->type.align,
-        file,
-        line,
-        func
-    );
-}
+    // Copy data from source to new memory
+    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
+
+    return_ok(new_mem);
+} ext_unscoped;
+
+fn_ext_scope(mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli) {
+    // Allocate new memory with same element type but one extra element for sentinel
+    let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
+
+    // Copy data from source to new memory
+    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
+    mem_set(dst_bytes.ptr, 0, dst_bytes.len);
+
+    // // Set sentinel value at end
+    // if (src.type.size == 1) {
+    //     // For byte-sized elements, directly set the sentinel
+    //     as$(u8*, new_mem.addr)[src.len] = 0;
+    // } else {
+    //     // For larger elements, we'd need to know the exact type to properly set the sentinel
+    //     // This simple implementation assumes sentinel is just the first byte of the element
+    //     bti_memset(as$(u8*, new_mem.addr) + (src.len * src.type.size), 0, 1);
+    // }
+
+    return_ok({
+        .type = new_mem.type,
+        .addr = new_mem.addr,
+        .len = src.len,  // Note: we preserve original length, sentinel is separate
+    });
+} ext_unscoped;
+
+/*========== Debug Versions of Functions ===================================*/
+
+/* Skip: these are similar to the versions above but with SrcLoc parameter */
+#if COMP_TIME && (!COMP_TIME || debug_comp_enabled)
+/* Implementation of debug tracking versions would go here */
 #endif

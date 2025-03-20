@@ -87,13 +87,13 @@ extern "C" {
 
 #define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({             \
     let __union_enum = (val_union_enum);                                     \
-    debug_assert(_union_enum.tag == (E_UnionEnum_Tag));                      \
+    debug_assert(__union_enum.tag == (E_UnionEnum_Tag));                     \
     eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
 })
 
 #define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({            \
     var __union_enum = &(var_union_enum);                                       \
-    debug_assert(_union_enum->tag == (E_UnionEnum_Tag));                        \
+    debug_assert(__union_enum->tag == (E_UnionEnum_Tag));                       \
     eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
 })
 

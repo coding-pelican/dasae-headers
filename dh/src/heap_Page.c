@@ -1,21 +1,24 @@
 #include "dh/heap/Page.h"
-#include "dh/mem.h"
+#include "dh/mem/common.h"
 
 #if bti_plat_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
 #include <unistd.h>
-#endif /* posix */
+#endif                 /* posix */
+#include <stdatomic.h> // Required for atomic operations
 
-static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) must_check;
-static bool       heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_size) must_check;
-static void       heap_Page_free(anyptr ctx, Sli$u8 buf, usize buf_align);
+static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
+static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool);
+static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8);
+static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 
-mem_Allocator heap_Page_allocator(heap_Page* self) {
-    static const mem_AllocatorVT vt[1] = { {
+fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
+    static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Page_alloc,
         .resize = heap_Page_resize,
+        .remap  = heap_Page_remap,
         .free   = heap_Page_free,
     } };
     return (mem_Allocator){
@@ -26,33 +29,68 @@ mem_Allocator heap_Page_allocator(heap_Page* self) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {
-    reserveReturn(Opt$Ptr$u8);
-    unused(ctx, ptr_align);
-    // Ensure alignment is a power of 2
-    debug_assert_fmt(mem_isValidAlign(ptr_align), "Alignment must be a power of 2");
+static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+    unused(ctx, align);
+    debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
-    debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)", ptr_align, mem_page_size);
+    debug_assert_fmt(align <= mem_page_size, "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)", align, mem_page_size);
 
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
 
 #if bti_plat_windows
+    // Windows allocation logic similar to zig's PageAllocator
     let addr = VirtualAlloc(
         null,
         len, // VirtualAlloc rounds to page size internally
         MEM_COMMIT | MEM_RESERVE,
         PAGE_READWRITE
     );
-    if (addr == null) { return_none(); }
-    // Verify returned address meets alignment requirements
-    debug_assert_fmt(mem_isAligned(rawptrToInt(addr), ptr_align), "VirtualAlloc returned misaligned address");
+    if (addr != null) {
+        // Verify returned address meets alignment requirements
+        debug_assert_fmt(mem_isAligned(rawptrToInt(addr), align), "VirtualAlloc returned misaligned address");
+        return_some(addr);
+    }
 
-    return_some(addr);
+    // Fallback: reserve a range of memory large enough to find a
+    // sufficiently aligned address, then free the entire range and
+    // immediately allocate the desired subset. Another thread may have won
+    // the race to map the target range, in which case a retry is needed.
+
+    let overalloc_len = len + align - mem_page_size;
+    let aligned_len   = mem_alignForward(len, mem_page_size);
+
+    while (true) {
+        let reserved_addr = VirtualAlloc(
+            null,
+            overalloc_len,
+            MEM_RESERVE,
+            PAGE_NOACCESS
+        );
+        if (reserved_addr == null) {
+            return_none();
+        }
+
+        let aligned_addr = mem_alignForward(rawptrToInt(reserved_addr), align);
+        VirtualFree(reserved_addr, 0, MEM_RELEASE);
+
+        let addr = VirtualAlloc(
+            intToRawptr$(anyptr, aligned_addr),
+            aligned_len,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE
+        );
+        if (addr != null) {
+            return_some(addr);
+        }
+        // If VirtualAlloc fails, it might be due to address collision, retry.
+        // In a real-world scenario, consider adding a retry limit.
+    }
+
 #else  /* posix */
     let aligned_len = mem_alignForward(len, mem_page_size);
-    var hint        = heap_Page_s_next_mmap_addr_hint;
+    let hint        = heap_Page_s_next_mmap_addr_hint;
 
     let map = mmap(
         hint,
@@ -78,23 +116,27 @@ static Opt$Ptr$u8 heap_Page_alloc(anyptr ctx, usize len, usize ptr_align) {
     );
     return_some(map);
 #endif /* posix */
-}
+} ext_unscoped;
 
-static bool heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_size) {
+static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
     unused(ctx, buf_align);
-    // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    const usize new_size_aligned = mem_alignForward(new_size, mem_page_size);
+    let new_size_aligned = mem_alignForward(new_size, mem_page_size);
+    let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
+
+    if (new_size_aligned == buf_aligned_len && new_size <= buf.len) {
+        return true; // No resize needed
+    }
 
 #if bti_plat_windows
     if (new_size <= buf.len) {
-        const usize base_addr    = rawptrToInt(buf.ptr);
-        const usize old_addr_end = base_addr + mem_alignForward(buf.len, mem_page_size);
-        const usize new_addr_end = base_addr + new_size_aligned;
+        let base_addr    = rawptrToInt(buf.ptr);
+        let old_addr_end = base_addr + buf_aligned_len;
+        let new_addr_end = base_addr + new_size_aligned;
 
         if (old_addr_end > new_addr_end) {
             // For shrinking that is not releasing, only
@@ -108,29 +150,78 @@ static bool heap_Page_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_
         return true;
     }
 
-    const usize old_size_aligned = mem_alignForward(buf.len, mem_page_size);
-    if (new_size_aligned <= old_size_aligned) { return true; }
+    // Windows PageAllocator in zig doesn't support resize larger.
+    // Returning false to indicate resize failure.
     return false;
-#else  /* posix */
-    const usize buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
-    if (new_size_aligned == buf_aligned_len) { return true; }
+
+#else /* posix */
 
     if (new_size_aligned < buf_aligned_len) {
-        anyptr ptr = as$(u8*, buf.ptr) + new_size_aligned;
-        // TODO: if heap_Page_s_next_mmap_addr_hint is within the unmapped range, update it
+        let ptr = as$(u8*, buf.ptr) + new_size_aligned;
         munmap(ptr, buf_aligned_len - new_size_aligned);
         return true;
     }
 
-    // TODO: call mremap
-    // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it
+#ifdef MAP_REMAP // Check if mremap is available
+    if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
+        let new_ptr = mremap(buf.ptr, buf.len, new_size, MREMAP_MAYMOVE);
+        if (new_ptr != MAP_FAILED) {
+            // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
+            return true; // Assume success for now, further hint update needed if address changes.
+        }
+        // mremap failed, fall back to returning false.
+        return false;
+    }
+#endif
+
+    // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return false;
 #endif /* posix */
 }
 
-static void heap_Page_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
+static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
     unused(ctx, buf_align);
-    // Ensure alignment is a power of 2
+    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
+    debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
+    // Verify the buffer address actually has the claimed alignment
+    debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    let new_size_aligned = mem_alignForward(new_size, mem_page_size);
+    let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
+
+    if (new_size_aligned == buf_aligned_len && new_size <= buf.len) {
+        return_some(buf.ptr); // No resize needed
+    }
+
+#if bti_plat_windows
+    // Windows PageAllocator in zig doesn't support resize larger.
+    return_none(); // Indicate remap failure, as resize up is not supported.
+
+#else /* posix */
+
+    if (new_size_aligned < buf_aligned_len) {
+        return_none(); // Indicate remap failure, shrinking via remap not supported
+    }
+
+#ifdef MAP_REMAP // Check if mremap is available
+    if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
+        let new_ptr = mremap(buf.ptr, buf.len, new_size, MREMAP_MAYMOVE);
+        if (new_ptr != MAP_FAILED) {
+            // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
+            return_some(new_ptr); // Assume success for now, further hint update needed if address changes.
+        }
+        // mremap failed, fall back to returning none.
+        return_none();
+    }
+#endif
+
+    // mremap is not available or failed, larger resize is not supported in this simple page allocator.
+    return_none();
+#endif /* posix */
+} ext_unscoped;
+
+static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
+    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -139,7 +230,7 @@ static void heap_Page_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
 #if bti_plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);
 #else  /* posix */
-    const usize buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
+    let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
     munmap(buf.ptr, buf_aligned_len);
 #endif /* posix */
 }

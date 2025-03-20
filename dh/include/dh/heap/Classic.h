@@ -1,15 +1,15 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    Classic.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-07 (date of creation)
- * @updated 2024-12-29 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-03-20 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Classic
  *
- * @brief   Classic C standard library allocator wrapper using smart pointers
+ * @brief   Classic C standard library allocator wrapper
  */
 
 #ifndef HEAP_CLASSIC_INCLUDED
@@ -22,24 +22,22 @@ extern "C" {
 
 #include "cfg.h"
 
-#include <stdlib.h>
-
 /*========== Classic C Allocator ============================================*/
 
-/* Classic allocator instance (minimal state) */
+/// Classic allocator instance (minimal state)
 typedef struct heap_Classic {
-    Void unused_[0]; // Empty struct not allowed in C
+    Void unused_[0]; /* Empty struct not allowed in C */
 } heap_Classic;
 
-// Get allocator interface for instance
-extern mem_Allocator heap_Classic_allocator(heap_Classic* self);
+/// Get allocator interface for instance
+extern fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator);
 
-/*========== Implementation =================================================*/
+/*========== Macros and Declarations ========================================*/
 
-// Get underlying malloc_size if available
 #if defined(__GLIBC__) || defined(__APPLE__)
 #define heap_Classic_has_malloc_size (1)
-force_inline usize heap_Classic_mallocSize(anyptr ptr) {
+/// Get underlying malloc_size if available
+force_inline fn_(heap_Classic_mallocSize(anyptr ptr), usize) {
 #if defined(__GLIBC__)
     return malloc_usable_size(ptr);
 #else

@@ -1,15 +1,20 @@
 #include "dh/heap/Classic.h"
 #include "dh/mem/common.h"
 
-static Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) must_check;
-static bool       heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) must_check;
-static void       heap_Classic_free(anyptr ctx, Sli$u8 buf, usize buf_align);
+#include <stdlib.h>
 
-mem_Allocator heap_Classic_allocator(heap_Classic* self) {
+// Forward declarations of static functions (using fn_ macro)
+static fn_(heap_Classic_alloc(anyptr ctx,  usize len, u32 align), Opt$Ptr$u8);
+static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
+static fn_(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align,  usize new_len), Opt$Ptr$u8);
+static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
+
+fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
     /* VTable for Classic allocator */
-    static const mem_AllocatorVT vt[1] = { {
+    static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Classic_alloc,
         .resize = heap_Classic_resize,
+        .remap  = heap_Classic_remap,
         .free   = heap_Classic_free,
     } };
     return (mem_Allocator){
@@ -20,22 +25,20 @@ mem_Allocator heap_Classic_allocator(heap_Classic* self) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
-    reserveReturn(Opt$Ptr$u8);
+static fn_ext_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     unused(ctx);
-    // Ensure alignment is a power of 2
-    debug_assert_fmt(mem_isValidAlign(ptr_align), "Alignment must be a power of 2");
+    debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
     // Allocate aligned memory
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) { return_some(ptr); }
+    if_(let ptr = _aligned_malloc(len, align), ptr != null) { return_some(ptr); }
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    if_(var ptr = make$(anyptr), posix_memalign(&ptr, ptr_align, len) == 0) { return_some(ptr); }
+    if_(var ptr = make$(anyptr), posix_memalign(&ptr, align, len) == 0) { return_some(ptr); }
 #else  /* other platforms */
     // Manual alignment with proper header storage
     // Allocate extra space for the original pointer and alignment padding
     let header_size = sizeOf$(anyptr);
-    let total_size  = len + header_size + ptr_align - 1;
+    let total_size  = len + header_size + align - 1;
     // Check for overflow
     if (total_size < len) { return_none(); } // Overflow occurred
 
@@ -44,7 +47,7 @@ static Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
     if (raw != null) {
         // Calculate aligned address, leaving space for the header
         let raw_addr     = rawptrToInt(raw);
-        let aligned_addr = mem_alignForward(raw_addr + header_size, ptr_align);
+        let aligned_addr = mem_alignForward(raw_addr + header_size, align);
 
         // Store the original pointer just before the aligned address
         let ptr        = intToRawptr$(anyptr, aligned_addr);
@@ -56,11 +59,10 @@ static Opt$Ptr$u8 heap_Classic_alloc(anyptr ctx, usize len, usize ptr_align) {
 
     // Failed to allocate memory
     return_none();
-}
+} ext_unscoped;
 
-static bool heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize new_len) {
+static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     unused(ctx, buf_align);
-    // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
@@ -86,9 +88,67 @@ static bool heap_Classic_resize(anyptr ctx, Sli$u8 buf, usize buf_align, usize n
     return false;
 }
 
-static void heap_Classic_free(anyptr ctx, Sli$u8 buf, usize buf_align) {
+static fn_ext_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+    unused(ctx);
+    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
+    debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    // If the buffer is null, treat it as a malloc.
+    if (buf.ptr == null) {
+        return heap_Classic_alloc(ctx, new_len, buf_align);
+    }
+
+    // If the new length is zero, treat it as a free, and return NULL.
+    if (new_len == 0) {
+        heap_Classic_free(ctx, buf, buf_align);
+        return_none();
+    }
+    // If the new size is smaller or equal to the usable size of the current block try to shrink and return the same pointer.
+    if (heap_Classic_resize(ctx, buf, buf_align, new_len)) {
+        return_some(buf.ptr);
+    }
+
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+    // Use _aligned_realloc for MSVC, MinGW.
+    if_(let new_ptr = _aligned_realloc(buf.ptr, new_len, buf_align), new_ptr != null) {
+        return_some(new_ptr);
+    }
+#elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    // Use realloc for POSIX systems. It does not guarantee to maintain alignment.
+    if_(let new_ptr = realloc(buf.ptr, new_len), new_ptr != null) {
+        // we allocated a different block, make sure the alignment is correct.
+        if (mem_isAligned(rawptrToInt(new_ptr), buf_align)) {
+            return_some(new_ptr);
+        } else {
+            // Alignment is lost. The specification does not support this, free the new_ptr, and return none.
+            free(new_ptr);
+            return_none();
+        }
+    }
+#else
+    // Fallback implementation:  Allocate, copy, and free.
+    //   This is necessary because realloc *does not* guarantee alignment.
+
+    // 1. Allocate a new block with the requested size and alignment.
+    Opt$Ptr$u8 new_buf = heap_Classic_alloc(ctx, new_len, buf_align);
+    if (new_buf.ptr == null) {
+        return_none(); // Allocation failed.
+    }
+
+    // 2. Copy the data from the old block to the new block.
+    usize copy_len = (buf.len < new_len) ? buf.len : new_len; // Copy the smaller of the two sizes.
+    mem_copy(new_buf.ptr, buf.ptr, copy_len);
+    // 3. Free the old block.
+    heap_Classic_free(ctx, buf, buf_align);
+
+    // 4. Return the new block.
+    return new_buf;
+#endif
+    return_none();
+} ext_unscoped;
+
+static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     unused(ctx, buf_align);
-    // Ensure alignment is a power of 2
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");

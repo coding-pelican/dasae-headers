@@ -27,8 +27,8 @@ ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
     };
 }
 
-mem_AllocErr$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) {
-    reserveReturn(mem_AllocErr$ArrList);
+mem_Allocator_Err$ArrList ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap) {
+    reserveReturn(mem_Allocator_Err$ArrList);
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
     debug_assert_nonnull_fmt(allocator.ptr, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
@@ -60,8 +60,8 @@ void ArrList_fini(ArrList* self) {
 }
 
 
-mem_AllocErr$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
-    reserveReturn(mem_AllocErr$meta_Sli);
+mem_Allocator_Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
+    reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
     let actual_mem = (meta_Sli){
@@ -97,8 +97,8 @@ ArrList ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice) {
     };
 }
 
-mem_AllocErr$ArrList ArrList_clone(const ArrList* self) {
-    reserveReturn(mem_AllocErr$ArrList);
+mem_Allocator_Err$ArrList ArrList_clone(const ArrList* self) {
+    reserveReturn(mem_Allocator_Err$ArrList);
     debug_assert_nonnull(self);
 
     var new_list = try_(ArrList_initCap(
@@ -115,8 +115,8 @@ mem_AllocErr$ArrList ArrList_clone(const ArrList* self) {
     return_ok(new_list);
 }
 
-mem_AllocErr$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     if (self->cap >= new_cap) {
@@ -133,8 +133,8 @@ mem_AllocErr$void ArrList_ensureTotalCap(ArrList* self, usize new_cap) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     if (new_cap <= self->cap) {
@@ -169,16 +169,16 @@ mem_AllocErr$void ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_ensureUnusedCap(ArrList* self, usize additional) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_ensureUnusedCap(ArrList* self, usize additional) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureTotalCap(self, self->items.len + additional));
     return_void();
 }
 
-mem_AllocErr$void ArrList_resize(ArrList* self, usize new_len) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_resize(ArrList* self, usize new_len) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureTotalCap(self, new_len));
@@ -218,8 +218,8 @@ void ArrList_expandToCap(ArrList* self) {
     self->items.len = self->cap;
 }
 
-mem_AllocErr$void ArrList_append(ArrList* self, meta_Ptr item) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_append(ArrList* self, meta_Ptr item) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
@@ -235,8 +235,8 @@ mem_AllocErr$void ArrList_append(ArrList* self, meta_Ptr item) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, items.len));
@@ -250,8 +250,8 @@ mem_AllocErr$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -267,8 +267,8 @@ mem_AllocErr$void ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_prepend(ArrList* self, meta_Ptr item) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_prepend(ArrList* self, meta_Ptr item) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
@@ -292,8 +292,8 @@ mem_AllocErr$void ArrList_prepend(ArrList* self, meta_Ptr item) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, items.len));
@@ -315,8 +315,8 @@ mem_AllocErr$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -340,8 +340,8 @@ mem_AllocErr$void ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n) 
     return_void();
 }
 
-mem_AllocErr$meta_Ptr ArrList_addBackOne(ArrList* self) {
-    reserveReturn(mem_AllocErr$meta_Ptr);
+mem_Allocator_Err$meta_Ptr ArrList_addBackOne(ArrList* self) {
+    reserveReturn(mem_Allocator_Err$meta_Ptr);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, 1));
@@ -359,8 +359,8 @@ meta_Ptr ArrList_addBackOneAssumeCap(ArrList* self) {
     };
 }
 
-mem_AllocErr$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
-    reserveReturn(mem_AllocErr$meta_Sli);
+mem_Allocator_Err$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
+    reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -380,8 +380,8 @@ meta_Sli ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n) {
     };
 }
 
-mem_AllocErr$meta_Ptr ArrList_addFrontOne(ArrList* self) {
-    reserveReturn(mem_AllocErr$meta_Ptr);
+mem_Allocator_Err$meta_Ptr ArrList_addFrontOne(ArrList* self) {
+    reserveReturn(mem_Allocator_Err$meta_Ptr);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, 1));
@@ -407,8 +407,8 @@ meta_Ptr ArrList_addFrontOneAssumeCap(ArrList* self) {
     };
 }
 
-mem_AllocErr$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
-    reserveReturn(mem_AllocErr$meta_Sli);
+mem_Allocator_Err$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
+    reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -435,8 +435,8 @@ meta_Sli ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n) {
     };
 }
 
-mem_AllocErr$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
@@ -460,8 +460,8 @@ mem_AllocErr$void ArrList_insert(ArrList* self, usize index, meta_Ptr item) {
     return_void();
 }
 
-mem_AllocErr$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) {
-    reserveReturn(mem_AllocErr$void);
+mem_Allocator_Err$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) {
+    reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
