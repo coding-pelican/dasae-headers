@@ -94,11 +94,7 @@ int main(
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return make$(
-            Sli$Str_const,
-            .ptr = args_buf,
-            .len = argc
-        );
+        eval_return make$(Sli$Str_const, .ptr = args_buf, .len = argc);
     });
     dh_main(args);
 #else  /* !main_no_args && !main_no_returns_err */
@@ -107,11 +103,7 @@ int main(
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return make$(
-            Sli$Str_const,
-            .ptr = args_buf,
-            .len = argc
-        );
+        eval_return make$(Sli$Str_const, .ptr = args_buf, .len = argc);
     });
     catch_from(dh_main(args), err, eval({
         Err_print(err);
