@@ -4,8 +4,8 @@
  * @file    sample-tetris.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-19 (date of creation)
- * @updated 2025-03-19 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-03-21 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/samples
  * @prefix  tetris
  *

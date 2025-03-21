@@ -61,7 +61,8 @@ static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
     let overalloc_len = len + align - mem_page_size;
     let aligned_len   = mem_alignForward(len, mem_page_size);
 
-    while (true) {
+    static let retry_limit = 4;
+    for (var retry_count = 0; retry_count < retry_limit; ++retry_count) {
         let reserved_addr = VirtualAlloc(
             null,
             overalloc_len,
