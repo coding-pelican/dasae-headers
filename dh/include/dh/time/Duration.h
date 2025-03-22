@@ -96,19 +96,19 @@ cmp_fnGe_default(time_Duration);
         .secs  = (_secs) == 0 ? 0 : (_secs),  \
         .nanos = 0                            \
     )
-#define literal_time_Duration_fromMillis(_millis) \
+#define literal_time_Duration_fromMillis(_millis)                                              \
     make$(                                                                                     \
         time_Duration,                                                                         \
         .secs  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec,                         \
         .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli \
     )
-#define literal_time_Duration_fromMicros(_micros) \
+#define literal_time_Duration_fromMicros(_micros)                                              \
     make$(                                                                                     \
         time_Duration,                                                                         \
         .secs  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec,                         \
         .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro \
     )
-#define literal_time_Duration_fromNanos(_nanos) \
+#define literal_time_Duration_fromNanos(_nanos)                     \
     make$(                                                          \
         time_Duration,                                              \
         .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \

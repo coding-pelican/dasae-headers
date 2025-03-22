@@ -1,73 +1,246 @@
-#include "dh/mem/Tracker.h"
-#include "dh/fs/dir.h"
+/**
+ * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ *
+ * @file    mem_Tracker.c
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2025-01-09 (date of creation)
+ * @updated 2025-03-22 (date of last update)
+ * @version v0.1-alpha.2
+ * @ingroup dasae-headers(dh)/mem
+ * @prefix  mem_Tracker
+ *
+ * @brief   Debug memory tracking system
+ * @details Implementation of memory allocation tracking functionality
+ */
 
-#include <stdlib.h>
-#include <string.h>
+#include "dh/mem/Tracker.h"
+#include "dh/mem/common.h"
+#include "dh/heap/Classic.h"
+#include "dh/ArrList.h"
+#include "dh/err_res.h"
+#include "dh/core/src_loc.h"
+#include "dh/fs/dir.h"
+#include "dh/io.h"
+#include "dh/Str.h"
+#include "dh/Arr.h"
+#include "dh/time.h"
 
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
 
-static const char* const mem_Tracker_default_log_file = "log/mem.log";
-// static FILE*             mem_Tracker_fallbackLogFile(void) { return stderr; }
+/*========== Constants and Default Configuration ===========================*/
 
-static void __attribute__((constructor)) mem_Tracker_init(void) {
-    mem_Tracker_initWithFile(mem_Tracker_default_log_file);
-    ignore atexit(mem_Tracker_finiWithGenerateReportAndCleanup);
-}
+static const Str_const mem_Tracker_default_log_file = Str_l("log/mem.log");
 
-static void __attribute__((destructor)) mem_Tracker_fini(void) {
-    mem_Tracker_finiWithGenerateReportAndCleanup();
-}
+/*========== Tracker Leak Report Types =====================================*/
+
+/// Individual allocation record
+typedef struct mem_Allocation {
+    anyptr                 ptr;       /* Allocated pointer */
+    usize                  size;      /* Allocation size */
+    SrcLoc                 src_loc;   /* Source location*/
+    time_Instant           timestamp; /* Allocation time */
+    struct mem_Allocation* next;
+} mem_Allocation;
+
+/// Leak site for aggregated reporting
+typedef struct LeakSite {
+    SrcLoc src_loc;
+    usize  count;
+    usize  total_bytes;
+} LeakSite;
+
+/*========== Singleton Instance ============================================*/
 
 static mem_Tracker mem_Tracker_s_instance = cleared();
 
-void mem_Tracker_initWithFile(const char* log_path) {
-    char dir_path[256] = { 0 };
-    if_(let dir_last_slash = strrchr(log_path, '/'), dir_last_slash) {
-        let dir_len = dir_last_slash - log_path;
-        strncpy(dir_path, log_path, dir_len);
-        dir_path[dir_len] = '\0';
+/// Automatic initialization at program start
+static __attribute__((constructor)) fn_(mem_Tracker_init(void), void) {
+    catch_from(mem_Tracker_initWithPath(mem_Tracker_default_log_file), err, eval({
+         /* If initialization fails, try to log to stderr */
+        printf("ERROR: Failed to initialize memory tracker: [%s] %s\n",
+            Err_domainToCStr(err), Err_codeToCStr(err)
+        );
+        ErrTrace_print();
+    }));
+    ignore atexit(mem_Tracker_finiAndGenerateReport);
+}
 
-        // Create directory
-        catch_from(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)), err, ({
-            ignore fprintf(stderr, "Failed to create directory for memory tracker log: %s\n", log_path);
-            Err_print(err);
-            ErrTrace_print();
-            claim_unreachable;
-        }));
-    }
+/// Automatic finalization at program exit (will call atexit handler)
+static __attribute__((destructor)) fn_(mem_Tracker_fini(void), void) {
+    mem_Tracker_finiAndGenerateReport();
+}
 
-    let log_file = fopen(log_path, "w");
-    if (!log_file) {
-        ignore fprintf(stderr, "Failed to open memory tracker log file: %s\n", log_path);
-        claim_unreachable;
-    }
+/*========== Implementation ================================================*/
+
+fn_ext_scope(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
+    // Create directory if needed
+    let dir_path = Str_l("log");
+    try_(fs_dir_create(dir_path));
+
+    // Open log file
+    Arr$(256, u8) path_buf = Arr_zero();
+    mem_copy(path_buf.items, log_path.ptr, log_path.len);
+    Arr_setAt(path_buf, log_path.len, '\0');
+
+    let log_file = fopen(as$(const char*, path_buf.items), "w");
+    if (!log_file) { return_err(io_FileErr_OpenFailed()); }
+    errdefer_(ignore fclose(log_file));
+
+    // Close previous log file if it exists
     if (mem_Tracker_s_instance.log_file) {
         ignore fclose(mem_Tracker_s_instance.log_file);
     }
-    mem_Tracker_s_instance.log_file = log_file;
 
-    ignore fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized\n");
+    // Set up the tracker instance
+    mem_Tracker_s_instance.log_file        = log_file;
+    mem_Tracker_s_instance.allocations     = null;
+    mem_Tracker_s_instance.total_allocated = 0;
+    mem_Tracker_s_instance.active_allocs   = 0;
+
+    // clang-format off
+    // Write header
+    ignore fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized at %f\n",
+        time_Duration_asSecs_f64(time_Instant_elapsed(time_Instant_now()))
+    );
     ignore fprintf(mem_Tracker_s_instance.log_file, "================================\n");
-}
+    // clang-format on
+    return_void();
+} ext_unscoped;
 
-void mem_Tracker_registerAlloc(void* ptr, usize size, const char* file, int line, const char* func) {
-    if (!ptr) { return; }
+fn_ext_scope(mem_Tracker_finiAndGenerateReport(void), void) {
+    if (!mem_Tracker_s_instance.log_file) { return; }
+
+    // clang-format off
+    ignore fprintf(mem_Tracker_s_instance.log_file, "\nMemory Leak Report\n");
+    ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+    ignore fprintf(mem_Tracker_s_instance.log_file, "Total allocations: %zu bytes\n",
+        mem_Tracker_s_instance.total_allocated
+    );
+    ignore fprintf(mem_Tracker_s_instance.log_file, "Active allocations: %zu\n",
+        mem_Tracker_s_instance.active_allocs
+    );
+    // clang-format on
+
+    if (mem_Tracker_s_instance.active_allocs > 0) {
+        ignore fprintf(mem_Tracker_s_instance.log_file, "\nDetected Memory Leaks:\n");
+        ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+
+        // Get current time for age calculations
+        time_Instant now = time_Instant_now();
+
+        // Track all leaks
+        mem_Allocation* curr         = mem_Tracker_s_instance.allocations;
+        usize           leak_count   = 0;
+        usize           total_leaked = 0;
+
+        // Create a dynamic array for leak sites
+        var sites = type$(ArrList$(LeakSite), ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(create$(heap_Classic))));
+        defer_(ArrList_fini(sites.base));
+
+        // Process each leak
+        while (curr) {
+            leak_count++;
+            total_leaked += curr->size;
+
+            // Calculate age of leak
+            time_Duration age      = time_Instant_durationSince(now, curr->timestamp);
+            f64           age_secs = time_Duration_asSecs_f64(age);
+
+            // Log individual leak
+            ignore fprintf(mem_Tracker_s_instance.log_file, "Leak #%zu:\n", leak_count);
+            ignore fprintf(mem_Tracker_s_instance.log_file, "  Address: %p\n", curr->ptr);
+            ignore fprintf(mem_Tracker_s_instance.log_file, "  Size: %zu bytes\n", curr->size);
+            ignore fprintf(mem_Tracker_s_instance.log_file, "  Location: %s:%d\n", curr->src_loc.file_name, curr->src_loc.line);
+            ignore fprintf(mem_Tracker_s_instance.log_file, "  Function: %s\n", curr->src_loc.fn_name);
+            ignore fprintf(mem_Tracker_s_instance.log_file, "  Age: %.2f seconds\n", age_secs);
+
+            // Find or add to leak sites
+            bool found = false;
+            for_slice_indexed (sites.items, site_ptr, i) {
+                LeakSite* site = site_ptr;
+
+                // Check if it's the same location
+                if (Str_eql(Str_viewZ(as$(u8*, site->src_loc.file_name)), Str_viewZ(as$(u8*, curr->src_loc.file_name)))
+                    && site->src_loc.line == curr->src_loc.line
+                    && Str_eql(Str_viewZ(as$(u8*, site->src_loc.fn_name)), Str_viewZ(as$(u8*, curr->src_loc.fn_name)))) {
+
+                    site->count++;
+                    site->total_bytes += curr->size;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                // Add new leak site
+                catch_(ArrList_addBackOne(sites.base), ({ ignore fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
+                }));
+
+                if_some (ArrList_popOrNull(sites.base), site_ptr) {
+                    let site          = meta_cast$(LeakSite*, site_ptr);
+                    site->src_loc     = curr->src_loc;
+                    site->count       = 1;
+                    site->total_bytes = curr->size;
+                }
+            }
+
+            curr = curr->next;
+        }
+
+        // Print leak summary by allocation site
+        ignore fprintf(mem_Tracker_s_instance.log_file, "\nLeak Summary by Location:\n");
+        ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+
+        for_slice (sites.items, site) {
+            ignore fprintf(
+                mem_Tracker_s_instance.log_file,
+                "Location: %s:%d in %s\n"
+                "  Count: %zu leaks\n"
+                "  Total bytes: %zu\n\n",
+                site->src_loc.file_name,
+                site->src_loc.line,
+                site->src_loc.fn_name,
+                site->count,
+                site->total_bytes
+            );
+        }
+
+        ignore fprintf(mem_Tracker_s_instance.log_file, "\nTotal leaked memory: %zu bytes\n", total_leaked);
+    }
+
+    // Cleanup the tracker's linked list of allocations
+    mem_Allocation* curr = mem_Tracker_s_instance.allocations;
+    while (curr) {
+        mem_Allocation* next = curr->next;
+        free(curr);
+        curr = next;
+    }
+
+    ignore fclose(mem_Tracker_s_instance.log_file);
+    mem_Tracker_s_instance.log_file    = null;
+    mem_Tracker_s_instance.allocations = null;
+} ext_unscoped;
+
+fn_(mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc), void) {
+    if (!ptr || !mem_Tracker_s_instance.log_file) { return; }
 
     // Create new allocation record
-    mem_Allocation* alloc = (mem_Allocation*)malloc(sizeof(mem_Allocation));
+    let alloc = as$(mem_Allocation*, malloc(sizeof(mem_Allocation)));
     if (!alloc) {
-        ignore fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n", file, line);
+        // clang-format off
+        ignore fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n",
+            src_loc.file_name, src_loc.line
+        );
+        // clang-format on
         return;
     }
 
     // Fill allocation info
     alloc->ptr       = ptr;
     alloc->size      = size;
-    alloc->file      = file;
-    alloc->line      = line;
-    alloc->func      = func;
-    alloc->timestamp = time(null);
+    alloc->src_loc   = src_loc;
+    alloc->timestamp = time_Instant_now();
 
     // Add to linked list
     alloc->next                        = mem_Tracker_s_instance.allocations;
@@ -77,17 +250,51 @@ void mem_Tracker_registerAlloc(void* ptr, usize size, const char* file, int line
     mem_Tracker_s_instance.total_allocated += size;
     mem_Tracker_s_instance.active_allocs++;
 
-    // Log allocation with total bytes
     // clang-format off
-    ignore fprintf(mem_Tracker_s_instance.log_file,
-        "ALLOC: %p (%zu bytes) at %s:%d in %s (Total bytes allocated: %zu)\n",
-        ptr, size, file, line, func, mem_Tracker_s_instance.total_allocated
+    // Log allocation with total bytes
+    ignore fprintf(mem_Tracker_s_instance.log_file, "ALLOC: %p (%zu bytes) at %s:%d in %s (Total: %zu bytes)\n",
+        ptr, size, src_loc.file_name, src_loc.line, src_loc.fn_name, mem_Tracker_s_instance.total_allocated
     );
     // clang-format on
 }
 
-bool mem_Tracker_registerFree(void* ptr, const char* file, int line, const char* func) {
-    if (!ptr) { return false; }
+fn_(mem_Tracker_registerRemap(anyptr old_ptr, anyptr new_ptr, usize new_size, SrcLoc src_loc), void) {
+    if (!mem_Tracker_s_instance.log_file) { return; }
+
+    // First, find the old allocation
+    usize old_size = 0;
+    if (old_ptr) {
+        mem_Allocation* curr = mem_Tracker_s_instance.allocations;
+        while (curr) {
+            if (curr->ptr == old_ptr) {
+                old_size = curr->size;
+                break;
+            }
+            curr = curr->next;
+        }
+    }
+
+    // clang-format off
+    // Log the remap operation
+    ignore fprintf(mem_Tracker_s_instance.log_file, "REMAP: %p (%zu bytes) -> %p (%zu bytes) at %s:%d in %s\n",
+        old_ptr, old_size, new_ptr, new_size, src_loc.file_name, src_loc.line, src_loc.fn_name
+    );
+    // clang-format on
+
+    // If we found the old allocation, update it
+    if (0 < old_size) {
+        // For remap, remove the old allocation and add a new one
+        mem_Tracker_registerFree(old_ptr, src_loc);
+    }
+
+    // Register the new allocation if it's valid
+    if (new_ptr) {
+        mem_Tracker_registerAlloc(new_ptr, new_size, src_loc);
+    }
+}
+
+fn_(mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc), bool) {
+    if (!ptr || !mem_Tracker_s_instance.log_file) { return false; }
 
     mem_Allocation** curr = &mem_Tracker_s_instance.allocations;
 
@@ -97,28 +304,36 @@ bool mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
     }
 
     if (!*curr) {
-        // Double free or invalid free detected
         // clang-format off
-        ignore fprintf(mem_Tracker_s_instance.log_file,
-            "ERROR: Invalid/Double free of %p at %s:%d in %s\n",
-            ptr, file, line, func
+        // Double free or invalid free detected
+        ignore fprintf(mem_Tracker_s_instance.log_file, "ERROR: DOUBLE FREE or INVALID FREE of %p at %s:%d in %s\n",
+            ptr, src_loc.file_name, src_loc.line, src_loc.fn_name
         );
         // clang-format on
         return false;
     }
 
-    // Get the original allocation size
-    usize orig_size = (*curr)->size;
+    // Calculate elapsed time since allocation
+    let elapsed     = time_Instant_durationSince(time_Instant_now(), (*curr)->timestamp);
+    let elapsed_sec = time_Duration_asSecs_f64(elapsed);
+
+    // Get the original allocation info
+    let orig_size    = (*curr)->size;
+    let orig_src_loc = (*curr)->src_loc;
 
     // Update stats
     mem_Tracker_s_instance.total_allocated -= orig_size;
     mem_Tracker_s_instance.active_allocs--;
 
-    // Log deallocation with total bytes
     // clang-format off
+    // Log deallocation with details
     ignore fprintf(mem_Tracker_s_instance.log_file,
-        "FREE: %p (%zu bytes) at %s:%d in %s (Total bytes remaining: %zu)\n",
-        ptr, orig_size, file, line, func, mem_Tracker_s_instance.total_allocated
+        "FREE: %p (%zu bytes) at %s:%d in %s\n"
+        "      Originally allocated at %s:%d in %s (%.2f seconds ago)\n"
+        "      (Total remaining: %zu bytes)\n",
+        ptr, orig_size, src_loc.file_name, src_loc.line, src_loc.fn_name,
+        orig_src_loc.file_name, orig_src_loc.line, orig_src_loc.fn_name, elapsed_sec,
+        mem_Tracker_s_instance.total_allocated
     );
     // clang-format on
 
@@ -129,115 +344,7 @@ bool mem_Tracker_registerFree(void* ptr, const char* file, int line, const char*
     return true;
 }
 
-typedef struct LeakSite {
-    const char* file;
-    i32         line;
-    const char* func;
-    usize       count;
-    usize       total_bytes;
-} LeakSite;
-void mem_Tracker_finiWithGenerateReportAndCleanup(void) {
-    if (!mem_Tracker_s_instance.log_file) { return; }
-
-    ignore fprintf(mem_Tracker_s_instance.log_file, "\nMemory Leak Report\n");
-    ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
-    ignore fprintf(mem_Tracker_s_instance.log_file, "Total allocations: %zu bytes\n", mem_Tracker_s_instance.total_allocated);
-    ignore fprintf(mem_Tracker_s_instance.log_file, "Active allocations: %zu\n", mem_Tracker_s_instance.active_allocs);
-
-    if (0 < mem_Tracker_s_instance.active_allocs) {
-        ignore fprintf(mem_Tracker_s_instance.log_file, "\nDetected Memory Leaks:\n");
-        ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
-
-        mem_Allocation* curr         = mem_Tracker_s_instance.allocations;
-        usize           leak_count   = 0;
-        usize           total_leaked = 0;
-
-        // Group leaks by allocation site
-        LeakSite* sites         = null;
-        usize     site_count    = 0;
-        usize     site_capacity = 16;
-        sites                   = malloc(sizeof(LeakSite) * site_capacity);
-
-        while (curr) {
-            ignore fprintf(mem_Tracker_s_instance.log_file, "Leak #%zu:\n", ++leak_count);
-            ignore fprintf(mem_Tracker_s_instance.log_file, "  Address: %p\n", curr->ptr);
-            ignore fprintf(mem_Tracker_s_instance.log_file, "  Size: %zu bytes\n", curr->size);
-            ignore fprintf(mem_Tracker_s_instance.log_file, "  Location: %s:%d\n", curr->file, curr->line);
-            ignore fprintf(mem_Tracker_s_instance.log_file, "  Function: %s\n", curr->func);
-
-            // Track leak sites
-            bool found = false;
-            for (usize i = 0; i < site_count; i++) {
-                if (sites[i].file == curr->file && sites[i].line == curr->line && sites[i].func == curr->func) {
-                    sites[i].count++;
-                    sites[i].total_bytes += curr->size;
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                if (site_count == site_capacity) {
-                    site_capacity *= 2;
-                    LeakSite* new_sites = realloc(sites, sizeof(LeakSite) * site_capacity);
-                    if (new_sites == null) {
-                        // Handle realloc failure
-                        free(sites);
-                        claim_unreachable_msg("Failed to reallocate memory for leak sites");
-                        // TODO: Perhaps add some cleanup-related logic
-                        return;
-                    }
-                    sites = new_sites;
-                }
-                sites[site_count] = (LeakSite){
-                    .file        = curr->file,
-                    .line        = curr->line,
-                    .func        = curr->func,
-                    .count       = 1,
-                    .total_bytes = curr->size
-                };
-                site_count++;
-            }
-
-            total_leaked += curr->size;
-            curr = curr->next;
-        }
-
-        // Print leak summary by allocation site
-        ignore fprintf(mem_Tracker_s_instance.log_file, "\nLeak Summary by Location:\n");
-        ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
-        for (usize i = 0; i < site_count; i++) {
-            // clang-format off
-            ignore fprintf(mem_Tracker_s_instance.log_file,
-                "Location: %s:%d in %s\n"
-                    "  Count: %zu leaks\n"
-                    "  Total bytes: %zu\n\n",
-                sites[i].file, sites[i].line, sites[i].func,
-                sites[i].count,
-                sites[i].total_bytes
-            ); // clang-format on
-        }
-
-        free(sites);
-        ignore fprintf(mem_Tracker_s_instance.log_file, "\nTotal leaked memory: %zu bytes\n", total_leaked);
-    }
-
-    // Only clean up the tracker's own allocations
-    mem_Allocation* curr = mem_Tracker_s_instance.allocations;
-    while (curr) {
-        mem_Allocation* next = curr->next;
-        /* FIXME: When exiting the program, a memory leak was detected and during the cleanup process, the program was crashed in the code below. */
-        // free(curr->ptr); // Fix the leak
-        free(curr);
-        curr = next;
-    }
-
-    ignore fclose(mem_Tracker_s_instance.log_file);
-    mem_Tracker_s_instance.log_file    = null;
-    mem_Tracker_s_instance.allocations = null;
-}
-
-mem_Tracker* mem_Tracker_instance(void) {
+fn_(mem_Tracker_instance(void), mem_Tracker*) {
     return &mem_Tracker_s_instance;
 }
 

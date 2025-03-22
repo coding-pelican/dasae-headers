@@ -46,6 +46,7 @@ fn_(heap_Fixed_thrdSafeAllocator(heap_Fixed* self), mem_Allocator) {
 fn_(heap_Fixed_init(heap_Fixed* self, Sli$u8 buf), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(buf.ptr);
+
     *self = (heap_Fixed){
         .buffer    = buf,
         .end_index = 0,
@@ -81,14 +82,15 @@ fn_(heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf), bool)
 static fn_ext_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
-    var self = as$(heap_Fixed*, ctx);
+
+    let self = as$(heap_Fixed*, ctx);
 
     // Calculate aligned offset
-    const usize ptr_addr       = rawptrToInt(self->buffer.ptr) + self->end_index;
-    const usize aligned_addr   = mem_alignForward(ptr_addr, align);
-    const usize adjust_off     = aligned_addr - ptr_addr;
-    const usize adjusted_index = self->end_index + adjust_off;
-    const usize new_end_index  = adjusted_index + len;
+    let ptr_addr       = rawptrToInt(self->buffer.ptr) + self->end_index;
+    let aligned_addr   = mem_alignForward(ptr_addr, align);
+    let adjust_off     = aligned_addr - ptr_addr;
+    let adjusted_index = self->end_index + adjust_off;
+    let new_end_index  = adjusted_index + len;
 
     // Check if we have enough space
     if (self->buffer.len < new_end_index) { return_none(); }
@@ -101,7 +103,9 @@ static fn_ext_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$
 static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-    var self = as$(heap_Fixed*, ctx);
+
+    let self = as$(heap_Fixed*, ctx);
+    unused(buf_align);
 
     // Verify buffer ownership
     debug_assert_fmt(
@@ -133,6 +137,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
 static fn_ext_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
+
     if (heap_Fixed_resize(ctx, buf, buf_align, new_size)) {
         return_some(buf.ptr);
     }
@@ -142,7 +147,9 @@ static fn_ext_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usiz
 static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-    var self = as$(heap_Fixed*, ctx);
+
+    let self = as$(heap_Fixed*, ctx);
+    unused(buf_align);
 
     // Verify buffer ownership
     debug_assert_fmt(
@@ -162,7 +169,8 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 static fn_ext_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
-    var self = as$(heap_Fixed*, ctx);
+
+    let self = as$(heap_Fixed*, ctx);
 
     // Use atomic operations for thread safety
     usize end_index = atomic_load_explicit(

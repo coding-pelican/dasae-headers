@@ -31,7 +31,7 @@ fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
     for_slice (__collection.items, __iter_elem) {                                         \
         var _PayloadCapture = *__iter_elem;                                               \
         var __item          = eval({ _Body; });                                           \
-        try_(ArrList_append(&__temp, meta_refPtr(&__item)));                               \
+        try_(ArrList_append(&__temp, meta_refPtr_mut(&__item)));                           \
     };                                                                                    \
     eval_return type$(TypeOf(__collection), __temp);                                      \
 })

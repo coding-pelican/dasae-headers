@@ -27,8 +27,8 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Optional value */
-#define Opt$(T)                          comp_type_anon__Opt$(T)
-#define Opt_asNamed$(T_Opt, var_anon...) comp_op__Opt_asNamed$(T_Opt, var_anon)
+#define Opt$(T)                           comp_type_anon__Opt$(T)
+#define Opt_anonCast$(T_Opt, var_anon...) comp_op__Opt_anonCast$(T_Opt, var_anon)
 
 #define use_Opt$(T)  comp_gen__use_Opt$(T)
 #define decl_Opt$(T) comp_gen__decl_Opt$(T)
@@ -73,7 +73,7 @@ extern "C" {
         bool has_value;         \
         T    value;             \
     }
-#define comp_op__Opt_asNamed$(T_Opt, var_anon...) eval({                                            \
+#define comp_op__Opt_anonCast$(T_Opt, var_anon...) eval({                                           \
     let __anon = var_anon;                                                                          \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Opt));                                   \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Opt));                                 \

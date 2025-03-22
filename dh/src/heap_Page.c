@@ -30,11 +30,12 @@ fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
 /*========== Allocator Interface Implementation =============================*/
 
 static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
-    unused(ctx, align);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
     debug_assert_fmt(align <= mem_page_size, "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)", align, mem_page_size);
+
+    unused(ctx, align);
 
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
@@ -120,11 +121,12 @@ static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
 } ext_unscoped;
 
 static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
-    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_size, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
@@ -181,11 +183,12 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
 }
 
 static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
-    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_size, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
@@ -222,11 +225,12 @@ static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize
 } ext_unscoped;
 
 static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
-    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx, buf_align);
 
 #if bti_plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);

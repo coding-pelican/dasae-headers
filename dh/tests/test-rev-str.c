@@ -8,7 +8,7 @@ Err$void dh_main(Sli$Str_const args) {
     unused(args);
     reserveReturn(Err$void);
 
-    printf("passed args:");
+    printf("passed args:\n");
     for_slice_indexed (args, arg, index) {
         printf("  arg %llu: %s\n", index, arg->ptr);
     }
@@ -16,7 +16,7 @@ Err$void dh_main(Sli$Str_const args) {
 
     char buffer[32] = cleared();
     ignore fgets(buffer, 32, stdin);
-    let str = Str_from(as$(u8*, buffer), strlen(buffer));
+    let str = Str_fromZ(as$(u8*, buffer));
     for_slice_rev (str, ch) {
         ignore putchar(*ch);
     }

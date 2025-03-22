@@ -209,7 +209,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
                 prim_max(math_Vec3f_dot(normal, halfway_dir), 0.0f),
                 64.0f
             );
-            const f32   spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
+            const f32 spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
             eval_return spec_mod_by_light_angle;
         })
     );
@@ -225,7 +225,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
 // Previous functions remain the same up to renderHeart
 void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
     let z_buffer = Grid_fromSli$(Grid$f32, buffer->z_buffer, window_res_width, window_res_height);
-    for_slice(z_buffer.items, depth) {
+    for_slice (z_buffer.items, depth) {
         *depth = -math_f32_inf;
     }
 
@@ -270,8 +270,8 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
 
                 // Scale and rotate point
                 const Vec3f pos = eval({
-                    let         scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
-                    let         rotated = applyRotation(scaled, angle);
+                    let scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
+                    let rotated = applyRotation(scaled, angle);
                     eval_return rotated;
                 });
 
@@ -327,7 +327,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
 }
 
 void flipCanvasBuffer(engine_Canvas* canvas) {
-    let       sli         = Sli_asNamed$(Sli$Color, canvas->buffer);
+    let       sli         = Sli_anonCast$(Sli$Color, canvas->buffer);
     let       mat         = Grid_fromSli$(Grid$Color, sli, canvas->width, canvas->height);
     const i32 width       = as$(i32, canvas->width);
     const i32 height      = as$(i32, canvas->height);
@@ -417,7 +417,7 @@ void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Grid$u8 
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
     let pixels  = Grid_fromSli$(
         Grid$Color,
-        Sli_asNamed$(Sli$Color, canvas->buffer),
+        Sli_anonCast$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
     );
@@ -497,7 +497,7 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
     let pixels  = Grid_fromSli$(
         Grid$Color,
-        Sli_asNamed$(Sli$Color, canvas->buffer),
+        Sli_anonCast$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
     );
@@ -605,19 +605,15 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
         var allocator = heap_Classic_allocator(&(heap_Classic){});
         var buffer    = (RenderBuffer){
                .canvas   = game_canvas,
-               .z_buffer = meta_cast$(Sli$f32, try(mem_Allocator_alloc(allocator, typeInfo(f32), window_res_size)))
-        };
+               .z_buffer = meta_cast$(Sli$f32, try(mem_Allocator_alloc(allocator, typeInfo(f32), window_res_size))) };
         defer(mem_Allocator_free(allocator, anySli(buffer.z_buffer)));
         // memset(buffer.z_buffer.ptr, 0, window_res_size * sizeof(f32));
         var overlay = (CanvasAscii){
             .color = buffer.canvas,
             .ascii = Grid_fromSli$(
                 Grid$u8,
-                meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))),
-                window_res_width,
-                window_res_height / 2
-            ),
-        };
+                meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))), window_res_width, window_res_height / 2),
+                };
         defer(mem_Allocator_free(allocator, anySli(overlay.ascii.items)));
         // memset(overlay.ascii.items.ptr, 0, window_res_size / 2);
 
@@ -767,12 +763,11 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target; clamp to zero if negative
-            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
+            if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;
         }
         return_ok({});
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

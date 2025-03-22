@@ -61,25 +61,25 @@ use_ArrList$(i32);
 /* Game Types ===============================================================*/
 
 typedef enum tetris_Tetrominos {
-    tetris_Tetrominos_I     = 0,
-    tetris_Tetrominos_J     = 1,
-    tetris_Tetrominos_O     = 2,
-    tetris_Tetrominos_L     = 3,
-    tetris_Tetrominos_S     = 4,
-    tetris_Tetrominos_T     = 5,
-    tetris_Tetrominos_Z     = 6,
+    tetris_Tetrominos_i     = 0,
+    tetris_Tetrominos_j     = 1,
+    tetris_Tetrominos_o     = 2,
+    tetris_Tetrominos_l     = 3,
+    tetris_Tetrominos_s     = 4,
+    tetris_Tetrominos_t     = 5,
+    tetris_Tetrominos_z     = 6,
     tetris_Tetrominos_count = 7
 } tetris_Tetrominos;
 
 /// Global variables for tetromino definitions
 pvt const Arr$(tetris_Tetrominos_count, u16) tetris_tetrominos = Arr_init({
-    [tetris_Tetrominos_I] = 0b0000001000100010, /* I: ....X...X...X...X. */
-    [tetris_Tetrominos_J] = 0b0000001001100010, /* J: ..X..XX...X..... */
-    [tetris_Tetrominos_O] = 0b0000000001100110, /* O: .....XX..XX..... */
-    [tetris_Tetrominos_L] = 0b0000001001100100, /* L: ..X..XX..X...... */
-    [tetris_Tetrominos_S] = 0b0000010001100010, /* S: .X...XX...X..... */
-    [tetris_Tetrominos_T] = 0b0000010001001100, /* T: .X...X...XX..... */
-    [tetris_Tetrominos_Z] = 0b0000001001100010  /* Z: ..X...X..XX..... */
+    [tetris_Tetrominos_i] = lit_num(0b, 0010, 0010, 0010, 0010), /* I: ..X...X...X...X. */
+    [tetris_Tetrominos_j] = lit_num(0b, 0000, 0010, 0110, 0010), /* J: ..X..XX...X..... */
+    [tetris_Tetrominos_o] = lit_num(0b, 0000, 0000, 0110, 0110), /* O: .....XX..XX..... */
+    [tetris_Tetrominos_l] = lit_num(0b, 0000, 0010, 0110, 0100), /* L: ..X..XX..X...... */
+    [tetris_Tetrominos_s] = lit_num(0b, 0000, 0100, 0110, 0010), /* S: .X...XX...X..... */
+    [tetris_Tetrominos_t] = lit_num(0b, 0000, 0100, 0100, 1100), /* T: .X...X...XX..... */
+    [tetris_Tetrominos_z] = lit_num(0b, 0000, 0010, 0110, 0010)  /* Z: ..X...X..XX..... */
 });
 
 typedef struct tetris_PlayField {
@@ -133,7 +133,7 @@ fn_ext_scope(dh_main(void), Err$void) {
     bool is_gameover      = false;
     i32  current_piece    = as$(i32, Random_range_i64(0, tetris_Tetrominos_count - 1));
     i32  current_rotation = 0;
-    i32  current_x        = tetris_field_width / 2;
+    i32  current_x        = (tetris_field_width / 2) - 2;
     i32  current_y        = 0;
     i32  speed            = 20;
     i32  speed_count      = 0;
@@ -205,7 +205,7 @@ fn_ext_scope(dh_main(void), Err$void) {
                 }
 
                 /* Pick new piece */
-                current_x        = tetris_field_width / 2;
+                current_x        = (tetris_field_width / 2) - 2;
                 current_y        = 0;
                 current_rotation = 0;
                 current_piece    = as$(i32, Random_range_i64(0, tetris_Tetrominos_count - 1));

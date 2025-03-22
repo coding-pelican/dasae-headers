@@ -152,12 +152,12 @@ union meta_Sli {
 #define comp_op__meta_ptrToAny(var_meta_ptr) eval({                                    \
     const TypeOf(var_meta_ptr) _ptr = var_meta_ptr;                                    \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
-    eval_return(AnyType){ .type = _ptr.type, .ctx = _ptr.addr, .len = 1 };             \
+    eval_return tagUnion$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr });      \
 })
-#define comp_op__meta_sliToAny(var_meta_sli) eval({                                    \
-    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                    \
-    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
-    eval_return(*(AnyType*)&_sli);                                                     \
+#define comp_op__meta_sliToAny(var_meta_sli) eval({                                             \
+    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                             \
+    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type");          \
+    eval_return tagUnion$(AnyType, AnyType_sli, { .type = _sli.type, .addr = _sli.addr, .len = _sli.len }); \
 })
 
 // clang-format off

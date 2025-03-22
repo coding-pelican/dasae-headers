@@ -32,15 +32,11 @@ fn_ext_scope(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), E
     if_(let buffer = self->buffer,
         width == Grid_width(buffer) && height == Grid_height(buffer)) { return_void(); }
 
-    let new_len     = as$(usize, width) * height;
-    let reallocated = mem_Allocator_realloc(self->allocator, anySli(self->buffer.items), new_len);
-    if_none (reallocated) {
-        return_err(mem_AllocErr_OutOfMemory());
-    }
-    else_some (new_items) {
-        self->buffer = Grid_fromSli$(Grid$Color, meta_cast$(Sli$Color, new_items), width, height);
-        log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
-    }
+    let new_len   = as$(usize, width) * height;
+    let new_items = try_(mem_Allocator_realloc(self->allocator, anySli(self->buffer.items), new_len));
+    self->buffer  = Grid_fromSli$(Grid$Color, meta_cast$(Sli$Color, new_items), width, height);
+    log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
+
     return_void();
 } ext_unscoped;
 

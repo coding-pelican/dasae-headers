@@ -24,17 +24,9 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
+#include "dh/io.h"
 
 #include <stdio.h>
-
-config_ErrSet(
-    io_FileErr,
-    NotFound,
-    AccessDenied,
-    OpenFailed,
-    ReadFailed,
-    WriteFailed
-);
 
 // Log levels
 typedef enum log_Level {

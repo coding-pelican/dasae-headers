@@ -29,9 +29,9 @@ extern "C" {
 typedef struct Grid_const Grid_const;
 typedef union Grid        Grid;
 
-#define Grid_const$(T)                     comp_type_anon__Grid_const$(T)
-#define Grid$(T)                           comp_type_anon__Grid$(T)
-#define Grid_asNamed$(T_Grid, var_anon...) comp_op__Grid_asNamed$(pp_uniqTok(anon), T_Grid, var_anon)
+#define Grid_const$(T)                      comp_type_anon__Grid_const$(T)
+#define Grid$(T)                            comp_type_anon__Grid$(T)
+#define Grid_anonCast$(T_Grid, var_anon...) comp_op__Grid_anonCast$(pp_uniqTok(anon), T_Grid, var_anon)
 
 #define use_Grid$(T)  comp_gen__use_Grid$(T)
 #define decl_Grid$(T) comp_gen__decl_Grid$(T)
@@ -76,7 +76,7 @@ union Grid {
         };                       \
         Grid_const$(T) as_const; \
     }
-#define comp_op__Grid_asNamed$(__anon, T_Grid, var_anon...) eval({                             \
+#define comp_op__Grid_anonCast$(__anon, T_Grid, var_anon...) eval({                            \
     const TypeOf(var_anon) __anon = var_anon;                                                  \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Grid));                             \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Grid));                           \

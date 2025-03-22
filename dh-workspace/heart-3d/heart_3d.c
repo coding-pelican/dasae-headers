@@ -131,7 +131,7 @@ must_check FontSystemErr$KoreanFont FontSystem_init(mem_Allocator allocator, con
         defer(ignore fclose(font_file));
 
         ignore fseek(font_file, 0, SEEK_END);
-        long   file_size = ftell(font_file);
+        long file_size = ftell(font_file);
         ignore fseek(font_file, 0, SEEK_SET);
 
         let font_buffer = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), file_size)));
@@ -153,8 +153,7 @@ must_check FontSystemErr$KoreanFont FontSystem_init(mem_Allocator allocator, con
 
         stbtt_GetFontVMetrics(&font.info, &font.ascent, &font.descent, &font.line_gap);
         return_ok(font);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 void FontSystem_fini(KoreanFont* font) {
@@ -196,23 +195,17 @@ must_check FontSystemErr$Glyph FontSystem_renderGlyph(const KoreanFont* font, i3
         if (w <= 0 || h <= 0) {
             // blank or empty glyph, return a zero-bitmap
             Glyph gBlank = {
-                .bitmap   = Grid_fromSli$(Grid$u8, meta_cast$(Sli$u8, try(mem_Allocator_alloc(font->allocator, typeInfo(u8), 1))), 1, 1),
-                .width    = 0,
-                .height   = 0,
-                .x_offset = 0,
-                .y_offset = 0,
-                .advance  = (i32)((f32)advance * final_scale)
-            };
+                .bitmap = Grid_fromSli$(Grid$u8, meta_cast$(Sli$u8, try(mem_Allocator_alloc(font->allocator, typeInfo(u8), 1))), 1, 1), .width = 0, .height = 0, .x_offset = 0, .y_offset = 0, .advance = (i32)((f32)advance * final_scale) };
             return_ok(gBlank);
         }
 
         // 4) Allocate memory for the bitmap
-        usize  size = (usize)w * h;
-        Sli$u8 mem  = meta_cast$(
+        usize  size   = (usize)w * h;
+        Sli$u8 mem    = meta_cast$(
             Sli$u8,
             try(mem_Allocator_alloc(font->allocator, typeInfo(u8), size))
         );
-        let bitmap = Grid_fromSli$(Grid$u8, mem, w, h);
+        let    bitmap = Grid_fromSli$(Grid$u8, mem, w, h);
 
         // 5) Render via stbtt_GetGlyphBitmap
         i32 outW     = 0;
@@ -249,8 +242,7 @@ must_check FontSystemErr$Glyph FontSystem_renderGlyph(const KoreanFont* font, i3
             .advance  = (i32)((f32)advance * final_scale)
         };
         return_ok(glyph);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 // ========== Render glyph to canvas (unchanged) ==========
@@ -315,8 +307,7 @@ must_check FontSystemErr$void renderKoreanText(Str_const text, engine_Canvas* ca
             }
         }
         return_ok({});
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Fireworks ======================================================*/
@@ -435,8 +426,7 @@ Err$Ptr$Firework Firework_createAt(Firework* f, mem_Allocator allocator, f64 x, 
         try(Firework_createEffectsAt(f, x, y, scale, base_color));
 
         return_ok(f);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 // Helper function for interpolation if not already defined
@@ -600,7 +590,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
                 prim_max(math_Vec3f_dot(normal, halfway_dir), 0.0f),
                 64.0f
             );
-            const f32   spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
+            const f32 spec_mod_by_light_angle = spec * n_dot_l; // Modulate by light angle
             eval_return spec_mod_by_light_angle;
         })
     );
@@ -616,7 +606,7 @@ Color calculateHeartLighting(Vec3f normal, Vec3f view_pos, Vec3f frag_pos, Color
 // Previous functions remain the same up to renderHeart
 void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
     let z_buffer = Grid_fromSli$(Grid$f32, buffer->z_buffer, window_res_width, window_res_height);
-    for_slice(z_buffer.items, depth) {
+    for_slice (z_buffer.items, depth) {
         *depth = -math_f32_inf;
     }
 
@@ -661,8 +651,8 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
 
                 // Scale and rotate point
                 const Vec3f pos = eval({
-                    let         scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
-                    let         rotated = applyRotation(scaled, angle);
+                    let scaled  = math_Vec3f_scale(math_Vec3f_from(px, py, tz), scale);
+                    let rotated = applyRotation(scaled, angle);
                     eval_return rotated;
                 });
 
@@ -718,7 +708,7 @@ void renderHeart(RenderBuffer* buffer, f32 t, Color color) {
 }
 
 void flipCanvasBuffer(engine_Canvas* canvas) {
-    let       sli         = Sli_asNamed$(Sli$Color, canvas->buffer);
+    let       sli         = Sli_anonCast$(Sli$Color, canvas->buffer);
     let       mat         = Grid_fromSli$(Grid$Color, sli, canvas->width, canvas->height);
     const i32 width       = as$(i32, canvas->width);
     const i32 height      = as$(i32, canvas->height);
@@ -808,7 +798,7 @@ void printAscii(engine_Platform* platform, const engine_Canvas* canvas, Grid$u8 
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
     let pixels  = Grid_fromSli$(
         Grid$Color,
-        Sli_asNamed$(Sli$Color, canvas->buffer),
+        Sli_anonCast$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
     );
@@ -888,7 +878,7 @@ static void printAsciiWithColor(engine_Platform* platform, const engine_Canvas* 
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
     let pixels  = Grid_fromSli$(
         Grid$Color,
-        Sli_asNamed$(Sli$Color, canvas->buffer),
+        Sli_anonCast$(Sli$Color, canvas->buffer),
         as$(u32, canvas->width),
         as$(u32, canvas->height)
     );
@@ -948,7 +938,7 @@ must_check i32 measureKoreanTextWidth(Str_const text, usize size_pixels) {
     var allocator   = heap_Classic_allocator(&(heap_Classic){});
     i32 total_width = 0;
 
-    if_ok(FontSystem_init(allocator, "assets/Galmuri11-Bold.ttf", (f32)size_pixels), font) {
+    if_ok (FontSystem_init(allocator, "assets/Galmuri11-Bold.ttf", (f32)size_pixels), font) {
         // Iterate codepoints
         StrUtf8Iter iter = StrUtf8_iter(text);
         Opt$u32     cp   = { 0 };
@@ -960,7 +950,7 @@ must_check i32 measureKoreanTextWidth(Str_const text, usize size_pixels) {
             i32 codepoint = (i32)cp.value;
 
             // Render glyph only to measure
-            if_ok(FontSystem_renderGlyph(&font, codepoint, 1.0f), glyph) {
+            if_ok (FontSystem_renderGlyph(&font, codepoint, 1.0f), glyph) {
                 total_width += glyph.advance;
                 // clean glyph memory
                 mem_Allocator_free(allocator, anySli(glyph.bitmap.items));
@@ -1035,8 +1025,7 @@ must_check Err$void renderKoreanTextFade(
             }
         }
         return_ok({});
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 Err$void renderMessagesIfTimeAllows(f32 t, engine_Canvas* canvas) {
@@ -1157,19 +1146,15 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
         var allocator = heap_Classic_allocator(&(heap_Classic){});
         var buffer    = (RenderBuffer){
                .canvas   = game_canvas,
-               .z_buffer = meta_cast$(Sli$f32, try(mem_Allocator_alloc(allocator, typeInfo(f32), window_res_size)))
-        };
+               .z_buffer = meta_cast$(Sli$f32, try(mem_Allocator_alloc(allocator, typeInfo(f32), window_res_size))) };
         defer(mem_Allocator_free(allocator, anySli(buffer.z_buffer)));
         // memset(buffer.z_buffer.ptr, 0, window_res_size * sizeof(f32));
         var overlay = (CanvasAscii){
             .color = buffer.canvas,
             .ascii = Grid_fromSli$(
                 Grid$u8,
-                meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))),
-                window_res_width,
-                window_res_height / 2
-            ),
-        };
+                meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), window_res_size / 2))), window_res_width, window_res_height / 2),
+                };
         defer(mem_Allocator_free(allocator, anySli(overlay.ascii.items)));
         // memset(overlay.ascii.items.ptr, 0, window_res_size / 2);
 
@@ -1306,7 +1291,7 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
                     fireworks_started = true;
 
                     // Create initial large burst at heart center
-                    if_some(try(State_spawnFirework(&state)), firework) {
+                    if_some (try(State_spawnFirework(&state)), firework) {
                         // Position at screen center
                         f64 center_x = window_res_width / 2.0;
                         f64 center_y = window_res_height / 2.0;
@@ -1324,7 +1309,7 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
                 } else {
                     // Randomly spawn normal-sized fireworks
                     if (Random_f64() < 0.05) { // 5% chance each frame
-                        if_some(try(State_spawnFirework(&state)), firework) {
+                        if_some (try(State_spawnFirework(&state)), firework) {
                             // Random position
                             f64 x = Random_f64() * window_res_width;
                             f64 y = window_res_height * 0.7; // Slightly above center
@@ -1379,14 +1364,13 @@ Err$void dh_main(i32 argc, const char* argv[]) { // NOLINT
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
             // 8) Subtract from our target; clamp to zero if negative
-            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
+            if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;
         }
         return_ok({});
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Implementation Fireworks =======================================*/
@@ -1537,8 +1521,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         f->effect_base_color = Color_intoHsl(effect_base_color);
 
         return_ok(f);
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 void Firework_fini(Firework* f) {
@@ -1546,7 +1529,7 @@ void Firework_fini(Firework* f) {
 
     log_debug("Destroying firework(%p)\n", f);
 
-    if_some(f->rocket, rocket) {
+    if_some (f->rocket, rocket) {
         log_debug("Destroying rocket(%p)\n", rocket);
         mem_Allocator_destroy(f->allocator, anyPtr(rocket));
         log_debug("rocket destroyed\n");
@@ -1562,7 +1545,7 @@ void Firework_fini(Firework* f) {
 static bool Firework__deadsAllEffect(const Firework* f) {
     debug_assert_nonnull(f);
 
-    for_slice(f->effects.items, effect) {
+    for_slice (f->effects.items, effect) {
         if (Particle_isDead(effect)) { continue; }
         return false;
     }
@@ -1593,7 +1576,7 @@ Err$void Firework_update(Firework* f, f64 dt) { // NOLINT
     debug_assert_nonnull(f);
     unused(dt);
 
-    if_some(f->rocket, rocket) {
+    if_some (f->rocket, rocket) {
         Particle_update(rocket, dt);
         if (-0.2 <= rocket->speed[1]) {
             log_debug(
@@ -1629,7 +1612,7 @@ Err$void Firework_update(Firework* f, f64 dt) { // NOLINT
             log_debug("rocket destroyed\n");
         }
     }
-    for_slice(f->effects.items, effect) {
+    for_slice (f->effects.items, effect) {
         Particle_update(effect, dt);
     }
 
@@ -1640,11 +1623,11 @@ void Firework_render(const Firework* f, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(f);
     debug_assert_nonnull(c);
 
-    if_some(f->rocket, rocket) {
+    if_some (f->rocket, rocket) {
         debug_assert_fmt(!Particle_isDead(rocket), "rocket must be alive");
         Particle_render(rocket, c, dt);
     }
-    for_slice(f->effects.items, effect) {
+    for_slice (f->effects.items, effect) {
         Particle_render(effect, c, dt);
     }
 }
@@ -1665,7 +1648,7 @@ Err$State State_init(mem_Allocator allocator, u32 width, u32 height) {
 void State_fini(State* s) {
     debug_assert_nonnull(s);
 
-    for_slice(s->fireworks.items, firework) {
+    for_slice (s->fireworks.items, firework) {
         Firework_fini(firework);
     }
     ArrList_fini(&s->fireworks.base);
@@ -1688,7 +1671,7 @@ Err$void State_update(State* s, f64 dt) {
             but not in release mode.
          */
         // debug_only(
-        if_some(try(State_spawnFirework(s)), firework) {
+        if_some (try(State_spawnFirework(s)), firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
         }
@@ -1696,7 +1679,7 @@ Err$void State_update(State* s, f64 dt) {
     }
 
     /* Update all fireworks */
-    for_slice(s->fireworks.items, firework) {
+    for_slice (s->fireworks.items, firework) {
         try(Firework_update(firework, dt));
     }
 
@@ -1713,7 +1696,7 @@ Err$void State_update(State* s, f64 dt) {
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
-        if_some(maybe_firework, firework) {
+        if_some (maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
         }
@@ -1725,7 +1708,7 @@ Err$void State_update(State* s, f64 dt) {
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         });
-        if_some(maybe_firework, firework) {
+        if_some (maybe_firework, firework) {
             let rocket    = unwrap(firework->rocket);
             let mouse_pos = engine_Mouse_getPosition();
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
@@ -1742,7 +1725,7 @@ void State_render(const State* s, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(s);
     debug_assert_nonnull(c);
 
-    for_slice(s->fireworks.items, firework) {
+    for_slice (s->fireworks.items, firework) {
         Firework_render(firework, c, dt);
     }
 }

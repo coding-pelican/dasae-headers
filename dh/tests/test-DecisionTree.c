@@ -59,8 +59,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
+    defer_(log_fini());
     {
-        defer_(log_fini());
         // Configure logging behavior
         log_setLevel(log_Level_debug);
         log_showTimestamp(true);
@@ -75,8 +75,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Load dataset if a filename was provided, otherwise create a demo tree
     if (1 < args.len) {
-        log_info("Loading dataset from %s", deref(Sli_at(args, 1)->ptr));
-        var dataset = try_(Dataset_loadFromCSV(allocator, deref(Sli_at(args, 1)), true));
+        log_info("Loading dataset from %s", Sli_getAt(args, 1).ptr);
+        var dataset = try_(Dataset_loadFromCSV(allocator, Sli_getAt(args, 1), true));
         defer_(Dataset_destroy(&dataset));
 
         // Here normally build the tree from the dataset
@@ -379,9 +379,10 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
     log_debug("Found %u lines and %u features in CSV", line_count, actual_feature_count);
 
     // Initialize dataset
-    Dataset dataset;
-    dataset.n_samples  = line_count;
-    dataset.n_features = actual_feature_count;
+    Dataset dataset = {
+        .n_samples  = line_count,
+        .n_features = actual_feature_count
+    };
 
     // Allocate memory for features and labels
     typeAsg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$(usize, line_count) * actual_feature_count)));
@@ -411,11 +412,11 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
 
             if (col_idx < actual_feature_count) {
                 // Feature value
-                try_(ArrList_append(dataset.features.base, meta_refPtr(&value)));
+                try_(ArrList_append(dataset.features.base, meta_refPtr_mut(&value)));
             } else {
                 // Label (assumed to be the last column)
                 var label = as$(i32, value);
-                try_(ArrList_append(dataset.labels.base, meta_refPtr(&label)));
+                try_(ArrList_append(dataset.labels.base, meta_refPtr_mut(&label)));
             }
 
             token = strtok(null, ",");

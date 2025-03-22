@@ -68,9 +68,11 @@ extern "C" {
 #define pp_foreach(macro, name, ...) \
     IMPL_pp_foreach_(IMPL_pp_foreach_NARG(__VA_ARGS__), macro, name, __VA_ARGS__)
 
-// pp_literal_int(11,644,473,600u) => 11644473600u
-#define pp_literal_int(...) \
-    IMPL_pp_literal_int(__VA_ARGS__)
+// lit_num(11,644,473,600u) => 11644473600u
+#define lit_num(...) \
+    IMPL_lit_num(__VA_ARGS__)
+#define lit_num$(T, ...) \
+    IMPL_lit_num$(T, __VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -134,15 +136,17 @@ extern "C" {
 #define IMPL_pp_foreach_15(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_14(macro, name, __VA_ARGS__)
 #define IMPL_pp_foreach_16(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_15(macro, name, __VA_ARGS__)
 
-#define IMPL_pp_literal_int(...) \
-    pp_cat(IMPL_pp_literal_int_, pp_countArgs(__VA_ARGS__))(__VA_ARGS__)
+#define IMPL_lit_num(...) \
+    pp_cat(IMPL_lit_num_, pp_countArgs(__VA_ARGS__))(__VA_ARGS__)
 /* Handle different numbers of arguments */
-#define IMPL_pp_literal_int_1(_Num1)                                    _Num1
-#define IMPL_pp_literal_int_2(_Num1, _Num2)                             pp_cat(_Num1, _Num2)
-#define IMPL_pp_literal_int_3(_Num1, _Num2, _Num3)                      pp_cat3(_Num1, _Num2, _Num3)
-#define IMPL_pp_literal_int_4(_Num1, _Num2, _Num3, _Num4)               pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
-#define IMPL_pp_literal_int_5(_Num1, _Num2, _Num3, _Num4, _Num5)        pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
-#define IMPL_pp_literal_int_6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
+#define IMPL_lit_num_1(_Num1)                                    _Num1
+#define IMPL_lit_num_2(_Num1, _Num2)                             pp_cat(_Num1, _Num2)
+#define IMPL_lit_num_3(_Num1, _Num2, _Num3)                      pp_cat3(_Num1, _Num2, _Num3)
+#define IMPL_lit_num_4(_Num1, _Num2, _Num3, _Num4)               pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
+#define IMPL_lit_num_5(_Num1, _Num2, _Num3, _Num4, _Num5)        pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
+#define IMPL_lit_num_6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
+
+#define IMPL_lit_num$(T, ...) as$(T, lit_num(__VA_ARGS__))
 
 #if defined(__cplusplus)
 } /* extern "C" */

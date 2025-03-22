@@ -36,14 +36,14 @@ typedef union SliZ        SliZ;
 typedef union SliS_const SliS_const;
 typedef union SliS       SliS;
 
-typedef union Sli_const  Sli_const;
-typedef union Sli        Sli;
+typedef union Sli_const Sli_const;
+typedef union Sli       Sli;
 
 /* Slice ====================================================================*/
 
-#define Sli_const$(T)                 comp_type_anon__Sli_const$(T)
-#define Sli$(T)                       comp_type_anon__Sli$(T)
-#define Sli_asNamed$(T_Sli, var_anon) comp_op__Sli_asNamed$(pp_uniqTok(__anon), T_Sli, var_anon)
+#define Sli_const$(T)                  comp_type_anon__Sli_const$(T)
+#define Sli$(T)                        comp_type_anon__Sli$(T)
+#define Sli_anonCast$(T_Sli, var_anon) comp_op__Sli_anonCast$(pp_uniqTok(__anon), T_Sli, var_anon)
 
 #define use_Sli$(T)  comp_gen__use_Sli$(T)
 #define decl_Sli$(T) comp_gen__decl_Sli$(T)
@@ -94,9 +94,9 @@ typedef union Sli        Sli;
  * @brief Null-terminated slice (similar to C strings)
  * @tparam T Element type
  */
-#define SliZ_const$(T)                             comp_type_anon__SliZ_const$(T)
-#define SliZ$(T)                                   comp_type_anon__SliZ$(T)
-#define SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z) comp_op__SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z)
+#define SliZ_const$(T)                              comp_type_anon__SliZ_const$(T)
+#define SliZ$(T)                                    comp_type_anon__SliZ$(T)
+#define SliZ_anonCast$(T_NamedSliZ, var_anon_sli_z) comp_op__SliZ_anonCast$(T_NamedSliZ, var_anon_sli_z)
 
 #define SliZ_from(val_ptr...)              comp_op__SliZ_from(val_ptr)
 #define SliZ_from$(T_SliZ, val_ptr...)     comp_op__SliZ_from$(T_SliZ, val_ptr)
@@ -112,9 +112,9 @@ typedef union Sli        Sli;
  * @brief Sentinel-terminated slice (ends with a specific sentinel value)
  * @tparam T Element type
  */
-#define SliS_const$(T)                             comp_type_anon__SliS_const$(T)
-#define SliS$(T)                                   comp_type_anon__SliS$(T)
-#define SliS_asNamed$(T_NamedSliS, var_anon_sli_s) comp_op__SliS_asNamed$(T_NamedSliS, var_anon_sli_s)
+#define SliS_const$(T)                              comp_type_anon__SliS_const$(T)
+#define SliS$(T)                                    comp_type_anon__SliS$(T)
+#define SliS_anonCast$(T_NamedSliS, var_anon_sli_s) comp_op__SliS_anonCast$(T_NamedSliS, var_anon_sli_s)
 
 #define SliS_from(val_ptr, val_sentinel...)          comp_op__SliS_from(val_ptr, val_sentinel)
 #define SliS_from$(T_SliS, val_ptr, val_sentinel...) comp_op__SliS_from$(T_SliS, val_ptr, val_sentinel)
@@ -209,7 +209,7 @@ union __AssociationTypes_Sli {
         usize len;                 \
         Sli*  __base_type_hint[0]; \
     }
-#define comp_op__Sli_asNamed$(__anon, T_Sli, var_anon...) eval({                        \
+#define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({                       \
     const TypeOf(var_anon) __anon = var_anon;                                           \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
@@ -562,7 +562,7 @@ union __AssociationTypes_Sli {
         rawptr$(T) ptr;            \
         SliZ* __base_type_hint[0]; \
     }
-#define comp_op__SliZ_asNamed$(T_NamedSliZ, var_anon_sli_z)
+#define comp_op__SliZ_anonCast$(T_NamedSliZ, var_anon_sli_z)
 
 #define comp_op__SliZ_from(val_ptr...)                          { .ptr = ensureNonnull(val_ptr) }
 #define comp_op__SliZ_from$(T_SliZ, val_ptr...)                 ((T_SliZ)SliZ_from(val_ptr))
@@ -606,7 +606,7 @@ union __AssociationTypes_Sli {
         T     sentinel;            \
         SliS* __base_type_hint[0]; \
     }
-#define comp_op__SliS_asNamed$(T_NamedSliS, var_anon_sli_s)
+#define comp_op__SliS_anonCast$(T_NamedSliS, var_anon_sli_s)
 
 #define comp_op__SliS_from(val_ptr, val_sentinel...)            { .ptr = ensureNonnull(val_ptr), .sentinel = val_sentinel }
 #define comp_op__SliS_from$(T_SliS, val_ptr, val_sentinel...)   ((T_SliS)SliS_from(val_ptr, val_sentinel))

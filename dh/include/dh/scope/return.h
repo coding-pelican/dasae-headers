@@ -65,7 +65,7 @@ extern "C" {
 #define comp_syn__ext_unscoped                      \
             goto __returned_scope;                  \
         }                                           \
-        return ensureNonnull(__reserved_return)[0]; \
+        return (eval({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
     }
 /* #define comp_syn__ext_scope(T_ReservedReturn...)            \
     {                                                       \
@@ -120,7 +120,7 @@ extern "C" {
         __scope_defer.returns = true; \
         goto __deferred;              \
     }                                 \
-    return ensureNonnull(__reserved_return)[0]
+    return (eval({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
 
 #define SYN__scope_return(val_return...) \
     {                                    \
@@ -143,7 +143,7 @@ extern "C" {
     unused(0)
 
 #define SYN__returnReserved \
-    return (debug_assert_nonnull(__reserved_return), __reserved_return[0])
+    return (eval({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
 
 #define FUNC__getReservedReturn() \
     (__reserved_return)

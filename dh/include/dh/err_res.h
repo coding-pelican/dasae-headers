@@ -30,8 +30,8 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error result */
-#define Err$(T_Ok)                          comp_type_anon__Err$(T_Ok)
-#define Err_asNamed$(T_ErrRes, var_anon...) comp_op__ErrRes_asNamed$(T_ErrRes, var_anon)
+#define Err$(T_Ok)                           comp_type_anon__Err$(T_Ok)
+#define Err_anonCast$(T_ErrRes, var_anon...) comp_op__ErrRes_anonCast$(T_ErrRes, var_anon)
 
 #define use_Err$(T_Ok)  comp_gen__use_Err$(T_Ok)
 #define decl_Err$(T_Ok) comp_gen__decl_Err$(T_Ok)
@@ -97,7 +97,7 @@ typedef struct Err$Void {
             T_Ok ok;               \
         } data;                    \
     }
-#define comp_op__Err_asNamed$(T_ErrRes, var_anon...) eval({                                          \
+#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) eval({                                         \
     let __anon = var_anon;                                                                           \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes));                                 \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes));                               \

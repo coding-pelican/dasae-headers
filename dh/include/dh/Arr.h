@@ -22,9 +22,9 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define Arr_const$(N, T...)              comp_type_anon__Arr_const$(N, T)
-#define Arr$(N, T...)                    comp_type_anon__Arr$(N, T)
-#define Arr_asNamed$(T_Arr, var_anon...) comp_op__Arr_asNamed$(pp_uniqTok(anon), T_Arr, var_anon)
+#define Arr_const$(N, T...)               comp_type_anon__Arr_const$(N, T)
+#define Arr$(N, T...)                     comp_type_anon__Arr$(N, T)
+#define Arr_anonCast$(T_Arr, var_anon...) comp_op__Arr_anonCast$(pp_uniqTok(anon), T_Arr, var_anon)
 
 #define use_Arr$(N, T...)  comp_gen__use_Arr$(N, T)
 #define decl_Arr$(N, T...) comp_gen__decl_Arr$(N, T)
@@ -35,10 +35,10 @@ extern "C" {
 #define Arr_init(_Initial...)         comp_op__Arr_init(_Initial)
 #define Arr_init$(T_Arr, _Initial...) comp_op__Arr_init$(T_Arr, _Initial)
 
-#define Arr_len(var_self...)                          comp_op__Arr_len(pp_uniqTok(self), var_self)
-#define Arr_at(var_self, usize_index...)              comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-#define Arr_getAt(var_self, usize_index...)           comp_op__Arr_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-#define Arr_setAt(var_self, usize_index, val_item...) comp_op__Arr_setAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index, val_item)
+#define Arr_len(var_self...)                          comp_op__Arr_len(pp_uniqTok(self), /*Arr*/ var_self)
+#define Arr_at(var_self, usize_index...)              comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), /*Arr*/ var_self, /*usize*/ usize_index)
+#define Arr_getAt(var_self, usize_index...)           comp_op__Arr_getAt(pp_uniqTok(self), pp_uniqTok(index), /*Arr*/ var_self, /*usize*/ usize_index)
+#define Arr_setAt(var_self, usize_index, val_item...) comp_op__Arr_setAt(pp_uniqTok(self), pp_uniqTok(index), /*Arr*/ var_self, /*usize*/ usize_index, /*Elem*/ val_item)
 
 // /* Slice */
 // #define Arr_slice(var_self, usize_begin, usize_end...) comp_op__Arr_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), var_self, usize_begin, usize_end)
@@ -61,7 +61,7 @@ extern "C" {
     struct {                          \
         T items[N];                   \
     }
-#define comp_op__Arr_asNamed$(__anon, T_Arr, var_anon...) eval({                             \
+#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
     let __anon = &var_anon;                                                                  \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                           \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                         \

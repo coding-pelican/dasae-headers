@@ -31,8 +31,6 @@ config_ErrSet(mem_Allocator_Err, OutOfMemory);
 
 /*========== Allocator Interface ============================================*/
 
-#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
-
 /// Allocator vtable
 typedef struct mem_Allocator_VT {
     fn_((*alloc)(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
@@ -60,6 +58,8 @@ extern fn_(mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usiz
 extern fn_(mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
 /// Default VTable functions for no-op fallbacks
 extern fn_(mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
+
+#if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 
 /*========== Core Allocator Functions =======================================*/
 
@@ -97,26 +97,6 @@ extern fn_(mem_Allocator_dupe(mem_Allocator self, meta_Sli src), must_check mem_
 extern fn_(mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), must_check mem_Allocator_Err$meta_Sli);
 
 #else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-
-typedef struct mem_Allocator_VT {
-    fn_((*alloc)(anyptr ctx, usize len, u32 align, SrcLoc src_loc), Opt$Ptr$u8);
-    fn_((*resize)(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc), bool);
-    fn_((*remap)(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc), Opt$Ptr$u8);
-    fn_((*free)(anyptr ctx, Sli$u8 buf, u32 buf_align, SrcLoc src_loc), void);
-} mem_Allocator_VT;
-
-typedef struct mem_Allocator {
-    anyptr                  ptr;
-    const mem_Allocator_VT* vt;
-} mem_Allocator;
-use_Opt$(mem_Allocator);
-use_ErrSet$(mem_Allocator_Err, meta_Ptr);
-use_ErrSet$(mem_Allocator_Err, meta_Sli);
-
-extern fn_(mem_Allocator_VT_noAlloc(anyptr ctx, usize len, u32 align, SrcLoc src_loc), Opt$Ptr$u8);
-extern fn_(mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc), bool);
-extern fn_(mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc), Opt$Ptr$u8);
-extern fn_(mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align, SrcLoc src_loc), void);
 
 extern fn_(mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc src_loc), Opt$Ptr$u8);
 extern fn_(mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc), bool);
@@ -170,8 +150,8 @@ extern fn_(mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc sr
 #define mem_Allocator_realloc_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_realloc_debug(_self, _old_mem, _new_len, _src_loc)
 #define mem_Allocator_free_callDebug(_self, _mem, _src_loc)                  mem_Allocator_free_debug(_self, _mem, _src_loc)
 
-#define mem_Allocator_dupe_callDebug(_self, _src, _src_loc)  mem_Allocator_dupe_callDebug(_self, _src, _src_loc)
-#define mem_Allocator_dupeZ_callDebug(_self, _src, _src_loc) mem_Allocator_dupeZ_callDebug(_self, _src, _src_loc)
+#define mem_Allocator_dupe_callDebug(_self, _src, _src_loc)  mem_Allocator_dupe_debug(_self, _src, _src_loc)
+#define mem_Allocator_dupeZ_callDebug(_self, _src, _src_loc) mem_Allocator_dupeZ_debug(_self, _src, _src_loc)
 
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
 

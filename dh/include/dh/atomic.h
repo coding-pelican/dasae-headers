@@ -70,7 +70,7 @@ typedef enum atomic_MemOrd {
     typedef __attribute__((aligned(sizeOf$(T)))) struct pp_join($, atomic_Value, T) { \
         volatile T raw;                                                               \
     } pp_join($, atomic_Value, T)
-#define atomic_Value_asNamed$(TNamedValue, var_unnamed_value) eval({                                  \
+#define atomic_Value_anonCast$(TNamedValue, var_unnamed_value) eval({                                 \
     let _unnamed_value = var_unnamed_value;                                                           \
     claim_assert_static(sizeOf(TypeOf(_unnamed_value)) == sizeOf(TNamedValue));                       \
     claim_assert_static(alignOf(TypeOf(_unnamed_value)) == alignOf(TNamedValue));                     \
@@ -96,7 +96,7 @@ typedef enum atomic_MemOrd {
 #define atomic_load$(T, _ptr, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_load_n((_ptr), (val_order)))
 #define atomic_load(var_self, val_order) eval({                             \
-    let         __self = &(var_self);                                       \
+    let __self = &(var_self);                                               \
     eval_return atomic_load$(TypeOf(__self->raw), &__self->raw, val_order); \
 })
 
@@ -106,7 +106,7 @@ typedef enum atomic_MemOrd {
 #define atomic_store$(T, _ptr, val_raw, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_store_n((_ptr), (val_raw), (val_order)))
 #define atomic_store(var_self, val_raw, val_order) eval({                             \
-    let         __self = &(var_self);                                                 \
+    let __self = &(var_self);                                                         \
     eval_return atomic_store$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
 })
 
@@ -116,7 +116,7 @@ typedef enum atomic_MemOrd {
 #define atomic_swap$(T, _ptr, val_raw, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_exchange_n((_ptr), (val_raw), (val_order)))
 #define atomic_swap(var_self, val_raw, val_order) eval({                             \
-    let         __self = &(var_self);                                                \
+    let __self = &(var_self);                                                        \
     eval_return atomic_swap$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
 })
 

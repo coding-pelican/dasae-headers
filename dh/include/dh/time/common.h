@@ -34,11 +34,11 @@ typedef struct time_SysTime time_SysTime;
 decl_Opt$(time_SysTime);
 
 /* Constants */
-static const u32 time_nanos_per_sec   = pp_literal_int(1, 000, 000, 000u);
-static const u32 time_nanos_per_milli = pp_literal_int(1, 000, 000);
-static const u32 time_nanos_per_micro = pp_literal_int(1, 000u);
-static const u32 time_millis_per_sec  = pp_literal_int(1, 000u);
-static const u32 time_micros_per_sec  = pp_literal_int(1, 000, 000u);
+static const u32 time_nanos_per_sec   = lit_num(1, 000, 000, 000u);
+static const u32 time_nanos_per_milli = lit_num(1, 000, 000);
+static const u32 time_nanos_per_micro = lit_num(1, 000u);
+static const u32 time_millis_per_sec  = lit_num(1, 000u);
+static const u32 time_micros_per_sec  = lit_num(1, 000, 000u);
 
 static const u64 time_secs_per_min  = 60ull;
 static const u64 time_mins_per_hour = 60ull;

@@ -22,8 +22,8 @@ use_Opt$(ArrList);
 use_Err$(ArrList);
 use_ErrSet$(mem_Allocator_Err, ArrList);
 
-#define ArrList$(T)                              comp_type_anon__ArrList$(T)
-#define ArrList_asNamed$(T_ArrList, var_anon...) comp_op__ArrList_asNamed$(pp_uniqTok(anon), T_ArrList, var_anon)
+#define ArrList$(T)                               comp_type_anon__ArrList$(T)
+#define ArrList_anonCast$(T_ArrList, var_anon...) comp_op__ArrList_anonCast$(pp_uniqTok(anon), T_ArrList, var_anon)
 
 #define use_ArrList$(T)  comp_gen__use_ArrList$(T)
 #define decl_ArrList$(T) comp_gen__decl_ArrList$(T)
@@ -104,7 +104,7 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
             mem_Allocator allocator; \
         };                           \
     }
-#define comp_op__ArrList_asNamed$(__anon, T_ArrList, var_anon...) eval({                                 \
+#define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) eval({                                \
     let __anon = &var_anon;                                                                              \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList));                                   \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList));                                 \

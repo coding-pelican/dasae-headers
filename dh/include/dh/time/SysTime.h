@@ -27,9 +27,9 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-static const u64 time_SysTime_nanos_per_sec           = pp_literal_int(1, 000, 000, 000ull); // 1ns intervals per second
+static const u64 time_SysTime_nanos_per_sec           = lit_num(1, 000, 000, 000ull);        // 1ns intervals per second
 static const u64 time_SysTime_intervals_per_sec       = time_SysTime_nanos_per_sec / 100ull; // 100ns intervals per second
-static const u64 time_SysTime_intervals_to_unix_epoch = pp_literal_int(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec;
+static const u64 time_SysTime_intervals_to_unix_epoch = lit_num(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec;
 
 /*========== Structures =====================================================*/
 

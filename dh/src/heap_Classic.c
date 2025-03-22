@@ -26,8 +26,8 @@ fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
 /*========== Allocator Interface Implementation =============================*/
 
 static fn_ext_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
-    unused(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
+    unused(ctx);
 
     // Allocate aligned memory
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
@@ -62,10 +62,11 @@ static fn_ext_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Pt
 } ext_unscoped;
 
 static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
-    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx, buf_align);
 
     // Get current allocation size
     let ptr = buf.ptr;
@@ -89,9 +90,10 @@ static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_
 }
 
 static fn_ext_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
-    unused(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx);
 
     // If the buffer is null, treat it as a malloc.
     if (buf.ptr == null) {
@@ -148,10 +150,11 @@ static fn_ext_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, us
 } ext_unscoped;
 
 static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
-    unused(ctx, buf_align);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+
+    unused(ctx, buf_align);
 
     var raw_ptr = as$(anyptr, buf.ptr);
     if (raw_ptr == null) { return; }

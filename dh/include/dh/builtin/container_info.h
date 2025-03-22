@@ -160,7 +160,7 @@ extern "C" {
 })
 
 #define fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-    isSameType(TypeOf(pp_join(_, T_FieldNamed, asNamed$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field))
+    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
