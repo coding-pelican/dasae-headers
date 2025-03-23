@@ -60,6 +60,7 @@
         "-DCOMP",
         "-Wall",
         "-Wextra",
+        "-Wdocumentation",
         "-g",
         "-O0",
         "-funsigned-char",

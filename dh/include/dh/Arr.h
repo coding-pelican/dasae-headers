@@ -38,36 +38,63 @@ var typed2       = Arr_anonCast$(Arr(3, i32), anon2);    // Type conversion
 
 /* API Reference List =======================================================*/
 
-/* Type Creation */
-#define Arr_const(N, T) // Define constant array type with N elements of type T
-#define Arr(N, T)       // Define mutable array type with N elements of type T
+/* Type Definitions */
+/// Fixed-size array type
+typedef struct Arr$N$T {
+    T items[N]; ///< Array elements
+} Arr$N$T;
 
-#define use_Arr(N, T)  // Declare and implement array type in one step
-#define decl_Arr(N, T) // Declare array type without implementation
-#define impl_Arr(N, T) // Implement previously declared array type
+/* Type Tokens */
+/// Create a constant array type with N elements of type T
+#define Arr_const(N, T) ...
+/// Create a mutable array type with N elements of type T
+#define Arr(N, T)       ...
 
-#define Arr_const$(N, T)          // Create anonymous constant array type
-#define Arr$(N, T)                // Create anonymous mutable array type
-#define Arr_anonCast$(T_Arr, var) // Convert anonymous array to specific type
+/* Type Generations */
+/// Declare and implement array type in one step
+#define use_Arr(N, T)  ...
+/// Declare array type without implementation
+#define decl_Arr(N, T) ...
+/// Implement previously declared array type
+#define impl_Arr(N, T) ...
+
+/* Anonymous Types */
+/// Create anonymous constant array type
+#define Arr_const$(N, T)                  ...
+/// Create anonymous mutable array type
+#define Arr$(N, T)                        ...
+/// Convert anonymous array to specific type
+#define Arr_anonCast$(T_Arr, var_anon...) ...
 
 /* Initialization */
-#define Arr_zero()               // Initialize array with zeros
-#define Arr_zero$(T_Arr)         // Initialize specific array type with zeros
-#define Arr_init({... })         // Initialize array with specified values
-#define Arr_init$(T_Arr, {... }) // Initialize specific array type with values
+/// Initialize array with zeros
+#define Arr_zero()                    ...
+/// Initialize specific array type with zeros
+#define Arr_zero$(T_Arr)              ...
+/// Initialize array with specified values
+#define Arr_init(_Initial...)         ...
+/// Initialize specific array type with values
+#define Arr_init$(T_Arr, _Initial...) ...
 
 /* Operations */
-#define Arr_len(arr)             // Get number of elements in array
-#define Arr_at(arr, idx)         // Get pointer to element at index (bounds-checked)
-#define Arr_getAt(arr, idx)      // Get value of element at index (bounds-checked)
-#define Arr_setAt(arr, idx, val) // Set value at index (bounds-checked)
+/// Get number of elements in array
+#define Arr_len(var_self...)                          ...
+/// Get pointer to element at index (bounds-checked)
+#define Arr_at(var_self, usize_index...)              ...
+/// Get value of element at index (bounds-checked)
+#define Arr_getAt(var_self, usize_index...)           ...
+/// Set value at index (bounds-checked)
+#define Arr_setAt(var_self, usize_index, val_item...) ...
 
 /* Iteration */
-#define for_array(arr, capture_item)                      // Forward iteration over elements
-#define for_array_indexed(arr, capture_item, capture_idx) // Forward iteration with index
-
-#define for_array_rev(arr, capture_item)                      // Reverse iteration over elements
-#define for_array_rev_indexed(arr, capture_item, capture_idx) // Reverse iteration with index
+/// Forward iteration over elements
+#define for_array(var_arr, _Iter_item)                          ...
+/// Forward iteration with index
+#define for_array_indexed(var_arr, _Iter_item, _Iter_index)     ...
+/// Reverse iteration over elements
+#define for_array_rev(var_arr, _Iter_item)                      ...
+/// Reverse iteration with index
+#define for_array_rev_indexed(var_arr, _Iter_item, _Iter_index) ...
 
 /* Operations Examples ======================================================*/
 
@@ -106,7 +133,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Arr_const(N, T...)                                                   \
+#define Arr_const(N, T)                                                      \
     /**                                                                      \
      * @brief Creates a constant array type                                  \
      * @param N Size of the array                                            \
@@ -116,19 +143,18 @@ extern "C" {
      *     Arr_const(3, i32) myConstArr;  // const i32 array with 3 elements \
      */                                                                      \
     comp_type_token__Arr_const(N, T)
-
-#define Arr(N, T...)                                        \
+#define Arr(N, T)                                           \
     /**                                                     \
      * @brief Creates a mutable array type                  \
      * @param N Size of the array                           \
      * @param T Element type of the array                   \
-     * @return Array type token                             \
+     * @return Mutable Array type token                     \
      * @example                                             \
      *     Arr(5, f32) myArr;  // f32 array with 5 elements \
      */                                                     \
     comp_type_token__Arr(N, T)
 
-#define use_Arr(N, T...)                                                \
+#define use_Arr(N, T)                                                   \
     /**                                                                 \
      * @brief Declares and implements an array type                     \
      * @param N Size of the array                                       \
@@ -137,8 +163,7 @@ extern "C" {
      *     use_Arr(4, u8);  // Declares and implements u8[4] array type \
      */                                                                 \
     comp_type_gen__use_Arr(N, T)
-
-#define decl_Arr(N, T...)                                   \
+#define decl_Arr(N, T)                                      \
     /**                                                     \
      * @brief Declares an array type without implementation \
      * @param N Size of the array                           \
@@ -147,8 +172,7 @@ extern "C" {
      *     decl_Arr(3, i32);  // Declares i32[3] array type \
      */                                                     \
     comp_type_gen__decl_Arr(N, T)
-
-#define impl_Arr(N, T...)                                     \
+#define impl_Arr(N, T)                                        \
     /**                                                       \
      * @brief Implements a previously declared array type     \
      * @param N Size of the array                             \
@@ -158,35 +182,35 @@ extern "C" {
      */                                                       \
     comp_type_gen__impl_Arr(N, T)
 
-#define Arr_const$(N, T...)                                                           \
+#define Arr_const$(N, T)                                                              \
     /**                                                                               \
      * @brief Creates an anonymous constant array type                                \
      * @param N Size of the array                                                     \
      * @param T Element type of the array                                             \
+     * @return Anonymous constant array type token                                    \
      * @example                                                                       \
      *     typedef Arr_const$(3, i32) MyConstArrType;  // Anonymous const i32[3] type \
      */                                                                               \
     comp_type_anon__Arr_const$(N, T)
-
-#define Arr$(N, T...)                                                \
+#define Arr$(N, T)                                                   \
     /**                                                              \
      * @brief Creates an anonymous array type                        \
      * @param N Size of the array                                    \
      * @param T Element type of the array                            \
+     * @return Anonymous array type token                            \
      * @example                                                      \
      *     typedef Arr$(3, i32) MyArrType;  // Anonymous i32[3] type \
      */                                                              \
     comp_type_anon__Arr$(N, T)
-
 #define Arr_anonCast$(T_Arr, var_anon...)                                                          \
     /**                                                                                            \
      * @brief Casts an anonymous array to a specific array type                                    \
      * @param T_Arr Target array type                                                              \
      * @param var_anon Anonymous array variable                                                    \
+     * @return Cast array of specified type                                                        \
      * @details Performs type safety checks and converts the anonymous array to the specified type \
      * @example                                                                                    \
-     *     Arr$(3, i32) anon = {{1, 2, 3}};                                                        \
-     *     Arr(3, i32) typed = Arr_anonCast$(Arr(3, i32), anon);                                   \
+     *     Arr$3$i32 typed = Arr_anonCast$(Arr$3$i32, anon);                                       \
      */                                                                                            \
     comp_op__Arr_anonCast$(pp_uniqTok(anon), T_Arr, var_anon)
 
@@ -198,7 +222,6 @@ extern "C" {
      *     Arr(3, i32) arr = Arr_zero();  // {0, 0, 0} \
      */                                                \
     comp_op__Arr_zero()
-
 #define Arr_zero$(T_Arr)                                           \
     /**                                                            \
      * @brief Initializes specified array type with zeros          \
@@ -218,7 +241,6 @@ extern "C" {
      *     Arr(3, i32) arr = Arr_init({1, 2, 3});     \
      */                                               \
     comp_op__Arr_init(_Initial)
-
 #define Arr_init$(T_Arr, _Initial...)                           \
     /**                                                         \
      * @brief Initializes specified array type with values      \
@@ -240,7 +262,6 @@ extern "C" {
      *     usize len = Arr_len(arr);  // 3        \
      */                                           \
     comp_op__Arr_len(pp_uniqTok(self), var_self)
-
 #define Arr_at(var_self, usize_index...)                                                             \
     /**                                                                                              \
      * @brief Returns a reference to an element at the specified index                               \
@@ -253,7 +274,6 @@ extern "C" {
      *     i32* pItem = Arr_at(arr, 1);  // &arr.items[1]                                            \
      */                                                                                              \
     comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-
 #define Arr_getAt(var_self, usize_index...)                                                          \
     /**                                                                                              \
      * @brief Returns the value of an element at the specified index                                 \
@@ -266,7 +286,6 @@ extern "C" {
      *     i32 item = Arr_getAt(arr, 1);  // 2                                                       \
      */                                                                                              \
     comp_op__Arr_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-
 #define Arr_setAt(var_self, usize_index, val_item...)                                                \
     /**                                                                                              \
      * @brief Sets the value of an element at the specified index                                    \
@@ -288,12 +307,11 @@ extern "C" {
      * @param _Iter_item Iterator variable for each element \
      * @example                                             \
      *     Arr(3, i32) arr = Arr_init({1, 2, 3});           \
-     *     for_array(arr, item) {                           \
+     *     for_array (arr, item) {                          \
      *         printf("%d ", *item);  // "1 2 3"            \
      *     }                                                \
      */                                                     \
     comp_syn__for_array(pp_uniqTok(arr), pp_uniqTok(i), var_arr, _Iter_item)
-
 #define for_array_indexed(var_arr, _Iter_item, _Iter_index)             \
     /**                                                                 \
      * @brief Iterates through array elements with index                \
@@ -302,12 +320,11 @@ extern "C" {
      * @param _Iter_index Index variable                                \
      * @example                                                         \
      *     Arr(3, i32) arr = Arr_init({1, 2, 3});                       \
-     *     for_array_indexed(arr, item, idx) {                          \
+     *     for_array_indexed (arr, item, idx) {                         \
      *         printf("[%zu]=%d ", idx, *item);  // "[0]=1 [1]=2 [2]=3" \
      *     }                                                            \
      */                                                                 \
     comp_syn__for_array_indexed(pp_uniqTok(arr), var_arr, _Iter_item, _Iter_index)
-
 #define for_array_rev(var_arr, _Iter_item)                     \
     /**                                                        \
      * @brief Iterates through array elements in reverse order \
@@ -315,12 +332,11 @@ extern "C" {
      * @param _Iter_item Iterator variable for each element    \
      * @example                                                \
      *     Arr(3, i32) arr = Arr_init({1, 2, 3});              \
-     *     for_array_rev(arr, item) {                          \
+     *     for_array_rev (arr, item) {                         \
      *         printf("%d ", *item);  // "3 2 1"               \
      *     }                                                   \
      */                                                        \
     comp_syn__for_array_rev(pp_uniqTok(arr), pp_uniqTok(i), var_arr, _Iter_item)
-
 #define for_array_rev_indexed(var_arr, _Iter_item, _Iter_index)           \
     /**                                                                   \
      * @brief Iterates through array elements in reverse order with index \
@@ -329,7 +345,7 @@ extern "C" {
      * @param _Iter_index Index variable                                  \
      * @example                                                           \
      *     Arr(3, i32) arr = Arr_init({1, 2, 3});                         \
-     *     for_array_rev_indexed(arr, item, idx) {                        \
+     *     for_array_rev_indexed (arr, item, idx) {                       \
      *         printf("[%zu]=%d ", idx, *item);  // "[2]=3 [1]=2 [0]=1"   \
      *     }                                                              \
      */                                                                   \
@@ -337,33 +353,33 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_token__Arr_const(N, T...) pp_join3($, Arr_const, N, T)
-#define comp_type_token__Arr(N, T...)       pp_join3($, Arr, N, T)
+#define comp_type_token__Arr_const(N, T) pp_join3($, Arr_const, N, T)
+#define comp_type_token__Arr(N, T)       pp_join3($, Arr, N, T)
 
-#define comp_type_gen__use_Arr(N, T...) \
-    decl_Arr(N, T);                     \
+#define comp_type_gen__use_Arr(N, T) \
+    decl_Arr(N, T);                  \
     impl_Arr(N, T)
-#define comp_type_gen__decl_Arr(N, T...)            \
+#define comp_type_gen__decl_Arr(N, T)               \
     typedef struct Arr_const(N, T) Arr_const(N, T); \
     typedef union Arr(N, T) Arr(N, T)
-#define comp_type_gen__impl_Arr(N, T...) \
-    struct Arr_const(N, T) {             \
-        const T items[N];                \
-    };                                   \
-    union Arr(N, T) {                    \
-        struct {                         \
-            T items[N];                  \
-        };                               \
-        Arr(N, T) as_const;              \
+#define comp_type_gen__impl_Arr(N, T) \
+    struct Arr_const(N, T) {          \
+        const T items[N];             \
+    };                                \
+    union Arr(N, T) {                 \
+        struct {                      \
+            T items[N];               \
+        };                            \
+        Arr(N, T) as_const;           \
     }
 
-#define comp_type_anon__Arr_const$(N, T...) \
-    struct {                                \
-        const T items[N];                   \
+#define comp_type_anon__Arr_const$(N, T) \
+    struct {                             \
+        const T items[N];                \
     }
-#define comp_type_anon__Arr$(N, T...) \
-    struct {                          \
-        T items[N];                   \
+#define comp_type_anon__Arr$(N, T) \
+    struct {                       \
+        T items[N];                \
     }
 #define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
     let __anon = &var_anon;                                                                  \

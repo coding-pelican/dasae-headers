@@ -40,8 +40,8 @@
 #define render_target_fps (render_target_fps__31_25)
 #define render_target_spf (1.0 / render_target_fps)
 
-use_ArrList$(Vec2f);
-use_ArrList$(Color);
+use_ArrList(Vec2f);
+use_ArrList(Color);
 
 #define update_target_fps (480.0f)
 #define update_target_spf (1.0f / update_target_fps)

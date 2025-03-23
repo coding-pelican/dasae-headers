@@ -60,7 +60,7 @@ pub fn_(dh_main(void), must_check Err$void);
 use_Sli$(Str_const);
 pub fn_(dh_main(Sli$Str_const args), void);
 #else  /* !main_no_args && !main_no_returns_err */
-use_Sli$(Str_const);
+use_Sli(Str_const);
 pub fn_(dh_main(Sli$Str_const args), must_check Err$void);
 #endif /* !main_no_args && !main_no_returns_err */
 

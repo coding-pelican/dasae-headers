@@ -19,7 +19,7 @@ enum {
     engine_MouseButton_count = 5
 };
 typedef i8 engine_MouseButton;
-use_Sli$(engine_MouseButton);
+use_Sli(engine_MouseButton);
 use_Opt$(engine_MouseButton);
 use_Err$(engine_MouseButton);
 

@@ -60,7 +60,7 @@ void ArrList_fini(ArrList* self) {
 }
 
 
-mem_Allocator_Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
+mem_Allocator_Err$meta_Sli ArrList_toOwnedSli(ArrList* self) {
     reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
@@ -89,7 +89,7 @@ mem_Allocator_Err$meta_Sli ArrList_toOwnedSlice(ArrList* self) {
     return_ok(new_mem);
 }
 
-ArrList ArrList_fromOwnedSlice(mem_Allocator allocator, meta_Sli slice) {
+ArrList ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice) {
     return (ArrList){
         .items     = slice,
         .cap       = slice.len,
@@ -235,7 +235,7 @@ mem_Allocator_Err$void ArrList_append(ArrList* self, meta_Ptr item) {
     return_void();
 }
 
-mem_Allocator_Err$void ArrList_appendSlice(ArrList* self, meta_Sli items) {
+mem_Allocator_Err$void ArrList_appendSli(ArrList* self, meta_Sli items) {
     reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
@@ -292,7 +292,7 @@ mem_Allocator_Err$void ArrList_prepend(ArrList* self, meta_Ptr item) {
     return_void();
 }
 
-mem_Allocator_Err$void ArrList_prependSlice(ArrList* self, meta_Sli items) {
+mem_Allocator_Err$void ArrList_prependSli(ArrList* self, meta_Sli items) {
     reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
 
@@ -359,15 +359,15 @@ meta_Ptr ArrList_addBackOneAssumeCap(ArrList* self) {
     };
 }
 
-mem_Allocator_Err$meta_Sli ArrList_addBackManyAsSlice(ArrList* self, usize n) {
+mem_Allocator_Err$meta_Sli ArrList_addBackManyAsSli(ArrList* self, usize n) {
     reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
-    return_ok(ArrList_addBackManyAsSliceAssumeCap(self, n));
+    return_ok(ArrList_addBackManyAsSliAssumeCap(self, n));
 }
 
-meta_Sli ArrList_addBackManyAsSliceAssumeCap(ArrList* self, usize n) {
+meta_Sli ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len + n <= self->cap);
 
@@ -407,15 +407,15 @@ meta_Ptr ArrList_addFrontOneAssumeCap(ArrList* self) {
     };
 }
 
-mem_Allocator_Err$meta_Sli ArrList_addFrontManyAsSlice(ArrList* self, usize n) {
+mem_Allocator_Err$meta_Sli ArrList_addFrontManyAsSli(ArrList* self, usize n) {
     reserveReturn(mem_Allocator_Err$meta_Sli);
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
-    return_ok(ArrList_addFrontManyAsSliceAssumeCap(self, n));
+    return_ok(ArrList_addFrontManyAsSliAssumeCap(self, n));
 }
 
-meta_Sli ArrList_addFrontManyAsSliceAssumeCap(ArrList* self, usize n) {
+meta_Sli ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len + n <= self->cap);
 
@@ -460,7 +460,7 @@ mem_Allocator_Err$void ArrList_insert(ArrList* self, usize index, meta_Ptr item)
     return_void();
 }
 
-mem_Allocator_Err$void ArrList_insertSlice(ArrList* self, usize index, meta_Sli items) {
+mem_Allocator_Err$void ArrList_insertSli(ArrList* self, usize index, meta_Sli items) {
     reserveReturn(mem_Allocator_Err$void);
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);

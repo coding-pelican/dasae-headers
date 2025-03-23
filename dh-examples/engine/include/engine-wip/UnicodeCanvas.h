@@ -8,7 +8,7 @@ typedef struct engine_UnicodeCanvas {
     engine_ColorCanvas color_canvas;
     Grid$u8            unicode_buffer;
 } engine_UnicodeCanvas;
-use_Sli$(engine_UnicodeCanvas);
+use_Sli(engine_UnicodeCanvas);
 use_Opt$(engine_UnicodeCanvas);
 use_Err$(engine_UnicodeCanvas);
 

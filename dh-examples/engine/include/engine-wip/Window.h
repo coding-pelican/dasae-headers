@@ -48,7 +48,7 @@ struct engine_Window {
     Opt$engine_Backend backend;
     mem_Allocator      allocator;
 };
-use_Sli$(engine_Window);
+use_Sli(engine_Window);
 use_Opt$(engine_Window);
 use_Err$(engine_Window);
 

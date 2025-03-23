@@ -17,7 +17,7 @@ typedef struct engine_Canvas {
     Color             default_color;
     mem_Allocator     allocator;
 } engine_Canvas;
-use_Sli$(engine_Canvas);
+use_Sli(engine_Canvas);
 use_Opt$(engine_Canvas);
 use_Err$(engine_Canvas);
 
@@ -55,7 +55,7 @@ extern fn_(engine_Canvas_blit(engine_Canvas* dst, const engine_Canvas* src, i32 
 extern fn_(engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* src, i32 x, i32 y, f32 scale), void);
 
 typedef engine_Canvas engine_ColorCanvas;
-use_Ptr$(engine_ColorCanvas);
+use_Ptr(engine_ColorCanvas);
 use_Err$(engine_ColorCanvas);
 
 typedef struct engine_CanvasView engine_CanvasView;

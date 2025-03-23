@@ -11,7 +11,7 @@ enum {
     engine_KeyButtonStates_released = 1 << 2  /**< Key/Button was just released this frame */
 };
 typedef u8 engine_KeyButtonStates;
-use_Sli$(engine_KeyButtonStates);
+use_Sli(engine_KeyButtonStates);
 use_Opt$(engine_KeyButtonStates);
 use_Err$(engine_KeyButtonStates);
 

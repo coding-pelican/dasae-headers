@@ -41,13 +41,16 @@ typedef union Sli       Sli;
 
 /* Slice ====================================================================*/
 
-#define Sli_const$(T)                  comp_type_anon__Sli_const$(T)
-#define Sli$(T)                        comp_type_anon__Sli$(T)
-#define Sli_anonCast$(T_Sli, var_anon) comp_op__Sli_anonCast$(pp_uniqTok(__anon), T_Sli, var_anon)
+#define Sli_const(T) comp_type_token__Sli_const(T)
+#define Sli(T)       comp_type_token__Sli(T)
 
-#define use_Sli$(T)  comp_gen__use_Sli$(T)
-#define decl_Sli$(T) comp_gen__decl_Sli$(T)
-#define impl_Sli$(T) comp_gen__impl_Sli$(T)
+#define use_Sli(T)  comp_type_gen__use_Sli(T)
+#define decl_Sli(T) comp_type_gen__decl_Sli(T)
+#define impl_Sli(T) comp_type_gen__impl_Sli(T)
+
+#define Sli_const$(T)                     comp_type_anon__Sli_const$(T)
+#define Sli$(T)                           comp_type_anon__Sli$(T)
+#define Sli_anonCast$(T_Sli, var_anon...) comp_op__Sli_anonCast$(pp_uniqTok(__anon), T_Sli, var_anon)
 
 /* Core Slice Operations */
 
@@ -197,6 +200,11 @@ union __AssociationTypes_Sli {
     __AssociationTypes_Sli_const as_const;
 };
 
+#define comp_type_token__Sli_const(T) \
+    pp_join($, Sli_const, T)
+#define comp_type_token__Sli(T) \
+    pp_join($, Sli, T)
+
 #define comp_type_anon__Sli_const$(T)   \
     struct {                            \
         rawptr_const$(T) ptr;           \
@@ -220,17 +228,17 @@ union __AssociationTypes_Sli {
     eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
 })
 
-#define comp_gen__use_Sli$(T) \
-    decl_Sli$(T);             \
-    impl_Sli$(T)
-#define comp_gen__decl_Sli$(T)                                          \
+#define comp_type_gen__use_Sli(T) \
+    decl_Sli(T);                  \
+    impl_Sli(T)
+#define comp_type_gen__decl_Sli(T)                                      \
     typedef struct pp_join($, SliZ_const, T) pp_join($, SliZ_const, T); \
     typedef union pp_join($, SliZ, T) pp_join($, SliZ, T);              \
     typedef union pp_join($, SliS_const, T) pp_join($, SliS_const, T);  \
     typedef union pp_join($, SliS, T) pp_join($, SliS, T);              \
     typedef union pp_join($, Sli_const, T) pp_join($, Sli_const, T);    \
     typedef union pp_join($, Sli, T) pp_join($, Sli, T)
-#define comp_gen__impl_Sli$(T)                                     \
+#define comp_type_gen__impl_Sli(T)                                 \
     typedef struct pp_join($, __AssociationTypes_Sli_const, T)     \
         pp_join($, __AssociationTypes_Sli_const, T);               \
     typedef union pp_join($, __AssociationTypes_Sli, T)            \
@@ -648,8 +656,8 @@ union __AssociationTypes_Sli {
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-use_Sli$(u8);
-use_Sli$(i32);
+use_Sli(u8);
+use_Sli(i32);
 
 void slice_example(void) {
     // Create a slice from an array
