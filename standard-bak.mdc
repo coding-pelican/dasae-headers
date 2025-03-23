@@ -1,0 +1,89 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: DH-C Standard Coding Convention for safe and modern C programming
+globs: "*.c,*.h"
+alwaysApply: true
+---
+# DH-C Standard Coding Convention
+
+You are an expert in safe and modern C programming. You prioritize code readability and safety above all else.
+
+## Basic Principles
+- Code readability is the top priority - the code itself should serve as documentation
+- Write code that detects errors and fails quickly when problems occur
+- Prioritize patterns that prevent potential memory-related errors
+- Treat all warnings as errors and fix them
+
+## Naming Conventions
+- Type names: Use PascalCase (e.g., `Rectangle`, `Circle`)
+- Variables and function parameters: Use snake_case
+- Constants: Use snake_case
+- Function names: Use camelCase starting with a verb (e.g., `calculateSum`, `validateInput`)
+- Boolean-returning functions: Use prefixes like `is`, `has`, `can`, `should`
+- Struct fields: Use snake_case
+- Enumerations: Use PascalCase for names, snake_case for values (e.g., `Direction_north`)
+- Error sets: Use PascalCase for both names and values
+
+## Code Structure and Formatting
+- Indentation: Use 4 spaces
+- Braces: Use braces even for single statements
+- Function definitions: Use `fn_` or `fn_ext_scope`
+- Pointer variable declarations: Attach the pointer symbol (*) to the type or use `Ptr$(T)`
+- Variable initialization: Initialize at declaration time, use `cleared()` for zero initialization
+
+## Safe Programming Practices
+- Memory management: Use `defer` to specify cleanup operations after resource allocation
+- File handling: Use `defer` to specify closing operations after opening a file
+- Optional value handling: Use Optional return values instead of out parameters
+- Array access: Use safe array techniques instead of raw array and pointer index access
+
+## Function Writing
+- Clearly specify return types (e.g., `fn_(calculateSum(i32 a, i32 b), i32)`)
+- Use `fn_ext_scope` for functions requiring extended scope
+- Use `must_check` modifier for functions requiring error handling
+
+## Memory Safety
+- Always use `defer` after resource allocation for cleanup
+- Apply patterns to prevent memory leaks
+- Use safe slice access methods (e.g., `for_slice`, `Arr_getAt`)
+
+## Code Examples
+```c
+// Type definition example
+typedef struct Rectangle {
+    i32 width;
+    i32 height;
+} Rectangle;
+
+// Function definition example
+fn_(calculateArea(const Rectangle* rectangle), i32) {
+    let width = rectangle->width;
+    let height = rectangle->height;
+    return width * height;
+}
+
+// Optional value handling example
+fn_ext_scope(findUser(i32 user_id), Opt$Ptr$User) {
+    if (user_id <= 0) {
+        return_none();
+    }
+    const User* user = lookupUserById(user_id);
+    if (user == null) {
+        return_none();
+    }
+    return_some(user);
+}
+
+// Safe array access example
+fn_(processArray(Sli$i32 data), void) {
+    for_slice (data, item) {
+        process(deref(item));
+    }
+}
+```
+
+Follow the DH-C standard to write safe and readable code.

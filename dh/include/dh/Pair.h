@@ -29,7 +29,8 @@ extern "C" {
 #define use_Pair(T_First, T_Second)  comp_type_gen__Pair(T_First, T_Second)
 #define decl_Pair(T_First, T_Second) comp_type_decl__Pair(T_First, T_Second)
 #define impl_Pair(T_First, T_Second) comp_type_impl__Pair(T_First, T_Second)
-#define Pair$(T_First, T_Second)     comp_type_anon__Pair$(T_First, T_Second)
+
+#define Pair$(T_First, T_Second) comp_type_anon__Pair$(T_First, T_Second)
 
 /*========== Macros and Definitions =========================================*/
 

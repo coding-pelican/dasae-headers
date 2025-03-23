@@ -159,7 +159,7 @@ Err$void Simulation_collide(Simulation* self) {
         // Sort indices using stableSort with comparison function and self pointer
         try_(sort_stableSortUsingTemp(
             self->sort_rect_indices_cache_as_temp,
-            meta_refSli(indices),
+            meta_refSli_mut(indices),
             wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
                 let idx_lhs  = *as$(const usize*, lhs);
                 let idx_rhs  = *as$(const usize*, rhs);
