@@ -43,6 +43,9 @@ extern "C" {
 #define warn_deprecated_msg(_Msg)                   ATTR__warn_deprecated_msg(_Msg)
 #define warn_deprecated_instead(_Msg, _Replacement) ATTR__warn_deprecated_instead(_Msg, _Replacement)
 
+#define $on_load comp_attr__$on_load
+#define $on_exit comp_attr__$on_exit
+
 #define must_check                                                                  \
     /**                                                                             \
      * @brief Attribute marks a function as returning a value that must be checked  \
@@ -131,6 +134,9 @@ extern "C" {
 #define ATTR__warn_deprecated                             BUILTIN_COMP_DEPRECATED
 #define ATTR__warn_deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
 #define ATTR__warn_deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
+
+#define comp_attr__$on_load __attribute__((constructor))
+#define comp_attr__$on_exit __attribute__((destructor))
 
 #define ATTR__must_check BUILTIN_COMP_MUST_CHECK
 #define ATTR__no_return  BUILTIN_COMP_NO_RETURN

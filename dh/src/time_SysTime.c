@@ -3,6 +3,8 @@
 #include "dh/time/Instant.h"
 #include "dh/time/Duration.h"
 
+#include "dh/fn.h"
+
 /*========== Internals ======================================================*/
 
 /* Variables */
@@ -24,7 +26,7 @@ static bool                 s_pref_initialized  = false;
 
 /* Initialization */
 /// Initialize performance counter frequency and offset.
-static void __attribute__((constructor)) init(void) {
+static $on_load fn_(init(void), void) {
     if (s_pref_initialized) { return; }
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if (!QueryPerformanceFrequency(&s_perf_freq)) {

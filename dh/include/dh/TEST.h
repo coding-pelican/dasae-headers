@@ -35,8 +35,7 @@ extern "C" {
 
 // clang-format off
 #define comp_syn__fn_test_scope(caseFn, _Name...)       \
-    __attribute__((constructor))                        \
-    fn_(caseFn(void), must_check Err$Opt$TEST_Result) { \
+    $on_load fn_(caseFn(void), must_check Err$Opt$TEST_Result) { \
         scope_reserveReturn(Err$Opt$TEST_Result) {      \
             static bool __s_is_bound = false;           \
             if (!__s_is_bound) {                        \

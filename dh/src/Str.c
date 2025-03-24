@@ -12,7 +12,7 @@
 #include <unistd.h>
 #endif /* posix */
 
-static void __attribute__((constructor)) init(void) {
+static $on_load fn_(init(void), void) {
     static bool s_initialized = false;
     if (s_initialized) { return; }
     /* Set locale for proper UTF-8 handling */
