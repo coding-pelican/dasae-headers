@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: DH-C Standard Coding Convention for safe and modern C programming
+globs: "*.c,*.h"
 alwaysApply: true
 ---
 # DH-C Standard Coding Convention

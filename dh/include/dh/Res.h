@@ -25,11 +25,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Res(T_First, T_Second)      comp_type_token__Res(T_First, T_Second)
-#define use_Res(T_First, T_Second)  comp_type_gen__Res(T_First, T_Second)
-#define decl_Res(T_First, T_Second) comp_type_decl__Res(T_First, T_Second)
-#define impl_Res(T_First, T_Second) comp_type_impl__Res(T_First, T_Second)
-#define Res$(T_First, T_Second)     comp_type_anon__Res$(T_First, T_Second)
+#define use_Res$(T_First, T_Second)  comp_type_gen__use_Res$(T_First, T_Second)
+#define decl_Res$(T_First, T_Second) comp_type_gen__decl_Res$(T_First, T_Second)
+#define impl_Res$(T_First, T_Second) comp_type_gen__impl_Res$(T_First, T_Second)
+
+#define Res$(T_First, T_Second)  comp_type_alias__Res$(T_First, T_Second)
+#define Res$$(T_First, T_Second) comp_type_anon__Res$$(T_First, T_Second)
 
 #define Res_detFirst(val_first...)   comp_op__Res_detFirst(val_first)
 #define Res_detSecond(val_second...) comp_op__Res_detSecond(val_second)
@@ -52,28 +53,29 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_token__Res(T_First, T_Second) \
-    pp_join3($, Res, pp_cat(1, T_First), pp_cat(2, T_Second))
-#define comp_type_gen__Res(T_First, T_Second) \
-    decl_Res(T_First, T_Second);              \
-    impl_Res(T_First, T_Second)
-#define comp_type_decl__Res(T_First, T_Second) \
-    typedef struct Res(T_First, T_Second)
-#define comp_type_impl__Res(T_First, T_Second) \
-    struct Res(T_First, T_Second) {            \
-        union {                                \
-            T_First  first;                    \
-            T_Second second;                   \
-        } data[1];                             \
-        bool is_first;                         \
+#define comp_type_gen__use_Res$(T_First, T_Second) \
+    decl_Res$(T_First, T_Second);                  \
+    impl_Res$(T_First, T_Second)
+#define comp_type_gen__decl_Res$(T_First, T_Second) \
+    typedef struct Res$(T_First, T_Second)
+#define comp_type_gen__impl_Res$(T_First, T_Second) \
+    struct Res$(T_First, T_Second) {                \
+        union {                                     \
+            T_First  first;                         \
+            T_Second second;                        \
+        } data[1];                                  \
+        bool is_first;                              \
     }
-#define comp_type_anon__Res$(T_First, T_Second) \
-    struct {                                    \
-        union {                                 \
-            T_First  first;                     \
-            T_Second second;                    \
-        } data[1];                              \
-        bool is_first;                          \
+
+#define comp_type_alias__Res$(T_First, T_Second) \
+    pp_join3($, Res, pp_cat(1, T_First), pp_cat(2, T_Second))
+#define comp_type_anon__Res$$(T_First, T_Second) \
+    struct {                                     \
+        union {                                  \
+            T_First  first;                      \
+            T_Second second;                     \
+        } data[1];                               \
+        bool is_first;                           \
     }
 
 #define comp_op__Res_detFirst(val_first...)   { .is_first = true, .data[0].first = val_first }

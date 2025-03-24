@@ -41,15 +41,14 @@ typedef union Sli       Sli;
 
 /* Slice ====================================================================*/
 
-#define Sli_const(T) comp_type_token__Sli_const(T)
-#define Sli(T)       comp_type_token__Sli(T)
+#define use_Sli$(T)  comp_type_gen__use_Sli$(T)
+#define decl_Sli$(T) comp_type_gen__decl_Sli$(T)
+#define impl_Sli$(T) comp_type_gen__impl_Sli$(T)
 
-#define use_Sli(T)  comp_type_gen__use_Sli(T)
-#define decl_Sli(T) comp_type_gen__decl_Sli(T)
-#define impl_Sli(T) comp_type_gen__impl_Sli(T)
-
-#define Sli_const$(T)                     comp_type_anon__Sli_const$(T)
-#define Sli$(T)                           comp_type_anon__Sli$(T)
+#define Sli_const$(T)                     comp_type_alias__Sli_const$(T)
+#define Sli$(T)                           comp_type_alias__Sli$(T)
+#define Sli_const$$(T)                    comp_type_anon__Sli_const$$(T)
+#define Sli$$(T)                          comp_type_anon__Sli$$(T)
 #define Sli_anonCast$(T_Sli, var_anon...) comp_op__Sli_anonCast$(pp_uniqTok(__anon), T_Sli, var_anon)
 
 /* Core Slice Operations */
@@ -200,45 +199,17 @@ union __AssociationTypes_Sli {
     __AssociationTypes_Sli_const as_const;
 };
 
-#define comp_type_token__Sli_const(T) \
-    pp_join($, Sli_const, T)
-#define comp_type_token__Sli(T) \
-    pp_join($, Sli, T)
-
-#define comp_type_anon__Sli_const$(T)   \
-    struct {                            \
-        rawptr_const$(T) ptr;           \
-        usize      len;                 \
-        Sli_const* __base_type_hint[0]; \
-    }
-#define comp_type_anon__Sli$(T)    \
-    struct {                       \
-        rawptr$(T) ptr;            \
-        usize len;                 \
-        Sli*  __base_type_hint[0]; \
-    }
-#define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({                       \
-    const TypeOf(var_anon) __anon = var_anon;                                           \
-    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
-    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
-    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr)));   \
-    claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len)));   \
-    claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
-    claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
-    eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
-})
-
-#define comp_type_gen__use_Sli(T) \
-    decl_Sli(T);                  \
-    impl_Sli(T)
-#define comp_type_gen__decl_Sli(T)                                      \
+#define comp_type_gen__use_Sli$(T) \
+    decl_Sli$(T);                  \
+    impl_Sli$(T)
+#define comp_type_gen__decl_Sli$(T)                                     \
     typedef struct pp_join($, SliZ_const, T) pp_join($, SliZ_const, T); \
     typedef union pp_join($, SliZ, T) pp_join($, SliZ, T);              \
     typedef union pp_join($, SliS_const, T) pp_join($, SliS_const, T);  \
     typedef union pp_join($, SliS, T) pp_join($, SliS, T);              \
-    typedef union pp_join($, Sli_const, T) pp_join($, Sli_const, T);    \
-    typedef union pp_join($, Sli, T) pp_join($, Sli, T)
-#define comp_type_gen__impl_Sli(T)                                 \
+    typedef union Sli_const$(T) Sli_const$(T);                          \
+    typedef union Sli$(T) Sli$(T)
+#define comp_type_gen__impl_Sli$(T)                                \
     typedef struct pp_join($, __AssociationTypes_Sli_const, T)     \
         pp_join($, __AssociationTypes_Sli_const, T);               \
     typedef union pp_join($, __AssociationTypes_Sli, T)            \
@@ -289,7 +260,7 @@ union __AssociationTypes_Sli {
         rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) \
             __association_types_hint[0];                           \
     };                                                             \
-    union pp_join($, Sli, T) {                                     \
+    union Sli$(T) {                                                \
         pp_join($, SliZ, T) as_zero_terminated;                    \
         struct {                                                   \
             rawptr$(T) ptr;                                        \
@@ -314,6 +285,32 @@ union __AssociationTypes_Sli {
         pp_join($, __AssociationTypes_Sli_const, T) as_const;      \
     }
 
+#define comp_type_alias__Sli_const$(T) \
+    pp_join($, Sli_const, T)
+#define comp_type_alias__Sli$(T) \
+    pp_join($, Sli, T)
+#define comp_type_anon__Sli_const$$(T)  \
+    struct {                            \
+        rawptr_const$(T) ptr;           \
+        usize      len;                 \
+        Sli_const* __base_type_hint[0]; \
+    }
+#define comp_type_anon__Sli$$(T)   \
+    struct {                       \
+        rawptr$(T) ptr;            \
+        usize len;                 \
+        Sli*  __base_type_hint[0]; \
+    }
+#define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({                       \
+    const TypeOf(var_anon) __anon = var_anon;                                           \
+    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
+    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
+    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr)));   \
+    claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len)));   \
+    claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
+    claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
+    eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
+})
 
 #define comp_op__Sli_from(val_ptr, val_len...)                 { .ptr = ensureNonnull(val_ptr), .len = val_len }
 #define comp_op__Sli_from$(T_Sli, val_ptr, val_len...)         ((T_Sli)Sli_from(val_ptr, val_len))

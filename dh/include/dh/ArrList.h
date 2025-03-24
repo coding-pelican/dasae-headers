@@ -51,21 +51,19 @@ typedef union ArrList$T {
     };
 } ArrList$T;
 
-/* Type Tokens */
-/// Create an array list type
-#define ArrList(T) ...
-
 /* Type Generations */
 /// Declare and implement typed array list
-#define use_ArrList(T)  ...
+#define use_ArrList$(T)  ...
 /// Declare typed array list
-#define decl_ArrList(T) ...
+#define decl_ArrList$(T) ...
 /// Implement typed array list
-#define impl_ArrList(T) ...
+#define impl_ArrList$(T) ...
 
-/* Anonymous Types */
-/// Create anonymous array list
+/* Type Alias and Anonymous Types */
+/// Create array list type
 #define ArrList$(T)                               ...
+/// Create anonymous array list
+#define ArrList$$(T)                              ...
 /// Convert anonymous array list to specific type
 #define ArrList_anonCast$(T_ArrList, var_anon...) ...
 
@@ -188,51 +186,50 @@ use_Opt$(ArrList);
 use_Err$(ArrList);
 use_ErrSet$(mem_Allocator_Err, ArrList);
 
-#define ArrList(T)                                                    \
+#define use_ArrList$(T)                                               \
     /**                                                               \
-     * @brief Create an array list type                               \
+     * @brief Declare and implement typed array list                  \
      * @param T Type of elements to store in the list                 \
-     * @return Array list type token                                  \
      * @example                                                       \
-     *     ArrList(i32) list; // Create an array list of i32 elements \
+     *     use_ArrList$(i32); // Declare and implement i32 array list \
      */                                                               \
-    comp_type_token__ArrList(T)
+    comp_type_gen__use_ArrList$(T)
+#define decl_ArrList$(T)                                           \
+    /**                                                            \
+     * @brief Declare typed array list structure                   \
+     * @param T Type of elements to store in the list              \
+     * @example                                                    \
+     *     decl_ArrList$(i32); // Declare i32 array list structure \
+     */                                                            \
+    comp_type_gen__decl_ArrList$(T)
+#define impl_ArrList$(T)                                                  \
+    /**                                                                   \
+     * @brief Implement typed array list structure                        \
+     * @param T Type of elements to store in the list                     \
+     * @example                                                           \
+     *     impl_ArrList$(i32); // Implement previously declared structure \
+     */                                                                   \
+    comp_type_gen__impl_ArrList$(T)
 
-#define use_ArrList(T)                                               \
-    /**                                                              \
-     * @brief Declare and implement typed array list                 \
-     * @param T Type of elements to store in the list                \
-     * @example                                                      \
-     *     use_ArrList(i32); // Declare and implement i32 array list \
-     */                                                              \
-    comp_type_gen__use_ArrList(T)
-#define decl_ArrList(T)                                           \
-    /**                                                           \
-     * @brief Declare typed array list structure                  \
-     * @param T Type of elements to store in the list             \
-     * @example                                                   \
-     *     decl_ArrList(i32); // Declare i32 array list structure \
-     */                                                           \
-    comp_type_gen__decl_ArrList(T)
-#define impl_ArrList(T)                                                  \
-    /**                                                                  \
-     * @brief Implement typed array list structure                       \
-     * @param T Type of elements to store in the list                    \
-     * @example                                                          \
-     *     impl_ArrList(i32); // Implement previously declared structure \
-     */                                                                  \
-    comp_type_gen__impl_ArrList(T)
-
-#define ArrList$(T)                                                                \
+#define ArrList$(T)                                                    \
+    /**                                                                \
+     * @brief Create an array list type                                \
+     * @param T Type of elements to store in the list                  \
+     * @return Array list type alias                                   \
+     * @example                                                        \
+     *     ArrList$(i32) list; // Create an array list of i32 elements \
+     */                                                                \
+    comp_type_alias__ArrList$(T)
+#define ArrList$$(T)                                                               \
     /**                                                                            \
      * @brief Create a anonymous array list structure                              \
      * @param T Type of elements to store in the list                              \
      * @return Anonymous array list type token                                     \
      * @details Creates an anonymous union with both base ArrList and typed fields \
      * @example                                                                    \
-     *     ArrList$(i32) anon; // Create anonymous array list of i32 elements      \
+     *     ArrList$$(i32) anon; // Create anonymous array list of i32 elements     \
      */                                                                            \
-    comp_type_anon__ArrList$(T)
+    comp_type_anon__ArrList$$(T)
 #define ArrList_anonCast$(T_ArrList, var_anon...)                    \
     /**                                                              \
      * @brief Cast anonymous array list to a specific type           \
@@ -753,31 +750,32 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_token__ArrList(T) \
-    pp_join($, ArrList, T)
-
-#define comp_type_gen__use_ArrList(T) \
-    decl_ArrList(T);                  \
-    impl_ArrList(T)
-#define comp_type_gen__decl_ArrList(T) \
-    typedef union ArrList(T) ArrList(T)
-#define comp_type_gen__impl_ArrList(T) \
-    union ArrList(T) {                 \
-        ArrList base[1];               \
-        struct {                       \
-            TypeInfo type;             \
-            Sli(T) items;              \
-            usize         cap;         \
-            mem_Allocator allocator;   \
-        };                             \
+#define comp_type_gen__use_ArrList$(T) \
+    decl_ArrList$(T);                  \
+    impl_ArrList$(T)
+#define comp_type_gen__decl_ArrList$(T) \
+    typedef union ArrList$(T) ArrList$(T)
+#define comp_type_gen__impl_ArrList$(T) \
+    union ArrList$(T) {                 \
+        ArrList base[1];                \
+        struct {                        \
+            TypeInfo type;              \
+            Sli$(T) items;              \
+            usize         cap;          \
+            mem_Allocator allocator;    \
+        };                              \
     }
 
-#define comp_type_anon__ArrList$(T)  \
+
+
+#define comp_type_alias__ArrList$(T) \
+    pp_join($, ArrList, T)
+#define comp_type_anon__ArrList$$(T) \
     union {                          \
         ArrList base[1];             \
         struct {                     \
             TypeInfo type;           \
-            Sli$(T) items;           \
+            Sli$$(T) items;          \
             usize         cap;       \
             mem_Allocator allocator; \
         };                           \

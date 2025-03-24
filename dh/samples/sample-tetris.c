@@ -49,7 +49,7 @@
 /* Templates ================================================================*/
 
 use_Grid$(u8);
-use_ArrList(i32);
+use_ArrList$(i32);
 
 /* Constants ================================================================*/
 
@@ -72,7 +72,7 @@ typedef enum tetris_Tetrominos {
 } tetris_Tetrominos;
 
 /// Global variables for tetromino definitions
-pvt const Arr$(tetris_Tetrominos_count, u16) tetris_tetrominos = Arr_init({
+pvt const Arr$$(tetris_Tetrominos_count, u16) tetris_tetrominos = Arr_init({
     [tetris_Tetrominos_i] = lit_num(0b, 0010, 0010, 0010, 0010), /* I: ..X...X...X...X. */
     [tetris_Tetrominos_j] = lit_num(0b, 0000, 0010, 0110, 0010), /* J: ..X..XX...X..... */
     [tetris_Tetrominos_o] = lit_num(0b, 0000, 0000, 0110, 0110), /* O: .....XX..XX..... */
@@ -297,7 +297,7 @@ pvt fn_(tetris_Console_shutdown(void), void) {
 pvt fn_(tetris_isKeyPressed(i32 key), bool) {
 #if bti_plat_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
-    static const Arr_const$(5, i8) key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
+    static const Arr_const$$(5, i8) key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
     return (GetAsyncKeyState(Arr_getAt(key_map, key)) & 0x8000) != 0;
 #else  /* others */
     /* Non-blocking read from stdin */

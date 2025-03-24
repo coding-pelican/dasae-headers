@@ -30,7 +30,7 @@ extern "C" {
 
 /* Node for the linked list of memory buffers */
 typedef struct heap_Arena_BufNode heap_Arena_BufNode;
-use_Ptr(heap_Arena_BufNode);
+use_Ptr$(heap_Arena_BufNode);
 use_Opt$(Ptr$heap_Arena_BufNode);
 
 struct heap_Arena_BufNode {

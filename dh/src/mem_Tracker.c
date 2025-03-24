@@ -79,7 +79,7 @@ fn_ext_scope(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
     try_(fs_dir_create(dir_path));
 
     // Open log file
-    Arr$(256, u8) path_buf = Arr_zero();
+    Arr$$(256, u8) path_buf = Arr_zero();
     mem_copy(path_buf.items, log_path.ptr, log_path.len);
     Arr_setAt(path_buf, log_path.len, '\0');
 
@@ -135,7 +135,7 @@ fn_ext_scope(mem_Tracker_finiAndGenerateReport(void), void) {
         usize           total_leaked = 0;
 
         // Create a dynamic array for leak sites
-        var sites = type$(ArrList$(LeakSite), ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(create$(heap_Classic))));
+        var sites = type$(ArrList$$(LeakSite), ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(create$(heap_Classic))));
         defer_(ArrList_fini(sites.base));
 
         // Process each leak

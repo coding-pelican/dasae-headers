@@ -44,7 +44,7 @@ static must_check Err$void example(void) {
             ),
             2
         );
-        try_(ArrList_appendSlice(points.base, meta_refSli_mut(more_points)));
+        try_(ArrList_appendSli(points.base, meta_refSli_mut(more_points)));
 
         // Print current state
         try_(printPoints(&points));
@@ -69,7 +69,7 @@ static must_check Err$void example(void) {
         }
 
         // Add many at once
-        let new_space         = meta_castSli$(Sli$Point, try_(ArrList_addBackManyAsSlice(points.base, 2)));
+        let new_space         = meta_castSli$(Sli$Point, try_(ArrList_addBackManyAsSli(points.base, 2)));
         *Sli_at(new_space, 0) = (Point){ .x = 90, .y = 100 };
         *Sli_at(new_space, 1) = (Point){ .x = 110, .y = 120 };
         printf("\nAfter adding two more points:\n");
@@ -82,11 +82,11 @@ static must_check Err$void example(void) {
         try_(printPoints(&cloned));
 
         // Convert to owned slice
-        let owned_slice = meta_castSli$(Sli$Point, try_(ArrList_toOwnedSlice(points.base)));
+        let owned_slice = meta_castSli$(Sli$Point, try_(ArrList_toOwnedSli(points.base)));
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
-        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSlice(allocator, meta_refSli_mut(owned_slice)));
+        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSli(allocator, meta_refSli_mut(owned_slice)));
         defer_(ArrList_fini(from_slice.base));
         printf("\nCreated from owned slice:\n");
         try_(printPoints(&from_slice));

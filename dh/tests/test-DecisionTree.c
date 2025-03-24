@@ -42,8 +42,8 @@ pvt fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), must_ch
 
 // Dataset structure
 typedef struct Dataset {
-    ArrList$(f32) features;
-    ArrList$(i32) labels;
+    ArrList$$(f32) features;
+    ArrList$$(i32) labels;
     u32 n_samples;
     u32 n_features;
 } Dataset;

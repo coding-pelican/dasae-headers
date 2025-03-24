@@ -164,7 +164,7 @@ force_inline void comp_inline__claim_assert_nonnull_fmt(bool, const char*, ...);
  * @param file The file where the assertion failed.
  * @param line The line number where the assertion failed.
  */
-extern void claim_assert_fail(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */);
+extern void claim_assert_fail(const char* expr, const char* func, const char* file, i32 line);
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
  *
@@ -175,7 +175,7 @@ extern void claim_assert_fail(const char* /* expr */, const char* /* func */, co
  * @param fmt The formatted message to include in the assertion failure.
  * @param ... The arguments for the formatted message.
  */
-extern void claim_assert_fail_fmt(const char* /* expr */, const char* /* func */, const char* /* file */, i32 /* line */, const char* /* fmt */, ...);
+extern void claim_assert_fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...);
 #endif /* COMP_TIME */
 
 #if defined(__cplusplus)

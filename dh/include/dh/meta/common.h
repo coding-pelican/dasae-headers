@@ -174,23 +174,23 @@ use_Opt$(meta_Sli_const); use_Opt$(meta_Sli);
 use_Err$(meta_Sli_const); use_Err$(meta_Sli);
 
 /* builtin types */
-use_Ptr(u8); use_Ptr(u16); use_Ptr(u32); use_Ptr(u64); use_Ptr(usize);
-use_Sli(u8); use_Sli(u16); use_Sli(u32); use_Sli(u64); use_Sli(usize);
+use_Ptr$(u8); use_Ptr$(u16); use_Ptr$(u32); use_Ptr$(u64); use_Ptr$(usize);
+use_Sli$(u8); use_Sli$(u16); use_Sli$(u32); use_Sli$(u64); use_Sli$(usize);
 use_Opt$(u8); use_Opt$(u16); use_Opt$(u32); use_Opt$(u64); use_Opt$(usize);
 use_Err$(u8); use_Err$(u16); use_Err$(u32); use_Err$(u64); use_Err$(usize);
 
-use_Ptr(i8); use_Ptr(i16); use_Ptr(i32); use_Ptr(i64); use_Ptr(isize);
-use_Sli(i8); use_Sli(i16); use_Sli(i32); use_Sli(i64); use_Sli(isize);
+use_Ptr$(i8); use_Ptr$(i16); use_Ptr$(i32); use_Ptr$(i64); use_Ptr$(isize);
+use_Sli$(i8); use_Sli$(i16); use_Sli$(i32); use_Sli$(i64); use_Sli$(isize);
 use_Opt$(i8); use_Opt$(i16); use_Opt$(i32); use_Opt$(i64); use_Opt$(isize);
 use_Err$(i8); use_Err$(i16); use_Err$(i32); use_Err$(i64); use_Err$(isize);
 
-use_Ptr(f32); use_Ptr(f64);
-use_Sli(f32); use_Sli(f64);
+use_Ptr$(f32); use_Ptr$(f64);
+use_Sli$(f32); use_Sli$(f64);
 use_Opt$(f32); use_Opt$(f64);
 use_Err$(f32); use_Err$(f64);
 
-use_Ptr(bool); use_Ptr(char);
-use_Sli(bool); use_Sli(char);
+use_Ptr$(bool); use_Ptr$(char);
+use_Sli$(bool); use_Sli$(char);
 use_Opt$(bool); use_Opt$(char);
 use_Err$(bool); use_Err$(char);
 // clang-format on

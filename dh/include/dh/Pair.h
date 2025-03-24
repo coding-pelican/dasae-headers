@@ -25,31 +25,32 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Pair(T_First, T_Second)      comp_type_token__Pair(T_First, T_Second)
-#define use_Pair(T_First, T_Second)  comp_type_gen__Pair(T_First, T_Second)
-#define decl_Pair(T_First, T_Second) comp_type_decl__Pair(T_First, T_Second)
-#define impl_Pair(T_First, T_Second) comp_type_impl__Pair(T_First, T_Second)
+#define use_Pair$(T_First, T_Second)  comp_type_gen__Pair$(T_First, T_Second)
+#define decl_Pair$(T_First, T_Second) comp_type_decl__Pair$(T_First, T_Second)
+#define impl_Pair$(T_First, T_Second) comp_type_impl__Pair$(T_First, T_Second)
 
-#define Pair$(T_First, T_Second) comp_type_anon__Pair$(T_First, T_Second)
+#define Pair$(T_First, T_Second)  comp_type_alias__Pair$(T_First, T_Second)
+#define Pair$$(T_First, T_Second) comp_type_anon__Pair$$(T_First, T_Second)
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_token__Pair(T_First, T_Second) \
-    pp_join3($, Pair, pp_cat(1, T_First), pp_cat(2, T_Second))
-#define comp_type_gen__Pair(T_First, T_Second) \
-    decl_Pair(T_First, T_Second);              \
-    impl_Pair(T_First, T_Second)
-#define comp_type_decl__Pair(T_First, T_Second) \
-    typedef struct Pair(T_First, T_Second)
-#define comp_type_impl__Pair(T_First, T_Second) \
-    struct Pair(T_First, T_Second) {            \
-        T_First  first;                         \
-        T_Second second;                        \
-    }
-#define comp_type_anon__Pair$(T_First, T_Second) \
-    struct {                                     \
+#define comp_type_gen__Pair$(T_First, T_Second) \
+    decl_Pair$(T_First, T_Second);              \
+    impl_Pair$(T_First, T_Second)
+#define comp_type_decl__Pair$(T_First, T_Second) \
+    typedef struct Pair$(T_First, T_Second)
+#define comp_type_impl__Pair$(T_First, T_Second) \
+    struct Pair$(T_First, T_Second) {            \
         T_First  first;                          \
         T_Second second;                         \
+    }
+
+#define comp_type_alias__Pair$(T_First, T_Second) \
+    pp_join3($, Pair, pp_cat(1, T_First), pp_cat(2, T_Second))
+#define comp_type_anon__Pair$$(T_First, T_Second) \
+    struct {                                      \
+        T_First  first;                           \
+        T_Second second;                          \
     }
 
 #if defined(__cplusplus)

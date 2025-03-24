@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: DH-C Standard Documentation Convention
+globs:
 alwaysApply: false
 ---
 # Documentation comment styles

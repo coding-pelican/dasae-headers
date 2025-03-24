@@ -1,6 +1,7 @@
 #include "dh/core.h"
 #include "dh/Arr.h"
 #include "dh/Str.h"
+#include <stdio.h>
 
 use_Ptr$(FILE);
 use_Sli$(Ptr$FILE);

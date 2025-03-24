@@ -1,9 +1,4 @@
 ---
-description: 
-globs: 
-alwaysApply: false
----
----
 description: DH-C Standard Coding Convention for safe and modern C programming
 globs: "*.c,*.h"
 alwaysApply: true
