@@ -22,7 +22,7 @@ typedef struct engine_Window engine_Window;
 
 typedef struct engine_CanvasView engine_CanvasView;
 #define engine_Window_max_canvases (8)
-typedef Arr$(engine_Window_max_canvases, struct engine_CanvasView {
+typedef Arr$$(engine_Window_max_canvases, struct engine_CanvasView {
     engine_Canvas* canvas; // Associated canvas
     struct {
         Vec2i top_left;
@@ -48,7 +48,7 @@ struct engine_Window {
     Opt$engine_Backend backend;
     mem_Allocator      allocator;
 };
-use_Sli(engine_Window);
+use_Sli$(engine_Window);
 use_Opt$(engine_Window);
 use_Err$(engine_Window);
 

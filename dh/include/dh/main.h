@@ -27,7 +27,6 @@ extern "C" {
 #include "dh/Err.h"
 #include "dh/ErrTrace.h"
 #include "dh/err_res.h"
-#include "dh/variant.h"
 #include "dh/union_enum.h"
 #include "dh/Str.h"
 #include "dh/fn.h"

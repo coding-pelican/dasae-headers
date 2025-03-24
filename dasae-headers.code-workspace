@@ -9,6 +9,10 @@
       "path": "dh"
     },
     {
+      "name": "dh-archive",
+      "path": "../dasae-headers-archive"
+    },
+    {
       "name": "dh-workspace",
       "path": "dh-workspace"
     },
@@ -41,13 +45,12 @@
       "path": "dh-examples/game-of-life"
     },
     {
+      "name": "barnes-hut",
       "path": "dh-examples/barnes-hut"
     },
     {
+      "name": "grid-path-finder",
       "path": "dh-examples/grid-path-finder"
-    },
-    {
-      "path": "dh-examples/space-shooter"
     }
   ],
   "settings": {

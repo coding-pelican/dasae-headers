@@ -376,11 +376,8 @@ extern "C" {
         const T items[N];                 \
     }
 #define comp_type_anon__Arr$$(N, T) \
-    union {                         \
-        struct {                    \
-            T items[N];             \
-        };                          \
-        Arr_const$$(N, T) as_const; \
+    struct {                        \
+        T items[N];                 \
     }
 #define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
     let __anon = &var_anon;                                                                  \

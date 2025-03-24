@@ -96,7 +96,7 @@ union Color {
 };
 use_Opt$(Color);
 use_Err$(Color);
-use_Sli(Color);
+use_Sli$(Color);
 use_Grid$(Color);
 
 #define Color_(...)                               make$(Color, __VA_ARGS__)

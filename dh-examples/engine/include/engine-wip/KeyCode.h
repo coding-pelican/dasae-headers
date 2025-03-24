@@ -93,7 +93,8 @@ enum {
     engine_KeyCode_count = (i16)256
 };
 typedef i16 engine_KeyCode;
-use_Sli(engine_KeyCode);
+use_Ptr$(engine_KeyCode);
+use_Sli$(engine_KeyCode);
 use_Opt$(engine_KeyCode);
 use_Err$(engine_KeyCode);
 

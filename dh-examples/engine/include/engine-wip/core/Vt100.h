@@ -13,7 +13,7 @@ typedef struct engine_core_Vt100_Config {
 } engine_core_Vt100_Config;
 
 typedef struct engine_core_Vt100 engine_core_Vt100;
-use_Ptr(engine_core_Vt100);
+use_Ptr$(engine_core_Vt100);
 use_Err$(Ptr$engine_core_Vt100);
 
 extern Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config* config) must_check;

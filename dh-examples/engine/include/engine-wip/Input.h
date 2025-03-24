@@ -55,7 +55,8 @@ typedef struct engine_InputEvent {
         (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
     );
 } engine_InputEvent;
-use_Sli(engine_InputEvent);
+use_Ptr$(engine_InputEvent);
+use_Sli$(engine_InputEvent);
 use_Opt$(engine_InputEvent);
 use_Err$(engine_InputEvent);
 
@@ -77,7 +78,8 @@ typedef struct engine_Input {
     Opt$engine_Backend      backend;
     mem_Allocator           allocator;
 } engine_Input;
-use_Sli(engine_Input);
+use_Ptr$(engine_Input);
+use_Sli$(engine_Input);
 use_Opt$(engine_Input);
 use_Err$(engine_Input);
 
