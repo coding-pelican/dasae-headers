@@ -7,42 +7,54 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "dh/core.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define debug_point            \
+/// Function to detect if a debugger is attached
+extern bool debug_isDebuggerPresent(void);
+
+#define $debug_point           \
     /* breakpoint attribute */ \
-    ATTR__debug_point
+    comp_attr__$debug_point
 #define debug_break() \
     /* Breakpoint. */ \
-    FUNC__debug_break()
+    comp_op__debug_break()
 #define debug_only(...)                        \
     /* Used only when `debug_comp_enabled`. */ \
-    SYN__debug_only(__VA_ARGS__)
+    comp_syn__debug_only(__VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
-#define ATTR__debug_point debug_break(),
+#define comp_attr__$debug_point debug_break(),
 
 #if !debug_comp_enabled
 
-#define FUNC__debug_break()  unused(0)
-#define SYN__debug_only(...) unused(0)
+#define comp_op__debug_break()    unused(0)
+#define comp_syn__debug_only(...) unused(0)
 
 #else /* debug_comp_enabled */
 
+/* Only trigger debug break if a debugger is attached */
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#define FUNC__debug_break() __builtin_debugtrap()
+#define comp_op__debug_break() eval({                         \
+    if (debug_isDebuggerPresent()) { __builtin_debugtrap(); } \
+})
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#define FUNC__debug_break() __debugbreak()
-#else
+#define comp_op__debug_break() eval({                  \
+    if (debug_isDebuggerPresent()) { __debugbreak(); } \
+})
+#else /* others */
 /* Fallback using signal */
 #include <signal.h>
-#define FUNC__debug_break() raise(SIGTRAP)
-#endif
-#define SYN__debug_only(...) __VA_ARGS__
+#define comp_op__debug_break() eval({                  \
+    if (debug_isDebuggerPresent()) { raise(SIGTRAP); } \
+})
+#endif /* others */
+
+#define comp_syn__debug_only(...) __VA_ARGS__
 
 #endif /* debug_comp_enabled */
 

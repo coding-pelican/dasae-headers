@@ -24,6 +24,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/fn.h"
+#include "dh/opt.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -37,7 +39,9 @@ typedef anyptr       Ptr;
 #define Ptr_const$$(T) comp_type_raw__Ptr_const$$(T)
 #define Ptr$$(T)       comp_type_raw__Ptr$$(T)
 
-extern Ptr Ptr_constCast(Ptr_const);
+pub fn_(Ptr_constCastable(anyptr_const ptr), bool);
+#define Ptr_constCast(var_ptr... /* Opt$Ptr$T */)         comp_op__Ptr_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
+#define Ptr_constCast$(T_Ptr, var_ptr... /* Opt$T_Ptr */) comp_op__Ptr_constCast$(pp_uniqTok(ptr), pp_uniqTok(ret), T_Ptr, var_ptr)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -53,6 +57,27 @@ extern Ptr Ptr_constCast(Ptr_const);
     const T*
 #define comp_type_raw__Ptr$$(T) \
     T*
+
+#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({ \
+    const TypeOf(var_ptr) __ptr       = var_ptr;                \
+    Opt$(TypeUnqualOf(*__ptr)*) __ret = cleared();              \
+    if (Ptr_constCastable(__ptr)) {                             \
+        someAsg(&__ret, as$(TypeUnqualOf(*__ptr)*, __ptr));     \
+    } else {                                                    \
+        noneAsg(&__ret);                                        \
+    }                                                           \
+    eval_return __ret;                                          \
+})
+#define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) eval({ \
+    const TypeOf(var_ptr) __ptr = var_ptr;                              \
+    Opt$(T_Ptr) __ret           = cleared();                            \
+    if (Ptr_constCastable(__ptr)) {                                     \
+        someAsg(&__ret, as$(T_Ptr, __ptr));                             \
+    } else {                                                            \
+        noneAsg(&__ret);                                                \
+    }                                                                   \
+    eval_return __ret;                                                  \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

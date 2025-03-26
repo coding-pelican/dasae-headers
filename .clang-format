@@ -184,10 +184,11 @@ Macros:
   - scope_returnReserved=/**/
   - block_deferral=/**/
   - ext_unscoped=/**/
-  - test_unscoped=/**/
+  - TEST_unscoped=/**/
   - match_=switch
   - "pattern_(tag,capture)=case tag:"
   - "fallback_=default:"
+  - else_void=else
 
 TypeNames:
   - let

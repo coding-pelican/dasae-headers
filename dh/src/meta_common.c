@@ -1,15 +1,5 @@
 #include "dh/meta/common.h"
 
-Ptr Ptr_constCast(Ptr_const self) {
-    debug_assert_nonnull(self);
-    return as$(Ptr, self);
-}
-
-Sli Sli_constCast(Sli_const self) {
-    debug_assert_nonnull(self.ptr);
-    return (Sli){ .as_const = self };
-}
-
 const anyptr Sli_rawAt(TypeInfo type, const anyptr ptr, usize len, usize index) {
     unused(len);
     debug_assert_nonnull(ptr);

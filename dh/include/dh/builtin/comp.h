@@ -188,23 +188,23 @@ extern "C" {
     { _Inital }
 
 #define SYN__cleared() \
-    { 0 }
+    {}
 
 #define FUNC__make$(T, _Inital...) \
     (literal$(T, _Inital))
 
 #define FUNC__makeCleared$(T) \
-    (literal$(T, 0))
+    (literal$(T, ))
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define FUNC__create$(T, _Inital...) \
-    (literal$(T[1], [0] = make$(T, _Inital)))
+    (&*literal$(T[1], [0] = make$(T, _Inital)))
 
 #define FUNC__createCleared$(T) \
-    (literal$(T[1], [0] = makeCleared$(T)))
+    (&*literal$(T[1], [0] = makeCleared$(T)))
 
 #define FUNC__createFrom$(T, var_src...) \
-    (literal$(T[1], [0] = var_src))
+    (&*literal$(T[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
 
 #define comp_syn__bti_Generic_match$(T, _Pattern...) \

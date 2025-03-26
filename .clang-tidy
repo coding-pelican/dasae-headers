@@ -391,7 +391,7 @@ WarningsAsErrors: "*"
 
 CheckOptions:
   - { key: readability-braces-around-statements.ShortStatementLines, value: "0" }
-  - { key: readability-function-cognitive-complexity.Threshold, value: "128" }
+  - { key: readability-function-cognitive-complexity.Threshold, value: "256" }
   - { key: readability-function-size.BranchThreshold, value: "4294967295" }
   - { key: readability-function-size.LineThreshold, value: "4294967295" }
   - { key: readability-function-size.StatementThreshold, value: "800" }

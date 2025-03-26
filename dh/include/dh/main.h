@@ -22,14 +22,18 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+
 #include "dh/scope.h"
+#include "dh/fn.h"
+
+#include "dh/union_enum.h"
 #include "dh/opt.h"
+#include "dh/err_res.h"
 #include "dh/Err.h"
 #include "dh/ErrTrace.h"
-#include "dh/err_res.h"
-#include "dh/union_enum.h"
+
 #include "dh/Str.h"
-#include "dh/fn.h"
+#include "dh/TEST.h"
 
 /*========== Macros =========================================================*/
 
@@ -68,6 +72,7 @@ pub fn_(dh_main(Sli$Str_const args), must_check Err$void);
 #ifndef MAIN_ROOT_INCLUDED
 #define MAIN_ROOT_INCLUDED (1)
 
+#if !TEST_comp_enabled
 int main(
 #if main_no_args && main_no_returns_err
     void
@@ -79,6 +84,7 @@ int main(
     int argc, const char* argv[]
 #endif /* !main_no_args && !main_no_returns_err */
 ) {
+
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
@@ -112,6 +118,12 @@ int main(
 #endif /* !main_no_args && !main_no_returns_err */
     return 0;
 }
+#else  /* TEST_comp_enabled */
+fn_(main(void), int) {
+    TEST_Framework_run();
+    return 0;
+}
+#endif /* TEST_comp_enabled */
 
 #endif /* MAIN_ROOT_INCLUDED */
 

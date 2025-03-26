@@ -68,9 +68,11 @@ extern "C" {
 
 /* Error result payload captures */
 #define if_ok(val_result, _Payload_Capture)  comp_syn__if_ok(val_result, _Payload_Capture)
+#define if_void(val_result)                  comp_syn__if_void(val_result)
 #define else_err(_Payload_Capture)           comp_syn__else_err(_Payload_Capture)
 #define if_err(val_result, _Payload_Capture) comp_syn__if_err(val_result, _Payload_Capture)
 #define else_ok(_Payload_Capture)            comp_syn__else_ok(_Payload_Capture)
+#define else_void                            comp_syn__else_void
 
 /* Error void result (special case) */
 typedef struct Err$Void {
@@ -166,7 +168,7 @@ typedef struct Err$Void {
 #define comp_op__isOk(val_result...)  (!(val_result).is_err)
 
 #define comp_syn__return_err(val_err...)           \
-    debug_point ErrTrace_captureFrame();           \
+    $debug_point ErrTrace_captureFrame();          \
     scope_return((TypeOf(getReservedReturn()[0])){ \
         .is_err   = true,                          \
         .data.err = val_err,                       \
@@ -230,6 +232,8 @@ typedef struct Err$Void {
 #define comp_syn__if_ok(val_result, _Payload_Capture)     \
     scope_if(let _result = (val_result), !_result.is_err) \
         scope_with(let _Payload_Capture = _result.data.ok)
+#define comp_syn__if_void(val_result) \
+    scope_if(let _result = (val_result), !_result.is_err)
 #define comp_syn__else_err(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.data.err)
 #define comp_syn__if_err(val_result, _Payload_Capture)   \
@@ -237,6 +241,8 @@ typedef struct Err$Void {
         scope_with(let _Payload_Capture = _result.data.err)
 #define comp_syn__else_ok(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.data.ok)
+#define comp_syn__else_void \
+    else
 
 #define comp_syn__return_void()                    \
     scope_return((TypeOf(getReservedReturn()[0])){ \
