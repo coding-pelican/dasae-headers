@@ -40,8 +40,8 @@
 #define render_target_fps (render_target_fps__31_25)
 #define render_target_spf (1.0 / render_target_fps)
 
-use_ArrList(Vec2f);
-use_ArrList(Color);
+use_ArrList$(Vec2f);
+use_ArrList$(Color);
 
 #define update_target_fps (480.0f)
 #define update_target_spf (1.0f / update_target_fps)
@@ -222,7 +222,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             log_debug("esc pressed");
         }
 
-        with_(const Arr_const$(2, bool) left_space = {
+        with_(const Arr_const$$(2, bool) left_space = {
             engine_Mouse_held(&input->mouse, engine_MouseButton_left),
             engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
         }) {
