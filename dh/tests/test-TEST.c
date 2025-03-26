@@ -17,7 +17,7 @@ fn_TEST_scope("Basic Math Operations") {
 } TEST_unscoped;
 
 /// Test side effects of increment operators
-fn_TEST_scope("Side Effect") {
+fn_TEST_scope("Increment Operator Side Effects in Type System Operations") {
     i32 cnt = 123;
 
     let cnt_post_inc = cnt++;
@@ -36,11 +36,11 @@ fn_TEST_scope("Side Effect") {
     try_(TEST_expect(cnt_pre_inc_with_size_of == sizeOf(cnt)));
     try_(TEST_expect(cnt == 125));
 
-    TypeOf(cnt++) cnt_post_inc_with_type_of = cnt; // cnt++ side effect is not applied here
+    const TypeOf(cnt++) cnt_post_inc_with_type_of = cnt; // cnt++ side effect is not applied here
     try_(TEST_expect(cnt_post_inc_with_type_of == 125));
     try_(TEST_expect(cnt == 125));
 
-    TypeOf(++cnt) cnt_pre_inc_with_type_of = cnt; // ++cnt side effect is not applied here
+    const TypeOf(++cnt) cnt_pre_inc_with_type_of = cnt; // ++cnt side effect is not applied here
     try_(TEST_expect(cnt_pre_inc_with_type_of == 125));
     try_(TEST_expect(cnt == 125));
 
@@ -54,16 +54,17 @@ fn_TEST_scope("Side Effect") {
 } TEST_unscoped;
 
 /// Test type comparison
-fn_TEST_scope("Compare Types") {
-    const i32 a = 10;
-    const f32 b = 10.0f;
-    try_(TEST_expect(!isSameType(TypeOf(a), TypeOf(b))));
-    try_(TEST_expect(isSameType(TypeOf(a), TypeOf(b))));
+fn_TEST_scope("Simply Type Comparison with Failing Test") {
+    const i32 integer  = 10;
+    const f32 floating = 10.0f;
+    try_(TEST_expect(!isSameType(TypeOf(integer), TypeOf(floating))));
+    try_(TEST_expect(isSameType(TypeOf(integer), TypeOf(floating)))); // This will always fail
 } TEST_unscoped;
 
 /// Sample main function
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     ignore args;
+    // fmt_println(Str_l("Hello, World!"));
     printf("Hello, World!\n");
     return_void();
 } ext_unscoped;
