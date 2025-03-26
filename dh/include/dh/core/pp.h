@@ -70,9 +70,9 @@ extern "C" {
 
 // lit_num(11,644,473,600u) => 11644473600u
 #define lit_num(...) \
-    IMPL_lit_num(__VA_ARGS__)
+    comp_syn__lit_num(__VA_ARGS__)
 #define lit_num$(T, ...) \
-    IMPL_lit_num$(T, __VA_ARGS__)
+    comp_syn__lit_num$(T, __VA_ARGS__)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -136,17 +136,18 @@ extern "C" {
 #define IMPL_pp_foreach_15(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_14(macro, name, __VA_ARGS__)
 #define IMPL_pp_foreach_16(macro, name, x, ...) macro(name, x) IMPL_pp_foreach_15(macro, name, __VA_ARGS__)
 
-#define IMPL_lit_num(...) \
-    pp_cat(IMPL_lit_num_, pp_countArgs(__VA_ARGS__))(__VA_ARGS__)
+#define comp_syn__lit_num(...) \
+    pp_cat(comp_syn__lit_num_, pp_countArgs(__VA_ARGS__))(__VA_ARGS__)
 /* Handle different numbers of arguments */
-#define IMPL_lit_num_1(_Num1)                                    _Num1
-#define IMPL_lit_num_2(_Num1, _Num2)                             pp_cat(_Num1, _Num2)
-#define IMPL_lit_num_3(_Num1, _Num2, _Num3)                      pp_cat3(_Num1, _Num2, _Num3)
-#define IMPL_lit_num_4(_Num1, _Num2, _Num3, _Num4)               pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
-#define IMPL_lit_num_5(_Num1, _Num2, _Num3, _Num4, _Num5)        pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
-#define IMPL_lit_num_6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
-
-#define IMPL_lit_num$(T, ...) as$(T, lit_num(__VA_ARGS__))
+#define comp_syn__lit_num_1(_Num1)                                                  _Num1
+#define comp_syn__lit_num_2(_Num1, _Num2)                                           pp_cat(_Num1, _Num2)
+#define comp_syn__lit_num_3(_Num1, _Num2, _Num3)                                    pp_cat3(_Num1, _Num2, _Num3)
+#define comp_syn__lit_num_4(_Num1, _Num2, _Num3, _Num4)                             pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
+#define comp_syn__lit_num_5(_Num1, _Num2, _Num3, _Num4, _Num5)                      pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
+#define comp_syn__lit_num_6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6)               pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
+#define comp_syn__lit_num_7(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7)        pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6), _Num7)
+#define comp_syn__lit_num_8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
+#define comp_syn__lit_num$(T, ...)                                                  as$(T, lit_num(__VA_ARGS__))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -7,8 +7,7 @@
 
 fn_TEST_scope("Basic Allocator Reallocation Usage") {
     var buffer = Arr_zero$(Arr$$(1024, u8));
-    var fixed  = make$(heap_Fixed);
-    heap_Fixed_init(&fixed, Sli_from$(Sli$u8, buffer.items, Arr_len(buffer)));
+    var fixed  = heap_Fixed_init(Sli_from$(Sli$u8, buffer.items, Arr_len(buffer)));
 
     let allocator = heap_Fixed_allocator(&fixed);
     var sli       = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), 10)));

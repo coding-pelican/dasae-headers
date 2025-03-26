@@ -43,11 +43,9 @@ fn_(heap_Fixed_thrdSafeAllocator(heap_Fixed* self), mem_Allocator) {
     };
 }
 
-fn_(heap_Fixed_init(heap_Fixed* self, Sli$u8 buf), void) {
-    debug_assert_nonnull(self);
+fn_(heap_Fixed_init(Sli$u8 buf), heap_Fixed) {
     debug_assert_nonnull(buf.ptr);
-
-    *self = (heap_Fixed){
+    return (heap_Fixed){
         .buffer    = buf,
         .end_index = 0,
     };

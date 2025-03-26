@@ -4,8 +4,8 @@
  * @file    Fixed.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-21 (date of creation)
- * @updated 2025-03-21 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-03-26 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Fixed
  *
@@ -37,8 +37,11 @@ use_Err$(heap_Fixed);
 
 /// Get allocator interface for instance
 extern fn_(heap_Fixed_allocator(heap_Fixed* self), mem_Allocator);
+/// Get thread-safe allocator interface for instance (only allocate is thread-safe)
+extern fn_(heap_Fixed_thrdSafeAllocator(heap_Fixed* self), mem_Allocator);
+
 /// Initialize with buffer
-extern fn_(heap_Fixed_init(heap_Fixed* self, Sli$u8 buf), void);
+extern fn_(heap_Fixed_init(Sli$u8 buf), heap_Fixed);
 /// Reset allocator state (frees all allocations)
 extern fn_(heap_Fixed_reset(heap_Fixed* self), void);
 /// Check if allocator owns a pointer
@@ -47,11 +50,6 @@ extern fn_(heap_Fixed_ownsPtr(const heap_Fixed* self, Ptr_const$u8 ptr), bool);
 extern fn_(heap_Fixed_ownsSli(const heap_Fixed* self, Sli_const$u8 sli), bool);
 /// Check if a slice is the last allocation
 extern fn_(heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf), bool);
-
-/*========== Thread-Safe Variant ============================================*/
-
-/// Get thread-safe allocator interface for instance (only allocate is thread-safe)
-extern fn_(heap_Fixed_thrdSafeAllocator(heap_Fixed* self), mem_Allocator);
 
 #if defined(__cplusplus)
 } /* extern "C" */
