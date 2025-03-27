@@ -70,6 +70,7 @@ pub fn_(TEST_Framework_run(void), void);
 
 /*========== Test Macros ==================================================*/
 
+#define TEST_only(...)          comp_syn__TEST_only(__VA_ARGS__)
 #define fn_TEST_scope(_Name...) comp_syn__fn_TEST_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
 #define TEST_unscoped           comp_syn__TEST_unscoped
 
@@ -81,6 +82,12 @@ pub fn_(TEST_expectMsg(bool expr, Str_const msg), must_check Err$void);
 #endif /* !COMP_TIME */
 
 /*========== Implementation Details =======================================*/
+
+#if TEST_comp_enabled
+#define comp_syn__TEST_only(...) __VA_ARGS__
+#else /* !TEST_comp_enabled */
+#define comp_syn__TEST_only(...)
+#endif /* TEST_comp_enabled */
 
 #define comp_syn__fn_TEST_scope(_ID_binder, _ID_caseFn, _Name...) \
     TEST__binder(_ID_binder, _ID_caseFn, _Name);                  \

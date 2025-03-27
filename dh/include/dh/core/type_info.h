@@ -31,40 +31,39 @@ typedef struct TypeInfo {
     u32 align;
 } TypeInfo;
 /// Get type information for meta
-#define typeInfo$(T) FUNC__typeInfo$(T)
-#if !COMP_TIME
+#define typeInfo$(T /* TypeInfo */) comp_op__typeInfo$(T)
 /// Compare equality of type information
 force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
-#else
-#define TypeInfo_eq(val_lhs, val_rhs) comp_inline__TypeInfo_eq(val_lhs, val_rhs)
-#endif
 
 /// For explicit materialization type representation of abstract generic types
-#define type$(TDest, val_generic_src)              FUNC__type$(TDest, val_generic_src)
-#define typeAsg(var_addr_dest, val_generic_src...) comp_op__typeAsg(var_addr_dest, val_generic_src)
+#define type$(T_Dest, val_src... /* T_Dest */)                 comp_op__type$(pp_uniqTok(src), T_Dest, val_src)
+#define typeAsg(var_addr_dest, val_src... /* var_addr_dest */) comp_op__typeAsg(pp_uniqTok(addr_dest), var_addr_dest, val_src)
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__typeInfo$(T)                                  ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
-#define comp_op__typeAsg(var_addr_dest, val_generic_src...) eval({   \
-    let __addr_dest = var_addr_dest;                                 \
-    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_generic_src); \
-    eval_return __addr_dest;                                         \
-})
-
+#define comp_op__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
 #if COMP_TIME
-#define comp_inline__TypeInfo_eq(val_lhs, val_rhs) eval({    \
-    let _lhs = val_lhs;                                      \
-    let _rhs = val_rhs;                                      \
-    eval_return memcmp(&_lhs, &_rhs, sizeOf(TypeInfo)) == 0; \
-})
-#endif
+force_inline bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
+    return bti_memcmp(&lhs, &rhs, sizeOf(TypeInfo)) == 0;
+}
+#endif /* COMP_TIME */
 
-#define FUNC__type$(TDest, val_generic_src) eval({                                                                                   \
-    var _src = val_generic_src;                                                                                                      \
-    claim_assert_static_msg(!isSameType(TypeOf(_src), meta_Ptr), "`meta_Ptr` is not compatible with `type$`. Use `meta_castPtr$`."); \
-    claim_assert_static_msg(!isSameType(TypeOf(_src), meta_Sli), "`meta_Sli` is not compatible with `type$`. Use `meta_castSli$`."); \
-    eval_return(*((TDest*)&_src));                                                                                                   \
+#define comp_op__type$(__src, T_Dest, val_src...) eval({                  \
+    var __src = val_src;                                                  \
+    claim_assert_static_msg(                                              \
+        !isSameType(TypeOf(__src), meta_Ptr),                             \
+        "`meta_Ptr` is not compatible with `type$`. Use `meta_castPtr$`." \
+    );                                                                    \
+    claim_assert_static_msg(                                              \
+        !isSameType(TypeOf(__src), meta_Sli),                             \
+        "`meta_Sli` is not compatible with `type$`. Use `meta_castSli$`." \
+    );                                                                    \
+    eval_return(*((T_Dest*)&(__src)));                                    \
+})
+#define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) eval({ \
+    let __addr_dest = var_addr_dest;                                    \
+    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_src);           \
+    eval_return __addr_dest;                                            \
 })
 
 #if defined(__cplusplus)

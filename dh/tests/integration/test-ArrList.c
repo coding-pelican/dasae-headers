@@ -33,7 +33,7 @@ static must_check Err$void example(void) {
 
         // Append individual items
         Point p1 = { .x = 10, .y = 20 };
-        try_(ArrList_append(points.base, meta_refPtr_mut(&p1)));
+        try_(ArrList_append(points.base, meta_refPtr(&p1)));
 
         // Append multiple items at once
         Sli$Point more_points = Sli_from(
@@ -51,7 +51,7 @@ static must_check Err$void example(void) {
 
         // Insert at specific position
         Point p4 = { .x = 70, .y = 80 };
-        try_(ArrList_insert(points.base, 1, meta_refPtr_mut(&p4)));
+        try_(ArrList_insert(points.base, 1, meta_refPtr(&p4)));
         printf("\nAfter insert at position 1:\n");
         try_(printPoints(&points));
 

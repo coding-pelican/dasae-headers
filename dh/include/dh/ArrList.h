@@ -766,8 +766,6 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
         };                              \
     }
 
-
-
 #define comp_type_alias__ArrList$(T) \
     pp_join($, ArrList, T)
 #define comp_type_anon__ArrList$$(T) \

@@ -4,9 +4,9 @@
  * @file    comp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-03 (date of creation)
- * @updated 2025-02-26 (date of last update)
- * @version v0.1-alpha.3
- * @ingroup dasae-headers(dh)/builtin
+ * @updated 2025-03-27 (date of last update)
+ * @version v0.1-alpha.4
+ * @ingroup dasae-headers(dh)/bti
  * @prefix  NONE
  *
  * @brief   Compiler-specific configurations and optimizations
@@ -46,18 +46,20 @@ extern "C" {
 #define $on_load comp_attr__$on_load
 #define $on_exit comp_attr__$on_exit
 
-#define must_check                                                                  \
-    /**                                                                             \
-     * @brief Attribute marks a function as returning a value that must be checked  \
-     to avoid potential errors or warnings                                          \
-     * @details This attribute can be used to ensure that a function's return value \
-     */                                                                             \
+#define must_check                                                            \
+    /**                                                                       \
+     * @brief Attribute marks a function as returning a value that must be    \
+     *        checked to avoid potential errors or warnings                   \
+     * @details This attribute can be used to ensure that a function's return \
+     *          value is checked to avoid potential errors or warnings        \
+     */                                                                       \
     ATTR__must_check
-#define no_return \
-    /**           \
-     * @brief     \
-     *            \
-     */           \
+#define no_return                                                         \
+    /**                                                                   \
+     * @brief Attribute marks a function as not returning a value         \
+     * @details This attribute can be used to ensure that a function does \
+     *          not return a value                                        \
+     */                                                                   \
     ATTR__no_return
 #define ignore                                                           \
     /**                                                                  \
@@ -66,40 +68,50 @@ extern "C" {
      */                                                                  \
     ATTR__ignore
 
-#define used(_Expr...)                                                    \
-    /**                                                                   \
-     * @brief Marks variables or expressions as used to suppress compiler \
-    warnings                                                              \
-     * @details In macro functions, the arguments are marked as used      \
-     * @param _Expr... Variable number of arguments to be marked as used  \
-     */                                                                   \
+#define used(_Expr... /*void*/)                                                    \
+    /**                                                                            \
+     * @brief Marks variables or expressions as used to suppress compiler warnings \
+     * @details In macro functions, the arguments are marked as used               \
+     * @param _Expr... Variable number of arguments to be marked as used           \
+     */                                                                            \
     ATTR__used(_Expr)
-#define unused(_Expr...)                                                   \
-    /**                                                                    \
-     * @brief Marks variables or expressions as intentionally unused       \
-    to suppress compiler warnings                                          \
-     * @param _Expr... Variable number of arguments to be marked as unused \
-     */                                                                    \
+#define unused(_Expr... /*void*/)                                                    \
+    /**                                                                              \
+     * @brief Marks variables or expressions as unused to suppress compiler warnings \
+     * @param _Expr... Variable number of arguments to be marked as unused           \
+     */                                                                              \
     ATTR__unused(_Expr)
 
-#define as$(TDest, val_src) \
-    FUNC__as$(TDest, val_src)
-#define literal$(TLit, _Inital...)                                           \
+#define as$(T_Dest, val_src... /*T_Dest*/)                                  \
+    /**                                                                     \
+     * @brief Cast macro for converting a value to a different type         \
+     * @details This macro is used to cast a value from one type to another \
+     * @param T_Dest The destination type to cast to                        \
+     * @param val_src The value to cast                                     \
+     * @return The casted value                                             \
+     */                                                                     \
+    comp_syn__as$(T_Dest, val_src)
+#define lit$(T_Lit, _Inital... /*T_Lit*/)                                    \
     /**                                                                      \
-     * @brief Literal macro for creating a compound literal                  \
+     * @brief Literal macro for creating a compound lit                      \
      * @details Plain structures in C++ (without constructors) can be        \
-        initialized with { } This is called aggregate initialization (C++11) \
+     *          initialized with { } This is called aggregate initialization \
+     *          (C++11)                                                      \
      * @note MSVC C++ compiler does not support compound literals (C99)      \
+     * @param T_Lit The type of the literal to create                        \
+     * @param _Inital The initial values for the literal                     \
+     * @return The created literal                                           \
      */                                                                      \
-    SYN__literal$(TLit, _Inital)
+    comp_syn__lit$(T_Lit, _Inital)
 
-#define initial(_Inital...)        SYN__initial(_Inital)
-#define cleared()                  SYN__cleared()
-#define make$(T, _Inital...)       FUNC__make$(T, _Inital)
-#define makeCleared$(T)            FUNC__makeCleared$(T)
-#define create$(T, _Initial...)    FUNC__create$(T, _Initial)
-#define createCleared$(T)          FUNC__createCleared$(T)
-#define createFrom$(T, var_src...) FUNC__createFrom$(T, var_src)
+#define initial(_Inital...)                      comp_syn__initial(_Inital)
+#define cleared()                                comp_syn__cleared()
+#define make$(T_Lit, _Inital... /*T*/)           comp_syn__make$(T_Lit, _Inital)
+#define makeCleared$(T_Lit /*T*/)                comp_syn__makeCleared$(T_Lit)
+#define create$(T_Lit, _Initial... /*Ptr$T*/)    comp_syn__create$(T_Lit, _Initial)
+#define createCleared$(T_Lit /*Ptr$T*/)          comp_syn__createCleared$(T_Lit)
+#define createFrom(var_src... /*Ptr$T*/)         comp_syn__createFrom(var_src)
+#define createFrom$(T_Lit, var_src... /*Ptr$T*/) comp_syn__createFrom$(T_Lit, var_src)
 
 #define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
@@ -108,8 +120,8 @@ extern "C" {
 #define eval_return                        comp_syn__eval_return
 #define eval_return_(...)                  comp_syn__eval_return_(__VA_ARGS__)
 
-#define likely(_Expr...)   FUNC__likely(_Expr)
-#define unlikely(_Expr...) FUNC__unlikely(_Expr)
+#define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
+#define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
 /*========== Macros and Implementations =====================================*/
 
@@ -170,41 +182,37 @@ extern "C" {
 #define ATTR__unused_15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)      (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15)
 #define ATTR__unused_16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15), (void)(x16)
 /* end unused */
-#if defined(__cplusplus)
-#define FUNC__as$(TDest, val_src) static_cast<TDest>(val_src)
-#else
-#define FUNC__as$(TDest, val_src) ((TDest)(val_src))
-#endif
 
 #if defined(__cplusplus)
-#define SYN__literal$(TLit, _Inital...) \
-    TLit { _Inital }
+#define comp_syn__as$(T_Dest, val_src...) (static_cast<T_Dest>(val_src))
 #else
-#define SYN__literal$(TLit, _Inital...) \
-    (TLit) { _Inital }
+#define comp_syn__as$(T_Dest, val_src...) ((T_Dest)(val_src))
+#endif
+#if defined(__cplusplus)
+#define comp_syn__lit$(T_Lit, _Inital...) \
+    T_Lit { _Inital }
+#else
+#define comp_syn__lit$(T_Lit, _Inital...) \
+    (T_Lit) { _Inital }
 #endif
 
-#define SYN__initial(_Inital...) \
+#define comp_syn__initial(_Inital...) \
     { _Inital }
-
-#define SYN__cleared() \
+#define comp_syn__cleared() \
     {}
 
-#define FUNC__make$(T, _Inital...) \
-    (literal$(T, _Inital))
-
-#define FUNC__makeCleared$(T) \
-    (literal$(T, ))
+#define comp_syn__make$(T_Lit, _Inital...) (lit$(T_Lit, _Inital))
+#define comp_syn__makeCleared$(T_Lit)      (lit$(T_Lit))
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define FUNC__create$(T, _Inital...) \
-    (&*literal$(T[1], [0] = make$(T, _Inital)))
-
-#define FUNC__createCleared$(T) \
-    (&*literal$(T[1], [0] = makeCleared$(T)))
-
-#define FUNC__createFrom$(T, var_src...) \
-    (&*literal$(T[1], [0] = var_src))
+#define comp_syn__create$(T_Lit, _Inital...) \
+    (&*lit$(T_Lit[1], [0] = make$(T_Lit, _Inital)))
+#define comp_syn__createCleared$(T_Lit) \
+    (&*lit$(T_Lit[1], [0] = makeCleared$(T_Lit)))
+#define comp_syn__createFrom(var_src...) \
+    (&*lit$(TypeOf(var_src)[1], [0] = var_src))
+#define comp_syn__createFrom$(T_Lit, var_src...) \
+    (&*lit$(T_Lit[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
 
 #define comp_syn__bti_Generic_match$(T, _Pattern...) \
@@ -218,8 +226,8 @@ extern "C" {
 #define comp_syn__eval_return       /* just comment for expr stmt ({...}) */
 #define comp_syn__eval_return_(...) __VA_ARGS__
 
-#define FUNC__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
-#define FUNC__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
+#define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
+#define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 
 #if defined(__cplusplus)
 } /* extern "C" */

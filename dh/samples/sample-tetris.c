@@ -521,7 +521,7 @@ pvt fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i3
 
             /* Add to lines list */
             var line_y = as$(i32, y);
-            try_(ArrList_append(lines->base, meta_refPtr_mut(&line_y)));
+            try_(ArrList_append(lines->base, meta_refPtr(&line_y)));
         }
     }
 

@@ -412,11 +412,11 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
 
             if (col_idx < actual_feature_count) {
                 // Feature value
-                try_(ArrList_append(dataset.features.base, meta_refPtr_mut(&value)));
+                try_(ArrList_append(dataset.features.base, meta_refPtr(&value)));
             } else {
                 // Label (assumed to be the last column)
                 var label = as$(i32, value);
-                try_(ArrList_append(dataset.labels.base, meta_refPtr_mut(&label)));
+                try_(ArrList_append(dataset.labels.base, meta_refPtr(&label)));
             }
 
             token = strtok(null, ",");

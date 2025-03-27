@@ -3,18 +3,16 @@
  *
  * @file    Arena.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
- * @date    2025-01-15 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v0.1-alpha
+ * @date    2025-03-26 (date of creation)
+ * @updated 2025-03-26 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Arena
  *
- * @brief   Arena allocator that allows batch deallocation
+ * @brief   Arena allocator that wraps another allocator for bulk freeing
  * @details Takes an existing allocator, wraps it, and provides an interface
  *          where you can allocate without freeing, and then free it all together.
  */
-
-/* TODO: Implement this header interface */
 
 #ifndef HEAP_ARENA_INCLUDED
 #define HEAP_ARENA_INCLUDED (1)
@@ -25,64 +23,45 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "dh/mem/Allocator.h"
+#include "dh/list.h"
 
-/*========== Buffer List Node =============================================*/
+/*========== Arena Allocator ===============================================*/
 
-/* Node for the linked list of memory buffers */
-typedef struct heap_Arena_BufNode heap_Arena_BufNode;
-use_Ptr$(heap_Arena_BufNode);
-use_Opt$(Ptr$heap_Arena_BufNode);
-
-struct heap_Arena_BufNode {
-    Opt$Ptr$heap_Arena_BufNode next;
-    usize                      len; // Total buffer length including node
-};
-
-/*========== Arena State ================================================*/
-
-/* Inner state of ArenaAllocator. Can be stored separately as an optimization */
+use_ListSgl$(usize);
+typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
-    Opt$Ptr$heap_Arena_BufNode first;     // First buffer in list
-    usize                      end_index; // Current allocation position
+    ListSgl$usize buffer_list;
+    usize         end_index;
 } heap_Arena_State;
-/* Inner state promoter function */
-extern struct heap_Arena heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child);
 
-/*========== Arena Allocator ============================================*/
+/// Inner state of ArenaAllocator
+pub fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena);
 
-typedef struct heap_Arena {
-    mem_Allocator    child; // Underlying allocator
-    heap_Arena_State state; // Arena state
-} heap_Arena;
-extern mem_Allocator heap_Arena_allocator(heap_Arena* self);
-
-// Lifecycle
-extern heap_Arena heap_Arena_init(mem_Allocator child);
-extern void       heap_Arena_fini(heap_Arena* self);
-
-/*========== Arena Operations ===========================================*/
-
-/* Modes for resetting the arena */
-enum {
-    heap_Arena_ResetMode_free_all     = 0, // Free all memory
-    heap_Arena_ResetMode_retain_cap   = 1, // Keep memory for future use
-    heap_Arena_ResetMode_retain_limit = 2, // Keep memory up to limit
+struct heap_Arena {
+    mem_Allocator    child_allocator;
+    heap_Arena_State state;
 };
-typedef union heap_Arena_ResetMode {
-    struct {
-        i32 tag;
-    };
-    struct {
-        i32   tag;
-        usize limit;
-    } retain_limit;
-} heap_Arena_ResetMode;
 
-/* Query current arena capacity */
-extern usize heap_Arena_queryCap(const heap_Arena* self);
+/// Get allocator interface for instance
+extern fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator);
 
-/* Reset arena and optionally retain capacity */
-extern bool heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode);
+/// Initialize with child allocator
+extern fn_(heap_Arena_init(mem_Allocator child_allocator), heap_Arena);
+/// Deinitialize and free all memory
+extern fn_(heap_Arena_fini(heap_Arena self), void);
+
+/// Reset mode for arena reset operation
+config_UnionEnum(heap_Arena_ResetMode,
+    (heap_Arena_ResetMode_free_all, Void),
+    (heap_Arena_ResetMode_retain_capacity, Void),
+    (heap_Arena_ResetMode_retain_with_limit, usize)
+);
+
+/// Query current memory capacity of arena
+extern fn_(heap_Arena_queryCap(const heap_Arena* self), usize);
+/// Reset arena with specified mode
+extern fn_(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), bool);
 
 #if defined(__cplusplus)
 } /* extern "C" */

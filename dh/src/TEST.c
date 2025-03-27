@@ -45,8 +45,8 @@ fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void) {
     let instance = TEST_Framework_instance();
     let result   = ArrList_append(
         instance->cases.base,
-        meta_refPtr_mut(create$(TEST_Case, .fn = fn, .name = name))
-    );
+        meta_refPtr(create$(TEST_Case, .fn = fn, .name = name))
+        );
     if (isErr(result)) { return; } /* Occurs when heap is full (Out of memory) */
 }
 

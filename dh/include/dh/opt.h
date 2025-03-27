@@ -23,16 +23,18 @@ extern "C" {
 
 #include "core.h"
 #include "scope.h"
+#include "ptr.h"
 
 /*========== Definitions ====================================================*/
 
 /* Optional value */
-#define Opt$(T)                           comp_type_anon__Opt$(T)
-#define Opt_anonCast$(T_Opt, var_anon...) comp_op__Opt_anonCast$(T_Opt, var_anon)
-
 #define use_Opt$(T)  comp_gen__use_Opt$(T)
 #define decl_Opt$(T) comp_gen__decl_Opt$(T)
 #define impl_Opt$(T) comp_gen__impl_Opt$(T)
+
+#define Opt$(T)                           comp_type_alias__Opt$(T)
+#define Opt$$(T)                          comp_type_anon__Opt$$(T)
+#define Opt_anonCast$(T_Opt, var_anon...) comp_op__Opt_anonCast$(T_Opt, var_anon)
 
 /* Determines optional value */
 #define some(val_some...) comp_op__some(val_some)
@@ -68,10 +70,34 @@ extern "C" {
 
 /*========== Implementations ================================================*/
 
-#define comp_type_anon__Opt$(T) \
-    struct {                    \
-        bool has_value;         \
-        T    value;             \
+#define comp_gen__use_Opt$(T) \
+    use_Ptr$(T);              \
+    decl_Opt$(T);             \
+    impl_Opt$(T)
+#define comp_gen__decl_Opt$(T)                              \
+    typedef struct Opt$(Ptr_const$(T)) Opt$(Ptr_const$(T)); \
+    typedef struct Opt$(Ptr$(T)) Opt$(Ptr$(T));             \
+    typedef struct Opt$(T) Opt$(T)
+#define comp_gen__impl_Opt$(T)   \
+    struct Opt$(Ptr_const$(T)) { \
+        rawptr_const$(T) value;  \
+        bool has_value;          \
+    };                           \
+    struct Opt$(Ptr$(T)) {       \
+        rawptr$(T) value;        \
+        bool has_value;          \
+    };                           \
+    struct Opt$(T) {             \
+        T    value;              \
+        bool has_value;          \
+    }
+
+#define comp_type_alias__Opt$(T) \
+    pp_join($, Opt, T)
+#define comp_type_anon__Opt$$(T) \
+    struct {                     \
+        T    value;              \
+        bool has_value;          \
     }
 #define comp_op__Opt_anonCast$(T_Opt, var_anon...) eval({                                           \
     let __anon = var_anon;                                                                          \
@@ -85,27 +111,6 @@ extern "C" {
     claim_assert_static(fieldPadding(TypeOf(__anon), value) == fieldPadding(T_Opt, value));         \
     eval_return(*(T_Opt*)&__anon);                                                                  \
 })
-
-#define comp_gen__use_Opt$(T) \
-    decl_Opt$(T);             \
-    impl_Opt$(T)
-#define comp_gen__decl_Opt$(T)                                                \
-    typedef struct pp_join($, Opt$Ptr_const, T) pp_join($, Opt$Ptr_const, T); \
-    typedef struct pp_join($, Opt$Ptr, T) pp_join($, Opt$Ptr, T);             \
-    typedef struct pp_join($, Opt, T) pp_join($, Opt, T)
-#define comp_gen__impl_Opt$(T)            \
-    struct pp_join($, Opt$Ptr_const, T) { \
-        bool has_value;                   \
-        rawptr_const$(T) value;           \
-    };                                    \
-    struct pp_join($, Opt$Ptr, T) {       \
-        bool has_value;                   \
-        rawptr$(T) value;                 \
-    };                                    \
-    struct pp_join($, Opt, T) {           \
-        bool has_value;                   \
-        T    value;                       \
-    }
 
 #define comp_op__some(val_some...) { .has_value = true, .value = val_some }
 #define comp_op__none()            { .has_value = false }

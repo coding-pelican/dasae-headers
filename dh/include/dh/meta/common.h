@@ -39,10 +39,9 @@ typedef struct meta_Sli_const meta_Sli_const;
 typedef union meta_Sli        meta_Sli;
 extern meta_Sli               meta_Sli_constCast(meta_Sli_const);
 
-#define meta_refPtr(var_ptr...)     comp_op__meta_refPtr(var_ptr)
-#define meta_refSli(var_sli...)     comp_op__meta_refSli(var_sli)
-#define meta_refPtr_mut(var_ptr...) comp_op__meta_refPtr_mut(var_ptr)
-#define meta_refSli_mut(var_sli...) comp_op__meta_refSli_mut(var_sli)
+#define meta_create$(T_Lit, _Initial...) comp_op__meta_create$(T_Lit, _Initial)
+#define meta_refPtr(var_ptr...)          comp_op__meta_refPtr(var_ptr)
+#define meta_refSli(var_sli...)          comp_op__meta_refSli(var_sli)
 
 #define meta_cast$(T_Dest, var_meta...)                     comp_op__meta_cast$(T_Dest, var_meta)
 #define meta_castPtr$(T_DestPtr, var_meta_ptr...)           comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr)
@@ -80,29 +79,13 @@ union meta_Sli {
     meta_Sli_const as_const;
 };
 
-#define comp_op__meta_refPtr(var_ptr...) eval({ \
-    const TypeOf(var_ptr) __ptr = var_ptr;      \
-    eval_return((meta_Ptr_const){               \
-        .type = typeInfo$(TypeOf(*__ptr)),      \
-        .addr = __ptr,                          \
-    });                                         \
-})
-#define comp_op__meta_refSli(var_sli...) eval({    \
-    const TypeOf(var_sli) __sli = var_sli;         \
-    eval_return((meta_Sli_const){                  \
-        .ptr = {                                   \
-            .type = typeInfo$(TypeOf(*__sli.ptr)), \
-            .addr = __sli.ptr,                     \
-        },                                         \
-        .len = __sli.len,                          \
-    });                                            \
-})
-#define comp_op__meta_refPtr_mut(var_ptr...) eval({ \
-    const TypeOf(var_ptr) __ptr = var_ptr;          \
-    eval_return((meta_Ptr){                         \
-        .type = typeInfo$(TypeOf(*__ptr)),          \
-        .addr = __ptr,                              \
-    });                                             \
+#define comp_op__meta_create$(T_Lit, _Initial...) meta_refPtr(create$(T_Lit, _Initial))
+#define comp_op__meta_refPtr(var_ptr...)          eval({ \
+    const TypeOf(var_ptr) __ptr = var_ptr;               \
+    eval_return((meta_Ptr){                              \
+        .type = typeInfo$(TypeOf(*__ptr)),               \
+        .addr = __ptr,                                   \
+    });                                                  \
 })
 #define comp_op__meta_refSli_mut(var_sli...) eval({ \
     const TypeOf(var_sli) __sli = var_sli;          \
