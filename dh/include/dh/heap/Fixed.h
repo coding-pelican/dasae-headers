@@ -23,7 +23,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/mem/Allocator.h"
 
 /*========== Fixed Buffer Allocator =========================================*/
 

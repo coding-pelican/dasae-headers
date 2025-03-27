@@ -23,7 +23,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/mem/Allocator.h"
 #include "dh/list.h"
 
 /*========== Arena Allocator ===============================================*/
@@ -36,7 +35,7 @@ typedef struct heap_Arena_State {
 } heap_Arena_State;
 
 /// Inner state of ArenaAllocator
-pub fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena);
+extern fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena);
 
 struct heap_Arena {
     mem_Allocator    child_allocator;

@@ -1,16 +1,20 @@
 {
   "version": "2.0.0",
-  "runner": "terminal",
-  "echoCommand": true,
-  "presentation": {
-    "reveal": "always",
-    "clear": false
-  },
   "inputs": [
-    { // cStandard
+    {
+      "id": "compiler",
+      "type": "pickString",
+      "description": "Select compiler",
+      "options": [
+        "clang",
+        "gcc"
+      ],
+      "default": "clang"
+    },
+    {
       "id": "cStandard",
       "type": "pickString",
-      "description": "Select C standard:",
+      "description": "Select C standard",
       "options": [
         "c17",
         "c11",
@@ -18,35 +22,41 @@
       ],
       "default": "c17"
     },
-    { // cppStandard
-      "id": "cppStandard",
+    {
+      "id": "optimization",
       "type": "pickString",
-      "description": "Select C++ standard:",
+      "description": "Select optimization level",
       "options": [
-        "c++20",
-        "c++17",
-        "c++14",
-        "c++11",
-        "c++98"
+        "-O0",
+        "-O1",
+        "-O2",
+        "-O3",
+        "-Os",
+        "-Ofast"
       ],
-      "default": "c++20"
+      "default": "-O2"
     },
-    { // libraries
+    {
       "id": "libraries",
-      "type": "promptString",
-      "description": "Enter libraries to link (space-separated):",
+      "type": "pickString",
+      "description": "Select libraries to link",
+      "options": [
+        "",
+        "-lm",
+        "-lpthread"
+      ],
       "default": ""
     },
-    { // userArgs
-      "id": "userArgs",
+    {
+      "id": "runArgs",
       "type": "promptString",
-      "description": "Enter program arguments:",
+      "description": "Arguments to pass to the program",
       "default": ""
     }
   ],
   "tasks": [
-    { // dh>build C file (debug)
-      "label": "dh>build C file (debug)",
+    {
+      "label": "dh>build C file (debug-clang)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -60,30 +70,27 @@
         "-DCOMP",
         "-Wall",
         "-Wextra",
-        "-Wdocumentation",
         "-g",
         "-O0",
         "-funsigned-char",
         "-fblocks",
         "-fdiagnostics-color=always",
         "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/data.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/runtime.c",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}-debug",
         "-static",
         "${input:libraries}"
       ],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
+      "group": "build",
       "problemMatcher": [
         "$gcc"
       ]
     },
-    { // dh>build C file (release)
-      "label": "dh>build C file (release)",
+    {
+      "label": "dh>build C file (release-clang)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -103,8 +110,9 @@
         "-fblocks",
         "-fdiagnostics-color=always",
         "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/data.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/runtime.c",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/*.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}",
         "-static",
@@ -115,8 +123,8 @@
         "$gcc"
       ]
     },
-    { // dh>build C file (optimize)
-      "label": "dh>build C file (optimize)",
+    {
+      "label": "dh>build C file (optimized-clang)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -131,15 +139,16 @@
         "-DNDEBUG",
         "-Wall",
         "-Wextra",
-        "-O3",
+        "${input:optimization}",
         "-funsigned-char",
         "-fblocks",
         "-fdiagnostics-color=always",
         "${file}",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/data.c",
+        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/runtime.c",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/src/*.c",
-        "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/libs/BlocksRuntime/src/*.c",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}",
+        "${fileDirname}/${fileBasenameNoExtension}-opt",
         "-static",
         "${input:libraries}"
       ],
@@ -148,93 +157,37 @@
         "$gcc"
       ]
     },
-    { // execute debug build
-      "label": "execute debug build",
+    {
+      "label": "dh>run debug build",
       "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
+      "command": "${fileDirname}/${fileBasenameNoExtension}-debug",
+      "args": [
+        "${input:runArgs}"
+      ],
       "options": {
         "cwd": "${fileDirname}"
       },
       "group": "test"
     },
-    { // execute release/optimize build
-      "label": "execute release/optimize build",
+    {
+      "label": "dh>run release build",
       "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs}"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}"
-        ]
-      },
+      "command": "${fileDirname}/${fileBasenameNoExtension}",
+      "args": [
+        "${input:runArgs}"
+      ],
       "options": {
         "cwd": "${fileDirname}"
       },
       "group": "test"
     },
-    { // execute and cleanup debug build
-      "label": "execute and cleanup debug build",
+    {
+      "label": "dh>run optimized build",
       "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension}-debug ${input:userArgs} && del /f ${fileBasenameNoExtension}-debug.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}-debug",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}-debug"
-        ]
-      },
-      "options": {
-        "cwd": "${fileDirname}"
-      },
-      "group": "test"
-    },
-    { // execute and cleanup release/optimize build
-      "label": "execute and cleanup release/optimize build",
-      "type": "shell",
-      "windows": {
-        "command": "cmd.exe",
-        "args": [
-          "/C",
-          "${fileBasenameNoExtension} ${input:userArgs} && del /f ${fileBasenameNoExtension}.exe"
-        ]
-      },
-      "linux": {
-        "command": "./${fileBasenameNoExtension}",
-        "args": [
-          "${input:userArgs}",
-          "&&",
-          "rm",
-          "-f",
-          "${fileBasenameNoExtension}"
-        ]
-      },
+      "command": "${fileDirname}/${fileBasenameNoExtension}-opt",
+      "args": [
+        "${input:runArgs}"
+      ],
       "options": {
         "cwd": "${fileDirname}"
       },

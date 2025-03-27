@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)
  * @prefix  time
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Time management and measurement utilities
+ * @details Provides functionality for:
+ *          - Time measurement and duration tracking
+ *          - High-precision timestamps and intervals
+ *          - Time formatting and conversion utilities
+ *          - Platform-independent time operations
  */
 
 #ifndef TIME_INCLUDED

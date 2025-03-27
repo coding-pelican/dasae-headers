@@ -1,16 +1,17 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-23 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-03-27 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Configuration settings for heap management
+ * @details Defines compile-time options and configuration parameters
+ *          for memory allocation behavior and safety features.
  */
 
 #ifndef HEAP_CFG_INCLUDED

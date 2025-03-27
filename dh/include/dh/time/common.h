@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Common time utilities
+ * @details Provides common time utilities and functions for:
+ *          - Time duration operations
+ *          - Timestamp and interval measurements
+ *          - Time formatting and parsing
+ *          - Platform-independent time operations
  */
 
 #ifndef TIME_COMMON_INCLUDED

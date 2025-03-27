@@ -10,6 +10,9 @@
  * @prefix  heap_Classic
  *
  * @brief   Classic C standard library allocator wrapper
+ * @details Wraps the C standard library allocator functions
+ *          for type-safe memory management. Provides a simple
+ *          interface for allocating and freeing memory.
  */
 
 #ifndef HEAP_CLASSIC_INCLUDED

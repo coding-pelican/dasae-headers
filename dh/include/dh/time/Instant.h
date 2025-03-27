@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Instant
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Time instant utilities
+ * @details Provides functionality for:
+ *          - Time measurement and duration tracking
+ *          - High-precision timestamps and intervals
+ *          - Time formatting and parsing
+ *          - Platform-independent time operations
  */
 
 #ifndef TIME_INSTANT_INCLUDED

@@ -10,6 +10,8 @@
  * @prefix  heap_Page
  *
  * @brief   Page allocator using OS virtual memory APIs
+ * @details Uses OS-level virtual memory APIs to allocate memory in page-sized blocks.
+ *          Provides a simple interface for allocating and freeing memory.
  */
 
 #ifndef HEAP_PAGE_INCLUDED

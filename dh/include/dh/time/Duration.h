@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Duration
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Time duration utilities
+ * @details Provides functionality for:
+ *          - Time duration operations
+ *          - Timestamp and interval measurements
+ *          - Time formatting and parsing
+ *          - Platform-independent time operations
  */
 
 #ifndef TIME_DURATION_INCLUDED

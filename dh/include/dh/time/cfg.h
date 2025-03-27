@@ -9,8 +9,9 @@
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *
- * @brief   Source of some software
- * @details Some detailed explanation
+ * @brief   Configuration settings for time management
+ * @details Defines compile-time options and configuration parameters
+ *          for time-related operations and utilities.
  */
 
 #ifndef TIME_CFG_INCLUDED

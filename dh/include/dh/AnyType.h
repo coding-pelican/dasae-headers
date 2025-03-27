@@ -146,11 +146,6 @@ config_UnionEnum(AnyType,
     }); \
 })
 
-// (1-a)
-// (a*b)
-// (1-(1-a)(1-b))
-// (1-(a*b))
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
