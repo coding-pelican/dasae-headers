@@ -4,8 +4,8 @@
  * @file    sample-tetris.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-19 (date of creation)
- * @updated 2025-03-21 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2025-03-27 (date of last update)
+ * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/samples
  * @prefix  tetris
  *
@@ -102,8 +102,9 @@ pvt fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines)
 pvt fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
 
 #if bti_plat_windows
-pvt HANDLE   tetris_Console_output_handle = null;
-pvt wchar_t* tetris_Console_screen_buffer = null;
+use_Sli$(wchar_t);
+pvt HANDLE      tetris_Console_output_handle = null;
+pvt Sli$wchar_t tetris_Console_screen_buffer = cleared();
 #else  /* others */
 struct termios tetris_Console_original = cleared();
 #endif /* others */
@@ -238,32 +239,44 @@ fn_ext_scope(dh_main(void), Err$void) {
 pvt fn_ext_scope(tetris_Console_bootup(void), Err$void) {
 #if bti_plat_windows
     /* Set up Windows console */
-    var screenSize               = tetris_screen_width * tetris_screen_height;
-    tetris_Console_screen_buffer = calloc(screenSize, sizeof(wchar_t));
-    if (tetris_Console_screen_buffer == null) {
-        return_err(mem_Allocator_Err_OutOfMemory());
-    }
-    for (i32 i = 0; i < screenSize; ++i) {
-        tetris_Console_screen_buffer[i] = L' ';
+    var screen_size = tetris_screen_width * tetris_screen_height;
+
+    /* Use safe allocation with proper type information */
+    var allocator                = heap_Page_allocator(create$(heap_Page));
+    var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar_t), screen_size));
+    tetris_Console_screen_buffer = meta_castSli$(Sli$wchar_t, screen_buffer);
+    errdefer_(mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
+
+    /* Initialize buffer with spaces */
+    for_slice (tetris_Console_screen_buffer, cell) {
+        *cell = L' ';
     }
 
-    tetris_Console_output_handle = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, null, CONSOLE_TEXTMODE_BUFFER, null);
+    /* Create console buffer with proper error handling */
+    tetris_Console_output_handle = CreateConsoleScreenBuffer(
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        null,
+        CONSOLE_TEXTMODE_BUFFER,
+        null
+    );
     if (tetris_Console_output_handle == INVALID_HANDLE_VALUE) {
         return_err(Err_Unexpected());
     }
+    errdefer_(CloseHandle(tetris_Console_output_handle));
 
     if (!SetConsoleActiveScreenBuffer(tetris_Console_output_handle)) {
         return_err(Err_Unexpected());
     }
 #else
     /* Set up Unix terminal */
-    struct termios new_termios;
+    struct termios new_termios = cleared();
 
     /* Get current terminal settings */
-    tcgetattr(STDIN_FILENO, &tetris_Console_original = cleared());
+    tcgetattr(STDIN_FILENO, &tetris_Console_original);
 
     /* Copy settings */
-    new_termios = tetris_Console_original = cleared();
+    new_termios = tetris_Console_original;
 
     /* Disable canonical mode and echo */
     new_termios.c_lflag &= ~(ICANON | ECHO);
@@ -280,31 +293,26 @@ pvt fn_ext_scope(tetris_Console_bootup(void), Err$void) {
 
 pvt fn_(tetris_Console_shutdown(void), void) {
 #if bti_plat_windows
-    if (tetris_Console_screen_buffer != null) {
-        free(tetris_Console_screen_buffer);
-        tetris_Console_screen_buffer = null;
-    }
-    if (tetris_Console_output_handle != INVALID_HANDLE_VALUE) {
-        CloseHandle(tetris_Console_output_handle);
-        tetris_Console_output_handle = INVALID_HANDLE_VALUE;
-    }
+    var allocator = heap_Page_allocator(create$(heap_Page));
+    mem_Allocator_free(allocator, anySli(tetris_Console_screen_buffer));
+    CloseHandle(tetris_Console_output_handle);
 #else  /* others */
     /* Restore original terminal settings */
-    tcsetattr(STDIN_FILENO, TCSANOW, &tetris_Console_original = cleared());
+    tcsetattr(STDIN_FILENO, TCSANOW, &tetris_Console_original);
 #endif /* others */
 }
 
 pvt fn_(tetris_isKeyPressed(i32 key), bool) {
 #if bti_plat_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
-    static const Arr_const$$(5, i8) key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
-    return (GetAsyncKeyState(Arr_getAt(key_map, key)) & 0x8000) != 0;
+    static const Arr_const$$(5, i8) s_key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
+    return (GetAsyncKeyState(Arr_getAt(s_key_map, key)) & 0x8000) != 0;
 #else  /* others */
     /* Non-blocking read from stdin */
-    static bool is_initialized = false;
-    if (!is_initialized) {
+    static bool s_is_initialized = false;
+    if (!s_is_initialized) {
         fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
-        is_initialized = true;
+        s_is_initialized = true;
     }
 
     i8 c = 0;
@@ -321,11 +329,11 @@ pvt fn_(tetris_isKeyPressed(i32 key), bool) {
 }
 
 pvt fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
-    /* Allocate grid for field */
-    var items = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height)));
+    /* Allocate grid for field with proper type information */
+    var items = try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height));
 
-    /* Create grid from slice */
-    let field = Grid_fromSli$(Grid$u8, items, tetris_field_width, tetris_field_height);
+    /* Create grid from slice with proper type casting */
+    let field = Grid_fromSli$(Grid$u8, meta_castSli$(Sli$u8, items), tetris_field_width, tetris_field_height);
 
     /* Initialize field - borders are 9, inside is 0 */
     for (u32 y = 0; y < tetris_field_height; ++y) {
@@ -344,8 +352,8 @@ pvt fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_Play
 pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
 #if bti_plat_windows
     /* Clear screen buffer */
-    for (i32 i = 0; i < tetris_screen_width * tetris_screen_height; ++i) {
-        tetris_Console_screen_buffer[i] = L' ';
+    for_slice (tetris_Console_screen_buffer, cell) {
+        *cell = L' ';
     }
 
     /* Draw field */
@@ -364,7 +372,7 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
                 c = L'A' + cell - 1; /* Tetromino */
             }
 
-            tetris_Console_screen_buffer[(y + 2) * tetris_screen_width + (x + 2)] = c;
+            Sli_setAt(tetris_Console_screen_buffer, (y + 2) * tetris_screen_width + (x + 2), c);
         }
     }
 
@@ -375,7 +383,7 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
             let bit = 1 << pi;
 
             if (Arr_getAt(tetris_tetrominos, current_piece) & bit) {
-                tetris_Console_screen_buffer[(pos_y + py + 2) * tetris_screen_width + (pos_x + px + 2)] = L'A' + current_piece;
+                Sli_setAt(tetris_Console_screen_buffer, (pos_y + py + 2) * tetris_screen_width + (pos_x + px + 2), L'A' + current_piece);
             }
         }
     }
@@ -384,47 +392,47 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
     wchar_t score_text[32] = { 0 };
     ignore swprintf(score_text, 32, L"SCORE: %8d", score);
     for (i32 i = 0; score_text[i] != L'\0'; ++i) {
-        tetris_Console_screen_buffer[2 * tetris_screen_width + field->grid.width + 6 + i] = score_text[i];
+        Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, score_text[i]);
     }
 
     /* Output to console */
     DWORD dwBytesWritten = 0;
-    WriteConsoleOutputCharacterW(tetris_Console_output_handle, tetris_Console_screen_buffer, tetris_screen_width * tetris_screen_height, (COORD){ 0, 0 }, &dwBytesWritten);
+    WriteConsoleOutputCharacterW(tetris_Console_output_handle, tetris_Console_screen_buffer.ptr, tetris_Console_screen_buffer.len, (COORD){ 0, 0 }, &dwBytesWritten);
 #else  /* others */
     /* Move cursor to top-left */
     printf("\033[H");
 
     /* Draw top border */
     printf("+");
-    for (i32 i = 0; i < field->field.width; ++i) {
+    for (i32 i = 0; i < field->grid.width; ++i) {
         printf("-");
     }
     printf("+\n");
 
     /* Draw field */
-    for (i32 y = 0; y < field->field.height; ++y) {
+    for (i32 y = 0; y < field->grid.height; ++y) {
         printf("|");
-        for (i32 x = 0; x < field->field.width; ++x) {
+        for (i32 x = 0; x < field->grid.width; ++x) {
             u8 c = ' ';
 
             /* Check if current position has the active piece */
             bool is_current_piece = false;
-            if (posX <= x && x < posX + 4
-                && posY <= y && y < posY + 4) {
-                let px  = x - posX;
-                let py  = y - posY;
-                let pi  = rotate(px, py, rotation);
+            if (pos_x <= x && x < pos_x + 4
+                && pos_y <= y && y < pos_y + 4) {
+                let px  = x - pos_x;
+                let py  = y - pos_y;
+                let pi  = tetris_rotate(px, py, rotation);
                 let bit = 1 << pi;
 
-                if (Arr_getAt(tetrominos, currentPiece) & bit) {
+                if (Arr_getAt(tetris_tetrominos, current_piece) & bit) {
                     is_current_piece = true;
                 }
             }
 
             if (is_current_piece) {
-                c = 'A' + currentPiece;
+                c = 'A' + current_piece;
             } else {
-                u8 cell = Grid_getAt(field->field, x, y);
+                u8 cell = Grid_getAt(field->grid, x, y);
                 if (cell == 0) {
                     c = ' '; /* Empty */
                 } else if (cell == 9) {
@@ -443,7 +451,7 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
 
     /* Draw bottom border */
     printf("+");
-    for (i32 i = 0; i < field->field.width; ++i) {
+    for (i32 i = 0; i < field->grid.width; ++i) {
         printf("-");
     }
     printf("+\n");
