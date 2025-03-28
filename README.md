@@ -16,6 +16,23 @@
   </div>
 </div>
 
+## Table of Contents
+
+- [dasae-headers](#dasae-headers)
+  - [Table of Contents](#table-of-contents)
+  - [🌟 Introduction](#-introduction)
+  - [🛡️ Key Features](#️-key-features)
+  - [🌐 Platform Support](#-platform-support)
+  - [🚀 Getting Started](#-getting-started)
+    - [Installation](#installation)
+  - [⚡ Code Samples](#-code-samples)
+    - [Basic Example](#basic-example)
+    - [Error Handling Example](#error-handling-example)
+    - [🧪 Test Code Example](#-test-code-example)
+  - [📚 Documentation](#-documentation)
+  - [🚧 Current Status](#-current-status)
+  - [📜 License](#-license)
+
 ## 🌟 Introduction
 
 dasae-headers aims to apply modern programming paradigms to the C language, greatly enhancing safety, expressiveness, and productivity. It provides memory safety, type safety, and improved error handling while maintaining the simplicity of C.
