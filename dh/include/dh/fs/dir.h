@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs_dir
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Directory utilities
+ * @details Provides utilities for directory operations:
+ *          - Directory creation
+ *          - Directory listing
+ *          - Directory traversal
+ *          - Directory deletion
+ *          - Directory utilities
  */
 
 #ifndef FS_DIR_INCLUDED

@@ -9,8 +9,11 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Switch utilities
+ * @details Provides switch utilities and functions for:
+ *          - Fallthrough
+ *          - Case return
+ *          - Default return
  */
 
 #ifndef CORE_PRIM_SWITCH_INCLUDED

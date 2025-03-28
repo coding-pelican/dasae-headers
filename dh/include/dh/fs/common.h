@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Common file system utilities
+ * @details Provides common file system utilities and functions for:
+ *          - File operations
+ *          - Directory operations
+ *          - Path operations
+ *          - File system operations
+ *          - File system utilities
  */
 
 #ifndef FS_COMMON_INCLUDED

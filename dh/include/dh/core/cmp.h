@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/core
  * @prefix  cmp
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Comparator utilities
+ * @details Provides comparator utilities and functions for:
+ *          - Comparison operations
+ *          - Equality checks
+ *          - Inequality checks
+ *          - Ordering operations
+ *          - Comparison utilities
  */
 
 #ifndef CORE_CMP_INCLUDED

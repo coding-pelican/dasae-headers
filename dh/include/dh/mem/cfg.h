@@ -9,8 +9,9 @@
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Memory configuration settings
+ * @details Defines compile-time options and configuration parameters
+ *          for memory-related operations and utilities.
  */
 
 #ifndef MEM_CFG_INCLUDED

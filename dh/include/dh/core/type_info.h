@@ -10,7 +10,12 @@
  * @prefix  NONE
  *
  * @brief   Type information for type-safe programming
- * @details Some detailed explanation
+ * @details Provides type information for type-safe programming:
+ *          - Type size and alignment
+ *          - Type comparison
+ *          - Type casting
+ *          - Type conversion
+ *          - Type utility functions
  */
 
 #ifndef CORE_TYPE_INFO_INCLUDED

@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Integer type overflow checking utilities
+ * @details Provides utilities for checking integer overflows.
  */
 
 #ifndef INT_INCLUDED

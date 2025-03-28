@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/scope
  * @prefix  scope
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Common scope management utilities
+ * @details Provides macros and functions for scope-based resource management:
+ *          - Scoped variable declarations and initialization
+ *          - Resource acquisition and cleanup
+ *          - Conditional scope execution
+ *          - Loop constructs with initialization
  */
 
 #ifndef SCOPE_COMMON_INCLUDED

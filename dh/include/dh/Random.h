@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Random
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Random number generator utilities
+ * @details Provides a random number generator that can be used to generate random numbers.
  */
 
 #ifndef RANDOM_INCLUDED
@@ -68,11 +68,6 @@ extern f64 Random_f64(void);
 extern u64 Random_range_u64(u64 min, u64 max);
 extern i64 Random_range_i64(i64 min, i64 max);
 extern f64 Random_range_f64(f64 min, f64 max);
-
-/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
-
-#ifdef UNIT_TEST
-#endif /* UNIT_TEST */
 
 #if defined(__cplusplus)
 } /* extern "C" */

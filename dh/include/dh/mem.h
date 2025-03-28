@@ -10,7 +10,7 @@
  * @prefix  mem
  *
  * @brief   Memory management with type-safe operations
- * @details
+ * @details Provides memory management utilities with type-safe operations.
  */
 
 #ifndef MEM_INCLUDED

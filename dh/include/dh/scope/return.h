@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Return utilities
+ * @details Provides utilities for returning values from functions:
+ *          - Return value reservation
+ *          - Return value setting
+ *          - Return value management
+ *          - Return value cleanup
  */
 
 #ifndef SCOPE_RETURN_INCLUDED

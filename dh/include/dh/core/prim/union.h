@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Union type utilities
+ * @details Provides union type utilities and functions for:
+ *          - Union type definition
+ *          - Union type usage
+ *          - Union type operations
+ *          - Union type utilities
  */
 
 #ifndef CORE_PRIM_UNION_INCLUDED

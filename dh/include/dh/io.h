@@ -10,8 +10,9 @@
  * @ingroup dasae-headers(dh)
  * @prefix  io
  *
- * @brief
- * @details
+ * @brief   Input/output utilities
+ * @details Provides utilities for input/output operations, including file handling,
+ *          string formatting, and console input/output.
  */
 
 #ifndef IO_INCLUDED

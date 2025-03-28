@@ -9,8 +9,10 @@
  * @ingroup dasae-headers(dh)
  * @prefix  scope
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Scope-based resource management utilities
+ * @details Provides macros and utilities for automatic resource cleanup,
+ *          including defer statements and scope guards that ensure resources
+ *          are properly released when execution leaves the current scope.
  */
 
 #ifndef SCOPE_INCLUDED

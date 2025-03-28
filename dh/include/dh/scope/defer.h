@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/scope
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Defer utilities
+ * @details Provides utilities for deferred execution of statements:
+ *          - Defer statements for resource cleanup
+ *          - Block-level defer management
+ *          - Conditional defer execution
+ *          - Loop-level defer execution
  */
 
 #ifndef SCOPE_DEFER_INCLUDED

@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  prim
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Primitive types and operations
+ * @details Provides primitive types and operations for:
+ *          - Bitwise operations
+ *          - Boolean operations
+ *          - Integer operations
+ *          - Floating-point operations
+ *          - Pointer operations
  */
 
 #ifndef CORE_PRIM_INCLUDED
@@ -23,7 +28,6 @@ extern "C" {
 
 #include "prim/cfg.h"
 
-#include "prim/bitwise.h"
 #include "prim/bool.h"
 #include "prim/int.h"
 #include "prim/flt.h"
@@ -33,7 +37,6 @@ extern "C" {
 
 #include "prim/struct.h"
 #include "prim/union.h"
-#include "prim/enum.h"
 #include "prim/switch.h"
 
 /*========== Macros and Definitions =========================================*/
@@ -72,33 +75,33 @@ typedef struct Void {
     );                                                        \
 })
 #define FUNC__prim_eq(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs == (__rhs);                            \
 })
 #define FUNC__prim_ne(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs != (__rhs);                            \
 })
 #define FUNC__prim_lt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs < (__rhs);                             \
 })
 #define FUNC__prim_gt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs > (__rhs);                             \
 })
 #define FUNC__prim_le(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs <= (__rhs);                            \
 })
 #define FUNC__prim_ge(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let         __lhs = (val_lhs);                           \
-    let         __rhs = (val_rhs);                           \
+    let __lhs = (val_lhs);                                   \
+    let __rhs = (val_rhs);                                   \
     eval_return __lhs >= (__rhs);                            \
 })
 
@@ -130,7 +133,7 @@ typedef struct Void {
     eval_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
 })
 #define FUNC__prim_sign(val_x) eval({                                              \
-    let         __scalar = (val_x);                                                \
+    let __scalar = (val_x);                                                        \
     eval_return as$(TypeOf(__scalar), __scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0)); \
 })
 

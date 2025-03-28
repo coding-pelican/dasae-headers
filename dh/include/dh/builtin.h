@@ -23,8 +23,6 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-// bt? bi? bti? uni? unf? ax? => "bti"
-
 #include "builtin/arch_cfg.h"
 #include "builtin/plat_cfg.h"
 #include "builtin/lang_cfg.h"

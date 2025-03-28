@@ -9,8 +9,9 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Function utilities
+ * @details Provides utilities for function operations, including function pointers,
+ *          function declarations, and function implementations.
  */
 
 #ifndef FN_INCLUDED

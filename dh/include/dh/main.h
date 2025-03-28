@@ -10,7 +10,7 @@
  * @prefix  NONE
  *
  * @brief   hijacked main for error handling
- * @details
+ * @details Provides a hijacked main function for error handling.
  */
 
 #ifndef MAIN_INCLUDED

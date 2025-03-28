@@ -175,17 +175,6 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// @brief Dynamic array list structure
-/// @details Provides a contiguous memory buffer that automatically resizes
-typedef struct ArrList {
-    meta_Sli      items;     ///< Slice containing the elements with meta
-    usize         cap;       ///< Current capacity of the list
-    mem_Allocator allocator; ///< Memory allocator to use
-} ArrList;
-use_Opt$(ArrList);
-use_Err$(ArrList);
-use_ErrSet$(mem_Allocator_Err, ArrList);
-
 #define use_ArrList$(T)                                               \
     /**                                                               \
      * @brief Declare and implement typed array list                  \
@@ -240,6 +229,17 @@ use_ErrSet$(mem_Allocator_Err, ArrList);
      *     ArrList$i32 typed = ArrList_anonCast$(ArrList$i32, anon); \
      */                                                              \
     comp_op__ArrList_anonCast$(pp_uniqTok(anon), T_ArrList, var_anon)
+
+/// @brief Dynamic array list structure
+/// @details Provides a contiguous memory buffer that automatically resizes
+typedef struct ArrList {
+    meta_Sli      items;     ///< Slice containing the elements with meta
+    usize         cap;       ///< Current capacity of the list
+    mem_Allocator allocator; ///< Memory allocator to use
+} ArrList;
+use_Opt$(ArrList);
+use_Err$(ArrList);
+use_ErrSet$(mem_Allocator_Err, ArrList);
 
 /*========== Function Prototypes ============================================*/
 

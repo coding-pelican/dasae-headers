@@ -9,8 +9,9 @@
  * @ingroup dasae-headers(dh)/scope
  * @prefix  scope
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Configuration settings for scope management
+ * @details Defines compile-time options and configuration parameters
+ *          for scope-related operations and utilities.
  */
 
 #ifndef SCOPE_CFG_INCLUDED

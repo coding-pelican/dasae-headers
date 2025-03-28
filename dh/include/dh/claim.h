@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  claim
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Assertion utilities
+ * @details Provides assertion utilities for static and dynamic assertions.
  */
 
 #ifndef CLAIM_INCLUDED

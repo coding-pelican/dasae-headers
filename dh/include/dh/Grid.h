@@ -10,7 +10,7 @@
  * @prefix  Grid
  *
  * @brief   Using one-dimensional slice as two-dimensional grid
- * @details
+ * @details Provides a grid implementation using a one-dimensional slice as a two-dimensional grid.
  */
 
 #ifndef GRID_INCLUDED
@@ -29,13 +29,15 @@ extern "C" {
 typedef struct Grid_const Grid_const;
 typedef union Grid        Grid;
 
-#define Grid_const$(T)                      comp_type_anon__Grid_const$(T)
-#define Grid$(T)                            comp_type_anon__Grid$(T)
-#define Grid_anonCast$(T_Grid, var_anon...) comp_op__Grid_anonCast$(pp_uniqTok(anon), T_Grid, var_anon)
-
 #define use_Grid$(T)  comp_gen__use_Grid$(T)
 #define decl_Grid$(T) comp_gen__decl_Grid$(T)
 #define impl_Grid$(T) comp_gen__impl_Grid$(T)
+
+#define Grid_const$(T)                      comp_type_alias__Grid_const$(T)
+#define Grid$(T)                            comp_type_alias__Grid$(T)
+#define Grid_const$$(T)                     comp_type_anon__Grid_const$$(T)
+#define Grid$$(T)                           comp_type_anon__Grid$$(T)
+#define Grid_anonCast$(T_Grid, var_anon...) comp_op__Grid_anonCast$(pp_uniqTok(anon), T_Grid, var_anon)
 
 #define Grid_fromSli$(T_Grid, var_sli, u32_width, u32_height...) comp_op__Grid_fromSli$(pp_uniqTok(sli), pp_uniqTok(width), pp_uniqTok(height), T_Grid, var_sli, u32_width, u32_height)
 
@@ -61,34 +63,6 @@ union Grid {
     Grid_const as_const;
 };
 
-#define comp_type_anon__Grid_const$(T) \
-    struct {                           \
-        Sli_const$(T) items;           \
-        u32 width;                     \
-        u32 height;                    \
-    }
-#define comp_type_anon__Grid$(T) \
-    union {                      \
-        struct {                 \
-            Sli$(T) items;       \
-            u32 width;           \
-            u32 height;          \
-        };                       \
-        Grid_const$(T) as_const; \
-    }
-#define comp_op__Grid_anonCast$(__anon, T_Grid, var_anon...) eval({                            \
-    const TypeOf(var_anon) __anon = var_anon;                                                  \
-    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Grid));                             \
-    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Grid));                           \
-    claim_assert_static(fieldAnonTypeCastable(T_Grid, __anon, Sli, items));                    \
-    claim_assert_static(validateField(__anon, width, FieldTypeOf(u32, width)));                \
-    claim_assert_static(validateField(__anon, height, FieldTypeOf(u32, height)));              \
-    claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items));   \
-    claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width));   \
-    claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \
-    eval_return rawderef(as$(rawptr$(T_Grid), &__anon));                                       \
-})
-
 #define comp_gen__use_Grid$(T) \
     decl_Grid$(T);             \
     impl_Grid$(T)
@@ -109,6 +83,31 @@ union Grid {
         };                                  \
         pp_join($, Grid_const, T) as_const; \
     }
+
+#define comp_type_anon__Grid_const$$(T) \
+    struct {                            \
+        Sli_const$$(T) items;           \
+        u32 width;                      \
+        u32 height;                     \
+    }
+#define comp_type_anon__Grid$$(T) \
+    struct {                      \
+        Sli$$(T) items;           \
+        u32 width;                \
+        u32 height;               \
+    };
+#define comp_op__Grid_anonCast$(__anon, T_Grid, var_anon...) eval({                            \
+    const TypeOf(var_anon) __anon = var_anon;                                                  \
+    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Grid));                             \
+    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Grid));                           \
+    claim_assert_static(fieldAnonTypeCastable(T_Grid, __anon, Sli, items));                    \
+    claim_assert_static(validateField(__anon, width, FieldTypeOf(u32, width)));                \
+    claim_assert_static(validateField(__anon, height, FieldTypeOf(u32, height)));              \
+    claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items));   \
+    claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width));   \
+    claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \
+    eval_return rawderef(as$(rawptr$(T_Grid), &__anon));                                       \
+})
 
 #define comp_op__Grid_fromSli$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) eval({ \
     const TypeOf(var_sli) __sli = var_sli;                                                                 \

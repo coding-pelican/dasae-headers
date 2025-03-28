@@ -7,10 +7,10 @@
  * @updated 2024-12-31 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
- * @prefix
+ * @prefix  meta
  *
- * @brief
- * @details
+ * @brief   Meta-programming utilities
+ * @details Provides meta-programming utilities for compile-time type information and manipulation.
  */
 
 #ifndef META_INCLUDED

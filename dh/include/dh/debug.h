@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  debug
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Debug utilities
+ * @details Provides debug utilities for the project.
  */
 
 #ifndef DEBUG_INCLUDED

@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Err
  *
- * @brief
- * @details
+ * @brief   Error utilities
+ * @details Provides error utilities for the project.
  */
 
 #ifndef ERR_INCLUDED

@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Floating point type utilities
+ * @details Provides floating point type utilities and functions for:
+ *          - Floating point type definition
+ *          - Floating point type usage
+ *          - Floating point type operations
+ *          - Floating point type utilities
  */
 
 #ifndef CORE_PRIM_FLTS_INCLUDED

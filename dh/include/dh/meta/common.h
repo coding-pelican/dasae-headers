@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/meta
  * @prefix
  *
- * @brief
- * @details
+ * @brief   Common meta utilities
+ * @details Provides common meta utilities and functions for:
+ *          - Meta type creation
+ *          - Meta type casting
+ *          - Meta type conversion
+ *          - Meta type comparison
+ *          - Meta type utility functions
  */
 
 #ifndef META_COMMON_INCLUDED

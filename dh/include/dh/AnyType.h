@@ -7,10 +7,10 @@
  * @updated 2025-03-19 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
- * @prefix
+ * @prefix  NONE
  *
- * @brief
- * @details
+ * @brief   AnyType is a type that can be used to store any type of data.
+ * @details It is a union of all types that can be stored in a variable.
  */
 
 #ifndef ANY_TYPE_INCLUDED
@@ -101,8 +101,8 @@ config_UnionEnum(AnyType,
 );
 
 #define anyPtr(var_ptr...)        comp_op__anyPtr(var_ptr)
-#define anySliZ(var_sli...)       comp_op__anySliZ(var_sli)
-#define anySliS(var_sli...)       comp_op__anySliS(var_sli)
+#define anySliZ(var_sli...)       comp_op__anySliZ(var_sli) /* Not implemented */
+#define anySliS(var_sli...)       comp_op__anySliS(var_sli) /* Not implemented */
 #define anySli(var_sli...)        comp_op__anySli(var_sli)
 #define anyOpt(var_opt...)        comp_op__anyOpt(var_opt)
 #define anyErrRes(var_err_res...) comp_op__anyErrSet(var_err_res)

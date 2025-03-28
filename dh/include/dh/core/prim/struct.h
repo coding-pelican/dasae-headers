@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Struct type utilities
+ * @details Provides struct type utilities and functions for:
+ *          - Struct type definition
+ *          - Struct type usage
+ *          - Struct type operations
+ *          - Struct type utilities
  */
 
 #ifndef CORE_PRIM_STRUCT_INCLUDED

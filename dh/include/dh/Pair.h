@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Pair
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Pair type implementation
+ * @details Provides a pair type that can be used to represent a pair of values.
  */
 
 #ifndef PAIR_INCLUDED

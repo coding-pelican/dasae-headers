@@ -9,8 +9,10 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Union enum implementation with pattern matching
+ * @details Provides macros and utilities for creating and working with tagged unions (discriminated unions),
+ *          including pattern matching syntax, payload extraction, and type-safe union construction.
+ *          Supports compile-time type checking and exhaustive pattern matching.
  */
 
 #ifndef UNION_ENUM_INCLUDED

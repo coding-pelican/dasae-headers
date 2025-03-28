@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/core
  * @prefix  ops
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Operator utilities
+ * @details Provides operator utilities and functions for:
+ *          - Unary operators
+ *          - Binary operators
+ *          - Function-like macros
+ *          - Wrapper macros
+ *          - Externalized static functions
  */
 
 #ifndef CORE_OPS_INCLUDED

@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)/core
  * @prefix  pp
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Preprocessor utilities
+ * @details Provides preprocessor utilities and functions for:
+ *          - Stringification
+ *          - Token concatenation
+ *          - Token uniquification
+ *          - Token counting
+ *          - Token iteration
  */
 
 #ifndef CORE_PP_INCLUDED

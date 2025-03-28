@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Range
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Range type implementation
+ * @details Provides a range type that can be used to represent a range of values.
  */
 
 #ifndef RANGE_INCLUDED

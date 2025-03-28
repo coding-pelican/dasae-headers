@@ -10,8 +10,13 @@
  * @ingroup dasae-headers(dh)/io
  * @prefix  io
  *
- * @brief
- * @details
+ * @brief   Common IO utilities
+ * @details Provides common IO utilities and functions for:
+ *          - File operations
+ *          - Stream operations
+ *          - Buffer operations
+ *          - Error handling
+ *          - Utility functions
  */
 
 #ifndef IO_COMMON_INCLUDED

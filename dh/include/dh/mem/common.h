@@ -10,7 +10,13 @@
  * @prefix  mem
  *
  * @brief   Memory management with type-safe operations
- * @details
+ * @details Provides type-safe memory allocation and management utilities:
+ *          - Memory allocation and deallocation
+ *          - Memory resizing and remapping
+ *          - Memory tracing and debugging
+ *          - Memory alignment and padding utilities
+ *          - Memory comparison and equality checks
+ *          - Memory conversion and type-safe operations
  */
 
 #ifndef MEM_COMMON_INCLUDED

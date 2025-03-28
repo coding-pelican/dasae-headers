@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Pointer utilities
+ * @details Provides pointer utilities and functions for:
+ *          - Pointer definition
+ *          - Pointer usage
+ *          - Pointer operations
+ *          - Pointer utilities
  */
 
 #ifndef CORE_PRIM_PTR_INCLUDED
@@ -107,7 +111,7 @@ typedef ptrdiff_t   ptrdiff;
 #define FUNC__rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
 
 #define comp_op__ensureNonnull(__ptr, val_ptr...) eval({ \
-    TypeOf(*val_ptr)* __ptr = val_ptr;             \
+    TypeOf(*val_ptr)* __ptr = val_ptr;                   \
     eval_return debug_assert_nonnull(__ptr), __ptr;      \
 })
 

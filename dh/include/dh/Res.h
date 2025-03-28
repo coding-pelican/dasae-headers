@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  Res
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Result type implementation
+ * @details Provides a result type that can be used to return a value and an error.
  */
 
 #ifndef RES_INCLUDED

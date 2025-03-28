@@ -9,8 +9,9 @@
  * @ingroup dasae-headers(dh)
  * @prefix  fs
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   File system utilities
+ * @details Provides utilities for file system operations, including directory traversal,
+ *          file path manipulation, and file handling.
  */
 
 #ifndef FS_INCLUDED

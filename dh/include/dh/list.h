@@ -9,8 +9,13 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief   List implementation
- * @details
+ * @brief   List data structures
+ * @details Provides comprehensive linked list implementations:
+ *          - Singly linked list: Memory-efficient forward traversal
+ *          - Doubly linked list: Bidirectional traversal with O(1) operations
+ *
+ *          Both implementations include standard operations like insertion,
+ *          deletion, traversal, and utility functions for common list operations.
  */
 
 #ifndef LIST_INCLUDED

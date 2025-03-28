@@ -9,8 +9,8 @@
  * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
- * @brief
- * @details
+ * @brief   Optional value implementation
+ * @details Provides a type for representing optional values, which may or may not contain a value.
  */
 
 #ifndef OPT_INCLUDED

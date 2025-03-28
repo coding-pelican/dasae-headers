@@ -8,6 +8,11 @@
  * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  sort
+ *
+ * @brief   Sorting utilities
+ * @details Provides sorting functions for arrays and slices.
+ *          Includes insertion sort, merge sort, and stable sort implementations.
+ *          Supports custom comparison functions and optional memory allocation.
  */
 
 #ifndef SORT_INCLUDED

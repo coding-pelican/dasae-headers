@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Null utilities
+ * @details Provides null utilities and functions for:
+ *          - Null definition
+ *          - Null pointer definition
+ *          - Nullable-Nonnull attributes
+ *          - Nullable-Nonnull macros
  */
 
 #ifndef CORE_PRIM_NULL_INCLUDED
@@ -55,27 +59,27 @@ extern "C" {
 #endif
 
 /* Nullable-Nonnull attributes */
-#define nullable ATTR_nullable
-#define nonnull  ATTR_nonnull
+#define nullable comp_attr__nullable
+#define nonnull  comp_attr__nonnull
 
-#define Nullable(TPtr) TYPE_Nullable(TPtr)
-#define Nonnull(TPtr)  TYPE_Nonnull(TPtr)
+#define Nullable(TPtr) comp_type__Nullable(TPtr)
+#define Nonnull(TPtr)  comp_type__Nonnull(TPtr)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
-#define ATTR_nullable _Nullable
-#define ATTR_nonnull  _Nonnull
+#define comp_attr__nullable _Nullable
+#define comp_attr__nonnull  _Nonnull
 #elif defined(__GNUC__)
-#define ATTR_nullable __attribute__((nullable))
-#define ATTR_nonnull  __attribute__((nonnull))
+#define comp_attr__nullable __attribute__((nullable))
+#define comp_attr__nonnull  __attribute__((nonnull))
 #else
-#define ATTR_nullable /* nullable */
-#define ATTR_nonnull  /* nonnull */
+#define comp_attr__nullable /* nullable */
+#define comp_attr__nonnull  /* nonnull */
 #endif
 
-#define TYPE_Nullable(TPtr) TPtr nullable
-#define TYPE_Nonnull(TPtr)  TPtr nonnull
+#define comp_type__Nullable(TPtr) TPtr nullable
+#define comp_type__Nonnull(TPtr)  TPtr nonnull
 
 #if defined(__cplusplus)
 } /* extern "C" */

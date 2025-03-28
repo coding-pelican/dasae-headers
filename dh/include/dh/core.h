@@ -10,7 +10,7 @@
  * @prefix  NONE
  *
  * @brief   "Make C Great Again"
- * @details Some detailed explanation
+ * @details Provides core utilities and definitions for the project.
  */
 
 #ifndef CORE_INCLUDED
@@ -28,9 +28,6 @@ extern "C" {
 #include "core/cmp.h"
 #include "core/type_info.h"
 #include "core/src_loc.h"
-
-// #define op_asg(var_ptr, val)     OP__op_asg(var_ptr, val)
-// #define OP__op_asg(var_ptr, val) (*(var_ptr) = type$(TypeOf(*(var_ptr)), val))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -9,8 +9,12 @@
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
  *
- * @brief   Header of some software
- * @details Some detailed explanation
+ * @brief   Integer type utilities
+ * @details Provides integer type utilities and functions for:
+ *          - Integer type definition
+ *          - Integer type usage
+ *          - Integer type operations
+ *          - Integer type utilities
  */
 
 #ifndef CORE_PRIM_INT_INCLUDED
@@ -105,7 +109,7 @@ typedef uintptr_t usize;
 #define usize_limit_min (0)
 #define usize_limit_max (UINTPTR_MAX)
 
-typedef __int128_t u128;
+typedef __int128_t  u128;
 typedef __uint128_t i128;
 
 #if defined(__cplusplus)
