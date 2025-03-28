@@ -54,6 +54,7 @@
     - [🧪 Test Code Example](#-test-code-example)
   - [📚 Documentation](#-documentation)
   - [🚧 Current Status](#-current-status)
+  - [🙏 Contributing](#-contributing)
   - [📜 License](#-license)
 
 ## 🌟 Introduction
@@ -220,9 +221,13 @@ Detailed documentation can be found at:
 This project is actively under development, and the API is not yet stabilized. We would appreciate if you could use it in experimental projects and provide feedback.
 <!-- If you are interested in improving the project, please refer to contribution.md. -->
 
-1. Issue reporting: Bug reports or feature requests
-2. Code contributions: Feature additions or bug fixes via Pull Requests
-3. Documentation: Improving documentation or adding example code
+## 🙏 Contributing
+
+Issues, pull requests, and feedback are always welcome!
+
+1. Issue reporting: Bug reports / feature requests
+2. Code contributions: Feature additions / bug fixes via Pull Requests
+3. Documentation: Improving documentation / adding example code
 
 ## 📜 License
 
