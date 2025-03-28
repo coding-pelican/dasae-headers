@@ -62,7 +62,7 @@ config_ErrSet(TerrainDataErr,
 use_ErrSet$(TerrainDataErr, TerrainData);
 /// Suppose "heightmap.png" is an 8-bit grayscale PNG,
 /// and "colormap.png" is an 8-bit RGB or RGBA PNG.
-pvt fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), must_check TerrainDataErr$TerrainData);
+pvt fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), $must_check TerrainDataErr$TerrainData);
 
 typedef struct State {
     TerrainData terrain;
@@ -97,7 +97,7 @@ pvt fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void);
 
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
+    $unused(args);
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     {
@@ -143,16 +143,13 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Initialize rendering with camera parameters
     var allocator = heap_Page_allocator(&(heap_Page){});
-    var state     = make$(State,
-        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
-        .camera_angle = 0.0f,                     // Starting angle (looking north)
-        .height       = 150.f / 2.0f,             // Height of camera above ground
-        .horizon      = window_res_height / 2.0f, // Center of screen
-        .scale_height = window_res_height,        // Full screen height for scaling
-        .distance     = 300.0f,
-        .is_running   = true
-    );
+    var state     = make$(State, .terrain = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")), .camera_pos = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
+                                             .camera_angle = 0.0f,                                                                          // Starting angle (looking north)
+                                             .height       = 150.f / 2.0f,                                                                  // Height of camera above ground
+                                             .horizon      = window_res_height / 2.0f,                                                      // Center of screen
+                                             .scale_height = window_res_height,                                                             // Full screen height for scaling
+                                             .distance     = 300.0f,
+                                             .is_running   = true);
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
     log_info("game state created\n");
@@ -215,7 +212,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
         let now        = time_Instant_now();
         let frame_used = time_Instant_durationSince(now, curr_frame_time);
-        if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+        if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
             time_sleep(leftover);
         }
     }
@@ -400,7 +397,7 @@ fn_(State_updateCamera(State* self, f64 dt), void) {
 fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
     debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
-    unused(dt);
+    $unused(dt);
 
     // Extract parameters from state
     let phi          = state->camera_angle;

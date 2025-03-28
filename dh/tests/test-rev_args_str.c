@@ -5,7 +5,7 @@
 #include <string.h>
 
 Err$void dh_main(Sli$Str_const args) {
-    unused(args);
+    $unused(args);
     reserveReturn(Err$void);
 
     printf("passed args:\n");
@@ -15,10 +15,10 @@ Err$void dh_main(Sli$Str_const args) {
     printf("\n");
 
     char buffer[32] = cleared();
-    ignore fgets(buffer, 32, stdin);
+    $ignore fgets(buffer, 32, stdin);
     let str = Str_fromZ(as$(u8*, buffer));
     for_slice_rev (str, ch) {
-        ignore putchar(*ch);
+        $ignore putchar(*ch);
     }
 
     return_ok({});

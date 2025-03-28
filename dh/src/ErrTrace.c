@@ -22,11 +22,11 @@ void ErrTrace_print_debug(void) {
 
     if (trace->len <= 0) { return; }
 
-    ignore fprintf(stderr, "Error trace:\n");
+    $ignore fprintf(stderr, "Error trace:\n");
     for (usize i = 0; i < trace->len; ++i) {
         let frame = &trace->frames[i];
         // clang-format off
-        ignore fprintf(stderr, "  at %s (%s:%d:%d)\n",
+        $ignore fprintf(stderr, "  at %s (%s:%d:%d)\n",
             frame->src_loc.fn_name,
             frame->src_loc.file_name, frame->src_loc.line, frame->src_loc.column
         );

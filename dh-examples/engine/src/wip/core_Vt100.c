@@ -54,8 +54,8 @@ static Vec2u getWindowRes(const anyptr ctx);
 
 static Vec2u    getWindowMinRes(const anyptr ctx);
 static Vec2u    getWindowMaxRes(const anyptr ctx);
-static Err$void setWindowMinRes(anyptr ctx, Vec2u size) must_check;
-static Err$void setWindowMaxRes(anyptr ctx, Vec2u size) must_check;
+static Err$void setWindowMinRes(anyptr ctx, Vec2u size) $must_check;
+static Err$void setWindowMaxRes(anyptr ctx, Vec2u size) $must_check;
 
 static bool isWindowFocused(const anyptr ctx);
 static bool isWindowMinimized(const anyptr ctx);
@@ -135,22 +135,22 @@ force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
 force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
 
 warn_deprecated force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);
-warn_deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) must_check;
+warn_deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) $must_check;
 
-static Err$void syncWindowMetrics(engine_core_Vt100* self) must_check;
+static Err$void syncWindowMetrics(engine_core_Vt100* self) $must_check;
 
-static Err$void configureConsoleOutput(engine_core_Vt100* self) must_check;
-static Err$void configureConsoleInput(engine_core_Vt100* self) must_check;
+static Err$void configureConsoleOutput(engine_core_Vt100* self) $must_check;
+static Err$void configureConsoleInput(engine_core_Vt100* self) $must_check;
 
-force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) must_check;
-force_inline Err$void showConsoleCursor(engine_core_Vt100* self) must_check;
-force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) must_check;
+force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) $must_check;
+force_inline Err$void showConsoleCursor(engine_core_Vt100* self) $must_check;
+force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) $must_check;
 
 static void processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool is_down);
 static void processConsoleKeyboardEvents(engine_core_Vt100* self);
 
-force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) must_check;
-force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) must_check;
+force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) $must_check;
+force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) $must_check;
 static void           processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down);
 static void           processConsoleMouseEvents(engine_core_Vt100* self); /* TODO: validate */
 
@@ -174,7 +174,7 @@ force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
     //     return self->client.metrics.res.curr;
     // }
     // return self->client.metrics.current_size; // Return cached size as fallback
-    unused(self);
+    $unused(self);
     return (Vec2u){ 0 };
 }
 
@@ -190,7 +190,7 @@ force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
     //     return self->client.metrics.res.curr;
     // }
     // return self->client.metrics.current_size;
-    unused(self);
+    $unused(self);
     return (Vec2u){ 0 };
 }
 
@@ -842,7 +842,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->allocator       = allocator;
         self->abstract.window = eval({
             let window = config->window;
-            someAsg(&window->backend, engine_core_Vt100_backend(self));
+            toSome(&window->backend, engine_core_Vt100_backend(self));
             eval_return window;
         });
         self->abstract.buffer = eval({
@@ -854,7 +854,7 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         errdefer_(ArrList_fini(self->abstract.buffer.base));
         self->input = eval({
             let input = config->input;
-            someAsg(&input->backend, engine_core_Vt100_backend(self));
+            toSome(&input->backend, engine_core_Vt100_backend(self));
             eval_return input;
         });
 
@@ -1095,14 +1095,14 @@ static Vec2u getWindowMaxRes(const anyptr ctx) {
 static Err$void setWindowMinRes(anyptr ctx, Vec2u size) {
     reserveReturn(Err$void);
     debug_assert_nonnull(ctx);
-    unused(ctx), unused(size);
+    $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 }
 
 static Err$void setWindowMaxRes(anyptr ctx, Vec2u size) {
     reserveReturn(Err$void);
     debug_assert_nonnull(ctx);
-    unused(ctx), unused(size);
+    $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 }
 

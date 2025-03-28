@@ -240,7 +240,7 @@ force_inline void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta)
 Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     reserveReturn(Err$void);
     debug_assert_nonnull(self);
-    unused(window);
+    $unused(window);
 
     // Handle resets
     if (engine_Key_pressed(engine_KeyCode_r)) {
@@ -268,7 +268,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
 
     // Handle moving
     let controls = Control_list();
-    for_slice(controls, control) {
+    for_slice (controls, control) {
         if (engine_Key_held(control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
             self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
@@ -299,9 +299,9 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button pressed");
         let world_mouse = Visualizer_mousePosToWorld(self);
 
-        someAsg(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-        someAsg(self->spawn.angle, 0.0f);
-        someAsg(self->spawn.total, 0.0f);
+        toSome(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
+        toSome(self->spawn.angle, 0.0f);
+        toSome(self->spawn.total, 0.0f);
 
     } else if (engine_Mouse_held(engine_MouseButton_right)) {
         log_debug("right mouse button held");
@@ -320,7 +320,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
                 body->radius = cbrtf(body->mass);
             }
             else {
-                someAsg(self->spawn.angle, atan2f(d.y, d.x));
+                toSome(self->spawn.angle, atan2f(d.y, d.x));
             }
             body->vel = d;
         }
@@ -329,11 +329,11 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button released");
         if_some_mut(self->spawn.body, body) {
             if_none(self->spawn.confirmed) {
-                someAsg(self->spawn.confirmed, *body);
+                toSome(self->spawn.confirmed, *body);
             }
-            noneAsg(self->spawn.body);
-            noneAsg(self->spawn.angle);
-            noneAsg(self->spawn.total);
+            toNone(self->spawn.body);
+            toNone(self->spawn.angle);
+            toNone(self->spawn.total);
         }
     }
     return_void();
@@ -346,7 +346,7 @@ Err$void Visualizer_update(Visualizer* self) {
     // Handle spawned body confirmation
     if_some_mut(self->spawn.confirmed, confirmed) {
         try(ArrList_append(&self->bodies.base, meta_refPtr(confirmed)));
-        noneAsg(self->spawn.confirmed);
+        toNone(self->spawn.confirmed);
     }
 
     return_void();
@@ -396,7 +396,7 @@ force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -419,7 +419,7 @@ force_inline void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -449,7 +449,7 @@ force_inline void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -479,7 +479,7 @@ force_inline void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -557,7 +557,8 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
         try(ArrList_append(
             &stack->base,
             meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
-        ));
+            )
+        );
 
         var min_depth = usize_limit;
         var max_depth = 0ull;
@@ -574,7 +575,8 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
                 try(ArrList_append(
                     &stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
-                ));
+                    )
+                );
             }
         }
         *depth_range = make$(TypeOf(*depth_range), .min = min_depth, .max = max_depth);
@@ -590,7 +592,8 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
     try(ArrList_append(
         &stack->base,
         meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
-    ));
+        )
+    );
     while_some(ArrList_popOrNull(&stack->base), capture) {
         let item = *meta_cast$(Visualizer_QuadCache*, capture);
         let node = Sli_at(self->nodes.items, item.node_idx);
@@ -600,7 +603,8 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
                 try(ArrList_append(
                     &stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
-                ));
+                    )
+                );
             }
             continue;
         }

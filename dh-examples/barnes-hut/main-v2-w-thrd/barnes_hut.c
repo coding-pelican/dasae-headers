@@ -59,8 +59,8 @@ static struct {
 #if debug_comp_enabled
 static void global_debug_logSimStateFrontBodiesN(usize n);
 #endif /* debug_comp_enabled */
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) must_check;
-static Err$void global_update(Visualizer* viz, Simulation* sim) must_check;
+static Err$void global_processInput(Visualizer* viz, engine_Window* window) $must_check;
+static Err$void global_update(Visualizer* viz, Simulation* sim) $must_check;
 static void     global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
 
 // Thread functions
@@ -68,7 +68,7 @@ static anyptr Simulation_thread(anyptr arg);
 
 // Main function
 Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
@@ -123,7 +123,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        ignore getchar();
+        $ignore getchar();
 
         // Create threads for simulation and visualization
         pthread_t sim_thread = 0;
@@ -181,8 +181,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 #if debug_comp_enabled
@@ -228,7 +227,7 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     return_void();
 }
 
-static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
+static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(viz);
         debug_assert_nonnull(sim);
@@ -236,11 +235,11 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            noneAsg(viz->spawn.confirmed);
+            toNone(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
-        for_slice(global_state.spawn_bodies.items, body) {
+        for_slice (global_state.spawn_bodies.items, body) {
             try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
@@ -254,8 +253,7 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
 
         try(Visualizer_update(viz));
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
@@ -307,7 +305,7 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
 }
 
 static anyptr Simulation_thread(anyptr arg) {
-    unused(arg);
+    $unused(arg);
 
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms

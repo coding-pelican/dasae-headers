@@ -81,19 +81,19 @@ static_inline void MiniPng_filterScanline(
 static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h, i32* out_channels) {
     FILE* fp = fopen(filename, "rb");
     if (!fp) {
-        ignore fprintf(stderr, "Cannot open file: %s\n", filename);
+        $ignore fprintf(stderr, "Cannot open file: %s\n", filename);
         return null;
     }
 
     /* Read signature */
     u8 sig[8];
     if (fread(sig, 1, 8, fp) != 8) {
-        ignore fclose(fp);
+        $ignore fclose(fp);
         return null;
     }
     if (memcmp(sig, MiniPng_sig, 8) != 0) {
-        ignore fclose(fp);
-        ignore fprintf(stderr, "Not a PNG file.\n");
+        $ignore fclose(fp);
+        $ignore fprintf(stderr, "Not a PNG file.\n");
         return null;
     }
 
@@ -122,7 +122,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
         // Allocate chunk data
         u8* chunk_data = (u8*)malloc(length);
         if (chunk_data == null) {
-            ignore fclose(fp);
+            $ignore fclose(fp);
             return null;
         }
 
@@ -132,9 +132,9 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
             break;
         }
 
-        // Read CRC (ignore in this simplified code)
-        u8     crc_bytes[4];
-        ignore fread(crc_bytes, 1, 4, fp);
+        // Read CRC ($ignore in this simplified code)
+        u8 crc_bytes[4];
+        $ignore fread(crc_bytes, 1, 4, fp);
 
         if (!strcmp((char*)type_bytes, "IHDR")) {
             // Parse IHDR
@@ -145,9 +145,9 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
                 color_type = chunk_data[9];
                 // We only support 8-bit depth, color types 0,2,6
                 if (bit_depth != 8 || (color_type != 0 && color_type != 2 && color_type != 6)) {
-                    ignore fprintf(stderr, "Unsupported PNG format (bit_depth=%d, color_type=%d)\n", bit_depth, color_type);
+                    $ignore fprintf(stderr, "Unsupported PNG format (bit_depth=%d, color_type=%d)\n", bit_depth, color_type);
                     free(chunk_data);
-                    ignore fclose(fp);
+                    $ignore fclose(fp);
                     return null;
                 }
             }
@@ -156,7 +156,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
             u8* temp = (u8*)realloc(idat_data, idat_size + length);
             if (!temp) {
                 free(chunk_data);
-                ignore fclose(fp);
+                $ignore fclose(fp);
                 return null;
             }
             idat_data = temp;
@@ -170,7 +170,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
         free(chunk_data);
     }
 
-    ignore fclose(fp);
+    $ignore fclose(fp);
 
     // We now have width, height, bit_depth=8, color_type in {0,2,6},
     // and IDAT data in idat_data (size = idat_size).
@@ -196,7 +196,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
         break; // rgba
     default:
         free(idat_data);
-        ignore fprintf(stderr, "Unsupported PNG format (color_type=%d)\n", color_type);
+        $ignore fprintf(stderr, "Unsupported PNG format (color_type=%d)\n", color_type);
         return null;
     }
     usize raw_len_per_scanline = ((usize)channels * width);
@@ -214,7 +214,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
     if (MiniZlib_inflate(idat_data, idat_size, decomp_data, raw_len_total * 4, &out_len) != 0) {
         free(idat_data);
         free(decomp_data);
-        ignore fprintf(stderr, "Inflate failed (or block type not supported).\n");
+        $ignore fprintf(stderr, "Inflate failed (or block type not supported).\n");
         return null;
     }
     free(idat_data);
@@ -222,7 +222,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
     if (out_len < raw_len_total) {
         // Not enough data
         free(decomp_data);
-        ignore fprintf(stderr, "Inflated data too short.\n");
+        $ignore fprintf(stderr, "Inflated data too short.\n");
         return null;
     }
 
@@ -236,7 +236,7 @@ static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h,
     u8*   prev_line    = null;
     u8*   current_line = decomp_data;
     usize src_offset   = 0;
-    unused(src_offset);
+    $unused(src_offset);
     for (i32 y = 0; y < height; y++) {
         i32 filter_type = current_line[0];
         u8* scanline    = current_line + 1;

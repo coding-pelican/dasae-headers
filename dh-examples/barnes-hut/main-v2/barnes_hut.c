@@ -86,11 +86,11 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try(ArrList_append(&global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            noneAsg(viz->spawn.confirmed);
+            toNone(viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
-        for_slice(global_state.spawn_bodies.items, body) {
+        for_slice (global_state.spawn_bodies.items, body) {
             try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
@@ -109,12 +109,11 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
 
         try(Visualizer_update(viz));
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
@@ -170,7 +169,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        ignore getchar();
+        $ignore getchar();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
@@ -243,6 +242,5 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

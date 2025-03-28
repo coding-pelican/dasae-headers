@@ -103,7 +103,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
     let self = as$(heap_Fixed*, ctx);
-    unused(buf_align);
+    $unused(buf_align);
 
     // Verify buffer ownership
     debug_assert_fmt(
@@ -147,7 +147,7 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
     let self = as$(heap_Fixed*, ctx);
-    unused(buf_align);
+    $unused(buf_align);
 
     // Verify buffer ownership
     debug_assert_fmt(

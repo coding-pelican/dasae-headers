@@ -78,13 +78,13 @@ typedef struct Visualizer {
 use_Err$(Visualizer);
 
 // Core functions
-extern Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) must_check;
+extern Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) $must_check;
 extern void           Visualizer_destroy(Visualizer* self);
 
 // Main loop functions
-extern Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) must_check;
-extern Err$void Visualizer_update(Visualizer* self) must_check;
-extern Err$void Visualizer_render(Visualizer* self) must_check;
+extern Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) $must_check;
+extern Err$void Visualizer_update(Visualizer* self) $must_check;
+extern Err$void Visualizer_render(Visualizer* self) $must_check;
 
 /* /// Unified coordinate system transformations
 /// Screen Coordinates          World Coordinates

@@ -140,7 +140,7 @@ extern "C" {
     __returned_scope:                                                           \
         return (debug_assert_nonnull(__reserved_return), __reserved_return[0]); \
     }                                                                           \
-    unused(0)
+    $unused(0)
 
 #define SYN__returnReserved \
     return (eval({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])

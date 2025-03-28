@@ -209,7 +209,7 @@ static void Win32ConsoleBackend_processEvents(engine_Platform* platform) {
     let backend = (engine_Win32ConsoleBackend*)platform->backend;
 
     // Process window metrics
-    if_some (Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
+    if_some(Win32ConsoleBackend_getWindowMetrics(platform), current_metrics) {
         if (!engine_WindowMetrics_eq(&backend->last_metrics, &current_metrics)) {
             if (current_metrics.client_width != backend->last_metrics.client_width
                 || current_metrics.client_height != backend->last_metrics.client_height) {
@@ -699,22 +699,22 @@ engine_RenderBackend engine_RenderBackend_createNoOp(void) {
 }
 
 void engine_RenderBackend_noDestroy(struct engine_Platform* platform) {
-    unused(platform);
+    $unused(platform);
 }
 
 void engine_RenderBackend_noProcessEvents(struct engine_Platform* platform) {
-    unused(platform);
+    $unused(platform);
 }
 
 void engine_RenderBackend_noPresentBuffer(struct engine_Platform* platform, const Color* buffer, u32 width, u32 height) {
-    unused(platform);
-    unused(buffer);
-    unused(width);
-    unused(height);
+    $unused(platform);
+    $unused(buffer);
+    $unused(width);
+    $unused(height);
 }
 
 Opt$engine_WindowMetrics engine_RenderBackend_noGetWindowMetrics(struct engine_Platform* platform) {
-    unused(platform);
+    $unused(platform);
     reserveReturn(Opt$engine_WindowMetrics);
     return_none();
 }

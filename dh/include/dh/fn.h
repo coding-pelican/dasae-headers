@@ -47,7 +47,7 @@ extern "C" {
 
 /* declarations */
 use_ErrSet$(math_Err, i32);
-pub fn_(math_divideSafe(i32 lhs, i32 rhs), must_check math_Err$i32);
+pub fn_(math_divideSafe(i32 lhs, i32 rhs), $must_check math_Err$i32);
 
 /* implementations */
 fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {

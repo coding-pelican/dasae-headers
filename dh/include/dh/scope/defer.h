@@ -95,7 +95,7 @@ extern "C" {
 #define SYN___scope_deferral \
     goto __deferred;         \
     }                        \
-    unused(0)
+    $unused(0)
 
 #define SYN__defer_return(val_return...) \
     {                                    \

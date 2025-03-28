@@ -47,7 +47,7 @@ use_Ptr$(engine_Platform);
 use_Err$(engine_Platform);
 
 // Create platform instance with specific backend
-extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) must_check;
+extern Err$Ptr$engine_Platform engine_Platform_create(const engine_PlatformParams* params) $must_check;
 extern void                    engine_Platform_destroy(engine_Platform* platform);
 
 #endif /* ENGINE_PLATFORM_INCLUDED */

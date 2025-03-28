@@ -11,7 +11,7 @@ bool debug_isDebuggerPresent(void) {
     i32               mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
     struct kinfo_proc info;
     usize             size = sizeof(info);
-    if (sysctl(mib, 4, &info, &size, NULL, 0) == 0) {
+    if (sysctl(mib, 4, &info, &size, null, 0) == 0) {
         return (info.kp_proc.p_flag & P_TRACED) != 0;
     }
     return false;
@@ -21,7 +21,7 @@ bool debug_isDebuggerPresent(void) {
 bool debug_isDebuggerPresent(void) {
     /* Check /proc/self/status for TracerPid */
     FILE* f = fopen("/proc/self/status", "r");
-    if (f == NULL) {
+    if (f == null) {
         return false;
     }
 

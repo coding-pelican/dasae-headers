@@ -70,10 +70,10 @@ use_Opt$(Firework);
 use_Err$(Firework);
 use_Err$(Opt$Ptr$Firework);
 use_Sli$(Firework);
-extern Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color) must_check;
+extern Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color) $must_check;
 extern void             Firework_fini(Firework* f);
 extern bool             Firework_isDead(const Firework* f);
-extern Err$void         Firework_update(Firework* f, f64 dt) must_check;
+extern Err$void         Firework_update(Firework* f, f64 dt) $must_check;
 extern void             Firework_render(const Firework* f, engine_Canvas* c, f64 dt);
 
 use_ArrList$(Firework);
@@ -86,17 +86,17 @@ typedef struct State {
     bool                is_running;
 } State;
 use_Err$(State);
-extern Err$State            State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input) must_check;
+extern Err$State            State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input) $must_check;
 extern void                 State_fini(State* s);
 extern bool                 State_isDead(const State* s);
-extern Err$void             State_update(State* s, f64 dt) must_check;
+extern Err$void             State_update(State* s, f64 dt) $must_check;
 extern void                 State_render(const State* s, engine_Canvas* c, f64 dt);
-extern Err$Opt$Ptr$Firework State_spawnFirework(State* s) must_check;
+extern Err$Opt$Ptr$Firework State_spawnFirework(State* s) $must_check;
 
 
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
+    $unused(args);
     Random_init();
 
     // Initialize logging to a file
@@ -172,7 +172,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     defer_(State_fini(&state));
     log_info("game state created");
 
-    ignore engine_utils_getch();
+    $ignore engine_utils_getch();
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs_f64(target_spf);
@@ -221,7 +221,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
         // 8) Subtract from our target
-        if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
+        if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
             time_sleep(leftover);
         }
         time_frame_prev = time_frame_curr;
@@ -276,7 +276,7 @@ bool Particle_isDead(const Particle* p) {
 
 void Particle_update(Particle* p, f64 dt) {
     debug_assert_nonnull(p);
-    unused(dt);
+    $unused(dt);
     if (Particle_isDead(p)) { return; }
 
     p->speed[0] += p->acceleration[0];
@@ -291,7 +291,7 @@ void Particle_update(Particle* p, f64 dt) {
 void Particle_render(const Particle* p, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(p);
     debug_assert_nonnull(c);
-    unused(dt);
+    $unused(dt);
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
@@ -321,7 +321,7 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
             Particle_init(rocket, as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color);
             Particle_initWithSpeed(rocket, 0.0, -2.0 - Random_f64() * -1.0);
             Particle_initWithAcceleration(rocket, 0.0, 0.02);
-            someAsg(&f->rocket, rocket);
+            toSome(&f->rocket, rocket);
         }
 
         f->effects = type$(ArrList$Particle, try_(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)));
@@ -338,7 +338,7 @@ void Firework_fini(Firework* f) {
 
     log_debug("Destroying firework(%p)\n", f);
 
-    if_some (f->rocket, rocket) {
+    if_some(f->rocket, rocket) {
         log_debug("Destroying rocket(%p)\n", rocket);
         mem_Allocator_destroy(f->allocator, anyPtr(rocket));
         log_debug("rocket destroyed\n");
@@ -383,9 +383,9 @@ bool Firework_isDead(const Firework* f) {
 Err$void Firework_update(Firework* f, f64 dt) {
     reserveReturn(Err$void);
     debug_assert_nonnull(f);
-    unused(dt);
+    $unused(dt);
 
-    if_some (f->rocket, rocket) {
+    if_some(f->rocket, rocket) {
         Particle_update(rocket, dt);
         if (-0.2 <= rocket->speed[1]) {
             log_debug(
@@ -414,7 +414,7 @@ Err$void Firework_update(Firework* f, f64 dt) {
             }
             log_debug("destroying rocket(%p)\n", rocket);
             mem_Allocator_destroy(f->allocator, anyPtr(rocket));
-            noneAsg(&f->rocket);
+            toNone(&f->rocket);
             log_debug("rocket destroyed\n");
         }
     }
@@ -429,7 +429,7 @@ void Firework_render(const Firework* f, engine_Canvas* c, f64 dt) {
     debug_assert_nonnull(f);
     debug_assert_nonnull(c);
 
-    if_some (f->rocket, rocket) {
+    if_some(f->rocket, rocket) {
         debug_assert_fmt(!Particle_isDead(rocket), "rocket must be alive");
         Particle_render(rocket, c, dt);
     }
@@ -478,7 +478,7 @@ Err$void State_update(State* s, f64 dt) {
             but not in release mode.
          */
         // debug_only(
-        if_some (try_(State_spawnFirework(s)), firework) {
+        if_some(try_(State_spawnFirework(s)), firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
         }
@@ -503,7 +503,7 @@ Err$void State_update(State* s, f64 dt) {
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         }));
-        if_some (maybe_firework, firework) {
+        if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
         }
@@ -515,7 +515,7 @@ Err$void State_update(State* s, f64 dt) {
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
             return_err(err);
         }));
-        if_some (maybe_firework, firework) {
+        if_some(maybe_firework, firework) {
             let rocket    = unwrap(firework->rocket);
             let mouse_pos = engine_Mouse_getPos(&s->input->mouse);
             log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);

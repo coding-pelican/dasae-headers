@@ -106,7 +106,7 @@ Opt$time_Duration time_SysTime_chkdDurationSince(time_SysTime later, time_SysTim
     // Calculate the difference in ticks
     let diff  = as$(f64, later.impl_.QuadPart - earlier.impl_.QuadPart);
     // Convert ticks to nanoseconds
-    let nanos = as$(u64, diff * time_SysTime_nanos_per_sec * freqInv());
+    let nanos = as$(u64, diff* time_SysTime_nanos_per_sec* freqInv());
 #else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     // Calculate the difference in seconds and nanoseconds
     var diff    = makeCleared$(time_SysTimePlatform);
@@ -117,7 +117,7 @@ Opt$time_Duration time_SysTime_chkdDurationSince(time_SysTime later, time_SysTim
     } else {
         diff.tv_nsec = later.impl_.tv_nsec - earlier.impl_.tv_nsec;
     }
-    let nanos = as$(u64, diff.tv_sec * time_SysTime_nanos_per_sec) + diff.tv_nsec;
+    let nanos = as$(u64, diff.tv_sec* time_SysTime_nanos_per_sec) + diff.tv_nsec;
 #endif /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     return_some(time_Duration_fromNanos(nanos));
 }

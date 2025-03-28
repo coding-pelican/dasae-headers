@@ -19,7 +19,7 @@ static Vec2f bezierQuad(Vec2f a, Vec2f b, Vec2f c, f32 t) {
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("sample-bezier_quad-debug.log", "w"), debug_file) {
@@ -138,6 +138,5 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

@@ -26,7 +26,7 @@
 /*========== Extern Function Implementations ================================*/
 
 void claim_assert_fail(const char* expr, const char* func, const char* file, i32 line) {
-    ignore fprintf(
+    $ignore fprintf(
         CLAIM_OUTPUT,
         CLAIM_ASSERT_MSG_FORMAT,
         expr,
@@ -40,7 +40,7 @@ void claim_assert_fail(const char* expr, const char* func, const char* file, i32
 }
 
 void claim_assert_fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
-    ignore fprintf(
+    $ignore fprintf(
         CLAIM_OUTPUT,
         CLAIM_ASSERT_FMT_MSG_FORMAT,
         expr
@@ -48,14 +48,14 @@ void claim_assert_fail_fmt(const char* expr, const char* func, const char* file,
 
     va_list args = null;
     va_start(args, fmt);
-    ignore vfprintf(
+    $ignore vfprintf(
         CLAIM_OUTPUT,
         fmt,
         args
     );
     va_end(args);
 
-    ignore fprintf(
+    $ignore fprintf(
         CLAIM_OUTPUT,
         CLAIM_ASSERT_FMT_LOC_FORMAT,
         func,

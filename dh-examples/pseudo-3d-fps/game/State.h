@@ -18,7 +18,7 @@ typedef struct game_State {
 use_Ptr$(game_State);
 use_Err$(game_State);
 
-extern Err$Ptr$game_State game_State_create(void) must_check;
+extern Err$Ptr$game_State game_State_create(void) $must_check;
 extern void               game_State_destroy(game_State* state);
 extern void               game_State_update(game_State* state, f32 elapsed_time);
 

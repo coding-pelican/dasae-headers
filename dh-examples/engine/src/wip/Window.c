@@ -23,11 +23,11 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
                 /* Set default color */
                 var color = config->default_color;
                 if_none (color) {
-                    someAsg(&color, engine_Window_composite_buffer_color_default);
+                    toSome(&color, engine_Window_composite_buffer_color_default);
                 }
                 else_some (color_cfg) {
                     if (color_cfg.a != ColorChannel_alpha_opaque) {
-                        someAsg(&color, engine_Window_composite_buffer_color_default);
+                        toSome(&color, engine_Window_composite_buffer_color_default);
                     }
                 }
                 eval_return color;
@@ -40,7 +40,7 @@ Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) {
         window->views.count = 0;
 
         /* Reserve backend for init */
-        noneAsg(&window->backend);
+        toNone(&window->backend);
 
         /* Created successfully */
         return_ok(window);
@@ -131,7 +131,7 @@ Opt$u32 engine_Window_appendCanvasView(engine_Window* self, engine_Canvas* canva
 
 void engine_Window_removeCanvasView(engine_Window* self, u32 view_id) {
     debug_assert_nonnull(self);
-    unused(self), unused(view_id); /* TODO: Implement this function */
+    $unused(self), $unused(view_id); /* TODO: Implement this function */
     /* debug_assert_nonnull(self);
     debug_assert(0 <= view_id);
     debug_assert(view_id < self->views.count);

@@ -30,27 +30,28 @@ io_FileErr$void log_init(const char* filename) {
 
     let file = fopen(filename, "w");
     if (!file) { return_err(io_FileErr_OpenFailed()); }
-    errdefer_(ignore fclose(file));
+    errdefer_($ignore fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        ignore fclose(log_s_config.output_file);
+        $ignore fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
     return_void();
 
-    scope_returnReserved;
+        scope_returnReserved
+    ;
 }
 
 void log_initWithFile(FILE* file) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        ignore fclose(log_s_config.output_file);
+        $ignore fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
 }
 
 void log_fini(void) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        ignore fclose(log_s_config.output_file);
+        $ignore fclose(log_s_config.output_file);
         log_s_config.output_file = stderr;
     }
 }
@@ -93,8 +94,8 @@ void log_message(log_Level level, const char* file, int line, const char* func, 
         time_t     t            = time(null);
         struct tm* lt           = localtime(&t);
         char       time_str[16] = cleared();
-        ignore strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        ignore fprintf(output, "[%s]", time_str);
+        $ignore strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
+        $ignore fprintf(output, "[%s]", time_str);
     }
 
     // Add level if needed
@@ -116,17 +117,17 @@ void log_message(log_Level level, const char* file, int line, const char* func, 
         default:
             claim_unreachable;
         }
-        ignore fprintf(output, "[%s]", level_str);
+        $ignore fprintf(output, "[%s]", level_str);
     }
 
     // Add location if needed
     if (log_s_config.shows_location) {
-        ignore fprintf(output, "[%s:%d]", file, line);
+        $ignore fprintf(output, "[%s:%d]", file, line);
     }
 
     // Add function name if needed
     if (log_s_config.shows_function) {
-        ignore fprintf(output, "[%s]", func);
+        $ignore fprintf(output, "[%s]", func);
     }
 
     // Add a space before the message if we added any prefixes
@@ -134,17 +135,17 @@ void log_message(log_Level level, const char* file, int line, const char* func, 
         || log_s_config.shows_level
         || log_s_config.shows_location
         || log_s_config.shows_function) {
-        ignore fprintf(output, " ");
+        $ignore fprintf(output, " ");
     }
 
     // Print the actual message
     scope_with(va_list args = null) {
         va_start(args, fmt);
-        ignore vfprintf(output, fmt, args);
+        $ignore vfprintf(output, fmt, args);
         va_end(args);
     }
 
     // Add newline and flush
-    ignore fprintf(output, "\n");
-    ignore fflush(output);
+    $ignore fprintf(output, "\n");
+    $ignore fflush(output);
 }

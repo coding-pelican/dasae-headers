@@ -23,9 +23,9 @@ use_Opt$(engine_Canvas);
 use_Err$(engine_Canvas);
 
 /// Canvas creation with specific type
-extern fn_(engine_Canvas_init(mem_Allocator allocator, u32 width, u32 height, engine_CanvasType type, Opt$Color default_color), must_check Err$Ptr$engine_Canvas);
+extern fn_(engine_Canvas_init(mem_Allocator allocator, u32 width, u32 height, engine_CanvasType type, Opt$Color default_color), $must_check Err$Ptr$engine_Canvas);
 extern fn_(engine_Canvas_fini(engine_Canvas* self), void);
-extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), must_check Err$void);
+extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), $must_check Err$void);
 
 extern fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void);
 

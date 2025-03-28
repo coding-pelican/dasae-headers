@@ -10,7 +10,7 @@
 
 /* declarations */
 use_ErrSet$(math_Err, i32);
-pub fn_(math_divideSafe(i32 lhs, i32 rhs), must_check math_Err$i32);
+pub fn_(math_divideSafe(i32 lhs, i32 rhs), $must_check math_Err$i32);
 
 /* implementations */
 fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
@@ -21,14 +21,14 @@ fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
 } ext_unscoped;
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
+    $unused(args);
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
     printf("Hello World!\n");
     catch_from(math_divideSafe(10, 0), err, ({
         printf("Occurs error\n");
         let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
-        unused(err_code);
+        $unused(err_code);
         debug_assert_true(Str_const_eq(err_code, Str_l("DivisionByZero")));
         Err_print(err);
         ErrTrace_print();

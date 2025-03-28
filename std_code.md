@@ -163,7 +163,7 @@ fn_ext_scope(divideNumbers(i32 lhs, i32 rhs), Opt$i32) {
 
 // Function requiring error handling
 use_Err$(Str_const);
-fn_(readFile(Str_const path), must_check Err$Str_const);
+fn_(readFile(Str_const path), $must_check Err$Str_const);
 fn_ext_scope(readFile(Str_const path), Err$Str_const) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());
@@ -243,7 +243,7 @@ fn_ext_scope(readFileContents(Str_const filename), io_Err$Str_const) {
     if (file == null) {
         return_err(io_Err_OpenFailed());
     }
-    defer_(ignore fclose(file));
+    defer_($ignore fclose(file));
 
     // File processing...
 

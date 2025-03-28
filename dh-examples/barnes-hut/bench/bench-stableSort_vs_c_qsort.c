@@ -22,18 +22,17 @@ force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     return_ok(lhs * rhs);
 }
 // Swap two elements of given size
-force_inline must_check Err$void swapElements(u8* a, u8* b, usize size) {
+force_inline $must_check Err$void swapElements(u8* a, u8* b, usize size) {
     scope_reserveReturn(Err$void) {
         u8* temp = alloca(size);
         memcpy(temp, a, size);
         memcpy(a, b, size);
         memcpy(b, temp, size);
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 // Insertion sort for small arrays
-static must_check Err$void insertionSort(
+static $must_check Err$void insertionSort(
     anyptr base,
     usize  num,
     usize  size,
@@ -56,11 +55,10 @@ static must_check Err$void insertionSort(
             }
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static must_check Err$void mergeSortWithTmpRecur( // NOLINT
+static $must_check Err$void mergeSortWithTmpRecur( // NOLINT
     anyptr base,
     usize  num,
     usize  size,
@@ -122,11 +120,10 @@ static must_check Err$void mergeSortWithTmpRecur( // NOLINT
         memcpy(base_bytes, temp_buffer.ptr, total_bytes);
 
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
-static must_check Err$void stableSort(
+static $must_check Err$void stableSort(
     anyptr base,
     usize  num,
     usize  size,
@@ -141,8 +138,7 @@ static must_check Err$void stableSort(
 
         try_(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Helper Functions ===============================================*/
@@ -150,7 +146,7 @@ static must_check Err$void stableSort(
 static mem_Allocator testAllocator(void) {
     static Opt$mem_Allocator allocator = none();
     if_none(allocator) {
-        someAsg(allocator, heap_Page_allocator(&(heap_Page){}));
+        toSome(allocator, heap_Page_allocator(&(heap_Page){}));
     }
     return unwrap(allocator);
 }
@@ -166,7 +162,7 @@ static mem_Allocator testAllocator(void) {
             const clock_t overhead_begin = clock();                                              \
             memcpy(WORK_ARR, SRC_ARR, (ARR_LEN) * sizeof(i32));                                  \
             overhead_time += (clock() - overhead_begin);                                         \
-            ignore BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                               \
+            $ignore BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                              \
         }                                                                                        \
         const clock_t end      = clock();                                                        \
         const f64     total_ms = ((f64)(end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC; \
@@ -191,7 +187,7 @@ static i32 qsort_compareInts(const void* lhs, const void* rhs) {
 }
 
 static_inline cmp_Ord stableSort_compareInts(const void* lhs, const void* rhs, const void* arg) {
-    unused(arg);
+    $unused(arg);
     return prim_cmp(*as$(i32*, lhs), *as$(i32*, rhs));
 }
 
@@ -233,8 +229,7 @@ must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
                   allocator);
 
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Benchmark Runner ===============================================*/
@@ -253,24 +248,20 @@ int main(void) {
     printf("\nbenchmarking...\n");
 
     printf("\n-- 1,000 elements --\n");
-    catch_from(benchmark(1000, iterations), err, {
-        exit(err.ctx);
+    catch_from(benchmark(1000, iterations), err, { exit(err.ctx);
     });
     printf("\n-- 10,000 elements --\n");
-    catch_from(benchmark(10000, iterations), err, {
-        exit(err.ctx);
+    catch_from(benchmark(10000, iterations), err, { exit(err.ctx);
     });
     printf("\n-- 100,000 elements --\n");
-    catch_from(benchmark(100000, iterations), err, {
-        exit(err.ctx);
+    catch_from(benchmark(100000, iterations), err, { exit(err.ctx);
     });
     printf("\n-- 1,000,000 elements --\n");
-    catch_from(benchmark(1000000, iterations), err, {
-        exit(err.ctx);
+    catch_from(benchmark(1000000, iterations), err, { exit(err.ctx);
     });
 
     printf("\ndone.\n");
 
-    ignore getchar();
+    $ignore getchar();
     return 0;
 }

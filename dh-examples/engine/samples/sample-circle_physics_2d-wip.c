@@ -86,8 +86,7 @@ static Err$BallManager BallManager_init(mem_Allocator allocator) {
             .selected_ball = null,
             .allocator     = allocator,
         });
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 static void BallManager_fini(BallManager* self) {
@@ -113,11 +112,11 @@ static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
                 .acc  = math_Vec2f_zero,
                 .mass = 0.0f, // Will be set based on radius
             })
-        ));
+                        ));
     }
 
     // Set masses based on radii
-    for_slice(self->balls.items, ball) {
+    for_slice (self->balls.items, ball) {
         ball->mass = ball->transform.radius * Ball_mass_scaler_by_radius;
     }
 
@@ -190,7 +189,7 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
 
 static void BallManager_update(BallManager* self, f32 dt) {
     // Update physics
-    for_slice(self->balls.items, ball) {
+    for_slice (self->balls.items, ball) {
         // Apply drag
         ball->acc = math_Vec2f_scale(math_Vec2f_neg(ball->vel), Ball_drag_coefficient);
 
@@ -236,7 +235,7 @@ force_inline Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
 };
 static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     // Draw all balls
-    for_slice(self->balls.items, ball) {
+    for_slice (self->balls.items, ball) {
         let pos    = worldToScreen(ball->transform.center, canvas);
         let radius = ball->transform.radius * window_res_scale;
         engine_Canvas_drawCircle(canvas, as$(i32, pos.x), as$(i32, pos.y), as$(i32, radius), Color_white);
@@ -269,7 +268,7 @@ static void BallManager_processInput(BallManager* self) {
     if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Mouse_pressed(engine_MouseButton_right)) {
         self->selected_ball = null;
         let world_pos       = screenToWorld(engine_Mouse_getPosition());
-        for_slice(self->balls.items, ball) {
+        for_slice (self->balls.items, ball) {
             if (Circ2f_containsPoint(ball->transform, world_pos)) {
                 self->selected_ball = ball;
                 break;
@@ -300,7 +299,7 @@ static void BallManager_processInput(BallManager* self) {
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging
         scope_if(let debug_file = fopen("sample-circle_physics_2d-debug.log", "w"), debug_file) {
@@ -372,6 +371,5 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

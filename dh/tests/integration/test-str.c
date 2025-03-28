@@ -11,7 +11,7 @@ static void Str_print(Str_const self) {
 
 static void Str_println(Str_const self) {
     Str_print(self);
-    ignore putchar('\n');
+    $ignore putchar('\n');
 }
 
 static void TEST_string_literals(void) {
@@ -49,7 +49,7 @@ static void TEST_string_literals(void) {
             }
             Str_print(Str_l(" "));
         }
-        ignore putchar('\n');
+        $ignore putchar('\n');
     }
 
     Str_println(Str_l("할아버지 보고싶어요"));

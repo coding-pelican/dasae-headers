@@ -54,12 +54,12 @@ fn_(slice_example(void), void) {
         }
         printf("\n");
 
-        ignore third_ptr;
-        ignore value;
-        ignore length;
-        ignore middle;
-        ignore first_half;
-        ignore second_half;
+        $ignore third_ptr;
+        $ignore value;
+        $ignore length;
+        $ignore middle;
+        $ignore first_half;
+        $ignore second_half;
     }
 
     // Create a null-terminated string
@@ -70,7 +70,7 @@ fn_(slice_example(void), void) {
         let ch    = SliZ_getAt(str_z, 1); // 'e'
         // let hello_sli = SliZ_toSli$(Sli$u8, str_z); // Convert to regular slice
         printf("%s\n", str_z.ptr);
-        ignore ch;
+        $ignore ch;
     }
 
     // Working with sentinel-terminated slices (SliS)
@@ -90,7 +90,7 @@ fn_(slice_example(void), void) {
             printf("%d ", deref(iter));
         }
         printf("\n");
-        ignore num;
+        $ignore num;
     }
 
     // Type casting example

@@ -27,7 +27,7 @@ extern "C" {
 
 /*========== Function Prototypes ============================================*/
 
-extern Err$void fs_dir_create(Str_const path) must_check;
+extern Err$void fs_dir_create(Str_const path) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */

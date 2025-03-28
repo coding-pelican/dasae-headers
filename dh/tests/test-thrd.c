@@ -241,7 +241,7 @@ static int ThrdFtx_wait(ThrdFtx* ftx, LONG expect) {
         if (err == ERROR_TIMEOUT) {
             return 1; /* or define error code for timed out */
         }
-        /* spurious wake or mismatch => ignore */
+        /* spurious wake or mismatch => $ignore */
     }
     return 0;
 }
@@ -493,6 +493,6 @@ int main(void) {
     example_ThrdSem();
 
     /* For ThrdCnd and ThrdFtx, usage is more specialized. This is just a sample code. */
-    ignore fprintf(stdout, "All examples finished.\n");
+    $ignore fprintf(stdout, "All examples finished.\n");
     return 0;
 }

@@ -191,7 +191,7 @@ TEST_Result TEST_heap_Classic_Errors(void) {
     TypeInfo huge_type = { .size = sizeof(i32), .align = alignof(i32) };
     let      huge_res  = mem_Allocator_alloc(allocator, huge_type, SIZE_MAX / sizeof(i32) + 1);
     catch_from(huge_res, err, {
-        unused(err);
+        $unused(err);
         TEST_condition(huge_res.is_err);
     });
     var ptr = meta_castSli$(Sli$u8, huge_res.ok);
@@ -203,7 +203,7 @@ TEST_Result TEST_heap_Classic_Errors(void) {
 /*========== Test Runner ============================================*/
 
 int main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
 
     TEST_init();
     printf("Starting Heap Classic Allocator Tests\n");
@@ -231,7 +231,7 @@ int main(int argc, const char* argv[]) {
 
 // Err$void dh_main(int argc, const char* argv[]) {
 //     reserveReturn(Err$void);
-//     unused(argc), unused(argv);
+//     $unused(argc), $unused(argv);
 
 //     TEST_init();
 //     printf("Starting Heap Classic Allocator Tests\n");

@@ -48,9 +48,9 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
         }
     }
 
-    ignore ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
-    ignore ListSgl_remove(list.base, five.base); // {2, 3, 4}
-    ignore ListSgl_Node_removeNext(two.base);    // {2, 4}
+    $ignore ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
+    $ignore ListSgl_remove(list.base, five.base); // {2, 3, 4}
+    $ignore ListSgl_Node_removeNext(two.base);    // {2, 4}
 
     try_(TEST_expect(*unwrap(list.first)->data == 2));
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 4));

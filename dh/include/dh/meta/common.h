@@ -87,13 +87,13 @@ union meta_Sli {
         .addr = __ptr,                                   \
     });                                                  \
 })
-#define comp_op__meta_refSli_mut(var_sli...) eval({ \
-    const TypeOf(var_sli) __sli = var_sli;          \
-    eval_return((meta_Sli){                         \
-        .type = typeInfo$(TypeOf(*__sli.ptr)),      \
-        .addr = __sli.ptr,                          \
-        .len  = __sli.len,                          \
-    });                                             \
+#define comp_op__meta_refSli(var_sli...) eval({ \
+    const TypeOf(var_sli) __sli = var_sli;      \
+    eval_return((meta_Sli){                     \
+        .type = typeInfo$(TypeOf(*__sli.ptr)),  \
+        .addr = __sli.ptr,                      \
+        .len  = __sli.len,                      \
+    });                                         \
 })
 
 #define comp_op__meta_cast$(T_Dest, var_meta...) eval({                                                                         \
@@ -115,9 +115,9 @@ union meta_Sli {
     const TypeOf(var_meta_opt) __opt = var_meta_opt;              \
     T_DestOpt __result               = cleared();                 \
     if (isNone(__opt)) {                                          \
-        noneAsg(&__result);                                       \
+        toNone(&__result);                                        \
     } else {                                                      \
-        someAsg(&__result, __opt.value.addr);                     \
+        toSome(&__result, __opt.value.addr);                      \
     }                                                             \
     eval_return __result;                                         \
 })
@@ -125,9 +125,9 @@ union meta_Sli {
     const TypeOf(var_meta_err_res) __err_res = var_meta_err_res;            \
     T_DestErrRes __result                    = cleared();                   \
     if (isOk(__err_res)) {                                                  \
-        okAsg(&__result, __err_res.data.ok.addr);                           \
+        toOk(&__result, __err_res.data.ok.addr);                            \
     } else {                                                                \
-        errAsg(&__result, __err_res.data.err);                              \
+        toErr(&__result, __err_res.data.err);                               \
     }                                                                       \
     eval_return __result;                                                   \
 })

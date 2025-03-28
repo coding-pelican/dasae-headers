@@ -8,7 +8,7 @@
 #include "engine.h"
 
 Err$void dh_main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         if_(let debug_file = fopen("sample-rotate_lines-debug.log", "w"), debug_file) {
@@ -106,6 +106,5 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

@@ -21,13 +21,13 @@ struct ArrList {
     usize         cap;
     usize         item_size;
 };
-static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
-static void                   ArrList_fini(ArrList* self);
-static must_check Err$void    ArrList_append(ArrList* self, const anyptr item);
-static Slice                  ArrList_slice(const ArrList* self);
+static $must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
+static void                    ArrList_fini(ArrList* self);
+static $must_check Err$void    ArrList_append(ArrList* self, const anyptr item);
+static Slice                   ArrList_slice(const ArrList* self);
 
 impl_Err$(ArrList);
-static must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
+static $must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
     reserveReturn(Err$ArrList);
 
     anyptr const ptr = unwrap(allocator.vt->alloc(allocator.ptr, type.size * 8ull, type.align)); // Initial capacity of 8
@@ -53,7 +53,7 @@ static void ArrList_fini(ArrList* self) {
     self->cap       = 0;
 }
 
-static must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
+static $must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
     reserveReturn(Err$void);
 
     if (self->items.len == 10) { // Note: Force error raising for exception checking
@@ -110,6 +110,7 @@ Err$void dh_main(void) {
     }
 
     return_void();
-    scope_returnReserved;
+        scope_returnReserved
+    ;
 }
 #endif /* UNUSED_CODE */

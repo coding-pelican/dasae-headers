@@ -15,7 +15,7 @@ Err$void fs_dir_create(Str_const path) {
     reserveReturn(Err$void);
     const bool exists = makeDir(path);
     if (exists) {
-        // Ignore if directory already exists
+        // $ignore if directory already exists
         if (errno != EEXIST) {
             // return_err(io_FileErr_OpenFailed());
         }

@@ -66,9 +66,9 @@ struct ErrTrace {
 #if COMP_TIME
 #if !ErrTrace_comp_enabled
 
-#define ErrTrace_reset()        unused(0)
-#define ErrTrace_captureFrame() unused(0)
-#define ErrTrace_print()        unused(0)
+#define ErrTrace_reset()        $unused(0)
+#define ErrTrace_captureFrame() $unused(0)
+#define ErrTrace_print()        $unused(0)
 
 #else /* ErrTrace_comp_enabled */
 

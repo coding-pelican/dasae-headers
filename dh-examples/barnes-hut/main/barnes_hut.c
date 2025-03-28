@@ -58,8 +58,8 @@ static struct {
 #if debug_comp_enabled
 static void global_debug_logSimStateFrontBodiesN(usize n);
 #endif /* debug_comp_enabled */
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) must_check;
-static Err$void global_update(Visualizer* viz, Simulation* sim) must_check;
+static Err$void global_processInput(Visualizer* viz, engine_Window* window) $must_check;
+static Err$void global_update(Visualizer* viz, Simulation* sim) $must_check;
 static void     global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
 
 // Thread functions
@@ -67,7 +67,7 @@ static anyptr Simulation_thread(anyptr arg);
 
 // Main function
 Err$void dh_main(Sli$Str_const args) {
-    unused(args);
+    $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         try_(log_init("log/debug.log"));
@@ -120,7 +120,7 @@ Err$void dh_main(Sli$Str_const args) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        ignore getchar();
+        $ignore getchar();
 
         // Create threads for simulation and visualization
         pthread_t sim_thread = 0;
@@ -172,14 +172,13 @@ Err$void dh_main(Sli$Str_const args) {
             // 5) sleep
             let time_now        = time_Instant_now();
             let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
-            if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
+            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
                 time_sleep(time_leftover);
             }
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 #if debug_comp_enabled
@@ -232,7 +231,7 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     return_void();
 }
 
-static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
+static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
     scope_reserveReturn(Err$void) {
         debug_assert_nonnull(viz);
         debug_assert_nonnull(sim);
@@ -240,7 +239,7 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
         // Transfer confirmed spawns from Visualizer to global_state
         if_some_mut(viz->spawn.confirmed, confirmed_body) {
             try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            noneAsg(&viz->spawn.confirmed);
+            toNone(&viz->spawn.confirmed);
         }
 
         // Add spawned bodies to simulation
@@ -258,8 +257,7 @@ static Err$void must_check global_update(Visualizer* viz, Simulation* sim) {
 
         try_(Visualizer_update(viz));
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
@@ -311,7 +309,7 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
 }
 
 static anyptr Simulation_thread(anyptr arg) {
-    unused(arg);
+    $unused(arg);
 
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms

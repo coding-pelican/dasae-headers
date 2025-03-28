@@ -13,7 +13,7 @@ int TEST_func() {
 
 Err$void dh_main(Sli$Str_const args) {
     reserveReturn(Err$void);
-    unused(args);
+    $unused(args);
     int value = TEST_func();
     debug_assert(value == 0);
     return_void();

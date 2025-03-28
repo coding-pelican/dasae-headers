@@ -85,9 +85,9 @@ use_Err$(engine_Input);
 
 /* Input management */
 
-extern Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) must_check;
+extern Err$Ptr$engine_Input engine_Input_init(mem_Allocator allocator) $must_check;
 extern void                 engine_Input_fini(engine_Input* self);
-extern Err$void             engine_Input_update(engine_Input* self) must_check;
+extern Err$void             engine_Input_update(engine_Input* self) $must_check;
 
 /* Event buffer management */
 

@@ -65,7 +65,7 @@ fn_(TEST_Framework_run(void), void) {
         printf("Running test: %s%.*s%s\n", TEST_color_yellow, as$(i32, test_case->name.len), test_case->name.ptr, TEST_color_reset);
 
         // Run the test
-        if_err (test_case->fn(), err) {
+        if_err(test_case->fn(), err) {
             instance->stats.failed++;
             printf("  %s[FAIL]%s: [%s] %s\n", TEST_color_red, TEST_color_reset, Err_domainToCStr(err), Err_codeToCStr(err));
         } else_void {
@@ -89,8 +89,8 @@ fn_(TEST_Framework_run(void), void) {
 
 /* Debug versions of test functions */
 fn_ext_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) {
-    unused(loc);
-    unused(expr_str);
+    $unused(loc);
+    $unused(expr_str);
     if (!expr) {
         return_err(Err_InvalidArgument());
     }
@@ -98,9 +98,9 @@ fn_ext_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$vo
 } ext_unscoped;
 
 fn_ext_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) {
-    unused(msg);
-    unused(loc);
-    unused(expr_str);
+    $unused(msg);
+    $unused(loc);
+    $unused(expr_str);
     if (!expr) {
         return_err(Err_InvalidArgument());
     }

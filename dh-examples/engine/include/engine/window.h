@@ -49,9 +49,9 @@ use_Err$(engine_Window);
 #define engine_Window_composite_buffer_default_color ((Color){ .r = 0x18, .g = 0x18, .b = 0x18, .a = 0xFF })
 
 // Window management
-extern Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) must_check;
+extern Err$Ptr$engine_Window engine_Window_init(const engine_PlatformParams* params) $must_check;
 extern void                  engine_Window_fini(engine_Window* window);
-extern Err$void              engine_Window_processEvents(engine_Window* window) must_check;
+extern Err$void              engine_Window_processEvents(engine_Window* window) $must_check;
 extern void                  engine_Window_present(engine_Window* window);
 
 // Canvas view management

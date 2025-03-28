@@ -322,7 +322,7 @@ void DrawMaze(engine_Canvas* canvas) {
 }
 
 Err$void dh_main(Sli$Str_const args) {
-    unused(args);
+    $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
@@ -361,7 +361,7 @@ Err$void dh_main(Sli$Str_const args) {
         InitMaze();
         log_info("maze initialized\n");
 
-        ignore getchar();
+        $ignore getchar();
 
         // Run each algorithm for 5 seconds
         pthread_t navigation_thread = 0;
@@ -474,6 +474,5 @@ Err$void dh_main(Sli$Str_const args) {
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

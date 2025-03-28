@@ -30,10 +30,10 @@ use_Ptr$(engine_Canvas);
 use_Err$(engine_Canvas);
 
 // Canvas creation with specific type
-extern Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasType type) must_check;
-extern Err$Ptr$engine_Canvas engine_Canvas_createWithDefault(u32 width, u32 height, engine_CanvasType type, Color default_color) must_check;
+extern Err$Ptr$engine_Canvas engine_Canvas_create(u32 width, u32 height, engine_CanvasType type) $must_check;
+extern Err$Ptr$engine_Canvas engine_Canvas_createWithDefault(u32 width, u32 height, engine_CanvasType type, Color default_color) $must_check;
 extern void                  engine_Canvas_destroy(engine_Canvas* self);
-extern Err$void              engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height) must_check;
+extern Err$void              engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height) $must_check;
 extern void                  engine_Canvas_clear(engine_Canvas* self, Color color);
 extern void                  engine_Canvas_clearDefault(engine_Canvas* self);
 extern void                  engine_Canvas_drawPixel(engine_Canvas* self, i32 x, i32 y, Color color);

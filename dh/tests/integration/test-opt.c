@@ -2,40 +2,38 @@
 #define main_no_returns_err (1)
 #include "dh/main.h"
 
-Opt$i32 getValueIfPositive(i32 value) {
-    reserveReturn(Opt$i32);
+fn_ext_scope(getValueIfPositive(i32 value), Opt$i32) {
     if (value <= 0) { return_none(); }
     return_some(value);
-}
+} ext_unscoped;
 
-Opt$u8 getCharIfNumeric(u8 value) {
-    reserveReturn(Opt$u8);
+fn_ext_scope(getCharIfNumeric(u8 value), Opt$u8) {
     if ('0' <= value && value <= '9') { return_some(value); }
     return_none();
-}
+} ext_unscoped;
 
-void dh_main(void) {
-    if_some (getValueIfPositive(10), value) {
+fn_(dh_main(void), void){
+    if_some(getValueIfPositive(10), value) {
         printf("Value is %d\n", value);
-    } else {
+    } else_none {
         printf("Value is not positive\n");
     }
 
-    if_some (getCharIfNumeric('a'), value) {
+    if_some(getCharIfNumeric('a'), value) {
         printf("Value is %c\n", value);
-    } else {
+    } else_none {
         printf("Value is not numeric\n");
     }
 
-    if_some (getValueIfPositive(-10), value) {
-        printf("Value is %d\n", value);
-    } else {
+    if_none(getValueIfPositive(-10)) {
         printf("Value is not positive\n");
+    } else_some(value) {
+        printf("Value is %d\n", value);
     }
 
-    if_some (getCharIfNumeric('9'), value) {
-        printf("Value is %c\n", value);
-    } else {
+    if_none(getCharIfNumeric('9')) {
         printf("Value is not numeric\n");
+    } else_some(value) {
+        printf("Value is %c\n", value);
     }
 }

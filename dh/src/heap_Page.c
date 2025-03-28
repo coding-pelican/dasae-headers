@@ -35,7 +35,7 @@ static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
     // Verify requested alignment is not stricter than page alignment
     debug_assert_fmt(align <= mem_page_size, "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)", align, mem_page_size);
 
-    unused(ctx, align);
+    $unused(ctx, align);
 
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
@@ -126,7 +126,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    unused(ctx, buf_align);
+    $unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_size, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
@@ -188,7 +188,7 @@ static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    unused(ctx, buf_align);
+    $unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_size, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
@@ -230,7 +230,7 @@ static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    unused(ctx, buf_align);
+    $unused(ctx, buf_align);
 
 #if bti_plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);

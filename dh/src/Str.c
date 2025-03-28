@@ -16,7 +16,7 @@ static $on_load fn_(init(void), void) {
     static bool s_initialized = false;
     if (s_initialized) { return; }
     /* Set locale for proper UTF-8 handling */
-    ignore setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
+    $ignore setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
     s_initialized = true;
 }
 
@@ -119,7 +119,7 @@ Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
         var result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
         errdefer_(mem_Allocator_free(allocator, anySli(result)));
         {
-            ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
+            $ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
             result.len = len;
         }
         return_ok(result);

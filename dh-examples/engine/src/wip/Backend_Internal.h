@@ -14,8 +14,8 @@ struct engine_BackendVT_Internal {
 
     Vec2u (*getWindowMinRes)(const anyptr ctx);
     Vec2u (*getWindowMaxRes)(const anyptr ctx);
-    Err$void (*setWindowMinRes)(anyptr ctx, Vec2u size) must_check;
-    Err$void (*setWindowMaxRes)(anyptr ctx, Vec2u size) must_check;
+    Err$void (*setWindowMinRes)(anyptr ctx, Vec2u size) $must_check;
+    Err$void (*setWindowMaxRes)(anyptr ctx, Vec2u size) $must_check;
 
     bool (*isWindowFocused)(const anyptr ctx);
     bool (*isWindowMinimized)(const anyptr ctx);
@@ -48,8 +48,8 @@ extern Vec2u engine_Backend_getWindowRes(const engine_Backend self);
 
 extern Vec2u    engine_Backend_getWindowMinRes(const engine_Backend self);
 extern Vec2u    engine_Backend_getWindowMaxRes(const engine_Backend self);
-extern Err$void engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size) must_check;
-extern Err$void engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size) must_check;
+extern Err$void engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size) $must_check;
+extern Err$void engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size) $must_check;
 
 extern bool engine_Backend_isWindowFocused(const engine_Backend self);
 extern bool engine_Backend_isWindowMinimized(const engine_Backend self);

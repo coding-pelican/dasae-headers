@@ -72,8 +72,7 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
         memcpy(base_bytes, temp_bytes, temp_index * size);
 
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
 static Err$void stableSort(
@@ -93,8 +92,7 @@ static Err$void stableSort(
         // Perform merge sort
         try(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Helper Functions ===============================================*/
@@ -102,13 +100,13 @@ static Err$void stableSort(
 static mem_Allocator testAllocator(void) {
     static Opt$mem_Allocator allocator = none();
     if_none(allocator) {
-        someAsg(allocator, heap_Classic_allocator(&(heap_Classic){}));
+        toSome(allocator, heap_Classic_allocator(&(heap_Classic){}));
     }
     return unwrap(allocator);
 }
 
 static cmp_Ord compareInt(anyptr_const a, anyptr_const b, anyptr_const arg) {
-    unused(arg);
+    $unused(arg);
     int ia = *(const int*)a;
     int ib = *(const int*)b;
     return (ia < ib) ? cmp_Ord_lt : ((ia > ib) ? cmp_Ord_gt : cmp_Ord_eq);
@@ -134,7 +132,7 @@ force_inline cmp_fnCmp(TestElem) {
     return cmp_Ord_eq;
 }
 static cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
-    unused(arg);
+    $unused(arg);
     let self  = as$(const TestElem*, lhs);
     let other = as$(const TestElem*, rhs);
     return TestElem_cmp(*self, *other);
@@ -173,8 +171,7 @@ Err$TEST_Result TEST_stableSort_Basic(void) {
         TEST_condition(isSorted(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Stability Tests ================================================*/
@@ -204,8 +201,7 @@ Err$TEST_Result TEST_stableSort_Stability(void) {
         TEST_condition(isStable(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Edge Case Tests ================================================*/
@@ -232,8 +228,7 @@ Err$TEST_Result TEST_stableSort_EdgeCases(void) {
         TEST_condition(isSorted(sorted, 5));
 
         return_ok(TEST_completeResult(&result));
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Larger Dataset Tests ===========================================*/
@@ -269,8 +264,7 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
         TEST_condition(isSorted(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
@@ -289,8 +283,7 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
         TEST_condition(isStable(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 /*========== Test Runner ====================================================*/

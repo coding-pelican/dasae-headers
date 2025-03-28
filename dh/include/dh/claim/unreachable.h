@@ -34,7 +34,7 @@ extern "C" {
 #define BUILTIN_UNREACHABLE __assume(0)
 #else
 /* TODO: Add support for other compilers */
-#define BUILTIN_UNREACHABLE unused(0)
+#define BUILTIN_UNREACHABLE $unused(0)
 #endif
 
 #define claim_unreachable                                                                    \
@@ -90,7 +90,7 @@ extern "C" {
     (debug_assert_fmt(false, _msg, _fmt), BUILTIN_UNREACHABLE)
 
 #define FUNC__claim_unreachable_val$(_T) \
-    ((_T)(claim_unreachable, literal$(_T, 0)))
+    ((_T)(claim_unreachable, lit$(_T, 0)))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

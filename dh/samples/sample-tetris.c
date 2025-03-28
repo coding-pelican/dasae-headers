@@ -89,16 +89,16 @@ use_Err$(tetris_PlayField);
 
 /* Function Prototypes ======================================================*/
 
-pvt fn_(tetris_Console_bootup(void), must_check Err$void);
+pvt fn_(tetris_Console_bootup(void), $must_check Err$void);
 pvt fn_(tetris_Console_shutdown(void), void);
 
 pvt fn_(tetris_isKeyPressed(i32 key), bool);
 
-pvt fn_(tetris_PlayField_init(mem_Allocator allocator), must_check Err$tetris_PlayField);
-pvt fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), must_check Err$void);
+pvt fn_(tetris_PlayField_init(mem_Allocator allocator), $must_check Err$tetris_PlayField);
+pvt fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), $must_check Err$void);
 pvt fn_(tetris_rotate(i32 px, i32 py, i32 r), i32);
 pvt fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool);
-pvt fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), must_check Err$i32);
+pvt fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), $must_check Err$i32);
 pvt fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
 
 #if bti_plat_windows
@@ -390,7 +390,7 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
 
     /* Draw score */
     wchar_t score_text[32] = { 0 };
-    ignore swprintf(score_text, 32, L"SCORE: %8d", score);
+    $ignore swprintf(score_text, 32, L"SCORE: %8d", score);
     for (i32 i = 0; score_text[i] != L'\0'; ++i) {
         Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, score_text[i]);
     }

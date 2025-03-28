@@ -66,9 +66,9 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
                         brightness = 0.2f; // Distant walls
                     }
 
-                    color.r = as$(u8, brightness * ColorChannel_max_value);
-                    color.g = as$(u8, brightness * ColorChannel_max_value);
-                    color.b = as$(u8, brightness * ColorChannel_max_value);
+                    color.r = as$(u8, brightness* ColorChannel_max_value);
+                    color.g = as$(u8, brightness* ColorChannel_max_value);
+                    color.b = as$(u8, brightness* ColorChannel_max_value);
                     color.a = ColorChannel_max_value;
                 }
             }
@@ -90,7 +90,7 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
                     brightness = 0.1f; // Distant floor
                 }
 
-                color.r = as$(u8, brightness * ColorChannel_max_value);
+                color.r = as$(u8, brightness* ColorChannel_max_value);
                 color.g = as$(u8, (brightness * 0.8f) * ColorChannel_max_value); // Slight color tint
                 color.b = as$(u8, (brightness * 0.6f) * ColorChannel_max_value);
                 color.a = ColorChannel_max_value;
@@ -104,7 +104,7 @@ void game_Screen_renderFirstPersonView(engine_Canvas* canvas, const game_State* 
 }
 
 void game_Screen_renderUi(engine_Canvas* canvas, const game_State* state) {
-    unused(state);
+    $unused(state);
 
     // Crosshair configuration
     const Color ui_color = {

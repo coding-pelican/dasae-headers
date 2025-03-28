@@ -16,7 +16,7 @@ typedef struct engine_core_Vt100 engine_core_Vt100;
 use_Ptr$(engine_core_Vt100);
 use_Err$(Ptr$engine_core_Vt100);
 
-extern Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config* config) must_check;
+extern Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config* config) $must_check;
 extern void                      engine_core_Vt100_fini(engine_core_Vt100* self);
 extern engine_Backend            engine_core_Vt100_backend(engine_core_Vt100* self);
 

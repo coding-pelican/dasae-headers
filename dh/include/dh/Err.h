@@ -99,7 +99,7 @@ force_inline const char* Err_domainToCStr(Err self) { return self.vt->domainToCS
 force_inline const char* Err_codeToCStr(Err self) { return self.vt->codeToCStr(self.ctx); }
 
 static_inline const char* GeneralErr_domainToCStr(ErrCode ctx) {
-    unused(ctx);
+    $unused(ctx);
     return "GeneralErr";
 }
 static_inline const char* GeneralErr_codeToCStr(ErrCode ctx) {
@@ -148,7 +148,7 @@ force_inline Err Err_None(void) { return GeneralErr_err(ErrCode_None); }
     } pp_cat(Name, Code);                                                                                                             \
     typedef Err               Name;                                                                                                   \
     static_inline const char* pp_join(_, Name, domainToCStr)(ErrCode ctx) {                                                           \
-        unused(ctx);                                                                                                                  \
+        $unused(ctx);                                                                                                                 \
         return #Name;                                                                                                                 \
     }                                                                                                                                 \
     static_inline const char* pp_join(_, Name, codeToCStr)(ErrCode ctx) {                                                             \
@@ -169,11 +169,11 @@ force_inline Err Err_None(void) { return GeneralErr_err(ErrCode_None); }
     }                                                                                                                                 \
     GEN__config_ErrSet__FN__ctorTemplates(Name, pp_foreach (GEN__config_ErrSet__FN__ctorTemplate, Name, __VA_ARGS__));                \
     typedef struct pp_join($, Name, Void) {                                                                                           \
-        bool is_err;                                                                                                                  \
         union {                                                                                                                       \
             Name err;                                                                                                                 \
             Void ok;                                                                                                                  \
         } data;                                                                                                                       \
+        bool is_err;                                                                                                                  \
     } pp_join($, Name, Void);                                                                                                         \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
 

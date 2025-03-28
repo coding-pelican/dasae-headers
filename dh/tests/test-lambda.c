@@ -81,7 +81,7 @@ fn_ext_scope(dh_main(void), Err$void) {
 fn_(add(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
+    $unused(args);
     LambdaOp real_lambda    = lambda((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
     LambdaOp test_asg_fnptr = (LambdaOp)add;
     printf("real_lambda: %d\n", real_lambda(10, 5));

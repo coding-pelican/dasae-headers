@@ -164,7 +164,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
 
     const f32 radius = 2.5f;
     log_info("game state created");
-    ignore engine_utils_getch();
+    $ignore engine_utils_getch();
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
@@ -373,7 +373,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
         // 8) Subtract from our target
-        if_some (time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
+        if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), leftover) {
             time_sleep(leftover);
         }
         time_frame_prev = time_frame_curr;

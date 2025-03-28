@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void Err_print(Err self) {
-    ignore fprintf(
+    $ignore fprintf(
         stderr,
         "Program failed: [%s] %s(%d)\n",
         Err_domainToCStr(self),

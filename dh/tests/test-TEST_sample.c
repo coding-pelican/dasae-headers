@@ -26,7 +26,7 @@ fn_TEST_scope("Always Fails") {
 } TEST_unscoped;
 
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    ignore args;
+    $ignore args;
     let a = 1;
     let b = 2;
     let c = addInt(a, b);

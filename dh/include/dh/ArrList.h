@@ -262,7 +262,7 @@ extern fn_(ArrList_init(TypeInfo type, mem_Allocator allocator), ArrList);
 ///     ArrList list = ArrList_initCap(typeInfo$(i32), allocator, 10);
 ///     ---
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_initCap(typeInfo$(i32), allocator, 10));
-extern fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), must_check mem_Allocator_Err$ArrList);
+extern fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), $must_check mem_Allocator_Err$ArrList);
 
 /// @brief Free resources used by the list
 /// @param self Pointer to array list
@@ -287,7 +287,7 @@ extern fn_(ArrList_fini(ArrList* self), void);
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     Sli$i32 slice = meta_cast$(Sli$i32, try_(ArrList_toOwnedSli(list.base)));
-extern fn_(ArrList_toOwnedSli(ArrList* self), must_check mem_Allocator_Err$meta_Sli);
+extern fn_(ArrList_toOwnedSli(ArrList* self), $must_check mem_Allocator_Err$meta_Sli);
 
 /// @brief Create array list from an owned slice
 /// @param allocator Memory allocator to use
@@ -310,7 +310,7 @@ extern fn_(ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice), ArrLis
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     ArrList$i32 cloned = type$(ArrList$i32, try_(ArrList_clone(list.base)));
-extern fn_(ArrList_clone(const ArrList* self), must_check mem_Allocator_Err$ArrList);
+extern fn_(ArrList_clone(const ArrList* self), $must_check mem_Allocator_Err$ArrList);
 
 /// @brief Ensure total capacity of the list
 /// @param self Pointer to array list
@@ -325,7 +325,7 @@ extern fn_(ArrList_clone(const ArrList* self), must_check mem_Allocator_Err$ArrL
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_ensureTotalCap(list.base, 20));
-extern fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), $must_check mem_Allocator_Err$void);
 
 /// @brief Ensure precise total capacity of the list
 /// @param self Pointer to array list
@@ -340,7 +340,7 @@ extern fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), must_check mem_
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_ensureTotalCapPrecise(list.base, 20));
-extern fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), $must_check mem_Allocator_Err$void);
 
 /// @brief Ensure there is capacity for additional elements
 /// @param self Pointer to array list
@@ -354,7 +354,7 @@ extern fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), must_che
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_ensureUnusedCap(list.base, 5));
-extern fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), $must_check mem_Allocator_Err$void);
 
 /// @brief Resize the list to a new length
 /// @param self Pointer to array list
@@ -369,7 +369,7 @@ extern fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), must_check 
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_resize(list.base, 10));
-extern fn_(ArrList_resize(ArrList* self, usize new_len), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_resize(ArrList* self, usize new_len), $must_check mem_Allocator_Err$void);
 
 /// @brief Shrink the list and free excess memory
 /// @param self Pointer to array list
@@ -424,7 +424,7 @@ extern fn_(ArrList_expandToCap(ArrList* self), void);
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_append(list.base, pointer));
-extern fn_(ArrList_append(ArrList* self, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_append(ArrList* self, meta_Ptr item), $must_check mem_Allocator_Err$void);
 
 /// @brief Add multiple elements to the end of the list
 /// @param self Pointer to array list
@@ -438,7 +438,7 @@ extern fn_(ArrList_append(ArrList* self, meta_Ptr item), must_check mem_Allocato
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_appendSli(list.base, slice));
-extern fn_(ArrList_appendSli(ArrList* self, meta_Sli items), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_appendSli(ArrList* self, meta_Sli items), $must_check mem_Allocator_Err$void);
 
 /// @brief Add the same value multiple times to the end of the list
 /// @param self Pointer to array list
@@ -453,7 +453,7 @@ extern fn_(ArrList_appendSli(ArrList* self, meta_Sli items), must_check mem_Allo
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_appendNTimes(list.base, pointer, 3));
-extern fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), $must_check mem_Allocator_Err$void);
 
 /// @brief Add an element to the front of the list
 /// @param self Pointer to array list
@@ -467,7 +467,7 @@ extern fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), must_ch
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_prepend(list.base, pointer));
-extern fn_(ArrList_prepend(ArrList* self, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_prepend(ArrList* self, meta_Ptr item), $must_check mem_Allocator_Err$void);
 
 /// @brief Add multiple elements to the front of the list
 /// @param self Pointer to array list
@@ -481,7 +481,7 @@ extern fn_(ArrList_prepend(ArrList* self, meta_Ptr item), must_check mem_Allocat
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_prependSli(list.base, slice));
-extern fn_(ArrList_prependSli(ArrList* self, meta_Sli items), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_prependSli(ArrList* self, meta_Sli items), $must_check mem_Allocator_Err$void);
 
 /// @brief Add the same value multiple times to the front of the list
 /// @param self Pointer to array list
@@ -496,7 +496,7 @@ extern fn_(ArrList_prependSli(ArrList* self, meta_Sli items), must_check mem_All
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_prependNTimes(list.base, pointer, 3));
-extern fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), $must_check mem_Allocator_Err$void);
 
 /// @brief Add one element to the end of the list and return a pointer to it
 /// @param self Pointer to array list
@@ -509,7 +509,7 @@ extern fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), must_c
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     i32* item = meta_cast$(i32*, try_(ArrList_addBackOne(list.base)));
-extern fn_(ArrList_addBackOne(ArrList* self), must_check mem_Allocator_Err$meta_Ptr);
+extern fn_(ArrList_addBackOne(ArrList* self), $must_check mem_Allocator_Err$meta_Ptr);
 
 /// @brief Add one element to the end assuming sufficient capacity
 /// @param self Pointer to array list
@@ -537,7 +537,7 @@ extern fn_(ArrList_addBackOneAssumeCap(ArrList* self), meta_Ptr);
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     Sli$i32 items = meta_cast$(Sli$i32, try_(ArrList_addBackManyAsSli(list.base, 5)));
-extern fn_(ArrList_addBackManyAsSli(ArrList* self, usize n), must_check mem_Allocator_Err$meta_Sli);
+extern fn_(ArrList_addBackManyAsSli(ArrList* self, usize n), $must_check mem_Allocator_Err$meta_Sli);
 
 /// @brief Add multiple elements to the end assuming sufficient capacity
 /// @param self Pointer to array list
@@ -565,7 +565,7 @@ extern fn_(ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli);
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     i32* item = meta_cast$(i32*, try_(ArrList_addFrontOne(list.base)));
-extern fn_(ArrList_addFrontOne(ArrList* self), must_check mem_Allocator_Err$meta_Ptr);
+extern fn_(ArrList_addFrontOne(ArrList* self), $must_check mem_Allocator_Err$meta_Ptr);
 
 /// @brief Add one element to the front assuming sufficient capacity
 /// @param self Pointer to array list
@@ -593,7 +593,7 @@ extern fn_(ArrList_addFrontOneAssumeCap(ArrList* self), meta_Ptr);
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     Sli$i32 items = meta_cast$(Sli$i32, try_(ArrList_addFrontManyAsSli(list.base, 5)));
-extern fn_(ArrList_addFrontManyAsSli(ArrList* self, usize n), must_check mem_Allocator_Err$meta_Sli);
+extern fn_(ArrList_addFrontManyAsSli(ArrList* self, usize n), $must_check mem_Allocator_Err$meta_Sli);
 
 /// @brief Add multiple elements to the front assuming sufficient capacity
 /// @param self Pointer to array list
@@ -623,7 +623,7 @@ extern fn_(ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli)
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_insert(list.base, 2, pointer));
-extern fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), $must_check mem_Allocator_Err$void);
 
 /// @brief Insert multiple elements at a specific index
 /// @param self Pointer to array list
@@ -638,7 +638,7 @@ extern fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), must_check
 ///     ArrList$i32 list = type$(ArrList$i32, ArrList_init(typeInfo$(i32), allocator));
 ///     ...
 ///     try_(ArrList_insertSli(list.base, 2, slice));
-extern fn_(ArrList_insertSli(ArrList* self, usize index, meta_Sli items), must_check mem_Allocator_Err$void);
+extern fn_(ArrList_insertSli(ArrList* self, usize index, meta_Sli items), $must_check mem_Allocator_Err$void);
 
 /// @brief Remove the last element from the list
 /// @param self Pointer to array list

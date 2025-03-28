@@ -109,7 +109,7 @@ pub fn_ext_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), 
     var maybe_first_node = none$(Opt$Ptr$ListSgl_Node$usize);
     while_some(it, node) {
         let next_it = node->next;
-        if_none (next_it) {
+        if_none(next_it) {
             maybe_first_node = some$(Opt$Ptr$ListSgl_Node$usize, node);
             break;
         }
@@ -121,7 +121,7 @@ pub fn_ext_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), 
     // Reset end index before resizing buffers
     self->state.end_index = 0;
 
-    if_some (maybe_first_node, first_node) {
+    if_some(maybe_first_node, first_node) {
         self->state.buffer_list.first = some$(Opt$Ptr$ListSgl_Node$usize, first_node);
 
         // Perfect size match, no need to resize
@@ -199,10 +199,10 @@ static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
     let self = (heap_Arena*)ctx;
-    unused(buf_align);
+    $unused(buf_align);
 
     // Check if this is the most recent allocation
-    if_none (self->state.buffer_list.first) {
+    if_none(self->state.buffer_list.first) {
         return false;
     }
     let cur_node    = unwrap(self->state.buffer_list.first);
@@ -240,10 +240,10 @@ static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
     let self = (heap_Arena*)ctx;
-    unused(buf_align);
+    $unused(buf_align);
 
     // Only free if it's the most recent allocation
-    if_none (self->state.buffer_list.first) {
+    if_none(self->state.buffer_list.first) {
         return;
     }
     let cur_node = unwrap(self->state.buffer_list.first);

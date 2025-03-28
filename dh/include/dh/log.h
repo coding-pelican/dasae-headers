@@ -48,7 +48,7 @@ typedef struct log_Config {
 } log_Config;
 
 // Initialize logging with a file
-extern io_FileErr$void log_init(const char* filename) must_check;
+extern io_FileErr$void log_init(const char* filename) $must_check;
 // Initialize logging with an existing file handle
 extern void            log_initWithFile(FILE* file);
 // Close logging
@@ -91,10 +91,10 @@ force_inline void log_error(const char* /* fmt */, ...);
 #endif
 #else
 
-#define log_debug(...) unused(0)
-#define log_info(...)  unused(0)
-#define log_warn(...)  unused(0)
-#define log_error(...) unused(0)
+#define log_debug(...) $unused(0)
+#define log_info(...)  $unused(0)
+#define log_warn(...)  $unused(0)
+#define log_error(...) $unused(0)
 
 #endif
 

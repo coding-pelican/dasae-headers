@@ -23,7 +23,7 @@ pub fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), vo
 
 pub fn_ext_scope(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node) {
     debug_assert_nonnull(node);
-    if_none (node->next) {
+    if_none(node->next) {
         return_none();
     }
     let next_node   = unwrap(node->next);
@@ -54,7 +54,7 @@ pub fn_(ListSgl_Node_countChildren(const ListSgl_Node* node), usize) {
 
 pub fn_(ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect), void) {
     debug_assert_nonnull(indirect);
-    if_none (*indirect) {
+    if_none(*indirect) {
         return;
     }
     var prev    = none$(Opt$Ptr$ListSgl_Node);
@@ -86,7 +86,7 @@ pub fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
 
-    if_some (self->first, first) {
+    if_some(self->first, first) {
         if (first == node) {
             self->first = node->next;
             node->next  = none$(Opt$Ptr$ListSgl_Node);
@@ -106,7 +106,7 @@ pub fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
 
 pub fn_ext_scope(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node) {
     debug_assert_nonnull(self);
-    if_none (self->first) {
+    if_none(self->first) {
         return_none();
     }
     var first   = unwrap(self->first);
@@ -118,7 +118,7 @@ pub fn_ext_scope(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node) {
 pub fn_(ListSgl_len(const ListSgl* self), usize) {
     debug_assert_nonnull(self);
     usize len = 0;
-    if_some (self->first, first) {
+    if_some(self->first, first) {
         len = 1 + ListSgl_Node_countChildren(first);
     }
     return len;
@@ -149,7 +149,7 @@ pub fn_(ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new
 
     new_node->prev = some$(Opt$Ptr$ListDbl_Node, node);
     new_node->next = node->next;
-    if_some (node->next, next) {
+    if_some(node->next, next) {
         next->prev = some$(Opt$Ptr$ListDbl_Node, new_node);
     } else {
         self->last = some$(Opt$Ptr$ListDbl_Node, new_node);
@@ -165,7 +165,7 @@ pub fn_(ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* ne
 
     new_node->next = some$(Opt$Ptr$ListDbl_Node, node);
     new_node->prev = node->prev;
-    if_some (node->prev, prev) {
+    if_some(node->prev, prev) {
         prev->next = some$(Opt$Ptr$ListDbl_Node, new_node);
     } else {
         self->first = some$(Opt$Ptr$ListDbl_Node, new_node);
@@ -178,8 +178,8 @@ pub fn_(ListDbl_concatByMoving(ListDbl* dst, ListDbl* src), void) {
     debug_assert_nonnull(dst);
     debug_assert_nonnull(src);
 
-    if_some (dst->last, last) {
-        if_some (src->first, first) {
+    if_some(dst->last, last) {
+        if_some(src->first, first) {
             last->next  = src->first;
             first->prev = some$(Opt$Ptr$ListDbl_Node, last);
             dst->last   = src->last;
@@ -199,7 +199,7 @@ pub fn_(ListDbl_append(ListDbl* self, ListDbl_Node* new_node), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(new_node);
 
-    if_some (self->last, last) {
+    if_some(self->last, last) {
         ListDbl_insertAfter(self, last, new_node);
     } else {
         new_node->prev = none$(Opt$Ptr$ListDbl_Node);
@@ -214,7 +214,7 @@ pub fn_(ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(new_node);
 
-    if_some (self->first, first) {
+    if_some(self->first, first) {
         ListDbl_insertBefore(self, first, new_node);
     } else {
         new_node->prev = none$(Opt$Ptr$ListDbl_Node);
@@ -229,12 +229,12 @@ pub fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
 
-    if_some (node->prev, prev) {
+    if_some(node->prev, prev) {
         prev->next = node->next;
     } else {
         self->first = node->next;
     }
-    if_some (node->next, next) {
+    if_some(node->next, next) {
         next->prev = node->prev;
     } else {
         self->last = node->prev;
@@ -246,7 +246,7 @@ pub fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
 
 pub fn_ext_scope(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     debug_assert_nonnull(self);
-    if_none (self->last) {
+    if_none(self->last) {
         return_none();
     }
     var last = unwrap(self->last);
@@ -256,7 +256,7 @@ pub fn_ext_scope(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node) {
 
 pub fn_ext_scope(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     debug_assert_nonnull(self);
-    if_none (self->first) {
+    if_none(self->first) {
         return_none();
     }
     var first = unwrap(self->first);

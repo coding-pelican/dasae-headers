@@ -54,9 +54,9 @@ use_Err$(engine_Window);
 
 /* Window management */
 
-extern Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) must_check;
+extern Err$Ptr$engine_Window engine_Window_init(const engine_WindowConfig* config) $must_check;
 extern void                  engine_Window_fini(engine_Window* self);
-extern Err$void              engine_Window_update(engine_Window* self) must_check;
+extern Err$void              engine_Window_update(engine_Window* self) $must_check;
 extern void                  engine_Window_present(engine_Window* self);
 
 /* Canvas view management */
@@ -75,8 +75,8 @@ extern Vec2u engine_Window_getRes(const engine_Window* self);
 
 extern Vec2u    engine_Window_getMinRes(const engine_Window* self);
 extern Vec2u    engine_Window_getMaxRes(const engine_Window* self);
-extern Err$void engine_Window_setMinRes(engine_Window* self, Vec2u size) must_check;
-extern Err$void engine_Window_setMaxRes(engine_Window* self, Vec2u size) must_check;
+extern Err$void engine_Window_setMinRes(engine_Window* self, Vec2u size) $must_check;
+extern Err$void engine_Window_setMaxRes(engine_Window* self, Vec2u size) $must_check;
 
 extern bool engine_Window_isFocused(const engine_Window* self);
 extern bool engine_Window_isMinimized(const engine_Window* self);

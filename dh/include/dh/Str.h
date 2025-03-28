@@ -92,9 +92,9 @@ extern bool    Str_constCastable(Str_const self);
 extern Opt$Str Str_constCast(Str_const self);
 
 /// Concatenate strings
-extern Err$Str   Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) must_check;
+extern Err$Str   Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) $must_check;
 /// Format string with arguments
-extern Err$Str   Str_format(mem_Allocator allocator, const char* format, ...) must_check;
+extern Err$Str   Str_format(mem_Allocator allocator, const char* format, ...) $must_check;
 /// Get substring
 extern Str_const Str_slice(Str_const self, usize start, usize end);
 /// Remove whitespace from both ends
@@ -104,9 +104,9 @@ extern Str_const Str_ltrim(Str_const self);
 /// Remove whitespace from end
 extern Str_const Str_rtrim(Str_const self);
 /// Convert to uppercase
-extern Err$Str   Str_upper(mem_Allocator allocator, Str_const str) must_check;
+extern Err$Str   Str_upper(mem_Allocator allocator, Str_const str) $must_check;
 /// Convert to lowercase
-extern Err$Str   Str_lower(mem_Allocator allocator, Str_const str) must_check;
+extern Err$Str   Str_lower(mem_Allocator allocator, Str_const str) $must_check;
 
 /// Check if string contains substring
 extern bool      Str_contains(Str_const haystack, Str_const needle);
@@ -198,17 +198,17 @@ extern Opt$Str_const StrTokenizer_next(StrTokenizer* self);
 #define comp_syn__StrZ_l(_literal_as_readonly...) \
     ((StrZ_const){ .ptr = as$(const u8*, "" _literal_as_readonly) })
 #define comp_syn__StrZ_m(_literal_to_writable...) \
-    ((StrZ){ .ptr = literal$(u8[], "" _literal_to_writable) })
+    ((StrZ){ .ptr = lit$(u8[], "" _literal_to_writable) })
 
 #define comp_syn__StrS_l(_literal_as_readonly...) \
     ((StrS_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .sentinel = '\0' })
 #define comp_syn__StrS_m(_literal_to_writable...) \
-    ((StrS){ .ptr = literal$(u8[], "" _literal_to_writable), .sentinel = '\0' })
+    ((StrS){ .ptr = lit$(u8[], "" _literal_to_writable), .sentinel = '\0' })
 
 #define comp_syn__Str_l(_literal_as_readonly...) \
     ((Str_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .len = sizeOf(_literal_as_readonly) - 1 })
 #define comp_syn__Str_m(_literal_to_writable...) \
-    ((Str){ .ptr = literal$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
+    ((Str){ .ptr = lit$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -62,9 +62,9 @@ pub fn_(Ptr_constCastable(anyptr_const ptr), bool);
     const TypeOf(var_ptr) __ptr       = var_ptr;                \
     Opt$(TypeUnqualOf(*__ptr)*) __ret = cleared();              \
     if (Ptr_constCastable(__ptr)) {                             \
-        someAsg(&__ret, as$(TypeUnqualOf(*__ptr)*, __ptr));     \
+        toSome(&__ret, as$(TypeUnqualOf(*__ptr)*, __ptr));      \
     } else {                                                    \
-        noneAsg(&__ret);                                        \
+        toNone(&__ret);                                         \
     }                                                           \
     eval_return __ret;                                          \
 })
@@ -72,9 +72,9 @@ pub fn_(Ptr_constCastable(anyptr_const ptr), bool);
     const TypeOf(var_ptr) __ptr = var_ptr;                              \
     Opt$(T_Ptr) __ret           = cleared();                            \
     if (Ptr_constCastable(__ptr)) {                                     \
-        someAsg(&__ret, as$(T_Ptr, __ptr));                             \
+        toSome(&__ret, as$(T_Ptr, __ptr));                              \
     } else {                                                            \
-        noneAsg(&__ret);                                                \
+        toNone(&__ret);                                                 \
     }                                                                   \
     eval_return __ret;                                                  \
 })

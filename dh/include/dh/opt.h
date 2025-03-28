@@ -43,8 +43,8 @@ extern "C" {
 #define some$(T_Opt, val_some...) comp_op__some$(T_Opt, val_some)
 #define none$(T_Opt)              comp_op__none$(T_Opt)
 
-#define someAsg(var_addr_opt, val_some...) comp_op__someAsg(pp_uniqTok(addr_opt), var_addr_opt, val_some)
-#define noneAsg(var_addr_opt...)           comp_op__noneAsg(pp_uniqTok(addr_opt), var_addr_opt)
+#define toSome(var_addr_opt, val_some...) comp_op__toSome(pp_uniqTok(addr_opt), var_addr_opt, val_some)
+#define toNone(var_addr_opt...)           comp_op__toNone(pp_uniqTok(addr_opt), var_addr_opt)
 
 /* Checks optional value */
 #define isSome(val_opt...) comp_op__isSome(val_opt)
@@ -59,14 +59,12 @@ extern "C" {
 #define orelse(_Expr, _Default_Or_Eval...) comp_op__orelse(pp_uniqTok(result), _Expr, _Default_Or_Eval)
 
 /* Optional value payload capture (similar to Zig's if/while captures) */
-#define if_some(val_opt, _Payload_Capture)        comp_syn__if_some(val_opt, _Payload_Capture)
-#define if_some_mut(var_opt, _Payload_Capture)    comp_syn__if_some_mut(var_opt, _Payload_Capture)
-#define if_none(val_opt)                          comp_syn__if_none(val_opt)
-#define else_some(_Payload_Capture)               comp_syn__else_some(_Payload_Capture)
-#define else_some_mut(_Payload_Capture)           comp_syn__else_some_mut(_Payload_Capture)
-#define while_some(val_opt, _Payload_Capture)     comp_syn__while_some(val_opt, _Payload_Capture)
-#define while_some_mut(var_opt, _Payload_Capture) comp_syn__while_some_mut(var_opt, _Payload_Capture)
-#define while_none(val_opt)                       comp_syn__while_none(val_opt)
+#define if_some(val_opt, _Payload_Capture)    comp_syn__if_some(val_opt, _Payload_Capture)
+#define else_none                             comp_syn__else_none
+#define if_none(val_opt)                      comp_syn__if_none(val_opt)
+#define else_some(_Payload_Capture)           comp_syn__else_some(_Payload_Capture)
+#define while_some(val_opt, _Payload_Capture) comp_syn__while_some(val_opt, _Payload_Capture)
+#define while_none(val_opt)                   comp_syn__while_none(val_opt)
 
 /*========== Implementations ================================================*/
 
@@ -118,17 +116,17 @@ extern "C" {
 #define comp_op__some$(T_Opt, val_some...) ((T_Opt)some(val_some))
 #define comp_op__none$(T_Opt)              ((T_Opt)none())
 
-#define comp_op__someAsg(__addr_opt, var_addr_opt, val_some...) eval({ \
-    let __addr_opt = var_addr_opt;                                     \
-    debug_assert_nonnull(__addr_opt);                                  \
-    *__addr_opt = some$(TypeOf(*__addr_opt), val_some);                \
-    eval_return __addr_opt;                                            \
+#define comp_op__toSome(__addr_opt, var_addr_opt, val_some...) eval({ \
+    let __addr_opt = var_addr_opt;                                    \
+    debug_assert_nonnull(__addr_opt);                                 \
+    *__addr_opt = some$(TypeOf(*__addr_opt), val_some);               \
+    eval_return __addr_opt;                                           \
 })
-#define comp_op__noneAsg(__addr_opt, var_addr_opt...) eval({ \
-    let __addr_opt = var_addr_opt;                           \
-    debug_assert_nonnull(__addr_opt);                        \
-    *__addr_opt = none$(TypeOf(*__addr_opt));                \
-    eval_return __addr_opt;                                  \
+#define comp_op__toNone(__addr_opt, var_addr_opt...) eval({ \
+    let __addr_opt = var_addr_opt;                          \
+    debug_assert_nonnull(__addr_opt);                       \
+    *__addr_opt = none$(TypeOf(*__addr_opt));               \
+    eval_return __addr_opt;                                 \
 })
 
 #define comp_op__isSome(val_opt...) ((val_opt).has_value)
@@ -151,7 +149,7 @@ extern "C" {
         __result.value = bti_Generic_match$(                         \
             TypeOf(_Default_Or_Eval),                                \
             bti_Generic_pattern$(void) eval({                        \
-                ignore _Default_Or_Eval;                             \
+                $ignore _Default_Or_Eval;                            \
                 eval_return make$(TypeOf(__result.value));           \
             }),                                                      \
             bti_Generic_fallback_ _Default_Or_Eval                   \
@@ -163,21 +161,15 @@ extern "C" {
 #define comp_syn__if_some(val_opt, _Payload_Capture) \
     if_(let _result = (val_opt), _result.has_value)  \
         with_(let _Payload_Capture = _result.value)
-#define comp_syn__if_some_mut(var_opt, _Payload_Capture) \
-    if_(let _result = &(var_opt), _result->has_value)    \
-        with_(let _Payload_Capture = &_result->value)
+#define comp_syn__else_none \
+    else
 #define comp_syn__if_none(val_opt) \
     if_(let _result = (val_opt), !_result.has_value)
 #define comp_syn__else_some(_Payload_Capture) \
     else_(let _Payload_Capture = _result.value)
-#define comp_syn__else_some_mut(var_opt, _Payload_Capture) \
-    else_(let _Payload_Capture = &_result->value)
 #define comp_syn__while_some(val_opt, _Payload_Capture)                   \
     for (var _result = (val_opt); _result.has_value; _result = (val_opt)) \
     with_(let _Payload_Capture = _result.value)
-#define comp_syn__while_some_mut(var_opt, _Payload_Capture)                  \
-    for (var _result = &(var_opt); _result->has_value; _result = &(var_opt)) \
-    with_(let _Payload_Capture = &_result->value)
 #define comp_syn__while_none(val_opt) \
     while_(var _result = (val_opt), !_result.has_value)
 

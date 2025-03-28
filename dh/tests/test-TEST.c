@@ -63,7 +63,7 @@ fn_TEST_scope("Simply Type Comparison with Failing Test") {
 
 /// Sample main function
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    ignore args;
+    $ignore args;
     // fmt_println(Str_l("Hello, World!"));
     printf("Hello, World!\n");
     return_void();

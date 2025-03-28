@@ -125,17 +125,93 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ExperimentalAutoDetectBinPacking: false
 
 # Macro handling configurations
-AttributeMacros:
-  - pub
-  - pvt
-  - extern_inline
-  - static_inline
-  - force_inline
-  - nullable
-  - nonnull
-  - alignAs
-  - must_check
-  - no_return
+
+TypeNames:
+  # Inference
+  - let
+  - var
+  - TypeOf
+  - TypeUnqualOf
+  # primitive
+  - u8
+  - u16
+  - u32
+  - u64
+  - usize
+  - i8
+  - i16
+  - i32
+  - i64
+  - isize
+  - f32
+  - f64
+  - bool
+  - char
+  - rawptr_const$
+  - rawptr$
+  - anyptr_const
+  - anyptr
+  - AnyType
+  - Void
+  # Pointer
+  - Ptr_const$
+  - Ptr$
+  - Ptr_const$$
+  - Ptr$$
+  # Slice
+  - SliZ_const$
+  - SliZ$
+  - SliZ_const$$
+  - SliZ$$
+  - SliS_const$
+  - SliS$
+  - SliS_const$$
+  - SliS$$
+  - Sli_const$
+  - Sli$
+  - Sli_const$$
+  - Sli$$
+  # Array
+  - Arr_const$
+  - Arr$
+  - Arr_const$$
+  - Arr$$
+  # Optional value
+  - Opt$
+  - Opt$$
+  # Error result
+  - Err$
+  - Err$$
+  - Err$Void
+  - Err$void
+  # Atomic
+  - atomic_Value$
+  - atomic_Value$$
+
+Macros:
+  # Optional value
+  - "if_some(_,_)=if (_)"
+  - "if_none(_)=if (_)"
+  - "else_none=else"
+  - "else_some(_)=else if (_)"
+  # Error result
+  - "if_err(_,_)=if (_)"
+  - "if_ok(_,_)=if (_)"
+  - "if_void(_)=if (_)"
+  - "else_ok(_)=else if (_)"
+  - "else_void=else"
+  - "else_err(_)=else if (_)"
+  # Scope
+  - scope_returnReserved=/**/ # scope_reserveReturn
+  - block_deferral=/**/ # defer_block
+  - ext_unscoped=/**/ # fn_ext_scope, ext_scope
+  - TEST_unscoped=/**/ # fn_TEST_scope, TEST_scope
+  # Match
+  - "match_(expr)=switch (expr)"
+  - "pattern_(tag,capture)=case tag:"
+  - "fallback_(_)=default:"
+
+IfMacros:
 
 ForEachMacros:
   - pp_foreach
@@ -148,20 +224,23 @@ ForEachMacros:
   - for_array_rev
   - for_array_rev_indexed
 
-IfMacros:
-  - if_some
-  - if_none
-  - if_ok
-  - if_err
-  - else_some
-  - else_none
-  - else_ok
-  - else_err
+AttributeMacros:
+  - pub
+  - pvt
+  - $on_load
+  - $on_exit
+  - extern_inline
+  - static_inline
+  - force_inline
+  - $nullable
+  - $nonnull
+  - $must_check
+  - $no_return
 
 StatementAttributeLikeMacros:
   - unused
   - used
-  - ignore
+  - $ignore
   - eval
   - eval_return
   - type$
@@ -174,47 +253,6 @@ StatementAttributeLikeMacros:
   - try_
   - catch_
   - catch_from
-
-Macros:
-  # - type$=/**/
-  # - make$=/**/
-  # - create$=/**/
-  # - initial=/**/
-  # - cleared=/**/
-  - scope_returnReserved=/**/
-  - block_deferral=/**/
-  - ext_unscoped=/**/
-  - TEST_unscoped=/**/
-  - match_=switch
-  - "pattern_(tag,capture)=case tag:"
-  - "fallback_=default:"
-  - else_void=else
-
-TypeNames:
-  - let
-  - var
-  - anyptr_const
-  - anyptr
-  - rawptr_const$
-  - rawptr$
-  - Ptr_const$
-  - Ptr$
-  - SliZ_const$
-  - SliZ$
-  - SliS_const$
-  - SliS$
-  - Sli_const$
-  - Sli$
-  - Grid_const$
-  - Grid$
-  - Arr_const$
-  - Arr$
-  - Opt$
-  - Optptr$
-  - Err$
-  - TypeOf
-  - TypeUnqualOf
-  - atomic_Value$
 
 WhitespaceSensitiveMacros:
   - with_

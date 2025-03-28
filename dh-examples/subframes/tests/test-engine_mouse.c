@@ -47,7 +47,7 @@
 
 
 Err$void dh_main(Sli$Str_const args) { // NOLINT
-    unused(args);
+    $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("test-engine_mouse-debug.log", "w"), debug_file) {
@@ -89,7 +89,7 @@ Err$void dh_main(Sli$Str_const args) { // NOLINT
         var allocator = heap_Page_allocator(&(heap_Page){});
 
         log_info("game state created\n");
-        ignore getchar();
+        $ignore getchar();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
@@ -139,6 +139,5 @@ Err$void dh_main(Sli$Str_const args) { // NOLINT
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }

@@ -69,10 +69,10 @@ static_inline i32 MiniZlib_inflateUncompressedBlock(MiniZlibInflator* self) {
    This example only handles 'uncompressed' blocks for brevity.
 */
 static_inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 type) {
-    unused(self);
-    unused(type);
+    $unused(self);
+    $unused(type);
     // *** You would handle Type=1 and Type=2 here with Huffman decoding ***
-    ignore fprintf(stderr, "Compressed block not supported in this minimal example.\n");
+    $ignore fprintf(stderr, "Compressed block not supported in this minimal example.\n");
     return -1;
 }
 

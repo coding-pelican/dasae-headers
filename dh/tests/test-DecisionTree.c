@@ -32,13 +32,13 @@ use_Ptr$(TreeNode);
 use_Err$(Ptr$TreeNode);
 
 // Forward declarations
-pvt fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), must_check Err$Ptr$TreeNode);
-pvt fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), must_check Err$Ptr$TreeNode);
+pvt fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), $must_check Err$Ptr$TreeNode);
+pvt fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), $must_check Err$Ptr$TreeNode);
 pvt fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
 pvt fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
 pvt fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
-pvt fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), must_check Err$void);
-pvt fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), must_check Err$Ptr$TreeNode);
+pvt fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), $must_check Err$void);
+pvt fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), $must_check Err$Ptr$TreeNode);
 
 // Dataset structure
 typedef struct Dataset {
@@ -50,12 +50,12 @@ typedef struct Dataset {
 use_Err$(Dataset);
 
 // Forward declarations
-pvt fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), must_check Err$Dataset);
+pvt fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), $must_check Err$Dataset);
 pvt fn_(Dataset_destroy(Dataset* dataset), void);
 
 // Main function
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    unused(args);
+    $unused(args);
 
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -123,7 +123,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         }
 
         try_(TreeNode_saveToFileRecur(root, save_file));
-        ignore fclose(save_file);
+        $ignore fclose(save_file);
         log_info("Saved decision tree to decision_tree.bin");
     }
 
@@ -136,7 +136,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         }
 
         let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
-        ignore fclose(load_file);
+        $ignore fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
         eval_return loaded;
@@ -200,16 +200,17 @@ fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOL
     if (node == null) { return; }
     match_(deref(node)) {
     pattern_(TreeNode_leaf, _) {
-        unused(_);
+        $unused(_);
     } break;
     pattern_(TreeNode_decision, decision) {
         TreeNode_destroyRecur(allocator, decision->left);
         TreeNode_destroyRecur(allocator, decision->right);
     } break;
-    fallback_ {
-        log_error("Invalid node type encountered during prediction");
-        claim_unreachable;
-    } break;
+        fallback_ {
+            log_error("Invalid node type encountered during prediction");
+            claim_unreachable;
+        }
+        break;
     }
     mem_Allocator_destroy(allocator, anyPtr(node));
 }
@@ -233,10 +234,11 @@ fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features),
                 current = decision->right;
             }
         } break;
-        fallback_ {
-            log_error("Invalid node type encountered during prediction");
-            claim_unreachable;
-        } break;
+            fallback_ {
+                log_error("Invalid node type encountered during prediction");
+                claim_unreachable;
+            }
+            break;
         }
     }
 }
@@ -261,10 +263,11 @@ fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-n
         log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
         TreeNode_printRecur(decision->right, depth + 1);
     } break;
-    fallback_ {
-        log_error("%sInvalid node type", indent);
-        claim_unreachable;
-    } break;
+        fallback_ {
+            log_error("%sInvalid node type", indent);
+            claim_unreachable;
+        }
+        break;
     }
 }
 
@@ -291,8 +294,8 @@ fn_ext_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$voi
         try_(TreeNode_saveToFileRecur(decision->left, file));
         try_(TreeNode_saveToFileRecur(decision->right, file));
     } break;
-    fallback_
-        claim_unreachable;
+        fallback_
+            claim_unreachable;
     }
 
     return_void();
@@ -351,7 +354,7 @@ fn_ext_scope(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
         log_error("Failed to open file: %.*s", (int)filename.len, filename.ptr);
         return_err(io_FileErr_OpenFailed());
     }
-    defer_(ignore fclose(file));
+    defer_($ignore fclose(file));
 
     // First pass: count lines and features
     u32 line_count    = 0;

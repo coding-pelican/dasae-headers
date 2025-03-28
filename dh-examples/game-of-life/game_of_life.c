@@ -65,14 +65,14 @@ typedef struct State {
     mem_Allocator allocator;
 } State;
 use_Err$(State);
-Err$State State_init(mem_Allocator allocator, usize states_width, usize states_height) must_check;
+Err$State State_init(mem_Allocator allocator, usize states_width, usize states_height) $must_check;
 void      State_update(State* self, f64 dt);
 void      State_render(const State* self, engine_Canvas* canvas, f64 dt);
 void      State_fini(State* self);
 
 
 Err$void dh_main(Sli$Str_const args) {
-    unused(args);
+    $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file
         try_(log_init("log/debug.log"));
@@ -130,7 +130,7 @@ Err$void dh_main(Sli$Str_const args) {
             GameOfLife_setCellSlice(&state.cells, x, y + 2, (Sli$i8)Sli_from(((i8[]){ 0, 0, 1, 0, 0 }), 5));
         }
         log_info("game state created\n");
-        ignore getchar();
+        $ignore getchar();
 
         // Initialize timing variables
         let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
@@ -178,14 +178,13 @@ Err$void dh_main(Sli$Str_const args) {
             let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
             // 8) Subtract from our target
-            if_some (time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
+            if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
                 time_sleep(leftover);
             }
             prev_frame_time = curr_frame_time;
         }
         return_void();
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 
 
@@ -212,8 +211,7 @@ Err$State State_init(mem_Allocator allocator, usize states_width, usize states_h
             .is_running = true,
             .allocator  = allocator,
         });
-    }
-    scope_returnReserved;
+    } scope_returnReserved;
 }
 void State_update(State* self, f64 dt) {
     debug_assert_nonnull(self);
@@ -241,7 +239,7 @@ void State_render(const State* self, engine_Canvas* canvas, f64 dt) {
     debug_assert_nonnull(canvas);
 
     let states = GameOfLife_getCellMatrix(&self->cells);
-    unused(dt);
+    $unused(dt);
     for (usize y = 0; y < canvas->height; ++y) {
         for (usize x = 0; x < canvas->width; ++x) {
             let cell_state = *Grid_at(states, x + 1, y + 1);
@@ -259,7 +257,7 @@ void State_fini(State* self) {
 
 void GameOfLife_update(GameOfLife* self, f64 dt) {
     debug_assert_nonnull(self);
-    unused(dt);
+    $unused(dt);
 
     if (self->tick_current < self->tick_threshold) {
         self->tick_current += 1;

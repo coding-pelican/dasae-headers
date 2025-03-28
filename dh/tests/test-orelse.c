@@ -20,5 +20,5 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     let f    = unwrap(opt);
 
     return_ok({});
-    unused(args, a, b, c, d, e, f);
+    $unused(args, a, b, c, d, e, f);
 } ext_unscoped;

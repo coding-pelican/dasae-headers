@@ -117,7 +117,7 @@ extern "C" {
 #if debug_comp_enabled
 #if COMP_TIME
 #define comp_inline__debug_assert(_Expr) \
-    ignore((!!(_Expr)) || (debug_assert_fail(#_Expr, __func__, __FILE__, __LINE__), 0))
+    $ignore((!!(_Expr)) || (debug_assert_fail(#_Expr, __func__, __FILE__, __LINE__), 0))
 
 #define comp_inline__debug_assert_true(_Expr)        comp_inline__debug_assert_fmt((_Expr) == true, "%s is not true", #_Expr)
 #define comp_inline__debug_assert_false(_Expr)       comp_inline__debug_assert_fmt((_Expr) == false, "%s is not false", #_Expr)
@@ -127,7 +127,7 @@ extern "C" {
 #define comp_inline__debug_assert_nonnull(_Expr)     comp_inline__debug_assert_fmt((_Expr) != null, "%s is null", #_Expr)
 
 #define comp_inline__debug_assert_fmt(_Expr, ...) \
-    ignore((!!(_Expr)) || (debug_assert_fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
+    $ignore((!!(_Expr)) || (debug_assert_fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
 
 #define comp_inline__debug_assert_true_fmt(_Expr, ...)        comp_inline__debug_assert_fmt((_Expr) == true, __VA_ARGS__)
 #define comp_inline__debug_assert_false_fmt(_Expr, ...)       comp_inline__debug_assert_fmt((_Expr) == false, __VA_ARGS__)
@@ -155,23 +155,23 @@ force_inline void comp_inline__debug_assert_null_fmt(bool, const char*, ...);
 force_inline void comp_inline__debug_assert_nonnull_fmt(bool, const char*, ...);
 #endif /* COMP_TIME */
 #else  /* !debug_comp_enabled */
-#define comp_inline__debug_assert(_Expr) unused(0)
+#define comp_inline__debug_assert(_Expr) $unused(0)
 
-#define comp_inline__debug_assert_true(_Expr)        unused(0)
-#define comp_inline__debug_assert_false(_Expr)       unused(0)
-#define comp_inline__debug_assert_eq(_Expr1, _Expr2) unused(0)
-#define comp_inline__debug_assert_ne(_Expr1, _Expr2) unused(0)
-#define comp_inline__debug_assert_null(_Expr)        unused(0)
-#define comp_inline__debug_assert_nonnull(_Expr)     unused(0)
+#define comp_inline__debug_assert_true(_Expr)        $unused(0)
+#define comp_inline__debug_assert_false(_Expr)       $unused(0)
+#define comp_inline__debug_assert_eq(_Expr1, _Expr2) $unused(0)
+#define comp_inline__debug_assert_ne(_Expr1, _Expr2) $unused(0)
+#define comp_inline__debug_assert_null(_Expr)        $unused(0)
+#define comp_inline__debug_assert_nonnull(_Expr)     $unused(0)
 
-#define comp_inline__debug_assert_fmt(_Expr, ...) unused(0)
+#define comp_inline__debug_assert_fmt(_Expr, ...) $unused(0)
 
-#define comp_inline__debug_assert_true_fmt(_Expr, ...)        unused(0)
-#define comp_inline__debug_assert_false_fmt(_Expr, ...)       unused(0)
-#define comp_inline__debug_assert_eq_fmt(_Expr1, _Expr2, ...) unused(0)
-#define comp_inline__debug_assert_ne_fmt(_Expr1, _Expr2, ...) unused(0)
-#define comp_inline__debug_assert_null_fmt(_Expr, ...)        unused(0)
-#define comp_inline__debug_assert_nonnull_fmt(_Expr, ...)     unused(0)
+#define comp_inline__debug_assert_true_fmt(_Expr, ...)        $unused(0)
+#define comp_inline__debug_assert_false_fmt(_Expr, ...)       $unused(0)
+#define comp_inline__debug_assert_eq_fmt(_Expr1, _Expr2, ...) $unused(0)
+#define comp_inline__debug_assert_ne_fmt(_Expr1, _Expr2, ...) $unused(0)
+#define comp_inline__debug_assert_null_fmt(_Expr, ...)        $unused(0)
+#define comp_inline__debug_assert_nonnull_fmt(_Expr, ...)     $unused(0)
 #endif /* debug_comp_enabled */
 
 /*========== Extern Function Prototypes =====================================*/

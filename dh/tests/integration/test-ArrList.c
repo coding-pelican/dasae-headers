@@ -12,7 +12,7 @@ typedef struct Point {
 use_Sli$(Point);
 use_ArrList$(Point);
 
-static must_check Err$void printPoints(const ArrList$Point* points) {
+static $must_check Err$void printPoints(const ArrList$Point* points) {
     reserveReturn(Err$void);
     debug_assert_nonnull(points);
     printf("Points (%zu items):\n", points->items.len);
@@ -22,7 +22,7 @@ static must_check Err$void printPoints(const ArrList$Point* points) {
     return_void();
 }
 
-static must_check Err$void example(void) {
+static $must_check Err$void example(void) {
     scope_reserveReturn(Err$void) {
         // Initialize allocator
         let allocator = heap_Classic_allocator(&(heap_Classic){});
@@ -44,7 +44,7 @@ static must_check Err$void example(void) {
             ),
             2
         );
-        try_(ArrList_appendSli(points.base, meta_refSli_mut(more_points)));
+        try_(ArrList_appendSli(points.base, meta_refSli(more_points)));
 
         // Print current state
         try_(printPoints(&points));
@@ -62,7 +62,7 @@ static must_check Err$void example(void) {
         try_(printPoints(&points));
 
         // Pop last element
-        if_some (ArrList_popOrNull(points.base), item_last) {
+        if_some(ArrList_popOrNull(points.base), item_last) {
             let last = meta_castPtr$(Point*, item_last);
             printf("\nPopped last element: (%d, %d)\n", last->x, last->y);
             try_(printPoints(&points));
@@ -86,7 +86,7 @@ static must_check Err$void example(void) {
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
-        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSli(allocator, meta_refSli_mut(owned_slice)));
+        var from_slice = type$(ArrList$Point, ArrList_fromOwnedSli(allocator, meta_refSli(owned_slice)));
         defer_(ArrList_fini(from_slice.base));
         printf("\nCreated from owned slice:\n");
         try_(printPoints(&from_slice));

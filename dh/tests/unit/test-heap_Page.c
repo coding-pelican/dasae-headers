@@ -219,7 +219,7 @@ TEST_Result TEST_heap_Page_MultiPageAccess(void) {
 /*========== Test Runner ============================================*/
 
 int main(int argc, const char* argv[]) {
-    unused(argc), unused(argv);
+    $unused(argc), $unused(argv);
 
     TEST_init();
     printf("Starting Page Allocator Tests\n");

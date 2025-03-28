@@ -9,32 +9,32 @@
 /*========== Common VTable Functions ========================================*/
 
 fn_(mem_Allocator_VT_noAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
-    ignore ctx;
-    ignore len;
-    ignore align;
+    $ignore ctx;
+    $ignore len;
+    $ignore align;
     return none$(Opt$Ptr$u8);
 }
 
 fn_(mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
-    ignore ctx;
-    ignore buf;
-    ignore buf_align;
-    ignore new_len;
+    $ignore ctx;
+    $ignore buf;
+    $ignore buf_align;
+    $ignore new_len;
     return false;
 }
 
 fn_(mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
-    ignore ctx;
-    ignore buf;
-    ignore buf_align;
-    ignore new_len;
+    $ignore ctx;
+    $ignore buf;
+    $ignore buf_align;
+    $ignore new_len;
     return none$(Opt$Ptr$u8);
 }
 
 fn_(mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
-    ignore ctx;
-    ignore buf;
-    ignore buf_align;
+    $ignore ctx;
+    $ignore buf;
+    $ignore buf_align;
 }
 
 /*========== Raw Allocation Functions =======================================*/
@@ -65,7 +65,7 @@ mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc sr
     let result = self.vt->alloc(self.ptr, len, align);
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 #else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-    if_some (result, addr) { mem_Tracker_registerAlloc(addr, len, src_loc); }
+    if_some(result, addr) { mem_Tracker_registerAlloc(addr, len, src_loc); }
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
     return result;
 };
@@ -134,7 +134,7 @@ mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usiz
     let result = self.vt->remap(self.ptr, buf, buf_align, new_len);
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 #else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-    if_some (result, addr) { mem_Tracker_registerRemap(buf.ptr, addr, new_len, src_loc); }
+    if_some(result, addr) { mem_Tracker_registerRemap(buf.ptr, addr, new_len, src_loc); }
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
     return result;
 }
@@ -177,7 +177,7 @@ fn_ext_scope(mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Alloca
     }
 
     let mem_opt = mem_Allocator_rawAlloc(self, type.size, type.align);
-    if_none (mem_opt) {
+    if_none(mem_opt) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
@@ -219,12 +219,12 @@ fn_ext_scope(mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count)
 
     // Check for overflow in multiplication
     let byte_count = usize_chkdMul(type.size, count);
-    if_none (byte_count) {
+    if_none(byte_count) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
     let mem_opt = mem_Allocator_rawAlloc(self, byte_count.value, type.align);
-    if_none (mem_opt) {
+    if_none(mem_opt) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
@@ -265,7 +265,7 @@ fn_(mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len), bo
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return false;
     }
 
@@ -308,12 +308,12 @@ fn_ext_scope(mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return_none();
     }
 
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, info.align, new_byte_count.value);
-    if_none (new_ptr) {
+    if_none(new_ptr) {
         return_none();
     }
     return_some({
@@ -359,13 +359,13 @@ fn_ext_scope(mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, info.align, new_byte_count.value);
-    if_some (new_ptr, p) {
+    if_some(new_ptr, p) {
         return_ok({
             .type = info.type,
             .addr = p,
@@ -375,7 +375,7 @@ fn_ext_scope(mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize ne
 
     // Remap failed, need to allocate new memory and copy
     let new_mem = mem_Allocator_rawAlloc(self, new_byte_count.value, info.align);
-    if_none (new_mem) {
+    if_none(new_mem) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
@@ -466,7 +466,7 @@ fn_ext_scope(mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLo
     }
 
     let mem_opt = mem_Allocator_rawAlloc_debug(self, type.size, type.align, src_loc);
-    if_none (mem_opt) {
+    if_none(mem_opt) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
@@ -508,12 +508,12 @@ fn_ext_scope(mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize 
 
     // Check for overflow in multiplication
     let byte_count = usize_chkdMul(type.size, count);
-    if_none (byte_count) {
+    if_none(byte_count) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
     let mem_opt = mem_Allocator_rawAlloc_debug(self, byte_count.value, type.align, src_loc);
-    if_none (mem_opt) {
+    if_none(mem_opt) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
@@ -553,7 +553,7 @@ fn_(mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_le
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return false;
     }
 
@@ -595,12 +595,12 @@ fn_ext_scope(mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usiz
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return_none();
     }
 
     let new_ptr = mem_Allocator_rawRemap_debug(self, old_bytes, info.align, new_byte_count.value, src_loc);
-    if_none (new_ptr) { return_none(); }
+    if_none(new_ptr) { return_none(); }
 
     return_some({
         .type = info.type,
@@ -645,13 +645,13 @@ fn_ext_scope(mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, us
 
     // Check for overflow in multiplication
     let new_byte_count = usize_chkdMul(info.size, new_len);
-    if_none (new_byte_count) {
+    if_none(new_byte_count) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap_debug(self, old_bytes, info.align, new_byte_count.value, src_loc);
-    if_some (new_ptr, p) {
+    if_some(new_ptr, p) {
         return_ok({
             .type = info.type,
             .addr = p,
@@ -661,7 +661,7 @@ fn_ext_scope(mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, us
 
     // Remap failed, need to allocate new memory and copy
     let new_mem = mem_Allocator_rawAlloc_debug(self, new_byte_count.value, info.align, src_loc);
-    if_none (new_mem) {
+    if_none(new_mem) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
 

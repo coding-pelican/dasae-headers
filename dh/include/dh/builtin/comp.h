@@ -39,48 +39,48 @@ extern "C" {
 #define force_inline  ATTR__force_inline
 #define no_inline     ATTR__no_inline
 
-#define warn_deprecated                             ATTR__warn_deprecated
-#define warn_deprecated_msg(_Msg)                   ATTR__warn_deprecated_msg(_Msg)
-#define warn_deprecated_instead(_Msg, _Replacement) ATTR__warn_deprecated_instead(_Msg, _Replacement)
+#define $warn_deprecated                             comp_attr__$warn_deprecated
+#define $warn_deprecated_msg(_Msg)                   comp_attr__$warn_deprecated_msg(_Msg)
+#define $warn_deprecated_instead(_Msg, _Replacement) comp_attr__$warn_deprecated_instead(_Msg, _Replacement)
 
 #define $on_load comp_attr__$on_load
 #define $on_exit comp_attr__$on_exit
 
-#define must_check                                                            \
+#define $must_check                                                           \
     /**                                                                       \
      * @brief Attribute marks a function as returning a value that must be    \
      *        checked to avoid potential errors or warnings                   \
      * @details This attribute can be used to ensure that a function's return \
      *          value is checked to avoid potential errors or warnings        \
      */                                                                       \
-    ATTR__must_check
-#define no_return                                                         \
+    comp_attr__$must_check
+#define $no_return                                                        \
     /**                                                                   \
      * @brief Attribute marks a function as not returning a value         \
      * @details This attribute can be used to ensure that a function does \
      *          not return a value                                        \
      */                                                                   \
-    ATTR__no_return
-#define ignore                                                           \
-    /**                                                                  \
-     * @brief Attribute explicitly ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values   \
-     */                                                                  \
-    ATTR__ignore
+    comp_attr__$no_return
+#define $ignore                                                           \
+    /**                                                                   \
+     * @brief Attribute explicitly $ignores an expression or return value \
+     * @details Used to suppress compiler warnings about unused values    \
+     */                                                                   \
+    comp_attr__$ignore
 
-#define used(_Expr... /*void*/)                                                    \
+#define $used(_Expr... /*void*/)                                                   \
     /**                                                                            \
      * @brief Marks variables or expressions as used to suppress compiler warnings \
      * @details In macro functions, the arguments are marked as used               \
      * @param _Expr... Variable number of arguments to be marked as used           \
      */                                                                            \
-    ATTR__used(_Expr)
-#define unused(_Expr... /*void*/)                                                    \
+    comp_attr__$used(_Expr)
+#define $unused(_Expr... /*void*/)                                                   \
     /**                                                                              \
      * @brief Marks variables or expressions as unused to suppress compiler warnings \
      * @param _Expr... Variable number of arguments to be marked as unused           \
      */                                                                              \
-    ATTR__unused(_Expr)
+    comp_attr__$unused(_Expr)
 
 #define as$(T_Dest, val_src... /*T_Dest*/)                                  \
     /**                                                                     \
@@ -143,44 +143,62 @@ extern "C" {
 #define ATTR__force_inline BUILTIN_COMP_FORCE_INLINE
 #define ATTR__no_inline    BUILTIN_COMP_NO_INLINE
 
-#define ATTR__warn_deprecated                             BUILTIN_COMP_DEPRECATED
-#define ATTR__warn_deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
-#define ATTR__warn_deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
+#define comp_attr__$warn_deprecated                             BUILTIN_COMP_DEPRECATED
+#define comp_attr__$warn_deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
+#define comp_attr__$warn_deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
 
 #define comp_attr__$on_load __attribute__((constructor))
 #define comp_attr__$on_exit __attribute__((destructor))
 
-#define ATTR__must_check BUILTIN_COMP_MUST_CHECK
-#define ATTR__no_return  BUILTIN_COMP_NO_RETURN
-#define ATTR__ignore     (void)
+#define comp_attr__$must_check BUILTIN_COMP_MUST_CHECK
+#define comp_attr__$no_return  BUILTIN_COMP_NO_RETURN
+#define comp_attr__$ignore     (void)
 
-#define ATTR__used(_Expr...) _Expr
+#define comp_attr__$used(_Expr...) _Expr
 /* begin unused */
-#define ATTR__unused(...) \
-    ATTR__unused_IMPL(ATTR__unused_COUNT(__VA_ARGS__), __VA_ARGS__)
-
-#define ATTR__unused_IMPL(N, ...) pp_cat(ATTR__unused_, N)(__VA_ARGS__)
-
-#define ATTR__unused_COUNT(...) \
-    ATTR__unused_SELECT_COUNT(__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-#define ATTR__unused_SELECT_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, N, ...) N
-
-#define ATTR__unused_1(x1)                                                                     (void)(x1)
-#define ATTR__unused_2(x1, x2)                                                                 (void)(x1), (void)(x2)
-#define ATTR__unused_3(x1, x2, x3)                                                             (void)(x1), (void)(x2), (void)(x3)
-#define ATTR__unused_4(x1, x2, x3, x4)                                                         (void)(x1), (void)(x2), (void)(x3), (void)(x4)
-#define ATTR__unused_5(x1, x2, x3, x4, x5)                                                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5)
-#define ATTR__unused_6(x1, x2, x3, x4, x5, x6)                                                 (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6)
-#define ATTR__unused_7(x1, x2, x3, x4, x5, x6, x7)                                             (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7)
-#define ATTR__unused_8(x1, x2, x3, x4, x5, x6, x7, x8)                                         (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8)
-#define ATTR__unused_9(x1, x2, x3, x4, x5, x6, x7, x8, x9)                                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9)
-#define ATTR__unused_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)                               (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10)
-#define ATTR__unused_11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)                          (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11)
-#define ATTR__unused_12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)                     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12)
-#define ATTR__unused_13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13)                (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13)
-#define ATTR__unused_14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)           (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14)
-#define ATTR__unused_15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)      (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15)
-#define ATTR__unused_16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15), (void)(x16)
+#define comp_attr__$unused(_Expr...) \
+    comp_attr__$unused__payload(comp_attr__$unused__countArgs(_Expr), _Expr)
+#define comp_attr__$unused__payload(_Count, _Args...) \
+    pp_join(__, comp_attr__$unused, _Count)(_Args)
+#define comp_attr__$unused__countArgs(_Args...)                      \
+    comp_attr__$unused__countArgs__select(                           \
+        _Args, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 \
+    )
+#define comp_attr__$unused__countArgs__select(                                     \
+    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
+) _N
+#define comp_attr__$unused__1(x1) \
+    (void)(x1)
+#define comp_attr__$unused__2(x1, x2) \
+    (void)(x1), (void)(x2)
+#define comp_attr__$unused__3(x1, x2, x3) \
+    (void)(x1), (void)(x2), (void)(x3)
+#define comp_attr__$unused__4(x1, x2, x3, x4) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4)
+#define comp_attr__$unused__5(x1, x2, x3, x4, x5) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5)
+#define comp_attr__$unused__6(x1, x2, x3, x4, x5, x6) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6)
+#define comp_attr__$unused__7(x1, x2, x3, x4, x5, x6, x7) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7)
+#define comp_attr__$unused__8(x1, x2, x3, x4, x5, x6, x7, x8) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8)
+#define comp_attr__$unused__9(x1, x2, x3, x4, x5, x6, x7, x8, x9) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9)
+#define comp_attr__$unused__10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10)
+#define comp_attr__$unused__11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11)
+#define comp_attr__$unused__12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12)
+#define comp_attr__$unused__13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13)
+#define comp_attr__$unused__14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14)
+#define comp_attr__$unused__15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15)
+#define comp_attr__$unused__16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) \
+    (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15), (void)(x16)
 /* end unused */
 
 #if defined(__cplusplus)
