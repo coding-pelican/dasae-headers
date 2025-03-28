@@ -1,5 +1,28 @@
 # dasae-headers
 
+<!--
+***Description***
+"Make C Great Again": A modern language extension for safer and more productive C programming
+
+***Topic***
+- c-programming
+- memory-safety
+- modern-c
+- safe-c
+- generic
+- c17
+- c-extension
+- error-handling
+- type-safety
+- defer-pattern
+- optional-type
+- transpiler
+- cross-platform
+- rust-inspired
+- zig-inspired
+- testing-framework
+ -->
+
 <div align="center">
   <h1>dasae-headers: Modern and Safe C programming</h1>
   <p><strong>A modern language extension for safer and more productive C programming</strong></p>
