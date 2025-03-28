@@ -206,6 +206,11 @@ Macros:
   - block_deferral=/**/ # defer_block
   - ext_unscoped=/**/ # fn_ext_scope, ext_scope
   - TEST_unscoped=/**/ # fn_TEST_scope, TEST_scope
+  # Eval
+  - "eval_(_)=({ _; })"
+  - "eval$(T,_)=(T)({ _; })"
+  - "eval_return_(_)=return _"
+  - "asg_eval(_)=({ _; })"
   # Match
   - "match_(expr)=switch (expr)"
   - "pattern_(tag,capture)=case tag:"
@@ -274,7 +279,7 @@ WhitespaceSensitiveMacros:
   - config_UnionEnumAsField
   - tagUnion
   - tagUnion$
-  - tagUnionAsg
+  - toTagUnion
   - match_
   - meta_refPtr
   - meta_refSli

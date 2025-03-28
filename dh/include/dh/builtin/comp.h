@@ -228,7 +228,7 @@ extern "C" {
 #define comp_syn__createCleared$(T_Lit) \
     (&*lit$(T_Lit[1], [0] = makeCleared$(T_Lit)))
 #define comp_syn__createFrom(var_src...) \
-    (&*lit$(TypeOf(var_src)[1], [0] = var_src))
+    (&*lit$(TypeUnqualOf(var_src)[1], [0] = var_src))
 #define comp_syn__createFrom$(T_Lit, var_src...) \
     (&*lit$(T_Lit[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)

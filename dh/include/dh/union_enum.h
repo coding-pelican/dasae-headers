@@ -32,9 +32,9 @@ extern "C" {
 #define config_UnionEnumAsField(Pair_1Tag_2Type...)       comp_gen__config_UnionEnumAsField(Pair_1Tag_2Type)
 
 /* Determines union enum tag */
-#define tagUnion(E_UnionEnum_Tag, val_tagged...)                         comp_op__tagUnion(E_UnionEnum_Tag, val_tagged)
-#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)           comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
-#define tagUnionAsg(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) comp_op__tagUnionAsg(pp_uniqTok(addr_union_enum), var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
+#define tagUnion(E_UnionEnum_Tag, val_tagged...)                        comp_op__tagUnion(E_UnionEnum_Tag, val_tagged)
+#define tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...)          comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged)
+#define toTagUnion(var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) comp_op__toTagUnion(pp_uniqTok(addr_union_enum), var_addr_union_enum, E_UnionEnum_Tag, val_tagged)
 
 #define extract(val_union_enum, E_UnionEnum_Tag)     comp_op__extract(val_union_enum, E_UnionEnum_Tag)
 #define extract_mut(var_union_enum, E_UnionEnum_Tag) comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag)
@@ -44,7 +44,7 @@ extern "C" {
 #define match_mut_(var_union_enum)                      comp_syn__match_mut_(var_union_enum)
 #define pattern_(E_UnionEnum_Tag, _Payload_Capture)     comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture)
 #define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
-#define fallback_                                       comp_syn__fallback_
+#define fallback_()                                     comp_syn__fallback_()
 
 /*========== Implementations ================================================*/
 
@@ -78,11 +78,11 @@ extern "C" {
 
 #define comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define comp_op__tagUnionAsg(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
-    let __addr_union_enum = var_addr_union_enum;                                                            \
-    debug_assert_nonnull(__addr_union_enum);                                                                \
-    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);                  \
-    eval_return __addr_union_enum;                                                                          \
+#define comp_op__toTagUnion(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
+    let __addr_union_enum = var_addr_union_enum;                                                           \
+    debug_assert_nonnull(__addr_union_enum);                                                               \
+    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);                 \
+    eval_return __addr_union_enum;                                                                         \
 })
 
 #define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({             \
@@ -111,7 +111,7 @@ extern "C" {
     case E_UnionEnum_Tag:                                         \
         for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define comp_syn__fallback_ \
+#define comp_syn__fallback_() \
     default:
 
 #define comp_gen__config_UnionEnum__enumTags(T_UnionEnum, ...) \
@@ -161,8 +161,8 @@ static f32 Shape_getArea(Shape shape) {
         pattern_(Shape_Rect, s) {
             area = s->width * s->height;
         } break;
-        fallback_
-            claim_unreachable;
+            fallback_
+                claim_unreachable;
         }
         eval_return area;
     });
@@ -198,7 +198,7 @@ use_Opt$(InputEvent);
 extern fn_(pullInputEvent(void), Opt$InputEvent);
 
 static void example_handleEvent(void) {
-    if_some (pullInputEvent(), event) {
+    if_some(pullInputEvent(), event) {
         match_(event) {
         pattern_(InputEvent_press_key, on_pressed) {
             debug_assert_true_fmt(
@@ -212,8 +212,8 @@ static void example_handleEvent(void) {
                 "button is out of range"
             );
         } break;
-        fallback_
-            claim_unreachable;
+            fallback_
+                claim_unreachable;
         }
     }
 }

@@ -1,6 +1,20 @@
 /**
- * @file decision_tree.c
- * @brief Decision tree implementation using DH library with file I/O
+ * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ *
+ * @file    sample-decision_tree.c
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2025-03-07 (date of creation)
+ * @updated 2025-03-27 (date of last update)
+ * @version v0.1-alpha.2
+ * @ingroup dasae-headers(dh)/samples
+ * @prefix  NONE
+ *
+ * @brief   Decision tree implementation for classification
+ * @details This file implements a basic decision tree classifier that can:
+ *          - Build a tree from training data
+ *          - Make predictions on new data
+ *          - Save/load trees to/from files
+ *          - Handle CSV data input
  */
 
 #include "dh/main.h"
@@ -171,7 +185,7 @@ fn_ext_scope(TreeNode_createLeaf(
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    tagUnionAsg(node, TreeNode_leaf, {
+    toTagUnion(node, TreeNode_leaf, {
         .class_label = class_label,
     });
     return_ok(node);
@@ -187,7 +201,7 @@ fn_ext_scope(TreeNode_createDecision(
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    tagUnionAsg(node, TreeNode_decision, {
+    toTagUnion(node, TreeNode_decision, {
         .feature_index = feature_index,
         .threshold     = threshold,
         .left          = left,
@@ -206,11 +220,10 @@ fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOL
         TreeNode_destroyRecur(allocator, decision->left);
         TreeNode_destroyRecur(allocator, decision->right);
     } break;
-        fallback_ {
-            log_error("Invalid node type encountered during prediction");
-            claim_unreachable;
-        }
-        break;
+    fallback_() {
+        log_error("Invalid node type encountered during prediction");
+        claim_unreachable;
+    } break;
     }
     mem_Allocator_destroy(allocator, anyPtr(node));
 }
@@ -234,11 +247,10 @@ fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features),
                 current = decision->right;
             }
         } break;
-            fallback_ {
-                log_error("Invalid node type encountered during prediction");
-                claim_unreachable;
-            }
-            break;
+        fallback_() {
+            log_error("Invalid node type encountered during prediction");
+            claim_unreachable;
+        } break;
         }
     }
 }
@@ -263,11 +275,10 @@ fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-n
         log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
         TreeNode_printRecur(decision->right, depth + 1);
     } break;
-        fallback_ {
-            log_error("%sInvalid node type", indent);
-            claim_unreachable;
-        }
-        break;
+    fallback_() {
+        log_error("%sInvalid node type", indent);
+        claim_unreachable;
+    } break;
     }
 }
 
@@ -294,8 +305,8 @@ fn_ext_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$voi
         try_(TreeNode_saveToFileRecur(decision->left, file));
         try_(TreeNode_saveToFileRecur(decision->right, file));
     } break;
-        fallback_
-            claim_unreachable;
+    fallback_()
+        claim_unreachable;
     }
 
     return_void();

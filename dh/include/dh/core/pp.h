@@ -42,6 +42,8 @@ extern "C" {
 
 #define pp_uniqTok(_Tok...) \
     comp_op__pp_uniqTok(_Tok)
+#define pp_uniqTokByLine(_Tok...) \
+    comp_op__pp_uniqTokByLine(_Tok)
 
 #define pp_countArgs(_Args...) \
     comp_op__pp_countArgs(_Args)
@@ -78,6 +80,8 @@ extern "C" {
 
 #define comp_op__pp_uniqTok(_Tok...) \
     pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
+#define comp_op__pp_uniqTokByLine(_Tok...) \
+    pp_join(_, pp_join2(_, _, __LINE__), _Tok)
 
 #define comp_op__pp_countArgs(_Args...)               \
     comp_op__pp_countArgs__selectArgCountInListRseqN( \
