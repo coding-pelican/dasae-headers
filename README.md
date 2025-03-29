@@ -57,6 +57,7 @@
   - [📚 Documentation](#-documentation)
   - [🚧 Current Status](#-current-status)
   - [🙏 Contributing](#-contributing)
+  - [📧 Contact](#-contact)
   - [📜 License](#-license)
 
 ## 🌟 Introduction
@@ -312,6 +313,11 @@ Issues, pull requests, and feedback are always welcome!
 1. Issue reporting: Bug reports / feature requests
 2. Code contributions: Feature additions / bug fixes via Pull Requests
 3. Documentation: Improving documentation / adding example code
+
+## 📧 Contact
+
+For any questions or inquiries, please contact the project author:
+- Gyeongtae Kim(dev-dasae) <<codingpelican@gmail.com>>
 
 ## 📜 License
 
