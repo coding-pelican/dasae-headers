@@ -39,18 +39,20 @@
   </div>
 </div>
 
-## Table of Contents
+## 📋 Table of Contents
 
 - [dasae-headers](#dasae-headers)
-  - [Table of Contents](#table-of-contents)
+  - [📋 Table of Contents](#-table-of-contents)
   - [🌟 Introduction](#-introduction)
   - [🛡️ Key Features](#️-key-features)
   - [🌐 Platform Support](#-platform-support)
   - [🚀 Getting Started](#-getting-started)
-    - [Installation](#installation)
+    - [💽 Installation](#-installation)
   - [⚡ Code Samples](#-code-samples)
-    - [Basic Example](#basic-example)
-    - [Error Handling Example](#error-handling-example)
+    - [👋 Hello, world!](#-hello-world)
+    - [🔍 Optional Values Example](#-optional-values-example)
+    - [🔄 Error Results Example](#-error-results-example)
+    - [🤝 Pattern Matching Example](#-pattern-matching-example)
     - [🧪 Test Code Example](#-test-code-example)
   - [📚 Documentation](#-documentation)
   - [🚧 Current Status](#-current-status)
@@ -95,7 +97,9 @@ dasae-headers was developed with inspiration from the syntax and standard librar
 
 ## 🚀 Getting Started
 
-### Installation
+### 💽 Installation
+
+> Detailed installation and build guide is in preparation. Please wait a moment!
 
 1. Clone this repository:
 
@@ -106,6 +110,7 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 2. Include the necessary headers:
 
 ```c
+#include "dh/main.h"
 #include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
@@ -114,62 +119,138 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ## ⚡ Code Samples
 
-### Basic Example
+### 👋 Hello, world!
 
 ```c
+// Include the main header that provides program entry point
 #include "dh/main.h"
-#include "dh/core.h"
-#include "dh/opt.h"
+// Include string utilities for working with text
+#include "dh/Str.h"
 
-// Function that returns an optional value
-fn_ext_scope(findValue(i32 id), Opt$i32) {
-    if (id > 0) {
-        return_some(id * 10);
+// Define the main function with extended scope and error handling
+// Takes command line arguments and returns an error result with void payload
+fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+    // Create a string literal using Str_l
+    let hello_world = Str_l("Hello, world!");
+
+    // Print the string to the console with a newline
+    Str_println(hello_world);
+
+    // Return success (void value with no error)
+    return_ok({});
+} ext_unscoped; // End the extended scope block
+```
+
+### 🔍 Optional Values Example
+
+```c
+fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+    for_slice_indexed (items, item, index) {
+        if (*item != value) { continue; }
+        return_some(index); // Return with a value
     }
-    return_none();
+    return_none(); // Return with no value
 } ext_unscoped;
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    // Using optional values
-    let result = findValue(5);
+fn_(example(void), void) {
+    Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
 
-    if_some(result, value) {
-        printf("Found value: %d\n", value);
+    // Create optional values
+    let opt_value = some$(Opt$i32, 42);
+    let opt_empty = none$(Opt$i32);
+
+    // Find a value in array
+    let found = findValueIndex(30, Sli_arr$(Sli_const$i32, nums));
+
+    // Check if option has value
+    if_some(found, index) {
+        printf("Found at: %d\n", index);
     } else_none {
-        printf("Value not found.\n");
+        printf("Not found\n");
     }
 
-    return_void();
+    // Default values
+    let value = orelse(found, -1); // Use -1 if not found
+
+    // Unsafe extraction (assertion if option might be none)
+    let unsafe_value = unwrap(opt_value);
+}
+```
+
+### 🔄 Error Results Example
+
+```c
+config_ErrSet(math_Err,
+    DivisionByZero,
+    Overflow,
+    Underflow
+);
+
+use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
+fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+    if (rhs == 0) {
+        return_err(math_Err_DivisionByZero()); // Return with an error
+    }
+    return_ok(lhs / rhs); // Return with a value
+} ext_unscoped;
+
+fn_ext_scope(example(void), Err$void) {
+    // Allocate resources
+    var buffer = meta_cast$(Sli$i32,
+        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
+    );
+    // Cleanup always when function returns
+    defer_(mem_Allocator_free(allocator, anySli(buffer)));
+    // Cleanup only when an error occurs and propagates
+    errdefer_(log_error("Occurred error!"));
+
+    // Error propagation (early return)
+    let result_invalid = try_(safeDivide(10, 0));
+
+    // Error handling with default value
+    let result_default = catch_(safeDivide(10, 0), 1);
+
+    // Error handling with error payload capture
+    let result_handling = catch_from(safeDivide(10, 0), err, eval({
+        Err_print(err);   // Print the error
+        ErrTrace_print(); // Print the error trace
+        return_err(err);  // Return with an error
+    }));
+
+    // Return a normally
+    return_ok({});
 } ext_unscoped;
 ```
 
-### Error Handling Example
+### 🤝 Pattern Matching Example
 
 ```c
-// safe division - handling division by zero error
-fn_ext_scope(safeDivide(i32 a, i32 b), math_Err$i32) {
-    if (b == 0) {
-        return_err(math_Err_DivisionByZero());
-    }
-    return_ok(a / b);
-} ext_unscoped;
+config_UnionEnum(InputEvent,
+    (InputEvent_press_key,      struct { i32 key; }),
+    (InputEvent_release_button, struct { i8 button; })
+);
+use_Opt$(InputEvent);
+fn_(pullInputEvent(void), Opt$InputEvent);
 
-// Processing Optional values
-fn_(processNumber(Opt$i32 maybe_num), void) {
-    if_some(maybe_num, num) {
-        printf("Got number: %d\n", num);
-    } else_none {
-        printf("No number provided\n");
+fn_(example(void), void) {
+    if_some(pullInputEvent(), event) {
+        match_(event) {
+        pattern_(InputEvent_press_key, on_pressed) {
+            debug_assert_true_fmt(
+                -1 < on_pressed->key && on_pressed->key <= 255,
+                "key is out of range"
+            );
+        } break;
+        pattern_(InputEvent_release_button, on_released) {
+            debug_assert_true_fmt(
+                -1 < on_released->button && on_released->button <= 5,
+                "button is out of range"
+            );
+        } break;
+        fallback_()
+            claim_unreachable;
+        }
     }
-}
-
-// Ensuring memory safety with boundary-checked slices
-fn_(sumSlice(Sli_const$i32 numbers), i32) {
-    i32 sum = 0;
-    for_slice(numbers, num) {
-        sum += deref(num);
-    }
-    return sum;
 }
 ```
 
@@ -190,7 +271,7 @@ fn_(mathMultiply(i32 a, i32 b), i32) {
     return a * b;
 }
 
-// Define test module
+// Define test unit
 fn_TEST_scope("Basic Math Operations Test") {
     // Addition test
     let a = 5;
@@ -213,8 +294,11 @@ fn_TEST_scope("Basic Math Operations Test") {
 ## 📚 Documentation
 
 Detailed documentation can be found at:
-- [Source code and examples](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
 - [API documentation](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+- [Header files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
+- [Source files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
+- [Examples](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
+- [Tests](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
 
 ## 🚧 Current Status
 

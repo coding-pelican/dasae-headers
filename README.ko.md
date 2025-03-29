@@ -16,19 +16,21 @@
   </div>
 </div>
 
-## 목차
+## 📋 목차
 
 - [dasae-headers](#dasae-headers)
-  - [목차](#목차)
+  - [📋 목차](#-목차)
   - [🌟 소개](#-소개)
   - [🛡️ 주요 특징](#️-주요-특징)
   - [🌐 플랫폼 지원](#-플랫폼-지원)
   - [🚀 시작하기](#-시작하기)
-    - [설치](#설치)
+    - [💽 설치](#-설치)
   - [⚡ 코드 샘플](#-코드-샘플)
-    - [기본 예제](#기본-예제)
-    - [오류 처리 예제](#오류-처리-예제)
-    - [🧪 테스트 코드 예제](#-테스트-코드-예제)
+    - [👋 Hello, world!](#-hello-world)
+    - [🔍 Optional Values 예제](#-optional-values-예제)
+    - [🔄 Error Results 예제](#-error-results-예제)
+    - [🤝 Pattern Matching 예제](#-pattern-matching-예제)
+    - [🧪 Testing 예제](#-testing-예제)
   - [📚 문서](#-문서)
   - [🚧 현재 상태](#-현재-상태)
   - [🙏 기여](#-기여)
@@ -72,7 +74,9 @@ dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 �
 
 ## 🚀 시작하기
 
-### 설치
+### 💽 설치
+
+> 자세한 설치 및 빌드 가이드는 준비 중에 있습니다. 조금만 기다려주세요!
 
 1. 이 저장소를 클론합니다:
 
@@ -83,6 +87,7 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 2. 필요한 헤더를 포함시킵니다:
 
 ```c
+#include "dh/main.h"
 #include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
@@ -91,66 +96,142 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ## ⚡ 코드 샘플
 
-### 기본 예제
+### 👋 Hello, world!
 
 ```c
+// 프로그램 진입점을 제공하는 메인 헤더 포함
 #include "dh/main.h"
-#include "dh/core.h"
-#include "dh/opt.h"
+// 텍스트 작업을 위한 문자열 유틸리티 포함
+#include "dh/Str.h"
 
-// 옵셔널 값을 반환하는 함수
-fn_ext_scope(findValue(i32 id), Opt$i32) {
-    if (id > 0) {
-        return_some(id * 10);
-    }
-    return_none();
-} ext_unscoped;
-
+// 확장 범위와 오류 처리를 갖는 메인 함수 정의
+// 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    // 옵셔널 값 사용
-    let result = findValue(5);
+    // Str_l로 문자열 리터럴 생성
+    let hello_world = Str_l("Hello, world!");
 
-    if_some(result, value) {
-        printf("값을 찾았습니다: %d\n", value);
-    } else_none {
-        printf("값을 찾지 못했습니다.\n");
-    }
+    // 문자열을 콘솔에 줄바꿈과 함께 출력
+    Str_println(hello_world);
 
-    return_void();
-} ext_unscoped;
+    // 성공 반환 (오류 없는 void 값)
+    return_ok({});
+} ext_unscoped; // 확장 범위 블록 종료
 ```
 
-### 오류 처리 예제
+### 🔍 Optional Values 예제
 
 ```c
-// safe division - 0으로 나눔 오류 처리
-fn_ext_scope(safeDivide(i32 a, i32 b), math_Err$i32) {
-    if (b == 0) {
-        return_err(math_Err_DivisionByZero());
+fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+    for_slice_indexed (items, item, index) {
+        if (*item != value) { continue; }
+        return_some(index); // 값이 있음을 반환
     }
-    return_ok(a / b);
+    return_none(); // 값이 없음을 반환
 } ext_unscoped;
 
-// Optional 값 처리
-fn_(processNumber(Opt$i32 maybe_num), void) {
-    if_some(maybe_num, num) {
-        printf("Got number: %d\n", num);
-    } else_none {
-        printf("No number provided\n");
-    }
-}
+fn_(example(void), void) {
+    Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
 
-// 경계 검사된 슬라이스로 메모리 안전성 보장
-fn_(sumSlice(Sli_const$i32 numbers), i32) {
-    i32 sum = 0;
-    for_slice(numbers, num) {
-        sum += deref(num);
+    // Optional 값 생성
+    let opt_value = some$(Opt$i32, 42);
+    let opt_empty = none$(Opt$i32);
+
+    // 배열에서 값 찾기
+    let found = findValueIndex(30, Sli_arr$(Sli_const$i32, nums));
+
+    // Optional 값 확인
+    if_some(found, index) {
+        printf("찾은 위치: %d\n", index);
+    } else_none {
+        printf("찾지 못함\n");
     }
-    return sum;
+
+    // 기본값 설정
+    let value = orelse(found, -1); // 찾지 못한 경우 -1 사용
+
+    // 안전하지 않은 추출 (옵션이 none인 경우 assertion 발생)
+    let unsafe_value = unwrap(opt_value);
 }
 ```
 
-### 🧪 테스트 코드 예제
+### 🔄 Error Results 예제
+
+```c
+config_ErrSet(math_Err,
+    DivisionByZero,
+    Overflow,
+    Underflow
+);
+
+use_ErrSet$(math_Err, i32); // 또는 일반적으로 `use_Err$(i32)`
+fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+    if (rhs == 0) {
+        return_err(math_Err_DivisionByZero()); // 오류를 반환
+    }
+    return_ok(lhs / rhs); // 값을 반환
+} ext_unscoped;
+
+fn_ext_scope(example(void), Err$void) {
+    // 리소스 할당
+    var buffer = meta_cast$(Sli$i32,
+        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
+    );
+    // 함수가 반환될 때 항상 정리됨
+    defer_(mem_Allocator_free(allocator, anySli(buffer)));
+    // 오류가 발생하고 전파될 때만 정리됨
+    errdefer_(log_error("오류 발생!"));
+
+    // 오류 전파 (조기 반환)
+    let result_invalid = try_(safeDivide(10, 0));
+
+    // 기본값으로 오류 처리
+    let result_default = catch_(safeDivide(10, 0), 1);
+
+    // 오류 페이로드 캡처를 통한 오류 처리
+    let result_handling = catch_from(safeDivide(10, 0), err, eval({
+        Err_print(err);   // 오류 출력
+        ErrTrace_print(); // 오류 추적 출력
+        return_err(err);  // 오류를 반환
+    }));
+
+    // 정상 반환
+    return_ok({});
+} ext_unscoped;
+```
+
+### 🤝 Pattern Matching 예제
+
+```c
+config_UnionEnum(InputEvent,
+    (InputEvent_press_key,      struct { i32 key; }),
+    (InputEvent_release_button, struct { i8 button; })
+);
+use_Opt$(InputEvent);
+fn_(pullInputEvent(void), Opt$InputEvent);
+
+fn_(example(void), void) {
+    if_some(pullInputEvent(), event) {
+        match_(event) {
+        pattern_(InputEvent_press_key, on_pressed) {
+            debug_assert_true_fmt(
+                -1 < on_pressed->key && on_pressed->key <= 255,
+                "key is out of range"
+            );
+        } break;
+        pattern_(InputEvent_release_button, on_released) {
+            debug_assert_true_fmt(
+                -1 < on_released->button && on_released->button <= 5,
+                "button is out of range"
+            );
+        } break;
+        fallback_()
+            claim_unreachable;
+        }
+    }
+}
+```
+
+### 🧪 Testing 예제
 
 dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제공합니다. `TEST.h` 헤더를 통해 단위 테스트를 쉽게 작성하고 실행할 수 있습니다.
 
@@ -158,7 +239,7 @@ dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제�
 #include "dh/main.h"
 #include "dh/TEST.h"
 
-// 테스트할 함수 정의
+// 테스트 대상 함수 정의
 fn_(mathAdd(i32 a, i32 b), i32) {
     return a + b;
 }
@@ -167,7 +248,7 @@ fn_(mathMultiply(i32 a, i32 b), i32) {
     return a * b;
 }
 
-// 테스트 모듈 정의
+// 테스트 케이스 정의
 fn_TEST_scope("기본 수학 연산 테스트") {
     // 덧셈 테스트
     let a = 5;
@@ -190,8 +271,11 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 ## 📚 문서
 
 자세한 문서는 다음 위치에서 확인할 수 있습니다:
-- [소스 코드 및 예제](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
 - [API 문서](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+- [헤더 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
+- [소스 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
+- [예제 코드](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
+- [테스트](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
 
 ## 🚧 현재 상태
 
