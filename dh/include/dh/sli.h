@@ -55,6 +55,8 @@ typedef union Sli       Sli;
 
 #define Sli_from(val_ptr, val_len...)         comp_op__Sli_from(val_ptr, val_len)
 #define Sli_from$(T_Sli, val_ptr, val_len...) comp_op__Sli_from$(T_Sli, val_ptr, val_len)
+#define Sli_arr(val_arr...)                   comp_op__Sli_arr(pp_uniqTok(arr), val_arr)
+#define Sli_arr$(T_Sli, val_arr...)           comp_op__Sli_arr$(pp_uniqTok(arr), T_Sli, val_arr)
 #define Sli_asg(var_addr_sli, val_sli...)     comp_op__Sli_asg(var_addr_sli, val_sli)
 
 #define Sli_len(var_self...)                          comp_op__Sli_len(var_self)
@@ -312,8 +314,24 @@ union __AssociationTypes_Sli {
     eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
 })
 
-#define comp_op__Sli_from(val_ptr, val_len...)                 { .ptr = ensureNonnull(val_ptr), .len = val_len }
-#define comp_op__Sli_from$(T_Sli, val_ptr, val_len...)         ((T_Sli)Sli_from(val_ptr, val_len))
+#define comp_op__Sli_from(val_ptr, val_len...)         { .ptr = ensureNonnull(val_ptr), .len = val_len }
+#define comp_op__Sli_from$(T_Sli, val_ptr, val_len...) ((T_Sli)Sli_from(val_ptr, val_len))
+#define comp_op__Sli_arr(__arr, val_arr...)            eval({ \
+    TypeOf(val_arr)* const __arr = &val_arr;                  \
+    eval_return Sli_from$(                                    \
+        Sli$$(TypeOf(__arr->items[0])),                       \
+        __arr->items,                                         \
+        Arr_len(*__arr)                                       \
+    );                                                        \
+})
+#define comp_op__Sli_arr$(__arr, T_Sli, val_arr...) eval({ \
+    TypeOf(val_arr)* const __arr = &val_arr;               \
+    eval_return Sli_from$(                                 \
+        T_Sli,                                             \
+        __arr->items,                                      \
+        Arr_len(*__arr)                                    \
+    );                                                     \
+})
 #define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({    \
     const TypeOf(var_addr_sli) __addr_sli = var_addr_sli;                \
     deref(__addr_sli)                     = TypeOf(*__addr_sli) val_sli; \

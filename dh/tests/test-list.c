@@ -41,11 +41,10 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
     {
         var it    = list.first;
         u32 index = 1;
-        while_some(it, node) {
+        while_some(it, node) block_defer {
+            defer_({ index += 1; it = node->next; });
             try_(TEST_expect(*node->data == index));
-            index += 1;
-            it = node->next;
-        }
+        } block_deferral;
     }
 
     $ignore ListSgl_popFirst(list.base);          // {2, 3, 4, 5}

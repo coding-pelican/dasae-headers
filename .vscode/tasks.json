@@ -23,6 +23,16 @@
       "default": "c17"
     },
     {
+      "id": "testFlag",
+      "type": "pickString",
+      "description": "Build tests?",
+      "options": [
+        "",
+        "-DCOMP_TEST"
+      ],
+      "default": ""
+    },
+    {
       "id": "optimization",
       "type": "pickString",
       "description": "Select optimization level",
@@ -68,6 +78,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples",
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
         "-DCOMP",
+        "${input:testFlag}",
         "-Wall",
         "-Wextra",
         "-g",
@@ -103,6 +114,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
         "-DCOMP",
         "-DNDEBUG",
+        "${input:testFlag}",
         "-Wall",
         "-Wextra",
         "-O2",
@@ -137,6 +149,7 @@
         "-IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/include",
         "-DCOMP",
         "-DNDEBUG",
+        "${input:testFlag}",
         "-Wall",
         "-Wextra",
         "${input:optimization}",
