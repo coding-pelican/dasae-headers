@@ -100,6 +100,18 @@ Err$Str Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) {
     return_ok(result);
 }
 
+void Str_print(Str_const self) {
+    debug_assert_nonnull(self.ptr);
+    if (self.len <= 0) { return; }
+    printf("%.*s", as$(i32, self.len), self.ptr);
+}
+
+void Str_println(Str_const self) {
+    debug_assert_nonnull(self.ptr);
+    Str_print(self);
+    $ignore putchar('\n');
+}
+
 Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
     scope_reserveReturn(Err$Str) {
         va_list args1 = {};

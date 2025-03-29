@@ -168,8 +168,8 @@ fn_ext_scope(example(void), Err$void) {
 
     // Error handling with error payload capture
     let result_handling = catch_from(safeDivide(10, 0), err, eval({
-        Err_print(err);
-        ErrTrace_print();
+        Err_print(err);   // Print the error
+        ErrTrace_print(); // Print the error trace
         return_err(err); // Return with an error
     }));
 

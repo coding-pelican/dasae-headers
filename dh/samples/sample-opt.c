@@ -153,7 +153,7 @@ fn_(example(void), void) {
     // Default values
     let value = orelse(found, -1); // Use -1 if not found
 
-    // Unsafe extraction (avoid if option might be none)
+    // Unsafe extraction (assertion if option might be none)
     let unsafe_value = unwrap(opt_value);
 }
 #endif /* README_SAMPLE */

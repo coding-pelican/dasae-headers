@@ -3,17 +3,6 @@
 #include "dh/main.h"
 #include "dh/Str.h"
 
-static void Str_print(Str_const self) {
-    debug_assert_nonnull(self.ptr);
-    if (self.len <= 0) { return; }
-    printf("%.*s", as$(i32, self.len), self.ptr);
-}
-
-static void Str_println(Str_const self) {
-    Str_print(self);
-    $ignore putchar('\n');
-}
-
 static void TEST_string_literals(void) {
     /* Test different string literal types */
     let str_readonly = Str_l("Readonly byte slice"); /* [*]const u8 */

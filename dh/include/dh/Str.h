@@ -93,6 +93,10 @@ extern Opt$Str Str_constCast(Str_const self);
 
 /// Concatenate strings
 extern Err$Str   Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) $must_check;
+/// Print string
+extern void      Str_print(Str_const self);
+/// Print string with newline
+extern void      Str_println(Str_const self);
 /// Format string with arguments
 extern Err$Str   Str_format(mem_Allocator allocator, const char* format, ...) $must_check;
 /// Get substring
