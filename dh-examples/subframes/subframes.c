@@ -230,11 +230,11 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
                 debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
                 debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
 
-                let_(pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
+                with_(let pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
                     *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
                 }
 
-                let_(vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
+                with_(let vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
                         let r     = math_Vec2f_sincos(angle);
@@ -242,7 +242,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
                     });
                 }
 
-                let_(color = meta_cast$(Color*, try_(ArrList_addBackOne(colors.base)))) {
+                with_(let color = meta_cast$(Color*, try_(ArrList_addBackOne(colors.base)))) {
                     *color = Color_fromHslOpaque((Hsl){ .channels = { as$(f64, Random_range_i64(0, 360)), 50.0, 80.0 } });
                 }
             }
@@ -340,10 +340,10 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             }
         }
         with_(engine_Canvas_clear(overlay_canvas, none$(Opt$Color))) {
-            let_(win_res = engine_Window_getRes(window)) {
+            with_(let win_res = engine_Window_getRes(window)) {
                 engine_Canvas_drawRect(overlay_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
             }
-            let_(mouse_pos = engine_Mouse_getPos(&input->mouse)) {
+            with_(let mouse_pos = engine_Mouse_getPos(&input->mouse)) {
                 engine_Canvas_drawPixel(overlay_canvas, mouse_pos.x, mouse_pos.y, Color_white);
             }
         }

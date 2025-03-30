@@ -297,14 +297,17 @@ union __AssociationTypes_Sli {
         usize      len;                 \
         Sli_const* __base_type_hint[0]; \
     }
-#define comp_type_anon__Sli$$(T)   \
-    struct {                       \
-        rawptr$(T) ptr;            \
-        usize len;                 \
-        Sli*  __base_type_hint[0]; \
+#define comp_type_anon__Sli$$(T)  \
+    union {                       \
+        struct {                  \
+            rawptr$(T) ptr;       \
+            usize len;            \
+        };                        \
+        Sli_const$$(T) as_const;  \
+        Sli* __base_type_hint[0]; \
     }
 #define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({                       \
-    const TypeOf(var_anon) __anon = var_anon;                                           \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                        \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
     claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr)));   \
@@ -317,7 +320,7 @@ union __AssociationTypes_Sli {
 #define comp_op__Sli_from(val_ptr, val_len...)         { .ptr = ensureNonnull(val_ptr), .len = val_len }
 #define comp_op__Sli_from$(T_Sli, val_ptr, val_len...) ((T_Sli)Sli_from(val_ptr, val_len))
 #define comp_op__Sli_arr(__arr, val_arr...)            eval({ \
-    TypeOf(val_arr)* const __arr = &val_arr;                  \
+    let_(__arr, TypeOf(&val_arr)) = &val_arr;                 \
     eval_return Sli_from$(                                    \
         Sli$$(TypeOf(__arr->items[0])),                       \
         __arr->items,                                         \
@@ -325,23 +328,23 @@ union __AssociationTypes_Sli {
     );                                                        \
 })
 #define comp_op__Sli_arr$(__arr, T_Sli, val_arr...) eval({ \
-    TypeOf(val_arr)* const __arr = &val_arr;               \
+    let_(__arr, TypeOf(&val_arr)) = &val_arr;              \
     eval_return Sli_from$(                                 \
         T_Sli,                                             \
         __arr->items,                                      \
         Arr_len(*__arr)                                    \
     );                                                     \
 })
-#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({    \
-    const TypeOf(var_addr_sli) __addr_sli = var_addr_sli;                \
-    deref(__addr_sli)                     = TypeOf(*__addr_sli) val_sli; \
-    eval_return __addr_sli;                                              \
+#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({      \
+    let_(__addr_sli, TypeOf(&var_addr_sli)) = &var_addr_sli;               \
+    deref(__addr_sli)                       = TypeOf(*__addr_sli) val_sli; \
+    eval_return __addr_sli;                                                \
 })
 
-#define comp_op__Sli_len(var_self...)                              (var_self.len)
+#define comp_op__Sli_len(var_self...)                              ((var_self).len)
 #define comp_op__Sli_at(__self, __index, var_self, usize_index...) eval({ \
-    const TypeOf(var_self) __self = var_self;                             \
-    const usize __index           = usize_index;                          \
+    let_(__self, TypeOf(var_self)) = var_self;                            \
+    let_(__index, usize)           = usize_index;                         \
     debug_assert_nonnull(__self.ptr);                                     \
     debug_assert_fmt(                                                     \
         __index < __self.len,                                             \
@@ -352,8 +355,8 @@ union __AssociationTypes_Sli {
     eval_return_(&__self.ptr[__index]);                                   \
 })
 #define comp_op__Sli_getAt(__self, __index, var_self, usize_index...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                \
-    const usize __index           = usize_index;                             \
+    let_(__self, TypeOf(var_self)) = var_self;                               \
+    let_(__index, usize)           = usize_index;                            \
     debug_assert_nonnull(__self.ptr);                                        \
     debug_assert_fmt(                                                        \
         __index < __self.len,                                                \
@@ -364,8 +367,8 @@ union __AssociationTypes_Sli {
     eval_return __self.ptr[__index];                                         \
 })
 #define comp_op__Sli_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                          \
-    const usize __index           = usize_index;                                       \
+    let_(__self, TypeOf(var_self)) = var_self;                                         \
+    let_(__index, usize)           = usize_index;                                      \
     debug_assert_nonnull(__self.ptr);                                                  \
     debug_assert_fmt(                                                                  \
         __index < __self.len,                                                          \
@@ -378,8 +381,8 @@ union __AssociationTypes_Sli {
 })
 
 #define comp_op__Sli_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                          \
-    const Range __range           = Range_from range_index_begin_end;                  \
+    let_(__self, TypeOf(var_self)) = var_self;                                         \
+    let_(__range, Range)           = Range_from range_index_begin_end;                 \
     debug_assert_fmt(                                                                  \
         __range.begin < __range.end,                                                   \
         "Invalid slice range: begin(%zu) >= end(%zu)",                                 \
@@ -399,8 +402,8 @@ union __AssociationTypes_Sli {
     );                                                                                 \
 })
 #define comp_op__Sli_sliceZ(__self, __range, var_self, range_index_begin_end...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                           \
-    const Range __range           = Range_from range_index_begin_end;                   \
+    let_(__self, TypeOf(var_self)) = var_self;                                          \
+    let_(__range, Range)           = Range_from range_index_begin_end;                  \
     debug_assert_fmt(                                                                   \
         __range.begin < __range.end,                                                    \
         "Invalid slice range: begin(%zu) >= end(%zu)",                                  \
@@ -414,7 +417,7 @@ union __AssociationTypes_Sli {
         __self.len                                                                      \
     );                                                                                  \
     debug_assert_fmt(                                                                   \
-        memcmp(                                                                         \
+        bti_memcmp(                                                                     \
             as$(u8*, &__self.ptr[__range.end]),                                         \
             as$(u8*, &make$(TypeOf(*__self.ptr))),                                      \
             sizeOf$(TypeOf(*__self.ptr))                                                \
@@ -427,9 +430,9 @@ union __AssociationTypes_Sli {
     );                                                                                  \
 })
 #define comp_op__Sli_sliceS(__self, __range, __sentinel, var_self, range_index_begin_end, val_sentinel...) eval({ \
-    const TypeOf(var_self) __self         = var_self;                                                             \
-    const Range __range                   = Range_from range_index_begin_end;                                     \
-    const TypeOf(val_sentinel) __sentinel = val_sentinel;                                                         \
+    let_(__self, TypeOf(var_self))         = var_self;                                                            \
+    let_(__range, Range)                   = Range_from range_index_begin_end;                                    \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                                                        \
     debug_assert_fmt(                                                                                             \
         __range.begin < __range.end,                                                                              \
         "Invalid slice range: begin(%zu) >= end(%zu)",                                                            \
@@ -443,7 +446,7 @@ union __AssociationTypes_Sli {
         __self.len                                                                                                \
     );                                                                                                            \
     debug_assert_fmt(                                                                                             \
-        memcmp(                                                                                                   \
+        bti_memcmp(                                                                                               \
             as$(u8*, &__self.ptr[__range.end]),                                                                   \
             as$(u8*, &__sentinel),                                                                                \
             sizeOf$(TypeOf(*__self.ptr))                                                                          \
@@ -457,8 +460,8 @@ union __AssociationTypes_Sli {
     );                                                                                                            \
 })
 #define comp_op__Sli_prefix(__self, __end, var_self, usize_index_end...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                   \
-    const usize __end             = usize_index_end;                            \
+    let_(__self, TypeOf(var_self)) = var_self;                                  \
+    let_(__end, usize)             = usize_index_end;                           \
     debug_assert_fmt(                                                           \
         __end <= __self.len,                                                    \
         "Index out of bounds: %zu > %zu",                                       \
@@ -472,9 +475,9 @@ union __AssociationTypes_Sli {
     );                                                                          \
 })
 #define comp_op__Sli_prefixZ(__self, var_self...) eval({                  \
-    const TypeOf(var_self) __self = var_self;                             \
+    let_(__self, TypeOf(var_self)) = var_self;                            \
     debug_assert_fmt(                                                     \
-        memcmp(                                                           \
+        bti_memcmp(                                                       \
             as$(u8*, &__self.ptr[__self.len]),                            \
             as$(u8*, &make$(TypeOf(*__self.ptr))),                        \
             sizeOf$(TypeOf(*__self.ptr))                                  \
@@ -487,10 +490,10 @@ union __AssociationTypes_Sli {
     );                                                                    \
 })
 #define comp_op__Sli_prefixS(__self, __sentinel, var_self, val_sentinel...) eval({ \
-    const TypeOf(var_self) __self         = var_self;                              \
-    const TypeOf(val_sentinel) __sentinel = val_sentinel;                          \
+    let_(__self, TypeOf(var_self))         = var_self;                             \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                         \
     debug_assert_fmt(                                                              \
-        memcmp(                                                                    \
+        bti_memcmp(                                                                \
             as$(u8*, &__self.ptr[__self.len]),                                     \
             as$(u8*, &__sentinel),                                                 \
             sizeOf$(TypeOf(*__self.ptr))                                           \
@@ -504,8 +507,8 @@ union __AssociationTypes_Sli {
     );                                                                             \
 })
 #define comp_op__Sli_suffix(__self, __begin, var_self, usize_index_begin...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                       \
-    const usize __begin           = usize_index_begin;                              \
+    let_(__self, TypeOf(var_self)) = var_self;                                      \
+    let_(__begin, usize)           = usize_index_begin;                             \
     debug_assert_fmt(                                                               \
         __begin < __self.len,                                                       \
         "Index out of bounds: %zu > %zu",                                           \
@@ -519,8 +522,8 @@ union __AssociationTypes_Sli {
     );                                                                              \
 })
 #define comp_op__Sli_suffixZ(__self, __begin, var_self, usize_index_begin...) eval({ \
-    const TypeOf(var_self) __self = var_self;                                        \
-    const usize __begin           = usize_index_begin;                               \
+    let_(__self, TypeOf(var_self)) = var_self;                                       \
+    let_(__begin, usize)           = usize_index_begin;                              \
     debug_assert_fmt(                                                                \
         __begin < __self.len,                                                        \
         "Index out of bounds: %zu > %zu",                                            \
@@ -528,7 +531,7 @@ union __AssociationTypes_Sli {
         __self.len                                                                   \
     );                                                                               \
     debug_assert_fmt(                                                                \
-        memcmp(                                                                      \
+        bti_memcmp(                                                                  \
             as$(u8*, &__self.ptr[__self.len]),                                       \
             as$(u8*, &make$(TypeOf(*__self.ptr))),                                   \
             sizeOf$(TypeOf(*__self.ptr))                                             \
@@ -541,9 +544,9 @@ union __AssociationTypes_Sli {
     );                                                                               \
 })
 #define comp_op__Sli_suffixS(__self, __begin, __sentinel, var_self, usize_index_begin, val_sentinel...) eval({ \
-    const TypeOf(var_self) __self         = var_self;                                                          \
-    const usize __begin                   = usize_index_begin;                                                 \
-    const TypeOf(val_sentinel) __sentinel = val_sentinel;                                                      \
+    let_(__self, TypeOf(var_self))         = var_self;                                                         \
+    let_(__begin, usize)                   = usize_index_begin;                                                \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                                                     \
     debug_assert_fmt(                                                                                          \
         __begin < __self.len,                                                                                  \
         "Index out of bounds: %zu > %zu",                                                                      \
@@ -551,7 +554,7 @@ union __AssociationTypes_Sli {
         __self.len                                                                                             \
     );                                                                                                         \
     debug_assert_fmt(                                                                                          \
-        memcmp(                                                                                                \
+        bti_memcmp(                                                                                            \
             as$(u8*, &__self.ptr[__self.len]),                                                                 \
             as$(u8*, &__sentinel),                                                                             \
             sizeOf$(TypeOf(*__self.ptr))                                                                       \
@@ -566,7 +569,7 @@ union __AssociationTypes_Sli {
 })
 
 #define comp_syn__for_slice(__sli, __i, var_sli, _Iter_item) \
-    with_(let __sli = (var_sli)) for (usize __i = 0; (__i) < (__sli).len; ++(__i)) with_(let _Iter_item = Sli_at(__sli, __i))
+    with_(let __sli = (var_sli)) for (usize __i = 0; (__i) < (__sli).len; ++(__i)) with_(var _Iter_item = Sli_at(__sli, __i))
 #define comp_syn__for_slice_indexed(__sli, var_sli, _Iter_item, _Iter_index) \
     with_(let __sli = (var_sli)) for (usize _Iter_index = 0; (_Iter_index) < (__sli).len; ++(_Iter_index)) with_(let _Iter_item = Sli_at(__sli, _Iter_index))
 #define comp_syn__for_slice_rev(__sli, __i, var_sli, _Iter_item) \
@@ -644,7 +647,7 @@ union __AssociationTypes_Sli {
     let         __self  = var_self;                                        \
     const usize __index = usize_index;                                     \
     debug_assert_nonnull(__self.ptr);                                      \
-    eval_return_(&__self.ptr[__index]);                                    \
+    eval_return __self.ptr + __index;                                      \
 })
 #define comp_op__SliS_getAt(__self, __index, var_self, usize_index...) eval({ \
     let         __self  = var_self;                                           \
@@ -660,24 +663,17 @@ union __AssociationTypes_Sli {
     eval_return __self;                                                                 \
 })
 
-#define OP__Sli_assign(__dst_ptr, __src, var_dst_ptr, var_src) eval({ \
-    let __dst_ptr    = var_dst_ptr;                                   \
-    let __src        = var_src;                                       \
-    (__dst_ptr)->ptr = (__src)->ptr;                                  \
-    (__dst_ptr)->len = (__src)->len;                                  \
-    eval_return*(__dst_ptr);                                          \
-})
-
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-use_Sli(u8);
-use_Sli(i32);
+#include "dh/Arr.h"
+use_Sli$(u8);
+use_Sli$(i32);
 
 void slice_example(void) {
     // Create a slice from an array
-    i32 numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    let slice     = Sli_from$(Sli$i32, numbers, 10);
+    Arr$$(10, i32) c = Arr_init({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+    let slice        = Sli_arr$(Sli$i32, c);
 
     // Basic operations
     let third_ptr = Sli_at(slice, 2);    // Get pointer to the third element
