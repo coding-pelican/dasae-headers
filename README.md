@@ -2,7 +2,7 @@
 
 <!--
 ***Description***
-"Make C Great Again": A modern language extension for safer and more productive C programming
+dasae-headers: A modern extension language for safer and more productive C programming
 
 ***Topic***
 - c-programming
@@ -61,6 +61,8 @@
   - [📜 License](#-license)
 
 ## 🌟 Introduction
+
+> "Make C Great Again"
 
 dasae-headers aims to apply modern programming paradigms to the C language, greatly enhancing safety, expressiveness, and productivity. It provides memory safety, type safety, and improved error handling while maintaining the simplicity of C.
 
