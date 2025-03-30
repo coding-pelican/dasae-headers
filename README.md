@@ -25,7 +25,7 @@ dasae-headers: A modern extension language for safer and more productive C progr
 
 <div align="center">
   <h1>dasae-headers: Modern and Safe C programming</h1>
-  <p><strong>A modern language extension for safer and more productive C programming</strong></p>
+  <p><strong>A modern extension language for safer and more productive C programming</strong></p>
 
   <div>
     <a href="./README.md"><img src="https://img.shields.io/badge/readme-en-red?style=flat-square" alt="Language: English"></a>
