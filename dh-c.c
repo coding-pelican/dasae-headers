@@ -28,6 +28,8 @@
 #define PATH_SEPARATOR "/"
 #endif
 
+#define DH_VERSION "0.1.0"
+
 // Configuration
 typedef struct {
     char project_name[256];
@@ -60,6 +62,216 @@ bool is_c_source_file(const char* filename);
 void detect_build_type(BuildConfig* config, int argc, char* argv[]);
 void add_dh_includes(BuildConfig* config, char*** includes, int* include_count);
 void add_dh_sources(BuildConfig* config, char*** sources, int* source_count);
+void create_workspace(const char* name, const char* dh_path);
+void create_project(const char* name, const char* dh_path);
+void write_file(const char* path, const char* content);
+bool create_directory(const char* path);
+bool find_dh_path_from_env(BuildConfig* config);
+void write_example_files(const char* project_path);
+void create_project_clangd(const char* project_path, const char* dh_path);
+
+// Add the template content for config files
+const char* CLANGD_TEMPLATE = "CompileFlags:\n"
+                              "  Add: [-xc, -std=c17, -Wall, -Wextra, -funsigned-char, -fblocks]\n"
+                              "  Compiler: clang\n"
+                              "\n"
+                              "Diagnostics:\n"
+                              "  UnusedIncludes: Strict\n"
+                              "  ClangTidy:\n"
+                              "    Add: [modernize*, performance*, readability*, bugprone*, portability*]\n"
+                              "    Remove: [modernize-use-trailing-return-type, readability-named-parameter]\n"
+                              "\n"
+                              "InlayHints:\n"
+                              "  Enabled: Yes\n"
+                              "  ParameterNames: Yes\n"
+                              "  DeducedTypes: Yes\n"
+                              "\n"
+                              "Hover:\n"
+                              "  ShowAKA: Yes\n";
+
+const char* CLANG_FORMAT_TEMPLATE = "Language: Cpp\n"
+                                    "BasedOnStyle: LLVM\n"
+                                    "IndentWidth: 4\n"
+                                    "TabWidth: 4\n"
+                                    "UseTab: Never\n"
+                                    "ColumnLimit: 120\n"
+                                    "AlignAfterOpenBracket: Align\n"
+                                    "AlignConsecutiveAssignments: true\n"
+                                    "AlignConsecutiveDeclarations: true\n"
+                                    "AlignEscapedNewlines: Right\n"
+                                    "AlignOperands: true\n"
+                                    "AlignTrailingComments: true\n"
+                                    "AllowAllArgumentsOnNextLine: false\n"
+                                    "AllowAllParametersOfDeclarationOnNextLine: false\n"
+                                    "AllowShortBlocksOnASingleLine: Empty\n"
+                                    "AllowShortCaseLabelsOnASingleLine: false\n"
+                                    "AllowShortFunctionsOnASingleLine: Empty\n"
+                                    "AllowShortIfStatementsOnASingleLine: Never\n"
+                                    "AllowShortLoopsOnASingleLine: false\n"
+                                    "AlwaysBreakAfterReturnType: None\n"
+                                    "AlwaysBreakBeforeMultilineStrings: false\n"
+                                    "BinPackArguments: false\n"
+                                    "BinPackParameters: false\n"
+                                    "BreakBeforeBraces: Attach\n"
+                                    "BreakStringLiterals: true\n"
+                                    "SpaceBeforeParens: ControlStatements\n";
+
+const char* TASKS_JSON_TEMPLATE = "{\n"
+                                  "  \"version\": \"2.0.0\",\n"
+                                  "  \"inputs\": [\n"
+                                  "    {\n"
+                                  "      \"id\": \"compiler\",\n"
+                                  "      \"type\": \"pickString\",\n"
+                                  "      \"description\": \"Select compiler\",\n"
+                                  "      \"options\": [\n"
+                                  "        \"clang\",\n"
+                                  "        \"gcc\"\n"
+                                  "      ],\n"
+                                  "      \"default\": \"clang\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"id\": \"cStandard\",\n"
+                                  "      \"type\": \"pickString\",\n"
+                                  "      \"description\": \"Select C standard\",\n"
+                                  "      \"options\": [\n"
+                                  "        \"c17\",\n"
+                                  "        \"c11\",\n"
+                                  "        \"c99\"\n"
+                                  "      ],\n"
+                                  "      \"default\": \"c17\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"id\": \"testFlag\",\n"
+                                  "      \"type\": \"pickString\",\n"
+                                  "      \"description\": \"Build tests?\",\n"
+                                  "      \"options\": [\n"
+                                  "        \"\",\n"
+                                  "        \"-DCOMP_TEST\"\n"
+                                  "      ],\n"
+                                  "      \"default\": \"\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"id\": \"optimization\",\n"
+                                  "      \"type\": \"pickString\",\n"
+                                  "      \"description\": \"Select optimization level\",\n"
+                                  "      \"options\": [\n"
+                                  "        \"-O0\",\n"
+                                  "        \"-O1\",\n"
+                                  "        \"-O2\",\n"
+                                  "        \"-O3\",\n"
+                                  "        \"-Os\",\n"
+                                  "        \"-Ofast\"\n"
+                                  "      ],\n"
+                                  "      \"default\": \"-O2\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"id\": \"libraries\",\n"
+                                  "      \"type\": \"pickString\",\n"
+                                  "      \"description\": \"Select libraries to link\",\n"
+                                  "      \"options\": [\n"
+                                  "        \"\",\n"
+                                  "        \"-lm\",\n"
+                                  "        \"-lpthread\"\n"
+                                  "      ],\n"
+                                  "      \"default\": \"\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"id\": \"runArgs\",\n"
+                                  "      \"type\": \"promptString\",\n"
+                                  "      \"description\": \"Arguments to pass to the program\",\n"
+                                  "      \"default\": \"\"\n"
+                                  "    }\n"
+                                  "  ],\n"
+                                  "  \"tasks\": [\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>build C file (debug)\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"build\",\n"
+                                  "        \"debug\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--compiler=${input:compiler}\",\n"
+                                  "        \"--std=${input:cStandard}\"\n"
+                                  "      ],\n"
+                                  "      \"group\": \"build\",\n"
+                                  "      \"problemMatcher\": [\"$gcc\"]\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>build C file (release)\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"build\",\n"
+                                  "        \"release\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--compiler=${input:compiler}\",\n"
+                                  "        \"--std=${input:cStandard}\"\n"
+                                  "      ],\n"
+                                  "      \"group\": \"build\",\n"
+                                  "      \"problemMatcher\": [\"$gcc\"]\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>build C file (optimized)\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"build\",\n"
+                                  "        \"optimize\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--compiler=${input:compiler}\",\n"
+                                  "        \"--std=${input:cStandard}\",\n"
+                                  "        \"--opt=${input:optimization}\"\n"
+                                  "      ],\n"
+                                  "      \"group\": \"build\",\n"
+                                  "      \"problemMatcher\": [\"$gcc\"]\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>run debug build\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"run\",\n"
+                                  "        \"debug\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
+                                  "      ],\n"
+                                  "      \"options\": {\n"
+                                  "        \"cwd\": \"${fileDirname}\"\n"
+                                  "      },\n"
+                                  "      \"group\": \"test\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>run release build\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"run\",\n"
+                                  "        \"release\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
+                                  "      ],\n"
+                                  "      \"options\": {\n"
+                                  "        \"cwd\": \"${fileDirname}\"\n"
+                                  "      },\n"
+                                  "      \"group\": \"test\"\n"
+                                  "    },\n"
+                                  "    {\n"
+                                  "      \"label\": \"dh>run test\",\n"
+                                  "      \"type\": \"shell\",\n"
+                                  "      \"command\": \"dh-c\",\n"
+                                  "      \"args\": [\n"
+                                  "        \"test\",\n"
+                                  "        \"${file}\",\n"
+                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
+                                  "      ],\n"
+                                  "      \"options\": {\n"
+                                  "        \"cwd\": \"${fileDirname}\"\n"
+                                  "      },\n"
+                                  "      \"group\": \"test\"\n"
+                                  "    }\n"
+                                  "  ]\n"
+                                  "}\n";
 
 // Cross-platform wrapper for getting absolute path
 bool get_absolute_path(const char* path, char* resolved_path, size_t resolved_path_size) {
@@ -238,8 +450,30 @@ void parse_libraries(BuildConfig* config, char* libs_file) {
     fclose(file);
 }
 
-// Find the DH library path
+// Add function to find dh path via environment variable
+bool find_dh_path_from_env(BuildConfig* config) {
+    char* dh_home = getenv("DH_HOME");
+    if (dh_home && strlen(dh_home) > 0) {
+        // Verify the path has the necessary structure
+        char include_dir[1024];
+        int  result = snprintf(include_dir, sizeof(include_dir), "%s%sinclude", dh_home, PATH_SEPARATOR);
+        if (result >= 0 && (size_t)result < sizeof(include_dir) && dir_exists(include_dir)) {
+            strcpy(config->dh_path, dh_home);
+            printf("Using DH library from environment variable: %s\n", config->dh_path);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Update find_dh_path to also check environment variable
 bool find_dh_path(BuildConfig* config) {
+    // First try to find from environment variable
+    if (find_dh_path_from_env(config)) {
+        return true;
+    }
+
+    // Existing code to find via standard locations
     // Try current path first
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
@@ -712,13 +946,236 @@ void free_string_array(char** array, int count) {
     free(array);
 }
 
-// Print usage information
+// Create project-specific .clangd with absolute paths
+void create_project_clangd(const char* project_path, const char* dh_path) {
+    char clangd_path[1024];
+    int  result = snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", project_path, PATH_SEPARATOR);
+    if (result < 0 || (size_t)result >= sizeof(clangd_path)) {
+        fprintf(stderr, "Error: Path too long for .clangd\n");
+        return;
+    }
+
+    char abs_include_path[1024], abs_src_path[1024], dh_include_path[1024], blocks_include_path[1024];
+    char temp_path[1024];
+
+    // Get absolute paths
+    snprintf(temp_path, sizeof(temp_path), "%s%sinclude", project_path, PATH_SEPARATOR);
+    if (!get_absolute_path(temp_path, abs_include_path, sizeof(abs_include_path))) {
+        fprintf(stderr, "Warning: Could not resolve absolute path for include directory\n");
+        strcpy(abs_include_path, temp_path);
+    }
+
+    snprintf(temp_path, sizeof(temp_path), "%s%ssrc", project_path, PATH_SEPARATOR);
+    if (!get_absolute_path(temp_path, abs_src_path, sizeof(abs_src_path))) {
+        fprintf(stderr, "Warning: Could not resolve absolute path for src directory\n");
+        strcpy(abs_src_path, temp_path);
+    }
+
+    // Get DH paths
+    result = snprintf(dh_include_path, sizeof(dh_include_path), "%s%sinclude", dh_path, PATH_SEPARATOR);
+    if (result < 0 || (size_t)result >= sizeof(dh_include_path)) {
+        fprintf(stderr, "Error: DH include path too long\n");
+        return;
+    }
+
+    result = snprintf(blocks_include_path, sizeof(blocks_include_path), "%s%slibs%sBlocksRuntime%sinclude", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    if (result < 0 || (size_t)result >= sizeof(blocks_include_path)) {
+        fprintf(stderr, "Error: BlocksRuntime include path too long\n");
+        return;
+    }
+
+    char project_clangd[4096];
+    result = snprintf(project_clangd, sizeof(project_clangd), "CompileFlags:\n"
+                                                              "  Compiler: clang\n"
+                                                              "  CompilationDatabase: %s\n"
+                                                              "  Add:\n"
+                                                              "    - -xc\n"
+                                                              "    - -std=c17\n"
+                                                              "    - -Wall\n"
+                                                              "    - -Wextra\n"
+                                                              "    - -funsigned-char\n"
+                                                              "    - -fblocks\n"
+                                                              "    - -I%s\n"
+                                                              "    - -I%s\n"
+                                                              "    - -I%s\n"
+                                                              "    - -I%s\n"
+                                                              "\n"
+                                                              "Diagnostics:\n"
+                                                              "  UnusedIncludes: Strict\n"
+                                                              "  ClangTidy:\n"
+                                                              "    Add: [modernize*, performance*, readability*, bugprone*, portability*]\n"
+                                                              "    Remove: [modernize-use-trailing-return-type, readability-named-parameter]\n"
+                                                              "\n"
+                                                              "InlayHints:\n"
+                                                              "  Enabled: Yes\n"
+                                                              "  ParameterNames: Yes\n"
+                                                              "  DeducedTypes: Yes\n"
+                                                              "\n"
+                                                              "Hover:\n"
+                                                              "  ShowAKA: Yes\n",
+                      project_path,
+                      abs_include_path,
+                      abs_src_path,
+                      dh_include_path,
+                      blocks_include_path);
+
+    if (result < 0 || (size_t)result >= sizeof(project_clangd)) {
+        fprintf(stderr, "Error: Project clangd content too long\n");
+        return;
+    }
+
+    write_file(clangd_path, project_clangd);
+}
+
+// Helper function to write example files
+void write_example_files(const char* project_path) {
+    char main_path[1024];
+    int  result = snprintf(main_path, sizeof(main_path), "%s%ssrc%smain.c", project_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    if (result < 0 || (size_t)result >= sizeof(main_path)) {
+        fprintf(stderr, "Error: Path too long for main.c\n");
+        return;
+    }
+
+    const char* main_content = "/// @file  main.c\n"
+                               "/// @brief Example DH-C program\n"
+                               "\n"
+                               "#include <dh/main.h>\n"
+                               "#include <dh/Str.h>\n"
+                               "\n"
+                               "fn_TEST_scope(\"simple test\") {\n"
+                               "    try_(TEST_expect(1 + 1 == 2));\n"
+                               "} TEST_unscoped;\n"
+                               "\n"
+                               "fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {\n"
+                               "    $ignore args;\n"
+                               "    let message = Str_l(\"Hello, world!\");\n"
+                               "    Str_println(message);\n"
+                               "    return_ok({});\n"
+                               "} ext_unscoped;\n";
+
+    write_file(main_path, main_content);
+}
+
+// Update create_project function
+void create_project(const char* name, const char* dh_path) {
+    char project_path[1024] = { 0 };
+
+    if (name == NULL || strcmp(name, ".") == 0) {
+        if (getcwd(project_path, sizeof(project_path)) == NULL) {
+            fprintf(stderr, "Error: Could not get current working directory\n");
+            return;
+        }
+    } else {
+        if (strlen(name) >= sizeof(project_path)) {
+            fprintf(stderr, "Error: Project name too long\n");
+            return;
+        }
+        strcpy(project_path, name);
+        if (!create_directory(project_path)) {
+            fprintf(stderr, "Error: Could not create project directory '%s'\n", name);
+            return;
+        }
+    }
+
+    printf("Creating project in: %s\n", project_path);
+
+    // Create standard project structure
+    char include_path[1024], src_path[1024], tests_path[1024], libs_path[1024];
+
+    int result = snprintf(include_path, sizeof(include_path), "%s%sinclude", project_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(include_path)) {
+        create_directory(include_path);
+    }
+
+    result = snprintf(src_path, sizeof(src_path), "%s%ssrc", project_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(src_path)) {
+        create_directory(src_path);
+    }
+
+    result = snprintf(tests_path, sizeof(tests_path), "%s%stests", project_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(tests_path)) {
+        create_directory(tests_path);
+    }
+
+    result = snprintf(libs_path, sizeof(libs_path), "%s%slibs", project_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(libs_path)) {
+        create_directory(libs_path);
+    }
+
+    // Create .clangd file
+    create_project_clangd(project_path, dh_path);
+
+    // Create example files
+    write_example_files(project_path);
+
+    printf("Project created successfully with example files!\n");
+}
+
+// Update create_workspace function
+void create_workspace(const char* name, const char* dh_path) {
+    char workspace_path[1024] = { 0 };
+
+    if (name == NULL || strcmp(name, ".") == 0) {
+        // Use current directory
+        if (getcwd(workspace_path, sizeof(workspace_path)) == NULL) {
+            fprintf(stderr, "Error: Could not get current working directory\n");
+            return;
+        }
+    } else {
+        // Create a new directory with the given name
+        strcpy(workspace_path, name);
+        if (!create_directory(workspace_path)) {
+            fprintf(stderr, "Error: Could not create workspace directory '%s'\n", name);
+            return;
+        }
+    }
+
+    printf("Creating workspace in: %s\n", workspace_path);
+
+    // Create .clangd file
+    char clangd_path[1024];
+    snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", workspace_path, PATH_SEPARATOR);
+    write_file(clangd_path, CLANGD_TEMPLATE);
+
+    // Create .clang-format file
+    char clang_format_path[1024];
+    snprintf(clang_format_path, sizeof(clang_format_path), "%s%s.clang-format", workspace_path, PATH_SEPARATOR);
+    write_file(clang_format_path, CLANG_FORMAT_TEMPLATE);
+
+    // Create .vscode directory
+    char vscode_path[1024];
+    snprintf(vscode_path, sizeof(vscode_path), "%s%s.vscode", workspace_path, PATH_SEPARATOR);
+    if (!create_directory(vscode_path)) {
+        fprintf(stderr, "Warning: Could not create .vscode directory\n");
+    } else {
+        // Create tasks.json file
+        char tasks_path[1024];
+        snprintf(tasks_path, sizeof(tasks_path), "%s%stasks.json", vscode_path, PATH_SEPARATOR);
+        write_file(tasks_path, TASKS_JSON_TEMPLATE);
+    }
+
+    // Create an example project in the workspace
+    char example_project_path[1024];
+    int  result = snprintf(example_project_path, sizeof(example_project_path), "%s%shello-world", workspace_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(example_project_path)) {
+        create_project(example_project_path, dh_path);
+    } else {
+        fprintf(stderr, "Warning: Could not create example project (path too long)\n");
+    }
+
+    printf("Workspace created successfully!\n");
+}
+
+// Update print_usage function to include version command
 void print_usage() {
-    printf("Usage: dh-c [build|test|run] [debug|release|optimize] [file.c] [options]\n\n");
+    printf("Usage: dh-c [command] [options]\n\n");
     printf("Commands:\n");
-    printf("  build    - Build the project or file\n");
-    printf("  test     - Build and run tests\n");
-    printf("  run      - Build and run the project or file\n\n");
+    printf("  --version            - Display version information\n");
+    printf("  build               - Build the project or file\n");
+    printf("  test                - Build and run tests\n");
+    printf("  run                 - Build and run the project or file\n");
+    printf("  workspace <.|name>  - Create workspace with config files (.clangd, .clang-format, .vscode)\n");
+    printf("  project <.|name>    - Create a new project with DH-C structure\n\n");
     printf("Build modes:\n");
     printf("  debug    - Debug build with no optimization\n");
     printf("  release  - Release build with -O2 optimization\n");
@@ -729,13 +1186,19 @@ void print_usage() {
     printf("  --opt=<O0|O1|O2|O3|Os>  - Specify optimization level for optimize mode\n");
     printf("  --args=\"args\"           - Arguments to pass when running\n");
     printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n\n");
+    printf("Environment Variables:\n");
+    printf("  DH_HOME               - Path to DH library installation\n\n");
     printf("Examples:\n");
+    printf("  dh-c --version                    - Show version information\n");
     printf("  dh-c build debug                  - Build project in debug mode\n");
     printf("  dh-c run release sample.c         - Build and run single file in release mode\n");
     printf("  dh-c test sample.c                - Build and run tests for single file\n");
     printf("  dh-c build optimize --opt=O2 file.c - Build file with O2 optimization\n");
+    printf("  dh-c workspace myworkspace        - Create new workspace named 'myworkspace'\n");
+    printf("  dh-c project myproject            - Create new project named 'myproject'\n");
 }
 
+// Update main function to handle version command
 int main(int argc, char* argv[]) {
     // Default configuration
     BuildConfig config;
@@ -748,16 +1211,53 @@ int main(int argc, char* argv[]) {
     config.is_test        = false;
     config.is_single_file = false;
 
-    // Check compiler availability
-    if (!detect_clang()) {
-        fprintf(stderr, "Warning: clang compiler not found. Using gcc as fallback.\n");
-        strcpy(config.compiler, "gcc");
-    }
-
     // Parse command-line arguments
     if (argc < 2) {
         print_usage();
         return 1;
+    }
+
+    // Handle version command first (now using --version format)
+    if (strcmp(argv[1], "--version") == 0) {
+        printf("DH-C Build Tool version %s\n", DH_VERSION);
+        printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
+        printf("Licensed under the MIT License\n");
+        return 0;
+    }
+
+    // Try to find DH path early for workspace and project commands
+    if (!find_dh_path(&config)) {
+        fprintf(stderr, "Warning: Could not find DH library path\n");
+        return 1;
+    }
+
+    // Create bin directory if it doesn't exist
+    char bin_path[1024];
+    int  result = snprintf(bin_path, sizeof(bin_path), "%s%sbin", config.dh_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(bin_path)) {
+        if (!dir_exists(bin_path)) {
+            if (!create_directory(bin_path)) {
+                fprintf(stderr, "Warning: Could not create bin directory\n");
+            }
+        }
+    }
+
+    // Handle workspace and project commands
+    if (strcmp(argv[1], "workspace") == 0) {
+        const char* name = (argc > 2) ? argv[2] : ".";
+        create_workspace(name, config.dh_path);
+        return 0;
+    } else if (strcmp(argv[1], "project") == 0) {
+        const char* name = (argc > 2) ? argv[2] : ".";
+        create_project(name, config.dh_path);
+        return 0;
+    }
+
+    // For standard build commands, continue with existing logic
+    // Check compiler availability
+    if (!detect_clang()) {
+        fprintf(stderr, "Warning: clang compiler not found. Using gcc as fallback.\n");
+        strcpy(config.compiler, "gcc");
     }
 
     // Process the command first
@@ -811,4 +1311,50 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
+}
+
+// Helper function to write a file
+void write_file(const char* path, const char* content) {
+    FILE* file = fopen(path, "w");
+    if (!file) {
+        fprintf(stderr, "Error: Could not create file: %s\n", path);
+        return;
+    }
+
+    size_t content_len = strlen(content);
+    size_t written     = fwrite(content, 1, content_len, file);
+    if (written != content_len) {
+        fprintf(stderr, "Error: Could not write complete content to file: %s\n", path);
+        fclose(file);
+        return;
+    }
+
+    if (fclose(file) != 0) {
+        fprintf(stderr, "Warning: Error closing file: %s\n", path);
+        return;
+    }
+
+    printf("Created file: %s\n", path);
+}
+
+// Helper function to create a directory
+bool create_directory(const char* path) {
+    if (dir_exists(path)) {
+        return true; // Directory already exists
+    }
+
+#ifdef _WIN32
+    if (_mkdir(path) != 0) {
+        fprintf(stderr, "Error: Could not create directory: %s\n", path);
+        return false;
+    }
+#else
+    if (mkdir(path, 0755) != 0) {
+        fprintf(stderr, "Error: Could not create directory: %s\n", path);
+        return false;
+    }
+#endif
+
+    printf("Created directory: %s\n", path);
+    return true;
 }

@@ -136,23 +136,23 @@ extern "C" {
 #define comp_inline__debug_assert_null_fmt(_Expr, ...)        comp_inline__debug_assert_fmt((_Expr) == null, __VA_ARGS__)
 #define comp_inline__debug_assert_nonnull_fmt(_Expr, ...)     comp_inline__debug_assert_fmt((_Expr) != null, __VA_ARGS__)
 #else  /* !COMP_TIME */
-force_inline void comp_inline__debug_assert(bool);
+extern void comp_inline__debug_assert(bool);
 
-force_inline void comp_inline__debug_assert_true(bool);
-force_inline void comp_inline__debug_assert_false(bool);
-force_inline void comp_inline__debug_assert_eq(bool, bool);
-force_inline void comp_inline__debug_assert_ne(bool, bool);
-force_inline void comp_inline__debug_assert_null(bool);
-force_inline void comp_inline__debug_assert_nonnull(bool);
+extern void comp_inline__debug_assert_true(bool);
+extern void comp_inline__debug_assert_false(bool);
+extern void comp_inline__debug_assert_eq(bool, bool);
+extern void comp_inline__debug_assert_ne(bool, bool);
+extern void comp_inline__debug_assert_null(bool);
+extern void comp_inline__debug_assert_nonnull(bool);
 
-force_inline void comp_inline__debug_assert_fmt(bool, const char*, ...);
+extern void comp_inline__debug_assert_fmt(bool, const char*, ...);
 
-force_inline void comp_inline__debug_assert_true_fmt(bool, const char*, ...);
-force_inline void comp_inline__debug_assert_false_fmt(bool, const char*, ...);
-force_inline void comp_inline__debug_assert_eq_fmt(bool, bool, const char*, ...);
-force_inline void comp_inline__debug_assert_ne_fmt(bool, bool, const char*, ...);
-force_inline void comp_inline__debug_assert_null_fmt(bool, const char*, ...);
-force_inline void comp_inline__debug_assert_nonnull_fmt(bool, const char*, ...);
+extern void comp_inline__debug_assert_true_fmt(bool, const char*, ...);
+extern void comp_inline__debug_assert_false_fmt(bool, const char*, ...);
+extern void comp_inline__debug_assert_eq_fmt(bool, bool, const char*, ...);
+extern void comp_inline__debug_assert_ne_fmt(bool, bool, const char*, ...);
+extern void comp_inline__debug_assert_null_fmt(bool, const char*, ...);
+extern void comp_inline__debug_assert_nonnull_fmt(bool, const char*, ...);
 #endif /* COMP_TIME */
 #else  /* !debug_comp_enabled */
 #define comp_inline__debug_assert(_Expr) $unused(0)

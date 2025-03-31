@@ -1,124 +1,144 @@
-
 # DH-C Build Tool
 
-A simple build tool for DH-C projects that handles compilation, testing, and running of code. The tool supports both project and single-file compilation while integrating with the DH.
+A lightweight, cross-platform build tool for C projects using the DH library system.
 
 ## Features
 
-- Detects clang toolchain (falls back to gcc if clang is not available)
-- Supports build, test, and run commands
-- Handles debug/release/optimize modes
-- Supports both project and single-file compilation
-- Automatically finds and compiles source files
-- Automatically adds include paths
-- Auto-detects and includes DH library
+- Cargo-like project management (workspace and project commands)
+- Cross-platform support (Windows, macOS, Linux)
+- Auto-detection of the DH library
+- Support for debug, release, and optimized builds
+- Automatic include/source file discovery
+- IDE integration through `.clangd` and VSCode tasks
 
-## Project Structure
+## Installation
 
-For project builds, the tool expects a standard DH-C project structure:
+### Windows
 
-```
-(root) <project-name>/
-├── libs/                 # Optional dependencies
-│   └── link.dhc          # Optional list of libraries to link
-├── include/              # Public headers
-│   ├── <project-name>.h
-│   └── <project-name>/   # Project-specific headers
-│       ├── common.h
-│       └── ...
-└── src/                  # Source files
-    ├── common.c
-    └── ...
-```
+1. Clone or download this repository
+2. Open a PowerShell prompt as Administrator
+3. Navigate to the directory containing the `dh-c.c` file
+4. Run the installation script:
 
-For single file compilation, simply specify the .c file in the command.
+   ```powershell
+   .\install-dhc.ps1
+   ```
 
-## Building the Tool
+5. Restart your terminal or PowerShell session
 
-Use clang to build the tool directly:
+### Linux/macOS
 
-```bash
-clang -std=c17 -Wall -Wextra -funsigned-char -fblocks -o dh-c dh-c.c
-```
+1. Clone or download this repository
+2. Open a terminal
+3. Navigate to the directory containing the `dh-c.c` file
+4. Make the installation script executable and run it:
 
-Or with gcc:
+   ```bash
+   chmod +x install-dhc.sh
+   ./install-dhc.sh
+   ```
 
-```bash
-gcc -std=c17 -Wall -Wextra -funsigned-char -fblocks -o dh-c dh-c.c
-```
-
-On Windows you might need to add `-lws2_32` for socket libraries, and on Unix-like systems you might need `-lpthread` for threading.
+5. Follow the on-screen instructions to complete the installation
 
 ## Usage
 
-```
-dh-c [build|test|run] [debug|release|optimize] [file.c] [options]
-```
+### Project Management
 
-### Commands
+Create a new workspace:
 
-- `build` - Build the project or file
-- `test` - Build and run tests
-- `run` - Build and run the project or file
-
-### Build Modes
-
-- `debug` - Debug build with no optimization
-- `release` - Release build with -O2 optimization
-- `optimize` - Optimized build (default: -O3)
-
-### Options
-
-- `--compiler=<clang|gcc>` - Specify compiler (default: clang)
-- `--std=<c99|c11|c17>` - Specify C standard (default: c17)
-- `--opt=<O0|O1|O2|O3|Os>` - Specify optimization level for optimize mode
-- `--args="args"` - Arguments to pass when running
-- `--dh=<path>` - Path to DH library (auto-detected by default)
-
-## Examples
-
-### Project Builds
-
-```bash
-# Build project in debug mode
-dh-c build debug
-
-# Build and run tests in release mode
-dh-c test release
-
-# Build and run in optimize mode with custom optimization level
-dh-c run optimize --opt=O2
+```sh
+dh-c workspace my-workspace
 ```
 
-### Single File Compilation
+Create a new project:
 
-```bash
-# Build a single file in debug mode
-dh-c build debug sample.c
-
-# Build and run a single file
-dh-c run sample.c
-
-# Build and test a single file with custom arguments
-dh-c test sample.c --args="--verbose"
+```sh
+dh-c project my-project
 ```
 
-### Specifying DH Library Location
+Initialize the current directory as a workspace or project:
 
-If the tool can't automatically find the DH library, you can specify its location:
-
-```bash
-dh-c build sample.c --dh=/path/to/dh
+```sh
+dh-c workspace .
+dh-c project .
 ```
 
-## Output Files
+### Building and Running
 
-For projects, the build tool creates executables in the `build` directory:
-- `<project-name>` for release builds
-- `<project-name>-debug` for debug builds
-- `<project-name>-opt` for optimized builds
+Build a single file:
 
-For single files, the executables are created in the same directory as the source file:
-- `<file-name>` for release builds
-- `<file-name>-debug` for debug builds
-- `<file-name>-opt` for optimized builds
+```sh
+dh-c build file.c
+```
+
+Build a file with debug symbols:
+
+```sh
+dh-c build debug file.c
+```
+
+Build and run a file:
+
+```sh
+dh-c run file.c
+```
+
+Build and run tests:
+
+```sh
+dh-c test test-file.c
+```
+
+Build an entire project:
+
+```sh
+dh-c build
+```
+
+### Additional Options
+
+Specify compiler:
+
+```sh
+dh-c build file.c --compiler=gcc
+```
+
+Use a specific C standard:
+
+```sh
+dh-c build file.c --std=c11
+```
+
+Set optimization level:
+
+```sh
+dh-c build optimize file.c --opt=O2
+```
+
+Pass arguments to the program:
+
+```sh
+dh-c run file.c --args="arg1 arg2"
+```
+
+## Environment Variables
+
+- `DH_HOME`: Points to the DH library root directory. Set automatically by the installation scripts, but can be manually configured if needed.
+
+## Project Structure
+
+A typical DH-C project follows this structure:
+
+```txt
+my-project/
+  ├── include/my-project (public headers)
+  ├── src/my-project     (implementation files)
+  ├── test/              (test files)
+  ├── lib/               (third-party libraries)
+  ├── .clangd            (language server config)
+  └── .vscode/           (IDE config)
+```
+
+## Credits
+
+DH-C was created as a lightweight build and project management system for C programming, inspired by Cargo from the Rust ecosystem.
