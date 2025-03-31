@@ -62,7 +62,7 @@ config_ErrSet(TerrainDataErr,
 use_ErrSet$(TerrainDataErr, TerrainData);
 /// Suppose "heightmap.png" is an 8-bit grayscale PNG,
 /// and "colormap.png" is an 8-bit RGB or RGBA PNG.
-pvt fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), $must_check TerrainDataErr$TerrainData);
+static fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), $must_check TerrainDataErr$TerrainData);
 
 typedef struct State {
     TerrainData terrain;
@@ -86,13 +86,13 @@ typedef struct State {
     } input;
 } State;
 /// Key input handling
-pvt fn_(State_handleInputKey(State* self), void);
+static fn_(State_handleInputKey(State* self), void);
 /// Mouse input handling
-pvt fn_(State_handleInputMouse(State* state), void);
+static fn_(State_handleInputMouse(State* state), void);
 /// Camera update logic
-pvt fn_(State_updateCamera(State* self, f64 dt), void);
+static fn_(State_updateCamera(State* self, f64 dt), void);
 /// heightmap-based horizon renderer
-pvt fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void);
+static fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void);
 
 
 

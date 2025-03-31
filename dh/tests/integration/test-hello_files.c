@@ -12,9 +12,9 @@ config_ErrSet(LoadFileErr,
 );
 
 use_Err$(Ptr$FILE);
-pvt fn_(loadFile(Str_const filename),must_check Err$Ptr$FILE);
+static fn_(loadFile(Str_const filename), $must_check Err$Ptr$FILE);
 use_Err$(Arr_const$4$Ptr$FILE);
-pvt fn_(loadFiles(void), $must_check Err$Arr_const$4$Ptr$FILE);
+static fn_(loadFiles(void), $must_check Err$Arr_const$4$Ptr$FILE);
 
 fn_ext_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
     if_(let file = fopen(as$(const char*, filename.ptr), "r"),
