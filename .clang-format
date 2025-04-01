@@ -130,6 +130,8 @@ TypeNames:
   # Inference
   - let
   - var
+  - let_
+  - var_
   - TypeOf
   - TypeUnqualOf
   # primitive
@@ -261,8 +263,6 @@ StatementAttributeLikeMacros:
 
 WhitespaceSensitiveMacros:
   - with_
-  - let_
-  - var_
   - fn_
   - fn_ext_scope
   - config_ErrSet

@@ -100,10 +100,10 @@ extern "C" {
 })
 
 #define comp_syn__match_(val_union_enum) \
-    let_(_union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
+    with_(let _union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
 
 #define comp_syn__match_mut_(var_union_enum) \
-    let_(_union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
+    with_(let _union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
 
 #define comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
     case E_UnionEnum_Tag:                                     \

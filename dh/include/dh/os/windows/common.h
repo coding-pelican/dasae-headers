@@ -17,10 +17,10 @@
 #endif /* !defined(NOMINMAX) */
 #include <windows.h>
 
-#define auto            SYN__auto
-#define var             SYN__var
-#define let             SYN__let
-#define warn_deprecated ATTR__warn_deprecated
+#define auto            comp_syn__auto
+#define var             comp_syn__var
+#define let             comp_syn__let
+#define warn_deprecated comp_attr__$warn_deprecated
 #endif /* bti_plat_windows */
 
 #endif /* OS_WINDOWS_COMMON_INCLUDED */

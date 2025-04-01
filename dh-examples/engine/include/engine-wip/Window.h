@@ -21,8 +21,7 @@ typedef struct engine_Window engine_Window;
 #define engine_Window_composite_buffer_color_default ((Color){ .r = 0x18, .g = 0x18, .b = 0x18, .a = 0xFF })
 
 typedef struct engine_CanvasView engine_CanvasView;
-#define engine_Window_max_canvases (8)
-typedef Arr$$(engine_Window_max_canvases, struct engine_CanvasView {
+struct engine_CanvasView {
     engine_Canvas* canvas; // Associated canvas
     struct {
         Vec2i top_left;
@@ -37,7 +36,9 @@ typedef Arr$$(engine_Window_max_canvases, struct engine_CanvasView {
         } resizable;
     } rect;
     bool visible; // Visibility flag
-}) engine_CanvasViews;
+};
+#define engine_Window_max_canvases (8)
+typedef Arr$$(engine_Window_max_canvases, engine_CanvasView) engine_CanvasViews;
 
 struct engine_Window {
     struct {
