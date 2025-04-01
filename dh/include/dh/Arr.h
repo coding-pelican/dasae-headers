@@ -75,14 +75,52 @@ typedef struct Arr$N$T {
 #define Arr_init$(T_Arr, _Initial...) ...
 
 /* Operations */
-/// Get number of elements in array
+/// `arr.len` | Get number of elements in array
 #define Arr_len(var_self...)                          ...
-/// Get pointer to element at index (bounds-checked)
+/// `&arr[index]` | Get pointer to element at index (bounds-checked)
 #define Arr_at(var_self, usize_index...)              ...
-/// Get value of element at index (bounds-checked)
+/// `arr[index]` | Get value of element at index (bounds-checked)
 #define Arr_getAt(var_self, usize_index...)           ...
-/// Set value at index (bounds-checked)
+/// `arr[index] = val` | Set value at index (bounds-checked)
 #define Arr_setAt(var_self, usize_index, val_item...) ...
+
+/* Range-based Slice Operations */
+/// `arr[begin..end]` | Get slice from begin to end
+#define Arr_slice(var_self, range_index_begin_end...)                        ...
+/// `arr[begin..end]` | Get specific slice from begin to end
+#define Arr_slice$(T_Sli, var_self, range_index_begin_end...)                ...
+/// `arr[begin..end:0]` | Get slice from begin to end with zero sentinel
+#define Arr_sliceZ(var_self, range_index_begin_end...)                       ...
+/// `arr[begin..end:0]` | Get specific slice from begin to end with zero sentinel
+#define Arr_sliceZ$(T_Sli, var_self, range_index_begin_end...)               ...
+/// `arr[begin..end:sentinel]` | Get slice from begin to end with sentinel
+#define Arr_sliceS(var_self, range_index_begin_end, val_sentinel...)         ...
+/// `arr[begin..end:sentinel]` | Get specific slice from begin to end with sentinel
+#define Arr_sliceS$(T_Sli, var_self, range_index_begin_end, val_sentinel...) ...
+/// `arr[0..index]` | Get slice from begin to index
+#define Arr_prefix(var_self, usize_index_end...)                             ...
+/// `arr[0..index]` | Get specific slice from begin to index
+#define Arr_prefix$(T_Sli, var_self, usize_index_end...)                     ...
+/// `arr[0..index:0]` | Get slice from begin to zero sentinel
+#define Arr_prefixZ(var_self...)                                             ...
+/// `arr[0..index:0]` | Get specific slice from begin to zero sentinel
+#define Arr_prefixZ$(T_Sli, var_self...)                                     ...
+/// `arr[0..index:sentinel]` | Get slice from begin to sentinel
+#define Arr_prefixS(var_self, val_sentinel...)                               ...
+/// `arr[0..index:sentinel]` | Get specific slice from begin to sentinel
+#define Arr_prefixS$(T_Sli, var_self, val_sentinel...)                       ...
+/// `arr[index..len]` | Get slice from index to end
+#define Arr_suffix(var_self, usize_index_begin...)                           ...
+/// `arr[index..len]` | Get specific slice from index to end
+#define Arr_suffix$(T_Sli, var_self, usize_index_begin...)                   ...
+/// `arr[index..len:0]` | Get slice from index to zero sentinel
+#define Arr_suffixZ(var_self, usize_index_begin...)                          ...
+/// `arr[index..len:0]` | Get specific slice from index to zero sentinel
+#define Arr_suffixZ$(T_Sli, var_self, usize_index_begin...)                  ...
+/// `arr[index..len:sentinel]` | Get slice from index to sentinel
+#define Arr_suffixS(var_self, usize_index_begin, val_sentinel...)            ...
+/// `arr[index..len:sentinel]` | Get specific slice from index to sentinel
+#define Arr_suffixS$(T_Sli, var_self, usize_index_begin, val_sentinel...)    ...
 
 /* Iteration */
 /// Forward iteration over elements
@@ -249,19 +287,19 @@ extern "C" {
      */                                                           \
     comp_op__Arr_init$(T_Arr, _Initial)
 
-#define Arr_len(var_self...)                       \
-    /**                                            \
-     * @brief Returns the length of an array       \
-     * @param var_self Array variable              \
-     * @return Length of the array                 \
-     * @example                                    \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
-     *     usize len = Arr_len(arr);  // 3         \
-     */                                            \
+#define Arr_len(var_self...)                              \
+    /**                                                   \
+     * @brief `arr.len` | Get number of elements in array \
+     * @param var_self Array variable                     \
+     * @return Length of the array                        \
+     * @example                                           \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});        \
+     *     usize len = Arr_len(arr);  // 3                \
+     */                                                   \
     comp_op__Arr_len(pp_uniqTok(self), var_self)
 #define Arr_at(var_self, usize_index...)                                                             \
     /**                                                                                              \
-     * @brief Returns a reference to an element at the specified index                               \
+     * @brief `&arr[index]` | Get pointer to element at index (bounds-checked)                       \
      * @param var_self Array variable                                                                \
      * @param usize_index Index                                                                      \
      * @return Reference to the element                                                              \
@@ -273,7 +311,7 @@ extern "C" {
     comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define Arr_getAt(var_self, usize_index...)                                                          \
     /**                                                                                              \
-     * @brief Returns the value of an element at the specified index                                 \
+     * @brief `arr[index]` | Get value of element at index (bounds-checked)                          \
      * @param var_self Array variable                                                                \
      * @param usize_index Index                                                                      \
      * @return Element value                                                                         \
@@ -285,7 +323,7 @@ extern "C" {
     comp_op__Arr_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define Arr_setAt(var_self, usize_index, val_item...)                                                \
     /**                                                                                              \
-     * @brief Sets the value of an element at the specified index                                    \
+     * @brief `arr[index] = val` | Set value at index (bounds-checked)                               \
      * @param var_self Array variable                                                                \
      * @param usize_index Index                                                                      \
      * @param val_item Value to set                                                                  \
@@ -296,6 +334,32 @@ extern "C" {
      *     Arr_setAt(arr, 1, 5);  // arr = {1, 5, 3}                                                 \
      */                                                                                              \
     comp_op__Arr_setAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index, val_item)
+
+#define Arr_slice(var_self, range_index_begin_end...)         \
+    /**                                                       \
+     * @brief `arr[begin..end]` | Get slice from begin to end \
+     * @param var_self Array variable                         \
+     * @param range_index_begin_end Range and index           \
+     * @return Slice of the array                             \
+     * @example                                               \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});            \
+     *     Sli$(i32)    sli = Arr_slice(arr, (1, 2));         \
+     *     // sli = {2}                                       \
+     */                                                       \
+    comp_op__Arr_slice(pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
+#define Arr_slice$(T_Sli, var_self, range_index_begin_end...)          \
+    /**                                                                \
+     * @brief `arr[begin..end]` | Get specific slice from begin to end \
+     * @param T_Sli Slice type                                         \
+     * @param var_self Array variable                                  \
+     * @param range_index_begin_end Range and index                    \
+     * @return Slice of the array                                      \
+     * @example                                                        \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                     \
+     *     Sli$(i32)    sli = Arr_slice$(Sli$(i32), arr, (1, 2));      \
+     *     // sli = {2}                                                \
+     */                                                                \
+    comp_op__Arr_slice$(T_Sli, pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
 
 #define for_array(var_arr, _Iter_item)                      \
     /**                                                     \
@@ -376,11 +440,14 @@ extern "C" {
         const T items[N];                 \
     }
 #define comp_type_anon__Arr$$(N, T) \
-    struct {                        \
-        T items[N];                 \
+    union {                         \
+        struct {                    \
+            T items[N];             \
+        };                          \
+        Arr_const$$(N, T) as_const; \
     }
 #define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
-    let __anon = &var_anon;                                                                  \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                             \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                           \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                         \
     claim_assert_static(validateField(TypeOf(*__anon), items, FieldTypeOf(T_Arr, items)));   \
@@ -394,12 +461,12 @@ extern "C" {
 #define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
 
 #define comp_op__Arr_len(__self, var_self...) eval({ \
-    const TypeOf(&var_self) __self = &var_self;      \
+    let_(__self, TypeOf(&var_self)) = &var_self;     \
     eval_return countOf(__self->items);              \
 })
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
-    const TypeOf(&var_self) __self = &var_self;                           \
-    const usize __index            = usize_index;                         \
+    let_(__self, TypeOf(&var_self)) = &var_self;                          \
+    const usize __index             = usize_index;                        \
     debug_assert_fmt(                                                     \
         __index < Arr_len(*__self),                                       \
         "Index out of bounds: %zu >= %zu",                                \
@@ -430,6 +497,28 @@ extern "C" {
     );                                                                                  \
     __self->items[__index] = as$(TypeOf(__self->items[0]), var_value);                  \
     eval_return __self;                                                                 \
+})
+
+#define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
+    let_(__self, TypeOf(&var_self)) = &var_self;                                       \
+    let_(__range, Range)            = Range_from range_index_begin_end;                \
+    debug_assert_fmt(                                                                  \
+        __range.begin < __range.end,                                                   \
+        "Invalid slice range: begin(%zu) >= end(%zu)",                                 \
+        __range.begin,                                                                 \
+        __range.end                                                                    \
+    );                                                                                 \
+    debug_assert_fmt(                                                                  \
+        __range.end <= Arr_len(*__self),                                               \
+        "Index out of bounds: end(%zu) > len(%zu)",                                    \
+        __range.end,                                                                   \
+        Arr_len(*__self)                                                               \
+    );                                                                                 \
+    eval_return make$(                                                                 \
+        TypeOf(__self),                                                                \
+        .items = __self->items + __range.begin,                                        \
+        .len   = Range_len(__range)                                                    \
+    );                                                                                 \
 })
 
 #define comp_syn__for_array(__arr, __i, var_arr, _Iter_item) \

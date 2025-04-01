@@ -130,7 +130,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     TreeNode_printRecur(root, 0);
 
     // Save the tree to a file
-    var_(save_file = fopen("decision_tree.bin", "wb")) {
+    with_(var save_file = fopen("decision_tree.bin", "wb")) {
         if (!save_file) {
             log_error("Failed to open file for writing: decision_tree.bin");
             return_err(io_FileErr_OpenFailed());
