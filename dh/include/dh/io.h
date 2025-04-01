@@ -1,6 +1,7 @@
 
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    io.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>

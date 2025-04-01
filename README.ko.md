@@ -274,7 +274,12 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 ## 📚 문서
 
 자세한 문서는 다음 위치에서 확인할 수 있습니다:
-- [API 문서](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+
+- [위키 홈](./dh/docs/ko/home.md) - 메인 문서 포탈
+- [빠른 시작 가이드](./dh/docs/ko/quick-start.md) - 시작을 위한 상세 가이드
+- [API 참조](./dh/docs/ko/api/index.md) - 모듈 문서
+
+추가 자료:
 - [헤더 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
 - [소스 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
 - [예제 코드](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
@@ -283,7 +288,7 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 ## 🚧 현재 상태
 
 이 프로젝트는 적극적으로 개발 중이며 API는 아직 안정화되지 않았습니다. 실험적인 프로젝트에서 사용하고 피드백을 제공해 주시면 감사하겠습니다.
-<!-- 프로젝트 개선에 관심이 있으시다면 contribution.md를 참조해 주세요. -->
+프로젝트 개선에 관심이 있으시다면 [contribution.md](./dh/docs/ko/contributing.md)를 참조해 주세요.
 
 ## 🙏 기여
 
@@ -300,4 +305,6 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 
 ## 📜 라이센스
 
-Copyright © 2024-2025. Gyeongtae Kim. All rights reserved.
+이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
+
+Copyright © 2024-2025 Gyeongtae Kim. All rights reserved.
