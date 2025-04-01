@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2024. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    op.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>

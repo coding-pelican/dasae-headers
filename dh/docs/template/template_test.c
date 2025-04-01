@@ -1,15 +1,17 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    template_test.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-01-15 (date of last update)
+ * @updated 2025-04-01 (date of last update)
  * @version v1.0.3
- * @ingroup UNIT_TEST_IMPLEMENTATION
- * @prefix  TEST
+ * @ingroup dasae-headers(dh)/test
+ * @prefix  NONE
  *
  * @brief   Test of some module
+ * @details TODO
  */
 
 /*========== Includes =======================================================*/

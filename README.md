@@ -296,8 +296,12 @@ fn_TEST_scope("Basic Math Operations Test") {
 
 ## 📚 Documentation
 
-Detailed documentation can be found at:
-- [API documentation](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+Detailed documentation can be found in our wiki:
+- [Wiki Home](./dh/docs/en/home.md) - Main documentation portal
+- [Quick Start Guide](./dh/docs/en/quick-start.md) - Detailed guide for beginners
+- [API Reference](./dh/docs/en/api/index.md) - Module documentation
+
+Additional resources:
 - [Header files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
 - [Source files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
 - [Examples](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
@@ -306,7 +310,7 @@ Detailed documentation can be found at:
 ## 🚧 Current Status
 
 This project is actively under development, and the API is not yet stabilized. We would appreciate if you could use it in experimental projects and provide feedback.
-<!-- If you are interested in improving the project, please refer to contribution.md. -->
+If you are interested in improving the project, please refer to [contribution.md](./dh/docs/en/contributing.md).
 
 ## 🙏 Contributing
 
@@ -323,4 +327,6 @@ For any questions or inquiries, please contact the project author:
 
 ## 📜 License
 
-Copyright © 2024-2025. Gyeongtae Kim. All rights reserved.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+Copyright © 2024-2025 Gyeongtae Kim. All rights reserved.

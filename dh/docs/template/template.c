@@ -1,12 +1,13 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    template.c
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v1.0.2
- * @ingroup dasae-headers(dh)/docs
+ * @updated 2025-04-01 (date of last update)
+ * @version v1.0.3
+ * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
  * @brief   Source of some software
@@ -16,6 +17,10 @@
 /*========== Includes =======================================================*/
 
 // only those that are NECESSARY
+
+/*========== Macros and Declarations ========================================*/
+
+// when NEEDED in this source file
 
 /*========== Macros and Definitions =========================================*/
 
@@ -29,7 +34,7 @@
 
 /*========== Static Function Implementations ================================*/
 
-/*========== Externalized Static Function Implementations (Unit Test) =======*/
+/*========== Unit Test ======================================================*/
 
-#ifdef UNIT_TEST
+#if UNIT_TEST
 #endif /* UNIT_TEST */
