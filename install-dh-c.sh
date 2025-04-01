@@ -3,12 +3,12 @@
 # Works on Windows (Git Bash/WSL/etc.) and Unix-like systems
 #
 # Make it executable
-# chmod +x install-dhc.sh
+# chmod +x install-dh-c.sh
 #
 # Run it
-# ./install-dhc.sh
+# ./install-dh-c.sh
 # or
-# sh install-dhc.sh
+# sh install-dh-c.sh
 
 set -e # Exit on any error
 
