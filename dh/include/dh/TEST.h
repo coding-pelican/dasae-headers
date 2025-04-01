@@ -62,11 +62,11 @@ typedef struct TEST_Framework {
 } TEST_Framework;
 
 /// @brief Access test framework singleton instance
-pub fn_(TEST_Framework_instance(void), TEST_Framework*);
+extern fn_(TEST_Framework_instance(void), TEST_Framework*);
 /// @brief Bind test case to framework
-pub fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void);
+extern fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void);
 /// @brief Run all registered tests
-pub fn_(TEST_Framework_run(void), void);
+extern fn_(TEST_Framework_run(void), void);
 
 /*========== Test Macros ==================================================*/
 
@@ -76,9 +76,9 @@ pub fn_(TEST_Framework_run(void), void);
 
 #if !COMP_TIME
 /// @brief Check expression and record result
-pub fn_(TEST_expect(bool expr), $must_check Err$void);
+extern fn_(TEST_expect(bool expr), $must_check Err$void);
 /// @brief Same as TEST_expect but with custom message
-pub fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
+extern fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 #endif /* !COMP_TIME */
 
 /*========== Implementation Details =======================================*/
@@ -97,8 +97,8 @@ pub fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 #define TEST__caseFn(_ID_binder, _ID_caseFn...)        comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn)
 
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...)       \
-    pvt fn_(_ID_caseFn(void), $must_check Err$void);                        \
-    pvt comp_fn_gen__TEST__binder__sgn(_ID_binder) {                      \
+    static fn_(_ID_caseFn(void), $must_check Err$void);                     \
+    static comp_fn_gen__TEST__binder__sgn(_ID_binder) {                   \
         static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) {                                                \
             TEST_Framework_bindCase(_ID_caseFn, Str_l(_Name));            \
@@ -115,7 +115,7 @@ pub fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 // clang-format off
 #define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \
-    pvt fn_ext_scope(_ID_caseFn(void), Err$void) {                \
+    static fn_ext_scope(_ID_caseFn(void), Err$void) {                \
         _ID_binder();                                             \
 
 #define comp_syn__TEST_unscoped \
@@ -124,8 +124,8 @@ pub fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 // clang-format on
 
 #if COMP_TIME
-pub fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), $must_check Err$void);
-pub fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), $must_check Err$void);
+extern fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), $must_check Err$void);
+extern fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), $must_check Err$void);
 
 #define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), Str_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), Str_l(#_expr))

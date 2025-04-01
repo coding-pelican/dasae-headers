@@ -232,8 +232,6 @@ ForEachMacros:
   - for_array_rev_indexed
 
 AttributeMacros:
-  - pub
-  - pvt
   - $on_load
   - $on_exit
   - extern_inline

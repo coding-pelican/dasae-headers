@@ -1,12 +1,11 @@
-#include "dh/core.h"
 #include "dh/main.h"
 #include "dh/Str.h"
-#include <stdio.h>
-#include <string.h>
+#include "dh/Arr.h"
 
-Err$void dh_main(Sli$Str_const args) {
-    $unused(args);
-    reserveReturn(Err$void);
+#include <stdio.h>
+
+fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
 
     printf("passed args:\n");
     for_slice_indexed (args, arg, index) {
@@ -14,12 +13,12 @@ Err$void dh_main(Sli$Str_const args) {
     }
     printf("\n");
 
-    char buffer[32] = cleared();
-    $ignore fgets(buffer, 32, stdin);
-    let str = Str_fromZ(as$(u8*, buffer));
+    var_(input, Arr$$(32, u8)) = Arr_zero();
+    $ignore fgets(as$(char*, input.buf), Arr_len(input), stdin);
+    let str = Str_fromZ(input.buf);
     for_slice_rev (str, ch) {
         $ignore putchar(*ch);
     }
 
     return_ok({});
-}
+} ext_unscoped;
