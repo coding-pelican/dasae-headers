@@ -3,7 +3,7 @@
 #include "dh/main.h"
 #include "dh/Str.h"
 
-static void TEST_string_literals(void) {
+static fn_(TEST_string_literals(void), void) {
     /* Test different string literal types */
     let str_readonly = Str_l("Readonly byte slice"); /* [*]const u8 */
     let str_writable = Str_m("Writable byte slice"); /* []u8 */
@@ -32,9 +32,9 @@ static void TEST_string_literals(void) {
         var iter      = StrUtf8_iter(utf8_str);
         var codepoint = make$(Opt$u32);
         while (StrUtf8Iter_next(&iter, &codepoint)) {
-            if (codepoint.has_value) {
+            if_some(codepoint, point) {
                 // Print the actual Unicode character
-                printf("%C", codepoint.value);
+                printf("%C", point);
             }
             Str_print(Str_l(" "));
         }
@@ -44,6 +44,6 @@ static void TEST_string_literals(void) {
     Str_println(Str_l("할아버지 보고싶어요"));
 }
 
-void dh_main(void) {
+fn_(dh_main(void), void) {
     TEST_string_literals();
 }

@@ -26,15 +26,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define pub                                          comp_syn__pub
-#define pvt                                          comp_syn__pvt
 #define fn_(_Name_With_Params, T_Return...)          comp_syn__fn_(_Name_With_Params, T_Return)
 #define fn_ext_scope(_Name_With_Params, T_Return...) comp_syn__fn_ext_scope(_Name_With_Params, T_Return)
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_syn__pub                                          extern
-#define comp_syn__pvt                                          static
 #define comp_syn__fn_(_Name_With_Params, T_Return...)          T_Return _Name_With_Params
 #define comp_syn__fn_ext_scope(_Name_With_Params, T_Return...) fn_(_Name_With_Params, T_Return) ext_scope(T_Return)
 
@@ -42,23 +38,15 @@ extern "C" {
 
 #if EXAMPLE_USAGE
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/math.h"
 #include "dh/Str.h"
 
-/* declarations */
+/* declarations =============================================================*/
 use_ErrSet$(math_Err, i32);
-pub fn_(math_divideSafe(i32 lhs, i32 rhs), $must_check math_Err$i32);
+static fn_(math_divideSafe(i32 lhs, i32 rhs), $must_check math_Err$i32);
 
-/* implementations */
-fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
-    if (rhs == 0) {
-        return_(err(math_Err_DivisionByZero()));
-    }
-    return_ok(lhs / rhs);
-} ext_unscoped;
+/* main =====================================================================*/
 
-/* main */
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
@@ -68,6 +56,15 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         return_err(err);
     });
     return_(ok({}));
+} ext_unscoped;
+
+/* definitions ==============================================================*/
+
+fn_ext_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
+    if (rhs == 0) {
+        return_(err(math_Err_DivisionByZero()));
+    }
+    return_ok(lhs / rhs);
 } ext_unscoped;
 #endif /* EXAMPLE_USAGE */
 

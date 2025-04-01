@@ -46,13 +46,13 @@ use_Ptr$(TreeNode);
 use_Err$(Ptr$TreeNode);
 
 // Forward declarations
-pvt fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), $must_check Err$Ptr$TreeNode);
-pvt fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), $must_check Err$Ptr$TreeNode);
-pvt fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
-pvt fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
-pvt fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
-pvt fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), $must_check Err$void);
-pvt fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), $must_check Err$Ptr$TreeNode);
+static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), $must_check Err$Ptr$TreeNode);
+static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), $must_check Err$Ptr$TreeNode);
+static fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
+static fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
+static fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
+static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), $must_check Err$void);
+static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), $must_check Err$Ptr$TreeNode);
 
 // Dataset structure
 typedef struct Dataset {
@@ -64,8 +64,8 @@ typedef struct Dataset {
 use_Err$(Dataset);
 
 // Forward declarations
-pvt fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), $must_check Err$Dataset);
-pvt fn_(Dataset_destroy(Dataset* dataset), void);
+static fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), $must_check Err$Dataset);
+static fn_(Dataset_destroy(Dataset* dataset), void);
 
 // Main function
 fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {

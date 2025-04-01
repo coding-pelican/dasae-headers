@@ -72,7 +72,7 @@ typedef enum tetris_Tetrominos {
 } tetris_Tetrominos;
 
 /// Global variables for tetromino definitions
-pvt const Arr$$(tetris_Tetrominos_count, u16) tetris_tetrominos = Arr_init({
+static const Arr$$(tetris_Tetrominos_count, u16) tetris_tetrominos = Arr_init({
     [tetris_Tetrominos_i] = lit_num(0b, 0010, 0010, 0010, 0010), /* I: ..X...X...X...X. */
     [tetris_Tetrominos_j] = lit_num(0b, 0000, 0010, 0110, 0010), /* J: ..X..XX...X..... */
     [tetris_Tetrominos_o] = lit_num(0b, 0000, 0000, 0110, 0110), /* O: .....XX..XX..... */
@@ -89,22 +89,22 @@ use_Err$(tetris_PlayField);
 
 /* Function Prototypes ======================================================*/
 
-pvt fn_(tetris_Console_bootup(void), $must_check Err$void);
-pvt fn_(tetris_Console_shutdown(void), void);
+static fn_(tetris_Console_bootup(void), $must_check Err$void);
+static fn_(tetris_Console_shutdown(void), void);
 
-pvt fn_(tetris_isKeyPressed(i32 key), bool);
+static fn_(tetris_isKeyPressed(i32 key), bool);
 
-pvt fn_(tetris_PlayField_init(mem_Allocator allocator), $must_check Err$tetris_PlayField);
-pvt fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), $must_check Err$void);
-pvt fn_(tetris_rotate(i32 px, i32 py, i32 r), i32);
-pvt fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool);
-pvt fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), $must_check Err$i32);
-pvt fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
+static fn_(tetris_PlayField_init(mem_Allocator allocator), $must_check Err$tetris_PlayField);
+static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), $must_check Err$void);
+static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32);
+static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool);
+static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), $must_check Err$i32);
+static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
 
 #if bti_plat_windows
 use_Sli$(wchar_t);
-pvt HANDLE      tetris_Console_output_handle = null;
-pvt Sli$wchar_t tetris_Console_screen_buffer = cleared();
+static HANDLE      tetris_Console_output_handle = null;
+static Sli$wchar_t tetris_Console_screen_buffer = cleared();
 #else  /* others */
 struct termios tetris_Console_original = cleared();
 #endif /* others */
@@ -236,7 +236,7 @@ fn_ext_scope(dh_main(void), Err$void) {
 
 /* Function Implementations =================================================*/
 
-pvt fn_ext_scope(tetris_Console_bootup(void), Err$void) {
+static fn_ext_scope(tetris_Console_bootup(void), Err$void) {
 #if bti_plat_windows
     /* Set up Windows console */
     var screen_size = tetris_screen_width * tetris_screen_height;
@@ -291,7 +291,7 @@ pvt fn_ext_scope(tetris_Console_bootup(void), Err$void) {
     return_void();
 } ext_unscoped;
 
-pvt fn_(tetris_Console_shutdown(void), void) {
+static fn_(tetris_Console_shutdown(void), void) {
 #if bti_plat_windows
     var allocator = heap_Page_allocator(create$(heap_Page));
     mem_Allocator_free(allocator, anySli(tetris_Console_screen_buffer));
@@ -302,7 +302,7 @@ pvt fn_(tetris_Console_shutdown(void), void) {
 #endif /* others */
 }
 
-pvt fn_(tetris_isKeyPressed(i32 key), bool) {
+static fn_(tetris_isKeyPressed(i32 key), bool) {
 #if bti_plat_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
     static const Arr_const$$(5, i8) s_key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
@@ -328,7 +328,7 @@ pvt fn_(tetris_isKeyPressed(i32 key), bool) {
 #endif /* others */
 }
 
-pvt fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
+static fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
     /* Allocate grid for field with proper type information */
     var items = try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height));
 
@@ -349,7 +349,7 @@ pvt fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_Play
     return_ok({ .grid = field });
 } ext_unscoped;
 
-pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
+static fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
 #if bti_plat_windows
     /* Clear screen buffer */
     for_slice (tetris_Console_screen_buffer, cell) {
@@ -463,7 +463,7 @@ pvt fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 
     return_void();
 } ext_unscoped;
 
-pvt fn_(tetris_rotate(i32 px, i32 py, i32 r), i32) {
+static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32) {
     i32 pi = 0;
     switch (r % 4) {
     case 0: /* 0 degrees */
@@ -484,7 +484,7 @@ pvt fn_(tetris_rotate(i32 px, i32 py, i32 r), i32) {
     return pi;
 }
 
-pvt fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool) {
+static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool) {
     for (i32 py = 0; py < 4; ++py) {
         for (i32 px = 0; px < 4; ++px) {
             /* Get index into piece */
@@ -509,7 +509,7 @@ pvt fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromi
     return true;
 }
 
-pvt fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) {
+static fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) {
     ArrList_clearRetainingCap(lines->base);
 
     /* Check for complete lines */
@@ -557,7 +557,7 @@ pvt fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i3
     return_ok(as$(i32, lines->items.len));
 } ext_unscoped;
 
-pvt fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void) {
+static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void) {
     for (i32 py = 0; py < 4; ++py) {
         for (i32 px = 0; px < 4; ++px) {
             let pi  = tetris_rotate(px, py, rotation);

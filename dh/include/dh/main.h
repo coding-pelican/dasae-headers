@@ -56,15 +56,15 @@ extern "C" {
 #else /* !main_no_hijack */
 
 #if main_no_args && main_no_returns_err
-pub fn_(dh_main(void), void);
+extern fn_(dh_main(void), void);
 #elif main_no_args && !main_no_returns_err
-pub fn_(dh_main(void), $must_check Err$void);
+extern fn_(dh_main(void), $must_check Err$void);
 #elif !main_no_args && main_no_returns_err
 use_Sli$(Str_const);
-pub fn_(dh_main(Sli$Str_const args), void);
+extern fn_(dh_main(Sli$Str_const args), void);
 #else  /* !main_no_args && !main_no_returns_err */
 use_Sli$(Str_const);
-pub fn_(dh_main(Sli$Str_const args), $must_check Err$void);
+extern fn_(dh_main(Sli$Str_const args), $must_check Err$void);
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -73,18 +73,17 @@ pub fn_(dh_main(Sli$Str_const args), $must_check Err$void);
 #define MAIN_ROOT_INCLUDED (1)
 
 #if !TEST_comp_enabled
-int main(
+fn_(
 #if main_no_args && main_no_returns_err
-    void
+    main(void)
 #elif main_no_args && !main_no_returns_err
-    void
+    main(void)
 #elif !main_no_args && main_no_returns_err
-    int argc, const char* argv[]
+    main(int argc, const char* argv[])
 #else  /* !main_no_args && !main_no_returns_err */
-    int argc, const char* argv[]
+    main(int argc, const char* argv[])
 #endif /* !main_no_args && !main_no_returns_err */
-) {
-
+, int) {
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
@@ -99,7 +98,7 @@ int main(
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return make$(Sli$Str_const, .ptr = args_buf, .len = argc);
+        eval_return Sli_from$(Sli$Str_const, args_buf, argc);
     });
     dh_main(args);
 #else  /* !main_no_args && !main_no_returns_err */
@@ -108,7 +107,7 @@ int main(
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return make$(Sli$Str_const, .ptr = args_buf, .len = argc);
+        eval_return Sli_from$(Sli$Str_const, args_buf, argc);
     });
     catch_from(dh_main(args), err, eval({
         Err_print(err);

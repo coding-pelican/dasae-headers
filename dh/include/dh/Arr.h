@@ -41,7 +41,7 @@ var typed2        = Arr_anonCast$(Arr$(3, i32), anon2);    // Type conversion
 /* Type Definitions */
 /// Fixed-size array type
 typedef struct Arr$N$T {
-    T items[N]; ///< Array elements
+    T buf[N]; ///< Array elements
 } Arr$N$T;
 
 /* Type Generations */
@@ -306,7 +306,7 @@ extern "C" {
      * @details Performs bounds checking, triggers assertion in debug mode if index is out of bounds \
      * @example                                                                                      \
      *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                                                   \
-     *     i32* pItem = Arr_at(arr, 1);  // &arr.items[1]                                            \
+     *     i32* pItem = Arr_at(arr, 1);  // &arr.buf[1]                                              \
      */                                                                                              \
     comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define Arr_getAt(var_self, usize_index...)                                                          \
@@ -422,11 +422,11 @@ extern "C" {
     typedef union Arr$(N, T) Arr$(N, T)
 #define comp_type_gen__impl_Arr$(N, T) \
     struct Arr_const$(N, T) {          \
-        const T items[N];              \
+        const T buf[N];                \
     };                                 \
     union Arr$(N, T) {                 \
         struct {                       \
-            T items[N];                \
+            T buf[N];                  \
         };                             \
         Arr_const$(N, T) as_const;     \
     }
@@ -437,32 +437,32 @@ extern "C" {
     pp_join3($, Arr, N, T)
 #define comp_type_anon__Arr_const$$(N, T) \
     struct {                              \
-        const T items[N];                 \
+        const T buf[N];                   \
     }
 #define comp_type_anon__Arr$$(N, T) \
     union {                         \
         struct {                    \
-            T items[N];             \
+            T buf[N];               \
         };                          \
         Arr_const$$(N, T) as_const; \
     }
-#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
-    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                             \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                           \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                         \
-    claim_assert_static(validateField(TypeOf(*__anon), items, FieldTypeOf(T_Arr, items)));   \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_Arr, items)); \
-    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                       \
+#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                        \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                         \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                       \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                     \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(T_Arr, buf)));   \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(T_Arr, buf)); \
+    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                   \
 })
 
-#define comp_op__Arr_zero()                    { .items = { 0 } }
+#define comp_op__Arr_zero()                    { .buf = { 0 } }
 #define comp_op__Arr_zero$(T_Arr)              ((T_Arr)Arr_zero())
-#define comp_op__Arr_init(_Initial...)         { .items = _Initial }
+#define comp_op__Arr_init(_Initial...)         { .buf = _Initial }
 #define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
 
 #define comp_op__Arr_len(__self, var_self...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self;     \
-    eval_return countOf(__self->items);              \
+    eval_return countOf(__self->buf);                \
 })
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self;                          \
@@ -473,7 +473,7 @@ extern "C" {
         __index,                                                          \
         Arr_len(*__self)                                                  \
     );                                                                    \
-    eval_return rawref(__self->items[__index]);                           \
+    eval_return rawref(__self->buf[__index]);                             \
 })
 #define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
     const TypeOf(&var_self) __self = &var_self;                              \
@@ -484,7 +484,7 @@ extern "C" {
         __index,                                                             \
         Arr_len(*__self)                                                     \
     );                                                                       \
-    eval_return __self->items[__index];                                      \
+    eval_return __self->buf[__index];                                        \
 })
 #define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
     const TypeOf(&var_self) __self = &var_self;                                         \
@@ -495,7 +495,7 @@ extern "C" {
         __index,                                                                        \
         Arr_len(*__self)                                                                \
     );                                                                                  \
-    __self->items[__index] = as$(TypeOf(__self->items[0]), var_value);                  \
+    __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value);                      \
     eval_return __self;                                                                 \
 })
 
@@ -516,8 +516,8 @@ extern "C" {
     );                                                                                 \
     eval_return make$(                                                                 \
         TypeOf(__self),                                                                \
-        .items = __self->items + __range.begin,                                        \
-        .len   = Range_len(__range)                                                    \
+        .buf = __self->buf + __range.begin,                                            \
+        .len = Range_len(__range)                                                      \
     );                                                                                 \
 })
 

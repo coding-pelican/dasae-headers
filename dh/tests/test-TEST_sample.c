@@ -2,7 +2,7 @@
 #include "dh/TEST.h"
 #include <stdio.h>
 
-fn_(addInt(i32 a, i32 b), i32) {
+static fn_(addInt(i32 a, i32 b), i32) {
     return a + b;
 }
 

@@ -7,7 +7,7 @@
 #include "dh/log.h"
 
 // Function that may return an optional i32
-fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+static fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
     for_slice_indexed (items, item, index) {
         if (*item == value) {
             return_some(index); // Return optional with a value
@@ -17,7 +17,7 @@ fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
 } ext_unscoped;
 
 // Function that uses unwrap and orelse for default values
-fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
+static fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
     // unwrap() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
     let value_unsafe = unwrap(opt);
@@ -37,7 +37,7 @@ fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
 }
 
 // Function showing if_some and else_none pattern
-fn_(processOptionalValue(Opt$i32 opt), void) {
+static fn_(processOptionalValue(Opt$i32 opt), void) {
     if_some(opt, value) {
         // This block runs if opt has a value
         printf("Found value: %d\n", value);
@@ -53,7 +53,7 @@ fn_(processOptionalValue(Opt$i32 opt), void) {
 }
 
 // Example of nested optional handling
-fn_(processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner), i32) {
+static fn_(processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner), i32) {
     if_some(maybe_outer, outer) {
         if_some(maybe_inner, inner) {
             return outer + inner;
@@ -121,7 +121,7 @@ fn_ext_scope(dh_main(void), Err$void) {
     // Uncommenting this would cause an assertion failure:
     // printf("This would fail: %d\n", unwrap(opt_empty));
 
-    return_void();
+    return_ok({});
 } ext_unscoped;
 
 #if README_SAMPLE
