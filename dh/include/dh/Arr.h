@@ -441,11 +441,8 @@ extern "C" {
         const T buf[N];                   \
     }
 #define comp_type_anon__Arr$$(N, T) \
-    union {                         \
-        struct {                    \
-            T buf[N];               \
-        };                          \
-        Arr_const$$(N, T) as_const; \
+    struct {                        \
+        T buf[N];                   \
     }
 #define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                        \
     let_(__anon, TypeOf(&var_anon)) = &var_anon;                                         \

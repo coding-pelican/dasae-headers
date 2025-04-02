@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     $ignore args;
 
     printf("passed args:\n");
@@ -21,4 +21,4 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     }
 
     return_ok({});
-} ext_unscoped;
+} unscoped;

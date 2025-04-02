@@ -114,7 +114,6 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ```c
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 // Include additional headers according to needed functionality
@@ -130,9 +129,11 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 // Include string utilities for working with text
 #include "dh/Str.h"
 
-// Define the main function with extended scope and error handling
+// Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
+
     // Create a string literal using Str_l
     let hello_world = Str_l("Hello, world!");
 
@@ -141,19 +142,19 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success (void value with no error)
     return_ok({});
-} ext_unscoped; // End the extended scope block
+} unscoped; // End the scope block
 ```
 
 ### 🔍 Optional Values Example
 
 ```c
-fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     }
     return_none(); // Return with no value
-} ext_unscoped;
+} unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -190,14 +191,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(example(void), Err$void) {
+fn_scope_ext(example(void), Err$void) {
     // Allocate resources
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -222,7 +223,7 @@ fn_ext_scope(example(void), Err$void) {
 
     // Return a normally
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ### 🤝 Pattern Matching Example

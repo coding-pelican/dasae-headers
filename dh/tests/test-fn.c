@@ -1,8 +1,6 @@
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/Err.h"
 #include "dh/math.h"
-#include "dh/fn.h"
 #include "dh/Str.h"
 #include "dh/builtin/lambda.h"
 

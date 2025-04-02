@@ -1,6 +1,7 @@
 #define main_no_args (1)
 #include "dh/main.h"
 #include "dh/callback.h"
+
 #include <stdio.h>
 
 // Original function pointer
@@ -36,7 +37,7 @@ static fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
 })
 
 // Example main function showing how to use the compatibility layer
-fn_ext_scope(dh_main(void), Err$void) {
+fn_scope_ext(dh_main(void), Err$void) {
     var i32_list = type$(ArrList$$(i32), try_(ArrList_initCap(typeInfo$(i32), heap_Page_allocator(&(heap_Page){}), 8)));
     defer_(ArrList_fini(i32_list.base));
     i32_list.items.len = 8;
@@ -74,4 +75,4 @@ fn_ext_scope(dh_main(void), Err$void) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-} ext_unscoped;
+} unscoped_ext;

@@ -89,7 +89,8 @@ fn_TEST_scope("test block defer") {
 static fn_scope_ext(testBlockDeferScope(void), void) {
     defer_(recordCleanup(1));
 
-    block_defer {
+        block_defer
+    {
         defer_(recordCleanup(2));
         if (true) {
             defer_(recordCleanup(3));

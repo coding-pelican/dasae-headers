@@ -20,10 +20,6 @@
 
 #define main_no_args (1)
 #include "dh/main.h"
-#include "dh/core.h"
-
-#include "dh/opt.h"
-#include "dh/err_res.h"
 
 #include "dh/ptr.h"
 #include "dh/sli.h"

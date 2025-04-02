@@ -91,7 +91,6 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ```c
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 // 필요한 기능에 따라 추가 헤더 포함
@@ -109,7 +108,9 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
+
     // Str_l로 문자열 리터럴 생성
     let hello_world = Str_l("Hello, world!");
 
@@ -118,19 +119,19 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
-} ext_unscoped; // 확장 범위 블록 종료
+} unscoped; // 범위 블록 종료
 ```
 
 ### 🔍 Optional Values 예제
 
 ```c
-fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // 값이 있음을 반환
     }
     return_none(); // 값이 없음을 반환
-} ext_unscoped;
+} unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -167,14 +168,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // 또는 일반적으로 `use_Err$(i32)`
-fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(example(void), Err$void) {
+fn_scope_ext(example(void), Err$void) {
     // 리소스 할당
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -199,7 +200,7 @@ fn_ext_scope(example(void), Err$void) {
 
     // 정상 반환
     return_ok({});
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 🤝 Pattern Matching 예제

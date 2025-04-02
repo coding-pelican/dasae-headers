@@ -1,6 +1,6 @@
-#include "dh/list.h"
-#include "dh/TEST.h"
 #include "dh/main.h"
+#include "dh/TEST.h"
+#include "dh/list.h"
 
 use_ListSgl$(u32);
 fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
@@ -44,8 +44,7 @@ fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
         while_some(it, node) block_defer {
             defer_(index += 1, it = node->next);
             try_(TEST_expect(*node->data == index));
-        }
-        block_deferral;
+        } block_deferral;
     }
 
     $ignore ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
