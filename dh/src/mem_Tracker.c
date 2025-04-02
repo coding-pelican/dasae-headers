@@ -73,7 +73,7 @@ static $on_exit fn_(mem_Tracker_fini(void), void) {
 
 /*========== Implementation ================================================*/
 
-fn_ext_scope(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
+fn_scope_ext(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
     // Create directory if needed
     let dir_path = Str_l("log");
     try_(fs_dir_create(dir_path));
@@ -105,10 +105,10 @@ fn_ext_scope(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
     );
     $ignore fprintf(mem_Tracker_s_instance.log_file, "================================\n");
     // clang-format on
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
-fn_ext_scope(mem_Tracker_finiAndGenerateReport(void), void) {
+fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
     if (!mem_Tracker_s_instance.log_file) { return; }
 
     // clang-format off
@@ -220,7 +220,8 @@ fn_ext_scope(mem_Tracker_finiAndGenerateReport(void), void) {
     $ignore fclose(mem_Tracker_s_instance.log_file);
     mem_Tracker_s_instance.log_file    = null;
     mem_Tracker_s_instance.allocations = null;
-} ext_unscoped;
+    return_void();
+} unscoped_ext;
 
 fn_(mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc), void) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return; }

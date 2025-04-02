@@ -111,7 +111,7 @@ struct termios tetris_Console_original = cleared();
 
 /* Main Function ============================================================*/
 
-fn_ext_scope(dh_main(void), Err$void) {
+fn_scope_ext(dh_main(void), Err$void) {
     /* Initialize random number generator */
     Random_init();
 
@@ -231,12 +231,12 @@ fn_ext_scope(dh_main(void), Err$void) {
     time_sleep(time_Duration_fromMillis(2000));
 #endif
 
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
 /* Function Implementations =================================================*/
 
-static fn_ext_scope(tetris_Console_bootup(void), Err$void) {
+static fn_scope_ext(tetris_Console_bootup(void), Err$void) {
 #if bti_plat_windows
     /* Set up Windows console */
     var screen_size = tetris_screen_width * tetris_screen_height;
@@ -288,8 +288,8 @@ static fn_ext_scope(tetris_Console_bootup(void), Err$void) {
     printf("\033[2J\033[H");
 #endif
 
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
 static fn_(tetris_Console_shutdown(void), void) {
 #if bti_plat_windows
@@ -328,7 +328,7 @@ static fn_(tetris_isKeyPressed(i32 key), bool) {
 #endif /* others */
 }
 
-static fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
+static fn_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
     /* Allocate grid for field with proper type information */
     var items = try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height));
 
@@ -347,9 +347,9 @@ static fn_ext_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_P
     }
 
     return_ok({ .grid = field });
-} ext_unscoped;
+} unscoped;
 
-static fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
+static fn_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
 #if bti_plat_windows
     /* Clear screen buffer */
     for_slice (tetris_Console_screen_buffer, cell) {
@@ -460,8 +460,8 @@ static fn_ext_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i
     printf("SCORE: %8d\n", score);
 #endif /* others */
 
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;
 
 static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32) {
     i32 pi = 0;
@@ -509,7 +509,7 @@ static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetr
     return true;
 }
 
-static fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) {
+static fn_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) {
     ArrList_clearRetainingCap(lines->base);
 
     /* Check for complete lines */
@@ -555,7 +555,7 @@ static fn_ext_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList
     }
 
     return_ok(as$(i32, lines->items.len));
-} ext_unscoped;
+} unscoped;
 
 static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void) {
     for (i32 py = 0; py < 4; ++py) {

@@ -1,4 +1,5 @@
 #include "dh/fs/dir.h"
+#include "dh/io/common.h"
 
 #include <sys/stat.h>
 #include <errno.h>
@@ -11,14 +12,13 @@ force_inline i32 makeDir(Str_const path) {
 #endif
 }
 
-Err$void fs_dir_create(Str_const path) {
-    reserveReturn(Err$void);
+fn_scope(fs_dir_create(Str_const path), Err$void) {
     const bool exists = makeDir(path);
     if (exists) {
         // $ignore if directory already exists
         if (errno != EEXIST) {
-            // return_err(io_FileErr_OpenFailed());
+            return_err(io_FileErr_OpenFailed());
         }
     }
-    return_void();
-}
+    return_ok({});
+} unscoped;

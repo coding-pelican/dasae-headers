@@ -23,7 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core.h"
-#include "scope.h"
+#include "fn.h"
 #include "ptr.h"
 #include "Err.h"
 #include "ErrTrace.h"
@@ -66,8 +66,8 @@ extern "C" {
 #define catch_from(_Expr, _Payload_Capture, _Default_Or_Eval...) comp_op__catch_from(pp_uniqTok(result), _Expr, _Payload_Capture, _Default_Or_Eval)
 
 /* Defers when error */
-#define errdefer_(_Stmt...)                       comp_syn__errdefer_(_Stmt)
-#define errdefer_from(_Payload_Capture, _Stmt...) comp_syn__errdefer_from(_Payload_Capture, _Stmt)
+#define errdefer_(_Expr...)                       comp_syn__errdefer_(_Expr)
+#define errdefer_from(_Payload_Capture, _Expr...) comp_syn__errdefer_from(_Payload_Capture, _Expr)
 
 /* Error result payload captures */
 #define if_err(val_result, _Payload_Capture) comp_syn__if_err(val_result, _Payload_Capture)
@@ -85,7 +85,6 @@ typedef struct Err$Void {
     } data;
     bool is_err;
 } Err$Void, Err$void;
-#define return_void() comp_syn__return_void()
 
 /* Error result specific */
 #define use_ErrSet$(T_Err, T_Ok)  comp_type_gen__use_ErrSet$(T_Err, T_Ok)
@@ -172,17 +171,11 @@ typedef struct Err$Void {
 #define comp_op__isErr(val_result...) ((val_result).is_err)
 #define comp_op__isOk(val_result...)  (!(val_result).is_err)
 
-#define comp_syn__return_err(val_err...)           \
-    $debug_point ErrTrace_captureFrame();          \
-    scope_return((TypeOf(getReservedReturn()[0])){ \
-        .is_err   = true,                          \
-        .data.err = val_err,                       \
-    })
-#define comp_syn__return_ok(val_ok...)             \
-    scope_return((TypeOf(getReservedReturn()[0])){ \
-        .is_err  = false,                          \
-        .data.ok = val_ok,                         \
-    })
+#define comp_syn__return_err(val_err...)  \
+    $debug_point ErrTrace_captureFrame(); \
+    return_(err(val_err))
+#define comp_syn__return_ok(val_ok...) \
+    return_(ok(val_ok))
 
 #define comp_op__try_(__result, _Expr...) eval({ \
     let __result = _Expr;                        \
@@ -222,15 +215,15 @@ typedef struct Err$Void {
     eval_return ErrTrace_reset(), __result.data.ok;                                        \
 })
 
-#define comp_syn__errdefer_(_Stmt...) defer_(                   \
-    if (getReservedReturn() && getReservedReturn()[0].is_err) { \
-        _Stmt;                                                  \
-    }                                                           \
+#define comp_syn__errdefer_(_Expr...) defer_( \
+    if (__reserved_return->is_err) {          \
+        _Expr;                                \
+    }                                         \
 )
-#define comp_syn__errdefer_from(_Payload_Capture, _Stmt...) defer_( \
-    if (getReservedReturn() && getReservedReturn()[0].is_err) {     \
-        let _Payload_Capture = getReservedReturn()[0].data.err;     \
-        _Stmt;                                                      \
+#define comp_syn__errdefer_from(_Payload_Capture, _Expr...) defer_( \
+    if (__reserved_return->is_err) {                                \
+        let _Payload_Capture = __reserved_return->data.err;         \
+        _Expr;                                                      \
     }                                                               \
 )
 
@@ -249,12 +242,6 @@ typedef struct Err$Void {
 #define comp_syn__else_err(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.data.err)
 
-#define comp_syn__return_void()                    \
-    scope_return((TypeOf(getReservedReturn()[0])){ \
-        .is_err  = false,                          \
-        .data.ok = (Void){},                       \
-    })
-
 #define comp_type_gen__use_ErrSet$(T_Err, T_Ok) \
     decl_ErrSet$(T_Err, T_Ok);                  \
     impl_ErrSet$(T_Err, T_Ok)
@@ -264,25 +251,25 @@ typedef struct Err$Void {
     typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
 #define comp_type_gen__impl_ErrSet$(T_Err, T_Ok) \
     struct pp_join3($, T_Err, Ptr_const, T_Ok) { \
-        bool is_err;                             \
         union {                                  \
             T_Err err;                           \
             rawptr_const$(T_Ok) ok;              \
         } data;                                  \
+        bool is_err;                             \
     };                                           \
     struct pp_join3($, T_Err, Ptr, T_Ok) {       \
-        bool is_err;                             \
         union {                                  \
             T_Err err;                           \
             rawptr$(T_Ok) ok;                    \
         } data;                                  \
+        bool is_err;                             \
     };                                           \
     struct pp_join($, T_Err, T_Ok) {             \
-        bool is_err;                             \
         union {                                  \
             T_Err err;                           \
             T_Ok  ok;                            \
         } data;                                  \
+        bool is_err;                             \
     }
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
@@ -298,13 +285,13 @@ use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
 static fn_(safeDivide(i32 lhs, i32 rhs), $must_check math_Err$i32);
 static fn_(test(void), $must_check Err$void);
 
-static fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+static fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
-} ext_unscoped;
-static fn_ext_scope(test(void), Err$void) {
+} unscoped;
+static fn_scope(test(void), Err$void) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
     let result_handling = catch_from(safeDivide(10, 0), err, eval({
@@ -312,8 +299,8 @@ static fn_ext_scope(test(void), Err$void) {
         ErrTrace_print();
         return_err(err);
     }));
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

@@ -21,7 +21,7 @@ extern fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node),
     node->next     = some$(Opt$Ptr$ListSgl_Node, new_node);
 }
 
-extern fn_ext_scope(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node) {
+extern fn_scope(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node) {
     debug_assert_nonnull(node);
     if_none(node->next) {
         return_none();
@@ -30,7 +30,7 @@ extern fn_ext_scope(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl
     node->next      = next_node->next;
     next_node->next = none$(Opt$Ptr$ListSgl_Node);
     return_some(next_node);
-} ext_unscoped;
+} unscoped;
 
 extern fn_(ListSgl_Node_findLast(ListSgl_Node* node), ListSgl_Node*) {
     debug_assert_nonnull(node);
@@ -104,7 +104,7 @@ extern fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
     }
 }
 
-extern fn_ext_scope(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node) {
+extern fn_scope(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();
@@ -113,7 +113,7 @@ extern fn_ext_scope(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node) {
     self->first = first->next;
     first->next = none$(Opt$Ptr$ListSgl_Node);
     return_some(first);
-} ext_unscoped;
+} unscoped;
 
 extern fn_(ListSgl_len(const ListSgl* self), usize) {
     debug_assert_nonnull(self);
@@ -244,7 +244,7 @@ extern fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
     self->len--;
 }
 
-extern fn_ext_scope(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node) {
+extern fn_scope(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     debug_assert_nonnull(self);
     if_none(self->last) {
         return_none();
@@ -252,9 +252,9 @@ extern fn_ext_scope(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     var last = unwrap(self->last);
     ListDbl_remove(self, last);
     return_some(last);
-} ext_unscoped;
+} unscoped;
 
-extern fn_ext_scope(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node) {
+extern fn_scope(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();
@@ -262,7 +262,7 @@ extern fn_ext_scope(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node) {
     var first = unwrap(self->first);
     ListDbl_remove(self, first);
     return_some(first);
-} ext_unscoped;
+} unscoped;
 
 extern fn_(ListDbl_len(const ListDbl* self), usize) {
     debug_assert_nonnull(self);

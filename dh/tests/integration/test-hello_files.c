@@ -21,15 +21,15 @@ static fn_(loadFiles(void), $must_check Err$Arr_const$4$Ptr$FILE);
 
 /* definitions ==============================================================*/
 
-fn_ext_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
+fn_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
     if_(let file = fopen(as$(const char*, filename.ptr), "r"),
         file != null) {
         return_ok(file);
     }
     return_err(LoadFileErr_FailedOpenFile());
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(loadFiles(void), Err$Arr_const$4$Ptr$FILE) {
+fn_scope_ext(loadFiles(void), Err$Arr_const$4$Ptr$FILE) {
     FILE* fp1 = fopen("hello1.txt", "r");
     if (fp1 == null) {
         return_err(LoadFileErr_FailedOpenFile());
@@ -46,4 +46,4 @@ fn_ext_scope(loadFiles(void), Err$Arr_const$4$Ptr$FILE) {
     errdefer_($ignore fclose(fp4));
 
     return_ok({ fp1, fp2, fp3, fp4 });
-} ext_unscoped;
+} unscoped_ext;

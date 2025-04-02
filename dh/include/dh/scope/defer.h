@@ -24,6 +24,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#if DEPRECATED
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -120,6 +121,7 @@ extern "C" {
         }                                           \
     }
 // NOLINTEND(bugprone-terminating-continue)
+#endif // DEPRECATED
 
 #if defined(__cplusplus)
 } /* extern "C" */
