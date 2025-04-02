@@ -3,7 +3,7 @@
 #include "dh/main.h"
 
 use_ListSgl$(u32);
-fn_TEST_scope("Basic SinglyLinkedList Operations") {
+fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
     var list = type$(ListSgl$u32, ListSgl_init());
 
     try_(TEST_expect(ListSgl_len(list.base) == 0));
@@ -41,11 +41,12 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
     {
         var it    = list.first;
         u32 index = 1;
-        while_some(it, node) {
+        while_some(it, node) block_defer {
+            defer_(index += 1, it = node->next);
             try_(TEST_expect(*node->data == index));
-            index += 1;
-            it = node->next;
         }
+        block_deferral
+            ;
     }
 
     $ignore ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
@@ -61,4 +62,4 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
     try_(TEST_expect(*unwrap(list.first)->data == 4));
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 2));
     try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
-} TEST_unscoped;
+} TEST_unscoped_ext;

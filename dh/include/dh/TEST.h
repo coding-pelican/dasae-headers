@@ -49,7 +49,7 @@ use_Sli$(TEST_Case);
 /* Use array list for test cases */
 use_ArrList$(TEST_Case);
 
-/*========== externlic API ====================================================*/
+/*========== Public API =====================================================*/
 
 /// @brief Test framework structure
 typedef struct TEST_Framework {
@@ -68,20 +68,22 @@ extern fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void);
 /// @brief Run all registered tests
 extern fn_(TEST_Framework_run(void), void);
 
-/*========== Test Macros ==================================================*/
+/*========== Test Macros ====================================================*/
 
-#define TEST_only(...)          comp_syn__TEST_only(__VA_ARGS__)
-#define fn_TEST_scope(_Name...) comp_syn__fn_TEST_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
-#define TEST_unscoped           comp_syn__TEST_unscoped
+#define TEST_only(...)              comp_syn__TEST_only(__VA_ARGS__)
+#define fn_TEST_scope(_Name...)     comp_syn__fn_TEST_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
+#define TEST_unscoped               comp_syn__TEST_unscoped
+#define fn_TEST_scope_ext(_Name...) comp_syn__fn_TEST_scope_ext(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
+#define TEST_unscoped_ext           comp_syn__TEST_unscoped_ext
 
 #if !COMP_TIME
 /// @brief Check expression and record result
-extern fn_(TEST_expect(bool expr), $must_check Err$void);
+extern fn_( TEST_expect(bool expr), $must_check Err$void);
 /// @brief Same as TEST_expect but with custom message
-extern fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
+extern fn_( TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 #endif /* !COMP_TIME */
 
-/*========== Implementation Details =======================================*/
+/*========== Implementation Details ========================================*/
 
 #if TEST_comp_enabled
 #define comp_syn__TEST_only(...) __VA_ARGS__
@@ -93,8 +95,13 @@ extern fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
     TEST__binder(_ID_binder, _ID_caseFn, _Name);                  \
     TEST__caseFn(_ID_binder, _ID_caseFn)
 
+#define comp_syn__fn_TEST_scope_ext(_ID_binder, _ID_caseFn, _Name...) \
+    TEST__binder(_ID_binder, _ID_caseFn, _Name);                      \
+    TEST__caseFn_ext(_ID_binder, _ID_caseFn)
+
 #define TEST__binder(_ID_binder, _ID_caseFn, _Name...) comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name)
 #define TEST__caseFn(_ID_binder, _ID_caseFn...)        comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn)
+#define TEST__caseFn_ext(_ID_binder, _ID_caseFn...)    comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
 
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...)       \
     static fn_(_ID_caseFn(void), $must_check Err$void);                     \
@@ -115,17 +122,23 @@ extern fn_(TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 // clang-format off
 #define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \
-    static fn_scope(_ID_caseFn(void), Err$void) {                \
-        _ID_binder();                                             \
-
+    static fn_scope(_ID_caseFn(void), Err$void) {                 \
+        _ID_binder();
 #define comp_syn__TEST_unscoped \
         return_ok({});          \
     } unscoped
+
+#define comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn...) \
+    static fn_scope_ext(_ID_caseFn(void), Err$void) {            \
+        _ID_binder();
+#define comp_syn__TEST_unscoped_ext \
+        return_ok({});              \
+    } unscoped_ext
 // clang-format on
 
 #if COMP_TIME
-extern fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), $must_check Err$void);
-extern fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), $must_check Err$void);
+extern fn_( TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), $must_check Err$void);
+extern fn_( TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), $must_check Err$void);
 
 #define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), Str_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), Str_l(#_expr))

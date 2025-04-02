@@ -5,7 +5,7 @@
 #include "dh/heap/Fixed.h"
 #include "dh/mem/Allocator.h"
 
-fn_TEST_scope("Basic Allocator Reallocation Usage") {
+fn_TEST_scope_ext("Basic Allocator Reallocation Usage") {
     var buffer = Arr_zero$(Arr$$(1024, u8));
     var fixed  = heap_Fixed_init(Sli_from$(Sli$u8, buffer.items, Arr_len(buffer)));
 
@@ -32,4 +32,4 @@ fn_TEST_scope("Basic Allocator Reallocation Usage") {
     try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, sli.as_const)));
 
     for (usize i = 0; i < 10; ++i) { try_(TEST_expect(Sli_getAt(sli, i) == i)); }
-} TEST_unscoped;
+} TEST_unscoped_ext;

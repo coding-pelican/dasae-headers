@@ -58,7 +58,6 @@ fn_(ArrList_fini(ArrList* self), void) {
     mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
 }
 
-
 fn_scope(ArrList_toOwnedSli(ArrList* self), mem_Allocator_Err$meta_Sli) {
     debug_assert_nonnull(self);
 

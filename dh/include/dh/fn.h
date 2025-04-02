@@ -48,6 +48,8 @@ extern "C" {
 #define block_defer    comp_syn__block_defer
 #define block_deferral comp_syn__block_deferral
 
+#define defer_break comp_syn__defer_break
+
 /*
 #define errdefer_(_Expr...) comp_syn__errdefer_(_Expr)
  */
@@ -140,6 +142,9 @@ __step_deferred: switch (__scope_counter.current_line) {       \
         goto __step_deferred;    \
     } while (false)
 // clang-format on
+
+#define comp_syn__defer_break \
+    goto __step_deferred
 
 #define comp_syn__defer__op_snapshot(_Expr...)                            \
     {                                                                     \
