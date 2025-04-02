@@ -98,8 +98,7 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 
 fn_scope_ext(func(void), Err$void) {
     printf("func\n");
-}
-unscoped_ext;
+} unscoped_ext;
 
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     $ignore args;
@@ -116,8 +115,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     };
     printf("end\n");
     return_ok({});
-}
-unscoped_ext;
+} unscoped_ext;
 
 // Err$void dh_main(Sli$Str_const args) {
 //     const __auto_type __reserved_return = ((Err$void*)((u8[_Generic(Err$void, void: 0, default: sizeof(Err$void))]){}));
