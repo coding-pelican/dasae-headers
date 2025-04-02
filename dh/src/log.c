@@ -14,9 +14,7 @@ static log_Config log_s_config = {
     .shows_function  = true            // Show function name by default
 };
 
-io_FileErr$void log_init(const char* filename) {
-    scope_reserveReturn(io_FileErr$void);
-
+fn_scope_ext(log_init(const char* filename), io_FileErr$void) {
     // Extract directory path
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -36,20 +34,17 @@ io_FileErr$void log_init(const char* filename) {
         $ignore fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
-    return_void();
+    return_ok({});
+} unscoped_ext;
 
-        scope_returnReserved
-    ;
-}
-
-void log_initWithFile(FILE* file) {
+fn_(log_initWithFile(FILE* file), void) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
         $ignore fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
 }
 
-void log_fini(void) {
+fn_(log_fini(void), void) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
         $ignore fclose(log_s_config.output_file);
         log_s_config.output_file = stderr;

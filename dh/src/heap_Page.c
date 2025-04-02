@@ -29,7 +29,7 @@ fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
@@ -89,7 +89,7 @@ static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
         // If VirtualAlloc fails, it might be due to address collision, retry.
         // In a real-world scenario, consider adding a retry limit.
     }
-
+    return_none();
 #else  /* posix */
     let aligned_len = mem_alignForward(len, mem_page_size);
     let hint        = heap_Page_s_next_mmap_addr_hint;
@@ -118,7 +118,7 @@ static fn_ext_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
     );
     return_some(map);
 #endif /* posix */
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
@@ -182,7 +182,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
 #endif /* posix */
 }
 
-static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
+static fn_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -222,7 +222,7 @@ static fn_ext_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return_none();
 #endif /* posix */
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");

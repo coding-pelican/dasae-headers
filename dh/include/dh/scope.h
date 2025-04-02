@@ -26,8 +26,6 @@ extern "C" {
 
 #include "scope/cfg.h"
 #include "scope/common.h"
-#include "scope/return.h"
-#include "scope/defer.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

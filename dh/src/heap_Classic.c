@@ -25,7 +25,7 @@ fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_ext_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     $unused(ctx);
 
@@ -59,7 +59,7 @@ static fn_ext_scope(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Pt
 
     // Failed to allocate memory
     return_none();
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
@@ -89,7 +89,7 @@ static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_
     return false;
 }
 
-static fn_ext_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+static fn_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
@@ -147,7 +147,7 @@ static fn_ext_scope(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, us
     return new_buf;
 #endif
     return_none();
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
