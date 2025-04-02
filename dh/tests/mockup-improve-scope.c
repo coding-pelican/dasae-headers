@@ -1,6 +1,6 @@
 #include "dh/main.h"
 
-#undef return_
+/* #undef return_
 #undef comp_syn__return_
 #undef return_ok
 #undef comp_syn__return_ok
@@ -115,7 +115,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     };
     printf("end\n");
     return_ok({});
-} unscoped_ext;
+} unscoped_ext; */
 
 // Err$void dh_main(Sli$Str_const args) {
 //     const __auto_type __reserved_return = ((Err$void*)((u8[_Generic(Err$void, void: 0, default: sizeof(Err$void))]){}));

@@ -30,8 +30,8 @@ extern bool debug_isDebuggerPresent(void);
 
 #if !debug_comp_enabled
 
-#define comp_op__debug_break()    unused(0)
-#define comp_syn__debug_only(...) unused(0)
+#define comp_op__debug_break()    $unused(0)
+#define comp_syn__debug_only(...) $unused(0)
 
 #else /* debug_comp_enabled */
 

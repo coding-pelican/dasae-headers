@@ -19,6 +19,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#if DEPRECATED
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -156,6 +157,7 @@ extern "C" {
     getReservedReturn()[0] = val_return;              \
     eval_return getReservedReturn()[0];               \
 }) */
+#endif // DEPRECATED
 
 #if defined(__cplusplus)
 } /* extern "C" */

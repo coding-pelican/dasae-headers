@@ -77,7 +77,7 @@ fn_(heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf), bool)
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_ext_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -96,7 +96,7 @@ static fn_ext_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$
     // Update allocation position
     self->end_index = new_end_index;
     return_some(intToRawptr$(u8*, aligned_addr));
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
     debug_assert_nonnull(ctx);
@@ -132,7 +132,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
     return true;
 }
 
-static fn_ext_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
+static fn_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -140,7 +140,7 @@ static fn_ext_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usiz
         return_some(buf.ptr);
     }
     return_none();
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_nonnull(ctx);
@@ -164,7 +164,7 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 /*========== Thread-Safe Implementation =====================================*/
 
-static fn_ext_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -205,7 +205,7 @@ static fn_ext_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), 
         // Another thread modified end_index, try again with the new value
         end_index = expected;
     }
-} ext_unscoped;
+} unscoped;
 
 /*========== Utility Functions ==============================================*/
 

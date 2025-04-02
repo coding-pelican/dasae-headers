@@ -61,14 +61,16 @@ fn_(sort_insertionSortWithArg(
 }
 
 // TODO: 와 큰일 날 뻔... 직접적인 meta_Sli 생성은 금지해야겠다. meta_Sli_slice 함수 작성이 시급하다.
-fn_ext_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
+// clang-format off
+fn_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
     Sli$u8     temp_buf,
     meta_Sli   base_sli,
     sort_CmpFn cmpFn
 ), Err$void) {
+    // clang-format on
     if (base_sli.len <= sort_stableSort_threshold_merge_to_insertion) {
         sort_insertionSort(base_sli, cmpFn);
-        return_void();
+        return_ok({});
     }
     let base_type  = base_sli.type;
     let base_bytes = as$(u8*, base_sli.addr);
@@ -100,7 +102,7 @@ fn_ext_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
         let left_last   = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
         if (invoke(cmpFn, left_last, right_first) <= cmp_Ord_eq) {
-            return_void(); /* Already ordered, no merge needed */
+            return_ok({}); /* Already ordered, no merge needed */
         }
     }
 
@@ -141,18 +143,20 @@ fn_ext_scope(sort_mergeSortUsingTempRecur( /* NOLINT(misc-no-recursion) */
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buf.ptr;
     memcpy(base_bytes, temp_buf.ptr, total_bytes);
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;
 
-fn_ext_scope(sort_mergeSortWithArgUsingTempRecur( /* NOLINT(misc-no-recursion) */
+// clang-format off
+fn_scope(sort_mergeSortWithArgUsingTempRecur(/* NOLINT(misc-no-recursion) */
     Sli$u8            temp_buf,
     meta_Sli          base_sli,
     sort_CmpWithArgFn cmpFn,
     anyptr_const      arg
 ), Err$void) {
+    // clang-format on
     if (base_sli.len <= sort_stableSort_threshold_merge_to_insertion) {
         sort_insertionSortWithArg(base_sli, cmpFn, arg);
-        return_void();
+        return_ok({});
     }
     let base_type  = base_sli.type;
     let base_bytes = as$(u8*, base_sli.addr);
@@ -174,7 +178,7 @@ fn_ext_scope(sort_mergeSortWithArgUsingTempRecur( /* NOLINT(misc-no-recursion) *
         let left_last   = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
         if (invoke(cmpFn, left_last, right_first, arg) <= cmp_Ord_eq) {
-            return_void(); /* Already ordered, no merge needed */
+            return_ok({}); /* Already ordered, no merge needed */
         }
     }
 
@@ -215,57 +219,39 @@ fn_ext_scope(sort_mergeSortWithArgUsingTempRecur( /* NOLINT(misc-no-recursion) *
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buf.ptr;
     memcpy(base_bytes, temp_buf.ptr, total_bytes);
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;
 
-fn_ext_scope(sort_stableSort(
-    mem_Allocator allocator,
-    meta_Sli      base_sli,
-    sort_CmpFn    cmpFn
-), Err$void) {
+fn_scope_ext(sort_stableSort(mem_Allocator allocator, meta_Sli base_sli, sort_CmpFn cmpFn), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
-fn_ext_scope(sort_stableSortWithArg(
-    mem_Allocator     allocator,
-    meta_Sli          base_sli,
-    sort_CmpWithArgFn cmpFn,
-    anyptr_const      arg
-), Err$void) {
+fn_scope_ext(sort_stableSortWithArg(mem_Allocator allocator, meta_Sli base_sli, sort_CmpWithArgFn cmpFn, anyptr_const arg), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
-fn_ext_scope(sort_stableSortUsingTemp(
-    Sli$u8     temp_buf,
-    meta_Sli   base_sli,
-    sort_CmpFn cmpFn
-), Err$void) {
+fn_scope(sort_stableSortUsingTemp(Sli$u8 temp_buf, meta_Sli base_sli, sort_CmpFn cmpFn), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;
 
-fn_ext_scope(sort_stableSortWithArgUsingTemp(
-    Sli$u8            temp_buf,
-    meta_Sli          base_sli,
-    sort_CmpWithArgFn cmpFn,
-    anyptr_const      arg
-), Err$void) {
+fn_scope(sort_stableSortWithArgUsingTemp(Sli$u8 temp_buf, meta_Sli base_sli, sort_CmpWithArgFn cmpFn, anyptr_const arg), Err$void) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
         return_err(mem_Allocator_Err_OutOfMemory());
     }
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped;

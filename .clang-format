@@ -205,8 +205,12 @@ Macros:
   - "else_err(_)=else if (_)"
   # Scope
   - block_deferral=/**/ # block_defer
+  - "fn_(name_with_params,return_type)=return_type name_with_params"
+  - "fn_scope(name_with_params,return_type)=return_type name_with_params"
   - unscoped=/**/ # fn_scope
+  - "fn_scope_ext(name_with_params,return_type)=return_type name_with_params"
   - unscoped_ext=/**/ # fn_scope_ext
+  - "fn_TEST_scope(name)=Err$void TEST_caseFn(void)"
   - TEST_unscoped=/**/ # fn_TEST_scope
   # Eval
   - "eval_(_)=({ _; })"
@@ -262,7 +266,8 @@ StatementAttributeLikeMacros:
 WhitespaceSensitiveMacros:
   - with_
   - fn_
-  - fn_ext_scope
+  - fn_scope
+  - fn_scope_ext
   - config_ErrSet
   - return_err
   - return_ok
