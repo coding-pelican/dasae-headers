@@ -152,7 +152,7 @@ ArrList_fini(list.base);
 #include "dh/main.h"
 #include "dh/ArrList.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     // Initialize array list
     ArrList$i32 list = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -184,13 +184,13 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     printf("\n");
 
     return_ok({});
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### Dynamic Collection
 
 ```c
-fn_ext_scope(processDynamicData(Sli$i32 input), Err$Sli$i32) {
+fn_scope_ext(processDynamicData(Sli$i32 input), Err$Sli$i32) {
     // Initialize with allocator
     ArrList$i32 results = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -210,7 +210,7 @@ fn_ext_scope(processDynamicData(Sli$i32 input), Err$Sli$i32) {
     // Convert to owned slice and return (caller takes ownership)
     meta_Sli owned = try_(ArrList_toOwnedSli(results.base));
     return_ok(meta_cast$(Sli$i32, owned));
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ## API Reference

@@ -144,7 +144,7 @@ Sli$i32 suffix = Arr_suffix(arr, 1);  // Last 2 elements
 #include "dh/main.h"
 #include "dh/Arr.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // Declare and initialize a fixed-size array
     Arr$(3, i32) numbers = Arr_init({ 10, 20, 30 });
 
@@ -173,7 +173,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     printf("\n");
 
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ## API Reference

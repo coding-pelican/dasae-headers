@@ -90,10 +90,10 @@ Unlike standard C, dasae-headers provides a structured entry point with built-in
 ```c
 #include "dh/main.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // Your code here
     return_ok({});  // Return success
-} ext_unscoped;
+} unscoped;
 ```
 
 ## First Program
@@ -104,7 +104,7 @@ Let's create a simple "Hello, world!" program using dasae-headers:
 #include "dh/main.h"
 #include "dh/Str.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // Create a string literal
     let hello = Str_l("Hello, dasae-headers!");
 
@@ -113,12 +113,12 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ### Key Features in This Example
 
-1. `fn_ext_scope` - Function with extended scope for resource cleanup
+1. `fn_scope` - Function with extended scope for return payload
 2. `Sli$Str_const` - Slice of constant strings (command-line arguments)
 3. `Err$void` - Error result type with void payload
 4. `let` - Type inference for variable declaration
@@ -129,14 +129,22 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
 ### Variable Declaration
 
-dasae-headers provides two ways to declare variables:
+dasae-headers provides both traditional C-style and modern type inference approaches for variable declaration:
 
 ```c
-// Type inference (immutable by default)
-let count = 10;  // i32 inferred
+// Basic form (immutable)
+const i32 count = 10;
+// Type inference (immutable)
+let count = 10;  // const i32 inferred
+// Type specified (immutable)
+let_(count, i32) = 10; // const i32
 
-// Explicit type (mutable)
-var number = 42;  // Explicitly mutable
+// Basic form (mutable)
+i32 number = 42;
+// Type inference (mutable)
+var number = 42;  // i32 inferred
+// Type specified (mutable)
+var_(number, i32) = 42; // i32
 ```
 
 ### Memory Safety with defer
@@ -144,7 +152,7 @@ var number = 42;  // Explicitly mutable
 Automatic resource cleanup using `defer`:
 
 ```c
-fn_ext_scope(readFile(Str_const path), Err$Str) {
+fn_scope_ext(readFile(Str_const path), Err$Str) {
     let_(file, FILE*) = fopen(path.ptr, "r");
     if (file == null) {
         return_err(fileError("Could not open file"));
@@ -156,7 +164,7 @@ fn_ext_scope(readFile(Str_const path), Err$Str) {
     // Process file...
 
     return_ok(fileContents);
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### Error Handling
@@ -164,14 +172,14 @@ fn_ext_scope(readFile(Str_const path), Err$Str) {
 Explicit error handling with the `try_` pattern:
 
 ```c
-fn_ext_scope(processData(void), Err$void) {
+fn_scope(processData(void), Err$void) {
     // Call function that may fail and propagate error
     let result = try_(getData());
 
     // Process result...
 
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ### Optional Types
@@ -179,14 +187,14 @@ fn_ext_scope(processData(void), Err$void) {
 Safe handling of nullable values:
 
 ```c
-fn_ext_scope(findUser(i32 id), Opt$User) {
+fn_scope(findUser(i32 id), Opt$User) {
     if (id <= 0) {
         return_none();  // No user found
     }
 
     User user = getUserById(id);
     return_some(user);  // User found
-} ext_unscoped;
+} unscoped;
 
 // Usage
 if_some(findUser(42), user) {

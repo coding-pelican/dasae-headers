@@ -152,7 +152,7 @@ ArrList_fini(list.base);
 #include "dh/main.h"
 #include "dh/ArrList.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     // 배열 리스트 초기화
     ArrList$i32 list = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -184,13 +184,13 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
     printf("\n");
 
     return_ok({});
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 동적 컬렉션
 
 ```c
-fn_ext_scope(processDynamicData(Sli$i32 input), Err$Sli$i32) {
+fn_scope_ext(processDynamicData(Sli$i32 input), Err$Sli$i32) {
     // 할당자로 초기화
     ArrList$i32 results = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -210,7 +210,7 @@ fn_ext_scope(processDynamicData(Sli$i32 input), Err$Sli$i32) {
     // 소유권 있는 슬라이스로 변환하고 반환 (호출자가 소유권 가짐)
     meta_Sli owned = try_(ArrList_toOwnedSli(results.base));
     return_ok(meta_cast$(Sli$i32, owned));
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ## API 참조

@@ -204,8 +204,8 @@ Macros:
   - "else_void=else"
   - "else_err(_)=else if (_)"
   # Scope
-  - "block_defer=do"
-  - "block_deferral=while (false)"
+  - block_defer=/**/
+  - block_deferral=/**/
   - defer_break=break
   - "fn_(name_with_params,return_type)=return_type name_with_params"
   - "fn_scope(name_with_params,return_type)=return_type name_with_params"

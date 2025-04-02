@@ -90,10 +90,10 @@ my-project/
 ```c
 #include "dh/main.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // 코드 작성
     return_ok({});  // 성공 리턴
-} ext_unscoped;
+} unscoped;
 ```
 
 ## 첫 번째 프로그램
@@ -104,7 +104,7 @@ dasae-headers를 사용한 간단한 "Hello, world!" 프로그램을 만들어 �
 #include "dh/main.h"
 #include "dh/Str.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // 문자열 리터럴 생성
     let hello = Str_l("Hello, dasae-headers!");
 
@@ -113,12 +113,12 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // 성공 리턴
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ### 이 예제의 주요 기능
 
-1. `fn_ext_scope` - 리소스 정리를 위한 확장 범위 함수
+1. `fn_scope` - 페이로드 반환 타입을 위한 확장 범위 함수
 2. `Sli$Str_const` - 상수 문자열의 슬라이스 (명령줄 인수)
 3. `Err$void` - void 페이로드가 있는 오류 결과 타입
 4. `let` - 변수 선언을 위한 타입 추론
@@ -129,14 +129,22 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
 ### 변수 선언
 
-dasae-headers는 변수를 선언하는 두 가지 방법을 제공합니다:
+dasae-headers는 변수를 선언할 때 기본 C 스타일과 현대적인 타입 추론 방식을 모두 제공합니다:
 
 ```c
-// 타입 추론 (기본적으로 불변)
-let count = 10;  // i32로 추론됨
+// 기본형 (불변)
+const i32 count = 10;
+// 타입 추론 (불변)
+let count = 10;  // const i32로 추론됨
+// 타입 명시 (불변)
+let_(count, i32) = 10; // const i32
 
-// 명시적 타입 (가변)
-var number = 42;  // 명시적으로 가변
+// 기본형 (가변)
+i32 number = 42;
+// 타입 추론 (가변)
+var number = 42;  // i32로 추론됨
+// 타입 명시 (가변)
+var_(number, i32) = 42; // i32
 ```
 
 ### defer를 통한 메모리 안전성
@@ -144,7 +152,7 @@ var number = 42;  // 명시적으로 가변
 `defer`를 사용한 자동 리소스 정리:
 
 ```c
-fn_ext_scope(readFile(Str_const path), Err$Str) {
+fn_scope_ext(readFile(Str_const path), Err$Str) {
     let_(file, FILE*) = fopen(path.ptr, "r");
     if (file == null) {
         return_err(fileError("파일을 열 수 없습니다"));
@@ -156,7 +164,7 @@ fn_ext_scope(readFile(Str_const path), Err$Str) {
     // 파일 처리...
 
     return_ok(fileContents);
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 오류 처리
@@ -164,14 +172,14 @@ fn_ext_scope(readFile(Str_const path), Err$Str) {
 `try_` 패턴을 사용한 명시적 오류 처리:
 
 ```c
-fn_ext_scope(processData(void), Err$void) {
+fn_scope(processData(void), Err$void) {
     // 실패할 수 있는 함수 호출 및 오류 전파
     let result = try_(getData());
 
     // 결과 처리...
 
     return_ok({});
-} ext_unscoped;
+} unscoped;
 ```
 
 ### 옵셔널 타입
@@ -179,14 +187,14 @@ fn_ext_scope(processData(void), Err$void) {
 널 값을 안전하게 처리:
 
 ```c
-fn_ext_scope(findUser(i32 id), Opt$User) {
+fn_scope(findUser(i32 id), Opt$User) {
     if (id <= 0) {
         return_none();  // 사용자를 찾을 수 없음
     }
 
     User user = getUserById(id);
     return_some(user);  // 사용자를 찾음
-} ext_unscoped;
+} unscoped;
 
 // 사용법
 if_some(findUser(42), user) {

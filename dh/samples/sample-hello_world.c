@@ -3,9 +3,9 @@
 // Include string utilities for working with text
 #include "dh/Str.h"
 
-// Define the main function with extended scope and error handling
+// Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
     $ignore args;
 
     // Create a string literal using Str_l
@@ -16,4 +16,4 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success (void value with no error)
     return_ok({});
-} ext_unscoped; // End the extended scope block
+} unscoped; // End the scope block

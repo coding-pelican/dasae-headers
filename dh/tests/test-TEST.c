@@ -1,6 +1,8 @@
 #include "dh/main.h"
 #include "dh/TEST.h"
 
+#include <stdio.h>
+
 /// Basic tests demonstrating the framework's features
 fn_TEST_scope("Basic Math Operations") {
     // Simple boolean condition

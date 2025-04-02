@@ -1,4 +1,3 @@
-#include "dh/core.h"
 #include "dh/main.h"
 #include "dh/log.h"
 

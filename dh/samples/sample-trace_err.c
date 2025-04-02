@@ -1,24 +1,22 @@
 #define main_no_args (1)
 #include "dh/main.h"
-#include "dh/core.h"
-#include "dh/err_res.h"
 
-static fn_ext_scope(alwaysFailure(void), Err$void) {
+static fn_scope(alwaysFailure(void), Err$void) {
     return_err(Err_Unexpected());
-} ext_unscoped;
+} unscoped;
 
-static fn_ext_scope(func3(void), Err$void) {
+static fn_scope(func3(void), Err$void) {
     return_ok(try_(alwaysFailure()));
-} ext_unscoped;
+} unscoped;
 
-static fn_ext_scope(func2(void), Err$void) {
+static fn_scope(func2(void), Err$void) {
     return_ok(try_(func3()));
-} ext_unscoped;
+} unscoped;
 
-static fn_ext_scope(func1(void), Err$void) {
+static fn_scope(func1(void), Err$void) {
     return_ok(try_(func2()));
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(dh_main(void), Err$void) {
+fn_scope(dh_main(void), Err$void) {
     return_ok(try_(func1()));
-} ext_unscoped;
+} unscoped;
