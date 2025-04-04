@@ -223,7 +223,7 @@ fn_scope_ext(example(void), Err$void) {
 
     // Return a normally
     return_ok({});
-} unscoped;
+} unscoped_ext;
 ```
 
 ### 🤝 Pattern Matching Example
