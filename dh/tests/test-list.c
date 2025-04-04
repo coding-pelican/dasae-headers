@@ -4,30 +4,15 @@
 
 use_ListSgl$(u32);
 fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
-    var list = type$(ListSgl$u32, ListSgl_init());
+    var_type(list, ListSgl$u32, ListSgl_init());
 
     try_(TEST_expect(ListSgl_len(list.base) == 0));
 
-    var one = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 1))
-    );
-    var two = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 2))
-    );
-    var three = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 3))
-    );
-    var four = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 4))
-    );
-    var five = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 5))
-    );
+    var_type(one, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 1)));
+    var_type(two, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 2)));
+    var_type(three, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 3)));
+    var_type(four, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 4)));
+    var_type(five, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 5)));
 
     ListSgl_prepend(list.base, two.base);            // {2}
     ListSgl_Node_insertAfter(two.base, five.base);   // {2, 5}

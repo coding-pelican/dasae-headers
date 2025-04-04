@@ -79,11 +79,11 @@ fn_scope_ext(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
     try_(fs_dir_create(dir_path));
 
     // Open log file
-    Arr$$(256, u8) path_buf = Arr_zero();
-    mem_copy(path_buf.items, log_path.ptr, log_path.len);
-    Arr_setAt(path_buf, log_path.len, '\0');
+    Arr$$(256, u8) path_str = Arr_zero();
+    mem_copy(path_str.buf, log_path.ptr, log_path.len);
+    Arr_setAt(path_str, log_path.len, '\0');
 
-    let log_file = fopen(as$(const char*, path_buf.items), "w");
+    let log_file = fopen(as$(const char*, path_str.buf), "w");
     if (!log_file) { return_err(io_FileErr_OpenFailed()); }
     errdefer_($ignore fclose(log_file));
 
