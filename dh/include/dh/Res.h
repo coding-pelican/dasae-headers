@@ -58,7 +58,7 @@ extern "C" {
     decl_Res$(T_First, T_Second);                  \
     impl_Res$(T_First, T_Second)
 #define comp_type_gen__decl_Res$(T_First, T_Second) \
-    typedef struct Res$(T_First, T_Second)
+    typedef struct Res$(T_First, T_Second) Res$(T_First, T_Second)
 #define comp_type_gen__impl_Res$(T_First, T_Second) \
     struct Res$(T_First, T_Second) {                \
         union {                                     \
@@ -69,7 +69,7 @@ extern "C" {
     }
 
 #define comp_type_alias__Res$(T_First, T_Second) \
-    pp_join3($, Res, pp_cat(1, T_First), pp_cat(2, T_Second))
+    pp_cat3(Res, pp_cat3($, 1, T_First), pp_cat3($, 2, T_Second))
 #define comp_type_anon__Res$$(T_First, T_Second) \
     struct {                                     \
         union {                                  \
