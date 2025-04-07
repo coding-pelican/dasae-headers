@@ -174,9 +174,7 @@ TypeNames:
   - Sli_const$$
   - Sli$$
   # Array
-  - Arr_const$
   - Arr$
-  - Arr_const$$
   - Arr$$
   # Optional value
   - Opt$

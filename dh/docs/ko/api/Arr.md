@@ -2,8 +2,8 @@
 title: 고정 크기 배열 (Arr)
 description: 경계 검사를 갖춘 타입 안전 고정 크기 배열을 제공하는 Arr 모듈에 대한 문서
 created: 2025-04-01
-updated: 2025-04-01
-version: v0.1
+updated: 2025-04-07
+version: v0.1.1
 target_version: pre-alpha
 ---
 
@@ -17,7 +17,6 @@ target_version: pre-alpha
 
 - 컴파일 타임 크기 및 요소 타입 검사
 - 디버그 모드에서 자동 경계 검사
-- 상수(불변) 및 가변 배열 변형
 - 풍부한 슬라이싱 연산
 - 편리한 반복 패턴
 - 릴리스 빌드에서 제로 오버헤드 추상화
@@ -42,11 +41,8 @@ impl_Arr$(4, f32);
 ### 타입 별칭
 
 ```c
-// 상수(불변) 배열 타입 생성
-Arr_const$(3, i32) constArr;  // 3개 정수의 상수 배열
-
-// 가변 배열 타입 생성
-Arr$(5, f32) arr;  // 5개 부동 소수점의 가변 배열
+// 배열 타입 생성
+Arr$(5, f32) arr;  // [5]f32 배열 타입
 
 // 타입정의용 (익명 배열 타입)
 typedef Arr$$(4, u8) ByteQuad;  // 4바이트 배열을 위한 타입 정의
@@ -186,10 +182,8 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
 ### 타입 별칭
 
-- `Arr_const$(N, T)` - T 타입의 N개 요소를 가진 상수 배열 타입 생성
-- `Arr$(N, T)` - T 타입의 N개 요소를 가진 가변 배열 타입 생성
-- `Arr_const$$(N, T)` - 익명 상수 배열 타입 생성
-- `Arr$$(N, T)` - 익명 가변 배열 타입 생성
+- `Arr$(N, T)` - T 타입의 N개 요소를 가진 배열 타입 생성
+- `Arr$$(N, T)` - T 타입의 N개 요소를 가진 익명 배열 타입 생성
 - `Arr_anonCast$(T_Arr, var_anon...)` - 익명 배열을 특정 타입으로 변환
 
 ### 초기화

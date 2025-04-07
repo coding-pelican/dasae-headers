@@ -301,7 +301,7 @@ static fn_(tetris_Console_shutdown(void), void) {
 static fn_(tetris_isKeyPressed(i32 key), bool) {
 #if bti_plat_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
-    static const Arr_const$$(5, i8) s_key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
+    static const Arr$$(5, i8) s_key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
     return (GetAsyncKeyState(Arr_getAt(s_key_map, key)) & 0x8000) != 0;
 #else  /* others */
     /* Non-blocking read from stdin */
