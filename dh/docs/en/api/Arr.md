@@ -2,8 +2,8 @@
 title: Fixed-Size Arrays (Arr)
 description: Documentation for the Arr module that provides type-safe fixed-size arrays with bounds checking
 created: 2025-04-01
-updated: 2025-04-01
-version: v0.1
+updated: 2025-04-07
+version: v0.1.1
 target_version: pre-alpha
 ---
 
@@ -17,7 +17,6 @@ The `Arr` module provides type-safe fixed-size arrays with bounds checking and c
 
 - Compile-time size and element type checking
 - Automatic bounds checking in debug mode
-- Constant (immutable) and mutable array variants
 - Rich slicing operations
 - Convenient iteration patterns
 - Zero-overhead abstraction in release builds
@@ -42,11 +41,8 @@ impl_Arr$(4, f32);
 ### Type Aliases
 
 ```c
-// Create a constant (immutable) array type
-Arr_const$(3, i32) constArr;  // Constant array of 3 integers
-
-// Create a mutable array type
-Arr$(5, f32) arr;  // Mutable array of 5 floats
+// Create an array type
+Arr$(5, f32) arr;  // [5]f32 array type
 
 // For typedefs (anonymous array types)
 typedef Arr$$(4, u8) ByteQuad;  // Type definition for a 4-byte array
@@ -186,10 +182,8 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
 ### Type Aliases
 
-- `Arr_const$(N, T)` - Create a constant array type with N elements of type T
-- `Arr$(N, T)` - Create a mutable array type with N elements of type T
-- `Arr_const$$(N, T)` - Create anonymous constant array type
-- `Arr$$(N, T)` - Create anonymous mutable array type
+- `Arr$(N, T)` - Create an array type with N elements of type T
+- `Arr$$(N, T)` - Create an anonymous array type with N elements of type T
 - `Arr_anonCast$(T_Arr, var_anon...)` - Convert anonymous array to specific type
 
 ### Initialization

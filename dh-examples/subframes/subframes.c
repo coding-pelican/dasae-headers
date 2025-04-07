@@ -58,7 +58,7 @@ use_ArrList$(Color);
  * World Space Size = Window Resolution Size (dimensions correspond to units of physical screen size)
  */
 
-fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive-complexity) */
+fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive-complexity) */
     Random_init();
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -222,7 +222,7 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             log_debug("esc pressed");
         }
 
-        with_(const Arr_const$$(2, bool) left_space = {
+        with_(let_(left_space, Arr$$(2, bool))  = {
             engine_Mouse_held(&input->mouse, engine_MouseButton_left),
             engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
         }) {
@@ -378,5 +378,5 @@ fn_ext_scope(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         }
         time_frame_prev = time_frame_curr;
     }
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
