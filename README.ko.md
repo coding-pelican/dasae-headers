@@ -10,9 +10,9 @@
   </div>
 
   <div style="margin-top: 8px;">
-    <img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS">
-    <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT">
+    <a href="https://en.wikipedia.org/wiki/C17_(C_standard_revision)"><img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17"></a>
+    <a href="./dh/include/dh/builtin/plat_cfg.h"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT"></a>
   </div>
 </div>
 
@@ -308,4 +308,4 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 
 이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
 
-Copyright © 2024-2025 Gyeongtae Kim. All rights reserved.
+Copyright © 2024-2025 Gyeongtae Kim
