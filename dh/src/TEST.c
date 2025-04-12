@@ -88,21 +88,23 @@ fn_(TEST_Framework_run(void), void) {
 }
 
 /* Debug versions of test functions */
-fn_ext_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) {
-    $unused(loc);
-    $unused(expr_str);
-    if (!expr) {
-        return_err(Err_InvalidArgument());
-    }
-    return_ok({});
-} ext_unscoped;
+fn_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) {
+    $ignore loc;
+    $ignore expr_str;
 
-fn_ext_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) {
-    $unused(msg);
-    $unused(loc);
-    $unused(expr_str);
     if (!expr) {
         return_err(Err_InvalidArgument());
     }
     return_ok({});
-} ext_unscoped;
+} unscoped;
+
+fn_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) {
+    $ignore msg;
+    $ignore loc;
+    $ignore expr_str;
+
+    if (!expr) {
+        return_err(Err_InvalidArgument());
+    }
+    return_ok({});
+} unscoped;

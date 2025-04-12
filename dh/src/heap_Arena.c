@@ -14,7 +14,7 @@ static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 // Internal helper functions
 static fn_(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size), Opt$Ptr$ListSgl_Node$usize);
 
-pub fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena) {
+extern fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena) {
     debug_assert_nonnull(self);
     return (heap_Arena){
         .child_allocator = child_allocator,
@@ -22,7 +22,7 @@ pub fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_all
     };
 }
 
-pub fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator) {
+extern fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator) {
     debug_assert_nonnull(self);
     /* VTable for Arena allocator */
     static const mem_Allocator_VT vt[1] = { {
@@ -37,7 +37,7 @@ pub fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator) {
     };
 }
 
-pub fn_(heap_Arena_init(mem_Allocator child_allocator), heap_Arena) {
+extern fn_(heap_Arena_init(mem_Allocator child_allocator), heap_Arena) {
     return (heap_Arena){
         .child_allocator = child_allocator,
 
@@ -48,7 +48,7 @@ pub fn_(heap_Arena_init(mem_Allocator child_allocator), heap_Arena) {
     };
 }
 
-pub fn_(heap_Arena_fini(heap_Arena self), void) {
+extern fn_(heap_Arena_fini(heap_Arena self), void) {
     // Free all buffers in the list
     var it = self.state.buffer_list.first;
     while_some(it, node) {
@@ -60,7 +60,7 @@ pub fn_(heap_Arena_fini(heap_Arena self), void) {
     }
 }
 
-pub fn_(heap_Arena_queryCap(const heap_Arena* self), usize) {
+extern fn_(heap_Arena_queryCap(const heap_Arena* self), usize) {
     debug_assert_nonnull(self);
     usize size = 0;
     var   it   = self->state.buffer_list.first;
@@ -72,7 +72,7 @@ pub fn_(heap_Arena_queryCap(const heap_Arena* self), usize) {
     return size;
 }
 
-pub fn_ext_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), bool) {
+extern fn_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), bool) {
     debug_assert_nonnull(self);
 
     // Calculate requested capacity based on mode
@@ -146,11 +146,11 @@ pub fn_ext_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), 
     }
 
     return_(true);
-} ext_unscoped;
+} unscoped;
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_ext_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -192,7 +192,7 @@ static fn_ext_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$
             cur_node = orelse(heap_Arena_createNode(self, cur_buf_len, len + ptr_align), eval({ return_none(); }));
         }
     }
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
     debug_assert_nonnull(ctx);
@@ -228,12 +228,12 @@ static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
     return false;
 }
 
-static fn_ext_scope(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
+static fn_scope(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
     if (heap_Arena_resize(ctx, buf, buf_align, new_size)) {
         return_some(buf.ptr);
     }
     return_none();
-} ext_unscoped;
+} unscoped;
 
 static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_nonnull(ctx);
@@ -256,7 +256,7 @@ static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 /*========== Internal Helper Functions =====================================*/
 
-static fn_ext_scope(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size), Opt$Ptr$ListSgl_Node$usize) {
+static fn_scope(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size), Opt$Ptr$ListSgl_Node$usize) {
     debug_assert_nonnull(self);
 
     // Calculate new buffer size with exponential growth
@@ -272,4 +272,4 @@ static fn_ext_scope(heap_Arena_createNode(heap_Arena* self, usize prev_len, usiz
     self->state.end_index = 0;
 
     return_some(node);
-} ext_unscoped;
+} unscoped;

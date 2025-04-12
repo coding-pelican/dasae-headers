@@ -17,6 +17,9 @@ extern "C" {
 #define var_(_identifier, T...) comp_syn__var_(_identifier, T)
 #define let_(_identifier, T...) comp_syn__let_(_identifier, T)
 
+#define var_type(_identifier, T, _Expr...) comp_syn__var_type(_identifier, T, _Expr)
+#define let_type(_identifier, T, _Expr...) comp_syn__let_type(_identifier, T, _Expr)
+
 /*========== Macros and Implementations =====================================*/
 
 #if defined(__cplusplus)
@@ -53,6 +56,9 @@ extern "C" {
 
 #define comp_syn__var_(_identifier, T...) T _identifier
 #define comp_syn__let_(_identifier, T...) T const _identifier
+
+#define comp_syn__var_type(_identifier, T, _Expr...) T _identifier = type$(T, _Expr)
+#define comp_syn__let_type(_identifier, T, _Expr...) T const _identifier = type$(T, _Expr)
 
 #if defined(__cplusplus)
 } /* extern "C" */

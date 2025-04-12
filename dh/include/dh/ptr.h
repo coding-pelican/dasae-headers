@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    ptr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -39,7 +40,7 @@ typedef anyptr       Ptr;
 #define Ptr_const$$(T) comp_type_raw__Ptr_const$$(T)
 #define Ptr$$(T)       comp_type_raw__Ptr$$(T)
 
-pub fn_(Ptr_constCastable(anyptr_const ptr), bool);
+extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
 #define Ptr_constCast(var_ptr... /* Opt$Ptr$T */)         comp_op__Ptr_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
 #define Ptr_constCast$(T_Ptr, var_ptr... /* Opt$T_Ptr */) comp_op__Ptr_constCast$(pp_uniqTok(ptr), pp_uniqTok(ret), T_Ptr, var_ptr)
 

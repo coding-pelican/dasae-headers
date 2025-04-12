@@ -1,16 +1,12 @@
 #define main_no_args (1)
 #include "dh/main.h"
-
-#include "dh/core.h"
 #include "dh/sli.h"
 
-
 static fn_(slice_example(void), void);
-fn_ext_scope(dh_main(void), Err$void) {
+fn_scope(dh_main(void), Err$void) {
     slice_example();
     return_ok({});
-} ext_unscoped;
-
+} unscoped;
 
 decl_Sli$(u8);
 decl_Sli$(i32);

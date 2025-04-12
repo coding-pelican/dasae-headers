@@ -1,11 +1,12 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-13 (date of creation)
- * @updated 2025-01-13 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-04-02 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/scope
  * @prefix  scope
  *
@@ -23,12 +24,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-
-/*========== Macros and Definitions =========================================*/
-
-#if !defined(SCOPE_RESERVE_RETURN_NO_CONTAINS_DEFER)
-#define SCOPE_RESERVE_RETURN_CONTAINS_DEFER (1)
-#endif /* !defined(SCOPE_RESERVE_RETURN_NO_CONTAIN_DEFER) */
 
 #if defined(__cplusplus)
 }

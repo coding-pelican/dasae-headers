@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    opt.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -22,7 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "core.h"
-#include "scope.h"
+#include "fn.h"
 #include "ptr.h"
 
 /*========== Definitions ====================================================*/
@@ -132,15 +133,8 @@ extern "C" {
 #define comp_op__isSome(val_opt...) ((val_opt).has_value)
 #define comp_op__isNone(val_opt...) (!(val_opt).has_value)
 
-#define comp_syn__return_some(val_some...)         \
-    scope_return((TypeOf(getReservedReturn()[0])){ \
-        .has_value = true,                         \
-        .value     = val_some,                     \
-    })
-#define comp_syn__return_none()                    \
-    scope_return((TypeOf(getReservedReturn()[0])){ \
-        .has_value = false,                        \
-    })
+#define comp_syn__return_some(val_some...) return_(some(val_some))
+#define comp_syn__return_none()            return_(none())
 
 #define comp_op__unwrap(_Expr...)                             orelse(_Expr, claim_unreachable)
 #define comp_op__orelse(__result, _Expr, _Default_Or_Eval...) eval({ \

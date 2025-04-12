@@ -1,7 +1,10 @@
-#include "dh/core.h"
+#include "dh/main.h"
 #include "dh/Arr.h"
 #include "dh/Str.h"
+
 #include <stdio.h>
+
+/* declarations =============================================================*/
 
 use_Ptr$(FILE);
 use_Sli$(Ptr$FILE);
@@ -12,19 +15,21 @@ config_ErrSet(LoadFileErr,
 );
 
 use_Err$(Ptr$FILE);
-pvt fn_(loadFile(Str_const filename),must_check Err$Ptr$FILE);
-use_Err$(Arr_const$4$Ptr$FILE);
-pvt fn_(loadFiles(void), $must_check Err$Arr_const$4$Ptr$FILE);
+static fn_(loadFile(Str_const filename), $must_check Err$Ptr$FILE);
+use_Err$(Arr$4$Ptr$FILE);
+static fn_(loadFiles(void), $must_check Err$Arr$4$Ptr$FILE);
 
-fn_ext_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
+/* definitions ==============================================================*/
+
+fn_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
     if_(let file = fopen(as$(const char*, filename.ptr), "r"),
         file != null) {
         return_ok(file);
     }
     return_err(LoadFileErr_FailedOpenFile());
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(loadFiles(void), Err$Arr_const$4$Ptr$FILE) {
+fn_scope_ext(loadFiles(void), Err$Arr$4$Ptr$FILE) {
     FILE* fp1 = fopen("hello1.txt", "r");
     if (fp1 == null) {
         return_err(LoadFileErr_FailedOpenFile());
@@ -41,4 +46,13 @@ fn_ext_scope(loadFiles(void), Err$Arr_const$4$Ptr$FILE) {
     errdefer_($ignore fclose(fp4));
 
     return_ok({ fp1, fp2, fp3, fp4 });
-} ext_unscoped;
+} unscoped_ext;
+
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
+    let files = try_(loadFiles());
+    for_array (files, file) {
+        $ignore fclose(*file);
+    }
+    return_ok({});
+} unscoped;

@@ -1,13 +1,14 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
- * @file    template_test.c
+ * @file    template_test.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v1.0.2
- * @ingroup UNIT_TEST_IMPLEMENTATION
- * @prefix  TEST
+ * @updated 2025-04-01 (date of last update)
+ * @version v1.0.3
+ * @ingroup dasae-headers(dh)/test
+ * @prefix  NONE
  *
  * @brief   Test header of the some module
  * @details TODO
@@ -22,6 +23,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 /*========== Unit Testing Framework Directives ==============================*/
+
+/*========== Macros and Declarations ========================================*/
 
 /*========== Macros and Definitions =========================================*/
 
