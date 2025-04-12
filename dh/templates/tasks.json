@@ -1,0 +1,170 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    { /* compiler */
+      "id": "compiler",
+      "type": "pickString",
+      "description": "Select compiler",
+      "options": [
+        "clang"
+      ],
+      "default": "clang"
+    },
+    { /* cStandard */
+      "id": "cStandard",
+      "type": "pickString",
+      "description": "Select C standard",
+      "options": [
+        "c17",
+        "c11",
+        "c99"
+      ],
+      "default": "c17"
+    },
+    { /* buildConfig */
+      "id": "buildConfig",
+      "type": "pickString",
+      "description": "Select build configuration",
+      "options": [
+        "dev",
+        "test",
+        "profile",
+        "release",
+        "performance",
+        "embedded",
+        "micro"
+      ],
+      "default": "dev"
+    },
+    { /* noLibDh */
+      "id": "noLibDh",
+      "type": "pickString",
+      "description": "Skip DH library usage?",
+      "options": [
+        "",
+        "--no-libdh"
+      ],
+      "default": ""
+    },
+    { /* runArgs */
+      "id": "runArgs",
+      "type": "promptString",
+      "description": "Arguments to pass to the program",
+      "default": ""
+    }
+  ],
+  "tasks": [
+    { /* create workspace */
+      "label": "dh>create workspace",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "workspace",
+        "${input:prompt:Enter workspace name:}"
+      ],
+      "problemMatcher": []
+    },
+    { /* create project */
+      "label": "dh>create project",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "project",
+        "${input:prompt:Enter project name:}"
+      ],
+      "problemMatcher": []
+    },
+    { /* build current file */
+      "label": "dh>build current file",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "build",
+        "${input:buildConfig}",
+        "${file}",
+        "--compiler=${input:compiler}",
+        "--std=${input:cStandard}",
+        "${input:noLibDh}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { /* build project */
+      "label": "dh>build project",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "build",
+        "${input:buildConfig}",
+        "--compiler=${input:compiler}",
+        "--std=${input:cStandard}",
+        "${input:noLibDh}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    { /* test current file */
+      "label": "dh>test current file",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "test",
+        "${file}",
+        "--args=\"${input:runArgs}\"",
+        "${input:noLibDh}"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    },
+    { /* test project */
+      "label": "dh>test project",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "test",
+        "${input:buildConfig}",
+        "--args=\"${input:runArgs}\"",
+        "${input:noLibDh}"
+      ]
+    },
+    { /* run current file */
+      "label": "dh>run current file",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "run",
+        "${input:buildConfig}",
+        "${file}",
+        "--args=\"${input:runArgs}\"",
+        "${input:noLibDh}"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    { /* run project */
+      "label": "dh>run project",
+      "type": "shell",
+      "command": "dh-c",
+      "args": [
+        "run",
+        "${input:buildConfig}",
+        "--args=\"${input:runArgs}\"",
+        "${input:noLibDh}"
+      ]
+    }
+  ]
+}

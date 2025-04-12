@@ -1,12 +1,14 @@
-// clang -std=c17 -Wall -Wextra -funsigned-char -fblocks -o dh-c dh-c.c
-
 /**
- * dh-c.c - Build tool for DH-C projects
+ * dh-c - Build tool for DH-C projects
+ *
+ * Compilation:
+ * - clang -std=c17 -Wall -Wextra -O3 -o dh-c dh-c.c -static
  *
  * Features:
  * - Detects clang toolchain
+ * - Supports workspace and project creation
  * - Supports build, test, and run commands
- * - Handles debug/release/optimize modes
+ * - Supports various build configurations
  */
 
 #include <stdio.h>
@@ -30,248 +32,136 @@
 
 #define DH_VERSION "0.1.0"
 
+// Debug level enum
+typedef enum {
+    DEBUG_NONE,     // No debug info
+    DEBUG_MINIMAL,  // -g1: Line tables only
+    DEBUG_STANDARD, // -g: Standard debug info
+    DEBUG_EXTENDED  // -g3: Extra debug info
+} DebugLevel;
+
+// Optimization level enum
+typedef enum {
+    OPT_NONE,        // -O0: No optimization
+    OPT_BASIC,       // -O1: Basic optimizations
+    OPT_BALANCED,    // -O2: Good balance
+    OPT_AGGRESSIVE,  // -O3: Maximum performance
+    OPT_SIZE,        // -Os: Optimize for size
+    OPT_SIZE_EXTREME // -Oz: Size at all costs
+} OptimizationLevel;
+
+// Extra flags array
+typedef struct {
+    char** flags;
+    int    count;
+} ExtraFlags;
+
 // Configuration
 typedef struct {
-    char project_name[256];
-    char project_root[1024];
-    char compiler[64];
-    char c_standard[8];
-    char output_dir[1024];
-    bool is_test;
-    char build_mode[16]; // debug, release, optimize
-    char optimization_level[8];
-    char linked_libraries[1024];
-    char run_args[1024];
-    bool is_single_file;
-    char single_file[1024];
-    char dh_path[1024];
+    char              project_name[256];
+    char              project_root[1024];
+    char              compiler[64];
+    char              c_standard[8];
+    char              output_dir[1024];
+    bool              is_test;
+    DebugLevel        debug_level;
+    OptimizationLevel optimization_level;
+    bool              assertions_enabled;
+    ExtraFlags        extra_flags;
+    char              linked_libraries[1024];
+    char              run_args[1024];
+    bool              is_single_file;
+    char              single_file[1024];
+    char              dh_path[1024];
+    bool              no_libdh;              // Flag to skip DH library
+    char              build_config_name[32]; // Name of selected build configuration
 } BuildConfig;
 
+// Build configuration presets
+typedef struct {
+    char              name[32];
+    DebugLevel        debug_level;
+    OptimizationLevel optimization_level;
+    bool              assertions_enabled;
+    ExtraFlags        extra_flags;
+} BuildConfigPreset;
+
 // Function prototypes
-bool detect_clang();
-void detect_project_structure(BuildConfig* config);
-void collect_source_files(BuildConfig* config, char*** sources, int* source_count);
-void collect_include_paths(BuildConfig* config, char*** includes, int* include_count);
-void parse_libraries(BuildConfig* config, char* libs_file);
-void build_project(BuildConfig* config);
-void run_executable(BuildConfig* config);
-void print_usage();
-void free_string_array(char** array, int count);
-bool find_dh_path(BuildConfig* config);
-bool is_c_source_file(const char* filename);
-void detect_build_type(BuildConfig* config, int argc, char* argv[]);
-void add_dh_includes(BuildConfig* config, char*** includes, int* include_count);
-void add_dh_sources(BuildConfig* config, char*** sources, int* source_count);
-void create_workspace(const char* name, const char* dh_path);
-void create_project(const char* name, const char* dh_path);
-void write_file(const char* path, const char* content);
-bool create_directory(const char* path);
-bool find_dh_path_from_env(BuildConfig* config);
-void write_example_files(const char* project_path);
-void create_project_clangd(const char* project_path, const char* dh_path);
+bool        detect_clang();
+void        detect_project_structure(BuildConfig* config);
+void        collect_source_files(BuildConfig* config, char*** sources, int* source_count);
+void        collect_include_paths(BuildConfig* config, char*** includes, int* include_count);
+void        parse_libraries(BuildConfig* config, char* libs_file);
+void        build_project(BuildConfig* config);
+void        run_executable(BuildConfig* config);
+void        print_usage();
+void        free_string_array(char** array, int count);
+bool        find_dh_path(BuildConfig* config);
+bool        is_c_source_file(const char* filename);
+void        detect_build_type(BuildConfig* config, int argc, const char* argv[]);
+void        add_dh_includes(BuildConfig* config, char*** includes, int* include_count);
+void        add_dh_sources(BuildConfig* config, char*** sources, int* source_count);
+void        create_workspace(const char* name, const char* dh_path);
+void        create_project(const char* name, const char* dh_path);
+void        write_file(const char* path, const char* content);
+bool        create_directory(const char* path);
+bool        find_dh_path_from_env(BuildConfig* config);
+void        write_example_files(const char* project_path);
+void        create_project_clangd(const char* project_path, const char* dh_path);
+void        apply_build_preset(BuildConfig* config, const char* preset_name);
+const char* debug_level_to_flag(DebugLevel level);
+const char* optimization_level_to_flag(OptimizationLevel level);
+void        init_build_config(BuildConfig* config);
+void        free_extra_flags(ExtraFlags* flags);
 
-// Add the template content for config files
-const char* CLANGD_TEMPLATE = "CompileFlags:\n"
-                              "  Add: [-xc, -std=c17, -Wall, -Wextra, -funsigned-char, -fblocks]\n"
-                              "  Compiler: clang\n"
-                              "\n"
-                              "Diagnostics:\n"
-                              "  UnusedIncludes: Strict\n"
-                              "  ClangTidy:\n"
-                              "    Add: [modernize*, performance*, readability*, bugprone*, portability*]\n"
-                              "    Remove: [modernize-use-trailing-return-type, readability-named-parameter]\n"
-                              "\n"
-                              "InlayHints:\n"
-                              "  Enabled: Yes\n"
-                              "  ParameterNames: Yes\n"
-                              "  DeducedTypes: Yes\n"
-                              "\n"
-                              "Hover:\n"
-                              "  ShowAKA: Yes\n";
+// Add forward declarations for functions
+void init_build_presets(void);
+void cleanup_build_presets(void);
+bool load_template_file(const char* filename, char** template_content);
+void initialize_templates(const char* dh_path);
+void cleanup_templates(void);
+void create_templates_directory(const char* dh_path);
 
-const char* CLANG_FORMAT_TEMPLATE = "Language: Cpp\n"
-                                    "BasedOnStyle: LLVM\n"
-                                    "IndentWidth: 4\n"
-                                    "TabWidth: 4\n"
-                                    "UseTab: Never\n"
-                                    "ColumnLimit: 120\n"
-                                    "AlignAfterOpenBracket: Align\n"
-                                    "AlignConsecutiveAssignments: true\n"
-                                    "AlignConsecutiveDeclarations: true\n"
-                                    "AlignEscapedNewlines: Right\n"
-                                    "AlignOperands: true\n"
-                                    "AlignTrailingComments: true\n"
-                                    "AllowAllArgumentsOnNextLine: false\n"
-                                    "AllowAllParametersOfDeclarationOnNextLine: false\n"
-                                    "AllowShortBlocksOnASingleLine: Empty\n"
-                                    "AllowShortCaseLabelsOnASingleLine: false\n"
-                                    "AllowShortFunctionsOnASingleLine: Empty\n"
-                                    "AllowShortIfStatementsOnASingleLine: Never\n"
-                                    "AllowShortLoopsOnASingleLine: false\n"
-                                    "AlwaysBreakAfterReturnType: None\n"
-                                    "AlwaysBreakBeforeMultilineStrings: false\n"
-                                    "BinPackArguments: false\n"
-                                    "BinPackParameters: false\n"
-                                    "BreakBeforeBraces: Attach\n"
-                                    "BreakStringLiterals: true\n"
-                                    "SpaceBeforeParens: ControlStatements\n";
+// Predefined build configurations
+BuildConfigPreset build_presets[] = {
+    { .name               = "dev",
+      .debug_level        = DEBUG_EXTENDED,
+      .optimization_level = OPT_NONE,
+      .assertions_enabled = true,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "test",
+      .debug_level        = DEBUG_STANDARD,
+      .optimization_level = OPT_BASIC,
+      .assertions_enabled = true,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "profile",
+      .debug_level        = DEBUG_STANDARD,
+      .optimization_level = OPT_BALANCED,
+      .assertions_enabled = true,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "release",
+      .debug_level        = DEBUG_MINIMAL,
+      .optimization_level = OPT_BALANCED,
+      .assertions_enabled = false,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "performance",
+      .debug_level        = DEBUG_NONE,
+      .optimization_level = OPT_AGGRESSIVE,
+      .assertions_enabled = false,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "embedded",
+      .debug_level        = DEBUG_NONE,
+      .optimization_level = OPT_SIZE,
+      .assertions_enabled = false,
+      .extra_flags        = { NULL, 0 } },
+    { .name               = "micro",
+      .debug_level        = DEBUG_NONE,
+      .optimization_level = OPT_SIZE_EXTREME,
+      .assertions_enabled = false,
+      .extra_flags        = { NULL, 0 } }
+};
 
-const char* TASKS_JSON_TEMPLATE = "{\n"
-                                  "  \"version\": \"2.0.0\",\n"
-                                  "  \"inputs\": [\n"
-                                  "    {\n"
-                                  "      \"id\": \"compiler\",\n"
-                                  "      \"type\": \"pickString\",\n"
-                                  "      \"description\": \"Select compiler\",\n"
-                                  "      \"options\": [\n"
-                                  "        \"clang\",\n"
-                                  "        \"gcc\"\n"
-                                  "      ],\n"
-                                  "      \"default\": \"clang\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"id\": \"cStandard\",\n"
-                                  "      \"type\": \"pickString\",\n"
-                                  "      \"description\": \"Select C standard\",\n"
-                                  "      \"options\": [\n"
-                                  "        \"c17\",\n"
-                                  "        \"c11\",\n"
-                                  "        \"c99\"\n"
-                                  "      ],\n"
-                                  "      \"default\": \"c17\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"id\": \"testFlag\",\n"
-                                  "      \"type\": \"pickString\",\n"
-                                  "      \"description\": \"Build tests?\",\n"
-                                  "      \"options\": [\n"
-                                  "        \"\",\n"
-                                  "        \"-DCOMP_TEST\"\n"
-                                  "      ],\n"
-                                  "      \"default\": \"\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"id\": \"optimization\",\n"
-                                  "      \"type\": \"pickString\",\n"
-                                  "      \"description\": \"Select optimization level\",\n"
-                                  "      \"options\": [\n"
-                                  "        \"-O0\",\n"
-                                  "        \"-O1\",\n"
-                                  "        \"-O2\",\n"
-                                  "        \"-O3\",\n"
-                                  "        \"-Os\",\n"
-                                  "        \"-Ofast\"\n"
-                                  "      ],\n"
-                                  "      \"default\": \"-O2\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"id\": \"libraries\",\n"
-                                  "      \"type\": \"pickString\",\n"
-                                  "      \"description\": \"Select libraries to link\",\n"
-                                  "      \"options\": [\n"
-                                  "        \"\",\n"
-                                  "        \"-lm\",\n"
-                                  "        \"-lpthread\"\n"
-                                  "      ],\n"
-                                  "      \"default\": \"\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"id\": \"runArgs\",\n"
-                                  "      \"type\": \"promptString\",\n"
-                                  "      \"description\": \"Arguments to pass to the program\",\n"
-                                  "      \"default\": \"\"\n"
-                                  "    }\n"
-                                  "  ],\n"
-                                  "  \"tasks\": [\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>build C file (debug)\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"build\",\n"
-                                  "        \"debug\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--compiler=${input:compiler}\",\n"
-                                  "        \"--std=${input:cStandard}\"\n"
-                                  "      ],\n"
-                                  "      \"group\": \"build\",\n"
-                                  "      \"problemMatcher\": [\"$gcc\"]\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>build C file (release)\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"build\",\n"
-                                  "        \"release\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--compiler=${input:compiler}\",\n"
-                                  "        \"--std=${input:cStandard}\"\n"
-                                  "      ],\n"
-                                  "      \"group\": \"build\",\n"
-                                  "      \"problemMatcher\": [\"$gcc\"]\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>build C file (optimized)\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"build\",\n"
-                                  "        \"optimize\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--compiler=${input:compiler}\",\n"
-                                  "        \"--std=${input:cStandard}\",\n"
-                                  "        \"--opt=${input:optimization}\"\n"
-                                  "      ],\n"
-                                  "      \"group\": \"build\",\n"
-                                  "      \"problemMatcher\": [\"$gcc\"]\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>run debug build\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"run\",\n"
-                                  "        \"debug\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
-                                  "      ],\n"
-                                  "      \"options\": {\n"
-                                  "        \"cwd\": \"${fileDirname}\"\n"
-                                  "      },\n"
-                                  "      \"group\": \"test\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>run release build\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"run\",\n"
-                                  "        \"release\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
-                                  "      ],\n"
-                                  "      \"options\": {\n"
-                                  "        \"cwd\": \"${fileDirname}\"\n"
-                                  "      },\n"
-                                  "      \"group\": \"test\"\n"
-                                  "    },\n"
-                                  "    {\n"
-                                  "      \"label\": \"dh>run test\",\n"
-                                  "      \"type\": \"shell\",\n"
-                                  "      \"command\": \"dh-c\",\n"
-                                  "      \"args\": [\n"
-                                  "        \"test\",\n"
-                                  "        \"${file}\",\n"
-                                  "        \"--args=\\\"${input:runArgs}\\\"\"\n"
-                                  "      ],\n"
-                                  "      \"options\": {\n"
-                                  "        \"cwd\": \"${fileDirname}\"\n"
-                                  "      },\n"
-                                  "      \"group\": \"test\"\n"
-                                  "    }\n"
-                                  "  ]\n"
-                                  "}\n";
+const int NUM_BUILD_PRESETS = sizeof(build_presets) / sizeof(BuildConfigPreset);
 
 // Cross-platform wrapper for getting absolute path
 bool get_absolute_path(const char* path, char* resolved_path, size_t resolved_path_size) {
@@ -284,18 +174,18 @@ bool get_absolute_path(const char* path, char* resolved_path, size_t resolved_pa
 
 // Helper function to check if a directory exists
 bool dir_exists(const char* path) {
-    struct stat st;
+    struct stat st = {};
     return stat(path, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
 // Helper function to check if a file exists
 bool file_exists(const char* path) {
-    struct stat st;
+    struct stat st = {};
     return stat(path, &st) == 0 && S_ISREG(st.st_mode);
 }
 
 // Recursively find all C source files in a directory
-void find_source_files(const char* dir_path, char*** sources, int* source_count) {
+void find_source_files(const char* dir_path, char*** sources, int* source_count) { /* NOLINT(misc-no-recursion) */
     DIR* dir = opendir(dir_path);
     if (!dir) {
         return;
@@ -307,13 +197,13 @@ void find_source_files(const char* dir_path, char*** sources, int* source_count)
             continue; // Skip hidden files and . / ..
         }
 
-        char path[1024];
-        int  result = snprintf(path, sizeof(path), "%s%s%s", dir_path, PATH_SEPARATOR, entry->d_name);
+        char path[1024] = {};
+        int  result     = snprintf(path, sizeof(path), "%s%s%s", dir_path, PATH_SEPARATOR, entry->d_name);
         if (result < 0 || (size_t)result >= sizeof(path)) {
             continue; // Path too long, skip
         }
 
-        struct stat st;
+        struct stat st = {};
         if (stat(path, &st) == 0) {
             if (S_ISDIR(st.st_mode)) {
                 // Recurse into subdirectory
@@ -325,13 +215,13 @@ void find_source_files(const char* dir_path, char*** sources, int* source_count)
                     // Add to sources array
                     *sources = realloc(*sources, (*source_count + 1) * sizeof(char*));
                     if (*sources == NULL) {
-                        fprintf(stderr, "Memory allocation failed\n");
+                        (void)fprintf(stderr, "Memory allocation failed\n");
                         closedir(dir);
                         exit(1);
                     }
                     (*sources)[*source_count] = strdup(path);
                     if ((*sources)[*source_count] == NULL) {
-                        fprintf(stderr, "Memory allocation failed\n");
+                        (void)fprintf(stderr, "Memory allocation failed\n");
                         closedir(dir);
                         exit(1);
                     }
@@ -350,7 +240,7 @@ bool detect_clang() {
         return false;
     }
 
-    char buffer[128];
+    char buffer[128] = {};
     if (fgets(buffer, sizeof(buffer), pipe) != NULL) {
         pclose(pipe);
         return true;
@@ -362,9 +252,9 @@ bool detect_clang() {
 
 // Detect project structure and fill config
 void detect_project_structure(BuildConfig* config) {
-    char cwd[1024];
+    char cwd[1024] = {};
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
-        fprintf(stderr, "Error: Could not get current working directory\n");
+        (void)fprintf(stderr, "Error: Could not get current working directory\n");
         exit(1);
     }
 
@@ -381,39 +271,39 @@ void detect_project_structure(BuildConfig* config) {
     printf("Detected project: %s at %s\n", config->project_name, config->project_root);
 
     // Check for required directories
-    char include_path[1024];
-    char src_path[1024];
-    char libs_path[1024];
+    char include_path[1024] = {};
+    char src_path[1024]     = {};
+    char libs_path[1024]    = {};
 
-    snprintf(include_path, sizeof(include_path), "%s%sinclude", config->project_root, PATH_SEPARATOR);
-    snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
-    snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
+    (void)snprintf(include_path, sizeof(include_path), "%s%sinclude", config->project_root, PATH_SEPARATOR);
+    (void)snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
+    (void)snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
 
     if (!dir_exists(include_path)) {
-        fprintf(stderr, "Error: include/ directory not found\n");
+        (void)fprintf(stderr, "Error: include/ directory not found\n");
         exit(1);
     }
 
     if (!dir_exists(src_path)) {
-        fprintf(stderr, "Error: src/ directory not found\n");
+        (void)fprintf(stderr, "Error: src/ directory not found\n");
         exit(1);
     }
 
     // Check for optional libs directory and link.dhc
-    char link_file[1024];
-    snprintf(link_file, sizeof(link_file), "%s%slink.dhc", libs_path, PATH_SEPARATOR);
+    char link_file[1024] = {};
+    (void)snprintf(link_file, sizeof(link_file), "%s%slink.dhc", libs_path, PATH_SEPARATOR);
 
     if (dir_exists(libs_path) && file_exists(link_file)) {
         parse_libraries(config, link_file);
     }
 
     // Create output directory
-    char output_path[1024];
-    snprintf(output_path, sizeof(output_path), "%s%sbuild", config->project_root, PATH_SEPARATOR);
+    char output_path[1024] = {};
+    (void)snprintf(output_path, sizeof(output_path), "%s%sbuild", config->project_root, PATH_SEPARATOR);
 
     if (!dir_exists(output_path)) {
         if (mkdir(output_path, 0755) != 0) {
-            fprintf(stderr, "Warning: Could not create build directory\n");
+            (void)fprintf(stderr, "Warning: Could not create build directory\n");
         }
     }
 
@@ -429,7 +319,7 @@ void parse_libraries(BuildConfig* config, char* libs_file) {
 
     config->linked_libraries[0] = '\0';
 
-    char line[1024];
+    char line[1024] = {};
     while (fgets(line, sizeof(line), file)) {
         // Remove newline
         line[strcspn(line, "\r\n")] = 0;
@@ -447,7 +337,7 @@ void parse_libraries(BuildConfig* config, char* libs_file) {
         strcat(config->linked_libraries, line);
     }
 
-    fclose(file);
+    (void)fclose(file);
 }
 
 // Add function to find dh path via environment variable
@@ -475,7 +365,7 @@ bool find_dh_path(BuildConfig* config) {
 
     // Existing code to find via standard locations
     // Try current path first
-    char cwd[1024];
+    char cwd[1024] = {};
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         return false;
     }
@@ -488,7 +378,7 @@ bool find_dh_path(BuildConfig* config) {
     }
 
     // Check if we're in a subdirectory of dh
-    char temp_path[1024];
+    char temp_path[1024] = {};
     strcpy(temp_path, cwd);
 
     while (strlen(temp_path) > 3) { // Minimum path length (e.g., C:\ on Windows)
@@ -518,8 +408,8 @@ bool find_dh_path(BuildConfig* config) {
 
     for (size_t i = 0; i < sizeof(standard_locations) / sizeof(standard_locations[0]); i++) {
         if (dir_exists(standard_locations[i])) {
-            char include_dir[1024];
-            snprintf(include_dir, sizeof(include_dir), "%s%sinclude", standard_locations[i], PATH_SEPARATOR);
+            char include_dir[1024] = {};
+            (void)snprintf(include_dir, sizeof(include_dir), "%s%sinclude", standard_locations[i], PATH_SEPARATOR);
 
             if (dir_exists(include_dir)) {
                 strcpy(config->dh_path, standard_locations[i]);
@@ -538,7 +428,7 @@ bool is_c_source_file(const char* filename) {
 }
 
 // Detect if we're building a single file or a project
-void detect_build_type(BuildConfig* config, int argc, char* argv[]) {
+void detect_build_type(BuildConfig* config, int argc, const char* argv[]) {
     config->is_single_file = false;
 
     // Check if a filename was provided as an argument
@@ -561,7 +451,7 @@ void detect_build_type(BuildConfig* config, int argc, char* argv[]) {
             }
 
             // Remove the .c extension to get the project name
-            char basename[256];
+            char basename[256] = {};
             strcpy(basename, filename);
             char* dot = strrchr(basename, '.');
             if (dot) {
@@ -589,17 +479,22 @@ void detect_build_type(BuildConfig* config, int argc, char* argv[]) {
 
 // Add DH-specific includes and libraries
 void add_dh_includes(BuildConfig* config, char*** includes, int* include_count) {
+    // Skip if no_libdh flag is set
+    if (config->no_libdh) {
+        return;
+    }
+
     // Check if dh_path is found
     if (strlen(config->dh_path) == 0) {
         if (!find_dh_path(config)) {
-            fprintf(stderr, "Warning: Could not find DH library path\n");
+            (void)fprintf(stderr, "Warning: Could not find DH library path\n");
             return;
         }
     }
 
     // Add DH includes
-    char dh_include[1024];
-    snprintf(dh_include, sizeof(dh_include), "%s%sinclude", config->dh_path, PATH_SEPARATOR);
+    char dh_include[1024] = {};
+    (void)snprintf(dh_include, sizeof(dh_include), "%s%sinclude", config->dh_path, PATH_SEPARATOR);
 
     if (dir_exists(dh_include)) {
         *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -613,8 +508,8 @@ void add_dh_includes(BuildConfig* config, char*** includes, int* include_count) 
     (*include_count)++;
 
     // Add BlocksRuntime include if it exists
-    char blocks_include[1024];
-    snprintf(blocks_include, sizeof(blocks_include), "%s%slibs%sBlocksRuntime%sinclude", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    char blocks_include[1024] = {};
+    (void)snprintf(blocks_include, sizeof(blocks_include), "%s%slibs%sBlocksRuntime%sinclude", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
     if (dir_exists(blocks_include)) {
         *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -625,35 +520,41 @@ void add_dh_includes(BuildConfig* config, char*** includes, int* include_count) 
 
 // Add DH-specific source files
 void add_dh_sources(BuildConfig* config, char*** sources, int* source_count) {
+    // Skip if no_libdh flag is set
+    if (config->no_libdh) {
+        return;
+    }
+
     // Check if dh_path is found
     if (strlen(config->dh_path) == 0) {
         if (!find_dh_path(config)) {
-            fprintf(stderr, "Warning: Could not find DH library path\n");
+            (void)fprintf(stderr, "Warning: Could not find DH library path\n");
             return;
         }
     }
 
     // Add DH source files
-    char dh_src_glob[1024];
-    snprintf(dh_src_glob, sizeof(dh_src_glob), "%s%ssrc%s*.c", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    char dh_src_glob[1024] = {};
+    (void)snprintf(dh_src_glob, sizeof(dh_src_glob), "%s%ssrc%s*.c", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
 
     // Find dh source files
-    char dh_src_dir[1024];
-    snprintf(dh_src_dir, sizeof(dh_src_dir), "%s%ssrc", config->dh_path, PATH_SEPARATOR);
+    char dh_src_dir[1024] = {};
+    (void)snprintf(dh_src_dir, sizeof(dh_src_dir), "%s%ssrc", config->dh_path, PATH_SEPARATOR);
 
     if (dir_exists(dh_src_dir)) {
         find_source_files(dh_src_dir, sources, source_count);
     }
 
     // Add BlocksRuntime source files if they exist
-    char blocks_src_dir[1024];
-    snprintf(blocks_src_dir, sizeof(blocks_src_dir), "%s%slibs%sBlocksRuntime%ssrc", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    char blocks_src_dir[1024] = {};
+    (void)snprintf(blocks_src_dir, sizeof(blocks_src_dir), "%s%slibs%sBlocksRuntime%ssrc", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
     if (dir_exists(blocks_src_dir)) {
         // Add data.c and runtime.c explicitly
-        char data_c[1024], runtime_c[1024];
-        snprintf(data_c, sizeof(data_c), "%s%sdata.c", blocks_src_dir, PATH_SEPARATOR);
-        snprintf(runtime_c, sizeof(runtime_c), "%s%sruntime.c", blocks_src_dir, PATH_SEPARATOR);
+        char data_c[1024]    = {};
+        char runtime_c[1024] = {};
+        (void)snprintf(data_c, sizeof(data_c), "%s%sdata.c", blocks_src_dir, PATH_SEPARATOR);
+        (void)snprintf(runtime_c, sizeof(runtime_c), "%s%sruntime.c", blocks_src_dir, PATH_SEPARATOR);
 
         if (file_exists(data_c)) {
             *sources                  = realloc(*sources, (*source_count + 1) * sizeof(char*));
@@ -690,8 +591,8 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
         (*include_count)++;
 
         // Add ./include if it exists relative to the file
-        char include_dir[1024];
-        snprintf(include_dir, sizeof(include_dir), "%sinclude", dir_path);
+        char include_dir[1024] = {};
+        (void)snprintf(include_dir, sizeof(include_dir), "%sinclude", dir_path);
 
         if (dir_exists(include_dir)) {
             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -700,8 +601,8 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
         }
     } else {
         // Add standard include paths for a project
-        char include_path[1024];
-        snprintf(include_path, sizeof(include_path), "%s%sinclude", config->project_root, PATH_SEPARATOR);
+        char include_path[1024] = {};
+        (void)snprintf(include_path, sizeof(include_path), "%s%sinclude", config->project_root, PATH_SEPARATOR);
 
         if (dir_exists(include_path)) {
             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -710,8 +611,8 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
         }
 
         // Add src path for internal includes
-        char src_path[1024];
-        snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
+        char src_path[1024] = {};
+        (void)snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
 
         if (dir_exists(src_path)) {
             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -720,8 +621,8 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
         }
 
         // Add libs paths if they exist
-        char libs_path[1024];
-        snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
+        char libs_path[1024] = {};
+        (void)snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
 
         if (dir_exists(libs_path)) {
             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -737,14 +638,14 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
                         continue; // Skip hidden files and . / ..
                     }
 
-                    char subdir_path[1024];
-                    snprintf(subdir_path, sizeof(subdir_path), "%s%s%s", libs_path, PATH_SEPARATOR, entry->d_name);
+                    char subdir_path[1024] = {};
+                    (void)snprintf(subdir_path, sizeof(subdir_path), "%s%s%s", libs_path, PATH_SEPARATOR, entry->d_name);
 
-                    struct stat st;
+                    struct stat st = {};
                     if (stat(subdir_path, &st) == 0 && S_ISDIR(st.st_mode)) {
                         // Check for include directory
-                        char lib_include[1024];
-                        snprintf(lib_include, sizeof(lib_include), "%s%sinclude", subdir_path, PATH_SEPARATOR);
+                        char lib_include[1024] = {};
+                        (void)snprintf(lib_include, sizeof(lib_include), "%s%sinclude", subdir_path, PATH_SEPARATOR);
 
                         if (dir_exists(lib_include)) {
                             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
@@ -771,16 +672,16 @@ void collect_source_files(BuildConfig* config, char*** sources, int* source_coun
         (*source_count)++;
     } else {
         // For project builds, collect all source files
-        char src_path[1024];
-        snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
+        char src_path[1024] = {};
+        (void)snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
 
         if (dir_exists(src_path)) {
             find_source_files(src_path, sources, source_count);
         }
 
         // Also check for source files in libs
-        char libs_path[1024];
-        snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
+        char libs_path[1024] = {};
+        (void)snprintf(libs_path, sizeof(libs_path), "%s%slibs", config->project_root, PATH_SEPARATOR);
 
         if (dir_exists(libs_path)) {
             DIR* dir = opendir(libs_path);
@@ -791,14 +692,14 @@ void collect_source_files(BuildConfig* config, char*** sources, int* source_coun
                         continue; // Skip hidden files and . / ..
                     }
 
-                    char subdir_path[1024];
-                    snprintf(subdir_path, sizeof(subdir_path), "%s%s%s", libs_path, PATH_SEPARATOR, entry->d_name);
+                    char subdir_path[1024] = {};
+                    (void)snprintf(subdir_path, sizeof(subdir_path), "%s%s%s", libs_path, PATH_SEPARATOR, entry->d_name);
 
-                    struct stat st;
+                    struct stat st = {};
                     if (stat(subdir_path, &st) == 0 && S_ISDIR(st.st_mode)) {
                         // Check for src directory
-                        char lib_src[1024];
-                        snprintf(lib_src, sizeof(lib_src), "%s%ssrc", subdir_path, PATH_SEPARATOR);
+                        char lib_src[1024] = {};
+                        (void)snprintf(lib_src, sizeof(lib_src), "%s%ssrc", subdir_path, PATH_SEPARATOR);
 
                         if (dir_exists(lib_src)) {
                             find_source_files(lib_src, sources, source_count);
@@ -814,6 +715,654 @@ void collect_source_files(BuildConfig* config, char*** sources, int* source_coun
     add_dh_sources(config, sources, source_count);
 }
 
+// Convert debug level to compiler flag
+const char* debug_level_to_flag(DebugLevel level) {
+    switch (level) {
+    case DEBUG_NONE:
+        return "";
+    case DEBUG_MINIMAL:
+        return "-g1";
+    case DEBUG_STANDARD:
+        return "-g";
+    case DEBUG_EXTENDED:
+        return "-g3";
+    default:
+        return "-g";
+    }
+}
+
+// Convert optimization level to compiler flag
+const char* optimization_level_to_flag(OptimizationLevel level) {
+    switch (level) {
+    case OPT_NONE:
+        return "-O0";
+    case OPT_BASIC:
+        return "-O1";
+    case OPT_BALANCED:
+        return "-O2";
+    case OPT_AGGRESSIVE:
+        return "-O3";
+    case OPT_SIZE:
+        return "-Os";
+    case OPT_SIZE_EXTREME:
+        return "-Oz";
+    default:
+        return "-O2";
+    }
+}
+
+// Initialize default build configuration
+void init_build_config(BuildConfig* config) {
+    // Set defaults
+    strcpy(config->compiler, "clang");
+    strcpy(config->c_standard, "c17");
+    config->debug_level        = DEBUG_STANDARD;
+    config->optimization_level = OPT_BALANCED;
+    config->assertions_enabled = true;
+    config->extra_flags.flags  = NULL;
+    config->extra_flags.count  = 0;
+    config->is_test            = false;
+    config->is_single_file     = false;
+    config->no_libdh           = false;
+    strcpy(config->build_config_name, "dev"); // Default build config
+}
+
+// Free the extra flags array
+void free_extra_flags(ExtraFlags* flags) {
+    if (flags->flags) {
+        for (int i = 0; i < flags->count; ++i) {
+            free(flags->flags[i]);
+        }
+        free(flags->flags);
+        flags->flags = NULL;
+        flags->count = 0;
+    }
+}
+
+// Change the template strings to be pointers that will be loaded
+// Replace constant definitions with declarations
+extern char* CLANGD_TEMPLATE;
+extern char* CLANG_FORMAT_TEMPLATE;
+extern char* TASKS_JSON_TEMPLATE;
+
+// Add fallback templates in case files can't be loaded
+const char* DEFAULT_CLANGD_TEMPLATE
+    = "CompileFlags:\n"
+      "  Compiler: clang\n"
+      "  Add: \n"
+      "    - -xc\n"
+      "    - -std=c17\n"
+      "    - -Wall\n"
+      "    - -Wextra\n"
+      "    - -Werror\n"
+      "    - -funsigned-char\n"
+      "    - -fblocks\n"
+      "Diagnostics:\n"
+      "  UnusedIncludes: Strict\n"
+      "  ClangTidy:\n"
+      "    Add: \n"
+      "      - modernize*\n"
+      "      - performance*\n"
+      "      - readability*\n"
+      "      - bugprone*\n"
+      "      - portability*\n"
+      "    Remove: \n"
+      "      - modernize-use-trailing-return-type\n"
+      "      - readability-named-parameter\n"
+      "InlayHints:\n"
+      "  Enabled: true\n"
+      "  TypeNameLimit: 24\n"
+      "  DeducedTypes: true\n"
+      "  ParameterNames: true\n"
+      "  Designators: true\n"
+      "  BlockEnd: false\n"
+      "Hover:\n"
+      "  ShowAKA: true\n"
+      "---\n"
+      "If:\n"
+      "  PathMatch:\n"
+      "    - .*\\.h\n"
+      "    - .*\\.hh\n"
+      "    - .*\\.hpp\n"
+      "    - .*\\.hxx\n"
+      "CompileFlags:\n"
+      "  Add: \n"
+      "    - -Wno-unused-function\n"
+      "    - -Wno-unused-variable\n"
+      "    - -Wno-unused-const-variable\n";
+
+const char* DEFAULT_CLANG_FORMAT_TEMPLATE
+    = "BasedOnStyle: LLVM\n"
+      "AccessModifierOffset: -4\n"
+      "AlignAfterOpenBracket: BlockIndent\n"
+      "AlignArrayOfStructures: Right\n"
+      "AlignConsecutiveAssignments:\n"
+      "  Enabled: true\n"
+      "  AcrossComments: true\n"
+      "AlignConsecutiveBitFields:\n"
+      "  Enabled: true\n"
+      "  AcrossComments: true\n"
+      "AlignConsecutiveDeclarations:\n"
+      "  Enabled: true\n"
+      "  AcrossComments: true\n"
+      "AlignConsecutiveMacros:\n"
+      "  Enabled: true\n"
+      "  AcrossComments: true\n"
+      "AlignConsecutiveShortCaseStatements:\n"
+      "  Enabled: true\n"
+      "  AcrossComments: true\n"
+      "AlignEscapedNewlines: Left\n"
+      "AlignOperands: AlignAfterOperator\n"
+      "AllowShortBlocksOnASingleLine: Always\n"
+      "AllowShortIfStatementsOnASingleLine: Always\n"
+      "AllowShortLoopsOnASingleLine: true\n"
+      "BinPackArguments: false\n"
+      "BinPackParameters: false\n"
+      "BraceWrapping:\n"
+      "  AfterCaseLabel: false\n"
+      "  AfterClass: false\n"
+      "  AfterControlStatement: Never\n"
+      "  AfterEnum: false\n"
+      "  AfterFunction: false\n"
+      "  AfterNamespace: false\n"
+      "  AfterObjCDeclaration: false\n"
+      "  AfterStruct: false\n"
+      "  AfterUnion: false\n"
+      "  AfterExternBlock: false\n"
+      "  BeforeCatch: false\n"
+      "  BeforeElse: false\n"
+      "  BeforeLambdaBody: false\n"
+      "  BeforeWhile: false\n"
+      "  IndentBraces: false\n"
+      "  SplitEmptyFunction: false\n"
+      "  SplitEmptyRecord: true\n"
+      "  SplitEmptyNamespace: true\n"
+      "BreakBeforeBinaryOperators: All\n"
+      "BreakBeforeBraces: Custom\n"
+      "BreakConstructorInitializers: BeforeComma\n"
+      "ColumnLimit: 0\n"
+      "Cpp11BracedListStyle: false\n"
+      "IndentWidth: 4\n"
+      "InsertBraces: true\n"
+      "InsertNewlineAtEOF: true\n"
+      "MaxEmptyLinesToKeep: 5\n"
+      "ObjCBlockIndentWidth: 4\n"
+      "PointerAlignment: Left\n"
+      "SortIncludes: Never\n"
+      "Standard: c++20\n"
+      "TabWidth: 4\n"
+      "ConstructorInitializerAllOnOneLineOrOnePerLine: false\n"
+      "TypeNames:\n"
+      "  - let\n"
+      "  - var\n"
+      "  - let_\n"
+      "  - var_\n"
+      "  - TypeOf\n"
+      "  - TypeUnqualOf\n"
+      "  # primitive\n"
+      "  - u8\n"
+      "  - u16\n"
+      "  - u32\n"
+      "  - u64\n"
+      "  - usize\n"
+      "  - i8\n"
+      "  - i16\n"
+      "  - i32\n"
+      "  - i64\n"
+      "  - isize\n"
+      "  - f32\n"
+      "  - f64\n"
+      "  - bool\n"
+      "  - char\n"
+      "  - rawptr_const$\n"
+      "  - rawptr$\n"
+      "  - anyptr_const\n"
+      "  - anyptr\n"
+      "  - AnyType\n"
+      "  - Void\n"
+      "  # Pointer\n"
+      "  - Ptr_const$\n"
+      "  - Ptr$\n"
+      "  - Ptr_const$$\n"
+      "  - Ptr$$\n"
+      "  # Slice\n"
+      "  - SliZ_const$\n"
+      "  - SliZ$\n"
+      "  - SliZ_const$$\n"
+      "  - SliZ$$\n"
+      "  - SliS_const$\n"
+      "  - SliS$\n"
+      "  - SliS_const$$\n"
+      "  - SliS$$\n"
+      "  - Sli_const$\n"
+      "  - Sli$\n"
+      "  - Sli_const$$\n"
+      "  - Sli$$\n"
+      "  # Array\n"
+      "  - Arr$\n"
+      "  - Arr$$\n"
+      "  # Optional value\n"
+      "  - Opt$\n"
+      "  - Opt$$\n"
+      "  # Error result\n"
+      "  - Err$\n"
+      "  - Err$$\n"
+      "  - Err$Void\n"
+      "  - Err$void\n"
+      "  # Atomic\n"
+      "  - atomic_Value$\n"
+      "  - atomic_Value$$\n"
+      "Macros:\n"
+      "  # Optional value\n"
+      "  - \"if_some(_,_)=if (_)\"\n"
+      "  - \"if_none(_)=if (_)\"\n"
+      "  - \"else_none=else\"\n"
+      "  - \"else_some(_)=else if (_)\"\n"
+      "  # Error result\n"
+      "  - \"if_err(_,_)=if (_)\"\n"
+      "  - \"if_ok(_,_)=if (_)\"\n"
+      "  - \"if_void(_)=if (_)\"\n"
+      "  - \"else_ok(_)=else if (_)\"\n"
+      "  - \"else_void=else\"\n"
+      "  - \"else_err(_)=else if (_)\"\n"
+      "  # Scope\n"
+      "  - block_defer=/**/\n"
+      "  - block_deferral=/**/\n"
+      "  - defer_break=break\n"
+      "  - \"fn_(name_with_params,return_type)=return_type name_with_params\"\n"
+      "  - \"fn_scope(name_with_params,return_type)=return_type name_with_params\"\n"
+      "  - unscoped=/**/\n"
+      "  - \"fn_scope_ext(name_with_params,return_type)=return_type name_with_params\"\n"
+      "  - unscoped_ext=/**/\n"
+      "  - \"fn_TEST_scope(name)=Err$void TEST_caseFn(void)\"\n"
+      "  - TEST_unscoped=/**/\n"
+      "  - \"fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)\"\n"
+      "  - TEST_unscoped_ext=/**/\n"
+      "  # Eval\n"
+      "  - \"eval_(_)=({ _; })\"\n"
+      "  - \"eval$(T,_)=(T)({ _; })\"\n"
+      "  - \"eval_return_(_)=return _\"\n"
+      "  - \"asg_eval(_)=({ _; })\"\n"
+      "  # Match\n"
+      "  - \"match_(expr)=switch (expr)\"\n"
+      "  - \"pattern_(tag,capture)=case tag:\"\n"
+      "  - \"fallback_(_)=default:\"\n"
+      "ForEachMacros:\n"
+      "  - \"pp_foreach\"\n"
+      "  - \"for_slice\"\n"
+      "  - \"for_slice_indexed\"\n"
+      "  - \"for_slice_rev\"\n"
+      "  - \"for_slice_rev_indexed\"\n"
+      "  - \"for_array\"\n"
+      "  - \"for_array_indexed\"\n"
+      "  - \"for_array_rev\"\n"
+      "  - \"for_array_rev_indexed\"\n"
+      "AttributeMacros:\n"
+      "  - $on_load\n"
+      "  - $on_exit\n"
+      "  - extern_inline\n"
+      "  - static_inline\n"
+      "  - force_inline\n"
+      "  - $nullable\n"
+      "  - $nonnull\n"
+      "  - $must_check\n"
+      "  - $no_return\n"
+      "StatementAttributeLikeMacros:\n"
+      "  - unused\n"
+      "  - used\n"
+      "  - $ignore\n"
+      "  - eval\n"
+      "  - eval_return\n"
+      "  - type$\n"
+      "  - make$\n"
+      "  - create$\n"
+      "  - initial\n"
+      "  - cleared\n"
+      "  - unwrap\n"
+      "  - orelse\n"
+      "  - try_\n"
+      "  - catch_\n"
+      "  - catch_from\n"
+      "WhitespaceSensitiveMacros:\n"
+      "  - with_\n"
+      "  - fn_\n"
+      "  - fn_scope\n"
+      "  - fn_scope_ext\n"
+      "  - try_\n"
+      "  - catch_\n"
+      "  - catch_from\n"
+      "  - return_err\n"
+      "  - return_ok\n"
+      "  - unwrap\n"
+      "  - orelse\n"
+      "  - return_some\n"
+      "  - return_none\n"
+      "  - config_ErrSet\n"
+      "  - config_UnionEnum\n"
+      "  - config_UnionEnumAsField\n"
+      "  - match_\n"
+      "  - tagUnion\n"
+      "  - tagUnion$\n"
+      "  - toTagUnion\n"
+      "  - meta_refPtr\n"
+      "  - meta_refSli\n"
+      "  - meta_refPtr_const\n"
+      "  - meta_refSli_const\n"
+      "  - meta_castPtr$\n"
+      "  - meta_cast$\n"
+      "  - meta_ptrToAny\n"
+      "  - meta_sliToAny\n";
+
+const char* DEFAULT_TASKS_JSON_TEMPLATE
+    = "{\n"
+      "  \"version\": \"2.0.0\",\n"
+      "  \"inputs\": [\n"
+      "    { /* compiler */\n"
+      "      \"id\": \"compiler\",\n"
+      "      \"type\": \"pickString\",\n"
+      "      \"description\": \"Select compiler\",\n"
+      "      \"options\": [\n"
+      "        \"clang\",\n"
+      "        \"gcc\"\n"
+      "      ],\n"
+      "      \"default\": \"clang\"\n"
+      "    },\n"
+      "    { /* cStandard */\n"
+      "      \"id\": \"cStandard\",\n"
+      "      \"type\": \"pickString\",\n"
+      "      \"description\": \"Select C standard\",\n"
+      "      \"options\": [\n"
+      "        \"c17\",\n"
+      "        \"c11\",\n"
+      "        \"c99\"\n"
+      "      ],\n"
+      "      \"default\": \"c17\"\n"
+      "    },\n"
+      "    { /* buildConfig */\n"
+      "      \"id\": \"buildConfig\",\n"
+      "      \"type\": \"pickString\",\n"
+      "      \"description\": \"Select build configuration\",\n"
+      "      \"options\": [\n"
+      "        \"dev\",\n"
+      "        \"test\",\n"
+      "        \"profile\",\n"
+      "        \"release\",\n"
+      "        \"performance\",\n"
+      "        \"embedded\",\n"
+      "        \"micro\"\n"
+      "      ],\n"
+      "      \"default\": \"dev\"\n"
+      "    },\n"
+      "    { /* noLibDh */\n"
+      "      \"id\": \"noLibDh\",\n"
+      "      \"type\": \"pickString\",\n"
+      "      \"description\": \"Skip DH library usage?\",\n"
+      "      \"options\": [\n"
+      "        \"\",\n"
+      "        \"--no-libdh\"\n"
+      "      ],\n"
+      "      \"default\": \"\"\n"
+      "    },\n"
+      "    { /* runArgs */\n"
+      "      \"id\": \"runArgs\",\n"
+      "      \"type\": \"promptString\",\n"
+      "      \"description\": \"Arguments to pass to the program\",\n"
+      "      \"default\": \"\"\n"
+      "    }\n"
+      "  ],\n"
+      "  \"tasks\": [\n"
+      "    { /* create workspace */\n"
+      "      \"label\": \"dh>create workspace\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"workspace\",\n"
+      "        \"${input:prompt:Enter workspace name:}\"\n"
+      "      ],\n"
+      "      \"problemMatcher\": []\n"
+      "    },\n"
+      "    { /* create project */\n"
+      "      \"label\": \"dh>create project\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"project\",\n"
+      "        \"${input:prompt:Enter project name:}\"\n"
+      "      ],\n"
+      "      \"problemMatcher\": []\n"
+      "    },\n"
+      "    { /* build current file */\n"
+      "      \"label\": \"dh>build current file\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"build\",\n"
+      "        \"${input:buildConfig}\",\n"
+      "        \"${file}\",\n"
+      "        \"--compiler=${input:compiler}\",\n"
+      "        \"--std=${input:cStandard}\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ],\n"
+      "      \"group\": {\n"
+      "        \"kind\": \"build\",\n"
+      "        \"isDefault\": true\n"
+      "      },\n"
+      "      \"problemMatcher\": [\"$gcc\"]\n"
+      "    },\n"
+      "    { /* build project */\n"
+      "      \"label\": \"dh>build project\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"build\",\n"
+      "        \"${input:buildConfig}\",\n"
+      "        \"--compiler=${input:compiler}\",\n"
+      "        \"--std=${input:cStandard}\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ],\n"
+      "      \"group\": \"build\",\n"
+      "      \"problemMatcher\": [\"$gcc\"]\n"
+      "    },\n"
+      "    { /* test current file */\n"
+      "      \"label\": \"dh>test current file\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"test\",\n"
+      "        \"${file}\",\n"
+      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ],\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${fileDirname}\"\n"
+      "      },\n"
+      "      \"group\": \"test\"\n"
+      "    },\n"
+      "    { /* test project */\n"
+      "      \"label\": \"dh>test project\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"test\",\n"
+      "        \"${input:buildConfig}\",\n"
+      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ]\n"
+      "    },\n"
+      "    { /* run current file */\n"
+      "      \"label\": \"dh>run current file\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"run\",\n"
+      "        \"${input:buildConfig}\",\n"
+      "        \"${file}\",\n"
+      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ],\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${fileDirname}\"\n"
+      "      },\n"
+      "      \"group\": {\n"
+      "        \"kind\": \"test\",\n"
+      "        \"isDefault\": true\n"
+      "      }\n"
+      "    },\n"
+      "    { /* run project */\n"
+      "      \"label\": \"dh>run project\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"dh-c\",\n"
+      "      \"args\": [\n"
+      "        \"run\",\n"
+      "        \"${input:buildConfig}\",\n"
+      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+      "        \"${input:noLibDh}\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}\n";
+
+// Initialize global pointers to NULL
+char* CLANGD_TEMPLATE       = NULL;
+char* CLANG_FORMAT_TEMPLATE = NULL;
+char* TASKS_JSON_TEMPLATE   = NULL;
+
+// Function to load a template file and store its contents
+bool load_template_file(const char* filename, char** template_content) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        return false;
+    }
+
+    // Get file size
+    if (fseek(file, 0, SEEK_END) != 0) {
+        (void)fclose(file);
+        return false;
+    }
+
+    long file_size = ftell(file);
+    if (file_size == -1) {
+        (void)fclose(file);
+        return false;
+    }
+
+    // Move back to the beginning of the file with proper error handling
+    if (fseek(file, 0, SEEK_SET) != 0) {
+        (void)fclose(file);
+        return false;
+    }
+
+    // Allocate memory for content
+    *template_content = (char*)malloc(file_size + 1);
+    if (*template_content == NULL) {
+        (void)fclose(file);
+        return false;
+    }
+
+    // Read file content
+    size_t read_size = fread(*template_content, 1, file_size, file);
+    (void)fclose(file);
+
+    if (read_size != (size_t)file_size) {
+        free(*template_content);
+        *template_content = NULL;
+        return false;
+    }
+
+    // Null terminate
+    (*template_content)[file_size] = '\0';
+
+    return true;
+}
+
+// Function to initialize all templates
+void initialize_templates(const char* dh_path) {
+    char template_path[1024] = {};
+
+    // Load .clangd template
+    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%s.clangd", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &CLANGD_TEMPLATE)) {
+        // Fall back to default
+        CLANGD_TEMPLATE = strdup(DEFAULT_CLANGD_TEMPLATE);
+        printf("Using default .clangd template (couldn't load from %s)\n", template_path);
+    } else {
+        printf("Loaded .clangd template from %s\n", template_path);
+    }
+
+    // Load .clang-format template
+    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%s.clang-format", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &CLANG_FORMAT_TEMPLATE)) {
+        // Fall back to default
+        CLANG_FORMAT_TEMPLATE = strdup(DEFAULT_CLANG_FORMAT_TEMPLATE);
+        printf("Using default .clang-format template (couldn't load from %s)\n", template_path);
+    } else {
+        printf("Loaded .clang-format template from %s\n", template_path);
+    }
+
+    // Load tasks.json template
+    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%stasks.json", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &TASKS_JSON_TEMPLATE)) {
+        // Fall back to default
+        TASKS_JSON_TEMPLATE = strdup(DEFAULT_TASKS_JSON_TEMPLATE);
+        printf("Using default tasks.json template (couldn't load from %s)\n", template_path);
+    } else {
+        printf("Loaded tasks.json template from %s\n", template_path);
+    }
+}
+
+// Function to free template memory
+void cleanup_templates() {
+    if (CLANGD_TEMPLATE) {
+        free(CLANGD_TEMPLATE);
+        CLANGD_TEMPLATE = NULL;
+    }
+
+    if (CLANG_FORMAT_TEMPLATE) {
+        free(CLANG_FORMAT_TEMPLATE);
+        CLANG_FORMAT_TEMPLATE = NULL;
+    }
+
+    if (TASKS_JSON_TEMPLATE) {
+        free(TASKS_JSON_TEMPLATE);
+        TASKS_JSON_TEMPLATE = NULL;
+    }
+}
+
+// Function to create templates directory and write default templates
+void create_templates_directory(const char* dh_path) {
+    char templates_dir[1024] = {};
+    (void)snprintf(templates_dir, sizeof(templates_dir), "%s%stemplates", dh_path, PATH_SEPARATOR);
+
+    if (!dir_exists(templates_dir)) {
+        if (!create_directory(templates_dir)) {
+            (void)fprintf(stderr, "Warning: Could not create templates directory\n");
+            return;
+        }
+        printf("Created templates directory: %s\n", templates_dir);
+    }
+
+    // Write default templates to files
+    char template_path[1024] = {};
+
+    // Write .clangd template
+    (void)snprintf(template_path, sizeof(template_path), "%s%s.clangd", templates_dir, PATH_SEPARATOR);
+    if (!file_exists(template_path)) {
+        write_file(template_path, DEFAULT_CLANGD_TEMPLATE);
+    }
+
+    // Write .clang-format template
+    (void)snprintf(template_path, sizeof(template_path), "%s%s.clang-format", templates_dir, PATH_SEPARATOR);
+    if (!file_exists(template_path)) {
+        write_file(template_path, DEFAULT_CLANG_FORMAT_TEMPLATE);
+    }
+
+    // Write tasks.json template
+    (void)snprintf(template_path, sizeof(template_path), "%s%stasks.json", templates_dir, PATH_SEPARATOR);
+    if (!file_exists(template_path)) {
+        write_file(template_path, DEFAULT_TASKS_JSON_TEMPLATE);
+    }
+}
+
 // Build the project
 void build_project(BuildConfig* config) {
     char** includes      = NULL;
@@ -827,7 +1376,7 @@ void build_project(BuildConfig* config) {
     collect_source_files(config, &sources, &source_count);
 
     // Prepare command
-    char command[8192] = { 0 };
+    char command[8192] = {};
     strcat(command, config->compiler);
 
     // Add standard
@@ -835,7 +1384,7 @@ void build_project(BuildConfig* config) {
     strcat(command, config->c_standard);
 
     // Add include paths
-    for (int i = 0; i < include_count; i++) {
+    for (int i = 0; i < include_count; ++i) {
         strcat(command, " -I");
         strcat(command, includes[i]);
     }
@@ -846,34 +1395,51 @@ void build_project(BuildConfig* config) {
         strcat(command, " -DCOMP_TEST");
     }
 
-    strcat(command, " -Wall -Wextra -funsigned-char -fblocks");
+    // Only add -funsigned-char -fblocks if not using --no-libdh
+    if (!config->no_libdh) {
+        strcat(command, " -Wall -Wextra -funsigned-char -fblocks");
+    } else {
+        strcat(command, " -Wall -Wextra");
+    }
 
-    // Add mode-specific flags
-    if (strcmp(config->build_mode, "debug") == 0) {
-        strcat(command, " -g -O0");
-    } else if (strcmp(config->build_mode, "release") == 0) {
-        strcat(command, " -O2 -DNDEBUG");
-    } else if (strcmp(config->build_mode, "optimize") == 0) {
+    // Add debug level flag
+    const char* debug_flag = debug_level_to_flag(config->debug_level);
+    if (strlen(debug_flag) > 0) {
         strcat(command, " ");
-        strcat(command, config->optimization_level);
+        strcat(command, debug_flag);
+    }
+
+    // Add optimization level flag
+    const char* opt_flag = optimization_level_to_flag(config->optimization_level);
+    if (strlen(opt_flag) > 0) {
+        strcat(command, " ");
+        strcat(command, opt_flag);
+    }
+
+    // Add NDEBUG if assertions are disabled
+    if (!config->assertions_enabled) {
         strcat(command, " -DNDEBUG");
     }
 
+    // Add extra flags
+    for (int i = 0; i < config->extra_flags.count; ++i) {
+        strcat(command, " ");
+        strcat(command, config->extra_flags.flags[i]);
+    }
+
     // Add source files
-    for (int i = 0; i < source_count; i++) {
+    for (int i = 0; i < source_count; ++i) {
         strcat(command, " ");
         strcat(command, sources[i]);
     }
 
     // Add output file
-    char output_file[1024];
-    snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
+    char output_file[1024] = {};
+    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
 
-    if (strcmp(config->build_mode, "debug") == 0) {
-        strcat(output_file, "-debug");
-    } else if (strcmp(config->build_mode, "optimize") == 0) {
-        strcat(output_file, "-opt");
-    }
+    // Add build config name to output file
+    strcat(output_file, "-");
+    strcat(output_file, config->build_config_name);
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
@@ -891,12 +1457,12 @@ void build_project(BuildConfig* config) {
     strcat(command, " -static");
 
     // Execute build command
-    printf("Building %s in %s mode...\n", config->project_name, config->build_mode);
+    printf("Building %s with config '%s'...\n", config->project_name, config->build_config_name);
     printf("Command: %s\n", command);
 
     int result = system(command);
     if (result != 0) {
-        fprintf(stderr, "Build failed with error code: %d\n", result);
+        (void)fprintf(stderr, "Build failed with error code: %d\n", result);
         exit(1);
     }
 
@@ -909,26 +1475,24 @@ void build_project(BuildConfig* config) {
 
 // Run the compiled executable
 void run_executable(BuildConfig* config) {
-    char output_file[1024];
-    snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
+    char output_file[1024] = {};
+    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
 
-    if (strcmp(config->build_mode, "debug") == 0) {
-        strcat(output_file, "-debug");
-    } else if (strcmp(config->build_mode, "optimize") == 0) {
-        strcat(output_file, "-opt");
-    }
+    // Add build config name to output file
+    strcat(output_file, "-");
+    strcat(output_file, config->build_config_name);
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
 #endif
 
     if (!file_exists(output_file)) {
-        fprintf(stderr, "Error: Executable not found: %s\n", output_file);
+        (void)fprintf(stderr, "Error: Executable not found: %s\n", output_file);
         exit(1);
     }
 
-    char command[2048];
-    snprintf(command, sizeof(command), "\"%s\" %s", output_file, config->run_args);
+    char command[2048] = {};
+    (void)snprintf(command, sizeof(command), "\"%s\" %s", output_file, config->run_args);
 
     printf("Running: %s\n", command);
     system(command);
@@ -940,7 +1504,7 @@ void free_string_array(char** array, int count) {
         return;
     }
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         free(array[i]);
     }
     free(array);
@@ -948,79 +1512,107 @@ void free_string_array(char** array, int count) {
 
 // Create project-specific .clangd with absolute paths
 void create_project_clangd(const char* project_path, const char* dh_path) {
-    char clangd_path[1024];
-    int  result = snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", project_path, PATH_SEPARATOR);
+    char clangd_path[1024] = {};
+    int  result            = snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", project_path, PATH_SEPARATOR);
     if (result < 0 || (size_t)result >= sizeof(clangd_path)) {
-        fprintf(stderr, "Error: Path too long for .clangd\n");
+        (void)fprintf(stderr, "Error: Path too long for .clangd\n");
         return;
     }
 
-    char abs_include_path[1024], abs_src_path[1024], dh_include_path[1024], blocks_include_path[1024];
-    char temp_path[1024];
+    char abs_include_path[1024]    = {};
+    char abs_src_path[1024]        = {};
+    char dh_include_path[1024]     = {};
+    char blocks_include_path[1024] = {};
+    char temp_path[1024]           = {};
 
     // Get absolute paths
-    snprintf(temp_path, sizeof(temp_path), "%s%sinclude", project_path, PATH_SEPARATOR);
+    (void)snprintf(temp_path, sizeof(temp_path), "%s%sinclude", project_path, PATH_SEPARATOR);
     if (!get_absolute_path(temp_path, abs_include_path, sizeof(abs_include_path))) {
-        fprintf(stderr, "Warning: Could not resolve absolute path for include directory\n");
+        (void)fprintf(stderr, "Warning: Could not resolve absolute path for include directory\n");
         strcpy(abs_include_path, temp_path);
     }
 
-    snprintf(temp_path, sizeof(temp_path), "%s%ssrc", project_path, PATH_SEPARATOR);
+    (void)snprintf(temp_path, sizeof(temp_path), "%s%ssrc", project_path, PATH_SEPARATOR);
     if (!get_absolute_path(temp_path, abs_src_path, sizeof(abs_src_path))) {
-        fprintf(stderr, "Warning: Could not resolve absolute path for src directory\n");
+        (void)fprintf(stderr, "Warning: Could not resolve absolute path for src directory\n");
         strcpy(abs_src_path, temp_path);
     }
 
     // Get DH paths
     result = snprintf(dh_include_path, sizeof(dh_include_path), "%s%sinclude", dh_path, PATH_SEPARATOR);
     if (result < 0 || (size_t)result >= sizeof(dh_include_path)) {
-        fprintf(stderr, "Error: DH include path too long\n");
+        (void)fprintf(stderr, "Error: DH include path too long\n");
         return;
     }
 
     result = snprintf(blocks_include_path, sizeof(blocks_include_path), "%s%slibs%sBlocksRuntime%sinclude", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
     if (result < 0 || (size_t)result >= sizeof(blocks_include_path)) {
-        fprintf(stderr, "Error: BlocksRuntime include path too long\n");
+        (void)fprintf(stderr, "Error: BlocksRuntime include path too long\n");
         return;
     }
 
-    char project_clangd[4096];
-    result = snprintf(project_clangd, sizeof(project_clangd), "CompileFlags:\n"
-                                                              "  Compiler: clang\n"
-                                                              "  CompilationDatabase: %s\n"
-                                                              "  Add:\n"
-                                                              "    - -xc\n"
-                                                              "    - -std=c17\n"
-                                                              "    - -Wall\n"
-                                                              "    - -Wextra\n"
-                                                              "    - -funsigned-char\n"
-                                                              "    - -fblocks\n"
-                                                              "    - -I%s\n"
-                                                              "    - -I%s\n"
-                                                              "    - -I%s\n"
-                                                              "    - -I%s\n"
-                                                              "\n"
-                                                              "Diagnostics:\n"
-                                                              "  UnusedIncludes: Strict\n"
-                                                              "  ClangTidy:\n"
-                                                              "    Add: [modernize*, performance*, readability*, bugprone*, portability*]\n"
-                                                              "    Remove: [modernize-use-trailing-return-type, readability-named-parameter]\n"
-                                                              "\n"
-                                                              "InlayHints:\n"
-                                                              "  Enabled: Yes\n"
-                                                              "  ParameterNames: Yes\n"
-                                                              "  DeducedTypes: Yes\n"
-                                                              "\n"
-                                                              "Hover:\n"
-                                                              "  ShowAKA: Yes\n",
-                      project_path,
-                      abs_include_path,
-                      abs_src_path,
-                      dh_include_path,
-                      blocks_include_path);
+    char project_clangd[4096] = {};
+
+    result = snprintf(
+        project_clangd,
+        sizeof(project_clangd),
+        "CompileFlags:\n"
+        "  Compiler: clang\n"
+        "  CompilationDatabase: %s\n"
+        "  Add:\n"
+        "    - -xc\n"
+        "    - -std=c17\n"
+        "    - -Wall\n"
+        "    - -Wextra\n"
+        "    - -Werror\n"
+        "    - -funsigned-char\n"
+        "    - -fblocks\n"
+        "    - -I%s\n"
+        "    - -I%s\n"
+        "    - -I%s\n"
+        "    - -I%s\n"
+        "Diagnostics:\n"
+        "  UnusedIncludes: Strict\n"
+        "  ClangTidy:\n"
+        "    Add: \n"
+        "      - modernize*\n"
+        "      - performance*\n"
+        "      - readability*\n"
+        "      - bugprone*\n"
+        "      - portability*\n"
+        "    Remove: \n"
+        "      - modernize-use-trailing-return-type\n"
+        "      - readability-named-parameter\n"
+        "InlayHints:\n"
+        "  Enabled: true\n"
+        "  TypeNameLimit: 24\n"
+        "  DeducedTypes: true\n"
+        "  ParameterNames: true\n"
+        "  Designators: true\n"
+        "  BlockEnd: false\n"
+        "Hover:\n"
+        "  ShowAKA: true\n"
+        "---\n"
+        "If:\n"
+        "  PathMatch:\n"
+        "    - .*\\.h\n"
+        "    - .*\\.hh\n"
+        "    - .*\\.hpp\n"
+        "    - .*\\.hxx\n"
+        "CompileFlags:\n"
+        "  Add: \n"
+        "    - -Wno-unused-function\n"
+        "    - -Wno-unused-variable\n"
+        "    - -Wno-unused-const-variable\n",
+        project_path,
+        abs_include_path,
+        abs_src_path,
+        dh_include_path,
+        blocks_include_path
+    );
 
     if (result < 0 || (size_t)result >= sizeof(project_clangd)) {
-        fprintf(stderr, "Error: Project clangd content too long\n");
+        (void)fprintf(stderr, "Error: Project clangd content too long\n");
         return;
     }
 
@@ -1029,50 +1621,51 @@ void create_project_clangd(const char* project_path, const char* dh_path) {
 
 // Helper function to write example files
 void write_example_files(const char* project_path) {
-    char main_path[1024];
-    int  result = snprintf(main_path, sizeof(main_path), "%s%ssrc%smain.c", project_path, PATH_SEPARATOR, PATH_SEPARATOR);
+    char main_path[1024] = {};
+    int  result          = snprintf(main_path, sizeof(main_path), "%s%ssrc%smain.c", project_path, PATH_SEPARATOR, PATH_SEPARATOR);
     if (result < 0 || (size_t)result >= sizeof(main_path)) {
-        fprintf(stderr, "Error: Path too long for main.c\n");
+        (void)fprintf(stderr, "Error: Path too long for main.c\n");
         return;
     }
 
-    const char* main_content = "/// @file  main.c\n"
-                               "/// @brief Example DH-C program\n"
-                               "\n"
-                               "#include <dh/main.h>\n"
-                               "#include <dh/Str.h>\n"
-                               "\n"
-                               "fn_TEST_scope(\"simple test\") {\n"
-                               "    try_(TEST_expect(1 + 1 == 2));\n"
-                               "} TEST_unscoped;\n"
-                               "\n"
-                               "fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {\n"
-                               "    $ignore args;\n"
-                               "    let message = Str_l(\"Hello, world!\");\n"
-                               "    Str_println(message);\n"
-                               "    return_ok({});\n"
-                               "} ext_unscoped;\n";
+    const char* main_content
+        = "/// @file  main.c\n"
+          "/// @brief Example DH-C program\n"
+          "\n"
+          "#include <dh/main.h>\n"
+          "#include <dh/Str.h>\n"
+          "\n"
+          "fn_TEST_scope(\"simple test\") {\n"
+          "    try_(TEST_expect(1 + 1 == 2));\n"
+          "} TEST_unscoped;\n"
+          "\n"
+          "fn_scope(dh_main(Sli$Str_const args), Err$void) {\n"
+          "    $ignore args;\n"
+          "    let message = Str_l(\"Hello, world!\");\n"
+          "    Str_println(message);\n"
+          "    return_ok({});\n"
+          "} unscoped;\n";
 
     write_file(main_path, main_content);
 }
 
 // Update create_project function
 void create_project(const char* name, const char* dh_path) {
-    char project_path[1024] = { 0 };
+    char project_path[1024] = {};
 
     if (name == NULL || strcmp(name, ".") == 0) {
         if (getcwd(project_path, sizeof(project_path)) == NULL) {
-            fprintf(stderr, "Error: Could not get current working directory\n");
+            (void)fprintf(stderr, "Error: Could not get current working directory\n");
             return;
         }
     } else {
         if (strlen(name) >= sizeof(project_path)) {
-            fprintf(stderr, "Error: Project name too long\n");
+            (void)fprintf(stderr, "Error: Project name too long\n");
             return;
         }
         strcpy(project_path, name);
         if (!create_directory(project_path)) {
-            fprintf(stderr, "Error: Could not create project directory '%s'\n", name);
+            (void)fprintf(stderr, "Error: Could not create project directory '%s'\n", name);
             return;
         }
     }
@@ -1080,7 +1673,10 @@ void create_project(const char* name, const char* dh_path) {
     printf("Creating project in: %s\n", project_path);
 
     // Create standard project structure
-    char include_path[1024], src_path[1024], tests_path[1024], libs_path[1024];
+    char include_path[1024] = {};
+    char src_path[1024]     = {};
+    char tests_path[1024]   = {};
+    char libs_path[1024]    = {};
 
     int result = snprintf(include_path, sizeof(include_path), "%s%sinclude", project_path, PATH_SEPARATOR);
     if (result >= 0 && (size_t)result < sizeof(include_path)) {
@@ -1111,56 +1707,118 @@ void create_project(const char* name, const char* dh_path) {
     printf("Project created successfully with example files!\n");
 }
 
-// Update create_workspace function
+// Update create_workspace function to include DH_HOME in clangd config
 void create_workspace(const char* name, const char* dh_path) {
-    char workspace_path[1024] = { 0 };
+    char workspace_path[1024] = {};
 
     if (name == NULL || strcmp(name, ".") == 0) {
         // Use current directory
         if (getcwd(workspace_path, sizeof(workspace_path)) == NULL) {
-            fprintf(stderr, "Error: Could not get current working directory\n");
+            (void)fprintf(stderr, "Error: Could not get current working directory\n");
             return;
         }
     } else {
         // Create a new directory with the given name
         strcpy(workspace_path, name);
         if (!create_directory(workspace_path)) {
-            fprintf(stderr, "Error: Could not create workspace directory '%s'\n", name);
+            (void)fprintf(stderr, "Error: Could not create workspace directory '%s'\n", name);
             return;
         }
     }
 
     printf("Creating workspace in: %s\n", workspace_path);
 
-    // Create .clangd file
-    char clangd_path[1024];
-    snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", workspace_path, PATH_SEPARATOR);
-    write_file(clangd_path, CLANGD_TEMPLATE);
+    // Create custom .clangd file with DH_HOME paths
+    char clangd_path[1024] = {};
+    (void)snprintf(clangd_path, sizeof(clangd_path), "%s%s.clangd", workspace_path, PATH_SEPARATOR);
+
+    // Create DH include paths for clangd
+    char dh_include_path[1024] = {};
+    (void)snprintf(dh_include_path, sizeof(dh_include_path), "%s%sinclude", dh_path, PATH_SEPARATOR);
+
+    char blocks_include_path[1024] = {};
+    (void)snprintf(blocks_include_path, sizeof(blocks_include_path), "%s%slibs%sBlocksRuntime%sinclude", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+    char custom_clangd_content[4096] = {};
+
+    (void)snprintf(
+        custom_clangd_content,
+        sizeof(custom_clangd_content),
+        "CompileFlags:\n"
+        "  Compiler: clang\n"
+        "  Add: \n"
+        "    - -xc\n"
+        "    - -std=c17\n"
+        "    - -Wall\n"
+        "    - -Wextra\n"
+        "    - -Werror\n"
+        "    - -funsigned-char\n"
+        "    - -fblocks\n"
+        "    - -I%s\n"
+        "    - -I%s\n"
+        "Diagnostics:\n"
+        "  UnusedIncludes: Strict\n"
+        "  ClangTidy:\n"
+        "    Add: \n"
+        "      - modernize*\n"
+        "      - performance*\n"
+        "      - readability*\n"
+        "      - bugprone*\n"
+        "      - portability*\n"
+        "    Remove: \n"
+        "      - modernize-use-trailing-return-type\n"
+        "      - readability-named-parameter\n"
+        "InlayHints:\n"
+        "  Enabled: true\n"
+        "  TypeNameLimit: 24\n"
+        "  DeducedTypes: true\n"
+        "  ParameterNames: true\n"
+        "  Designators: true\n"
+        "  BlockEnd: false\n"
+        "Hover:\n"
+        "  ShowAKA: true\n"
+        "---\n"
+        "If:\n"
+        "  PathMatch:\n"
+        "    - .*\\.h\n"
+        "    - .*\\.hh\n"
+        "    - .*\\.hpp\n"
+        "    - .*\\.hxx\n"
+        "CompileFlags:\n"
+        "  Add: \n"
+        "    - -Wno-unused-function\n"
+        "    - -Wno-unused-variable\n"
+        "    - -Wno-unused-const-variable\n",
+        dh_include_path,
+        blocks_include_path
+    );
+
+    write_file(clangd_path, custom_clangd_content);
 
     // Create .clang-format file
-    char clang_format_path[1024];
-    snprintf(clang_format_path, sizeof(clang_format_path), "%s%s.clang-format", workspace_path, PATH_SEPARATOR);
+    char clang_format_path[1024] = {};
+    (void)snprintf(clang_format_path, sizeof(clang_format_path), "%s%s.clang-format", workspace_path, PATH_SEPARATOR);
     write_file(clang_format_path, CLANG_FORMAT_TEMPLATE);
 
     // Create .vscode directory
-    char vscode_path[1024];
-    snprintf(vscode_path, sizeof(vscode_path), "%s%s.vscode", workspace_path, PATH_SEPARATOR);
+    char vscode_path[1024] = {};
+    (void)snprintf(vscode_path, sizeof(vscode_path), "%s%s.vscode", workspace_path, PATH_SEPARATOR);
     if (!create_directory(vscode_path)) {
-        fprintf(stderr, "Warning: Could not create .vscode directory\n");
+        (void)fprintf(stderr, "Warning: Could not create .vscode directory\n");
     } else {
         // Create tasks.json file
-        char tasks_path[1024];
-        snprintf(tasks_path, sizeof(tasks_path), "%s%stasks.json", vscode_path, PATH_SEPARATOR);
+        char tasks_path[1024] = {};
+        (void)snprintf(tasks_path, sizeof(tasks_path), "%s%stasks.json", vscode_path, PATH_SEPARATOR);
         write_file(tasks_path, TASKS_JSON_TEMPLATE);
     }
 
     // Create an example project in the workspace
-    char example_project_path[1024];
-    int  result = snprintf(example_project_path, sizeof(example_project_path), "%s%shello-world", workspace_path, PATH_SEPARATOR);
+    char example_project_path[1024] = {};
+    int  result                     = snprintf(example_project_path, sizeof(example_project_path), "%s%shello-world", workspace_path, PATH_SEPARATOR);
     if (result >= 0 && (size_t)result < sizeof(example_project_path)) {
         create_project(example_project_path, dh_path);
     } else {
-        fprintf(stderr, "Warning: Could not create example project (path too long)\n");
+        (void)fprintf(stderr, "Warning: Could not create example project (path too long)\n");
     }
 
     printf("Workspace created successfully!\n");
@@ -1171,49 +1829,54 @@ void print_usage() {
     printf("Usage: dh-c [command] [options]\n\n");
     printf("Commands:\n");
     printf("  --version            - Display version information\n");
-    printf("  build               - Build the project or file\n");
-    printf("  test                - Build and run tests\n");
-    printf("  run                 - Build and run the project or file\n");
-    printf("  workspace <.|name>  - Create workspace with config files (.clangd, .clang-format, .vscode)\n");
-    printf("  project <.|name>    - Create a new project with DH-C structure\n\n");
-    printf("Build modes:\n");
-    printf("  debug    - Debug build with no optimization\n");
-    printf("  release  - Release build with -O2 optimization\n");
-    printf("  optimize - Optimized build (default: -O3)\n\n");
+    printf("  build                - Build the project or file\n");
+    printf("  test                 - Build and run tests\n");
+    printf("  run                  - Build and run the project or file\n");
+    printf("  workspace <.|name>   - Create workspace with config files (.clangd, .clang-format, .vscode)\n");
+    printf("  project <.|name>     - Create a new project with DH-C structure\n\n");
+    printf("Build configurations:\n");
+    printf("  dev         - Extended debug info, no optimization, assertions enabled\n");
+    printf("  test        - Standard debug info, basic optimization, assertions enabled\n");
+    printf("  profile     - Standard debug info, balanced optimization, assertions enabled\n");
+    printf("  release     - Minimal debug info, balanced optimization, assertions disabled\n");
+    printf("  performance - No debug info, aggressive optimization, assertions disabled\n");
+    printf("  embedded    - No debug info, size optimization, assertions disabled\n");
+    printf("  micro       - No debug info, extreme size optimization, assertions disabled\n\n");
     printf("Options:\n");
     printf("  --compiler=<clang|gcc>  - Specify compiler (default: clang)\n");
     printf("  --std=<c99|c11|c17>     - Specify C standard (default: c17)\n");
-    printf("  --opt=<O0|O1|O2|O3|Os>  - Specify optimization level for optimize mode\n");
     printf("  --args=\"args\"           - Arguments to pass when running\n");
-    printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n\n");
+    printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n");
+    printf("  --no-libdh              - Skip DH library\n\n");
     printf("Environment Variables:\n");
     printf("  DH_HOME               - Path to DH library installation\n\n");
     printf("Examples:\n");
-    printf("  dh-c --version                    - Show version information\n");
-    printf("  dh-c build debug                  - Build project in debug mode\n");
-    printf("  dh-c run release sample.c         - Build and run single file in release mode\n");
-    printf("  dh-c test sample.c                - Build and run tests for single file\n");
-    printf("  dh-c build optimize --opt=O2 file.c - Build file with O2 optimization\n");
-    printf("  dh-c workspace myworkspace        - Create new workspace named 'myworkspace'\n");
-    printf("  dh-c project myproject            - Create new project named 'myproject'\n");
+    printf("  dh-c --version                   - Show version information\n");
+    printf("  dh-c build dev                   - Build project in dev mode\n");
+    printf("  dh-c run release sample.c        - Build and run single file in release mode\n");
+    printf("  dh-c test sample.c               - Build and run tests for single file\n");
+    printf("  dh-c build performance           - Build with performance optimizations\n");
+    printf("  dh-c workspace myworkspace       - Create new workspace named 'myworkspace'\n");
+    printf("  dh-c project myproject           - Create new project named 'myproject'\n");
+    printf("  dh-c build embedded --no-libdh   - Build non-DH-C project with size optimization\n");
 }
 
 // Update main function to handle version command
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
     // Default configuration
-    BuildConfig config;
+    BuildConfig config = {};
     memset(&config, 0, sizeof(BuildConfig));
 
-    strcpy(config.compiler, "clang");
-    strcpy(config.c_standard, "c17");
-    strcpy(config.optimization_level, "-O3");
-    strcpy(config.build_mode, "release"); // Default mode
-    config.is_test        = false;
-    config.is_single_file = false;
+    // Initialize build presets
+    init_build_presets();
+
+    // Initialize default config
+    init_build_config(&config);
 
     // Parse command-line arguments
     if (argc < 2) {
         print_usage();
+        cleanup_build_presets();
         return 1;
     }
 
@@ -1221,23 +1884,28 @@ int main(int argc, char* argv[]) {
     if (strcmp(argv[1], "--version") == 0) {
         printf("DH-C Build Tool version %s\n", DH_VERSION);
         printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
-        printf("Licensed under the MIT License\n");
+        cleanup_build_presets();
         return 0;
     }
 
     // Try to find DH path early for workspace and project commands
     if (!find_dh_path(&config)) {
-        fprintf(stderr, "Warning: Could not find DH library path\n");
+        (void)fprintf(stderr, "Warning: Could not find DH library path\n");
+        cleanup_build_presets();
         return 1;
     }
 
+    // Create templates directory and initialize templates
+    create_templates_directory(config.dh_path);
+    initialize_templates(config.dh_path);
+
     // Create bin directory if it doesn't exist
-    char bin_path[1024];
-    int  result = snprintf(bin_path, sizeof(bin_path), "%s%sbin", config.dh_path, PATH_SEPARATOR);
+    char bin_path[1024] = {};
+    int  result         = snprintf(bin_path, sizeof(bin_path), "%s%sbin", config.dh_path, PATH_SEPARATOR);
     if (result >= 0 && (size_t)result < sizeof(bin_path)) {
         if (!dir_exists(bin_path)) {
             if (!create_directory(bin_path)) {
-                fprintf(stderr, "Warning: Could not create bin directory\n");
+                (void)fprintf(stderr, "Warning: Could not create bin directory\n");
             }
         }
     }
@@ -1246,49 +1914,64 @@ int main(int argc, char* argv[]) {
     if (strcmp(argv[1], "workspace") == 0) {
         const char* name = (argc > 2) ? argv[2] : ".";
         create_workspace(name, config.dh_path);
+        cleanup_build_presets();
+        cleanup_templates();
         return 0;
-    } else if (strcmp(argv[1], "project") == 0) {
+    }
+
+    if (strcmp(argv[1], "project") == 0) {
         const char* name = (argc > 2) ? argv[2] : ".";
         create_project(name, config.dh_path);
+        cleanup_build_presets();
+        cleanup_templates();
         return 0;
     }
 
     // For standard build commands, continue with existing logic
     // Check compiler availability
     if (!detect_clang()) {
-        fprintf(stderr, "Warning: clang compiler not found. Using gcc as fallback.\n");
+        (void)fprintf(stderr, "Warning: clang compiler not found. Using gcc as fallback.\n");
         strcpy(config.compiler, "gcc");
     }
 
     // Process the command first
     if (strcmp(argv[1], "build") == 0) {
-        // build only
+        // Just build
     } else if (strcmp(argv[1], "test") == 0) {
-        config.is_test = true;
+        // Apply test preset and run
+        apply_build_preset(&config, "test");
     } else if (strcmp(argv[1], "run") == 0) {
-        // build and run
+        // Build and run
     } else if (!is_c_source_file(argv[1]) || !file_exists(argv[1])) {
-        fprintf(stderr, "Unknown command: %s\n", argv[1]);
+        (void)fprintf(stderr, "Unknown command: %s\n", argv[1]);
         print_usage();
+        cleanup_build_presets();
+        cleanup_templates();
         return 1;
+    }
+
+    // Check if a build config has been specified
+    if (argc > 2 && argv[2][0] != '-') {
+        apply_build_preset(&config, argv[2]);
     }
 
     // Then check if we're building a single file or a project
     detect_build_type(&config, argc, argv);
 
     // Parse additional options
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; ++i) {
         if (strncmp(argv[i], "--compiler=", 11) == 0) {
             strcpy(config.compiler, argv[i] + 11);
         } else if (strncmp(argv[i], "--std=", 6) == 0) {
             strcpy(config.c_standard, argv[i] + 6);
-        } else if (strncmp(argv[i], "--opt=", 6) == 0) {
-            sprintf(config.optimization_level, "-%s", argv[i] + 6);
         } else if (strncmp(argv[i], "--args=", 7) == 0) {
             strcpy(config.run_args, argv[i] + 7);
         } else if (strncmp(argv[i], "--dh=", 5) == 0) {
             // Allow user to specify DH path
             strcpy(config.dh_path, argv[i] + 5);
+        } else if (strcmp(argv[i], "--no-libdh") == 0) {
+            // Skip DH library
+            config.no_libdh = true;
         }
     }
 
@@ -1310,6 +1993,11 @@ int main(int argc, char* argv[]) {
         run_executable(&config);
     }
 
+    // Clean up
+    free_extra_flags(&config.extra_flags);
+    cleanup_build_presets();
+    cleanup_templates();
+
     return 0;
 }
 
@@ -1317,20 +2005,20 @@ int main(int argc, char* argv[]) {
 void write_file(const char* path, const char* content) {
     FILE* file = fopen(path, "w");
     if (!file) {
-        fprintf(stderr, "Error: Could not create file: %s\n", path);
+        (void)fprintf(stderr, "Error: Could not create file: %s\n", path);
         return;
     }
 
     size_t content_len = strlen(content);
     size_t written     = fwrite(content, 1, content_len, file);
     if (written != content_len) {
-        fprintf(stderr, "Error: Could not write complete content to file: %s\n", path);
-        fclose(file);
+        (void)fprintf(stderr, "Error: Could not write complete content to file: %s\n", path);
+        (void)fclose(file);
         return;
     }
 
     if (fclose(file) != 0) {
-        fprintf(stderr, "Warning: Error closing file: %s\n", path);
+        (void)fprintf(stderr, "Warning: Error closing file: %s\n", path);
         return;
     }
 
@@ -1345,16 +2033,107 @@ bool create_directory(const char* path) {
 
 #ifdef _WIN32
     if (_mkdir(path) != 0) {
-        fprintf(stderr, "Error: Could not create directory: %s\n", path);
+        (void)fprintf(stderr, "Error: Could not create directory: %s\n", path);
         return false;
     }
 #else
     if (mkdir(path, 0755) != 0) {
-        fprintf(stderr, "Error: Could not create directory: %s\n", path);
+        (void)fprintf(stderr, "Error: Could not create directory: %s\n", path);
         return false;
     }
 #endif
 
     printf("Created directory: %s\n", path);
     return true;
+}
+
+// Fixed recursive call in apply_build_preset
+void apply_build_preset(BuildConfig* config, const char* preset_name) {
+    // Free any existing extra flags
+    free_extra_flags(&config->extra_flags);
+
+    bool preset_found = false;
+
+    for (int i = 0; i < NUM_BUILD_PRESETS; ++i) {
+        if (strcmp(build_presets[i].name, preset_name) == 0) {
+            preset_found               = true;
+            // Copy preset values
+            config->debug_level        = build_presets[i].debug_level;
+            config->optimization_level = build_presets[i].optimization_level;
+            config->assertions_enabled = build_presets[i].assertions_enabled;
+            strcpy(config->build_config_name, build_presets[i].name);
+
+            // Copy extra flags
+            if (build_presets[i].extra_flags.count > 0 && build_presets[i].extra_flags.flags) {
+                config->extra_flags.count = build_presets[i].extra_flags.count;
+                config->extra_flags.flags = malloc(config->extra_flags.count * sizeof(char*));
+
+                for (int j = 0; j < config->extra_flags.count; ++j) {
+                    config->extra_flags.flags[j] = strdup(build_presets[i].extra_flags.flags[j]);
+                }
+            }
+
+            // Special handling for test mode
+            if (strcmp(preset_name, "test") == 0) {
+                config->is_test = true;
+            }
+
+            break;
+        }
+    }
+
+    // If preset not found, use dev preset as default
+    if (!preset_found) {
+        // Set default values directly rather than recursively calling
+        config->debug_level        = DEBUG_EXTENDED;
+        config->optimization_level = OPT_NONE;
+        config->assertions_enabled = true;
+        strcpy(config->build_config_name, "dev");
+
+        // Copy dev preset extra flags if they're set
+        if (build_presets[0].extra_flags.count > 0 && build_presets[0].extra_flags.flags) {
+            config->extra_flags.count = build_presets[0].extra_flags.count;
+            config->extra_flags.flags = malloc(config->extra_flags.count * sizeof(char*));
+
+            for (int j = 0; j < config->extra_flags.count; ++j) {
+                config->extra_flags.flags[j] = strdup(build_presets[0].extra_flags.flags[j]);
+            }
+        }
+    }
+}
+
+// Initialize the extra flags for predefined configurations
+void init_build_presets() {
+    // dev preset extra flags
+    BuildConfigPreset* dev    = &build_presets[0];
+    dev->extra_flags.count    = 2;
+    dev->extra_flags.flags    = malloc(dev->extra_flags.count * sizeof(char*));
+    dev->extra_flags.flags[0] = strdup("-Wall");
+    dev->extra_flags.flags[1] = strdup("-Werror");
+
+    // test preset extra flags
+    BuildConfigPreset* test    = &build_presets[1];
+    test->extra_flags.count    = 1;
+    test->extra_flags.flags    = malloc(test->extra_flags.count * sizeof(char*));
+    test->extra_flags.flags[0] = strdup("-fno-omit-frame-pointer");
+
+    // profile preset extra flags
+    BuildConfigPreset* profile    = &build_presets[2];
+    profile->extra_flags.count    = 1;
+    profile->extra_flags.flags    = malloc(profile->extra_flags.count * sizeof(char*));
+    profile->extra_flags.flags[0] = strdup("-fno-omit-frame-pointer");
+
+    // micro preset extra flags
+    BuildConfigPreset* micro    = &build_presets[6];
+    micro->extra_flags.count    = 2;
+    micro->extra_flags.flags    = malloc(micro->extra_flags.count * sizeof(char*));
+    micro->extra_flags.flags[0] = strdup("-ffunction-sections");
+    micro->extra_flags.flags[1] = strdup("-fdata-sections");
+}
+
+// Free resources used by build presets
+void cleanup_build_presets() {
+    for (int i = 0; i < NUM_BUILD_PRESETS; ++i) {
+        free_extra_flags(&build_presets[i].extra_flags);
+    }
 }

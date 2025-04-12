@@ -95,7 +95,7 @@ else
     OUTPUT_FILE="$INSTALL_DIR/dh-c"
 fi
 
-clang -std=c17 -Wall -Wextra -funsigned-char -fblocks -o "$OUTPUT_FILE" "$SOURCE_FILE"
+clang -std=c17 -Wall -Wextra -O3 -o "$OUTPUT_FILE" "$SOURCE_FILE" -static
 
 if [ ! -f "$OUTPUT_FILE" ]; then
     echo -e "${RED}Error: Compilation failed.${RESET}"

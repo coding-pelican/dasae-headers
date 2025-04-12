@@ -14,7 +14,7 @@
     },
     {
       "name": "dh-workspace",
-      "path": "dh-workspace"
+      "path": "../dh-workspace"
     },
     {
       "name": "dh-examples",

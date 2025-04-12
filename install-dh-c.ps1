@@ -28,7 +28,7 @@ $sourcePath = Join-Path $dhPath "dh-c.c"
 $outputPath = Join-Path $binPath "dh-c.exe"
 
 Write-Host "Compiling dh-c build tool..."
-clang -std=c17 -Wall -Wextra -funsigned-char -fblocks -O2 -o "$outputPath" "$sourcePath"
+clang -std=c17 -Wall -Wextra -O3 -o "$outputPath" "$sourcePath" -static
 
 if (-not $?) {
     Write-Host "Error: Failed to compile dh-c" -ForegroundColor Red
