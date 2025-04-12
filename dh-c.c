@@ -18,6 +18,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -75,6 +76,8 @@ typedef struct {
     char              dh_path[1024];
     bool              no_libdh;              // Flag to skip DH library
     char              build_config_name[32]; // Name of selected build configuration
+    bool              show_commands;         // Flag to control printing of commands
+    bool              verbose;               // Flag for verbose logging
 } BuildConfig;
 
 // Build configuration presets
@@ -113,14 +116,15 @@ const char* debug_level_to_flag(DebugLevel level);
 const char* optimization_level_to_flag(OptimizationLevel level);
 void        init_build_config(BuildConfig* config);
 void        free_extra_flags(ExtraFlags* flags);
+bool        get_executable_path(char* buffer, size_t size);
 
 // Add forward declarations for functions
 void init_build_presets(void);
 void cleanup_build_presets(void);
-bool load_template_file(const char* filename, char** template_content);
-void initialize_templates(const char* dh_path);
+bool load_template_file(const char* filename, char** template_content, bool verbose);
+void initialize_templates(const char* dh_path, bool verbose);
 void cleanup_templates(void);
-void create_templates_directory(const char* dh_path);
+void create_templates_directory(const char* dh_path, bool verbose);
 
 // Predefined build configurations
 BuildConfigPreset build_presets[] = {
@@ -764,6 +768,8 @@ void init_build_config(BuildConfig* config) {
     config->is_test            = false;
     config->is_single_file     = false;
     config->no_libdh           = false;
+    config->show_commands      = false;       // Default: don't show commands
+    config->verbose            = false;       // Default: don't show verbose logs
     strcpy(config->build_config_name, "dev"); // Default build config
 }
 
@@ -1227,27 +1233,44 @@ char* CLANGD_TEMPLATE       = NULL;
 char* CLANG_FORMAT_TEMPLATE = NULL;
 char* TASKS_JSON_TEMPLATE   = NULL;
 
-// Function to load a template file and store its contents
-bool load_template_file(const char* filename, char** template_content) {
-    FILE* file = fopen(filename, "r");
+// Function to load a template file and store its contents - update to check verbose flag
+bool load_template_file(const char* filename, char** template_content, bool verbose) {
+    if (verbose) {
+        printf("Attempting to load template from: %s\n", filename);
+    }
+
+    // Open in binary mode to avoid text mode translations
+    FILE* file = fopen(filename, "rb");
     if (!file) {
+        if (verbose) {
+            printf("Failed to open template file: %s (error: %s)\n", filename, strerror(errno));
+        }
         return false;
     }
 
     // Get file size
     if (fseek(file, 0, SEEK_END) != 0) {
+        if (verbose) {
+            printf("Failed to seek to end of file: %s\n", filename);
+        }
         (void)fclose(file);
         return false;
     }
 
     long file_size = ftell(file);
     if (file_size == -1) {
+        if (verbose) {
+            printf("Failed to determine file size: %s\n", filename);
+        }
         (void)fclose(file);
         return false;
     }
 
     // Move back to the beginning of the file with proper error handling
     if (fseek(file, 0, SEEK_SET) != 0) {
+        if (verbose) {
+            printf("Failed to seek to beginning of file: %s\n", filename);
+        }
         (void)fclose(file);
         return false;
     }
@@ -1255,58 +1278,130 @@ bool load_template_file(const char* filename, char** template_content) {
     // Allocate memory for content
     *template_content = (char*)malloc(file_size + 1);
     if (*template_content == NULL) {
+        if (verbose) {
+            printf("Memory allocation failed for template: %s\n", filename);
+        }
         (void)fclose(file);
         return false;
     }
 
-    // Read file content
-    size_t read_size = fread(*template_content, 1, file_size, file);
-    (void)fclose(file);
+    // Read file content in chunks to handle potential partial reads
+    size_t bytes_read = 0;
+    size_t total_read = 0;
+    char*  buffer_pos = *template_content;
 
-    if (read_size != (size_t)file_size) {
-        free(*template_content);
-        *template_content = NULL;
-        return false;
+    while (total_read < (size_t)file_size) {
+        bytes_read = fread(buffer_pos, 1, file_size - total_read, file);
+
+        if (bytes_read == 0) {
+            if (feof(file)) {
+                // End of file reached unexpectedly
+                if (verbose) {
+                    printf("Warning: EOF reached after reading %zu of %ld bytes from %s\n", total_read, file_size, filename);
+                }
+                break;
+            }
+
+            if (ferror(file)) {
+                if (verbose) {
+                    printf("Error reading from file %s: %s\n", filename, strerror(errno));
+                }
+                free(*template_content);
+                *template_content = NULL;
+                (void)fclose(file);
+                return false;
+            }
+        }
+
+        total_read += bytes_read;
+        buffer_pos += bytes_read;
     }
 
-    // Null terminate
-    (*template_content)[file_size] = '\0';
+    (void)fclose(file);
 
+    // Null terminate
+    (*template_content)[total_read] = '\0';
+    if (verbose) {
+        printf("Successfully loaded template: %s (%zu bytes)\n", filename, total_read);
+    }
     return true;
 }
 
 // Function to initialize all templates
-void initialize_templates(const char* dh_path) {
+void initialize_templates(const char* dh_path, bool verbose) {
     char template_path[1024] = {};
+    char templates_dir[1024] = {};
+
+    // Ensure templates directory exists
+    (void)snprintf(templates_dir, sizeof(templates_dir), "%s%stemplates", dh_path, PATH_SEPARATOR);
+    if (!dir_exists(templates_dir)) {
+        create_templates_directory(dh_path, verbose);
+    }
 
     // Load .clangd template
-    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%s.clangd", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
-    if (!load_template_file(template_path, &CLANGD_TEMPLATE)) {
+    (void)snprintf(template_path, sizeof(template_path), "%s%s.clangd", templates_dir, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &CLANGD_TEMPLATE, verbose)) {
         // Fall back to default
         CLANGD_TEMPLATE = strdup(DEFAULT_CLANGD_TEMPLATE);
-        printf("Using default .clangd template (couldn't load from %s)\n", template_path);
+        if (verbose) {
+            printf("Using default .clangd template (couldn't load from %s)\n", template_path);
+        }
+
+        // Try to create the file if it doesn't exist
+        if (!file_exists(template_path)) {
+            write_file(template_path, DEFAULT_CLANGD_TEMPLATE);
+            if (verbose) {
+                printf("Created default .clangd template file\n");
+            }
+        }
     } else {
-        printf("Loaded .clangd template from %s\n", template_path);
+        if (verbose) {
+            printf("Loaded .clangd template from %s\n", template_path);
+        }
     }
 
     // Load .clang-format template
-    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%s.clang-format", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
-    if (!load_template_file(template_path, &CLANG_FORMAT_TEMPLATE)) {
+    (void)snprintf(template_path, sizeof(template_path), "%s%s.clang-format", templates_dir, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &CLANG_FORMAT_TEMPLATE, verbose)) {
         // Fall back to default
         CLANG_FORMAT_TEMPLATE = strdup(DEFAULT_CLANG_FORMAT_TEMPLATE);
-        printf("Using default .clang-format template (couldn't load from %s)\n", template_path);
+        if (verbose) {
+            printf("Using default .clang-format template (couldn't load from %s)\n", template_path);
+        }
+
+        // Try to create the file if it doesn't exist
+        if (!file_exists(template_path)) {
+            write_file(template_path, DEFAULT_CLANG_FORMAT_TEMPLATE);
+            if (verbose) {
+                printf("Created default .clang-format template file\n");
+            }
+        }
     } else {
-        printf("Loaded .clang-format template from %s\n", template_path);
+        if (verbose) {
+            printf("Loaded .clang-format template from %s\n", template_path);
+        }
     }
 
     // Load tasks.json template
-    (void)snprintf(template_path, sizeof(template_path), "%s%stemplates%stasks.json", dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
-    if (!load_template_file(template_path, &TASKS_JSON_TEMPLATE)) {
+    (void)snprintf(template_path, sizeof(template_path), "%s%stasks.json", templates_dir, PATH_SEPARATOR);
+    if (!load_template_file(template_path, &TASKS_JSON_TEMPLATE, verbose)) {
         // Fall back to default
         TASKS_JSON_TEMPLATE = strdup(DEFAULT_TASKS_JSON_TEMPLATE);
-        printf("Using default tasks.json template (couldn't load from %s)\n", template_path);
+        if (verbose) {
+            printf("Using default tasks.json template (couldn't load from %s)\n", template_path);
+        }
+
+        // Try to create the file if it doesn't exist
+        if (!file_exists(template_path)) {
+            write_file(template_path, DEFAULT_TASKS_JSON_TEMPLATE);
+            if (verbose) {
+                printf("Created default tasks.json template file\n");
+            }
+        }
     } else {
-        printf("Loaded tasks.json template from %s\n", template_path);
+        if (verbose) {
+            printf("Loaded tasks.json template from %s\n", template_path);
+        }
     }
 }
 
@@ -1329,7 +1424,7 @@ void cleanup_templates() {
 }
 
 // Function to create templates directory and write default templates
-void create_templates_directory(const char* dh_path) {
+void create_templates_directory(const char* dh_path, bool verbose) {
     char templates_dir[1024] = {};
     (void)snprintf(templates_dir, sizeof(templates_dir), "%s%stemplates", dh_path, PATH_SEPARATOR);
 
@@ -1338,7 +1433,9 @@ void create_templates_directory(const char* dh_path) {
             (void)fprintf(stderr, "Warning: Could not create templates directory\n");
             return;
         }
-        printf("Created templates directory: %s\n", templates_dir);
+        if (verbose) {
+            printf("Created templates directory: %s\n", templates_dir);
+        }
     }
 
     // Write default templates to files
@@ -1348,18 +1445,27 @@ void create_templates_directory(const char* dh_path) {
     (void)snprintf(template_path, sizeof(template_path), "%s%s.clangd", templates_dir, PATH_SEPARATOR);
     if (!file_exists(template_path)) {
         write_file(template_path, DEFAULT_CLANGD_TEMPLATE);
+        if (verbose) {
+            printf("Created default .clangd template file\n");
+        }
     }
 
     // Write .clang-format template
     (void)snprintf(template_path, sizeof(template_path), "%s%s.clang-format", templates_dir, PATH_SEPARATOR);
     if (!file_exists(template_path)) {
         write_file(template_path, DEFAULT_CLANG_FORMAT_TEMPLATE);
+        if (verbose) {
+            printf("Created default .clang-format template file\n");
+        }
     }
 
     // Write tasks.json template
     (void)snprintf(template_path, sizeof(template_path), "%s%stasks.json", templates_dir, PATH_SEPARATOR);
     if (!file_exists(template_path)) {
         write_file(template_path, DEFAULT_TASKS_JSON_TEMPLATE);
+        if (verbose) {
+            printf("Created default tasks.json template file\n");
+        }
     }
 }
 
@@ -1458,8 +1564,14 @@ void build_project(BuildConfig* config) {
 
     // Execute build command
     printf("Building %s with config '%s'...\n", config->project_name, config->build_config_name);
-    printf("Command: %s\n", command);
 
+    // Only print command if show_commands is true
+    if (config->show_commands) {
+        printf("Command: %s\n", command);
+    }
+
+    // Using system() is a linter warning but is required for this tool's functionality
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
     int result = system(command);
     if (result != 0) {
         (void)fprintf(stderr, "Build failed with error code: %d\n", result);
@@ -1494,7 +1606,15 @@ void run_executable(BuildConfig* config) {
     char command[2048] = {};
     (void)snprintf(command, sizeof(command), "\"%s\" %s", output_file, config->run_args);
 
-    printf("Running: %s\n", command);
+    // Only print command if show_commands is true
+    if (config->show_commands) {
+        printf("Running: %s\n", command);
+    } else {
+        printf("Running %s...\n", config->project_name);
+    }
+
+    // Using system() is a linter warning but is required for this tool's functionality
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
     system(command);
 }
 
@@ -1675,8 +1795,7 @@ void create_project(const char* name, const char* dh_path) {
     // Create standard project structure
     char include_path[1024] = {};
     char src_path[1024]     = {};
-    char tests_path[1024]   = {};
-    char libs_path[1024]    = {};
+    char lib_path[1024]     = {}; // Changed from libs_path to lib_path
 
     int result = snprintf(include_path, sizeof(include_path), "%s%sinclude", project_path, PATH_SEPARATOR);
     if (result >= 0 && (size_t)result < sizeof(include_path)) {
@@ -1688,15 +1807,13 @@ void create_project(const char* name, const char* dh_path) {
         create_directory(src_path);
     }
 
-    result = snprintf(tests_path, sizeof(tests_path), "%s%stests", project_path, PATH_SEPARATOR);
-    if (result >= 0 && (size_t)result < sizeof(tests_path)) {
-        create_directory(tests_path);
+    // Changed from libs to lib
+    result = snprintf(lib_path, sizeof(lib_path), "%s%slib", project_path, PATH_SEPARATOR);
+    if (result >= 0 && (size_t)result < sizeof(lib_path)) {
+        create_directory(lib_path);
     }
 
-    result = snprintf(libs_path, sizeof(libs_path), "%s%slibs", project_path, PATH_SEPARATOR);
-    if (result >= 0 && (size_t)result < sizeof(libs_path)) {
-        create_directory(libs_path);
-    }
+    // Removed tests directory creation
 
     // Create .clangd file
     create_project_clangd(project_path, dh_path);
@@ -1824,7 +1941,7 @@ void create_workspace(const char* name, const char* dh_path) {
     printf("Workspace created successfully!\n");
 }
 
-// Update print_usage function to include version command
+// Update print_usage function to include --show-commands
 void print_usage() {
     printf("Usage: dh-c [command] [options]\n\n");
     printf("Commands:\n");
@@ -1847,7 +1964,8 @@ void print_usage() {
     printf("  --std=<c99|c11|c17>     - Specify C standard (default: c17)\n");
     printf("  --args=\"args\"           - Arguments to pass when running\n");
     printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n");
-    printf("  --no-libdh              - Skip DH library\n\n");
+    printf("  --no-libdh              - Skip DH library\n");
+    printf("  --show-commands         - Show commands being executed\n\n");
     printf("Environment Variables:\n");
     printf("  DH_HOME               - Path to DH library installation\n\n");
     printf("Examples:\n");
@@ -1861,7 +1979,7 @@ void print_usage() {
     printf("  dh-c build embedded --no-libdh   - Build non-DH-C project with size optimization\n");
 }
 
-// Update main function to handle version command
+// Update main function to handle --show-commands and show exe path with version
 int main(int argc, const char* argv[]) {
     // Default configuration
     BuildConfig config = {};
@@ -1884,8 +2002,23 @@ int main(int argc, const char* argv[]) {
     if (strcmp(argv[1], "--version") == 0) {
         printf("DH-C Build Tool version %s\n", DH_VERSION);
         printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
+
+        // Get and print executable path
+        char exe_path[1024] = { 0 };
+        if (get_executable_path(exe_path, sizeof(exe_path))) {
+            printf("Installed at: %s\n", exe_path);
+        }
+
         cleanup_build_presets();
         return 0;
+    }
+
+    // Check for --show-commands option
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--show-commands") == 0) {
+            config.show_commands = true;
+            break;
+        }
     }
 
     // Try to find DH path early for workspace and project commands
@@ -1895,9 +2028,9 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    // Create templates directory and initialize templates
-    create_templates_directory(config.dh_path);
-    initialize_templates(config.dh_path);
+    // Create templates directory if needed and initialize templates
+    create_templates_directory(config.dh_path, config.verbose);
+    initialize_templates(config.dh_path, config.verbose);
 
     // Create bin directory if it doesn't exist
     char bin_path[1024] = {};
@@ -1935,13 +2068,14 @@ int main(int argc, const char* argv[]) {
     }
 
     // Process the command first
-    if (strcmp(argv[1], "build") == 0) {
+    if (strcmp(argv[1], "build") == 0) { // NOLINT(bugprone-branch-clone)
         // Just build
     } else if (strcmp(argv[1], "test") == 0) {
-        // Apply test preset and run
+        // Apply test preset and run tests
         apply_build_preset(&config, "test");
+        config.is_test = true;
     } else if (strcmp(argv[1], "run") == 0) {
-        // Build and run
+        // Build and run the program
     } else if (!is_c_source_file(argv[1]) || !file_exists(argv[1])) {
         (void)fprintf(stderr, "Unknown command: %s\n", argv[1]);
         print_usage();
@@ -2136,4 +2270,18 @@ void cleanup_build_presets() {
     for (int i = 0; i < NUM_BUILD_PRESETS; ++i) {
         free_extra_flags(&build_presets[i].extra_flags);
     }
+}
+
+// Add function to get the executable path
+bool get_executable_path(char* buffer, size_t size) {
+#ifdef _WIN32
+    return GetModuleFileName(NULL, buffer, (DWORD)size) > 0;
+#else
+    ssize_t len = readlink("/proc/self/exe", buffer, size - 1);
+    if (len != -1) {
+        buffer[len] = '\0';
+        return true;
+    }
+    return false;
+#endif
 }
