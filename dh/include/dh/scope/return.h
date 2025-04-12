@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    return.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -23,6 +24,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#if DEPRECATED
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -160,6 +162,7 @@ extern "C" {
     getReservedReturn()[0] = val_return;              \
     eval_return getReservedReturn()[0];               \
 }) */
+#endif // DEPRECATED
 
 #if defined(__cplusplus)
 } /* extern "C" */

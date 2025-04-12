@@ -2,7 +2,7 @@
 
 <!--
 ***Description***
-"Make C Great Again": A modern language extension for safer and more productive C programming
+dasae-headers: A modern extension language for safer and more productive C programming
 
 ***Topic***
 - c-programming
@@ -25,7 +25,7 @@
 
 <div align="center">
   <h1>dasae-headers: Modern and Safe C programming</h1>
-  <p><strong>A modern language extension for safer and more productive C programming</strong></p>
+  <p><strong>A modern extension language for safer and more productive C programming</strong></p>
 
   <div>
     <a href="./README.md"><img src="https://img.shields.io/badge/readme-en-red?style=flat-square" alt="Language: English"></a>
@@ -33,9 +33,9 @@
   </div>
 
   <div style="margin-top: 8px;">
-    <img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS">
-    <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT">
+    <a href="https://en.wikipedia.org/wiki/C17_(C_standard_revision)"><img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17"></a>
+    <a href="./dh/include/dh/builtin/plat_cfg.h"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT"></a>
   </div>
 </div>
 
@@ -61,6 +61,8 @@
   - [📜 License](#-license)
 
 ## 🌟 Introduction
+
+> "Make C Great Again"
 
 dasae-headers aims to apply modern programming paradigms to the C language, greatly enhancing safety, expressiveness, and productivity. It provides memory safety, type safety, and improved error handling while maintaining the simplicity of C.
 
@@ -112,7 +114,6 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ```c
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 // Include additional headers according to needed functionality
@@ -128,9 +129,11 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 // Include string utilities for working with text
 #include "dh/Str.h"
 
-// Define the main function with extended scope and error handling
+// Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
+
     // Create a string literal using Str_l
     let hello_world = Str_l("Hello, world!");
 
@@ -139,19 +142,19 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success (void value with no error)
     return_ok({});
-} ext_unscoped; // End the extended scope block
+} unscoped; // End the scope block
 ```
 
 ### 🔍 Optional Values Example
 
 ```c
-fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     }
     return_none(); // Return with no value
-} ext_unscoped;
+} unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -188,14 +191,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(example(void), Err$void) {
+fn_scope_ext(example(void), Err$void) {
     // Allocate resources
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -220,7 +223,7 @@ fn_ext_scope(example(void), Err$void) {
 
     // Return a normally
     return_ok({});
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 🤝 Pattern Matching Example
@@ -294,8 +297,12 @@ fn_TEST_scope("Basic Math Operations Test") {
 
 ## 📚 Documentation
 
-Detailed documentation can be found at:
-- [API documentation](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+Detailed documentation can be found in our wiki:
+- [Wiki Home](./dh/docs/en/home.md) - Main documentation portal
+- [Quick Start Guide](./dh/docs/en/quick-start.md) - Detailed guide for beginners
+- [API Reference](./dh/docs/en/api/index.md) - Module documentation
+
+Additional resources:
 - [Header files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
 - [Source files](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
 - [Examples](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
@@ -304,7 +311,7 @@ Detailed documentation can be found at:
 ## 🚧 Current Status
 
 This project is actively under development, and the API is not yet stabilized. We would appreciate if you could use it in experimental projects and provide feedback.
-<!-- If you are interested in improving the project, please refer to contribution.md. -->
+If you are interested in improving the project, please refer to [contribution.md](./dh/docs/en/contributing.md).
 
 ## 🙏 Contributing
 
@@ -321,4 +328,6 @@ For any questions or inquiries, please contact the project author:
 
 ## 📜 License
 
-Copyright © 2024-2025. Gyeongtae Kim. All rights reserved.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+Copyright © 2024-2025 Gyeongtae Kim

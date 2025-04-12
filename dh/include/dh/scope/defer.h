@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    defer.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -23,6 +24,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#if DEPRECATED
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
@@ -119,6 +121,7 @@ extern "C" {
         }                                           \
     }
 // NOLINTEND(bugprone-terminating-continue)
+#endif // DEPRECATED
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,17 +1,25 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved. | Released under the MIT License. See LICENSE file for details.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    template.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-01-15 (date of last update)
- * @version v1.0.1
- * @ingroup dasae-headers(dh)/docs
+ * @updated 2025-04-01 (date of last update)
+ * @version v1.0.3
+ * @ingroup dasae-headers(dh)
  * @prefix  NONE
  *
  * @brief   Header of some software
  * @details Some detailed explanation
  */
+
+/*========== Cheat Sheet ====================================================*/
+
+#if CHEAT_SHEET
+#endif /* CHEAT_SHEET */
+
+/*========== Header Guard ===================================================*/
 
 #ifndef TEMPLATE_INCLUDED
 #define TEMPLATE_INCLUDED (1)
@@ -45,9 +53,9 @@ extern "C" {
 
 // implementations: macro function definitions, inline function definitions
 
-/*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
+/*========== Unit Test ======================================================*/
 
-#ifdef UNIT_TEST
+#if UNIT_TEST
 #endif /* UNIT_TEST */
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/

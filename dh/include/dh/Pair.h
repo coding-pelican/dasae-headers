@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    Pair.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -38,7 +39,7 @@ extern "C" {
     decl_Pair$(T_First, T_Second);              \
     impl_Pair$(T_First, T_Second)
 #define comp_type_decl__Pair$(T_First, T_Second) \
-    typedef struct Pair$(T_First, T_Second)
+    typedef struct Pair$(T_First, T_Second) Pair$(T_First, T_Second)
 #define comp_type_impl__Pair$(T_First, T_Second) \
     struct Pair$(T_First, T_Second) {            \
         T_First  first;                          \
@@ -46,7 +47,7 @@ extern "C" {
     }
 
 #define comp_type_alias__Pair$(T_First, T_Second) \
-    pp_join3($, Pair, pp_cat(1, T_First), pp_cat(2, T_Second))
+    pp_cat3(Pair, pp_cat3($, 1, T_First), pp_cat3($, 2, T_Second))
 #define comp_type_anon__Pair$$(T_First, T_Second) \
     struct {                                      \
         T_First  first;                           \

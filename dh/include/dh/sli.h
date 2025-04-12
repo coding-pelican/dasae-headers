@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    sli.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -322,8 +323,8 @@ union __AssociationTypes_Sli {
 #define comp_op__Sli_arr(__arr, val_arr...)            eval({ \
     let_(__arr, TypeOf(&val_arr)) = &val_arr;                 \
     eval_return Sli_from$(                                    \
-        Sli$$(TypeOf(__arr->items[0])),                       \
-        __arr->items,                                         \
+        Sli$$(TypeOf(__arr->buf[0])),                         \
+        __arr->buf,                                           \
         Arr_len(*__arr)                                       \
     );                                                        \
 })
@@ -331,7 +332,7 @@ union __AssociationTypes_Sli {
     let_(__arr, TypeOf(&val_arr)) = &val_arr;              \
     eval_return Sli_from$(                                 \
         T_Sli,                                             \
-        __arr->items,                                      \
+        __arr->buf,                                        \
         Arr_len(*__arr)                                    \
     );                                                     \
 })

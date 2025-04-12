@@ -1,5 +1,6 @@
 /**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    comp.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
@@ -105,7 +106,9 @@ extern "C" {
     comp_syn__lit$(T_Lit, _Inital)
 
 #define initial(_Inital...)                      comp_syn__initial(_Inital)
+#define initial$(T_Lit, _Inital... /*T*/)        comp_syn__initial$(T_Lit, _Inital)
 #define cleared()                                comp_syn__cleared()
+#define cleared$(T_Lit /*T*/)                    comp_syn__cleared$(T_Lit)
 #define make$(T_Lit, _Inital... /*T*/)           comp_syn__make$(T_Lit, _Inital)
 #define makeCleared$(T_Lit /*T*/)                comp_syn__makeCleared$(T_Lit)
 #define create$(T_Lit, _Initial... /*Ptr$T*/)    comp_syn__create$(T_Lit, _Initial)
@@ -216,8 +219,12 @@ extern "C" {
 
 #define comp_syn__initial(_Inital...) \
     { _Inital }
+#define comp_syn__initial$(T_Lit, _Inital... /*T*/) \
+    (lit$(T_Lit, _Inital))
 #define comp_syn__cleared() \
     {}
+#define comp_syn__cleared$(T_Lit /*T*/) \
+    (lit$(T_Lit))
 
 #define comp_syn__make$(T_Lit, _Inital...) (lit$(T_Lit, _Inital))
 #define comp_syn__makeCleared$(T_Lit)      (lit$(T_Lit))

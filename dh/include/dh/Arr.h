@@ -1,18 +1,17 @@
 /**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
+ * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    Arr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-17 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha.5
+ * @updated 2025-04-07 (date of last update)
+ * @version v0.1-alpha.6
  * @ingroup dasae-headers(dh)
  * @prefix  Arr
  *
  * @brief   Fixed-size array types and operations
  * @details This header provides types and macros for C-style fixed-size arrays.
- *          Supports both constant and mutable arrays, with separate type
- *          declarations and implementations.
  *          Array size and element type are determined at compile-time and
  *          cannot be changed at runtime.
  */
@@ -21,11 +20,10 @@
 
 #if CHEAT_SHEET
 /* Type Declarations */
-Arr_const$(3, i32) constArr;   // Constant i32 array with 3 elements
-Arr$(5, f32) arr;              // Mutable f32 array with 5 elements
-typedef Arr$$(4, u8) ByteQuad; // Anonymous array type for typedefs
-use_Arr$(4, u8);               // Declare and implement u8[4] array type
-decl_Arr$(3, i32);             // Declare i32[3] array type
+Arr$(5, f32) arr;              // [5]f32 array
+typedef Arr$$(4, u8) ByteQuad; // Anonymous [4]u8 type for typedefs
+use_Arr$(4, u8);               // Declare and implement [4]u8 array type
+decl_Arr$(3, i32);             // Declare [3]i32 array type
 impl_Arr$(3, i32);             // Implement previously declared type
 
 /* Initialization */
@@ -41,7 +39,7 @@ var typed2        = Arr_anonCast$(Arr$(3, i32), anon2);    // Type conversion
 /* Type Definitions */
 /// Fixed-size array type
 typedef struct Arr$N$T {
-    T items[N]; ///< Array elements
+    T buf[N]; ///< Array elements
 } Arr$N$T;
 
 /* Type Generations */
@@ -53,13 +51,9 @@ typedef struct Arr$N$T {
 #define impl_Arr$(N, T) ...
 
 /* Type Alias and Anonymous Types */
-/// Create a constant array type with N elements of type T
-#define Arr_const$(N, T)                  ...
-/// Create a mutable array type with N elements of type T
+/// Create an array type with N elements of type T
 #define Arr$(N, T)                        ...
-/// Create anonymous constant array type
-#define Arr_const$$(N, T)                 ...
-/// Create anonymous mutable array type
+/// Create an anonymous array type with N elements of type T
 #define Arr$$(N, T)                       ...
 /// Convert anonymous array to specific type
 #define Arr_anonCast$(T_Arr, var_anon...) ...
@@ -175,7 +169,7 @@ extern "C" {
      * @param N Size of the array                                        \
      * @param T Element type of the array                                \
      * @example                                                          \
-     *     use_Arr$(4, u8);  // Declares and implements u8[4] array type \
+     *     use_Arr$(4, u8);  // Declares and implements [4]u8 array type \
      */                                                                  \
     comp_type_gen__use_Arr$(N, T)
 #define decl_Arr$(N, T)                                      \
@@ -184,7 +178,7 @@ extern "C" {
      * @param N Size of the array                            \
      * @param T Element type of the array                    \
      * @example                                              \
-     *     decl_Arr$(3, i32);  // Declares i32[3] array type \
+     *     decl_Arr$(3, i32);  // Declares [3]i32 array type \
      */                                                      \
     comp_type_gen__decl_Arr$(N, T)
 #define impl_Arr$(N, T)                                        \
@@ -193,40 +187,20 @@ extern "C" {
      * @param N Size of the array                              \
      * @param T Element type of the array                      \
      * @example                                                \
-     *     impl_Arr$(3, i32);  // Implements i32[3] array type \
+     *     impl_Arr$(3, i32);  // Implements [3]i32 array type \
      */                                                        \
     comp_type_gen__impl_Arr$(N, T)
 
-#define Arr_const$(N, T)                                                      \
-    /**                                                                       \
-     * @brief Creates a constant array type                                   \
-     * @param N Size of the array                                             \
-     * @param T Element type of the array                                     \
-     * @return Constant array type alias                                      \
-     * @example                                                               \
-     *     Arr_const$(3, i32) myConstArr;  // const i32 array with 3 elements \
-     */                                                                       \
-    comp_type_alias__Arr_const$(N, T)
-#define Arr$(N, T)                                           \
-    /**                                                      \
-     * @brief Creates a mutable array type                   \
-     * @param N Size of the array                            \
-     * @param T Element type of the array                    \
-     * @return Mutable Array type alias                      \
-     * @example                                              \
-     *     Arr$(5, f32) myArr;  // f32 array with 5 elements \
-     */                                                      \
+#define Arr$(N, T)                              \
+    /**                                         \
+     * @brief Creates an array type             \
+     * @param N Size of the array               \
+     * @param T Element type of the array       \
+     * @return Array type alias                 \
+     * @example                                 \
+     *     Arr$(5, f32) myArr;  // [5]f32 array \
+     */                                         \
     comp_type_alias__Arr$(N, T)
-#define Arr_const$$(N, T)                                                              \
-    /**                                                                                \
-     * @brief Creates an anonymous constant array type                                 \
-     * @param N Size of the array                                                      \
-     * @param T Element type of the array                                              \
-     * @return Anonymous constant array type alias                                     \
-     * @example                                                                        \
-     *     typedef Arr_const$$(3, i32) MyConstArrType;  // Anonymous const i32[3] type \
-     */                                                                                \
-    comp_type_anon__Arr_const$$(N, T)
 #define Arr$$(N, T)                                                   \
     /**                                                               \
      * @brief Creates an anonymous array type                         \
@@ -234,7 +208,7 @@ extern "C" {
      * @param T Element type of the array                             \
      * @return Anonymous array type alias                             \
      * @example                                                       \
-     *     typedef Arr$$(3, i32) MyArrType;  // Anonymous i32[3] type \
+     *     typedef Arr$$(3, i32) MyArrType;  // Anonymous [3]i32 type \
      */                                                               \
     comp_type_anon__Arr$$(N, T)
 #define Arr_anonCast$(T_Arr, var_anon...)                                                          \
@@ -306,7 +280,7 @@ extern "C" {
      * @details Performs bounds checking, triggers assertion in debug mode if index is out of bounds \
      * @example                                                                                      \
      *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                                                   \
-     *     i32* pItem = Arr_at(arr, 1);  // &arr.items[1]                                            \
+     *     i32* pItem = Arr_at(arr, 1);  // &arr.buf[1]                                              \
      */                                                                                              \
     comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define Arr_getAt(var_self, usize_index...)                                                          \
@@ -417,52 +391,36 @@ extern "C" {
 #define comp_type_gen__use_Arr$(N, T) \
     decl_Arr$(N, T);                  \
     impl_Arr$(N, T)
-#define comp_type_gen__decl_Arr$(N, T)                \
-    typedef struct Arr_const$(N, T) Arr_const$(N, T); \
-    typedef union Arr$(N, T) Arr$(N, T)
+#define comp_type_gen__decl_Arr$(N, T) \
+    typedef struct Arr$(N, T) Arr$(N, T)
 #define comp_type_gen__impl_Arr$(N, T) \
-    struct Arr_const$(N, T) {          \
-        const T items[N];              \
-    };                                 \
-    union Arr$(N, T) {                 \
-        struct {                       \
-            T items[N];                \
-        };                             \
-        Arr_const$(N, T) as_const;     \
+    struct Arr$(N, T) {                \
+        T buf[N];                      \
     }
 
-#define comp_type_alias__Arr_const$(N, T) \
-    pp_join3($, Arr_const, N, T)
 #define comp_type_alias__Arr$(N, T) \
     pp_join3($, Arr, N, T)
-#define comp_type_anon__Arr_const$$(N, T) \
-    struct {                              \
-        const T items[N];                 \
-    }
 #define comp_type_anon__Arr$$(N, T) \
-    union {                         \
-        struct {                    \
-            T items[N];             \
-        };                          \
-        Arr_const$$(N, T) as_const; \
+    struct {                        \
+        T buf[N];                   \
     }
-#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                            \
-    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                             \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                           \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                         \
-    claim_assert_static(validateField(TypeOf(*__anon), items, FieldTypeOf(T_Arr, items)));   \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_Arr, items)); \
-    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                       \
+#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                        \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                         \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                       \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                     \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(T_Arr, buf)));   \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(T_Arr, buf)); \
+    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                   \
 })
 
-#define comp_op__Arr_zero()                    { .items = { 0 } }
+#define comp_op__Arr_zero()                    { .buf = { 0 } }
 #define comp_op__Arr_zero$(T_Arr)              ((T_Arr)Arr_zero())
-#define comp_op__Arr_init(_Initial...)         { .items = _Initial }
+#define comp_op__Arr_init(_Initial...)         { .buf = _Initial }
 #define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
 
 #define comp_op__Arr_len(__self, var_self...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self;     \
-    eval_return countOf(__self->items);              \
+    eval_return countOf(__self->buf);                \
 })
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self;                          \
@@ -473,7 +431,7 @@ extern "C" {
         __index,                                                          \
         Arr_len(*__self)                                                  \
     );                                                                    \
-    eval_return rawref(__self->items[__index]);                           \
+    eval_return rawref(__self->buf[__index]);                             \
 })
 #define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
     const TypeOf(&var_self) __self = &var_self;                              \
@@ -484,7 +442,7 @@ extern "C" {
         __index,                                                             \
         Arr_len(*__self)                                                     \
     );                                                                       \
-    eval_return __self->items[__index];                                      \
+    eval_return __self->buf[__index];                                        \
 })
 #define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
     const TypeOf(&var_self) __self = &var_self;                                         \
@@ -495,7 +453,7 @@ extern "C" {
         __index,                                                                        \
         Arr_len(*__self)                                                                \
     );                                                                                  \
-    __self->items[__index] = as$(TypeOf(__self->items[0]), var_value);                  \
+    __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value);                      \
     eval_return __self;                                                                 \
 })
 
@@ -516,8 +474,8 @@ extern "C" {
     );                                                                                 \
     eval_return make$(                                                                 \
         TypeOf(__self),                                                                \
-        .items = __self->items + __range.begin,                                        \
-        .len   = Range_len(__range)                                                    \
+        .buf = __self->buf + __range.begin,                                            \
+        .len = Range_len(__range)                                                      \
     );                                                                                 \
 })
 

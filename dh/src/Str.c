@@ -88,8 +88,7 @@ Opt$Str Str_constCast(Str_const self) {
     return some$(Opt$Str, Str_from(as$(u8*, self.ptr), self.len));
 }
 
-Err$Str Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) {
-    reserveReturn(Err$Str);
+fn_scope(Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs), Err$Str) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
@@ -98,45 +97,43 @@ Err$Str Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) {
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
-}
+} unscoped;
 
-void Str_print(Str_const self) {
+fn_(Str_print(Str_const self), void) {
     debug_assert_nonnull(self.ptr);
     if (self.len <= 0) { return; }
     printf("%.*s", as$(i32, self.len), self.ptr);
 }
 
-void Str_println(Str_const self) {
+fn_(Str_println(Str_const self), void) {
     debug_assert_nonnull(self.ptr);
     Str_print(self);
     $ignore putchar('\n');
 }
 
-Err$Str Str_format(mem_Allocator allocator, const char* format, ...) {
-    scope_reserveReturn(Err$Str) {
-        va_list args1 = {};
-        va_start(args1, format);
-        defer_(va_end(args1));
+fn_scope_ext(Str_format(mem_Allocator allocator, const char* format, ...), Err$Str) {
+    va_list args1 = {};
+    va_start(args1, format);
+    defer_(va_end(args1));
 
-        va_list args2 = {};
-        va_copy(args2, args1);
-        defer_(va_end(args2));
+    va_list args2 = {};
+    va_copy(args2, args1);
+    defer_(va_end(args2));
 
-        let len = eval({
-            let res = vsnprintf(null, 0, format, args1);
-            if (res < 0) { return_err(mem_Allocator_Err_OutOfMemory()); }
-            eval_return as$(usize, res);
-        });
+    let len = eval({
+        let res = vsnprintf(null, 0, format, args1);
+        if (res < 0) { return_err(mem_Allocator_Err_OutOfMemory()); }
+        eval_return as$(usize, res);
+    });
 
-        var result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
-        errdefer_(mem_Allocator_free(allocator, anySli(result)));
-        {
-            $ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
-            result.len = len;
-        }
-        return_ok(result);
-    } scope_returnReserved;
-}
+    var result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
+    errdefer_(mem_Allocator_free(allocator, anySli(result)));
+    {
+        $ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
+        result.len = len;
+    }
+    return_ok(result);
+} unscoped_ext;
 
 Str_const Str_slice(Str_const self, usize start, usize end) {
     debug_assert_nonnull(self.ptr);
@@ -171,8 +168,7 @@ Str_const Str_rtrim(Str_const self) {
     return Str_slice(self, 0, end);
 }
 
-Err$Str Str_upper(mem_Allocator allocator, Str_const str) {
-    reserveReturn(Err$Str);
+fn_scope(Str_upper(mem_Allocator allocator, Str_const str), Err$Str) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -180,10 +176,9 @@ Err$Str Str_upper(mem_Allocator allocator, Str_const str) {
         *ch = as$(u8, toupper(*Sli_at(str, i)));
     }
     return_ok(result);
-}
+} unscoped;
 
-Err$Str Str_lower(mem_Allocator allocator, Str_const str) {
-    reserveReturn(Err$Str);
+fn_scope(Str_lower(mem_Allocator allocator, Str_const str), Err$Str) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -191,7 +186,7 @@ Err$Str Str_lower(mem_Allocator allocator, Str_const str) {
         *ch = as$(u8, tolower(*Sli_at(str, i)));
     }
     return_ok(result);
-}
+} unscoped;
 
 bool Str_contains(Str_const haystack, Str_const needle) {
     debug_assert_nonnull(haystack.ptr);
@@ -206,8 +201,7 @@ bool Str_contains(Str_const haystack, Str_const needle) {
     return false;
 }
 
-Opt$usize Str_find(Str_const haystack, Str_const needle, usize start) {
-    reserveReturn(Opt$usize);
+fn_scope(Str_find(Str_const haystack, Str_const needle, usize start), Opt$usize) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -218,10 +212,9 @@ Opt$usize Str_find(Str_const haystack, Str_const needle, usize start) {
         }
     }
     return_none();
-}
+} unscoped;
 
-Opt$usize Str_rfind(Str_const haystack, Str_const needle, usize start) {
-    reserveReturn(Opt$usize);
+fn_scope(Str_rfind(Str_const haystack, Str_const needle, usize start), Opt$usize) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -232,7 +225,7 @@ Opt$usize Str_rfind(Str_const haystack, Str_const needle, usize start) {
         }
     }
     return_none();
-}
+} unscoped;
 
 bool Str_startsWith(Str_const self, Str_const prefix) {
     debug_assert_nonnull(self.ptr);
@@ -369,8 +362,7 @@ bool StrUtf8_isValid(Str_const self) {
     return true;
 }
 
-Opt$u32 StrUtf8_codepointAt(Str_const self, usize pos) {
-    reserveReturn(Opt$u32);
+fn_scope(StrUtf8_codepointAt(Str_const self, usize pos), Opt$u32) {
     debug_assert_nonnull(self.ptr);
     debug_assert(pos < self.len);
 
@@ -404,7 +396,7 @@ Opt$u32 StrUtf8_codepointAt(Str_const self, usize pos) {
     }
 
     return_none();
-}
+} unscoped;
 
 StrUtf8Iter StrUtf8_iter(Str_const self) {
     debug_assert_nonnull(self.ptr);
@@ -433,8 +425,7 @@ StrTokenizer Str_tokenizer(Str_const self, Str_const delims) {
     };
 }
 
-Opt$Str_const StrTokenizer_next(StrTokenizer* self) {
-    reserveReturn(Opt$Str_const);
+fn_scope(StrTokenizer_next(StrTokenizer* self), Opt$Str_const) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->str.ptr);
     debug_assert_nonnull(self->delims.ptr);
@@ -471,4 +462,4 @@ Opt$Str_const StrTokenizer_next(StrTokenizer* self) {
     }
 
     return_some(Str_slice(self->str, start, self->pos));
-}
+} unscoped;

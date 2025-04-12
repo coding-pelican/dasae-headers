@@ -10,9 +10,9 @@
   </div>
 
   <div style="margin-top: 8px;">
-    <img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS">
-    <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT">
+    <a href="https://en.wikipedia.org/wiki/C17_(C_standard_revision)"><img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17"></a>
+    <a href="./dh/include/dh/builtin/plat_cfg.h"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square" alt="Platform: Windows | Linux | macOS"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="License: MIT"></a>
   </div>
 </div>
 
@@ -38,6 +38,8 @@
   - [📜 라이센스](#-라이센스)
 
 ## 🌟 소개
+
+> "Make C Great Again"
 
 dasae-headers는 C언어에 현대적인 프로그래밍 패러다임을 적용하여 안전성, 표현력 및 생산성을 크게 향상시키는 것을 목표로 합니다. 메모리 안전성, 타입 안전성, 향상된 오류 처리 기능을 제공하면서도 C언어의 간결함을 유지합니다.
 
@@ -89,7 +91,6 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 ```c
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
 // 필요한 기능에 따라 추가 헤더 포함
@@ -107,7 +108,9 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    $ignore args;
+
     // Str_l로 문자열 리터럴 생성
     let hello_world = Str_l("Hello, world!");
 
@@ -116,19 +119,19 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
-} ext_unscoped; // 확장 범위 블록 종료
+} unscoped; // 범위 블록 종료
 ```
 
 ### 🔍 Optional Values 예제
 
 ```c
-fn_ext_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // 값이 있음을 반환
     }
     return_none(); // 값이 없음을 반환
-} ext_unscoped;
+} unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -165,14 +168,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // 또는 일반적으로 `use_Err$(i32)`
-fn_ext_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
-} ext_unscoped;
+} unscoped;
 
-fn_ext_scope(example(void), Err$void) {
+fn_scope_ext(example(void), Err$void) {
     // 리소스 할당
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -197,7 +200,7 @@ fn_ext_scope(example(void), Err$void) {
 
     // 정상 반환
     return_ok({});
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 🤝 Pattern Matching 예제
@@ -272,7 +275,12 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 ## 📚 문서
 
 자세한 문서는 다음 위치에서 확인할 수 있습니다:
-- [API 문서](https://github.com/coding-pelican/dasae-headers/tree/main/dh/docs)
+
+- [위키 홈](./dh/docs/ko/home.md) - 메인 문서 포탈
+- [빠른 시작 가이드](./dh/docs/ko/quick-start.md) - 시작을 위한 상세 가이드
+- [API 참조](./dh/docs/ko/api/index.md) - 모듈 문서
+
+추가 자료:
 - [헤더 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
 - [소스 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
 - [예제 코드](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
@@ -281,7 +289,7 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 ## 🚧 현재 상태
 
 이 프로젝트는 적극적으로 개발 중이며 API는 아직 안정화되지 않았습니다. 실험적인 프로젝트에서 사용하고 피드백을 제공해 주시면 감사하겠습니다.
-<!-- 프로젝트 개선에 관심이 있으시다면 contribution.md를 참조해 주세요. -->
+프로젝트 개선에 관심이 있으시다면 [contribution.md](./dh/docs/ko/contributing.md)를 참조해 주세요.
 
 ## 🙏 기여
 
@@ -298,4 +306,6 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 
 ## 📜 라이센스
 
-Copyright © 2024-2025. Gyeongtae Kim. All rights reserved.
+이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
+
+Copyright © 2024-2025 Gyeongtae Kim

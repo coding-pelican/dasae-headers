@@ -1,33 +1,18 @@
-#include "dh/list.h"
-#include "dh/TEST.h"
 #include "dh/main.h"
+#include "dh/TEST.h"
+#include "dh/list.h"
 
 use_ListSgl$(u32);
-fn_TEST_scope("Basic SinglyLinkedList Operations") {
-    var list = type$(ListSgl$u32, ListSgl_init());
+fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
+    var_type(list, ListSgl$u32, ListSgl_init());
 
     try_(TEST_expect(ListSgl_len(list.base) == 0));
 
-    var one = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 1))
-    );
-    var two = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 2))
-    );
-    var three = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 3))
-    );
-    var four = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 4))
-    );
-    var five = type$(
-        ListSgl_Node$u32,
-        ListSgl_Node_init(meta_create$(u32, 5))
-    );
+    var_type(one, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 1)));
+    var_type(two, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 2)));
+    var_type(three, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 3)));
+    var_type(four, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 4)));
+    var_type(five, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 5)));
 
     ListSgl_prepend(list.base, two.base);            // {2}
     ListSgl_Node_insertAfter(two.base, five.base);   // {2, 5}
@@ -42,7 +27,7 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
         var it    = list.first;
         u32 index = 1;
         while_some(it, node) block_defer {
-            defer_({ index += 1; it = node->next; });
+            defer_(index += 1, it = node->next);
             try_(TEST_expect(*node->data == index));
         } block_deferral;
     }
@@ -60,4 +45,4 @@ fn_TEST_scope("Basic SinglyLinkedList Operations") {
     try_(TEST_expect(*unwrap(list.first)->data == 4));
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 2));
     try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
-} TEST_unscoped;
+} TEST_unscoped_ext;

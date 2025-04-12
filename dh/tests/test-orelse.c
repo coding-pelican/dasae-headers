@@ -1,9 +1,8 @@
-#include "dh/core.h"
 #include "dh/main.h"
 #include "dh/log.h"
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    const Opt$(i32) opt = none();
+fn_scope(dh_main(Sli$Str_const args), Err$void) {
+    let_(opt, Opt$(i32)) = none();
 
     let temp = 123;
     let a    = orelse(opt, 123);
@@ -21,4 +20,4 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
 
     return_ok({});
     $unused(args, a, b, c, d, e, f);
-} ext_unscoped;
+} unscoped;
