@@ -95,7 +95,7 @@ else
     OUTPUT_FILE="$INSTALL_DIR/dh-c"
 fi
 
-clang -std=c17 -Wall -Wextra -O3 -o "$OUTPUT_FILE" "$SOURCE_FILE" -static
+clang -std=c17 -Wall -Wextra -O3 -o "$OUTPUT_FILE" "$SOURCE_FILE"
 
 if [ ! -f "$OUTPUT_FILE" ]; then
     echo -e "${RED}Error: Compilation failed.${RESET}"
@@ -178,7 +178,68 @@ else
         if ! grep -q "export PATH=.*$INSTALL_DIR" "$SHELL_CONFIG" 2>/dev/null; then
             echo -e "\n# Added by DH-C installer" >>"$SHELL_CONFIG"
             echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >>"$SHELL_CONFIG"
-            echo "export DH_HOME=\"$SOURCE_PATH\"" >>"$SHELL_CONFIG"
+            echo "export DH_HOME=\"$SOURCE_PATH/dh\"" >>"$SHELL_CONFIG"
+        fi
+        
+        # For macOS, create a LaunchAgent for persistent environment variables
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            echo -e "${YELLOW}Setting up macOS LaunchAgent for persistent environment variables...${RESET}"
+            LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
+            mkdir -p "$LAUNCH_AGENT_DIR"
+            PLIST_FILE="$LAUNCH_AGENT_DIR/com.dh-c.environment.plist"
+            
+            cat > "$PLIST_FILE" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dh-c.environment</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>exit 0</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>DH_HOME</key>
+        <string>$SOURCE_PATH/dh</string>
+        <key>PATH</key>
+        <string>$INSTALL_DIR:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>GlobalEnvironment</key>
+    <true/>
+</dict>
+</plist>
+EOF
+            
+            # Create a wrapper script to ensure environment variables are set
+            WRAPPER_SCRIPT="$INSTALL_DIR/dh-c-wrapper.sh"
+            cat > "$WRAPPER_SCRIPT" << EOF
+#!/bin/bash
+
+# Set the environment variable explicitly
+export DH_HOME="$SOURCE_PATH/dh"
+
+# Run the actual binary with all arguments passed to this script
+exec $INSTALL_DIR/dh-c "\$@"
+EOF
+            chmod +x "$WRAPPER_SCRIPT"
+            
+            # Add alias to shell config
+            if ! grep -q "alias dh-c=" "$SHELL_CONFIG" 2>/dev/null; then
+                echo -e "\n# Create an alias to ensure DH_HOME is set correctly" >> "$SHELL_CONFIG"
+                echo "alias dh-c=\"$WRAPPER_SCRIPT\"" >> "$SHELL_CONFIG"
+            fi
+            
+            # Load the LaunchAgent
+            launchctl unload "$PLIST_FILE" 2>/dev/null || true
+            launchctl load "$PLIST_FILE"
+            echo -e "${GREEN}Created and loaded LaunchAgent for environment variables${RESET}"
+            echo -e "${GREEN}Created wrapper script to ensure environment variables are set${RESET}"
         fi
     fi
 fi
@@ -200,4 +261,9 @@ if $IS_WINDOWS; then
 elif [ -n "$SHELL_CONFIG" ]; then
     echo -e "\n${YELLOW}To start using dh-c immediately, run:${RESET}"
     echo -e "  source $SHELL_CONFIG"
+    
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo -e "\n${GREEN}Environment variables have been set up with a LaunchAgent.${RESET}"
+        echo -e "${GREEN}They will be available in all new terminal sessions.${RESET}"
+    fi
 fi
