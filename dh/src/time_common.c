@@ -1,6 +1,6 @@
 #include "dh/time.h"
 
-void time_sleep(time_Duration duration) {
+fn_(time_sleep(time_Duration duration), void) {
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     HANDLE timer = CreateWaitableTimerExW(
         null,
@@ -25,23 +25,33 @@ void time_sleep(time_Duration duration) {
 
     CloseHandle(timer);
 #else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
-/* TODO: Implement sleep function for Unix platforms */
+    struct timespec req = {
+        .tv_sec  = duration.secs,
+        .tv_nsec = duration.nanos
+    };
+    struct timespec rem = {};
+
+    // Use nanosleep for Unix platforms
+    while (nanosleep(&req, &rem) == -1) {
+        // If interrupted by signal, retry with remaining time
+        req = rem;
+    }
 #endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
 }
 
-void time_sleepSecs(u64 secs) {
+fn_(time_sleepSecs(u64 secs), void) {
     time_sleep(time_Duration_fromSecs(secs));
 }
 
-void time_sleepMillis(u64 millis) {
+fn_(time_sleepMillis(u64 millis), void) {
     time_sleep(time_Duration_fromMillis(millis));
 }
 
-void time_sleepMicros(u64 micros) {
+fn_(time_sleepMicros(u64 micros), void) {
     time_sleep(time_Duration_fromMicros(micros));
 }
 
-void time_sleepNanos(u32 nanos) {
+fn_(time_sleepNanos(u32 nanos), void) {
     time_sleep(time_Duration_fromNanos(nanos));
 }
 

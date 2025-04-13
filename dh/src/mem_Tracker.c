@@ -25,6 +25,8 @@
 #include "dh/Arr.h"
 #include "dh/time.h"
 
+#include <stdlib.h> // For malloc, free, and atexit
+
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
 

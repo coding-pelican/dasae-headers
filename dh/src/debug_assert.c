@@ -19,7 +19,8 @@
 #include "dh/debug/assert.h"
 
 #include <stdarg.h> /* For va_list, va_start(), va_end() */
-#include <stdio.h>  /* For fprintf() */
+#include <stdio.h>  /* For fprintf(), stderr */
+#include <stdlib.h> /* For abort() */
 
 /*========== Extern Function Implementations ================================*/
 

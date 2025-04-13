@@ -40,16 +40,26 @@ extern fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator);
 
 #if defined(__GLIBC__) || defined(__APPLE__)
 #define heap_Classic_has_malloc_size (1)
-/// Get underlying malloc_size if available
-force_inline fn_(heap_Classic_mallocSize(anyptr ptr), usize) {
-#if defined(__GLIBC__)
-    return malloc_usable_size(ptr);
-#else
-    return malloc_size(ptr);
-#endif
-}
 #else
 #define heap_Classic_has_malloc_size (0)
+#endif
+
+#if heap_Classic_has_malloc_size
+#if defined(__GLIBC__)
+#elif defined(__APPLE__)
+#include <malloc/malloc.h>
+#else
+#endif
+/// Get underlying malloc_size if available
+force_inline fn_( heap_Classic_mallocSize(anyptr ptr), usize) {
+#if defined(__GLIBC__)
+    return malloc_usable_size(ptr);
+#elif defined(__APPLE__)
+    return malloc_size(ptr);
+#else
+    return 0; // Fallback
+#endif
+}
 #endif
 
 #if defined(__cplusplus)
