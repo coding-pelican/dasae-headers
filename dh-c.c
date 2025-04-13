@@ -117,6 +117,8 @@ const char* optimization_level_to_flag(OptimizationLevel level);
 void        init_build_config(BuildConfig* config);
 void        free_extra_flags(ExtraFlags* flags);
 bool        get_executable_path(char* buffer, size_t size);
+bool        check_blocksruntime_lib(const char* dh_path, char* out_lib_path, size_t path_size);
+bool        compile_blocksruntime_lib(const char* dh_path, const char* out_lib_path, bool verbose);
 
 // Add forward declarations for functions
 void init_build_presets(void);
@@ -549,29 +551,8 @@ void add_dh_sources(BuildConfig* config, char*** sources, int* source_count) {
         find_source_files(dh_src_dir, sources, source_count);
     }
 
-    // Add BlocksRuntime source files if they exist
-    char blocks_src_dir[1024] = {};
-    (void)snprintf(blocks_src_dir, sizeof(blocks_src_dir), "%s%slibs%sBlocksRuntime%ssrc", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
-
-    if (dir_exists(blocks_src_dir)) {
-        // Add data.c and runtime.c explicitly
-        char data_c[1024]    = {};
-        char runtime_c[1024] = {};
-        (void)snprintf(data_c, sizeof(data_c), "%s%sdata.c", blocks_src_dir, PATH_SEPARATOR);
-        (void)snprintf(runtime_c, sizeof(runtime_c), "%s%sruntime.c", blocks_src_dir, PATH_SEPARATOR);
-
-        if (file_exists(data_c)) {
-            *sources                  = realloc(*sources, (*source_count + 1) * sizeof(char*));
-            (*sources)[*source_count] = strdup(data_c);
-            (*source_count)++;
-        }
-
-        if (file_exists(runtime_c)) {
-            *sources                  = realloc(*sources, (*source_count + 1) * sizeof(char*));
-            (*sources)[*source_count] = strdup(runtime_c);
-            (*source_count)++;
-        }
-    }
+    // For BlocksRuntime, we'll now check for the static library instead of directly adding source files
+    // We'll handle linking the library separately in the build_project function
 }
 
 // Collect all include paths
@@ -1481,6 +1462,80 @@ void build_project(BuildConfig* config) {
     collect_include_paths(config, &includes, &include_count);
     collect_source_files(config, &sources, &source_count);
 
+    // Handle BlocksRuntime library if needed
+    char blocks_lib_path[1024] = {};
+    bool needs_blocks_runtime  = false;
+    bool has_blocks_lib        = false;
+    bool blocks_sources_added  = false;
+
+    // Only check for BlocksRuntime if not using --no-libdh
+    if (!config->no_libdh) {
+        needs_blocks_runtime = true;
+
+        // Check if BlocksRuntime library exists
+        has_blocks_lib = check_blocksruntime_lib(config->dh_path, blocks_lib_path, sizeof(blocks_lib_path));
+
+        // If not, try to compile it
+        if (!has_blocks_lib) {
+            // Create a path for the new library
+            char lib_dir[1024] = {};
+
+            (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%slib", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+            if (!dir_exists(lib_dir)) {
+                create_directory(lib_dir);
+            }
+
+#ifdef _WIN32
+            (void)snprintf(blocks_lib_path, sizeof(blocks_lib_path), "%s%sBlocksRuntime.lib", lib_dir, PATH_SEPARATOR);
+#else
+            (void)snprintf(blocks_lib_path, sizeof(blocks_lib_path), "%s%slibBlocksRuntime.a", lib_dir, PATH_SEPARATOR);
+#endif
+
+            has_blocks_lib = compile_blocksruntime_lib(config->dh_path, blocks_lib_path, config->verbose);
+
+            if (!has_blocks_lib) {
+                if (config->verbose) {
+                    printf("Warning: Could not compile BlocksRuntime library, will include source files directly\n");
+                }
+
+                // Add BlocksRuntime source files directly if we couldn't compile the library
+                char blocks_src_dir[1024] = {};
+                (void)snprintf(blocks_src_dir, sizeof(blocks_src_dir), "%s%slibs%sBlocksRuntime%ssrc", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+                if (dir_exists(blocks_src_dir)) {
+                    // Add data.c and runtime.c explicitly
+                    char data_c[1024]    = {};
+                    char runtime_c[1024] = {};
+                    (void)snprintf(data_c, sizeof(data_c), "%s%sdata.c", blocks_src_dir, PATH_SEPARATOR);
+                    (void)snprintf(runtime_c, sizeof(runtime_c), "%s%sruntime.c", blocks_src_dir, PATH_SEPARATOR);
+
+                    if (file_exists(data_c)) {
+                        char** new_sources = realloc(sources, (source_count + 1) * sizeof(char*));
+                        if (new_sources != NULL) {
+                            sources               = new_sources;
+                            sources[source_count] = strdup(data_c);
+                            source_count++;
+                            blocks_sources_added = true;
+                        }
+                    }
+
+                    if (file_exists(runtime_c)) {
+                        char** new_sources = realloc(sources, (source_count + 1) * sizeof(char*));
+                        if (new_sources != NULL) {
+                            sources               = new_sources;
+                            sources[source_count] = strdup(runtime_c);
+                            source_count++;
+                            blocks_sources_added = true;
+                        }
+                    }
+                }
+            }
+        } else if (config->verbose) {
+            printf("Using existing BlocksRuntime library: %s\n", blocks_lib_path);
+        }
+    }
+
     // Prepare command
     char command[8192] = {};
     strcat(command, config->compiler);
@@ -1503,7 +1558,7 @@ void build_project(BuildConfig* config) {
 
     // Only add -funsigned-char -fblocks if not using --no-libdh
     if (!config->no_libdh) {
-        strcat(command, " -Wall -Wextra -funsigned-char -fblocks");
+        strcat(command, " -Wall -Wextra -funsigned-char -fblocks -DBlocksRuntime_STATIC");
     } else {
         strcat(command, " -Wall -Wextra");
     }
@@ -1553,6 +1608,13 @@ void build_project(BuildConfig* config) {
 
     strcat(command, " -o ");
     strcat(command, output_file);
+
+    // Add BlocksRuntime library if we found or compiled it AND we didn't add the source files directly
+    if (needs_blocks_runtime && has_blocks_lib && !blocks_sources_added) {
+        strcat(command, " \"");
+        strcat(command, blocks_lib_path);
+        strcat(command, "\"");
+    }
 
     // Add linked libraries
     if (config->linked_libraries[0] != '\0') {
@@ -2284,4 +2346,126 @@ bool get_executable_path(char* buffer, size_t size) {
     }
     return false;
 #endif
+}
+
+// Add function to check if BlocksRuntime static library exists
+bool check_blocksruntime_lib(const char* dh_path, char* out_lib_path, size_t path_size) {
+    if (!dh_path || !out_lib_path || path_size == 0) {
+        return false;
+    }
+
+    char lib_dir[1024] = {};
+    (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%slib", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+    if (!dir_exists(lib_dir)) {
+        return false;
+    }
+
+#ifdef _WIN32
+    (void)snprintf(out_lib_path, path_size, "%s%sBlocksRuntime.lib", lib_dir, PATH_SEPARATOR);
+#else
+    (void)snprintf(out_lib_path, path_size, "%s%slibBlocksRuntime.a", lib_dir, PATH_SEPARATOR);
+#endif
+
+    return file_exists(out_lib_path);
+}
+
+// Add function to compile BlocksRuntime as a static library
+bool compile_blocksruntime_lib(const char* dh_path, const char* out_lib_path, bool verbose) {
+    if (!dh_path || !out_lib_path) {
+        return false;
+    }
+
+    char blocks_src_dir[1024] = {};
+    (void)snprintf(blocks_src_dir, sizeof(blocks_src_dir), "%s%slibs%sBlocksRuntime%ssrc", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+    char data_c[1024]    = {};
+    char runtime_c[1024] = {};
+    (void)snprintf(data_c, sizeof(data_c), "%s%sdata.c", blocks_src_dir, PATH_SEPARATOR);
+    (void)snprintf(runtime_c, sizeof(runtime_c), "%s%sruntime.c", blocks_src_dir, PATH_SEPARATOR);
+
+    if (!file_exists(data_c) || !file_exists(runtime_c)) {
+        if (verbose) {
+            printf("BlocksRuntime source files not found\n");
+        }
+        return false;
+    }
+
+    // Create object files directory
+    char obj_dir[1024] = {};
+    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%slibs%sBlocksRuntime%sobj", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+    if (!dir_exists(obj_dir)) {
+        create_directory(obj_dir);
+    }
+
+    // Compile data.c
+    char data_o[1024] = {};
+    (void)snprintf(data_o, sizeof(data_o), "%s%sdata.o", obj_dir, PATH_SEPARATOR);
+
+    char compile_data_cmd[2048] = {};
+    (void)snprintf(compile_data_cmd, sizeof(compile_data_cmd), "clang -I%s%slibs%sBlocksRuntime%sinclude -DBlocksRuntime_STATIC -fPIC -c %s -o %s", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, data_c, data_o);
+
+    if (verbose) {
+        printf("Compiling BlocksRuntime data.c: %s\n", compile_data_cmd);
+    }
+
+    // Using system() is a linter warning but is required for this tool's functionality
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(compile_data_cmd) != 0) {
+        if (verbose) {
+            printf("Failed to compile BlocksRuntime data.c\n");
+        }
+        return false;
+    }
+
+    // Compile runtime.c
+    char runtime_o[1024] = {};
+    (void)snprintf(runtime_o, sizeof(runtime_o), "%s%sruntime.o", obj_dir, PATH_SEPARATOR);
+
+    char compile_runtime_cmd[2048] = {};
+    (void)snprintf(compile_runtime_cmd, sizeof(compile_runtime_cmd), "clang -I%s%slibs%sBlocksRuntime%sinclude -DBlocksRuntime_STATIC -fPIC -c %s -o %s", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, runtime_c, runtime_o);
+
+    if (verbose) {
+        printf("Compiling BlocksRuntime runtime.c: %s\n", compile_runtime_cmd);
+    }
+
+    // Using system() is a linter warning but is required for this tool's functionality
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(compile_runtime_cmd) != 0) {
+        if (verbose) {
+            printf("Failed to compile BlocksRuntime runtime.c\n");
+        }
+        return false;
+    }
+
+    // Create static library
+#ifdef _WIN32
+    // Windows: Use ar with clang instead of lib.exe since that's more widely available
+    char ar_cmd[2048] = {};
+    (void)snprintf(ar_cmd, sizeof(ar_cmd), "ar rcs %s %s %s", out_lib_path, data_o, runtime_o);
+#else
+    // Unix systems use ar
+    char ar_cmd[2048] = {};
+    (void)snprintf(ar_cmd, sizeof(ar_cmd), "ar rcs %s %s %s", out_lib_path, data_o, runtime_o);
+#endif
+
+    if (verbose) {
+        printf("Creating BlocksRuntime static library: %s\n", ar_cmd);
+    }
+
+    // Using system() is a linter warning but is required for this tool's functionality
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(ar_cmd) != 0) {
+        if (verbose) {
+            printf("Failed to create BlocksRuntime static library\n");
+        }
+        return false;
+    }
+
+    if (verbose) {
+        printf("Successfully created BlocksRuntime static library: %s\n", out_lib_path);
+    }
+
+    return true;
 }
