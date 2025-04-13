@@ -11,6 +11,8 @@ A lightweight, cross-platform build tool for C projects using the DH-C system.
 - Automatic include/source file discovery
 - IDE integration through `.clangd` and VSCode tasks
 - Option to build without the DH library (`--no-libdh`)
+- Configurable output suffix for build configurations
+- Test mode with automatic cleanup
 
 ## Installation
 
@@ -42,6 +44,22 @@ A lightweight, cross-platform build tool for C projects using the DH-C system.
 5. Follow the on-screen instructions to complete the installation
 
 ## Usage
+
+### Getting Help
+
+Display help information:
+
+```sh
+dh-c --help
+# or
+dh-c -h
+```
+
+Display version information:
+
+```sh
+dh-c --version
+```
 
 ### Project Management
 
@@ -140,18 +158,32 @@ Pass arguments to the program:
 dh-c run file.c --args="arg1 arg2"
 ```
 
+Show commands being executed:
+
+```sh
+dh-c build file.c --show-commands
+```
+
+Enable output suffix for build configurations:
+
+```sh
+dh-c build dev file.c --use-output-suffix
+```
+
 ## VSCode Integration
 
 The DH-C build tool includes a `tasks.json` template that provides VSCode integration with the following tasks:
 
 - `dh>create workspace` - Create a new workspace
 - `dh>create project` - Create a new project
-- `dh>build current file` - Build the current file (default build task)
+- `dh>build current file` - Build the current file
 - `dh>build project` - Build the entire project
 - `dh>test current file` - Run tests for the current file
 - `dh>test project` - Run tests for the entire project
-- `dh>run current file` - Build and run the current file (default test task)
+- `dh>run current file` - Build and run the current file
 - `dh>run project` - Build and run the entire project
+- `dh>execute current file` - Run the existing executable for the current file without building
+- `dh>execute project` - Run the existing executable for the project without building
 
 ## Environment Variables
 
@@ -170,3 +202,11 @@ my-project/
   ├── .clang-format      (code formatter config)
   └── .vscode/           (IDE config)
 ```
+
+## Test Mode
+
+When running in test mode with `dh-c test`, a special executable with the `-TEST` suffix is created. This test executable is automatically removed after the test is completed, keeping your build directory clean.
+
+## Version
+
+Current version: v0.1.0-alpha

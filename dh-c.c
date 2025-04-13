@@ -31,7 +31,7 @@
 #define PATH_SEPARATOR "/"
 #endif
 
-#define DH_VERSION "0.1.0"
+#define DH_VERSION "0.1.0-alpha"
 
 // Debug level enum
 typedef enum {
@@ -78,6 +78,7 @@ typedef struct {
     char              build_config_name[32]; // Name of selected build configuration
     bool              show_commands;         // Flag to control printing of commands
     bool              verbose;               // Flag for verbose logging
+    bool              use_output_suffix;     // Flag to enable output suffix (dev, release, etc.)
 } BuildConfig;
 
 // Build configuration presets
@@ -751,6 +752,7 @@ void init_build_config(BuildConfig* config) {
     config->no_libdh           = false;
     config->show_commands      = false;       // Default: don't show commands
     config->verbose            = false;       // Default: don't show verbose logs
+    config->use_output_suffix  = false;       // Default: don't use output suffix
     strcpy(config->build_config_name, "dev"); // Default build config
 }
 
@@ -1049,8 +1051,7 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "      \"type\": \"pickString\",\n"
       "      \"description\": \"Select compiler\",\n"
       "      \"options\": [\n"
-      "        \"clang\",\n"
-      "        \"gcc\"\n"
+      "        \"clang\"\n"
       "      ],\n"
       "      \"default\": \"clang\"\n"
       "    },\n"
@@ -1130,10 +1131,10 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "        \"--std=${input:cStandard}\",\n"
       "        \"${input:noLibDh}\"\n"
       "      ],\n"
-      "      \"group\": {\n"
-      "        \"kind\": \"build\",\n"
-      "        \"isDefault\": true\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${fileDirname}\"\n"
       "      },\n"
+      "      \"group\": \"build\",\n"
       "      \"problemMatcher\": [\"$gcc\"]\n"
       "    },\n"
       "    { /* build project */\n"
@@ -1147,6 +1148,9 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "        \"--std=${input:cStandard}\",\n"
       "        \"${input:noLibDh}\"\n"
       "      ],\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${workspaceFolder}\"\n"
+      "      },\n"
       "      \"group\": \"build\",\n"
       "      \"problemMatcher\": [\"$gcc\"]\n"
       "    },\n"
@@ -1174,7 +1178,11 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "        \"${input:buildConfig}\",\n"
       "        \"--args=\\\"${input:runArgs}\\\"\",\n"
       "        \"${input:noLibDh}\"\n"
-      "      ]\n"
+      "      ],\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${workspaceFolder}\"\n"
+      "      },\n"
+      "      \"group\": \"test\"\n"
       "    },\n"
       "    { /* run current file */\n"
       "      \"label\": \"dh>run current file\",\n"
@@ -1190,10 +1198,7 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "      \"options\": {\n"
       "        \"cwd\": \"${fileDirname}\"\n"
       "      },\n"
-      "      \"group\": {\n"
-      "        \"kind\": \"test\",\n"
-      "        \"isDefault\": true\n"
-      "      }\n"
+      "      \"group\": \"test\"\n"
       "    },\n"
       "    { /* run project */\n"
       "      \"label\": \"dh>run project\",\n"
@@ -1204,7 +1209,41 @@ const char* DEFAULT_TASKS_JSON_TEMPLATE
       "        \"${input:buildConfig}\",\n"
       "        \"--args=\\\"${input:runArgs}\\\"\",\n"
       "        \"${input:noLibDh}\"\n"
-      "      ]\n"
+      "      ],\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${workspaceFolder}\"\n"
+      "      },\n"
+      "      \"group\": \"test\"\n"
+      "    },\n"
+      "    { /* execute current file - just runs existing executable */\n"
+      "      \"label\": \"dh>execute current file\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"${fileDirname}/build/${fileBasenameNoExtension}-${input:buildConfig}.exe\",\n"
+      "      \"args\": [\n"
+      "        \"${input:runArgs}\"\n"
+      "      ],\n"
+      "      \"windows\": {\n"
+      "        \"command\": \"${fileDirname}\\\\build\\\\${fileBasenameNoExtension}-${input:buildConfig}.exe\"\n"
+      "      },\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${fileDirname}\"\n"
+      "      },\n"
+      "      \"group\": \"test\"\n"
+      "    },\n"
+      "    { /* execute project - just runs existing executable */\n"
+      "      \"label\": \"dh>execute project\",\n"
+      "      \"type\": \"shell\",\n"
+      "      \"command\": \"${workspaceFolder}/build/${workspaceFolderBasename}-${input:buildConfig}.exe\",\n"
+      "      \"args\": [\n"
+      "        \"${input:runArgs}\"\n"
+      "      ],\n"
+      "      \"windows\": {\n"
+      "        \"command\": \"${workspaceFolder}\\\\build\\\\${workspaceFolderBasename}-${input:buildConfig}.exe\"\n"
+      "      },\n"
+      "      \"options\": {\n"
+      "        \"cwd\": \"${workspaceFolder}\"\n"
+      "      },\n"
+      "      \"group\": \"test\"\n"
       "    }\n"
       "  ]\n"
       "}\n";
@@ -1598,9 +1637,13 @@ void build_project(BuildConfig* config) {
     char output_file[1024] = {};
     (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
 
-    // Add build config name to output file
-    strcat(output_file, "-");
-    strcat(output_file, config->build_config_name);
+    // Add build config name or test suffix to output file if enabled
+    if (config->is_test) {
+        strcat(output_file, "-TEST");
+    } else if (config->use_output_suffix) {
+        strcat(output_file, "-");
+        strcat(output_file, config->build_config_name);
+    }
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
@@ -1652,9 +1695,13 @@ void run_executable(BuildConfig* config) {
     char output_file[1024] = {};
     (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
 
-    // Add build config name to output file
-    strcat(output_file, "-");
-    strcat(output_file, config->build_config_name);
+    // Add appropriate suffix based on build type
+    if (config->is_test) {
+        strcat(output_file, "-TEST");
+    } else if (config->use_output_suffix) {
+        strcat(output_file, "-");
+        strcat(output_file, config->build_config_name);
+    }
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
@@ -1678,6 +1725,23 @@ void run_executable(BuildConfig* config) {
     // Using system() is a linter warning but is required for this tool's functionality
     // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
     system(command);
+
+    // Delete test executable after running
+    if (config->is_test) {
+        // Only print command if show_commands is true
+        if (config->show_commands) {
+            printf("Removing test executable: %s\n", output_file);
+        }
+
+#ifdef _WIN32
+        char rm_command[1024] = {};
+        (void)snprintf(rm_command, sizeof(rm_command), "del \"%s\"", output_file);
+        // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+        system(rm_command);
+#else
+        remove(output_file);
+#endif
+    }
 }
 
 // Free memory from string array
@@ -2007,6 +2071,7 @@ void create_workspace(const char* name, const char* dh_path) {
 void print_usage() {
     printf("Usage: dh-c [command] [options]\n\n");
     printf("Commands:\n");
+    printf("  --help, -h           - Display this help message\n");
     printf("  --version            - Display version information\n");
     printf("  build                - Build the project or file\n");
     printf("  test                 - Build and run tests\n");
@@ -2027,10 +2092,12 @@ void print_usage() {
     printf("  --args=\"args\"           - Arguments to pass when running\n");
     printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n");
     printf("  --no-libdh              - Skip DH library\n");
-    printf("  --show-commands         - Show commands being executed\n\n");
+    printf("  --show-commands         - Show commands being executed\n");
+    printf("  --use-output-suffix     - Enable output suffix for build configurations\n\n");
     printf("Environment Variables:\n");
     printf("  DH_HOME               - Path to DH library installation\n\n");
     printf("Examples:\n");
+    printf("  dh-c --help                      - Display help information\n");
     printf("  dh-c --version                   - Show version information\n");
     printf("  dh-c build dev                   - Build project in dev mode\n");
     printf("  dh-c run release sample.c        - Build and run single file in release mode\n");
@@ -2060,7 +2127,14 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    // Handle version command first (now using --version format)
+    // Handle help command first
+    if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+        print_usage();
+        cleanup_build_presets();
+        return 0;
+    }
+
+    // Handle version command
     if (strcmp(argv[1], "--version") == 0) {
         printf("DH-C Build Tool version %s\n", DH_VERSION);
         printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
@@ -2079,6 +2153,14 @@ int main(int argc, const char* argv[]) {
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--show-commands") == 0) {
             config.show_commands = true;
+            break;
+        }
+    }
+
+    // Check for --use-output-suffix option
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--use-output-suffix") == 0) {
+            config.use_output_suffix = true;
             break;
         }
     }
