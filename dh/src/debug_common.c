@@ -7,6 +7,7 @@ bool debug_isDebuggerPresent(void) {
 }
 #elif defined(__APPLE__)
 #include <sys/sysctl.h>
+#include <unistd.h>
 bool debug_isDebuggerPresent(void) {
     i32               mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
     struct kinfo_proc info;

@@ -213,10 +213,10 @@ cmp_fnCmp(time_SysTime) {
     if (self.impl_.QuadPart < other.impl_.QuadPart) { return cmp_Ord_lt; }
     if (self.impl_.QuadPart > other.impl_.QuadPart) { return cmp_Ord_gt; }
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
-    if (self.impl_.tv_secs < other.impl_.tv_secs) { return cmp_Ord_lt; }
-    if (self.impl_.tv_secs > other.impl_.tv_secs) { return cmp_Ord_gt; }
-    if (self.impl_.tv_nanos < other.impl_.tv_nanos) { return cmp_Ord_lt; }
-    if (self.impl_.tv_nanos > other.impl_.tv_nanos) { return cmp_Ord_gt; }
+    if (self.impl_.tv_sec < other.impl_.tv_sec) { return cmp_Ord_lt; }
+    if (self.impl_.tv_sec > other.impl_.tv_sec) { return cmp_Ord_gt; }
+    if (self.impl_.tv_nsec < other.impl_.tv_nsec) { return cmp_Ord_lt; }
+    if (self.impl_.tv_nsec > other.impl_.tv_nsec) { return cmp_Ord_gt; }
 #endif
     return cmp_Ord_eq;
 }
