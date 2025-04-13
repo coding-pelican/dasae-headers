@@ -48,6 +48,7 @@ dasae-headers: A modern extension language for safer and more productive C progr
   - [🌐 Platform Support](#-platform-support)
   - [🚀 Getting Started](#-getting-started)
     - [💽 Installation](#-installation)
+    - [🔨 Building and Running](#-building-and-running)
   - [⚡ Code Samples](#-code-samples)
     - [👋 Hello, world!](#-hello-world)
     - [🔍 Optional Values Example](#-optional-values-example)
@@ -106,11 +107,35 @@ dasae-headers was developed with inspiration from the syntax and standard librar
 
 1. Clone this repository:
 
-```bash
+```sh
 git clone https://github.com/coding-pelican/dasae-headers.git
 ```
 
-2. Include the necessary headers:
+2. Install the dh-c build tool:
+
+On Windows:
+
+```ps1
+cd dasae-headers
+.\install-dh-c.ps1
+```
+
+On Linux/macOS:
+
+```sh
+cd dasae-headers
+chmod +x install-dh-c.sh
+./install-dh-c.sh
+```
+
+3. Create a new project:
+
+```sh
+dh-c project myproject
+cd myproject
+```
+
+4. Start coding by including the necessary headers:
 
 ```c
 #include "dh/main.h"
@@ -118,6 +143,28 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 #include "dh/err_res.h"
 // Include additional headers according to needed functionality
 ```
+
+### 🔨 Building and Running
+
+Build your project:
+
+```sh
+dh-c build dev
+```
+
+Run your project:
+
+```sh
+dh-c run dev
+```
+
+Run tests:
+
+```sh
+dh-c test
+```
+
+See the [Quick Start Guide](./dh/docs/en/quick-start.md) for more details.
 
 ## ⚡ Code Samples
 

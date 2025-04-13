@@ -144,7 +144,7 @@ if (condition) {
 
 ### 2. Function Definitions
 
-Use `fn_` or `fn_ext_scope` for function definitions.
+Use `fn_` or `fn_scope` for function definitions.
 
 ```c
 // Basic function definition
@@ -154,23 +154,23 @@ fn_(calculateSum(i32 a, i32 b), i32) {
 
 // Function definition requiring extended scope (Optional return)
 use_Opt$(i32);
-fn_ext_scope(divideNumbers(i32 lhs, i32 rhs), Opt$i32) {
+fn_scope(divideNumbers(i32 lhs, i32 rhs), Opt$i32) {
     if (rhs == 0) {
         return_none();
     }
     return_some(lhs / rhs);
-} ext_unscoped;
+} unscoped;
 
 // Function requiring error handling
 use_Err$(Str_const);
 fn_(readFile(Str_const path), $must_check Err$Str_const);
-fn_ext_scope(readFile(Str_const path), Err$Str_const) {
+fn_scope(readFile(Str_const path), Err$Str_const) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());
     }
     // Processing...
     return_ok(content);
-}
+} unscoped;
 ```
 
 ### 3. Pointer Variable Declarations
@@ -215,22 +215,22 @@ After resource allocation, use defer to specify cleanup operations.
 
 ```c
 // Incorrect example
-fn_ext_scope(processData(void), Err$void) {
+fn_scope(processData(void), Err$void) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
 
     // Processing logic...
 
     mem_Allocator_free(anySli(buffer)); // Memory leak if there's a return in the middle
-} ext_unscoped;
+} unscoped;
 
 // Correct example
-fn_ext_scope(processData(void), Err$void) {
+fn_scope_ext(processData(void), Err$void) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
     defer_(mem_Allocator_free(anySli(buffer)));
 
     // Processing logic...
     // Buffer is always freed regardless of where the return occurs
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 2. File Handling
@@ -238,7 +238,7 @@ fn_ext_scope(processData(void), Err$void) {
 After opening a file, use defer to specify closing operations.
 
 ```c
-fn_ext_scope(readFileContents(Str_const filename), io_Err$Str_const) {
+fn_scope_ext(readFileContents(Str_const filename), io_Err$Str_const) {
     let file = fopen(filename.ptr, "r");
     if (file == null) {
         return_err(io_Err_OpenFailed());
@@ -248,7 +248,7 @@ fn_ext_scope(readFileContents(Str_const filename), io_Err$Str_const) {
     // File processing...
 
     return_ok(content); // File is automatically closed when the function ends
-} ext_unscoped;
+} unscoped_ext;
 ```
 
 ### 3. Optional Value Handling
@@ -267,7 +267,7 @@ fn_(findUser(i32 user_id, User** out_user), bool) {
 }
 
 // Correct example
-fn_ext_scope(findUser(i32 user_id), Opt$Ptr$User) {
+fn_scope(findUser(i32 user_id), Opt$Ptr$User) {
     if (user_id <= 0) {
         return_none();
     }
@@ -278,7 +278,7 @@ fn_ext_scope(findUser(i32 user_id), Opt$Ptr$User) {
     }
 
     return_some(user);
-}
+} unscoped;
 
 // Usage example
 fn_(processUserData(i32 user_id), bool) {

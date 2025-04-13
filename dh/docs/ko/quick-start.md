@@ -2,8 +2,8 @@
 title: 빠른 시작 가이드
 description: 안전한 C 프로그래밍을 위한 dasae-headers 시작하기
 created: 2025-04-01
-updated: 2025-04-01
-version: v0.1
+updated: 2025-04-13
+version: v0.1.1
 target_version: pre-alpha
 ---
 
@@ -26,79 +26,81 @@ target_version: pre-alpha
 ### 전제 조건
 
 - C17 호환 컴파일러 (clang 11+, gcc 8+, 또는 MSVC 19.20+)
-- Git (소스 코득용)
-- CMake 3.15+ (빌드 설정용)
+- Git (소스 코드 획득용)
 
 ### 소스 코득
 
 저장소를 로컬 머신에 복제합니다:
 
-```bash
+```sh
 git clone https://github.com/coding-pelican/dasae-headers.git
 cd dasae-headers
 ```
 
-### 설치 옵션
+### dh-c 빌드 도구 설치
 
-#### 방법 1: 직접 포함 (기존 프로젝트에 권장)
+dh-c 빌드 도구는 dasae-headers 프로젝트의 관리, 빌드 및 테스트를 간소화합니다.
 
-1. `dh` 디렉토리를 프로젝트 소스에 복사합니다
-2. C 파일에 필요한 헤더를 포함합니다:
+#### Windows
 
-```c
-#include "dh/main.h"   // 프로그램 진입점
-#include "dh/core.h"   // 핵심 기능
-// 필요에 따라 다른 헤더 추가
+1. 관리자 권한으로 PowerShell 프롬프트 열기
+2. dasae-headers 디렉토리로 이동
+3. 설치 스크립트 실행:
+
+```ps1
+.\install-dh-c.ps1
 ```
 
-#### 방법 2: CMake 통합
+4. 터미널 또는 PowerShell 세션 재시작
 
-<!-- 1. 저장소를 서브모듈로 추가:
+#### Linux/macOS
 
-```bash
-git submodule add https://github.com/coding-pelican/dasae-headers.git external/dasae-headers
+1. 터미널 열기
+2. dasae-headers 디렉토리로 이동
+3. 설치 스크립트 실행 가능하게 만들고 실행하기:
+
+```sh
+chmod +x install-dh-c.sh
+./install-dh-c.sh
 ```
 
-2. CMakeLists.txt 업데이트:
-
-```cmake
-add_subdirectory(external/dasae-headers)
-target_link_libraries(your_target PRIVATE dasae-headers)
-``` -->
+4. 터미널 세션을 재시작하거나 프로필을 소스로 설정
 
 ## 프로젝트 설정
 
+### 새 프로젝트 생성
+
+dh-c 도구를 사용하여 새 프로젝트를 생성합니다:
+
+```sh
+dh-c project my-project
+cd my-project
+```
+
+이 명령은 필요한 모든 설정 파일이 포함된 표준 프로젝트 구조를 생성합니다.
+
 ### 디렉토리 구조
 
-일반적인 dasae-headers 프로젝트는 다음과 같은 구조를 따릅니다:
+dh-c 도구는 다음과 같은 디렉토리 구조를 생성합니다:
 
-```
+```txt
 my-project/
-├── src/
-│   ├── main.c       # 메인 진입점
-│   └── ...          # 기타 소스 파일
-├── include/         # 프로젝트별 헤더
-├── dh/              # dasae-headers 디렉토리
-├── tests/           # 테스트 파일
-└── README.md        # 프로젝트 문서
-```
-
-### 메인 진입점
-
-표준 C와 달리 dasae-headers는 내장된 오류 처리 기능을 갖춘 구조화된 진입점을 제공합니다:
-
-```c
-#include "dh/main.h"
-
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
-    // 코드 작성
-    return_ok({});  // 성공 리턴
-} unscoped;
+├── include/          # 프로젝트별 헤더
+├── src/              # 소스 파일
+│   └── main.c        # 메인 진입점
+├── lib/              # 외부 라이브러리
+├── build/            # 빌드 출력 (빌드 중 생성됨)
+├── .clangd           # 언어 서버 구성
+├── .clang-format     # 코드 포맷터 구성
+└── .vscode/          # VS Code 구성
+    └── tasks.json    # 빌드 작업
 ```
 
 ## 첫 번째 프로그램
 
-dasae-headers를 사용한 간단한 "Hello, world!" 프로그램을 만들어 보겠습니다:
+간단한 "Hello, world!" 프로그램을 만들어 보겠습니다:
+
+1. `src/main.c`를 열고 내용을 다음으로 교체합니다:
 
 ```c
 #include "dh/main.h"
@@ -114,6 +116,13 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // 성공 리턴
     return_ok({});
 } unscoped;
+```
+
+2. 프로그램 빌드 및 실행:
+
+```sh
+dh-c build dev    # 개발 모드로 빌드
+dh-c run dev      # 프로그램 실행
 ```
 
 ### 이 예제의 주요 기능
@@ -206,50 +215,62 @@ if_some(findUser(42), user) {
 
 ## 빌드 및 실행
 
-<!-- ### CMake 사용
+dh-c 도구는 프로젝트를 빌드하고 실행하는 간단하고 일관된 방법을 제공합니다.
 
-1. `CMakeLists.txt` 파일 생성:
+### 빌드
 
-```cmake
-cmake_minimum_required(VERSION 3.15)
-project(my_dasae_project C)
+사전 정의된 구성으로 프로젝트 빌드:
 
-set(CMAKE_C_STANDARD 17)
-
-# 소스 파일
-add_executable(my_program
-    src/main.c
-    # 다른 소스 파일 추가
-)
-
-# 인클루드 경로
-target_include_directories(my_program PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/dh
-)
+```sh
+dh-c build dev         # 개발 모드 (디버그, 최적화 없음)
+dh-c build test        # 테스트 모드
+dh-c build release     # 릴리즈 모드 (최적화)
+dh-c build performance # 최대 성능
+dh-c build embedded    # 크기 최적화
+dh-c build micro       # 극단적인 크기 최적화
 ```
 
-2. 프로젝트 빌드:
+### 실행
 
-```bash
-mkdir build && cd build
-cmake ..
-cmake --build .
+애플리케이션 실행:
+
+```sh
+dh-c run dev           # 개발 모드로 빌드하고 실행
 ```
 
-3. 프로그램 실행:
+프로그램에 인수 전달:
 
-```bash
-./my_program
+```sh
+dh-c run dev --args="arg1 arg2"
 ```
 
-### Make 또는 다른 빌드 시스템 사용
+### 테스트
 
-CMake가 아닌 프로젝트의 경우 다음을 확인하세요:
+테스트 실행:
 
-1. C 표준을 C17 이상으로 설정
-2. 인클루드 경로에 dasae-headers 디렉토리 포함
-3. 필요한 모든 소스 파일 컴파일 -->
+```sh
+dh-c test              # 모든 테스트 실행
+```
+
+### 추가 옵션
+
+실행되는 명령 표시:
+
+```sh
+dh-c build dev --show-commands
+```
+
+빌드 구성의 출력 접미사 활성화:
+
+```sh
+dh-c build dev --use-output-suffix
+```
+
+도움말 보기:
+
+```sh
+dh-c --help
+```
 
 ## 디버깅
 
@@ -261,6 +282,18 @@ dasae-headers는 내장 디버그 기능을 포함합니다:
 debug_assert_true(condition, "오류 메시지");
 debug_assert_fmt(0 < count, "유효하지 않은 개수: %d", count);
 ```
+
+## IDE 통합
+
+dh-c 도구는 프로젝트를 위한 VSCode 설정 파일을 생성합니다:
+
+### VSCode 작업
+
+`Ctrl+Shift+B`(기본 단축키)를 눌러 빌드 작업에 액세스:
+- `dh>build project` - 프로젝트 빌드
+- `dh>run project` - 프로젝트 빌드 및 실행
+- `dh>test project` - 테스트 실행
+- `dh>execute project` - 재빌드 없이 실행
 
 ## 다음 단계
 

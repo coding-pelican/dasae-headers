@@ -25,6 +25,7 @@
   - [🌐 플랫폼 지원](#-플랫폼-지원)
   - [🚀 시작하기](#-시작하기)
     - [💽 설치](#-설치)
+    - [🔨 빌드 및 실행](#-빌드-및-실행)
   - [⚡ 코드 샘플](#-코드-샘플)
     - [👋 Hello, world!](#-hello-world)
     - [🔍 Optional Values 예제](#-optional-values-예제)
@@ -83,11 +84,35 @@ dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 �
 
 1. 이 저장소를 클론합니다:
 
-```bash
+```sh
 git clone https://github.com/coding-pelican/dasae-headers.git
 ```
 
-2. 필요한 헤더를 포함시킵니다:
+2. dh-c 빌드 도구 설치:
+
+Windows의 경우:
+
+```ps1
+cd dasae-headers
+.\install-dh-c.ps1
+```
+
+Linux/macOS의 경우:
+
+```sh
+cd dasae-headers
+chmod +x install-dh-c.sh
+./install-dh-c.sh
+```
+
+3. 새 프로젝트 생성:
+
+```sh
+dh-c project myproject
+cd myproject
+```
+
+4. 필요한 헤더를 포함하여 코딩 시작:
 
 ```c
 #include "dh/main.h"
@@ -95,6 +120,28 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 #include "dh/err_res.h"
 // 필요한 기능에 따라 추가 헤더 포함
 ```
+
+### 🔨 빌드 및 실행
+
+프로젝트 빌드:
+
+```sh
+dh-c build dev
+```
+
+프로젝트 실행:
+
+```sh
+dh-c run dev
+```
+
+테스트 실행:
+
+```sh
+dh-c test
+```
+
+더 자세한 내용은 [빠른 시작 가이드](./dh/docs/ko/quick-start.md)를 참조하세요.
 
 ## ⚡ 코드 샘플
 
