@@ -2,8 +2,8 @@
 title: Quick Start Guide
 description: Getting started with dasae-headers for safer C programming
 created: 2025-04-01
-updated: 2025-04-01
-version: v0.1
+updated: 2025-04-13
+version: v0.1.1
 target_version: pre-alpha
 ---
 
@@ -27,78 +27,80 @@ This guide will help you get started with dasae-headers, a modern extension lang
 
 - C17 compatible compiler (clang 11+, gcc 8+, or MSVC 19.20+)
 - Git (for obtaining the source)
-- CMake 3.15+ (for build setup)
 
 ### Getting the Source
 
 Clone the repository to your local machine:
 
-```bash
+```sh
 git clone https://github.com/coding-pelican/dasae-headers.git
 cd dasae-headers
 ```
 
-### Installation Options
+### Installing the dh-c Build Tool
 
-#### Method 1: Direct inclusion (recommended for existing projects)
+The dh-c build tool simplifies project management, building, and testing of dasae-headers projects.
 
-1. Copy the `dh` directory into your project source
-2. Include the necessary headers in your C files:
+#### Windows
 
-```c
-#include "dh/main.h"   // For program entry point
-#include "dh/core.h"   // Core functionality
-// Add other headers as needed
+1. Open a PowerShell prompt as Administrator
+2. Navigate to the dasae-headers directory
+3. Run the installation script:
+
+```ps1
+.\install-dh-c.ps1
 ```
 
-#### Method 2: CMake integration
+4. Restart your terminal or PowerShell session
 
-<!-- 1. Add the repository as a submodule:
+#### Linux/macOS
 
-```bash
-git submodule add https://github.com/coding-pelican/dasae-headers.git external/dasae-headers
+1. Open a terminal
+2. Navigate to the dasae-headers directory
+3. Make the installation script executable and run it:
+
+```sh
+chmod +x install-dh-c.sh
+./install-dh-c.sh
 ```
 
-2. Update your CMakeLists.txt:
-
-```cmake
-add_subdirectory(external/dasae-headers)
-target_link_libraries(your_target PRIVATE dasae-headers)
-``` -->
+4. Restart your terminal session or source your profile
 
 ## Project Setup
 
+### Creating a New Project
+
+Create a new project using the dh-c tool:
+
+```sh
+dh-c project my-project
+cd my-project
+```
+
+This command creates a standard project structure with all necessary configuration files.
+
 ### Directory Structure
 
-A typical dasae-headers project follows this structure:
+The dh-c tool creates the following directory structure:
 
-```
+```txt
 my-project/
-├── src/
-│   ├── main.c       # Main entry point
-│   └── ...          # Other source files
-├── include/         # Project-specific headers
-├── dh/              # dasae-headers directory
-├── tests/           # Test files
-└── README.md        # Project documentation
-```
-
-### Main Entry Point
-
-Unlike standard C, dasae-headers provides a structured entry point with built-in error handling:
-
-```c
-#include "dh/main.h"
-
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
-    // Your code here
-    return_ok({});  // Return success
-} unscoped;
+├── include/          # Project-specific headers
+├── src/              # Source files
+│   └── main.c        # Main entry point
+├── lib/              # Third-party libraries
+├── build/            # Build output (created during build)
+├── .clangd           # Language server configuration
+├── .clang-format     # Code formatter configuration
+└── .vscode/          # VS Code configuration
+    └── tasks.json    # Build tasks
 ```
 
 ## First Program
 
-Let's create a simple "Hello, world!" program using dasae-headers:
+Let's create a simple "Hello, world!" program:
+
+1. Open `src/main.c` and replace its contents with:
 
 ```c
 #include "dh/main.h"
@@ -114,6 +116,13 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     // Return success
     return_ok({});
 } unscoped;
+```
+
+2. Build and run the program:
+
+```sh
+dh-c build dev    # Build in development mode
+dh-c run dev      # Run the program
 ```
 
 ### Key Features in This Example
@@ -206,50 +215,62 @@ if_some(findUser(42), user) {
 
 ## Building and Running
 
-<!-- ### Using CMake
+The dh-c tool provides a simple and consistent way to build and run your projects.
 
-1. Create a `CMakeLists.txt` file:
+### Building
 
-```cmake
-cmake_minimum_required(VERSION 3.15)
-project(my_dasae_project C)
+Build your project with one of the predefined configurations:
 
-set(CMAKE_C_STANDARD 17)
-
-# Source files
-add_executable(my_program
-    src/main.c
-    # Add other source files
-)
-
-# Include paths
-target_include_directories(my_program PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/dh
-)
+```sh
+dh-c build dev         # Development mode (debug, no optimization)
+dh-c build test        # Test mode
+dh-c build release     # Release mode (optimized)
+dh-c build performance # Maximum performance
+dh-c build embedded    # Size optimization
+dh-c build micro       # Extreme size optimization
 ```
 
-2. Build the project:
+### Running
 
-```bash
-mkdir build && cd build
-cmake ..
-cmake --build .
+Run your application:
+
+```sh
+dh-c run dev           # Build and run in development mode
 ```
 
-3. Run your program:
+Pass arguments to your program:
 
-```bash
-./my_program
+```sh
+dh-c run dev --args="arg1 arg2"
 ```
 
-### Using Make or Other Build Systems
+### Testing
 
-For non-CMake projects, ensure you:
+Run tests:
 
-1. Set the C standard to C17 or later
-2. Include the dasae-headers directory in your include path
-3. Compile all required source files -->
+```sh
+dh-c test              # Run all tests
+```
+
+### Additional Options
+
+Show executed commands:
+
+```sh
+dh-c build dev --show-commands
+```
+
+Enable output suffix for build configurations:
+
+```sh
+dh-c build dev --use-output-suffix
+```
+
+Get help:
+
+```sh
+dh-c --help
+```
 
 ## Debugging
 
@@ -261,6 +282,18 @@ dasae-headers includes built-in debug features:
 debug_assert_true(condition, "Error message");
 debug_assert_fmt(0 < count, "Invalid count: %d", count);
 ```
+
+## IDE Integration
+
+The dh-c tool creates VSCode configuration files for your project:
+
+### VSCode Tasks
+
+Press `Ctrl+Shift+B`(default shortcut) to access build tasks:
+- `dh>build project` - Build the project
+- `dh>run project` - Build and run the project
+- `dh>test project` - Run tests
+- `dh>execute project` - Run without rebuilding
 
 ## Next Steps
 
