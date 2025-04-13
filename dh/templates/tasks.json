@@ -86,10 +86,10 @@
         "--std=${input:cStandard}",
         "${input:noLibDh}"
       ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
+      "options": {
+        "cwd": "${fileDirname}"
       },
+      "group": "build",
       "problemMatcher": [
         "$gcc"
       ]
@@ -105,6 +105,9 @@
         "--std=${input:cStandard}",
         "${input:noLibDh}"
       ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "group": "build",
       "problemMatcher": [
         "$gcc"
@@ -134,9 +137,13 @@
         "${input:buildConfig}",
         "--args=\"${input:runArgs}\"",
         "${input:noLibDh}"
-      ]
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test"
     },
-    { /* run current file */
+    { /* run current file - runs directly after build */
       "label": "dh>run current file",
       "type": "shell",
       "command": "dh-c",
@@ -150,12 +157,9 @@
       "options": {
         "cwd": "${fileDirname}"
       },
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
+      "group": "test"
     },
-    { /* run project */
+    { /* run project - runs directly after build */
       "label": "dh>run project",
       "type": "shell",
       "command": "dh-c",
@@ -164,7 +168,41 @@
         "${input:buildConfig}",
         "--args=\"${input:runArgs}\"",
         "${input:noLibDh}"
-      ]
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test"
+    },
+    { /* execute current file - just runs existing executable */
+      "label": "dh>execute current file",
+      "type": "shell",
+      "command": "${fileDirname}/build/${fileBasenameNoExtension}-${input:buildConfig}.exe",
+      "args": [
+        "${input:runArgs}"
+      ],
+      "windows": {
+        "command": "${fileDirname}\\build\\${fileBasenameNoExtension}-${input:buildConfig}.exe"
+      },
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test"
+    },
+    { /* execute project - just runs existing executable */
+      "label": "dh>execute project",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/${workspaceFolderBasename}-${input:buildConfig}.exe",
+      "args": [
+        "${input:runArgs}"
+      ],
+      "windows": {
+        "command": "${workspaceFolder}\\build\\${workspaceFolderBasename}-${input:buildConfig}.exe"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test"
     }
   ]
 }
