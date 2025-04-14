@@ -114,11 +114,11 @@ if $IS_WINDOWS; then
     if $IS_GITBASH; then
         # Get absolute paths in Windows format
         WIN_INSTALL_DIR=$(cd "$INSTALL_DIR" && pwd -W)
-        WIN_SOURCE_PATH=$(cd "$SOURCE_PATH" && pwd -W)
+        WIN_SOURCE_PATH=$(cd "$SOURCE_PATH/dh" && pwd -W)
     else
         # For other Windows environments, use cygpath with absolute path conversion
         WIN_INSTALL_DIR=$(cd "$INSTALL_DIR" && cygpath -w "$(pwd)")
-        WIN_SOURCE_PATH=$(cd "$SOURCE_PATH" && cygpath -w "$(pwd)")
+        WIN_SOURCE_PATH=$(cd "$SOURCE_PATH/dh" && cygpath -w "$(pwd)")
     fi
 
     # Escape backslashes for the registry file
@@ -158,7 +158,7 @@ pause" >"$BAT_FILE"
         if ! grep -q "export PATH=.*$INSTALL_DIR" "$SHELL_CONFIG" 2>/dev/null; then
             echo -e "\n# Added by DH-C installer" >>"$SHELL_CONFIG"
             echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >>"$SHELL_CONFIG"
-            echo "export DH_HOME=\"$SOURCE_PATH\"" >>"$SHELL_CONFIG"
+            echo "export DH_HOME=\"$SOURCE_PATH/dh\"" >>"$SHELL_CONFIG"
         fi
     fi
 else
@@ -170,7 +170,7 @@ else
     else
         echo -e "${YELLOW}Unsupported shell. Please add the following to your shell configuration file manually:${RESET}"
         echo -e "export PATH=\"$INSTALL_DIR:\$PATH\""
-        echo -e "export DH_HOME=\"$SOURCE_PATH\""
+        echo -e "export DH_HOME=\"$SOURCE_PATH/dh\""
         SHELL_CONFIG=""
     fi
 
@@ -180,15 +180,15 @@ else
             echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >>"$SHELL_CONFIG"
             echo "export DH_HOME=\"$SOURCE_PATH/dh\"" >>"$SHELL_CONFIG"
         fi
-        
+
         # For macOS, create a LaunchAgent for persistent environment variables
         if [[ "$OSTYPE" == "darwin"* ]]; then
             echo -e "${YELLOW}Setting up macOS LaunchAgent for persistent environment variables...${RESET}"
             LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
             mkdir -p "$LAUNCH_AGENT_DIR"
             PLIST_FILE="$LAUNCH_AGENT_DIR/com.dh-c.environment.plist"
-            
-            cat > "$PLIST_FILE" << EOF
+
+            cat >"$PLIST_FILE" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -215,10 +215,10 @@ else
 </dict>
 </plist>
 EOF
-            
+
             # Create a wrapper script to ensure environment variables are set
             WRAPPER_SCRIPT="$INSTALL_DIR/dh-c-wrapper.sh"
-            cat > "$WRAPPER_SCRIPT" << EOF
+            cat >"$WRAPPER_SCRIPT" <<EOF
 #!/bin/bash
 
 # Set the environment variable explicitly
@@ -228,13 +228,13 @@ export DH_HOME="$SOURCE_PATH/dh"
 exec $INSTALL_DIR/dh-c "\$@"
 EOF
             chmod +x "$WRAPPER_SCRIPT"
-            
+
             # Add alias to shell config
             if ! grep -q "alias dh-c=" "$SHELL_CONFIG" 2>/dev/null; then
-                echo -e "\n# Create an alias to ensure DH_HOME is set correctly" >> "$SHELL_CONFIG"
-                echo "alias dh-c=\"$WRAPPER_SCRIPT\"" >> "$SHELL_CONFIG"
+                echo -e "\n# Create an alias to ensure DH_HOME is set correctly" >>"$SHELL_CONFIG"
+                echo "alias dh-c=\"$WRAPPER_SCRIPT\"" >>"$SHELL_CONFIG"
             fi
-            
+
             # Load the LaunchAgent
             launchctl unload "$PLIST_FILE" 2>/dev/null || true
             launchctl load "$PLIST_FILE"
@@ -248,8 +248,8 @@ fi
 echo -e "\n${CYAN}DH-C installation complete!${RESET}"
 echo -e "${CYAN}You can now use dh-c from any directory like this:${RESET}"
 echo -e "  dh-c --version"
-echo -e "  dh-c workspace myworkspace"
-echo -e "  dh-c project myproject"
+echo -e "  dh-c workspace my-workspace"
+echo -e "  dh-c project my-project"
 
 if $IS_WINDOWS; then
     echo -e "\n${YELLOW}Important: To complete the Windows installation:${RESET}"
@@ -261,7 +261,7 @@ if $IS_WINDOWS; then
 elif [ -n "$SHELL_CONFIG" ]; then
     echo -e "\n${YELLOW}To start using dh-c immediately, run:${RESET}"
     echo -e "  source $SHELL_CONFIG"
-    
+
     if [[ "$OSTYPE" == "darwin"* ]]; then
         echo -e "\n${GREEN}Environment variables have been set up with a LaunchAgent.${RESET}"
         echo -e "${GREEN}They will be available in all new terminal sessions.${RESET}"
