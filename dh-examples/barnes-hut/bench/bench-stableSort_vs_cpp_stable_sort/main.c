@@ -13,7 +13,7 @@
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(MulErr, Overflow);
-force_inline Err$usize mulSafe(usize lhs, usize rhs) {
+$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
@@ -22,14 +22,15 @@ force_inline Err$usize mulSafe(usize lhs, usize rhs) {
     return_ok(lhs * rhs);
 }
 // Swap two elements of given size
-force_inline $must_check Err$void swapElements(u8* a, u8* b, usize size) {
+$inline_always $must_check Err$void swapElements(u8* a, u8* b, usize size) {
     scope_reserveReturn(Err$void) {
         u8* temp = alloca(size);
         memcpy(temp, a, size);
         memcpy(a, b, size);
         memcpy(b, temp, size);
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 // Insertion sort for small arrays
 static $must_check Err$void insertionSort(
@@ -55,7 +56,8 @@ static $must_check Err$void insertionSort(
             }
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 // Modernized merge sort with temporary buffer (stable sort)
 static $must_check Err$void mergeSortWithTmpRecur( // NOLINT
@@ -120,7 +122,8 @@ static $must_check Err$void mergeSortWithTmpRecur( // NOLINT
         memcpy(base_bytes, temp_buffer.ptr, total_bytes);
 
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
 static $must_check Err$void stableSort(
@@ -138,7 +141,8 @@ static $must_check Err$void stableSort(
 
         try_(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Helper Functions ===============================================*/
@@ -152,12 +156,12 @@ static mem_Allocator testAllocator(void) {
 }
 
 use_Sli$(TestElem);
-force_inline cmp_fnCmp(TestElem) {
+$inline_always cmp_fnCmp(TestElem) {
     if (self.value < other.value) { return cmp_Ord_lt; }
     if (self.value > other.value) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 }
-force_inline cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+$inline_always cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
     $unused(arg);
     return TestElem_cmp(*as$(const TestElem*, lhs), *as$(const TestElem*, rhs));
 }
@@ -252,7 +256,8 @@ must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
 
         printf("  Stability: %s | %s\n", std_stable_sort.stable ? "PASS" : "FAIL", dh_stable_sort.stable ? "PASS" : "FAIL");
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Benchmark Runner ===============================================*/

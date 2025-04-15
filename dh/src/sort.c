@@ -2,7 +2,7 @@
 #include "dh/int.h"
 #include "dh/mem/cfg.h"
 
-force_inline fn_(mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs), void) {
+$inline_always fn_(mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs), void) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
     let tmp_ptr = as$(u8*, bti_alloca(tmp_len));
@@ -12,7 +12,7 @@ force_inline fn_(mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs), void) {
 }
 
 /// Swap two elements of given size
-force_inline fn_(sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len), void) {
+$inline_always fn_(sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len), void) {
     let tmp = as$(u8*, bti_alloca(byte_len));
     memcpy(tmp, lhs, byte_len);
     memcpy(lhs, rhs, byte_len);

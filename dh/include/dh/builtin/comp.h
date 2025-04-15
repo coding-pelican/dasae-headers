@@ -35,14 +35,13 @@ extern "C" {
 #define COMP_TIME (1)
 #endif
 
-#define static_inline ATTR__static_inline
-#define extern_inline ATTR__extern_inline
-#define force_inline  ATTR__force_inline
-#define no_inline     ATTR__no_inline
+#define $inline        comp_attr__$inline
+#define $inline_always comp_attr__$inline_always
+#define $inline_never  comp_attr__$inline_never
 
-#define $warn_deprecated                             comp_attr__$warn_deprecated
-#define $warn_deprecated_msg(_Msg)                   comp_attr__$warn_deprecated_msg(_Msg)
-#define $warn_deprecated_instead(_Msg, _Replacement) comp_attr__$warn_deprecated_instead(_Msg, _Replacement)
+#define $deprecated                             comp_attr__$deprecated
+#define $deprecated_msg(_Msg)                   comp_attr__$deprecated_msg(_Msg)
+#define $deprecated_instead(_Msg, _Replacement) comp_attr__$deprecated_instead(_Msg, _Replacement)
 
 #define $on_load comp_attr__$on_load
 #define $on_exit comp_attr__$on_exit
@@ -128,27 +127,13 @@ extern "C" {
 
 /*========== Macros and Implementations =====================================*/
 
-/* Inline Definitions Based on Language Mode */
-#if BUILTIN_LANG_MODE_CPP
-/* C++ always supports 'inline' */
-#define ATTR__static_inline static inline
-#define ATTR__extern_inline inline
-#elif BUILTIN_LANG_C_99
-/* C99 or later */
-#define ATTR__static_inline static inline
-#define ATTR__extern_inline inline
-#else
-/* Use compiler-specific inline directives */
-#define ATTR__static_inline BUILTIN_COMP_INLINE static
-#define ATTR__extern_inline BUILTIN_COMP_INLINE
-#endif
+#define comp_attr__$inline        BUILTIN_COMP_INLINE
+#define comp_attr__$inline_always BUILTIN_COMP_ALWAYS_INLINE
+#define comp_attr__$inline_never  BUILTIN_COMP_NO_INLINE
 
-#define ATTR__force_inline BUILTIN_COMP_FORCE_INLINE
-#define ATTR__no_inline    BUILTIN_COMP_NO_INLINE
-
-#define comp_attr__$warn_deprecated                             BUILTIN_COMP_DEPRECATED
-#define comp_attr__$warn_deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
-#define comp_attr__$warn_deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
+#define comp_attr__$deprecated                             BUILTIN_COMP_DEPRECATED
+#define comp_attr__$deprecated_msg(_Msg)                   BUILTIN_COMP_DEPRECATED_MSG(_Msg)
+#define comp_attr__$deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
 
 #define comp_attr__$on_load __attribute__((constructor))
 #define comp_attr__$on_exit __attribute__((destructor))

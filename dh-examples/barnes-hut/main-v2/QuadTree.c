@@ -14,7 +14,7 @@ Quad Quad_newContaining(const Sli$Body bodies) {
     var max_x = f32_limit_min;
     var max_y = f32_limit_min;
 
-    for_slice(bodies, body) {
+    for_slice (bodies, body) {
         min_x = fminf(min_x, body->pos.x);
         min_y = fminf(min_y, body->pos.y);
         max_x = fmaxf(max_x, body->pos.x);
@@ -41,7 +41,7 @@ Arr$4$Quad Quad_subdivide(const Quad* self) {
     debug_assert_nonnull(self);
 
     Arr$4$Quad quads = cleared();
-    for_array_indexed(quads, quad, index) {
+    for_array_indexed (quads, quad, index) {
         *quad = Quad_intoQuadrant(*self, index);
     }
     return quads;
@@ -110,7 +110,7 @@ void QuadTree_clear(QuadTree* self) {
 }
 
 // Partition function
-force_inline usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
+$inline_always usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
     if (self.len == 0) { return 0; }
     usize lhs = 0;
     usize rhs = self.len - 1;
@@ -126,10 +126,10 @@ force_inline usize partition(Sli$Body self, bool (*predFn)(const Body* self, mat
     return lhs;
 }
 // Predicates
-static_inline bool predLtX(const Body* body, math_Vec2f center) {
+static $inline bool predLtX(const Body* body, math_Vec2f center) {
     return body->pos.x < center.x;
 }
-static_inline bool predLtY(const Body* body, math_Vec2f center) {
+static $inline bool predLtY(const Body* body, math_Vec2f center) {
     return body->pos.y < center.y;
 }
 
@@ -173,8 +173,7 @@ static Err$void QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, 
             &self->nodes.base,
             meta_refPtr(createFrom$(
                 QuadNode, QuadNode_new(*Sli_at(nexts, index), *Arr_at(quads, index), bodies)
-            ))
-        ));
+            )) ));
     }
     return_void();
 }
@@ -183,7 +182,7 @@ void QuadTree_propagate(QuadTree* self) {
     debug_assert_nonnull(self);
 
     // Propagate masses and center of mass upward through the tree
-    for_slice_rev(self->parents.items, node) {
+    for_slice_rev (self->parents.items, node) {
         let idx = Sli_at(self->nodes.items, *node)->children;
 
         // Get children nodes
@@ -207,7 +206,7 @@ void QuadTree_propagate(QuadTree* self) {
                    + c2->mass
                    + c3->mass;
     }
-    for_slice(self->nodes.items, node) {
+    for_slice (self->nodes.items, node) {
         math_Vec2f_scaleInvTo(&node->pos, prim_max(node->mass, f32_limit_min));
     }
 }
@@ -223,7 +222,8 @@ Err$void QuadTree_build(QuadTree* self, Sli$Body bodies) {
         meta_refPtr(createFrom$(
             QuadNode, QuadNode_new(0, quad, Range_from(0, bodies.len))
         ))
-    ));
+        )
+        );
 
     usize node = 0;
     while (node < self->nodes.items.len) {

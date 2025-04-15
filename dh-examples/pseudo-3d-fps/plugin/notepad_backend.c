@@ -20,13 +20,13 @@ NOTE: 테스트해볼 솔루션을 찾았다!!!
     결국 Edit 등을 활용하는 방법으로는 실패하고 허무한 방법으로 해결했다...
 */
 
-static void     NotepadBackend_destroy(engine_Platform* platform);
-static void     NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
+static void       NotepadBackend_destroy(engine_Platform* platform);
+static void       NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
 /**
  * Using precomputed coefficients (R*0.299 + G*0.587 + B*0.114)
  * Multiplied by 256 for fixed-point arithmetic
  */
-force_inline u8 NotepadBackend_getGrayscale(const Color* color) {
+$inline_always u8 NotepadBackend_getGrayscale(const Color* color) {
     return (u8)((color->r * 77 + color->g * 150 + color->b * 29) >> 8);
 }
 use_Err$(HWND);
@@ -83,7 +83,8 @@ Err$Ptr$engine_RenderBackend NotepadBackend_create(void) {
             eval_return vt;
         });
         return_ok(&backend->base);
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 static void NotepadBackend_destroy(engine_Platform* platform) {

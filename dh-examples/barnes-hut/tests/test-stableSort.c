@@ -12,7 +12,7 @@
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(MulErr, Overflow);
-force_inline Err$usize mulSafe(usize lhs, usize rhs) {
+$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
@@ -72,7 +72,8 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
         memcpy(base_bytes, temp_bytes, temp_index * size);
 
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
 static Err$void stableSort(
@@ -92,7 +93,8 @@ static Err$void stableSort(
         // Perform merge sort
         try(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Helper Functions ===============================================*/
@@ -126,7 +128,7 @@ typedef struct {
     int seq;
 } TestElem;
 use_Sli$(TestElem);
-force_inline cmp_fnCmp(TestElem) {
+$inline_always cmp_fnCmp(TestElem) {
     if (self.value < other.value) { return cmp_Ord_lt; }
     if (self.value > other.value) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
@@ -171,7 +173,8 @@ Err$TEST_Result TEST_stableSort_Basic(void) {
         TEST_condition(isSorted(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Stability Tests ================================================*/
@@ -201,7 +204,8 @@ Err$TEST_Result TEST_stableSort_Stability(void) {
         TEST_condition(isStable(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Edge Case Tests ================================================*/
@@ -228,7 +232,8 @@ Err$TEST_Result TEST_stableSort_EdgeCases(void) {
         TEST_condition(isSorted(sorted, 5));
 
         return_ok(TEST_completeResult(&result));
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Larger Dataset Tests ===========================================*/
@@ -264,7 +269,8 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
         TEST_condition(isSorted(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
@@ -283,7 +289,8 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
         TEST_condition(isStable(arr.ptr, arr.len));
 
         return_ok(TEST_completeResult(&result));
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 /*========== Test Runner ====================================================*/

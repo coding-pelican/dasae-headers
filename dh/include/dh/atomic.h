@@ -186,7 +186,7 @@ typedef enum atomic_MemOrd {
  *
  * Adjust as needed for your usage patterns or correct instructions.
  *======================================================================== */
-force_inline void atomic_spinLoopHint(void) {
+$inline_always void atomic_spinLoopHint(void) {
     // NOLINTBEGIN
 #if bti_arch_x86 || bti_arch_x64
     __asm__ volatile("pause");

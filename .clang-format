@@ -4,7 +4,6 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
-# AlignArrayOfStructures: Right
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossComments: true
@@ -61,70 +60,6 @@ SortIncludes: Never
 Standard: c++20
 TabWidth: 4
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-## Before 2024-10-28
-# ## clang-format configurator v2 https://clang-format-configurator.site/
-# ## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-# ---
-# BasedOnStyle: LLVM
-# Standard: c++20
-
-# ColumnLimit: 0
-# # ColumnLimit: 119 ## codes
-# # ColumnLimit: 79  ## annotations
-# MaxEmptyLinesToKeep: 5
-
-# ## Indentation settings
-# TabWidth: 4
-# IndentWidth: 4
-# AccessModifierOffset: -4
-# # IndentPPDirectives: AfterHash
-# # PPIndentWidth: 2
-# ObjCBlockIndentWidth: 4
-
-# ## Alignment and breaking options
-# # AlignAfterOpenBracket: DontAlign
-# AlignAfterOpenBracket: BlockIndent
-# AlignOperands: AlignAfterOperator
-# AlignConsecutiveAssignments: true
-# AlignConsecutiveDeclarations: true
-# AlignTrailingComments: false
-# AlignConsecutiveMacros:
-#   Enabled: true
-# AlignEscapedNewlines: Left
-
-# AllowShortBlocksOnASingleLine: Always
-# AllowShortFunctionsOnASingleLine: All
-# AllowShortIfStatementsOnASingleLine: Always
-# AllowShortLoopsOnASingleLine: true
-
-# ## Allow all elements on separate lines
-# AllowAllArgumentsOnNextLine: true
-# AllowAllParametersOfDeclarationOnNextLine: true
-
-# ## Disable bin packing to ensure each parameter is on a new line
-# BinPackArguments: false
-# BinPackParameters: false
-
-# ## Break before braces and other style options
-# BreakBeforeBinaryOperators: None
-# BreakBeforeBraces: Custom
-# BraceWrapping:
-#   AfterFunction: false
-#   SplitEmptyFunction: false
-# BreakConstructorInitializers: BeforeComma
-# ConstructorInitializerAllOnOneLineOrOnePerLine: false
-# Cpp11BracedListStyle: false
-
-# ## Insert braces and new lines
-# InsertBraces: true
-# InsertNewlineAtEOF: true
-# PointerAlignment: Left
-
-# ## Specific settings for function calls and declarations
-# BreakAfterJavaFieldAnnotations: false
-# ExperimentalAutoDetectBinPacking: false
-
-# Macro handling configurations
 
 TypeNames:
   # Inference
@@ -187,7 +122,6 @@ TypeNames:
   # Atomic
   - atomic_Value$
   - atomic_Value$$
-
 Macros:
   # Optional value
   - "if_some(_,_)=if (_)"
@@ -201,6 +135,20 @@ Macros:
   - "else_ok(_)=else if (_)"
   - "else_void=else"
   - "else_err(_)=else if (_)"
+  # Union enum
+  - tagUnion(tag,expr)=
+  - tagUnion$(T,tag,expr)=
+  - toTagUnion(addr,tag,expr)=
+  # Match
+  - "match_(expr)=switch (expr)"
+  - "pattern_(tag,capture)=case tag:"
+  - "fallback_(_)=default:"
+  - "$must_check=/**/"
+  # Eval
+  - "eval_(_)=({ _; })"
+  - "eval$(T,_)=(T)({ _; })"
+  - "eval_return_(_)=return _"
+  - "asg_eval(_)=({ _; })"
   # Scope
   - block_defer=/**/
   - block_deferral=/**/
@@ -214,18 +162,6 @@ Macros:
   - TEST_unscoped=/**/
   - "fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)"
   - TEST_unscoped_ext=/**/
-  # Eval
-  - "eval_(_)=({ _; })"
-  - "eval$(T,_)=(T)({ _; })"
-  - "eval_return_(_)=return _"
-  - "asg_eval(_)=({ _; })"
-  # Match
-  - "match_(expr)=switch (expr)"
-  - "pattern_(tag,capture)=case tag:"
-  - "fallback_(_)=default:"
-
-IfMacros:
-
 ForEachMacros:
   - pp_foreach
   - for_slice
@@ -236,21 +172,20 @@ ForEachMacros:
   - for_array_indexed
   - for_array_rev
   - for_array_rev_indexed
-
 AttributeMacros:
   - $on_load
   - $on_exit
-  - extern_inline
-  - static_inline
-  - force_inline
-  - $nullable
-  - $nonnull
+  - $inline
+  - $inline_always
+  - $inline_never
+  - $deprecated
+  - $deprecated_msg
+  - $deprecated_instead
   - $must_check
   - $no_return
-
+  - $nullable
+  - $nonnull
 StatementAttributeLikeMacros:
-  - unused
-  - used
   - $ignore
   - eval
   - eval_return
@@ -264,12 +199,8 @@ StatementAttributeLikeMacros:
   - try_
   - catch_
   - catch_from
-
 WhitespaceSensitiveMacros:
   - with_
-  - fn_
-  - fn_scope
-  - fn_scope_ext
   - try_
   - catch_
   - catch_from
@@ -282,10 +213,6 @@ WhitespaceSensitiveMacros:
   - config_ErrSet
   - config_UnionEnum
   - config_UnionEnumAsField
-  - match_
-  - tagUnion
-  - tagUnion$
-  - toTagUnion
   - meta_refPtr
   - meta_refSli
   - meta_refPtr_const
@@ -295,8 +222,3 @@ WhitespaceSensitiveMacros:
   - meta_cast$
   - meta_ptrToAny
   - meta_sliToAny
-  # - type$
-  # - make$
-  # - create$
-  # - initial
-  # - cleared

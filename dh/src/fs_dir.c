@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-force_inline i32 makeDir(Str_const path) {
+$inline_always i32 makeDir(Str_const path) {
 #if bti_plat_windows
     return mkdir(as$(const char*, path.ptr));
 #else

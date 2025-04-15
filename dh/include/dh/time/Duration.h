@@ -74,7 +74,7 @@ extern Opt$time_Duration time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs);
 extern Opt$time_Duration time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs);
 
 /* Comparison */
-force_inline cmp_fnCmp(time_Duration) {
+$inline_always cmp_fnCmp(time_Duration) {
     if (self.secs < other.secs) { return cmp_Ord_lt; }
     if (self.secs > other.secs) { return cmp_Ord_gt; }
     if (self.nanos < other.nanos) { return cmp_Ord_lt; }

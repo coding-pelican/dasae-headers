@@ -76,21 +76,21 @@ typedef enum cmp_Ord {
 
 /* Binary operators default implementation */
 // clang-format off
-#define cmp_fnEq_default(TSelf) force_inline cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_eq; }
-#define cmp_fnNe_default(TSelf) force_inline cmp_fnOrd(ne, TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
-#define cmp_fnLt_default(TSelf) force_inline cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_lt; }
-#define cmp_fnGt_default(TSelf) force_inline cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_gt; }
-#define cmp_fnLe_default(TSelf) force_inline cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
-#define cmp_fnGe_default(TSelf) force_inline cmp_fnOrd(ge, TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
+#define cmp_fnEq_default(TSelf) $inline_always cmp_fnOrd(eq, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_eq; }
+#define cmp_fnNe_default(TSelf) $inline_always cmp_fnOrd(ne, TSelf) { return !pp_join(_, TSelf, eq)(self, other); }
+#define cmp_fnLt_default(TSelf) $inline_always cmp_fnOrd(lt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_lt; }
+#define cmp_fnGt_default(TSelf) $inline_always cmp_fnOrd(gt, TSelf) { return pp_join(_, TSelf, cmp)(self, other) == cmp_Ord_gt; }
+#define cmp_fnLe_default(TSelf) $inline_always cmp_fnOrd(le, TSelf) { return !pp_join(_, TSelf, gt)(self, other); }
+#define cmp_fnGe_default(TSelf) $inline_always cmp_fnOrd(ge, TSelf) { return !pp_join(_, TSelf, lt)(self, other); }
 // clang-format on
 
 // clang-format off
-#define cmp_fnEqApx_default(TSelf) force_inline cmp_fnOrdApx(eqApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_eq; }
-#define cmp_fnNeApx_default(TSelf) force_inline cmp_fnOrdApx(neApx, TSelf) { return !pp_join(_, TSelf, eqApx)(self, other, threshold); }
-#define cmp_fnLtApx_default(TSelf) force_inline cmp_fnOrdApx(ltApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_lt; }
-#define cmp_fnGtApx_default(TSelf) force_inline cmp_fnOrdApx(gtApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_gt; }
-#define cmp_fnLeApx_default(TSelf) force_inline cmp_fnOrdApx(leApx, TSelf) { return !pp_join(_, TSelf, gtApx)(self, other, threshold); }
-#define cmp_fnGeApx_default(TSelf) force_inline cmp_fnOrdApx(geApx, TSelf) { return !pp_join(_, TSelf, ltApx)(self, other, threshold); }
+#define cmp_fnEqApx_default(TSelf) $inline_always cmp_fnOrdApx(eqApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_eq; }
+#define cmp_fnNeApx_default(TSelf) $inline_always cmp_fnOrdApx(neApx, TSelf) { return !pp_join(_, TSelf, eqApx)(self, other, threshold); }
+#define cmp_fnLtApx_default(TSelf) $inline_always cmp_fnOrdApx(ltApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_lt; }
+#define cmp_fnGtApx_default(TSelf) $inline_always cmp_fnOrdApx(gtApx, TSelf) { return pp_join(_, TSelf, cmpApx)(self, other, threshold) == cmp_Ord_gt; }
+#define cmp_fnLeApx_default(TSelf) $inline_always cmp_fnOrdApx(leApx, TSelf) { return !pp_join(_, TSelf, gtApx)(self, other, threshold); }
+#define cmp_fnGeApx_default(TSelf) $inline_always cmp_fnOrdApx(geApx, TSelf) { return !pp_join(_, TSelf, ltApx)(self, other, threshold); }
 // clang-format on
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/

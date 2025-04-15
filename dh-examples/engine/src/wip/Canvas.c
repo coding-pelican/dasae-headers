@@ -17,7 +17,8 @@ fn_ext_scope(engine_Canvas_init(mem_Allocator allocator, u32 width, u32 height, 
 
     engine_Canvas_clear(self, none$(Opt$Color));
     return_ok(self);
-} ext_unscoped;
+}
+ext_unscoped;
 
 fn_(engine_Canvas_fini(engine_Canvas* self), void) {
     if (!self) { return; }
@@ -38,7 +39,8 @@ fn_ext_scope(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), E
     log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
 
     return_void();
-} ext_unscoped;
+}
+ext_unscoped;
 
 fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
     debug_assert_nonnull(self);
@@ -50,7 +52,7 @@ fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
     }
 }
 
-force_inline Color Color_blendAlpha(Color src, Color dst) {
+$inline_always Color Color_blendAlpha(Color src, Color dst) {
     // Convert [0..255] => [0..1]
     let s_a = as$(f32, src.a) / as$(f32, ColorChannel_max_value);
     let d_a = as$(f32, dst.a) / as$(f32, ColorChannel_max_value);
@@ -74,7 +76,7 @@ force_inline Color Color_blendAlpha(Color src, Color dst) {
         as$(u8, out_r + 0.5f),
         as$(u8, out_g + 0.5f),
         as$(u8, out_b + 0.5f),
-        as$(u8, out_a * as$(f32, ColorChannel_max_value) + 0.5f)
+        as$(u8, out_a* as$(f32, ColorChannel_max_value) + 0.5f)
     );
 }
 
@@ -176,7 +178,7 @@ void engine_Canvas_drawRect(engine_Canvas* self, i32 x1, i32 y1, i32 x2, i32 y2,
 }
 
 // Utility to plot the eight symmetrical points
-force_inline void plotCirclePoints(engine_Canvas* self, i32 cx, i32 cy, i32 x, i32 y, Color color) {
+$inline_always void plotCirclePoints(engine_Canvas* self, i32 cx, i32 cy, i32 x, i32 y, Color color) {
     engine_Canvas_drawPixel(self, cx + x, cy + y, color);
     engine_Canvas_drawPixel(self, cx - x, cy + y, color);
     engine_Canvas_drawPixel(self, cx + x, cy - y, color);
@@ -289,16 +291,16 @@ void engine_Canvas_drawRing(engine_Canvas* self, i32 cx, i32 cy, i32 r_inner, i3
 // }
 
 // Convert degrees to radians
-force_inline f32  degToRad(f32 deg) { return (deg * math_f32_pi) / 180.0f; }
+$inline_always f32  degToRad(f32 deg) { return (deg * math_f32_pi) / 180.0f; }
 // Check if angle (in radians) is in [start_rad, end_rad]
-force_inline bool isAngleInRange(f32 angle, f32 start_rad, f32 end_rad) {
+$inline_always bool isAngleInRange(f32 angle, f32 start_rad, f32 end_rad) {
     // Normalize angle to [0, 2π) for easier comparison
     if (angle < 0) { angle += 2.0f * math_f32_pi; }
     // We assume startRad <= endRad
     return start_rad <= angle && angle <= end_rad;
 }
 // Plot 8 symmetric points *only if* their angle is in [startRad, endRad].
-force_inline void plotArcPoints(engine_Canvas* self, i32 cx, i32 cy, i32 x, i32 y, f32 start_rad, f32 end_rad, Color color) {
+$inline_always void plotArcPoints(engine_Canvas* self, i32 cx, i32 cy, i32 x, i32 y, f32 start_rad, f32 end_rad, Color color) {
     // All the symmetrical coords around the center
     const i32 coords[8][2] = {
         { cx + x, cy + y },
@@ -393,7 +395,7 @@ void engine_Canvas_drawCapsule(engine_Canvas* self, i32 x1, i32 y1, i32 x2, i32 
 }
 
 // Helper: integer "round" for f32 -> int
-force_inline i32 iround(f32 x) { return (i32)(x + 0.5f); }
+$inline_always i32 iround(f32 x) { return (i32)(x + 0.5f); }
 
 // Draw a thick line by drawing multiple offset lines
 void engine_Canvas_drawLineThick(engine_Canvas* self, i32 x1, i32 y1, i32 x2, i32 y2, f32 thickness, Color color) {
@@ -550,7 +552,7 @@ void engine_Canvas_fillRingByScanlines(engine_Canvas* self, i32 cx, i32 cy, i32 
 }
 
 
-force_inline void drawHLineAngleClipped(engine_Canvas* self, i32 x1, i32 x2, i32 y, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
+$inline_always void drawHLineAngleClipped(engine_Canvas* self, i32 x1, i32 x2, i32 y, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
     if (x2 < x1) { prim_swap(x1, x2); }
 
     for (i32 x = x1; x <= x2; ++x) {
@@ -567,7 +569,7 @@ force_inline void drawHLineAngleClipped(engine_Canvas* self, i32 x1, i32 x2, i32
     }
 }
 
-force_inline void drawVLineAngleClipped(engine_Canvas* self, i32 y1, i32 y2, i32 x, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
+$inline_always void drawVLineAngleClipped(engine_Canvas* self, i32 y1, i32 y2, i32 x, i32 cx, i32 cy, f32 start_rad, f32 end_rad, Color color) {
     if (y2 < y1) { prim_swap(y1, y2); }
 
     for (i32 y = y1; y <= y2; ++y) {

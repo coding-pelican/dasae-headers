@@ -114,13 +114,13 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 }
 // clang-format on
 
-#define comp_syn__return_(_Expr...) eval({                        \
-    bti_memcpy(                                                   \
-        as$(u8*, __reserved_return),                              \
-        as$(u8*, (TypeOf(*__reserved_return)[1]){ [0] = _Expr }), \
-        sizeOf$(*__reserved_return)                               \
-    );                                                            \
-    goto __step_return;                                           \
+#define comp_syn__return_(_Expr...) eval({                         \
+    bti_memcpy(                                                    \
+        as$(u8*, __reserved_return),                               \
+        as$(u8*, (TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
+        sizeOf$(*__reserved_return)                                \
+    );                                                             \
+    goto __step_return;                                            \
 })
 #define comp_syn__return_void() eval({                                         \
     claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \

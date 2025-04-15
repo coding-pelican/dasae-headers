@@ -9,7 +9,7 @@
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(utils_MulErr, Overflow);
-force_inline Err$usize utils_usize_mulSafe(usize lhs, usize rhs) {
+$inline_always Err$usize utils_usize_mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow

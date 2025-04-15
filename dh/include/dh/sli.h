@@ -212,80 +212,74 @@ union __AssociationTypes_Sli {
     typedef union pp_join($, SliS, T) pp_join($, SliS, T);              \
     typedef union Sli_const$(T) Sli_const$(T);                          \
     typedef union Sli$(T) Sli$(T)
-#define comp_type_gen__impl_Sli$(T)                                \
-    typedef struct pp_join($, __AssociationTypes_Sli_const, T)     \
-        pp_join($, __AssociationTypes_Sli_const, T);               \
-    typedef union pp_join($, __AssociationTypes_Sli, T)            \
-        pp_join($, __AssociationTypes_Sli, T);                     \
-    struct pp_join($, SliZ_const, T) {                             \
-        rawptr_const$(T) ptr;                                      \
-        rawptr_const$(SliZ_const) __base_type_hint[0];             \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) \
-            __association_types_hint[0];                           \
-    };                                                             \
-    union pp_join($, SliZ, T) {                                    \
-        struct {                                                   \
-            rawptr$(T) ptr;                                        \
-        };                                                         \
-        pp_join($, SliZ_const, T) as_const;                        \
-        rawptr_const$(SliZ) __base_type_hint[0];                   \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T))       \
-            __association_types_hint[0];                           \
-    };                                                             \
-    union pp_join($, SliS_const, T) {                              \
-        pp_join($, SliZ_const, T) as_zero_terminated;              \
-        struct {                                                   \
-            rawptr_const$(T) ptr;                                  \
-            T sentinel;                                            \
-        };                                                         \
-        rawptr_const$(SliS_const) __base_type_hint[0];             \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) \
-            __association_types_hint[0];                           \
-    };                                                             \
-    union pp_join($, SliS, T) {                                    \
-        pp_join($, SliZ, T) as_zero_terminated;                    \
-        struct {                                                   \
-            rawptr$(T) ptr;                                        \
-            T sentinel;                                            \
-        };                                                         \
-        pp_join($, SliS_const, T) as_const;                        \
-        rawptr_const$(SliS) __base_type_hint[0];                   \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T))       \
-            __association_types_hint[0];                           \
-    };                                                             \
-    union pp_join($, Sli_const, T) {                               \
-        pp_join($, SliZ_const, T) as_zero_terminated;              \
-        struct {                                                   \
-            rawptr_const$(T) ptr;                                  \
-            usize len;                                             \
-        };                                                         \
-        rawptr_const$(Sli_const) __base_type_hint[0];              \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) \
-            __association_types_hint[0];                           \
-    };                                                             \
-    union Sli$(T) {                                                \
-        pp_join($, SliZ, T) as_zero_terminated;                    \
-        struct {                                                   \
-            rawptr$(T) ptr;                                        \
-            usize len;                                             \
-        };                                                         \
-        pp_join($, Sli_const, T) as_const;                         \
-        rawptr_const$(Sli) __base_type_hint[0];                    \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T))       \
-            __association_types_hint[0];                           \
-    };                                                             \
-    struct pp_join($, __AssociationTypes_Sli_const, T) {           \
-        rawptr$(pp_join($, SliZ_const, T)) zero_terminated;        \
-        rawptr$(pp_join($, SliS_const, T)) sentinel_terminated;    \
-        rawptr$(pp_join($, Sli_const, T)) regular;                 \
-    };                                                             \
-    union pp_join($, __AssociationTypes_Sli, T) {                  \
-        struct {                                                   \
-            rawptr$(pp_join($, SliZ, T)) zero_terminated;          \
-            rawptr$(pp_join($, SliS, T)) sentinel_terminated;      \
-            rawptr$(pp_join($, Sli, T)) regular;                   \
-        };                                                         \
-        pp_join($, __AssociationTypes_Sli_const, T) as_const;      \
+#define comp_type_gen__impl_Sli$(T)                                                             \
+    typedef struct pp_join($, __AssociationTypes_Sli_const, T)                                  \
+        pp_join($, __AssociationTypes_Sli_const, T);                                            \
+    typedef union pp_join($, __AssociationTypes_Sli, T)                                         \
+        pp_join($, __AssociationTypes_Sli, T);                                                  \
+    struct pp_join($, SliZ_const, T) {                                                          \
+        rawptr_const$(T) ptr;                                                                   \
+        rawptr_const$(SliZ_const) __base_type_hint[0];                                          \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
+    };                                                                                          \
+    union pp_join($, SliZ, T) {                                                                 \
+        struct {                                                                                \
+            rawptr$(T) ptr;                                                                     \
+        };                                                                                      \
+        pp_join($, SliZ_const, T) as_const;                                                     \
+        rawptr_const$(SliZ) __base_type_hint[0];                                                \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
+    };                                                                                          \
+    union pp_join($, SliS_const, T) {                                                           \
+        pp_join($, SliZ_const, T) as_zero_terminated;                                           \
+        struct {                                                                                \
+            rawptr_const$(T) ptr;                                                               \
+            T sentinel;                                                                         \
+        };                                                                                      \
+        rawptr_const$(SliS_const) __base_type_hint[0];                                          \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
+    };                                                                                          \
+    union pp_join($, SliS, T) {                                                                 \
+        pp_join($, SliZ, T) as_zero_terminated;                                                 \
+        struct {                                                                                \
+            rawptr$(T) ptr;                                                                     \
+            T sentinel;                                                                         \
+        };                                                                                      \
+        pp_join($, SliS_const, T) as_const;                                                     \
+        rawptr_const$(SliS) __base_type_hint[0];                                                \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
+    };                                                                                          \
+    union pp_join($, Sli_const, T) {                                                            \
+        pp_join($, SliZ_const, T) as_zero_terminated;                                           \
+        struct {                                                                                \
+            rawptr_const$(T) ptr;                                                               \
+            usize len;                                                                          \
+        };                                                                                      \
+        rawptr_const$(Sli_const) __base_type_hint[0];                                           \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
+    };                                                                                          \
+    union Sli$(T) {                                                                             \
+        pp_join($, SliZ, T) as_zero_terminated;                                                 \
+        struct {                                                                                \
+            rawptr$(T) ptr;                                                                     \
+            usize len;                                                                          \
+        };                                                                                      \
+        pp_join($, Sli_const, T) as_const;                                                      \
+        rawptr_const$(Sli) __base_type_hint[0];                                                 \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
+    };                                                                                          \
+    struct pp_join($, __AssociationTypes_Sli_const, T) {                                        \
+        rawptr$(pp_join($, SliZ_const, T)) zero_terminated;                                     \
+        rawptr$(pp_join($, SliS_const, T)) sentinel_terminated;                                 \
+        rawptr$(pp_join($, Sli_const, T)) regular;                                              \
+    };                                                                                          \
+    union pp_join($, __AssociationTypes_Sli, T) {                                               \
+        struct {                                                                                \
+            rawptr$(pp_join($, SliZ, T)) zero_terminated;                                       \
+            rawptr$(pp_join($, SliS, T)) sentinel_terminated;                                   \
+            rawptr$(pp_join($, Sli, T)) regular;                                                \
+        };                                                                                      \
+        pp_join($, __AssociationTypes_Sli_const, T) as_const;                                   \
     }
 
 #define comp_type_alias__Sli_const$(T) \

@@ -110,7 +110,7 @@ void QuadTree_clear(QuadTree* self) {
 }
 
 // Partition function
-force_inline usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
+$inline_always usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
     if (self.len == 0) { return 0; }
     usize lhs = 0;
     usize rhs = self.len - 1;
@@ -126,10 +126,10 @@ force_inline usize partition(Sli$Body self, bool (*predFn)(const Body* self, mat
     return lhs;
 }
 // Predicates
-static_inline bool predLtX(const Body* body, math_Vec2f center) {
+static $inline bool predLtX(const Body* body, math_Vec2f center) {
     return body->pos.x < center.x;
 }
-static_inline bool predLtY(const Body* body, math_Vec2f center) {
+static $inline bool predLtY(const Body* body, math_Vec2f center) {
     return body->pos.y < center.y;
 }
 

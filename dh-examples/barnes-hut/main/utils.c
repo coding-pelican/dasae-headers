@@ -4,7 +4,7 @@
 #include "dh/Random.h"
 #include "dh/mem/cfg.h"
 
-static_inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
+static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
@@ -92,4 +92,5 @@ fn_ext_scope(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Bo
     }
 
     return_ok(bodies);
-} ext_unscoped;
+}
+ext_unscoped;

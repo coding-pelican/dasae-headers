@@ -39,7 +39,7 @@ typedef struct TypeInfo {
 /// Get type information for meta
 #define typeInfo$(T /* TypeInfo */) comp_op__typeInfo$(T)
 /// Compare equality of type information
-force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
+static bool TypeInfo_eq(TypeInfo, TypeInfo);
 
 /// For explicit materialization type representation of abstract generic types
 #define type$(T_Dest, val_src... /* T_Dest */)                 comp_op__type$(pp_uniqTok(src), T_Dest, val_src)
@@ -49,7 +49,7 @@ force_inline bool TypeInfo_eq(TypeInfo, TypeInfo);
 
 #define comp_op__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
 #if COMP_TIME
-force_inline bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
+$inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
     return bti_memcmp(&lhs, &rhs, sizeOf(TypeInfo)) == 0;
 }
 #endif /* COMP_TIME */

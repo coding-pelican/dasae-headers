@@ -14,7 +14,7 @@ void mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs) {
 }
 
 // Swap two elements of given size
-force_inline void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
+$inline_always void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
     let tmp = as$(u8*, alloca(byte_len));
     memcpy(tmp, lhs, byte_len);
     memcpy(lhs, rhs, byte_len);
@@ -278,7 +278,7 @@ Err$void utils_stableSortWithArgUsingTemp(
     return_void();
 }
 
-static_inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
+static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
@@ -308,7 +308,8 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
         meta_refPtr(createFrom$(
             Body, Body_new(math_Vec2f_zero, math_Vec2f_zero, m, inner_radius)
         ))
-    ));
+        )
+    );
 
     // Generate outer bodies
     while (bodies.items.len < n) {
@@ -332,7 +333,8 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
         try(ArrList_append(
             &bodies.base,
             meta_refPtr(createFrom$(Body, Body_new(pos, vel, mass, radius)))
-        ));
+            )
+        );
     }
 
     // Sort by distance from center and adjust velocities
@@ -359,7 +361,7 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 #if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(MulErr, Overflow);
-force_inline Err$usize mulSafe(usize lhs, usize rhs) {
+$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(Err$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow

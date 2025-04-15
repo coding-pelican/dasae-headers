@@ -94,7 +94,7 @@ extern Err$void Visualizer_render(Visualizer* self) $must_check;
 ///    |    (CENTER)   |                +--→ x+
 ///    |               |
 /// (0,h-1) -------- (w-1,h-1)  (-w/2*scale, -h/2*scale)
-force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
+$inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
     // Calculate screen center offsets (handles even/odd dimensions)
     let center_x = as$(i32, (self->canvas->width - (~self->canvas->width & 1)) >> 1);
     let center_y = as$(i32, (self->canvas->height - (~self->canvas->height & 1)) >> 1);
@@ -103,7 +103,7 @@ force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// Unified coordinate system transformations
 /// screen_px == (world_px - screen_center_px) * scale
 /// screen_py == (screen_center_py - world_py) * scale
-force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+$inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
     let p_sub_center        = math_Vec2f_sub(world_pos, self->pos);
     let p_sub_center_scaled = math_Vec2f_scale(p_sub_center, Visualizer_scale(self));
     return math_Vec2i_from(
@@ -114,7 +114,7 @@ force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
 /// Unified coordinate system transformations
 /// world_px == screen_center_px + (screen_px * 1/scale)
 /// world_py == screen_center_py - (screen_py * 1/scale)
-force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+$inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
     let p = math_Vec2f_from(
         as$(f32, screen_pos.x),
         as$(f32, -screen_pos.y)

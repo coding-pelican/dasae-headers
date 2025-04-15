@@ -20,7 +20,7 @@ typedef struct MiniZlibInflator {
 } MiniZlibInflator;
 
 /* Read bits from the input stream */
-static_inline u32 MiniZlib_readBits(MiniZlibInflator* self, i32 num_bits) {
+static $inline u32 MiniZlib_readBits(MiniZlibInflator* self, i32 num_bits) {
     u32 result = 0;
     for (i32 i = 0; i < num_bits; ++i) {
         // If we run out of input, bail out
@@ -38,7 +38,7 @@ static_inline u32 MiniZlib_readBits(MiniZlibInflator* self, i32 num_bits) {
 }
 
 /* A very minimal "uncompressed" block reader (Type=0) */
-static_inline i32 MiniZlib_inflateUncompressedBlock(MiniZlibInflator* self) {
+static $inline i32 MiniZlib_inflateUncompressedBlock(MiniZlibInflator* self) {
     // align to byte boundary
     self->bit_pos = (self->bit_pos + 7) & ~7;
     if ((self->bit_pos >> 3) + 4 > self->input_len) {
@@ -68,7 +68,7 @@ static_inline i32 MiniZlib_inflateUncompressedBlock(MiniZlibInflator* self) {
    In a real-world scenario, you’d implement the Huffman codes, etc.
    This example only handles 'uncompressed' blocks for brevity.
 */
-static_inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 type) {
+static $inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 type) {
     $unused(self);
     $unused(type);
     // *** You would handle Type=1 and Type=2 here with Huffman decoding ***
@@ -77,7 +77,7 @@ static_inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 ty
 }
 
 /* Minimal inflate: expects zlib header + raw DEFLATE blocks (no dictionary). */
-static_inline i32 MiniZlib_inflate(const u8* in, usize in_len, u8* out, usize out_size, usize* out_len) {
+static $inline i32 MiniZlib_inflate(const u8* in, usize in_len, u8* out, usize out_size, usize* out_len) {
     MiniZlibInflator inf;
     memset(&inf, 0, sizeof(inf));
     inf.input       = in;
