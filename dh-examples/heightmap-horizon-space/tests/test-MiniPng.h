@@ -11,7 +11,7 @@ static const u8 MiniPng_sig[8] = {
 };
 
 /* Filter recon helpers for each byte */
-force_inline u8 MiniPng_paeth(u8 a, u8 b, u8 c) {
+$inline_always u8 MiniPng_paeth(u8 a, u8 b, u8 c) {
     i32 p  = a + b - c;
     i32 pa = abs(p - a);
     i32 pb = abs(p - b);
@@ -26,7 +26,7 @@ force_inline u8 MiniPng_paeth(u8 a, u8 b, u8 c) {
 }
 
 /* Decode one scanline with the specified PNG filter type */
-static_inline void MiniPng_filterScanline(
+static $inline void MiniPng_filterScanline(
     u8*       scanline,
     const u8* prev_scanline,
     i32       bytes_per_pixel,
@@ -78,7 +78,7 @@ static_inline void MiniPng_filterScanline(
 
    This code handles color type=0 (gray), 2 (RGB), and 6 (RGBA) at 8-bit depth only.
 */
-static_inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h, i32* out_channels) {
+static $inline u8* MiniPng_load8bit(const char* filename, i32* out_w, i32* out_h, i32* out_channels) {
     FILE* fp = fopen(filename, "rb");
     if (!fp) {
         $ignore fprintf(stderr, "Cannot open file: %s\n", filename);

@@ -15,8 +15,8 @@
 #define Visualizer_alpha_scale       (0.8f) // Alpha multiplier for blending
 
 /* Function to calculate the inverse scale factor for rendering nodes.  */
-force_inline f32   Visualizer_scale(Visualizer* self) { return self->scale; }
-force_inline f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
+$inline_always f32   Visualizer_scale(Visualizer* self) { return self->scale; }
+$inline_always f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
 ///////////////////////////////////////////////////////////////////////////////
 /// Unified coordinate system transformations:
 ///
@@ -46,7 +46,7 @@ force_inline f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->s
 ///    wy = camy - ( (sy - cy) * scale )
 ///
 ///////////////////////////////////////////////////////////////////////////////
-force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
+$inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
     let cx = (as$(i32, self->canvas->width) - 1) / 2;
     let cy = (as$(i32, self->canvas->height) - 1) / 2;
@@ -61,7 +61,7 @@ force_inline Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// @param self      Pointer to the Visualizer (contains camera pos & scale).
 /// @param world_pos The (wx, wy) coordinates in world space.
 /// @return          The corresponding (sx, sy) on the screen in pixels.
-force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+$inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
     let center      = Visualizer_screenCenter(self);
     let w_minus_cam = math_Vec2f_sub(world_pos, self->pos);
     let divided     = math_Vec2f_scale(w_minus_cam, 1.0f / self->scale);
@@ -79,7 +79,7 @@ force_inline Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
 /// @param self       Pointer to the Visualizer (contains camera pos & scale).
 /// @param screen_pos The (sx, sy) pixel coordinates on the screen.
 /// @return           The corresponding (wx, wy) in world space.
-force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+$inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
     let center     = Visualizer_screenCenter(self);
     let dx         = as$(f32, screen_pos.x - center.x);
     let dy         = as$(f32, center.y - screen_pos.y);
@@ -88,7 +88,7 @@ force_inline Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) 
     return math_Vec2f_add(self->pos, multiplied);
 }
 /// Returns the current mouse position converted to world coords.
-force_inline Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
+$inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
     return Visualizer_screenToWorld(self, engine_Mouse_getPos());
 }
 
@@ -159,23 +159,23 @@ static Sli_const$Control Control_list(void) {
     };
 }
 
-force_inline void VisualizerInput_resetPos(Visualizer* self) {
+$inline_always void VisualizerInput_resetPos(Visualizer* self) {
     self->pos = math_Vec2f_zero;
 }
-force_inline void VisualizerInput_toggleShowingBodies(Visualizer* self) {
+$inline_always void VisualizerInput_toggleShowingBodies(Visualizer* self) {
     self->shows_bodies = !self->shows_bodies;
 }
-force_inline void VisualizerInput_toggleVisualizationBodiesVelVec(Visualizer* self) {
+$inline_always void VisualizerInput_toggleVisualizationBodiesVelVec(Visualizer* self) {
     self->shows_bodies_vel_vec = !self->shows_bodies_vel_vec;
 }
-force_inline void VisualizerInput_toggleVisualizationBodiesAccVec(Visualizer* self) {
+$inline_always void VisualizerInput_toggleVisualizationBodiesAccVec(Visualizer* self) {
     self->shows_bodies_acc_vec = !self->shows_bodies_acc_vec;
 }
-force_inline void VisualizerInput_toggleVisualizationQuadTree(Visualizer* self) {
+$inline_always void VisualizerInput_toggleVisualizationQuadTree(Visualizer* self) {
     self->shows_quad_tree = !self->shows_quad_tree;
 }
 // Call this when the middle mouse button is first pressed:
-force_inline void VisualizerInput_onPanBegin(Visualizer* self) {
+$inline_always void VisualizerInput_onPanBegin(Visualizer* self) {
     if (self->is_panning) { return; }
     // Store screen coordinates & camera pos
     self->pan_screen_begin = engine_Mouse_getPos();
@@ -183,7 +183,7 @@ force_inline void VisualizerInput_onPanBegin(Visualizer* self) {
     self->is_panning       = true;
 }
 // Call this each frame while the middle mouse is held:
-force_inline void VisualizerInput_handlePan(Visualizer* self) {
+$inline_always void VisualizerInput_handlePan(Visualizer* self) {
     // Current mouse position in SCREEN space
     let mouse_now_screen = engine_Mouse_getPos();
 
@@ -201,13 +201,13 @@ force_inline void VisualizerInput_handlePan(Visualizer* self) {
     self->pos = math_Vec2f_add(self->pan_cam_begin, diff_world);
 }
 // Call this when the middle mouse button is released:
-force_inline void VisualizerInput_onPanEnd(Visualizer* self) {
+$inline_always void VisualizerInput_onPanEnd(Visualizer* self) {
     self->is_panning = false;
     // // Reset pan screen & cam begin to zero
     // self->pan_screen_begin = math_Vec2f_zero;
     // self->pan_cam_begin    = math_Vec2f_zero;
 }
-force_inline void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta) {
+$inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta) {
     if (scroll_delta == 0) { return; }
 
     // 1) Find the world coords under the mouse BEFORE changing scale
@@ -375,7 +375,7 @@ Err$void        Visualizer_render(Visualizer* self) {
     return_void();
 }
 
-force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
+$inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
     if (1.0f < screen_radius) {
         return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
     }
@@ -387,7 +387,7 @@ force_inline void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 
     color.a      = as$(u8, 255.0f * coverage * Visualizer_alpha_scale);
     return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
-force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
+$inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
     let view_min = math_Vec2f_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
@@ -410,7 +410,7 @@ force_inline void Visualizer_drawBodiesOnly(Visualizer* self) {
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
     }
 }
-force_inline void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
+$inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
     let view_min = math_Vec2f_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
@@ -440,7 +440,7 @@ force_inline void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         }
     }
 }
-force_inline void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
+$inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
     let view_min = math_Vec2f_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
@@ -470,7 +470,7 @@ force_inline void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         }
     }
 }
-force_inline void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
+$inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
     let view_min = math_Vec2f_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
@@ -529,7 +529,7 @@ static void Visualizer_renderBodies(Visualizer* self) {
     }
 }
 
-force_inline void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color) {
+$inline_always void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color) {
     // Convert world min/max to screen coordinates
     let screen_min = Visualizer_worldToScreen(self, min);
     let screen_max = Visualizer_worldToScreen(self, max);

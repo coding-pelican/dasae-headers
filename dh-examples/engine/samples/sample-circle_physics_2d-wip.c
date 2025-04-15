@@ -25,13 +25,13 @@ typedef struct Circ2f {
     Vec2f center;
     f32   radius;
 } Circ2f;
-force_inline bool Circ2f_intersects(Circ2f a, Circ2f b) {
+$inline_always bool Circ2f_intersects(Circ2f a, Circ2f b) {
     let diff      = math_Vec2f_sub(b.center, a.center);
     let dist_sq   = math_Vec2f_lenSq(diff);
     let sum_radii = a.radius + b.radius;
     return dist_sq <= (sum_radii * sum_radii);
 }
-force_inline bool Circ2f_containsPoint(Circ2f c, Vec2f point) {
+$inline_always bool Circ2f_containsPoint(Circ2f c, Vec2f point) {
     let diff    = math_Vec2f_sub(point, c.center);
     let dist_sq = math_Vec2f_lenSq(diff);
     return dist_sq <= (c.radius * c.radius);
@@ -86,7 +86,8 @@ static Err$BallManager BallManager_init(mem_Allocator allocator) {
             .selected_ball = null,
             .allocator     = allocator,
         });
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 static void BallManager_fini(BallManager* self) {
@@ -223,7 +224,7 @@ static void BallManager_update(BallManager* self, f32 dt) {
 }
 
 // Convert world space to screen space for a ball
-force_inline Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
+$inline_always Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
     let scale  = window_res_scale;
     let center = (Vec2f){
         .x = as$(f32, canvas->width) * 0.5f,
@@ -249,7 +250,7 @@ static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     }
 }
 
-force_inline Vec2f screenToWorld(Vec2i screen_pos) {
+$inline_always Vec2f screenToWorld(Vec2i screen_pos) {
     var pos = (Vec2f){
         .x = as$(f32, screen_pos.x),
         .y = as$(f32, screen_pos.y)
@@ -371,5 +372,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }

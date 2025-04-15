@@ -205,7 +205,7 @@ extern void                  engine_InputEventBuffer_clear(void);
 extern engine_InputState* engine_Input_instance(void);
 
 // Input state queries
-force_inline bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state) {
+$inline_always bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state) {
     debug_assert_true(engine_KeyCode_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     debug_assert_true(engine_KeyStates_none <= state);
@@ -213,20 +213,20 @@ force_inline bool engine_Key_isState(engine_KeyCode key, engine_KeyStates state)
     return (input->curr_states[key] & state) != engine_KeyStates_none;
 }
 
-force_inline bool engine_Key_pressed(engine_KeyCode key) {
+$inline_always bool engine_Key_pressed(engine_KeyCode key) {
     return engine_Key_isState(key, engine_KeyStates_pressed);
 }
 
-force_inline bool engine_Key_held(engine_KeyCode key) {
+$inline_always bool engine_Key_held(engine_KeyCode key) {
     return engine_Key_isState(key, engine_KeyStates_held);
 }
 
-force_inline bool engine_Key_released(engine_KeyCode key) {
+$inline_always bool engine_Key_released(engine_KeyCode key) {
     return engine_Key_isState(key, engine_KeyStates_released);
 }
 
 // Get all current states for a key
-force_inline u8 engine_Key_getState(engine_KeyCode key) {
+$inline_always u8 engine_Key_getState(engine_KeyCode key) {
     debug_assert_true(engine_KeyCode_none <= key);
     debug_assert_true(key < engine_KeyCode_count);
     let input = engine_Input_instance();
@@ -234,7 +234,7 @@ force_inline u8 engine_Key_getState(engine_KeyCode key) {
 }
 
 // Mouse state queries
-force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStates state) {
+$inline_always bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStates state) {
     debug_assert_true(engine_MouseButton_none <= button);
     debug_assert_true(button < engine_MouseButton_count);
     debug_assert_true(engine_KeyStates_none <= state);
@@ -242,19 +242,19 @@ force_inline bool engine_Mouse_isState(engine_MouseButton button, engine_KeyStat
     return (input->mouse.curr_button_states[button] & state) != engine_KeyStates_none;
 }
 
-force_inline bool engine_Mouse_pressed(engine_MouseButton button) {
+$inline_always bool engine_Mouse_pressed(engine_MouseButton button) {
     return engine_Mouse_isState(button, engine_KeyStates_pressed);
 }
 
-force_inline bool engine_Mouse_held(engine_MouseButton button) {
+$inline_always bool engine_Mouse_held(engine_MouseButton button) {
     return engine_Mouse_isState(button, engine_KeyStates_held);
 }
 
-force_inline bool engine_Mouse_released(engine_MouseButton button) {
+$inline_always bool engine_Mouse_released(engine_MouseButton button) {
     return engine_Mouse_isState(button, engine_KeyStates_released);
 }
 
-force_inline Vec2i engine_Mouse_getPos(void) {
+$inline_always Vec2i engine_Mouse_getPos(void) {
     let input = engine_Input_instance();
     return (Vec2i){
         .s = {
@@ -264,7 +264,7 @@ force_inline Vec2i engine_Mouse_getPos(void) {
     };
 }
 
-force_inline Vec2i engine_Mouse_getPosDelta(void) {
+$inline_always Vec2i engine_Mouse_getPosDelta(void) {
     let input = engine_Input_instance();
     return (Vec2i){
         .s = {
@@ -274,17 +274,17 @@ force_inline Vec2i engine_Mouse_getPosDelta(void) {
     };
 }
 
-force_inline f64 engine_Mouse_getScrollSpeed(void) {
+$inline_always f64 engine_Mouse_getScrollSpeed(void) {
     let input = engine_Input_instance();
     return input->mouse.scroll_speed;
 }
 
-force_inline i32 engine_Mouse_getWheelScrollDelta(void) {
+$inline_always i32 engine_Mouse_getWheelScrollDelta(void) {
     let input = engine_Input_instance();
     return input->mouse.scroll_delta;
 }
 
-force_inline f64 engine_Mouse_getScrollDeltaAccumulated(void) {
+$inline_always f64 engine_Mouse_getScrollDeltaAccumulated(void) {
     let input = engine_Input_instance();
     return input->mouse.accumulated_scroll_delta;
 }

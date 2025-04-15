@@ -84,10 +84,10 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 
 #else
 
-force_inline void log_debug(const char* /* fmt */, ...);
-force_inline void log_info(const char* /* fmt */, ...);
-force_inline void log_warn(const char* /* fmt */, ...);
-force_inline void log_error(const char* /* fmt */, ...);
+static void log_debug(const char* /* fmt */, ...);
+static void log_info(const char* /* fmt */, ...);
+static void log_warn(const char* /* fmt */, ...);
+static void log_error(const char* /* fmt */, ...);
 
 #endif
 #else

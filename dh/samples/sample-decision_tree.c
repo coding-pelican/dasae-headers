@@ -174,26 +174,15 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 } unscoped_ext;
 
 // Implementation of TreeNode functions
-fn_scope(TreeNode_createLeaf(
-    mem_Allocator allocator,
-    i32           class_label
-), Err$Ptr$TreeNode) {
+fn_scope(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    toTagUnion(node, TreeNode_leaf, {
-        .class_label = class_label,
-    });
+    toTagUnion(node, TreeNode_leaf, { .class_label = class_label });
     return_ok(node);
 } unscoped;
 
-fn_scope(TreeNode_createDecision(
-    mem_Allocator allocator,
-    u32           feature_index,
-    f32           threshold,
-    TreeNode*     left,
-    TreeNode*     right
-), Err$Ptr$TreeNode) {
+fn_scope(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
@@ -201,7 +190,7 @@ fn_scope(TreeNode_createDecision(
         .feature_index = feature_index,
         .threshold     = threshold,
         .left          = left,
-        .right         = right,
+        .right         = right
     });
     return_ok(node);
 } unscoped;

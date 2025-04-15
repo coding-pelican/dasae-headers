@@ -12,8 +12,8 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
 
 // Utility functions
-static_inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool);
-static_inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool);
+static $inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool);
+static $inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool);
 
 fn_(heap_Fixed_allocator(heap_Fixed* self), mem_Allocator) {
     /* VTable for FixedBuf allocator */
@@ -209,7 +209,7 @@ static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$
 
 /*========== Utility Functions ==============================================*/
 
-static_inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool) {
+static $inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool) {
     let container_start = rawptrToInt(container.ptr);
     let container_end   = container_start + container.len;
     let ptr_addr        = rawptrToInt(ptr);
@@ -217,7 +217,7 @@ static_inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8
     return container_start <= ptr_addr && ptr_addr < container_end;
 }
 
-static_inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool) {
+static $inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool) {
     let container_start = rawptrToInt(container.ptr);
     let container_end   = container_start + container.len;
     let slice_start     = rawptrToInt(sli.ptr);

@@ -115,25 +115,25 @@ extern "C" {
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
 #if EXAMPLE_USAGE
-force_inline i8 op_fnUn(neg, i8) { return (i8)(-self); }
-force_inline i8 op_fnBin(add, i8) { return (i8)(self + other); }
-force_inline i8 op_fnBin(sub, i8) { return (i8)(self - other); }
-force_inline i8 op_fnBin(mul, i8) { return (i8)(self * other); }
-force_inline i8 op_fnBin(div, i8) { return (i8)(self / other); }
-force_inline i8 op_fnBin(rem, i8) { return (i8)(self % other); }
+$inline_always i8 op_fnUn(neg, i8) { return (i8)(-self); }
+$inline_always i8 op_fnBin(add, i8) { return (i8)(self + other); }
+$inline_always i8 op_fnBin(sub, i8) { return (i8)(self - other); }
+$inline_always i8 op_fnBin(mul, i8) { return (i8)(self * other); }
+$inline_always i8 op_fnBin(div, i8) { return (i8)(self / other); }
+$inline_always i8 op_fnBin(rem, i8) { return (i8)(self % other); }
 
-force_inline i32 op_fnAdd(i32) { return self + other; }
-force_inline i32 op_fnSub(i32) { return self - other; }
-force_inline i32 op_fnMul(i32) { return self * other; }
-force_inline i32 op_fnDiv(i32) { return self / other; }
-force_inline i32 op_fnRem(i32) { return self % other; }
+$inline_always i32 op_fnAdd(i32) { return self + other; }
+$inline_always i32 op_fnSub(i32) { return self - other; }
+$inline_always i32 op_fnMul(i32) { return self * other; }
+$inline_always i32 op_fnDiv(i32) { return self / other; }
+$inline_always i32 op_fnRem(i32) { return self % other; }
 
-force_inline i32* op_fnAsg(i32) { return *self = other, self; }
-force_inline i32* op_fnAddAsg(i32) { return *self = op_add(i32)(*self, other), self; }
-force_inline i32* op_fnSubAsg(i32) { return *self = op_sub(i32)(*self, other), self; }
-force_inline i32* op_fnMulAsg(i32) { return *self = op_mul(i32)(*self, other), self; }
-force_inline i32* op_fnDivAsg(i32) { return *self = op_div(i32)(*self, other), self; }
-force_inline i32* op_fnRemAsg(i32) { return *self = op_rem(i32)(*self, other), self; }
+$inline_always i32* op_fnAsg(i32) { return *self = other, self; }
+$inline_always i32* op_fnAddAsg(i32) { return *self = op_add(i32)(*self, other), self; }
+$inline_always i32* op_fnSubAsg(i32) { return *self = op_sub(i32)(*self, other), self; }
+$inline_always i32* op_fnMulAsg(i32) { return *self = op_mul(i32)(*self, other), self; }
+$inline_always i32* op_fnDivAsg(i32) { return *self = op_div(i32)(*self, other), self; }
+$inline_always i32* op_fnRemAsg(i32) { return *self = op_rem(i32)(*self, other), self; }
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

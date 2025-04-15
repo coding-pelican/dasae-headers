@@ -1,6 +1,6 @@
 #include "engine/color.h"
 
-force_inline f64 f64_clamp(f64 val, f64 low, f64 high) {
+$inline_always f64 f64_clamp(f64 val, f64 low, f64 high) {
     return prim_min(prim_max(low, val), high);
 }
 

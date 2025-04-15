@@ -46,16 +46,16 @@ extern Opt$time_Duration time_Instant_chkdDurationSince(time_Instant later, time
 
 /*========== Arithmetic Operations ==========================================*/
 
-extern time_Instant       op_fnAddBy(time_Instant, time_Duration);
-extern time_Instant       op_fnAddAsgBy(time_Instant, time_Duration);
-force_inline time_Instant op_fnWrapAddBy(addDuration, time_Instant, time_Duration);
-force_inline time_Instant op_fnWrapAddAsgBy(addAsgDuration, time_Instant, time_Duration);
-extern time_Instant       op_fnSubBy(time_Instant, time_Duration);
-extern time_Instant       op_fnSubAsgBy(time_Instant, time_Duration);
-force_inline time_Instant op_fnWrapSubBy(subDuration, time_Instant, time_Duration);
-force_inline time_Instant op_fnWrapSubAsgBy(subAsgDuration, time_Instant, time_Duration);
-extern Opt$time_Instant   time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs);
-extern Opt$time_Instant   time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs);
+extern time_Instant         op_fnAddBy(time_Instant, time_Duration);
+extern time_Instant         op_fnAddAsgBy(time_Instant, time_Duration);
+$inline_always time_Instant op_fnWrapAddBy(addDuration, time_Instant, time_Duration);
+$inline_always time_Instant op_fnWrapAddAsgBy(addAsgDuration, time_Instant, time_Duration);
+extern time_Instant         op_fnSubBy(time_Instant, time_Duration);
+extern time_Instant         op_fnSubAsgBy(time_Instant, time_Duration);
+$inline_always time_Instant op_fnWrapSubBy(subDuration, time_Instant, time_Duration);
+$inline_always time_Instant op_fnWrapSubAsgBy(subAsgDuration, time_Instant, time_Duration);
+extern Opt$time_Instant     time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs);
+extern Opt$time_Instant     time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

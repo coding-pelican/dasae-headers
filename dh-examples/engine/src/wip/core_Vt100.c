@@ -127,36 +127,36 @@ engine_Backend engine_core_Vt100_backend(engine_core_Vt100* self) {
 
 /*========== Forward declarations ===========================================*/
 
-static_inline usize                calcAbstractBufferSize(u32 width, u32 height);
-warn_deprecated force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self);
-warn_deprecated force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self);
+static $inline usize             calcAbstractBufferSize(u32 width, u32 height);
+$deprecated $inline_always Vec2u clientWindowPixelRect(engine_core_Vt100* self);
+$deprecated $inline_always Vec2u clientOutputConsoleRect(engine_core_Vt100* self);
 
-force_inline Vec2u abstractWindowRect(engine_core_Vt100* self);
-force_inline usize abstractBufferCapSize(engine_core_Vt100* self);
+$inline_always Vec2u abstractWindowRect(engine_core_Vt100* self);
+$inline_always usize abstractBufferCapSize(engine_core_Vt100* self);
 
-warn_deprecated force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self);
-warn_deprecated static Err$void   resizeAbstractWindow(engine_core_Vt100* self) $must_check;
+$deprecated $inline_always bool needsResizeAbstractWindow(engine_core_Vt100* self);
+$deprecated static Err$void     resizeAbstractWindow(engine_core_Vt100* self) $must_check;
 
 static Err$void syncWindowMetrics(engine_core_Vt100* self) $must_check;
 
 static Err$void configureConsoleOutput(engine_core_Vt100* self) $must_check;
 static Err$void configureConsoleInput(engine_core_Vt100* self) $must_check;
 
-force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) $must_check;
-force_inline Err$void showConsoleCursor(engine_core_Vt100* self) $must_check;
-force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) $must_check;
+$inline_always Err$void hideConsoleCursor(engine_core_Vt100* self) $must_check;
+$inline_always Err$void showConsoleCursor(engine_core_Vt100* self) $must_check;
+$inline_always Err$void resetConsoleCursorPos(engine_core_Vt100* self) $must_check;
 
 static void processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool is_down);
 static void processConsoleKeyboardEvents(engine_core_Vt100* self);
 
-force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) $must_check;
-force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) $must_check;
-static void           processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down);
-static void           processConsoleMouseEvents(engine_core_Vt100* self); /* TODO: validate */
+$inline_always Err$void enableConsoleMouse(engine_core_Vt100* self) $must_check;
+$inline_always Err$void disableConsoleMouse(engine_core_Vt100* self) $must_check;
+static void             processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down);
+static void             processConsoleMouseEvents(engine_core_Vt100* self); /* TODO: validate */
 
 /*========== Implementations ================================================*/
 
-static_inline usize calcAbstractBufferSize(u32 width, u32 height) {
+static $inline usize calcAbstractBufferSize(u32 width, u32 height) {
     return (as$(usize, width) + 1)
          * (as$(usize, height) + 1)
          * (sizeof("\033[38;2;255;255;255;48;2;255;255;255m▀") - 1);
@@ -164,7 +164,7 @@ static_inline usize calcAbstractBufferSize(u32 width, u32 height) {
 
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
-force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
+$inline_always Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
     // if_(RECT rect = cleared(), GetClientRect(self->client.handle.window, &rect)) {
     //     // Update client metrics in sync
     //     self->client.metrics.current_size = (Vec2u){
@@ -180,7 +180,7 @@ force_inline Vec2u clientWindowPixelRect(engine_core_Vt100* self) {
 
 /// Returns the size (width, height) of the console screen buffer
 /// in character cells (columns and rows).
-force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
+$inline_always Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
     // if_(CONSOLE_SCREEN_BUFFER_INFO info = cleared(), GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
     //     // Keep buffer size in sync with console
     //     self->client.metrics.current_size = (Vec2u){
@@ -196,7 +196,7 @@ force_inline Vec2u clientOutputConsoleRect(engine_core_Vt100* self) {
 
 /// Returns the current abstract window size from engine_WindowMetrics,
 /// typically used for high-level engine logic.
-force_inline Vec2u abstractWindowRect(engine_core_Vt100* self) {
+$inline_always Vec2u abstractWindowRect(engine_core_Vt100* self) {
     return (Vec2u){
         .x = Grid_width(self->abstract.window->composite_buffer->buffer),
         .y = Grid_height(self->abstract.window->composite_buffer->buffer)
@@ -206,7 +206,7 @@ force_inline Vec2u abstractWindowRect(engine_core_Vt100* self) {
 /// Returns the bytes-length of the internal "abstract" buffer,
 /// which you might use for storing render data before presenting.
 /// If you’re using ArrList$u8 as a text buffer only, adapt as needed.
-force_inline usize abstractBufferCapSize(engine_core_Vt100* self) {
+$inline_always usize abstractBufferCapSize(engine_core_Vt100* self) {
     // If you store rows and columns separately in abstract.buffer, adapt accordingly.
     // For example, if you always keep a buffer big enough for (width * height * cellSize),
     // you could do something like the logic below or just re-return the window rect.
@@ -216,7 +216,7 @@ force_inline usize abstractBufferCapSize(engine_core_Vt100* self) {
 
 /// Checks if the abstract buffer needs to be resized based on the
 /// latest window metrics or any other condition your engine considers.
-force_inline bool needsResizeAbstractWindow(engine_core_Vt100* self) {
+$inline_always bool needsResizeAbstractWindow(engine_core_Vt100* self) {
     let current_size = abstractBufferCapSize(self);
     // Compare with the expected size from your function
     let needed_size  = eval({
@@ -506,7 +506,7 @@ config_ErrSet(
     FailedShow,
     FailedResetPos
 );
-force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) {
+$inline_always Err$void hideConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, false })) {
@@ -515,7 +515,7 @@ force_inline Err$void hideConsoleCursor(engine_core_Vt100* self) {
     }
     return_void();
 }
-force_inline Err$void showConsoleCursor(engine_core_Vt100* self) {
+$inline_always Err$void showConsoleCursor(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, true })) {
@@ -524,7 +524,7 @@ force_inline Err$void showConsoleCursor(engine_core_Vt100* self) {
     }
     return_void();
 }
-force_inline Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
+$inline_always Err$void resetConsoleCursorPos(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle  = self->client.handle.output;
     let command = Str_l("\033[H");
@@ -595,7 +595,7 @@ config_ErrSet(
     FailedDisableSetMode
 );
 /// Enable mouse input through the console.
-force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
+$inline_always Err$void enableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.input;
     // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
@@ -614,7 +614,7 @@ force_inline Err$void enableConsoleMouse(engine_core_Vt100* self) {
     return_void();
 }
 /// Disable mouse input in the console.
-force_inline Err$void disableConsoleMouse(engine_core_Vt100* self) {
+$inline_always Err$void disableConsoleMouse(engine_core_Vt100* self) {
     reserveReturn(Err$void);
     let handle = self->client.handle.input;
     // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
@@ -745,7 +745,7 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
                             engine_InputEvent_mouse_scroll,
                             { .delta = math_Vec2f_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
                         )
-                            );
+                    );
                 }
 
                 // Handle horizontal wheel if needed
@@ -762,7 +762,7 @@ static void processConsoleMouseEvents(engine_core_Vt100* self) {
                             engine_InputEvent_mouse_scroll,
                             { .delta = math_Vec2f_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
                         )
-                            );
+                    );
                 }
             }
         }
@@ -913,7 +913,8 @@ Err$Ptr$engine_core_Vt100 engine_core_Vt100_init(const engine_core_Vt100_Config*
         self->client.is_maximized = false;
 
         return_ok(self);
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 void engine_core_Vt100_fini(engine_core_Vt100* self) {
     debug_assert_nonnull(self);

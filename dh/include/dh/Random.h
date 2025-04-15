@@ -33,7 +33,7 @@ typedef struct Random {
 
 /*
  * static       Random Random_s_rng[1];
- * force_inline u64    Random_xorshiro256(u64 x, u32 k);
+ * $inline_always u64    Random_xorshiro256(u64 x, u32 k);
  * static       u64    Random_next();
  */
 

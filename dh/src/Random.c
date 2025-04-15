@@ -14,13 +14,13 @@ Random* const Random_rng = Random_s_rng;
 /*========== Static Function Prototypes =====================================*/
 
 // Using xorshiro256** algorithm
-force_inline u64 Random_xorshiro256(u64 x, u32 k);
+$inline_always u64 Random_xorshiro256(u64 x, u32 k);
 // Generate next random number
-static u64       Random_next(void);
+static u64         Random_next(void);
 
 /*========== Static Function Implementations ================================*/
 
-force_inline u64 Random_xorshiro256(u64 x, u32 k) {
+$inline_always u64 Random_xorshiro256(u64 x, u32 k) {
     return (x << k) | (x >> (64ull - k));
 }
 

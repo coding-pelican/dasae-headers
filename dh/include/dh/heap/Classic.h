@@ -51,7 +51,7 @@ extern fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator);
 #else
 #endif
 /// Get underlying malloc_size if available
-force_inline fn_( heap_Classic_mallocSize(anyptr ptr), usize) {
+$inline_always fn_( heap_Classic_mallocSize(anyptr ptr), usize) {
 #if defined(__GLIBC__)
     return malloc_usable_size(ptr);
 #elif defined(__APPLE__)

@@ -34,31 +34,31 @@ typedef struct Range {
 } Range;
 
 /// Create a Range from begin and end indices [begin..end] => [begin, end)
-force_inline fn_(Range_from(usize begin, usize end), Range);
+$inline_always fn_(Range_from(usize begin, usize end), Range);
 /// Get the length of a Range
-force_inline fn_(Range_len(Range self), usize);
+$inline_always fn_(Range_len(Range self), usize);
 /// Check if an index is within a Range
-force_inline fn_(Range_contains(Range self, usize index), bool);
+$inline_always fn_(Range_contains(Range self, usize index), bool);
 /// Check if Range is valid (begin < end)
-force_inline fn_(Range_isValid(Range self), bool);
+$inline_always fn_(Range_isValid(Range self), bool);
 
 /// Compare two Ranges for equality
-force_inline fn_(Range_eq(Range lhs, Range rhs), bool);
+$inline_always fn_(Range_eq(Range lhs, Range rhs), bool);
 /// Compare two Ranges for inequality
-force_inline fn_(Range_ne(Range lhs, Range rhs), bool);
+$inline_always fn_(Range_ne(Range lhs, Range rhs), bool);
 
 /*========== Macros and Definitions =========================================*/
 
-force_inline fn_(Range_from(usize begin, usize end), Range) {
+$inline_always fn_(Range_from(usize begin, usize end), Range) {
     debug_assert_fmt(begin < end, "Invalid range: begin(%zu) >= end(%zu)", begin, end);
     return (Range){ .begin = begin, .end = end };
 }
-force_inline fn_(Range_len(Range self), usize) { return self.end - self.begin; }
-force_inline fn_(Range_contains(Range self, usize index), bool) { return self.begin <= index && index < self.end; }
-force_inline fn_(Range_isValid(Range self), bool) { return self.begin < self.end; }
+$inline_always fn_(Range_len(Range self), usize) { return self.end - self.begin; }
+$inline_always fn_(Range_contains(Range self, usize index), bool) { return self.begin <= index && index < self.end; }
+$inline_always fn_(Range_isValid(Range self), bool) { return self.begin < self.end; }
 
-force_inline fn_(Range_eq(Range lhs, Range rhs), bool) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
-force_inline fn_(Range_ne(Range lhs, Range rhs), bool) { return !Range_eq(lhs, rhs); }
+$inline_always fn_(Range_eq(Range lhs, Range rhs), bool) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
+$inline_always fn_(Range_ne(Range lhs, Range rhs), bool) { return !Range_eq(lhs, rhs); }
 
 #if defined(__cplusplus)
 }

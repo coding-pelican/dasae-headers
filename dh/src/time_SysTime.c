@@ -48,21 +48,21 @@ static $on_load fn_(init(void), void) {
 #endif
     s_pref_initialized = true;
 }
-static_inline void ensureInit(void) {
+$inline_always void ensureInit(void) {
     return init(), debug_assert_fmt(s_pref_initialized, "SysTime not initialized");
 }
 
 /* Accessors */
-force_inline time_SysTime freq(void) {
+$inline_always time_SysTime freq(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_perf_freq };
 }
-force_inline f64 freqInv(void) {
+$inline_always f64 freqInv(void) {
     return ensureInit(), s_perf_freq_inv;
 }
-force_inline time_SysTime offset(void) {
+$inline_always time_SysTime offset(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_pref_offset_value };
 }
-force_inline time_SysTime value(void) {
+$inline_always time_SysTime value(void) {
     return ensureInit(), (time_SysTime){
         .impl_ = eval({
             var current = makeCleared$(time_SysTimePlatform);

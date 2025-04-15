@@ -46,52 +46,52 @@ extern "C" {
 /*========== Memory Utilities ===============================================*/
 
 // Memory operations
-force_inline void mem_set(anyptr dest, u8 value, usize size);
-force_inline void mem_copy(anyptr dest, const anyptr src, usize size);
-force_inline void mem_move(anyptr dest, anyptr src, usize size);
-force_inline i32  mem_cmp(const anyptr lhs, const anyptr rhs, usize size);
+$inline_always void mem_set(anyptr dest, u8 value, usize size);
+$inline_always void mem_copy(anyptr dest, const anyptr src, usize size);
+$inline_always void mem_move(anyptr dest, anyptr src, usize size);
+$inline_always i32  mem_cmp(const anyptr lhs, const anyptr rhs, usize size);
 
 /*========== Alignment Functions ============================================*/
 
 // Check if alignment is valid (power of 2)
-force_inline bool  mem_isValidAlign(usize align);
+$inline_always bool  mem_isValidAlign(usize align);
 // Check if address is aligned
-force_inline bool  mem_isAligned(usize addr, usize align);
+$inline_always bool  mem_isAligned(usize addr, usize align);
 // Check if address is aligned to power of 2
-force_inline bool  mem_isAlignedLog2(usize addr, u8 log2_align);
+$inline_always bool  mem_isAlignedLog2(usize addr, u8 log2_align);
 // Forward align an address
-force_inline usize mem_alignForward(usize addr, usize align);
+$inline_always usize mem_alignForward(usize addr, usize align);
 // Forward align an address to power of 2
-force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align);
+$inline_always usize mem_alignForwardLog2(usize addr, u8 log2_align);
 // Backward align an address
-force_inline usize mem_alignBackward(usize addr, usize align);
+$inline_always usize mem_alignBackward(usize addr, usize align);
 
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-force_inline void mem_copyBytes(u8* dest, const u8* src, usize len);
+$inline_always void mem_copyBytes(u8* dest, const u8* src, usize len);
 // Set bytes to value with bounds checking
-force_inline void mem_setBytes(u8* dest, u8 value, usize len);
+$inline_always void mem_setBytes(u8* dest, u8 value, usize len);
 // Compare two byte buffers
-force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len);
+$inline_always bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len);
 
 /*========== Endian Conversion ==============================================*/
 
-force_inline u16 mem_littleToNative16(u16 x);
-force_inline u32 mem_littleToNative32(u32 x);
-force_inline u64 mem_littleToNative64(u64 x);
+$inline_always u16 mem_littleToNative16(u16 x);
+$inline_always u32 mem_littleToNative32(u32 x);
+$inline_always u64 mem_littleToNative64(u64 x);
 
-force_inline u16 mem_bigToNative16(u16 x);
-force_inline u32 mem_bigToNative32(u32 x);
-force_inline u64 mem_bigToNative64(u64 x);
+$inline_always u16 mem_bigToNative16(u16 x);
+$inline_always u32 mem_bigToNative32(u32 x);
+$inline_always u64 mem_bigToNative64(u64 x);
 
-force_inline u16 mem_nativeToLittle16(u16 x);
-force_inline u32 mem_nativeToLittle32(u32 x);
-force_inline u64 mem_nativeToLittle64(u64 x);
+$inline_always u16 mem_nativeToLittle16(u16 x);
+$inline_always u32 mem_nativeToLittle32(u32 x);
+$inline_always u64 mem_nativeToLittle64(u64 x);
 
-force_inline u16 mem_nativeToBig16(u16 x);
-force_inline u32 mem_nativeToBig32(u32 x);
-force_inline u64 mem_nativeToBig64(u64 x);
+$inline_always u16 mem_nativeToBig16(u16 x);
+$inline_always u32 mem_nativeToBig32(u32 x);
+$inline_always u64 mem_nativeToBig64(u64 x);
 
 /*========== Implementation =================================================*/
 
@@ -106,7 +106,7 @@ force_inline u64 mem_nativeToBig64(u64 x);
  * @param x The input value
  * @return The number of trailing zeros
  */
-force_inline u32 ctz(u64 x) {
+$inline_always u32 ctz(u64 x) {
     if (x == 0) {
         return sizeof(u64) * 8;
     }
@@ -135,7 +135,7 @@ force_inline u32 ctz(u64 x) {
 /**
  * @brief Convert actual alignment value to log2
  */
-force_inline u8 mem_alignToLog2(usize align) {
+$inline_always u8 mem_alignToLog2(usize align) {
     debug_assert(mem_isValidAlign(align));
     return (u8)ctz(align);
 }
@@ -143,7 +143,7 @@ force_inline u8 mem_alignToLog2(usize align) {
 /**
  * @brief Convert log2 value to actual alignment
  */
-force_inline usize mem_log2ToAlign(u8 log2_align) {
+$inline_always usize mem_log2ToAlign(u8 log2_align) {
     return (usize)1 << log2_align;
 }
 
@@ -157,7 +157,7 @@ force_inline usize mem_log2ToAlign(u8 log2_align) {
  * @param x The value to byte-swap
  * @return The byte-swapped value
  */
-force_inline u16 byteSwap16(u16 x) {
+$inline_always u16 byteSwap16(u16 x) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap16(x);
 #else
@@ -165,7 +165,7 @@ force_inline u16 byteSwap16(u16 x) {
 #endif
 }
 
-force_inline u32 byteSwap32(u32 x) {
+$inline_always u32 byteSwap32(u32 x) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap32(x);
 #else
@@ -173,7 +173,7 @@ force_inline u32 byteSwap32(u32 x) {
 #endif
 }
 
-force_inline u64 byteSwap64(u64 x) {
+$inline_always u64 byteSwap64(u64 x) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap64(x);
 #else
@@ -183,24 +183,24 @@ force_inline u64 byteSwap64(u64 x) {
 
 /*========== Memory Operations ==============================================*/
 
-force_inline void mem_set(anyptr dest, u8 value, usize size) {
+$inline_always void mem_set(anyptr dest, u8 value, usize size) {
     debug_assert_nonnull(dest);
     memset(dest, value, size);
 }
 
-force_inline void mem_copy(anyptr dest, const anyptr src, usize size) {
+$inline_always void mem_copy(anyptr dest, const anyptr src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
     memcpy(dest, src, size);
 }
 
-force_inline void mem_move(anyptr dest, anyptr src, usize size) {
+$inline_always void mem_move(anyptr dest, anyptr src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
     memmove(dest, src, size);
 }
 
-force_inline i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
+$inline_always i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
     return memcmp(lhs, rhs, size);
@@ -208,30 +208,30 @@ force_inline i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
 
 /*========== Alignment Functions ============================================*/
 
-force_inline bool mem_isValidAlign(usize align) {
+$inline_always bool mem_isValidAlign(usize align) {
     return align > 0 && (align & (align - 1)) == 0;
 }
 
-force_inline bool mem_isAligned(usize addr, usize align) {
+$inline_always bool mem_isAligned(usize addr, usize align) {
     debug_assert(mem_isValidAlign(align));
     return (addr & (align - 1)) == 0;
 }
 
-force_inline bool mem_isAlignedLog2(usize addr, u8 log2_align) {
+$inline_always bool mem_isAlignedLog2(usize addr, u8 log2_align) {
     return ctz(addr) >= log2_align;
 }
 
-force_inline usize mem_alignForward(usize addr, usize align) {
+$inline_always usize mem_alignForward(usize addr, usize align) {
     debug_assert(mem_isValidAlign(align));
     return (addr + (align - 1)) & ~(align - 1);
 }
 
-force_inline usize mem_alignForwardLog2(usize addr, u8 log2_align) {
+$inline_always usize mem_alignForwardLog2(usize addr, u8 log2_align) {
     const usize alignment = (usize)1 << log2_align;
     return mem_alignForward(addr, alignment);
 }
 
-force_inline usize mem_alignBackward(usize addr, usize align) {
+$inline_always usize mem_alignBackward(usize addr, usize align) {
     debug_assert(mem_isValidAlign(align));
     return addr & ~(align - 1);
 }
@@ -239,20 +239,20 @@ force_inline usize mem_alignBackward(usize addr, usize align) {
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-force_inline void mem_copyBytes(u8* dest, const u8* src, usize len) {
+$inline_always void mem_copyBytes(u8* dest, const u8* src, usize len) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
     mem_copy(dest, src, len);
 }
 
 // Set bytes to value with bounds checking
-force_inline void mem_setBytes(u8* dest, u8 value, usize len) {
+$inline_always void mem_setBytes(u8* dest, u8 value, usize len) {
     debug_assert_nonnull(dest);
     mem_set(dest, value, len);
 }
 
 // Compare two byte buffers
-force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
+$inline_always bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
     return mem_cmp(lhs, rhs, len) == 0;
@@ -260,7 +260,7 @@ force_inline bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
 
 /*========== Endian Conversion ==============================================*/
 
-force_inline u16 mem_littleToNative16(u16 x) {
+$inline_always u16 mem_littleToNative16(u16 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -268,7 +268,7 @@ force_inline u16 mem_littleToNative16(u16 x) {
 #endif
 }
 
-force_inline u32 mem_littleToNative32(u32 x) {
+$inline_always u32 mem_littleToNative32(u32 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -276,7 +276,7 @@ force_inline u32 mem_littleToNative32(u32 x) {
 #endif
 }
 
-force_inline u64 mem_littleToNative64(u64 x) {
+$inline_always u64 mem_littleToNative64(u64 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -284,7 +284,7 @@ force_inline u64 mem_littleToNative64(u64 x) {
 #endif
 }
 
-force_inline u16 mem_bigToNative16(u16 x) {
+$inline_always u16 mem_bigToNative16(u16 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
@@ -292,7 +292,7 @@ force_inline u16 mem_bigToNative16(u16 x) {
 #endif
 }
 
-force_inline u32 mem_bigToNative32(u32 x) {
+$inline_always u32 mem_bigToNative32(u32 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
@@ -300,7 +300,7 @@ force_inline u32 mem_bigToNative32(u32 x) {
 #endif
 }
 
-force_inline u64 mem_bigToNative64(u64 x) {
+$inline_always u64 mem_bigToNative64(u64 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
@@ -308,7 +308,7 @@ force_inline u64 mem_bigToNative64(u64 x) {
 #endif
 }
 
-force_inline u16 mem_nativeToLittle16(u16 x) {
+$inline_always u16 mem_nativeToLittle16(u16 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -316,7 +316,7 @@ force_inline u16 mem_nativeToLittle16(u16 x) {
 #endif
 }
 
-force_inline u32 mem_nativeToLittle32(u32 x) {
+$inline_always u32 mem_nativeToLittle32(u32 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -324,7 +324,7 @@ force_inline u32 mem_nativeToLittle32(u32 x) {
 #endif
 }
 
-force_inline u64 mem_nativeToLittle64(u64 x) {
+$inline_always u64 mem_nativeToLittle64(u64 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_little_endian
     return x;
 #else
@@ -332,7 +332,7 @@ force_inline u64 mem_nativeToLittle64(u64 x) {
 #endif
 }
 
-force_inline u16 mem_nativeToBig16(u16 x) {
+$inline_always u16 mem_nativeToBig16(u16 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
@@ -340,7 +340,7 @@ force_inline u16 mem_nativeToBig16(u16 x) {
 #endif
 }
 
-force_inline u32 mem_nativeToBig32(u32 x) {
+$inline_always u32 mem_nativeToBig32(u32 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else
@@ -348,7 +348,7 @@ force_inline u32 mem_nativeToBig32(u32 x) {
 #endif
 }
 
-force_inline u64 mem_nativeToBig64(u64 x) {
+$inline_always u64 mem_nativeToBig64(u64 x) {
 #if bti_plat_byte_order == bti_plat_byte_order_big_endian
     return x;
 #else

@@ -73,7 +73,7 @@ extern "C" {
 
 #if BUILTIN_COMP_MSVC
 #define BUILTIN_COMP_INLINE                                 __inline
-#define BUILTIN_COMP_FORCE_INLINE                           __forceinline
+#define BUILTIN_COMP_ALWAYS_INLINE                          __forceinline
 #define BUILTIN_COMP_NO_INLINE                              __declspec(noinline)
 #define BUILTIN_COMP_ALIGN(_align)                          __declspec(align(_align))
 #define BUILTIN_COMP_DEPRECATED                             __declspec(deprecated)
@@ -83,7 +83,7 @@ extern "C" {
 #define BUILTIN_COMP_MUST_CHECK                             _Must_inspect_result_
 #elif BUILTIN_COMP_GCC || BUILTIN_COMP_CLANG
 #define BUILTIN_COMP_INLINE                                 inline
-#define BUILTIN_COMP_FORCE_INLINE                           __attribute__((always_inline)) inline
+#define BUILTIN_COMP_ALWAYS_INLINE                          __attribute__((always_inline)) inline
 #define BUILTIN_COMP_NO_INLINE                              __attribute__((noinline))
 #define BUILTIN_COMP_ALIGN(_align)                          __attribute__((aligned(_align)))
 #define BUILTIN_COMP_DEPRECATED                             __attribute__((deprecated))
@@ -93,7 +93,7 @@ extern "C" {
 #define BUILTIN_COMP_MUST_CHECK                             __attribute__((warn_unused_result))
 #else
 #define BUILTIN_COMP_INLINE
-#define BUILTIN_COMP_FORCE_INLINE
+#define BUILTIN_COMP_ALWAYS_INLINE
 #define BUILTIN_COMP_NO_INLINE
 #define BUILTIN_COMP_ALIGN(_align)
 #define BUILTIN_COMP_DEPRECATED

@@ -88,7 +88,7 @@ fn_(time_sleepNanos(u32 nanos), void) {
 //     req.tv_sec           = sec;
 //     req.tv_nsec          = nsec;
 
-//     // NOTE: Use nanosleep() on Unix platforms... usleep() it's warn_deprecated
+//     // NOTE: Use nanosleep() on Unix platforms... usleep() it's $deprecated
 //     while (nanosleep(&req, &req) == -1) {
 //         continue;
 //     }

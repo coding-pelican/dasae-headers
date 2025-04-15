@@ -60,7 +60,7 @@ extern void    engine_Window_removeCanvasView(engine_Window* window, u32 view_id
 extern void    engine_Window_updateCanvasView(engine_Window* window, u32 view_id, i32 x, i32 y, u32 width, u32 height);
 
 // Window metrics queries
-force_inline Vec2i engine_Window_getPosition(const engine_Window* window) {
+$inline_always Vec2i engine_Window_getPosition(const engine_Window* window) {
     return (Vec2i){
         .s = {
             window->metrics.x,
@@ -69,7 +69,7 @@ force_inline Vec2i engine_Window_getPosition(const engine_Window* window) {
     };
 }
 
-force_inline Vec2u engine_Window_getDim(const engine_Window* window) {
+$inline_always Vec2u engine_Window_getDim(const engine_Window* window) {
     return (Vec2u){
         .s = {
             window->metrics.width,
@@ -78,7 +78,7 @@ force_inline Vec2u engine_Window_getDim(const engine_Window* window) {
     };
 }
 
-force_inline Vec2u engine_Window_getClientSize(const engine_Window* window) {
+$inline_always Vec2u engine_Window_getClientSize(const engine_Window* window) {
     return (Vec2u){
         .s = {
             window->metrics.client_width,
@@ -87,25 +87,25 @@ force_inline Vec2u engine_Window_getClientSize(const engine_Window* window) {
     };
 }
 
-force_inline void engine_Window_setMinRes(engine_Window* window, u32 width, u32 height) {
+$inline_always void engine_Window_setMinRes(engine_Window* window, u32 width, u32 height) {
     window->metrics.min_width  = prim_clamp(width, engine_Window_min_width_default, window->metrics.max_width);
     window->metrics.min_height = prim_clamp(height, engine_Window_min_height_default, window->metrics.max_height);
 }
 
-force_inline void engine_Window_setMaxRes(engine_Window* window, u32 width, u32 height) {
+$inline_always void engine_Window_setMaxRes(engine_Window* window, u32 width, u32 height) {
     window->metrics.max_width  = prim_clamp(width, window->metrics.min_width, engine_Window_max_width_default);
     window->metrics.max_height = prim_clamp(height, window->metrics.min_height, engine_Window_max_height_default);
 }
 
-force_inline bool engine_Window_isFocused(const engine_Window* window) {
+$inline_always bool engine_Window_isFocused(const engine_Window* window) {
     return window->metrics.is_focused;
 }
 
-force_inline bool engine_Window_isMinimized(const engine_Window* window) {
+$inline_always bool engine_Window_isMinimized(const engine_Window* window) {
     return window->metrics.is_minimized;
 }
 
-force_inline bool engine_Window_isMaximized(const engine_Window* window) {
+$inline_always bool engine_Window_isMaximized(const engine_Window* window) {
     return window->metrics.is_maximized;
 }
 
