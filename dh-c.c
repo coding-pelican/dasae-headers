@@ -31,9 +31,12 @@
 #define PATH_SEPARATOR "/"
 #endif
 
-// Version number
-// major.minor.patch-prerelease.minor.patch+build.number
-#define DH_VERSION "0.1.0-alpha.0.1"
+#define DH_C_VERSION                                         \
+    /**                                                      \
+     * Version number                                        \
+     * major.minor.patch-prerelease.minor.patch+build.number \
+     */                                                      \
+    "0.1.0-alpha.0.1"
 
 // Debug level enum
 typedef enum {
@@ -2138,7 +2141,7 @@ int main(int argc, const char* argv[]) {
 
     // Handle version command
     if (strcmp(argv[1], "--version") == 0) {
-        printf("DH-C Build Tool version %s\n", DH_VERSION);
+        printf("DH-C Build Tool version %s\n", DH_C_VERSION);
         printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
 
         // Get and print executable path
