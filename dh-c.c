@@ -31,7 +31,9 @@
 #define PATH_SEPARATOR "/"
 #endif
 
-#define DH_VERSION "0.1.0-alpha"
+// Version number
+// major.minor.patch-prerelease.minor.patch+build.number
+#define DH_VERSION "0.1.0-alpha.0.1"
 
 // Debug level enum
 typedef enum {
@@ -2175,17 +2177,6 @@ int main(int argc, const char* argv[]) {
     // Create templates directory if needed and initialize templates
     create_templates_directory(config.dh_path, config.verbose);
     initialize_templates(config.dh_path, config.verbose);
-
-    // Create bin directory if it doesn't exist
-    char bin_path[1024] = {};
-    int  result         = snprintf(bin_path, sizeof(bin_path), "%s%sbin", config.dh_path, PATH_SEPARATOR);
-    if (result >= 0 && (size_t)result < sizeof(bin_path)) {
-        if (!dir_exists(bin_path)) {
-            if (!create_directory(bin_path)) {
-                (void)fprintf(stderr, "Warning: Could not create bin directory\n");
-            }
-        }
-    }
 
     // Handle workspace and project commands
     if (strcmp(argv[1], "workspace") == 0) {
