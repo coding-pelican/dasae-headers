@@ -1,6 +1,5 @@
 #define main_no_args (1)
 #include "dh/main.h"
-#include "dh/debug.h"
 #include "dh/log.h"
 
 #include "dh/mem.h"
@@ -11,7 +10,7 @@
 #include "dh/time.h"
 #include "dh/Random.h"
 
-#include "engine-wip.h"
+#include "engine.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -77,65 +76,60 @@ fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
     log_info("allocator reserved");
 
     // Create window
-    let window = try_(engine_Window_init(create$(engine_WindowConfig,
-        .allocator = allocator,
-        .title     = Str_l("Subframes"),
-        .rect_size = {
-            .x = window_res_width,
-            .y = window_res_height,
-        },
+    let window = try_(engine_Window_init(create$(engine_Window_Config,
+        .allocator     = some(allocator),
+        .rect_size     = { .x = window_res_width, .y = window_res_height },
         .default_color = some({ .packed = 0x181818FF }),
+        .title         = some(Str_l("Subframes")),
     )));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
-    let game_canvas = try_(engine_Canvas_init(
-        allocator,
-        window_res_width,
-        window_res_height,
-        engine_CanvasType_rgba,
-        none$(Opt$Color)
-    ));
+    let game_canvas = try_(engine_Canvas_init(create$(engine_Canvas_Config,
+        .allocator     = some(allocator),
+        .width         = window_res_width,
+        .height        = window_res_height,
+        .default_color = none(),
+        .type          = some(engine_CanvasType_rgba),
+    )));
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
         engine_Canvas_clear(game_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
-        engine_Window_appendCanvasView(
-            window,
-            game_canvas,
-            make$(Vec2i, .x = 0, .y = 0),
-            make$(Vec2u, .x = window_res_width, .y = window_res_height),
-            make$(Vec2f, .x = 1.0f, .y = 1.0f),
-            true,
-            true,
-            true
-        );
+        engine_Window_appendView(window, create$(engine_CanvasView_Config,
+            .canvas      = game_canvas,
+            .pos         = { .x = 0, .y = 0 },
+            .size        = { .x = window_res_width, .y = window_res_height },
+            .scale       = { .x = 1.0f, .y = 1.0f },
+            .resizable_x = true,
+            .resizable_y = true,
+            .visible     = true,
+        ));
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
-    let overlay_canvas = try_(engine_Canvas_init(
-        allocator,
-        window_res_width,
-        window_res_height,
-        engine_CanvasType_rgba,
-        none$(Opt$Color)
-    ));
+    let overlay_canvas = try_(engine_Canvas_init(create$(engine_Canvas_Config,
+        .allocator     = some(allocator),
+        .width         = window_res_width,
+        .height        = window_res_height,
+        .default_color = none$(Opt$Color),
+        .type          = some(engine_CanvasType_rgba),
+    )));
     defer_(engine_Canvas_fini(overlay_canvas));
     {
         log_info("canvas created: %s", nameOf(overlay_canvas));
         engine_Canvas_clear(overlay_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
-        engine_Window_appendCanvasView(
-            window,
-            overlay_canvas,
-            make$(Vec2i, .x = 0, .y = 0),
-            make$(Vec2u, .x = window_res_width, .y = window_res_height),
-            make$(Vec2f, .x = 1.0f, .y = 1.0f),
-            true,
-            true,
-            true
-        );
+        engine_Window_appendView(window, create$(engine_CanvasView_Config,
+            .canvas      = overlay_canvas,
+            .pos         = { .x = 0, .y = 0 },
+            .size        = { .x = window_res_width, .y = window_res_height },
+            .scale       = { .x = 1.0f, .y = 1.0f },
+            .resizable_x = true,
+            .resizable_y = true,
+            .visible     = true
+        ));
         log_info("canvas views added: %s", nameOf(overlay_canvas));
     }
 
@@ -145,7 +139,7 @@ fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
 
     // Bind engine core
     let core = try_(engine_core_Vt100_init(create$(engine_core_Vt100_Config,
-        .allocator = allocator,
+        .allocator = some(allocator),
         .window    = window,
         .input     = input,
     )));
@@ -217,21 +211,21 @@ fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         // 5) Update game state and Render all views
         engine_Canvas_clear(game_canvas, none$(Opt$Color));
 
-        if (engine_Keyboard_pressed(&input->keyboard, engine_KeyCode_esc)) {
+        if (engine_Keyboard_pressed(input->keyboard, engine_KeyCode_esc)) {
             is_running = false;
             log_debug("esc pressed");
         }
 
         with_(let_(left_space, Arr$$(2, bool))  = {
-            engine_Mouse_held(&input->mouse, engine_MouseButton_left),
-            engine_Keyboard_held(&input->keyboard, engine_KeyCode_space)
+            engine_Mouse_held(input->mouse, engine_MouseButton_left),
+            engine_Keyboard_held(input->keyboard, engine_KeyCode_space)
         }) {
             if (Arr_getAt(left_space, 0) || Arr_getAt(left_space, 1)) {
                 debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
                 debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
 
                 with_(let pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
-                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(&input->mouse));
+                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(input->mouse));
                 }
 
                 with_(let vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
@@ -343,7 +337,7 @@ fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
             with_(let win_res = engine_Window_getRes(window)) {
                 engine_Canvas_drawRect(overlay_canvas, 0, 0, as$(i32, win_res.x) - 1, as$(i32, win_res.y) - 1, Color_white);
             }
-            with_(let mouse_pos = engine_Mouse_getPos(&input->mouse)) {
+            with_(let mouse_pos = engine_Mouse_getPos(input->mouse)) {
                 engine_Canvas_drawPixel(overlay_canvas, mouse_pos.x, mouse_pos.y, Color_white);
             }
         }

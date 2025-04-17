@@ -9,7 +9,7 @@
 #include "dh/time.h"
 #include "dh/Random.h"
 
-#include "engine-wip.h"
+#include "engine.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -141,7 +141,7 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         log_info("canvas created: %s", nameOf(game_canvas));
         engine_Canvas_clear(game_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
-        engine_Window_appendCanvasView(
+        engine_Window_appendView(
             window,
             game_canvas,
             make$(Vec2i, .x = 0, .y = 0),
@@ -227,7 +227,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         time_frame_prev = time_frame_curr;
     }
     return_void();
-} ext_unscoped;
+}
+ext_unscoped;
 
 
 
@@ -330,7 +331,8 @@ Err$Ptr$Firework Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_
         f->effect_base_color = Color_intoHsl(effect_base_color);
 
         return_ok(f);
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 void Firework_fini(Firework* f) {
@@ -564,4 +566,5 @@ fn_ext_scope(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) {
         s->height,
         Color_fromOpaque(Random_u8(), Random_u8(), Random_u8())
     ))));
-} ext_unscoped;
+}
+ext_unscoped;

@@ -140,8 +140,8 @@
         "$gcc"
       ]
     },
-    { // engine-wip>build C file (debug)
-      "label": "engine-wip>build C file (debug)",
+    { // engine>build C file (debug)
+      "label": "engine>build C file (debug)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -178,8 +178,8 @@
         "$gcc"
       ]
     },
-    { // engine-wip>build C file (release)
-      "label": "engine-wip>build C file (release)",
+    { // engine>build C file (release)
+      "label": "engine>build C file (release)",
       "type": "shell",
       "command": "clang",
       "args": [
@@ -213,8 +213,8 @@
         "$gcc"
       ]
     },
-    { // engine-wip>build C file (optimize)
-      "label": "engine-wip>build C file (optimize)",
+    { // engine>build C file (optimize)
+      "label": "engine>build C file (optimize)",
       "type": "shell",
       "command": "clang",
       "args": [

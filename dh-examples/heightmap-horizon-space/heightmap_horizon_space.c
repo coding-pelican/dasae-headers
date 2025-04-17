@@ -10,7 +10,7 @@
 #include "engine.h"
 #include "engine/canvas.h"
 #include "engine/input.h"
-#include "engine-wip/utils.h"
+#include "engine/utils.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "libs/stb_image.h"
 
@@ -217,7 +217,8 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         }
     }
     return_void();
-} ext_unscoped;
+}
+ext_unscoped;
 
 
 
@@ -289,7 +290,8 @@ fn_ext_scope(loadSample(mem_Allocator allocator, const char* heightmap_file, con
         .width     = width,
         .height    = height,
     });
-} ext_unscoped;
+}
+ext_unscoped;
 
 fn_(State_handleInputKey(State* self), void) {
     // Reset input state

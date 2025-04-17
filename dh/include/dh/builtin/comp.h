@@ -125,6 +125,8 @@ extern "C" {
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
+#define $like_ptr comp_attr__$like_ptr
+
 /*========== Macros and Implementations =====================================*/
 
 #define comp_attr__$inline        BUILTIN_COMP_INLINE
@@ -238,6 +240,8 @@ extern "C" {
 
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
+
+#define comp_attr__$like_ptr [1]
 
 #if defined(__cplusplus)
 } /* extern "C" */
