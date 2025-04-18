@@ -2,8 +2,8 @@
 title: Fixed-Size Arrays (Arr)
 description: Documentation for the Arr module that provides type-safe fixed-size arrays with bounds checking
 created: 2025-04-01
-updated: 2025-04-07
-version: v0.1.1
+updated: 2025-04-18
+version: v0.1.2
 target_version: pre-alpha
 ---
 
@@ -192,6 +192,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 - `Arr_zero$(T_Arr)` - Initialize specific array type with zeros
 - `Arr_init(_Initial...)` - Initialize array with specified values
 - `Arr_init$(T_Arr, _Initial...)` - Initialize specific array type with values
+- `Arr_from$(T, _Initial...)` - Initialize array inferred size from initial values
 
 ### Operations
 
@@ -199,6 +200,18 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 - `Arr_at(var_self, usize_index...)` - Get pointer to element at index (bounds-checked)
 - `Arr_getAt(var_self, usize_index...)` - Get value of element at index (bounds-checked)
 - `Arr_setAt(var_self, usize_index, val_item...)` - Set value at index (bounds-checked)
+
+### Concatenation
+
+- `Arr_cat(var_self, var_other...)` - Concatenate two arrays
+- `Arr_cat$(T_Arr, var_self, var_other...)` - Concatenate two arrays with specific target type
+
+### Slicing
+
+- `Arr_slice(var_self, range_index_begin_end...)` - Get slice from begin to end
+- `Arr_slice$(T_Sli, var_self, range_index_begin_end...)` - Get type-specific slice
+- `Arr_prefix(var_self, usize_count)` - Get slice from beginning to index
+- `Arr_suffix(var_self, usize_count)` - Get slice from index to end
 
 ### Iteration
 
