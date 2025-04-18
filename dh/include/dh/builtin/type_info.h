@@ -27,8 +27,8 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Type Size and Alignment */
-#define sizeOf$(T) sizeOf(T)
-#define sizeOf(T_or_val)                                  \
+#define sizeOf$(T...) sizeOf(T)
+#define sizeOf(T_or_val...)                               \
     /**                                                   \
      * @brief Get size of a type or value at compile time \
      *                                                    \
@@ -37,8 +37,8 @@ extern "C" {
      */                                                   \
     FUNC__sizeOf(T_or_val)
 
-#define alignOf$(T) alignOf(T)
-#define alignOf(T)                                  \
+#define alignOf$(T...) alignOf(T)
+#define alignOf(T...)                               \
     /**                                             \
      * @brief Get alignment requirement of a type   \
      *                                              \
@@ -47,7 +47,7 @@ extern "C" {
      */                                             \
     FUNC__alignOf(T)
 
-#define alignAs(val_align)                             \
+#define alignAs(val_align...)                             \
     /**                                                \
      * @brief Specify alignment requirement for a type \
      *                                                 \
@@ -152,13 +152,13 @@ extern "C" {
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__sizeOf(T_or_val) \
+#define FUNC__sizeOf(T_or_val...) \
     sizeof(T_or_val)
 
-#define FUNC__alignAs(val_align) \
+#define FUNC__alignAs(val_align...) \
     alignas(val_align)
 
-#define FUNC__alignOf(T) \
+#define FUNC__alignOf(T...) \
     alignof(T)
 
 #define FUNC__countOf(var_arr...) \

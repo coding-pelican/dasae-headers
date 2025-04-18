@@ -5,8 +5,8 @@
  * @file    Arr.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-17 (date of creation)
- * @updated 2025-04-07 (date of last update)
- * @version v0.1-alpha.6
+ * @updated 2025-04-18 (date of last update)
+ * @version v0.1-alpha.7
  * @ingroup dasae-headers(dh)
  * @prefix  Arr
  *
@@ -67,6 +67,8 @@ typedef struct Arr$N$T {
 #define Arr_init(_Initial...)         ...
 /// Initialize specific array type with values
 #define Arr_init$(T_Arr, _Initial...) ...
+/// Initialize array inferred size from initial values
+#define Arr_from$(T, _Initial...)     ...
 
 /* Operations */
 /// `arr.len` | Get number of elements in array
@@ -77,6 +79,12 @@ typedef struct Arr$N$T {
 #define Arr_getAt(var_self, usize_index...)           ...
 /// `arr[index] = val` | Set value at index (bounds-checked)
 #define Arr_setAt(var_self, usize_index, val_item...) ...
+
+/* Concatenation */
+/// Concatenate two arrays
+#define Arr_cat(var_self, var_other...)             ...
+/// Concatenate two arrays with specific target type
+#define Arr_cat$(T_Arr, var_self, var_other...)    ...
 
 /* Range-based Slice Operations */
 /// `arr[begin..end]` | Get slice from begin to end
@@ -261,6 +269,17 @@ extern "C" {
      */                                                           \
     comp_op__Arr_init$(T_Arr, _Initial)
 
+#define Arr_from$(T, _Initial...)                                 \
+    /**                                                           \
+     * @brief Initializes array inferred size from initial values \
+     * @param T Element type of the array                         \
+     * @param _Initial Initial values                             \
+     * @return Initialized array                                  \
+     * @example                                                   \
+     *     var arr = Arr_from$(i32, {1, 2, 3});                   \
+     */                                                           \
+    comp_op__Arr_from$(T, _Initial)
+
 #define Arr_len(var_self...)                              \
     /**                                                   \
      * @brief `arr.len` | Get number of elements in array \
@@ -270,7 +289,7 @@ extern "C" {
      *     Arr$(3, i32) arr = Arr_init({1, 2, 3});        \
      *     usize len = Arr_len(arr);  // 3                \
      */                                                   \
-    comp_op__Arr_len(pp_uniqTok(self), var_self)
+    comp_op__Arr_len(var_self)
 #define Arr_at(var_self, usize_index...)                                                             \
     /**                                                                                              \
      * @brief `&arr[index]` | Get pointer to element at index (bounds-checked)                       \
@@ -308,6 +327,34 @@ extern "C" {
      *     Arr_setAt(arr, 1, 5);  // arr = {1, 5, 3}                                                 \
      */                                                                                              \
     comp_op__Arr_setAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index, val_item)
+
+#define Arr_cat(var_self, var_other...)             \
+    /**                                             \
+     * @brief Concatenates two arrays               \
+     * @param var_self First array variable         \
+     * @param var_other Second array variable       \
+     * @return Concatenated array                   \
+     * @example                                     \
+     *     Arr$(3, i32) arr1 = Arr_init({1, 2, 3}); \
+     *     Arr$(3, i32) arr2 = Arr_init({4, 5, 6}); \
+     *     var          arr3 = Arr_cat(arr1, arr2); \
+     *     // arr3 = {1, 2, 3, 4, 5, 6}             \
+     */                                             \
+    comp_op__Arr_cat(pp_uniqTok(temp), var_self, var_other)
+#define Arr_cat$(T_Arr, var_self, var_other...)                    \
+    /**                                                            \
+     * @brief Concatenates two arrays                              \
+     * @param T_Arr Target array type                              \
+     * @param var_self First array variable                        \
+     * @param var_other Second array variable                      \
+     * @return Concatenated array                                  \
+     * @example                                                    \
+     *     Arr$(3, i32) arr1 = Arr_init({1, 2, 3});                \
+     *     Arr$(3, i32) arr2 = Arr_init({4, 5, 6});                \
+     *     Arr$(6, i32) arr3 = Arr_cat$(Arr$(6, i32), arr1, arr2); \
+     *     // arr3 = {1, 2, 3, 4, 5, 6}                            \
+     */                                                            \
+    comp_op__Arr_cat$(pp_uniqTok(temp), T_Arr, var_self, var_other)
 
 #define Arr_slice(var_self, range_index_begin_end...)         \
     /**                                                       \
@@ -417,11 +464,9 @@ extern "C" {
 #define comp_op__Arr_zero$(T_Arr)              ((T_Arr)Arr_zero())
 #define comp_op__Arr_init(_Initial...)         { .buf = _Initial }
 #define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
+#define comp_op__Arr_from$(T, _Initial...)     Arr_init$(Arr$$(sizeOf((T[])_Initial) / sizeOf$(T), T), _Initial)
 
-#define comp_op__Arr_len(__self, var_self...) eval({ \
-    let_(__self, TypeOf(&var_self)) = &var_self;     \
-    eval_return countOf(__self->buf);                \
-})
+#define comp_op__Arr_len(var_self...)                              countOf((var_self).buf)
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self;                          \
     const usize __index             = usize_index;                        \
@@ -455,6 +500,32 @@ extern "C" {
     );                                                                                  \
     __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value);                      \
     eval_return __self;                                                                 \
+})
+
+#define comp_op__Arr_cat(__temp, var_self, var_other...) eval({                         \
+    claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
+    union {                                                                             \
+        Arr$$(                                                                          \
+            countOf((var_self).buf) + countOf((var_other).buf),                         \
+            TypeOf((var_self).buf[0])                                                   \
+        ) concatted;                                                                    \
+        struct {                                                                        \
+            TypeOf(var_self) lhs;                                                       \
+            TypeOf(var_other) rhs;                                                      \
+        };                                                                              \
+    } __temp = { .lhs = var_self, .rhs = var_other };                                   \
+    eval_return __temp.concatted;                                                       \
+})
+#define comp_op__Arr_cat$(__temp, T_Arr, var_self, var_other...) eval({                 \
+    claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
+    union {                                                                             \
+        T_Arr concatted;                                                                \
+        struct {                                                                        \
+            TypeOf(var_self) lhs;                                                       \
+            TypeOf(var_other) rhs;                                                      \
+        };                                                                              \
+    } __temp = { .lhs = var_self, .rhs = var_other };                                   \
+    eval_return __temp.concatted;                                                       \
 })
 
 #define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \

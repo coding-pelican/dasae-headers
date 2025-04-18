@@ -2,8 +2,8 @@
 title: 고정 크기 배열 (Arr)
 description: 경계 검사를 갖춘 타입 안전 고정 크기 배열을 제공하는 Arr 모듈에 대한 문서
 created: 2025-04-01
-updated: 2025-04-07
-version: v0.1.1
+updated: 2025-04-18
+version: v0.1.2
 target_version: pre-alpha
 ---
 
@@ -25,7 +25,7 @@ target_version: pre-alpha
 
 ### 선언
 
-배열은 여러 가지 방법으로 선언하고 구현할 수 있습니다:
+배열은 아래 방법으로 선언하고 구현할 수 있습니다:
 
 ```c
 // 한 단계로 선언 및 구현
@@ -50,7 +50,7 @@ typedef Arr$$(4, u8) ByteQuad;  // 4바이트 배열을 위한 타입 정의
 
 ## 초기화
 
-배열은 여러 가지 방법으로 초기화할 수 있습니다:
+배열은 아래 방법으로 초기화할 수 있습니다:
 
 ```c
 // 0으로 초기화
@@ -92,7 +92,7 @@ Arr_setAt(arr, 1, 5);  // arr = {1, 5, 3}
 
 ## 반복
 
-배열은 여러 가지 방법으로 반복할 수 있습니다:
+배열은 아래 방법으로 반복할 수 있습니다:
 
 ```c
 // 순방향 반복
@@ -118,7 +118,7 @@ for_array_rev_indexed (arr, item, idx) {
 
 ## 슬라이싱 연산
 
-배열은 슬라이스하여 배열의 일부에 대한 뷰를 생성할 수 있습니다:
+배열은 아래 방법으로 슬라이스하여 배열의 일부에 대한 뷰를 생성할 수 있습니다:
 
 ```c
 // 시작부터 끝까지 슬라이스 가져오기
@@ -192,6 +192,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 - `Arr_zero$(T_Arr)` - 특정 배열 타입을 0으로 초기화
 - `Arr_init(_Initial...)` - 지정된 값으로 배열 초기화
 - `Arr_init$(T_Arr, _Initial...)` - 특정 배열 타입을 값으로 초기화
+- `Arr_from$(T, _Initial...)` - 초기 값으로 배열 초기화
 
 ### 연산
 
@@ -199,6 +200,18 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 - `Arr_at(var_self, usize_index...)` - 인덱스의 요소 포인터 가져오기 (경계 검사)
 - `Arr_getAt(var_self, usize_index...)` - 인덱스의 요소 값 가져오기 (경계 검사)
 - `Arr_setAt(var_self, usize_index, val_item...)` - 인덱스의 값 설정 (경계 검사)
+
+### 연결
+
+- `Arr_cat(var_self, var_other...)` - 두 배열 연결
+- `Arr_cat$(T_Arr, var_self, var_other...)` - 특정 배열 타입으로 연결
+
+### 슬라이싱
+
+- `Arr_slice(var_self, range_index_begin_end...)` - 시작부터 끝까지 슬라이스 가져오기
+- `Arr_slice$(T_Sli, var_self, range_index_begin_end...)` - 특정 슬라이스 타입으로 슬라이스 가져오기
+- `Arr_prefix(var_self, usize_count)` - 처음부터 인덱스까지 슬라이스 가져오기
+- `Arr_suffix(var_self, usize_count)` - 인덱스부터 끝까지 슬라이스 가져오기
 
 ### 반복
 
