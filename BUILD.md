@@ -209,4 +209,4 @@ When running in test mode with `dh-c test`, a special executable with the `-TEST
 
 ## Version
 
-Current version: v0.1.0-alpha
+Current version: 0.1.0-alpha.0.1
