@@ -73,25 +73,34 @@ Currently in its early development stage, dasae-headers utilizes C's preprocesso
 
 dasae-headers was developed with inspiration from the syntax and standard libraries of Zig and Rust:
 
-**Enhanced Safety**
-- Automated memory management through `defer` statements
-- Null safety through `Optional` types
-- Enhanced type safety through compile-time checks
+**Memory Safety & Resource Management**
+- Custom allocators for selective memory usage and control
 - Built-in memory tracking for detecting memory leaks and related bugs
-
-**Modern Programming Structures**
-- Type inference through `let` and `var` keywords
-- Boundary-checked slices for safe memory manipulation
-- Result types for explicit error handling with `try_`, `catch_` patterns
-- Algebraic data types (union enum) with pattern matching
 - Array safety through checked access methods
+- Boundary-checked slices for safe memory manipulation
+- Automated resource management through `defer` and `errdefer` statements
 
-**Development Productivity**
-- Expressive macros for improved code clarity
-- Modern function syntax using `fn_` declarations
-- Cross-platform support for various architectures
-- Major compiler compatibility (clang, gcc, msvc)
+**Type System Enhancements**
+- Enhanced type safety through compile-time checks
+- Algebraic data types (union enum) with pattern matching and `match` statements
+- Null safety through optional types with `some`/`none` keywords and `unwrap`/`orelse` patterns
+
+**Error Handling & Debugging**
+- Error-wrapped types for explicit error handling with `ok`/`err` keywords
+- Structured error propagation with `try`, `catch` patterns
+- Comprehensive error tracing with stack traces for debugging
+
+**Modern Programming Paradigms**
+- Type inference through `let` and `var` keywords
+- Modern function syntax using `fn` declarations
+- Lambda expressions and callback types
 - Consistent code style and naming conventions
+- Expressive macros for improved code clarity
+
+**Development Tools**
+- Built-in testing framework for unit and integration tests
+- Multi-platform support for various architectures
+- Major compiler compatibility (clang, gcc, msvc)
 
 ## 🌐 Platform Support
 
@@ -359,6 +368,8 @@ Additional resources:
 
 This project is actively under development, and the API is not yet stabilized. We would appreciate if you could use it in experimental projects and provide feedback.
 If you are interested in improving the project, please refer to [contribution.md](./dh/docs/en/contributing.md).
+
+The name "dasae-headers" originated from its beginnings as a header-only library that collected personal favorite C utility code. I haven't decided on a name for it yet. If you have a good name for it, please suggest it :D
 
 ## 🙏 Contributing
 

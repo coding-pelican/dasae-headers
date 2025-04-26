@@ -14,7 +14,7 @@ static fn_(recordCleanup(i32 value), void) {
 }
 
 // Forward declarations of test scope functions
-static fn_(testBasicDeferScope(void), $must_check Err$void);
+static fn_(testBasicDeferScope(void), Err$void) $must_check;
 static fn_(testMultipleDeferScope(void), void);
 static fn_(testDeferWithReturnScope(void), void);
 static fn_(testBlockDeferScope(void), void);

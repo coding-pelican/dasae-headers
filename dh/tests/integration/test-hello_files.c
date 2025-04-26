@@ -15,9 +15,9 @@ config_ErrSet(LoadFileErr,
 );
 
 use_Err$(Ptr$FILE);
-static fn_(loadFile(Str_const filename), $must_check Err$Ptr$FILE);
+static fn_(loadFile(Str_const filename), Err$Ptr$FILE) $must_check;
 use_Err$(Arr$4$Ptr$FILE);
-static fn_(loadFiles(void), $must_check Err$Arr$4$Ptr$FILE);
+static fn_(loadFiles(void), Err$Arr$4$Ptr$FILE) $must_check;
 
 /* definitions ==============================================================*/
 

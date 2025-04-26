@@ -45,7 +45,7 @@ typedef struct mem_Tracker {
 /*========== Memory Tracker Interface ======================================*/
 
 /// Initialize memory tracker with custom log path
-extern fn_(mem_Tracker_initWithPath(Str_const log_path), $must_check Err$void);
+extern fn_(mem_Tracker_initWithPath(Str_const log_path), Err$void) $must_check;
 /// Generate final report and cleanup
 extern fn_(mem_Tracker_finiAndGenerateReport(void), void);
 

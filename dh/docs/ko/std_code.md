@@ -163,7 +163,7 @@ fn_scope(divideNumbers(i32 lhs, i32 rhs), Opt$i32) {
 
 // 오류 처리가 필요한 함수
 use_Err$(Str_const);
-fn_(readFile(Str_const path), $must_check Err$Str_const);
+fn_(readFile(Str_const path), Err$Str_const) $must_check;
 fn_scope(readFile(Str_const path), Err$Str_const) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());

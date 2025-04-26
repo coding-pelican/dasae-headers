@@ -79,9 +79,9 @@ extern fn_(TEST_Framework_run(void), void);
 
 #if !COMP_TIME
 /// @brief Check expression and record result
-extern fn_( TEST_expect(bool expr), $must_check Err$void);
+extern fn_(TEST_expect(bool expr), Err$void) $must_check;
 /// @brief Same as TEST_expect but with custom message
-extern fn_( TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
+extern fn_(TEST_expectMsg(bool expr, Str_const msg), Err$void) $must_check;
 #endif /* !COMP_TIME */
 
 /*========== Implementation Details ========================================*/
@@ -105,7 +105,7 @@ extern fn_( TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 #define TEST__caseFn_ext(_ID_binder, _ID_caseFn...)    comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
 
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...)       \
-    static fn_(_ID_caseFn(void), $must_check Err$void);                     \
+    static fn_(_ID_caseFn(void), Err$void) $must_check;                    \
     static comp_fn_gen__TEST__binder__sgn(_ID_binder) {                   \
         static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) {                                                \
@@ -138,8 +138,8 @@ extern fn_( TEST_expectMsg(bool expr, Str_const msg), $must_check Err$void);
 // clang-format on
 
 #if COMP_TIME
-extern fn_( TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), $must_check Err$void);
-extern fn_( TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), $must_check Err$void);
+extern fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) $must_check;
+extern fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) $must_check;
 
 #define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), Str_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), Str_l(#_expr))
