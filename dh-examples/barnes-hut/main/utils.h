@@ -9,6 +9,6 @@
 #include "Body.h"
 
 decl_ArrList$(Body);
-extern fn_(utils_uniformDisc(mem_Allocator allocator, usize n), $must_check Err$ArrList$Body);
+extern fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body) $must_check;
 
 #endif /* UTILS_INCLUDED */

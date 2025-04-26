@@ -59,13 +59,13 @@ extern "C" {
 #if main_no_args && main_no_returns_err
 extern fn_(dh_main(void), void);
 #elif main_no_args && !main_no_returns_err
-extern fn_(dh_main(void), $must_check Err$void);
+extern fn_(dh_main(void), Err$void) $must_check;
 #elif !main_no_args && main_no_returns_err
 use_Sli$(Str_const);
 extern fn_(dh_main(Sli$Str_const args), void);
 #else  /* !main_no_args && !main_no_returns_err */
 use_Sli$(Str_const);
-extern fn_(dh_main(Sli$Str_const args), $must_check Err$void);
+extern fn_(dh_main(Sli$Str_const args), Err$void) $must_check;
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -76,13 +76,13 @@ extern fn_(dh_main(Sli$Str_const args), $must_check Err$void);
 #if !TEST_comp_enabled
 fn_(
 #if main_no_args && main_no_returns_err
-    main(void)
+main(void)
 #elif main_no_args && !main_no_returns_err
-    main(void)
+main(void)
 #elif !main_no_args && main_no_returns_err
-    main(int argc, const char* argv[])
+main(int argc, const char* argv[])
 #else  /* !main_no_args && !main_no_returns_err */
-    main(int argc, const char* argv[])
+main(int argc, const char* argv[])
 #endif /* !main_no_args && !main_no_returns_err */
 , int) {
 #if main_no_args && main_no_returns_err

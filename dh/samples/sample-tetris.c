@@ -85,16 +85,16 @@ use_Err$(tetris_PlayField);
 
 /* Function Prototypes ======================================================*/
 
-static fn_(tetris_Console_bootup(void), $must_check Err$void);
+static fn_(tetris_Console_bootup(void), Err$void) $must_check;
 static fn_(tetris_Console_shutdown(void), void);
 
 static fn_(tetris_isKeyPressed(i32 key), bool);
 
-static fn_(tetris_PlayField_init(mem_Allocator allocator), $must_check Err$tetris_PlayField);
-static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), $must_check Err$void);
+static fn_(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) $must_check;
+static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) $must_check;
 static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32);
 static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool);
-static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), $must_check Err$i32);
+static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) $must_check;
 static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
 
 #if bti_plat_windows

@@ -168,7 +168,7 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 
 /* declarations =============================================================*/
 use_ErrSet$(math_Err, i32);
-static fn_(math_divideSafe(i32 lhs, i32 rhs), $must_check math_Err$i32);
+static fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) $must_check;
 
 /* main */
 fn_scope(dh_main(Sli$Str_const args), Err$void) {

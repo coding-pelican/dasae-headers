@@ -275,15 +275,14 @@ typedef struct Err$Void {
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-config_ErrSet(
-    math_Err,
+config_ErrSet(math_Err,
     DivisionByZero,
     Overflow,
     Underflow
 );
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-static fn_(safeDivide(i32 lhs, i32 rhs), $must_check math_Err$i32);
-static fn_(test(void), $must_check Err$void);
+static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32) $must_check;
+static fn_(test(void), Err$void) $must_check;
 
 static fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
     if (rhs == 0) {

@@ -31,12 +31,13 @@ This documentation is available in the following languages:
 
 dasae-headers provides the following key features:
 
-- **Memory Safety** - Prevent memory-related errors
-- **Expressive Error Handling** - Result and Optional types
-- **Type Safety** - Prevent type-related errors
-- **Robust Data Structures** - Arrays, Strings, Maps, Sets, etc.
-- **Utility Functions** - A variety of tools for common tasks
-- **Testing Framework** - Code correctness verification
+- **Memory Safety & Resource Management** - Automatic resource management through `defer` and `errdefer`, custom allocators, array safety, and boundary-checked slices
+- **Type System Enhancements** - Enhanced type safety through compile-time checks, algebraic data types with pattern matching, and null safety with optional types
+- **Error Handling & Debugging** - Error-wrapped types, comprehensive error tracing with stack traces, and structured error propagation
+- **Modern Programming Paradigms** - Type inference, modern function syntax, lambda expressions, and expressive macros
+- **Development Tools** - Built-in testing framework, multi-platform support, and major compiler compatibility
+
+For more detailed information about these features, see the [Core Concepts](./concepts/index.md) section.
 
 ## Getting Started
 

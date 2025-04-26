@@ -42,13 +42,13 @@ use_Ptr$(TreeNode);
 use_Err$(Ptr$TreeNode);
 
 // Forward declarations
-static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), $must_check Err$Ptr$TreeNode);
-static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), $must_check Err$Ptr$TreeNode);
+static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) $must_check;
+static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) $must_check;
 static fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
 static fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
 static fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
-static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), $must_check Err$void);
-static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), $must_check Err$Ptr$TreeNode);
+static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) $must_check;
+static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) $must_check;
 
 // Dataset structure
 typedef struct Dataset {
@@ -60,7 +60,7 @@ typedef struct Dataset {
 use_Err$(Dataset);
 
 // Forward declarations
-static fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), $must_check Err$Dataset);
+static fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), Err$Dataset) $must_check;
 static fn_(Dataset_destroy(Dataset* dataset), void);
 
 // Main function
@@ -177,8 +177,8 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 fn_scope(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
-    );
-    toTagUnion(node, TreeNode_leaf, { .class_label = class_label });
+    ); toTagUnion(node, TreeNode_leaf, { .class_label = class_label })
+    ;
     return_ok(node);
 } unscoped;
 
@@ -186,12 +186,7 @@ fn_scope(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
-    toTagUnion(node, TreeNode_decision, {
-        .feature_index = feature_index,
-        .threshold     = threshold,
-        .left          = left,
-        .right         = right
-    });
+    toTagUnion(node, TreeNode_decision, { .feature_index = feature_index, .threshold = threshold, .left = left, .right = right });
     return_ok(node);
 } unscoped;
 
