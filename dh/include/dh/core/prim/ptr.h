@@ -95,7 +95,9 @@ typedef ptrdiff_t   ptrdiff;
 
 #define rawref(var_src...)   comp_syn__rawref(var_src)
 #define rawderef(val_ptr...) comp_syn__rawderef(val_ptr)
-#define deref(val_ptr...)    comp_syn__deref(val_ptr)
+
+#define ref(val_src...)   comp_syn__ref(val_src)
+#define deref(val_ptr...) comp_syn__deref(val_ptr)
 
 /*========== Macros Implementation ==========================================*/
 
@@ -118,7 +120,9 @@ typedef ptrdiff_t   ptrdiff;
 
 #define comp_syn__rawref(var_src...)   (&var_src)
 #define comp_syn__rawderef(val_ptr...) (*val_ptr)
-#define comp_syn__deref(val_ptr...)    (*ensureNonnull(val_ptr))
+
+#define comp_syn__ref(val_src...)   (&val_src)
+#define comp_syn__deref(val_ptr...) (*ensureNonnull(val_ptr))
 
 /*========== Validation Checks ==============================================*/
 

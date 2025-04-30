@@ -51,10 +51,11 @@ extern "C" {
 #define pp_uniqTokByLine(_Tok...) \
     comp_op__pp_uniqTokByLine(_Tok)
 
+// pp_countArgs -> literal int: [0, 16) (handles up to 16 arguments)
 #define pp_countArgs(_Args...) \
     comp_op__pp_countArgs(_Args)
 
-// pp_foreach macro implementation (handles up to 8 arguments)
+// pp_foreach (handles up to 8 arguments)
 #define pp_foreach(macro, name, ...) \
     comp_op__pp_foreach_(comp_op__pp_foreach_NARG(__VA_ARGS__), macro, name, __VA_ARGS__)
 
@@ -89,16 +90,16 @@ extern "C" {
 #define comp_op__pp_uniqTokByLine(_Tok...) \
     pp_join(_, pp_join2(_, _, __LINE__), _Tok)
 
-#define comp_op__pp_countArgs(_Args...)               \
-    comp_op__pp_countArgs__selectArgCountInListRseqN( \
-        _Args, comp_op__pp_countArgs__getListRseqN()  \
+#define comp_op__pp_countArgs(...)                                        \
+    comp_op__pp_countArgs__selectArgCountInListRseqN(                     \
+        __VA_OPT__(, ) __VA_ARGS__, comp_op__pp_countArgs__getListRseqN() \
     )
 #define comp_op__pp_countArgs__selectArgCountInListRseqN(_Args...) \
     comp_op__pp_countArgs__argN(_Args)
 #define comp_op__pp_countArgs__getListRseqN() \
-    16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define comp_op__pp_countArgs__argN(                                               \
-    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
+    15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+#define comp_op__pp_countArgs__argN(                                              \
+    _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _N, ... \
 ) _N
 
 // pp_foreach macro implementation (handles up to 16 arguments)
