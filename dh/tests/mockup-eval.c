@@ -4,6 +4,17 @@
 #undef eval_return_
 #undef comp_syn__eval_return_
 
+// // make early returns
+// let scope_1 = eval$(i32,
+//     let a = 1;
+//     let b = 2;
+//     let c = a + b;
+//     if (0 < c) {
+//         eval_return_(c);
+//     }
+//     -1
+// );
+
 #define eval$(T_Return, _Expr...) \
     comp_syn__eval$(T_Return, _Expr)
 #define eval_return_(_Expr...) \

@@ -150,7 +150,6 @@ Macros:
   - "fallback_(_)=default:"
   - "$must_check=/**/"
   # Eval
-  # - "eval(_)=({ _; })"
   - "eval_(_)=({ _; })"
   - "eval$(T,_)=(T)({ _; })"
   - "eval_return_(_)=return _"
@@ -193,7 +192,6 @@ AttributeMacros:
   - $nonnull
 StatementAttributeLikeMacros:
   - $ignore
-  - eval
   - eval_return
   - type$
   - make$
@@ -222,6 +220,7 @@ WhitespaceSensitiveMacros:
   - config_ErrSet
   - config_UnionEnum
   - config_UnionEnumAsField
+  - pipe
   - meta_refPtr
   - meta_refSli
   - meta_refPtr_const
