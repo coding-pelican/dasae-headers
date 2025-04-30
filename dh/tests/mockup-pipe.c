@@ -13,17 +13,18 @@
 // Conditional comma macro
 #define EMPTY()
 #define COMMA()                  ,
-#define PIPE_COMMA_IF(...)       PIPE_IF(PIPE_HAS_ARGS(__VA_ARGS__), COMMA, EMPTY)
-#define PIPE_IF(cond, t, f)      PIPE_IF_IMPL(cond, t, f)
-#define PIPE_IF_IMPL(cond, t, f) PIPE_IF_##cond(t, f)
+#define PIPE_COMMA_IF(...)       PIPE_IF((PIPE_HAS_ARGS(__VA_ARGS__)), (COMMA), (EMPTY))
+#define PIPE_IF(cond, t, f)      PIPE_IF_IMPL(PIPE_EXPAND cond, t, f)
+#define PIPE_IF_IMPL(cond, t, f) pp_join(_, PIPE_IF, cond)(PIPE_EXPAND t, PIPE_EXPAND f)
 #define PIPE_IF_0(t, f)          f()
 #define PIPE_IF_1(t, f)          t()
 
 // Apply a function with a value and arguments
-#define PIPE_APPLY(value, func, args...) func(value PIPE_COMMA_IF args PIPE_EXPAND args)
+#define PIPE_MAP(F, ARG...)              F(ARG)
+#define PIPE_APPLY(value, func, args...) PIPE_MAP(func, value PIPE_COMMA_IF args PIPE_EXPAND args)
 
 // Process a single step in the pipe
-#define PIPE_STEP(prev_result_var, step_num, func, args) \
+#define PIPE_STEP(prev_result_var, step_num, func, args...) \
     var ret##step_num = PIPE_APPLY(prev_result_var, func, args);
 
 // Generate a unique variable name for each step
@@ -180,12 +181,13 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         );
         printf("Pipe result: %d\n", result2);
     } block_deferral;
+
     return_ok({});
 } unscoped_ext;
 
 // Example functions that would typically be used in a chain
 fn_(Foo_init(mem_Allocator allocator), Foo*) {
-    var foo    = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
+    let foo    = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
     foo->mem   = allocator;
     foo->a     = 0;
     foo->b     = 0;
@@ -213,4 +215,26 @@ fn_(Foo_merge(Foo* self, const Foo* other), Foo*) {
 }
 fn_(Foo_baz(const Foo* self), i32) {
     return self->value;
+}
+
+void resolveIssuePipeExpanding(mem_Allocator allocator) {
+    // #define try   try_
+    // #define catch catch_
+
+    // #define MAP(F, ...) F(__VA_ARGS__)
+    //     MAP(catch, value PIPE_COMMA_IF(a) PIPE_EXPAND(a))
+
+    //     PIPE_APPLY(ret, catch, (a));
+    //     PIPE_STEP(ret, 0, catch, (a));
+    //     var foo = meta_cast$(Foo*, pipe(pipe(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
+    //     var foo = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
+
+    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ $ignore err; claim_unreachable;}))));
+    // var foo      = meta_cast$(Foo*, pipe_ret);
+    // $ignore foo;
+
+    let pipe_foo = meta_cast$(Foo*, pipe(allocator,
+        (mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
+    ));
+    $ignore pipe_foo;
 }
