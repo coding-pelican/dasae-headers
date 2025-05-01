@@ -118,10 +118,10 @@ typedef ptrdiff_t   ptrdiff;
     eval_return debug_assert_nonnull(__ptr), __ptr;      \
 })
 
-#define comp_syn__rawref(var_src...)   (&var_src)
-#define comp_syn__rawderef(val_ptr...) (*val_ptr)
+#define comp_syn__rawref(var_src...)   (&(var_src))
+#define comp_syn__rawderef(val_ptr...) (*(val_ptr))
 
-#define comp_syn__ref(val_src...)   (&val_src)
+#define comp_syn__ref(val_src...)   (&(val_src))
 #define comp_syn__deref(val_ptr...) (*ensureNonnull(val_ptr))
 
 /*========== Validation Checks ==============================================*/
