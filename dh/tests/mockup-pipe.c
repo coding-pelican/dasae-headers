@@ -49,17 +49,24 @@
 #define PIPE_APPLY(value, func, args...)        PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
 
 // Process a single step in the pipe
-#define PIPE_STEP(prev_result_var, step_num, func, args...) \
-    var ret##step_num = PIPE_APPLY((prev_result_var), func, args);
+#define PIPE_STEP(prev_result_var, step_num, func, args...)             \
+    var ret##step_num = bti_Generic_match$(                             \
+        TypeOf(PIPE_APPLY((prev_result_var), func, args)),              \
+        bti_Generic_pattern$(void) eval({                               \
+            $ignore PIPE_APPLY((prev_result_var), func, args);          \
+            eval_return make$(Void);                                    \
+        }),                                                             \
+        bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
+    );
 
-// Generate a unique variable name for each step
+// Generate a unique variable _Name for each step
 #define PIPE_RESULT(step_num) ret##step_num
 
 // Main pipe implementation
 #define pipe(initial_value...)             comp_syn__pipe(initial_value)
-#define comp_syn__pipe(initial_value, ...) ({ \
-    var __pipe_initial = initial_value;       \
-    PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
+#define comp_syn__pipe(initial_value, ...) ({                    \
+    var_(__pipe_initial, TypeOf(initial_value)) = initial_value; \
+    PIPE_IMPL(__pipe_initial, ##__VA_ARGS__);                    \
 })
 
 // Extract function and args from pair
@@ -134,7 +141,6 @@
 #include "dh/main.h"
 #include "dh/heap/Page.h"
 #include <stdio.h>
-// #include "pipe.h"
 
 // Example Foo structure
 typedef struct Foo {
@@ -143,7 +149,8 @@ typedef struct Foo {
     var_(value, i32);
     var_(mem, mem_Allocator);
 } Foo;
-static fn_(Foo_init(mem_Allocator allocator), Foo*);
+use_Err$(Foo);
+static fn_(Foo_init(mem_Allocator allocator), Err$Ptr$Foo) $must_check;
 static fn_(Foo_fini(Foo* self), void);
 static fn_(Foo_setA(Foo* self, i32 a), Foo*);
 static fn_(Foo_setB(Foo* self, i32 b), Foo*);
@@ -151,12 +158,12 @@ static fn_(Foo_eval(Foo* self), Foo*);
 static fn_(Foo_merge(Foo* self, const Foo* other), Foo*);
 static fn_(Foo_baz(const Foo* self), i32);
 
-static fn_(i32_add(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
-static fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return *lhs += rhs, lhs; }
+$maybe_unused static $inline fn_(i32_add(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
+$maybe_unused static $inline fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return deref(lhs) += rhs, lhs; }
 
 
 
-fn_(enhancePipeExpanding(Foo foo), void) {
+/* fn_(enhancePipeExpanding(Foo foo), void) {
     // PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC (deref_,().value), PIPE_GET_ARGS (deref_,().value))
     // PIPE_STEP(PIPE_RESULT(1), 2, deref_, ().value)
     // var ret1 = 0;
@@ -167,7 +174,7 @@ fn_(enhancePipeExpanding(Foo foo), void) {
 
     let value = pipe(&foo,(Foo_setA,(10)),(&Foo_setB,(20)->value),(i32_addAsg,(123)),(deref,()));
     printf("Enhanced pipe result: %d\n", value);
-}
+} */
 
 /* fn_(resolveIssuePipeExpanding(mem_Allocator allocator), void) {
     // #define try   try_
@@ -204,7 +211,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 
     // Traditional approach
     block_defer {
-        let bar = Foo_init(allocator);
+        let bar = try_(Foo_init(allocator));
         {
             Foo_setA(bar, 5);
             Foo_setB(bar, 15);
@@ -212,7 +219,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         }
         defer_(Foo_fini(bar));
 
-        let foo = Foo_init(allocator);
+        let foo = try_(Foo_init(allocator));
         defer_(Foo_fini(foo));
         Foo_setA(foo, 10);
         Foo_setB(foo, 20);
@@ -225,14 +232,14 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 
     // Using pipe macro
     block_defer {
-        let bar = pipe(Foo_init(allocator),
+        let bar = pipe(try_(Foo_init(allocator)),
             (Foo_setA,(5)),
             (Foo_setB,(15)),
             (Foo_eval,())
         );
         defer_(Foo_fini(bar));
 
-        let foo = Foo_init(allocator);
+        let foo = try_(Foo_init(allocator));
         defer_(Foo_fini(foo));
         let result = pipe(foo,
             (Foo_setA,(10)),
@@ -247,36 +254,92 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     return_ok({});
 } unscoped_ext;
 
+
+
+#define pp_ignore(...) pp_exec_ignore(__VA_ARGS__)
+#define pp_exec_ignore(...)
+
+#define pp_expand(...)      pp_exec_expand(__VA_ARGS__)
+#define pp_exec_expand(...) __VA_ARGS__
+
+#undef pp_cat
+#define pp_cat(_lhs, _rhs...)      pp_exec_cat(_lhs, _rhs)
+#define pp_exec_cat(_lhs, _rhs...) _lhs##_rhs
+
+#undef pp_join
+#define pp_join(_sep, _lhs, _rhs...)      pp_exec_join(_sep, _lhs, _rhs)
+#define pp_exec_join(_sep, _lhs, _rhs...) _lhs##_sep##_rhs
+
+#define pp_overload(_Name, ...)      pp_exec_overload(_Name, __VA_ARGS__)
+#define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArgs(__VA_ARGS__))
+
+#define func_(_Name_With_Params, T_Return, ...) \
+    pp_overload(func, __VA_ARGS__)(_Name_With_Params, T_Return, __VA_ARGS__)
+#define func_0(_Name_With_Params, T_Return, ...) \
+    fn_(_Name_With_Params, T_Return)
+#define func_1(_Name_With_Params, T_Return, _Body...) \
+    fn_scope(_Name_With_Params, T_Return) _Body unscoped
+#define func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...) \
+    pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return) _Body pp_cat(unscoped_, _Expand_Type)
+
+#define $scope          $scope
+#define fn_scope_$scope fn_scope_ext
+#define unscoped_$scope unscoped_ext
+
+func_(runPipeExampleUsage(Sli$Str_const args), Err$void, $scope, {
+    $ignore args;
+    let allocator = heap_Page_allocator(create$(heap_Page));
+
+    let bar = pipe(try_(Foo_init(allocator)),
+        (Foo_setA,(5)),
+        (Foo_setB,(15)),
+        (Foo_eval,())
+    );
+    defer_(Foo_fini(bar));
+
+    let foo = try_(Foo_init(allocator));
+    defer_(Foo_fini(foo));
+    let result = pipe(foo,
+        (Foo_setA,(10)),
+        (Foo_setB,(20)),
+        (Foo_eval,()),
+        (Foo_merge,(bar)),
+        (Foo_baz,())
+    );
+    printf("Pipe result: %d\n", result);
+
+    return_ok({});
+});
+
+
+
 // Example functions that would typically be used in a chain
-fn_(Foo_init(mem_Allocator allocator), Foo*) {
+fn_scope(Foo_init(mem_Allocator allocator), Err$Ptr$Foo) {
     let foo    = meta_cast$(Foo*,
-        pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable)))
+        try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo)))))
     );
     foo->mem   = allocator;
     foo->a     = 0;
     foo->b     = 0;
     foo->value = 0;
-    return foo;
-}
+    return_ok(foo);
+} unscoped;
 fn_(Foo_fini(Foo* self), void) {
-    mem_Allocator_destroy(self->mem, anyPtr(self));
+    mem_Allocator_destroy(deref(self).mem, anyPtr(self));
 }
 fn_(Foo_setA(Foo* self, i32 a), Foo*) {
-    self->a = a;
-    return self;
+    return deref(self).a = a, self;
 }
 fn_(Foo_setB(Foo* self, i32 b), Foo*) {
-    self->b = b;
-    return self;
+    return deref(self).b = b, self;
 }
 fn_(Foo_eval(Foo* self), Foo*) {
-    self->value = self->a + self->b;
-    return self;
+    debug_assert_nonnull(self);
+    return self->value = self->a + self->b, self;
 }
 fn_(Foo_merge(Foo* self, const Foo* other), Foo*) {
-    self->value += other->value;
-    return self;
+    return deref(self).value += deref(other).value, self;
 }
 fn_(Foo_baz(const Foo* self), i32) {
-    return self->value;
+    return deref(self).value;
 }

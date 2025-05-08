@@ -130,8 +130,8 @@ extern "C" {
     eval_return __addr_opt;                                 \
 })
 
-#define comp_op__isSome(val_opt...) ((val_opt).has_value)
-#define comp_op__isNone(val_opt...) (!(val_opt).has_value)
+#define comp_op__isSome(val_opt...) (as$(bool, (val_opt).has_value))
+#define comp_op__isNone(val_opt...) (as$(bool, !(val_opt).has_value))
 
 #define comp_syn__return_some(val_some...) return_(some(val_some))
 #define comp_syn__return_none()            return_(none())

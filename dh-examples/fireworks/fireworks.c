@@ -144,7 +144,13 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         engine_Window_appendCanvasView(
             window,
             game_canvas,
-            make$(Vec2i, .x = 0, .y = 0), make$(Vec2u, .x = window_res_width, .y = window_res_height), make$(Vec2f, .x = 1.0f, .y = 1.0f), true, true, true);
+            make$(Vec2i, .x = 0, .y = 0),
+            make$(Vec2u, .x = window_res_width, .y = window_res_height),
+            make$(Vec2f, .x = 1.0f, .y = 1.0f),
+            true,
+            true,
+            true
+        );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
 
@@ -465,7 +471,7 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
     if (engine_Keyboard_pressed(&s->input->keyboard, engine_KeyCode_esc)) {
         log_debug("pressed esc\n");
         s->is_running = false;
-        return_void();
+        return_ok({});
     }
 
     if (engine_Keyboard_pressed(&s->input->keyboard, engine_KeyCode_space)) {
@@ -487,9 +493,10 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
             return_err(err);
         }));
         if_some(maybe_firework, firework) {
+            let rocket = unwrap(firework->rocket);
+            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
             let mouse_pos = engine_Mouse_getPos(&s->input->mouse);
-            // log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
-            pipe(unwrap(firework->rocket),
+            pipe(rocket,
                 (Particle_init,(mouse_pos.x, mouse_pos.y, 1, 1, rocket->color)),
                 (Particle_withFading,(0.0))
             );
@@ -497,8 +504,8 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
         }
     }
 
-    return_void();
-}
+    return_({});
+} unscoped;
 fn_(State_render(const State* s, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(s);
     debug_assert_nonnull(c);

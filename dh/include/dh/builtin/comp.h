@@ -82,6 +82,10 @@ extern "C" {
      */                                                                              \
     comp_attr__$unused(_Expr)
 
+#define $keep_symbol  comp_attr__$keep_symbol
+#define $maybe_unused comp_attr__$maybe_unused
+#define $must_use     comp_attr__$must_use
+
 #define as$(T_Dest, val_src... /*T_Dest*/)                                  \
     /**                                                                     \
      * @brief Cast macro for converting a value to a different type         \
@@ -188,6 +192,10 @@ extern "C" {
 #define comp_attr__$unused__16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), (void)(x13), (void)(x14), (void)(x15), (void)(x16)
 /* end unused */
+
+#define comp_attr__$keep_symbol  __attribute__((used))
+#define comp_attr__$maybe_unused __attribute__((unused))
+#define comp_attr__$must_use     __attribute__((warn_unused_result))
 
 #if defined(__cplusplus)
 #define comp_syn__as$(T_Dest, val_src...) (static_cast<T_Dest>(val_src))
