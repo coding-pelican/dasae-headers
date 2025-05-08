@@ -177,8 +177,8 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 fn_scope(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
-    ); toTagUnion(node, TreeNode_leaf, { .class_label = class_label })
-    ;
+    );
+    toTagUnion(node, TreeNode_leaf, { .class_label = class_label });
     return_ok(node);
 } unscoped;
 

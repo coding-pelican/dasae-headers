@@ -26,6 +26,7 @@ extern "C" {
 
 #include "dh/scope.h"
 #include "dh/fn.h"
+#include "dh/pipe.h"
 
 #include "dh/union_enum.h"
 #include "dh/opt.h"

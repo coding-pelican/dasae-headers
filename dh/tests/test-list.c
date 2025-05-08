@@ -36,13 +36,19 @@ fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
     $ignore ListSgl_remove(list.base, five.base); // {2, 3, 4}
     $ignore ListSgl_Node_removeNext(two.base);    // {2, 4}
 
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->data),(deref,())) == 2));
     try_(TEST_expect(*unwrap(list.first)->data == 2));
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data),(deref,())) == 4));
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 4));
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
     try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
 
     ListSgl_Node_reverse(type$(Opt$Ptr$ListSgl_Node*, &list.first));
 
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->data),(deref,())) == 4));
     try_(TEST_expect(*unwrap(list.first)->data == 4));
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data),(deref,())) == 2));
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 2));
+    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
     try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
 } TEST_unscoped_ext;

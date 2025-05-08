@@ -141,9 +141,9 @@ Macros:
   - "else_void=else"
   - "else_err(_)=else if (_)"
   # Union enum
-  - tagUnion(tag,expr)=/**/
-  - tagUnion$(T,tag,expr)=/**/
-  - toTagUnion(addr,tag,expr)=/**/
+  # - tagUnion(tag,expr)=/**/
+  # - tagUnion$(T,tag,expr)=/**/
+  # - toTagUnion(addr,tag,expr)=/**/
   # Match
   - "match_(expr)=switch (expr)"
   - "pattern_(tag,capture)=case tag:"
@@ -230,5 +230,5 @@ WhitespaceSensitiveMacros:
   - meta_cast$
   - meta_ptrToAny
   - meta_sliToAny
-  - make$
-  - create$
+  # - make$
+  # - create$

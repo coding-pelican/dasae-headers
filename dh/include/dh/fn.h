@@ -148,15 +148,15 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 #define comp_syn__defer_break \
     goto __step_deferred
 
-#define comp_syn__defer__op_snapshot(_Expr...)                            \
-    {                                                                     \
-        u32 __scope_counter_previous_line = __scope_counter.current_line; \
-        __scope_counter.current_line      = __LINE__;                     \
-        if (false) {                                                      \
-        case __LINE__:                                                    \
-            __scope_counter.current_line = __scope_counter_previous_line; \
-            _Expr;                                                        \
-        }                                                                 \
+#define comp_syn__defer__op_snapshot(_Expr...)                                  \
+    {                                                                           \
+        const u32 __scope_counter_previous_line = __scope_counter.current_line; \
+        __scope_counter.current_line            = __LINE__;                     \
+        if (false) {                                                            \
+        case __LINE__:                                                          \
+            __scope_counter.current_line = __scope_counter_previous_line;       \
+            _Expr;                                                              \
+        }                                                                       \
     }
 
 /*========== Example usage ==================================================*/
