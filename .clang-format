@@ -90,6 +90,25 @@ TypeNames:
   - anyptr
   - AnyType
   - Void
+  # Core types
+  - P_const$
+  - P$
+  - PZ_const$
+  - PZ$
+  - S_const$
+  - S$
+  - SZ_const$
+  - SZ$
+  - E$
+  - O$
+  - OP_const$
+  - OP$
+  - OPZ_const$
+  - OPZ$
+  - OS_const$
+  - OS$
+  - OSZ_const$
+  - OSZ$
   # Pointer
   - Ptr_const$
   - Ptr$
@@ -155,9 +174,9 @@ Macros:
   - "eval_return_(_)=return _"
   - "asg_eval(_)=({ _; })"
   # Scope
-  - block_defer=/**/
-  - block_deferral=/**/
-  - defer_break=break
+  - "block_defer=do { /**/ } while (false)"
+  - "block_deferral=/**/"
+  - "defer_break=goto __step_deferred;"
   - "fn_(name_with_params,return_type)=auto name_with_params -> return_type"
   - "fn_scope(name_with_params,return_type)=auto name_with_params -> return_type"
   - unscoped=/**/
