@@ -15,7 +15,7 @@ $inline_always i32 makeDir(Str_const path) {
 fn_scope(fs_dir_create(Str_const path), Err$void) {
     const bool exists = makeDir(path);
     if (exists) {
-        // $ignore if directory already exists
+        // ignore if directory already exists
         if (errno != EEXIST) {
             return_err(io_FileErr_OpenFailed());
         }

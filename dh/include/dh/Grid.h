@@ -67,9 +67,9 @@ union Grid {
 #define comp_gen__use_Grid$(T) \
     decl_Grid$(T);             \
     impl_Grid$(T)
-#define comp_gen__decl_Grid$(T)                                         \
-    typedef struct pp_join($, Grid_const, T) pp_join($, Grid_const, T); \
-    typedef union pp_join($, Grid, T) pp_join($, Grid, T)
+#define comp_gen__decl_Grid$(T)                                                       \
+    $maybe_unused typedef struct pp_join($, Grid_const, T) pp_join($, Grid_const, T); \
+    $maybe_unused typedef union pp_join($, Grid, T) pp_join($, Grid, T)
 #define comp_gen__impl_Grid$(T)             \
     struct pp_join($, Grid_const, T) {      \
         pp_join($, Sli_const, T) items;     \

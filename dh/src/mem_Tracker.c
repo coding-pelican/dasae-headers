@@ -65,7 +65,7 @@ static $on_load fn_(mem_Tracker_init(void), void) {
         );
         ErrTrace_print();
     }));
-    $ignore atexit(mem_Tracker_finiAndGenerateReport);
+    $ignore = atexit(mem_Tracker_finiAndGenerateReport);
 }
 
 /// Automatic finalization at program exit (will call atexit handler)
@@ -87,11 +87,11 @@ fn_scope_ext(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
 
     let log_file = fopen(as$(const char*, path_str.buf), "w");
     if (!log_file) { return_err(io_FileErr_OpenFailed()); }
-    errdefer_($ignore fclose(log_file));
+    errdefer_($ignore = fclose(log_file));
 
     // Close previous log file if it exists
     if (mem_Tracker_s_instance.log_file) {
-        $ignore fclose(mem_Tracker_s_instance.log_file);
+        $ignore = fclose(mem_Tracker_s_instance.log_file);
     }
 
     // Set up the tracker instance
@@ -102,10 +102,10 @@ fn_scope_ext(mem_Tracker_initWithPath(Str_const log_path), Err$void) {
 
     // clang-format off
     // Write header
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized at %f\n",
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized at %f\n",
         time_Duration_asSecs_f64(time_Instant_elapsed(time_Instant_now()))
     );
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "================================\n");
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "================================\n");
     // clang-format on
     return_ok({});
 } unscoped_ext;
@@ -114,19 +114,19 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
     if (!mem_Tracker_s_instance.log_file) { return; }
 
     // clang-format off
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "\nMemory Leak Report\n");
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "Total allocations: %zu bytes\n",
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "\nMemory Leak Report\n");
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "Total allocations: %zu bytes\n",
         mem_Tracker_s_instance.total_allocated
     );
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "Active allocations: %zu\n",
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "Active allocations: %zu\n",
         mem_Tracker_s_instance.active_allocs
     );
     // clang-format on
 
     if (mem_Tracker_s_instance.active_allocs > 0) {
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "\nDetected Memory Leaks:\n");
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "\nDetected Memory Leaks:\n");
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
 
         // Get current time for age calculations
         time_Instant now = time_Instant_now();
@@ -150,12 +150,12 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
             f64           age_secs = time_Duration_asSecs_f64(age);
 
             // Log individual leak
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "Leak #%zu:\n", leak_count);
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "  Address: %p\n", curr->ptr);
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "  Size: %zu bytes\n", curr->size);
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "  Location: %s:%d\n", curr->src_loc.file_name, curr->src_loc.line);
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "  Function: %s\n", curr->src_loc.fn_name);
-            $ignore fprintf(mem_Tracker_s_instance.log_file, "  Age: %.2f seconds\n", age_secs);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "Leak #%zu:\n", leak_count);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "  Address: %p\n", curr->ptr);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "  Size: %zu bytes\n", curr->size);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "  Location: %s:%d\n", curr->src_loc.file_name, curr->src_loc.line);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "  Function: %s\n", curr->src_loc.fn_name);
+            $ignore = fprintf(mem_Tracker_s_instance.log_file, "  Age: %.2f seconds\n", age_secs);
 
             // Find or add to leak sites
             bool found = false;
@@ -176,7 +176,7 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
 
             if (!found) {
                 // Add new leak site
-                catch_(ArrList_addBackOne(sites.base), ({ $ignore fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
+                catch_(ArrList_addBackOne(sites.base), ({ $ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
                 }));
 
                 if_some(ArrList_popOrNull(sites.base), site_ptr) {
@@ -191,11 +191,11 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
         }
 
         // Print leak summary by allocation site
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "\nLeak Summary by Location:\n");
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "\nLeak Summary by Location:\n");
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
 
         for_slice (sites.items, site) {
-            $ignore fprintf(
+            $ignore = fprintf(
                 mem_Tracker_s_instance.log_file,
                 "Location: %s:%d in %s\n"
                 "  Count: %zu leaks\n"
@@ -208,7 +208,7 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
             );
         }
 
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "\nTotal leaked memory: %zu bytes\n", total_leaked);
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "\nTotal leaked memory: %zu bytes\n", total_leaked);
     }
 
     // Cleanup the tracker's linked list of allocations
@@ -219,7 +219,7 @@ fn_scope_ext(mem_Tracker_finiAndGenerateReport(void), void) {
         curr = next;
     }
 
-    $ignore fclose(mem_Tracker_s_instance.log_file);
+    $ignore                            = fclose(mem_Tracker_s_instance.log_file);
     mem_Tracker_s_instance.log_file    = null;
     mem_Tracker_s_instance.allocations = null;
     return_void();
@@ -232,7 +232,7 @@ fn_(mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc), void) {
     let alloc = as$(mem_Allocation*, malloc(sizeof(mem_Allocation)));
     if (!alloc) {
         // clang-format off
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n",
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n",
             src_loc.file_name, src_loc.line
         );
         // clang-format on
@@ -255,7 +255,7 @@ fn_(mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc), void) {
 
     // clang-format off
     // Log allocation with total bytes
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "ALLOC: %p (%zu bytes) at %s:%d in %s (Total: %zu bytes)\n",
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "ALLOC: %p (%zu bytes) at %s:%d in %s (Total: %zu bytes)\n",
         ptr, size, src_loc.file_name, src_loc.line, src_loc.fn_name, mem_Tracker_s_instance.total_allocated
     );
     // clang-format on
@@ -279,7 +279,7 @@ fn_(mem_Tracker_registerRemap(anyptr old_ptr, anyptr new_ptr, usize new_size, Sr
 
     // clang-format off
     // Log the remap operation
-    $ignore fprintf(mem_Tracker_s_instance.log_file, "REMAP: %p (%zu bytes) -> %p (%zu bytes) at %s:%d in %s\n",
+    $ignore = fprintf(mem_Tracker_s_instance.log_file, "REMAP: %p (%zu bytes) -> %p (%zu bytes) at %s:%d in %s\n",
         old_ptr, old_size, new_ptr, new_size, src_loc.file_name, src_loc.line, src_loc.fn_name
     );
     // clang-format on
@@ -309,7 +309,7 @@ fn_(mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc), bool) {
     if (!*curr) {
         // clang-format off
         // Double free or invalid free detected
-        $ignore fprintf(mem_Tracker_s_instance.log_file, "ERROR: DOUBLE FREE or INVALID FREE of %p at %s:%d in %s\n",
+        $ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: DOUBLE FREE or INVALID FREE of %p at %s:%d in %s\n",
             ptr, src_loc.file_name, src_loc.line, src_loc.fn_name
         );
         // clang-format on
@@ -330,7 +330,7 @@ fn_(mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc), bool) {
 
     // clang-format off
     // Log deallocation with details
-    $ignore fprintf(mem_Tracker_s_instance.log_file,
+    $ignore = fprintf(mem_Tracker_s_instance.log_file,
         "FREE: %p (%zu bytes) at %s:%d in %s\n"
         "      Originally allocated at %s:%d in %s (%.2f seconds ago)\n"
         "      (Total remaining: %zu bytes)\n",

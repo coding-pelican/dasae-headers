@@ -38,7 +38,7 @@ static fn_(TEST_string_literals(void), void) {
             }
             Str_print(Str_l(" "));
         }
-        $ignore putchar('\n');
+        $ignore = putchar('\n');
     }
 
     Str_println(Str_l("할아버지 보고싶어요"));

@@ -34,25 +34,25 @@ fn_scope_ext(loadFiles(void), Err$Arr$4$Ptr$FILE) {
     if (fp1 == null) {
         return_err(LoadFileErr_FailedOpenFile());
     }
-    errdefer_($ignore fclose(fp1));
+    errdefer_($ignore = fclose(fp1));
 
     let fp2 = try_(loadFile(Str_l("hello2.txt")));
-    errdefer_($ignore fclose(fp2));
+    errdefer_($ignore = fclose(fp2));
 
     let fp3 = try_(loadFile(Str_l("hello3.txt")));
-    errdefer_($ignore fclose(fp3));
+    errdefer_($ignore = fclose(fp3));
 
     let fp4 = try_(loadFile(Str_l("hello4.txt")));
-    errdefer_($ignore fclose(fp4));
+    errdefer_($ignore = fclose(fp4));
 
     return_ok({ fp1, fp2, fp3, fp4 });
 } unscoped_ext;
 
 fn_scope(dh_main(Sli$Str_const args), Err$void) {
-    $ignore args;
+    $ignore   = args;
     let files = try_(loadFiles());
     for_array (files, file) {
-        $ignore fclose(*file);
+        $ignore = fclose(*file);
     }
     return_ok({});
 } unscoped;

@@ -89,8 +89,8 @@ fn_(TEST_Framework_run(void), void) {
 
 /* Debug versions of test functions */
 fn_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) {
-    $ignore loc;
-    $ignore expr_str;
+    $ignore = loc;
+    $ignore = expr_str;
 
     if (!expr) {
         return_err(Err_InvalidArgument());
@@ -99,9 +99,9 @@ fn_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) 
 } unscoped;
 
 fn_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) {
-    $ignore msg;
-    $ignore loc;
-    $ignore expr_str;
+    $ignore = msg;
+    $ignore = loc;
+    $ignore = expr_str;
 
     if (!expr) {
         return_err(Err_InvalidArgument());

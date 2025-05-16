@@ -30,9 +30,9 @@ fn_TEST_scope("test Arr_cat") {
     }
 } TEST_unscoped;
 
-use_Arr$(6, i32);
-use_Arr$(8, i32);
 fn_TEST_scope("test Arr_cat$") {
+    use_Arr$(6, i32);
+    use_Arr$(8, i32);
     let arr3_lhs    = Arr_from$(i32, { 0, 1, 2 });
     let arr3_rhs    = Arr_from$(i32, { 3, 4, 5 });
     let res_3_add_3 = Arr_cat$(Arr$(6, i32), arr3_lhs, arr3_rhs);

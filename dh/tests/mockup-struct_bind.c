@@ -48,14 +48,14 @@ fn_(getModel(void), union Model) {
     name1        = __$tuple._n1
 
 fn_scope(dh_main(Sli$Str_const args), Err$void) {
-    $ignore args;
+    $ignore = args;
 
     {
         let __$ret = getModel();
         let a      = __$ret._field.n0;
         let b      = __$ret._field.n1;
-        $ignore a;
-        $ignore b;
+        $ignore    = a;
+        $ignore    = b;
     }
 
     {
@@ -63,13 +63,13 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
         var b = 2;
         let c = tuple(a, b);
         untuple(c, var n0, let n1);
-        $ignore n0;
-        $ignore n1;
+        $ignore = n0;
+        $ignore = n1;
 
-        var d = tuple_at(&c, 0);
-        let e = tuple_atMut(&c, 0);
-        $ignore d;
-        $ignore e;
+        var d   = tuple_at(&c, 0);
+        let e   = tuple_atMut(&c, 0);
+        $ignore = d;
+        $ignore = e;
     }
 
     return_ok({});

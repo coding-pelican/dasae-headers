@@ -25,7 +25,7 @@
 /*========== Extern Function Implementations ================================*/
 
 void debug_assert_fail(const char* expr, const char* func, const char* file, i32 line) {
-    $ignore fprintf(
+    $ignore = fprintf(
         DEBUG_OUTPUT,
         DEBUG_ASSERT_MSG_FORMAT,
         expr,
@@ -38,7 +38,7 @@ void debug_assert_fail(const char* expr, const char* func, const char* file, i32
 }
 
 void debug_assert_fail_fmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...) {
-    $ignore fprintf(
+    $ignore = fprintf(
         DEBUG_OUTPUT,
         DEBUG_ASSERT_FMT_MSG_FORMAT,
         expr
@@ -46,14 +46,14 @@ void debug_assert_fail_fmt(const char* expr, const char* func, const char* file,
 
     va_list args = null;
     va_start(args, fmt);
-    $ignore vfprintf(
+    $ignore = vfprintf(
         DEBUG_OUTPUT,
         fmt,
         args
     );
     va_end(args);
 
-    $ignore fprintf(
+    $ignore = fprintf(
         DEBUG_OUTPUT,
         DEBUG_ASSERT_FMT_LOC_FORMAT,
         func,

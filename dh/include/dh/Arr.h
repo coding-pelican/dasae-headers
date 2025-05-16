@@ -82,9 +82,9 @@ typedef struct Arr$N$T {
 
 /* Concatenation */
 /// Concatenate two arrays
-#define Arr_cat(var_self, var_other...)             ...
+#define Arr_cat(var_self, var_other...)         ...
 /// Concatenate two arrays with specific target type
-#define Arr_cat$(T_Arr, var_self, var_other...)    ...
+#define Arr_cat$(T_Arr, var_self, var_other...) ...
 
 /* Range-based Slice Operations */
 /// `arr[begin..end]` | Get slice from begin to end
@@ -439,7 +439,7 @@ extern "C" {
     decl_Arr$(N, T);                  \
     impl_Arr$(N, T)
 #define comp_type_gen__decl_Arr$(N, T) \
-    typedef struct Arr$(N, T) Arr$(N, T)
+    $maybe_unused typedef struct Arr$(N, T) Arr$(N, T)
 #define comp_type_gen__impl_Arr$(N, T) \
     struct Arr$(N, T) {                \
         T buf[N];                      \
@@ -545,9 +545,30 @@ extern "C" {
     );                                                                                 \
     eval_return make$(                                                                 \
         TypeOf(__self),                                                                \
-        .buf = __self->buf + __range.begin,                                            \
+        .ptr = __self->buf + __range.begin,                                            \
         .len = Range_len(__range)                                                      \
     );                                                                                 \
+})
+#define comp_op__Arr_slice$(T_Sli, __self, __range, var_self, range_index_begin_end...) eval({ \
+    let_(__self, TypeOf(&var_self)) = &var_self;                                               \
+    let_(__range, Range)            = Range_from range_index_begin_end;                        \
+    debug_assert_fmt(                                                                          \
+        __range.begin < __range.end,                                                           \
+        "Invalid slice range: begin(%zu) >= end(%zu)",                                         \
+        __range.begin,                                                                         \
+        __range.end                                                                            \
+    );                                                                                         \
+    debug_assert_fmt(                                                                          \
+        __range.end <= Arr_len(*__self),                                                       \
+        "Index out of bounds: end(%zu) > len(%zu)",                                            \
+        __range.end,                                                                           \
+        Arr_len(*__self)                                                                       \
+    );                                                                                         \
+    eval_return make$(                                                                         \
+        T_Sli,                                                                                 \
+        .ptr = __self->buf + __range.begin,                                                    \
+        .len = Range_len(__range)                                                              \
+    );                                                                                         \
 })
 
 #define comp_syn__for_array(__arr, __i, var_arr, _Iter_item) \

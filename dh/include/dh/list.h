@@ -119,9 +119,9 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
 #define comp_type_gen__use_ListSgl_Node$(T) \
     decl_ListSgl_Node$(T);                  \
     impl_ListSgl_Node$(T)
-#define comp_type_gen__decl_ListSgl_Node$(T)         \
-    typedef union ListSgl_Node$(T) ListSgl_Node$(T); \
-    use_Ptr$(ListSgl_Node$(T));                      \
+#define comp_type_gen__decl_ListSgl_Node$(T)                       \
+    $maybe_unused typedef union ListSgl_Node$(T) ListSgl_Node$(T); \
+    use_Ptr$(ListSgl_Node$(T));                                    \
     use_Opt$(Ptr$(ListSgl_Node$(T)))
 #define comp_type_gen__impl_ListSgl_Node$(T)   \
     union ListSgl_Node$(T) {                   \
@@ -140,7 +140,7 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
     decl_ListSgl$(T);                  \
     impl_ListSgl$(T)
 #define comp_type_gen__decl_ListSgl$(T) \
-    typedef union ListSgl$(T) ListSgl$(T)
+    $maybe_unused typedef union ListSgl$(T) ListSgl$(T)
 #define comp_type_gen__impl_ListSgl$(T)         \
     union ListSgl$(T) {                         \
         ListSgl base[1];                        \
@@ -156,9 +156,9 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
 #define comp_type_gen__use_ListDbl_Node$(T) \
     decl_ListDbl_Node$(T);                  \
     impl_ListDbl_Node$(T)
-#define comp_type_gen__decl_ListDbl_Node$(T)         \
-    typedef union ListDbl_Node$(T) ListDbl_Node$(T); \
-    use_Ptr$(ListDbl_Node$(T));                      \
+#define comp_type_gen__decl_ListDbl_Node$(T)                       \
+    $maybe_unused typedef union ListDbl_Node$(T) ListDbl_Node$(T); \
+    use_Ptr$(ListDbl_Node$(T));                                    \
     use_Opt$(Ptr$(ListDbl_Node$(T)))
 #define comp_type_gen__impl_ListDbl_Node$(T)   \
     union ListDbl_Node$(T) {                   \
@@ -177,7 +177,7 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
     decl_ListDbl$(T);                  \
     impl_ListDbl$(T)
 #define comp_type_gen__decl_ListDbl$(T) \
-    typedef union ListDbl$(T) ListDbl$(T)
+    $maybe_unused typedef union ListDbl$(T) ListDbl$(T)
 #define comp_type_gen__impl_ListDbl$(T)         \
     union ListDbl$(T) {                         \
         ListDbl base[1];                        \

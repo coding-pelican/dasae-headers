@@ -386,7 +386,7 @@ static fn_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 c
 
     /* Draw score */
     wchar_t score_text[32] = { 0 };
-    $ignore swprintf(score_text, 32, L"SCORE: %8d", score);
+    $ignore                = swprintf(score_text, 32, L"SCORE: %8d", score);
     for (i32 i = 0; score_text[i] != L'\0'; ++i) {
         Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, score_text[i]);
     }
