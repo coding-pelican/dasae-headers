@@ -82,7 +82,7 @@ extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
     eval_return __ret;                                                  \
 })
 
-#define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(TypeOf(var_ptr), var_ptr)
+#define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(const TypeOf(*var_ptr)*, var_ptr)
 #define comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr...) as$(T_Ptr_const, var_ptr)
 
 #if defined(__cplusplus)

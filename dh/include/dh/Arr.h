@@ -279,6 +279,7 @@ extern "C" {
      *     var arr = Arr_from$(i32, {1, 2, 3});                   \
      */                                                           \
     comp_op__Arr_from$(T, _Initial)
+#define Arr_asg(var_self, var_other...) comp_op__Arr_asg(var_self, var_other)
 
 #define Arr_len(var_self...)                              \
     /**                                                   \
@@ -460,11 +461,19 @@ extern "C" {
     eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                   \
 })
 
-#define comp_op__Arr_zero()                    { .buf = { 0 } }
-#define comp_op__Arr_zero$(T_Arr)              ((T_Arr)Arr_zero())
-#define comp_op__Arr_init(_Initial...)         { .buf = _Initial }
-#define comp_op__Arr_init$(T_Arr, _Initial...) ((T_Arr)Arr_init(_Initial))
-#define comp_op__Arr_from$(T, _Initial...)     Arr_init$(Arr$$(sizeOf((T[])_Initial) / sizeOf$(T), T), _Initial)
+#define comp_op__Arr_zero()                      { .buf = { 0 } }
+#define comp_op__Arr_zero$(T_Arr)                ((T_Arr)Arr_zero())
+#define comp_op__Arr_init(_Initial...)           { .buf = _Initial }
+#define comp_op__Arr_init$(T_Arr, _Initial...)   ((T_Arr)Arr_init(_Initial))
+#define comp_op__Arr_from$(T, _Initial...)       Arr_init$(Arr$$(sizeOf((T[])_Initial) / sizeOf$(T), T), _Initial)
+#define comp_op__Arr_asg(var_self, var_other...) eval({                             \
+    let __self  = &var_self;                                                        \
+    let __other = &var_other;                                                       \
+    claim_assert_static(sizeOf(TypeOf(*__self)) == sizeOf(TypeOf(*__other)));       \
+    claim_assert_static(alignOf(TypeOf(*__self)) == alignOf(TypeOf(*__other)));     \
+    claim_assert_static(isSameType(TypeOf((*__self).buf), TypeOf((*__other).buf))); \
+    eval_return deref(__self) = deref(as$(TypeOf(__self), __other));                \
+})
 
 #define comp_op__Arr_len(var_self...)                              countOf((var_self).buf)
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
