@@ -6,6 +6,6 @@
 
 fn_scope(dh_main(void), Err$void) {
     let allocator = heap_Classic_allocator(&(heap_Classic){});
-    $ignore meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), 1024)));
+    $ignore       = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), 1024)));
     return_ok({});
 } unscoped;

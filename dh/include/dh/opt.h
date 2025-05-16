@@ -73,10 +73,10 @@ extern "C" {
     use_Ptr$(T);              \
     decl_Opt$(T);             \
     impl_Opt$(T)
-#define comp_gen__decl_Opt$(T)                              \
-    typedef struct Opt$(Ptr_const$(T)) Opt$(Ptr_const$(T)); \
-    typedef struct Opt$(Ptr$(T)) Opt$(Ptr$(T));             \
-    typedef struct Opt$(T) Opt$(T)
+#define comp_gen__decl_Opt$(T)                                            \
+    $maybe_unused typedef struct Opt$(Ptr_const$(T)) Opt$(Ptr_const$(T)); \
+    $maybe_unused typedef struct Opt$(Ptr$(T)) Opt$(Ptr$(T));             \
+    $maybe_unused typedef struct Opt$(T) Opt$(T)
 #define comp_gen__impl_Opt$(T)   \
     struct Opt$(Ptr_const$(T)) { \
         rawptr_const$(T) value;  \
@@ -143,7 +143,7 @@ extern "C" {
         __result.value = bti_Generic_match$(                         \
             TypeOf(_Default_Or_Eval),                                \
             bti_Generic_pattern$(void) eval({                        \
-                $ignore _Default_Or_Eval;                            \
+                $ignore_void _Default_Or_Eval;                       \
                 eval_return make$(TypeOf(__result.value));           \
             }),                                                      \
             bti_Generic_fallback_ _Default_Or_Eval                   \

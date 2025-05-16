@@ -15,6 +15,9 @@
 //     -1
 // );
 
+#undef eval
+#define eval(...) ({ __VA_ARGS__; })
+
 #define eval$(T_Return, _Expr...) \
     comp_syn__eval$(T_Return, _Expr)
 #define eval_return_(_Expr...) \
@@ -33,7 +36,7 @@
         __eval_state.curr = __LINE__ - 1;      \
     } break;                                   \
     case __LINE__ - 1:                         \
-        fallthrough;                           \
+        $fallthrough;                           \
     default:                                   \
         break;                                 \
     }                                          \
@@ -80,6 +83,79 @@ fn_scope(dh_main(void), Err$void) {
         eval_return_(c);
     );
     printf("%d\n", scope_3);
+
+    // let a = 0 < 1 ? ({ 1; }) : ({ claim_unreachable; });
+    let a = eval(
+        i32 _return_val;
+        var _then = _Generic(
+            TypeOf(eval(0)),
+            void: eval(
+                $ignore_void eval(0);
+                (TypeOf(_return_val)){}
+            ),
+            default: eval(0)
+        );
+        var _else = _Generic(
+            TypeOf(eval(claim_unreachable)),
+            void: eval(
+                $ignore_void eval(claim_unreachable);
+                (TypeOf(_return_val)){}
+            ),
+            default: eval(claim_unreachable)
+        );
+        0 < 1 ? _then : _else;
+    );
+    printf("%d\n", a);
+
+#define match$(T, _Expr...) _Generic(T, _Expr)
+#define case$(T, _Expr...) T: _Expr
+#define otherwise(_Expr...) default: _Expr
+
+    $ignore = eval(
+        i32 _return_val;
+        var _then = match$(TypeOf(eval(0)),
+            case$(void, eval(
+                $ignore_void eval(0);
+                eval_return make$(TypeOf(_return_val))
+            )),
+            otherwise(eval(0))
+        );
+        var _else = match$(TypeOf(eval(claim_unreachable)),
+            case$(void, eval(
+                $ignore_void eval(claim_unreachable);
+                eval_return make$(TypeOf(_return_val))
+            )),
+            otherwise(eval(claim_unreachable))
+        );
+        0 < 1 ? _then : _else;
+    );
+    printf("%d\n", a);
+
+#define eval_then ,
+#define eval_else ,
+#define eval_if$(T, cond, ...) comp_syn__eval_if$(T, cond, __VA_ARGS__)
+#define comp_syn__eval_if$(T, cond, _Then, _Else, ...) ({ \
+    cond ? match$(TypeOf(_Then), \
+        case$(void, eval( \
+            $ignore_void _Then; \
+            eval_return make$(T) \
+        )), \
+        otherwise(_Then) \
+    ) : match$(TypeOf(_Else), \
+        case$(void, eval( \
+            $ignore_void _Else; \
+            eval_return make$(T) \
+        )), \
+        otherwise(_Else) \
+    ); \
+})
+
+    let c = eval_if$(i32, 0 < 1
+        eval_then 1
+        eval_else eval_if$(i32, 0 < 2
+        eval_then 2 eval_else 3)
+    );
+    printf("%d\n", c);
 
     return_ok({});
 } unscoped;

@@ -96,10 +96,10 @@ typedef struct Err$Void {
 #define comp_type_gen__use_Err$(T_Ok) \
     decl_Err$(T_Ok);                  \
     impl_Err$(T_Ok)
-#define comp_type_gen__decl_Err$(T_Ok)                            \
-    typedef struct Err$(Ptr_const$(T_Ok)) Err$(Ptr_const$(T_Ok)); \
-    typedef struct Err$(Ptr$(T_Ok)) Err$(Ptr$(T_Ok));             \
-    typedef struct Err$(T_Ok) Err$(T_Ok)
+#define comp_type_gen__decl_Err$(T_Ok)                                          \
+    $maybe_unused typedef struct Err$(Ptr_const$(T_Ok)) Err$(Ptr_const$(T_Ok)); \
+    $maybe_unused typedef struct Err$(Ptr$(T_Ok)) Err$(Ptr$(T_Ok));             \
+    $maybe_unused typedef struct Err$(T_Ok) Err$(T_Ok)
 #define comp_type_gen__impl_Err$(T_Ok) \
     struct Err$(Ptr_const$(T_Ok)) {    \
         union {                        \

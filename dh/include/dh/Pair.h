@@ -39,7 +39,7 @@ extern "C" {
     decl_Pair$(T_First, T_Second);              \
     impl_Pair$(T_First, T_Second)
 #define comp_type_decl__Pair$(T_First, T_Second) \
-    typedef struct Pair$(T_First, T_Second) Pair$(T_First, T_Second)
+    $maybe_unused typedef struct Pair$(T_First, T_Second) Pair$(T_First, T_Second)
 #define comp_type_impl__Pair$(T_First, T_Second) \
     struct Pair$(T_First, T_Second) {            \
         T_First  first;                          \

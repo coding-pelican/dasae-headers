@@ -755,7 +755,7 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
     decl_ArrList$(T);                  \
     impl_ArrList$(T)
 #define comp_type_gen__decl_ArrList$(T) \
-    typedef union ArrList$(T) ArrList$(T)
+    $maybe_unused typedef union ArrList$(T) ArrList$(T)
 #define comp_type_gen__impl_ArrList$(T) \
     union ArrList$(T) {                 \
         ArrList base[1];                \

@@ -53,7 +53,7 @@
     var ret##step_num = bti_Generic_match$(                             \
         TypeOf(PIPE_APPLY((prev_result_var), func, args)),              \
         bti_Generic_pattern$(void) eval({                               \
-            $ignore PIPE_APPLY((prev_result_var), func, args);          \
+            $ignore = PIPE_APPLY((prev_result_var), func, args);        \
             eval_return make$(Void);                                    \
         }),                                                             \
         bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
@@ -188,9 +188,9 @@ $maybe_unused static $inline fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return d
     //     var foo = meta_cast$(Foo*, pipe(pipe(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
     //     var foo = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
 
-    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ $ignore err; claim_unreachable;}))));
+    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ $ignore = err; claim_unreachable;}))));
     // var foo      = meta_cast$(Foo*, pipe_ret);
-    // $ignore foo;
+    // $ignore = foo;
 
     let pipe_foo = pipe(pipe(meta_cast$(Foo*, pipe(allocator,
         (mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
@@ -200,13 +200,13 @@ $maybe_unused static $inline fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return d
         (Foo_eval,()),
         (Foo_baz,())
     );
-    $ignore pipe_foo;
+    $ignore = pipe_foo;
 } */
 
 
 
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
-    $ignore args;
+    $ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     // Traditional approach
@@ -287,7 +287,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 #define unscoped_$scope unscoped_ext
 
 func_(runPipeExampleUsage(Sli$Str_const args), Err$void, $scope, {
-    $ignore args;
+    $ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     let bar = pipe(try_(Foo_init(allocator)),

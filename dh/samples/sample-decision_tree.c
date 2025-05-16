@@ -65,7 +65,7 @@ static fn_(Dataset_destroy(Dataset* dataset), void);
 
 // Main function
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
-    $ignore args;
+    $ignore = args;
 
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -133,7 +133,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         }
 
         try_(TreeNode_saveToFileRecur(root, save_file));
-        $ignore fclose(save_file);
+        $ignore = fclose(save_file);
         log_info("Saved decision tree to decision_tree.bin");
     }
 
@@ -146,7 +146,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         }
 
         let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
-        $ignore fclose(load_file);
+        $ignore    = fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
         eval_return loaded;
@@ -345,7 +345,7 @@ fn_scope_ext(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
         log_error("Failed to open file: %.*s", (int)filename.len, filename.ptr);
         return_err(io_FileErr_OpenFailed());
     }
-    defer_($ignore fclose(file));
+    defer_($ignore = fclose(file));
 
     // First pass: count lines and features
     u32 line_count    = 0;

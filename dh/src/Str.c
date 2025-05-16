@@ -16,7 +16,7 @@ static $on_load fn_(init(void), void) {
     static bool s_initialized = false;
     if (s_initialized) { return; }
     /* Set locale for proper UTF-8 handling */
-    $ignore setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
+    $ignore       = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
     s_initialized = true;
 }
 
@@ -108,7 +108,7 @@ fn_(Str_print(Str_const self), void) {
 fn_(Str_println(Str_const self), void) {
     debug_assert_nonnull(self.ptr);
     Str_print(self);
-    $ignore putchar('\n');
+    $ignore = putchar('\n');
 }
 
 fn_scope_ext(Str_format(mem_Allocator allocator, const char* format, ...), Err$Str) {
@@ -129,7 +129,7 @@ fn_scope_ext(Str_format(mem_Allocator allocator, const char* format, ...), Err$S
     var result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
     errdefer_(mem_Allocator_free(allocator, anySli(result)));
     {
-        $ignore vsnprintf((char*)result.ptr, len + 1, format, args2);
+        $ignore    = vsnprintf((char*)result.ptr, len + 1, format, args2);
         result.len = len;
     }
     return_ok(result);
@@ -267,10 +267,10 @@ static u32 hashMurmur3(const u8* data, usize len) {
     switch (len & 3) {
     case 3:
         k1 ^= tail[2] << 16;
-        fallthrough;
+        $fallthrough;
     case 2:
         k1 ^= tail[1] << 8;
-        fallthrough;
+        $fallthrough;
     case 1:
         k1 ^= tail[0];
         k1 *= c1;

@@ -9,32 +9,32 @@
 /*========== Common VTable Functions ========================================*/
 
 fn_(mem_Allocator_VT_noAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
-    $ignore ctx;
-    $ignore len;
-    $ignore align;
+    $ignore = ctx;
+    $ignore = len;
+    $ignore = align;
     return none$(Opt$Ptr$u8);
 }
 
 fn_(mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
-    $ignore ctx;
-    $ignore buf;
-    $ignore buf_align;
-    $ignore new_len;
+    $ignore = ctx;
+    $ignore = buf;
+    $ignore = buf_align;
+    $ignore = new_len;
     return false;
 }
 
 fn_(mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
-    $ignore ctx;
-    $ignore buf;
-    $ignore buf_align;
-    $ignore new_len;
+    $ignore = ctx;
+    $ignore = buf;
+    $ignore = buf_align;
+    $ignore = new_len;
     return none$(Opt$Ptr$u8);
 }
 
 fn_(mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
-    $ignore ctx;
-    $ignore buf;
-    $ignore buf_align;
+    $ignore = ctx;
+    $ignore = buf;
+    $ignore = buf_align;
 }
 
 /*========== Raw Allocation Functions =======================================*/
@@ -167,8 +167,7 @@ mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLo
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 
-fn_scope( mem_Allocator_create(mem_Allocator self, TypeInfo type),
-mem_Allocator_Err$meta_Ptr) {
+fn_scope( mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Allocator_Err$meta_Ptr) {
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
@@ -191,8 +190,7 @@ mem_Allocator_Err$meta_Ptr) {
     });
 } unscoped;
 
-fn_( mem_Allocator_destroy(mem_Allocator self, AnyType ptr),
-void) {
+fn_( mem_Allocator_destroy(mem_Allocator self, AnyType ptr), void) {
     let info = extract(ptr, AnyType_ptr);
 
     // Special case for zero-sized types
@@ -209,8 +207,7 @@ void) {
     mem_Allocator_rawFree(self, mem, info.align);
 }
 
-fn_scope( mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count),
-mem_Allocator_Err$meta_Sli) {
+fn_scope( mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count), mem_Allocator_Err$meta_Sli) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
@@ -241,8 +238,7 @@ mem_Allocator_Err$meta_Sli) {
     });
 } unscoped;
 
-fn_( mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len),
-bool) {
+fn_( mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len), bool) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for zero-sized types
@@ -276,8 +272,7 @@ bool) {
     return mem_Allocator_rawResize(self, old_bytes, info.align, new_byte_count.value);
 }
 
-fn_scope( mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len),
-Opt$meta_Sli) {
+fn_scope( mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len), Opt$meta_Sli) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for zero-sized types
@@ -328,8 +323,7 @@ Opt$meta_Sli) {
     });
 } unscoped;
 
-fn_scope( mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len),
-mem_Allocator_Err$meta_Sli) {
+fn_scope( mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len), mem_Allocator_Err$meta_Sli) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for empty old memory
@@ -400,8 +394,7 @@ mem_Allocator_Err$meta_Sli) {
     });
 } unscoped;
 
-fn_( mem_Allocator_free(mem_Allocator self, AnyType memory),
-void) {
+fn_( mem_Allocator_free(mem_Allocator self, AnyType memory), void) {
     let info = extract(memory, AnyType_sli);
 
     // Special case for zero-sized types or empty slices
@@ -432,8 +425,7 @@ fn_scope( mem_Allocator_dupe(mem_Allocator self, meta_Sli src),mem_Allocator_Err
     return_ok(new_mem);
 } unscoped;
 
-fn_scope( mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src),
-mem_Allocator_Err$meta_Sli) {
+fn_scope( mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli) {
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
 

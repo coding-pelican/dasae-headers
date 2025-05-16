@@ -58,7 +58,7 @@ extern "C" {
     decl_Res$(T_First, T_Second);                  \
     impl_Res$(T_First, T_Second)
 #define comp_type_gen__decl_Res$(T_First, T_Second) \
-    typedef struct Res$(T_First, T_Second) Res$(T_First, T_Second)
+    $maybe_unused typedef struct Res$(T_First, T_Second) Res$(T_First, T_Second)
 #define comp_type_gen__impl_Res$(T_First, T_Second) \
     struct Res$(T_First, T_Second) {                \
         union {                                     \

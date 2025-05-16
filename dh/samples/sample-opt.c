@@ -30,8 +30,8 @@ static fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
         return default_val * 2;
     }));
 
-    $ignore value_unsafe;
-    $ignore value_computed;
+    $ignore = value_unsafe;
+    $ignore = value_computed;
     return value_safe;
 }
 

@@ -14,25 +14,25 @@
     typedef union Optptr$(T) Optptr$(T)
 #define impl_Optptr$(T)            \
     struct Optptr_const$(T) {      \
-        const T* addr;             \
+        const rawptr$(T) addr;     \
     };                             \
     union Optptr$(T) {             \
         struct {                   \
-            T* addr;               \
+            rawptr$(T) addr;       \
         };                         \
         Optptr_const$(T) as_const; \
     }
 
 #define Optptr_const$(T) pp_join($, Optptr_const, T)
 #define Optptr$(T)       pp_join($, Optptr, T)
-#define Optptr_const$$(T) \
-    struct {              \
-        const T* addr;    \
+#define Optptr_const$$(T)      \
+    struct {                   \
+        const rawptr$(T) addr; \
     }
 #define Optptr$$(T)                 \
     union {                         \
         struct {                    \
-            T* addr;                \
+            rawptr$(T) addr;        \
         };                          \
         Optptr_const$$(T) as_const; \
     }
@@ -127,7 +127,7 @@ union Node$i32 {
 // clang-format off
 $TEST_only(fn_TEST_scope("meta_Value_load"))
 $release_only(fn_scope(dh_main(Sli$Str_const args), Err$void)) {
-    $release_only($ignore args;)
+    $release_only($ignore = args;)
 
     var_type(node, Node$i32*, Node_init(make$(Node$i32).base, meta_create$(i32, 123)));
     i32 x = meta_Value_load$(i32, Node_data(node->base));
