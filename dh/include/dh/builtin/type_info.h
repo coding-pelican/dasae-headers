@@ -47,7 +47,7 @@ extern "C" {
      */                                             \
     FUNC__alignOf(T)
 
-#define alignAs(val_align...)                             \
+#define alignAs(val_align...)                          \
     /**                                                \
      * @brief Specify alignment requirement for a type \
      *                                                 \
@@ -66,7 +66,7 @@ extern "C" {
     FUNC__countOf(var_arr)
 
 /* Type Information */
-#define TypeOf(_Expr)                                   \
+#define TypeOf(_Expr...)                                \
     /**                                                 \
      * @brief Get type of an expression at compile time \
      *                                                  \
@@ -75,7 +75,7 @@ extern "C" {
      */                                                 \
     FUNC__TypeOf(_Expr)
 
-#define TypeUnqualOf(_Expr)                                         \
+#define TypeUnqualOf(_Expr...)                                      \
     /**                                                             \
      * @brief Get unqualified type of an expression at compile time \
      *                                                              \
@@ -84,7 +84,7 @@ extern "C" {
      */                                                             \
     FUNC__TypeUnqualOf(_Expr)
 
-#define isConstantExpr(_Expr)                              \
+#define isConstantExpr(_Expr...)                           \
     /**                                                    \
      * @brief Check if expression is compile-time constant \
      *                                                     \
@@ -93,8 +93,8 @@ extern "C" {
      */                                                    \
     FUNC__isConstantExpr(_Expr)
 
-#define isSameType$(T_lhs, T_rhs) isSameType(T_lhs, T_rhs)
-#define isSameType(T_lhs, T_rhs)               \
+#define isSameType$(T_lhs, T_rhs...) isSameType(T_lhs, T_rhs)
+#define isSameType(T_lhs, T_rhs...)            \
     /**                                        \
      * @brief Compare two types for equality   \
      *                                         \
@@ -164,16 +164,16 @@ extern "C" {
 #define FUNC__countOf(var_arr...) \
     (sizeof(var_arr) / sizeof(var_arr[0]))
 
-#define FUNC__TypeOf(_Expr) \
+#define FUNC__TypeOf(_Expr...) \
     __typeof__(_Expr)
 
-#define FUNC__TypeUnqualOf(_Expr) \
+#define FUNC__TypeUnqualOf(_Expr...) \
     __typeof_unqual(_Expr)
 
-#define FUNC__isConstantExpr(_Expr) \
+#define FUNC__isConstantExpr(_Expr...) \
     __builtin_constant_p(_Expr)
 
-#define FUNC__isSameType(T_lhs, T_rhs) \
+#define FUNC__isSameType(T_lhs, T_rhs...) \
     __builtin_types_compatible_p(T_lhs, T_rhs)
 
 #define FUNC__isUnsigned(T) _Generic( \
