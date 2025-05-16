@@ -25,11 +25,11 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define fallthrough                             \
+#define $fallthrough                            \
     /**                                         \
      * @brief fallthrough for `switch` internal \
      */                                         \
-    ATTR_fallthrough
+    comp_attr__$fallthrough
 
 #define case_return(_Expr)                      \
     /**                                         \
@@ -45,7 +45,8 @@ extern "C" {
 
 /*========== Macro Implementations ==========================================*/
 
-#define ATTR_fallthrough /* fallthrough */
+#define comp_attr__$fallthrough \
+    __attribute__((fallthrough))
 
 #define SYN_case_return(_Expr) \
     case _Expr:                \
