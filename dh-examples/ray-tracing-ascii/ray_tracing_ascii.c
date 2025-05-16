@@ -181,7 +181,7 @@ void Terminal_bootup() {
     Terminal_printDiagnosticInformation();
     printf("Terminal setup complete.\n");
     printf("Press any key to continue...\n");
-    getch();
+    (void)getch();
     Terminal_clear();
 }
 

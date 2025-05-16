@@ -45,7 +45,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     let state = try(game_State_create());
     log_info("game state created\n");
-    $ignore getchar();
+    $ignore = getchar();
 
     var curr_time   = time_Instant_now();
     var prev_time   = curr_time;

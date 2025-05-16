@@ -15,11 +15,11 @@ typedef struct Body {
     f32        radius;
 } Body;
 use_Sli$(Body);
-use_ArrList$(Body);
 use_Opt$(Body);
+use_ArrList$(Body);
 use_Err$(ArrList$Body);
 
-extern Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius);
-extern void Body_update(Body* self, f32 dt);
+extern fn_(Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius), Body);
+extern fn_(Body_update(Body* self, f32 dt), void);
 
 #endif /* BODY_INCLUDED */

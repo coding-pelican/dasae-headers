@@ -130,7 +130,7 @@ Err$void dh_main(Sli$Str_const args) {
             GameOfLife_setCellSlice(&state.cells, x, y + 2, (Sli$i8)Sli_from(((i8[]){ 0, 0, 1, 0, 0 }), 5));
         }
         log_info("game state created\n");
-        $ignore getchar();
+        $ignore = getchar();
 
         // Initialize timing variables
         let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
@@ -184,7 +184,8 @@ Err$void dh_main(Sli$Str_const args) {
             prev_frame_time = curr_frame_time;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 
@@ -211,7 +212,8 @@ Err$State State_init(mem_Allocator allocator, usize states_width, usize states_h
             .is_running = true,
             .allocator  = allocator,
         });
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 void State_update(State* self, f64 dt) {
     debug_assert_nonnull(self);
