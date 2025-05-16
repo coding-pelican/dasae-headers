@@ -116,7 +116,7 @@ extern "C" {
 
 #if COMP_TIME
 #define comp_inline__claim_assert(_Expr) \
-    $ignore((!!(_Expr)) || (claim_assert_fail(#_Expr, __func__, __FILE__, __LINE__), 0))
+    $ignore_void((!!(_Expr)) || (claim_assert_fail(#_Expr, __func__, __FILE__, __LINE__), 0))
 
 #define comp_inline__claim_assert_true(_Expr)        comp_inline__claim_assert_fmt((_Expr) == true, "%s is not true", #_Expr)
 #define comp_inline__claim_assert_false(_Expr)       comp_inline__claim_assert_fmt((_Expr) == false, "%s is not false", #_Expr)
@@ -126,7 +126,7 @@ extern "C" {
 #define comp_inline__claim_assert_nonnull(_Expr)     comp_inline__claim_assert_fmt((_Expr) != null, "%s is null", #_Expr)
 
 #define comp_inline__claim_assert_fmt(_Expr, ...) \
-    $ignore((!!(_Expr)) || (claim_assert_fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
+    $ignore_void((!!(_Expr)) || (claim_assert_fail_fmt(#_Expr, __func__, __FILE__, __LINE__, __VA_ARGS__), 0))
 
 #define comp_inline__claim_assert_true_fmt(_Expr, ...)        comp_inline__claim_assert_fmt((_Expr) == true, __VA_ARGS__)
 #define comp_inline__claim_assert_false_fmt(_Expr, ...)       comp_inline__claim_assert_fmt((_Expr) == false, __VA_ARGS__)

@@ -168,7 +168,7 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
     }
 
     // 함수가 종료될 때 실행됨
-    defer_($ignore fclose(file));
+    defer_($ignore = fclose(file));
 
     // 파일 처리...
 

@@ -168,7 +168,7 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
     }
 
     // This will execute when the function exits
-    defer_($ignore fclose(file));
+    defer_($ignore = fclose(file));
 
     // Process file...
 

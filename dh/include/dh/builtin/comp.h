@@ -61,6 +61,12 @@ extern "C" {
      *          not return a value                                        \
      */                                                                   \
     comp_attr__$no_return
+#define $ignore_void                                                      \
+    /**                                                                   \
+     * @brief Attribute explicitly $ignores an expression or return value \
+     * @details Used to suppress compiler warnings about unused values    \
+     */                                                                   \
+    comp_attr__$ignore_void
 #define $ignore                                                           \
     /**                                                                   \
      * @brief Attribute explicitly $ignores an expression or return value \
@@ -129,6 +135,8 @@ extern "C" {
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
+#define $like_ptr comp_attr__$like_ptr
+
 /*========== Macros and Implementations =====================================*/
 
 #define comp_attr__$inline        BUILTIN_COMP_INLINE
@@ -142,9 +150,10 @@ extern "C" {
 #define comp_attr__$on_load __attribute__((constructor))
 #define comp_attr__$on_exit __attribute__((destructor))
 
-#define comp_attr__$must_check BUILTIN_COMP_MUST_CHECK
-#define comp_attr__$no_return  BUILTIN_COMP_NO_RETURN
-#define comp_attr__$ignore     (void)
+#define comp_attr__$must_check  BUILTIN_COMP_MUST_CHECK
+#define comp_attr__$no_return   BUILTIN_COMP_NO_RETURN
+#define comp_attr__$ignore_void (void)
+#define comp_attr__$ignore      __attribute__((unused)) let pp_uniqTok(ignored)
 
 #define comp_attr__$used(_Expr...) _Expr
 /* begin unused */
@@ -246,6 +255,8 @@ extern "C" {
 
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
+
+#define comp_attr__$like_ptr [1]
 
 #if defined(__cplusplus)
 } /* extern "C" */
