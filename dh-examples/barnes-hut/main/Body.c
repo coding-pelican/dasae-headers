@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "dh/pipe.h"
 
 Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius) {
     return (Body){

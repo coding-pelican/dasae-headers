@@ -170,8 +170,8 @@ static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color*
     // Write to file
     FILE* fp = _wfopen(L"game_output.txt", L"w");
     if (fp) {
-        $ignore fwrite(backend->buffer, sizeof(wchar), backend->buffer_size, fp);
-        $ignore fclose(fp);
+        $ignore = fwrite(backend->buffer, sizeof(wchar), backend->buffer_size, fp);
+        $ignore = fclose(fp);
 
         // Get console window handle
         HWND console = GetConsoleWindow();
@@ -211,8 +211,8 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
     // Create initial file
     FILE* fp = _wfopen(L"game_output.txt", L"w");
     if (fp) {
-        $ignore fwprintf(fp, L"Loading...\n");
-        $ignore fclose(fp);
+        $ignore = fwprintf(fp, L"Loading...\n");
+        $ignore = fclose(fp);
     }
 
     // Create process
@@ -330,7 +330,7 @@ static Err$HWND NotepadBackend_launchNotepad(void) {
     }
     // Configure window
     SetWindowPos(notepad, HWND_TOPMOST, 100, 100, 800, 600, SWP_SHOWWINDOW);
-    $ignore getchar(); // user setting step
+    $ignore = getchar(); // user setting step
     // EnableWindow(notepad, false);
 
     // Store process handles for cleanup

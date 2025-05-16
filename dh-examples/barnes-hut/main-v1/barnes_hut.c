@@ -109,7 +109,8 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
 
         try(Visualizer_update(viz));
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 Err$void dh_main(int argc, const char* argv[]) {
@@ -169,7 +170,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        $ignore getchar();
+        $ignore = getchar();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
@@ -242,5 +243,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }

@@ -1,6 +1,5 @@
 #include "dh/main.h"
 #include "dh/core.h"
-#define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/log.h"
 
 #include "dh/ArrList.h"
@@ -8,11 +7,8 @@
 #include "dh/Grid.h"
 
 #include "engine.h"
-#include "engine/canvas.h"
-#include "engine/input.h"
-#include "engine-wip/utils.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "libs/stb_image.h"
+#include "lib/stb_image.h"
 
 
 
@@ -43,11 +39,17 @@
 #define target_fps (target_fps__125_0)
 #define target_spf (1.0 / target_fps)
 
+// #define create(literal...) (&*(TypeOf(literal)[1]){ [0] = literal })
+//     create((engine_Window_Config){
+//         .allocator = some(allocator),
+//         .rect_size = {
+//             .x = window_res_width,
+//             .y = window_res_height,
+//         },
+//     });
 
 
-use_Grid$(u8);
-use_Sli$(Color);
-use_Grid$(Color);
+
 typedef struct TerrainData {
     Grid$u8    heightmap; // grayscale
     Grid$Color colormap;  // RGB format (based RGBA)
@@ -85,19 +87,15 @@ typedef struct State {
         bool  mouse_active;
     } input;
 } State;
-/// Key input handling
-static fn_(State_handleInputKey(State* self), void);
-/// Mouse input handling
-static fn_(State_handleInputMouse(State* state), void);
-/// Camera update logic
+static fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), void);
+static fn_(State_handleInputMouse(State* self, const engine_Mouse* mouse), void);
 static fn_(State_updateCamera(State* self, f64 dt), void);
-/// heightmap-based horizon renderer
 static fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void);
 
 
 
-fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
-    $unused(args);
+fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+    $ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     {
@@ -110,49 +108,77 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         log_showFunction(true);
     }
 
+    // Initialize rendering with camera parameters
+    var allocator = heap_Page_allocator(&(heap_Page){});
+
     // Initialize platform with terminal backend
-    let window = try_(engine_Window_init(
-        &(engine_PlatformParams){
-            .backend_type  = engine_RenderBackendType_vt100,
-            .window_title  = "Heightmap Horizon Space",
-            .width         = window_res_width,
-            .height        = window_res_height,
-            .default_color = Color_blue,
-        }
-    ));
+    let window = try_(engine_Window_init(&(engine_Window_Config){
+        .allocator  = some(allocator),
+        .rect_size = {
+            .x = window_res_width,
+            .y = window_res_height,
+        },
+        .default_color = some(Color_blue),
+        .title  = some(Str_l("Heightmap Horizon Space")),
+    }));
     defer_(engine_Window_fini(window));
     log_info("engine initialized\n");
 
     // Create canvases
-    let game_canvas = catch_from(engine_Canvas_create(
-        window_res_width,
-        window_res_height,
-        engine_CanvasType_rgba
-    ), err, ({
-        log_error("Failed to create canvas: %s\n", err);
-        return_err(err);
+    let game_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
+        .allocator     = some(allocator),
+        .width         = window_res_width,
+        .height        = window_res_height,
+        .default_color = none(),
+        .type          = some(engine_CanvasType_rgba),
     }));
-    defer_(engine_Canvas_destroy(game_canvas));
-    log_info("canvas created\n");
-    engine_Canvas_clearDefault(game_canvas);
-    log_info("canvas cleared\n");
+    defer_(engine_Canvas_fini(game_canvas));
+    {
+        log_info("canvas created: %s", nameOf(game_canvas));
+        engine_Canvas_clear(game_canvas, none$(Opt$Color));
+        log_info("canvas cleared: %s", nameOf(game_canvas));
+        engine_Window_appendView(
+            window,
+            &(engine_CanvasView_Config){
+                .canvas      = game_canvas,
+                .pos         = { .x = 0, .y = 0 },
+                .size        = { .x = window_res_width, .y = window_res_height },
+                .scale       = { .x = 1.0f, .y = 1.0f },
+                .resizable_x = true,
+                .resizable_y = true,
+                .visible     = true,
+            }
+        );
+        log_info("canvas views added: %s", nameOf(game_canvas));
+    }
 
-    // Add canvas views
-    engine_Window_addCanvasView(window, game_canvas, 0, 0, window_res_width, window_res_height);
-    log_info("canvas views added\n");
-
-    // Initialize rendering with camera parameters
-    var allocator = heap_Page_allocator(&(heap_Page){});
-    var state     = make$(State, .terrain = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")), .camera_pos = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
-                                             .camera_angle = 0.0f,                                                                          // Starting angle (looking north)
-                                             .height       = 150.f / 2.0f,                                                                  // Height of camera above ground
-                                             .horizon      = window_res_height / 2.0f,                                                      // Center of screen
-                                             .scale_height = window_res_height,                                                             // Full screen height for scaling
-                                             .distance     = 300.0f,
-                                             .is_running   = true);
+    var state = (State){
+        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
+        .camera_angle = 0.0f,                     // Starting angle (looking north)
+        .height       = 150.f / 2.0f,             // Height of camera above ground
+        .horizon      = window_res_height / 2.0f, // Center of screen
+        .scale_height = window_res_height,        // Full screen height for scaling
+        .distance     = 300.0f,
+        .is_running   = true
+    };
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
     log_info("game state created\n");
+
+    // Create input system
+    let input = try_(engine_Input_init(allocator));
+    defer_(engine_Input_fini(input));
+
+    // Bind engine core
+    let core = try_(engine_core_Vt100_init(create$(engine_core_Vt100_Config,
+        .allocator = some(allocator),
+        .window    = window,
+        .input     = input,
+    )));
+    defer_(engine_core_Vt100_fini(core));
+    log_info("engine ready");
+
     engine_utils_getch();
 
     let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
@@ -167,15 +193,15 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
         prev_frame_time     = curr_frame_time;
 
         // Process events
-        try_(engine_Window_processEvents(window));
-        State_handleInputKey(&state);
-        // State_handleInputMouse(&state);
+        try_(engine_Window_update(window));
+        State_handleInputKeyboard(&state, input->keyboard);
+        State_handleInputMouse(&state, input->mouse);
 
         // Update game state
         State_updateCamera(&state, dt);
 
         // Render all views
-        engine_Canvas_clearDefault(game_canvas);
+        engine_Canvas_clear(game_canvas, none$(Opt$Color));
         State_render(&state, game_canvas, dt);
 
         // Present to screen
@@ -187,9 +213,9 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
             fps,
             window_res_width,
             window_res_height,
-            (i32)state.camera_pos.x,
-            (i32)state.camera_pos.y,
-            (i32)state.height,
+            as$(i32, state.camera_pos.x),
+            as$(i32, state.camera_pos.y),
+            as$(i32, state.height),
             state.scale_height
         );
         printf(
@@ -216,12 +242,12 @@ fn_ext_scope(dh_main(Sli$Str_const args), Err$void) {
             time_sleep(leftover);
         }
     }
-    return_void();
-} ext_unscoped;
+    return_ok({});
+} unscoped_ext;
 
 
 
-fn_ext_scope(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), TerrainDataErr$TerrainData) {
+fn_scope_ext(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), TerrainDataErr$TerrainData) {
     debug_assert_nonnull(heightmap_file);
     debug_assert_nonnull(colormap_file);
 
@@ -289,9 +315,9 @@ fn_ext_scope(loadSample(mem_Allocator allocator, const char* heightmap_file, con
         .width     = width,
         .height    = height,
     });
-} ext_unscoped;
+} unscoped_ext;
 
-fn_(State_handleInputKey(State* self), void) {
+fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), void) {
     // Reset input state
     self->input.forward_backward = 0;
     self->input.left_right       = 0;
@@ -299,22 +325,26 @@ fn_(State_handleInputKey(State* self), void) {
     self->input.dist_up_down     = 0;
 
     // WASD/Arrow key movement
-    if (engine_Key_held(engine_KeyCode_w) || engine_Key_held(engine_KeyCode_arrow_up)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_w)
+        || engine_Keyboard_held(keyboard, engine_KeyCode_arrow_up)) {
         self->input.forward_backward = 3.0;
     }
-    if (engine_Key_held(engine_KeyCode_s) || engine_Key_held(engine_KeyCode_arrow_down)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_s)
+        || engine_Keyboard_held(keyboard, engine_KeyCode_arrow_down)) {
         self->input.forward_backward = -3.0;
     }
-    if (engine_Key_held(engine_KeyCode_a) || engine_Key_held(engine_KeyCode_arrow_left)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_a)
+        || engine_Keyboard_held(keyboard, engine_KeyCode_arrow_left)) {
         self->input.left_right = 1.0;
     }
-    if (engine_Key_held(engine_KeyCode_d) || engine_Key_held(engine_KeyCode_arrow_right)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_d)
+        || engine_Keyboard_held(keyboard, engine_KeyCode_arrow_right)) {
         self->input.left_right = -1.0;
     }
 
     // Space/Shift-Space for up/down
-    if (engine_Key_held(engine_KeyCode_space)) {
-        if (!engine_Key_held(engine_KeyCode_shift)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_space)) {
+        if (!engine_Keyboard_held(keyboard, engine_KeyCode_shift)) {
             self->input.up_down = 2.0;
         } else {
             self->input.up_down = -2.0;
@@ -322,40 +352,40 @@ fn_(State_handleInputKey(State* self), void) {
     }
 
     // Q/E for look up/down
-    self->input.look_up   = engine_Key_held(engine_KeyCode_q);
-    self->input.look_down = engine_Key_held(engine_KeyCode_e);
+    self->input.look_up   = engine_Keyboard_held(keyboard, engine_KeyCode_q);
+    self->input.look_down = engine_Keyboard_held(keyboard, engine_KeyCode_e);
 
     // R/F for distance up/down
-    if (engine_Key_held(engine_KeyCode_r)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_r)) {
         self->input.dist_up_down = 4.0;
     }
-    if (engine_Key_held(engine_KeyCode_f)) {
+    if (engine_Keyboard_held(keyboard, engine_KeyCode_f)) {
         self->input.dist_up_down = -4.0;
     }
 
     // ESC to quit
-    if (engine_Key_pressed(engine_KeyCode_esc)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_esc)) {
         self->is_running = false;
     }
 }
-fn_(State_handleInputMouse(State* state), void) {
-    if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_pressed)) {
-        state->input.mouse_active     = true;
-        state->input.mouse_position   = engine_Mouse_getPos();
-        state->input.forward_backward = 3.0;
+fn_(State_handleInputMouse(State* self, const engine_Mouse* mouse), void) {
+    if (engine_Mouse_isState(mouse, engine_MouseButton_left, engine_KeyButtonStates_pressed)) {
+        self->input.mouse_active     = true;
+        self->input.mouse_position   = engine_Mouse_getPos(mouse);
+        self->input.forward_backward = 3.0;
     }
-    if (engine_Mouse_isState(engine_MouseButton_left, engine_KeyStates_released)) {
-        state->input.mouse_active     = false;
-        state->input.forward_backward = 0;
-        state->input.left_right       = 0;
-        state->input.up_down          = 0;
+    if (engine_Mouse_isState(mouse, engine_MouseButton_left, engine_KeyButtonStates_released)) {
+        self->input.mouse_active     = false;
+        self->input.forward_backward = 0;
+        self->input.left_right       = 0;
+        self->input.up_down          = 0;
     }
     /* 이걸 어케 바꾼담담 */
-    if (state->input.mouse_active) {
-        Vec2i delta             = engine_Mouse_getPosDelta();
-        state->input.left_right = (f64)delta.x / window_res_width * 2.0;
-        state->horizon          = 10.0 + (f64)delta.y / window_res_height * 50.0;
-        state->input.up_down    = (f64)delta.y / window_res_height * 10.0;
+    if (self->input.mouse_active) {
+        const Vec2i delta      = engine_Mouse_getPosDelta(mouse);
+        self->input.left_right = as$(f64, delta.x) / window_res_width * 2.0;
+        self->horizon          = 10.0 + as$(f64, delta.y) / window_res_height * 50.0;
+        self->input.up_down    = as$(f64, delta.y) / window_res_height * 10.0;
     }
 }
 fn_(State_updateCamera(State* self, f64 dt), void) {
@@ -387,74 +417,74 @@ fn_(State_updateCamera(State* self, f64 dt), void) {
     }
 
     // Collision detection - don't fly below surface
-    i32 map_x = (i32)((u32)self->camera_pos.x & (self->terrain.width - 1));
-    i32 map_y = (i32)((u32)self->camera_pos.y & (self->terrain.height - 1));
+    let map_x = as$(i32, as$(u32, self->camera_pos.x) & (self->terrain.width - 1));
+    let map_y = as$(i32, as$(u32, self->camera_pos.y) & (self->terrain.height - 1));
 
-    if (self->height < (*Grid_at(self->terrain.heightmap, map_x, map_y) + 10.0)) {
-        self->height = *Grid_at(self->terrain.heightmap, map_x, map_y) + 10.0;
+    if (self->height < (Grid_getAt(self->terrain.heightmap, map_x, map_y) + 10.0)) {
+        self->height = Grid_getAt(self->terrain.heightmap, map_x, map_y) + 10.0;
     }
 }
 fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
     debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
-    $unused(dt);
+    $ignore = dt;
 
     // Extract parameters from state
-    let phi          = state->camera_angle;
-    let sin_phi      = math_sin(phi);
-    let cos_phi      = math_cos(phi);
-    let p            = state->camera_pos;
-    let height       = state->height;
-    let horizon      = state->horizon;
-    let scale_height = state->scale_height;
-    let distance     = state->distance;
+    const f64   phi          = state->camera_angle;
+    const f64   sin_phi      = math_sin(phi);
+    const f64   cos_phi      = math_cos(phi);
+    const Vec2d p            = state->camera_pos;
+    const f64   height       = state->height;
+    const f64   horizon      = state->horizon;
+    const f64   scale_height = state->scale_height;
+    const f64   distance     = state->distance;
 
-    i32 screen_width  = (i32)canvas->width;
-    i32 screen_height = (i32)canvas->height;
+    let screen_width  = as$(i32, canvas->buffer.width);
+    let screen_height = as$(i32, canvas->buffer.height);
 
     // Get terrain data
-    const TerrainData* terrain    = &state->terrain;
-    const u8*          heightmap  = terrain->heightmap.items.ptr;
-    const Color*       colormap   = terrain->colormap.items.ptr;
-    i32                map_width  = (i32)terrain->width;
-    i32                map_height = (i32)terrain->height;
+    let terrain    = Ptr_mutCast(&state->terrain);
+    let heightmap  = Ptr_mutCast(terrain->heightmap.items.ptr);
+    let colormap   = Ptr_mutCast(terrain->colormap.items.ptr);
+    let map_width  = as$(i32, terrain->width);
+    let map_height = as$(i32, terrain->height);
 
     // Draw from back to front (high z to low z)
-    for (var z = distance; z > 1.0; z -= 1.0) {
+    for (f64 z = distance; z > 1.0; z -= 1.0) {
         // Calculate line endpoints on map (90° field of view)
-        var p_left = (Vec2d){
-            .x = (-cos_phi * z - sin_phi * z) + p.x,
-            .y = (sin_phi * z - cos_phi * z) + p.y
-        };
+        var p_left = math_Vec2d_from(
+            (-cos_phi * z - sin_phi * z) + p.x,
+            (sin_phi * z - cos_phi * z) + p.y
+        );
 
-        var p_right = (Vec2d){
-            .x = (cos_phi * z - sin_phi * z) + p.x,
-            .y = (-sin_phi * z - cos_phi * z) + p.y
-        };
+        var p_right = math_Vec2d_from(
+            (cos_phi * z - sin_phi * z) + p.x,
+            (-sin_phi * z - cos_phi * z) + p.y
+        );
 
         // Calculate step sizes for line segment
-        let dx = (p_right.x - p_left.x) / (f64)screen_width;
-        let dy = (p_right.y - p_left.y) / (f64)screen_width;
+        let dx = (p_right.x - p_left.x) / as$(f64, screen_width);
+        let dy = (p_right.y - p_left.y) / as$(f64, screen_width);
 
         // Raster line and draw vertical line for each segment
         for (i32 i = 0; i < screen_width; ++i) {
             // Convert and clamp coordinates to map bounds
-            i32 map_x = (i32)p_left.x;
-            i32 map_y = (i32)p_left.y;
+            var map_x = as$(i32, p_left.x);
+            var map_y = as$(i32, p_left.y);
 
             map_x = math_clamp(map_x, 0, map_width - 1);
             map_y = math_clamp(map_y, 0, map_height - 1);
 
             // Get height and color from maps
-            i32   map_index     = map_y * map_width + map_x;
-            f64   ground_height = (f64)heightmap[map_index];
-            Color color         = colormap[map_index];
+            let map_index     = map_y * map_width + map_x;
+            let ground_height = as$(f64, heightmap[map_index]);
+            let color         = colormap[map_index];
 
             // Calculate height on screen
-            f64 height_on_screen = (height - ground_height) / z * scale_height + horizon;
+            let height_on_screen = (height - ground_height) / z * scale_height + horizon;
 
             // Clamp height to screen bounds
-            i32 screen_y = (i32)height_on_screen;
+            var screen_y = as$(i32, height_on_screen);
             screen_y     = math_clamp(screen_y, 0, screen_height - 1);
 
             // Draw vertical line

@@ -9,7 +9,7 @@
 #include "dh/time.h"
 #include "dh/Random.h"
 
-#include "engine-wip.h"
+#include "engine.h"
 
 #define window_res_width__320x200  /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
@@ -34,22 +34,19 @@
 #define target_spf (1.0 / target_fps)
 
 
-#define Firework_effects_max        (25)
-#define Firework_effects_per_rocket (25)
-#define Fireworks_max               (16)
 
 typedef struct Particle {
-    f64   position[2];
-    f64   speed[2];
-    f64   acceleration[2];
-    f64   fading;
-    f64   lifetime;
-    Color color;
-    u32   dimensions[2];
+    var_(position, Arr$$(2, f64));
+    var_(speed, Arr$$(2, f64));
+    var_(acceleration, Arr$$(2, f64));
+    var_(fading, f64);
+    var_(lifetime, f64);
+    var_(color, Color);
+    var_(dimensions, Arr$$(2, u32));
 } Particle;
-use_Opt$(Particle);
-use_Err$(Particle);
 use_Sli$(Particle);
+use_Err$(Particle);
+use_Opt$(Particle);
 extern fn_(Particle_new(f64 x, f64 y, f64 width, f64 height, Color color), Particle);
 extern fn_(Particle_init(Particle* p, f64 x, f64 y, f64 width, f64 height, Color color), Particle*);
 extern fn_(Particle_withSpeed(Particle* p, f64 x, f64 y), Particle*);
@@ -59,17 +56,20 @@ extern fn_(Particle_isDead(const Particle* p), bool);
 extern fn_(Particle_update(Particle* p, f64 dt), void);
 extern fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void);
 
+#define Firework_effects_max        (25)
+#define Firework_effects_per_rocket (25)
+#define Fireworks_max               (16)
 use_ArrList$(Particle);
 typedef struct Firework {
-    Opt$Ptr$Particle rocket;
-    ArrList$Particle effects;
-    Hsl              effect_base_color;
-    mem_Allocator    allocator;
+    var_(rocket, Opt$Ptr$Particle);
+    var_(effects, ArrList$Particle);
+    var_(effect_base_color, Hsl);
+    var_(allocator, mem_Allocator);
 } Firework;
-use_Opt$(Firework);
-use_Err$(Firework);
-use_Err$(Opt$Ptr$Firework);
 use_Sli$(Firework);
+use_Err$(Firework);
+use_Opt$(Firework);
+use_Err$(Opt$Ptr$Firework);
 extern fn_(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color), Err$Ptr$Firework) $must_check;
 extern fn_(Firework_fini(Firework* f), void);
 extern fn_(Firework_isDead(const Firework* f), bool);
@@ -78,12 +78,12 @@ extern fn_(Firework_render(const Firework* f, engine_Canvas* c, f64 dt), void);
 
 use_ArrList$(Firework);
 typedef struct State {
-    mem_Allocator       allocator;
-    u32                 width;
-    u32                 height;
-    const engine_Input* input;
-    ArrList$Firework    fireworks;
-    bool                is_running;
+    var_(allocator, mem_Allocator);
+    var_(width, u32);
+    var_(height, u32);
+    var_(input, Ptr_const$$(engine_Input));
+    var_(fireworks, ArrList$Firework);
+    var_(is_running, bool);
 } State;
 use_Err$(State);
 extern fn_(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), Err$State) $must_check;
@@ -96,7 +96,7 @@ extern fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) $must_check;
 
 
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
-    $unused(args);
+    $ignore = args;
     Random_init();
 
     // Initialize logging to a file
@@ -112,44 +112,46 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     }
 
     // Initialize heap allocator and page pool
-    var allocator = heap_Page_allocator(create$(heap_Page));
+    var allocator = heap_Page_allocator(&(heap_Page){});
     log_info("allocator reserved");
 
     // Create window
-    let window = try_(engine_Window_init(create$(engine_WindowConfig,
-        .allocator = allocator,
-        .title     = Str_l("Fireworks"),
+    let window = try_(engine_Window_init(&(engine_Window_Config){
+        .allocator = some(allocator),
         .rect_size = {
             .x = window_res_width,
             .y = window_res_height,
         },
-        .default_color = some(Color_black)
-    )));
+        .default_color = some(Color_black),
+        .title         = some(Str_l("Fireworks"))
+    }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
-    let game_canvas = try_(engine_Canvas_init(
-        allocator,
-        window_res_width,
-        window_res_height,
-        engine_CanvasType_rgba,
-        none$(Opt$Color)
-    ));
+    let game_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
+        .allocator     = some(allocator),
+        .width         = window_res_width,
+        .height        = window_res_height,
+        .default_color = none(),
+        .type          = some(engine_CanvasType_rgba),
+    }));
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
         engine_Canvas_clear(game_canvas, none$(Opt$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
-        engine_Window_appendCanvasView(
+        engine_Window_appendView(
             window,
-            game_canvas,
-            make$(Vec2i, .x = 0, .y = 0),
-            make$(Vec2u, .x = window_res_width, .y = window_res_height),
-            make$(Vec2f, .x = 1.0f, .y = 1.0f),
-            true,
-            true,
-            true
+            &(engine_CanvasView_Config){
+                .canvas      = game_canvas,
+                .pos         = { .x = 0, .y = 0 },
+                .size        = { .x = window_res_width, .y = window_res_height },
+                .scale       = { .x = 1.0f, .y = 1.0f },
+                .resizable_x = true,
+                .resizable_y = true,
+                .visible     = true,
+            }
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
@@ -159,11 +161,11 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(create$(engine_core_Vt100_Config,
-        .allocator = allocator,
+    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+        .allocator = some(allocator),
         .window    = window,
         .input     = input,
-    )));
+    }));
     defer_(engine_core_Vt100_fini(core));
     log_info("engine ready");
 
@@ -172,7 +174,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     defer_(State_fini(&state));
     log_info("game state created");
 
-    $ignore engine_utils_getch();
+    $ignore = engine_utils_getch();
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs_f64(target_spf);
@@ -243,48 +245,43 @@ fn_(Particle_new(f64 x, f64 y, f64 width, f64 height, Color color), Particle) {
     };
 }
 fn_(Particle_init(Particle* p, f64 x, f64 y, f64 width, f64 height, Color color), Particle*) {
-    debug_assert_nonnull(p);
-    *p = Particle_new(x, y, width, height, color);
-    return p;
+    return deref(p) = Particle_new(x, y, width, height, color), p;
 }
 fn_(Particle_withSpeed(Particle* p, f64 x, f64 y), Particle*) {
     debug_assert_nonnull(p);
-    p->speed[0] = x;
-    p->speed[1] = y;
+    *Arr_at(p->speed, 0) = x;
+    *Arr_at(p->speed, 1) = y;
     return p;
 }
 fn_(Particle_withAcceleration(Particle* p, f64 x, f64 y), Particle*) {
     debug_assert_nonnull(p);
-    p->acceleration[0] = x;
-    p->acceleration[1] = y;
+    *Arr_at(p->acceleration, 0) = x;
+    *Arr_at(p->acceleration, 1) = y;
     return p;
 }
 fn_(Particle_withFading(Particle* p, f64 fading), Particle*) {
-    debug_assert_nonnull(p);
-    p->fading = fading;
-    return p;
+    return deref(p).fading = fading, p;
 }
 fn_(Particle_isDead(const Particle* p), bool) {
-    debug_assert_nonnull(p);
-    return p->lifetime <= 0.0;
+    return deref(p).lifetime <= 0.0;
 }
 fn_(Particle_update(Particle* p, f64 dt), void) {
     debug_assert_nonnull(p);
-    $ignore dt;
+    $ignore = dt;
     if (Particle_isDead(p)) { return; }
 
-    p->speed[0] += p->acceleration[0];
-    p->speed[1] += p->acceleration[1];
+    *Arr_at(p->speed, 0) += Arr_getAt(p->acceleration, 0);
+    *Arr_at(p->speed, 1) += Arr_getAt(p->acceleration, 1);
 
-    p->position[0] += p->speed[0];
-    p->position[1] += p->speed[1];
+    *Arr_at(p->position, 0) += Arr_getAt(p->speed, 0);
+    *Arr_at(p->position, 1) += Arr_getAt(p->speed, 1);
 
     p->lifetime -= p->fading;
 }
 fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(p);
     debug_assert_nonnull(c);
-    $ignore dt;
+    $ignore = dt;
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
@@ -294,10 +291,10 @@ fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void) {
     );
     engine_Canvas_fillRect(
         c,
-        as$(i64, p->position[0]),
-        as$(i64, p->position[1]),
-        as$(u32, p->position[0] + (p->dimensions[0] - 1)),
-        as$(u32, p->position[1] + (p->dimensions[1] - 1)),
+        as$(i64, Arr_getAt(p->position, 0)),
+        as$(i64, Arr_getAt(p->position, 1)),
+        as$(u32, Arr_getAt(p->position, 0) + as$(i64, Arr_getAt(p->dimensions, 0) - 1)),
+        as$(u32, Arr_getAt(p->position, 1) + as$(i64, Arr_getAt(p->dimensions, 1) - 1)),
         render_color
     );
 }
@@ -316,7 +313,7 @@ fn_scope_ext(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i
         ));
     }
 
-    f->effects = type$(ArrList$Particle, try_(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)) );
+    f->effects = type$(ArrList$Particle, try_(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)));
     errdefer_(ArrList_fini(f->effects.base));
 
     f->effect_base_color = Color_intoHsl(effect_base_color);
@@ -340,8 +337,7 @@ fn_(Firework_fini(Firework* f), void) {
     log_debug("firework destroyed\n");
 }
 $inline fn_(Firework__deadsAllEffect(const Firework* f), bool) {
-    debug_assert_nonnull(f);
-    for_slice (f->effects.items, effect) {
+    for_slice (deref(f).effects.items, effect) {
         if (Particle_isDead(effect)) { continue; }
         return false;
     }
@@ -367,21 +363,21 @@ fn_(Firework_isDead(const Firework* f), bool) {
 }
 fn_scope(Firework_update(Firework* f, f64 dt), Err$void) {
     debug_assert_nonnull(f);
-    $ignore dt;
+    $ignore = dt;
     if_some(f->rocket, rocket) {
         Particle_update(rocket, dt);
-        if (-0.2 <= rocket->speed[1]) {
+        if (-0.2 <= Arr_getAt(rocket->speed, 1)) {
             log_debug(
                 "Spawning %d effects at (%.2f, %.2f)",
                 Firework_effects_per_rocket,
-                rocket->position[0],
-                rocket->position[1]
+                Arr_getAt(rocket->position, 0),
+                Arr_getAt(rocket->position, 1)
             );
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
                 with_(let particle = meta_cast$(Particle*, try_(ArrList_addBackOne(f->effects.base)))) {
-                    let x      = rocket->position[0];
-                    let y      = rocket->position[1];
+                    let x      = Arr_getAt(rocket->position, 0);
+                    let y      = Arr_getAt(rocket->position, 1);
                     let width  = 1.0;
                     let height = 1.0;
                     let color  = Hsl_intoColorOpaque(Hsl_from(
@@ -441,8 +437,7 @@ fn_(State_fini(State* s), void) {
     ArrList_fini(s->fireworks.base);
 }
 fn_(State_isDead(const State* s), bool) {
-    debug_assert_nonnull(s);
-    return !s->is_running;
+    return !deref(s).is_running;
 }
 fn_scope(State_update(State* s, f64 dt), Err$void) {
     debug_assert_nonnull(s);
@@ -457,7 +452,7 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
         // debug_only(
         if_some(try_(State_spawnFirework(s)), firework) {
             let rocket = unwrap(firework->rocket);
-            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+            log_debug("Spawning rocket at (%.2f, %.2f)", Arr_getAt(rocket->position, 0), Arr_getAt(rocket->position, 1));
         }
         // );
     }
@@ -468,13 +463,13 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
     }
 
     // Input handling
-    if (engine_Keyboard_pressed(&s->input->keyboard, engine_KeyCode_esc)) {
+    if (engine_Keyboard_pressed(s->input->keyboard, engine_KeyCode_esc)) {
         log_debug("pressed esc\n");
         s->is_running = false;
         return_ok({});
     }
 
-    if (engine_Keyboard_pressed(&s->input->keyboard, engine_KeyCode_space)) {
+    if (engine_Keyboard_pressed(s->input->keyboard, engine_KeyCode_space)) {
         log_debug("pressed space\n");
         let maybe_firework = catch_from(State_spawnFirework(s), err, ({
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
@@ -482,11 +477,11 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
         }));
         if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
-            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
+            log_debug("Spawning rocket at (%.2f, %.2f)", Arr_getAt(rocket->position, 0), Arr_getAt(rocket->position, 1));
         }
     }
 
-    if (engine_Mouse_pressed(&s->input->mouse, engine_MouseButton_left)) {
+    if (engine_Mouse_pressed(s->input->mouse, engine_MouseButton_left)) {
         log_debug("pressed left mouse button\n");
         let maybe_firework = catch_from(State_spawnFirework(s), err, ({
             log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
@@ -494,8 +489,8 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
         }));
         if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
-            log_debug("Spawning rocket at (%.2f, %.2f)", rocket->position[0], rocket->position[1]);
-            let mouse_pos = engine_Mouse_getPos(&s->input->mouse);
+            log_debug("Spawning rocket at (%.2f, %.2f)", Arr_getAt(rocket->position, 0), Arr_getAt(rocket->position, 1));
+            let mouse_pos = engine_Mouse_getPos(s->input->mouse);
             pipe(rocket,
                 (Particle_init,(mouse_pos.x, mouse_pos.y, 1, 1, rocket->color)),
                 (Particle_withFading,(0.0))

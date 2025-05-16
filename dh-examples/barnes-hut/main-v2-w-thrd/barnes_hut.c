@@ -123,7 +123,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        $ignore getchar();
+        $ignore = getchar();
 
         // Create threads for simulation and visualization
         pthread_t sim_thread = 0;
@@ -181,7 +181,8 @@ Err$void dh_main(int argc, const char* argv[]) {
             time_frame_prev = time_frame_curr;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 #if debug_comp_enabled
@@ -253,7 +254,8 @@ static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
 
         try(Visualizer_update(viz));
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
 static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
