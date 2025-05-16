@@ -243,7 +243,7 @@ fn_scope_ext(readFileContents(Str_const filename), io_Err$Str_const) {
     if (file == null) {
         return_err(io_Err_OpenFailed());
     }
-    defer_($ignore fclose(file));
+    defer_($ignore = fclose(file));
 
     // File processing...
 

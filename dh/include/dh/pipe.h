@@ -56,7 +56,7 @@ extern "C" {
     var ret##step_num = bti_Generic_match$(                             \
         TypeOf(PIPE_APPLY((prev_result_var), func, args)),              \
         bti_Generic_pattern$(void) eval({                               \
-            $ignore PIPE_APPLY((prev_result_var), func, args);          \
+            $ignore = PIPE_APPLY((prev_result_var), func, args);        \
             eval_return make$(Void);                                    \
         }),                                                             \
         bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
