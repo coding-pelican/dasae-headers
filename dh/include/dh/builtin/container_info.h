@@ -67,7 +67,7 @@ extern "C" {
     FUNC__safeContainerOf(_ptr, _Type, _field)
 
 /* Field Type Operations */
-#define FieldTypeOf(_Type, _field)                            \
+#define FieldType$(_Type, _field)                             \
     /**                                                       \
      * @brief Get the type of a field within a container type \
      *                                                        \
@@ -75,7 +75,7 @@ extern "C" {
      * @param _field The field name                           \
      * @return The type of the specified field                \
      */                                                       \
-    FUNC__FieldTypeOf(_Type, _field)
+    FUNC__FieldType$(_Type, _field)
 
 /* Field Validation */
 #define hasField(_Type, _field)                                    \
@@ -138,7 +138,7 @@ extern "C" {
 })
 
 /* Field operations implementations */
-#define FUNC__FieldTypeOf(Type, field) \
+#define FUNC__FieldType$(Type, field) \
     TypeOf(((Type*)0)->field)
 
 #define FUNC__hasField(Type, field) eval({                              \
@@ -149,19 +149,19 @@ extern "C" {
 })
 
 #define FUNC__validateField(Type, field, ExpectedType) \
-    isSameType(FieldTypeOf(Type, field), ExpectedType)
+    isSameType(FieldType$(Type, field), ExpectedType)
 
 #define FUNC__fieldPtrFrom(container_ptr, field) \
     (&(container_ptr)->field)
 
-#define FUNC__fieldPadding(Type, field) eval({                \
-    const usize __offset = offsetTo(Type, field);             \
-    const usize __align  = alignOf(FieldTypeOf(Type, field)); \
-    eval_return(__offset - (__offset & ~(__align - 1)));      \
+#define FUNC__fieldPadding(Type, field) eval({               \
+    const usize __offset = offsetTo(Type, field);            \
+    const usize __align  = alignOf(FieldType$(Type, field)); \
+    eval_return(__offset - (__offset & ~(__align - 1)));     \
 })
 
 #define fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field))
+    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
