@@ -138,13 +138,13 @@ typedef struct Err$Void {
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes));                                 \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes));                               \
     claim_assert_static(hasField(TypeOf(__anon), is_err));                                           \
-    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldTypeOf(T_ErrRes, is_err)));       \
+    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldType$(T_ErrRes, is_err)));        \
     claim_assert_static(fieldPadding(TypeOf(__anon), is_err) == fieldPadding(T_ErrRes, is_err));     \
     claim_assert_static(hasField(TypeOf(__anon), data.err));                                         \
-    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldTypeOf(T_ErrRes, data.err)));   \
+    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldType$(T_ErrRes, data.err)));    \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.err) == fieldPadding(T_ErrRes, data.err)); \
     claim_assert_static(hasField(TypeOf(__anon), data.ok));                                          \
-    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldTypeOf(T_ErrRes, data.ok)));     \
+    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldType$(T_ErrRes, data.ok)));      \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.ok) == fieldPadding(T_ErrRes, data.ok));   \
     eval_return(*(T_ErrRes*)&__anon);                                                                \
 })

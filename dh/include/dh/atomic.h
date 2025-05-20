@@ -76,7 +76,7 @@ typedef enum atomic_MemOrd {
     claim_assert_static(sizeOf(TypeOf(_unnamed_value)) == sizeOf(TNamedValue));                       \
     claim_assert_static(alignOf(TypeOf(_unnamed_value)) == alignOf(TNamedValue));                     \
     claim_assert_static(hasField(TypeOf(_unnamed_value), raw));                                       \
-    claim_assert_static(validateField(TypeOf(_unnamed_value), raw, FieldTypeOf(TNamedValue, raw)));   \
+    claim_assert_static(validateField(TypeOf(_unnamed_value), raw, FieldType$(TNamedValue, raw)));    \
     claim_assert_static(fieldPadding(TypeOf(_unnamed_value), raw) == fieldPadding(TNamedValue, raw)); \
     eval_return(*(TNamedValue*)&_unnamed_value);                                                      \
 })

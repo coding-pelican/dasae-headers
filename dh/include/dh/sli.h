@@ -305,8 +305,8 @@ union __AssociationTypes_Sli {
     let_(__anon, TypeOf(&var_anon)) = &var_anon;                                        \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
-    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr)));   \
-    claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len)));   \
+    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldType$(T_Sli, ptr)));    \
+    claim_assert_static(validateField(TypeOf(__anon), len, FieldType$(T_Sli, len)));    \
     claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
     eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
