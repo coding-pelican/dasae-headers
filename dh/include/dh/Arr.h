@@ -456,7 +456,7 @@ extern "C" {
     let_(__anon, TypeOf(&var_anon)) = &var_anon;                                         \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                       \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                     \
-    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(T_Arr, buf)));   \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(T_Arr, buf)));    \
     claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(T_Arr, buf)); \
     eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                   \
 })
@@ -538,7 +538,7 @@ extern "C" {
 })
 
 #define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
-    let_(__self, TypeOf(&var_self)) = &var_self;                                       \
+    let_(__self, TypeOf(var_self)*) = &var_self;                                       \
     let_(__range, Range)            = Range_from range_index_begin_end;                \
     debug_assert_fmt(                                                                  \
         __range.begin < __range.end,                                                   \
@@ -553,7 +553,7 @@ extern "C" {
         Arr_len(*__self)                                                               \
     );                                                                                 \
     eval_return make$(                                                                 \
-        TypeOf(__self),                                                                \
+        Sli$$(TypeOf(__self->buf[0])),                                                 \
         .ptr = __self->buf + __range.begin,                                            \
         .len = Range_len(__range)                                                      \
     );                                                                                 \

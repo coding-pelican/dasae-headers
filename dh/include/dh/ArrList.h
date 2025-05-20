@@ -783,11 +783,11 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
     let __anon = &var_anon;                                                                              \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList));                                   \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList));                                 \
-    claim_assert_static(validateField(TypeOf(*__anon), base, FieldTypeOf(T_ArrList, base)));             \
-    claim_assert_static(validateField(TypeOf(*__anon), type, FieldTypeOf(T_ArrList, type)));             \
+    claim_assert_static(validateField(TypeOf(*__anon), base, FieldType$(T_ArrList, base)));              \
+    claim_assert_static(validateField(TypeOf(*__anon), type, FieldType$(T_ArrList, type)));              \
     claim_assert_static(fieldAnonTypeCastable(T_ArrList, *__anon, Sli, items));                          \
-    claim_assert_static(validateField(TypeOf(*__anon), cap, FieldTypeOf(T_ArrList, cap)));               \
-    claim_assert_static(validateField(TypeOf(*__anon), allocator, FieldTypeOf(T_ArrList, allocator)));   \
+    claim_assert_static(validateField(TypeOf(*__anon), cap, FieldType$(T_ArrList, cap)));                \
+    claim_assert_static(validateField(TypeOf(*__anon), allocator, FieldType$(T_ArrList, allocator)));    \
     claim_assert_static(fieldPadding(TypeOf(*__anon), base) == fieldPadding(T_ArrList, base));           \
     claim_assert_static(fieldPadding(TypeOf(*__anon), type) == fieldPadding(T_ArrList, type));           \
     claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items));         \

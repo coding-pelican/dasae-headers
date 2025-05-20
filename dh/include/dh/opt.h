@@ -103,10 +103,10 @@ extern "C" {
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Opt));                                   \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Opt));                                 \
     claim_assert_static(hasField(TypeOf(__anon), has_value));                                       \
-    claim_assert_static(validateField(TypeOf(__anon), has_value, FieldTypeOf(T_Opt, has_value)));   \
+    claim_assert_static(validateField(TypeOf(__anon), has_value, FieldType$(T_Opt, has_value)));    \
     claim_assert_static(fieldPadding(TypeOf(__anon), has_value) == fieldPadding(T_Opt, has_value)); \
     claim_assert_static(hasField(TypeOf(__anon), value));                                           \
-    claim_assert_static(validateField(TypeOf(__anon), value, FieldTypeOf(T_Opt, value)));           \
+    claim_assert_static(validateField(TypeOf(__anon), value, FieldType$(T_Opt, value)));            \
     claim_assert_static(fieldPadding(TypeOf(__anon), value) == fieldPadding(T_Opt, value));         \
     eval_return(*(T_Opt*)&__anon);                                                                  \
 })
