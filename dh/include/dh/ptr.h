@@ -41,10 +41,10 @@ typedef anyptr       Ptr;
 #define Ptr$$(T)       comp_type_raw__Ptr$$(T)
 
 extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
-#define Ptr_constCast(var_ptr... /* Opt$Ptr$T */)               comp_op__Ptr_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
 #define Ptr_constCast$(T_Ptr, var_ptr... /* Opt$T_Ptr */)       comp_op__Ptr_constCast$(pp_uniqTok(ptr), pp_uniqTok(ret), T_Ptr, var_ptr)
-#define Ptr_mutCast(var_ptr... /* Ptr_const$T */)               comp_op__Ptr_mutCast(var_ptr)
+#define Ptr_constCast(var_ptr... /* Opt$Ptr$T */)               comp_op__Ptr_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
 #define Ptr_mutCast$(T_Ptr_const, var_ptr... /* T_Ptr_const */) comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr)
+#define Ptr_mutCast(var_ptr... /* Ptr_const$T */)               comp_op__Ptr_mutCast(var_ptr)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -61,29 +61,30 @@ extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
 #define comp_type_raw__Ptr$$(T) \
     T*
 
-#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({ \
-    const TypeOf(var_ptr) __ptr       = var_ptr;                \
-    Opt$(TypeUnqualOf(*__ptr)*) __ret = cleared();              \
-    if (Ptr_constCastable(__ptr)) {                             \
-        toSome(&__ret, as$(TypeUnqualOf(*__ptr)*, __ptr));      \
-    } else {                                                    \
-        toNone(&__ret);                                         \
-    }                                                           \
-    eval_return __ret;                                          \
-})
 #define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) eval({ \
     const TypeOf(var_ptr) __ptr = var_ptr;                              \
     Opt$(T_Ptr) __ret           = cleared();                            \
     if (Ptr_constCastable(__ptr)) {                                     \
-        toSome(&__ret, as$(T_Ptr, __ptr));                              \
+        Opt_asg(&__ret, some(as$(T_Ptr, __ptr)));                       \
     } else {                                                            \
-        toNone(&__ret);                                                 \
+        Opt_asg(&__ret, none());                                        \
     }                                                                   \
     eval_return __ret;                                                  \
 })
+#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({   \
+    const TypeOf(var_ptr) __ptr        = var_ptr;                 \
+    Opt$$(TypeUnqualOf(*__ptr)*) __ret = cleared();               \
+    if (Ptr_constCastable(__ptr)) {                               \
+        Opt_asg(&__ret, some(as$(TypeUnqualOf(*__ptr)*, __ptr))); \
+    } else {                                                      \
+        Opt_asg(&__ret, none());                                  \
+    }                                                             \
+    eval_return __ret;                                            \
+})
 
-#define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(const TypeOf(*var_ptr)*, var_ptr)
+
 #define comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr...) as$(T_Ptr_const, var_ptr)
+#define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(const TypeOf(*var_ptr)*, var_ptr)
 
 #if defined(__cplusplus)
 } /* extern "C" */
