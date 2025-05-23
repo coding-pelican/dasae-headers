@@ -256,23 +256,6 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 
 
 
-#define pp_ignore(...) pp_exec_ignore(__VA_ARGS__)
-#define pp_exec_ignore(...)
-
-#define pp_expand(...)      pp_exec_expand(__VA_ARGS__)
-#define pp_exec_expand(...) __VA_ARGS__
-
-#undef pp_cat
-#define pp_cat(_lhs, _rhs...)      pp_exec_cat(_lhs, _rhs)
-#define pp_exec_cat(_lhs, _rhs...) _lhs##_rhs
-
-#undef pp_join
-#define pp_join(_sep, _lhs, _rhs...)      pp_exec_join(_sep, _lhs, _rhs)
-#define pp_exec_join(_sep, _lhs, _rhs...) _lhs##_sep##_rhs
-
-#define pp_overload(_Name, ...)      pp_exec_overload(_Name, __VA_ARGS__)
-#define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArgs(__VA_ARGS__))
-
 #define func_(_Name_With_Params, T_Return, ...) \
     pp_overload(func, __VA_ARGS__)(_Name_With_Params, T_Return, __VA_ARGS__)
 #define func_0(_Name_With_Params, T_Return, ...) \
