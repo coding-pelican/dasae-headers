@@ -3,14 +3,15 @@
 
 #include <stdlib.h>
 
-// Forward declarations of static functions (using fn_ macro)
+// Forward declarations for allocator vtable functions
 static fn_(heap_Classic_alloc(anyptr ctx,  usize len, u32 align), Opt$Ptr$u8);
 static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
 static fn_(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align,  usize new_len), Opt$Ptr$u8);
 static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 
 fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
-    /* VTable for Classic allocator */
+    debug_assert_nonnull(self);
+    // VTable for Classic allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Classic_alloc,
         .resize = heap_Classic_resize,

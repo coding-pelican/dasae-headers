@@ -9,12 +9,15 @@
 #endif                 /* posix */
 #include <stdatomic.h> // Required for atomic operations
 
+// Forward declarations for allocator vtable functions
 static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
-static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool);
-static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8);
+static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
+static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
 static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 
 fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
+    debug_assert_nonnull(self);
+    // VTable for Page allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Page_alloc,
         .resize = heap_Page_resize,
@@ -120,7 +123,7 @@ static fn_scope(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
 #endif /* posix */
 } unscoped;
 
-static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
+static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -128,15 +131,15 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
 
     $unused(ctx, buf_align);
 
-    let new_size_aligned = mem_alignForward(new_size, mem_page_size);
+    let new_size_aligned = mem_alignForward(new_len, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
 
-    if (new_size_aligned == buf_aligned_len && new_size <= buf.len) {
+    if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
         return true; // No resize needed
     }
 
 #if bti_plat_windows
-    if (new_size <= buf.len) {
+    if (new_len <= buf.len) {
         let base_addr    = rawptrToInt(buf.ptr);
         let old_addr_end = base_addr + buf_aligned_len;
         let new_addr_end = base_addr + new_size_aligned;
@@ -167,7 +170,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
 
 #ifdef MAP_REMAP // Check if mremap is available
     if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
-        let new_ptr = mremap(buf.ptr, buf.len, new_size, MREMAP_MAYMOVE);
+        let new_ptr = mremap(buf.ptr, buf.len, new_len, MREMAP_MAYMOVE);
         if (new_ptr != MAP_FAILED) {
             // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
             return true; // Assume success for now, further hint update needed if address changes.
@@ -182,7 +185,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_siz
 #endif /* posix */
 }
 
-static fn_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
+static fn_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -190,10 +193,10 @@ static fn_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new
 
     $unused(ctx, buf_align);
 
-    let new_size_aligned = mem_alignForward(new_size, mem_page_size);
+    let new_size_aligned = mem_alignForward(new_len, mem_page_size);
     let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
 
-    if (new_size_aligned == buf_aligned_len && new_size <= buf.len) {
+    if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
         return_some(buf.ptr); // No resize needed
     }
 
@@ -209,7 +212,7 @@ static fn_scope(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new
 
 #ifdef MAP_REMAP // Check if mremap is available
     if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
-        let new_ptr = mremap(buf.ptr, buf.len, new_size, MREMAP_MAYMOVE);
+        let new_ptr = mremap(buf.ptr, buf.len, new_len, MREMAP_MAYMOVE);
         if (new_ptr != MAP_FAILED) {
             // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
             return_some(new_ptr); // Assume success for now, further hint update needed if address changes.

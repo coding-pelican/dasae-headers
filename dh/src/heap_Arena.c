@@ -7,8 +7,8 @@
 
 // Forward declarations for allocator vtable functions
 static fn_(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
-static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool);
-static fn_(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8);
+static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
+static fn_(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
 static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 
 // Internal helper functions
@@ -24,7 +24,7 @@ extern fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_
 
 extern fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator) {
     debug_assert_nonnull(self);
-    /* VTable for Arena allocator */
+    // VTable for Arena allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Arena_alloc,
         .resize = heap_Arena_resize,
@@ -194,7 +194,7 @@ static fn_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) 
     }
 } unscoped;
 
-static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
+static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -211,25 +211,25 @@ static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
 
     if ((usize)cur_buf + self->state.end_index != (usize)buf.ptr + buf.len) {
         // Not the most recent allocation, can only shrink
-        return new_size <= buf.len;
+        return new_len <= buf.len;
     }
 
-    if (buf.len >= new_size) {
+    if (buf.len >= new_len) {
         // Shrinking
-        self->state.end_index -= buf.len - new_size;
+        self->state.end_index -= buf.len - new_len;
         return true;
     }
-    if (new_size - buf.len <= cur_buf_len - self->state.end_index) {
+    if (new_len - buf.len <= cur_buf_len - self->state.end_index) {
         // Growing within current buffer
-        self->state.end_index += new_size - buf.len;
+        self->state.end_index += new_len - buf.len;
         return true;
     }
 
     return false;
 }
 
-static fn_scope(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
-    if (heap_Arena_resize(ctx, buf, buf_align, new_size)) {
+static fn_scope(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+    if (heap_Arena_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
     return_none();
