@@ -5,7 +5,9 @@
 #include "dh/log.h"
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
-#include "engine/color.h"
+#include "dh/pipe.h"
+#include "engine/Color.h"
+#include "engine/Mouse.h"
 
 /* Color definitions for rendering nodes in the visualizer. */
 #define Visualizer_color_body        (literal_Color_fromOpaque(192, 192, 192))
@@ -15,8 +17,8 @@
 #define Visualizer_alpha_scale       (0.8f) // Alpha multiplier for blending
 
 /* Function to calculate the inverse scale factor for rendering nodes.  */
-$inline_always f32   Visualizer_scale(Visualizer* self) { return self->scale; }
-$inline_always f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
+static $inline_always fn_(Visualizer_scale(Visualizer* self), f32) { return self->scale; }
+static $inline_always fn_(Visualizer_scaleInv(Visualizer* self), f32) { return 1.0f / self->scale; }
 ///////////////////////////////////////////////////////////////////////////////
 /// Unified coordinate system transformations:
 ///
@@ -46,10 +48,10 @@ $inline_always f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self-
 ///    wy = camy - ( (sy - cy) * scale )
 ///
 ///////////////////////////////////////////////////////////////////////////////
-$inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
+static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), Vec2i) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
-    let cx = (as$(i32, self->canvas->width) - 1) / 2;
-    let cy = (as$(i32, self->canvas->height) - 1) / 2;
+    let cx = (as$(i32, self->canvas->buffer.width) - 1) / 2;
+    let cy = (as$(i32, self->canvas->buffer.height) - 1) / 2;
     return math_Vec2i_from(cx, cy);
 }
 /// @brief Convert a world-space position to screen-space (pixels).
@@ -61,7 +63,7 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// @param self      Pointer to the Visualizer (contains camera pos & scale).
 /// @param world_pos The (wx, wy) coordinates in world space.
 /// @return          The corresponding (sx, sy) on the screen in pixels.
-$inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+static $inline_always fn_(Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos), Vec2i) {
     let center      = Visualizer_screenCenter(self);
     let w_minus_cam = math_Vec2f_sub(world_pos, self->pos);
     let divided     = math_Vec2f_scale(w_minus_cam, 1.0f / self->scale);
@@ -79,7 +81,7 @@ $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos)
 /// @param self       Pointer to the Visualizer (contains camera pos & scale).
 /// @param screen_pos The (sx, sy) pixel coordinates on the screen.
 /// @return           The corresponding (wx, wy) in world space.
-$inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+static $inline_always fn_(Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos), Vec2f) {
     let center     = Visualizer_screenCenter(self);
     let dx         = as$(f32, screen_pos.x - center.x);
     let dy         = as$(f32, center.y - screen_pos.y);
@@ -88,13 +90,12 @@ $inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos
     return math_Vec2f_add(self->pos, multiplied);
 }
 /// Returns the current mouse position converted to world coords.
-$inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
-    return Visualizer_screenToWorld(self, engine_Mouse_getPos());
+static $inline_always fn_(Visualizer_mousePosToWorld(Visualizer* self, engine_Mouse* mouse), Vec2f) {
+    return Visualizer_screenToWorld(self, engine_Mouse_getPos(mouse));
 }
 
 /* Core visualizer functions */
-Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
-    reserveReturn(Err$Visualizer);
+fn_scope(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$Visualizer) {
     return_ok({
         .pos   = math_Vec2f_zero, // camera center pos
         .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
@@ -129,9 +130,9 @@ Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas)
         .allocator = allocator,
         .canvas    = canvas,
     });
-}
+} unscoped;
 
-void Visualizer_destroy(Visualizer* self) {
+fn_(Visualizer_destroy(Visualizer* self), void) {
     debug_assert_nonnull(self);
 
     ArrList_fini(self->cache_stack.base);
@@ -145,7 +146,7 @@ typedef struct Control {
     Vec2f          vec;
 } Control;
 use_Sli$(Control);
-static Sli_const$Control Control_list(void) {
+static fn_(Control_list(void), Sli_const$Control) {
     static const Control controls[] = {
         { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
         { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
@@ -159,33 +160,33 @@ static Sli_const$Control Control_list(void) {
     };
 }
 
-$inline_always void VisualizerInput_resetPos(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_resetPos(Visualizer* self), void) {
     self->pos = math_Vec2f_zero;
 }
-$inline_always void VisualizerInput_toggleShowingBodies(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_toggleShowingBodies(Visualizer* self), void) {
     self->shows_bodies = !self->shows_bodies;
 }
-$inline_always void VisualizerInput_toggleVisualizationBodiesVelVec(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_toggleVisualizationBodiesVelVec(Visualizer* self), void) {
     self->shows_bodies_vel_vec = !self->shows_bodies_vel_vec;
 }
-$inline_always void VisualizerInput_toggleVisualizationBodiesAccVec(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_toggleVisualizationBodiesAccVec(Visualizer* self), void) {
     self->shows_bodies_acc_vec = !self->shows_bodies_acc_vec;
 }
-$inline_always void VisualizerInput_toggleVisualizationQuadTree(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_toggleVisualizationQuadTree(Visualizer* self), void) {
     self->shows_quad_tree = !self->shows_quad_tree;
 }
 // Call this when the middle mouse button is first pressed:
-$inline_always void VisualizerInput_onPanBegin(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_onPanBegin(Visualizer* self, engine_Mouse* mouse), void) {
     if (self->is_panning) { return; }
     // Store screen coordinates & camera pos
-    self->pan_screen_begin = engine_Mouse_getPos();
+    self->pan_screen_begin = engine_Mouse_getPos(mouse);
     self->pan_cam_begin    = self->pos;
     self->is_panning       = true;
 }
 // Call this each frame while the middle mouse is held:
-$inline_always void VisualizerInput_handlePan(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_handlePan(Visualizer* self, engine_Mouse* mouse), void) {
     // Current mouse position in SCREEN space
-    let mouse_now_screen = engine_Mouse_getPos();
+    let mouse_now_screen = engine_Mouse_getPos(mouse);
 
     // Convert BOTH the original "pan begin" screen coords
     // and the new screen coords into world space
@@ -201,17 +202,18 @@ $inline_always void VisualizerInput_handlePan(Visualizer* self) {
     self->pos = math_Vec2f_add(self->pan_cam_begin, diff_world);
 }
 // Call this when the middle mouse button is released:
-$inline_always void VisualizerInput_onPanEnd(Visualizer* self) {
+static $inline_always fn_(VisualizerInput_onPanEnd(Visualizer* self, engine_Mouse* mouse), void) {
+    $ignore          = mouse;
     self->is_panning = false;
     // // Reset pan screen & cam begin to zero
     // self->pan_screen_begin = math_Vec2f_zero;
     // self->pan_cam_begin    = math_Vec2f_zero;
 }
-$inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta) {
+static $inline_always fn_(VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta, engine_Mouse* mouse), void) {
     if (scroll_delta == 0) { return; }
 
     // 1) Find the world coords under the mouse BEFORE changing scale
-    let mouse_screen       = engine_Mouse_getPos();
+    let mouse_screen       = engine_Mouse_getPos(mouse);
     let mouse_world_before = Visualizer_screenToWorld(self, mouse_screen);
 
     // 2) Choose a zoom factor
@@ -237,31 +239,32 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     let diff  = math_Vec2f_sub(mouse_world_before, mouse_world_after);
     self->pos = math_Vec2f_add(self->pos, diff);
 }
-Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
-    reserveReturn(Err$void);
+fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void) {
     debug_assert_nonnull(self);
-    $unused(window);
+    $ignore = window;
 
+    let keyboard = input->keyboard;
+    let mouse    = input->mouse;
     // Handle resets
-    if (engine_Key_pressed(engine_KeyCode_r)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_r)) {
         log_debug("pressed 'r' to reset position\n");
         VisualizerInput_resetPos(self);
     }
 
     // Handle toggles
-    if (engine_Key_pressed(engine_KeyCode_n1)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_n1)) {
         log_debug("pressed '1' to toggle bodies showing\n");
         VisualizerInput_toggleShowingBodies(self);
     }
-    if (engine_Key_pressed(engine_KeyCode_n2)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_n2)) {
         log_debug("pressed '2' to toggle bodies velocity vector visualization\n");
         VisualizerInput_toggleVisualizationBodiesVelVec(self);
     }
-    if (engine_Key_pressed(engine_KeyCode_n3)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_n3)) {
         log_debug("pressed '3' to toggle bodies acceleration vector visualization\n");
         VisualizerInput_toggleVisualizationBodiesAccVec(self);
     }
-    if (engine_Key_pressed(engine_KeyCode_q)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_q)) {
         log_debug("pressed 'q' to toggle quad-tree visualization\n");
         VisualizerInput_toggleVisualizationQuadTree(self);
     }
@@ -269,98 +272,101 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     // Handle moving
     let controls = Control_list();
     for_slice (controls, control) {
-        if (engine_Key_held(control->key)) {
+        if (engine_Keyboard_held(keyboard, control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
-            self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
+            let addAsg = math_Vec2f_addAsg;
+            let scale  = math_Vec2f_scale;
+            pipe(&self->pos,
+                (addAsg,(pipe(control->vec,(scale,(5.0f * Visualizer_scaleInv(self))))))
+            );
         }
     }
 
     // Handle panning
-    if (engine_Mouse_pressed(engine_MouseButton_middle)) {
+    if (engine_Mouse_pressed(mouse, engine_MouseButton_middle)) {
         log_debug("mouse wheel down: pan begin\n");
-        VisualizerInput_onPanBegin(self);
+        VisualizerInput_onPanBegin(self, mouse);
     }
-    if (engine_Mouse_held(engine_MouseButton_middle)) {
-        VisualizerInput_handlePan(self);
+    if (engine_Mouse_held(mouse, engine_MouseButton_middle)) {
+        VisualizerInput_handlePan(self, mouse);
     }
-    if (engine_Mouse_released(engine_MouseButton_middle)) {
+    if (engine_Mouse_released(mouse, engine_MouseButton_middle)) {
         log_debug("mouse wheel up: pan end\n");
-        VisualizerInput_onPanEnd(self);
+        VisualizerInput_onPanEnd(self, mouse);
     }
 
     // Handle zooming
-    scope_if(let scroll_delta = engine_Mouse_getScrollSpeed(), scroll_delta != 0) {
+    if_(const Vec2f wheel_scroll_delta
+        = engine_Mouse_getWheelScrollDelta(mouse),
+        wheel_scroll_delta.y != 0) {
         log_debug("mouse wheel scroll: zoom begin\n");
-        VisualizerInput_handleZoom(self, as$(i32, scroll_delta));
+        VisualizerInput_handleZoom(self, as$(i32, wheel_scroll_delta.y), mouse);
     }
 
     // FIXME: Handle body spawning
-    if (engine_Mouse_pressed(engine_MouseButton_right)) {
+    let spawn = &self->spawn;
+    if (engine_Mouse_pressed(mouse, engine_MouseButton_right)) {
         log_debug("right mouse button pressed");
-        let world_mouse = Visualizer_mousePosToWorld(self);
+        let world_mouse = Visualizer_mousePosToWorld(self, mouse);
 
-        toSome(&self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
-        toSome(&self->spawn.angle, 0.0f);
-        toSome(&self->spawn.total, 0.0f);
+        Opt_asg(&spawn->body, some(Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f)));
+        Opt_asg(&spawn->angle, some(0.0f));
+        Opt_asg(&spawn->total, some(0.0f));
 
-    } else if (engine_Mouse_held(engine_MouseButton_right)) {
+    } else if (engine_Mouse_held(mouse, engine_MouseButton_right)) {
         log_debug("right mouse button held");
-        if_some_mut(self->spawn.body, body) {
-            let world_mouse = Visualizer_mousePosToWorld(self);
+        if_some(Opt_asPtr(&spawn->body), body) {
+            let world_mouse = Visualizer_mousePosToWorld(self, mouse);
             let d           = math_Vec2f_sub(world_mouse, body->pos);
-            if_some_mut(self->spawn.angle, angle) {
+            if_some(Opt_asPtr(&spawn->angle), angle) {
                 let angle2    = atan2f(d.y, d.x);
                 let a         = angle2 - *angle;
                 let a_wrapped = fmodf(a + math_f32_pi, math_f32_tau) - math_f32_pi;
 
-                self->spawn.total.value -= a_wrapped;
+                spawn->total.value -= a_wrapped;
                 *angle = angle2;
 
-                body->mass   = exp2f(self->spawn.total.value / math_f32_tau);
+                body->mass   = exp2f(spawn->total.value / math_f32_tau);
                 body->radius = cbrtf(body->mass);
-            }
-            else {
-                toSome(&self->spawn.angle, atan2f(d.y, d.x));
+            } else {
+                Opt_asg(&spawn->angle, some(atan2f(d.y, d.x)));
             }
             body->vel = d;
         }
 
-    } else if (engine_Mouse_released(engine_MouseButton_right)) {
+    } else if (engine_Mouse_released(mouse, engine_MouseButton_right)) {
         log_debug("right mouse button released");
-        if_some_mut(self->spawn.body, body) {
-            if_none(self->spawn.confirmed) {
-                toSome(&self->spawn.confirmed, *body);
+        if_some(spawn->body, body) {
+            if_none(spawn->confirmed) {
+                Opt_asg(&spawn->confirmed, some(body));
             }
-            toNone(&self->spawn.body);
-            toNone(&self->spawn.angle);
-            toNone(&self->spawn.total);
+            Opt_asg(&spawn->body, none());
+            Opt_asg(&spawn->angle, none());
+            Opt_asg(&spawn->total, none());
         }
     }
-    return_void();
-}
+    return_ok({});
+} unscoped;
 
-Err$void Visualizer_update(Visualizer* self) {
-    reserveReturn(Err$void);
+fn_scope(Visualizer_update(Visualizer* self), Err$void) {
     debug_assert_nonnull(self);
-
     // Handle spawned body confirmation
-    if_some_mut(self->spawn.confirmed, confirmed) {
+    let spawn = &self->spawn;
+    if_some(Opt_asPtr(&spawn->confirmed), confirmed) {
         try_(ArrList_append(self->bodies.base, meta_refPtr(confirmed)));
-        toNone(&self->spawn.confirmed);
+        Opt_asg(&spawn->confirmed, none());
     }
+    return_ok({});
+} unscoped;
 
-    return_void();
-}
-
-static void     Visualizer_renderBodies(Visualizer* self);
-static Err$void Visualizer_renderQuadTree(Visualizer* self);
-Err$void        Visualizer_render(Visualizer* self) {
-    reserveReturn(Err$void);
+static fn_(Visualizer_renderBodies(Visualizer* self), void);
+static fn_(Visualizer_renderQuadTree(Visualizer* self), Err$void);
+fn_scope(Visualizer_render(Visualizer* self), Err$void) {
     debug_assert_nonnull(self);
 
     /* let begin_instant = time_Instant_now(); */
     // Clear canvas
-    engine_Canvas_clearDefault(self->canvas);
+    engine_Canvas_clear(self->canvas, (Opt$Color)none());
     // Draw bodies
     if (self->shows_bodies) {
         Visualizer_renderBodies(self);
@@ -372,10 +378,10 @@ Err$void        Visualizer_render(Visualizer* self) {
     /* let end_duration = time_Instant_elapsed(begin_instant);
     log_info("Render time: %lfms", time_Duration_asSecs_f64(end_duration)); */
 
-    return_void();
-}
+    return_ok({});
+} unscoped;
 
-$inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
+static $inline_always fn_(Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color), void) {
     if (1.0f < screen_radius) {
         return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
     }
@@ -387,14 +393,14 @@ $inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f3
     color.a      = as$(u8, 255.0f * coverage * Visualizer_alpha_scale);
     return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
-$inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
+static $inline_always fn_(Visualizer_drawBodiesOnly(Visualizer* self), void) {
     let view_min = math_Vec2f_from(
-        self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x - 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y - 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     let view_max = math_Vec2f_from(
-        self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x + 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y + 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
@@ -410,14 +416,14 @@ $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
     }
 }
-$inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
+static $inline_always fn_(Visualizer_drawBodiesWithVelVec(Visualizer* self), void) {
     let view_min = math_Vec2f_from(
-        self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x - 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y - 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     let view_max = math_Vec2f_from(
-        self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x + 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y + 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
@@ -440,14 +446,14 @@ $inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         }
     }
 }
-$inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
+static $inline_always fn_(Visualizer_drawBodiesWithAccVec(Visualizer* self), void) {
     let view_min = math_Vec2f_from(
-        self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x - 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y - 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     let view_max = math_Vec2f_from(
-        self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x + 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y + 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
@@ -470,14 +476,14 @@ $inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         }
     }
 }
-$inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
+static $inline_always fn_(Visualizer_drawBodiesWithVelAccVec(Visualizer* self), void) {
     let view_min = math_Vec2f_from(
-        self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x - 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y - 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     let view_max = math_Vec2f_from(
-        self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
-        self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
+        self->pos.x + 0.5f * (as$(f32, self->canvas->buffer.width) * self->scale),
+        self->pos.y + 0.5f * (as$(f32, self->canvas->buffer.height) * self->scale)
     );
     for_slice (self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
@@ -507,7 +513,7 @@ $inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
         }
     }
 }
-static void Visualizer_renderBodies(Visualizer* self) {
+fn_(Visualizer_renderBodies(Visualizer* self), void) {
     debug_assert_nonnull(self);
 
     let render_bodies_type = self->shows_bodies_vel_vec | self->shows_bodies_acc_vec << 1;
@@ -529,7 +535,7 @@ static void Visualizer_renderBodies(Visualizer* self) {
     }
 }
 
-$inline_always void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color) {
+static $inline_always fn_(Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color), void) {
     // Convert world min/max to screen coordinates
     let screen_min = Visualizer_worldToScreen(self, min);
     let screen_max = Visualizer_worldToScreen(self, max);
@@ -543,8 +549,7 @@ $inline_always void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, 
         color
     );
 }
-static Err$void Visualizer_renderQuadTree(Visualizer* self) {
-    reserveReturn(Err$void);
+fn_scope(Visualizer_renderQuadTree(Visualizer* self), Err$void) {
     debug_assert_nonnull(self);
 
     let depth_range = &self->depth_range;
@@ -626,5 +631,5 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
         Visualizer_drawNode(self, min, max, color);
     }
 
-    return_void();
-}
+    return_ok({});
+} unscoped;

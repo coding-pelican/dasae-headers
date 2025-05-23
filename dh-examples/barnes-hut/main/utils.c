@@ -4,7 +4,7 @@
 #include "dh/Random.h"
 #include "dh/mem/cfg.h"
 
-static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
+static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
@@ -14,7 +14,7 @@ static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     return cmp_Ord_eq;
 }
 
-fn_ext_scope(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body) {
+fn_scope_ext(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body) {
     // Initialize random seed
     Random_initWithSeed(0);
 
@@ -24,6 +24,7 @@ fn_ext_scope(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Bo
 
     // Create bodies array
     var bodies = type$(ArrList$Body, try_(ArrList_initCap(typeInfo$(Body), allocator, n)));
+    errdefer_(ArrList_fini(bodies.base));
 
     // Add center black hole
     const f32 m = 1e6f;
@@ -92,5 +93,4 @@ fn_ext_scope(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Bo
     }
 
     return_ok(bodies);
-}
-ext_unscoped;
+} unscoped_ext;
