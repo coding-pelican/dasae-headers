@@ -38,34 +38,42 @@ extern "C" {
 #define Opt_anonCast$(T_Opt, var_anon...) comp_op__Opt_anonCast$(T_Opt, var_anon)
 
 /* Determines optional value */
-#define some(val_some...) comp_op__some(val_some)
-#define none()            comp_op__none()
-
+#define some(val_some...)         comp_op__some(val_some)
 #define some$(T_Opt, val_some...) comp_op__some$(T_Opt, val_some)
+#define none()                    comp_op__none()
 #define none$(T_Opt)              comp_op__none$(T_Opt)
 
-#define toSome(var_addr_opt, val_some...) comp_op__toSome(pp_uniqTok(addr_opt), var_addr_opt, val_some)
-#define toNone(var_addr_opt...)           comp_op__toNone(pp_uniqTok(addr_opt), var_addr_opt)
+/* Assigns optional value */
+#define Opt_asg$(T_Opt, var_addr_opt, val_opt...) comp_op__Opt_asg$(pp_uniqTok(addr_opt), T_Opt, var_addr_opt, val_opt)
+#define Opt_asg(var_addr_opt, val_opt...)         comp_op__Opt_asg(var_addr_opt, val_opt)
+#define toSome$(T_Opt, var_addr_opt, val_some...) comp_op__toSome$(T_Opt, var_addr_opt, val_some)
+#define toSome(var_addr_opt, val_some...)         comp_op__toSome(var_addr_opt, val_some)
+#define toNone$(T_Opt, var_addr_opt...)           comp_op__toNone$(T_Opt, var_addr_opt)
+#define toNone(var_addr_opt...)                   comp_op__toNone(var_addr_opt)
 
 /* Checks optional value */
 #define isSome(val_opt...) comp_op__isSome(val_opt)
 #define isNone(val_opt...) comp_op__isNone(val_opt)
 
+/* Unwraps optional value (similar to Zig's orelse and .?) */
+#define orelse(_Expr, _Default_Or_Eval...) comp_op__orelse(pp_uniqTok(result), _Expr, _Default_Or_Eval)
+#define unwrap(_Expr...)                   comp_op__unwrap(_Expr)
+
+/* Converts optional value to pointer */
+#define Opt_asPtr$(T_OptPtr, var_addr_opt...) comp_op__Opt_asPtr$(pp_uniqTok(addr_opt), T_OptPtr, var_addr_opt)
+#define Opt_asPtr(var_addr_opt...)            comp_op__Opt_asPtr(var_addr_opt)
+
 /* Returns optional value */
 #define return_some(val_some...) comp_syn__return_some(val_some)
 #define return_none()            comp_syn__return_none()
 
-/* Unwraps optional value (similar to Zig's orelse and .?) */
-#define unwrap(_Expr...)                   comp_op__unwrap(_Expr)
-#define orelse(_Expr, _Default_Or_Eval...) comp_op__orelse(pp_uniqTok(result), _Expr, _Default_Or_Eval)
-
 /* Optional value payload capture (similar to Zig's if/while captures) */
-#define if_some(val_opt, _Payload_Capture)    comp_syn__if_some(val_opt, _Payload_Capture)
-#define else_none                             comp_syn__else_none
-#define if_none(val_opt)                      comp_syn__if_none(val_opt)
-#define else_some(_Payload_Capture)           comp_syn__else_some(_Payload_Capture)
-#define while_some(val_opt, _Payload_Capture) comp_syn__while_some(val_opt, _Payload_Capture)
-#define while_none(val_opt)                   comp_syn__while_none(val_opt)
+#define if_some(val_opt, _Payload_Capture...)    comp_syn__if_some(val_opt, _Payload_Capture)
+#define else_none                                comp_syn__else_none
+#define if_none(val_opt...)                      comp_syn__if_none(val_opt)
+#define else_some(_Payload_Capture...)           comp_syn__else_some(_Payload_Capture)
+#define while_some(val_opt, _Payload_Capture...) comp_syn__while_some(val_opt, _Payload_Capture)
+#define while_none(val_opt...)                   comp_syn__while_none(val_opt)
 
 /*========== Implementations ================================================*/
 
@@ -111,24 +119,22 @@ extern "C" {
     eval_return(*(T_Opt*)&__anon);                                                                  \
 })
 
-#define comp_op__some(val_some...) { .has_value = true, .value = val_some }
-#define comp_op__none()            { .has_value = false }
-
+#define comp_op__some(val_some...)         { .has_value = true, .value = val_some }
 #define comp_op__some$(T_Opt, val_some...) ((T_Opt)some(val_some))
+#define comp_op__none()                    { .has_value = false }
 #define comp_op__none$(T_Opt)              ((T_Opt)none())
 
-#define comp_op__toSome(__addr_opt, var_addr_opt, val_some...) eval({ \
-    let __addr_opt = var_addr_opt;                                    \
-    debug_assert_nonnull(__addr_opt);                                 \
-    *__addr_opt = some$(TypeOf(*__addr_opt), val_some);               \
-    eval_return __addr_opt;                                           \
+#define comp_op__Opt_asg$(__addr_opt, T_Opt, var_addr_opt, val_opt...) eval({ \
+    let __addr_opt = var_addr_opt;                                            \
+    debug_assert_nonnull(__addr_opt);                                         \
+    *__addr_opt = *(T_Opt[1]){ [0] = val_opt };                               \
+    eval_return __addr_opt;                                                   \
 })
-#define comp_op__toNone(__addr_opt, var_addr_opt...) eval({ \
-    let __addr_opt = var_addr_opt;                          \
-    debug_assert_nonnull(__addr_opt);                       \
-    *__addr_opt = none$(TypeOf(*__addr_opt));               \
-    eval_return __addr_opt;                                 \
-})
+#define comp_op__Opt_asg(var_addr_opt, val_opt...)         Opt_asg$(TypeOf(*var_addr_opt), var_addr_opt, val_opt)
+#define comp_op__toSome$(T_Opt, var_addr_opt, val_some...) Opt_asg$(T_Opt, var_addr_opt, some(val_some))
+#define comp_op__toSome(var_addr_opt, val_some...)         toSome$(TypeOf(*var_addr_opt), var_addr_opt, val_some)
+#define comp_op__toNone$(T_Opt, var_addr_opt...)           Opt_asg$(T_Opt, var_addr_opt, none())
+#define comp_op__toNone(var_addr_opt...)                   toNone$(TypeOf(*var_addr_opt), var_addr_opt)
 
 #define comp_op__isSome(val_opt...) (as$(bool, (val_opt).has_value))
 #define comp_op__isNone(val_opt...) (as$(bool, !(val_opt).has_value))
@@ -136,7 +142,6 @@ extern "C" {
 #define comp_syn__return_some(val_some...) return_(some(val_some))
 #define comp_syn__return_none()            return_(none())
 
-#define comp_op__unwrap(_Expr...)                             orelse(_Expr, claim_unreachable)
 #define comp_op__orelse(__result, _Expr, _Default_Or_Eval...) eval({ \
     var __result = _Expr;                                            \
     if (isNone(__result)) {                                          \
@@ -151,20 +156,32 @@ extern "C" {
     }                                                                \
     eval_return __result.value;                                      \
 })
+#define comp_op__unwrap(_Expr...) orelse(_Expr, claim_unreachable)
 
-#define comp_syn__if_some(val_opt, _Payload_Capture) \
-    if_(let _result = (val_opt), _result.has_value)  \
+#define comp_op__Opt_asPtr$(__addr_opt, T_OptPtr, var_addr_opt...) eval({ \
+    let __addr_opt = var_addr_opt;                                        \
+    debug_assert_nonnull(__addr_opt);                                     \
+    (T_OptPtr){                                                           \
+        .value     = &__addr_opt->value,                                  \
+        .has_value = __addr_opt->has_value                                \
+    };                                                                    \
+})
+#define comp_op__Opt_asPtr(var_addr_opt...) \
+    Opt_asPtr$(Opt$$(FieldType$(TypeOf(*var_addr_opt), value)*), var_addr_opt)
+
+#define comp_syn__if_some(val_opt, _Payload_Capture...) \
+    if_(let _result = (val_opt), _result.has_value)     \
         with_(let _Payload_Capture = _result.value)
 #define comp_syn__else_none \
     else
-#define comp_syn__if_none(val_opt) \
+#define comp_syn__if_none(val_opt...) \
     if_(let _result = (val_opt), !_result.has_value)
-#define comp_syn__else_some(_Payload_Capture) \
+#define comp_syn__else_some(_Payload_Capture...) \
     else_(let _Payload_Capture = _result.value)
-#define comp_syn__while_some(val_opt, _Payload_Capture)                   \
+#define comp_syn__while_some(val_opt, _Payload_Capture...)                \
     for (var _result = (val_opt); _result.has_value; _result = (val_opt)) \
     with_(let _Payload_Capture = _result.value)
-#define comp_syn__while_none(val_opt) \
+#define comp_syn__while_none(val_opt...) \
     while_(var _result = (val_opt), !_result.has_value)
 
 #if defined(__cplusplus)
