@@ -1,6 +1,3 @@
-#include <pthread.h>
-#include <sched.h> // for sched_yield()
-
 // #define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/main.h"
 #include "dh/debug.h"
@@ -8,15 +5,15 @@
 
 #include "dh/core.h"
 #include "dh/mem/Allocator.h"
-#include "dh/heap/Classic.h"
 #include "dh/heap/Page.h"
 #include "dh/ArrList.h"
 
-#include "dh/time/Duration.h"
 #include "dh/time/common.h"
-#include "engine.h"
-#include "engine/window.h"
+#include "dh/time/Duration.h"
+#include "dh/Thrd/common.h"
+#include "dh/Thrd/Mtx.h"
 
+#include "engine.h"
 #include "Simulation.h"
 #include "Visualizer.h"
 #include "utils.h"
@@ -39,151 +36,198 @@
 
 // Global state without thread synchronization
 static struct {
-    ArrList$Body    spawn_bodies;
-    mem_Allocator   allocator;
-    Simulation*     sim;
-    pthread_mutex_t sim_mutex;
-    Visualizer*     viz;
-    bool            paused;
-    bool            is_running;
+    Opt$mem_Allocator allocator;
+    ArrList$Body      spawn_bodies;
+    Thrd_Mtx          sim_mutex;
+    Simulation*       sim;
+    bool              paused;
+    bool              is_running;
 } global_state = {
+    .allocator    = none(),
     .spawn_bodies = cleared(),
-    .allocator    = cleared(),
-    .sim          = null,
-    .sim_mutex    = PTHREAD_MUTEX_INITIALIZER,
-    .viz          = null,
+    .sim_mutex    = cleared(),
     .paused       = false,
     .is_running   = false
 };
 #if debug_comp_enabled
-static void global_debug_logSimStateFrontBodiesN(usize n);
+static fn_(global_debug_logSimStateFrontBodiesN(usize n), void);
 #endif /* debug_comp_enabled */
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) $must_check;
-static Err$void global_update(Visualizer* viz, Simulation* sim) $must_check;
-static void     global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
+static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void) $must_check;
+static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void) $must_check;
+static fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void);
 
+typedef union Thrd_FnCtx$Simulation_thread {
+    Thrd_FnCtx base;
+    struct {
+        Void arg;
+        union {
+            Thrd_FnRet base[1];
+            Err$void   value;
+        } ret;
+    };
+} Thrd_FnCtx$Simulation_thread;
 // Thread functions
-static anyptr Simulation_thread(anyptr arg);
+static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*);
 
 // Main function
-Err$void dh_main(Sli$Str_const args) {
-    $unused(args);
-    scope_reserveReturn(Err$void) {
-        // Initialize logging to a file
-        try_(log_init("log/debug.log"));
-        {
-            defer_(log_fini());
-            // Configure logging behavior
-            log_setLevel(log_Level_debug);
-            log_showTimestamp(true);
-            log_showLevel(true);
-            log_showLocation(false);
-            log_showFunction(true);
-        }
+fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+    $ignore = args;
 
-        // Create window
-        var window = try_(engine_Window_init(&(engine_PlatformParams){
-            .backend_type  = engine_RenderBackendType_vt100,
-            .window_title  = "Barnes-hut N-Body Simulation",
-            .width         = main_window_res_width,
-            .height        = main_window_res_height,
-            .default_color = Color_black,
-        }));
-        defer_(engine_Window_fini(window));
-        log_info("engine initialized\n");
-
-        var canvas = try_(engine_Canvas_createWithDefault(main_window_res_width, main_window_res_height, engine_CanvasType_rgba, Color_transparent));
-        defer_(engine_Canvas_destroy(canvas));
-        log_info("canvas created\n");
-
-        engine_Window_addCanvasView(window, canvas, 0, 0, main_window_res_width, main_window_res_height);
-        log_info("canvas views added\n");
-
-        // Create allocator
-        // var allocator = heap_Classic_allocator(&(heap_Classic){});
-        var allocator          = heap_Page_allocator(&(heap_Page){});
-        global_state.allocator = allocator;
-
-        // Initialize state
-        var spawn_bodies = type$(ArrList$Body, try_(ArrList_initCap(typeInfo$(Body), allocator, main_simulation_n_body)));
-        defer_(ArrList_fini(global_state.spawn_bodies.base));
-        global_state.spawn_bodies = spawn_bodies;
-
-        // Create simulation and Visualizer
-        var sim = try_(Simulation_create(allocator, main_simulation_n_body));
-        defer_(Simulation_destroy(&sim));
-        global_state.sim = &sim;
-        log_info("simulation created\n");
-
-        var viz = try_(Visualizer_create(allocator, canvas));
-        defer_(Visualizer_destroy(&viz));
-        global_state.viz = &viz;
-        log_info("visualizer created\n");
-
-        $ignore = getchar();
-
-        // Create threads for simulation and visualization
-        pthread_t sim_thread = 0;
-        // Reserve destroy mutexes and cond vars
-        defer_(pthread_mutex_destroy(&global_state.sim_mutex));
-        global_state.is_running = true;
-
-        // Create threads
-        pthread_create(&sim_thread, null, Simulation_thread, null);
-        // Reserve wait for threads to finish
-        defer_(pthread_join(sim_thread, null));
-        log_info("threads created\n");
-
-        // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
-        var time_frame_prev   = time_Instant_now();
-        log_info("main loop started\n");
-
-        // Main loop
-        while (global_state.is_running) {
-            let time_frame_curr = time_Instant_now();
-            let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt         = time_Duration_asSecs_f64(time_elapsed);
-
-            // 1) Process input
-            try_(engine_Window_processEvents(window));
-            try_(global_processInput(&viz, window));
-
-            // 2) Update
-            try_(global_update(&viz, &sim));
-
-            // 3) Render
-            try_(Visualizer_render(global_state.viz));
-            engine_Window_present(window);
-
-            // 4) FPS timing
-            global_renderStatInfo(&viz, &sim, time_dt);
-            debug_only( // log frame every 1s
-                static f64 total_game_time_for_timestamp = 0.0;
-                static f64 logging_after_duration        = 0.0;
-                total_game_time_for_timestamp += time_dt;
-                logging_after_duration += time_dt;
-                if (1.0 < logging_after_duration) {
-                    logging_after_duration = 0.0;
-                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
-                }
-            );
-
-            // 5) sleep
-            let time_now        = time_Instant_now();
-            let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
-            if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
-                time_sleep(time_leftover);
-            }
-            time_frame_prev = time_frame_curr;
-        }
-        return_void();
+    // Initialize logging to a file
+    try_(log_init("log/debug.log"));
+    defer_(log_fini());
+    {
+        // Configure logging behavior
+        log_setLevel(log_Level_debug);
+        log_showTimestamp(true);
+        log_showLevel(true);
+        log_showLocation(false);
+        log_showFunction(true);
     }
-    scope_returnReserved;
-}
+
+    // Create allocator
+    var allocator = heap_Page_allocator(&(heap_Page){});
+    Opt_asg(&global_state.allocator, some(allocator));
+
+    // Create window
+    let window = try_(engine_Window_init(&(engine_Window_Config){
+        .allocator = some(allocator),
+        .rect_size = {
+            .x = main_window_res_width,
+            .y = main_window_res_height,
+        },
+        .default_color = some(Color_black),
+        .title         = some(Str_l("Barnes-hut N-Body Simulation"))
+    }));
+    defer_(engine_Window_fini(window));
+    log_info("engine initialized\n");
+
+    let canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
+        .allocator     = some(allocator),
+        .width         = main_window_res_width,
+        .height        = main_window_res_height,
+        .default_color = none(),
+        .type          = some(engine_CanvasType_rgba),
+    }));
+    defer_(engine_Canvas_fini(canvas));
+    {
+        log_info("canvas created: %s", nameOf(canvas));
+        engine_Canvas_clear(canvas, none$(Opt$Color));
+        log_info("canvas cleared: %s", nameOf(canvas));
+        engine_Window_appendView(
+            window,
+            &(engine_CanvasView_Config){
+                .canvas      = canvas,
+                .pos         = { .x = 0, .y = 0 },
+                .size        = { .x = main_window_res_width, .y = main_window_res_height },
+                .scale       = { .x = 1.0f, .y = 1.0f },
+                .resizable_x = true,
+                .resizable_y = true,
+                .visible     = true,
+            }
+        );
+        log_info("canvas views added: %s", nameOf(canvas));
+    }
+
+    // Create input system
+    let input = try_(engine_Input_init(allocator));
+    defer_(engine_Input_fini(input));
+
+    // Bind engine core
+    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+        .allocator = some(allocator),
+        .window    = window,
+        .input     = input,
+    }));
+    defer_(engine_core_Vt100_fini(core));
+    log_info("engine ready");
+
+    // Initialize state
+    var_type(spawn_bodies, ArrList$Body, try_(ArrList_initCap(typeInfo$(Body), allocator, main_simulation_n_body)));
+    defer_(ArrList_fini(spawn_bodies.base));
+    global_state.spawn_bodies = spawn_bodies;
+
+    // Create simulation and Visualizer
+    var sim = try_(Simulation_create(allocator, main_simulation_n_body));
+    defer_(Simulation_destroy(&sim));
+    global_state.sim = &sim;
+    log_info("simulation created\n");
+
+    var viz = try_(Visualizer_create(allocator, canvas));
+    defer_(Visualizer_destroy(&viz));
+    log_info("visualizer created\n");
+
+    $ignore = engine_utils_getch();
+
+    // Create threads for simulation and visualization
+    var sim_mutex = Thrd_Mtx_init();
+    defer_(Thrd_Mtx_fini(&sim_mutex));
+    global_state.sim_mutex                  = sim_mutex;
+    var sim_thread         = try_(Thrd_spawn(
+        Thrd_SpawnConfig_default,
+        Simulation_thread,
+        &(Thrd_FnCtx$Simulation_thread){}.base
+    ));
+    defer_({
+        catch_from(
+            *as$(FieldType$(Thrd_FnCtx$Simulation_thread, ret.value)*,
+            Thrd_join(sim_thread)),
+            err,
+            eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
+        );
+    });
+    global_state.paused     = false;
+    global_state.is_running = true;
+    log_info("threads created\n");
+
+    // Initialize timing variables
+    let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
+    var time_frame_prev   = time_Instant_now();
+    log_info("main loop started\n");
+
+    // Main loop
+    while (global_state.is_running) {
+        let time_frame_curr = time_Instant_now();
+        let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
+        let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+
+        // 1) Update engine
+        try_(engine_Window_update(window));
+
+        // 2) Update simulator
+        try_(global_processInput(&viz, window, input));
+        try_(global_update(&viz, &sim));
+
+        // 3) Render
+        try_(Visualizer_render(&viz));
+        engine_Window_present(window);
+
+        // 4) FPS timing
+        global_renderStatInfo(&viz, &sim, time_dt);
+        debug_only( // log frame every 1s
+            static f64 total_game_time_for_timestamp = 0.0;
+            static f64 logging_after_duration        = 0.0;
+            total_game_time_for_timestamp += time_dt;
+            logging_after_duration += time_dt;
+            if (1.0 < logging_after_duration) {
+                logging_after_duration = 0.0;
+                log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+            }
+        );
+
+        // 5) sleep
+        let time_now        = time_Instant_now();
+        let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
+        if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
+            time_sleep(time_leftover);
+        }
+        time_frame_prev = time_frame_curr;
+    }
+    return_ok({});
+} unscoped_ext;
 
 #if debug_comp_enabled
-static void global_debug_logSimStateFrontBodiesN(usize n) {
+static fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
     log_info("SimState:\n");
     log_info("  bodies: %d\n", global_state.sim->bodies.items.len);
     for (usize i = 0; i < prim_min(n, global_state.sim->bodies.items.len); ++i) {
@@ -200,67 +244,65 @@ static void global_debug_logSimStateFrontBodiesN(usize n) {
 }
 #endif
 
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
-    reserveReturn(Err$void);
+static fn_scope(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void) {
     debug_assert_nonnull(viz);
-    debug_assert_nonnull(window);
+    debug_assert_nonnull(wnd);
+    debug_assert_nonnull(input);
 
-    if (!engine_Window_isFocused(window)) { return_void(); }
+    if (!engine_Window_isFocused(wnd)) { return_ok({}); }
 
-    if (engine_Key_pressed(engine_KeyCode_esc)) {
+    let keyboard = input->keyboard;
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_esc)) {
         log_debug("esc pressed\n");
-        pthread_mutex_lock(&global_state.sim_mutex);
+        Thrd_Mtx_lock(&global_state.sim_mutex);
         global_state.is_running = false;
-        pthread_mutex_unlock(&global_state.sim_mutex);
+        Thrd_Mtx_unlock(&global_state.sim_mutex);
     }
-    if (engine_Key_pressed(engine_KeyCode_space)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_space)) {
         log_debug("space pressed\n");
-        pthread_mutex_lock(&global_state.sim_mutex);
+        Thrd_Mtx_lock(&global_state.sim_mutex);
         global_state.paused = !global_state.paused;
-        pthread_mutex_unlock(&global_state.sim_mutex);
+        Thrd_Mtx_unlock(&global_state.sim_mutex);
     }
 #if debug_comp_enabled
-    if (engine_Key_pressed(engine_KeyCode_i)) {
+    if (engine_Keyboard_pressed(keyboard, engine_KeyCode_i)) {
         log_debug("i pressed\n");
-        pthread_mutex_lock(&global_state.sim_mutex);
+        Thrd_Mtx_lock(&global_state.sim_mutex);
         global_debug_logSimStateFrontBodiesN(10);
-        pthread_mutex_unlock(&global_state.sim_mutex);
+        Thrd_Mtx_unlock(&global_state.sim_mutex);
     }
 #endif /* debug_comp_enabled */
 
-    try_(Visualizer_processInput(viz, window));
-    return_void();
-}
+    try_(Visualizer_processInput(viz, wnd, input));
+    return_ok({});
+} unscoped;
 
-static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
-    scope_reserveReturn(Err$void) {
-        debug_assert_nonnull(viz);
-        debug_assert_nonnull(sim);
+static fn_scope(global_update(Visualizer* viz, Simulation* sim), Err$void) {
+    debug_assert_nonnull(viz);
+    debug_assert_nonnull(sim);
 
-        // Transfer confirmed spawns from Visualizer to global_state
-        if_some_mut(viz->spawn.confirmed, confirmed_body) {
-            try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed_body)));
-            toNone(&viz->spawn.confirmed);
-        }
-
-        // Add spawned bodies to simulation
-        for_slice (global_state.spawn_bodies.items, body) {
-            try_(ArrList_append(sim->bodies.base, meta_refPtr(body)));
-        }
-        ArrList_clearRetainingCap(global_state.spawn_bodies.base);
-
-        // Update Visualizer's bodies and nodes from simulation
-        ArrList_clearRetainingCap(viz->bodies.base);
-        try_(ArrList_appendSlice(viz->bodies.base, meta_refSli(sim->bodies.items)));
-
-        ArrList_clearRetainingCap(viz->nodes.base);
-        try_(ArrList_appendSlice(viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
-
-        try_(Visualizer_update(viz));
-        return_void();
+    // Transfer confirmed spawns from Visualizer to global_state
+    if_some(Opt_asPtr(&viz->spawn.confirmed), confirmed) {
+        try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed)));
+        Opt_asg(&viz->spawn.confirmed, none());
     }
-    scope_returnReserved;
-}
+
+    // Add spawned bodies to simulation
+    for_slice (global_state.spawn_bodies.items, body) {
+        try_(ArrList_append(sim->bodies.base, meta_refPtr(body)));
+    }
+    ArrList_clearRetainingCap(global_state.spawn_bodies.base);
+
+    // Update Visualizer's bodies and nodes from simulation
+    ArrList_clearRetainingCap(viz->bodies.base);
+    try_(ArrList_appendSli(viz->bodies.base, meta_refSli(sim->bodies.items)));
+
+    ArrList_clearRetainingCap(viz->nodes.base);
+    try_(ArrList_appendSli(viz->nodes.base, meta_refSli(sim->quadtree.nodes.items)));
+
+    try_(Visualizer_update(viz));
+    return_ok({});
+} unscoped;
 
 static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[H\033[40;37m"); // Move cursor to top left
@@ -278,7 +320,7 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
         );
     }
 
-    pthread_mutex_lock(&global_state.sim_mutex);
+    Thrd_Mtx_lock(&global_state.sim_mutex);
     let bodies_len = sim->bodies.items.len;
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     let collision_count = sim->collision_count;
@@ -286,7 +328,7 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     let rects_len            = sim->rects.items.len;
     let quadtree_nodes_len   = sim->quadtree.nodes.items.len;
     let quadtree_parents_len = sim->quadtree.parents.items.len;
-    pthread_mutex_unlock(&global_state.sim_mutex);
+    Thrd_Mtx_unlock(&global_state.sim_mutex);
     {
         printf(
             "\rSIM> N-BODY:%llu"
@@ -310,8 +352,8 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[0m"); // Reset color
 }
 
-static anyptr Simulation_thread(anyptr arg) {
-    $unused(arg);
+static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*) {
+    let self = as$(Thrd_FnCtx$Simulation_thread*, ctx);
 
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
@@ -319,10 +361,10 @@ static anyptr Simulation_thread(anyptr arg) {
 
     while (true) {
         // Check if we should stop
-        pthread_mutex_lock(&global_state.sim_mutex);
+        Thrd_Mtx_lock(&global_state.sim_mutex);
         let running = global_state.is_running;
         let paused  = global_state.paused;
-        pthread_mutex_unlock(&global_state.sim_mutex);
+        Thrd_Mtx_unlock(&global_state.sim_mutex);
         if (!running) { break; } // exit thread
 
         // If paused, just sleep or do nothing
@@ -336,20 +378,19 @@ static anyptr Simulation_thread(anyptr arg) {
 
         // Otherwise, do one simulation step
         // (which includes building quadtree, attract, collide, etc.)
-        pthread_mutex_lock(&global_state.sim_mutex);
+        Thrd_Mtx_lock(&global_state.sim_mutex);
         if (global_state.sim) {
             // It's safe to call Simulation_step now
             // Provided Simulation_step modifies only sim's data (and possibly spawn_bodies)
             // In your code, you might also need to lock spawn_bodies
             // if it is shared with other threads.
             // log_info("sim_thread update\n");
-            catch_from(Simulation_step(global_state.sim), err, {
+            catch_from(Simulation_step(global_state.sim), err, eval({
                 log_error("Simulation_step failed: %s", Err_codeToCStr(err));
-                pthread_mutex_unlock(&global_state.sim_mutex);
-                break;
-            });
+                return toErr(&self->ret.value, err), self->ret.base;
+            }));
         }
-        pthread_mutex_unlock(&global_state.sim_mutex);
+        Thrd_Mtx_unlock(&global_state.sim_mutex);
 
         // Optional small sleep to limit sim speed
         // or you can use a time-based approach
@@ -357,5 +398,5 @@ static anyptr Simulation_thread(anyptr arg) {
         // sched_yield();
     }
 
-    return null;
+    return toOk(&self->ret.value, {}), self->ret.base;
 }

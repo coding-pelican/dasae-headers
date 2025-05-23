@@ -38,14 +38,14 @@ typedef struct Simulation {
 use_Err$(Simulation);
 
 // Core functions
-extern Err$Simulation Simulation_create(mem_Allocator allocator, usize n) $must_check;
-extern void           Simulation_destroy(Simulation* self);
+extern fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation) $must_check;
+extern fn_(Simulation_destroy(Simulation* self), void);
 
 // Step functions
-extern Err$void Simulation_step(Simulation* self) $must_check;
-extern void     Simulation_iterate(Simulation* self);
-extern Err$void Simulation_collide(Simulation* self) $must_check;
-extern Err$void Simulation_attract(Simulation* self) $must_check;
-extern void     Simulation_resolve(Simulation* self, usize lhs, usize rhs);
+extern fn_(Simulation_step(Simulation* self), Err$void) $must_check;
+extern fn_(Simulation_iterate(Simulation* self), void);
+extern fn_(Simulation_collide(Simulation* self), Err$void) $must_check;
+extern fn_(Simulation_attract(Simulation* self), Err$void) $must_check;
+extern fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void);
 
 #endif /* SIMULATION_INCLUDED */

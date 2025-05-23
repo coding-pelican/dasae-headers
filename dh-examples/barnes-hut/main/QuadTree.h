@@ -40,23 +40,23 @@ typedef struct QuadTree {
 use_Err$(QuadTree);
 
 // Quad functions
-extern Quad       Quad_newContaining(const Sli$Body bodies);
-extern Quad       Quad_intoQuadrant(Quad self, usize quadrant);
-extern Arr$4$Quad Quad_subdivide(const Quad* self);
+extern fn_(Quad_newContaining(const Sli$Body bodies), Quad);
+extern fn_(Quad_intoQuadrant(Quad self, usize quadrant), Quad);
+extern fn_(Quad_subdivide(const Quad* self), Arr$4$Quad);
 
 // QuadNode functions
-extern QuadNode QuadNode_new(usize next, Quad quad, Range bodies);
-extern bool     QuadNode_isLeaf(const QuadNode* self);
-extern bool     QuadNode_isBranch(const QuadNode* self);
-extern bool     QuadNode_isEmpty(const QuadNode* self);
+extern fn_(QuadNode_new(usize next, Quad quad, Range bodies), QuadNode);
+extern fn_(QuadNode_isLeaf(const QuadNode* self), bool);
+extern fn_(QuadNode_isBranch(const QuadNode* self), bool);
+extern fn_(QuadNode_isEmpty(const QuadNode* self), bool);
 
 // QuadTree functions
-extern Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize leaf_cap, usize n) $must_check;
-extern void         QuadTree_destroy(QuadTree* self);
-extern void         QuadTree_clear(QuadTree* self);
-extern Err$void     QuadTree_build(QuadTree* self, Sli$Body bodies) $must_check;
-extern void         QuadTree_propagate(QuadTree* self);
-extern math_Vec2f   QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies);
+extern fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize leaf_cap, usize n), Err$QuadTree) $must_check;
+extern fn_(QuadTree_destroy(QuadTree* self), void);
+extern fn_(QuadTree_clear(QuadTree* self), void);
+extern fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) $must_check;
+extern fn_(QuadTree_propagate(QuadTree* self), void);
+extern fn_(QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies), math_Vec2f);
 
 static const usize QuadTree_root = 0;
 

@@ -1,51 +1,48 @@
 #include "Simulation.h"
-#include "dh/core/cmp.h"
 #include "utils.h"
 #include "dh/sort.h"
 #include "dh/math.h"
 
 // n target: 100000
-Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
-    scope_reserveReturn(Err$Simulation) {
-        const f32   dt       = 0.05f;
-        const f32   theta    = 1.0f;
-        const f32   eps      = 1.0f;
-        const usize leaf_cap = 16;
+fn_scope_ext(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation) {
+    const f32   dt       = 0.05f;
+    const f32   theta    = 1.0f;
+    const f32   eps      = 1.0f;
+    const usize leaf_cap = 16;
 
-        var bodies = try_(utils_uniformDisc(allocator, n));
-        errdefer_(ArrList_fini(bodies.base));
-        var rects = type$(ArrList$Rect, try_(ArrList_initCap(typeInfo$(Rect), allocator, n)));
-        errdefer_(ArrList_fini(rects.base));
+    var bodies = try_(utils_uniformDisc(allocator, n));
+    errdefer_(ArrList_fini(bodies.base));
+    var rects = type$(ArrList$Rect, try_(ArrList_initCap(typeInfo$(Rect), allocator, n)));
+    errdefer_(ArrList_fini(rects.base));
 
-        try_(ArrList_resize(rects.base, n));
-        var quadtree = try_(QuadTree_create(allocator, theta, eps, leaf_cap, n));
-        errdefer_(QuadTree_destroy(&quadtree));
+    try_(ArrList_resize(rects.base, n));
+    var quadtree = try_(QuadTree_create(allocator, theta, eps, leaf_cap, n));
+    errdefer_(QuadTree_destroy(&quadtree));
 
-        // Sort body indices based on their AABB's min.x to enable sweep and prune
-        var sort_body_indices_cache = meta_cast$(Sli$usize, try_(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
-        errdefer_(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
+    // Sort body indices based on their AABB's min.x to enable sweep and prune
+    var sort_body_indices_cache = meta_cast$(Sli$usize, try_(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
+    errdefer_(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
 
-        // Sort body rects based on their AABB's min.x to enable sweep and prune
-        var sort_rect_indices_cache = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
-        errdefer_(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
+    // Sort body rects based on their AABB's min.x to enable sweep and prune
+    var sort_rect_indices_cache = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
+    errdefer_(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
-        return_ok((Simulation){
-            .dt                              = dt,
-            .frame                           = 0,
-            .bodies                          = bodies,
-            .rects                           = rects,
-            .quadtree                        = quadtree,
-            .sort_body_indices_cache         = sort_body_indices_cache,
-            .sort_rect_indices_cache_as_temp = sort_rect_indices_cache,
+    return_ok((Simulation){
+        .dt                              = dt,
+        .frame                           = 0,
+        .bodies                          = bodies,
+        .rects                           = rects,
+        .quadtree                        = quadtree,
+        .sort_body_indices_cache         = sort_body_indices_cache,
+        .sort_rect_indices_cache_as_temp = sort_rect_indices_cache,
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
-            .collision_count = 0,
+        .collision_count = 0,
 #endif
-            .allocator = allocator,
-        });
-    } scope_returnReserved;
-}
+        .allocator = allocator,
+    });
+} unscoped_ext;
 
-void Simulation_destroy(Simulation* self) {
+fn_(Simulation_destroy(Simulation* self), void) {
     debug_assert_nonnull(self);
 
     ArrList_fini(self->bodies.base);
@@ -57,8 +54,7 @@ void Simulation_destroy(Simulation* self) {
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
 }
 
-Err$void Simulation_step(Simulation* self) {
-    reserveReturn(Err$void);
+fn_scope(Simulation_step(Simulation* self), Err$void) {
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
@@ -66,10 +62,10 @@ Err$void Simulation_step(Simulation* self) {
     try_(Simulation_attract(self));
     self->frame += 1;
 
-    return_void();
-}
+    return_ok({});
+} unscoped;
 
-void Simulation_iterate(Simulation* self) {
+fn_(Simulation_iterate(Simulation* self), void) {
     debug_assert_nonnull(self);
 
     for_slice (self->bodies.items, body) {
@@ -82,8 +78,7 @@ void Simulation_iterate(Simulation* self) {
 #define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
-Err$void Simulation_collide(Simulation* self) {
-    reserveReturn(Err$void);
+fn_scope(Simulation_collide(Simulation* self), Err$void) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled
     self->collision_count = 0;
@@ -107,12 +102,12 @@ Err$void Simulation_collide(Simulation* self) {
         }
     }
 
-    return_void();
-}
+    return_ok({});
+} unscoped;
 #endif /* CollideMethod_simply_o_n_pow_2 */
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
-static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord) {
     let self     = as$(const Simulation*, arg);
     let idx_lhs  = *as$(const usize*, lhs);
     let idx_rhs  = *as$(const usize*, rhs);
@@ -130,36 +125,35 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 ///     AABB Checks Before Distance Calculation:
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-Err$void Simulation_collide(Simulation* self) {
-    scope_reserveReturn(Err$void) {
-        debug_assert_nonnull(self);
+fn_scope(Simulation_collide(Simulation* self), Err$void) {
+    debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
-        self->collision_count = 0;
+    self->collision_count = 0;
 #endif
-        if (self->rects.items.len == 0) {
-            return_void();
-        }
+    if (self->rects.items.len == 0) {
+        return_ok({});
+    }
 
-        // Update collision rects for current frame
-        for_slice_indexed (self->bodies.items, body, index) {
-            let pos        = body->pos;
-            let radius     = body->radius;
-            let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+    // Update collision rects for current frame
+    for_slice_indexed (self->bodies.items, body, index) {
+        let pos        = body->pos;
+        let radius     = body->radius;
+        let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
 
-            let rect  = Sli_at(self->rects.items, index);
-            rect->min = math_Vec2f_sub(pos, radius_vec);
-            rect->max = math_Vec2f_add(pos, radius_vec);
-        }
+        let rect  = Sli_at(self->rects.items, index);
+        rect->min = math_Vec2f_sub(pos, radius_vec);
+        rect->max = math_Vec2f_add(pos, radius_vec);
+    }
 
-        let indices = self->sort_body_indices_cache;
-        for_slice_indexed (indices, index, i) {
-            *index = i;
-        }
+    let indices = self->sort_body_indices_cache;
+    for_slice_indexed (indices, index, i) {
+        *index = i;
+    }
 
-        // Sort indices using stableSort with comparison function and self pointer
-        try_(sort_stableSortUsingTemp(
+    // Sort indices using stableSort with comparison function and self pointer
+    try_(sort_stableSortUsingTemp(
             self->sort_rect_indices_cache_as_temp,
-            meta_refSli_mut(indices),
+            meta_refSli(indices),
             wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
                 let idx_lhs  = *as$(const usize*, lhs);
                 let idx_rhs  = *as$(const usize*, rhs);
@@ -170,40 +164,38 @@ Err$void Simulation_collide(Simulation* self) {
                 return cmp_Ord_eq;
             })
         ));
-        // try_(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
+    // try_(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
 
-        // Sweep through sorted indices and check for AABB overlaps
-        for (usize current = 0; current < indices.len; ++current) {
-            let current_idx  = *Sli_at(indices, current);
-            let current_rect = Sli_at(self->rects.items, current_idx);
-            for (usize other = current + 1; other < indices.len; ++other) {
-                let other_idx  = *Sli_at(indices, other);
-                let other_rect = Sli_at(self->rects.items, other_idx);
+    // Sweep through sorted indices and check for AABB overlaps
+    for (usize current = 0; current < indices.len; ++current) {
+        let current_idx  = *Sli_at(indices, current);
+        let current_rect = Sli_at(self->rects.items, current_idx);
+        for (usize other = current + 1; other < indices.len; ++other) {
+            let other_idx  = *Sli_at(indices, other);
+            let other_rect = Sli_at(self->rects.items, other_idx);
 
-                // Exit early if no overlap in x-axis
-                if (current_rect->max.x < other_rect->min.x) { break; }
+            // Exit early if no overlap in x-axis
+            if (current_rect->max.x < other_rect->min.x) { break; }
 
-                // Check for overlap in y-axis
-                const bool y_overlap = !(current_rect->max.y < other_rect->min.y || other_rect->max.y < current_rect->min.y);
-                if (!y_overlap) { continue; }
+            // Check for overlap in y-axis
+            const bool y_overlap = !(current_rect->max.y < other_rect->min.y || other_rect->max.y < current_rect->min.y);
+            if (!y_overlap) { continue; }
 
-                // NOTE: 이것 때문에 충돌 처리 대부분이 스킵되어버림...
-                // vvv
-                // // Ensure each pair is checked only once (current_idx < other_idx)
-                // // if (other_idx <= current_idx) { continue; }
+            // NOTE: 이것 때문에 충돌 처리 대부분이 스킵되어버림...
+            // vvv
+            // // Ensure each pair is checked only once (current_idx < other_idx)
+            // // if (other_idx <= current_idx) { continue; }
 
-                Simulation_resolve(self, current_idx, other_idx);
-            }
+            Simulation_resolve(self, current_idx, other_idx);
         }
+    }
 
-        return_void();
-    } scope_returnReserved;
-}
+    return_ok({});
+} unscoped;
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
-Err$void Simulation_attract(Simulation* self) {
-    reserveReturn(Err$void);
+fn_scope(Simulation_attract(Simulation* self), Err$void) {
     debug_assert_nonnull(self);
 
     try_(QuadTree_build(&self->quadtree, self->bodies.items));
@@ -213,10 +205,10 @@ Err$void Simulation_attract(Simulation* self) {
         body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
-    return_void();
-}
+    return_ok({});
+} unscoped;
 
-void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
+fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     debug_assert_nonnull(self);
     debug_assert(lhs < self->bodies.items.len);
     debug_assert(rhs < self->bodies.items.len);

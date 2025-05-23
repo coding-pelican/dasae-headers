@@ -9,9 +9,9 @@
 #include "QuadTree.h"
 
 // Engine includes
-#include "engine/window.h"
-#include "engine/input.h"
-#include "engine/canvas.h"
+#include "engine/Window.h"
+#include "engine/Input.h"
+#include "engine/Canvas.h"
 
 typedef struct Visualizer_QuadCache {
     usize node_idx;
@@ -78,13 +78,13 @@ typedef struct Visualizer {
 use_Err$(Visualizer);
 
 // Core functions
-extern Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) $must_check;
-extern void           Visualizer_destroy(Visualizer* self);
+extern fn_(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$Visualizer) $must_check;
+extern fn_(Visualizer_destroy(Visualizer* self), void);
 
 // Main loop functions
-extern Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) $must_check;
-extern Err$void Visualizer_update(Visualizer* self) $must_check;
-extern Err$void Visualizer_render(Visualizer* self) $must_check;
+extern fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void) $must_check;
+extern fn_(Visualizer_update(Visualizer* self), Err$void) $must_check;
+extern fn_(Visualizer_render(Visualizer* self), Err$void) $must_check;
 
 /* /// Unified coordinate system transformations
 /// Screen Coordinates          World Coordinates
