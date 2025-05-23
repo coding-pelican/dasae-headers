@@ -128,10 +128,12 @@ extern "C" {
 #define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
 #define bti_Generic_fallback_              comp_syn__bti_Generic_fallback_
-#define eval                               comp_syn__eval
-#define eval_return                        comp_syn__eval_return
-#define eval_return_(...)                  comp_syn__eval_return_(__VA_ARGS__)
 
+#define eval              comp_syn__eval
+#define eval_return       comp_syn__eval_return
+#define eval_return_(...) comp_syn__eval_return_(__VA_ARGS__)
+
+#define local_label                 comp_syn__local_label
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
@@ -253,6 +255,7 @@ extern "C" {
 #define comp_syn__eval_return       /* just comment for expr stmt ({...}) */
 #define comp_syn__eval_return_(...) __VA_ARGS__
 
+#define comp_syn__local_label        __label__
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 

@@ -132,8 +132,7 @@ extern "C" {
 })
 
 #define FUNC__safeContainerOf(ptr, Type, field) eval({         \
-    TypeOf(ptr) __ptr                 = (ptr);                 \
-    TypeOf(((Type*)0)->field)* __mptr = __ptr;                 \
+    var __mptr = as$(FieldType$(Type, field)*, ptr);           \
     eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
 })
 
