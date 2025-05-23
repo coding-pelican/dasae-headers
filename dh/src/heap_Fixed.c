@@ -4,8 +4,8 @@
 
 // Forward declarations for allocator vtable functions
 static fn_(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
-static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool);
-static fn_(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8);
+static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
+static fn_(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
 static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
 
 // Thread-safe variants
@@ -16,7 +16,8 @@ static $inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u
 static $inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool);
 
 fn_(heap_Fixed_allocator(heap_Fixed* self), mem_Allocator) {
-    /* VTable for FixedBuf allocator */
+    debug_assert_nonnull(self);
+    // VTable for Fixed buffer allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Fixed_alloc,
         .resize = heap_Fixed_resize,
@@ -98,7 +99,7 @@ static fn_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) 
     return_some(intToRawptr$(u8*, aligned_addr));
 } unscoped;
 
-static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), bool) {
+static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -113,18 +114,18 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
 
     // If it's not the last allocation, we can only shrink
     if (!heap_Fixed_isLastAllocation(self, buf.as_const)) {
-        return new_size <= buf.len;
+        return new_len <= buf.len;
     }
 
     // If it's the last allocation, we can resize
-    if (new_size <= buf.len) {
+    if (new_len <= buf.len) {
         // Shrink
-        let reduction = buf.len - new_size;
+        let reduction = buf.len - new_len;
         self->end_index -= reduction;
         return true;
     }
     // Expand
-    let addition = new_size - buf.len;
+    let addition = new_len - buf.len;
     if (self->buffer.len < self->end_index + addition) {
         return false;
     }
@@ -132,11 +133,11 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_si
     return true;
 }
 
-static fn_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_size), Opt$Ptr$u8) {
+static fn_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    if (heap_Fixed_resize(ctx, buf, buf_align, new_size)) {
+    if (heap_Fixed_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
     return_none();
