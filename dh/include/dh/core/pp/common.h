@@ -89,7 +89,7 @@ extern "C" {
 #define pp_exec_expand(...) __VA_ARGS__
 
 #define pp_exec_stringify(_Tok...) #_Tok
-#define comp_op__nameOf(_Tok...)   (sizeof(_Tok), #_Tok)
+#define comp_op__nameOf(_Tok...)   ((void)(_Tok), #_Tok)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...)            _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...)           _LhsTok##_RhsTok
