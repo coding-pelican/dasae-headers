@@ -145,21 +145,6 @@ fn_TEST_scope("test for slice") {
 } TEST_unscoped;
  */
 
-#define pp_tuple_wrap(...)   (__VA_ARGS__)
-#define pp_tuple_unwrap(...) __VA_ARGS__
-
-#define pp_tuple_get1st(_a, ...)                             _a
-#define pp_tuple_get2nd(_a, _b, ...)                         _b
-#define pp_tuple_get3rd(_a, _b, _c, ...)                     _c
-#define pp_tuple_get4th(_a, _b, _c, _d, ...)                 _d
-#define pp_tuple_get5th(_a, _b, _c, _d, _e, ...)             _e
-#define pp_tuple_get6th(_a, _b, _c, _d, _e, _f, ...)         _f
-#define pp_tuple_get7th(_a, _b, _c, _d, _e, _f, _g, ...)     _g
-#define pp_tuple_get8th(_a, _b, _c, _d, _e, _f, _g, _h, ...) _h
-
-#define pp_tuple_pushFront(_elem, _tuple) pp_tuple_wrap(_elem, pp_tuple_unwrap _tuple)
-#define pp_tuple_pushBack(_elem, _tuple)  pp_tuple_wrap(pp_tuple_unwrap _tuple, _elem)
-
 
 
 #define $ignore_capture comp_attr__$ignore_capture(pp_uniqTok(ignored))
@@ -173,19 +158,19 @@ fn_TEST_scope("test for slice") {
     comp_syn__for_s1i(pp_uniqTok(i), _Tuple_Slice, _Tuple_Capture, _Expr)
 
 #define comp_syn__for_s1(_i, _Tuple_Slice, _Tuple_Capture, _Expr...) ({ \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                             \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                             \
     for (usize _i = 0; _i < _s0.len; ++_i) {                            \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + _i);            \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + _i);            \
         _Expr;                                                          \
     }                                                                   \
 })
-#define comp_syn__for_s1i(_i, _Tuple_Slice, _Tuple_Capture, _Expr...) ({                 \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                              \
-    for (usize _i = 0; _i < _s0.len; ++_i) {                                             \
-        let pp_tuple_get2nd _Tuple_Capture = _i;                                         \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + pp_tuple_get2nd _Tuple_Capture); \
-        _Expr;                                                                           \
-    }                                                                                    \
+#define comp_syn__for_s1i(_i, _Tuple_Slice, _Tuple_Capture, _Expr...) ({                         \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                                      \
+    for (usize _i = 0; _i < _s0.len; ++_i) {                                                     \
+        const usize pp_Tuple_get2nd _Tuple_Capture = _i;                                         \
+        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get2nd _Tuple_Capture); \
+        _Expr;                                                                                   \
+    }                                                                                            \
 })
 
 #define for_s2(_Tuple_Slice, _Tuple_Capture, _Expr...) \
@@ -194,25 +179,25 @@ fn_TEST_scope("test for slice") {
     comp_syn__for_s2i(pp_uniqTok(i), pp_uniqTok(s0), pp_uniqTok(s1), _Tuple_Slice, _Tuple_Capture, _Expr)
 
 #define comp_syn__for_s2(_i, _s0, _s1, _Tuple_Slice, _Tuple_Capture, _Expr...) ({ \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                       \
-    let _s1 = pp_tuple_get2nd _Tuple_Slice;                                       \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                       \
+    let _s1 = pp_Tuple_get2nd _Tuple_Slice;                                       \
     debug_assert(_s0.len == _s1.len);                                             \
     for (usize _i = 0; _i < _s0.len; ++_i) {                                      \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + _i);                      \
-        let pp_tuple_get2nd _Tuple_Capture = (_s1.ptr + _i);                      \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + _i);                      \
+        let pp_Tuple_get2nd _Tuple_Capture = (_s1.ptr + _i);                      \
         _Expr;                                                                    \
     }                                                                             \
 })
-#define comp_syn__for_s2i(_i, _s0, _s1, _Tuple_Slice, _Tuple_Capture, _Expr...) ({       \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                              \
-    let _s1 = pp_tuple_get2nd _Tuple_Slice;                                              \
-    debug_assert(_s0.len == _s1.len);                                                    \
-    for (usize _i = 0; _i < _s0.len; ++_i) {                                             \
-        let pp_tuple_get3rd _Tuple_Capture = _i;                                         \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + pp_tuple_get3rd _Tuple_Capture); \
-        let pp_tuple_get2nd _Tuple_Capture = (_s1.ptr + pp_tuple_get3rd _Tuple_Capture); \
-        _Expr;                                                                           \
-    }                                                                                    \
+#define comp_syn__for_s2i(_i, _s0, _s1, _Tuple_Slice, _Tuple_Capture, _Expr...) ({               \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                                      \
+    let _s1 = pp_Tuple_get2nd _Tuple_Slice;                                                      \
+    debug_assert(_s0.len == _s1.len);                                                            \
+    for (usize _i = 0; _i < _s0.len; ++_i) {                                                     \
+        const usize pp_Tuple_get3rd _Tuple_Capture = _i;                                         \
+        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get3rd _Tuple_Capture); \
+        let pp_Tuple_get2nd         _Tuple_Capture = (_s1.ptr + pp_Tuple_get3rd _Tuple_Capture); \
+        _Expr;                                                                                   \
+    }                                                                                            \
 })
 
 #define for_s3(_Tuple_Slice, _Tuple_Capture, _Expr...) \
@@ -221,41 +206,41 @@ fn_TEST_scope("test for slice") {
     comp_syn__for_s3i(pp_uniqTok(i), pp_uniqTok(s0), pp_uniqTok(s1), pp_uniqTok(s2), _Tuple_Slice, _Tuple_Capture, _Expr)
 
 #define comp_syn__for_s3(_i, _s0, _s1, _s2, _Tuple_Slice, _Tuple_Capture, _Expr...) ({ \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                            \
-    let _s1 = pp_tuple_get2nd _Tuple_Slice;                                            \
-    let _s2 = pp_tuple_get3rd _Tuple_Slice;                                            \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                            \
+    let _s1 = pp_Tuple_get2nd _Tuple_Slice;                                            \
+    let _s2 = pp_Tuple_get3rd _Tuple_Slice;                                            \
     debug_assert(_s0.len == _s1.len);                                                  \
     debug_assert(_s1.len == _s2.len);                                                  \
     for (usize _i = 0; _i < _s0.len; ++_i) {                                           \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + _i);                           \
-        let pp_tuple_get2nd _Tuple_Capture = (_s1.ptr + _i);                           \
-        let pp_tuple_get3rd _Tuple_Capture = (_s2.ptr + _i);                           \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + _i);                           \
+        let pp_Tuple_get2nd _Tuple_Capture = (_s1.ptr + _i);                           \
+        let pp_Tuple_get3rd _Tuple_Capture = (_s2.ptr + _i);                           \
         _Expr;                                                                         \
     }                                                                                  \
 })
-#define comp_syn__for_s3i(_i, _s0, _s1, _s2, _Tuple_Slice, _Tuple_Capture, _Expr...) ({  \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                              \
-    let _s1 = pp_tuple_get2nd _Tuple_Slice;                                              \
-    let _s2 = pp_tuple_get3rd _Tuple_Slice;                                              \
-    debug_assert(_s0.len == _s1.len);                                                    \
-    debug_assert(_s1.len == _s2.len);                                                    \
-    for (usize _i = 0; _i < _s0.len; ++_i) {                                             \
-        let pp_tuple_get4th _Tuple_Capture = _i;                                         \
-        let pp_tuple_get1st _Tuple_Capture = (_s0.ptr + pp_tuple_get4th _Tuple_Capture); \
-        let pp_tuple_get2nd _Tuple_Capture = (_s1.ptr + pp_tuple_get4th _Tuple_Capture); \
-        let pp_tuple_get3rd _Tuple_Capture = (_s2.ptr + pp_tuple_get4th _Tuple_Capture); \
-        _Expr;                                                                           \
-    }                                                                                    \
+#define comp_syn__for_s3i(_i, _s0, _s1, _s2, _Tuple_Slice, _Tuple_Capture, _Expr...) ({          \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                                      \
+    let _s1 = pp_Tuple_get2nd _Tuple_Slice;                                                      \
+    let _s2 = pp_Tuple_get3rd _Tuple_Slice;                                                      \
+    debug_assert(_s0.len == _s1.len);                                                            \
+    debug_assert(_s1.len == _s2.len);                                                            \
+    for (usize _i = 0; _i < _s0.len; ++_i) {                                                     \
+        const usize pp_Tuple_get4th _Tuple_Capture = _i;                                         \
+        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        let pp_Tuple_get2nd         _Tuple_Capture = (_s1.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        let pp_Tuple_get3rd         _Tuple_Capture = (_s2.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        _Expr;                                                                                   \
+    }                                                                                            \
 })
 
 /* #define for_s3i_(_Tuple_Slice, _Tuple_Capture, _Expr...) \
-    __for_s3i_expander(pp_uniqTok(i), pp_uniqTok(s0), pp_uniqTok(s1), pp_uniqTok(s2), _Tuple_Slice, pp_tuple_unwrap _Tuple_Capture, _Expr)
+    __for_s3i_expander(pp_uniqTok(i), pp_uniqTok(s0), pp_uniqTok(s1), pp_uniqTok(s2), _Tuple_Slice, pp_Tuple_unwrap _Tuple_Capture, _Expr)
 #define __for_s3i_expander(_i, _s0, _s1, _s2, _Tuple_Slice, _Untuple_Capture, _Expr...) \
     comp_syn__for_s3i_(_i, _s0, _s1, _s2, _Tuple_Slice, _Untuple_Capture, _Expr)
 #define comp_syn__for_s3i_(_i, _s0, _s1, _s2, _Tuple_Slice, _c1, _c2, _c3, _c4, _Expr...) ({ \
-    let _s0 = pp_tuple_get1st _Tuple_Slice;                                                  \
-    let _s1 = pp_tuple_get2nd _Tuple_Slice;                                                  \
-    let _s2 = pp_tuple_get3rd _Tuple_Slice;                                                  \
+    let _s0 = pp_Tuple_get1st _Tuple_Slice;                                                  \
+    let _s1 = pp_Tuple_get2nd _Tuple_Slice;                                                  \
+    let _s2 = pp_Tuple_get3rd _Tuple_Slice;                                                  \
     debug_assert(_s0.len == _s1.len);                                                        \
     debug_assert(_s1.len == _s2.len);                                                        \
     for (usize _i = 0; _i < _s0.len; ++_i) {                                                 \
