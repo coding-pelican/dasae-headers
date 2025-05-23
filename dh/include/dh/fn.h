@@ -36,7 +36,7 @@ extern "C" {
 #define unscoped_ext                                 comp_syn__unscoped_ext
 
 #define return_(_Expr...) comp_syn__return_(_Expr)
-#define return_void()     comp_syn__return_void()
+#define return_void(...)  pp_overload(comp_syn__return_void, __VA_ARGS__)(__VA_ARGS__)
 
 /*
 #define return_ok(_Expr...)   comp_syn__return_ok(_Expr)
@@ -122,9 +122,24 @@ __step_deferred: switch (__scope_counter.current_line) {       \
     );                                                             \
     goto __step_return;                                            \
 })
-#define comp_syn__return_void() eval({                                         \
-    claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \
-    goto __step_return;                                                        \
+#define comp_syn__return_void_0() eval({                        \
+    claim_assert_static(                                        \
+        isSameType(TypeOf(*__reserved_return), TypeOf(void))    \
+        || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
+    );                                                          \
+    goto __step_return;                                         \
+})
+#define comp_syn__return_void_1(_Expr...) eval({                \
+    claim_assert_static(                                        \
+        isSameType(TypeOf(*__reserved_return), TypeOf(void))    \
+        || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
+    );                                                          \
+    claim_assert_static(                                        \
+        isSameType(TypeOf(({ _Expr; })), TypeOf(void))          \
+        || isSameType(TypeOf(({ _Expr; })), TypeOf(Void))       \
+    );                                                          \
+    _Expr;                                                      \
+    goto __step_return;                                         \
 })
 
 #define comp_syn__defer(_Expr...) \
