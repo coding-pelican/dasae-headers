@@ -1,13 +1,7 @@
 #include "dh/main.h"
-#include "dh/time.h"
+#include "dh/Thrd/common.h"
 #include "dh/time/Duration.h"
-
-typedef struct Thrd_FnCtx {
-    u8 data[];
-} Thrd_FnCtx;
-typedef struct Thrd_FnRet {
-    u8 data[];
-} Thrd_FnRet;
+#include "dh/time/Instant.h"
 
 typedef union FnCtx$demoThrd {
     Thrd_FnCtx base[1];
@@ -34,35 +28,29 @@ fn_(demoThrd(Thrd_FnCtx* ctx), Thrd_FnRet*) {
     return self->ret.value = cnt, self->ret.base;
 }
 
-typedef fn_((*Thrd_StartFn)(Thrd_FnCtx* ctx), Thrd_FnRet*);
-#include <pthread.h>
-fn_(Thrd_spawn(Thrd_StartFn startFn, Thrd_FnCtx* ctx), pthread_t) {
-    pthread_t thrd = {};
-    pthread_create(&thrd, null, (void* (*)(void*))startFn, ctx);
-    return thrd;
-}
-fn_(Thrd_join(pthread_t thrd), Thrd_FnRet*) {
-    void* ret = null;
-    pthread_join(thrd, &ret);
-    return as$(Thrd_FnRet*, ret);
-}
-
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     $ignore = args;
 
     let direct_run = *as$(
-        TypeOf(((FnCtx$demoThrd*)0)->ret.value)*,
+        FieldType$(FnCtx$demoThrd, ret.value)*,
         demoThrd((FnCtx$demoThrd){ .arg = { time_Duration_secs } }.base)
     );
     printf("[main] direct_run: %d\n", direct_run);
 
-    let thrd = Thrd_spawn(demoThrd, (FnCtx$demoThrd){ .arg = { time_Duration_secs } }.base);
+    var thrd = try_(Thrd_spawn(
+        Thrd_SpawnConfig_default,
+        demoThrd,
+        (FnCtx$demoThrd){ .arg = { time_Duration_secs } }.base
+    ));
     defer_({
-        let ret = *as$(TypeOf(((FnCtx$demoThrd*)0)->ret.value)*, Thrd_join(thrd));
+        let ret = *as$(
+            FieldType$(FnCtx$demoThrd, ret.value)*,
+            Thrd_join(thrd)
+        );
         printf("ret: %d\n", ret);
     });
 
-    printf("thrd: %llu\n", thrd);
+    printf("thrd: %llu\n", thrd.handle);
     for (usize i = 0; i < 20; ++i) {
         printf("[main] current: %zu\n", i);
         time_sleep(time_Duration_fromSecs_f64(0.1));
