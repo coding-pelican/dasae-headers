@@ -39,21 +39,37 @@ extern "C" {
 
 typedef struct meta_Ptr_const meta_Ptr_const;
 typedef union meta_Ptr        meta_Ptr;
-extern meta_Ptr               meta_Ptr_constCast(meta_Ptr_const);
 
 typedef struct meta_Sli_const meta_Sli_const;
 typedef union meta_Sli        meta_Sli;
-extern meta_Sli               meta_Sli_constCast(meta_Sli_const);
+
+extern fn_(meta_Ptr_constCast(meta_Ptr_const), meta_Ptr);
+extern fn_(meta_Ptr_mutCast(meta_Ptr), meta_Ptr_const);
+extern fn_(meta_Ptr_toSli(meta_Ptr, TypeInfo type), meta_Sli);
+
+extern fn_(meta_Ptr_copy(meta_Ptr, meta_Ptr_const), meta_Ptr);
+extern fn_(meta_Ptr_move(meta_Ptr, meta_Ptr), meta_Ptr);
+
+extern fn_(meta_Sli_constCast(meta_Sli_const), meta_Sli);
+extern fn_(meta_Sli_mutCast(meta_Sli), meta_Sli_const);
+extern fn_(meta_Sli_asPtr(meta_Sli), meta_Ptr);
+extern fn_(meta_Sli_len(meta_Sli), usize);
+extern fn_(meta_Sli_at(meta_Sli, usize index), meta_Ptr);
+extern fn_(meta_Sli_slice(meta_Sli, usize begin, usize end), meta_Sli);
+
+extern fn_(meta_Sli_set(meta_Sli, meta_Ptr_const), meta_Sli);
+extern fn_(meta_Sli_copy(meta_Sli, meta_Sli_const), meta_Sli);
+extern fn_(meta_Sli_move(meta_Sli, meta_Sli), meta_Sli);
 
 #define meta_create$(T_Lit, _Initial...) comp_op__meta_create$(T_Lit, _Initial)
 #define meta_refPtr(var_ptr...)          comp_op__meta_refPtr(var_ptr)
 #define meta_refSli(var_sli...)          comp_op__meta_refSli(var_sli)
 
-#define meta_cast$(T_Dest, var_meta...)                     comp_op__meta_cast$(T_Dest, var_meta)
-#define meta_castPtr$(T_DestPtr, var_meta_ptr...)           comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr)
-#define meta_castSli$(T_DestSli, var_meta_sli...)           comp_op__meta_castSli$(T_DestSli, var_meta_sli)
-#define meta_castOpt$(T_DestOpt, var_meta_opt...)           comp_op__meta_castOpt$(T_DestOpt, var_meta_opt)
-#define meta_castErrRes$(T_DestErrRes, var_meta_err_res...) comp_op__meta_castErrRes$(T_DestErrRes, var_meta_err_res)
+#define meta_cast$(T_Dest, var_meta...)              comp_op__meta_cast$(T_Dest, var_meta)
+#define meta_castPtr$(T_DestPtr, var_meta_ptr...)    comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr)
+#define meta_castSli$(T_DestSli, var_meta_sli...)    comp_op__meta_castSli$(T_DestSli, var_meta_sli)
+#define meta_castOpt$(T_DestOpt, var_meta_opt...)    comp_op__meta_castOpt$(T_DestOpt, var_meta_opt)
+#define meta_castErr$(T_DestErrRes, var_meta_err...) comp_op__meta_castErr$(T_DestErrRes, var_meta_err)
 
 #define meta_ptrToAny(var_meta_ptr...) comp_op__meta_ptrToAny(var_meta_ptr)
 #define meta_sliToAny(var_meta_sli...) comp_op__meta_sliToAny(var_meta_sli)
@@ -86,66 +102,67 @@ union meta_Sli {
 };
 
 #define comp_op__meta_create$(T_Lit, _Initial...) meta_refPtr(create$(T_Lit, _Initial))
-#define comp_op__meta_refPtr(var_ptr...)          eval({ \
-    const TypeOf(var_ptr) __ptr = var_ptr;               \
-    eval_return((meta_Ptr){                              \
-        .type = typeInfo$(TypeOf(*__ptr)),               \
-        .addr = __ptr,                                   \
-    });                                                  \
+#define comp_op__meta_refPtr(var_ptr...)          ((meta_Ptr){ \
+    .type = typeInfo$(TypeOf(*var_ptr)), \
+    .addr = var_ptr, \
 })
 #define comp_op__meta_refSli(var_sli...) eval({ \
-    const TypeOf(var_sli) __sli = var_sli;      \
-    eval_return((meta_Sli){                     \
-        .type = typeInfo$(TypeOf(*__sli.ptr)),  \
-        .addr = __sli.ptr,                      \
-        .len  = __sli.len,                      \
-    });                                         \
+    let __sli = var_sli; \
+    eval_return((meta_Sli){ \
+        .type = typeInfo$(TypeOf(*__sli.ptr)), \
+        .addr = __sli.ptr, \
+        .len  = __sli.len, \
+    }); \
 })
 
-#define comp_op__meta_cast$(T_Dest, var_meta...) eval({                                                                         \
-    TypeOf(var_meta) _meta = var_meta;                                                                                          \
-    claim_assert_static_msg(isSameType$(TypeOf(_meta), meta_Ptr) || isSameType$(TypeOf(_meta), meta_Sli), "Invalid meta type"); \
-    eval_return(*((T_Dest*)&_meta.addr));                                                                                       \
+#define comp_op__meta_cast$(T_Dest, var_meta...) eval({ \
+    TypeOf(var_meta) _meta = var_meta; \
+    claim_assert_static_msg( \
+        isSameType$(TypeOf(_meta), meta_Ptr_const) || isSameType$(TypeOf(_meta), meta_Ptr) \
+            || isSameType$(TypeOf(_meta), meta_Sli_const) || isSameType$(TypeOf(_meta), meta_Sli), \
+        "Invalid meta type" \
+    ); \
+    eval_return(*((T_Dest*)&_meta.addr)); \
 })
-#define comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr...) eval({                      \
-    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr;                                    \
+#define comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr...) eval({ \
+    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr; \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
-    eval_return((T_DestPtr)_ptr.addr);                                                 \
+    eval_return((T_DestPtr)_ptr.addr); \
 })
-#define comp_op__meta_castSli$(T_DestSli, var_meta_sli...) eval({                      \
-    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                    \
+#define comp_op__meta_castSli$(T_DestSli, var_meta_sli...) eval({ \
+    const TypeOf(var_meta_sli) _sli = var_meta_sli; \
     claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
-    eval_return((T_DestSli){ .ptr = _sli.addr, .len = _sli.len });                     \
+    eval_return((T_DestSli){ .ptr = _sli.addr, .len = _sli.len }); \
 })
 #define comp_op__meta_castOpt$(T_DestOpt, var_meta_opt...) eval({ \
-    const TypeOf(var_meta_opt) __opt = var_meta_opt;              \
-    T_DestOpt __result               = cleared();                 \
-    if (isNone(__opt)) {                                          \
-        toNone(&__result);                                        \
-    } else {                                                      \
-        toSome(&__result, __opt.value.addr);                      \
-    }                                                             \
-    eval_return __result;                                         \
+    const TypeOf(var_meta_opt) __opt = var_meta_opt; \
+    T_DestOpt __result               = cleared(); \
+    if (isNone(__opt)) { \
+        toNone(&__result); \
+    } else { \
+        toSome(&__result, __opt.value.addr); \
+    } \
+    eval_return __result; \
 })
-#define comp_op__meta_castErrRes$(T_DestErrRes, var_meta_err_res...) eval({ \
-    const TypeOf(var_meta_err_res) __err_res = var_meta_err_res;            \
-    T_DestErrRes __result                    = cleared();                   \
-    if (isOk(__err_res)) {                                                  \
-        toOk(&__result, __err_res.data.ok.addr);                            \
-    } else {                                                                \
-        toErr(&__result, __err_res.data.err);                               \
-    }                                                                       \
-    eval_return __result;                                                   \
+#define comp_op__meta_castErr$(T_DestErrRes, var_meta_err...) eval({ \
+    const TypeOf(var_meta_err) __err_res = var_meta_err; \
+    T_DestErrRes __result                = cleared(); \
+    if (isOk(__err_res)) { \
+        toOk(&__result, __err_res.data.ok.addr); \
+    } else { \
+        toErr(&__result, __err_res.data.err); \
+    } \
+    eval_return __result; \
 })
 
-#define comp_op__meta_ptrToAny(var_meta_ptr) eval({                                    \
-    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr;                                    \
+#define comp_op__meta_ptrToAny(var_meta_ptr) eval({ \
+    const TypeOf(var_meta_ptr) _ptr = var_meta_ptr; \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
-    eval_return tagUnion$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr });      \
+    eval_return tagUnion$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr }); \
 })
-#define comp_op__meta_sliToAny(var_meta_sli) eval({                                             \
-    const TypeOf(var_meta_sli) _sli = var_meta_sli;                                             \
-    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type");          \
+#define comp_op__meta_sliToAny(var_meta_sli) eval({ \
+    const TypeOf(var_meta_sli) _sli = var_meta_sli; \
+    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
     eval_return tagUnion$(AnyType, AnyType_sli, { .type = _sli.type, .addr = _sli.addr, .len = _sli.len }); \
 })
 
