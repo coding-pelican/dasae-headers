@@ -106,7 +106,7 @@ Let's create a simple "Hello, world!" program:
 #include "dh/main.h"
 #include "dh/Str.h"
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     // Create a string literal
     let hello = Str_l("Hello, dasae-headers!");
 
@@ -115,7 +115,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success
     return_ok({});
-} unscoped;
+} $unscoped;
 ```
 
 2. Build and run the program:
@@ -127,12 +127,14 @@ dh-c run dev      # Run the program
 
 ### Key Features in This Example
 
-1. `fn_scope` - Function with extended scope for return payload
+1. `fn_` - Function declaration
 2. `Sli$Str_const` - Slice of constant strings (command-line arguments)
 3. `Err$void` - Error result type with void payload
+7. `$scope` - Function with extended scope for return payload
 4. `let` - Type inference for variable declaration
 5. `Str_l` - String literal creation
 6. `return_ok` - Successful return with payload
+8. `$unscoped` - End of function's extended scope
 
 ## Key Concepts
 
@@ -161,7 +163,7 @@ var_(number, i32) = 42; // i32
 Automatic resource cleanup using `defer`:
 
 ```c
-fn_scope_ext(readFile(Str_const path), Err$Str) {
+fn_(readFile(Str_const path), Err$Str, $guard) {
     let_(file, FILE*) = fopen(path.ptr, "r");
     if (file == null) {
         return_err(fileError("Could not open file"));
@@ -173,7 +175,7 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
     // Process file...
 
     return_ok(fileContents);
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### Error Handling
@@ -181,14 +183,14 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
 Explicit error handling with the `try_` pattern:
 
 ```c
-fn_scope(processData(void), Err$void) {
+fn_(processData(void), Err$void, $scope) {
     // Call function that may fail and propagate error
     let result = try_(getData());
 
     // Process result...
 
     return_ok({});
-} unscoped;
+} $unscoped;
 ```
 
 ### Optional Types
@@ -196,14 +198,14 @@ fn_scope(processData(void), Err$void) {
 Safe handling of nullable values:
 
 ```c
-fn_scope(findUser(i32 id), Opt$User) {
+fn_(findUser(i32 id), Opt$User, $scope) {
     if (id <= 0) {
         return_none();  // No user found
     }
 
     User user = getUserById(id);
     return_some(user);  // User found
-} unscoped;
+} $unscoped;
 
 // Usage
 if_some(findUser(42), user) {

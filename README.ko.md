@@ -164,7 +164,7 @@ dh-c test
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     // Str_l로 문자열 리터럴 생성
@@ -175,19 +175,19 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
-} unscoped; // 범위 블록 종료
+} $unscoped; // 범위 블록 종료
 ```
 
 ### 🔍 Optional Values 예제
 
 ```c
-fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // 값이 있음을 반환
     }
     return_none(); // 값이 없음을 반환
-} unscoped;
+} $unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -224,14 +224,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // 또는 일반적으로 `use_Err$(i32)`
-fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
-} unscoped;
+} $unscoped;
 
-fn_scope_ext(example(void), Err$void) {
+fn_(example(void), Err$void, $guard) {
     // 리소스 할당
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -256,7 +256,7 @@ fn_scope_ext(example(void), Err$void) {
 
     // 정상 반환
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### 🤝 Pattern Matching 예제
@@ -309,7 +309,7 @@ fn_(mathMultiply(i32 a, i32 b), i32) {
 }
 
 // 테스트 케이스 정의
-fn_TEST_scope("기본 수학 연산 테스트") {
+TEST_fn_("기본 수학 연산 테스트", $scope) {
     // 덧셈 테스트
     let a = 5;
     let b = 7;
@@ -325,7 +325,7 @@ fn_TEST_scope("기본 수학 연산 테스트") {
 
     // 실패하는 테스트 (의도적인 오류 발생)
     // try_(TEST_expect(product == 30)); // 실패: 35 != 30
-} TEST_unscoped;
+} $unscoped_TEST;
 ```
 
 ## 📚 문서

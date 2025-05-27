@@ -187,7 +187,7 @@ See the [Quick Start Guide](./dh/docs/en/quick-start.md) for more details.
 
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     // Create a string literal using Str_l
@@ -198,19 +198,19 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success (void value with no error)
     return_ok({});
-} unscoped; // End the scope block
+} $unscoped; // End the scope block
 ```
 
 ### 🔍 Optional Values Example
 
 ```c
-fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     }
     return_none(); // Return with no value
-} unscoped;
+} $unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
@@ -247,14 +247,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
-} unscoped;
+} $unscoped;
 
-fn_scope_ext(example(void), Err$void) {
+fn_(example(void), Err$void, $guard) {
     // Allocate resources
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -279,7 +279,7 @@ fn_scope_ext(example(void), Err$void) {
 
     // Return a normally
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### 🤝 Pattern Matching Example
@@ -332,7 +332,7 @@ fn_(mathMultiply(i32 a, i32 b), i32) {
 }
 
 // Define test unit
-fn_TEST_scope("Basic Math Operations Test") {
+TEST_fn_("Basic Math Operations Test", $scope) {
     // Addition test
     let a = 5;
     let b = 7;
@@ -348,7 +348,7 @@ fn_TEST_scope("Basic Math Operations Test") {
 
     // Failing test (intentional error)
     // try_(TEST_expect(product == 30)); // Fails: 35 != 30
-} TEST_unscoped;
+} $unscoped_TEST;
 ```
 
 ## 📚 Documentation
