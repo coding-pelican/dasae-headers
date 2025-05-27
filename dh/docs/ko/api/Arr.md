@@ -140,7 +140,7 @@ Sli$i32 suffix = Arr_suffix(arr, 1);  // 마지막 2개 요소
 #include "dh/main.h"
 #include "dh/Arr.h"
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     // 고정 크기 배열 선언 및 초기화
     Arr$(3, i32) numbers = Arr_init({ 10, 20, 30 });
 
@@ -169,7 +169,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     printf("\n");
 
     return_ok({});
-} unscoped;
+} $unscoped;
 ```
 
 ## API 참조

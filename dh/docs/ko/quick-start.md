@@ -106,7 +106,7 @@ my-project/
 #include "dh/main.h"
 #include "dh/Str.h"
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     // 문자열 리터럴 생성
     let hello = Str_l("Hello, dasae-headers!");
 
@@ -115,7 +115,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // 성공 리턴
     return_ok({});
-} unscoped;
+} $unscoped;
 ```
 
 2. 프로그램 빌드 및 실행:
@@ -127,12 +127,14 @@ dh-c run dev      # 프로그램 실행
 
 ### 이 예제의 주요 기능
 
-1. `fn_scope` - 페이로드 반환 타입을 위한 확장 범위 함수
+1. `fn_` - 함수 선언
 2. `Sli$Str_const` - 상수 문자열의 슬라이스 (명령줄 인수)
 3. `Err$void` - void 페이로드가 있는 오류 결과 타입
+7. `$scope` - 페이로드 반환 타입을 위한 확장 범위 함수
 4. `let` - 변수 선언을 위한 타입 추론
 5. `Str_l` - 문자열 리터럴 생성
 6. `return_ok` - 페이로드가 있는 성공적인 반환
+8. `$unscoped` - 함수의 확장 범위 종료
 
 ## 핵심 개념
 
@@ -161,7 +163,7 @@ var_(number, i32) = 42; // i32
 `defer`를 사용한 자동 리소스 정리:
 
 ```c
-fn_scope_ext(readFile(Str_const path), Err$Str) {
+fn_(readFile(Str_const path), Err$Str, $guard) {
     let_(file, FILE*) = fopen(path.ptr, "r");
     if (file == null) {
         return_err(fileError("파일을 열 수 없습니다"));
@@ -173,7 +175,7 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
     // 파일 처리...
 
     return_ok(fileContents);
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### 오류 처리
@@ -181,14 +183,14 @@ fn_scope_ext(readFile(Str_const path), Err$Str) {
 `try_` 패턴을 사용한 명시적 오류 처리:
 
 ```c
-fn_scope(processData(void), Err$void) {
+fn_(processData(void), Err$void, $scope) {
     // 실패할 수 있는 함수 호출 및 오류 전파
     let result = try_(getData());
 
     // 결과 처리...
 
     return_ok({});
-} unscoped;
+} $unscoped;
 ```
 
 ### 옵셔널 타입
@@ -196,14 +198,14 @@ fn_scope(processData(void), Err$void) {
 널 값을 안전하게 처리:
 
 ```c
-fn_scope(findUser(i32 id), Opt$User) {
+fn_(findUser(i32 id), Opt$User, $scope) {
     if (id <= 0) {
         return_none();  // 사용자를 찾을 수 없음
     }
 
     User user = getUserById(id);
     return_some(user);  // 사용자를 찾음
-} unscoped;
+} $unscoped;
 
 // 사용법
 if_some(findUser(42), user) {

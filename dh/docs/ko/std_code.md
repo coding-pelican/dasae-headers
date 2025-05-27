@@ -144,7 +144,9 @@ if (condition) {
 
 ### 2. 함수 정의
 
-함수 정의는 `fn_` 또는 `fn_scope`를 사용한다.
+함수 정의는 `fn_`를 사용한다.
+- `$scope`/`$unscoped` - 페이로드 반환을 위한 확장 범위 함수
+- `$guard`/`$unguarded` - defer, errdefer 등을 위한 보호 범위 함수
 
 ```c
 // 기본 함수 정의
@@ -154,23 +156,23 @@ fn_(calculateSum(i32 a, i32 b), i32) {
 
 // 확장된 스코프가 필요한 함수 정의 (Optional 반환)
 use_Opt$(i32);
-fn_scope(divideNumbers(i32 lhs, i32 rhs), Opt$i32) {
+fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32, $scope) {
     if (rhs == 0) {
         return_none();
     }
     return_some(lhs / rhs);
-} unscoped;
+} $unscoped;
 
 // 오류 처리가 필요한 함수
 use_Err$(Str_const);
 fn_(readFile(Str_const path), Err$Str_const) $must_check;
-fn_scope(readFile(Str_const path), Err$Str_const) {
+fn_(readFile(Str_const path), Err$Str_const, $scope) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());
     }
     // 처리...
     return_ok(content);
-} unscoped;
+} $unscoped;
 ```
 
 ### 3. 포인터 변수 선언
@@ -215,22 +217,22 @@ let rect = make$(Rectangle, .width = 10, .height = 20);
 
 ```c
 // 잘못된 예시
-fn_scope(processData(void), Err$void) {
+fn_(processData(void), Err$void, $scope) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
 
     // 처리 로직...
 
     mem_Allocator_free(anySli(buffer)); // 중간에 return이 있으면 메모리 누수 발생
-} unscoped;
+} $unscoped;
 
 // 올바른 예시
-fn_scope_ext(processData(void), Err$void) {
+fn_(processData(void), Err$void, $guard) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
     defer_(mem_Allocator_free(anySli(buffer)));
 
     // 처리 로직...
     // 어디서 return하더라도 buffer는 항상 해제됨
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### 2. 파일 처리
@@ -238,7 +240,7 @@ fn_scope_ext(processData(void), Err$void) {
 파일 열기 후에는 defer를 사용하여 닫기 작업을 명시한다.
 
 ```c
-fn_scope_ext(readFileContents(Str_const filename), io_Err$Str_const) {
+fn_(readFileContents(Str_const filename), io_Err$Str_const, $guard) {
     let file = fopen(filename.ptr, "r");
     if (file == null) {
         return_err(io_Err_OpenFailed());
@@ -248,7 +250,7 @@ fn_scope_ext(readFileContents(Str_const filename), io_Err$Str_const) {
     // 파일 처리...
 
     return_ok(content); // 함수 종료 시 file은 자동으로 닫힘
-} unscoped_ext;
+} $unguarded;
 ```
 
 ### 3. Optional 값 처리
@@ -267,7 +269,7 @@ fn_(findUser(i32 user_id, User** out_user), bool) {
 }
 
 // 올바른 예시
-fn_scope(findUser(i32 user_id), Opt$Ptr$User) {
+fn_(findUser(i32 user_id), Opt$Ptr$User, $scope) {
     if (user_id <= 0) {
         return_none();
     }
@@ -278,7 +280,7 @@ fn_scope(findUser(i32 user_id), Opt$Ptr$User) {
     }
 
     return_some(user);
-} unscoped;
+} $unscoped;
 
 // 사용 예시
 fn_(processUserData(i32 user_id), bool) {
