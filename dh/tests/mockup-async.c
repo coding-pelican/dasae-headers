@@ -364,7 +364,10 @@ async_fn_scope(asyncMain) {
 
 
 fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
-    $ignore = args;
+    for_slice_indexed (args, arg, idx) {
+        printf("args[%zu]: %*s\n", idx, as$(i32, arg->len), arg->ptr);
+    }
+    printf("\n");
 
     *timer_queue.base = try_(PQue_initCap(
         typeInfo$(Task),
