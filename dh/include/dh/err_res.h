@@ -94,59 +94,59 @@ typedef struct Err$Void {
 /*========== Implementations ================================================*/
 
 #define comp_type_gen__use_Err$(T_Ok) \
-    decl_Err$(T_Ok);                  \
+    decl_Err$(T_Ok); \
     impl_Err$(T_Ok)
-#define comp_type_gen__decl_Err$(T_Ok)                                          \
+#define comp_type_gen__decl_Err$(T_Ok) \
     $maybe_unused typedef struct Err$(Ptr_const$(T_Ok)) Err$(Ptr_const$(T_Ok)); \
-    $maybe_unused typedef struct Err$(Ptr$(T_Ok)) Err$(Ptr$(T_Ok));             \
+    $maybe_unused typedef struct Err$(Ptr$(T_Ok)) Err$(Ptr$(T_Ok)); \
     $maybe_unused typedef struct Err$(T_Ok) Err$(T_Ok)
 #define comp_type_gen__impl_Err$(T_Ok) \
-    struct Err$(Ptr_const$(T_Ok)) {    \
-        union {                        \
-            Err err;                   \
-            rawptr_const$(T_Ok) ok;    \
-        } data;                        \
-        bool is_err;                   \
-    };                                 \
-    struct Err$(Ptr$(T_Ok)) {          \
-        union {                        \
-            Err err;                   \
-            rawptr$(T_Ok) ok;          \
-        } data;                        \
-        bool is_err;                   \
-    };                                 \
-    struct Err$(T_Ok) {                \
-        union {                        \
-            Err  err;                  \
-            T_Ok ok;                   \
-        } data;                        \
-        bool is_err;                   \
+    struct Err$(Ptr_const$(T_Ok)) { \
+        union { \
+            Err err; \
+            rawptr_const$(T_Ok) ok; \
+        } data; \
+        bool is_err; \
+    }; \
+    struct Err$(Ptr$(T_Ok)) { \
+        union { \
+            Err err; \
+            rawptr$(T_Ok) ok; \
+        } data; \
+        bool is_err; \
+    }; \
+    struct Err$(T_Ok) { \
+        union { \
+            Err  err; \
+            T_Ok ok; \
+        } data; \
+        bool is_err; \
     }
 
 #define comp_type_alias__Err$(T_Ok) \
     pp_join($, Err, T_Ok)
 #define comp_type_anon__Err$$(T_Ok) \
-    struct {                        \
-        union {                     \
-            Err  err;               \
-            T_Ok ok;                \
-        } data;                     \
-        bool is_err;                \
+    struct { \
+        union { \
+            Err  err; \
+            T_Ok ok; \
+        } data; \
+        bool is_err; \
     }
-#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) eval({                                         \
-    let __anon = var_anon;                                                                           \
-    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes));                                 \
-    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes));                               \
-    claim_assert_static(hasField(TypeOf(__anon), is_err));                                           \
-    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldType$(T_ErrRes, is_err)));        \
-    claim_assert_static(fieldPadding(TypeOf(__anon), is_err) == fieldPadding(T_ErrRes, is_err));     \
-    claim_assert_static(hasField(TypeOf(__anon), data.err));                                         \
-    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldType$(T_ErrRes, data.err)));    \
+#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) eval({ \
+    let __anon = var_anon; \
+    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes)); \
+    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes)); \
+    claim_assert_static(hasField(TypeOf(__anon), is_err)); \
+    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldType$(T_ErrRes, is_err))); \
+    claim_assert_static(fieldPadding(TypeOf(__anon), is_err) == fieldPadding(T_ErrRes, is_err)); \
+    claim_assert_static(hasField(TypeOf(__anon), data.err)); \
+    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldType$(T_ErrRes, data.err))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.err) == fieldPadding(T_ErrRes, data.err)); \
-    claim_assert_static(hasField(TypeOf(__anon), data.ok));                                          \
-    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldType$(T_ErrRes, data.ok)));      \
-    claim_assert_static(fieldPadding(TypeOf(__anon), data.ok) == fieldPadding(T_ErrRes, data.ok));   \
-    eval_return(*(T_ErrRes*)&__anon);                                                                \
+    claim_assert_static(hasField(TypeOf(__anon), data.ok)); \
+    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldType$(T_ErrRes, data.ok))); \
+    claim_assert_static(fieldPadding(TypeOf(__anon), data.ok) == fieldPadding(T_ErrRes, data.ok)); \
+    eval_return(*(T_ErrRes*)&__anon); \
 })
 
 #define comp_op__err(val_err...) { .is_err = true, .data.err = val_err }
@@ -156,85 +156,85 @@ typedef struct Err$Void {
 #define comp_op__ok$(T_ErrRes, val_ok...)   ((T_ErrRes)ok(val_ok))
 
 #define comp_op__toErr(__addr_result, var_addr_result, val_err...) eval({ \
-    const TypeOf(var_addr_result) __addr_result                           \
-        = var_addr_result;                                                \
-    *__addr_result = err$(TypeOf(*__addr_result), val_err);               \
-    eval_return __addr_result;                                            \
+    const TypeOf(var_addr_result) __addr_result \
+        = var_addr_result; \
+    *__addr_result = err$(TypeOf(*__addr_result), val_err); \
+    eval_return __addr_result; \
 })
 #define comp_op__toOk(__addr_result, var_result, val_ok...) eval({ \
-    const TypeOf(var_result) __addr_result                         \
-        = var_result;                                              \
-    *__addr_result = ok$(TypeOf(*__addr_result), val_ok);          \
-    eval_return __addr_result;                                     \
+    const TypeOf(var_result) __addr_result \
+        = var_result; \
+    *__addr_result = ok$(TypeOf(*__addr_result), val_ok); \
+    eval_return __addr_result; \
 })
 
 #define comp_op__isErr(val_result...) ((val_result).is_err)
 #define comp_op__isOk(val_result...)  (!(val_result).is_err)
 
-#define comp_syn__return_err(val_err...)  \
+#define comp_syn__return_err(val_err...) \
     $debug_point ErrTrace_captureFrame(); \
     return_(err(val_err))
 #define comp_syn__return_ok(val_ok...) \
     return_(ok(val_ok))
 
 #define comp_op__try_(__result, _Expr...) eval({ \
-    let __result = _Expr;                        \
-    if (isErr(__result)) {                       \
-        return_err(__result.data.err);           \
-    }                                            \
-    eval_return __result.data.ok;                \
+    let __result = _Expr; \
+    if (isErr(__result)) { \
+        return_err(__result.data.err); \
+    } \
+    eval_return __result.data.ok; \
 })
 
 #define comp_op__catch_(__result, _Expr, _Default_Or_Eval...) eval({ \
-    var __result = _Expr;                                            \
-    if (isErr(__result)) {                                           \
-        __result.data.ok = bti_Generic_match$(                       \
-            TypeOf(_Default_Or_Eval),                                \
-            bti_Generic_pattern$(void) eval({                        \
-                _Default_Or_Eval;                                    \
-                eval_return make$(TypeOf(__result.data.ok));         \
-            }),                                                      \
-            bti_Generic_fallback_ _Default_Or_Eval                   \
-        );                                                           \
-    }                                                                \
-    eval_return ErrTrace_reset(), __result.data.ok;                  \
+    var __result = _Expr; \
+    if (isErr(__result)) { \
+        __result.data.ok = bti_Generic_match$( \
+            TypeOf(_Default_Or_Eval), \
+            bti_Generic_pattern$(void) eval({ \
+                _Default_Or_Eval; \
+                eval_return make$(TypeOf(__result.data.ok)); \
+            }), \
+            bti_Generic_fallback_ _Default_Or_Eval \
+        ); \
+    } \
+    eval_return ErrTrace_reset(), __result.data.ok; \
 })
 #define comp_op__catch_from(__result, _Expr, _Payload_Capture, _Default_Or_Eval...) eval({ \
-    var __result = _Expr;                                                                  \
-    if (isErr(__result)) {                                                                 \
-        let _Payload_Capture = __result.data.err;                                          \
-        __result.data.ok     = bti_Generic_match$(                                         \
-            TypeOf(_Default_Or_Eval),                                                  \
-            bti_Generic_pattern$(void) eval({                                          \
-                _Default_Or_Eval;                                                      \
-                eval_return make$(TypeOf(__result.data.ok));                           \
-            }),                                                                        \
-            bti_Generic_fallback_ _Default_Or_Eval                                     \
-        );                                                                             \
-    }                                                                                      \
-    eval_return ErrTrace_reset(), __result.data.ok;                                        \
+    var __result = _Expr; \
+    if (isErr(__result)) { \
+        let _Payload_Capture = __result.data.err; \
+        __result.data.ok     = bti_Generic_match$( \
+            TypeOf(_Default_Or_Eval), \
+            bti_Generic_pattern$(void) eval({ \
+                _Default_Or_Eval; \
+                eval_return make$(TypeOf(__result.data.ok)); \
+                }), \
+            bti_Generic_fallback_ _Default_Or_Eval \
+        ); \
+    } \
+    eval_return ErrTrace_reset(), __result.data.ok; \
 })
 
 #define comp_syn__errdefer_(_Expr...) defer_( \
-    if (__reserved_return->is_err) {          \
-        _Expr;                                \
-    }                                         \
+    if (__reserved_return->is_err) { \
+        _Expr; \
+    } \
 )
 #define comp_syn__errdefer_from(_Payload_Capture, _Expr...) defer_( \
-    if (__reserved_return->is_err) {                                \
-        let _Payload_Capture = __reserved_return->data.err;         \
-        _Expr;                                                      \
-    }                                                               \
+    if (__reserved_return->is_err) { \
+        let _Payload_Capture = __reserved_return->data.err; \
+        _Expr; \
+    } \
 )
 
-#define comp_syn__if_err(val_result, _Payload_Capture)   \
+#define comp_syn__if_err(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), _result.is_err) \
         scope_with(let _Payload_Capture = _result.data.err)
 #define comp_syn__else_ok(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.data.ok)
 #define comp_syn__else_void \
     else
-#define comp_syn__if_ok(val_result, _Payload_Capture)     \
+#define comp_syn__if_ok(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), !_result.is_err) \
         scope_with(let _Payload_Capture = _result.data.ok)
 #define comp_syn__if_void(val_result) \
@@ -243,33 +243,33 @@ typedef struct Err$Void {
     scope_else(let _Payload_Capture = _result.data.err)
 
 #define comp_type_gen__use_ErrSet$(T_Err, T_Ok) \
-    decl_ErrSet$(T_Err, T_Ok);                  \
+    decl_ErrSet$(T_Err, T_Ok); \
     impl_ErrSet$(T_Err, T_Ok)
-#define comp_type_gen__decl_ErrSet$(T_Err, T_Ok)                                            \
+#define comp_type_gen__decl_ErrSet$(T_Err, T_Ok) \
     typedef struct pp_join3($, T_Err, Ptr_const, T_Ok) pp_join3($, T_Err, Ptr_const, T_Ok); \
-    typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok);             \
+    typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok); \
     typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
 #define comp_type_gen__impl_ErrSet$(T_Err, T_Ok) \
     struct pp_join3($, T_Err, Ptr_const, T_Ok) { \
-        union {                                  \
-            T_Err err;                           \
-            rawptr_const$(T_Ok) ok;              \
-        } data;                                  \
-        bool is_err;                             \
-    };                                           \
-    struct pp_join3($, T_Err, Ptr, T_Ok) {       \
-        union {                                  \
-            T_Err err;                           \
-            rawptr$(T_Ok) ok;                    \
-        } data;                                  \
-        bool is_err;                             \
-    };                                           \
-    struct pp_join($, T_Err, T_Ok) {             \
-        union {                                  \
-            T_Err err;                           \
-            T_Ok  ok;                            \
-        } data;                                  \
-        bool is_err;                             \
+        union { \
+            T_Err err; \
+            rawptr_const$(T_Ok) ok; \
+        } data; \
+        bool is_err; \
+    }; \
+    struct pp_join3($, T_Err, Ptr, T_Ok) { \
+        union { \
+            T_Err err; \
+            rawptr$(T_Ok) ok; \
+        } data; \
+        bool is_err; \
+    }; \
+    struct pp_join($, T_Err, T_Ok) { \
+        union { \
+            T_Err err; \
+            T_Ok  ok; \
+        } data; \
+        bool is_err; \
     }
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
@@ -284,13 +284,13 @@ use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
 static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32) $must_check;
 static fn_(test(void), Err$void) $must_check;
 
-static fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
-} unscoped;
-static fn_scope(test(void), Err$void) {
+} $unscoped;
+static fn_(test(void), Err$void, $scope) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
     let result_handling = catch_from(safeDivide(10, 0), err, eval({
@@ -299,7 +299,7 @@ static fn_scope(test(void), Err$void) {
         return_err(err);
     }));
     return_ok({});
-} unscoped;
+} $unscoped;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
