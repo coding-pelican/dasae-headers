@@ -243,7 +243,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         }
     }
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 
 
@@ -315,7 +315,7 @@ fn_scope_ext(loadSample(mem_Allocator allocator, const char* heightmap_file, con
         .width     = width,
         .height    = height,
     });
-} unscoped_ext;
+} $unguarded;
 
 fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), void) {
     // Reset input state

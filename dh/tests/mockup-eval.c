@@ -49,7 +49,7 @@
 #define comp_syn__asg_eval(var_addr, _Expr...) \
     *var_addr = eval$(TypeOf(*var_addr), _Expr);
 
-fn_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $scope) {
     let scope_1 = eval$(i32,
         let a = 1;
         let b = 2;
@@ -158,4 +158,4 @@ fn_scope(dh_main(void), Err$void) {
     printf("%d\n", c);
 
     return_ok({});
-} unscoped;
+} $unscoped;

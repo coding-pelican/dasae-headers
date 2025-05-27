@@ -41,11 +41,12 @@ fn_(mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 fn_(
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
-mem_Allocator_rawAlloc(mem_Allocator self, usize len, u32 align)
-#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc src_loc)
+    mem_Allocator_rawAlloc(mem_Allocator self, usize len, u32 align)
+#else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc src_loc)
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-, Opt$Ptr$u8) {
+        ,
+    Opt$Ptr$u8) {
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt->alloc);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2: %u", align);
@@ -72,11 +73,12 @@ mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc sr
 
 fn_(
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
-mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len)
-#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
+    mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len)
+#else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-, bool) {
+        ,
+    bool) {
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt->resize);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
@@ -106,11 +108,12 @@ mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usi
 
 fn_(
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
-mem_Allocator_rawRemap(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len)
-#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
+    mem_Allocator_rawRemap(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len)
+#else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc)
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-, Opt$Ptr$u8) {
+        ,
+    Opt$Ptr$u8) {
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt->remap);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
@@ -141,11 +144,12 @@ mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usiz
 
 fn_(
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
-mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, u32 buf_align)
-#else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLoc src_loc)
+    mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, u32 buf_align)
+#else  /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
+    mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLoc src_loc)
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
-, void) {
+        ,
+    void) {
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt->free);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2: %u", buf_align);
@@ -167,7 +171,7 @@ mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLo
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 
-fn_scope( mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Allocator_Err$meta_Ptr) {
+fn_(mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Allocator_Err$meta_Ptr, $scope) {
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
@@ -188,9 +192,9 @@ fn_scope( mem_Allocator_create(mem_Allocator self, TypeInfo type), mem_Allocator
         .type = type,
         .addr = mem_opt.value,
     });
-} unscoped;
+} $unscoped;
 
-fn_( mem_Allocator_destroy(mem_Allocator self, AnyType ptr), void) {
+fn_(mem_Allocator_destroy(mem_Allocator self, AnyType ptr), void) {
     let info = extract(ptr, AnyType_ptr);
 
     // Special case for zero-sized types
@@ -207,7 +211,7 @@ fn_( mem_Allocator_destroy(mem_Allocator self, AnyType ptr), void) {
     mem_Allocator_rawFree(self, mem, info.align);
 }
 
-fn_scope( mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count), mem_Allocator_Err$meta_Sli, $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
@@ -236,9 +240,9 @@ fn_scope( mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count), m
         .addr = mem_opt.value,
         .len  = count,
     });
-} unscoped;
+} $unscoped;
 
-fn_( mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len), bool) {
+fn_(mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len), bool) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for zero-sized types
@@ -272,7 +276,7 @@ fn_( mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len), b
     return mem_Allocator_rawResize(self, old_bytes, info.align, new_byte_count.value);
 }
 
-fn_scope( mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len), Opt$meta_Sli) {
+fn_(mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len), Opt$meta_Sli, $scope) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for zero-sized types
@@ -321,9 +325,9 @@ fn_scope( mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len
         .addr = new_ptr.value,
         .len  = new_len,
     });
-} unscoped;
+} $unscoped;
 
-fn_scope( mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len), mem_Allocator_Err$meta_Sli, $scope) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for empty old memory
@@ -392,9 +396,9 @@ fn_scope( mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_l
         .addr = new_mem.value,
         .len  = new_len,
     });
-} unscoped;
+} $unscoped;
 
-fn_( mem_Allocator_free(mem_Allocator self, AnyType memory), void) {
+fn_(mem_Allocator_free(mem_Allocator self, AnyType memory), void) {
     let info = extract(memory, AnyType_sli);
 
     // Special case for zero-sized types or empty slices
@@ -413,9 +417,9 @@ fn_( mem_Allocator_free(mem_Allocator self, AnyType memory), void) {
 
 /*========== Helper Functions ===============================================*/
 
-fn_scope( mem_Allocator_dupe(mem_Allocator self, meta_Sli src),mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_dupe(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli, $scope) {
     // Allocate new memory with same element type and count
-    let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
+    let new_mem = try_( mem_Allocator_alloc(self, src.type, src.len));
 
     // Copy data from source to new memory
     let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
@@ -423,11 +427,11 @@ fn_scope( mem_Allocator_dupe(mem_Allocator self, meta_Sli src),mem_Allocator_Err
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
-} unscoped;
+} $unscoped;
 
-fn_scope( mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), mem_Allocator_Err$meta_Sli, $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
-    let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
+    let new_mem = try_( mem_Allocator_alloc(self, src.type, src.len + 1));
 
     // Copy data from source to new memory
     let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
@@ -450,13 +454,13 @@ fn_scope( mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src), mem_Allocator_E
         .addr = new_mem.addr,
         .len = src.len,  // Note: we preserve original length, sentinel is separate
     });
-} unscoped;
+} $unscoped;
 
 #else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
 
 /*========== Debug Versions of Functions ====================================*/
 
-fn_scope(mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc), mem_Allocator_Err$meta_Ptr) {
+fn_(mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc), mem_Allocator_Err$meta_Ptr, $scope) {
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
@@ -477,7 +481,7 @@ fn_scope(mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc sr
         .type = type,
         .addr = mem_opt.value,
     });
-} unscoped;
+} $unscoped;
 
 fn_(mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc), void) {
     let info = extract(ptr, AnyType_ptr);
@@ -496,7 +500,7 @@ fn_(mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc)
     mem_Allocator_rawFree_debug(self, mem, info.align, src_loc);
 }
 
-fn_scope(mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc), mem_Allocator_Err$meta_Sli, $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
@@ -525,7 +529,7 @@ fn_scope(mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize coun
         .addr = mem_opt.value,
         .len  = count,
     });
-} unscoped;
+} $unscoped;
 
 fn_(mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc), bool) {
     let info = extract(old_mem, AnyType_sli);
@@ -560,7 +564,7 @@ fn_(mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_le
     return mem_Allocator_rawResize_debug(self, old_bytes, info.align, new_byte_count.value, src_loc);
 }
 
-fn_scope(mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc), Opt$meta_Sli) {
+fn_(mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc), Opt$meta_Sli, $scope) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for zero-sized types
@@ -607,9 +611,9 @@ fn_scope(mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize ne
         .addr = new_ptr.value,
         .len = new_len,
     });
-} unscoped;
+} $unscoped;
 
-fn_scope(mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc), mem_Allocator_Err$meta_Sli, $scope) {
     let info = extract(old_mem, AnyType_sli);
 
     // Special case for empty old memory
@@ -678,7 +682,7 @@ fn_scope(mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize 
         .addr = new_mem.value,
         .len  = new_len,
     });
-} unscoped;
+} $unscoped;
 
 fn_(mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc), void) {
     let info = extract(mem, AnyType_sli);
@@ -697,7 +701,7 @@ fn_(mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc), v
     mem_Allocator_rawFree_debug(self, bytes, info.align, src_loc);
 }
 
-fn_scope(mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc), mem_Allocator_Err$meta_Sli, $scope) {
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
 
@@ -707,9 +711,9 @@ fn_scope(mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_l
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
-} unscoped;
+} $unscoped;
 
-fn_scope(mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc), mem_Allocator_Err$meta_Sli) {
+fn_(mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc), mem_Allocator_Err$meta_Sli, $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len + 1, src_loc));
 
@@ -734,6 +738,6 @@ fn_scope(mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_
         .addr = new_mem.addr,
         .len = src.len,  // Note: we preserve original length, sentinel is separate
     });
-} unscoped;
+} $unscoped;
 
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */

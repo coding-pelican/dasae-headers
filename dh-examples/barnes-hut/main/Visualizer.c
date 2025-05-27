@@ -130,7 +130,7 @@ fn_scope(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$
         .allocator = allocator,
         .canvas    = canvas,
     });
-} unscoped;
+} $unscoped;
 
 fn_(Visualizer_destroy(Visualizer* self), void) {
     debug_assert_nonnull(self);
@@ -346,7 +346,7 @@ fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine
         }
     }
     return_ok({});
-} unscoped;
+} $unscoped;
 
 fn_scope(Visualizer_update(Visualizer* self), Err$void) {
     debug_assert_nonnull(self);
@@ -357,7 +357,7 @@ fn_scope(Visualizer_update(Visualizer* self), Err$void) {
         Opt_asg(&spawn->confirmed, none());
     }
     return_ok({});
-} unscoped;
+} $unscoped;
 
 static fn_(Visualizer_renderBodies(Visualizer* self), void);
 static fn_(Visualizer_renderQuadTree(Visualizer* self), Err$void);
@@ -379,7 +379,7 @@ fn_scope(Visualizer_render(Visualizer* self), Err$void) {
     log_info("Render time: %lfms", time_Duration_asSecs_f64(end_duration)); */
 
     return_ok({});
-} unscoped;
+} $unscoped;
 
 static $inline_always fn_(Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color), void) {
     if (1.0f < screen_radius) {
@@ -632,4 +632,4 @@ fn_scope(Visualizer_renderQuadTree(Visualizer* self), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+} $unscoped;

@@ -6,14 +6,14 @@
 #include "dh/sli.h"
 
 // Function that may return an optional i32
-static fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+static fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
     for_slice_indexed (items, item, index) {
         if (*item == value) {
             return_some(index); // Return optional with a value
         }
     }
     return_none(); // Return optional with no value
-} unscoped;
+} $unscoped;
 
 // Function that uses unwrap and orelse for default values
 static fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
@@ -69,7 +69,7 @@ static fn_(processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner), i32
     claim_unreachable;
 }
 
-fn_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $scope) {
     // Create some optional values
     let opt_with_value = some$(Opt$i32, 42);
     let opt_empty      = none$(Opt$i32);
@@ -121,16 +121,16 @@ fn_scope(dh_main(void), Err$void) {
     // printf("This would fail: %d\n", unwrap(opt_empty));
 
     return_ok({});
-} unscoped;
+} $unscoped;
 
 #if README_SAMPLE
-fn_scope(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32) {
+fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     }
     return_none(); // Return with no value
-} unscoped;
+} $unscoped;
 
 fn_(example(void), void) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });

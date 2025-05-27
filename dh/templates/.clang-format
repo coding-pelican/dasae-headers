@@ -155,9 +155,9 @@ Macros:
   - defer_break=break
   - "fn_(name_with_params,return_type)=return_type name_with_params"
   - "fn_scope(name_with_params,return_type)=return_type name_with_params"
-  - unscoped=/**/
+  - $unscoped=/**/
   - "fn_scope_ext(name_with_params,return_type)=return_type name_with_params"
-  - unscoped_ext=/**/
+  - $unguarded=/**/
   - "fn_TEST_scope(name)=Err$void TEST_caseFn(void)"
   - TEST_unscoped=/**/
   - "fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)"

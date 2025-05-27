@@ -31,7 +31,7 @@ fn_scope_ext(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input) {
 
     toNone(&input->backend);
     return_ok(input);
-} unscoped_ext;
+} $unguarded;
 
 fn_(engine_Input_fini(engine_Input* self), void) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
@@ -41,7 +41,8 @@ fn_scope(engine_Input_update(engine_Input* self), Err$void) {
     $unused(self);
     return_err(Err_NotImplemented());
     /* TODO: Implement this function */
-} unscoped;
+}
+unscoped;
 
 fn_(engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event), void) {
     $unused(self), $unused(event);
@@ -52,13 +53,15 @@ fn_scope(engine_InputEventBuffer_pop(engine_Input* self), Opt$engine_InputEvent)
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-} unscoped;
+}
+unscoped;
 
 fn_scope(engine_InputEventBuffer_peek(engine_Input* self), Opt$engine_InputEvent) {
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-} unscoped;
+}
+unscoped;
 
 fn_(engine_InputEventBuffer_clear(engine_Input* self), void) {
     $unused(self);

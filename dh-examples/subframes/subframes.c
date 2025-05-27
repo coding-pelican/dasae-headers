@@ -63,7 +63,7 @@ static fn_(getGameMemory(void), heap_Fixed) {
     return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
 }
 
-fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive-complexity) */
+fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-complexity) */
     Random_init();
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -392,4 +392,4 @@ fn_scope_ext(dh_main(void), Err$void) { /* NOLINT(readability-function-cognitive
         time_frame_prev = time_frame_curr;
     }
     return_ok({});
-} unscoped_ext;
+} $unguarded;

@@ -78,7 +78,7 @@ fn_(heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf), bool)
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -97,7 +97,7 @@ static fn_scope(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) 
     // Update allocation position
     self->end_index = new_end_index;
     return_some(intToRawptr$(u8*, aligned_addr));
-} unscoped;
+} $unscoped;
 
 static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_nonnull(ctx);
@@ -109,8 +109,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
     // Verify buffer ownership
     debug_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
-        "Buffer not owned by this allocator"
-    );
+        "Buffer not owned by this allocator");
 
     // If it's not the last allocation, we can only shrink
     if (!heap_Fixed_isLastAllocation(self, buf.as_const)) {
@@ -133,7 +132,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
     return true;
 }
 
-static fn_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+static fn_(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8, $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -141,7 +140,7 @@ static fn_scope(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize ne
         return_some(buf.ptr);
     }
     return_none();
-} unscoped;
+} $unscoped;
 
 static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_nonnull(ctx);
@@ -153,8 +152,7 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     // Verify buffer ownership
     debug_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
-        "Buffer not owned by this allocator"
-    );
+        "Buffer not owned by this allocator");
 
     // We can only truly free the last allocation
     if (heap_Fixed_isLastAllocation(self, buf.as_const)) {
@@ -165,7 +163,7 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 /*========== Thread-Safe Implementation =====================================*/
 
-static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -174,8 +172,7 @@ static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$
     // Use atomic operations for thread safety
     usize end_index = atomic_load_explicit(
         as$(_Atomic(usize)*, &self->end_index),
-        memory_order_seq_cst
-    );
+        memory_order_seq_cst);
 
     while (true) {
         // Calculate aligned offset
@@ -197,8 +194,7 @@ static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$
                 &expected,
                 new_end_index,
                 memory_order_seq_cst,
-                memory_order_seq_cst
-            )) {
+                memory_order_seq_cst)) {
             // Success, return the allocated pointer
             return_some(intToRawptr$(u8*, aligned_addr));
         }
@@ -206,11 +202,12 @@ static fn_scope(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$
         // Another thread modified end_index, try again with the new value
         end_index = expected;
     }
-} unscoped;
+} $unscoped;
 
 /*========== Utility Functions ==============================================*/
 
-static $inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool) {
+static $inline
+fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u8 ptr), bool) {
     let container_start = rawptrToInt(container.ptr);
     let container_end   = container_start + container.len;
     let ptr_addr        = rawptrToInt(ptr);
@@ -218,7 +215,8 @@ static $inline fn_(heap_Fixed_sliContainsPtr(Sli_const$u8 container, Ptr_const$u
     return container_start <= ptr_addr && ptr_addr < container_end;
 }
 
-static $inline fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool) {
+static $inline
+fn_(heap_Fixed_sliContainsSli(Sli_const$u8 container, Sli_const$u8 sli), bool) {
     let container_start = rawptrToInt(container.ptr);
     let container_end   = container_start + container.len;
     let slice_start     = rawptrToInt(sli.ptr);

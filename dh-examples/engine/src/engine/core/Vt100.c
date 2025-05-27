@@ -127,7 +127,7 @@ fn_(engine_core_Vt100_backend(engine_core_Vt100* self), engine_Backend) {
 
 /*========== Forward declarations ===========================================*/
 
-static $inline_always fn_(            calcAbstractBufferSize(u32 width, u32 height), usize);
+static $inline_always             fn_(calcAbstractBufferSize(u32 width, u32 height), usize);
 $deprecated static $inline_always fn_(clientWindowPixelRect(engine_core_Vt100* self), Vec2u);
 $deprecated static $inline_always fn_(clientOutputConsoleRect(engine_core_Vt100* self), Vec2u);
 
@@ -135,7 +135,7 @@ static $inline_always fn_(abstractWindowRect(engine_core_Vt100* self), Vec2u);
 static $inline_always fn_(abstractBufferCapSize(engine_core_Vt100* self), usize);
 
 $deprecated static $inline_always fn_(needsResizeAbstractWindow(engine_core_Vt100* self), bool);
-$deprecated static fn_(               resizeAbstractWindow(engine_core_Vt100* self), Err$void) $must_check;
+$deprecated static fn_(resizeAbstractWindow(engine_core_Vt100* self), Err$void) $must_check;
 
 static fn_(syncWindowMetrics(engine_core_Vt100* self), Err$void) $must_check;
 
@@ -222,7 +222,7 @@ static $inline_always fn_(needsResizeAbstractWindow(engine_core_Vt100* self), bo
     let needed_size  = eval({
         let rect = abstractWindowRect(self);
         eval_return calcAbstractBufferSize(rect.x, rect.y);
-    });
+     });
     return current_size != needed_size;
 }
 
@@ -238,10 +238,12 @@ fn_scope(resizeAbstractWindow(engine_core_Vt100* self), Err$void) {
 
     // 2. Re-size your ArrList if needed
     let needed = calcAbstractBufferSize(rect.x, rect.y);
-    try_(ArrList_resize(self->abstract.buffer.base, needed));
+    try_(
+    ArrList_resize(self->abstract.buffer.base, needed));
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
     let handle_window = self->client.handle.window;
@@ -249,7 +251,7 @@ fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
         var rect = make$(RECT);
         GetWindowRect(handle_window, &rect);
         eval_return rect;
-    });
+      });
     // log_debug("Window rect: %d,%d,%d,%d", window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
     let client_rect   = eval({
         var rect = make$(RECT);
@@ -260,7 +262,7 @@ fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
         rect.right -= 12;
         rect.bottom += 12;
         eval_return rect;
-    });
+      });
     // log_debug("Client rect: %d,%d,%d,%d", client_rect.left, client_rect.top, client_rect.right, client_rect.bottom);
     let corner_point  = eval({
         // Convert the client area (0,0) to screen coords
@@ -290,7 +292,7 @@ fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
             return_err(Err_Unspecified());
         }
         eval_return info;
-    });
+         });
     let font_info        = eval({
         var info = make$(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
         if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
@@ -300,7 +302,7 @@ fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
             info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
         } */
         eval_return info;
-    });
+           });
     let usable_font_info = make$(bool, font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0);
     if (usable_font_info) {
         self->client.metrics.dim.x = buffer_info.dwSize.X * font_info.dwFontSize.X;
@@ -323,15 +325,18 @@ fn_scope(syncWindowMetrics(engine_core_Vt100* self), Err$void) {
         self->client.metrics.res.curr.x,
         self->client.metrics.res.curr.y
     );
-    try_(ArrList_resize(self->abstract.buffer.base, needed));
-    try_(engine_Canvas_resize(
+    try_(
+    ArrList_resize(self->abstract.buffer.base, needed));
+    try_(
+    engine_Canvas_resize(
         self->abstract.window->composite_buffer,
         self->client.metrics.res.curr.x,
         self->client.metrics.res.curr.y
     ));
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 // static Err$void syncWindowMetrics(engine_core_Vt100* self) {
 //     reserveReturn(Err$void);
@@ -467,7 +472,8 @@ fn_scope(configureConsoleOutput(engine_core_Vt100* self), Err$void) {
         }
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 config_ErrSet(ConfigConsoleInputErr,
     FailedGetMode,
@@ -488,7 +494,8 @@ fn_scope(configureConsoleInput(engine_core_Vt100* self), Err$void) {
         }
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 config_ErrSet(ConfigConsoleCursorErr,
     FailedHide,
@@ -502,7 +509,8 @@ fn_scope(hideConsoleCursor(engine_core_Vt100* self), Err$void) {
         return_err(ConfigConsoleCursorErr_FailedHide());
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_scope(showConsoleCursor(engine_core_Vt100* self), Err$void) {
     let handle = self->client.handle.output;
@@ -511,7 +519,8 @@ fn_scope(showConsoleCursor(engine_core_Vt100* self), Err$void) {
         return_err(ConfigConsoleCursorErr_FailedShow());
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_scope(resetConsoleCursorPos(engine_core_Vt100* self), Err$void) {
     let handle  = self->client.handle.output;
@@ -529,7 +538,8 @@ fn_scope(resetConsoleCursorPos(engine_core_Vt100* self), Err$void) {
         return_err(ConfigConsoleCursorErr_FailedResetPos());
     };
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_(processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool is_down), void) {
     let input    = self->input;
@@ -599,7 +609,8 @@ fn_scope(enableConsoleMouse(engine_core_Vt100* self), Err$void) {
         }
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 /// Disable mouse input in the console.
 fn_scope(disableConsoleMouse(engine_core_Vt100* self), Err$void) {
     let handle = self->client.handle.input;
@@ -616,7 +627,8 @@ fn_scope(disableConsoleMouse(engine_core_Vt100* self), Err$void) {
         }
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_(processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button, bool is_down), void) {
     let input = self->input;
@@ -818,7 +830,7 @@ fn_scope_ext(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err
     debug_assert_nonnull(config->window);
     debug_assert_nonnull(config->input);
 
-    let allocator = unwrap(config->allocator);
+    let allocator = unwrap( config->allocator);
     let self      = meta_cast$(engine_core_Vt100*, try_(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
     errdefer_(mem_Allocator_destroy(allocator, anyPtr(self)));
 
@@ -832,7 +844,7 @@ fn_scope_ext(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err
         let allocator = self->allocator;
         let window    = self->abstract.window;
         let size      = calcAbstractBufferSize(Grid_width(window->composite_buffer->buffer), Grid_height(window->composite_buffer->buffer));
-        eval_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
+        eval_return type$(ArrList$u8, try_( ArrList_initCap(typeInfo$(u8), allocator, size)));
     });
     errdefer_(ArrList_fini(self->abstract.buffer.base));
     self->input = eval({
@@ -885,18 +897,22 @@ fn_scope_ext(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err
         eval_return handle;
     });
 
-    try_(configureConsoleOutput(self));
-    try_(configureConsoleInput(self));
+    try_(
+    configureConsoleOutput(self));
+    try_(
+    configureConsoleInput(self));
 
-    try_(hideConsoleCursor(self));
-    try_(enableConsoleMouse(self));
+    try_(
+    hideConsoleCursor(self));
+    try_(
+    enableConsoleMouse(self));
 
     self->client.is_focused   = true;
     self->client.is_minimized = false;
     self->client.is_maximized = false;
 
     return_ok(self);
-} unscoped_ext;
+} $unguarded;
 
 fn_(engine_core_Vt100_fini(engine_core_Vt100* self), void) {
     debug_assert_nonnull(self);
@@ -942,7 +958,7 @@ fn_(processEvents(anyptr ctx), void) {
                 claim_unreachable;
             }
             eval_return handle == self->client.handle.window;
-        });
+          });
 
         self->client.is_minimized = is_minimized;
         self->client.is_maximized = is_maximized;
@@ -1079,13 +1095,15 @@ fn_scope(setWindowMinRes(anyptr ctx, Vec2u size), Err$void) {
     debug_assert_nonnull(ctx);
     $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
-} unscoped;
+}
+unscoped;
 
 fn_scope(setWindowMaxRes(anyptr ctx, Vec2u size), Err$void) {
     debug_assert_nonnull(ctx);
     $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
-} unscoped;
+}
+unscoped;
 
 fn_(isWindowFocused(const anyptr ctx), bool) {
     debug_assert_nonnull(ctx);

@@ -14,7 +14,7 @@
 #undef comp_syn__return_void
 
 #define fn_scope(_Name_With_Params, T_Return...) comp_syn__fn_scope(_Name_With_Params, T_Return)
-#define unscoped                                 comp_syn__unscoped
+#define $unscoped                                 comp_syn__unscoped
 
 #define return_(_Expr...)     comp_syn__return_(_Expr)
 #define return_ok(_Expr...)   comp_syn__return_ok(_Expr)
@@ -24,7 +24,7 @@
 #define return_void()         comp_syn__return_void()
 
 #define fn_scope_ext(_Name_With_Params, T_Return...) comp_syn__fn_scope_ext(_Name_With_Params, T_Return)
-#define unscoped_ext                                 comp_syn__unscoped_ext
+#define $unguarded                                 comp_syn__unscoped_ext
 
 // clang-format off
 #define comp_syn__fn_scope(_Name_With_Params, T_Return...) \
@@ -98,7 +98,7 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 
 fn_scope_ext(func(void), Err$void) {
     printf("func\n");
-} unscoped_ext;
+} $unguarded;
 
 fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     $ignore = args;
@@ -115,7 +115,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     };
     printf("end\n");
     return_ok({});
-} unscoped_ext; */
+} $unguarded; */
 
 // Err$void dh_main(Sli$Str_const args) {
 //     const __auto_type __reserved_return = ((Err$void*)((u8[_Generic(Err$void, void: 0, default: sizeof(Err$void))]){}));
@@ -211,7 +211,7 @@ __deferred:
         T_Return* __reserved_return = null;   \
         if (false) { __step_return: goto __step_unscope; } \
         else { claim_unreachable; }
-#define unscoped \
+#define $unscoped \
         if (false) { __step_unscope: return __reserved_return[0]; } \
         else { claim_unreachable; } \
     }
@@ -227,7 +227,7 @@ T_Return _Name_With_Params {                                    \
     T_Return* const __reserved_return = (anyptr)__reserved_buf; \
     if (false) { __step_return: goto __step_unscope; }          \
     else { claim_unreachable; }
-#define unscoped                              \
+#define $unscoped                              \
     if (false) { __step_unscope:              \
         if (bti_Generic_match$(TypeOf(void),  \
             bti_Generic_pattern$(void) false, \

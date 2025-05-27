@@ -25,19 +25,19 @@ static fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
 #include "dh/heap/Page.h"
 
 #define cinq_select(var_collection, _PayloadCapture, _Body...)           comp_syn__cinq_select(var_collection, _PayloadCapture, _Body)
-#define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) eval({           \
-    let __collection = var_collection;                                                    \
+#define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) eval({ \
+    let __collection = var_collection; \
     var __temp       = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \
-    for_slice (__collection.items, __iter_elem) {                                         \
-        var _PayloadCapture = *__iter_elem;                                               \
-        var __item          = eval({ _Body; });                                           \
-        try_(ArrList_append(&__temp, meta_refPtr(&__item)));                               \
-    };                                                                                    \
-    eval_return type$(TypeOf(__collection), __temp);                                      \
+    for_slice (__collection.items, __iter_elem) { \
+        var _PayloadCapture = *__iter_elem; \
+        var __item          = eval({ _Body; }); \
+        try_(ArrList_append(&__temp, meta_refPtr(&__item))); \
+    }; \
+    eval_return type$(TypeOf(__collection), __temp); \
 })
 
 // Example main function showing how to use the compatibility layer
-fn_scope_ext(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $guard) {
     var i32_list = type$(ArrList$$(i32), try_(ArrList_initCap(typeInfo$(i32), heap_Page_allocator(&(heap_Page){}), 8)));
     defer_(ArrList_fini(i32_list.base));
     i32_list.items.len = 8;
@@ -75,4 +75,4 @@ fn_scope_ext(dh_main(void), Err$void) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-} unscoped_ext;
+} $unguarded;

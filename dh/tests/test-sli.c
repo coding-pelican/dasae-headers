@@ -3,10 +3,10 @@
 #include "dh/sli.h"
 
 static fn_(slice_example(void), void);
-fn_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $scope) {
     slice_example();
     return_ok({});
-} unscoped;
+} $unscoped;
 
 fn_(slice_example(void), void) {
     decl_Sli$(u8);

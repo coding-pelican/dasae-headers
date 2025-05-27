@@ -2,17 +2,17 @@
 #define main_no_returns_err (1)
 #include "dh/main.h"
 
-static fn_ext_scope(getValueIfPositive(i32 value), Opt$i32) {
+static fn_(getValueIfPositive(i32 value), Opt$i32, $scope) {
     if (value <= 0) { return_none(); }
     return_some(value);
-} ext_unscoped;
+} $unscoped;
 
-static fn_ext_scope(getCharIfNumeric(u8 value), Opt$u8) {
+static fn_(getCharIfNumeric(u8 value), Opt$u8, $scope) {
     if ('0' <= value && value <= '9') { return_some(value); }
     return_none();
-} ext_unscoped;
+} $unscoped;
 
-fn_(dh_main(void), void){
+fn_(dh_main(void), void) {
     if_some(getValueIfPositive(10), value) {
         printf("Value is %d\n", value);
     } else_none {

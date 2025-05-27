@@ -14,7 +14,7 @@ static log_Config log_s_config = {
     .shows_function  = true            // Show function name by default
 };
 
-fn_scope_ext(log_init(const char* filename), io_FileErr$void) {
+fn_(log_init(const char* filename), io_FileErr$void, $guard) {
     // Extract directory path
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -35,7 +35,7 @@ fn_scope_ext(log_init(const char* filename), io_FileErr$void) {
     }
     log_s_config.output_file = file;
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 fn_(log_initWithFile(FILE* file), void) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
@@ -51,35 +51,35 @@ fn_(log_fini(void), void) {
     }
 }
 
-void log_setLevel(log_Level level) {
+fn_(log_setLevel(log_Level level), void) {
     log_s_config.min_level = level;
 }
 
-void log_showTimestamp(bool shows) {
+fn_(log_showTimestamp(bool shows), void) {
     log_s_config.shows_timestamp = shows;
 }
 
-void log_showLevel(bool shows) {
+fn_(log_showLevel(bool shows), void) {
     log_s_config.shows_level = shows;
 }
 
-void log_showLocation(bool shows) {
+fn_(log_showLocation(bool shows), void) {
     log_s_config.shows_location = shows;
 }
 
-void log_showFunction(bool shows) {
+fn_(log_showFunction(bool shows), void) {
     log_s_config.shows_function = shows;
 }
 
-log_Level log_getLevel(void) {
+fn_(log_getLevel(void), log_Level) {
     return log_s_config.min_level;
 }
 
-FILE* log_getOutputFile(void) {
+fn_(log_getOutputFile(void), FILE*) {
     return log_s_config.output_file ? log_s_config.output_file : stderr;
 }
 
-void log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...) {
+fn_(log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...), void) {
     if (level < log_s_config.min_level) { return; }
 
     let output = log_getOutputFile();

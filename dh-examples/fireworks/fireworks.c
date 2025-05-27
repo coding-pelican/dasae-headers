@@ -95,7 +95,7 @@ extern fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) $must_check;
 
 
 
-fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     $ignore = args;
     Random_init();
 
@@ -229,7 +229,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         time_frame_prev = time_frame_curr;
     }
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 
 
@@ -299,7 +299,7 @@ fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void) {
     );
 }
 
-fn_scope_ext(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color), Err$Ptr$Firework) {
+fn_(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color), Err$Ptr$Firework, $guard) {
     debug_assert_nonnull(f);
     log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
     f->allocator = allocator;
@@ -319,7 +319,7 @@ fn_scope_ext(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i
     f->effect_base_color = Color_intoHsl(effect_base_color);
 
     return_ok(f);
-} unscoped_ext;
+} $unguarded;
 fn_(Firework_fini(Firework* f), void) {
     debug_assert_nonnull(f);
     log_debug("Destroying firework(%p)\n", f);
@@ -361,7 +361,7 @@ fn_(Firework_isDead(const Firework* f), bool) {
     if (!Firework__deadsAllEffect(f)) { return false; }
     return true;
 }
-fn_scope(Firework_update(Firework* f, f64 dt), Err$void) {
+fn_(Firework_update(Firework* f, f64 dt), Err$void, $scope) {
     debug_assert_nonnull(f);
     $ignore = dt;
     if_some(f->rocket, rocket) {
@@ -403,7 +403,7 @@ fn_scope(Firework_update(Firework* f, f64 dt), Err$void) {
         Particle_update(effect, dt);
     }
     return_ok({});
-} unscoped;
+} $unscoped;
 fn_(Firework_render(const Firework* f, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(f);
     debug_assert_nonnull(c);
@@ -417,7 +417,7 @@ fn_(Firework_render(const Firework* f, engine_Canvas* c, f64 dt), void) {
     }
 }
 
-fn_scope(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), Err$State) {
+fn_(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), Err$State, $scope) {
     var fireworks = type$(ArrList$Firework, try_(ArrList_initCap(typeInfo$(Firework), allocator, Fireworks_max)));
     return_ok({
         .allocator  = allocator,
@@ -427,7 +427,7 @@ fn_scope(State_init(mem_Allocator allocator, u32 width, u32 height, const engine
         .fireworks  = fireworks,
         .is_running = true,
     });
-} unscoped;
+} $unscoped;
 fn_(State_fini(State* s), void) {
     debug_assert_nonnull(s);
 
@@ -439,7 +439,7 @@ fn_(State_fini(State* s), void) {
 fn_(State_isDead(const State* s), bool) {
     return !deref(s).is_running;
 }
-fn_scope(State_update(State* s, f64 dt), Err$void) {
+fn_(State_update(State* s, f64 dt), Err$void, $scope) {
     debug_assert_nonnull(s);
 
     /* Add a new rocket with with 5% chance */
@@ -500,7 +500,7 @@ fn_scope(State_update(State* s, f64 dt), Err$void) {
     }
 
     return_({});
-} unscoped;
+} $unscoped;
 fn_(State_render(const State* s, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(s);
     debug_assert_nonnull(c);
@@ -510,7 +510,7 @@ fn_(State_render(const State* s, engine_Canvas* c, f64 dt), void) {
         Firework_render(firework, c, dt);
     }
 }
-fn_scope(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) {
+fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework, $scope) {
     debug_assert_nonnull(s);
     log_debug("Spawning new firework...");
     log_debug("%d fireworks remaining: Removing dead fireworks...", s->fireworks.items.len);
@@ -535,4 +535,4 @@ fn_scope(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) {
         s->height,
         Color_fromOpaque(Random_u8(), Random_u8(), Random_u8())
     ))));
-} unscoped;
+} $unscoped;

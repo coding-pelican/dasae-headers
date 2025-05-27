@@ -10,7 +10,7 @@
 use_ErrSet$(math_Err, i32);
 static fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) $must_check;
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
@@ -27,12 +27,12 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     let testLambda = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
     printf("testLambda: %d\n", testLambda(10, 5));
     return_(ok({}));
-} unscoped;
+} $unscoped;
 
 /* implementations */
-fn_scope(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) {
+fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_(err(math_Err_DivisionByZero()));
     }
     return_ok(lhs / rhs);
-} unscoped;
+} $unscoped;

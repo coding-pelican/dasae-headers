@@ -1,7 +1,7 @@
 #include "dh/main.h"
 #include "dh/log.h"
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     let_(opt, Opt$(i32)) = none();
 
     let temp = 123;
@@ -20,4 +20,4 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     return_ok({});
     $unused(args, a, b, c, d, e, f);
-} unscoped;
+} $unscoped;

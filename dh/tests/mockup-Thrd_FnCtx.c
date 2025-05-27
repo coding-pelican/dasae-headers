@@ -32,7 +32,7 @@ fn_(demoThrd(Thrd_FnCtx* ctx), Thrd_FnRet*) {
     return self->ret.value = cnt, self->ret.base;
 }
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     let direct_run = *as$(
@@ -42,5 +42,4 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     printf("direct_run: %d\n", direct_run);
 
     return_ok({});
-} unscoped;
-
+} $unscoped;

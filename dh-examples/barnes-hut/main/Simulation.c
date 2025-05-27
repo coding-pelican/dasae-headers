@@ -40,7 +40,7 @@ fn_scope_ext(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation
 #endif
         .allocator = allocator,
     });
-} unscoped_ext;
+} $unguarded;
 
 fn_(Simulation_destroy(Simulation* self), void) {
     debug_assert_nonnull(self);
@@ -63,7 +63,8 @@ fn_scope(Simulation_step(Simulation* self), Err$void) {
     self->frame += 1;
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_(Simulation_iterate(Simulation* self), void) {
     debug_assert_nonnull(self);
@@ -103,7 +104,8 @@ fn_scope(Simulation_collide(Simulation* self), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 #endif /* CollideMethod_simply_o_n_pow_2 */
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
@@ -191,7 +193,8 @@ fn_scope(Simulation_collide(Simulation* self), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
@@ -206,7 +209,8 @@ fn_scope(Simulation_attract(Simulation* self), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     debug_assert_nonnull(self);

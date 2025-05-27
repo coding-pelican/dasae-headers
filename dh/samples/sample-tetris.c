@@ -107,7 +107,7 @@ struct termios tetris_Console_original = cleared();
 
 /* Main Function ============================================================*/
 
-fn_scope_ext(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $guard) {
     /* Initialize random number generator */
     Random_init();
 
@@ -228,18 +228,18 @@ fn_scope_ext(dh_main(void), Err$void) {
 #endif
 
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 /* Function Implementations =================================================*/
 
-static fn_scope_ext(tetris_Console_bootup(void), Err$void) {
+static fn_(tetris_Console_bootup(void), Err$void, $guard) {
 #if bti_plat_windows
     /* Set up Windows console */
     var screen_size = tetris_screen_width * tetris_screen_height;
 
     /* Use safe allocation with proper type information */
     var allocator                = heap_Page_allocator(create$(heap_Page));
-    var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar_t), screen_size));
+    var screen_buffer            = try_( mem_Allocator_alloc(allocator, typeInfo$(wchar_t), screen_size));
     tetris_Console_screen_buffer = meta_castSli$(Sli$wchar_t, screen_buffer);
     errdefer_(mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
 
@@ -285,7 +285,7 @@ static fn_scope_ext(tetris_Console_bootup(void), Err$void) {
 #endif
 
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 static fn_(tetris_Console_shutdown(void), void) {
 #if bti_plat_windows
@@ -324,7 +324,7 @@ static fn_(tetris_isKeyPressed(i32 key), bool) {
 #endif /* others */
 }
 
-static fn_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) {
+static fn_(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField, $scope) {
     /* Allocate grid for field with proper type information */
     var items = try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height));
 
@@ -343,9 +343,9 @@ static fn_scope(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayF
     }
 
     return_ok({ .grid = field });
-} unscoped;
+} $unscoped;
 
-static fn_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) {
+static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void, $scope) {
 #if bti_plat_windows
     /* Clear screen buffer */
     for_slice (tetris_Console_screen_buffer, cell) {
@@ -457,7 +457,7 @@ static fn_scope(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 c
 #endif /* others */
 
     return_ok({});
-} unscoped;
+} $unscoped;
 
 static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32) {
     i32 pi = 0;
@@ -505,7 +505,7 @@ static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetr
     return true;
 }
 
-static fn_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) {
+static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32, $scope) {
     ArrList_clearRetainingCap(lines->base);
 
     /* Check for complete lines */
@@ -551,7 +551,7 @@ static fn_scope(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32
     }
 
     return_ok(as$(i32, lines->items.len));
-} unscoped;
+} $unscoped;
 
 static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void) {
     for (i32 py = 0; py < 4; ++py) {
