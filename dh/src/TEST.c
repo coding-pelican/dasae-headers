@@ -33,9 +33,7 @@ fn_(TEST_Framework_instance(void), TEST_Framework*) {
             ArrList$TEST_Case,
             ArrList_init(
                 typeInfo$(TEST_Case),
-                heap_Page_allocator(&s_allocator)
-            )
-        );
+                heap_Page_allocator(&s_allocator)));
         s_is_initialized = true;
     }
     return &s_instance;
@@ -45,8 +43,7 @@ fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void) {
     let instance = TEST_Framework_instance();
     let result   = ArrList_append(
         instance->cases.base,
-        meta_refPtr(create$(TEST_Case, .fn = fn, .name = name))
-        );
+        meta_refPtr(create$(TEST_Case, .fn = fn, .name = name)) );
     if (isErr(result)) { return; } /* Occurs when heap is full (Out of memory) */
 }
 
@@ -88,7 +85,7 @@ fn_(TEST_Framework_run(void), void) {
 }
 
 /* Debug versions of test functions */
-fn_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) {
+fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void, $scope) {
     $ignore = loc;
     $ignore = expr_str;
 
@@ -96,9 +93,9 @@ fn_scope(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void) 
         return_err(Err_InvalidArgument());
     }
     return_ok({});
-} unscoped;
+} $unscoped;
 
-fn_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void) {
+fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void, $scope) {
     $ignore = msg;
     $ignore = loc;
     $ignore = expr_str;
@@ -107,4 +104,4 @@ fn_scope(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const exp
         return_err(Err_InvalidArgument());
     }
     return_ok({});
-} unscoped;
+} $unscoped;

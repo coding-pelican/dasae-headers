@@ -63,7 +63,7 @@ extern "C" {
      * func_0(_Name_With_Params, T_Return, ...):                                   \
      * => fn_(_Name_With_Params, T_Return)                                         \
      * func_1(_Name_With_Params, T_Return, _Body...):                              \
-     * => fn_scope(_Name_With_Params, T_Return) _Body unscoped                     \
+     * => fn_scope(_Name_With_Params, T_Return) _Body $unscoped                     \
      * func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...):                \
      * => pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return)             \
     _Body pp_cat(unscoped_, _Expand_Type)                                          \

@@ -2,30 +2,68 @@
 ## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 ---
 BasedOnStyle: LLVM
+# Language: Cpp
+Standard: c++20
+ColumnLimit: 0
+TabWidth: 4
+IndentWidth: 4
+IndentExternBlock: NoIndent
+IndentGotoLabels: false
+ObjCBlockIndentWidth: 4
+LambdaBodyIndentation: OuterScope
 AccessModifierOffset: -4
+MaxEmptyLinesToKeep: 5
+InsertNewlineAtEOF: true
+# AlignAfterOpenBracket: Align
+# AlignAfterOpenBracket: DontAlign
+# AlignAfterOpenBracket: AlwaysBreak
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments:
   Enabled: true
+  AcrossEmptyLines: false
   AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignConsecutiveBitFields:
   Enabled: true
+  AcrossEmptyLines: false
   AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignConsecutiveDeclarations:
   Enabled: true
+  AcrossEmptyLines: false
   AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignConsecutiveMacros:
   Enabled: true
+  AcrossEmptyLines: false
   AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignConsecutiveShortCaseStatements:
   Enabled: true
+  AcrossEmptyLines: false
   AcrossComments: true
-AlignEscapedNewlines: Left
+  AlignCaseArrows: false
+  AlignCaseColons: false
+AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Always
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLoopsOnASingleLine: true
-BinPackArguments: false
-BinPackParameters: false
+BinPackArguments: true
+BinPackParameters: true
+
+InsertBraces: true
+BreakAfterAttributes: Leave
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
@@ -43,23 +81,17 @@ BraceWrapping:
   BeforeWhile: false
   IndentBraces: false
   SplitEmptyFunction: false
-  SplitEmptyRecord: true
-  SplitEmptyNamespace: true
-BreakBeforeBinaryOperators: All
-BreakBeforeBraces: Custom
-BreakConstructorInitializers: BeforeComma
-ColumnLimit: 0
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 Cpp11BracedListStyle: false
-IndentWidth: 4
-InsertBraces: true
-InsertNewlineAtEOF: true
-MaxEmptyLinesToKeep: 5
-ObjCBlockIndentWidth: 4
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeComma
+
+# AlwaysBreakAfterReturnType: All
+# ContinuationIndentWidth: 4
+
 PointerAlignment: Left
 SortIncludes: Never
-Standard: c++20
-TabWidth: 4
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
 
 TypeNames:
   # Inference
@@ -142,20 +174,22 @@ TypeNames:
   - atomic_Value$
   - atomic_Value$$
 Macros:
+  - "$static=$static"
+  - "$extern=$extern"
   - "some(_)=_"
   - "none()={}"
   - "unwrap(_)=_"
   - "try_(_)=_"
   # Control flow
-  - "if_(init,cond)=if (init; cond)"
+  - "if_(init, cond)=if (init; cond)"
   - "else_(init)=else if (init; true)"
-  - "switch_(init,cond)=switch (init; cond)"
-  - "while_(init,cond)=while (init; cond)"
+  - "switch_(init, cond)=switch (init; cond)"
+  - "while_(init, cond)=while (init; cond)"
   # Optional value
-  - "if_some(_,_)=if (_)"
-  - "if_none(_)=if (_)"
+  - "if_some(expr, capture)=if (capture)"
+  - "if_none(expr)=if ()"
   - "else_none=else"
-  - "else_some(_)=else if (_)"
+  - "else_some(expr)=else if ()"
   # Error result
   - "if_err(_,_)=if (_)"
   - "if_ok(_,_)=if (_)"
@@ -169,27 +203,30 @@ Macros:
   # - toTagUnion(addr,tag,expr)=/**/
   # Match
   - "match_(expr)=switch (expr)"
-  - "pattern_(tag,capture)=case tag:"
+  - "pattern_(tag, capture)=case tag:"
   - "fallback_(_)=default:"
-  - "$must_check=/**/"
   # Eval
   - "eval_(_)=({ _; })"
   - "eval$(T,_)=(T)({ _; })"
   - "eval_return_(_)=return _"
   - "asg_eval(_)=({ _; })"
-  # Scope
+  # # Scope
   - "block_defer=do { /**/ } while (false)"
   - "block_deferral=/**/"
   - "defer_break=goto __step_deferred;"
-  - "fn_(name_with_params,return_type)=auto name_with_params -> return_type"
-  - "fn_scope(name_with_params,return_type)=auto name_with_params -> return_type"
-  - unscoped=/**/
-  - "fn_scope_ext(name_with_params,return_type)=auto name_with_params -> return_type"
-  - unscoped_ext=/**/
-  - "fn_TEST_scope(name)=Err$void TEST_caseFn(void)"
-  - TEST_unscoped=/**/
-  - "fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)"
-  - TEST_unscoped_ext=/**/
+  # - "fn_(name_with_params,return_type)=auto name_with_params -> return_type"
+  # - "fn_scope(name_with_params,return_type)=auto name_with_params -> return_type"
+  - $unscoped=/**/
+  # - "fn_scope_ext(name_with_params,return_type)=auto name_with_params -> return_type"
+  - $unguarded=/**/
+  # - "fn_TEST_scope(name)=Err$void TEST_caseFn(void)"
+  - $unscoped_TEST=/**/
+  # - "fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)"
+  - $unguarded_TEST=/**/
+  # async_fn_scope(name_with_params,return_type)
+  - async_unscoped=/**/
+  # async_fn_scope_ext(name_with_params,return_type)
+  # - async_unscoped_ext=/**/
 ForEachMacros:
   - pp_foreach
   - for_slice
@@ -201,16 +238,29 @@ ForEachMacros:
   - for_array_rev
   - for_array_rev_indexed
 AttributeMacros:
-  - $on_load
-  - $on_exit
+  - $static
+  - $extern
+
   - $inline
   - $inline_always
   - $inline_never
+
+  - $on_load
+  - $on_exit
+
+  - $must_check
+  - $must_use
+  - $maybe_unused
+  - $no_return
+
+  - $ignore
+  - $ignore_void
+  - $ignore_capture
+
   - $deprecated
   - $deprecated_msg
   - $deprecated_instead
-  - $must_check
-  - $no_return
+
   - $nullable
   - $nonnull
 StatementAttributeLikeMacros:
@@ -228,9 +278,9 @@ StatementAttributeLikeMacros:
   - catch_
   - catch_from
 WhitespaceSensitiveMacros:
-  - fn_
-  - fn_scope
-  - fn_scope_ext
+  # - fn_
+  # - fn_scope
+  # - fn_scope_ext
   - with_
   - try_
   - catch_
