@@ -90,27 +90,51 @@ extern "C" {
 #define op_fnDivAsgBy(TSelf, TOther) op_fnBinAsgBy(divAsgBy, TSelf, TOther)
 #define op_fnRemAsgBy(TSelf, TOther) op_fnBinAsgBy(remAsgBy, TSelf, TOther)
 
-#define op_fnWrapAddBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_addBy(TSelf, TOther)(self, other); }
-#define op_fnWrapSubBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_subBy(TSelf, TOther)(self, other); }
-#define op_fnWrapMulBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_mulBy(TSelf, TOther)(self, other); }
-#define op_fnWrapDivBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_divBy(TSelf, TOther)(self, other); }
-#define op_fnWrapRemBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_remBy(TSelf, TOther)(self, other); }
+#if !COMP_TIME
+#define op_fnWrapAddBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_addBy(TSelf, TOther)(self, other); }
+#define op_fnWrapSubBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_subBy(TSelf, TOther)(self, other); }
+#define op_fnWrapMulBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_mulBy(TSelf, TOther)(self, other); }
+#define op_fnWrapDivBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_divBy(TSelf, TOther)(self, other); }
+#define op_fnWrapRemBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_remBy(TSelf, TOther)(self, other); }
 
-#define op_fnWrapAddAsgBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_addAsgBy(TSelf, TOther)(self, other); }
-#define op_fnWrapSubAsgBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_subAsgBy(TSelf, TOther)(self, other); }
-#define op_fnWrapMulAsgBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_mulAsgBy(TSelf, TOther)(self, other); }
-#define op_fnWrapDivAsgBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_divAsgBy(TSelf, TOther)(self, other); }
-#define op_fnWrapRemAsgBy(fnName, TSelf, TOther) \
-    pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_remAsgBy(TSelf, TOther)(self, other); }
+#define op_fnWrapAddAsgBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_addAsgBy(TSelf, TOther)(self, other); }
+#define op_fnWrapSubAsgBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_subAsgBy(TSelf, TOther)(self, other); }
+#define op_fnWrapMulAsgBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_mulAsgBy(TSelf, TOther)(self, other); }
+#define op_fnWrapDivAsgBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_divAsgBy(TSelf, TOther)(self, other); }
+#define op_fnWrapRemAsgBy(fnName, TSelf, TOther, TRet) \
+    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_remAsgBy(TSelf, TOther)(self, other); }
+#else /* COMP_TIME */
+#define op_fnWrapAddBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_addBy(TSelf, TOther)
+#define op_fnWrapSubBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_subBy(TSelf, TOther)
+#define op_fnWrapMulBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_mulBy(TSelf, TOther)
+#define op_fnWrapDivBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_divBy(TSelf, TOther)
+#define op_fnWrapRemBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_remBy(TSelf, TOther)
+
+#define op_fnWrapAddAsgBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_addAsgBy(TSelf, TOther)
+#define op_fnWrapSubAsgBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_subAsgBy(TSelf, TOther)
+#define op_fnWrapMulAsgBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_mulAsgBy(TSelf, TOther)
+#define op_fnWrapDivAsgBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_divAsgBy(TSelf, TOther)
+#define op_fnWrapRemAsgBy(fnName, TSelf, TOther, TRet) \
+    let pp_join(_, TSelf, fnName) = op_remAsgBy(TSelf, TOther)
+#endif /* COMP_TIME */
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 
