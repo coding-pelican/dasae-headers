@@ -45,59 +45,58 @@ extern "C" {
 
 #if BUILTIN_LANG_MODE_C && BUILTIN_COMP_CLANG
 #define comp_type_unnamed__Callback(_Params, T_Return...) \
-    struct {                                              \
-        bool is_lam;                                      \
-        union {                                           \
-            fn_((^lamObj)_Params, T_Return);               \
-            fn_((*fnPtr)_Params, T_Return);                \
-        } callback;                                       \
+    struct { \
+        union { \
+            fn_((^lamObj)_Params, T_Return); \
+            fn_((*fnPtr)_Params, T_Return); \
+        } callback; \
+        bool is_lam; \
     }
 #define comp_gen__use_Callback(T_Callback, _Params, T_Return...) \
-    typedef struct T_Callback {                                  \
-        bool is_lam;                                             \
-        union {                                                  \
-            fn_((^lamObj)_Params, T_Return);                      \
-            fn_((*fnPtr)_Params, T_Return);                       \
-        } callback;                                              \
+    typedef struct T_Callback { \
+        union { \
+            fn_((^lamObj)_Params, T_Return); \
+            fn_((*fnPtr)_Params, T_Return); \
+        } callback; \
+        bool is_lam; \
     } T_Callback
 #else /* others */
 #define comp_type_unnamed__Callback(_Params, T_Return...) \
-    struct {                                              \
-        bool is_lam;                                      \
-        union {                                           \
-            fn_((*lamObj)_Params, T_Return);               \
-            fn_((*fnPtr)_Params, T_Return);                \
-        } callback;                                       \
+    struct { \
+        union { \
+            fn_((*lamObj)_Params, T_Return); \
+            fn_((*fnPtr)_Params, T_Return); \
+        } callback; \
+        bool is_lam; \
     }
 typedef struct T_Callback {
-    bool is_lam;
     union {
         fn_((*lamObj)_Params, T_Return);
         fn_((*fnPtr)_Params, T_Return);
     } callback;
+    bool is_lam;
 } T_Callback
 #endif /* others */
 
-#define comp_op__wrapLam(val_callbackLamObj...)     \
-    {                                               \
-        .is_lam   = true,                           \
-        .callback = {.lamObj = val_callbackLamObj } \
-    }
-#define comp_op__wrapFn(val_callbackFnPtr...)     \
-    {                                             \
-        .is_lam   = false,                        \
-        .callback = {.fnPtr = val_callbackFnPtr } \
-    }
+#define comp_op__wrapLam(val_callbackLamObj...) { \
+    .callback = { .lamObj = val_callbackLamObj }, \
+    .is_lam   = true \
+}
+#define comp_op__wrapFn(val_callbackFnPtr...) { \
+    .callback = { .fnPtr = val_callbackFnPtr }, \
+    .is_lam   = false \
+}
 
 #define comp_op__wrapLam$(T_Callback, val_callbackLamObj...) ((T_Callback)wrapLam(val_callbackLamObj))
 #define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...)   ((T_Callback)wrapFn(val_callbackFnPtr))
 
 #define comp_op__invoke(__wrapper, val_wrapper, _Args...) eval({ \
-    let __wrapper = val_wrapper;                                 \
-    eval_return(                                                 \
-        (__wrapper).is_lam ? (__wrapper).callback.lamObj(_Args)  \
-                           : (__wrapper).callback.fnPtr(_Args)   \
-    );                                                           \
+    let __wrapper = val_wrapper; \
+    eval_return( \
+        (__wrapper).is_lam \
+            ? (__wrapper).callback.lamObj(_Args) \
+            : (__wrapper).callback.fnPtr(_Args) \
+    ); \
 })
 
 /*========== Example Usage ==================================================*/
@@ -107,20 +106,17 @@ typedef struct T_Callback {
 config_Callback(sort_CmpFn_compat, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
 
 // Example: Invoke a comparison function
-$inline_always fn_( sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+$inline_always fn_(sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
     return invoke(cb, lhs, rhs);
 }
 // Example: Sort function that can accept both function pointers and blocks
-extern fn_( sort_insertionSort_compat(
-    meta_Sli          base_sli,
-    sort_CmpFn_compat cmpFn
-), void);
+extern fn_(sort_insertionSort_compat(meta_Sli base_sli, sort_CmpFn_compat cmpFn), void);
 // Actual implementation that uses the compatibility layer
-fn_( sort_insertionSort_compat(
-    meta_Sli          base_sli,
-    sort_CmpFn_compat cmpFn
-),
-void) {
+fn_(sort_insertionSort_compat(
+        meta_Sli          base_sli,
+        sort_CmpFn_compat cmpFn
+    ),
+    void) {
     // Implementation that calls sort_CmpFn_compat_invoke(cmpFn, lhs, rhs) instead of cmpFn(lhs, rhs)
     // ...
 }
@@ -130,26 +126,26 @@ void) {
 #include <stdio.h>
 
 // Original function pointer
-typedef fn_( (*IntBinaryOp)(i32, i32), i32);
+typedef fn_((*IntBinaryOp)(i32, i32), i32);
 // Compatible callback type that works with both function pointers and blocks
 use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
 
 // Function that accepts only function pointers
-fn_( operateFnptr(i32 a, i32 b, IntBinaryOp op),
-void) {
+fn_(operateFnptr(i32 a, i32 b, IntBinaryOp op),
+    void) {
     printf("Result: %d\n", op(a, b));
 }
 // Function that accepts the compatible callback type
-fn_( operateCompat(i32 a, i32 b, IntBinOp_compat op),
-void) {
+fn_(operateCompat(i32 a, i32 b, IntBinOp_compat op),
+    void) {
     printf("Result: %d\n", invoke(op, a, b));
 }
 
 // Function that adds two integers
-fn_( funcAdd(i32 lhs, i32 rhs),
-i32) { return lhs + rhs; }
+fn_(funcAdd(i32 lhs, i32 rhs),
+    i32) { return lhs + rhs; }
 // Example main function showing how to use the compatibility layer
-fn_ext_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $guard) {
     // Create a block/lambda
     let lambdaAdd = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
 
@@ -170,8 +166,7 @@ fn_ext_scope(dh_main(void), Err$void) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-}
-ext_unscoped;
+} $unguarded;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
