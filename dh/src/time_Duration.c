@@ -52,8 +52,7 @@ bool time_Duration_isZero(time_Duration self) {
 time_Duration time_Duration_fromSecs_f64(f64 secs) {
     return time_Duration_from(
         as$(u64, secs),
-        as$(u32, (secs - as$(f64, as$(u64, secs))) * as$(f64, time_nanos_per_sec))
-    );
+        as$(u32, (secs - as$(f64, as$(u64, secs))) * as$(f64, time_nanos_per_sec)));
 }
 
 f64 time_Duration_asSecs_f64(time_Duration self) {
@@ -94,7 +93,7 @@ time_Duration op_fnDivAsgBy(time_Duration, u64) {
     return *self = op_divBy(time_Duration, u64)(*self, other);
 }
 
-fn_scope(time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs), Opt$time_Duration) {
+fn_(time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs), Opt$time_Duration, $scope) {
     let total_nanos = (lhs.secs * time_nanos_per_sec + lhs.nanos)
                     + (rhs.secs * time_nanos_per_sec + rhs.nanos);
     // Check for overflow in nanoseconds
@@ -105,9 +104,9 @@ fn_scope(time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs), Opt$time_D
     let secs  = total_nanos / time_nanos_per_sec;
     let nanos = as$(u32, total_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
-} unscoped;
+} $unscoped;
 
-fn_scope(time_Duration_chkdSub(time_Duration lhs, time_Duration rhs), Opt$time_Duration) {
+fn_(time_Duration_chkdSub(time_Duration lhs, time_Duration rhs), Opt$time_Duration, $scope) {
     let lhs_total_nanos = lhs.secs * time_nanos_per_sec + lhs.nanos;
     let rhs_total_nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
     // Check for underflow
@@ -118,18 +117,18 @@ fn_scope(time_Duration_chkdSub(time_Duration lhs, time_Duration rhs), Opt$time_D
     let secs       = diff_nanos / time_nanos_per_sec;
     let nanos      = as$(u32, diff_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
-} unscoped;
+} $unscoped;
 
-fn_scope(time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs), Opt$time_Duration) {
+fn_(time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs), Opt$time_Duration, $scope) {
     // Check for overflow
     if ((u32_limit - rhs) < lhs.nanos || (u64_limit / rhs) < lhs.secs) {
         return_none();
     }
     let total_nanos = lhs.secs * rhs + lhs.nanos;
     return_some(literal_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
-} unscoped;
+} $unscoped;
 
-fn_scope(time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs), Opt$time_Duration) {
+fn_(time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs), Opt$time_Duration, $scope) {
     // Check for division by zero or overflow
     if (rhs == 0 || (u64_limit / rhs) < lhs.secs || (u32_limit / rhs) < lhs.nanos) {
         return_none();
@@ -138,4 +137,4 @@ fn_scope(time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs), Opt$time_Duratio
     let secs        = total_nanos / time_nanos_per_sec;
     let nanos       = as$(u32, total_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
-} unscoped;
+} $unscoped;

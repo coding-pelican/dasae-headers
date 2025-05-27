@@ -39,19 +39,19 @@ time_Instant op_fnSubAsgBy(time_Instant, time_Duration) {
     return *self = op_subBy(time_Instant, time_Duration)(*self, other);
 }
 
-fn_scope(time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs), Opt$time_Instant) {
+fn_(time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs), Opt$time_Instant, $scope) {
     if_some(time_SysTime_chkdAddDuration(lhs.point, rhs), opt) {
         return_some({ .point = opt });
     }
     return_none();
-} unscoped;
+} $unscoped;
 
-fn_scope(time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs), Opt$time_Instant) {
+fn_(time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs), Opt$time_Instant, $scope) {
     if_some(time_SysTime_chkdSubDuration(lhs.point, rhs), opt) {
         return_some({ .point = opt });
     }
     return_none();
-} unscoped;
+} $unscoped;
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

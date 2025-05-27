@@ -97,7 +97,7 @@ time_Duration time_SysTime_durationSince(time_SysTime later, time_SysTime earlie
     return unwrap(time_SysTime_chkdDurationSince(later, earlier));
 }
 
-fn_scope(time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier), Opt$time_Duration) {
+fn_(time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier), Opt$time_Duration, $scope) {
     if (time_SysTime_lt(later, earlier)) {
         return_none();
     }
@@ -119,7 +119,7 @@ fn_scope(time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier
     let nanos = as$(u64, diff.tv_sec* time_SysTime_nanos_per_sec) + diff.tv_nsec;
 #endif /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     return_some(time_Duration_fromNanos(nanos));
-} unscoped;
+} $unscoped;
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -139,7 +139,7 @@ time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
     return *self = op_subBy(time_SysTime, time_Duration)(*self, other);
 }
 
-fn_scope(time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime) {
+fn_(time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime, $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_max - as$(u64, lhs.impl_.QuadPart))) {
@@ -156,9 +156,9 @@ fn_scope(time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs), Opt$
     }
 #endif
     return_none();
-} unscoped;
+} $unscoped;
 
-fn_scope(time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime) {
+fn_(time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime, $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_min + as$(u64, lhs.impl_.QuadPart))) {
@@ -175,7 +175,7 @@ fn_scope(time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs), Opt$
     }
 #endif
     return_none();
-} unscoped;
+} $unscoped;
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 
