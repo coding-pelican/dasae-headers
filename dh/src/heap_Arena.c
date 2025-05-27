@@ -72,7 +72,7 @@ extern fn_(heap_Arena_queryCap(const heap_Arena* self), usize) {
     return size;
 }
 
-extern fn_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), bool) {
+extern fn_(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), bool) {
     debug_assert_nonnull(self);
 
     // Calculate requested capacity based on mode
@@ -98,7 +98,7 @@ extern fn_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), b
             .buffer_list = type$(ListSgl$usize, ListSgl_init()),
             .end_index   = 0
         };
-        return_(true);
+        return true;
     }
 
     // Calculate total size needed including node header
@@ -126,18 +126,22 @@ extern fn_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), b
 
         // Perfect size match, no need to resize
         if (*first_node->data == total_size) {
-            return_(true);
+            return true;
         }
 
         // Try to resize the buffer
         let alloc_buf = Sli_from$(Sli$u8, as$(u8*, first_node), *first_node->data);
         if (mem_Allocator_rawResize(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize), total_size)) {
             *first_node->data = total_size;
-            return_(true);
+            return true;
         }
 
         // Manual reallocation needed
-        let new_ptr = orelse(mem_Allocator_rawAlloc(self->child_allocator, total_size, alignOf(ListSgl_Node$usize)), eval({ return_(false); }));
+        let new_ptr = orelse(mem_Allocator_rawAlloc(
+            self->child_allocator,
+            total_size,
+            alignOf(ListSgl_Node$usize)
+        ), eval({ return false; }));
         // Free old buffer and update state
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
         let new_node                  = as$(ListSgl_Node$usize*, new_ptr);
@@ -145,12 +149,12 @@ extern fn_scope(heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode), b
         self->state.buffer_list.first = some$(Opt$Ptr$ListSgl_Node$usize, new_node);
     }
 
-    return_(true);
-} unscoped;
+    return true;
+}
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+static fn_(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -159,7 +163,7 @@ static fn_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) 
 
     var cur_node = eval({
         var node = make$(ListSgl_Node$usize*);
-        if_some (self->state.buffer_list.first, first_node) {
+        if_some(self->state.buffer_list.first, first_node) {
             node = first_node;
         } else {
             node = orelse(heap_Arena_createNode(self, 0, len + ptr_align), eval({ return_none(); }));
@@ -192,7 +196,7 @@ static fn_scope(heap_Arena_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) 
             cur_node = orelse(heap_Arena_createNode(self, cur_buf_len, len + ptr_align), eval({ return_none(); }));
         }
     }
-} unscoped;
+} $unscoped;
 
 static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
     debug_assert_nonnull(ctx);
@@ -228,12 +232,12 @@ static fn_(heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
     return false;
 }
 
-static fn_scope(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+static fn_(heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8, $scope) {
     if (heap_Arena_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
     return_none();
-} unscoped;
+} $unscoped;
 
 static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     debug_assert_nonnull(ctx);
@@ -256,7 +260,7 @@ static fn_(heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 /*========== Internal Helper Functions =====================================*/
 
-static fn_scope(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size), Opt$Ptr$ListSgl_Node$usize) {
+static fn_(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size), Opt$Ptr$ListSgl_Node$usize, $scope) {
     debug_assert_nonnull(self);
 
     // Calculate new buffer size with exponential growth
@@ -272,4 +276,4 @@ static fn_scope(heap_Arena_createNode(heap_Arena* self, usize prev_len, usize mi
     self->state.end_index = 0;
 
     return_some(node);
-} unscoped;
+} $unscoped;

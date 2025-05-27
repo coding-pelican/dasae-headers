@@ -88,7 +88,7 @@ Opt$Str Str_constCast(Str_const self) {
     return some$(Opt$Str, Str_from(as$(u8*, self.ptr), self.len));
 }
 
-fn_scope(Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs), Err$Str) {
+fn_(Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs), Err$Str, $scope) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
@@ -97,7 +97,7 @@ fn_scope(Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs), Err$Str
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
-} unscoped;
+} $unscoped;
 
 fn_(Str_print(Str_const self), void) {
     debug_assert_nonnull(self.ptr);
@@ -111,7 +111,7 @@ fn_(Str_println(Str_const self), void) {
     $ignore = putchar('\n');
 }
 
-fn_scope_ext(Str_format(mem_Allocator allocator, const char* format, ...), Err$Str) {
+fn_(Str_format(mem_Allocator allocator, const char* format, ...), Err$Str, $guard) {
     va_list args1 = {};
     va_start(args1, format);
     defer_(va_end(args1));
@@ -133,7 +133,7 @@ fn_scope_ext(Str_format(mem_Allocator allocator, const char* format, ...), Err$S
         result.len = len;
     }
     return_ok(result);
-} unscoped_ext;
+} $unguarded;
 
 Str_const Str_slice(Str_const self, usize start, usize end) {
     debug_assert_nonnull(self.ptr);
@@ -168,7 +168,7 @@ Str_const Str_rtrim(Str_const self) {
     return Str_slice(self, 0, end);
 }
 
-fn_scope(Str_upper(mem_Allocator allocator, Str_const str), Err$Str) {
+fn_(Str_upper(mem_Allocator allocator, Str_const str), Err$Str, $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -176,9 +176,9 @@ fn_scope(Str_upper(mem_Allocator allocator, Str_const str), Err$Str) {
         *ch = as$(u8, toupper(*Sli_at(str, i)));
     }
     return_ok(result);
-} unscoped;
+} $unscoped;
 
-fn_scope(Str_lower(mem_Allocator allocator, Str_const str), Err$Str) {
+fn_(Str_lower(mem_Allocator allocator, Str_const str), Err$Str, $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Str, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -186,7 +186,7 @@ fn_scope(Str_lower(mem_Allocator allocator, Str_const str), Err$Str) {
         *ch = as$(u8, tolower(*Sli_at(str, i)));
     }
     return_ok(result);
-} unscoped;
+} $unscoped;
 
 bool Str_contains(Str_const haystack, Str_const needle) {
     debug_assert_nonnull(haystack.ptr);
@@ -201,7 +201,7 @@ bool Str_contains(Str_const haystack, Str_const needle) {
     return false;
 }
 
-fn_scope(Str_find(Str_const haystack, Str_const needle, usize start), Opt$usize) {
+fn_(Str_find(Str_const haystack, Str_const needle, usize start), Opt$usize, $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -212,9 +212,9 @@ fn_scope(Str_find(Str_const haystack, Str_const needle, usize start), Opt$usize)
         }
     }
     return_none();
-} unscoped;
+} $unscoped;
 
-fn_scope(Str_rfind(Str_const haystack, Str_const needle, usize start), Opt$usize) {
+fn_(Str_rfind(Str_const haystack, Str_const needle, usize start), Opt$usize, $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -225,7 +225,7 @@ fn_scope(Str_rfind(Str_const haystack, Str_const needle, usize start), Opt$usize
         }
     }
     return_none();
-} unscoped;
+} $unscoped;
 
 bool Str_startsWith(Str_const self, Str_const prefix) {
     debug_assert_nonnull(self.ptr);
@@ -362,7 +362,7 @@ bool StrUtf8_isValid(Str_const self) {
     return true;
 }
 
-fn_scope(StrUtf8_codepointAt(Str_const self, usize pos), Opt$u32) {
+fn_(StrUtf8_codepointAt(Str_const self, usize pos), Opt$u32, $scope) {
     debug_assert_nonnull(self.ptr);
     debug_assert(pos < self.len);
 
@@ -396,7 +396,7 @@ fn_scope(StrUtf8_codepointAt(Str_const self, usize pos), Opt$u32) {
     }
 
     return_none();
-} unscoped;
+} $unscoped;
 
 StrUtf8Iter StrUtf8_iter(Str_const self) {
     debug_assert_nonnull(self.ptr);
@@ -425,7 +425,7 @@ StrTokenizer Str_tokenizer(Str_const self, Str_const delims) {
     };
 }
 
-fn_scope(StrTokenizer_next(StrTokenizer* self), Opt$Str_const) {
+fn_(StrTokenizer_next(StrTokenizer* self), Opt$Str_const, $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->str.ptr);
     debug_assert_nonnull(self->delims.ptr);
@@ -462,4 +462,4 @@ fn_scope(StrTokenizer_next(StrTokenizer* self), Opt$Str_const) {
     }
 
     return_some(Str_slice(self->str, start, self->pos));
-} unscoped;
+} $unscoped;

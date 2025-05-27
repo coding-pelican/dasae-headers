@@ -74,7 +74,7 @@ fn_scope_ext(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize 
         .parents   = parents,
         .allocator = allocator,
     });
-} unscoped_ext;
+} $unguarded;
 fn_(QuadTree_destroy(QuadTree* self), void) {
     debug_assert_nonnull(self);
     ArrList_fini(self->nodes.base);
@@ -157,7 +157,8 @@ static fn_scope(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, 
         ));
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 fn_(QuadTree_propagate(QuadTree* self), void) {
     debug_assert_nonnull(self);
     // Propagate masses and center of mass upward through the tree
@@ -216,7 +217,8 @@ fn_scope(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) {
 
     QuadTree_propagate(self);
     return_ok({});
-} unscoped;
+}
+unscoped;
 fn_(QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies), math_Vec2f) {
     debug_assert_nonnull(self);
     var acc  = math_Vec2f_zero;

@@ -111,7 +111,7 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
         Launcher_window_title.ptr
     );
     return_ok({});
-} unscoped;
+} $unscoped;
 
 config_ErrSet(fmt_ParseIntErr,
     EmptyStr,
@@ -135,7 +135,7 @@ fn_scope(fmt_parseInt_u32(Sli_const$u8 str), Err$u32) {
         }
         eval_return parsed;
     }));
-} unscoped;
+} $unscoped;
 fn_scope(fmt_parseInt_usize(Sli_const$u8 str), Err$usize) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
@@ -152,7 +152,7 @@ fn_scope(fmt_parseInt_usize(Sli_const$u8 str), Err$usize) {
         }
         eval_return parsed;
     }));
-} unscoped;
+} $unscoped;
 fn_scope(fmt_parseInt_i32(Sli_const$u8 str), Err$i32) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
@@ -198,7 +198,7 @@ fn_scope(fmt_parseInt_i32(Sli_const$u8 str), Err$i32) {
         }
         eval_return parsed;
     }));
-} unscoped;
+} $unscoped;
 fn_scope(fmt_parseInt_isize(Sli_const$u8 str), Err$isize) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
@@ -234,7 +234,7 @@ fn_scope(fmt_parseInt_isize(Sli_const$u8 str), Err$isize) {
         }
         eval_return parsed;
     }));
-} unscoped;
+} $unscoped;
 
 static $inline fn_(Err_codeToStr(Err err), Str_const) {
     return Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
@@ -282,7 +282,8 @@ fn_TEST_scope("fmt_parseInt_u32") {
             Str_l("Expected Overflow error")
         ));
     }
-} TEST_unscoped;
+}
+TEST_unscoped;
 
 fn_TEST_scope("fmt_parseInt_usize") {
     // Valid inputs
@@ -326,7 +327,8 @@ fn_TEST_scope("fmt_parseInt_usize") {
             Str_l("Expected Overflow error")
         ));
     }
-} TEST_unscoped;
+}
+TEST_unscoped;
 
 fn_TEST_scope("fmt_parseInt_i32") {
     // Valid positive
@@ -409,7 +411,8 @@ fn_TEST_scope("fmt_parseInt_i32") {
             Str_l("Expected Overflow error")
         ));
     }
-} TEST_unscoped;
+}
+TEST_unscoped;
 
 fn_TEST_scope("fmt_parseInt_isize") {
     // Valid positive
@@ -480,4 +483,5 @@ fn_TEST_scope("fmt_parseInt_isize") {
             Str_l("Expected Overflow error")
         ));
     }
-} TEST_unscoped;
+}
+TEST_unscoped;

@@ -31,11 +31,11 @@
 #define PATH_SEPARATOR "/"
 #endif
 
-#define DH_C_VERSION                                         \
-    /**                                                      \
-     * Version number                                        \
+#define DH_C_VERSION \
+    /** \
+     * Version number \
      * major.minor.patch-prerelease.minor.patch+build.number \
-     */                                                      \
+     */ \
     "0.1.0-alpha.0.1"
 
 // Debug level enum
@@ -988,9 +988,9 @@ const char* DEFAULT_CLANG_FORMAT_TEMPLATE
       "  - defer_break=break\n"
       "  - fn_(name_with_params,return_type)=return_type name_with_params\n"
       "  - fn_scope(name_with_params,return_type)=return_type name_with_params\n"
-      "  - unscoped=/**/\n"
+      "  - $unscoped=/**/\n"
       "  - fn_scope_ext(name_with_params,return_type)=return_type name_with_params\n"
-      "  - unscoped_ext=/**/\n"
+      "  - $unguarded=/**/\n"
       "  - fn_TEST_scope(name)=Err$void TEST_caseFn(void)\n"
       "  - TEST_unscoped=/**/\n"
       "  - fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)\n"
@@ -1904,7 +1904,7 @@ void write_example_files(const char* project_path) {
           "    let message = Str_l(\"Hello, world!\");\n"
           "    Str_println(message);\n"
           "    return_ok({});\n"
-          "} unscoped;\n";
+          "} $unscoped;\n";
 
     write_file(main_path, main_content);
 }

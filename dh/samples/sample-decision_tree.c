@@ -42,13 +42,14 @@ use_Ptr$(TreeNode);
 use_Err$(Ptr$TreeNode);
 
 // Forward declarations
-static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) $must_check;
-static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) $must_check;
-static fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
-static fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
-static fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
-static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) $must_check;
-static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) $must_check;
+
+$static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) $must_use;
+$static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) $must_use;
+$static fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
+$static fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
+$static fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
+$static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) $must_use;
+$static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) $must_use;
 
 // Dataset structure
 typedef struct Dataset {
@@ -64,7 +65,7 @@ static fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool
 static fn_(Dataset_destroy(Dataset* dataset), void);
 
 // Main function
-fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     $ignore = args;
 
     // Initialize logging to a file
@@ -171,24 +172,24 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 
     log_info("Decision tree application completed successfully");
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 // Implementation of TreeNode functions
-fn_scope(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) {
+fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode, $scope) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
     toTagUnion(node, TreeNode_leaf, { .class_label = class_label });
     return_ok(node);
-} unscoped;
+} $unscoped;
 
-fn_scope(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) {
+fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode, $scope) {
     let node = meta_castPtr$(TreeNode*,
         try_(mem_Allocator_create(allocator, typeInfo$(TreeNode)))
     );
     toTagUnion(node, TreeNode_decision, { .feature_index = feature_index, .threshold = threshold, .left = left, .right = right });
     return_ok(node);
-} unscoped;
+} $unscoped;
 
 fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
@@ -262,7 +263,7 @@ fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-n
     }
 }
 
-fn_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) /* NOLINT(misc-no-recursion) */ {
+fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void, $scope) /* NOLINT(misc-no-recursion) */ {
     if (fwrite(&node->tag, sizeof(node->tag), 1, file) != 1) {
         log_error("Failed to write node tag");
         return_err(io_FileErr_WriteFailed());
@@ -290,9 +291,9 @@ fn_scope(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) /
     }
 
     return_ok({});
-} unscoped;
+} $unscoped;
 
-fn_scope(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) /* NOLINT(misc-no-recursion) */ {
+fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode, $scope) /* NOLINT(misc-no-recursion) */ {
     let tag = eval({
         int tag = 0;
         if (fread(&tag, sizeof(tag), 1, file) != 1) {
@@ -327,10 +328,10 @@ fn_scope(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Pt
         log_error("Invalid node tag found in file: %d", tag);
         return_err(io_FileErr_ReadFailed());
     }
-} unscoped;
+} $unscoped;
 
 // Implementation of Dataset functions
-fn_scope_ext(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), Err$Dataset) {
+fn_(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bool has_header), Err$Dataset, $guard) {
     // Convert Str_const to C string for compatibility with fopen
     let filename_buf = meta_cast$(Sli$u8,
         try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1))
@@ -428,7 +429,7 @@ fn_scope_ext(Dataset_loadFromCSV(mem_Allocator allocator, Str_const filename, bo
     mem_Allocator_free(allocator, anySli(filename_buf));
 
     return_ok(dataset);
-} unscoped_ext;
+} $unguarded;
 
 fn_(Dataset_destroy(Dataset* dataset), void) {
     if (dataset == null) { return; }

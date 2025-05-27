@@ -5,7 +5,7 @@
 
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     // Create a string literal using Str_l
@@ -16,4 +16,4 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
 
     // Return success (void value with no error)
     return_ok({});
-} unscoped; // End the scope block
+} $unscoped; // End the scope block

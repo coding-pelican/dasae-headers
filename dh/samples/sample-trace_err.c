@@ -1,22 +1,22 @@
 #define main_no_args (1)
 #include "dh/main.h"
 
-static fn_scope(alwaysFailure(void), Err$void) {
+static fn_(alwaysFailure(void), Err$void, $scope) {
     return_err(Err_Unexpected());
-} unscoped;
+} $unscoped;
 
-static fn_scope(func3(void), Err$void) {
+static fn_(func3(void), Err$void, $scope) {
     return_ok(try_(alwaysFailure()));
-} unscoped;
+} $unscoped;
 
-static fn_scope(func2(void), Err$void) {
+static fn_(func2(void), Err$void, $scope) {
     return_ok(try_(func3()));
-} unscoped;
+} $unscoped;
 
-static fn_scope(func1(void), Err$void) {
+static fn_(func1(void), Err$void, $scope) {
     return_ok(try_(func2()));
-} unscoped;
+} $unscoped;
 
-fn_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $scope) {
     return_ok(try_(func1()));
-} unscoped;
+} $unscoped;

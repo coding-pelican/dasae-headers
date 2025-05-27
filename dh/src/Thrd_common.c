@@ -6,44 +6,43 @@ fn_(Thrd_sleep(time_Duration duration), void) {
     time_sleep(duration);
 }
 
-fn_scope(Thrd_yield(void), Err$void) {
+fn_(Thrd_yield(void), Err$void, $scope) {
     if_(i32 res = sched_yield(), res != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
     return_ok({});
-} unscoped;
+} $unscoped;
 
 fn_(Thrd_getCurrentId(void), Thrd_Id) {
     return pthread_self();
 }
 
-fn_scope(Thrd_getCpuCount(void), Err$usize) {
+fn_(Thrd_getCpuCount(void), Err$usize, $scope) {
     SYSTEM_INFO sysInfo = {};
     GetSystemInfo(&sysInfo);
     return_ok(sysInfo.dwNumberOfProcessors);
-} unscoped;
+} $unscoped;
 
 fn_(Thrd_getHandle(Thrd self), Thrd_Handle) {
     return self.handle;
 }
 
-fn_scope(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8) {
+fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8, $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(buf_ptr);
 
     let len = pthread_getname_np(
         self.handle,
         as$(char*, buf_ptr->buf),
-        Arr_len(*buf_ptr)
-    );
+        Arr_len(*buf_ptr));
     if (len == 0) {
         return_ok(none());
     }
 
     return_ok(some(Sli_from(buf_ptr->buf, len)));
-} unscoped;
+} $unscoped;
 
-fn_scope(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void) {
+fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void, $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(name.ptr);
 
@@ -68,14 +67,13 @@ fn_scope(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void) {
     }
 #endif
     return_ok({});
-} unscoped;
+} $unscoped;
 
-fn_scope(Thrd_spawn(Thrd_SpawnConfig config, Thrd_WorkFn workFn, Thrd_FnCtx* ctx), Err$Thrd) {
+fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_WorkFn workFn, Thrd_FnCtx* ctx), Err$Thrd, $scope) {
     $ignore = config;
     switch_(
         Thrd_Handle handle = {},
-        pthread_create(&handle, null, as$(void* (*)(void*), workFn), ctx)
-    ) {
+        pthread_create(&handle, null, as$(void* (*)(void*), workFn), ctx)) {
     case /* SUCCESS */ 0:
         return_ok({ .handle = handle });
     case /* AGAIN */ EAGAIN:
@@ -88,7 +86,7 @@ fn_scope(Thrd_spawn(Thrd_SpawnConfig config, Thrd_WorkFn workFn, Thrd_FnCtx* ctx
         return_err(Err_Unexpected());
     }
     claim_unreachable;
-} unscoped;
+} $unscoped;
 
 fn_(Thrd_detach(Thrd self), void) {
     debug_assert(self.handle != 0);

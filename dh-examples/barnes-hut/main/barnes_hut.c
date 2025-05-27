@@ -70,7 +70,7 @@ typedef union Thrd_FnCtx$Simulation_thread {
 static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*);
 
 // Main function
-fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     $ignore = args;
 
     // Initialize logging to a file
@@ -224,7 +224,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
         time_frame_prev = time_frame_curr;
     }
     return_ok({});
-} unscoped_ext;
+} $unguarded;
 
 #if debug_comp_enabled
 static fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
@@ -244,7 +244,7 @@ static fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
 }
 #endif
 
-static fn_scope(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void) {
+static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void, $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(wnd);
     debug_assert_nonnull(input);
@@ -275,9 +275,9 @@ static fn_scope(global_processInput(Visualizer* viz, engine_Window* wnd, engine_
 
     try_(Visualizer_processInput(viz, wnd, input));
     return_ok({});
-} unscoped;
+} $unscoped;
 
-static fn_scope(global_update(Visualizer* viz, Simulation* sim), Err$void) {
+static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void, $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(sim);
 
@@ -302,9 +302,10 @@ static fn_scope(global_update(Visualizer* viz, Simulation* sim), Err$void) {
 
     try_(Visualizer_update(viz));
     return_ok({});
-} unscoped;
+} $unscoped;
 
-static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
+static void
+global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[H\033[40;37m"); // Move cursor to top left
 
     const f64 time_fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;

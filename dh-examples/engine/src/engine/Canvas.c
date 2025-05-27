@@ -29,7 +29,7 @@ fn_scope_ext(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$eng
     engine_Canvas_clear(self, none$(Opt$Color));
 
     return_ok(self);
-} unscoped_ext;
+} $unguarded;
 
 fn_(engine_Canvas_fini(engine_Canvas* self), void) {
     if (!self) { return; }
@@ -49,7 +49,8 @@ fn_scope(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$v
     log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
 
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
     debug_assert_nonnull(self);

@@ -36,7 +36,7 @@
 
 
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     {
@@ -79,4 +79,4 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+} $unscoped;

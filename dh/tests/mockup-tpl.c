@@ -166,91 +166,91 @@
 #define comp_tpl_alias__OSZ_const$(T) pp_join($, OSZ_const, T)
 #define comp_tpl_alias__OSZ$(T)       pp_join($, OSZ, T)
 
-#define comp_tpl_inst__T_use$_P$(T)       \
+#define comp_tpl_inst__T_use$_P$(T) \
     typedef const rawptr$(T) P_const$(T); \
     typedef rawptr$(T) P$(T)
-#define comp_tpl_inst__T_use$_PZ$(T)       \
+#define comp_tpl_inst__T_use$_PZ$(T) \
     typedef const rawptr$(T) PZ_const$(T); \
     typedef rawptr$(T) PZ$(T)
-#define comp_tpl_inst__T_use$_S$(T)  \
-    typedef struct S_const$(T) {     \
-        var_(ptr, P_const$(T));      \
-        var_(len, usize);            \
-    } S_const$(T);                   \
-    typedef union S$(T) {            \
+#define comp_tpl_inst__T_use$_S$(T) \
+    typedef struct S_const$(T) { \
+        var_(ptr, P_const$(T)); \
+        var_(len, usize); \
+    } S_const$(T); \
+    typedef union S$(T) { \
         var_(as_const, S_const$(T)); \
-        struct {                     \
-            var_(ptr, P$(T));        \
-            var_(len, usize);        \
-        };                           \
+        struct { \
+            var_(ptr, P$(T)); \
+            var_(len, usize); \
+        }; \
     } S$(T)
-#define comp_tpl_inst__T_use$_SZ$(T)  \
-    typedef struct SZ_const$(T) {     \
-        var_(ptr, PZ_const$(T));      \
-        var_(len, usize);             \
-    } SZ_const$(T);                   \
-    typedef union SZ$(T) {            \
+#define comp_tpl_inst__T_use$_SZ$(T) \
+    typedef struct SZ_const$(T) { \
+        var_(ptr, PZ_const$(T)); \
+        var_(len, usize); \
+    } SZ_const$(T); \
+    typedef union SZ$(T) { \
         var_(as_const, SZ_const$(T)); \
-        struct {                      \
-            var_(ptr, PZ$(T));        \
-            var_(len, usize);         \
-        };                            \
+        struct { \
+            var_(ptr, PZ$(T)); \
+            var_(len, usize); \
+        }; \
     } SZ$(T)
 #define comp_tpl_inst__T_use$_E$(T) \
-    typedef struct E$(T) {          \
-        var_(is_ok, bool);          \
-        union {                     \
-            var_(ok, T);            \
-            var_(err, Err);         \
-        } payload;                  \
+    typedef struct E$(T) { \
+        union { \
+            var_(ok, T); \
+            var_(err, Err); \
+        } payload; \
+        var_(is_ok, bool); \
     } E$(T)
 #define comp_tpl_inst__T_use$_O$(T) \
-    typedef struct O$(T) {          \
-        var_(has_value, bool);      \
-        union {                     \
-            var_(some, T);          \
-            var_(none, Void);       \
-        } payload;                  \
+    typedef struct O$(T) { \
+        union { \
+            var_(some, T); \
+            var_(none, Void); \
+        } payload; \
+        var_(has_value, bool); \
     } O$(T)
-#define comp_tpl_inst__T_use$_OP$(T)  \
-    typedef struct OP_const$(T) {     \
-        var_(ptr, P_const$(T));       \
-    } OP_const$(T);                   \
-    typedef union OP$(T) {            \
+#define comp_tpl_inst__T_use$_OP$(T) \
+    typedef struct OP_const$(T) { \
+        var_(ptr, P_const$(T)); \
+    } OP_const$(T); \
+    typedef union OP$(T) { \
         var_(as_const, OP_const$(T)); \
-        struct {                      \
-            var_(ptr, P$(T));         \
-        };                            \
+        struct { \
+            var_(ptr, P$(T)); \
+        }; \
     } OP$(T)
-#define comp_tpl_inst__T_use$_OPZ$(T)  \
-    typedef struct OPZ_const$(T) {     \
-        var_(ptr, PZ_const$(T));       \
-    } OPZ_const$(T);                   \
-    typedef union OPZ$(T) {            \
+#define comp_tpl_inst__T_use$_OPZ$(T) \
+    typedef struct OPZ_const$(T) { \
+        var_(ptr, PZ_const$(T)); \
+    } OPZ_const$(T); \
+    typedef union OPZ$(T) { \
         var_(as_const, OPZ_const$(T)); \
-        struct {                       \
-            var_(ptr, PZ$(T));         \
-        };                             \
+        struct { \
+            var_(ptr, PZ$(T)); \
+        }; \
     } OPZ$(T)
-#define comp_tpl_inst__T_use$_OS$(T)  \
-    typedef struct OS_const$(T) {     \
-        var_(sli, S_const$(T));       \
-    } OS_const$(T);                   \
-    typedef union OS$(T) {            \
+#define comp_tpl_inst__T_use$_OS$(T) \
+    typedef struct OS_const$(T) { \
+        var_(sli, S_const$(T)); \
+    } OS_const$(T); \
+    typedef union OS$(T) { \
         var_(as_const, OS_const$(T)); \
-        struct {                      \
-            var_(sli, S$(T));         \
-        };                            \
+        struct { \
+            var_(sli, S$(T)); \
+        }; \
     } OS$(T)
-#define comp_tpl_inst__T_use$_OSZ$(T)  \
-    typedef struct OSZ_const$(T) {     \
-        var_(sli, SZ_const$(T));       \
-    } OSZ_const$(T);                   \
-    typedef union OSZ$(T) {            \
+#define comp_tpl_inst__T_use$_OSZ$(T) \
+    typedef struct OSZ_const$(T) { \
+        var_(sli, SZ_const$(T)); \
+    } OSZ_const$(T); \
+    typedef union OSZ$(T) { \
         var_(as_const, OSZ_const$(T)); \
-        struct {                       \
-            var_(sli, SZ$(T));         \
-        };                             \
+        struct { \
+            var_(sli, SZ$(T)); \
+        }; \
     } OSZ$(T)
 
 #define comp_tpl_inst__T_use$(_T, _List_Parenthesized) \
@@ -263,10 +263,10 @@
 /* Example usage ============================================================*/
 T_use$(i32, (P, PZ, S, SZ, E, O, OP, OPZ, OS, OSZ));
 
-fn_scope(sample(void), Err$i32) {
+fn_(sample(void), Err$i32, $scope) {
     i32 x   = 123;
     $ignore = P_makeRef(x);
     $ignore = P_makeRef_mut(x);
     $ignore = P_makeRef_const(x);
     return_ok(x);
-} unscoped;
+} $unscoped;

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /// Basic tests demonstrating the framework's features
-fn_TEST_scope("Basic Math Operations") {
+TEST_fn_("Basic Math Operations", $scope) {
     // Simple boolean condition
     try_(TEST_expect(2 + 2 == 4));
 
@@ -16,10 +16,10 @@ fn_TEST_scope("Basic Math Operations") {
     // Testing with expressions
     try_(TEST_expect(3 < 5));
     try_(TEST_expect(10 % 3 == 1));
-} TEST_unscoped;
+} $unscoped_TEST;
 
 /// Test side effects of increment operators
-fn_TEST_scope("Increment Operator Side Effects in Type System Operations") {
+TEST_fn_("Increment Operator Side Effects in Type System Operations", $scope) {
     i32 cnt = 123;
 
     let cnt_post_inc = cnt++;
@@ -53,20 +53,20 @@ fn_TEST_scope("Increment Operator Side Effects in Type System Operations") {
     let cnt_pre_inc_with_align_of = alignOf(TypeOf(++cnt)); // ++cnt side effect is not applied here
     try_(TEST_expect(cnt_pre_inc_with_align_of == alignOf(TypeOf(cnt))));
     try_(TEST_expect(cnt == 125));
-} TEST_unscoped;
+} $unscoped_TEST;
 
 /// Test type comparison
-fn_TEST_scope("Simply Type Comparison with Failing Test") {
+TEST_fn_("Simply Type Comparison with Failing Test", $scope) {
     const i32 integer  = 10;
     const f32 floating = 10.0f;
     try_(TEST_expect(!isSameType(TypeOf(integer), TypeOf(floating))));
     try_(TEST_expect(isSameType(TypeOf(integer), TypeOf(floating)))); // This will always fail
-} TEST_unscoped;
+} $unscoped_TEST;
 
 /// Sample main function
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
     // fmt_println(Str_l("Hello, World!"));
     printf("Hello, World!\n");
     return_ok({});
-} unscoped;
+} $unscoped;

@@ -17,7 +17,7 @@ config_ErrSet(math_Err,
 
 // Function that returns an error result
 use_ErrSet$(math_Err, i32);
-static fn_scope(safeDivide(i32 numerator, i32 denominator), math_Err$i32) {
+static fn_(safeDivide(i32 numerator, i32 denominator), math_Err$i32, $scope) {
     if (denominator == 0) {
         return_err(math_Err_DivisionByZero());
     }
@@ -28,18 +28,18 @@ static fn_scope(safeDivide(i32 numerator, i32 denominator), math_Err$i32) {
     }
 
     return_ok(numerator / denominator);
-} unscoped;
+} $unscoped;
 
 // Function demonstrating error propagation with try_
 use_ErrSet$(math_Err, f32);
-static fn_scope(calculateRatio(i32 a, i32 b, i32 c, i32 d), math_Err$f32) {
+static fn_(calculateRatio(i32 a, i32 b, i32 c, i32 d), math_Err$f32, $scope) {
     // try_ will return early if an error occurs
     let first_result  = try_(safeDivide(a, b));
     let second_result = try_(safeDivide(c, d));
 
     // Calculate the ratio
     return_ok(as$(f32, first_result) / as$(f32, second_result));
-} unscoped;
+} $unscoped;
 
 // Function demonstrating catch_from for error handling
 static fn_(handleDivision(i32 a, i32 b), i32) {
@@ -81,7 +81,7 @@ static fn_(processResult(math_ErrRes result), void) {
 
 // Function demonstrating errdefer_
 static var_(memory, Arr$$(1024, u8)) = Arr_zero();
-static fn_scope_ext(performOperation(i32 a, i32 b), math_Err$i32) {
+static fn_(performOperation(i32 a, i32 b), math_Err$i32, $guard) {
     // Allocate resources
     var fixed     = heap_Fixed_init(Sli_arr$(Sli$u8, memory));
     var allocator = heap_Fixed_allocator(&fixed);
@@ -103,9 +103,9 @@ static fn_scope_ext(performOperation(i32 a, i32 b), math_Err$i32) {
     // Clean up and return
     mem_Allocator_free(allocator, anySli(buffer));
     return_ok(result);
-} unscoped_ext;
+} $unguarded;
 
-fn_scope(dh_main(void), Err$void) {
+fn_(dh_main(void), Err$void, $scope) {
     printf("---- Error Handling Examples ----\n");
 
     // Basic error handling
@@ -133,7 +133,7 @@ fn_scope(dh_main(void), Err$void) {
     processResult(tagUnion$(math_ErrRes, math_ErrRes_i32, performOperation(10, 0)));
 
     return_ok({});
-} unscoped;
+} $unscoped;
 
 #if README_SAMPLE
 config_ErrSet(math_Err,
@@ -143,14 +143,14 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-fn_scope(safeDivide(i32 lhs, i32 rhs), math_Err$i32) {
+static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
-} unscoped;
+} $unscoped;
 
-fn_scope_ext(example(void), Err$void) {
+static fn_(example(void), Err$void, $scope) {
     // Allocate resources
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
@@ -170,10 +170,10 @@ fn_scope_ext(example(void), Err$void) {
     let result_handling = catch_from(safeDivide(10, 0), err, eval({
         Err_print(err);   // Print the error
         ErrTrace_print(); // Print the error trace
-        return_err(err);  // Return with an error
+        return_err(err); // Return with an error
     }));
 
     // Return a normally
     return_ok({});
-} unscoped;
+} $unscoped;
 #endif /* README_SAMPLE */

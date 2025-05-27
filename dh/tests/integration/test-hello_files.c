@@ -21,15 +21,15 @@ static fn_(loadFiles(void), Err$Arr$4$Ptr$FILE) $must_check;
 
 /* definitions ==============================================================*/
 
-fn_scope(loadFile(Str_const filename), Err$Ptr$FILE) {
+fn_(loadFile(Str_const filename), Err$Ptr$FILE, $scope) {
     if_(let file = fopen(as$(const char*, filename.ptr), "r"),
         file != null) {
         return_ok(file);
     }
     return_err(LoadFileErr_FailedOpenFile());
-} unscoped;
+} $unscoped;
 
-fn_scope_ext(loadFiles(void), Err$Arr$4$Ptr$FILE) {
+fn_(loadFiles(void), Err$Arr$4$Ptr$FILE, $guard) {
     FILE* fp1 = fopen("hello1.txt", "r");
     if (fp1 == null) {
         return_err(LoadFileErr_FailedOpenFile());
@@ -46,13 +46,13 @@ fn_scope_ext(loadFiles(void), Err$Arr$4$Ptr$FILE) {
     errdefer_($ignore = fclose(fp4));
 
     return_ok({ fp1, fp2, fp3, fp4 });
-} unscoped_ext;
+} $unguarded;
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore   = args;
     let files = try_(loadFiles());
     for_array (files, file) {
         $ignore = fclose(*file);
     }
     return_ok({});
-} unscoped;
+} $unscoped;

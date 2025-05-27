@@ -14,7 +14,7 @@ fn_scope_ext(engine_Window_init(const engine_Window_Config* config), Err$Ptr$eng
     window->allocator = allocator;
 
     /* Create composite buffer */
-    let rect_size        = config->rect_size;
+    let rect_size                                 = config->rect_size;
     let composite_buffer = try_(engine_Canvas_init(
         create$(engine_Canvas_Config,
             .allocator = some(allocator),
@@ -46,7 +46,7 @@ fn_scope_ext(engine_Window_init(const engine_Window_Config* config), Err$Ptr$eng
 
     /* Created successfully */
     return_ok(window);
-} unscoped_ext;
+} $unguarded;
 
 fn_(engine_Window_fini(engine_Window* self), void) {
     debug_assert_nonnull(self);
@@ -65,12 +65,12 @@ fn_scope(engine_Window_update(engine_Window* self), Err$void) {
     for (u32 id = 0; id < self->view.count; ++id) {
         let view = Arr_at(self->view.list, id);
         if (!view->visible) { continue; }
-        let size = eval({
+        let size        = eval({
             var full = view->rect.size;
             if (view->rect.resizable.x) { full.x = res.x; }
             if (view->rect.resizable.y) { full.y = res.y; }
             eval_return full;
-        });
+               });
         try_(engine_Canvas_resize(
             view->canvas,
             size.x,
@@ -79,7 +79,8 @@ fn_scope(engine_Window_update(engine_Window* self), Err$void) {
         view->rect.size = size;
     }
     return_ok({});
-} unscoped;
+}
+unscoped;
 
 /* TODO: Apply canvas view rect scale */
 fn_(engine_Window_present(engine_Window* self), void) {
@@ -126,7 +127,8 @@ fn_scope(engine_Window_appendView(engine_Window* self, const engine_CanvasView_C
         view->visible                = config->visible;
         eval_return self->view.count++;
     }));
-} unscoped;
+}
+unscoped;
 
 fn_(engine_Window_removeView(engine_Window* self, u32 view_id), void) {
     debug_assert_nonnull(self);

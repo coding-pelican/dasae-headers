@@ -26,28 +26,28 @@ fn_(getModel(void), union Model) {
 }
 
 #define tuple(field0, field1...) eval({ \
-    (struct {                           \
-        TypeOf(field0) _n0;             \
-        TypeOf(field1) _n1;             \
-    }){                                 \
-        ._n0 = field0,                  \
-        ._n1 = field1                   \
-    };                                  \
+    (struct { \
+        TypeOf(field0) _n0; \
+        TypeOf(field1) _n1; \
+    }){ \
+        ._n0 = field0, \
+        ._n1 = field1 \
+    }; \
 })
 #define tuple_at(tuple_addr, index) eval({ \
-    let __$tuple = tuple_addr;             \
-    eval_return __$tuple->_n##index;       \
+    let __$tuple = tuple_addr; \
+    eval_return __$tuple->_n##index; \
 })
 #define tuple_atMut(tuple_addr, index) eval({ \
-    let __$tuple = tuple_addr;                \
-    eval_return & __$tuple->_n##index;        \
+    let __$tuple = tuple_addr; \
+    eval_return & __$tuple->_n##index; \
 })
 #define untuple(tuple, name0, name1...) \
-    let __$tuple = tuple;               \
-    name0        = __$tuple._n0;        \
+    let __$tuple = tuple; \
+    name0        = __$tuple._n0; \
     name1        = __$tuple._n1
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
     {
@@ -73,4 +73,4 @@ fn_scope(dh_main(Sli$Str_const args), Err$void) {
     }
 
     return_ok({});
-} unscoped;
+} $unscoped;

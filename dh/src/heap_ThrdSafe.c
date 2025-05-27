@@ -21,34 +21,34 @@ fn_(heap_ThrdSafe_allocator(heap_ThrdSafe* self), mem_Allocator) {
     };
 }
 
-fn_scope_ext(heap_ThrdSafe_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8) {
+fn_(heap_ThrdSafe_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $guard) {
     debug_assert_nonnull(ctx);
     let self = as$(heap_ThrdSafe*, ctx);
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawAlloc(self->child_allocator, len, align));
-} unscoped_ext;
+} $unguarded;
 
-fn_scope_ext(heap_ThrdSafe_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
+fn_(heap_ThrdSafe_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool, $guard) {
     debug_assert_nonnull(ctx);
     let self = as$(heap_ThrdSafe*, ctx);
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawResize(self->child_allocator, buf, buf_align, new_len));
-} unscoped_ext;
+} $unguarded;
 
-fn_scope_ext(heap_ThrdSafe_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8) {
+fn_(heap_ThrdSafe_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8, $guard) {
     debug_assert_nonnull(ctx);
     let self = as$(heap_ThrdSafe*, ctx);
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawRemap(self->child_allocator, buf, buf_align, new_len));
-} unscoped_ext;
+} $unguarded;
 
-fn_scope_ext(heap_ThrdSafe_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
+fn_(heap_ThrdSafe_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void, $guard) {
     debug_assert_nonnull(ctx);
     let self = as$(heap_ThrdSafe*, ctx);
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_void(mem_Allocator_rawFree(self->child_allocator, buf, buf_align));
-} unscoped_ext;
+} $unguarded;

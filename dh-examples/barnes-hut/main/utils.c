@@ -93,4 +93,4 @@ fn_scope_ext(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Bo
     }
 
     return_ok(bodies);
-} unscoped_ext;
+} $unguarded;
