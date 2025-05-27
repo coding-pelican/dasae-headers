@@ -46,72 +46,72 @@ extern "C" {
 #define $on_load comp_attr__$on_load
 #define $on_exit comp_attr__$on_exit
 
-#define $must_check                                                           \
-    /**                                                                       \
-     * @brief Attribute marks a function as returning a value that must be    \
-     *        checked to avoid potential errors or warnings                   \
+#define $must_check \
+    /** \
+     * @brief Attribute marks a function as returning a value that must be \
+     *        checked to avoid potential errors or warnings \
      * @details This attribute can be used to ensure that a function's return \
-     *          value is checked to avoid potential errors or warnings        \
-     */                                                                       \
+     *          value is checked to avoid potential errors or warnings \
+     */ \
     comp_attr__$must_check
-#define $no_return                                                        \
-    /**                                                                   \
-     * @brief Attribute marks a function as not returning a value         \
+#define $no_return \
+    /** \
+     * @brief Attribute marks a function as not returning a value \
      * @details This attribute can be used to ensure that a function does \
-     *          not return a value                                        \
-     */                                                                   \
+     *          not return a value \
+     */ \
     comp_attr__$no_return
-#define $ignore_void                                                      \
-    /**                                                                   \
+#define $ignore_void \
+    /** \
      * @brief Attribute explicitly $ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values    \
-     */                                                                   \
+     * @details Used to suppress compiler warnings about unused values \
+     */ \
     comp_attr__$ignore_void
-#define $ignore                                                           \
-    /**                                                                   \
+#define $ignore \
+    /** \
      * @brief Attribute explicitly $ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values    \
-     */                                                                   \
+     * @details Used to suppress compiler warnings about unused values \
+     */ \
     comp_attr__$ignore
 
-#define $used(_Expr... /*void*/)                                                   \
-    /**                                                                            \
+#define $used(_Expr... /*void*/) \
+    /** \
      * @brief Marks variables or expressions as used to suppress compiler warnings \
-     * @details In macro functions, the arguments are marked as used               \
-     * @param _Expr... Variable number of arguments to be marked as used           \
-     */                                                                            \
+     * @details In macro functions, the arguments are marked as used \
+     * @param _Expr... Variable number of arguments to be marked as used \
+     */ \
     comp_attr__$used(_Expr)
-#define $unused(_Expr... /*void*/)                                                   \
-    /**                                                                              \
+#define $unused(_Expr... /*void*/) \
+    /** \
      * @brief Marks variables or expressions as unused to suppress compiler warnings \
-     * @param _Expr... Variable number of arguments to be marked as unused           \
-     */                                                                              \
+     * @param _Expr... Variable number of arguments to be marked as unused \
+     */ \
     comp_attr__$unused(_Expr)
 
 #define $keep_symbol  comp_attr__$keep_symbol
 #define $maybe_unused comp_attr__$maybe_unused
 #define $must_use     comp_attr__$must_use
 
-#define as$(T_Dest, val_src... /*T_Dest*/)                                  \
-    /**                                                                     \
-     * @brief Cast macro for converting a value to a different type         \
+#define as$(T_Dest, val_src... /*T_Dest*/) \
+    /** \
+     * @brief Cast macro for converting a value to a different type \
      * @details This macro is used to cast a value from one type to another \
-     * @param T_Dest The destination type to cast to                        \
-     * @param val_src The value to cast                                     \
-     * @return The casted value                                             \
-     */                                                                     \
+     * @param T_Dest The destination type to cast to \
+     * @param val_src The value to cast \
+     * @return The casted value \
+     */ \
     comp_syn__as$(T_Dest, val_src)
-#define lit$(T_Lit, _Inital... /*T_Lit*/)                                    \
-    /**                                                                      \
-     * @brief Literal macro for creating a compound lit                      \
-     * @details Plain structures in C++ (without constructors) can be        \
+#define lit$(T_Lit, _Inital... /*T_Lit*/) \
+    /** \
+     * @brief Literal macro for creating a compound lit \
+     * @details Plain structures in C++ (without constructors) can be \
      *          initialized with { } This is called aggregate initialization \
-     *          (C++11)                                                      \
-     * @note MSVC C++ compiler does not support compound literals (C99)      \
-     * @param T_Lit The type of the literal to create                        \
-     * @param _Inital The initial values for the literal                     \
-     * @return The created literal                                           \
-     */                                                                      \
+     *          (C++11) \
+     * @note MSVC C++ compiler does not support compound literals (C99) \
+     * @param T_Lit The type of the literal to create \
+     * @param _Inital The initial values for the literal \
+     * @return The created literal \
+     */ \
     comp_syn__lit$(T_Lit, _Inital)
 
 #define initial(_Inital...)                      comp_syn__initial(_Inital)
@@ -163,11 +163,11 @@ extern "C" {
     comp_attr__$unused__payload(comp_attr__$unused__countArgs(_Expr), _Expr)
 #define comp_attr__$unused__payload(_Count, _Args...) \
     pp_join(__, comp_attr__$unused, _Count)(_Args)
-#define comp_attr__$unused__countArgs(_Args...)                      \
-    comp_attr__$unused__countArgs__select(                           \
+#define comp_attr__$unused__countArgs(_Args...) \
+    comp_attr__$unused__countArgs__select( \
         _Args, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 \
     )
-#define comp_attr__$unused__countArgs__select(                                     \
+#define comp_attr__$unused__countArgs__select( \
     _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
 ) _N
 #define comp_attr__$unused__1(x1) \
@@ -247,7 +247,7 @@ extern "C" {
 #define comp_syn__bti_Generic_match$(T, _Pattern...) \
     _Generic(T, _Pattern)
 #define comp_syn__bti_Generic_pattern$(T) \
-    T:
+T:
 #define comp_syn__bti_Generic_fallback_ \
     default:
 
