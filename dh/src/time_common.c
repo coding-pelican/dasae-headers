@@ -6,8 +6,7 @@ fn_(time_sleep(time_Duration duration), void) {
         null,
         null,
         CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
-        TIMER_ALL_ACCESS
-    );
+        TIMER_ALL_ACCESS);
     if (timer == null) {
         Sleep((DWORD)((duration.secs * time_millis_per_sec) + (duration.nanos / time_nanos_per_milli)));
         return;
