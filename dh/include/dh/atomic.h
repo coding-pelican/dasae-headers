@@ -132,6 +132,10 @@ typedef enum atomic_MemOrd {
     );                                                                                           \
     eval_return __success ? null : __expected;                                                    \
 })
+#define atomic_cmpxchgWeak(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) eval({ \
+    let __self = &(var_self);                                                                       \
+    eval_return atomic_cmpxchgWeak$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
+})
 
 /**
  * Atomically compare and exchange value if expected matches
@@ -143,6 +147,10 @@ typedef enum atomic_MemOrd {
         (_ptr), (_expected_ptr), (_desired_val), false, (_success_order), (_fail_order)            \
     );                                                                                             \
     eval_return __success ? null : __expected;                                                      \
+})
+#define atomic_cmpxchgStrong(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) eval({ \
+    let __self = &(var_self);                                                                       \
+    eval_return atomic_cmpxchgStrong$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
 })
 
 /**
