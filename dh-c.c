@@ -36,7 +36,7 @@
      * Version number \
      * major.minor.patch-prerelease.minor.patch+build.number \
      */ \
-    "0.1.0-alpha.0.1"
+    "0.1.0-alpha.0.2"
 
 // Debug level enum
 typedef enum {
@@ -76,6 +76,7 @@ typedef struct {
     ExtraFlags        extra_flags;
     char              linked_libraries[1024];
     char              run_args[1024];
+    char              compiler_args[1024]; // Additional arguments for compiler
     bool              is_single_file;
     char              single_file[1024];
     char              dh_path[1024];
@@ -759,6 +760,8 @@ void init_build_config(BuildConfig* config) {
     config->verbose            = false;       // Default: don't show verbose logs
     config->use_output_suffix  = false;       // Default: don't use output suffix
     strcpy(config->build_config_name, "dev"); // Default build config
+    config->run_args[0]      = '\0';          // Initialize run args
+    config->compiler_args[0] = '\0';          // Initialize compiler args
 }
 
 // Free the extra flags array
@@ -1611,9 +1614,7 @@ void build_project(BuildConfig* config) {
 
     // Only add -funsigned-char -fblocks if not using --no-libdh
     if (!config->no_libdh) {
-        strcat(command, " -Wall -Wextra -funsigned-char -fblocks -DBlocksRuntime_STATIC");
-    } else {
-        strcat(command, " -Wall -Wextra");
+        strcat(command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC");
     }
 
     // Add debug level flag
@@ -1639,6 +1640,12 @@ void build_project(BuildConfig* config) {
     for (int i = 0; i < config->extra_flags.count; ++i) {
         strcat(command, " ");
         strcat(command, config->extra_flags.flags[i]);
+    }
+
+    // Add compiler arguments (from --args for build command)
+    if (config->compiler_args[0] != '\0') {
+        strcat(command, " ");
+        strcat(command, config->compiler_args);
     }
 
     // Add source files
@@ -1679,6 +1686,8 @@ void build_project(BuildConfig* config) {
         strcat(command, config->linked_libraries);
     }
 
+    // Add pthread library (required for threading support)
+    strcat(command, " -lpthread");
     strcat(command, " -static");
 
     // Execute build command
@@ -2086,7 +2095,7 @@ void print_usage() {
     printf("Usage: dh-c [command] [options]\n\n");
     printf("Commands:\n");
     printf("  --help, -h           - Display this help message\n");
-    printf("  --version            - Display version information\n");
+    printf("  --version, -v        - Display version information\n");
     printf("  build                - Build the project or file\n");
     printf("  test                 - Build and run tests\n");
     printf("  run                  - Build and run the project or file\n");
@@ -2103,7 +2112,7 @@ void print_usage() {
     printf("Options:\n");
     printf("  --compiler=<clang|gcc>  - Specify compiler (default: clang)\n");
     printf("  --std=<c99|c11|c17>     - Specify C standard (default: c17)\n");
-    printf("  --args=\"args\"           - Arguments to pass when running\n");
+    printf("  --args=\"args\"           - For 'build': compiler args; For 'run'/'test': 'compiler -- program'\n");
     printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n");
     printf("  --no-libdh              - Skip DH library\n");
     printf("  --show-commands         - Show commands being executed\n");
@@ -2120,6 +2129,9 @@ void print_usage() {
     printf("  dh-c workspace myworkspace       - Create new workspace named 'myworkspace'\n");
     printf("  dh-c project myproject           - Create new project named 'myproject'\n");
     printf("  dh-c build embedded --no-libdh   - Build non-DH-C project with size optimization\n");
+    printf("  dh-c build dev --args=\"-DDEBUG\"  - Build with additional compiler flags\n");
+    printf("  dh-c run dev --args=\"arg1 arg2\"  - Build and run with program arguments\n");
+    printf("  dh-c run dev --args=\"-lpthread -- --verbose --input file.txt\" - Compiler and program args\n");
 }
 
 // Update main function to handle --show-commands and show exe path with version
@@ -2149,7 +2161,7 @@ int main(int argc, const char* argv[]) {
     }
 
     // Handle version command
-    if (strcmp(argv[1], "--version") == 0) {
+    if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0) {
         printf("DH-C Build Tool version %s\n", DH_C_VERSION);
         printf("Copyright (c) 2024-2025 Gyeongtae Kim\n");
 
@@ -2246,7 +2258,30 @@ int main(int argc, const char* argv[]) {
         } else if (strncmp(argv[i], "--std=", 6) == 0) {
             strcpy(config.c_standard, argv[i] + 6);
         } else if (strncmp(argv[i], "--args=", 7) == 0) {
-            strcpy(config.run_args, argv[i] + 7);
+            // For build command, args go to compiler; for run/test, args can be split
+            if (strcmp(argv[1], "build") == 0) {
+                strcpy(config.compiler_args, argv[i] + 7);
+            } else {
+                // For run/test: split on " -- " separator
+                const char* args_str  = argv[i] + 7;
+                const char* separator = strstr(args_str, " -- ");
+
+                if (separator != NULL) {
+                    // Split arguments: before " -- " goes to compiler, after goes to program
+                    size_t compiler_len = separator - args_str;
+                    if (compiler_len < sizeof(config.compiler_args)) {
+                        strncpy(config.compiler_args, args_str, compiler_len);
+                        config.compiler_args[compiler_len] = '\0';
+                    }
+
+                    // Skip the " -- " separator (4 characters)
+                    const char* program_args = separator + 4;
+                    strcpy(config.run_args, program_args);
+                } else {
+                    // No separator found, all args go to program
+                    strcpy(config.run_args, args_str);
+                }
+            }
         } else if (strncmp(argv[i], "--dh=", 5) == 0) {
             // Allow user to specify DH path
             strcpy(config.dh_path, argv[i] + 5);
@@ -2385,31 +2420,56 @@ void apply_build_preset(BuildConfig* config, const char* preset_name) {
 
 // Initialize the extra flags for predefined configurations
 void init_build_presets() {
-    // dev preset extra flags
+    // dev preset extra flags (warnings are NOT errors)
     BuildConfigPreset* dev    = &build_presets[0];
-    dev->extra_flags.count    = 2;
+    dev->extra_flags.count    = 1;
     dev->extra_flags.flags    = malloc(dev->extra_flags.count * sizeof(char*));
     dev->extra_flags.flags[0] = strdup("-Wall");
-    dev->extra_flags.flags[1] = strdup("-Werror");
 
-    // test preset extra flags
+    // test preset extra flags (warnings are NOT errors)
     BuildConfigPreset* test    = &build_presets[1];
-    test->extra_flags.count    = 1;
+    test->extra_flags.count    = 2;
     test->extra_flags.flags    = malloc(test->extra_flags.count * sizeof(char*));
-    test->extra_flags.flags[0] = strdup("-fno-omit-frame-pointer");
+    test->extra_flags.flags[0] = strdup("-Wall");
+    test->extra_flags.flags[1] = strdup("-fno-omit-frame-pointer");
 
-    // profile preset extra flags
+    // profile preset extra flags (warnings ARE errors)
     BuildConfigPreset* profile    = &build_presets[2];
-    profile->extra_flags.count    = 1;
+    profile->extra_flags.count    = 3;
     profile->extra_flags.flags    = malloc(profile->extra_flags.count * sizeof(char*));
-    profile->extra_flags.flags[0] = strdup("-fno-omit-frame-pointer");
+    profile->extra_flags.flags[0] = strdup("-Wall");
+    profile->extra_flags.flags[1] = strdup("-Werror");
+    profile->extra_flags.flags[2] = strdup("-fno-omit-frame-pointer");
 
-    // micro preset extra flags
+    // release preset extra flags (warnings ARE errors)
+    BuildConfigPreset* release    = &build_presets[3];
+    release->extra_flags.count    = 2;
+    release->extra_flags.flags    = malloc(release->extra_flags.count * sizeof(char*));
+    release->extra_flags.flags[0] = strdup("-Wall");
+    release->extra_flags.flags[1] = strdup("-Werror");
+
+    // performance preset extra flags (warnings ARE errors)
+    BuildConfigPreset* performance    = &build_presets[4];
+    performance->extra_flags.count    = 2;
+    performance->extra_flags.flags    = malloc(performance->extra_flags.count * sizeof(char*));
+    performance->extra_flags.flags[0] = strdup("-Wall");
+    performance->extra_flags.flags[1] = strdup("-Werror");
+
+    // embedded preset extra flags (warnings ARE errors)
+    BuildConfigPreset* embedded    = &build_presets[5];
+    embedded->extra_flags.count    = 2;
+    embedded->extra_flags.flags    = malloc(embedded->extra_flags.count * sizeof(char*));
+    embedded->extra_flags.flags[0] = strdup("-Wall");
+    embedded->extra_flags.flags[1] = strdup("-Werror");
+
+    // micro preset extra flags (warnings ARE errors)
     BuildConfigPreset* micro    = &build_presets[6];
-    micro->extra_flags.count    = 2;
+    micro->extra_flags.count    = 4;
     micro->extra_flags.flags    = malloc(micro->extra_flags.count * sizeof(char*));
-    micro->extra_flags.flags[0] = strdup("-ffunction-sections");
-    micro->extra_flags.flags[1] = strdup("-fdata-sections");
+    micro->extra_flags.flags[0] = strdup("-Wall");
+    micro->extra_flags.flags[1] = strdup("-Werror");
+    micro->extra_flags.flags[2] = strdup("-ffunction-sections");
+    micro->extra_flags.flags[3] = strdup("-fdata-sections");
 }
 
 // Free resources used by build presets
