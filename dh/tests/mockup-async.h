@@ -89,14 +89,24 @@ typedef struct Co_Ctx {
 
 
 
-// #define async_(_fnAsync, _args...) \
-//     as$(Co_Ctx$(_fnAsync)*, (Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .args = { _args }, .locals = {} }.base)
-#define async_(_fnAsync, _args...) \
-    as$(Co_Ctx$(_fnAsync)*, _fnAsync((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))
-#define async_ctx(_fnAsync, _args...) \
-    ((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .args = { pp_Tuple_unwrap _args }, .locals = {} })
-#define async_with(_ctx, _fnAsync, _args...) \
-    suspend_(_ctx = *async_(_fnAsync, _args))
+#define async_(_fnAsync_and_Args...) \
+    pp_expand(pp_defer(__exec_async_)()(pp_Tuple_unwrapSufComma _fnAsync_and_Args))
+#define async_ctx(_fnAsync_and_Args...) \
+    pp_expand(pp_defer(__exec_async_ctx)()(pp_Tuple_unwrapSufComma _fnAsync_and_Args))
+#define async_with(_ctx, _fnAsync_and_Args...) \
+    pp_expand(pp_defer(__exec_async_with)()(_ctx, pp_Tuple_unwrapSufComma _fnAsync_and_Args))
+
+#define __exec_async_() __async_
+#define __async_(_fnAsync, _args...) \
+    as$(Co_Ctx$(_fnAsync)*, _fnAsync((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))
+
+#define __exec_async_ctx() __async_ctx
+#define __async_ctx(_fnAsync, _args...) \
+    ((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })
+
+#define __exec_async_with() __async_with
+#define __async_with(_ctx, _fnAsync, _args...) \
+    suspend_(_ctx = *__async_(_fnAsync, _args))
 
 #define suspend_(_expr...) comp_syn__suspend_(_expr)
 #define comp_syn__suspend_(_expr...) \
