@@ -281,8 +281,7 @@ async_fn_scope(waitUntilAndPrint) {
 #include "dh/heap/Page.h"
 #include "dh/callback.h"
 
-static $must_check $maybe_unused
-fn_(testTimeDurationSort(void), Err$void, $guard) {
+TEST_fn_("Test time_Duration sort", $guard) {
     use_Sli$(time_Duration);
     use_ArrList$(time_Duration);
     var_type(times, ArrList$time_Duration, ArrList_init(typeInfo$(time_Duration), heap_Page_allocator(&(heap_Page){})));
@@ -331,7 +330,7 @@ fn_(testTimeDurationSort(void), Err$void, $guard) {
         printf("\n");
     }
     return_ok({});
-} $unguarded;
+} $unguarded_TEST;
 
 
 
@@ -346,8 +345,8 @@ async_fn_scope(asyncMain) {
 
     // clang-format off
     Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_Ctx$(waitUntilAndPrint)), {
-        [0] = async_ctx(waitUntilAndPrint, (1000, 1200, u8_l("task-pair a"))),
-        [1] = async_ctx(waitUntilAndPrint, (500, 1300, u8_l("task-pair b"))),
+        [0] = async_ctx((waitUntilAndPrint)(1000, 1200, u8_l("task-pair a"))),
+        [1] = async_ctx((waitUntilAndPrint)(500, 1300, u8_l("task-pair b"))),
     })); // clang-format on
     for (locals->iter_resume = 0; locals->iter_resume < Arr_len(locals->tasks); ++locals->iter_resume) {
         resume_(Arr_at(locals->tasks, locals->iter_resume));
@@ -381,7 +380,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     ));
     defer_(PQue_fini(timer_queue.base));
 
-    var main_task = async_(asyncMain, ());
+    var main_task = async_((asyncMain)());
     {
         var mem = (Arr$$(128, u8)){};
         var buf = Arr_slice$(Sli$u8, mem, (0, 128));

@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-// Delay type for scheduling tasks
+/// \brief Task to be executed
 typedef struct Task {
     var_(frame, Co_Ctx*);
     var_(expires, time_Instant);
@@ -17,7 +17,10 @@ use_Ptr$(Task);
 use_Sli$(Task);
 use_Opt$(Task);
 
+/// \brief List of tasks to be executed
 static var_(exec_s_task_list, Arr$$(10, Opt$Task)) = {};
+/// \brief Run the event loop
+/// \param endless Whether to run the loop endlessly
 static fn_(exec_runLoop(bool endless), void) {
     use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
@@ -45,6 +48,8 @@ static fn_(exec_runLoop(bool endless), void) {
     }
 }
 
+/// \brief Find a slot for a task
+/// \return The slot for the task
 static fn_(exec_findSlot(void), Opt$Task*) {
     use_Sli$(Opt$Task);
 
@@ -60,6 +65,9 @@ static fn_(exec_findSlot(void), Opt$Task*) {
 }
 
 use_Co_Ctx$(exec_sleep, (var_(caller, Co_Ctx*); var_(ms, u64);), Void, {});
+/// \brief Sleep for a specified duration
+/// \param caller The caller context
+/// \param ms The duration to sleep in milliseconds
 async_fn_scope(exec_sleep) {
     $ignore = locals;
     suspend_({
@@ -79,6 +87,10 @@ async_fn_scope(exec_sleep) {
 #include "dh/Thrd.h"
 #include "dh/callback.h"
 
+/// \brief Report a message
+/// \param label The label to report
+/// \param fmt The format string
+/// \param ... The arguments to the format string
 fn_(report(Str_const label, const char* fmt, ...), void) {
     printf("[ThrdId(%zu): %*s] ", Thrd_getCurrentId(), as$(i32, label.len), label.ptr);
     va_list args = {};
@@ -102,7 +114,7 @@ async_fn_scope(count) {
     locals->i = 0;
     while (locals->i < args->n) {
         // suspend_(locals->sleep_ctx = *async_(exec_sleep, self->base, locals->wait_ms));
-        async_with(locals->sleep_ctx, exec_sleep, (self->base, locals->wait_ms));
+        async_with(locals->sleep_ctx, (exec_sleep)(self->base, locals->wait_ms));
         report(args->label, "slept %f | i: %zu < n: %zu\n", args->interval, locals->i, args->n);
         locals->i++;
     }
@@ -129,8 +141,8 @@ async_fn_scope(runMain) {
 
     // clang-format off
     Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_Ctx$(count)), {
-        [0] = async_ctx(count, (2, 1.0, u8_l("task a"))),
-        [1] = async_ctx(count, (3, 0.6, u8_l("task b"))),
+        [0] = async_ctx((count)(2, 1.0, u8_l("task a"))),
+        [1] = async_ctx((count)(3, 0.6, u8_l("task b"))),
     }));
     for_array (locals->tasks, task) { resume_(task); }
     // clang-format on
@@ -151,7 +163,7 @@ async_fn_scope(runMain) {
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
-    var task = async_(runMain, ());
+    var task = async_((runMain)());
     printf("run size: %zu\n", sizeOf(*task));
     exec_runLoop(false);
     let total = nosuspend_await_(task).value;
