@@ -27,8 +27,17 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define pp_Tuple_wrap(...)   (__VA_ARGS__)
-#define pp_Tuple_unwrap(...) __VA_ARGS__
+#define pp_Tuple_wrap(/* _Elems */...)   (__VA_ARGS__)
+#define pp_Tuple_unwrap(/* _Elems */...) __VA_ARGS__
+#define pp_Tuple_wrapOpen()  (
+#define pp_Tuple_wrapClose() )
+#define pp_Tuple_unwrapClose(/* _Elems */...) (__VA_ARGS__
+#define pp_Tuple_unwrapOpen(/* _Elems */...) __VA_ARGS__)
+#define pp_Tuple_unwrapCloseOptComma(/* _Elems */...) (__VA_ARGS__ __VA_OPT__(,)
+#define pp_Tuple_unwrapOpenOptComma(/* _Elems */...) __VA_OPT__(,) __VA_ARGS__)
+#define pp_Tuple_unwrapPreComma(/* _Elems */...) , __VA_ARGS__
+#define pp_Tuple_unwrapSufComma(/* _Elems */...) __VA_ARGS__,
+#define pp_Tuple_cat(/* _Elems */...)            pp_Tuple_wrapOpen() __VA_ARGS__ pp_Tuple_unwrapOpenOptComma
 
 #define pp_Tuple_get1st(_a, ...)                             _a
 #define pp_Tuple_get2nd(_a, _b, ...)                         _b
