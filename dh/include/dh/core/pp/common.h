@@ -30,6 +30,7 @@ extern "C" {
 #define pp_nothing(...) pp_exec_nothing(__VA_ARGS__)
 #define pp_ignore(...)  pp_exec_ignore(__VA_ARGS__)
 #define pp_expand(...)  pp_exec_expand(__VA_ARGS__)
+#define pp_defer(...)   pp_exec_defer(__VA_ARGS__)
 
 #define pp_stringify(_Tok...) pp_exec_stringify(_Tok)
 #define nameOf(_Tok...)       comp_op__nameOf(_Tok)
@@ -46,36 +47,36 @@ extern "C" {
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
 
 
-#define pp_countArgs(_Args...)          \
-    /**                                 \
+#define pp_countArgs(_Args...) \
+    /** \
      * @note handles up to 16 arguments \
-     *                                  \
-     * pp_countArgs() => 0              \
-     * pp_countArgs(x, y, z) => 16      \
-     */                                 \
+     * \
+     * pp_countArgs() => 0 \
+     * pp_countArgs(x, y, z) => 16 \
+     */ \
     pp_exec_countArgs(_Args)
-#define pp_overload(_Name, ...)                                                    \
-    /**                                                                            \
-     * @note handles up to 16 arguments                                            \
-     *                                                                             \
-     * func_(_Name_With_Params, T_Return, ...)                                     \
+#define pp_overload(_Name, ...) \
+    /** \
+     * @note handles up to 16 arguments \
+     * \
+     * func_(_Name_With_Params, T_Return, ...) \
      * => pp_overload(func, __VA_ARGS__)(_Name_With_Params, T_Return, __VA_ARGS__) \
-     * func_0(_Name_With_Params, T_Return, ...):                                   \
-     * => fn_(_Name_With_Params, T_Return)                                         \
-     * func_1(_Name_With_Params, T_Return, _Body...):                              \
-     * => fn_scope(_Name_With_Params, T_Return) _Body $unscoped                     \
-     * func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...):                \
-     * => pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return)             \
-    _Body pp_cat(unscoped_, _Expand_Type)                                          \
-     */                                                                            \
+     * func_0(_Name_With_Params, T_Return, ...): \
+     * => fn_(_Name_With_Params, T_Return) \
+     * func_1(_Name_With_Params, T_Return, _Body...): \
+     * => fn_scope(_Name_With_Params, T_Return) _Body $unscoped \
+     * func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...): \
+     * => pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return) \
+    _Body pp_cat(unscoped_, _Expand_Type) \
+     */ \
     pp_exec_overload(_Name, __VA_ARGS__)
-#define pp_foreach(_Macro, _Name, ...)                 \
-    /**                                                \
-     * @note handles up to 16 arguments                \
-     *                                                 \
-     * pp_foreach(macro, name, x, y, z):               \
+#define pp_foreach(_Macro, _Name, ...) \
+    /** \
+     * @note handles up to 16 arguments \
+     * \
+     * pp_foreach(macro, name, x, y, z): \
      * => macro(name, x) macro(name, y) macro(name, z) \
-     */                                                \
+     */ \
     pp_exec_foreach_(pp_exec_foreach_NARG(__VA_ARGS__), _Macro, _Name, __VA_ARGS__)
 
 // lit_num(11,644,473,600u) => 11644473600u
@@ -87,6 +88,7 @@ extern "C" {
 #define pp_exec_nothing(...)
 #define pp_exec_ignore(...)
 #define pp_exec_expand(...) __VA_ARGS__
+#define pp_exec_defer(...)  __VA_ARGS__ pp_exec_nothing()
 
 #define pp_exec_stringify(_Tok...) #_Tok
 #define comp_op__nameOf(_Tok...)   ((void)(_Tok), #_Tok)
@@ -102,15 +104,15 @@ extern "C" {
 #define pp_exec_uniqTok(_Tok...)       pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
 #define pp_exec_uniqTokByLine(_Tok...) pp_join(_, pp_join2(_, _, __LINE__), _Tok)
 
-#define pp_exec_countArgs(...)                                        \
-    pp_exec_countArgs__selectArgCountInListRseqN(                     \
+#define pp_exec_countArgs(...) \
+    pp_exec_countArgs__selectArgCountInListRseqN( \
         __VA_OPT__(, ) __VA_ARGS__, pp_exec_countArgs__getListRseqN() \
     )
 #define pp_exec_countArgs__selectArgCountInListRseqN(_Args...) \
     pp_exec_countArgs__argN(_Args)
 #define pp_exec_countArgs__getListRseqN() \
     15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define pp_exec_countArgs__argN(                                                  \
+#define pp_exec_countArgs__argN( \
     _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _N, ... \
 )                                    _N
 #define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArgs(__VA_ARGS__))
@@ -122,7 +124,7 @@ extern "C" {
     pp_exec_foreach_NARG_(__VA_ARGS__, pp_exec_foreach_RSEQ_N())
 #define pp_exec_foreach_NARG_(...) \
     pp_exec_foreach_ARG_N(__VA_ARGS__)
-#define pp_exec_foreach_ARG_N(                                                     \
+#define pp_exec_foreach_ARG_N( \
     _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ... \
 ) _N
 #define pp_exec_foreach_RSEQ_N() \
