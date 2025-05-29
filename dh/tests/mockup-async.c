@@ -187,7 +187,7 @@ fn_(PQue_deqOrNull(PQue* self), Opt$meta_Ptr, $scope) {
 
 
 
-#include "mockup-async.h"
+#include "mockup-async_ex.h"
 #include "dh/time.h"
 #include <stdio.h>
 
@@ -206,40 +206,41 @@ use_PQue$(Task);
 static PQue$Task timer_queue = { 0 };
 
 // Suspend for time in milliseconds
-use_Co_Ctx$(waitForTime, (var_(frame, Co_Ctx*); var_(name, Sli_const$u8); var_(ms, u64);), Void, {});
-async_fn_scope(waitForTime) {
+use_Co_Ctx$(Void);
+async_fn_(waitForTime, (var_(caller, Opt$$(Co_Ctx*)); var_(name, Sli_const$u8); var_(ms, u64);), Void);
+async_fn_scope(waitForTime, {}) {
     $ignore = locals;
-    printf("debug: [waitForTime(%zx)] starting <- [%*s(%zx)]\n", as$(u64, self->base), as$(i32, args->name.len), args->name.ptr, as$(u64, args->frame));
+    printf("debug: [waitForTime(%zx)] starting <- [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
     suspend_({
-        printf("debug: [waitForTime(%zx)] suspending -> [%*s(%zx)]\n", as$(u64, self->base), as$(i32, args->name.len), args->name.ptr, as$(u64, args->frame));
         static let addDur = time_Instant_addDuration;
         static let now    = time_Instant_now;
         static let fromMs = time_Duration_fromMillis;
         catch_(PQue_enq(timer_queue.base, meta_create$(Task,
-            .frame   = args->frame,
+            .frame   = orelse(args->caller, ctx->anyraw),
             .expires = addDur(now(), fromMs(args->ms))
         )), claim_unreachable);
+        printf("debug: [waitForTime(%zx)] suspending -> [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
     });
-    printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$(u64, self->base), as$(i32, args->name.len), args->name.ptr, as$(u64, args->frame));
-    async_return_({});
+    printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
+    areturn_({});
 } async_unscoped;
 
 // Coroutine: waitUntilAndPrint
-use_Co_Ctx$(waitUntilAndPrint, (var_(time1, u64); var_(time2, u64); var_(name, Sli_const$u8);), Void, {
+async_fn_(waitUntilAndPrint, (var_(caller, Opt$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, Sli_const$u8);), Void);
+async_fn_scope(waitUntilAndPrint, {
     time_Instant start;
-    Co_Ctx$(waitForTime) wait_ctx1;
-    Co_Ctx$(waitForTime) wait_ctx2;
-});
-async_fn_scope(waitUntilAndPrint) {
+    Co_CtxFn$(waitForTime) wait_ctx;
+}) {
     locals->start = time_Instant_now();
-    printf("debug: [%*s(%zx)] starting <- [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base));
+    printf("debug: [%*s(%zx)] starting <- [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base));
 
-    locals->wait_ctx1 = ((Co_Ctx$waitForTime){ .fn = waitForTime, .args = { self->base, args->name, args->time1 }, .locals = {} });
-    resume_(&locals->wait_ctx1);
-    printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base));
-    suspend_();
-    resume_(&locals->wait_ctx1);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base), args->time1);
+    // locals->wait_ctx = *async_ctx((waitForTime)(orelse(args->caller, ctx->anyraw), args->name, args->time1));
+    // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
+    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base)));
+    // }
+    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
+    debug_assert(locals->wait_ctx.state == Co_State_ready);
+    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base), args->time1);
     {
         static let asSecs   = time_Duration_asSecs_f64;
         static let durSince = time_Instant_durationSince;
@@ -252,12 +253,13 @@ async_fn_scope(waitUntilAndPrint) {
         );
     }
 
-    locals->wait_ctx2 = ((Co_Ctx$waitForTime){ .fn = waitForTime, .args = { self->base, args->name, args->time2 }, .locals = {} });
-    resume_(&locals->wait_ctx2);
-    printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base));
-    suspend_();
-    resume_(&locals->wait_ctx2);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base), args->time2);
+    // locals->wait_ctx = *async_ctx((waitForTime)(orelse(args->caller, ctx->anyraw), args->name, args->time2));
+    // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
+    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base)));
+    // }
+    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
+    debug_assert(locals->wait_ctx.state == Co_State_ready);
+    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base), args->time2);
     {
         static let asSecs   = time_Duration_asSecs_f64;
         static let durSince = time_Instant_durationSince;
@@ -270,8 +272,8 @@ async_fn_scope(waitUntilAndPrint) {
         );
     }
 
-    printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, self->base));
-    async_return_({});
+    printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base));
+    areturn_({});
 } async_unscoped;
 
 
@@ -335,18 +337,18 @@ TEST_fn_("Test time_Duration sort", $guard) {
 
 
 // asyncMain wrapper
-use_Co_Ctx$(asyncMain, (), Void, {
-    Arr$$(2, Co_Ctx$(waitUntilAndPrint)) tasks;
-    usize iter_resume;
-    usize iter_await;
-});
-async_fn_scope(asyncMain) {
+async_fn_(asyncMain, (Sli$Str_const args;), Void);
+async_fn_scope(asyncMain, {
+    var_(tasks, Arr$$(2, Co_CtxFn$(waitUntilAndPrint)));
+    var_(iter_resume, usize);
+    var_(iter_await, usize);
+}) {
     $ignore = args;
 
     // clang-format off
-    Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_Ctx$(waitUntilAndPrint)), {
-        [0] = async_ctx((waitUntilAndPrint)(1000, 1200, u8_l("task-pair a"))),
-        [1] = async_ctx((waitUntilAndPrint)(500, 1300, u8_l("task-pair b"))),
+    Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_CtxFn$(waitUntilAndPrint)), {
+        [0] = *async_ctx((waitUntilAndPrint)(none(), 1000, 1200, u8_l("task-pair a"))),
+        [1] = *async_ctx((waitUntilAndPrint)(none(), 500, 1300, u8_l("task-pair b"))),
     })); // clang-format on
     for (locals->iter_resume = 0; locals->iter_resume < Arr_len(locals->tasks); ++locals->iter_resume) {
         resume_(Arr_at(locals->tasks, locals->iter_resume));
@@ -357,7 +359,7 @@ async_fn_scope(asyncMain) {
     }
 
     printf("debug: [asyncMain] all tasks completed\n");
-    async_return_({});
+    areturn_({});
 } async_unscoped;
 
 
@@ -369,13 +371,11 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     printf("\n");
 
     *timer_queue.base = try_(PQue_initCap(
-        typeInfo$(Task),
-        heap_Page_allocator(&(heap_Page){}),
-        32,
+        typeInfo$(Task), heap_Page_allocator(&(heap_Page){}), 32,
         wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
-            let delay_lhs = as$(const Task*, lhs);
-            let delay_rhs = as$(const Task*, rhs);
-            return time_Instant_cmp(delay_lhs->expires, delay_rhs->expires);
+            let lhs_task = as$(const Task*, lhs);
+            let rhs_task = as$(const Task*, rhs);
+            return time_Instant_cmp(lhs_task->expires, rhs_task->expires);
         })
     ));
     defer_(PQue_fini(timer_queue.base));
@@ -399,7 +399,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
         resume_(delay->frame);
     }
 
-    nosuspend_await_(main_task);
+    nosuspend_(await_(resume_(main_task)));
     return_ok({});
 } $unguarded;
 
