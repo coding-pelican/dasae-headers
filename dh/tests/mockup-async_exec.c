@@ -1,4 +1,4 @@
-#include "mockup-async.h"
+#include "mockup-async_ex.h"
 
 #include "dh/sli.h"
 #include "dh/Arr.h"
@@ -64,11 +64,12 @@ static fn_(exec_findSlot(void), Opt$Task*) {
     return slot;
 }
 
-use_Co_Ctx$(exec_sleep, (var_(caller, Co_Ctx*); var_(ms, u64);), Void, {});
+use_Co_Ctx$(Void);
 /// \brief Sleep for a specified duration
 /// \param caller The caller context
 /// \param ms The duration to sleep in milliseconds
-async_fn_scope(exec_sleep) {
+async_fn_(exec_sleep, (var_(caller, Opt$$(Co_Ctx*)); var_(ms, u64);), Void);
+async_fn_scope(exec_sleep, {}) {
     $ignore = locals;
     suspend_({
         let slot = exec_findSlot();
@@ -78,9 +79,9 @@ async_fn_scope(exec_sleep) {
             static let now    = time_Instant_now;
             eval_return addDur(now(), fromMs(args->ms));
         });
-        Opt_asg(slot, some({ .frame = args->caller, .expires = time }));
+        Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
-    async_return_({});
+    areturn_({});
 } async_unscoped;
 
 #include "dh/main.h"
@@ -99,24 +100,26 @@ fn_(report(Str_const label, const char* fmt, ...), void) {
     va_end(args);
 }
 
-use_Co_Ctx$(count, (var_(n, usize); var_(interval, f64); var_(label, Str_const);), f64, {
+use_Co_Ctx$(f64);
+async_fn_(count, (var_(caller, Opt$$(Co_Ctx*)); var_(n, usize); var_(interval, f64); var_(label, Str_const);), f64);
+async_fn_scope(count, {
     var_(start, time_Instant);
     var_(wait_ms, u64);
-    var_(i, usize);
-    var_(sleep_ctx, Co_Ctx$(exec_sleep));
+    var_(iter, usize);
+    var_(sleep_ctx, Co_CtxFn$(exec_sleep));
     var_(total, f64);
-});
-async_fn_scope(count) {
+}) {
     locals->start = time_Instant_now();
     report(args->label, "before loop %f\n", args->interval);
     locals->wait_ms = as$(u64, (args->interval * time_millis_per_sec));
 
-    locals->i = 0;
-    while (locals->i < args->n) {
-        // suspend_(locals->sleep_ctx = *async_(exec_sleep, self->base, locals->wait_ms));
-        async_with(locals->sleep_ctx, (exec_sleep)(self->base, locals->wait_ms));
-        report(args->label, "slept %f | i: %zu < n: %zu\n", args->interval, locals->i, args->n);
-        locals->i++;
+    locals->iter = 0;
+    while (locals->iter < args->n) {
+        // locals->sleep_ctx = *async_ctx((exec_sleep)(ctx->anyraw, locals->wait_ms));
+        // while (resume_(&locals->sleep_ctx)->state == Co_State_suspended) { suspend_(); }
+        callAsync(&locals->sleep_ctx, (exec_sleep)(some(ctx->anyraw), locals->wait_ms));
+        report(args->label, "slept %f | i: %zu < n: %zu\n", args->interval, locals->iter, args->n);
+        locals->iter++;
     }
 
     locals->total = eval({
@@ -126,23 +129,25 @@ async_fn_scope(count) {
         eval_return asSecs(durSince(now(), locals->start));
     });
     report(args->label, "after loop %f\n", locals->total);
-    async_return_(locals->total);
+    areturn_(locals->total);
 } async_unscoped;
 
-use_Co_Ctx$(runMain, (), f64, {
-    var_(tasks, Arr$$(2, Co_Ctx$(count)));
+/// \brief Run the main function
+/// \param args The arguments to the main function
+async_fn_(runMain, (Sli$Str_const args;), f64);
+async_fn_scope(runMain, {
+    var_(tasks, Arr$$(2, Co_CtxFn$(count)));
     var_(total, f64);
     var_(await_idx, usize);
-    var_(await_curr, Co_Ctx$(count)*);
-});
-async_fn_scope(runMain) {
+    var_(await_curr, Co_CtxFn$(count)*);
+}) {
     $ignore = args;
     printf("begin\n");
 
     // clang-format off
-    Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_Ctx$(count)), {
-        [0] = async_ctx((count)(2, 1.0, u8_l("task a"))),
-        [1] = async_ctx((count)(3, 0.6, u8_l("task b"))),
+    Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_CtxFn$(count)), {
+        [0] = *async_ctx((count)(none(), 2, 1.0, u8_l("task a"))),
+        [1] = *async_ctx((count)(none(), 3, 0.6, u8_l("task b"))),
     }));
     for_array (locals->tasks, task) { resume_(task); }
     // clang-format on
@@ -151,24 +156,22 @@ async_fn_scope(runMain) {
 
     locals->total = 0.0;
     for (locals->await_idx = 0; locals->await_idx < Arr_len(locals->tasks); ++locals->await_idx) {
-        locals->await_curr = as$(Co_Ctx$(count)*, Arr_at(locals->tasks, locals->await_idx));
+        locals->await_curr = Arr_at(locals->tasks, locals->await_idx);
         await_(locals->await_curr);
-        locals->total += locals->await_curr->ret.value;
+        locals->total += locals->await_curr->ret->value;
     }
 
     printf("end\n");
-    async_return_(locals->total);
+    areturn_(locals->total);
 } async_unscoped;
 
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
-    $ignore = args;
-
-    var task = async_((runMain)());
+    var task = async_((runMain)(args));
     printf("run size: %zu\n", sizeOf(*task));
     exec_runLoop(false);
-    let total = nosuspend_await_(task).value;
+    nosuspend_(await_(resume_(task)));
+    let total = task->ret->value;
     printf("total: %f\n", total);
-
     return_ok({});
 } $unscoped;
 

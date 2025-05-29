@@ -82,13 +82,6 @@ typedef struct Co_Ctx {
         return ensureNonnull(self->base); \
     } while (false)
 
-
-
-#define callFn(_fn...)          comp_op__callFn(_fn)
-#define comp_op__callFn(_fn...) ensureNonnull(_fn)
-
-
-
 #define async_(_fnAsync_and_Args...) \
     pp_expand(pp_defer(__exec_async_)()(pp_Tuple_unwrapSufComma _fnAsync_and_Args))
 #define async_ctx(_fnAsync_and_Args...) \
@@ -123,27 +116,12 @@ typedef struct Co_Ctx {
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) eval({ \
     let __ctx = ensureNonnull(_ctx); \
-    callFn(__ctx->fn)(as$(Co_Ctx*, __ctx)); \
+    callFn((__ctx->fn)(as$(Co_Ctx*, __ctx))); \
 })
 
 #define await_(_ctx...) comp_syn__await_(_ctx)
 #define comp_syn__await_(_ctx...) \
     while (deref(_ctx).state != Co_State_ready) { suspend_(); }
-// #define comp_syn__await_(__await, __ctx, _ctx...)
-// __await:
-//     eval({
-//         let __ctx = _ctx;
-//         if (__ctx->state != Co_State_ready) {
-//             self->state = Co_State_suspended;
-//             self->count = __LINE__;
-//             return self->base;
-//         }
-//         eval_return & __ctx->ret;
-//     });
-//     if (false) {
-//     case __LINE__:;
-//         goto __await;
-//     }
 
 #define nosuspend_await_(_ctx)                     comp_syn__nosuspend_await_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__nosuspend_await_(__ctx, _ctx...) eval({ \
@@ -152,10 +130,3 @@ typedef struct Co_Ctx {
     debug_assert(__ctx->state == Co_State_ready); \
     eval_return __ctx->ret; \
 })
-// #define comp_syn__nosuspend_await_(__ctx, _ctx...) eval({ \
-//     let __ctx = _ctx; \
-//     while (__ctx->state != Co_State_ready) { \
-//         resume_(__ctx); \
-//     } \
-//     __ctx->ret; \
-// })
