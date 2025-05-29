@@ -185,6 +185,11 @@ __step_deferred: switch (__scope_counter.current_line) {       \
         } \
     }
 
+#define callFn(_fn_and_Args...) \
+    pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma _fn_and_Args))
+#define __exec_callFn()         __callFn
+#define __callFn(_fn, _Args...) (ensureNonnull(_fn)(_Args))
+
 /*========== Example usage ==================================================*/
 
 #if EXAMPLE_USAGE
