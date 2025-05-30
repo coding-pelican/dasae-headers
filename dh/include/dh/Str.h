@@ -72,6 +72,9 @@ use_Opt$(StrHash);
 #define Str_l(_literal_as_readonly...) /* For read-only string literals */ comp_syn__Str_l(_literal_as_readonly)
 #define Str_m(_literal_to_writable...) /* For writable string literals */ comp_syn__Str_m(_literal_to_writable)
 
+#define u8_s Str_m
+#define u8_l Str_l
+
 /// Create Str_const from const u8* with explicit length
 extern Str_const Str_view(const u8* ptr, usize len);
 extern Str_const Str_viewZ(const u8* ptr);

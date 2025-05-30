@@ -73,6 +73,8 @@ extern "C" {
      * @details Used to suppress compiler warnings about unused values \
      */ \
     comp_attr__$ignore
+#define $ignore_capture \
+    comp_attr__$ignore_capture
 
 #define $used(_Expr... /*void*/) \
     /** \
@@ -156,6 +158,10 @@ extern "C" {
 #define comp_attr__$no_return   BUILTIN_COMP_NO_RETURN
 #define comp_attr__$ignore_void (void)
 #define comp_attr__$ignore      __attribute__((unused)) let pp_uniqTok(ignored)
+#define comp_attr__$ignore_capture \
+    __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
+    $ignore
+
 
 #define comp_attr__$used(_Expr...) _Expr
 /* begin unused */

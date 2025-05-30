@@ -8,8 +8,8 @@
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;
 
-    // Create a string literal using Str_l
-    let hello_world = Str_l("Hello, world!");
+    // Create a string literal using u8_l
+    let hello_world = u8_l("Hello, world!");
 
     // Print the string to the console with a newline
     Str_println(hello_world);
