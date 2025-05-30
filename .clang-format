@@ -214,19 +214,16 @@ Macros:
   - "block_defer=do { /**/ } while (false)"
   - "block_deferral=/**/"
   - "defer_break=goto __step_deferred;"
-  # - "fn_(name_with_params,return_type)=auto name_with_params -> return_type"
-  # - "fn_scope(name_with_params,return_type)=auto name_with_params -> return_type"
   - $unscoped=/**/
-  # - "fn_scope_ext(name_with_params,return_type)=auto name_with_params -> return_type"
+  - $unscoped_=/**/
   - $unguarded=/**/
-  # - "fn_TEST_scope(name)=Err$void TEST_caseFn(void)"
-  - $unscoped_TEST=/**/
-  # - "fn_TEST_scope_ext(name)=Err$void TEST_caseFn_ext(void)"
-  - $unguarded_TEST=/**/
-  # async_fn_scope(name_with_params,return_type)
-  - async_unscoped=/**/
-  # async_fn_scope_ext(name_with_params,return_type)
-  # - async_unscoped_ext=/**/
+  - $unguarded_=/**/
+  - $unscoped_TEST_fn=/**/
+  - $unguarded_TEST_fn=/**/
+  - $unscoped_Thrd_fn=/**/
+  - $unguarded_Thrd_fn=/**/
+  - $unscoped_async_fn=/**/
+  - $unguarded_async_fn=/**/
 ForEachMacros:
   - pp_foreach
   - for_slice
@@ -263,6 +260,10 @@ AttributeMacros:
 
   - $nullable
   - $nonnull
+
+  - pp_Tuple_get1st
+  - pp_Tuple_get2nd
+  - pp_Tuple_get3rd
 StatementAttributeLikeMacros:
   - $ignore
   - $ignore_void

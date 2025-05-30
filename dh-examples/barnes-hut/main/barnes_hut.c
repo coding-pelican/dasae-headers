@@ -56,18 +56,8 @@ static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input
 static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void) $must_check;
 static fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void);
 
-typedef union Thrd_FnCtx$Simulation_thread {
-    Thrd_FnCtx base;
-    struct {
-        Void arg;
-        union {
-            Thrd_FnRet base[1];
-            Err$void   value;
-        } ret;
-    };
-} Thrd_FnCtx$Simulation_thread;
-// Thread functions
-static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*);
+$must_check
+$static Thrd_fn_(Simulation_thread, ({}, Err$void));
 
 // Main function
 fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
@@ -162,20 +152,12 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     // Create threads for simulation and visualization
     var sim_mutex = Thrd_Mtx_init();
     defer_(Thrd_Mtx_fini(&sim_mutex));
-    global_state.sim_mutex                  = sim_mutex;
-    var sim_thread         = try_(Thrd_spawn(
-        Thrd_SpawnConfig_default,
-        Simulation_thread,
-        &(Thrd_FnCtx$Simulation_thread){}.base
-    ));
-    defer_({
-        catch_from(
-            *as$(FieldType$(Thrd_FnCtx$Simulation_thread, ret.value)*,
-            Thrd_join(sim_thread)),
-            err,
+    global_state.sim_mutex = sim_mutex;
+    var sim_thread         = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
+    defer_(catch_from(
+        Thrd_FnCtx_returned(Simulation_thread, Thrd_join(sim_thread)), err,
             eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
-        );
-    });
+    ));
     global_state.paused     = false;
     global_state.is_running = true;
     log_info("threads created\n");
@@ -353,9 +335,7 @@ global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[0m"); // Reset color
 }
 
-static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*) {
-    let self = as$(Thrd_FnCtx$Simulation_thread*, ctx);
-
+Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture), $guard) {
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
     log_info("sim loop started\n");
@@ -379,25 +359,26 @@ static fn_(Simulation_thread(Thrd_FnCtx* ctx), Thrd_FnRet*) {
 
         // Otherwise, do one simulation step
         // (which includes building quadtree, attract, collide, etc.)
-        Thrd_Mtx_lock(&global_state.sim_mutex);
-        if (global_state.sim) {
-            // It's safe to call Simulation_step now
-            // Provided Simulation_step modifies only sim's data (and possibly spawn_bodies)
-            // In your code, you might also need to lock spawn_bodies
-            // if it is shared with other threads.
-            // log_info("sim_thread update\n");
-            catch_from(Simulation_step(global_state.sim), err, eval({
-                log_error("Simulation_step failed: %s", Err_codeToCStr(err));
-                return toErr(&self->ret.value, err), self->ret.base;
-            }));
-        }
-        Thrd_Mtx_unlock(&global_state.sim_mutex);
+        block_defer {
+            Thrd_Mtx_lock(&global_state.sim_mutex);
+            defer_(Thrd_Mtx_unlock(&global_state.sim_mutex));
+            if (global_state.sim) {
+                // It's safe to call Simulation_step now
+                // Provided Simulation_step modifies only sim's data (and possibly spawn_bodies)
+                // In your code, you might also need to lock spawn_bodies
+                // if it is shared with other threads.
+                // log_info("sim_thread update\n");
+                catch_from(Simulation_step(global_state.sim), err, eval({
+                    log_error("Simulation_step failed: %s", Err_codeToCStr(err));
+                    return_err(err);
+                }));
+            }
+        } block_deferral;
 
         // Optional small sleep to limit sim speed
         // or you can use a time-based approach
         time_sleep(time_update_target); // 1ms
-        // sched_yield();
     }
 
-    return toOk(&self->ret.value, {}), self->ret.base;
-}
+    return_ok({});
+} $unguarded_Thrd_fn;

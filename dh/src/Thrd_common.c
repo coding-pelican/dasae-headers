@@ -34,7 +34,8 @@ fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8, $scope
     let len = pthread_getname_np(
         self.handle,
         as$(char*, buf_ptr->buf),
-        Arr_len(*buf_ptr));
+        Arr_len(*buf_ptr)
+    );
     if (len == 0) {
         return_ok(none());
     }
@@ -69,11 +70,15 @@ fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void, $scope) {
     return_ok({});
 } $unscoped;
 
-fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_WorkFn workFn, Thrd_FnCtx* ctx), Err$Thrd, $scope) {
+fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd, $scope) {
     $ignore = config;
+    debug_assert_nonnull(fn_ctx);
+    debug_assert_nonnull(fn_ctx->fn);
+
     switch_(
         Thrd_Handle handle = {},
-        pthread_create(&handle, null, as$(void* (*)(void*), workFn), ctx)) {
+        pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx)
+    ) {
     case /* SUCCESS */ 0:
         return_ok({ .handle = handle });
     case /* AGAIN */ EAGAIN:
@@ -93,9 +98,9 @@ fn_(Thrd_detach(Thrd self), void) {
     $ignore = pthread_detach(self.handle); // TODO: handle err
 }
 
-fn_(Thrd_join(Thrd self), Thrd_FnRet*) {
+fn_(Thrd_join(Thrd self), Thrd_FnCtx*) {
     debug_assert(self.handle != 0);
-    void* ret = null;
-    $ignore   = pthread_join(self.handle, &ret); // TODO: handle err
-    return as$(Thrd_FnRet*, ret);
+    void* ctx_ptr = null;
+    $ignore       = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
+    return as$(Thrd_FnCtx*, ctx_ptr);
 }
