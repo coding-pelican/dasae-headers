@@ -101,6 +101,38 @@ fn_(report(Str_const label, const char* fmt, ...), void) {
     va_end(args);
 }
 
+fn_(Terminal_clear(void), void) { printf("\x1b[2J\x1b[H"); }
+fn_(Terminal_home(void), void) { printf("\x1b[1;1H"); }
+fn_(Terminal_feedLine(void), void) { printf("\n"); }
+fn_(Terminal_moveCursor(u32 x, u32 y), void) { printf("\x1b[%u;%uH", y + 1, x + 1); }
+fn_(Terminal_writeByte(u8 byte), void) { printf("%c", byte); }
+fn_(Terminal_writeByteAt(u32 x, u32 y, u8 byte), void) {
+    Terminal_moveCursor(x, y);
+    Terminal_writeByte(byte);
+}
+fn_(Terminal_writeBytes(Sli_const$u8 bytes), void) { printf("%*s", as$(i32, bytes.len), bytes.ptr); }
+fn_(Terminal_writeBytesAt(u32 x, u32 y, Sli_const$u8 bytes), void) {
+    Terminal_moveCursor(x, y);
+    Terminal_writeBytes(bytes);
+}
+fn_(Terminal_writeTypo(u8 typo), void) { printf("%c", typo); }
+fn_(Terminal_writeTypoAt(u32 x, u32 y, u8 typo), void) {
+    Terminal_moveCursor(x, y);
+    Terminal_writeTypo(typo);
+}
+fn_(Terminal_writeText(Sli_const$u8 text), void) { printf("%*s", as$(i32, text.len), text.ptr); }
+fn_(Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text), void) {
+    Terminal_moveCursor(x, y);
+    Terminal_writeText(text);
+}
+
+use_Arr$(1024, u8);
+fn_(Terminal_readBytes(Arr$1024$u8* mem), Sli$u8) {
+    $ignore = fgets(as$(char*, mem->buf), as$(i32, Arr_len(*mem)), stdin);
+    return Str_fromZ(mem->buf);
+}
+
+
 /// \brief Types out a string character by character with specified interval between characters
 /// \param caller The caller context
 /// \param text The text to type out
@@ -118,8 +150,7 @@ async_fn_scope(typeEffectWithInterval, {
 
     locals->delay_ms = as$(u64, (args->interval * time_millis_per_sec));
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
-        // Move cursor position
-        printf("\x1b[%u;%uH%c", args->y + 1, args->x + 1 + as$(u32, locals->iter_typo), Sli_getAt(args->text, locals->iter_typo));
+        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, Sli_getAt(args->text, locals->iter_typo));
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse(args->caller, ctx->anyraw)), locals->delay_ms));
     }
 
@@ -144,8 +175,7 @@ async_fn_scope(typeEffectOverDuration, {
     let interval     = args->duration / as$(f64, args->text.len);
     locals->delay_ms = as$(u64, (interval * time_millis_per_sec));
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
-        // Move cursor position
-        printf("\x1b[%u;%uH%c", args->y + 1, args->x + 1 + as$(u32, locals->iter_typo), Sli_getAt(args->text, locals->iter_typo));
+        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, Sli_getAt(args->text, locals->iter_typo));
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse(args->caller, ctx->anyraw)), locals->delay_ms));
     }
 
@@ -173,7 +203,7 @@ async_fn_scope(typeEffectRealistic, {
 
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
         let current_char = Sli_getAt(args->text, locals->iter_typo);
-        printf("\x1b[%u;%uH%c", args->y + 1, args->x + 1 + as$(u32, locals->iter_typo), current_char);
+        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, current_char);
 
         locals->delay_ms = as$(u64, (args->base_interval * time_millis_per_sec));
         if (args->add_randomness) {
@@ -206,6 +236,7 @@ async_fn_scope(typeEffectRealistic, {
 async_fn_(runMain, (Sli$Str_const args;), Void);
 async_fn_scope(runMain, {
     var_(sample_text, Str_const);
+    var_(line, u32);
     struct {
         var_(type_ctx, Co_CtxFn$(typeEffectWithInterval));
     } demo1;
@@ -227,10 +258,22 @@ async_fn_scope(runMain, {
     struct {
         var_(type_ctx, Co_CtxFn$(typeEffectRealistic));
     } demo7;
+    var_(read_mem, Arr$1024$u8);
+    var_(user_text, Sli$u8);
+    var_(interval, f64);
+    union {
+        var_(type_interval, Co_CtxFn$(typeEffectWithInterval));
+        var_(type_duration, Co_CtxFn$(typeEffectOverDuration));
+        var_(type_realistic, Co_CtxFn$(typeEffectRealistic));
+    } interactive_ctx;
 }) {
     $ignore = args;
-    printf("\x1b[2J\x1b[H");
-    printf("=== Typing Effect Demo ===\n");
+
+    locals->line = 0;
+    Terminal_clear();
+    Terminal_home();
+    Terminal_writeText(u8_l("=== Typing Effect Demo ==="));
+    Terminal_feedLine();
 
     locals->sample_text = u8_l("Hello, World! This is a typing effect demonstration.");
 
@@ -253,8 +296,7 @@ async_fn_scope(runMain, {
     // Demo 3: Realistic typing with randomness
     locals->demo7.type_ctx = *async_ctx((typeEffectRealistic)(none(), locals->sample_text, 0.08, true, .x = 0, .y = 7));
     resume_(&locals->demo7.type_ctx);
-
-    suspend_();
+    locals->line = 8;
 
     await_(&locals->demo1.type_ctx);
     await_(&locals->demo2.type_ctx);
@@ -264,9 +306,55 @@ async_fn_scope(runMain, {
     await_(&locals->demo6.type_ctx);
     await_(&locals->demo7.type_ctx);
 
-    printf("\x1b[%u;%uH", 8, 0);
-    printf("\nPress any key to exit...");
-    $ignore = getchar();
+    Terminal_moveCursor(0, locals->line);
+    $ignore = getchar(); // TODO: use a better way to wait for user input
+
+    // Interactive example
+    Terminal_moveCursor(0, locals->line);
+    Terminal_feedLine();
+    locals->line++;
+    Terminal_writeText(u8_l("=== Interactive Mode ==="));
+    Terminal_feedLine();
+    locals->line++;
+
+    Terminal_writeText(u8_l("Enter text to type: "));
+    locals->user_text = Terminal_readBytes(&locals->read_mem);
+    locals->line++;
+
+    if (0 < locals->user_text.len) {
+        Terminal_writeText(u8_l("Enter interval in seconds (e.g., 0.1): "));
+        if (scanf("%lf", &locals->interval) == 1) {
+            locals->line++;
+            Terminal_feedLine();
+            locals->line++;
+            let message = u8_l("Typing your text: ");
+            Terminal_writeText(message);
+            locals->interactive_ctx.type_interval = *async_ctx(
+                (typeEffectWithInterval)(none(), locals->user_text.as_const, locals->interval, .x = as$(u32, message.len), .y = locals->line++)
+            );
+            resume_(&locals->interactive_ctx.type_interval);
+            exec_runLoop(false);
+            await_(&locals->interactive_ctx.type_interval);
+        } else {
+            locals->line++;
+            Terminal_feedLine();
+            locals->line++;
+            let message = u8_l("Using default realistic typing: ");
+            Terminal_writeText(message);
+            locals->interactive_ctx.type_realistic = *async_ctx(
+                (typeEffectRealistic)(none(), locals->user_text.as_const, 0.08, true, .x = as$(u32, message.len), .y = locals->line++)
+            );
+            resume_(&locals->interactive_ctx.type_realistic);
+            exec_runLoop(false);
+            await_(&locals->interactive_ctx.type_realistic);
+        }
+        $ignore = getchar();
+    }
+
+    Terminal_feedLine();
+    Terminal_writeText(u8_l("Press any key to exit..."));
+    Terminal_feedLine();
+    $ignore = getchar(); // TODO: use a better way to wait for user input
 
     areturn_({});
 } async_unscoped;
