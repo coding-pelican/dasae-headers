@@ -5,7 +5,7 @@ Checks: >
   -*,
   bugprone-argument-comment,
   bugprone-assert-side-effect,
-  bugprone-assignment-in-if-condition,
+  -bugprone-assignment-in-if-condition,
   bugprone-bad-signal-to-kill-thread,
   bugprone-bool-pointer-implicit-conversion,
   bugprone-branch-clone,
