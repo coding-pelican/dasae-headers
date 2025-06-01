@@ -8,7 +8,8 @@
 
 /* declarations */
 use_ErrSet$(math_Err, i32);
-static fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) $must_check;
+$must_check
+$static fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32);
 
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     $ignore = args;

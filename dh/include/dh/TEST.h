@@ -79,9 +79,9 @@ extern fn_(TEST_Framework_run(void), void);
     pp_join(_, TEST_fn, _Extension)(_Name)
 
 #define TEST_fn_$scope(_Name...) comp_syn__TEST_fn_$scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
-#define $unscoped_TEST           comp_syn__$unscoped_TEST
+#define $unscoped_TEST_fn        comp_syn__$unscoped_TEST_fn
 #define TEST_fn_$guard(_Name...) comp_syn__TEST_fn_$guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
-#define $unguarded_TEST          comp_syn__$unguarded_TEST
+#define $unguarded_TEST_fn       comp_syn__$unguarded_TEST_fn
 
 #if !COMP_TIME
 /// @brief Check expression and record result
@@ -131,14 +131,14 @@ extern fn_(TEST_expectMsg(bool expr, Str_const msg), Err$void) $must_check;
     /* TODO: Add case check if it has been run before $on_exit */ \
     static fn_(_ID_caseFn(void), Err$void, $scope) {                 \
         _ID_binder();
-#define comp_syn__$unscoped_TEST \
+#define comp_syn__$unscoped_TEST_fn \
         return_ok({});          \
     } $unscoped
 
 #define comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn...) \
     static fn_(_ID_caseFn(void), Err$void, $guard) {            \
         _ID_binder();
-#define comp_syn__$unguarded_TEST \
+#define comp_syn__$unguarded_TEST_fn \
         return_ok({});              \
     } $unguarded
 // clang-format on
