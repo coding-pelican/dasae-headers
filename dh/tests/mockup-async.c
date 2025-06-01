@@ -4,8 +4,6 @@
 #include "dh/Str.h"
 #include "dh/time/common.h"
 
-#define u8_s Str_m
-#define u8_l Str_l
 static fn_(io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...), Err$usize) $must_check;
 static fn_(io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...), Err$usize, $guard) {
     va_list args = {};
@@ -20,7 +18,7 @@ static fn_(io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...), Err$usize, $gua
 } $unguarded;
 
 use_Err$(Sli_const$u8);
-$maybe_unused static fn_(time_Duration_fmt(time_Duration self, Sli$u8 buf), Err$Sli_const$u8) $must_check;
+static fn_(time_Duration_fmt(time_Duration self, Sli$u8 buf), Err$Sli_const$u8) $must_check;
 static fn_(time_Duration_fmt(time_Duration self, Sli$u8 buf), Err$Sli_const$u8, $scope) {
     usize written     = 0;
     let   total_nanos = self.secs * time_nanos_per_sec + self.nanos;
@@ -223,7 +221,7 @@ async_fn_scope(waitForTime, {}) {
     });
     printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 // Coroutine: waitUntilAndPrint
 async_fn_(waitUntilAndPrint, (var_(caller, Opt$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, Sli_const$u8);), Void);
@@ -274,7 +272,7 @@ async_fn_scope(waitUntilAndPrint, {
 
     printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base));
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 
 
@@ -332,7 +330,7 @@ TEST_fn_("Test time_Duration sort", $guard) {
         printf("\n");
     }
     return_ok({});
-} $unguarded_TEST;
+} $unguarded_TEST_fn;
 
 
 
@@ -360,7 +358,7 @@ async_fn_scope(asyncMain, {
 
     printf("debug: [asyncMain] all tasks completed\n");
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 
 

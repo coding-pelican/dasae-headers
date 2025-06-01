@@ -4,8 +4,6 @@
 #include "dh/Arr.h"
 #include "dh/time.h"
 #include "dh/Random.h"
-#define u8_s Str_m
-#define u8_l Str_l
 
 #include <stdio.h>
 
@@ -83,7 +81,7 @@ async_fn_scope(exec_sleep, {}) {
         Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 #include "dh/main.h"
 #include "dh/Thrd.h"
@@ -155,7 +153,7 @@ async_fn_scope(typeEffectWithInterval, {
     }
 
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 /// \brief Types out a string over a specified total duration
 /// \param caller The caller context
@@ -180,7 +178,7 @@ async_fn_scope(typeEffectOverDuration, {
     }
 
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 /// \brief Advanced typing effect with realistic variable speeds
 /// \param caller The caller context
@@ -229,7 +227,7 @@ async_fn_scope(typeEffectRealistic, {
     }
 
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
@@ -357,7 +355,7 @@ async_fn_scope(runMain, {
     $ignore = getchar(); // TODO: use a better way to wait for user input
 
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     var task = async_((runMain)(args));
