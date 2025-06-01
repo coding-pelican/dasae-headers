@@ -1,26 +1,3 @@
-// clang-format off
-#define blk_(_label, _BreakType_and_Body...) \
-    pp_overload(__blk, _BreakType_and_Body)(_label, _BreakType_and_Body)
-#define __blk_1(_label, _Body...)                    comp_syn__blk_((_label, Void), _Body)
-#define __blk_2(_label, _RetType, _Body...)          comp_syn__blk_((_label, _RetType), _Body)
-#define comp_syn__blk_(_Label_and_RetType, _Body...) eval({ \
-    local_label pp_Tuple_get1st _Label_and_RetType; \
-    var pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType) = _Generic( \
-        TypeOf(pp_Tuple_get2nd _Label_and_RetType), \
-        void: (Void){}, \
-        default: (pp_Tuple_get2nd _Label_and_RetType){} \
-    ); \
-    _Body; \
-    pp_Tuple_get1st _Label_and_RetType: \
-    pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType); \
-})
-// clang-format on
-
-#define blk_break_(_label, ...) comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
-#define comp_syn__blk_break_(__reserved_val, _label, ...) \
-    __reserved_val = *(TypeOf(__reserved_val)[1]){ [0] = __VA_ARGS__ }; \
-    goto _label
-
 // Co.h
 #ifndef CO_INCLUDED
 #define CO_INCLUDED (1)
@@ -103,7 +80,18 @@ typedef struct Co_Ctx {
         }; \
     }
 
+#define Co_CtxFn_init$(fnName) ((Co_CtxFn$(fnName)){ \
+    .fn     = as$(Co_FnWork*, fnName), \
+    .count  = 0, \
+    .state  = Co_State_pending, \
+    .ret    = {}, \
+    .args   = {}, \
+    .locals = {}, \
+})
+
 #endif /* CO_INCLUDED */
+
+#include "dh/blk.h"
 
 #define async_fn_(_fnName, Args, T_Return...) \
     use_Co_CtxArgs$(_fnName, Args); \
@@ -134,7 +122,7 @@ __step_return: \
         case 0: \
             __scope_counter.current_line--;
 // clang-format off
-#define async_unscoped \
+#define $unscoped_async_fn \
         break; \
     } \
     if (false) { \

@@ -3,8 +3,6 @@
 #include "dh/sli.h"
 #include "dh/Arr.h"
 #include "dh/time.h"
-#define u8_s Str_m
-#define u8_l Str_l
 
 #include <stdio.h>
 
@@ -82,7 +80,7 @@ async_fn_scope(exec_sleep, {}) {
         Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
     areturn_({});
-} async_unscoped;
+} $unscoped_async_fn;
 
 #include "dh/main.h"
 #include "dh/Thrd.h"
@@ -130,7 +128,7 @@ async_fn_scope(count, {
     });
     report(args->label, "after loop %f\n", locals->total);
     areturn_(locals->total);
-} async_unscoped;
+} $unscoped_async_fn;
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
@@ -163,7 +161,7 @@ async_fn_scope(runMain, {
 
     printf("end\n");
     areturn_(locals->total);
-} async_unscoped;
+} $unscoped_async_fn;
 
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     var task = async_((runMain)(args));
