@@ -123,9 +123,11 @@ extern Opt$usize Str_find(Str_const haystack, Str_const needle, usize start);
 /// Find last occurrence of substring
 extern Opt$usize Str_rfind(Str_const haystack, Str_const needle, usize start);
 /// Check if string starts with prefix
-extern bool      Str_startsWith(Str_const self, Str_const prefix);
+/// Returns index where prefix ends if found, otherwise none
+extern Opt$usize Str_startsWith(Str_const self, Str_const prefix);
 /// Check if string ends with suffix
-extern bool      Str_endsWith(Str_const self, Str_const suffix);
+/// Returns index where suffix starts if found, otherwise none
+extern Opt$usize Str_endsWith(Str_const self, Str_const suffix);
 
 /// Calculate string hash
 extern StrHash Str_hash(Str_const self);

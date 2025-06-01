@@ -37,6 +37,10 @@ typedef Thrd_IdImpl     Thrd_Id;
 // Thread handle type
 typedef Thrd_HandleImpl Thrd_Handle;
 
+// Thread function context type instantiation
+#define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
+// Thread function context type alias
+#define Thrd_FnCtx$(_fnName)                       comp_type_alias__Thrd_FnCtx$(_fnName)
 // Thread function context type erasure
 typedef struct Thrd_FnCtx Thrd_FnCtx;
 // Thread function arguments type erasure
@@ -57,11 +61,10 @@ struct Thrd_FnCtx {
         u8          data[];
     };
 };
-#define Thrd_FnCtx$(_fnName)                       comp_type_alias__Thrd_FnCtx$(_fnName)
-#define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
-#define Thrd_FnCtx_from(_fnName, _Args...)         comp_inline__Thrd_FnCtx_from(_fnName, _Args)
-#define Thrd_FnCtx_returned(_fnName, _ctx...)      comp_inline__Thrd_FnCtx_returned(_fnName, _ctx)
+#define Thrd_FnCtx_from(_fnName, _Args...)    comp_inline__Thrd_FnCtx_from(_fnName, _Args)
+#define Thrd_FnCtx_returned(_fnName, _ctx...) comp_inline__Thrd_FnCtx_returned(_fnName, _ctx)
 
+// Thread function syntax
 #define Thrd_fn_(_fnName, _Tuple_Args_Ret_w_Tuple_Captures_w_Extension...) \
     pp_overload(__Thrd_fn, _Tuple_Args_Ret_w_Tuple_Captures_w_Extension)(_fnName, _Tuple_Args_Ret_w_Tuple_Captures_w_Extension)
 #define __Thrd_fn_0(_fnName) \
@@ -119,7 +122,6 @@ typedef struct Thrd_RwLock Thrd_RwLock;
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_alias__Thrd_FnCtx$(_fnName) pp_join($, Thrd_FnCtx, _fnName)
 #define comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return) \
     typedef union Thrd_FnCtx$(_fnName) Thrd_FnCtx$(_fnName); \
     union Thrd_FnCtx$(_fnName) { \
@@ -136,6 +138,7 @@ typedef struct Thrd_RwLock Thrd_RwLock;
             } ret; \
         }; \
     }
+#define comp_type_alias__Thrd_FnCtx$(_fnName) pp_join($, Thrd_FnCtx, _fnName)
 #define comp_inline__Thrd_FnCtx_from(_fnName, _Args...) \
     ((Thrd_FnCtx$(_fnName)){ \
         .fn   = _fnName, \
