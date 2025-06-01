@@ -138,6 +138,6 @@ $release_only(fn_(dh_main(Sli$Str_const args), Err$void, $scope)) {
     try_(TEST_expect(y == 123));
 
     $release_only(return_ok({});)
-} $TEST_only($unscoped_TEST)
+} $TEST_only($unscoped_TEST_fn)
 $release_only($unscoped);
 // clang-format on

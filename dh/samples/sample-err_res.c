@@ -17,7 +17,8 @@ config_ErrSet(math_Err,
 
 // Function that returns an error result
 use_ErrSet$(math_Err, i32);
-static fn_(safeDivide(i32 numerator, i32 denominator), math_Err$i32, $scope) {
+$must_check
+$static fn_(safeDivide(i32 numerator, i32 denominator), math_Err$i32, $scope) {
     if (denominator == 0) {
         return_err(math_Err_DivisionByZero());
     }
@@ -32,7 +33,8 @@ static fn_(safeDivide(i32 numerator, i32 denominator), math_Err$i32, $scope) {
 
 // Function demonstrating error propagation with try_
 use_ErrSet$(math_Err, f32);
-static fn_(calculateRatio(i32 a, i32 b, i32 c, i32 d), math_Err$f32, $scope) {
+$must_check
+$static fn_(calculateRatio(i32 a, i32 b, i32 c, i32 d), math_Err$f32, $scope) {
     // try_ will return early if an error occurs
     let first_result  = try_(safeDivide(a, b));
     let second_result = try_(safeDivide(c, d));
@@ -81,7 +83,8 @@ static fn_(processResult(math_ErrRes result), void) {
 
 // Function demonstrating errdefer_
 static var_(memory, Arr$$(1024, u8)) = Arr_zero();
-static fn_(performOperation(i32 a, i32 b), math_Err$i32, $guard) {
+$must_check
+$static fn_(performOperation(i32 a, i32 b), math_Err$i32, $guard) {
     // Allocate resources
     var fixed     = heap_Fixed_init(Sli_arr$(Sli$u8, memory));
     var allocator = heap_Fixed_allocator(&fixed);
@@ -143,14 +146,16 @@ config_ErrSet(math_Err,
 );
 
 use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
+$must_check
+$static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
 } $unscoped;
 
-static fn_(example(void), Err$void, $scope) {
+$must_check
+$static fn_(example(void), Err$void, $scope) {
     // Allocate resources
     var buffer = meta_cast$(Sli$i32,
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))

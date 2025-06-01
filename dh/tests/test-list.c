@@ -2,7 +2,7 @@
 #include "dh/TEST.h"
 #include "dh/list.h"
 
-fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
+TEST_fn_("Basic SinglyLinkedList Operations", $guard) {
     use_ListSgl$(u32);
     var_type(list, ListSgl$u32, ListSgl_init());
 
@@ -51,4 +51,4 @@ fn_TEST_scope_ext("Basic SinglyLinkedList Operations") {
     try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 2));
     // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
     try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
-} TEST_unscoped_ext;
+} $unguarded_TEST_fn;

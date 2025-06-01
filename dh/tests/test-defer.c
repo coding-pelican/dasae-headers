@@ -25,7 +25,7 @@ TEST_fn_("test basic defer", $scope) {
     try_(testBasicDeferScope());
     try_(TEST_expect(s_test_state.counter == 2));
     return_ok({});
-} $unscoped_TEST
+} $unscoped_TEST_fn
 
 static fn_(testBasicDeferScope(void), Err$void, $guard) {
     s_test_state.counter = 1;
@@ -43,7 +43,7 @@ TEST_fn_("test multiple defers", $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 2));
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 2) == 1));
     return_ok({});
-} $unscoped_TEST
+} $unscoped_TEST_fn
 
 static fn_(testMultipleDeferScope(void), void, $guard) {
     defer_(recordCleanup(1));
@@ -61,7 +61,7 @@ TEST_fn_("test defer with early return", $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 2));
     return_ok({});
-} $unscoped_TEST
+} $unscoped_TEST_fn
 
 static fn_(testDeferWithReturnScope(void), void, $guard) {
     defer_(recordCleanup(1));
@@ -84,7 +84,7 @@ TEST_fn_("test block defer", $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 3) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 4));
     return_ok({});
-} $unscoped_TEST
+} $unscoped_TEST_fn
 
 static fn_(testBlockDeferScope(void), void, $guard) {
     defer_(recordCleanup(1));
