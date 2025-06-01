@@ -14,137 +14,137 @@
  * @details Provides mockup thread implementation for testing purposes.
  */
 
-#ifndef THRD_INCLUDED
-#define THRD_INCLUDED (1)
+// #ifndef THRD_INCLUDED
+// #define THRD_INCLUDED (1)
 
 
-#include "dh/core.h"
-#include "dh/err.h"
-#include "dh/Arr.h"
-#include "dh/Sli.h"
-#include "dh/Str.h"
-#include "dh/time.h"
+// #include "dh/core.h"
+// #include "dh/err.h"
+// #include "dh/Arr.h"
+// #include "dh/Sli.h"
+// #include "dh/Str.h"
+// #include "dh/time.h"
 
-// Constants
-#define Thrd_max_name_len (15)
-#define Thrd_use_pthread  (1)
+// // Constants
+// #define Thrd_max_name_len (15)
+// #define Thrd_use_pthread  (1)
 
-#if Thrd_use_pthread
-#include <pthread.h>
-#include <semaphore.h>
-#else  /* !Thrd_use_pthread */
-#endif /* !Thrd_use_pthread */
-
-
-// Error handling types
-config_ErrSet(Thrd_Err,
-    OutOfMemory,
-    SystemResources,
-    ThreadQuotaExceeded,
-    TooManyThreads,
-    NameTooLong,
-    PermissionDenied,
-    Unsupported,
-    InvalidParameter,
-    CpuCount,
-    Other
-);
-
-// Read-write lock type
-typedef struct Thrd_RwLock {
-    pthread_rwlock_t impl;
-} Thrd_RwLock;
-// Semaphore type
-typedef struct Thrd_Sem {
-#ifdef __APPLE__
-    dispatch_semaphore_t impl;
-#else
-    sem_t impl;
-#endif
-} Thrd_Sem;
-// Reset event type
-typedef struct Thrd_ResetEvent {
-    Thrd_Mtx  mutex;
-    Thrd_Cond cond;
-    bool      signaled;
-} Thrd_ResetEvent;
-// Wait group type
-typedef struct Thrd_WaitGroup {
-    Thrd_Mtx  mutex;
-    Thrd_Cond cond;
-    usize     count;
-} Thrd_WaitGroup;
+// #if Thrd_use_pthread
+// #include <pthread.h>
+// #include <semaphore.h>
+// #else  /* !Thrd_use_pthread */
+// #endif /* !Thrd_use_pthread */
 
 
-typedef struct Thrd_FnCtx {
-    u8 data[];
-} Thrd_FnCtx;
-typedef struct Thrd_FnRet {
-    u8 data[];
-} Thrd_FnRet;
-typedef fn_((*Thrd_WorkFn)(Thrd_FnCtx* ctx), Thrd_FnRet*);
-typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
-use_Opt$(Thrd_NameBuf);
-// Thread implementation
-struct Thrd {
-    Thrd_Handle handle;
-};
-use_Err$(Thrd);
-// Thread spawn configuration
-typedef struct Thrd_SpawnConfig {
-    usize             stack_size;
-    Opt$mem_Allocator allocator;
-} Thrd_SpawnConfig;
-#define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
-static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
-    .stack_size = Thrd_SpawnConfig_default_stack_size,
-    .allocator  = none()
-};
-// Thread pool type
-typedef struct Thrd_Pool Thrd_Pool;
+// // Error handling types
+// config_ErrSet(Thrd_Err,
+//     OutOfMemory,
+//     SystemResources,
+//     ThreadQuotaExceeded,
+//     TooManyThreads,
+//     NameTooLong,
+//     PermissionDenied,
+//     Unsupported,
+//     InvalidParameter,
+//     CpuCount,
+//     Other
+// );
+
+// // Read-write lock type
+// typedef struct Thrd_RwLock {
+//     pthread_rwlock_t impl;
+// } Thrd_RwLock;
+// // Semaphore type
+// typedef struct Thrd_Sem {
+// #ifdef __APPLE__
+//     dispatch_semaphore_t impl;
+// #else
+//     sem_t impl;
+// #endif
+// } Thrd_Sem;
+// // Reset event type
+// typedef struct Thrd_ResetEvent {
+//     Thrd_Mtx  mutex;
+//     Thrd_Cond cond;
+//     bool      signaled;
+// } Thrd_ResetEvent;
+// // Wait group type
+// typedef struct Thrd_WaitGroup {
+//     Thrd_Mtx  mutex;
+//     Thrd_Cond cond;
+//     usize     count;
+// } Thrd_WaitGroup;
+
+
+// typedef struct Thrd_FnCtx {
+//     u8 data[];
+// } Thrd_FnCtx;
+// typedef struct Thrd_FnRet {
+//     u8 data[];
+// } Thrd_FnRet;
+// typedef fn_((*Thrd_WorkFn)(Thrd_FnCtx* ctx), Thrd_FnRet*);
+// typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
+// use_Opt$(Thrd_NameBuf);
+// // Thread implementation
+// struct Thrd {
+//     Thrd_Handle handle;
+// };
+// use_Err$(Thrd);
+// // Thread spawn configuration
+// typedef struct Thrd_SpawnConfig {
+//     usize             stack_size;
+//     Opt$mem_Allocator allocator;
+// } Thrd_SpawnConfig;
+// #define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
+// static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
+//     .stack_size = Thrd_SpawnConfig_default_stack_size,
+//     .allocator  = none()
+// };
+// // Thread pool type
+// typedef struct Thrd_Pool Thrd_Pool;
 
 
 
-// Error sets
-typedef Err$void  Thrd_YieldError;
-typedef Err$void  Thrd_SetNameError;
-typedef Err$usize Thrd_CpuCountError;
-typedef Err$void  Thrd_GetNameError;
-typedef Err$Thrd  Thrd_SpawnError;
+// // Error sets
+// typedef Err$void  Thrd_YieldError;
+// typedef Err$void  Thrd_SetNameError;
+// typedef Err$usize Thrd_CpuCountError;
+// typedef Err$void  Thrd_GetNameError;
+// typedef Err$Thrd  Thrd_SpawnError;
 
 
-// RwLock functions
-Thrd_RwLock Thrd_RwLock_init(void);
-void        Thrd_RwLock_deinit(Thrd_RwLock* rwlock);
-void        Thrd_RwLock_readLock(Thrd_RwLock* rwlock);
-void        Thrd_RwLock_writeLock(Thrd_RwLock* rwlock);
-bool        Thrd_RwLock_tryReadLock(Thrd_RwLock* rwlock);
-bool        Thrd_RwLock_tryWriteLock(Thrd_RwLock* rwlock);
-void        Thrd_RwLock_unlock(Thrd_RwLock* rwlock);
+// // RwLock functions
+// Thrd_RwLock Thrd_RwLock_init(void);
+// void        Thrd_RwLock_deinit(Thrd_RwLock* rwlock);
+// void        Thrd_RwLock_readLock(Thrd_RwLock* rwlock);
+// void        Thrd_RwLock_writeLock(Thrd_RwLock* rwlock);
+// bool        Thrd_RwLock_tryReadLock(Thrd_RwLock* rwlock);
+// bool        Thrd_RwLock_tryWriteLock(Thrd_RwLock* rwlock);
+// void        Thrd_RwLock_unlock(Thrd_RwLock* rwlock);
 
-// Semaphore functions
-Thrd_Sem Thrd_Sem_init(usize initial_value);
-void     Thrd_Sem_deinit(Thrd_Sem* sem);
-void     Thrd_Sem_wait(Thrd_Sem* sem);
-bool     Thrd_Sem_timedWait(Thrd_Sem* sem, uint64_t ns);
-void     Thrd_Sem_post(Thrd_Sem* sem);
+// // Semaphore functions
+// Thrd_Sem Thrd_Sem_init(usize initial_value);
+// void     Thrd_Sem_deinit(Thrd_Sem* sem);
+// void     Thrd_Sem_wait(Thrd_Sem* sem);
+// bool     Thrd_Sem_timedWait(Thrd_Sem* sem, uint64_t ns);
+// void     Thrd_Sem_post(Thrd_Sem* sem);
 
-// Reset event functions
-Thrd_ResetEvent Thrd_ResetEvent_init(void);
-void            Thrd_ResetEvent_deinit(Thrd_ResetEvent* event);
-void            Thrd_ResetEvent_wait(Thrd_ResetEvent* event);
-bool            Thrd_ResetEvent_timedWait(Thrd_ResetEvent* event, uint64_t ns);
-void            Thrd_ResetEvent_signal(Thrd_ResetEvent* event);
-void            Thrd_ResetEvent_reset(Thrd_ResetEvent* event);
+// // Reset event functions
+// Thrd_ResetEvent Thrd_ResetEvent_init(void);
+// void            Thrd_ResetEvent_deinit(Thrd_ResetEvent* event);
+// void            Thrd_ResetEvent_wait(Thrd_ResetEvent* event);
+// bool            Thrd_ResetEvent_timedWait(Thrd_ResetEvent* event, uint64_t ns);
+// void            Thrd_ResetEvent_signal(Thrd_ResetEvent* event);
+// void            Thrd_ResetEvent_reset(Thrd_ResetEvent* event);
 
-// Wait group functions
-Thrd_WaitGroup Thrd_WaitGroup_init(void);
-void           Thrd_WaitGroup_deinit(Thrd_WaitGroup* wg);
-void           Thrd_WaitGroup_add(Thrd_WaitGroup* wg, usize count);
-void           Thrd_WaitGroup_wait(Thrd_WaitGroup* wg);
-void           Thrd_WaitGroup_done(Thrd_WaitGroup* wg);
+// // Wait group functions
+// Thrd_WaitGroup Thrd_WaitGroup_init(void);
+// void           Thrd_WaitGroup_deinit(Thrd_WaitGroup* wg);
+// void           Thrd_WaitGroup_add(Thrd_WaitGroup* wg, usize count);
+// void           Thrd_WaitGroup_wait(Thrd_WaitGroup* wg);
+// void           Thrd_WaitGroup_done(Thrd_WaitGroup* wg);
 
-#endif /* THRD_INCLUDED */
+// #endif /* THRD_INCLUDED */
 
 
 

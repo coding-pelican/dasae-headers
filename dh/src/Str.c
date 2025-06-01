@@ -227,17 +227,19 @@ fn_(Str_rfind(Str_const haystack, Str_const needle, usize start), Opt$usize, $sc
     return_none();
 } $unscoped;
 
-bool Str_startsWith(Str_const self, Str_const prefix) {
+fn_(Str_startsWith(Str_const self, Str_const prefix), Opt$usize, $scope) {
     debug_assert_nonnull(self.ptr);
-    if (self.len < prefix.len) { return false; }
-    return mem_eqlBytes(self.ptr, prefix.ptr, prefix.len);
-}
+    if (self.len < prefix.len) { return_none(); }
+    if (!mem_eqlBytes(self.ptr, prefix.ptr, prefix.len)) { return_none(); }
+    return_some(prefix.len);
+} $unscoped;
 
-bool Str_endsWith(Str_const self, Str_const suffix) {
+fn_(Str_endsWith(Str_const self, Str_const suffix), Opt$usize, $scope) {
     debug_assert_nonnull(self.ptr);
-    if (self.len < suffix.len) { return false; }
-    return mem_eqlBytes(self.ptr + self.len - suffix.len, suffix.ptr, suffix.len);
-}
+    if (self.len < suffix.len) { return_none(); }
+    if (!mem_eqlBytes(self.ptr + self.len - suffix.len, suffix.ptr, suffix.len)) { return_none(); }
+    return_some(self.len - suffix.len);
+} $unscoped;
 
 static u32 hashMurmur3(const u8* data, usize len) {
     const u32 c1 = 0xcc9e2d51;
