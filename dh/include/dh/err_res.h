@@ -69,6 +69,9 @@ extern "C" {
 #define errdefer_(_Expr...)                       comp_syn__errdefer_(_Expr)
 #define errdefer_from(_Payload_Capture, _Expr...) comp_syn__errdefer_from(_Payload_Capture, _Expr)
 
+#define Err_asOpt$(T_Opt, var_err...) comp_op__Err_asOpt$(pp_uniqTok(err), T_Opt, var_err)
+#define Err_asOpt(var_err...)         comp_op__Err_asOpt(var_err)
+
 /* Error result payload captures */
 #define if_err(val_result, _Payload_Capture) comp_syn__if_err(val_result, _Payload_Capture)
 #define else_ok(_Payload_Capture)            comp_syn__else_ok(_Payload_Capture)
@@ -226,6 +229,16 @@ typedef struct Err$Void {
         _Expr; \
     } \
 )
+
+#define comp_op__Err_asOpt$(__err, T_Opt, var_err...) eval({ \
+    let __err = var_err; \
+    (T_Opt){ \
+        .value     = __err.data.ok, \
+        .has_value = !__err.is_err \
+    }; \
+})
+#define comp_op__Err_asOpt(var_err...) \
+    Err_asOpt$(Opt$$(FieldType$(TypeOf(({ var_err; })), data.ok)), var_err)
 
 #define comp_syn__if_err(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), _result.is_err) \
