@@ -171,294 +171,296 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define use_Arr$(N, T)                                                   \
-    /**                                                                  \
-     * @brief Declares and implements an array type                      \
-     * @param N Size of the array                                        \
-     * @param T Element type of the array                                \
-     * @example                                                          \
+#define use_Arr$(N, T) \
+    /** \
+     * @brief Declares and implements an array type \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @example \
      *     use_Arr$(4, u8);  // Declares and implements [4]u8 array type \
-     */                                                                  \
+     */ \
     comp_type_gen__use_Arr$(N, T)
-#define decl_Arr$(N, T)                                      \
-    /**                                                      \
-     * @brief Declares an array type without implementation  \
-     * @param N Size of the array                            \
-     * @param T Element type of the array                    \
-     * @example                                              \
+#define decl_Arr$(N, T) \
+    /** \
+     * @brief Declares an array type without implementation \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @example \
      *     decl_Arr$(3, i32);  // Declares [3]i32 array type \
-     */                                                      \
+     */ \
     comp_type_gen__decl_Arr$(N, T)
-#define impl_Arr$(N, T)                                        \
-    /**                                                        \
-     * @brief Implements a previously declared array type      \
-     * @param N Size of the array                              \
-     * @param T Element type of the array                      \
-     * @example                                                \
+#define impl_Arr$(N, T) \
+    /** \
+     * @brief Implements a previously declared array type \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @example \
      *     impl_Arr$(3, i32);  // Implements [3]i32 array type \
-     */                                                        \
+     */ \
     comp_type_gen__impl_Arr$(N, T)
 
-#define Arr$(N, T)                              \
-    /**                                         \
-     * @brief Creates an array type             \
-     * @param N Size of the array               \
-     * @param T Element type of the array       \
-     * @return Array type alias                 \
-     * @example                                 \
+#define Arr$(N, T) \
+    /** \
+     * @brief Creates an array type \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @return Array type alias \
+     * @example \
      *     Arr$(5, f32) myArr;  // [5]f32 array \
-     */                                         \
+     */ \
     comp_type_alias__Arr$(N, T)
-#define Arr$$(N, T)                                                   \
-    /**                                                               \
-     * @brief Creates an anonymous array type                         \
-     * @param N Size of the array                                     \
-     * @param T Element type of the array                             \
-     * @return Anonymous array type alias                             \
-     * @example                                                       \
+#define Arr$$(N, T) \
+    /** \
+     * @brief Creates an anonymous array type \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @return Anonymous array type alias \
+     * @example \
      *     typedef Arr$$(3, i32) MyArrType;  // Anonymous [3]i32 type \
-     */                                                               \
+     */ \
     comp_type_anon__Arr$$(N, T)
-#define Arr_anonCast$(T_Arr, var_anon...)                                                          \
-    /**                                                                                            \
-     * @brief Casts an anonymous array to a specific array type                                    \
-     * @param T_Arr Target array type                                                              \
-     * @param var_anon Anonymous array variable                                                    \
-     * @return Cast array of specified type                                                        \
+#define Arr_anonCast$(T_Arr, var_anon...) \
+    /** \
+     * @brief Casts an anonymous array to a specific array type \
+     * @param T_Arr Target array type \
+     * @param var_anon Anonymous array variable \
+     * @return Cast array of specified type \
      * @details Performs type safety checks and converts the anonymous array to the specified type \
-     * @example                                                                                    \
-     *     Arr$3$i32 typed = Arr_anonCast$(Arr$3$i32, anon);                                       \
-     */                                                                                            \
+     * @example \
+     *     Arr$3$i32 typed = Arr_anonCast$(Arr$3$i32, anon); \
+     */ \
     comp_op__Arr_anonCast$(pp_uniqTok(anon), T_Arr, var_anon)
 
-#define Arr_zero()                                      \
-    /**                                                 \
-     * @brief Initializes array with zeros              \
-     * @return Zero-initialized array literal           \
-     * @example                                         \
+#define Arr_zero() \
+    /** \
+     * @brief Initializes array with zeros \
+     * @return Zero-initialized array literal \
+     * @example \
      *     Arr$(3, i32) arr = Arr_zero();  // {0, 0, 0} \
-     */                                                 \
+     */ \
     comp_op__Arr_zero()
-#define Arr_zero$(T_Arr)                                             \
-    /**                                                              \
-     * @brief Initializes specified array type with zeros            \
-     * @param T_Arr Array type                                       \
-     * @return Zero-initialized array                                \
-     * @example                                                      \
+#define Arr_zero$(T_Arr) \
+    /** \
+     * @brief Initializes specified array type with zeros \
+     * @param T_Arr Array type \
+     * @return Zero-initialized array \
+     * @example \
      *     Arr$(3, i32) arr = Arr_zero$(Arr$(3, i32));  // {0, 0, 0} \
-     */                                                              \
+     */ \
     comp_op__Arr_zero$(T_Arr)
 
-#define Arr_init(_Initial...)                         \
-    /**                                               \
+#define Arr_init(_Initial...) \
+    /** \
      * @brief Initializes array with specified values \
-     * @param _Initial Initial values                 \
-     * @return Initialized array literal              \
-     * @example                                       \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});    \
-     */                                               \
+     * @param _Initial Initial values \
+     * @return Initialized array literal \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     */ \
     comp_op__Arr_init(_Initial)
-#define Arr_init$(T_Arr, _Initial...)                             \
-    /**                                                           \
-     * @brief Initializes specified array type with values        \
-     * @param T_Arr Array type                                    \
-     * @param _Initial Initial values                             \
-     * @return Initialized array                                  \
-     * @example                                                   \
+#define Arr_init$(T_Arr, _Initial...) \
+    /** \
+     * @brief Initializes specified array type with values \
+     * @param T_Arr Array type \
+     * @param _Initial Initial values \
+     * @return Initialized array \
+     * @example \
      *     Arr$(3, i32) arr = Arr_init$(Arr$(3, i32), {1, 2, 3}); \
-     */                                                           \
+     */ \
     comp_op__Arr_init$(T_Arr, _Initial)
 
-#define Arr_from$(T, _Initial...)                                 \
-    /**                                                           \
+#define Arr_from$(T, _Initial...) \
+    /** \
      * @brief Initializes array inferred size from initial values \
-     * @param T Element type of the array                         \
-     * @param _Initial Initial values                             \
-     * @return Initialized array                                  \
-     * @example                                                   \
-     *     var arr = Arr_from$(i32, {1, 2, 3});                   \
-     */                                                           \
+     * @param T Element type of the array \
+     * @param _Initial Initial values \
+     * @return Initialized array \
+     * @example \
+     *     var arr = Arr_from$(i32, {1, 2, 3}); \
+     */ \
     comp_op__Arr_from$(T, _Initial)
 #define Arr_asg(var_self, var_other...) comp_op__Arr_asg(var_self, var_other)
 
-#define Arr_len(var_self...)                              \
-    /**                                                   \
+#define Arr_ptr(var_self...) comp_op__Arr_ptr(var_self)
+#define Arr_buf(var_self...) comp_op__Arr_buf(var_self)
+#define Arr_len(var_self...) \
+    /** \
      * @brief `arr.len` | Get number of elements in array \
-     * @param var_self Array variable                     \
-     * @return Length of the array                        \
-     * @example                                           \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});        \
-     *     usize len = Arr_len(arr);  // 3                \
-     */                                                   \
+     * @param var_self Array variable \
+     * @return Length of the array \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     usize len = Arr_len(arr);  // 3 \
+     */ \
     comp_op__Arr_len(var_self)
-#define Arr_at(var_self, usize_index...)                                                             \
-    /**                                                                                              \
-     * @brief `&arr[index]` | Get pointer to element at index (bounds-checked)                       \
-     * @param var_self Array variable                                                                \
-     * @param usize_index Index                                                                      \
-     * @return Reference to the element                                                              \
+#define Arr_at(var_self, usize_index...) \
+    /** \
+     * @brief `&arr[index]` | Get pointer to element at index (bounds-checked) \
+     * @param var_self Array variable \
+     * @param usize_index Index \
+     * @return Reference to the element \
      * @details Performs bounds checking, triggers assertion in debug mode if index is out of bounds \
-     * @example                                                                                      \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                                                   \
-     *     i32* pItem = Arr_at(arr, 1);  // &arr.buf[1]                                              \
-     */                                                                                              \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     i32* pItem = Arr_at(arr, 1);  // &arr.buf[1] \
+     */ \
     comp_op__Arr_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-#define Arr_getAt(var_self, usize_index...)                                                          \
-    /**                                                                                              \
-     * @brief `arr[index]` | Get value of element at index (bounds-checked)                          \
-     * @param var_self Array variable                                                                \
-     * @param usize_index Index                                                                      \
-     * @return Element value                                                                         \
+#define Arr_getAt(var_self, usize_index...) \
+    /** \
+     * @brief `arr[index]` | Get value of element at index (bounds-checked) \
+     * @param var_self Array variable \
+     * @param usize_index Index \
+     * @return Element value \
      * @details Performs bounds checking, triggers assertion in debug mode if index is out of bounds \
-     * @example                                                                                      \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                                                   \
-     *     i32 item = Arr_getAt(arr, 1);  // 2                                                       \
-     */                                                                                              \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     i32 item = Arr_getAt(arr, 1);  // 2 \
+     */ \
     comp_op__Arr_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
-#define Arr_setAt(var_self, usize_index, val_item...)                                                \
-    /**                                                                                              \
-     * @brief `arr[index] = val` | Set value at index (bounds-checked)                               \
-     * @param var_self Array variable                                                                \
-     * @param usize_index Index                                                                      \
-     * @param val_item Value to set                                                                  \
-     * @return Reference to the array itself                                                         \
+#define Arr_setAt(var_self, usize_index, val_item...) \
+    /** \
+     * @brief `arr[index] = val` | Set value at index (bounds-checked) \
+     * @param var_self Array variable \
+     * @param usize_index Index \
+     * @param val_item Value to set \
+     * @return Reference to the array itself \
      * @details Performs bounds checking, triggers assertion in debug mode if index is out of bounds \
-     * @example                                                                                      \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                                                   \
-     *     Arr_setAt(arr, 1, 5);  // arr = {1, 5, 3}                                                 \
-     */                                                                                              \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     Arr_setAt(arr, 1, 5);  // arr = {1, 5, 3} \
+     */ \
     comp_op__Arr_setAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index, val_item)
 
-#define Arr_cat(var_self, var_other...)             \
-    /**                                             \
-     * @brief Concatenates two arrays               \
-     * @param var_self First array variable         \
-     * @param var_other Second array variable       \
-     * @return Concatenated array                   \
-     * @example                                     \
+#define Arr_cat(var_self, var_other...) \
+    /** \
+     * @brief Concatenates two arrays \
+     * @param var_self First array variable \
+     * @param var_other Second array variable \
+     * @return Concatenated array \
+     * @example \
      *     Arr$(3, i32) arr1 = Arr_init({1, 2, 3}); \
      *     Arr$(3, i32) arr2 = Arr_init({4, 5, 6}); \
      *     var          arr3 = Arr_cat(arr1, arr2); \
-     *     // arr3 = {1, 2, 3, 4, 5, 6}             \
-     */                                             \
+     *     // arr3 = {1, 2, 3, 4, 5, 6} \
+     */ \
     comp_op__Arr_cat(pp_uniqTok(temp), var_self, var_other)
-#define Arr_cat$(T_Arr, var_self, var_other...)                    \
-    /**                                                            \
-     * @brief Concatenates two arrays                              \
-     * @param T_Arr Target array type                              \
-     * @param var_self First array variable                        \
-     * @param var_other Second array variable                      \
-     * @return Concatenated array                                  \
-     * @example                                                    \
-     *     Arr$(3, i32) arr1 = Arr_init({1, 2, 3});                \
-     *     Arr$(3, i32) arr2 = Arr_init({4, 5, 6});                \
+#define Arr_cat$(T_Arr, var_self, var_other...) \
+    /** \
+     * @brief Concatenates two arrays \
+     * @param T_Arr Target array type \
+     * @param var_self First array variable \
+     * @param var_other Second array variable \
+     * @return Concatenated array \
+     * @example \
+     *     Arr$(3, i32) arr1 = Arr_init({1, 2, 3}); \
+     *     Arr$(3, i32) arr2 = Arr_init({4, 5, 6}); \
      *     Arr$(6, i32) arr3 = Arr_cat$(Arr$(6, i32), arr1, arr2); \
-     *     // arr3 = {1, 2, 3, 4, 5, 6}                            \
-     */                                                            \
+     *     // arr3 = {1, 2, 3, 4, 5, 6} \
+     */ \
     comp_op__Arr_cat$(pp_uniqTok(temp), T_Arr, var_self, var_other)
 
-#define Arr_slice(var_self, range_index_begin_end...)         \
-    /**                                                       \
+#define Arr_slice(var_self, range_index_begin_end...) \
+    /** \
      * @brief `arr[begin..end]` | Get slice from begin to end \
-     * @param var_self Array variable                         \
-     * @param range_index_begin_end Range and index           \
-     * @return Slice of the array                             \
-     * @example                                               \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});            \
-     *     Sli$(i32)    sli = Arr_slice(arr, (1, 2));         \
-     *     // sli = {2}                                       \
-     */                                                       \
+     * @param var_self Array variable \
+     * @param range_index_begin_end Range and index \
+     * @return Slice of the array \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     Sli$(i32)    sli = Arr_slice(arr, (1, 2)); \
+     *     // sli = {2} \
+     */ \
     comp_op__Arr_slice(pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
-#define Arr_slice$(T_Sli, var_self, range_index_begin_end...)          \
-    /**                                                                \
+#define Arr_slice$(T_Sli, var_self, range_index_begin_end...) \
+    /** \
      * @brief `arr[begin..end]` | Get specific slice from begin to end \
-     * @param T_Sli Slice type                                         \
-     * @param var_self Array variable                                  \
-     * @param range_index_begin_end Range and index                    \
-     * @return Slice of the array                                      \
-     * @example                                                        \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                     \
-     *     Sli$(i32)    sli = Arr_slice$(Sli$(i32), arr, (1, 2));      \
-     *     // sli = {2}                                                \
-     */                                                                \
+     * @param T_Sli Slice type \
+     * @param var_self Array variable \
+     * @param range_index_begin_end Range and index \
+     * @return Slice of the array \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     Sli$(i32)    sli = Arr_slice$(Sli$(i32), arr, (1, 2)); \
+     *     // sli = {2} \
+     */ \
     comp_op__Arr_slice$(T_Sli, pp_uniqTok(self), pp_uniqTok(range), var_self, range_index_begin_end)
 
-#define for_array(var_arr, _Iter_item)                      \
-    /**                                                     \
-     * @brief Iterates through array elements               \
-     * @param var_arr Array variable                        \
+#define for_array(var_arr, _Iter_item) \
+    /** \
+     * @brief Iterates through array elements \
+     * @param var_arr Array variable \
      * @param _Iter_item Iterator variable for each element \
-     * @example                                             \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});          \
-     *     for_array (arr, item) {                          \
-     *         printf("%d ", *item);  // "1 2 3"            \
-     *     }                                                \
-     */                                                     \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     for_array (arr, item) { \
+     *         printf("%d ", *item);  // "1 2 3" \
+     *     } \
+     */ \
     comp_syn__for_array(pp_uniqTok(arr), pp_uniqTok(i), var_arr, _Iter_item)
-#define for_array_indexed(var_arr, _Iter_item, _Iter_index)             \
-    /**                                                                 \
-     * @brief Iterates through array elements with index                \
-     * @param var_arr Array variable                                    \
-     * @param _Iter_item Iterator variable for each element             \
-     * @param _Iter_index Index variable                                \
-     * @example                                                         \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                      \
-     *     for_array_indexed (arr, item, idx) {                         \
+#define for_array_indexed(var_arr, _Iter_item, _Iter_index) \
+    /** \
+     * @brief Iterates through array elements with index \
+     * @param var_arr Array variable \
+     * @param _Iter_item Iterator variable for each element \
+     * @param _Iter_index Index variable \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     for_array_indexed (arr, item, idx) { \
      *         printf("[%zu]=%d ", idx, *item);  // "[0]=1 [1]=2 [2]=3" \
-     *     }                                                            \
-     */                                                                 \
+     *     } \
+     */ \
     comp_syn__for_array_indexed(pp_uniqTok(arr), var_arr, _Iter_item, _Iter_index)
-#define for_array_rev(var_arr, _Iter_item)                     \
-    /**                                                        \
+#define for_array_rev(var_arr, _Iter_item) \
+    /** \
      * @brief Iterates through array elements in reverse order \
-     * @param var_arr Array variable                           \
-     * @param _Iter_item Iterator variable for each element    \
-     * @example                                                \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});             \
-     *     for_array_rev (arr, item) {                         \
-     *         printf("%d ", *item);  // "3 2 1"               \
-     *     }                                                   \
-     */                                                        \
+     * @param var_arr Array variable \
+     * @param _Iter_item Iterator variable for each element \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     for_array_rev (arr, item) { \
+     *         printf("%d ", *item);  // "3 2 1" \
+     *     } \
+     */ \
     comp_syn__for_array_rev(pp_uniqTok(arr), pp_uniqTok(i), var_arr, _Iter_item)
-#define for_array_rev_indexed(var_arr, _Iter_item, _Iter_index)           \
-    /**                                                                   \
+#define for_array_rev_indexed(var_arr, _Iter_item, _Iter_index) \
+    /** \
      * @brief Iterates through array elements in reverse order with index \
-     * @param var_arr Array variable                                      \
-     * @param _Iter_item Iterator variable for each element               \
-     * @param _Iter_index Index variable                                  \
-     * @example                                                           \
-     *     Arr$(3, i32) arr = Arr_init({1, 2, 3});                        \
-     *     for_array_rev_indexed (arr, item, idx) {                       \
-     *         printf("[%zu]=%d ", idx, *item);  // "[2]=3 [1]=2 [0]=1"   \
-     *     }                                                              \
-     */                                                                   \
+     * @param var_arr Array variable \
+     * @param _Iter_item Iterator variable for each element \
+     * @param _Iter_index Index variable \
+     * @example \
+     *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
+     *     for_array_rev_indexed (arr, item, idx) { \
+     *         printf("[%zu]=%d ", idx, *item);  // "[2]=3 [1]=2 [0]=1" \
+     *     } \
+     */ \
     comp_syn__for_array_rev_indexed(pp_uniqTok(arr), var_arr, _Iter_item, _Iter_index)
 
 /*========== Macros and Definitions =========================================*/
 
 #define comp_type_gen__use_Arr$(N, T) \
-    decl_Arr$(N, T);                  \
+    decl_Arr$(N, T); \
     impl_Arr$(N, T)
 #define comp_type_gen__decl_Arr$(N, T) \
     $maybe_unused typedef struct Arr$(N, T) Arr$(N, T)
 #define comp_type_gen__impl_Arr$(N, T) \
-    struct Arr$(N, T) {                \
-        T buf[N];                      \
+    struct Arr$(N, T) { \
+        T buf[N]; \
     }
 
 #define comp_type_alias__Arr$(N, T) \
     pp_join3($, Arr, N, T)
 #define comp_type_anon__Arr$$(N, T) \
-    struct {                        \
-        T buf[N];                   \
+    struct { \
+        T buf[N]; \
     }
-#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({                        \
-    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                         \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr));                       \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr));                     \
-    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(T_Arr, buf)));    \
+#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({ \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon; \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr)); \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr)); \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(T_Arr, buf))); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(T_Arr, buf)); \
-    eval_return rawderef(as$(rawptr$(T_Arr), __anon));                                   \
+    eval_return rawderef(as$(rawptr$(T_Arr), __anon)); \
 })
 
 #define comp_op__Arr_zero()                      { .buf = { 0 } }
@@ -466,118 +468,120 @@ extern "C" {
 #define comp_op__Arr_init(_Initial...)           { .buf = _Initial }
 #define comp_op__Arr_init$(T_Arr, _Initial...)   ((T_Arr)Arr_init(_Initial))
 #define comp_op__Arr_from$(T, _Initial...)       Arr_init$(Arr$$(sizeOf((T[])_Initial) / sizeOf$(T), T), _Initial)
-#define comp_op__Arr_asg(var_self, var_other...) eval({                             \
-    let __self  = &var_self;                                                        \
-    let __other = &var_other;                                                       \
-    claim_assert_static(sizeOf(TypeOf(*__self)) == sizeOf(TypeOf(*__other)));       \
-    claim_assert_static(alignOf(TypeOf(*__self)) == alignOf(TypeOf(*__other)));     \
+#define comp_op__Arr_asg(var_self, var_other...) eval({ \
+    let __self  = &var_self; \
+    let __other = &var_other; \
+    claim_assert_static(sizeOf(TypeOf(*__self)) == sizeOf(TypeOf(*__other))); \
+    claim_assert_static(alignOf(TypeOf(*__self)) == alignOf(TypeOf(*__other))); \
     claim_assert_static(isSameType(TypeOf((*__self).buf), TypeOf((*__other).buf))); \
-    eval_return deref(__self) = deref(as$(TypeOf(__self), __other));                \
+    eval_return deref(__self) = deref(as$(TypeOf(__self), __other)); \
 })
 
+#define comp_op__Arr_buf(var_self...)                              ((var_self).buf)
+#define comp_op__Arr_ptr(var_self...)                              (&*Arr_buf(var_self))
 #define comp_op__Arr_len(var_self...)                              countOf((var_self).buf)
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
-    let_(__self, TypeOf(&var_self)) = &var_self;                          \
-    const usize __index             = usize_index;                        \
-    debug_assert_fmt(                                                     \
-        __index < Arr_len(*__self),                                       \
-        "Index out of bounds: %zu >= %zu",                                \
-        __index,                                                          \
-        Arr_len(*__self)                                                  \
-    );                                                                    \
-    eval_return rawref(__self->buf[__index]);                             \
+    let_(__self, TypeOf(&var_self)) = &var_self; \
+    const usize __index             = usize_index; \
+    debug_assert_fmt( \
+        __index < Arr_len(*__self), \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        Arr_len(*__self) \
+    ); \
+    eval_return rawref(__self->buf[__index]); \
 })
 #define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
-    const TypeOf(&var_self) __self = &var_self;                              \
-    const usize __index            = usize_index;                            \
-    debug_assert_fmt(                                                        \
-        __index < Arr_len(*__self),                                          \
-        "Index out of bounds: %zu >= %zu",                                   \
-        __index,                                                             \
-        Arr_len(*__self)                                                     \
-    );                                                                       \
-    eval_return __self->buf[__index];                                        \
+    const TypeOf(&var_self) __self = &var_self; \
+    const usize __index            = usize_index; \
+    debug_assert_fmt( \
+        __index < Arr_len(*__self), \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        Arr_len(*__self) \
+    ); \
+    eval_return __self->buf[__index]; \
 })
 #define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
-    const TypeOf(&var_self) __self = &var_self;                                         \
-    const usize __index            = usize_index;                                       \
-    debug_assert_fmt(                                                                   \
-        __index < Arr_len(*__self),                                                     \
-        "Index out of bounds: %zu >= %zu",                                              \
-        __index,                                                                        \
-        Arr_len(*__self)                                                                \
-    );                                                                                  \
-    __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value);                      \
-    eval_return __self;                                                                 \
+    const TypeOf(&var_self) __self = &var_self; \
+    const usize __index            = usize_index; \
+    debug_assert_fmt( \
+        __index < Arr_len(*__self), \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        Arr_len(*__self) \
+    ); \
+    __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value); \
+    eval_return __self; \
 })
 
-#define comp_op__Arr_cat(__temp, var_self, var_other...) eval({                         \
+#define comp_op__Arr_cat(__temp, var_self, var_other...) eval({ \
     claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
-    union {                                                                             \
-        Arr$$(                                                                          \
-            countOf((var_self).buf) + countOf((var_other).buf),                         \
-            TypeOf((var_self).buf[0])                                                   \
-        ) concatted;                                                                    \
-        struct {                                                                        \
-            TypeOf(var_self) lhs;                                                       \
-            TypeOf(var_other) rhs;                                                      \
-        };                                                                              \
-    } __temp = { .lhs = var_self, .rhs = var_other };                                   \
-    eval_return __temp.concatted;                                                       \
+    union { \
+        Arr$$( \
+            countOf((var_self).buf) + countOf((var_other).buf), \
+            TypeOf((var_self).buf[0]) \
+        ) concatted; \
+        struct { \
+            TypeOf(var_self) lhs; \
+            TypeOf(var_other) rhs; \
+        }; \
+    } __temp = { .lhs = var_self, .rhs = var_other }; \
+    eval_return __temp.concatted; \
 })
-#define comp_op__Arr_cat$(__temp, T_Arr, var_self, var_other...) eval({                 \
+#define comp_op__Arr_cat$(__temp, T_Arr, var_self, var_other...) eval({ \
     claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
-    union {                                                                             \
-        T_Arr concatted;                                                                \
-        struct {                                                                        \
-            TypeOf(var_self) lhs;                                                       \
-            TypeOf(var_other) rhs;                                                      \
-        };                                                                              \
-    } __temp = { .lhs = var_self, .rhs = var_other };                                   \
-    eval_return __temp.concatted;                                                       \
+    union { \
+        T_Arr concatted; \
+        struct { \
+            TypeOf(var_self) lhs; \
+            TypeOf(var_other) rhs; \
+        }; \
+    } __temp = { .lhs = var_self, .rhs = var_other }; \
+    eval_return __temp.concatted; \
 })
 
 #define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
-    let_(__self, TypeOf(var_self)*) = &var_self;                                       \
-    let_(__range, Range)            = Range_from range_index_begin_end;                \
-    debug_assert_fmt(                                                                  \
-        __range.begin < __range.end,                                                   \
-        "Invalid slice range: begin(%zu) >= end(%zu)",                                 \
-        __range.begin,                                                                 \
-        __range.end                                                                    \
-    );                                                                                 \
-    debug_assert_fmt(                                                                  \
-        __range.end <= Arr_len(*__self),                                               \
-        "Index out of bounds: end(%zu) > len(%zu)",                                    \
-        __range.end,                                                                   \
-        Arr_len(*__self)                                                               \
-    );                                                                                 \
-    eval_return make$(                                                                 \
-        Sli$$(TypeOf(__self->buf[0])),                                                 \
-        .ptr = __self->buf + __range.begin,                                            \
-        .len = Range_len(__range)                                                      \
-    );                                                                                 \
+    let_(__self, TypeOf(var_self)*) = &var_self; \
+    let_(__range, Range)            = Range_from range_index_begin_end; \
+    debug_assert_fmt( \
+        __range.begin < __range.end, \
+        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin, \
+        __range.end \
+    ); \
+    debug_assert_fmt( \
+        __range.end <= Arr_len(*__self), \
+        "Index out of bounds: end(%zu) > len(%zu)", \
+        __range.end, \
+        Arr_len(*__self) \
+    ); \
+    eval_return make$( \
+        Sli$$(TypeOf(__self->buf[0])), \
+        .ptr = __self->buf + __range.begin, \
+        .len = Range_len(__range) \
+    ); \
 })
 #define comp_op__Arr_slice$(T_Sli, __self, __range, var_self, range_index_begin_end...) eval({ \
-    let_(__self, TypeOf(&var_self)) = &var_self;                                               \
-    let_(__range, Range)            = Range_from range_index_begin_end;                        \
-    debug_assert_fmt(                                                                          \
-        __range.begin < __range.end,                                                           \
-        "Invalid slice range: begin(%zu) >= end(%zu)",                                         \
-        __range.begin,                                                                         \
-        __range.end                                                                            \
-    );                                                                                         \
-    debug_assert_fmt(                                                                          \
-        __range.end <= Arr_len(*__self),                                                       \
-        "Index out of bounds: end(%zu) > len(%zu)",                                            \
-        __range.end,                                                                           \
-        Arr_len(*__self)                                                                       \
-    );                                                                                         \
-    eval_return make$(                                                                         \
-        T_Sli,                                                                                 \
-        .ptr = __self->buf + __range.begin,                                                    \
-        .len = Range_len(__range)                                                              \
-    );                                                                                         \
+    let_(__self, TypeOf(&var_self)) = &var_self; \
+    let_(__range, Range)            = Range_from range_index_begin_end; \
+    debug_assert_fmt( \
+        __range.begin < __range.end, \
+        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin, \
+        __range.end \
+    ); \
+    debug_assert_fmt( \
+        __range.end <= Arr_len(*__self), \
+        "Index out of bounds: end(%zu) > len(%zu)", \
+        __range.end, \
+        Arr_len(*__self) \
+    ); \
+    eval_return make$( \
+        T_Sli, \
+        .ptr = __self->buf + __range.begin, \
+        .len = Range_len(__range) \
+    ); \
 })
 
 #define comp_syn__for_array(__arr, __i, var_arr, _Iter_item) \
