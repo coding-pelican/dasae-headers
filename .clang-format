@@ -179,7 +179,7 @@ Macros:
   - "some(_)=_"
   - "none()={}"
   - "unwrap(_)=_"
-  - "try_(_)=_"
+  - "try_(expr)=try_(expr)"
   # Control flow
   - "if_(init, cond)=if (init; cond)"
   - "else_(init)=else if (init; true)"
@@ -260,10 +260,6 @@ AttributeMacros:
 
   - $nullable
   - $nonnull
-
-  - pp_Tuple_get1st
-  - pp_Tuple_get2nd
-  - pp_Tuple_get3rd
 StatementAttributeLikeMacros:
   - $ignore
   - $ignore_void
@@ -273,11 +269,11 @@ StatementAttributeLikeMacros:
   - create$
   - initial
   - cleared
-  - unwrap
-  - orelse
-  - try_
-  - catch_
-  - catch_from
+  # - unwrap
+  # - orelse
+  # - try_
+  # - catch_
+  # - catch_from
 WhitespaceSensitiveMacros:
   # - fn_
   # - fn_scope
