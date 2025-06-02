@@ -1,7 +1,7 @@
 #include "engine/Input.h"
 #include "dh/mem/common.h"
 
-fn_scope_ext(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input) {
+fn_(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input, $guard) {
     let input = meta_cast$(engine_Input*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Input))));
     errdefer_(mem_Allocator_destroy(allocator, anyPtr(input)));
     input->allocator = allocator;
@@ -37,31 +37,28 @@ fn_(engine_Input_fini(engine_Input* self), void) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_scope(engine_Input_update(engine_Input* self), Err$void) {
+fn_(engine_Input_update(engine_Input* self), Err$void, $scope) {
     $unused(self);
     return_err(Err_NotImplemented());
     /* TODO: Implement this function */
-}
-unscoped;
+} $unscoped;
 
 fn_(engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event), void) {
     $unused(self), $unused(event);
     /* TODO: Implement this function */
 }
 
-fn_scope(engine_InputEventBuffer_pop(engine_Input* self), Opt$engine_InputEvent) {
+fn_(engine_InputEventBuffer_pop(engine_Input* self), Opt$engine_InputEvent, $scope) {
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-}
-unscoped;
+} $unscoped;
 
-fn_scope(engine_InputEventBuffer_peek(engine_Input* self), Opt$engine_InputEvent) {
+fn_(engine_InputEventBuffer_peek(engine_Input* self), Opt$engine_InputEvent, $scope) {
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-}
-unscoped;
+} $unscoped;
 
 fn_(engine_InputEventBuffer_clear(engine_Input* self), void) {
     $unused(self);

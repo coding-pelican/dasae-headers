@@ -7,7 +7,7 @@ extern fn_(engine_Canvas_fini(engine_Canvas* self), void);
 extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void) $must_check;
 extern fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color color), void);
 
-fn_scope_ext(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas) {
+fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas, $guard) {
     debug_assert_nonnull(config);
     debug_assert(0 < config->width);
     debug_assert(0 < config->height);
@@ -37,7 +37,7 @@ fn_(engine_Canvas_fini(engine_Canvas* self), void) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_scope(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void) {
+fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void, $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 
@@ -49,8 +49,7 @@ fn_scope(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$v
     log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
 
     return_ok({});
-}
-unscoped;
+} $unscoped;
 
 fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
     debug_assert_nonnull(self);

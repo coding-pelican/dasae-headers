@@ -2,7 +2,7 @@
 #include "engine/Canvas.h"
 #include "Backend_Internal.h"
 
-fn_scope_ext(engine_Window_init(const engine_Window_Config* config), Err$Ptr$engine_Window) {
+fn_(engine_Window_init(const engine_Window_Config* config), Err$Ptr$engine_Window, $guard) {
     debug_assert_nonnull(config);
     debug_assert(0 < config->rect_size.x);
     debug_assert(0 < config->rect_size.y);
@@ -56,7 +56,7 @@ fn_(engine_Window_fini(engine_Window* self), void) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_scope(engine_Window_update(engine_Window* self), Err$void) {
+fn_(engine_Window_update(engine_Window* self), Err$void, $scope) {
     debug_assert_nonnull(self);
     engine_Backend_processEvents(unwrap(self->backend));
 
@@ -79,8 +79,7 @@ fn_scope(engine_Window_update(engine_Window* self), Err$void) {
         view->rect.size = size;
     }
     return_ok({});
-}
-unscoped;
+} $unscoped;
 
 /* TODO: Apply canvas view rect scale */
 fn_(engine_Window_present(engine_Window* self), void) {
@@ -111,7 +110,7 @@ fn_(engine_Window_present(engine_Window* self), void) {
     engine_Backend_presentBuffer(unwrap(self->backend));
 }
 
-fn_scope(engine_Window_appendView(engine_Window* self, const engine_CanvasView_Config* config), Opt$u32) {
+fn_(engine_Window_appendView(engine_Window* self, const engine_CanvasView_Config* config), Opt$u32, $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(config);
 
@@ -127,8 +126,7 @@ fn_scope(engine_Window_appendView(engine_Window* self, const engine_CanvasView_C
         view->visible                = config->visible;
         eval_return self->view.count++;
     }));
-}
-unscoped;
+} $unscoped;
 
 fn_(engine_Window_removeView(engine_Window* self, u32 view_id), void) {
     debug_assert_nonnull(self);
