@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    switch.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-20 (date of creation)
- * @updated 2024-11-20 (date of last update)
+ * @updated 2025-06-01 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  NONE
@@ -25,35 +25,35 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define $fallthrough                            \
-    /**                                         \
+#define $fallthrough \
+    /** \
      * @brief fallthrough for `switch` internal \
-     */                                         \
+     */ \
     comp_attr__$fallthrough
 
-#define case_return(_Expr)                      \
-    /**                                         \
+#define case_return(_Expr...) \
+    /** \
      * @brief case return for `switch` internal \
-     */                                         \
-    SYN_case_return(_Expr)
+     */ \
+    comp_syn__case_return(_Expr)
 
-#define default_return(_Expr)                      \
-    /**                                            \
+#define default_return \
+    /** \
      * @brief default return for `switch` internal \
-     */                                            \
-    SYN_default_return(_Expr)
+     */ \
+    comp_syn__default_return
 
 /*========== Macro Implementations ==========================================*/
 
 #define comp_attr__$fallthrough \
     __attribute__((fallthrough))
 
-#define SYN_case_return(_Expr) \
-    case _Expr:                \
+#define comp_syn__case_return(_Expr...) \
+    case _Expr: \
         return
 
-#define SYN_default_return(_Expr) \
-    default:                      \
+#define comp_syn__default_return \
+    default: \
         return
 
 #if defined(__cplusplus)
