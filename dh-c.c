@@ -36,7 +36,7 @@
      * Version number \
      * major.minor.patch-prerelease.minor.patch+build.number \
      */ \
-    "0.1.0-alpha.0.3.1"
+    "0.1.0-alpha.0.3.2"
 
 // Debug level enum
 typedef enum {
@@ -153,6 +153,8 @@ void  add_lib_dh_libraries(BuildConfig* config);
 void  free_library_configs(LibraryConfigArray* lib_configs);
 bool  create_library_command(BuildConfig* config);
 char* optimization_level_to_lib_flag(const char* opt_level);
+void  extract_library_dir_and_name(const char* lib_name, char* dir_part, char* name_part);
+bool  create_directory_recursive(const char* path);
 
 // Add forward declarations for functions
 void init_build_presets(void);
@@ -2913,15 +2915,31 @@ bool copy_directory_recursive(const char* src, const char* dest, bool verbose) {
 bool copy_library_includes(const char* lib_src_path, const char* project_lib_path, const char* lib_name, bool verbose) {
     char lib_include_src[1024];
     char lib_include_dest[1024];
+    char lib_dir_part[256];
+    char lib_name_part[256];
 
     (void)snprintf(lib_include_src, sizeof(lib_include_src), "%s%sinclude", lib_src_path, PATH_SEPARATOR);
-    (void)snprintf(lib_include_dest, sizeof(lib_include_dest), "%s%s%s", project_lib_path, PATH_SEPARATOR, lib_name);
+
+    // Extract directory and name parts from library name
+    extract_library_dir_and_name(lib_name, lib_dir_part, lib_name_part);
+
+    if (strlen(lib_dir_part) > 0) {
+        (void)snprintf(lib_include_dest, sizeof(lib_include_dest), "%s%sdeps%s%s", project_lib_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_dir_part);
+    } else {
+        (void)snprintf(lib_include_dest, sizeof(lib_include_dest), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+    }
 
     if (!dir_exists(lib_include_src)) {
         if (verbose) {
             printf("No include directory found for library %s at %s\n", lib_name, lib_include_src);
         }
         return true; // Not an error if no includes
+    }
+
+    // Create the target directory structure recursively
+    if (!create_directory_recursive(lib_include_dest)) {
+        (void)fprintf(stderr, "Could not create include directory: %s\n", lib_include_dest);
+        return false;
     }
 
     if (verbose) {
@@ -2969,6 +2987,23 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
             return false;
         }
     }
+
+    // Create deps directory
+    char deps_path[1024];
+    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+    if (!dir_exists(deps_path)) {
+        if (!create_directory(deps_path)) {
+            (void)fprintf(stderr, "Could not create deps directory: %s\n", deps_path);
+            free_string_array(sources, source_count);
+            return false;
+        }
+    }
+
+    // Extract directory and name parts from library name
+    char lib_dir_part[256];
+    char lib_name_part[256];
+    extract_library_dir_and_name(lib_config->library_name, lib_dir_part, lib_name_part);
 
     // Copy library includes
     if (!copy_library_includes(lib_config->library_path, project_lib_path, lib_config->library_name, config->verbose)) {
@@ -3081,27 +3116,72 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
 
     // Set output file
     char output_file[1024];
-    if (strcmp(lib_config->linking_type, "static") == 0) {
+
+    if (strlen(lib_dir_part) > 0) {
+        // Create the library subdirectory in deps
+        char lib_output_dir[1024];
+        (void)snprintf(lib_output_dir, sizeof(lib_output_dir), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
+
+        if (!create_directory_recursive(lib_output_dir)) {
+            (void)fprintf(stderr, "Could not create library output directory: %s\n", lib_output_dir);
+            free_string_array(sources, source_count);
+            return false;
+        }
+
+        if (strcmp(lib_config->linking_type, "static") == 0) {
 #ifdef _WIN32
-        (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", project_lib_path, PATH_SEPARATOR, lib_config->library_name);
+            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", lib_output_dir, PATH_SEPARATOR, lib_name_part);
 #else
-        (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", project_lib_path, PATH_SEPARATOR, lib_config->library_name);
+            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", lib_output_dir, PATH_SEPARATOR, lib_name_part);
 #endif
+        } else {
+#ifdef _WIN32
+            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", lib_output_dir, PATH_SEPARATOR, lib_name_part);
+#else
+            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", lib_output_dir, PATH_SEPARATOR, lib_name_part);
+#endif
+        }
     } else {
+        // No subdirectory, place directly in deps
+        if (strcmp(lib_config->linking_type, "static") == 0) {
 #ifdef _WIN32
-        (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", project_lib_path, PATH_SEPARATOR, lib_config->library_name);
+            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_name_part);
 #else
-        (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", project_lib_path, PATH_SEPARATOR, lib_config->library_name);
+            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_name_part);
 #endif
+        } else {
+#ifdef _WIN32
+            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", deps_path, PATH_SEPARATOR, lib_name_part);
+#else
+            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", deps_path, PATH_SEPARATOR, lib_name_part);
+#endif
+        }
     }
 
     if (strcmp(lib_config->linking_type, "static") == 0) {
         // For static libraries, compile to object files first, then create archive
         char obj_dir[1024];
-        (void)snprintf(obj_dir, sizeof(obj_dir), "%s%sobj_%s", project_lib_path, PATH_SEPARATOR, lib_config->library_name);
+
+        if (strlen(lib_dir_part) > 0) {
+            (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
+        } else {
+            (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_name_part);
+        }
 
         if (!dir_exists(obj_dir)) {
-            if (!create_directory(obj_dir)) {
+            // Create .obj directory first if it doesn't exist
+            char obj_base_dir[1024];
+            (void)snprintf(obj_base_dir, sizeof(obj_base_dir), "%s%s.obj", deps_path, PATH_SEPARATOR);
+
+            if (!dir_exists(obj_base_dir)) {
+                if (!create_directory(obj_base_dir)) {
+                    (void)fprintf(stderr, "Could not create .obj directory: %s\n", obj_base_dir);
+                    free_string_array(sources, source_count);
+                    return false;
+                }
+            }
+
+            if (!create_directory_recursive(obj_dir)) {
                 (void)fprintf(stderr, "Could not create object directory: %s\n", obj_dir);
                 free_string_array(sources, source_count);
                 return false;
@@ -3228,22 +3308,21 @@ void add_lib_dh_includes(BuildConfig* config, char*** includes, int* include_cou
     char project_lib_path[1024];
     (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
 
-    for (int i = 0; i < config->lib_configs.count; ++i) {
-        char lib_include_path[1024];
-        (void)snprintf(lib_include_path, sizeof(lib_include_path), "%s%s%s", project_lib_path, PATH_SEPARATOR, config->lib_configs.libraries[i].library_name);
+    // Add the common deps directory for all libraries
+    char deps_include_path[1024];
+    (void)snprintf(deps_include_path, sizeof(deps_include_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
 
-        if (dir_exists(lib_include_path)) {
-            *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
-            if (*includes == NULL) {
-                (void)fprintf(stderr, "Memory allocation failed\n");
-                exit(1);
-            }
-            (*includes)[*include_count] = strdup(lib_include_path);
-            (*include_count)++;
+    if (dir_exists(deps_include_path)) {
+        *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
+        if (*includes == NULL) {
+            (void)fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        (*includes)[*include_count] = strdup(deps_include_path);
+        (*include_count)++;
 
-            if (config->verbose) {
-                printf("Added library include path: %s\n", lib_include_path);
-            }
+        if (config->verbose) {
+            printf("Added library include path: %s\n", deps_include_path);
         }
     }
 }
@@ -3257,32 +3336,63 @@ void add_lib_dh_libraries(BuildConfig* config) {
     char project_lib_path[1024];
     (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
 
+    char deps_path[1024];
+    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
     // Add library search path
     if (config->linked_libraries[0] != '\0') {
         strcat(config->linked_libraries, " ");
     }
     strcat(config->linked_libraries, "-L");
-    strcat(config->linked_libraries, project_lib_path);
+    strcat(config->linked_libraries, deps_path);
+
+    // Add library search paths for subdirectories
+    for (int i = 0; i < config->lib_configs.count; ++i) {
+        const LibraryConfig* lib = &config->lib_configs.libraries[i];
+        char                 lib_dir_part[256];
+        char                 lib_name_part[256];
+        extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
+
+        if (strlen(lib_dir_part) > 0) {
+            char lib_search_path[1024];
+            (void)snprintf(lib_search_path, sizeof(lib_search_path), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
+            strcat(config->linked_libraries, " -L");
+            strcat(config->linked_libraries, lib_search_path);
+        }
+    }
 
     // Add each library
     for (int i = 0; i < config->lib_configs.count; ++i) {
         const LibraryConfig* lib = &config->lib_configs.libraries[i];
+        char                 lib_dir_part[256];
+        char                 lib_name_part[256];
+        extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
 
         if (strcmp(lib->linking_type, "static") == 0) {
             // For static libraries, add full path to the .a/.lib file
             char lib_file[1024];
+
+            if (strlen(lib_dir_part) > 0) {
 #ifdef _WIN32
-            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", project_lib_path, PATH_SEPARATOR, lib->library_name);
+                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
 #else
-            (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", project_lib_path, PATH_SEPARATOR, lib->library_name);
+                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
 #endif
+            } else {
+#ifdef _WIN32
+                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_name_part);
+#else
+                (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_name_part);
+#endif
+            }
+
             strcat(config->linked_libraries, " \"");
             strcat(config->linked_libraries, lib_file);
             strcat(config->linked_libraries, "\"");
         } else {
-            // For dynamic libraries, add -l flag
+            // For dynamic libraries, add -l flag with name part only
             strcat(config->linked_libraries, " -l");
-            strcat(config->linked_libraries, lib->library_name);
+            strcat(config->linked_libraries, lib_name_part);
         }
 
         if (config->verbose) {
@@ -3311,4 +3421,43 @@ bool create_library_command(BuildConfig* config) {
 
     // Compile all libraries
     return compile_libraries(config);
+}
+
+
+void extract_library_dir_and_name(const char* lib_name, char* dir_part, char* name_part) {
+    const char* last_slash = strrchr(lib_name, '/');
+    if (last_slash) {
+        size_t dir_len = last_slash - lib_name;
+        strncpy(dir_part, lib_name, dir_len);
+        dir_part[dir_len] = '\0';
+        strcpy(name_part, last_slash + 1);
+    } else {
+        strcpy(dir_part, "");
+        strcpy(name_part, lib_name);
+    }
+}
+
+bool create_directory_recursive(const char* path) { /* NOLINT(misc-no-recursion) */
+    if (!path || strlen(path) == 0) {
+        return true;
+    }
+
+    if (dir_exists(path)) {
+        return true;
+    }
+
+    char parent_path[1024];
+    strcpy(parent_path, path);
+
+    char* last_separator = strrchr(parent_path, PATH_SEPARATOR[0]);
+    if (last_separator) {
+        *last_separator = '\0';
+
+        // Create parent directory first
+        if (strlen(parent_path) > 0 && !create_directory_recursive(parent_path)) {
+            return false;
+        }
+    }
+
+    return create_directory(path);
 }
