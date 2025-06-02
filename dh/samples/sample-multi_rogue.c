@@ -1,4 +1,5 @@
 // dh-c build release sample-multi_rogue.c --args="-lws2_32"
+
 #include "dh/main.h"
 #include "dh/blk.h"
 #include "dh/Err.h"
@@ -11,6 +12,7 @@
 #include "dh/heap/Page.h"
 #include "dh/mem/common.h"
 #include "dh/Random.h"
+#include "dh/time.h"
 
 
 
@@ -185,8 +187,8 @@ fn_(engine_utils_kbhit(void), bool) {
 #define game_max_players         (10)
 #define game_max_player_name_len (32)
 #define game_max_player_msg_len  (248)
-#define game_max_map_width       (80)
-#define game_max_map_height      (24)
+#define game_max_map_width       (64)
+#define game_max_map_height      (20)
 #define game_max_ip_addr_len     (64)
 
 // Player class
@@ -638,10 +640,20 @@ typedef struct game_Clt {
 #if !bti_plat_windows
     struct termios orig_termios;
 #endif /* !bti_plat_windows */
+    // Performance tracking
+    u64 last_render_time;
+    u64 frame_count;
+    f64 avg_frame_time_ms;
 } game_Clt;
 
 static fn_(game_Clt_inst(void), game_Clt*) {
-    static game_Clt inst = { .player_id = -1, .server_ip = "127.0.0.1" };
+    static game_Clt inst = {
+        .player_id         = -1,
+        .server_ip         = "127.0.0.1",
+        .last_render_time  = 0,
+        .frame_count       = 0,
+        .avg_frame_time_ms = 0.0
+    };
     return &inst;
 }
 
@@ -663,7 +675,8 @@ static fn_(game_Clt_enableRawMode(void), void) {
 #endif /* !bti_plat_windows */
 
 static fn_(game_Clt_clearScreen(void), void) {
-    printf("\033[2J\033[H");
+    $ignore = printf("\033[2J\033[H");
+    $ignore = fflush(stdout);
 }
 
 
@@ -687,11 +700,208 @@ static fn_(game_getPlayerColor(i32 player_id, bool is_self), Sli_const$u8) {
 }
 
 fn_(Terminal_moveCursor(u32 x, u32 y), void) { printf("\033[%u;%uH", y + 1, x + 1); }
-// Update the client's draw game function
+
+// Optimized rendering system
+typedef struct game_RenderBuffer {
+    var_(data, Arr$$(game_max_map_width* game_max_map_height * 32, u8));       // 32 bytes per cell for ANSI codes + char
+    var_(current_frame, Arr$$(game_max_map_width* game_max_map_height, u32));  // Hash of each cell
+    var_(previous_frame, Arr$$(game_max_map_width* game_max_map_height, u32)); // Previous frame for comparison
+    usize len;
+    bool  needs_full_redraw;
+} game_RenderBuffer;
+
+use_Ptr$(game_RenderBuffer);
+
+static fn_(game_RenderBuffer_init(void), game_RenderBuffer*) {
+    static game_RenderBuffer buffer = { .needs_full_redraw = true };
+    return &buffer;
+}
+
+static fn_(game_RenderBuffer_clear(game_RenderBuffer* self), void) {
+    self->len = 0;
+}
+
+static fn_(game_RenderBuffer_append(game_RenderBuffer* self, Sli_const$u8 data), void) {
+    usize remaining = Arr_len(self->data) - self->len;
+    usize copy_len  = data.len < remaining ? data.len : remaining;
+    if (copy_len > 0) {
+        mem_copy(self->data.buf + self->len, data.ptr, copy_len);
+        self->len += copy_len;
+    }
+}
+
+static fn_(game_RenderBuffer_appendChar(game_RenderBuffer* self, u8 c), void) {
+    if (self->len < Arr_len(self->data)) {
+        self->data.buf[self->len++] = c;
+    }
+}
+
+static fn_(game_RenderBuffer_flush(game_RenderBuffer* self), void) {
+    if (self->len > 0) {
+        $ignore = fwrite(self->data.buf, 1, self->len, stdout);
+        $ignore = fflush(stdout);
+    }
+}
+
+// Simple hash function for cell content
+static fn_(game_cellHash(u8 tile, u8 player_char, i32 player_id), u32) {
+    return (as$(u32, tile) << 24) | (as$(u32, player_char) << 16) | (as$(u32, player_id) & 0xFFFF);
+}
+
+// Optimized rendering function
+$maybe_unused
+$static fn_(game_Clt_drawGameOptimized(void), void) {
+    let self       = game_Clt_inst();
+    let start_time = time_Instant_now();
+    let buffer     = game_RenderBuffer_init();
+
+    // Calculate current frame state
+    for (i32 y = 0; y < game_max_map_height; ++y) {
+        for (i32 x = 0; x < game_max_map_width; ++x) {
+            let tile_idx = y * game_max_map_width + x;
+            let tile     = Grid_getAt(self->state.map, x, y);
+
+            // Find player at this position
+            i32 player_id   = -1;
+            u8  player_char = 0;
+            for_slice (self->state.players, (player)) {
+                if (!player->active) { continue; }
+                if (!(player->x == x && player->y == y)) { continue; }
+                player_id   = player->id;
+                player_char = player->symbol;
+                break;
+            }
+
+            buffer->current_frame.buf[tile_idx] = game_cellHash(tile, player_char, player_id);
+        }
+    }
+
+    // Check if we need a full redraw
+    if (buffer->needs_full_redraw) {
+        game_Clt_clearScreen();
+        buffer->needs_full_redraw = false;
+
+        // Force redraw of everything on first frame
+        for (i32 y = 0; y < game_max_map_height; ++y) {
+            for (i32 x = 0; x < game_max_map_width; ++x) {
+                let tile_idx                         = y * game_max_map_width + x;
+                buffer->previous_frame.buf[tile_idx] = ~buffer->current_frame.buf[tile_idx]; // Force different
+            }
+        }
+    }
+
+    game_RenderBuffer_clear(buffer);
+
+    // Use simpler approach: redraw entire map when there are changes
+    // This avoids complex cursor positioning issues
+    var has_changes = false;
+    for (i32 y = 0; y < game_max_map_height && !has_changes; ++y) {
+        for (i32 x = 0; x < game_max_map_width; ++x) {
+            let tile_idx = y * game_max_map_width + x;
+            if (buffer->current_frame.buf[tile_idx] != buffer->previous_frame.buf[tile_idx]) {
+                has_changes = true;
+                break;
+            }
+        }
+    }
+
+    if (has_changes || buffer->needs_full_redraw) {
+        // Position cursor at top-left
+        game_RenderBuffer_append(buffer, u8_l("\033[1;1H"));
+
+        // Draw the entire map row by row
+        for (i32 y = 0; y < game_max_map_height; ++y) {
+            for (i32 x = 0; x < game_max_map_width; ++x) {
+                let tile = Grid_getAt(self->state.map, x, y);
+
+                // Find player at this position
+                var player_found = false;
+                for_slice (self->state.players, (player)) {
+                    if (!player->active) { continue; }
+                    if (!(player->x == x && player->y == y)) { continue; }
+
+                    let is_self = (player->id == self->player_id);
+                    let color   = game_getPlayerColor(player->id, is_self);
+
+                    game_RenderBuffer_append(buffer, color);
+                    game_RenderBuffer_appendChar(buffer, player->symbol);
+                    game_RenderBuffer_append(buffer, u8_l(ansi_attr_reset));
+                    player_found = true;
+                    break;
+                }
+
+                if (!player_found) {
+                    let color = game_TileType_getColor(tile);
+                    game_RenderBuffer_append(buffer, color);
+                    game_RenderBuffer_appendChar(buffer, tile);
+                    game_RenderBuffer_append(buffer, u8_l(ansi_attr_reset));
+                }
+            }
+
+            // Add line break at end of each row except the last
+            if (y < game_max_map_height - 1) {
+                game_RenderBuffer_appendChar(buffer, '\n');
+            }
+        }
+    }
+
+    // Update previous frame
+    mem_copy(buffer->previous_frame.buf, buffer->current_frame.buf, sizeof(buffer->current_frame.buf[0]) * Arr_len(buffer->current_frame));
+
+    // Draw UI (always redraw for now - could be optimized further)
+    var ui_cmd = (Arr$$(64, u8)){};
+    let ui_len = as$(usize, snprintf(as$(char*, ui_cmd.buf), Arr_len(ui_cmd), "\033[%d;1H", game_max_map_height + 2));
+    game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, ui_cmd.buf, ui_len));
+
+    game_RenderBuffer_append(buffer, u8_l("\n=== PLAYER INFO ===\n"));
+
+    for_slice (self->state.players, (player)) {
+        if (!player->active) { continue; }
+
+        let is_self     = (player->id == self->player_id);
+        let color       = game_getPlayerColor(player->id, is_self);
+        let name_prefix = is_self ? ">>> " : "    ";
+
+        var player_info = (Arr$$(256, u8)){};
+        let info_len    = as$(usize, snprintf(as$(char*, player_info.buf), Arr_len(player_info), "%s%*s%s [Lv.%d] HP:%d/%d MP:%d/%d Exp:%d Pos:(%d,%d)" ansi_attr_reset "\n", name_prefix, as$(i32, color.len), color.ptr, player->name, player->level, player->hp, player->max_hp, player->mp, player->max_mp, player->exp, player->x, player->y));
+        game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, player_info.buf, info_len));
+    }
+
+#ifdef FAST_RENDER
+    // Add performance information
+    var perf_info = (Arr$$(128, u8)){};
+    let perf_len  = as$(usize, snprintf(as$(char*, perf_info.buf), Arr_len(perf_info), "\n[FAST_RENDER] Avg frame time: %.2f ms | Frames: %llu\n", self->avg_frame_time_ms, as$(unsigned long long, self->frame_count)));
+    game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, perf_info.buf, perf_len));
+#endif
+
+    game_RenderBuffer_append(buffer, u8_l("Controls: WASD to move, Q to quit\n"));
+    game_RenderBuffer_append(buffer, u8_l("Your player: " ansi_attr_self_highlight "@" ansi_attr_reset "\n"));
+
+    // Flush everything at once
+    game_RenderBuffer_flush(buffer);
+
+    // Update performance metrics
+    let end_time       = time_Instant_now();
+    let frame_duration = time_Instant_durationSince(end_time, start_time);
+    let frame_time_ms  = time_Duration_asSecs_f64(frame_duration) * 1000.0;
+
+    self->frame_count++;
+    // Simple moving average
+    self->avg_frame_time_ms = (self->avg_frame_time_ms * 0.9) + (frame_time_ms * 0.1);
+}
+
+// Legacy rendering function (kept for compatibility with NO_GRID)
 static fn_(game_Clt_drawGame(void), void) {
     let self = game_Clt_inst();
-    game_Clt_clearScreen();
 
+#if defined(FAST_RENDER) && !defined(NO_GRID)
+    game_Clt_drawGameOptimized();
+    return;
+#endif // FAST_RENDER && !NO_GRID
+#ifndef FAST_RENDER
+    let start_time = time_Instant_now();
+    game_Clt_clearScreen();
+#endif /* FAST_RENDER */
 #if NO_GRID
     // Draw map
     for (i32 y = 0; y < game_max_map_height; ++y) {
@@ -704,18 +914,18 @@ static fn_(game_Clt_drawGame(void), void) {
                 if (!player->active) { continue; }
                 if (!(player->x == x && player->y == y)) { continue; }
 
-                let is_self = (player->id == self->player_id);
-                let color   = game_getPlayerColor(player->id, is_self);
-                printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, player->symbol);
+                let is_self  = (player->id == self->player_id);
+                let color    = game_getPlayerColor(player->id, is_self);
+                $ignore      = printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, player->symbol);
                 player_found = true;
                 break;
             }
 
             if (!player_found) {
-                printf("%c", c);
+                $ignore = printf("%c", c);
             }
         }
-        printf("\n");
+        $ignore = printf("\n");
     }
 #else
     // Draw map
@@ -723,7 +933,7 @@ static fn_(game_Clt_drawGame(void), void) {
     for_grid(self->state.map, (tile, (x, y)), {
         let color = game_TileType_getColor(*tile);
         Terminal_moveCursor(x, y);
-        printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, *tile);
+        $ignore = printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, *tile);
     });
 
     // Draw players
@@ -733,13 +943,13 @@ static fn_(game_Clt_drawGame(void), void) {
         Terminal_moveCursor(player->x, player->y);
         let is_self = (player->id == self->player_id);
         let color   = game_getPlayerColor(player->id, is_self);
-        printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, player->symbol);
+        $ignore     = printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, player->symbol);
     }
 #endif // NO_GRID
 
     // Draw UI
     Terminal_moveCursor(0, self->state.map.height + 1);
-    printf("\n=== PLAYER INFO ===\n");
+    $ignore = printf("\n=== PLAYER INFO ===\n");
     for_slice (self->state.players, (player)) {
         if (!player->active) { continue; }
 
@@ -747,11 +957,23 @@ static fn_(game_Clt_drawGame(void), void) {
         let color       = game_getPlayerColor(player->id, is_self);
         let name_prefix = is_self ? ">>> " : "    ";
 
-        printf("%s%*s%s [Lv.%d] HP:%d/%d MP:%d/%d Exp:%d" ansi_attr_reset "\n", name_prefix, as$(i32, color.len), color.ptr, player->name, player->level, player->hp, player->max_hp, player->mp, player->max_mp, player->exp);
+        $ignore = printf("%s%*s%s [Lv.%d] HP:%d/%d MP:%d/%d Exp:%d" ansi_attr_reset "\n", name_prefix, as$(i32, color.len), color.ptr, player->name, player->level, player->hp, player->max_hp, player->mp, player->max_mp, player->exp);
     }
 
-    printf("\nControls: WASD to move, Q to quit\n");
-    printf("Your player: " ansi_attr_self_highlight "@" ansi_attr_reset "\n");
+#ifndef FAST_RENDER
+    // Add performance information for legacy renderer
+    let end_time       = time_Instant_now();
+    let frame_duration = time_Instant_durationSince(end_time, start_time);
+    let frame_time_ms  = time_Duration_asSecs_f64(frame_duration) * 1000.0;
+
+    self->frame_count++;
+    self->avg_frame_time_ms = (self->avg_frame_time_ms * 0.9) + (frame_time_ms * 0.1);
+
+    $ignore = printf("\n[LEGACY_RENDER] Avg frame time: %.2f ms | Frames: %llu\n", self->avg_frame_time_ms, as$(unsigned long long, self->frame_count));
+#endif
+
+    $ignore = printf("Controls: WASD to move, Q to quit\n");
+    $ignore = printf("Your player: " ansi_attr_self_highlight "@" ansi_attr_reset "\n");
 }
 
 static Thrd_fn_(game_Clt_receiveEvents, ({}, Void), ($ignore_capture, $ignore_capture), $scope) {
