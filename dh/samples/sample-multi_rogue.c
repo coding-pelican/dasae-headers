@@ -397,10 +397,10 @@ static fn_(game_Svr_init(void), game_Svr*) {
 
     // Add some rooms and corridors
     for (i32 i = 0; i < 5; ++i) {
-        i32 room_x = 10 + as$(i32, (Random_range_i64(0, 60)));
-        i32 room_y = 5 + as$(i32, (Random_range_i64(0, 14)));
-        i32 room_w = 5 + as$(i32, (Random_range_i64(0, 10)));
-        i32 room_h = 3 + as$(i32, (Random_range_i64(0, 6)));
+        let room_x = 10 + as$(i32, (Random_range_i64(0, 60)));
+        let room_y = 5 + as$(i32, (Random_range_i64(0, 14)));
+        let room_w = 5 + as$(i32, (Random_range_i64(0, 10)));
+        let room_h = 3 + as$(i32, (Random_range_i64(0, 6)));
 
         for (i32 py = room_y; py < room_y + room_h && py < as$(i32, Grid_height(self->state.map)) - 1; ++py) {
             for (i32 px = room_x; px < room_x + room_w && px < as$(i32, Grid_width(self->state.map)) - 1; ++px) {
@@ -755,127 +755,128 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
     let start_time = time_Instant_now();
     let buffer     = game_RenderBuffer_init();
 
-    // Calculate current frame state
+    // Pre-calculate player positions for fast lookup
+    var player_map = (Arr$$(game_max_map_width * game_max_map_height, i32)){};
+    for (i32 i = 0; i < game_max_map_width * game_max_map_height; ++i) {
+        player_map.buf[i] = -1; // Initialize to "no player"
+    }
+
+    for_slice (self->state.players, (player)) {
+        if (!player->active) { continue; }
+        if (player->x < 0 || player->x >= game_max_map_width || player->y < 0 || player->y >= game_max_map_height) { continue; }
+        let idx             = player->y * game_max_map_width + player->x;
+        player_map.buf[idx] = player->id;
+    }
+
+    // Calculate current frame state (much faster now)
     for (i32 y = 0; y < game_max_map_height; ++y) {
         for (i32 x = 0; x < game_max_map_width; ++x) {
-            let tile_idx = y * game_max_map_width + x;
-            let tile     = Grid_getAt(self->state.map, x, y);
-
-            // Find player at this position
-            i32 player_id   = -1;
-            u8  player_char = 0;
-            for_slice (self->state.players, (player)) {
-                if (!player->active) { continue; }
-                if (!(player->x == x && player->y == y)) { continue; }
-                player_id   = player->id;
-                player_char = player->symbol;
-                break;
-            }
-
+            let tile_idx                        = y * game_max_map_width + x;
+            let tile                            = Grid_getAt(self->state.map, x, y);
+            let player_id                       = player_map.buf[tile_idx];
+            u8  player_char                     = (player_id >= 0) ? '@' : 0;
             buffer->current_frame.buf[tile_idx] = game_cellHash(tile, player_char, player_id);
         }
     }
 
-    // Check if we need a full redraw
-    if (buffer->needs_full_redraw) {
-        game_Clt_clearScreen();
-        buffer->needs_full_redraw = false;
-
-        // Force redraw of everything on first frame
-        for (i32 y = 0; y < game_max_map_height; ++y) {
-            for (i32 x = 0; x < game_max_map_width; ++x) {
-                let tile_idx                         = y * game_max_map_width + x;
-                buffer->previous_frame.buf[tile_idx] = ~buffer->current_frame.buf[tile_idx]; // Force different
-            }
-        }
-    }
-
-    game_RenderBuffer_clear(buffer);
-
-    // Use simpler approach: redraw entire map when there are changes
-    // This avoids complex cursor positioning issues
-    var has_changes = false;
-    for (i32 y = 0; y < game_max_map_height && !has_changes; ++y) {
-        for (i32 x = 0; x < game_max_map_width; ++x) {
-            let tile_idx = y * game_max_map_width + x;
-            if (buffer->current_frame.buf[tile_idx] != buffer->previous_frame.buf[tile_idx]) {
+    // Check if we need any redraw
+    var has_changes = buffer->needs_full_redraw;
+    if (!has_changes) {
+        for (i32 i = 0; i < game_max_map_width * game_max_map_height; ++i) {
+            if (buffer->current_frame.buf[i] != buffer->previous_frame.buf[i]) {
                 has_changes = true;
                 break;
             }
         }
     }
 
-    if (has_changes || buffer->needs_full_redraw) {
+    if (has_changes) {
+        if (buffer->needs_full_redraw) {
+            game_Clt_clearScreen();
+            buffer->needs_full_redraw = false;
+        }
+
+        game_RenderBuffer_clear(buffer);
+
+        // Use a MUCH more efficient approach: build entire screen as plain text first
+        // Then add minimal ANSI codes only where needed
+
         // Position cursor at top-left
         game_RenderBuffer_append(buffer, u8_l("\033[1;1H"));
 
-        // Draw the entire map row by row
+        // Build map content without ANSI codes for speed
         for (i32 y = 0; y < game_max_map_height; ++y) {
             for (i32 x = 0; x < game_max_map_width; ++x) {
-                let tile = Grid_getAt(self->state.map, x, y);
+                let player_id = player_map.buf[y * game_max_map_width + x];
 
-                // Find player at this position
-                var player_found = false;
-                for_slice (self->state.players, (player)) {
-                    if (!player->active) { continue; }
-                    if (!(player->x == x && player->y == y)) { continue; }
-
+                if (player_id >= 0) {
+                    // Player at this position
+                    let player  = Sli_at(self->state.players, player_id);
                     let is_self = (player->id == self->player_id);
-                    let color   = game_getPlayerColor(player->id, is_self);
 
-                    game_RenderBuffer_append(buffer, color);
-                    game_RenderBuffer_appendChar(buffer, player->symbol);
-                    game_RenderBuffer_append(buffer, u8_l(ansi_attr_reset));
-                    player_found = true;
-                    break;
-                }
-
-                if (!player_found) {
-                    let color = game_TileType_getColor(tile);
-                    game_RenderBuffer_append(buffer, color);
+                    if (is_self) {
+                        // Highlight self player
+                        game_RenderBuffer_append(buffer, u8_l(ansi_attr_self_highlight "@" ansi_attr_reset));
+                    } else {
+                        // Other player with simple color
+                        static let player_colors = (Arr$$(4, Sli_const$u8)){
+                            u8_l(ansi_attr_fg_bright_red "@" ansi_attr_reset),
+                            u8_l(ansi_attr_fg_bright_green "@" ansi_attr_reset),
+                            u8_l(ansi_attr_fg_bright_blue "@" ansi_attr_reset),
+                            u8_l(ansi_attr_fg_bright_yellow "@" ansi_attr_reset)
+                        };
+                        let color_seq = Arr_getAt(player_colors, player_id % Arr_len(player_colors));
+                        game_RenderBuffer_append(buffer, color_seq);
+                    }
+                } else {
+                    // Just the tile
+                    let tile = Grid_getAt(self->state.map, x, y);
                     game_RenderBuffer_appendChar(buffer, tile);
-                    game_RenderBuffer_append(buffer, u8_l(ansi_attr_reset));
                 }
             }
 
-            // Add line break at end of each row except the last
+            // Add line break except for last row
             if (y < game_max_map_height - 1) {
                 game_RenderBuffer_appendChar(buffer, '\n');
             }
         }
+
+        // Update previous frame
+        mem_copy(buffer->previous_frame.buf, buffer->current_frame.buf, sizeof(buffer->current_frame.buf[0]) * Arr_len(buffer->current_frame));
     }
 
-    // Update previous frame
-    mem_copy(buffer->previous_frame.buf, buffer->current_frame.buf, sizeof(buffer->current_frame.buf[0]) * Arr_len(buffer->current_frame));
-
-    // Draw UI (always redraw for now - could be optimized further)
-    var ui_cmd = (Arr$$(64, u8)){};
-    let ui_len = as$(usize, snprintf(as$(char*, ui_cmd.buf), Arr_len(ui_cmd), "\033[%d;1H", game_max_map_height + 2));
-    game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, ui_cmd.buf, ui_len));
-
-    game_RenderBuffer_append(buffer, u8_l("\n=== PLAYER INFO ===\n"));
+    // Draw UI (simplified)
+    game_RenderBuffer_append(buffer, u8_l("\033[22;1H\n=== PLAYER INFO ===\n"));
 
     for_slice (self->state.players, (player)) {
         if (!player->active) { continue; }
 
-        let is_self     = (player->id == self->player_id);
-        let color       = game_getPlayerColor(player->id, is_self);
-        let name_prefix = is_self ? ">>> " : "    ";
+        let is_self = (player->id == self->player_id);
+        if (is_self) {
+            game_RenderBuffer_append(buffer, u8_l(">>> " ansi_attr_self_highlight));
+        } else {
+            game_RenderBuffer_append(buffer, u8_l("    "));
+        }
 
-        var player_info = (Arr$$(256, u8)){};
-        let info_len    = as$(usize, snprintf(as$(char*, player_info.buf), Arr_len(player_info), "%s%*s%s [Lv.%d] HP:%d/%d MP:%d/%d Exp:%d Pos:(%d,%d)" ansi_attr_reset "\n", name_prefix, as$(i32, color.len), color.ptr, player->name, player->level, player->hp, player->max_hp, player->mp, player->max_mp, player->exp, player->x, player->y));
+        // Simple player info without complex formatting
+        var player_info = (Arr$$(128, u8)){};
+        let info_len    = as$(usize, snprintf(as$(char*, player_info.buf), Arr_len(player_info), "%s Lv.%d HP:%d/%d Pos:(%d,%d)", player->name, player->level, player->hp, player->max_hp, player->x, player->y));
         game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, player_info.buf, info_len));
+
+        if (is_self) {
+            game_RenderBuffer_append(buffer, u8_l(ansi_attr_reset));
+        }
+        game_RenderBuffer_appendChar(buffer, '\n');
     }
 
 #ifdef FAST_RENDER
-    // Add performance information
-    var perf_info = (Arr$$(128, u8)){};
-    let perf_len  = as$(usize, snprintf(as$(char*, perf_info.buf), Arr_len(perf_info), "\n[FAST_RENDER] Avg frame time: %.2f ms | Frames: %llu\n", self->avg_frame_time_ms, as$(unsigned long long, self->frame_count)));
+    // Simplified performance info
+    var perf_info = (Arr$$(64, u8)){};
+    let perf_len  = as$(usize, snprintf(as$(char*, perf_info.buf), Arr_len(perf_info), "\n[FAST] %.1fms | %llu frames\n", self->avg_frame_time_ms, as$(unsigned long long, self->frame_count)));
     game_RenderBuffer_append(buffer, Sli_from$(Sli_const$u8, perf_info.buf, perf_len));
 #endif
 
-    game_RenderBuffer_append(buffer, u8_l("Controls: WASD to move, Q to quit\n"));
-    game_RenderBuffer_append(buffer, u8_l("Your player: " ansi_attr_self_highlight "@" ansi_attr_reset "\n"));
+    game_RenderBuffer_append(buffer, u8_l("WASD=move, Q=quit\n"));
 
     // Flush everything at once
     game_RenderBuffer_flush(buffer);
@@ -1288,11 +1289,29 @@ static fn_(game_MainMenu_getUserChoice(void), game_MainMenuChoice) {
     }
 }
 
+static const Arr$$(2, Arr$$(2, Sli_const$u8)) game_MainMenu_table_lang_msg_host_server = { {
+    [game_Lang_en] = { {
+        u8_l("Starting server on port %d...\n"),
+        u8_l("Press Ctrl+C to stop the server.\n"),
+    } },
+    [game_Lang_ko] = { {
+        u8_l("포트 %d에서 서버를 시작하는 중...\n"),
+        u8_l("Ctrl+C를 눌러 서버를 종료할 수 있습니다.\n"),
+    } },
+} };
+
+static const Arr$$(2, Sli_const$u8) game_MainMenu_table_lang_msg_join_server = { {
+    [game_Lang_en] = u8_l("Connecting to server at %*s:%d...\n"),
+    [game_Lang_ko] = u8_l("서버 %*s:%d에 연결하는 중...\n"),
+} };
+
 $must_check
 $static fn_(game_MainMenu_handleHostServer(void), Err$void, $scope) {
-    printf("Starting server on port %d...\n", game_port);
-    printf("Players can connect using: --client\n");
-    printf("Press Ctrl+C to stop the server.\n");
+    let table    = game_MainMenu_table_lang_msg_host_server;
+    let lang_msg = Arr_getAt(table, game_Lang_current);
+    for_array (lang_msg, (msg)) {
+        printf("%*s", as$(i32, msg->len), msg->ptr);
+    }
     return_ok(try_(game_Svr_run()));
 } $unscoped;
 
@@ -1301,8 +1320,9 @@ $static fn_(game_MainMenu_handleJoinServer(void), Err$void, $scope) {
     while (true) {
         let selected_ip = try_(game_IpMenu_run());
         if_some(selected_ip, ip) {
-            printf("Connecting to server at %*s:%d...\n", as$(i32, ip.len), ip.ptr, game_port);
-            printf("Make sure the server is running before connecting.\n");
+            let table = game_MainMenu_table_lang_msg_join_server;
+            let msg   = Arr_getAt(table, game_Lang_current);
+            printf("%*s", as$(i32, msg.len), msg.ptr);
             return_ok(catch_(game_Clt_run(ip), eval({ continue; })));
         }
         return_ok({});
