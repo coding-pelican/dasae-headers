@@ -139,3 +139,9 @@ ipch/
 
 # Cursor settings
 .cursor/
+
+######## dh-c #########################
+
+log/
+lib/deps/
+lib/deps/.obj/
