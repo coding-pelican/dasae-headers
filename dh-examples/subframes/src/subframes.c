@@ -3,6 +3,7 @@
 #include "dh/log.h"
 
 #include "dh/mem.h"
+#include "dh/heap/Page.h"
 #include "dh/heap/Fixed.h"
 #include "dh/heap/Arena.h"
 #include "dh/ArrList.h"
@@ -80,12 +81,16 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
     // Initialize heap allocator and page pool
     var memory_engine    = getEngineMemory();
     var arena_engine     = heap_Arena_init(heap_Fixed_allocator(&memory_engine));
-    var allocator_engine = heap_Arena_allocator(&arena_engine);
+    $ignore              = arena_engine;
+    // var allocator_engine = heap_Arena_allocator(&arena_engine);
+    var allocator_engine = heap_Page_allocator(&(heap_Page){});
     log_info("allocator reserved for engine");
 
     var memory_game    = getGameMemory();
     var arena_game     = heap_Arena_init(heap_Fixed_allocator(&memory_game));
-    var allocator_game = heap_Arena_allocator(&arena_game);
+    $ignore            = arena_game;
+    // var allocator_game = heap_Arena_allocator(&arena_game);
+    var allocator_game = heap_Page_allocator(&(heap_Page){});
     log_info("allocator reserved for game");
 
     // Create window
@@ -93,7 +98,7 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
         .allocator     = some(allocator_engine),
         .rect_size     = { .x = window_res_width, .y = window_res_height },
         .default_color = some({ .packed = 0x181818FF }),
-        .title         = some(Str_l("Subframes")),
+        .title         = some(u8_l("Subframes")),
     )));
     defer_(engine_Window_fini(window));
     log_info("window created");

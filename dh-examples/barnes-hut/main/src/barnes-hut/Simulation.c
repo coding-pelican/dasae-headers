@@ -1,10 +1,11 @@
-#include "Simulation.h"
-#include "utils.h"
+#include "barnes-hut/Simulation.h"
+#include "barnes-hut/utils.h"
+
 #include "dh/sort.h"
 #include "dh/math.h"
 
 // n target: 100000
-fn_scope_ext(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation) {
+fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation, $guard) {
     const f32   dt       = 0.05f;
     const f32   theta    = 1.0f;
     const f32   eps      = 1.0f;
@@ -54,7 +55,7 @@ fn_(Simulation_destroy(Simulation* self), void) {
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
 }
 
-fn_scope(Simulation_step(Simulation* self), Err$void) {
+fn_(Simulation_step(Simulation* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
@@ -63,8 +64,7 @@ fn_scope(Simulation_step(Simulation* self), Err$void) {
     self->frame += 1;
 
     return_ok({});
-}
-unscoped;
+} $unscoped;
 
 fn_(Simulation_iterate(Simulation* self), void) {
     debug_assert_nonnull(self);
@@ -79,7 +79,7 @@ fn_(Simulation_iterate(Simulation* self), void) {
 #define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
-fn_scope(Simulation_collide(Simulation* self), Err$void) {
+fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled
     self->collision_count = 0;
@@ -104,12 +104,12 @@ fn_scope(Simulation_collide(Simulation* self), Err$void) {
     }
 
     return_ok({});
-}
-unscoped;
+} $unscoped;
 #endif /* CollideMethod_simply_o_n_pow_2 */
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
-static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord) {
+$maybe_unused
+$static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord) {
     let self     = as$(const Simulation*, arg);
     let idx_lhs  = *as$(const usize*, lhs);
     let idx_rhs  = *as$(const usize*, rhs);
@@ -127,7 +127,7 @@ static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), c
 ///     AABB Checks Before Distance Calculation:
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-fn_scope(Simulation_collide(Simulation* self), Err$void) {
+fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count = 0;
@@ -193,12 +193,11 @@ fn_scope(Simulation_collide(Simulation* self), Err$void) {
     }
 
     return_ok({});
-}
-unscoped;
+} $unscoped;
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
-fn_scope(Simulation_attract(Simulation* self), Err$void) {
+fn_(Simulation_attract(Simulation* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 
     try_(QuadTree_build(&self->quadtree, self->bodies.items));
@@ -209,8 +208,7 @@ fn_scope(Simulation_attract(Simulation* self), Err$void) {
     }
 
     return_ok({});
-}
-unscoped;
+} $unscoped;
 
 fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     debug_assert_nonnull(self);

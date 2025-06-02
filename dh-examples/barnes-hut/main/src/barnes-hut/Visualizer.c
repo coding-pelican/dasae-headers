@@ -1,11 +1,13 @@
-#include "Visualizer.h"
-#include "QuadTree.h"
+#include "barnes-hut/Visualizer.h"
+#include "barnes-hut/QuadTree.h"
+
 #include "dh/ArrList.h"
 #include "dh/debug/common.h"
 #include "dh/log.h"
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
 #include "dh/pipe.h"
+
 #include "engine/Color.h"
 #include "engine/Mouse.h"
 
@@ -17,8 +19,11 @@
 #define Visualizer_alpha_scale       (0.8f) // Alpha multiplier for blending
 
 /* Function to calculate the inverse scale factor for rendering nodes.  */
-static $inline_always fn_(Visualizer_scale(Visualizer* self), f32) { return self->scale; }
-static $inline_always fn_(Visualizer_scaleInv(Visualizer* self), f32) { return 1.0f / self->scale; }
+$maybe_unused
+$static $inline_always fn_(Visualizer_scale(Visualizer* self), f32) { return self->scale; }
+$maybe_unused
+$static $inline_always fn_(Visualizer_scaleInv(Visualizer* self), f32) { return 1.0f / self->scale; }
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Unified coordinate system transformations:
 ///
@@ -48,7 +53,7 @@ static $inline_always fn_(Visualizer_scaleInv(Visualizer* self), f32) { return 1
 ///    wy = camy - ( (sy - cy) * scale )
 ///
 ///////////////////////////////////////////////////////////////////////////////
-static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), Vec2i) {
+$static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), Vec2i) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
     let cx = (as$(i32, self->canvas->buffer.width) - 1) / 2;
     let cy = (as$(i32, self->canvas->buffer.height) - 1) / 2;
@@ -95,7 +100,7 @@ static $inline_always fn_(Visualizer_mousePosToWorld(Visualizer* self, engine_Mo
 }
 
 /* Core visualizer functions */
-fn_scope(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$Visualizer) {
+fn_(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$Visualizer, $scope) {
     return_ok({
         .pos   = math_Vec2f_zero, // camera center pos
         .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
@@ -239,7 +244,7 @@ static $inline_always fn_(VisualizerInput_handleZoom(Visualizer* self, i32 scrol
     let diff  = math_Vec2f_sub(mouse_world_before, mouse_world_after);
     self->pos = math_Vec2f_add(self->pos, diff);
 }
-fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void) {
+fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void, $scope) {
     debug_assert_nonnull(self);
     $ignore = window;
 
@@ -274,10 +279,8 @@ fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine
     for_slice (controls, control) {
         if (engine_Keyboard_held(keyboard, control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
-            let addAsg = math_Vec2f_addAsg;
-            let scale  = math_Vec2f_scale;
             pipe(&self->pos,
-                (addAsg,(pipe(control->vec,(scale,(5.0f * Visualizer_scaleInv(self))))))
+                (math_Vec2f_addAsg,(pipe(control->vec,(math_Vec2f_scale,(5.0f * Visualizer_scaleInv(self))))))
             );
         }
     }
@@ -296,6 +299,7 @@ fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine
     }
 
     // Handle zooming
+    // FIXME: Correct handling of zooming start/stop and speed control properly based on mouse wheel input
     if_(const Vec2f wheel_scroll_delta
         = engine_Mouse_getWheelScrollDelta(mouse),
         wheel_scroll_delta.y != 0) {
@@ -303,7 +307,7 @@ fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine
         VisualizerInput_handleZoom(self, as$(i32, wheel_scroll_delta.y), mouse);
     }
 
-    // FIXME: Handle body spawning
+    // FIXME: Correct handling of body spawning
     let spawn = &self->spawn;
     if (engine_Mouse_pressed(mouse, engine_MouseButton_right)) {
         log_debug("right mouse button pressed");
@@ -348,7 +352,7 @@ fn_scope(Visualizer_processInput(Visualizer* self, engine_Window* window, engine
     return_ok({});
 } $unscoped;
 
-fn_scope(Visualizer_update(Visualizer* self), Err$void) {
+fn_(Visualizer_update(Visualizer* self), Err$void, $scope) {
     debug_assert_nonnull(self);
     // Handle spawned body confirmation
     let spawn = &self->spawn;
@@ -361,7 +365,7 @@ fn_scope(Visualizer_update(Visualizer* self), Err$void) {
 
 static fn_(Visualizer_renderBodies(Visualizer* self), void);
 static fn_(Visualizer_renderQuadTree(Visualizer* self), Err$void);
-fn_scope(Visualizer_render(Visualizer* self), Err$void) {
+fn_(Visualizer_render(Visualizer* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 
     /* let begin_instant = time_Instant_now(); */
@@ -549,7 +553,7 @@ static $inline_always fn_(Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f
         color
     );
 }
-fn_scope(Visualizer_renderQuadTree(Visualizer* self), Err$void) {
+fn_(Visualizer_renderQuadTree(Visualizer* self), Err$void, $scope) {
     debug_assert_nonnull(self);
 
     let depth_range = &self->depth_range;

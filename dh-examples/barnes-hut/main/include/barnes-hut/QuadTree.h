@@ -1,21 +1,20 @@
-#ifndef QUAD_TREE_INCLUDED
-#define QUAD_TREE_INCLUDED (1)
+#ifndef BARNES_HUT_QUAD_TREE_INCLUDED
+#define BARNES_HUT_QUAD_TREE_INCLUDED (1)
 
-#include "dh/core.h"
-#include "dh/meta.h"
-#include "dh/mem/Allocator.h"
+#include "dh/sli.h"
 #include "dh/Arr.h"
 #include "dh/ArrList.h"
-#include "dh/Range.h"
+#include "dh/mem/Allocator.h"
+#include "dh/err_res.h"
+
 #include "Body.h"
 
 typedef struct Quad {
     math_Vec2f center;
     f32        size;
 } Quad;
-use_Arr$(4, Quad);
 use_Sli$(Quad);
-use_ArrList$(Quad);
+use_Arr$(4, Quad);
 
 typedef struct QuadNode {
     usize      children;
@@ -25,9 +24,9 @@ typedef struct QuadNode {
     Quad       quad;
     Range      bodies;
 } QuadNode;
+
 use_Sli$(QuadNode);
 use_ArrList$(QuadNode);
-
 use_ArrList$(usize);
 typedef struct QuadTree {
     f32              theta_sq;
@@ -60,4 +59,4 @@ extern fn_(QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bo
 
 static const usize QuadTree_root = 0;
 
-#endif /* QUAD_TREE_INCLUDED */
+#endif /* BARNES_HUT_QUAD_TREE_INCLUDED */

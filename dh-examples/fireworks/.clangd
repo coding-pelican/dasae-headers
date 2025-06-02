@@ -1,0 +1,49 @@
+CompileFlags:
+  Compiler: clang
+  Add:
+    - -xc
+    - -std=c17
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -funsigned-char
+    - -fblocks
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh\include
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh\libs\BlocksRuntime\include
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\fireworks\src
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\fireworks\include
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\fireworks\lib\deps
+# Diagnostics:
+#   UnusedIncludes: Strict
+#   MissingIncludes: Strict
+#   ClangTidy:
+#     Add:
+#       - modernize*
+#       - performance*
+#       - readability*
+#       - bugprone*
+#       - portability*
+#     Remove:
+#       - modernize-use-trailing-return-type
+#       - readability-named-parameter
+InlayHints:
+  Enabled: true
+  TypeNameLimit: 24
+  DeducedTypes: true
+  ParameterNames: true
+  Designators: true
+  BlockEnd: false
+Hover:
+  ShowAKA: true
+---
+If:
+  PathMatch:
+    - .*\.h
+    - .*\.hh
+    - .*\.hpp
+    - .*\.hxx
+CompileFlags:
+  Add:
+    - -Wno-unused-function
+    - -Wno-unused-variable
+    - -Wno-unused-const-variable

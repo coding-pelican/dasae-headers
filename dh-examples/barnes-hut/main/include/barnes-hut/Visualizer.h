@@ -1,12 +1,10 @@
-#ifndef VISUALIZER_INCLUDED
-#define VISUALIZER_INCLUDED (1)
+#ifndef BARNES_HUT_VISUALIZER_INCLUDED
+#define BARNES_HUT_VISUALIZER_INCLUDED (1)
 
-#include "dh/core.h"
-#include "dh/meta.h"
-#include "dh/mem/Allocator.h"
-#include "dh/math.h"
 #include "Body.h"
 #include "QuadTree.h"
+
+#include "dh/opt.h"
 
 // Engine includes
 #include "engine/Window.h"
@@ -20,7 +18,7 @@ typedef struct Visualizer_QuadCache {
 use_Sli$(Visualizer_QuadCache);
 use_ArrList$(Visualizer_QuadCache);
 
-use_ArrList$(u8);
+use_Opt$(Body);
 typedef struct Visualizer {
     // View state
     math_Vec2f pos;   // Camera center in world coords
@@ -123,4 +121,4 @@ $inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos
     return math_Vec2f_add(self->pos, p_inv_scaled);
 } */
 
-#endif /* VISUALIZER_INCLUDED */
+#endif /* BARNES_HUT_VISUALIZER_INCLUDED */

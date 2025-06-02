@@ -336,7 +336,7 @@ fn_(Firework_fini(Firework* f), void) {
 
     log_debug("firework destroyed\n");
 }
-$inline fn_(Firework__deadsAllEffect(const Firework* f), bool) {
+static $inline fn_(Firework__deadsAllEffect(const Firework* f), bool) {
     for_slice (deref(f).effects.items, effect) {
         if (Particle_isDead(effect)) { continue; }
         return false;

@@ -1,9 +1,10 @@
+#include "barnes-hut.h"
+#include "engine.h"
+
 // #define log_comp_disabled_not_debug_comp_enabled (1)
 #include "dh/main.h"
-#include "dh/debug.h"
 #include "dh/log.h"
 
-#include "dh/core.h"
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Page.h"
 #include "dh/ArrList.h"
@@ -12,13 +13,6 @@
 #include "dh/time/Duration.h"
 #include "dh/Thrd/common.h"
 #include "dh/Thrd/Mtx.h"
-
-#include "engine.h"
-#include "Simulation.h"
-#include "Visualizer.h"
-#include "utils.h"
-
-#include "cfg_values.h"
 
 #if debug_comp_enabled
 #define main_window_res_width  (window_res_width__80x50)
@@ -55,9 +49,7 @@ static fn_(global_debug_logSimStateFrontBodiesN(usize n), void);
 static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void) $must_check;
 static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void) $must_check;
 static fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void);
-
-$must_check
-$static Thrd_fn_(Simulation_thread, ({}, Err$void));
+static Thrd_fn_(Simulation_thread, ({}, Err$void));
 
 // Main function
 fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
@@ -209,7 +201,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
 } $unguarded;
 
 #if debug_comp_enabled
-static fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
+fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
     log_info("SimState:\n");
     log_info("  bodies: %d\n", global_state.sim->bodies.items.len);
     for (usize i = 0; i < prim_min(n, global_state.sim->bodies.items.len); ++i) {
@@ -224,9 +216,9 @@ static fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
         // clang-format on
     }
 }
-#endif
+#endif /* debug_comp_enabled */
 
-static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void, $scope) {
+fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void, $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(wnd);
     debug_assert_nonnull(input);
@@ -259,7 +251,7 @@ static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input
     return_ok({});
 } $unscoped;
 
-static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void, $scope) {
+fn_(global_update(Visualizer* viz, Simulation* sim), Err$void, $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(sim);
 
@@ -286,8 +278,7 @@ static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void, $scope) {
     return_ok({});
 } $unscoped;
 
-static void
-global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
+fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
     printf("\033[H\033[40;37m"); // Move cursor to top left
 
     const f64 time_fps = (0.0 < dt) ? (1.0 / dt) : 9999.0;
@@ -335,6 +326,7 @@ global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[0m"); // Reset color
 }
 
+$must_check
 Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture), $guard) {
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
