@@ -60,6 +60,8 @@ typedef union Sli       Sli;
 #define Sli_arr$(T_Sli, val_arr...)           comp_op__Sli_arr$(pp_uniqTok(arr), T_Sli, val_arr)
 #define Sli_asg(var_addr_sli, val_sli...)     comp_op__Sli_asg(var_addr_sli, val_sli)
 
+#define Sli_deref$(_Arr$N$T, _val_sli...) comp_op__Sli_deref$(_Arr$N$T, _val_sli)
+
 #define Sli_ptr(var_self...)                          comp_op__Sli_ptr(var_self)
 #define Sli_len(var_self...)                          comp_op__Sli_len(var_self)
 #define Sli_at(var_self, usize_index...)              comp_op__Sli_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
@@ -336,6 +338,14 @@ union __AssociationTypes_Sli {
     deref(__addr_sli)                       = TypeOf(*__addr_sli) val_sli; \
     eval_return __addr_sli; \
 })
+
+#define comp_op__Sli_deref$(_Arr$N$T, _val_sli...) (*eval({ \
+    let __sli = _val_sli; \
+    debug_assert_nonnull(__sli.ptr); \
+    let __arr_ptr = as$(_Arr$N$T*, __sli.ptr); \
+    debug_assert(__sli.len == Arr_len(*__arr_ptr)); \
+    eval_return __arr_ptr; \
+}))
 
 #define comp_op__Sli_ptr(var_self...) \
     ((var_self).ptr)

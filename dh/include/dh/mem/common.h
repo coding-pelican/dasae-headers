@@ -51,6 +51,13 @@ $inline_always void mem_copy(anyptr dest, const anyptr src, usize size);
 $inline_always void mem_move(anyptr dest, anyptr src, usize size);
 $inline_always i32  mem_cmp(const anyptr lhs, const anyptr rhs, usize size);
 
+#define mem_asBytes(_ptr...)                   comp_inline__mem_asBytes(_ptr)
+#define mem_asBytes_const(_ptr...)             comp_inline__mem_asBytes_const(_ptr)
+#define mem_toBytes$(_Arr$N$u8, _val...)       comp_inline__mem_toBytes$(pp_uniqTok(val), _Arr$N$u8, _val)
+#define mem_toBytes(_val...)                   comp_inline__mem_toBytes(_val)
+#define mem_toBytes_const$(_Arr$N$u8, _val...) comp_inline__mem_toBytes_const$(pp_uniqTok(val), _Arr$N$u8, _val)
+#define mem_toBytes_const(_val...)             comp_inline__mem_toBytes_const(_val)
+
 /*========== Alignment Functions ============================================*/
 
 // Check if alignment is valid (power of 2)
@@ -205,6 +212,23 @@ $inline_always i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
     debug_assert_nonnull(rhs);
     return memcmp(lhs, rhs, size);
 }
+
+#define comp_inline__mem_asBytes(_ptr...) \
+    Sli_from$(Sli$(u8), as$(u8*, _ptr), sizeOf(*_ptr))
+#define comp_inline__mem_asBytes_const(_ptr...) \
+    Sli_from$(Sli_const$(u8), as$(const u8*, _ptr), sizeOf(*_ptr))
+#define comp_inline__mem_toBytes$(__val, _Arr$N$u8, _val...) eval({ \
+    var __val = _val; \
+    eval_return Sli_deref$(_Arr$N$u8, mem_asBytes(&__val)); \
+})
+#define comp_inline__mem_toBytes_const$(__val, _Arr$N$u8, _val...) eval({ \
+    let __val = _val; \
+    eval_return Sli_deref$(_Arr$N$u8, mem_asBytes_const(&__val)); \
+})
+#define comp_inline__mem_toBytes(_val...) \
+    mem_toBytes$(Arr$$(sizeOf(_val), u8), _val)
+#define comp_inline__mem_toBytes_const(_val...) \
+    mem_toBytes_const$(Arr$$(sizeOf(_val), u8), _val)
 
 /*========== Alignment Functions ============================================*/
 
