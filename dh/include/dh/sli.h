@@ -60,6 +60,7 @@ typedef union Sli       Sli;
 #define Sli_arr$(T_Sli, val_arr...)           comp_op__Sli_arr$(pp_uniqTok(arr), T_Sli, val_arr)
 #define Sli_asg(var_addr_sli, val_sli...)     comp_op__Sli_asg(var_addr_sli, val_sli)
 
+#define Sli_ptr(var_self...)                          comp_op__Sli_ptr(var_self)
 #define Sli_len(var_self...)                          comp_op__Sli_len(var_self)
 #define Sli_at(var_self, usize_index...)              comp_op__Sli_at(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
 #define Sli_getAt(var_self, usize_index...)           comp_op__Sli_getAt(pp_uniqTok(self), pp_uniqTok(index), var_self, usize_index)
@@ -203,364 +204,367 @@ union __AssociationTypes_Sli {
 };
 
 #define comp_type_gen__use_Sli$(T) \
-    decl_Sli$(T);                  \
+    decl_Sli$(T); \
     impl_Sli$(T)
-#define comp_type_gen__decl_Sli$(T)                                                   \
+#define comp_type_gen__decl_Sli$(T) \
     $maybe_unused typedef struct pp_join($, SliZ_const, T) pp_join($, SliZ_const, T); \
-    $maybe_unused typedef union pp_join($, SliZ, T) pp_join($, SliZ, T);              \
-    $maybe_unused typedef union pp_join($, SliS_const, T) pp_join($, SliS_const, T);  \
-    $maybe_unused typedef union pp_join($, SliS, T) pp_join($, SliS, T);              \
-    $maybe_unused typedef union Sli_const$(T) Sli_const$(T);                          \
+    $maybe_unused typedef union pp_join($, SliZ, T) pp_join($, SliZ, T); \
+    $maybe_unused typedef union pp_join($, SliS_const, T) pp_join($, SliS_const, T); \
+    $maybe_unused typedef union pp_join($, SliS, T) pp_join($, SliS, T); \
+    $maybe_unused typedef union Sli_const$(T) Sli_const$(T); \
     $maybe_unused typedef union Sli$(T) Sli$(T)
-#define comp_type_gen__impl_Sli$(T)                                                             \
-    typedef struct pp_join($, __AssociationTypes_Sli_const, T)                                  \
-        pp_join($, __AssociationTypes_Sli_const, T);                                            \
-    typedef union pp_join($, __AssociationTypes_Sli, T)                                         \
-        pp_join($, __AssociationTypes_Sli, T);                                                  \
-    struct pp_join($, SliZ_const, T) {                                                          \
-        rawptr_const$(T) ptr;                                                                   \
-        rawptr_const$(SliZ_const) __base_type_hint[0];                                          \
+#define comp_type_gen__impl_Sli$(T) \
+    typedef struct pp_join($, __AssociationTypes_Sli_const, T) \
+        pp_join($, __AssociationTypes_Sli_const, T); \
+    typedef union pp_join($, __AssociationTypes_Sli, T) \
+        pp_join($, __AssociationTypes_Sli, T); \
+    struct pp_join($, SliZ_const, T) { \
+        rawptr_const$(T) ptr; \
+        rawptr_const$(SliZ_const) __base_type_hint[0]; \
         rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
-    };                                                                                          \
-    union pp_join($, SliZ, T) {                                                                 \
-        struct {                                                                                \
-            rawptr$(T) ptr;                                                                     \
-        };                                                                                      \
-        pp_join($, SliZ_const, T) as_const;                                                     \
-        rawptr_const$(SliZ) __base_type_hint[0];                                                \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
-    };                                                                                          \
-    union pp_join($, SliS_const, T) {                                                           \
-        pp_join($, SliZ_const, T) as_zero_terminated;                                           \
-        struct {                                                                                \
-            rawptr_const$(T) ptr;                                                               \
-            T sentinel;                                                                         \
-        };                                                                                      \
-        rawptr_const$(SliS_const) __base_type_hint[0];                                          \
+    }; \
+    union pp_join($, SliZ, T) { \
+        struct { \
+            rawptr$(T) ptr; \
+        }; \
+        pp_join($, SliZ_const, T) as_const; \
+        rawptr_const$(SliZ) __base_type_hint[0]; \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0]; \
+    }; \
+    union pp_join($, SliS_const, T) { \
+        pp_join($, SliZ_const, T) as_zero_terminated; \
+        struct { \
+            rawptr_const$(T) ptr; \
+            T sentinel; \
+        }; \
+        rawptr_const$(SliS_const) __base_type_hint[0]; \
         rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
-    };                                                                                          \
-    union pp_join($, SliS, T) {                                                                 \
-        pp_join($, SliZ, T) as_zero_terminated;                                                 \
-        struct {                                                                                \
-            rawptr$(T) ptr;                                                                     \
-            T sentinel;                                                                         \
-        };                                                                                      \
-        pp_join($, SliS_const, T) as_const;                                                     \
-        rawptr_const$(SliS) __base_type_hint[0];                                                \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
-    };                                                                                          \
-    union pp_join($, Sli_const, T) {                                                            \
-        pp_join($, SliZ_const, T) as_zero_terminated;                                           \
-        struct {                                                                                \
-            rawptr_const$(T) ptr;                                                               \
-            usize len;                                                                          \
-        };                                                                                      \
-        rawptr_const$(Sli_const) __base_type_hint[0];                                           \
+    }; \
+    union pp_join($, SliS, T) { \
+        pp_join($, SliZ, T) as_zero_terminated; \
+        struct { \
+            rawptr$(T) ptr; \
+            T sentinel; \
+        }; \
+        pp_join($, SliS_const, T) as_const; \
+        rawptr_const$(SliS) __base_type_hint[0]; \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0]; \
+    }; \
+    union pp_join($, Sli_const, T) { \
+        pp_join($, SliZ_const, T) as_zero_terminated; \
+        struct { \
+            rawptr_const$(T) ptr; \
+            usize len; \
+        }; \
+        rawptr_const$(Sli_const) __base_type_hint[0]; \
         rawptr_const$(pp_join($, __AssociationTypes_Sli_const, T)) __association_types_hint[0]; \
-    };                                                                                          \
-    union Sli$(T) {                                                                             \
-        pp_join($, SliZ, T) as_zero_terminated;                                                 \
-        struct {                                                                                \
-            rawptr$(T) ptr;                                                                     \
-            usize len;                                                                          \
-        };                                                                                      \
-        pp_join($, Sli_const, T) as_const;                                                      \
-        rawptr_const$(Sli) __base_type_hint[0];                                                 \
-        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0];       \
-    };                                                                                          \
-    struct pp_join($, __AssociationTypes_Sli_const, T) {                                        \
-        rawptr$(pp_join($, SliZ_const, T)) zero_terminated;                                     \
-        rawptr$(pp_join($, SliS_const, T)) sentinel_terminated;                                 \
-        rawptr$(pp_join($, Sli_const, T)) regular;                                              \
-    };                                                                                          \
-    union pp_join($, __AssociationTypes_Sli, T) {                                               \
-        struct {                                                                                \
-            rawptr$(pp_join($, SliZ, T)) zero_terminated;                                       \
-            rawptr$(pp_join($, SliS, T)) sentinel_terminated;                                   \
-            rawptr$(pp_join($, Sli, T)) regular;                                                \
-        };                                                                                      \
-        pp_join($, __AssociationTypes_Sli_const, T) as_const;                                   \
+    }; \
+    union Sli$(T) { \
+        pp_join($, SliZ, T) as_zero_terminated; \
+        struct { \
+            rawptr$(T) ptr; \
+            usize len; \
+        }; \
+        pp_join($, Sli_const, T) as_const; \
+        rawptr_const$(Sli) __base_type_hint[0]; \
+        rawptr_const$(pp_join($, __AssociationTypes_Sli, T)) __association_types_hint[0]; \
+    }; \
+    struct pp_join($, __AssociationTypes_Sli_const, T) { \
+        rawptr$(pp_join($, SliZ_const, T)) zero_terminated; \
+        rawptr$(pp_join($, SliS_const, T)) sentinel_terminated; \
+        rawptr$(pp_join($, Sli_const, T)) regular; \
+    }; \
+    union pp_join($, __AssociationTypes_Sli, T) { \
+        struct { \
+            rawptr$(pp_join($, SliZ, T)) zero_terminated; \
+            rawptr$(pp_join($, SliS, T)) sentinel_terminated; \
+            rawptr$(pp_join($, Sli, T)) regular; \
+        }; \
+        pp_join($, __AssociationTypes_Sli_const, T) as_const; \
     }
 
 #define comp_type_alias__Sli_const$(T) \
     pp_join($, Sli_const, T)
 #define comp_type_alias__Sli$(T) \
     pp_join($, Sli, T)
-#define comp_type_anon__Sli_const$$(T)  \
-    struct {                            \
-        rawptr_const$(T) ptr;           \
-        usize      len;                 \
+#define comp_type_anon__Sli_const$$(T) \
+    struct { \
+        rawptr_const$(T) ptr; \
+        usize      len; \
         Sli_const* __base_type_hint[0]; \
     }
-#define comp_type_anon__Sli$$(T)  \
-    union {                       \
-        struct {                  \
-            rawptr$(T) ptr;       \
-            usize len;            \
-        };                        \
-        Sli_const$$(T) as_const;  \
+#define comp_type_anon__Sli$$(T) \
+    union { \
+        struct { \
+            rawptr$(T) ptr; \
+            usize len; \
+        }; \
+        Sli_const$$(T) as_const; \
         Sli* __base_type_hint[0]; \
     }
-#define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({                       \
-    let_(__anon, TypeOf(&var_anon)) = &var_anon;                                        \
-    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli));                       \
-    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli));                     \
-    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldType$(T_Sli, ptr)));    \
-    claim_assert_static(validateField(TypeOf(__anon), len, FieldType$(T_Sli, len)));    \
+#define comp_op__Sli_anonCast$(__anon, T_Sli, var_anon...) eval({ \
+    let_(__anon, TypeOf(&var_anon)) = &var_anon; \
+    claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli)); \
+    claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli)); \
+    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldType$(T_Sli, ptr))); \
+    claim_assert_static(validateField(TypeOf(__anon), len, FieldType$(T_Sli, len))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
-    eval_return_(*as$(rawptr$(T_Sli), &__anon));                                        \
+    eval_return_(*as$(rawptr$(T_Sli), &__anon)); \
 })
 
 #define comp_op__Sli_from(val_ptr, val_len...)         { .ptr = ensureNonnull(val_ptr), .len = val_len }
 #define comp_op__Sli_from$(T_Sli, val_ptr, val_len...) ((T_Sli)Sli_from(val_ptr, val_len))
 #define comp_op__Sli_arr(__arr, val_arr...)            eval({ \
-    let_(__arr, TypeOf(&val_arr)) = &val_arr;                 \
-    eval_return Sli_from$(                                    \
-        Sli$$(TypeOf(__arr->buf[0])),                         \
-        __arr->buf,                                           \
-        Arr_len(*__arr)                                       \
-    );                                                        \
+    let_(__arr, TypeOf(&val_arr)) = &val_arr; \
+    eval_return Sli_from$( \
+        Sli$$(TypeOf(__arr->buf[0])), \
+        __arr->buf, \
+        Arr_len(*__arr) \
+    ); \
 })
 #define comp_op__Sli_arr$(__arr, T_Sli, val_arr...) eval({ \
-    let_(__arr, TypeOf(&val_arr)) = &val_arr;              \
-    eval_return Sli_from$(                                 \
-        T_Sli,                                             \
-        __arr->buf,                                        \
-        Arr_len(*__arr)                                    \
-    );                                                     \
+    let_(__arr, TypeOf(&val_arr)) = &val_arr; \
+    eval_return Sli_from$( \
+        T_Sli, \
+        __arr->buf, \
+        Arr_len(*__arr) \
+    ); \
 })
-#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({      \
-    let_(__addr_sli, TypeOf(&var_addr_sli)) = &var_addr_sli;               \
+#define comp_op__Sli_asg(__addr_sli, var_addr_sli, val_sli...) eval({ \
+    let_(__addr_sli, TypeOf(&var_addr_sli)) = &var_addr_sli; \
     deref(__addr_sli)                       = TypeOf(*__addr_sli) val_sli; \
-    eval_return __addr_sli;                                                \
+    eval_return __addr_sli; \
 })
 
-#define comp_op__Sli_len(var_self...)                              ((var_self).len)
+#define comp_op__Sli_ptr(var_self...) \
+    ((var_self).ptr)
+#define comp_op__Sli_len(var_self...) \
+    ((var_self).len)
 #define comp_op__Sli_at(__self, __index, var_self, usize_index...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                            \
-    let_(__index, usize)           = usize_index;                         \
-    debug_assert_nonnull(__self.ptr);                                     \
-    debug_assert_fmt(                                                     \
-        __index < __self.len,                                             \
-        "Index out of bounds: %zu >= %zu",                                \
-        __index,                                                          \
-        __self.len                                                        \
-    );                                                                    \
-    eval_return_(&__self.ptr[__index]);                                   \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__index, usize)           = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert_fmt( \
+        __index < __self.len, \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        __self.len \
+    ); \
+    eval_return_(&__self.ptr[__index]); \
 })
 #define comp_op__Sli_getAt(__self, __index, var_self, usize_index...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                               \
-    let_(__index, usize)           = usize_index;                            \
-    debug_assert_nonnull(__self.ptr);                                        \
-    debug_assert_fmt(                                                        \
-        __index < __self.len,                                                \
-        "Index out of bounds: %zu >= %zu",                                   \
-        __index,                                                             \
-        __self.len                                                           \
-    );                                                                       \
-    eval_return __self.ptr[__index];                                         \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__index, usize)           = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert_fmt( \
+        __index < __self.len, \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        __self.len \
+    ); \
+    eval_return __self.ptr[__index]; \
 })
 #define comp_op__Sli_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                         \
-    let_(__index, usize)           = usize_index;                                      \
-    debug_assert_nonnull(__self.ptr);                                                  \
-    debug_assert_fmt(                                                                  \
-        __index < __self.len,                                                          \
-        "Index out of bounds: %zu >= %zu",                                             \
-        __index,                                                                       \
-        __self.len                                                                     \
-    );                                                                                 \
-    __self.ptr[__index] = val_item;                                                    \
-    eval_return __self;                                                                \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__index, usize)           = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert_fmt( \
+        __index < __self.len, \
+        "Index out of bounds: %zu >= %zu", \
+        __index, \
+        __self.len \
+    ); \
+    __self.ptr[__index] = val_item; \
+    eval_return __self; \
 })
 
 #define comp_op__Sli_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                         \
-    let_(__range, Range)           = Range_from range_index_begin_end;                 \
-    debug_assert_fmt(                                                                  \
-        __range.begin < __range.end,                                                   \
-        "Invalid slice range: begin(%zu) >= end(%zu)",                                 \
-        __range.begin,                                                                 \
-        __range.end                                                                    \
-    );                                                                                 \
-    debug_assert_fmt(                                                                  \
-        __range.end <= __self.len,                                                     \
-        "Index out of bounds: end(%zu) > len(%zu)",                                    \
-        __range.end,                                                                   \
-        __self.len                                                                     \
-    );                                                                                 \
-    eval_return make$(                                                                 \
-        TypeOf(__self),                                                                \
-        .ptr = __self.ptr + __range.begin,                                             \
-        .len = Range_len(__range)                                                      \
-    );                                                                                 \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__range, Range)           = Range_from range_index_begin_end; \
+    debug_assert_fmt( \
+        __range.begin < __range.end, \
+        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin, \
+        __range.end \
+    ); \
+    debug_assert_fmt( \
+        __range.end <= __self.len, \
+        "Index out of bounds: end(%zu) > len(%zu)", \
+        __range.end, \
+        __self.len \
+    ); \
+    eval_return make$( \
+        TypeOf(__self), \
+        .ptr = __self.ptr + __range.begin, \
+        .len = Range_len(__range) \
+    ); \
 })
 #define comp_op__Sli_sliceZ(__self, __range, var_self, range_index_begin_end...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                          \
-    let_(__range, Range)           = Range_from range_index_begin_end;                  \
-    debug_assert_fmt(                                                                   \
-        __range.begin < __range.end,                                                    \
-        "Invalid slice range: begin(%zu) >= end(%zu)",                                  \
-        __range.begin,                                                                  \
-        __range.end                                                                     \
-    );                                                                                  \
-    debug_assert_fmt(                                                                   \
-        __range.end <= __self.len,                                                      \
-        "Index out of bounds: end(%zu) > len(%zu)",                                     \
-        __range.end,                                                                    \
-        __self.len                                                                      \
-    );                                                                                  \
-    debug_assert_fmt(                                                                   \
-        bti_memcmp(                                                                     \
-            as$(u8*, &__self.ptr[__range.end]),                                         \
-            as$(u8*, &make$(TypeOf(*__self.ptr))),                                      \
-            sizeOf$(TypeOf(*__self.ptr))                                                \
-        ) == 0,                                                                         \
-        "The slice is not zero-terminated"                                              \
-    );                                                                                  \
-    eval_return make$(                                                                  \
-        TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]),               \
-        .ptr = __self.ptr + __range.begin                                               \
-    );                                                                                  \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__range, Range)           = Range_from range_index_begin_end; \
+    debug_assert_fmt( \
+        __range.begin < __range.end, \
+        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin, \
+        __range.end \
+    ); \
+    debug_assert_fmt( \
+        __range.end <= __self.len, \
+        "Index out of bounds: end(%zu) > len(%zu)", \
+        __range.end, \
+        __self.len \
+    ); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__range.end]), \
+            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not zero-terminated" \
+    ); \
+    eval_return make$( \
+        TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]), \
+        .ptr = __self.ptr + __range.begin \
+    ); \
 })
 #define comp_op__Sli_sliceS(__self, __range, __sentinel, var_self, range_index_begin_end, val_sentinel...) eval({ \
-    let_(__self, TypeOf(var_self))         = var_self;                                                            \
-    let_(__range, Range)                   = Range_from range_index_begin_end;                                    \
-    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                                                        \
-    debug_assert_fmt(                                                                                             \
-        __range.begin < __range.end,                                                                              \
-        "Invalid slice range: begin(%zu) >= end(%zu)",                                                            \
-        __range.begin,                                                                                            \
-        __range.end                                                                                               \
-    );                                                                                                            \
-    debug_assert_fmt(                                                                                             \
-        __range.end <= __self.len,                                                                                \
-        "Index out of bounds: end(%zu) > len(%zu)",                                                               \
-        __range.end,                                                                                              \
-        __self.len                                                                                                \
-    );                                                                                                            \
-    debug_assert_fmt(                                                                                             \
-        bti_memcmp(                                                                                               \
-            as$(u8*, &__self.ptr[__range.end]),                                                                   \
-            as$(u8*, &__sentinel),                                                                                \
-            sizeOf$(TypeOf(*__self.ptr))                                                                          \
-        ) == 0,                                                                                                   \
-        "The slice is not sentinel-terminated"                                                                    \
-    );                                                                                                            \
-    eval_return make$(                                                                                            \
-        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),                                     \
-        .ptr      = __self.ptr + __range.begin,                                                                   \
-        .sentinel = __sentinel                                                                                    \
-    );                                                                                                            \
+    let_(__self, TypeOf(var_self))         = var_self; \
+    let_(__range, Range)                   = Range_from range_index_begin_end; \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
+    debug_assert_fmt( \
+        __range.begin < __range.end, \
+        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin, \
+        __range.end \
+    ); \
+    debug_assert_fmt( \
+        __range.end <= __self.len, \
+        "Index out of bounds: end(%zu) > len(%zu)", \
+        __range.end, \
+        __self.len \
+    ); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__range.end]), \
+            as$(u8*, &__sentinel), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not sentinel-terminated" \
+    ); \
+    eval_return make$( \
+        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]), \
+        .ptr      = __self.ptr + __range.begin, \
+        .sentinel = __sentinel \
+    ); \
 })
 #define comp_op__Sli_prefix(__self, __end, var_self, usize_index_end...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                  \
-    let_(__end, usize)             = usize_index_end;                           \
-    debug_assert_fmt(                                                           \
-        __end <= __self.len,                                                    \
-        "Index out of bounds: %zu > %zu",                                       \
-        __end,                                                                  \
-        __self.len                                                              \
-    );                                                                          \
-    eval_return make$(                                                          \
-        TypeOf(__self),                                                         \
-        .ptr = __self.ptr,                                                      \
-        .len = __end                                                            \
-    );                                                                          \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__end, usize)             = usize_index_end; \
+    debug_assert_fmt( \
+        __end <= __self.len, \
+        "Index out of bounds: %zu > %zu", \
+        __end, \
+        __self.len \
+    ); \
+    eval_return make$( \
+        TypeOf(__self), \
+        .ptr = __self.ptr, \
+        .len = __end \
+    ); \
 })
-#define comp_op__Sli_prefixZ(__self, var_self...) eval({                  \
-    let_(__self, TypeOf(var_self)) = var_self;                            \
-    debug_assert_fmt(                                                     \
-        bti_memcmp(                                                       \
-            as$(u8*, &__self.ptr[__self.len]),                            \
-            as$(u8*, &make$(TypeOf(*__self.ptr))),                        \
-            sizeOf$(TypeOf(*__self.ptr))                                  \
-        ) == 0,                                                           \
-        "The slice is not zero-terminated"                                \
-    );                                                                    \
-    eval_return make$(                                                    \
+#define comp_op__Sli_prefixZ(__self, var_self...) eval({ \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__self.len]), \
+            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not zero-terminated" \
+    ); \
+    eval_return make$( \
         TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]), \
-        .ptr = __self.ptr                                                 \
-    );                                                                    \
+        .ptr = __self.ptr \
+    ); \
 })
 #define comp_op__Sli_prefixS(__self, __sentinel, var_self, val_sentinel...) eval({ \
-    let_(__self, TypeOf(var_self))         = var_self;                             \
-    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                         \
-    debug_assert_fmt(                                                              \
-        bti_memcmp(                                                                \
-            as$(u8*, &__self.ptr[__self.len]),                                     \
-            as$(u8*, &__sentinel),                                                 \
-            sizeOf$(TypeOf(*__self.ptr))                                           \
-        ) == 0,                                                                    \
-        "The slice is not sentinel-terminated"                                     \
-    );                                                                             \
-    eval_return make$(                                                             \
-        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),      \
-        .ptr      = __self.ptr,                                                    \
-        .sentinel = __sentinel                                                     \
-    );                                                                             \
+    let_(__self, TypeOf(var_self))         = var_self; \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__self.len]), \
+            as$(u8*, &__sentinel), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not sentinel-terminated" \
+    ); \
+    eval_return make$( \
+        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]), \
+        .ptr      = __self.ptr, \
+        .sentinel = __sentinel \
+    ); \
 })
 #define comp_op__Sli_suffix(__self, __begin, var_self, usize_index_begin...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                      \
-    let_(__begin, usize)           = usize_index_begin;                             \
-    debug_assert_fmt(                                                               \
-        __begin < __self.len,                                                       \
-        "Index out of bounds: %zu > %zu",                                           \
-        __begin,                                                                    \
-        __self.len                                                                  \
-    );                                                                              \
-    eval_return make$(                                                              \
-        TypeOf(__self),                                                             \
-        .ptr = __self.ptr + __begin,                                                \
-        .len = __self.len - __begin                                                 \
-    );                                                                              \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__begin, usize)           = usize_index_begin; \
+    debug_assert_fmt( \
+        __begin < __self.len, \
+        "Index out of bounds: %zu > %zu", \
+        __begin, \
+        __self.len \
+    ); \
+    eval_return make$( \
+        TypeOf(__self), \
+        .ptr = __self.ptr + __begin, \
+        .len = __self.len - __begin \
+    ); \
 })
 #define comp_op__Sli_suffixZ(__self, __begin, var_self, usize_index_begin...) eval({ \
-    let_(__self, TypeOf(var_self)) = var_self;                                       \
-    let_(__begin, usize)           = usize_index_begin;                              \
-    debug_assert_fmt(                                                                \
-        __begin < __self.len,                                                        \
-        "Index out of bounds: %zu > %zu",                                            \
-        __begin,                                                                     \
-        __self.len                                                                   \
-    );                                                                               \
-    debug_assert_fmt(                                                                \
-        bti_memcmp(                                                                  \
-            as$(u8*, &__self.ptr[__self.len]),                                       \
-            as$(u8*, &make$(TypeOf(*__self.ptr))),                                   \
-            sizeOf$(TypeOf(*__self.ptr))                                             \
-        ) == 0,                                                                      \
-        "The slice is not zero-terminated"                                           \
-    );                                                                               \
-    eval_return make$(                                                               \
-        TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]),            \
-        .ptr = __self.ptr + __begin                                                  \
-    );                                                                               \
+    let_(__self, TypeOf(var_self)) = var_self; \
+    let_(__begin, usize)           = usize_index_begin; \
+    debug_assert_fmt( \
+        __begin < __self.len, \
+        "Index out of bounds: %zu > %zu", \
+        __begin, \
+        __self.len \
+    ); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__self.len]), \
+            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not zero-terminated" \
+    ); \
+    eval_return make$( \
+        TypeOf(__self.__association_types_hint[0][0].zero_terminated[0]), \
+        .ptr = __self.ptr + __begin \
+    ); \
 })
 #define comp_op__Sli_suffixS(__self, __begin, __sentinel, var_self, usize_index_begin, val_sentinel...) eval({ \
-    let_(__self, TypeOf(var_self))         = var_self;                                                         \
-    let_(__begin, usize)                   = usize_index_begin;                                                \
-    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel;                                                     \
-    debug_assert_fmt(                                                                                          \
-        __begin < __self.len,                                                                                  \
-        "Index out of bounds: %zu > %zu",                                                                      \
-        __begin,                                                                                               \
-        __self.len                                                                                             \
-    );                                                                                                         \
-    debug_assert_fmt(                                                                                          \
-        bti_memcmp(                                                                                            \
-            as$(u8*, &__self.ptr[__self.len]),                                                                 \
-            as$(u8*, &__sentinel),                                                                             \
-            sizeOf$(TypeOf(*__self.ptr))                                                                       \
-        ) == 0,                                                                                                \
-        "The slice is not sentinel-terminated"                                                                 \
-    );                                                                                                         \
-    eval_return make$(                                                                                         \
-        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]),                                  \
-        .ptr      = __self.ptr + __begin,                                                                      \
-        .sentinel = __sentinel                                                                                 \
-    );                                                                                                         \
+    let_(__self, TypeOf(var_self))         = var_self; \
+    let_(__begin, usize)                   = usize_index_begin; \
+    let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
+    debug_assert_fmt( \
+        __begin < __self.len, \
+        "Index out of bounds: %zu > %zu", \
+        __begin, \
+        __self.len \
+    ); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &__self.ptr[__self.len]), \
+            as$(u8*, &__sentinel), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not sentinel-terminated" \
+    ); \
+    eval_return make$( \
+        TypeOf(__self.__association_types_hint[0][0].sentinel_terminated[0]), \
+        .ptr      = __self.ptr + __begin, \
+        .sentinel = __sentinel \
+    ); \
 })
 
 #define comp_syn__for_slice(__sli, __i, var_sli, _Iter_item) \
@@ -573,14 +577,14 @@ union __AssociationTypes_Sli {
     with_(let __sli = (var_sli)) for (usize _Iter_index = (__sli).len; (_Iter_index)-- > 0;) with_(let _Iter_item = Sli_at(__sli, _Iter_index))
 
 
-#define comp_type_anon__SliZ_const$(T)   \
-    struct {                             \
-        rawptr_const$(T) ptr;            \
+#define comp_type_anon__SliZ_const$(T) \
+    struct { \
+        rawptr_const$(T) ptr; \
         SliZ_const* __base_type_hint[0]; \
     }
-#define comp_type_anon__SliZ$(T)   \
-    struct {                       \
-        rawptr$(T) ptr;            \
+#define comp_type_anon__SliZ$(T) \
+    struct { \
+        rawptr$(T) ptr; \
         SliZ* __base_type_hint[0]; \
     }
 #define comp_op__SliZ_anonCast$(T_NamedSliZ, var_anon_sli_z)
@@ -588,43 +592,43 @@ union __AssociationTypes_Sli {
 #define comp_op__SliZ_from(val_ptr...)                          { .ptr = ensureNonnull(val_ptr) }
 #define comp_op__SliZ_from$(T_SliZ, val_ptr...)                 ((T_SliZ)SliZ_from(val_ptr))
 #define comp_op__SliZ_asg(__addr_sli, var_addr_sli, val_sli...) eval({ \
-    let __addr_sli = var_addr_sli;                                     \
-    debug_assert_nonnull(__addr_sli);                                  \
-    *__addr_sli = TypeOf(*__addr_sli) val_sli;                         \
-    eval_return __addr_sli;                                            \
+    let __addr_sli = var_addr_sli; \
+    debug_assert_nonnull(__addr_sli); \
+    *__addr_sli = TypeOf(*__addr_sli) val_sli; \
+    eval_return __addr_sli; \
 })
 
 #define comp_op__SliZ_at(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                        \
-    const usize __index = usize_index;                                     \
-    debug_assert_nonnull(__self.ptr);                                      \
-    eval_return_(&__self.ptr[__index]);                                    \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    eval_return_(&__self.ptr[__index]); \
 })
 #define comp_op__SliZ_getAt(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                           \
-    const usize __index = usize_index;                                        \
-    debug_assert_nonnull(__self.ptr);                                         \
-    eval_return __self.ptr[__index];                                          \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    eval_return __self.ptr[__index]; \
 })
 #define comp_op__SliZ_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
-    let         __self  = var_self;                                                     \
-    const usize __index = usize_index;                                                  \
-    debug_assert_nonnull(__self.ptr);                                                   \
-    __self.ptr[__index] = val_item;                                                     \
-    eval_return __self;                                                                 \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    __self.ptr[__index] = val_item; \
+    eval_return __self; \
 })
 
 
-#define comp_type_anon__SliS_const$(T)   \
-    struct {                             \
-        rawptr_const$(T) ptr;            \
-        T           sentinel;            \
+#define comp_type_anon__SliS_const$(T) \
+    struct { \
+        rawptr_const$(T) ptr; \
+        T           sentinel; \
         SliS_const* __base_type_hint[0]; \
     }
-#define comp_type_anon__SliS$(T)   \
-    struct {                       \
-        rawptr$(T) ptr;            \
-        T     sentinel;            \
+#define comp_type_anon__SliS$(T) \
+    struct { \
+        rawptr$(T) ptr; \
+        T     sentinel; \
         SliS* __base_type_hint[0]; \
     }
 #define comp_op__SliS_anonCast$(T_NamedSliS, var_anon_sli_s)
@@ -632,30 +636,30 @@ union __AssociationTypes_Sli {
 #define comp_op__SliS_from(val_ptr, val_sentinel...)            { .ptr = ensureNonnull(val_ptr), .sentinel = val_sentinel }
 #define comp_op__SliS_from$(T_SliS, val_ptr, val_sentinel...)   ((T_SliS)SliS_from(val_ptr, val_sentinel))
 #define comp_op__SliS_asg(__addr_sli, var_addr_sli, val_sli...) eval({ \
-    let __addr_sli = var_addr_sli;                                     \
-    debug_assert_nonnull(__addr_sli);                                  \
-    *__addr_sli = TypeOf(*__addr_sli) val_sli;                         \
-    eval_return __addr_sli;                                            \
+    let __addr_sli = var_addr_sli; \
+    debug_assert_nonnull(__addr_sli); \
+    *__addr_sli = TypeOf(*__addr_sli) val_sli; \
+    eval_return __addr_sli; \
 })
 
 #define comp_op__SliS_at(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                        \
-    const usize __index = usize_index;                                     \
-    debug_assert_nonnull(__self.ptr);                                      \
-    eval_return __self.ptr + __index;                                      \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    eval_return __self.ptr + __index; \
 })
 #define comp_op__SliS_getAt(__self, __index, var_self, usize_index...) eval({ \
-    let         __self  = var_self;                                           \
-    const usize __index = usize_index;                                        \
-    debug_assert_nonnull(__self.ptr);                                         \
-    eval_return __self.ptr[__index];                                          \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    eval_return __self.ptr[__index]; \
 })
 #define comp_op__SliS_setAt(__self, __index, var_self, usize_index, val_item...) eval({ \
-    let         __self  = var_self;                                                     \
-    const usize __index = usize_index;                                                  \
-    debug_assert_nonnull(__self.ptr);                                                   \
-    __self.ptr[__index] = val_item;                                                     \
-    eval_return __self;                                                                 \
+    let         __self  = var_self; \
+    const usize __index = usize_index; \
+    debug_assert_nonnull(__self.ptr); \
+    __self.ptr[__index] = val_item; \
+    eval_return __self; \
 })
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
@@ -712,3 +716,233 @@ void slice_example(void) {
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* SLI_INCLUDED */
+
+#if SLI_MOCKUP_IMPROVEMENT
+
+#ifndef SLI_INCLUDED
+#define SLI_INCLUDED (1)
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
+
+#include "dh/core.h"
+#include "dh/Range.h"
+
+/*========== Macros and Declarations ========================================*/
+
+#define use_S$(T)  comp_type_gen__use_S$(T)
+#define decl_S$(T) comp_type_gen__decl_S$(T)
+#define impl_S$(T) comp_type_gen__impl_S$(T)
+
+#define S_c$(T) comp_type_alias__S_c$(T)
+#define S$(T)   comp_type_alias__S$(T)
+
+#define S_from(_ptr, _len...)         comp_op__S_from(_ptr, _len)
+#define S_from$(T_S, _ptr, _len...)   comp_op__S_from$(T_S, _ptr, _len)
+#define S_asg(_addr_lhs, _val_rhs...) comp_op__S_asg(pp_uniqTok(addr_lhs), _addr_lhs, _val_rhs)
+
+#define S_ptr(_self...)                  comp_op__S_ptr(_self)
+#define S_len(_self...)                  comp_op__S_len(_self)
+#define S_at(_self, _index...)           comp_op__S_at(pp_uniqTok(self), pp_uniqTok(index), _self, _index)
+#define S_getAt(_self, _index...)        comp_op__S_getAt(_self, _index)
+#define S_setAt(_self, _index, _item...) comp_op__S_setAt(_self, _index, _item)
+
+#define S_slice(_self, _begin, _end...)         comp_op__S_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), _self, _begin, _end)
+#define S_prefix(_self, _end...)                comp_op__S_prefix(pp_uniqTok(self), pp_uniqTok(end), _self, _end)
+#define S_suffix(_self, _begin...)              comp_op__S_suffix(pp_uniqTok(self), pp_uniqTok(begin), _self, _begin)
+#define S_sliceZ$(T_SZ, _self, _begin, _end...) comp_op__S_sliceZ(pp_uniqTok(self), pp_uniqTok(begin), T_SZ, pp_uniqTok(end), _self, _begin, _end)
+#define S_prefixZ$(T_SZ, _self, _end...)        comp_op__S_prefixZ(pp_uniqTok(self), pp_uniqTok(end), T_SZ, _self, _end)
+#define S_suffixZ$(T_SZ, _self, _begin...)      comp_op__S_suffixZ(pp_uniqTok(self), pp_uniqTok(begin), T_SZ, _self, _begin)
+
+#define use_SZ$(T)  comp_type_gen__use_SZ$(T)
+#define decl_SZ$(T) comp_type_gen__decl_SZ$(T)
+#define impl_SZ$(T) comp_type_gen__impl_SZ$(T)
+
+#define SZ_c$(T) comp_type_alias__SZ_c$(T)
+#define SZ$(T)   comp_type_alias__SZ$(T)
+
+#define SZ_from(_ptr, _len...)         comp_op__SZ_from(_ptr, _len)
+#define SZ_from$(T_SZ, _ptr, _len...)  comp_op__SZ_from$(T_SZ, _ptr, _len)
+#define SZ_asg(_addr_lhs, _val_rhs...) comp_op__SZ_asg(_addr_lhs, _val_rhs)
+
+#define SZ_ptr(_self...)                  comp_op__SZ_ptr(_self)
+#define SZ_len(_self...)                  comp_op__SZ_len(_self)
+#define SZ_at(_self, _index...)           comp_op__SZ_at(pp_uniqTok(self), pp_uniqTok(index), _self, _index)
+#define SZ_getAt(_self, _index...)        comp_op__SZ_getAt(pp_uniqTok(self), pp_uniqTok(index), _self, _index)
+#define SZ_setAt(_self, _index, _item...) comp_op__SZ_setAt(pp_uniqTok(self), pp_uniqTok(index), _self, _index, _item)
+
+#define SZ_slice$(T_S, _self, _begin, _end...) comp_op__SZ_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), T_S, _self, _begin, _end)
+#define SZ_prefix$(T_S, _self, _end...)        comp_op__SZ_prefix(pp_uniqTok(self), pp_uniqTok(end), T_S, _self, _end)
+#define SZ_suffix$(T_S, _self, _begin...)      comp_op__SZ_suffix(pp_uniqTok(self), pp_uniqTok(begin), T_S, _self, _begin)
+#define SZ_sliceZ(_self, _begin, _end...)      comp_op__SZ_sliceZ(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), _self, _begin, _end)
+#define SZ_prefixZ(_self, _end...)             comp_op__SZ_prefixZ(pp_uniqTok(self), pp_uniqTok(end), _self, _end)
+#define SZ_suffixZ(_self, _begin...)           comp_op__SZ_suffixZ(pp_uniqTok(self), pp_uniqTok(begin), _self, _begin)
+
+/*========== Macros and Definitions =========================================*/
+
+#define comp_type_gen__use_S$(T) \
+    comp_type_gen__decl_S$(T); \
+    comp_type_gen__impl_S$(T)
+#define comp_type_gen__decl_S$(T) \
+    $maybe_unused typedef struct S_c$(T) S_c$(T); \
+    $maybe_unused typedef union S$(T) S$(T)
+#define comp_type_gen__impl_S$(T) \
+    struct S_c$(T) { \
+        rawptr_const$(T) ptr; \
+        usize len; \
+    }; \
+    union S$(T) { \
+        S_c$(T) as_const; \
+        struct { \
+            rawptr$(T) ptr; \
+            usize len; \
+        }; \
+    }
+
+#define comp_type_alias__S_c$(T) pp_join($, S_c, T)
+#define comp_type_alias__S$(T)   pp_join($, S, T)
+
+#define comp_op__S_from(_ptr, _len...) \
+    { .ptr = ensureNonnull(_ptr), .len = _len }
+#define comp_op__S_from$(T_S, _ptr, _len...) \
+    ((T_S)S_from(_ptr, _len))
+#define comp_op__S_asg(__addr_lhs, _addr_lhs, _val_rhs...) eval({ \
+    let __addr_lhs = _addr_lhs; \
+    *__addr_lhs    = *(&*(TypeOf (*__addr_lhs)[1]){ [0] = _val_rhs }); \
+    eval_return __addr_lhs; \
+})
+
+#define comp_op__S_ptr(_self...) \
+    ((_self).ptr)
+#define comp_op__S_len(_self...) \
+    ((_self).len)
+#define comp_op__S_at(__self, __index, _self, _index...) eval({ \
+    let __self           = _self; \
+    let_(__index, usize) = _index; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert(__index < __self.len); \
+    eval_return __self.ptr + __index; \
+})
+#define comp_op__S_getAt(_self, _index...) \
+    (*S_at(_self, _index))
+#define comp_op__S_setAt(_self, _index, _item...) \
+    (S_getAt(_self, _index) = *(&*TypeOf(S_getAt(_self, _index)[1]){ [0] = _item }))
+
+#define comp_op__S_slice(__self, __begin, __end, _self, _begin, _end...) eval({ \
+    let __self           = _self; \
+    let_(__begin, usize) = _begin; \
+    let_(__end, usize)   = _end; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert(__begin < __end); \
+    debug_assert(__end <= __self.len); \
+    eval_return S_from$(TypeOf(__self), __self.ptr + __begin, __end - __begin); \
+})
+#define comp_op__S_prefix(__self, __end, _self, _end...) eval({ \
+    let __self         = _self; \
+    let_(__end, usize) = _end; \
+    eval_return S_slice(__self, 0, __end); \
+})
+#define comp_op__S_suffix(__self, __begin, _self, _begin...) eval({ \
+    let __self           = _self; \
+    let_(__begin, usize) = _begin; \
+    eval_return S_slice(__self, __begin, __self.len); \
+})
+// #define S_sliceZ$(T_SZ, _self, _begin, _end...) comp_op__S_sliceZ(pp_uniqTok(self), pp_uniqTok(begin), T_SZ, pp_uniqTok(end), _self, _begin, _end)
+// #define S_prefixZ$(T_SZ, _self, _end...)        comp_op__S_prefixZ(pp_uniqTok(self), pp_uniqTok(end), T_SZ, _self, _end)
+// #define S_suffixZ$(T_SZ, _self, _begin...)      comp_op__S_suffixZ(pp_uniqTok(self), pp_uniqTok(begin), T_SZ, _self, _begin)
+
+#define comp_type_gen__use_SZ$(T) \
+    comp_type_gen__decl_SZ$(T); \
+    comp_type_gen__impl_SZ$(T)
+#define comp_type_gen__decl_SZ$(T) \
+    $maybe_unused typedef struct SZ_c$(T) SZ_c$(T); \
+    $maybe_unused typedef union SZ$(T) SZ$(T)
+#define comp_type_gen__impl_SZ$(T) \
+    struct SZ_c$(T) { \
+        rawptr_const$(T) ptr; \
+        usize len; \
+    }; \
+    union SZ$(T) { \
+        SZ_c$(T) as_const; \
+        struct { \
+            rawptr$(T) ptr; \
+            usize len; \
+        }; \
+    }
+
+#define comp_type_alias__SZ_c$(T) pp_join($, SZ_c, T)
+#define comp_type_alias__SZ$(T)   pp_join($, SZ, T)
+
+#define comp_op__SZ_from(_ptr, _len...) \
+    { .ptr = ensureNonnull(_ptr), .len = _len }
+#define comp_op__SZ_from$(T_SZ, _ptr, _len...) \
+    ((T_SZ)SZ_from(_ptr, _len))
+#define comp_op__SZ_asg(__addr_lhs, _addr_lhs, _val_rhs...) eval({ \
+    let __addr_lhs = _addr_lhs; \
+    *__addr_lhs    = *(&*(TypeOf (*__addr_lhs)[1]){ [0] = _val_rhs }); \
+    eval_return __addr_lhs; \
+})
+
+#define comp_op__SZ_ptr(_self...) \
+    ((_self).ptr)
+#define comp_op__SZ_len(_self...) \
+    ((_self).len)
+#define comp_op__SZ_at(__self, __index, _self, _index...) eval({ \
+    let __self           = _self; \
+    let_(__index, usize) = _index; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert(__index <= __self.len); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &(__self.ptr + __self.len)), \
+            as$(u8*, &(TypeOf(*__self.ptr){})), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not zero-terminated" \
+    ); \
+    eval_return __self.ptr + __index; \
+})
+#define comp_op__SZ_getAt(_self, _index...) \
+    (*SZ_at(_self, _index))
+#define comp_op__SZ_setAt(_self, _index, _item...) \
+    (SZ_getAt(_self, _index) = *(&*TypeOf(SZ_getAt(_self, _index)[1]){ [0] = _item }))
+
+// #define SZ_slice$(T_S, _self, _begin, _end...) comp_op__SZ_slice(pp_uniqTok(self), pp_uniqTok(begin), pp_uniqTok(end), T_S, _self, _begin, _end)
+// #define SZ_prefix$(T_S, _self, _end...)        comp_op__SZ_prefix(pp_uniqTok(self), pp_uniqTok(end), T_S, _self, _end)
+// #define SZ_suffix$(T_S, _self, _begin...)      comp_op__SZ_suffix(pp_uniqTok(self), pp_uniqTok(begin), T_S, _self, _begin)
+#define comp_op__SZ_sliceZ(__self, __begin, __end, _self, _begin, _end...) eval({ \
+    let __self           = _self; \
+    let_(__begin, usize) = _begin; \
+    let_(__end, usize)   = _end; \
+    debug_assert_nonnull(__self.ptr); \
+    debug_assert(__begin < __end); \
+    debug_assert(__end <= __self.len); \
+    debug_assert_fmt( \
+        bti_memcmp( \
+            as$(u8*, &(__self.ptr + __end)), \
+            as$(u8*, &(TypeOf(*__self.ptr){})), \
+            sizeOf$(TypeOf(*__self.ptr)) \
+        ) == 0, \
+        "The slice is not zero-terminated" \
+    ); \
+    eval_return SZ_from$(TypeOf(__self), __self.ptr + __begin, __end - __begin); \
+})
+#define comp_op__SZ_prefixZ(__self, __end, _self, _end...) eval({ \
+    let __self         = _self; \
+    let_(__end, usize) = _end; \
+    eval_return SZ_sliceZ(__self, 0, __end); \
+})
+#define comp_op__SZ_suffixZ(__self, __begin, _self, _begin...) eval({ \
+    let __self           = _self; \
+    let_(__begin, usize) = _begin; \
+    eval_return SZ_sliceZ(__self, __begin, __self.len); \
+})
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
+#endif /* SLI_INCLUDED */
+
+#endif /* SLI_MOCKUP_IMPROVEMENT */
