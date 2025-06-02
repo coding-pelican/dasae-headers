@@ -1,5 +1,4 @@
 #include "dh/main.h"
-#include "dh/core.h"
 #include "dh/log.h"
 
 #include "dh/ArrList.h"
@@ -7,8 +6,7 @@
 #include "dh/Grid.h"
 
 #include "engine.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "lib/stb_image.h"
+#include "stb/image.h"
 
 
 
@@ -94,7 +92,7 @@ static fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void
 
 
 
-fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     $ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -153,15 +151,15 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     }
 
     var state = (State){
-        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
-        .camera_angle = 0.0f,                     // Starting angle (looking north)
-        .height       = 150.f / 2.0f,             // Height of camera above ground
-        .horizon      = window_res_height / 2.0f, // Center of screen
-        .scale_height = window_res_height,        // Full screen height for scaling
-        .distance     = 300.0f,
-        .is_running   = true
-    };
+        .terrain                     = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+                       .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
+                       .camera_angle = 0.0f,                     // Starting angle (looking north)
+                       .height       = 150.f / 2.0f,             // Height of camera above ground
+                       .horizon      = window_res_height / 2.0f, // Center of screen
+                       .scale_height = window_res_height,        // Full screen height for scaling
+                       .distance     = 300.0f,
+                       .is_running   = true
+        };
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
     log_info("game state created\n");
@@ -247,7 +245,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
 
 
 
-fn_scope_ext(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), TerrainDataErr$TerrainData) {
+fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* colormap_file), TerrainDataErr$TerrainData, $guard) {
     debug_assert_nonnull(heightmap_file);
     debug_assert_nonnull(colormap_file);
 

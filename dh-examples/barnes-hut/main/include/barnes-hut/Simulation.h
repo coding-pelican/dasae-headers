@@ -1,27 +1,20 @@
-#ifndef SIMULATION_INCLUDED
-#define SIMULATION_INCLUDED (1)
+#ifndef BARNES_HUT_SIMULATION_INCLUDED
+#define BARNES_HUT_SIMULATION_INCLUDED (1)
 
 #if !defined(Simulation_comp_enabled_record_collision_count)
 #define Simulation_comp_enabled_record_collision_count (1)
 #endif /* !defined(Simulation_comp_enabled_record_collision_count) */
 
-#include "dh/core.h"
-#include "dh/meta.h"
-#include "dh/mem/Allocator.h"
-#include "dh/Arr.h"
-#include "dh/ArrList.h"
-#include "QuadTree.h"
 #include "Body.h"
+#include "QuadTree.h"
 
 typedef struct Rect {
     math_Vec2f min;
     math_Vec2f max;
 } Rect;
-use_Sli$(Rect);
-use_Arr$(2, Rect);
-use_ArrList$(Rect);
 
-decl_ArrList$(ArrList$Body);
+use_Sli$(Rect);
+use_ArrList$(Rect);
 typedef struct Simulation {
     f32          dt;
     usize        frame;
@@ -48,4 +41,4 @@ extern fn_(Simulation_collide(Simulation* self), Err$void) $must_check;
 extern fn_(Simulation_attract(Simulation* self), Err$void) $must_check;
 extern fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void);
 
-#endif /* SIMULATION_INCLUDED */
+#endif /* BARNES_HUT_SIMULATION_INCLUDED */

@@ -1,9 +1,12 @@
-#include "utils.h"
+#include "barnes-hut/utils.h"
+
+#include "dh/sort.h"
 #include "dh/core/cmp.h"
 #include "dh/math.h"
 #include "dh/Random.h"
 #include "dh/mem/cfg.h"
 
+$maybe_unused
 static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
@@ -14,7 +17,7 @@ static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord)
     return cmp_Ord_eq;
 }
 
-fn_scope_ext(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body) {
+fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guard) {
     // Initialize random seed
     Random_initWithSeed(0);
 

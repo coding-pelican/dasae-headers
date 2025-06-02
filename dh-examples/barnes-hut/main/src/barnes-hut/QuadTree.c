@@ -1,12 +1,10 @@
-#include "QuadTree.h"
-#include "Body.h"
+#include "barnes-hut/QuadTree.h"
 
-#include "dh/callback.h"
-#include "dh/pipe.h"
-#include "dh/ArrList.h"
-#include "dh/log.h"
 #include "dh/math.h"
-#include "dh/meta/common.h"
+#include "dh/ArrList.h"
+#include "dh/callback.h"
+#include "dh/log.h"
+#include "dh/pipe.h"
 
 // Quad implementation
 fn_(Quad_newContaining(const Sli$Body bodies), Quad) {
@@ -61,7 +59,7 @@ fn_(QuadNode_isBranch(const QuadNode* self), bool) { return deref(self).children
 fn_(QuadNode_isEmpty(const QuadNode* self), bool) { return deref(self).mass == 0.0f; }
 
 // QuadTree implementation
-fn_scope_ext(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap, usize n), Err$QuadTree) {
+fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap, usize n), Err$QuadTree, $guard) {
     var_type(nodes, ArrList$QuadNode, try_(ArrList_initCap(typeInfo$(QuadNode), allocator, n)));
     errdefer_(ArrList_fini(nodes.base));
     var_type(parents, ArrList$usize, try_(ArrList_initCap(typeInfo$(usize), allocator, n)));
@@ -105,13 +103,15 @@ static $inline_always fn_(partition(Sli$Body self, Callback$partition predFn, ma
     return lhs;
 }
 // Predicates
-static $inline_always fn_(predLtX(const Body* body, math_Vec2f center), bool) {
+$maybe_unused
+$static $inline_always fn_(predLtX(const Body* body, math_Vec2f center), bool) {
     return body->pos.x < center.x;
 }
-static $inline_always fn_(predLtY(const Body* body, math_Vec2f center), bool) {
+$maybe_unused
+$static $inline_always fn_(predLtY(const Body* body, math_Vec2f center), bool) {
     return body->pos.y < center.y;
 }
-static fn_scope(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range range), Err$void) {
+static fn_(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range range), Err$void, $scope) {
     debug_assert_nonnull(self);
     let   center  = Sli_at(self->nodes.items, node)->quad.center;
     usize split[] = { range.begin, 0, 0, 0, range.end };
@@ -157,8 +157,7 @@ static fn_scope(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, 
         ));
     }
     return_ok({});
-}
-unscoped;
+} $unscoped;
 fn_(QuadTree_propagate(QuadTree* self), void) {
     debug_assert_nonnull(self);
     // Propagate masses and center of mass upward through the tree
@@ -186,7 +185,7 @@ fn_(QuadTree_propagate(QuadTree* self), void) {
         math_Vec2f_scaleInvAsg(&node->pos, prim_max(node->mass, f32_limit_min));
     }
 }
-fn_scope(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) {
+fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void, $scope) {
     debug_assert_nonnull(self);
     QuadTree_clear(self);
 
@@ -217,8 +216,7 @@ fn_scope(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) {
 
     QuadTree_propagate(self);
     return_ok({});
-}
-unscoped;
+} $unscoped;
 fn_(QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies), math_Vec2f) {
     debug_assert_nonnull(self);
     var acc  = math_Vec2f_zero;

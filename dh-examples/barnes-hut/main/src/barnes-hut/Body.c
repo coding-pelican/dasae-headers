@@ -1,5 +1,4 @@
-#include "Body.h"
-#include "dh/pipe.h"
+#include "barnes-hut/Body.h"
 
 fn_(Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius), Body) {
     return (Body){

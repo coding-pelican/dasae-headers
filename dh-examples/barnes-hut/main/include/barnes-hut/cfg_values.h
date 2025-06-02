@@ -1,5 +1,5 @@
-#ifndef CFG_VALUES_INCLUDED
-#define CFG_VALUES_INCLUDED (1)
+#ifndef BARNES_HUT_CFG_VALUES_INCLUDED
+#define BARNES_HUT_CFG_VALUES_INCLUDED (1)
 
 /* 16:10 */
 #define window_res_width__1920x1200  /* template value */ (1920)
@@ -82,4 +82,4 @@
 #define target_fps__12_500 /* template value */ (12.500)
 #define target_fps__10_000 /* template value */ (10.000)
 
-#endif /* CFG_VALUES_INCLUDED */
+#endif /* BARNES_HUT_CFG_VALUES_INCLUDED */

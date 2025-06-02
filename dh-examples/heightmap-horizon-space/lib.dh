@@ -1,0 +1,11 @@
+[engine]
+path=C:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\engine
+profile=default
+linking=static
+no-libdh=false
+
+[stb/image]
+path=C:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\lib\stb\image
+profile=performance
+linking=static
+no-libdh=false
