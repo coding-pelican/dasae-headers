@@ -281,6 +281,9 @@ extern "C" {
     comp_op__Arr_from$(T, _Initial)
 #define Arr_asg(var_self, var_other...) comp_op__Arr_asg(var_self, var_other)
 
+#define Arr_ref$(_Sli$T, _val_arr...) comp_op__Arr_ref$(_Sli$T, _val_arr)
+#define Arr_ref(_val_arr...)          comp_op__Arr_ref(_val_arr)
+
 #define Arr_ptr(var_self...) comp_op__Arr_ptr(var_self)
 #define Arr_buf(var_self...) comp_op__Arr_buf(var_self)
 #define Arr_len(var_self...) \
@@ -476,6 +479,11 @@ extern "C" {
     claim_assert_static(isSameType(TypeOf((*__self).buf), TypeOf((*__other).buf))); \
     eval_return deref(__self) = deref(as$(TypeOf(__self), __other)); \
 })
+
+#define comp_op__Arr_ref$(_Sli$T, _val_arr...) \
+    ((_Sli$T){ .ptr = Arr_ptr(_val_arr), Arr_len(_val_arr) })
+#define comp_op__Arr_ref(_val_arr...) \
+    Arr_ref$(Sli$$(TypeOf(*Arr_ptr(_val_arr))), _val_arr)
 
 #define comp_op__Arr_buf(var_self...)                              ((var_self).buf)
 #define comp_op__Arr_ptr(var_self...)                              (&*Arr_buf(var_self))
