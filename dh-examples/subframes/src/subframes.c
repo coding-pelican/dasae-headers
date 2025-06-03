@@ -242,10 +242,10 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
             log_debug("esc pressed");
         }
 
-        with_(let_(left_space, Arr$$(2, bool)) = {
-            engine_Mouse_held(input->mouse, engine_MouseButton_left),
-            engine_Keyboard_held(input->keyboard, engine_KeyCode_space)
-        }) {
+        with_(let left_space = Arr_from$(bool, {
+            [0] = engine_Mouse_held(input->mouse, engine_MouseButton_left),
+            [1] = engine_Keyboard_held(input->keyboard, engine_KeyCode_space)
+        })) {
             if (Arr_getAt(left_space, 0) || Arr_getAt(left_space, 1)) {
                 debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
                 debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
