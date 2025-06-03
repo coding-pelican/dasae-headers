@@ -1,4 +1,22 @@
 // dh-c build release sample-multi_rogue.c --args="-lws2_32"
+//
+// CLI Usage:
+// ./sample-multi_rogue --server                     # Start server
+// ./sample-multi_rogue --client                     # Connect to localhost:8080
+// ./sample-multi_rogue --client 192.168.1.100       # Connect to specific IP
+// ./sample-multi_rogue --client 192.168.1.100:9090  # Connect to specific IP:port
+// ./sample-multi_rogue --dummy-ai                   # AI player on localhost
+// ./sample-multi_rogue --dummy-ai 192.168.1.100     # AI player on remote server
+//
+// Performance optimizations available:
+// - Add -DFAST_RENDER to enable optimized frame-buffer based rendering
+//   1. Batching all terminal output into single buffer
+//   2. Only redrawing cells that have changed (dirty rectangle detection)
+//   3. Reducing ANSI escape sequence redundancy
+//   4. Minimizing printf syscalls from ~2000 to 1 per frame
+//
+// Example: dh-c build release sample-multi_rogue.c --args="-lws2_32 -DFAST_RENDER"
+//
 
 #include "dh/main.h"
 #include "dh/blk.h"
@@ -14,7 +32,7 @@
 #include "dh/Random.h"
 #include "dh/time.h"
 
-
+/* ANSI escape codes ========================================================*/
 
 #define ansi_attr_reset         "\033[0m"
 #define ansi_attr_bold_on       "\033[1m"
@@ -70,7 +88,7 @@
 #define ansi_attr_bg_bright_white   "\033[107m"
 #define ansi_attr_bg_bright_default "\033[109m"
 
-
+/* engine utils =============================================================*/
 
 #if bti_plat_windows
 #include "dh/os/windows.h"
@@ -94,7 +112,6 @@ fn_(engine_utils_getch(void), u8) {
     SetConsoleMode(console_input_handle, original_console_mode);
     return character_buffer;
 }
-
 fn_(engine_utils_kbhit(void), bool) {
     let console_input_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (console_input_handle == INVALID_HANDLE_VALUE) { return false; }
@@ -133,7 +150,6 @@ fn_(engine_utils_getch(void), u8) {
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attrs);
     return character_buffer;
 }
-
 fn_(engine_utils_kbhit(void), bool) {
     struct termios original_terminal_attrs = {};
     if (tcgetattr(STDIN_FILENO, &original_terminal_attrs) < 0) { return false; }
@@ -166,7 +182,7 @@ fn_(engine_utils_kbhit(void), bool) {
 }
 #endif /* bti_plat_unix */
 
-
+/* game common ==============================================================*/
 
 // common.h - Shared definitions and structures
 #ifndef GAME_COMMON_INCLUDED
@@ -235,7 +251,6 @@ typedef struct game_Player {
 } game_Player;
 use_Ptr$(game_Player);
 use_Sli$(game_Player);
-use_Sli$(Ptr$game_Player);
 use_Opt$(game_Player);
 
 // Tile types
@@ -330,23 +345,20 @@ typedef struct game_Event {
     } payload;
 } game_Event;
 
-#endif
+#endif /* GAME_COMMON_INCLUDED */
 
-// server.c - Game server implementation
-// #include "common.h"
+/* game Server ==============================================================*/
 
 typedef SOCKET Socket;
 $static fn_(Socket_send(Socket self, Sli_const$u8 buf, i32 flag), void) {
     send(self, as$(const char*, buf.ptr), as$(int, buf.len), flag);
 }
-
 $must_check
 $static fn_(Socket_recv(Socket self, Sli$u8 buf, i32 flag), Err$usize, $scope) {
     let len = recv(self, as$(char*, buf.ptr), as$(int, buf.len), flag);
     if (len <= 0) { return_err(Err_Unexpected()); }
     return_ok(len);
 } $unscoped;
-
 #if bti_plat_windows
 $must_check
 $static fn_(Socket_initWinsock(void), Err$void, $scope) {
@@ -358,7 +370,6 @@ $static fn_(Socket_initWinsock(void), Err$void, $scope) {
     }
     return_ok({});
 } $unscoped;
-
 $static fn_(Socket_cleanupWinsock(void), void) {
     WSACleanup();
 }
@@ -435,7 +446,7 @@ static fn_(game_Svr_broadcastState(void), void) {
     }
 }
 
-static fn_(isValidMove(i32 x, i32 y), bool) {
+static fn_(game_Svr_isValidMove(i32 x, i32 y), bool) {
     let self = game_Svr_inst();
     return 0 <= x && x < as$(i32, Grid_width(self->state.map))
         && 0 <= y && y < as$(i32, Grid_height(self->state.map))
@@ -451,7 +462,7 @@ static fn_(game_Svr_handlePlayerMove(i32 player_id, i32 new_x, i32 new_y), void,
 
     let player = Sli_at(self->state.players, player_id);
     // Validate move
-    if (!isValidMove(new_x, new_y)) { return_void(); }
+    if (!game_Svr_isValidMove(new_x, new_y)) { return_void(); }
     // Check for collision with other players
     if (!blk_(collision, bool, {
             for_slice (self->state.players, (other)) {
@@ -479,7 +490,7 @@ static fn_(game_Svr_handlePlayerMove(i32 player_id, i32 new_x, i32 new_y), void,
     return_void();
 } $unguarded;
 
-static fn_(findAvailablePlayerId(void), Opt$i32, $scope) {
+static fn_(game_Svr_findAvailablePlayerId(void), Opt$i32, $scope) {
     let self = game_Svr_inst();
     for_slice_indexed (self->state.players, (player), (idx)) {
         if (player->active) { continue; }
@@ -502,7 +513,7 @@ static Thrd_fn_(game_Svr_handleClt, ({ Socket socket; }, Void), ($ignore_capture
             game_Svr_broadcastState();
         });
 
-        id = orelse(findAvailablePlayerId(), eval({
+        id = orelse(game_Svr_findAvailablePlayerId(), eval({
             printf("No available player slot\n");
             return_void();
         }));
@@ -579,7 +590,6 @@ cleanup:
     return_void();
 } $unguarded_Thrd_fn;
 
-
 $must_check
 $static fn_(game_Svr_run(void), Err$void, $guard) {
     let self = game_Svr_init();
@@ -629,8 +639,69 @@ $static fn_(game_Svr_run(void), Err$void, $guard) {
     return_ok({});
 } $unguarded;
 
-// client.c - Game client implementation
-// #include "common.h"
+/* game Client ==============================================================*/
+
+#if !bti_plat_windows
+static fn_(game_Screen_enableRawMode(void), void) {
+    let self = game_Clt_inst();
+    tcgetattr(STDIN_FILENO, &self->orig_termios);
+    atexit(game_Screen_disableRawMode);
+
+    var raw = self->orig_termios;
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+static fn_(game_Screen_disableRawMode(void), void) {
+    let self = game_Clt_inst();
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &self->orig_termios);
+}
+#endif /* !bti_plat_windows */
+static fn_(game_Screen_clear(void), void) {
+    $ignore = printf("\033[2J\033[H");
+    $ignore = fflush(stdout);
+}
+static fn_(Game_Screen_moveCursor(u32 x, u32 y), void) {
+    $ignore = printf("\033[%u;%uH", y + 1, x + 1);
+}
+
+// Optimized rendering system
+typedef struct game_RenderBuffer {
+    var_(data, Arr$$(game_max_map_width* game_max_map_height * 32, u8));   // 32 bytes per cell for ANSI codes + char
+    var_(curr_frame, Arr$$(game_max_map_width* game_max_map_height, u32)); // Hash of each cell
+    var_(prev_frame, Arr$$(game_max_map_width* game_max_map_height, u32)); // Previous frame for comparison
+    var_(len, usize);
+    var_(needs_full_redraw, bool);
+} game_RenderBuffer;
+static fn_(game_RenderBuffer_init(void), game_RenderBuffer*) {
+    static game_RenderBuffer buffer = { .needs_full_redraw = true };
+    return &buffer;
+}
+static fn_(game_RenderBuffer_clear(game_RenderBuffer* self), void) {
+    self->len = 0;
+}
+static fn_(game_RenderBuffer_append(game_RenderBuffer* self, Sli_const$u8 data), void) {
+    let remaining = Arr_len(self->data) - self->len;
+    let copy_len  = data.len < remaining ? data.len : remaining;
+    if (0 < copy_len) {
+        mem_copy(self->data.buf + self->len, data.ptr, copy_len);
+        self->len += copy_len;
+    }
+}
+static fn_(game_RenderBuffer_appendChar(game_RenderBuffer* self, u8 c), void) {
+    if (self->len < Arr_len(self->data)) {
+        self->data.buf[self->len++] = c;
+    }
+}
+static fn_(game_RenderBuffer_flush(game_RenderBuffer* self), void) {
+    if (0 < self->len) {
+        $ignore = fwrite(self->data.buf, 1, self->len, stdout);
+        $ignore = fflush(stdout);
+    }
+}
+// Simple hash function for cell content
+static fn_(game_RenderBuffer_cellHash(u8 tile, u8 player_char, i32 player_id), u32) {
+    return (as$(u32, tile) << 24) | (as$(u32, player_char) << 16) | (as$(u32, player_id) & 0xFFFF);
+}
 
 typedef struct game_Clt {
     Socket     socket;
@@ -645,7 +716,6 @@ typedef struct game_Clt {
     u64 frame_count;
     f64 avg_frame_time_ms;
 } game_Clt;
-
 static fn_(game_Clt_inst(void), game_Clt*) {
     static game_Clt inst = {
         .player_id         = -1,
@@ -657,35 +727,11 @@ static fn_(game_Clt_inst(void), game_Clt*) {
     return &inst;
 }
 
-#if !bti_plat_windows
-static fn_(game_Clt_disableRawMode(void), void) {
-    let self = game_Clt_inst();
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &self->orig_termios);
-}
-
-static fn_(game_Clt_enableRawMode(void), void) {
-    let self = game_Clt_inst();
-    tcgetattr(STDIN_FILENO, &self->orig_termios);
-    atexit(game_Clt_disableRawMode);
-
-    var raw = self->orig_termios;
-    raw.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-}
-#endif /* !bti_plat_windows */
-
-static fn_(game_Clt_clearScreen(void), void) {
-    $ignore = printf("\033[2J\033[H");
-    $ignore = fflush(stdout);
-}
-
-
 // Player color highlight for own player
-#define ansi_attr_self_highlight "\033[1;97;41m" // Bold white on red background
-
+#define game_Clt_ansi_attr_self_highlight "\033[1;97;41m" // Bold white on red background
 // Add color assignment function
-static fn_(game_getPlayerColor(i32 player_id, bool is_self), Sli_const$u8) {
-    if (is_self) { return u8_l(ansi_attr_self_highlight); }
+static fn_(game_Clt_getPlayerColor(i32 player_id, bool is_self), Sli_const$u8) {
+    if (is_self) { return u8_l(game_Clt_ansi_attr_self_highlight); }
     static let colors = (Arr$$(8, Sli_const$u8)){ {
         u8_l(ansi_attr_fg_bright_black),
         u8_l(ansi_attr_fg_bright_red),
@@ -697,55 +743,6 @@ static fn_(game_getPlayerColor(i32 player_id, bool is_self), Sli_const$u8) {
         u8_l(ansi_attr_fg_bright_white),
     } };
     return Arr_getAt(colors, player_id % Arr_len(colors));
-}
-
-fn_(Terminal_moveCursor(u32 x, u32 y), void) { printf("\033[%u;%uH", y + 1, x + 1); }
-
-// Optimized rendering system
-typedef struct game_RenderBuffer {
-    var_(data, Arr$$(game_max_map_width* game_max_map_height * 32, u8));       // 32 bytes per cell for ANSI codes + char
-    var_(current_frame, Arr$$(game_max_map_width* game_max_map_height, u32));  // Hash of each cell
-    var_(previous_frame, Arr$$(game_max_map_width* game_max_map_height, u32)); // Previous frame for comparison
-    usize len;
-    bool  needs_full_redraw;
-} game_RenderBuffer;
-
-use_Ptr$(game_RenderBuffer);
-
-static fn_(game_RenderBuffer_init(void), game_RenderBuffer*) {
-    static game_RenderBuffer buffer = { .needs_full_redraw = true };
-    return &buffer;
-}
-
-static fn_(game_RenderBuffer_clear(game_RenderBuffer* self), void) {
-    self->len = 0;
-}
-
-static fn_(game_RenderBuffer_append(game_RenderBuffer* self, Sli_const$u8 data), void) {
-    usize remaining = Arr_len(self->data) - self->len;
-    usize copy_len  = data.len < remaining ? data.len : remaining;
-    if (copy_len > 0) {
-        mem_copy(self->data.buf + self->len, data.ptr, copy_len);
-        self->len += copy_len;
-    }
-}
-
-static fn_(game_RenderBuffer_appendChar(game_RenderBuffer* self, u8 c), void) {
-    if (self->len < Arr_len(self->data)) {
-        self->data.buf[self->len++] = c;
-    }
-}
-
-static fn_(game_RenderBuffer_flush(game_RenderBuffer* self), void) {
-    if (self->len > 0) {
-        $ignore = fwrite(self->data.buf, 1, self->len, stdout);
-        $ignore = fflush(stdout);
-    }
-}
-
-// Simple hash function for cell content
-static fn_(game_cellHash(u8 tile, u8 player_char, i32 player_id), u32) {
-    return (as$(u32, tile) << 24) | (as$(u32, player_char) << 16) | (as$(u32, player_id) & 0xFFFF);
 }
 
 // Optimized rendering function
@@ -771,11 +768,11 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
     // Calculate current frame state (much faster now)
     for (i32 y = 0; y < game_max_map_height; ++y) {
         for (i32 x = 0; x < game_max_map_width; ++x) {
-            let tile_idx                        = y * game_max_map_width + x;
-            let tile                            = Grid_getAt(self->state.map, x, y);
-            let player_id                       = player_map.buf[tile_idx];
-            u8  player_char                     = (player_id >= 0) ? '@' : 0;
-            buffer->current_frame.buf[tile_idx] = game_cellHash(tile, player_char, player_id);
+            let tile_idx                     = y * game_max_map_width + x;
+            let tile                         = Grid_getAt(self->state.map, x, y);
+            let player_id                    = player_map.buf[tile_idx];
+            u8  player_char                  = (player_id >= 0) ? '@' : 0;
+            buffer->curr_frame.buf[tile_idx] = game_RenderBuffer_cellHash(tile, player_char, player_id);
         }
     }
 
@@ -783,7 +780,7 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
     var has_changes = buffer->needs_full_redraw;
     if (!has_changes) {
         for (i32 i = 0; i < game_max_map_width * game_max_map_height; ++i) {
-            if (buffer->current_frame.buf[i] != buffer->previous_frame.buf[i]) {
+            if (buffer->curr_frame.buf[i] != buffer->prev_frame.buf[i]) {
                 has_changes = true;
                 break;
             }
@@ -792,7 +789,7 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
 
     if (has_changes) {
         if (buffer->needs_full_redraw) {
-            game_Clt_clearScreen();
+            game_Screen_clear();
             buffer->needs_full_redraw = false;
         }
 
@@ -816,7 +813,7 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
 
                     if (is_self) {
                         // Highlight self player
-                        game_RenderBuffer_append(buffer, u8_l(ansi_attr_self_highlight "@" ansi_attr_reset));
+                        game_RenderBuffer_append(buffer, u8_l(game_Clt_ansi_attr_self_highlight "@" ansi_attr_reset));
                     } else {
                         // Other player with simple color
                         static let player_colors = (Arr$$(4, Sli_const$u8)){
@@ -842,7 +839,7 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
         }
 
         // Update previous frame
-        mem_copy(buffer->previous_frame.buf, buffer->current_frame.buf, sizeof(buffer->current_frame.buf[0]) * Arr_len(buffer->current_frame));
+        mem_copy(buffer->prev_frame.buf, buffer->curr_frame.buf, sizeof(buffer->curr_frame.buf[0]) * Arr_len(buffer->curr_frame));
     }
 
     // Draw UI (simplified)
@@ -853,7 +850,7 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
 
         let is_self = (player->id == self->player_id);
         if (is_self) {
-            game_RenderBuffer_append(buffer, u8_l(">>> " ansi_attr_self_highlight));
+            game_RenderBuffer_append(buffer, u8_l(">>> " game_Clt_ansi_attr_self_highlight));
         } else {
             game_RenderBuffer_append(buffer, u8_l("    "));
         }
@@ -890,7 +887,6 @@ $static fn_(game_Clt_drawGameOptimized(void), void) {
     // Simple moving average
     self->avg_frame_time_ms = (self->avg_frame_time_ms * 0.9) + (frame_time_ms * 0.1);
 }
-
 // Legacy rendering function (kept for compatibility with NO_GRID)
 static fn_(game_Clt_drawGame(void), void) {
     let self = game_Clt_inst();
@@ -901,7 +897,7 @@ static fn_(game_Clt_drawGame(void), void) {
 #endif // FAST_RENDER && !NO_GRID
 #ifndef FAST_RENDER
     let start_time = time_Instant_now();
-    game_Clt_clearScreen();
+    game_Screen_clear();
 #endif /* FAST_RENDER */
 #if NO_GRID
     // Draw map
@@ -930,32 +926,32 @@ static fn_(game_Clt_drawGame(void), void) {
     }
 #else
     // Draw map
-    Terminal_moveCursor(0, 0);
+    Game_Screen_moveCursor(0, 0);
     for_grid(self->state.map, (tile, (x, y)), {
         let color = game_TileType_getColor(*tile);
-        Terminal_moveCursor(x, y);
+        Game_Screen_moveCursor(x, y);
         $ignore = printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, *tile);
     });
 
     // Draw players
-    Terminal_moveCursor(0, 0);
+    Game_Screen_moveCursor(0, 0);
     for_slice (self->state.players, (player)) {
         if (!player->active) { continue; }
-        Terminal_moveCursor(player->x, player->y);
+        Game_Screen_moveCursor(player->x, player->y);
         let is_self = (player->id == self->player_id);
-        let color   = game_getPlayerColor(player->id, is_self);
+        let color   = game_Clt_getPlayerColor(player->id, is_self);
         $ignore     = printf("%*s%c" ansi_attr_reset, as$(i32, color.len), color.ptr, player->symbol);
     }
 #endif // NO_GRID
 
     // Draw UI
-    Terminal_moveCursor(0, self->state.map.height + 1);
+    Game_Screen_moveCursor(0, self->state.map.height + 1);
     $ignore = printf("\n=== PLAYER INFO ===\n");
     for_slice (self->state.players, (player)) {
         if (!player->active) { continue; }
 
         let is_self     = (player->id == self->player_id);
-        let color       = game_getPlayerColor(player->id, is_self);
+        let color       = game_Clt_getPlayerColor(player->id, is_self);
         let name_prefix = is_self ? ">>> " : "    ";
 
         $ignore = printf("%s%*s%s [Lv.%d] HP:%d/%d MP:%d/%d Exp:%d" ansi_attr_reset "\n", name_prefix, as$(i32, color.len), color.ptr, player->name, player->level, player->hp, player->max_hp, player->mp, player->max_mp, player->exp);
@@ -974,7 +970,7 @@ static fn_(game_Clt_drawGame(void), void) {
 #endif
 
     $ignore = printf("Controls: WASD to move, Q to quit\n");
-    $ignore = printf("Your player: " ansi_attr_self_highlight "@" ansi_attr_reset "\n");
+    $ignore = printf("Your player: " game_Clt_ansi_attr_self_highlight "@" ansi_attr_reset "\n");
 }
 
 static Thrd_fn_(game_Clt_receiveEvents, ({}, Void), ($ignore_capture, $ignore_capture), $scope) {
@@ -983,7 +979,9 @@ static Thrd_fn_(game_Clt_receiveEvents, ({}, Void), ($ignore_capture, $ignore_ca
     while (!Socket_recv(self->socket, mem_asBytes(&event), 0).is_err) {
         switch (event.tag) {
         case game_EventTag_game_state: {
-            catch_from(Socket_recv(self->socket, mem_asBytes(&self->state), 0), err, ({ printf("Error receiving game state: %s\n", Err_codeToCStr(err));
+            catch_from(Socket_recv(self->socket, mem_asBytes(&self->state), 0), err, ({
+                printf("Error receiving game state: %s\n", Err_codeToCStr(err));
+                continue;
             }));
             self->state.players = Sli_arr$(Sli$game_Player, self->state.mem.players);
             self->state.map     = Grid_fromSli$(Grid$u8, Sli_arr$(Sli$u8, self->state.mem.map), game_max_map_width, game_max_map_height);
@@ -1005,7 +1003,6 @@ static Thrd_fn_(game_Clt_receiveEvents, ({}, Void), ($ignore_capture, $ignore_ca
     }
     return_void();
 } $unscoped_Thrd_fn;
-
 $must_check
 $static fn_(game_Clt_findMyPlayer(void), Opt$Ptr$game_Player, $scope) {
     let self = game_Clt_inst();
@@ -1021,21 +1018,45 @@ $static fn_(game_Clt_findMyPlayer(void), Opt$Ptr$game_Player, $scope) {
     return_none();
 } $unscoped;
 
+typedef struct game_CliOptions {
+    Sli_const$u8 server_ip;
+    i32          server_port;
+    bool         is_dummy_ai;
+} game_CliOptions;
 $must_check
-$static fn_(game_Clt_run(Sli_const$u8 server_ip), Err$void, $guard) {
+$static fn_(game_Clt_runWithOptions(game_CliOptions options), Err$void);
+$must_check
+$static fn_(game_Clt_runPlayer(Sli_const$u8 server_ip), Err$void, $scope) {
+    return_ok(try_(game_Clt_runWithOptions((game_CliOptions){
+        .server_ip = server_ip,
+        .server_port = game_port,
+        .is_dummy_ai = false
+    })));
+} $unscoped;
+$must_check
+$static fn_(game_Clt_runDummyAI(game_CliOptions options), Err$void, $scope) {
+    printf("[DUMMY] Connecting to %*s:%d as AI player...\n", as$(i32, options.server_ip.len), options.server_ip.ptr, options.server_port);
+    return_ok(catch_from(game_Clt_runWithOptions(options), err, eval({
+        printf("[DUMMY] Failed to connect as AI player: %s\n", Err_codeToCStr(err));
+        return_err(err);
+    })));
+} $unscoped;
+fn_(game_Clt_runWithOptions(game_CliOptions options), Err$void, $guard) {
     let self = game_Clt_inst();
 
     // Copy IP address to client instance
-    if (0 < server_ip.len && server_ip.len < game_max_ip_addr_len) {
-        mem_copy(self->server_ip, server_ip.ptr, server_ip.len);
-        self->server_ip[server_ip.len] = '\0';
+    if (0 < options.server_ip.len && options.server_ip.len < game_max_ip_addr_len) {
+        mem_copy(self->server_ip, options.server_ip.ptr, options.server_ip.len);
+        self->server_ip[options.server_ip.len] = '\0';
     }
 
 #if bti_plat_windows
     try_(Socket_initWinsock());
     defer_(Socket_cleanupWinsock());
 #else  /* !bti_plat_windows */
-    game_Clt_enableRawMode();
+    if (!options.is_dummy_player) {
+        game_Screen_enableRawMode();
+    }
 #endif /* bti_plat_windows */
 
     self->socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -1047,7 +1068,7 @@ $static fn_(game_Clt_run(Sli_const$u8 server_ip), Err$void, $guard) {
 
     let server_addr = (struct sockaddr_in){
         .sin_family      = AF_INET,
-        .sin_port        = htons(game_port),
+        .sin_port        = htons(options.server_port),
         .sin_addr.s_addr = inet_addr(self->server_ip)
     };
     if (connect(self->socket, as$(struct sockaddr*, &server_addr), sizeOf(server_addr)) < 0) {
@@ -1055,60 +1076,113 @@ $static fn_(game_Clt_run(Sli_const$u8 server_ip), Err$void, $guard) {
         return_err(Err_Unexpected());
     }
 
-    printf("Connected to roguelike server at %s:%d!\n", self->server_ip, game_port);
+    if (options.is_dummy_ai) {
+        printf("[DUMMY] Connected to roguelike server at %s:%d!\n", self->server_ip, options.server_port);
+    } else {
+        printf("Connected to roguelike server at %s:%d!\n", self->server_ip, options.server_port);
+    }
 
     let receive_thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(game_Clt_receiveEvents, {}).base));
     defer_(Thrd_detach(receive_thread));
 
-    while (true) {
-        let input = as$(u8, engine_utils_getch());
-        if (input == 'q' || input == 'Q') {
+    if (options.is_dummy_ai) {
+        // AI dummy player loop
+        Random_init();
+        printf("[DUMMY] Starting AI behavior...\n");
+
+        while (true) {
+            if (engine_utils_kbhit()) {
+                let input = as$(u8, engine_utils_getch());
+                if (input == 'q' || input == 'Q') {
+                    let event = (game_Event){
+                        .tag                       = game_EventTag_clt_disconnect,
+                        .payload.clt_disconnect.id = self->player_id,
+                    };
+                    Socket_send(self->socket, mem_asBytes_const(&event), 0);
+                    break;
+                }
+            }
+            // Wait for random interval (50-500ms)
+            let wait_ms = 50 + Random_range_i64(0, 450);
+            time_sleep(time_Duration_fromMillis(wait_ms));
+
+            // Find my player
+            let my_player = orelse(game_Clt_findMyPlayer(), eval({
+                continue; // Keep waiting for player assignment
+            }));
+            // Perform random action
+            let action = Random_range_i64(0, 5);
+            var new_x  = my_player->x;
+            var new_y  = my_player->y;
+
+            // clang-format off
+            switch (action) {
+            case 0: { new_y--; } break; // Move up
+            case 1: { new_y++; } break; // Move down
+            case 2: { new_x--; } break; // Move left
+            case 3: { new_x++; } break; // Move right
+            case 4: $fallthrough;
+            default: continue;
+            }
+            // clang-format on
+
+            printf("[DUMMY] AI moving from (%d,%d) to (%d,%d)\n", my_player->x, my_player->y, new_x, new_y);
+
             let event = (game_Event){
-                .tag                       = game_EventTag_clt_disconnect,
-                .payload.clt_disconnect.id = self->player_id,
+                .tag             = game_EventTag_move,
+                .payload.move.id = self->player_id,
+                .payload.move.x  = new_x,
+                .payload.move.y  = new_y,
             };
             Socket_send(self->socket, mem_asBytes_const(&event), 0);
-            break;
         }
+    } else {
+        // Human player input loop
+        while (true) {
+            let input = as$(u8, engine_utils_getch());
+            if (input == 'q' || input == 'Q') {
+                let event = (game_Event){
+                    .tag                       = game_EventTag_clt_disconnect,
+                    .payload.clt_disconnect.id = self->player_id,
+                };
+                Socket_send(self->socket, mem_asBytes_const(&event), 0);
+                break;
+            }
 
-        // Find my player
-        let my_player = orelse(game_Clt_findMyPlayer(), eval({ continue; }));
-        var new_x     = my_player->x;
-        var new_y     = my_player->y;
+            // Find my player
+            let my_player = orelse(game_Clt_findMyPlayer(), eval({ continue; }));
+            var new_x     = my_player->x;
+            var new_y     = my_player->y;
 
-        // clang-format off
-        switch (input) {
-        case 'w': case 'W': { new_y--; } break;
-        case 's': case 'S': { new_y++; } break;
-        case 'a': case 'A': { new_x--; } break;
-        case 'd': case 'D': { new_x++; } break;
-        default: continue;
+            // clang-format off
+            switch (input) {
+            case 'w': case 'W': { new_y--; } break;
+            case 's': case 'S': { new_y++; } break;
+            case 'a': case 'A': { new_x--; } break;
+            case 'd': case 'D': { new_x++; } break;
+            default: continue;
+            }
+            // clang-format on
+
+            let event = (game_Event){
+                .tag             = game_EventTag_move,
+                .payload.move.id = self->player_id,
+                .payload.move.x  = new_x,
+                .payload.move.y  = new_y,
+            };
+            Socket_send(self->socket, mem_asBytes_const(&event), 0);
         }
-        // clang-format on
-
-        let event = (game_Event){
-            .tag             = game_EventTag_move,
-            .payload.move.id = self->player_id,
-            .payload.move.x  = new_x,
-            .payload.move.y  = new_y,
-        };
-        Socket_send(self->socket, mem_asBytes_const(&event), 0);
-
-        //         // Clear any remaining input buffer to prevent rapid key press issues
-        // #if bti_plat_windows
-        //         // On Windows, flush the console input buffer
-        //         let handle = GetStdHandle(STD_INPUT_HANDLE);
-        //         FlushConsoleInputBuffer(handle);
-        // #else  /* !bti_plat_windows */
-        //         // On Unix, drain any pending input
-        //         tcflush(STDIN_FILENO, TCIFLUSH);
-        // #endif /* bti_plat_windows */
     }
 
+    if (options.is_dummy_ai) {
+        printf("[DUMMY] Disconnected from server\n");
+    } else {
+        printf("Disconnected from server\n");
+    }
     return_ok({});
 } $unguarded;
 
-
+/* game Localization ========================================================*/
 
 typedef enum game_Lang {
     game_Lang_en = 0,
@@ -1116,19 +1190,17 @@ typedef enum game_Lang {
     game_Lang_count
 } game_Lang;
 static var_(game_Lang_current, game_Lang) = game_Lang_ko;
-
 $maybe_unused
-$static fn_(game_MainMenu_displayLang(void), void) {
+$static fn_(game_Lang_displayList(void), void) {
     printf("Language:\n");
     printf("1. English\n");
     printf("2. Korean\n");
 }
 
-static const Arr$$(2, Sli_const$u8) game_MainMenu_table_lang_title = { {
-    [game_Lang_en] = u8_l("ROGUELIKE MULTIPLAYER"),
-    [game_Lang_ko] = u8_l("로그라이크 멀티플레이"),
-} };
+/* game Ip Menu =============================================================*/
 
+static fn_(game_IpMenu_displayTitle(void), void);
+static fn_(game_IpMenu_displayOptions(void), void);
 typedef enum game_IpChoice {
     game_IpChoice_invalid  = -1,
     game_IpChoice_local    = 0,
@@ -1136,94 +1208,23 @@ typedef enum game_IpChoice {
     game_IpChoice_back     = 2,
     game_IpChoice_count
 } game_IpChoice;
-
-static const Arr$$(game_IpChoice_count, Arr$$(2, Sli_const$u8)) game_IpChoice_table_lang_msg = { {
-    [game_IpChoice_local]    = { {
-        [game_Lang_en] = u8_l("Local (127.0.0.1)"),
-        [game_Lang_ko] = u8_l("로컬 (127.0.0.1)"),
-    } },
-    [game_IpChoice_external] = { {
-        [game_Lang_en] = u8_l("External IP"),
-        [game_Lang_ko] = u8_l("외부 IP"),
-    } },
-    [game_IpChoice_back]     = { {
-        [game_Lang_en] = u8_l("Back"),
-        [game_Lang_ko] = u8_l("뒤로"),
-    } },
-} };
-
-static const Arr$$(2, Sli_const$u8) game_IpMenu_table_lang_title = { {
-    [game_Lang_en] = u8_l("SELECT SERVER IP"),
-    [game_Lang_ko] = u8_l("서버 IP 선택"),
-} };
-
-static fn_(game_IpMenu_displayOptions(void), void) {
-    let title = Arr_getAt(game_IpMenu_table_lang_title, game_Lang_current);
-    printf("=== %*s ===\n", as$(i32, title.len), title.ptr);
-    for_array_indexed (game_IpChoice_table_lang_msg, (choice_lang_msg), (idx)) {
-        let msg = Arr_getAt(*choice_lang_msg, game_Lang_current);
-        printf("%zu. %*s\n", idx + 1, as$(i32, msg.len), msg.ptr);
-    }
-}
-
-static fn_(game_IpMenu_getUserChoice(void), game_IpChoice) {
-    let input = as$(char, getchar());
-
-    // Clear input buffer
-    if (input != '\n') {
-        while (getchar() != '\n') { /* consume rest of line */
-        }
-    }
-
-    switch (input) {
-    case '1':
-        return game_IpChoice_local;
-    case '2':
-        return game_IpChoice_external;
-    case '3':
-        return game_IpChoice_back;
-    default:
-        return game_IpChoice_invalid;
-    }
-}
-
-static const Arr$$(2, Sli_const$u8) game_IpMenu_table_lang_prompt = { {
-    [game_Lang_en] = u8_l("Enter server IP address: "),
-    [game_Lang_ko] = u8_l("서버 IP 주소를 입력하세요: "),
-} };
-
-static fn_(game_IpMenu_getLocalIp(void), Sli_const$u8) {
-    static let local_ip = u8_l("127.0.0.1");
-    return local_ip;
-}
-
+static fn_(game_IpMenu_getUserChoice(void), game_IpChoice);
+static fn_(game_IpMenu_getLocalIp(void), Sli_const$u8);
+static fn_(game_IpMenu_displayPrompt(void), void);
 use_Err$(Sli_const$u8);
 $must_check
-$static fn_(game_IpMenu_getExternalIp(void), Err$Sli_const$u8, $scope) {
-    static Arr$$(game_max_ip_addr_len, u8) ip_buffer = {};
-
-    let prompt_msg = Arr_getAt(game_IpMenu_table_lang_prompt, game_Lang_current);
-    printf("%*s", as$(i32, prompt_msg.len), prompt_msg.ptr);
-    $ignore = fflush(stdout);
-
-    if (!fgets(as$(char*, ip_buffer.buf), game_max_ip_addr_len, stdin)) {
-        return_err(Err_Unexpected());
-    }
-
-    var ip_view = Str_viewZ(as$(u8*, ip_buffer.buf));
-    if (ip_view.len == 0) { return_err(Err_Unexpected()); }
-    return_ok(ip_view);
-} $unscoped;
-
+$static fn_(game_IpMenu_getExternalIp(void), Err$Sli_const$u8);
 $must_check
 $static fn_(game_IpMenu_run(void), Err$Opt$Sli_const$u8, $scope) {
     while (true) {
+        game_IpMenu_displayTitle();
         game_IpMenu_displayOptions();
         switch (game_IpMenu_getUserChoice()) {
         case game_IpChoice_local: {
             return_ok(some(game_IpMenu_getLocalIp()));
         } break;
         case game_IpChoice_external: {
+            game_IpMenu_displayPrompt();
             return_ok(some(catch_(game_IpMenu_getExternalIp(), eval({ continue; }))));
         } break;
         case game_IpChoice_back: {
@@ -1236,6 +1237,76 @@ $static fn_(game_IpMenu_run(void), Err$Opt$Sli_const$u8, $scope) {
     }
 } $unscoped;
 
+static const Arr$$(game_Lang_count, Sli_const$u8) game_IpMenu_table_lang_title = Arr_init({
+    [game_Lang_en] = u8_l("SELECT SERVER IP"),
+    [game_Lang_ko] = u8_l("서버 IP 선택"),
+});
+fn_(game_IpMenu_displayTitle(void), void) {
+    let title = Arr_getAt(game_IpMenu_table_lang_title, game_Lang_current);
+    printf("=== %*s ===\n", as$(i32, title.len), title.ptr);
+}
+static const Arr$$(game_Lang_count, Arr$$(game_IpChoice_count, Sli_const$u8)) game_IpChoice_table_lang_opts = Arr_init({
+    [game_Lang_en] = Arr_init({
+        [game_IpChoice_local]    = u8_l("Local (127.0.0.1)"),
+        [game_IpChoice_external] = u8_l("External IP"),
+        [game_IpChoice_back]     = u8_l("Back"),
+    }),
+    [game_Lang_ko] = Arr_init({
+        [game_IpChoice_local]    = u8_l("로컬 (127.0.0.1)"),
+        [game_IpChoice_external] = u8_l("외부 IP"),
+        [game_IpChoice_back]     = u8_l("뒤로"),
+    }),
+});
+fn_(game_IpMenu_displayOptions(void), void) {
+    let table_lang = game_IpChoice_table_lang_opts;
+    let opts       = Arr_getAt(table_lang, game_Lang_current);
+    for_array_indexed (opts, (opt), (idx)) {
+        printf("%zu. %*s\n", idx + 1, as$(i32, opt->len), opt->ptr);
+    }
+}
+fn_(game_IpMenu_getUserChoice(void), game_IpChoice) {
+    let input = as$(u8, getchar());
+    // Clear input buffer
+    if (input != '\n') {
+        while (getchar() != '\n') { /* consume rest of line */
+        }
+    }
+    switch (input) {
+        case_return('1') game_IpChoice_local;
+        case_return('2') game_IpChoice_external;
+        case_return('3') game_IpChoice_back;
+        default_return game_IpChoice_invalid;
+    }
+}
+static const Arr$$(game_Lang_count, Sli_const$u8) game_IpMenu_table_lang_prompt = Arr_init({
+    [game_Lang_en] = u8_l("Enter server IP address: "),
+    [game_Lang_ko] = u8_l("서버 IP 주소를 입력하세요: "),
+});
+fn_(game_IpMenu_displayPrompt(void), void) {
+    let prompt_msg = Arr_getAt(game_IpMenu_table_lang_prompt, game_Lang_current);
+    printf("%*s", as$(i32, prompt_msg.len), prompt_msg.ptr);
+}
+fn_(game_IpMenu_getLocalIp(void), Sli_const$u8) {
+    static let local_ip = u8_l("127.0.0.1");
+    return local_ip;
+}
+fn_(game_IpMenu_getExternalIp(void), Err$Sli_const$u8, $scope) {
+    static Arr$$(game_max_ip_addr_len, u8) ip_buffer = {};
+
+    $ignore = fflush(stdout);
+    if (!fgets(as$(char*, ip_buffer.buf), game_max_ip_addr_len, stdin)) {
+        return_err(Err_Unexpected());
+    }
+
+    var ip_view = Str_viewZ(as$(u8*, ip_buffer.buf));
+    if (ip_view.len == 0) { return_err(Err_Unexpected()); }
+    return_ok(ip_view);
+} $unscoped;
+
+/* game Main Menu ===========================================================*/
+
+static fn_(game_MainMenu_displayTitle(void), void);
+static fn_(game_MainMenu_displayOptions(void), void);
 typedef enum game_MainMenuChoice {
     game_MainMenuChoice_invalid     = -1,
     game_MainMenuChoice_host_server = 0,
@@ -1243,99 +1314,17 @@ typedef enum game_MainMenuChoice {
     game_MainMenuChoice_exit        = 2,
     game_MainMenuChoice_count
 } game_MainMenuChoice;
-
-static const Arr$$(game_MainMenuChoice_count, Arr$$(2, Sli_const$u8)) game_MainMenuChoice_table_lang_msg = { {
-    [game_MainMenuChoice_host_server] = { {
-        [game_Lang_en] = u8_l("Host Server"),
-        [game_Lang_ko] = u8_l("서버 호스트"),
-    } },
-    [game_MainMenuChoice_join_server] = { {
-        [game_Lang_en] = u8_l("Join Server"),
-        [game_Lang_ko] = u8_l("서버 참여"),
-    } },
-    [game_MainMenuChoice_exit]        = { {
-        [game_Lang_en] = u8_l("Exit"),
-        [game_Lang_ko] = u8_l("종료"),
-    } },
-} };
-
-static fn_(game_MainMenu_displayOptions(void), void) {
-    let title = Arr_getAt(game_MainMenu_table_lang_title, game_Lang_current);
-    printf("=== %*s ===\n", as$(i32, title.len), title.ptr);
-    for_array_indexed (game_MainMenuChoice_table_lang_msg, (choice_lang_msg), (idx)) {
-        let msg = Arr_getAt(*choice_lang_msg, game_Lang_current);
-        printf("%zu. %*s\n", idx + 1, as$(i32, msg.len), msg.ptr);
-    }
-}
-
-static fn_(game_MainMenu_getUserChoice(void), game_MainMenuChoice) {
-    let input = as$(char, getchar());
-
-    // Clear input buffer
-    if (input != '\n') {
-        while (getchar() != '\n') { /* consume rest of line */
-        }
-    }
-
-    switch (input) {
-    case '1':
-        return game_MainMenuChoice_host_server;
-    case '2':
-        return game_MainMenuChoice_join_server;
-    case '3':
-        return game_MainMenuChoice_exit;
-    default:
-        return game_MainMenuChoice_invalid;
-    }
-}
-
-static const Arr$$(2, Arr$$(2, Sli_const$u8)) game_MainMenu_table_lang_msg_host_server = { {
-    [game_Lang_en] = { {
-        u8_l("Starting server on port %d...\n"),
-        u8_l("Press Ctrl+C to stop the server.\n"),
-    } },
-    [game_Lang_ko] = { {
-        u8_l("포트 %d에서 서버를 시작하는 중...\n"),
-        u8_l("Ctrl+C를 눌러 서버를 종료할 수 있습니다.\n"),
-    } },
-} };
-
-static const Arr$$(2, Sli_const$u8) game_MainMenu_table_lang_msg_join_server = { {
-    [game_Lang_en] = u8_l("Connecting to server at %*s:%d...\n"),
-    [game_Lang_ko] = u8_l("서버 %*s:%d에 연결하는 중...\n"),
-} };
-
+static fn_(game_MainMenu_getUserChoice(void), game_MainMenuChoice);
 $must_check
-$static fn_(game_MainMenu_handleHostServer(void), Err$void, $scope) {
-    let table    = game_MainMenu_table_lang_msg_host_server;
-    let lang_msg = Arr_getAt(table, game_Lang_current);
-    for_array (lang_msg, (msg)) {
-        printf("%*s", as$(i32, msg->len), msg->ptr);
-    }
-    return_ok(try_(game_Svr_run()));
-} $unscoped;
-
+$static fn_(game_MainMenu_handleHostServer(void), Err$void);
 $must_check
-$static fn_(game_MainMenu_handleJoinServer(void), Err$void, $scope) {
-    while (true) {
-        let selected_ip = try_(game_IpMenu_run());
-        if_some(selected_ip, ip) {
-            let table = game_MainMenu_table_lang_msg_join_server;
-            let msg   = Arr_getAt(table, game_Lang_current);
-            printf("%*s", as$(i32, msg.len), msg.ptr);
-            return_ok(catch_(game_Clt_run(ip), eval({ continue; })));
-        }
-        return_ok({});
-    }
-} $unscoped;
-
+$static fn_(game_MainMenu_handleJoinServer(void), Err$void);
 $must_check
 $static fn_(game_MainMenu_run(void), Err$void, $scope) {
     while (true) {
+        game_MainMenu_displayTitle();
         game_MainMenu_displayOptions();
-        let choice = game_MainMenu_getUserChoice();
-
-        switch (choice) {
+        switch (game_MainMenu_getUserChoice()) {
         case game_MainMenuChoice_host_server: {
             try_(game_MainMenu_handleHostServer());
         } break;
@@ -1347,37 +1336,221 @@ $static fn_(game_MainMenu_run(void), Err$void, $scope) {
             return_ok({});
         } break;
         case game_MainMenuChoice_invalid:
-        default: {
+            $fallthrough;
+        default:
             continue;
-        }
         }
     }
     return_ok({});
 } $unscoped;
 
-static fn_(printCliCmdHelp(Sli_const$u8 cmd), void) {
-    printf("Usage: %*s --server | --client\n", as$(i32, cmd.len), cmd.ptr);
+static const Arr$$(game_Lang_count, Sli_const$u8) game_MainMenu_table_lang_title = Arr_init({
+    [game_Lang_en] = u8_l("ROGUELIKE MULTIPLAYER"),
+    [game_Lang_ko] = u8_l("로그라이크 멀티플레이"),
+});
+fn_(game_MainMenu_displayTitle(void), void) {
+    let title = Arr_getAt(game_MainMenu_table_lang_title, game_Lang_current);
+    printf("=== %*s ===\n", as$(i32, title.len), title.ptr);
 }
-static fn_(printCliUnknownFlag(Sli_const$u8 flag), void) {
-    printf("Unknown flag: %*s\n", as$(i32, flag.len), flag.ptr);
+static const Arr$$(game_Lang_count, Arr$$(game_MainMenuChoice_count, Sli_const$u8)) game_MainMenuChoice_table_lang_msgs = Arr_init({
+    [game_Lang_en] = Arr_init({
+        [game_MainMenuChoice_host_server] = u8_l("Host Server"),
+        [game_MainMenuChoice_join_server] = u8_l("Join Server"),
+        [game_MainMenuChoice_exit]        = u8_l("Exit"),
+    }),
+    [game_Lang_ko] = Arr_init({
+        [game_MainMenuChoice_host_server] = u8_l("서버 호스트"),
+        [game_MainMenuChoice_join_server] = u8_l("서버 참여"),
+        [game_MainMenuChoice_exit]        = u8_l("종료"),
+    }),
+});
+fn_(game_MainMenu_displayOptions(void), void) {
+    let table     = game_MainMenuChoice_table_lang_msgs;
+    let lang_msgs = Arr_getAt(table, game_Lang_current);
+    for_array_indexed (lang_msgs, (msg), (idx)) {
+        printf("%zu. %*s\n", idx + 1, as$(i32, msg->len), msg->ptr);
+    }
 }
+fn_(game_MainMenu_getUserChoice(void), game_MainMenuChoice) {
+    let input = as$(u8, getchar());
+    // Clear input buffer
+    if (input != '\n') {
+        while (getchar() != '\n') { /* consume rest of line */
+        }
+    }
+    switch (input) {
+        case_return('1') game_MainMenuChoice_host_server;
+        case_return('2') game_MainMenuChoice_join_server;
+        case_return('3') game_MainMenuChoice_exit;
+        default_return game_MainMenuChoice_invalid;
+    }
+}
+static const Arr$$(game_Lang_count, Arr$$(2, Sli_const$u8)) game_MainMenu_host_server_table_lang_msgs = Arr_init({
+    [game_Lang_en] = Arr_init({
+        u8_l("Starting server on port %d...\n"),
+        u8_l("Press Ctrl+C to stop the server.\n"),
+    }),
+    [game_Lang_ko] = Arr_init({
+        u8_l("포트 %d에서 서버를 시작하는 중...\n"),
+        u8_l("Ctrl+C를 눌러 서버를 종료할 수 있습니다.\n"),
+    }),
+});
+fn_(game_MainMenu_handleHostServer(void), Err$void, $scope) {
+    let table = game_MainMenu_host_server_table_lang_msgs;
+    let msgs  = Arr_getAt(table, game_Lang_current);
+    for_array (msgs, (msg)) {
+        printf("%*s", as$(i32, msg->len), msg->ptr);
+    }
+    return_ok(try_(game_Svr_run()));
+} $unscoped;
+static const Arr$$(game_Lang_count, Arr$$(1, Sli_const$u8)) game_MainMenu_join_server_table_lang_msgs = Arr_init({
+    [game_Lang_en] = Arr_init({
+        u8_l("Connecting to server at %*s:%d...\n"),
+    }),
+    [game_Lang_ko] = Arr_init({
+        u8_l("서버 %*s:%d에 연결하는 중...\n"),
+    }),
+});
+fn_(game_MainMenu_handleJoinServer(void), Err$void, $scope) {
+    while (true) {
+        let selected_ip = try_(game_IpMenu_run());
+        if_some(selected_ip, ip) {
+            let table = game_MainMenu_join_server_table_lang_msgs;
+            let msgs  = Arr_getAt(table, game_Lang_current);
+            for_array (msgs, (msg)) {
+                printf("%*s", as$(i32, msg->len), msg->ptr);
+            }
+            return_ok(catch_(game_Clt_runPlayer(ip), eval({ continue; })));
+        }
+        return_ok({});
+    }
+} $unscoped;
+
+/* game exec ================================================================*/
+
+static fn_(game_exec_printCliCmdHelp(Sli_const$u8 cmd), void);
+static fn_(game_exec_parseSvrAddr(Sli_const$u8 addr_str), game_CliOptions);
+static fn_(game_exec_printCliUnknownFlag(Sli_const$u8 flag), void);
 fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
     // Handle command line arguments first
     if (1 < args.len) {
-        for_slice (args, (arg)) {
+        for_slice_indexed (args, (arg), (idx)) {
+            if (idx == 0) { continue; } // Skip program name
+
             let flag_begin = orelse(Str_startsWith(*arg, u8_l("--")), eval({ continue; }));
             let flag       = Str_slice(*arg, flag_begin, arg->len);
+
             if (Str_eqlNoCase(flag, u8_l("server"))) { return_ok(try_(game_Svr_run())); }
-            if (Str_eqlNoCase(flag, u8_l("client"))) { return_ok(try_(game_Clt_run(u8_l("127.0.0.1")))); }
+            if (Str_eqlNoCase(flag, u8_l("client"))) {
+                // Check if next argument is an IP address
+                let next_idx = idx + 1;
+                var options  = (game_CliOptions){
+                     .server_ip   = u8_l("127.0.0.1"),
+                     .server_port = game_port,
+                     .is_dummy_ai = false
+                };
+
+                if (next_idx < args.len) {
+                    let next_arg = Sli_getAt(args, next_idx);
+                    // If next argument doesn't start with --, treat it as IP address
+                    if_none(Str_startsWith(next_arg, u8_l("--"))) {
+                        options = game_exec_parseSvrAddr(next_arg);
+                    }
+                }
+                return_ok(try_(game_Clt_runWithOptions(options)));
+            }
+            if (Str_eqlNoCase(flag, u8_l("dummy-ai"))) {
+                // Check if next argument is an IP address
+                let next_idx = idx + 1;
+                var options  = (game_CliOptions){
+                     .server_ip   = u8_l("127.0.0.1"),
+                     .server_port = game_port,
+                     .is_dummy_ai = true
+                };
+
+                if (next_idx < args.len) {
+                    let next_arg = Sli_getAt(args, next_idx);
+                    // If next argument doesn't start with --, treat it as IP address
+                    if_none(Str_startsWith(next_arg, u8_l("--"))) {
+                        options             = game_exec_parseSvrAddr(next_arg);
+                        options.is_dummy_ai = true; // Ensure dummy flag is set
+                    }
+                }
+                return_ok(try_(game_Clt_runDummyAI(options)));
+            }
             if (Str_eqlNoCase(flag, u8_l("help"))) {
-                printCliCmdHelp(Sli_getAt(args, 0));
+                game_exec_printCliCmdHelp(Sli_getAt(args, 0));
                 return_ok({});
             }
-            printCliUnknownFlag(flag);
-            printCliCmdHelp(Sli_getAt(args, 0));
+            game_exec_printCliUnknownFlag(flag);
+            game_exec_printCliCmdHelp(Sli_getAt(args, 0));
             return_err(Err_Unexpected());
         }
     }
+
     // If no command line arguments, show interactive main menu
     return_ok(try_(game_MainMenu_run()));
 } $unscoped;
+
+fn_(game_exec_printCliCmdHelp(Sli_const$u8 cmd), void) {
+    printf("Usage: %*s [OPTIONS]\n", as$(i32, cmd.len), cmd.ptr);
+    printf("Options:\n");
+    printf("  --help                      Show this help message\n");
+    printf("  --server                    Start the game server\n");
+    printf("  --client [IP[:PORT]]        Connect to server (default: 127.0.0.1:8080)\n");
+    printf("  --dummy-ai [IP[:PORT]]  Connect as AI dummy player for debugging\n");
+    printf("\nExamples:\n");
+    printf("  %*s --server\n", as$(i32, cmd.len), cmd.ptr);
+    printf("  %*s --client\n", as$(i32, cmd.len), cmd.ptr);
+    printf("  %*s --client 192.168.1.100\n", as$(i32, cmd.len), cmd.ptr);
+    printf("  %*s --client 192.168.1.100:9090\n", as$(i32, cmd.len), cmd.ptr);
+    printf("  %*s --dummy-ai\n", as$(i32, cmd.len), cmd.ptr);
+}
+fn_(game_exec_parseSvrAddr(Sli_const$u8 addr_str), game_CliOptions) {
+    var options = (game_CliOptions){
+        .server_ip   = u8_l("127.0.0.1"),
+        .server_port = game_port,
+        .is_dummy_ai = false
+    };
+
+    if (addr_str.len == 0) {
+        return options; // Use defaults
+    }
+
+    // Look for port separator ':'
+    var colon_pos = -1;
+    for_slice_indexed (addr_str, (ch), (idx)) {
+        if (*ch == ':') {
+            colon_pos = as$(i32, idx);
+            break;
+        }
+    }
+
+    if (colon_pos >= 0) {
+        // Split IP and port
+        options.server_ip = Str_slice(addr_str, 0, colon_pos);
+        let port_str      = Str_slice(addr_str, colon_pos + 1, addr_str.len);
+
+        // Parse port
+        var port_val = 0;
+        for_slice (port_str, (ch)) {
+            if (*ch < '0' || *ch > '9') {
+                // Invalid port, use default
+                options.server_port = game_port;
+                break;
+            }
+            port_val = port_val * 10 + (*ch - '0');
+        }
+        if (port_val > 0 && port_val <= 65535) {
+            options.server_port = port_val;
+        }
+    } else {
+        // Just IP, no port
+        options.server_ip = addr_str;
+    }
+
+    return options;
+}
+fn_(game_exec_printCliUnknownFlag(Sli_const$u8 flag), void) {
+    printf("Unknown flag: %*s\n", as$(i32, flag.len), flag.ptr);
+}
