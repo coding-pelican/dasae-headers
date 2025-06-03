@@ -52,23 +52,23 @@ typedef struct Arr$N$T {
 
 /* Type Alias and Anonymous Types */
 /// Create an array type with N elements of type T
-#define Arr$(N, T)                        ...
+#define Arr$(N, T)                         ...
 /// Create an anonymous array type with N elements of type T
-#define Arr$$(N, T)                       ...
+#define Arr$$(N, T)                        ...
 /// Convert anonymous array to specific type
-#define Arr_anonCast$(T_Arr, var_anon...) ...
+#define Arr_anonCast$(_Arr$T, var_anon...) ...
 
 /* Initialization */
 /// Initialize array with zeros
-#define Arr_zero()                    ...
+#define Arr_zero()                     ...
 /// Initialize specific array type with zeros
-#define Arr_zero$(T_Arr)              ...
+#define Arr_zero$(_Arr$T)              ...
 /// Initialize array with specified values
-#define Arr_init(_Initial...)         ...
+#define Arr_init(_Initial...)          ...
 /// Initialize specific array type with values
-#define Arr_init$(T_Arr, _Initial...) ...
+#define Arr_init$(_Arr$T, _Initial...) ...
 /// Initialize array inferred size from initial values
-#define Arr_from$(T, _Initial...)     ...
+#define Arr_from$(T, _Initial...)      ...
 
 /* Operations */
 /// `arr.len` | Get number of elements in array
@@ -82,9 +82,9 @@ typedef struct Arr$N$T {
 
 /* Concatenation */
 /// Concatenate two arrays
-#define Arr_cat(var_self, var_other...)         ...
+#define Arr_cat(var_self, var_other...)          ...
 /// Concatenate two arrays with specific target type
-#define Arr_cat$(T_Arr, var_self, var_other...) ...
+#define Arr_cat$(_Arr$T, var_self, var_other...) ...
 
 /* Range-based Slice Operations */
 /// `arr[begin..end]` | Get slice from begin to end
@@ -219,17 +219,17 @@ extern "C" {
      *     typedef Arr$$(3, i32) MyArrType;  // Anonymous [3]i32 type \
      */ \
     comp_type_anon__Arr$$(N, T)
-#define Arr_anonCast$(T_Arr, var_anon...) \
+#define Arr_anonCast$(_Arr$T, var_anon...) \
     /** \
      * @brief Casts an anonymous array to a specific array type \
-     * @param T_Arr Target array type \
+     * @param _Arr$T Target array type \
      * @param var_anon Anonymous array variable \
      * @return Cast array of specified type \
      * @details Performs type safety checks and converts the anonymous array to the specified type \
      * @example \
      *     Arr$3$i32 typed = Arr_anonCast$(Arr$3$i32, anon); \
      */ \
-    comp_op__Arr_anonCast$(pp_uniqTok(anon), T_Arr, var_anon)
+    comp_op__Arr_anonCast$(pp_uniqTok(anon), _Arr$T, var_anon)
 
 #define Arr_zero() \
     /** \
@@ -239,15 +239,15 @@ extern "C" {
      *     Arr$(3, i32) arr = Arr_zero();  // {0, 0, 0} \
      */ \
     comp_op__Arr_zero()
-#define Arr_zero$(T_Arr) \
+#define Arr_zero$(_Arr$T) \
     /** \
      * @brief Initializes specified array type with zeros \
-     * @param T_Arr Array type \
+     * @param _Arr$T Array type \
      * @return Zero-initialized array \
      * @example \
      *     Arr$(3, i32) arr = Arr_zero$(Arr$(3, i32));  // {0, 0, 0} \
      */ \
-    comp_op__Arr_zero$(T_Arr)
+    comp_op__Arr_zero$(_Arr$T)
 
 #define Arr_init(_Initial...) \
     /** \
@@ -258,17 +258,16 @@ extern "C" {
      *     Arr$(3, i32) arr = Arr_init({1, 2, 3}); \
      */ \
     comp_op__Arr_init(_Initial)
-#define Arr_init$(T_Arr, _Initial...) \
+#define Arr_init$(_Arr$T, _Initial...) \
     /** \
      * @brief Initializes specified array type with values \
-     * @param T_Arr Array type \
+     * @param _Arr$T Array type \
      * @param _Initial Initial values \
      * @return Initialized array \
      * @example \
      *     Arr$(3, i32) arr = Arr_init$(Arr$(3, i32), {1, 2, 3}); \
      */ \
-    comp_op__Arr_init$(T_Arr, _Initial)
-
+    comp_op__Arr_init$(_Arr$T, _Initial)
 #define Arr_from$(T, _Initial...) \
     /** \
      * @brief Initializes array inferred size from initial values \
@@ -347,10 +346,10 @@ extern "C" {
      *     // arr3 = {1, 2, 3, 4, 5, 6} \
      */ \
     comp_op__Arr_cat(pp_uniqTok(temp), var_self, var_other)
-#define Arr_cat$(T_Arr, var_self, var_other...) \
+#define Arr_cat$(_Arr$T, var_self, var_other...) \
     /** \
      * @brief Concatenates two arrays \
-     * @param T_Arr Target array type \
+     * @param _Arr$T Target array type \
      * @param var_self First array variable \
      * @param var_other Second array variable \
      * @return Concatenated array \
@@ -360,7 +359,7 @@ extern "C" {
      *     Arr$(6, i32) arr3 = Arr_cat$(Arr$(6, i32), arr1, arr2); \
      *     // arr3 = {1, 2, 3, 4, 5, 6} \
      */ \
-    comp_op__Arr_cat$(pp_uniqTok(temp), T_Arr, var_self, var_other)
+    comp_op__Arr_cat$(pp_uniqTok(temp), _Arr$T, var_self, var_other)
 
 #define Arr_slice(var_self, range_index_begin_end...) \
     /** \
@@ -457,20 +456,21 @@ extern "C" {
     struct { \
         T buf[N]; \
     }
-#define comp_op__Arr_anonCast$(__anon, T_Arr, var_anon...) eval({ \
+#define comp_op__Arr_anonCast$(__anon, _Arr$T, var_anon...) eval({ \
     let_(__anon, TypeOf(&var_anon)) = &var_anon; \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_Arr)); \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_Arr)); \
-    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(T_Arr, buf))); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(T_Arr, buf)); \
-    eval_return rawderef(as$(rawptr$(T_Arr), __anon)); \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(_Arr$T)); \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(_Arr$T)); \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(_Arr$T, buf))); \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(_Arr$T, buf)); \
+    eval_return rawderef(as$(rawptr$(_Arr$T), __anon)); \
 })
 
 #define comp_op__Arr_zero()                      { .buf = { 0 } }
-#define comp_op__Arr_zero$(T_Arr)                ((T_Arr)Arr_zero())
+#define comp_op__Arr_zero$(_Arr$T)               ((_Arr$T)Arr_zero())
 #define comp_op__Arr_init(_Initial...)           { .buf = _Initial }
-#define comp_op__Arr_init$(T_Arr, _Initial...)   ((T_Arr)Arr_init(_Initial))
-#define comp_op__Arr_from$(T, _Initial...)       Arr_init$(Arr$$(sizeOf((T[])_Initial) / sizeOf$(T), T), _Initial)
+#define comp_op__Arr_init$(_Arr$T, _Initial...)  ((_Arr$T)Arr_init(_Initial))
+// #define comp_op__Arr_from$(_T, _Initial...)      Arr_init$(Arr$$(eval({ eval_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial)
+#define comp_op__Arr_from$(_T, _Initial...)      Arr_init$(Arr$$(pp_countArgs(_Initial), _T), _Initial)
 #define comp_op__Arr_asg(var_self, var_other...) eval({ \
     let __self  = &var_self; \
     let __other = &var_other; \
@@ -537,10 +537,10 @@ extern "C" {
     } __temp = { .lhs = var_self, .rhs = var_other }; \
     eval_return __temp.concatted; \
 })
-#define comp_op__Arr_cat$(__temp, T_Arr, var_self, var_other...) eval({ \
+#define comp_op__Arr_cat$(__temp, _Arr$T, var_self, var_other...) eval({ \
     claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
     union { \
-        T_Arr concatted; \
+        _Arr$T concatted; \
         struct { \
             TypeOf(var_self) lhs; \
             TypeOf(var_other) rhs; \
