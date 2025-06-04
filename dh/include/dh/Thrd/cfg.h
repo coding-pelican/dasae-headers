@@ -5,8 +5,8 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2025-05-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-06-04 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/Thrd
  * @prefix  Thrd
  *
@@ -34,6 +34,7 @@ extern "C" {
 
 #if Thrd_use_pthread
 #include <pthread.h>
+#include <sched.h>
 #include <semaphore.h>
 #else  /* !Thrd_use_pthread */
 /* TODO: Implement other fallback support */
