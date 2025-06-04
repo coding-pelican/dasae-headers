@@ -6,8 +6,8 @@ CompileFlags:
     - -Wall
     - -Wextra
     - -Werror
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\deps\stb\image\src
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\deps\stb\image\include
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\lib\stb\image\src
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\lib\stb\image\include
 InlayHints:
   Enabled: true
   TypeNameLimit: 24
