@@ -141,6 +141,9 @@ extern "C" {
 
 #define $like_ptr comp_attr__$like_ptr
 
+#define pragma_guard_(_push, _ctx, _pop, _code...) \
+    _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
+
 /*========== Macros and Implementations =====================================*/
 
 #define comp_attr__$inline        BUILTIN_COMP_INLINE
