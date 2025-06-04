@@ -27,6 +27,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
+#define pp_Tuple_len                     pp_countArgs
 #define pp_Tuple_wrap(/* _Elems */...)   (__VA_ARGS__)
 #define pp_Tuple_unwrap(/* _Elems */...) __VA_ARGS__
 #define pp_Tuple_wrapOpen()  (
