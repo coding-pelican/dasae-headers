@@ -3,10 +3,10 @@
 #include "dh/time/Duration.h"
 
 typedef struct Thrd_FnCtx {
-    u8 data[];
+    u8 data[0];
 } Thrd_FnCtx;
 typedef struct Thrd_FnRet {
-    u8 data[];
+    u8 data[0];
 } Thrd_FnRet;
 
 typedef union FnCtx$demoThrd {

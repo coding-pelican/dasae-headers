@@ -45,20 +45,20 @@ typedef Thrd_HandleImpl Thrd_Handle;
 typedef struct Thrd_FnCtx Thrd_FnCtx;
 // Thread function arguments type erasure
 typedef struct Thrd_FnArgs {
-    u8 data[];
+    u8 data[0];
 } Thrd_FnArgs;
 // Thread function return type erasure
 typedef struct Thrd_FnRet {
-    u8 data[];
+    u8 data[0];
 } Thrd_FnRet;
 // Thread function type
 typedef fn_((*Thrd_WorkFn)(Thrd_FnCtx* thrd_ctx), Thrd_FnCtx*);
 struct Thrd_FnCtx {
     Thrd_WorkFn fn;
     union {
-        Thrd_FnArgs args[];
-        Thrd_FnRet  ret[];
-        u8          data[];
+        Thrd_FnArgs args[0];
+        Thrd_FnRet  ret[0];
+        u8          data[0];
     };
 };
 #define Thrd_FnCtx_from(_fnName, _Args...)    comp_inline__Thrd_FnCtx_from(_fnName, _Args)

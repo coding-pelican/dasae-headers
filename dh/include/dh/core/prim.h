@@ -61,80 +61,80 @@ extern "C" {
 #define prim_sign(val_x)                 FUNC__prim_sign(val_x)
 
 typedef struct Void {
-    u8 unused_[0];
+    u8 bytes_zero[0];
 } Void;
 
 /*========== Macros Implementation ==========================================*/
 
 #define FUNC__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                    \
-    let __rhs = (val_rhs);                                    \
-    eval_return(                                              \
-        ((__lhs) < (__rhs))   ? -1 /* cmp_Ord_lt */           \
-        : ((__lhs) > (__rhs)) ? 1  /* cmp_Ord_gt */           \
-                              : 0  /* cmp_Ord_eq */           \
-    );                                                        \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return( \
+        ((__lhs) < (__rhs))   ? -1 /* cmp_Ord_lt */ \
+        : ((__lhs) > (__rhs)) ? 1  /* cmp_Ord_gt */ \
+                              : 0  /* cmp_Ord_eq */ \
+    ); \
 })
 #define FUNC__prim_eq(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs == (__rhs);                            \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs == (__rhs); \
 })
 #define FUNC__prim_ne(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs != (__rhs);                            \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs != (__rhs); \
 })
 #define FUNC__prim_lt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs < (__rhs);                             \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs < (__rhs); \
 })
 #define FUNC__prim_gt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs > (__rhs);                             \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs > (__rhs); \
 })
 #define FUNC__prim_le(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs <= (__rhs);                            \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs <= (__rhs); \
 })
 #define FUNC__prim_ge(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                   \
-    let __rhs = (val_rhs);                                   \
-    eval_return __lhs >= (__rhs);                            \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs >= (__rhs); \
 })
 
 #define FUNC__prim_min(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                    \
-    let __rhs = (val_rhs);                                    \
-    eval_return __lhs < (__rhs) ? (__lhs) : (__rhs);          \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs < (__rhs) ? (__lhs) : (__rhs); \
 })
 #define FUNC__prim_max(__lhs, __rhs, val_lhs, val_rhs) eval({ \
-    let __lhs = (val_lhs);                                    \
-    let __rhs = (val_rhs);                                    \
-    eval_return __lhs > (__rhs) ? (__lhs) : (__rhs);          \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
+    eval_return __lhs > (__rhs) ? (__lhs) : (__rhs); \
 })
 #define FUNC__prim_clamp(val_x, val_min, val_max) \
     prim_min(prim_max(val_x, val_min), val_max)
 
 #define FUNC__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) eval({ \
-    let __lhs = &(val_lhs);                                           \
-    let __rhs = &(val_rhs);                                           \
-    let __tmp = *(__lhs);                                             \
-    *(__lhs)  = *(__rhs);                                             \
-    *(__rhs)  = __tmp;                                                \
-    eval_return{};                                                    \
+    let __lhs = &(val_lhs); \
+    let __rhs = &(val_rhs); \
+    let __tmp = *(__lhs); \
+    *(__lhs)  = *(__rhs); \
+    *(__rhs)  = __tmp; \
+    eval_return{}; \
 })
 
-#define FUNC__prim_divisible(val_lhs, val_rhs) eval({     \
-    let __lhs = (val_lhs);                                \
-    let __rhs = (val_rhs);                                \
+#define FUNC__prim_divisible(val_lhs, val_rhs) eval({ \
+    let __lhs = (val_lhs); \
+    let __rhs = (val_rhs); \
     eval_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
 })
-#define FUNC__prim_sign(val_x) eval({                                              \
-    let __scalar = (val_x);                                                        \
+#define FUNC__prim_sign(val_x) eval({ \
+    let __scalar = (val_x); \
     eval_return as$(TypeOf(__scalar), __scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0)); \
 })
 
