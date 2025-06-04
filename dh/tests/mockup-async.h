@@ -15,7 +15,7 @@ typedef enum Co_State {
     Co_State_ready,
 } Co_State;
 typedef struct Co_Ret {
-    u8 data[];
+    u8 data[0];
 } Co_Ret;
 typedef struct Co_Ctx {
     Co_FnWork* fn;
