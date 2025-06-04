@@ -465,12 +465,20 @@ extern "C" {
     eval_return rawderef(as$(rawptr$(_Arr$T), __anon)); \
 })
 
-#define comp_op__Arr_zero()                      { .buf = { 0 } }
-#define comp_op__Arr_zero$(_Arr$T)               ((_Arr$T)Arr_zero())
-#define comp_op__Arr_init(_Initial...)           { .buf = _Initial }
-#define comp_op__Arr_init$(_Arr$T, _Initial...)  ((_Arr$T)Arr_init(_Initial))
-// #define comp_op__Arr_from$(_T, _Initial...)      Arr_init$(Arr$$(eval({ eval_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial)
-#define comp_op__Arr_from$(_T, _Initial...)      Arr_init$(Arr$$(pp_countArgs(_Initial), _T), _Initial)
+#define comp_op__Arr_zero()                     { .buf = { 0 } }
+#define comp_op__Arr_zero$(_Arr$T)              ((_Arr$T)Arr_zero())
+#define comp_op__Arr_init(_Initial...)          { .buf = _Initial }
+#define comp_op__Arr_init$(_Arr$T, _Initial...) ((_Arr$T)Arr_init(_Initial))
+#if comp_Arr_allows_gnu_folding_constant_for_inferred_len
+#define comp_op__Arr_from$(_T, _Initial...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wgnu-folding-constant\"", \
+    "clang diagnostic pop", \
+    Arr_init$(Arr$$(eval({ eval_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial) \
+)
+#else /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
+#define comp_op__Arr_from$(_T, _Initial...) Arr_init$(Arr$$(pp_countArgs(_Initial), _T), _Initial)
+#endif /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
 #define comp_op__Arr_asg(var_self, var_other...) eval({ \
     let __self  = &var_self; \
     let __other = &var_other; \
