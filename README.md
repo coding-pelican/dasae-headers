@@ -24,6 +24,9 @@ dasae-headers: A modern extension language for safer and more productive C progr
  -->
 
 <div align="center">
+  <a href="https://github.com/coding-pelican/dasae-headers">
+    <img src="./.github/logo-dasae_headers.svg" alt="dasae-headers Logo" width="150"/>
+  </a>
   <h1>dasae-headers: Modern and Safe C programming</h1>
   <p><strong>A modern extension language for safer and more productive C programming</strong></p>
 
