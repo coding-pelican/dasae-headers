@@ -219,6 +219,14 @@ extern "C" {
      *     typedef Arr$$(3, i32) MyArrType;  // Anonymous [3]i32 type \
      */ \
     comp_type_anon__Arr$$(N, T)
+#define ArrZ$$(N, T) \
+    /** \
+     * @brief Creates an anonymous array type with N elements of type T and zero sentinel \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @return Anonymous array type alias \
+     */ \
+    comp_type_anon__ArrZ$$(N, T)
 #define Arr_anonCast$(_Arr$T, var_anon...) \
     /** \
      * @brief Casts an anonymous array to a specific array type \
@@ -456,6 +464,11 @@ extern "C" {
     struct { \
         T buf[N]; \
     }
+#define comp_type_anon__ArrZ$$(N, T) \
+    struct { \
+        T buf[(N) + 1]; \
+    }
+
 #define comp_op__Arr_anonCast$(__anon, _Arr$T, var_anon...) eval({ \
     let_(__anon, TypeOf(&var_anon)) = &var_anon; \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(_Arr$T)); \
