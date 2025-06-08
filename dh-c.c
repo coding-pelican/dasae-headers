@@ -36,7 +36,7 @@
      * Version number \
      * major.minor.patch-prerelease.minor.patch+build.number \
      */ \
-    "0.1.0-alpha.0.3.2"
+    "0.1.0-alpha.0.4.0"
 
 // Debug level enum
 typedef enum {
@@ -208,7 +208,8 @@ const int NUM_BUILD_PRESETS = sizeof(build_presets) / sizeof(BuildConfigPreset);
 // Cross-platform wrapper for getting absolute path
 bool get_absolute_path(const char* path, char* resolved_path, size_t resolved_path_size) {
 #ifdef _WIN32
-    return _fullpath(resolved_path, path, resolved_path_size) != NULL;
+    DWORD result = GetFullPathNameA(path, (DWORD)resolved_path_size, resolved_path, NULL);
+    return result > 0 && result < resolved_path_size;
 #else
     return realpath(path, resolved_path) != NULL;
 #endif
@@ -277,6 +278,7 @@ void find_source_files(const char* dir_path, char*** sources, int* source_count)
 
 // Detect if clang is available
 bool detect_clang() {
+    // NOLINTNEXTLINE(cert-env33-c)
     FILE* pipe = popen("clang --version", "r");
     if (!pipe) {
         return false;
@@ -2515,54 +2517,66 @@ void apply_build_preset(BuildConfig* config, const char* preset_name) {
 void init_build_presets() {
     // dev preset extra flags (warnings are NOT errors)
     BuildConfigPreset* dev    = &build_presets[0];
-    dev->extra_flags.count    = 1;
+    dev->extra_flags.count    = 2;
     dev->extra_flags.flags    = malloc(dev->extra_flags.count * sizeof(char*));
     dev->extra_flags.flags[0] = strdup("-Wall");
+    dev->extra_flags.flags[1] = strdup("-Wextra");
 
     // test preset extra flags (warnings are NOT errors)
     BuildConfigPreset* test    = &build_presets[1];
-    test->extra_flags.count    = 2;
+    test->extra_flags.count    = 3;
     test->extra_flags.flags    = malloc(test->extra_flags.count * sizeof(char*));
     test->extra_flags.flags[0] = strdup("-Wall");
-    test->extra_flags.flags[1] = strdup("-fno-omit-frame-pointer");
+    test->extra_flags.flags[1] = strdup("-Wextra");
+    test->extra_flags.flags[2] = strdup("-fno-omit-frame-pointer");
 
-    // profile preset extra flags (warnings ARE errors)
+    // profile preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* profile    = &build_presets[2];
-    profile->extra_flags.count    = 3;
+    profile->extra_flags.count    = 5;
     profile->extra_flags.flags    = malloc(profile->extra_flags.count * sizeof(char*));
     profile->extra_flags.flags[0] = strdup("-Wall");
-    profile->extra_flags.flags[1] = strdup("-Werror");
-    profile->extra_flags.flags[2] = strdup("-fno-omit-frame-pointer");
+    profile->extra_flags.flags[1] = strdup("-Wextra");
+    profile->extra_flags.flags[2] = strdup("-Werror");
+    profile->extra_flags.flags[4] = strdup("-flto");
+    profile->extra_flags.flags[3] = strdup("-fno-omit-frame-pointer");
 
-    // release preset extra flags (warnings ARE errors)
+    // release preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* release    = &build_presets[3];
-    release->extra_flags.count    = 2;
+    release->extra_flags.count    = 4;
     release->extra_flags.flags    = malloc(release->extra_flags.count * sizeof(char*));
     release->extra_flags.flags[0] = strdup("-Wall");
-    release->extra_flags.flags[1] = strdup("-Werror");
+    release->extra_flags.flags[1] = strdup("-Wextra");
+    release->extra_flags.flags[2] = strdup("-Werror");
+    release->extra_flags.flags[3] = strdup("-flto");
 
-    // performance preset extra flags (warnings ARE errors)
+    // performance preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* performance    = &build_presets[4];
-    performance->extra_flags.count    = 2;
+    performance->extra_flags.count    = 4;
     performance->extra_flags.flags    = malloc(performance->extra_flags.count * sizeof(char*));
     performance->extra_flags.flags[0] = strdup("-Wall");
-    performance->extra_flags.flags[1] = strdup("-Werror");
+    performance->extra_flags.flags[1] = strdup("-Wextra");
+    performance->extra_flags.flags[2] = strdup("-Werror");
+    performance->extra_flags.flags[3] = strdup("-flto");
 
-    // embedded preset extra flags (warnings ARE errors)
+    // embedded preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* embedded    = &build_presets[5];
-    embedded->extra_flags.count    = 2;
+    embedded->extra_flags.count    = 4;
     embedded->extra_flags.flags    = malloc(embedded->extra_flags.count * sizeof(char*));
     embedded->extra_flags.flags[0] = strdup("-Wall");
-    embedded->extra_flags.flags[1] = strdup("-Werror");
+    embedded->extra_flags.flags[1] = strdup("-Wextra");
+    embedded->extra_flags.flags[2] = strdup("-Werror");
+    embedded->extra_flags.flags[3] = strdup("-flto");
 
-    // micro preset extra flags (warnings ARE errors)
+    // micro preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* micro    = &build_presets[6];
-    micro->extra_flags.count    = 4;
+    micro->extra_flags.count    = 6;
     micro->extra_flags.flags    = malloc(micro->extra_flags.count * sizeof(char*));
     micro->extra_flags.flags[0] = strdup("-Wall");
-    micro->extra_flags.flags[1] = strdup("-Werror");
-    micro->extra_flags.flags[2] = strdup("-ffunction-sections");
-    micro->extra_flags.flags[3] = strdup("-fdata-sections");
+    micro->extra_flags.flags[1] = strdup("-Wextra");
+    micro->extra_flags.flags[2] = strdup("-Werror");
+    micro->extra_flags.flags[3] = strdup("-flto");
+    micro->extra_flags.flags[4] = strdup("-fdata-sections");
+    micro->extra_flags.flags[5] = strdup("-ffunction-sections");
 }
 
 // Free resources used by build presets
