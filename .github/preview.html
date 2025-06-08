@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>dasae-headers - Modern and Safe C Programming</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+                background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+                width: 1280px;
+                height: 640px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                max-width: 1200px;
+                padding: 0 40px;
+                z-index: 2;
+            }
+
+            .content {
+                flex: 1;
+                color: white;
+                max-width: 550px;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-right: 18px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .logo-svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .project-name {
+                font-size: 42px;
+                font-weight: 700;
+                margin: 0;
+                background: linear-gradient(135deg, #60d1c3 0%, #ffffff 50%, #60d1c3 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                line-height: 1.1;
+            }
+
+            .tagline {
+                font-size: 28px;
+                font-weight: 600;
+                color: #f0f6fc;
+                margin: 12px 0 20px 0;
+                line-height: 1.2;
+            }
+
+            .description {
+                font-size: 20px;
+                color: #8b949e;
+                line-height: 1.4;
+                margin-bottom: 25px;
+                font-weight: 400;
+            }
+
+            .features {
+                display: flex;
+                gap: 25px;
+                flex-wrap: wrap;
+            }
+
+            .feature {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 18px;
+                color: #60d1c3;
+                font-weight: 600;
+            }
+
+            .feature::before {
+                content: "✓";
+                background: #60d1c3;
+                color: #0d1117;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+
+            .code-section {
+                flex: 1;
+                max-width: 580px;
+                background: rgba(22, 27, 34, 0.9);
+                border: 1px solid #30363d;
+                border-radius: 16px;
+                padding: 28px;
+                font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+                position: relative;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            }
+
+            .code-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 18px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #30363d;
+            }
+
+            .code-dot {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+            }
+
+            .dot-red {
+                background: #ff5f56;
+            }
+            .dot-yellow {
+                background: #ffbd2e;
+            }
+            .dot-green {
+                background: #27ca3f;
+            }
+
+            .code-title {
+                color: #f0f6fc;
+                font-size: 16px;
+                margin-left: 8px;
+                font-weight: 500;
+            }
+
+            .code {
+                color: #e6edf3;
+                font-size: 15px;
+                line-height: 1.5;
+                font-weight: 400;
+            }
+
+            .keyword {
+                color: #ff7b72;
+                font-weight: 500;
+            }
+            .string {
+                color: #a5d6ff;
+            }
+            .comment {
+                color: #8b949e;
+                font-style: italic;
+            }
+            .function {
+                color: #d2a8ff;
+                font-weight: 500;
+            }
+            .type {
+                color: #60d1c3;
+                font-weight: 500;
+            }
+
+            .background-pattern {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.08;
+                background-image: radial-gradient(circle at 25% 25%, #60d1c3 2px, transparent 2px),
+                    radial-gradient(circle at 75% 75%, #117f75 2px, transparent 2px);
+                background-size: 60px 60px;
+                background-position: 0 0, 30px 30px;
+            }
+
+            .glow {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 900px;
+                height: 500px;
+                background: radial-gradient(ellipse, rgba(96, 209, 195, 0.12) 0%, transparent 70%);
+                z-index: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="background-pattern"></div>
+        <div class="glow"></div>
+
+        <div class="container">
+            <div class="content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            x="0px"
+                            y="0px"
+                            width="480px"
+                            height="480px"
+                            viewBox="0 0 480 480"
+                            style="fill: #000000"
+                            xmlns:bx="https://boxy-svg.com">
+                            <g id="surface1" transform="matrix(9.999978, 0, 0, 9.999978, 0.000109, -0.0094)">
+                                <path
+                                    style="fill-rule: evenodd; fill: rgb(17, 127, 117)"
+                                    d="M 22.902 3.285 C 23.582 2.906 24.418 2.906 25.098 3.285 C 28.449 5.168 38.547 10.836 41.902 12.719 C 42.582 13.102 43 13.805 43 14.566 C 43 18.332 43 29.668 43 33.434 C 43 34.195 42.582 34.898 41.902 35.281 C 38.547 37.164 28.453 42.832 25.098 44.715 C 24.418 45.094 23.582 45.094 22.902 44.715 C 19.707 42.922 10.401 37.697 6.623 35.576 C 6.433 35.47 6.258 35.371 6.098 35.281 C 5.418 34.898 5 34.195 5 33.434 C 5 29.668 5 18.332 5 14.566 C 5 13.805 5.418 13.102 6.098 12.719 C 9.449 10.836 19.551 5.168 22.902 3.285 Z" />
+                                <path
+                                    style="fill-rule: evenodd; fill: rgb(96, 209, 195)"
+                                    d="M 5.304688 34.402344 C 5.039063 34.046875 5 33.710938 5 33.253906 C 5 29.511719 5 18.242188 5 14.496094 C 5 13.738281 5.417969 13.039063 6.09375 12.660156 C 9.4375 10.789063 19.5 5.152344 22.84375 3.28125 C 23.519531 2.902344 24.4375 2.910156 25.113281 3.289063 C 28.457031 5.160156 38.484375 10.746094 41.828125 12.617188 C 42.097656 12.769531 42.304688 12.953125 42.488281 13.195313 Z " />
+                                <path
+                                    style="fill-rule: evenodd; fill: #ffffff"
+                                    d="M 24 10 C 31.726563 10 38 16.273438 38 24 C 38 31.726563 31.726563 38 24 38 C 16.273438 38 10 31.726563 10 24 C 10 16.273438 16.273438 10 24 10 Z M 24 17 C 27.863281 17 31 20.136719 31 24 C 31 27.863281 27.863281 31 24 31 C 20.136719 31 17 27.863281 17 24 C 17 20.136719 20.136719 17 24 17 Z " />
+                                <path
+                                    style="fill-rule: evenodd; fill: rgb(21, 157, 144)"
+                                    d="M 42.484375 13.203125 C 43 13.6875 42.992188 14.414063 42.992188 14.988281 C 42.992188 18.785156 42.960938 29.578125 43 33.371094 C 43.003906 33.769531 42.871094 34.1875 42.675781 34.5 L 23.59375 24 Z " />
+                            </g>
+                            <path
+                                d="M 292.024 225.454 L 288.991 225.454 L 288.991 253.382 L 291.867 253.382 Q 294.587 253.382 296.365 252.571 Q 298.143 251.761 299.215 250.061 Q 300.288 248.361 300.732 245.694 Q 301.177 243.027 301.177 239.313 Q 301.177 235.652 300.732 233.037 Q 300.288 230.422 299.215 228.722 Q 298.143 227.023 296.391 226.238 Q 294.639 225.454 292.024 225.454 Z M 291.972 257.095 L 284.493 257.095 L 284.493 221.636 L 292.233 221.636 Q 295.947 221.636 298.509 222.63 Q 301.072 223.623 302.667 225.768 Q 304.262 227.912 304.968 231.233 Q 305.674 234.554 305.674 239.261 Q 305.674 244.177 304.942 247.577 Q 304.21 250.976 302.563 253.094 Q 300.915 255.212 298.3 256.154 Q 295.685 257.095 291.972 257.095 Z M 325.129 221.636 L 335.38 257.095 L 330.673 257.095 L 328.058 247.577 L 316.97 247.577 L 314.355 257.095 L 309.753 257.095 L 319.794 221.636 Z M 322.514 225.82 L 322.096 227.964 L 317.964 243.968 L 327.064 243.968 L 322.985 227.964 Z M 339.576 254.846 L 339.576 250.035 L 340.204 250.035 Q 342.714 251.865 344.989 252.754 Q 347.264 253.643 349.722 253.643 Q 353.174 253.643 355.057 252.257 Q 356.94 250.872 356.94 247.734 Q 356.94 245.485 355.188 243.733 Q 353.436 241.981 350.821 240.778 Q 347.944 239.47 345.957 238.346 Q 343.969 237.221 342.714 235.966 Q 341.459 234.711 340.91 233.246 Q 340.361 231.782 340.361 229.847 Q 340.361 227.546 341.224 225.872 Q 342.086 224.199 343.577 223.126 Q 345.068 222.054 347.003 221.531 Q 348.938 221.008 351.082 221.008 Q 353.279 221.008 355.658 221.427 Q 358.038 221.845 359.921 223.205 L 359.921 227.546 L 359.189 227.546 Q 355.528 224.983 351.239 224.983 Q 348.258 224.983 346.637 226.081 Q 345.015 227.18 345.015 229.69 Q 345.015 231.887 346.48 233.246 Q 347.944 234.606 350.141 235.495 Q 353.383 236.855 355.606 238.189 Q 357.829 239.522 359.215 240.935 Q 360.601 242.347 361.202 243.942 Q 361.804 245.537 361.804 247.42 Q 361.804 252.754 358.587 255.265 Q 355.371 257.775 349.565 257.775 Q 346.584 257.775 344.074 256.991 Q 341.563 256.206 339.576 254.846 Z M 381.428 221.636 L 391.679 257.095 L 386.972 257.095 L 384.357 247.577 L 373.269 247.577 L 370.654 257.095 L 366.052 257.095 L 376.094 221.636 Z M 378.813 225.82 L 378.395 227.964 L 374.263 243.968 L 383.363 243.968 L 379.284 227.964 Z M 418.26 257.095 L 398.229 257.095 L 398.229 221.636 L 417.789 221.636 L 417.789 225.454 L 402.727 225.454 L 402.727 236.123 L 416.795 236.123 L 416.795 239.993 L 402.727 239.993 L 402.727 253.277 L 418.26 253.277 Z"
+                                style="
+                                    fill: rgb(255, 255, 255);
+                                    text-transform: uppercase;
+                                    text-wrap-mode: nowrap;
+                                    stroke: rgb(255, 255, 255);
+                                " />
+                            <defs>
+                                <bx:grid x="0" y="0" width="96" height="96" />
+                            </defs>
+                        </svg>
+                    </div>
+                    <h1 class="project-name">dasae-headers</h1>
+                </div>
+
+                <div class="tagline">Modern C with Better Safety</div>
+
+                <div class="description">A modern extension language for safer and more productive C programming</div>
+
+                <div class="features">
+                    <div class="feature">Memory Safety</div>
+                    <div class="feature">Type Safety</div>
+                    <div class="feature">Error Handling</div>
+                    <div class="feature">Modern Libraries</div>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <div class="code-header">
+                    <div class="code-dot dot-red"></div>
+                    <div class="code-dot dot-yellow"></div>
+                    <div class="code-dot dot-green"></div>
+                    <div class="code-title">example.c</div>
+                </div>
+
+                <div class="code">
+                    <span class="comment">// Modern C with safety features</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/main.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/io/common.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/fs/common.h"</span><br />
+                    <br />
+                    <span class="function">fn_</span>(<span class="function">dh_main</span>(<span class="type"
+                        >Sli$Sli_const$u8</span
+                    >
+                    args), <span class="type">Err$void</span>, <span class="keyword">$scope</span>) {<br />
+                    &nbsp;&nbsp;<span class="keyword">$ignore</span> = args;<br />
+                    <br />
+                    &nbsp;&nbsp;<span class="keyword">let</span> out = <span class="function">fs_writer</span>(<span
+                        class="function"
+                        >io_getStdOut</span
+                    >());<br />
+                    &nbsp;&nbsp;<span class="keyword">let</span> msg = <span class="function">some$</span>(<span
+                        class="type"
+                        >Opt$Sli_const$u8</span
+                    >, <span class="function">u8_l</span>(<span class="string">"world"</span>));<br />
+                    &nbsp;&nbsp;<span class="function">try_</span>(<span class="function">io_Writer_print</span>(out,
+                    <span class="function">u8_l</span>(<span class="string">"Hello, {:s}!\n"</span>),
+                    <span class="function">unwrap</span>(msg)));<br />
+                    <br />
+                    &nbsp;&nbsp;<span class="keyword">return_ok</span>({});<br />
+                    } <span class="keyword">$unscoped</span>;
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

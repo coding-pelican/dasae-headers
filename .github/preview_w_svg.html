@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>dasae-headers - Modern and Safe C Programming</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+                background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+                width: 1280px;
+                height: 640px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                max-width: 1200px;
+                padding: 0 40px;
+                z-index: 2;
+            }
+
+            .content {
+                flex: 1;
+                color: white;
+                max-width: 550px;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-right: 18px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .logo-svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .project-name {
+                font-size: 42px;
+                font-weight: 700;
+                margin: 0;
+                background: linear-gradient(135deg, #60d1c3 0%, #ffffff 50%, #60d1c3 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                line-height: 1.1;
+            }
+
+            .tagline {
+                font-size: 28px;
+                font-weight: 600;
+                color: #f0f6fc;
+                margin: 12px 0 20px 0;
+                line-height: 1.2;
+            }
+
+            .description {
+                font-size: 20px;
+                color: #8b949e;
+                line-height: 1.4;
+                margin-bottom: 25px;
+                font-weight: 400;
+            }
+
+            .features {
+                display: flex;
+                gap: 25px;
+                flex-wrap: wrap;
+            }
+
+            .feature {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 18px;
+                color: #60d1c3;
+                font-weight: 600;
+            }
+
+            .feature::before {
+                content: "✓";
+                background: #60d1c3;
+                color: #0d1117;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+
+            .code-section {
+                flex: 1;
+                max-width: 580px;
+                background: rgba(22, 27, 34, 0.9);
+                border: 1px solid #30363d;
+                border-radius: 16px;
+                padding: 28px;
+                font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+                position: relative;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            }
+
+            .code-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 18px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #30363d;
+            }
+
+            .code-dot {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+            }
+
+            .dot-red {
+                background: #ff5f56;
+            }
+            .dot-yellow {
+                background: #ffbd2e;
+            }
+            .dot-green {
+                background: #27ca3f;
+            }
+
+            .code-title {
+                color: #f0f6fc;
+                font-size: 16px;
+                margin-left: 8px;
+                font-weight: 500;
+            }
+
+            .code {
+                color: #e6edf3;
+                font-size: 15px;
+                line-height: 1.5;
+                font-weight: 400;
+            }
+
+            .keyword {
+                color: #ff7b72;
+                font-weight: 500;
+            }
+            .string {
+                color: #a5d6ff;
+            }
+            .comment {
+                color: #8b949e;
+                font-style: italic;
+            }
+            .function {
+                color: #d2a8ff;
+                font-weight: 500;
+            }
+            .type {
+                color: #60d1c3;
+                font-weight: 500;
+            }
+
+            .background-pattern {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.08;
+                background-image: radial-gradient(circle at 25% 25%, #60d1c3 2px, transparent 2px),
+                    radial-gradient(circle at 75% 75%, #117f75 2px, transparent 2px);
+                background-size: 60px 60px;
+                background-position: 0 0, 30px 30px;
+            }
+
+            .glow {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 900px;
+                height: 500px;
+                background: radial-gradient(ellipse, rgba(96, 209, 195, 0.12) 0%, transparent 70%);
+                z-index: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="background-pattern"></div>
+        <div class="glow"></div>
+
+        <div class="container">
+            <div class="content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <img src="logo-dasae_headers.svg" alt="dasae-headers Logo" class="logo-svg" />
+                    </div>
+                    <h1 class="project-name">dasae-headers</h1>
+                </div>
+
+                <div class="tagline">Modern C with Better Safety</div>
+
+                <div class="description">A modern extension language for safer and more productive C programming</div>
+
+                <div class="features">
+                    <div class="feature">Memory Safety</div>
+                    <div class="feature">Type Safety</div>
+                    <div class="feature">Error Handling</div>
+                    <div class="feature">Modern Libraries</div>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <div class="code-header">
+                    <div class="code-dot dot-red"></div>
+                    <div class="code-dot dot-yellow"></div>
+                    <div class="code-dot dot-green"></div>
+                    <div class="code-title">example.c</div>
+                </div>
+
+                <div class="code">
+                    <span class="comment">// Modern C with safety features</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/main.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/io/common.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/fs/common.h"</span><br />
+                    <br />
+                    <span class="function">fn_</span>(<span class="function">dh_main</span>(<span class="type"
+                        >Sli$Sli_const$u8</span
+                    >
+                    args), <span class="type">Err$void</span>, <span class="keyword">$scope</span>) {<br />
+                    &nbsp;&nbsp;<span class="keyword">$ignore</span> = args;<br />
+                    <br />
+                    &nbsp;&nbsp;<span class="keyword">let</span> out = <span class="function">fs_writer</span>(<span
+                        class="function"
+                        >io_getStdOut</span
+                    >());<br />
+                    &nbsp;&nbsp;<span class="keyword">let</span> msg = <span class="function">some$</span>(<span
+                        class="type"
+                        >Opt$Sli_const$u8</span
+                    >, <span class="function">u8_l</span>(<span class="string">"world"</span>));<br />
+                    &nbsp;&nbsp;<span class="function">try_</span>(<span class="function">io_Writer_print</span>(out,
+                    <span class="function">u8_l</span>(<span class="string">"Hello, {:s}!\n"</span>),
+                    <span class="function">unwrap</span>(msg)));<br />
+                    <br />
+                    &nbsp;&nbsp;<span class="keyword">return_ok</span>({});<br />
+                    } <span class="keyword">$unscoped</span>;
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
