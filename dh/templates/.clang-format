@@ -146,7 +146,7 @@ Macros:
   - "$must_check=/**/"
   # Eval
   - "eval_(_)=({ _; })"
-  - "eval$(T,_)=(T)({ _; })"
+  - "eval_(T,_)=(T)({ _; })"
   - "eval_return_(_)=return _"
   - "asg_eval(_)=({ _; })"
   # Scope

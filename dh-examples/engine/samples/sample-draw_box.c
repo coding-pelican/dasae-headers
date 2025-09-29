@@ -35,7 +35,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
+        let game_canvas = catch(engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
@@ -71,21 +71,21 @@ Err$void dh_main(int argc, const char* argv[]) {
             Vec2f rotation = { .x = (f32)cos(t), .y = (f32)sin(t) };
             Vec2f box_min  = { .x = -48.0f, .y = -24.0f };
             Vec2f box_max  = { .x = 48.0f, .y = 24.0f };
-            Vec2f offset   = math_Vec2f_scale(rotation, 20.0f);
-            box_min        = math_Vec2f_sub(box_min, offset);
-            box_max        = math_Vec2f_add(box_max, offset);
+            Vec2f offset   = m_V2f32_scale(rotation, 20.0f);
+            box_min        = m_V2f32_sub(box_min, offset);
+            box_max        = m_V2f32_add(box_max, offset);
 
             // Render to canvas
             engine_Canvas_clear(game_canvas, Color_black);
             /* Transform World to Screen Coord */ {
                 const f32   canvas_scale  = 0.5f; // cuz logic based on 2x scale (160x100)
                 const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
-                box_min                   = math_Vec2f_scale(box_min, canvas_scale);
+                box_min                   = m_V2f32_scale(box_min, canvas_scale);
                 box_min.y                 = -box_min.y;
-                box_min                   = math_Vec2f_add(box_min, canvas_center);
-                box_max                   = math_Vec2f_scale(box_max, canvas_scale);
+                box_min                   = m_V2f32_add(box_min, canvas_center);
+                box_max                   = m_V2f32_scale(box_max, canvas_scale);
                 box_max.y                 = -box_max.y;
-                box_max                   = math_Vec2f_add(box_max, canvas_center);
+                box_max                   = m_V2f32_add(box_max, canvas_center);
             }
 
             engine_Canvas_drawRect(game_canvas, (i32)box_min.x, (i32)box_min.y, (i32)box_max.x, (i32)box_max.y, Color_white);
@@ -98,5 +98,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }

@@ -100,7 +100,7 @@ fn_scope_ext(func(void), Err$void) {
     printf("func\n");
 } $unguarded;
 
-fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
+fn_scope_ext(dh_main(Sli$Sli_const$u8 args), Err$void) {
     $ignore = args;
     printf("begin\n");
     {
@@ -117,7 +117,7 @@ fn_scope_ext(dh_main(Sli$Str_const args), Err$void) {
     return_ok({});
 } $unguarded; */
 
-// Err$void dh_main(Sli$Str_const args) {
+// Err$void dh_main(Sli$Sli_const$u8 args) {
 //     const __auto_type __reserved_return = ((Err$void*)((u8[_Generic(Err$void, void: 0, default: sizeof(Err$void))]){}));
 //     __auto_type       __scope_counter   = (struct __ScopeCounter){ .is_returning = (0), .current_line = 98 };
 //     if ((0)) {
@@ -178,7 +178,7 @@ T_Return _Name_With_Params {                                   \
 } */
 // clang-format on
 
-/* Err$void dh_main(Sli$Str_const args) {
+/* Err$void dh_main(Sli$Sli_const$u8 args) {
     Err$void* __reserved_return = ((void*)0);
     struct {
         i32  curr;
@@ -284,7 +284,7 @@ T_Return _Name_With_Params {                                    \
 //     }
 // };
 
-/* Err$void dh_main(Sli$Str_const args) {
+/* Err$void dh_main(Sli$Sli_const$u8 args) {
     Err$void* __reserved_return = ((void*)0);
     struct {
         u32 curr    : 31;

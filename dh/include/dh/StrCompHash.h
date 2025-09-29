@@ -21,9 +21,9 @@
 
 #if CHEAT_SHEET
 /* Creating Hash Values */
-StrCompHash hash1 = StrCompHash_createRaw("hello"); // From raw C string
-Str_const   str   = Str_fromRaw("world");
-StrCompHash hash2 = StrCompHash_create(str); // From Str_const
+StrCompHash  hash1 = StrCompHash_createRaw("hello"); // From raw C string
+Sli_const$u8 str   = Str_fromRaw("world");
+StrCompHash  hash2 = StrCompHash_create(str); // From Sli_const$u8
 
 /* Calculating Hash Values */
 u32 value1 = StrCompHash_calculateRaw("hello"); // From raw C string
@@ -52,8 +52,8 @@ fn_(StrCompHash_createRaw(const char* raw_str), StrCompHash);
 /* Calculating Hash Values */
 /// Calculate hash value from a byte array with specified length
 fn_(StrCompHash_calculate(const u8* ptr, usize len), u32);
-/// Create a StrCompHash from a Str_const
-fn_(StrCompHash_create(Str_const str), StrCompHash);
+/// Create a StrCompHash from a Sli_const$u8
+fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash);
 /// Extract the hash value from a StrCompHash structure
 fn_(StrCompHash_value(StrCompHash self), u32);
 
@@ -77,9 +77,9 @@ u32 direct_hash = StrCompHash_calculateRaw("hello");
 const u8* data      = (const u8*)"hello";
 u32       byte_hash = StrCompHash_calculate(data, 5);
 
-// Using with Str_const strings
-Str_const   str      = Str_fromRaw("hello");
-StrCompHash str_hash = StrCompHash_create(str);
+// Using with Sli_const$u8 strings
+Sli_const$u8 str      = Str_fromRaw("hello");
+StrCompHash  str_hash = StrCompHash_create(str);
 #endif /* CHEAT_SHEET */
 
 /*========== Header =========================================================*/
@@ -131,14 +131,14 @@ $inline_always fn_(StrCompHash_createRaw(const char* raw_str), StrCompHash);
 ///   // hash now contains the 32-bit hash value for "hello"
 $inline_always fn_(StrCompHash_calculate(const u8* ptr, usize len), u32);
 
-/// @brief  Create a StrCompHash from a Str_const
+/// @brief  Create a StrCompHash from a Sli_const$u8
 /// @param  str Constant string to hash
 /// @return StrCompHash structure containing the hash value
 /// @example
-///   Str_const str = Str_fromRaw("hello");
+///   Sli_const$u8 str = Str_fromRaw("hello");
 ///   StrCompHash hash = StrCompHash_create(str);
 ///   // hash.value now contains the hash for "hello"
-$inline_always fn_(StrCompHash_create(Str_const str), StrCompHash);
+$inline_always fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash);
 
 /// @brief  Extract the hash value from a StrCompHash structure
 /// @param  self StrCompHash structure
@@ -151,51 +151,51 @@ $inline_always fn_(StrCompHash_value(StrCompHash self), u32);
 
 /* Base cases for recursive macro-based hashing =============================*/
 
-#define StrCompHash__char1(_raw_ch)                                   \
-    /**                                                               \
-     * @brief Calculates hash value for a single character            \
-     * @param _raw_ch Character to hash                               \
-     * @return 32-bit hash value                                      \
-     * @example                                                       \
-     *   u32 hash = comp_op__StrCompHash__char1('a');                 \
+#define StrCompHash__char1(_raw_ch) \
+    /** \
+     * @brief Calculates hash value for a single character \
+     * @param _raw_ch Character to hash \
+     * @return 32-bit hash value \
+     * @example \
+     *   u32 hash = comp_op__StrCompHash__char1('a'); \
      *   // hash now contains the 32-bit hash value for character 'a' \
-     */                                                               \
+     */ \
     comp_op__StrCompHash__char1(_raw_ch)
 
-#define StrCompHash__char2(_raw_str)                         \
-    /**                                                      \
+#define StrCompHash__char2(_raw_str) \
+    /** \
      * @brief Calculates hash value for a 2-character string \
-     * @param _raw_str String to hash                        \
-     * @return 32-bit hash value                             \
-     * @example                                              \
-     *   const u8 str[2] = {'a', 'b'};                       \
-     *   u32 hash = comp_op__StrCompHash__char2(str);        \
+     * @param _raw_str String to hash \
+     * @return 32-bit hash value \
+     * @example \
+     *   const u8 str[2] = {'a', 'b'}; \
+     *   u32 hash = comp_op__StrCompHash__char2(str); \
      *   // hash now contains the 32-bit hash value for "ab" \
-     */                                                      \
+     */ \
     comp_op__StrCompHash__char2(_raw_str)
 
-#define StrCompHash__char3(_raw_str)                          \
-    /**                                                       \
-     * @brief Calculates hash value for a 3-character string  \
-     * @param _raw_str String to hash                         \
-     * @return 32-bit hash value                              \
-     * @example                                               \
-     *   const u8 str[3] = {'a', 'b', 'c'};                   \
-     *   u32 hash = comp_op__StrCompHash__char3(str);         \
+#define StrCompHash__char3(_raw_str) \
+    /** \
+     * @brief Calculates hash value for a 3-character string \
+     * @param _raw_str String to hash \
+     * @return 32-bit hash value \
+     * @example \
+     *   const u8 str[3] = {'a', 'b', 'c'}; \
+     *   u32 hash = comp_op__StrCompHash__char3(str); \
      *   // hash now contains the 32-bit hash value for "abc" \
-     */                                                       \
+     */ \
     comp_op__StrCompHash__char3(_raw_str)
 
-#define StrCompHash__char4(_raw_str)                           \
-    /**                                                        \
-     * @brief Calculates hash value for a 4-character string   \
-     * @param _raw_str String to hash                          \
-     * @return 32-bit hash value                               \
-     * @example                                                \
-     *   const u8 str[4] = {'a', 'b', 'c', 'd'};               \
-     *   u32 hash = comp_op__StrCompHash__char4(str);          \
+#define StrCompHash__char4(_raw_str) \
+    /** \
+     * @brief Calculates hash value for a 4-character string \
+     * @param _raw_str String to hash \
+     * @return 32-bit hash value \
+     * @example \
+     *   const u8 str[4] = {'a', 'b', 'c', 'd'}; \
+     *   u32 hash = comp_op__StrCompHash__char4(str); \
      *   // hash now contains the 32-bit hash value for "abcd" \
-     */                                                        \
+     */ \
     comp_op__StrCompHash__char4(_raw_str)
 
 /// @brief Recursively calculates hash value for string of any length
@@ -216,10 +216,10 @@ static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32);
 #define StrCompHash_calculateRaw(_raw_str) comp_op__StrCompHash_calculateRaw(_raw_str)
 #define StrCompHash_createRaw(_raw_str)    comp_op__StrCompHash_createRaw(_raw_str)
 #endif /* COMP_TIME */
-#define comp_op__StrCompHash_calculateRaw(_raw_str)                \
+#define comp_op__StrCompHash_calculateRaw(_raw_str) \
     /** Calculate hash value from a compile-time string literal */ \
     ((u32)StrCompHash__recur(_raw_str, sizeof(_raw_str) - 1))
-#define comp_op__StrCompHash_createRaw(_raw_str)                   \
+#define comp_op__StrCompHash_createRaw(_raw_str) \
     /** Create a StrCompHash from a compile-time string literal */ \
     ((StrCompHash){ .value = StrCompHash_calculateRaw(_raw_str) })
 
@@ -245,7 +245,7 @@ static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32) { /* NOLIN
 $inline_always fn_(StrCompHash_calculate(const u8* ptr, usize len), u32) {
     return StrCompHash__recur(ptr, len);
 }
-$inline_always fn_(StrCompHash_create(Str_const str), StrCompHash) {
+$inline_always fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash) {
     return (StrCompHash){ .value = StrCompHash_calculate(str.ptr, str.len) };
 }
 $inline_always fn_(StrCompHash_value(StrCompHash self), u32) {

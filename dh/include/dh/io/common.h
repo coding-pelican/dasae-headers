@@ -6,17 +6,15 @@
  * @file    common.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2025-03-22 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-06-21 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/io
  * @prefix  io
  *
  * @brief   Common IO utilities
  * @details Provides common IO utilities and functions for:
- *          - File operations
  *          - Stream operations
  *          - Buffer operations
- *          - Error handling
  *          - Utility functions
  */
 
@@ -28,17 +26,14 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/Err.h"
+#include "dh/prl.h"
+#include "dh/fs/File.h"
 
 /*========== Macros and Declarations ========================================*/
 
-config_ErrSet(io_FileErr,
-    NotFound,
-    AccessDenied,
-    OpenFailed,
-    ReadFailed,
-    WriteFailed
-);
+extern fn_(io_getStdIn(void), fs_File);
+extern fn_(io_getStdOut(void), fs_File);
+extern fn_(io_getStdErr(void), fs_File);
 
 #if defined(__cplusplus)
 } /* extern "C" */

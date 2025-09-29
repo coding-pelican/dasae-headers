@@ -8,18 +8,18 @@
 #include "dh/ArrList.h"
 
 typedef struct Body {
-    math_Vec2f pos;
-    math_Vec2f vel;
-    math_Vec2f acc;
-    f32        mass;
-    f32        radius;
+    m_V2f32 pos;
+    m_V2f32 vel;
+    m_V2f32 acc;
+    f32     mass;
+    f32     radius;
 } Body;
 use_Sli$(Body);
 use_ArrList$(Body);
 use_Opt$(Body);
 use_Err$(ArrList$Body);
 
-extern Body Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius);
+extern Body Body_new(m_V2f32 pos, m_V2f32 vel, f32 mass, f32 radius);
 extern void Body_update(Body* self, f32 dt);
 
 #endif /* BODY_INCLUDED */

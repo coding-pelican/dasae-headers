@@ -185,133 +185,126 @@ See the [Quick Start Guide](./dh/docs/en/quick-start.md) for more details.
 ```c
 // Include the main header that provides program entry point
 #include "dh/main.h"
-// Include string utilities for working with text
-#include "dh/Str.h"
+#include "dh/io/stream.h"
 
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
     $ignore = args;
 
-    // Create a string literal using Str_l
-    let hello_world = Str_l("Hello, world!");
-
-    // Print the string to the console with a newline
-    Str_println(hello_world);
+    // Create a string literal using u8_l
+    let hello = u8_l("Hello");
+    // Print the string to the standard output with a newline
+    io_stream_println(u8_l("{:s}, world!"), hello);
 
     // Return success (void value with no error)
     return_ok({});
-} $unscoped; // End the scope block
+} $unscoped_(fn); // End the scope block
 ```
 
 ### 🔍 Optional Values Example
 
 ```c
-fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
-    for_slice_indexed (items, item, index) {
+fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$usize $scope)) {
+    for_s((items), (item, index)) {
         if (*item != value) { continue; }
-        return_some(index); // Return with a value
+        return_some(index); // Return index
     }
-    return_none(); // Return with no value
-} $unscoped;
+    return_none(); // Return no index
+} $unscoped_(fn);
 
-fn_(example(void), void) {
-    Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
+fn_((example(void))(void)) {
+    var_(nums, Arr$$(5, i32)) = Arr_init({ 10, 20, 30, 40, 50 });
 
     // Create optional values
-    let opt_value = some$(Opt$i32, 42);
-    let opt_empty = none$(Opt$i32);
+    let opt_value = some$((Opt$usize)(42));
+    let opt_empty = none$((Opt$usize));
 
     // Find a value in array
-    let found = findValueIndex(30, Sli_arr$(Sli_const$i32, nums));
-
+    let found = findValueIndex(30, Arr_ref$(Sli$usize, nums).as_const);
     // Check if option has value
-    if_some(found, index) {
-        printf("Found at: %d\n", index);
+    if_some((found), (index)) {
+        io_stream_println(u8_l("Found at: {:zu}"), index);
     } else_none {
-        printf("Not found\n");
+        io_stream_println(u8_l("Not found"));
     }
 
     // Default values
-    let value = orelse(found, -1); // Use -1 if not found
-
+    let value = orelse_((found)(-1)); // Use -1 if not found
     // Unsafe extraction (assertion if option might be none)
-    let unsafe_value = unwrap(opt_value);
+    let unsafe_value = unwrap_(opt_value);
 }
 ```
 
 ### 🔄 Error Results Example
 
 ```c
-config_ErrSet(math_Err,
-    DivisionByZero,
-    Overflow,
-    Underflow
-);
+use_ErrSet_((math_Err)(
+    math_Err_DivisionByZero,
+    math_Err_Overflow,
+    math_Err_Underflow
+));
 
-use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
+Errset_useT$(math_Err, i32); // or Generally `Err_useT$(i32)`
+fn_((safeDivI32(i32 lhs, i32 rhs))(math_Err$i32 $scope)) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(example(void), Err$void, $guard) {
+fn_((example(void))(Err$void $guard)) {
     // Allocate resources
-    var buffer = meta_cast$(Sli$i32,
-        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
-    );
+    var buffer = meta_cast$((Sli$i32)(
+        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 128))
+    ));
     // Cleanup always when function returns
     defer_(mem_Allocator_free(allocator, anySli(buffer)));
     // Cleanup only when an error occurs and propagates
-    errdefer_(log_error("Occurred error!"));
+    errdefer_($ignore_capture, io_stream_eprintln(u8_l("Occurred error!")));
 
     // Error propagation (early return)
-    let result_invalid = try_(safeDivide(10, 0));
-
+    let result_invalid = try_(safeDivI32(10, 0));
     // Error handling with default value
-    let result_default = catch_(safeDivide(10, 0), 1);
-
+    let result_default = catch_((safeDivI32(10, 0))($ignore_capture, 1));
     // Error handling with error payload capture
-    let result_handling = catch_from(safeDivide(10, 0), err, eval({
-        Err_print(err);   // Print the error
-        ErrTrace_print(); // Print the error trace
-        return_err(err);  // Return with an error
+    let result_handling = catch_((safeDivI32(10, 0))(err, {
+        printErr(err);
+        printErrTrace();
+        return_err(err); // Return with an error
     }));
 
     // Return a normally
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 ```
 
 ### 🤝 Pattern Matching Example
 
 ```c
-config_UnionEnum(InputEvent,
+typedef variant_((InputEvent)(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
-);
-use_Opt$(InputEvent);
-fn_(pullInputEvent(void), Opt$InputEvent);
+)) InputEvent;
+Opt_useT$(InputEvent);
+fn_((pullInputEvent(void))(Opt$InputEvent));
 
-fn_(example(void), void) {
+fn_((example(void))(void)) {
     if_some(pullInputEvent(), event) {
         match_(event) {
-        pattern_(InputEvent_press_key, on_pressed) {
+        pattern_(InputEvent_press_key, on_pressed, {
             debug_assert_true_fmt(
                 -1 < on_pressed->key && on_pressed->key <= 255,
-                "key is out of range"
+                u8_l("key is out of range")
             );
-        } break;
-        pattern_(InputEvent_release_button, on_released) {
+        }) break;
+        pattern_(InputEvent_release_button, on_released, {
             debug_assert_true_fmt(
                 -1 < on_released->button && on_released->button <= 5,
                 "button is out of range"
             );
-        } break;
-        fallback_()
-            claim_unreachable;
+        }) break;
+        fallback_(claim_unreachable);
         }
     }
 }
@@ -326,32 +319,35 @@ dasae-headers provides a simple yet powerful built-in testing framework. You can
 #include "dh/TEST.h"
 
 // Define functions to test
-fn_(mathAdd(i32 a, i32 b), i32) {
+fn_((math_addI32(i32 a, i32 b))(i32)) {
     return a + b;
 }
 
-fn_(mathMultiply(i32 a, i32 b), i32) {
+fn_((math_addI32(i32 a, i32 b))(i32)) {
     return a * b;
 }
 
 // Define test unit
-TEST_fn_("Basic Math Operations Test", $scope) {
+TEST_fn_("Basic Math Operations Test" $scope) {
     // Addition test
-    let a = 5;
-    let b = 7;
-    let sum = mathAdd(a, b);
+    let_(a, i32)   = 5;
+    let_(b, i32)   = 7;
+    let_(sum, i32) = math_addI32(a, b);
 
     // Validate results
     try_(TEST_expect(sum == 12));
-    try_(TEST_expectMsg(sum > 10, "Sum should be greater than 10"));
+    try_(TEST_expectMsg(10 < sum , "Sum should be greater than 10"));
 
     // Multiplication test
-    let product = mathMultiply(a, b);
+    let_(product, i32) = math_mulI32(a, b);
     try_(TEST_expect(product == 35));
 
     // Failing test (intentional error)
-    // try_(TEST_expect(product == 30)); // Fails: 35 != 30
-} $unscoped_TEST;
+    catch_((TEST_expect(product == 30))($ignore_capture, {
+        // Fails: 35 != 30
+        io_stream_eprintln(u8_l("Product should be 30, but got {:d}"), product);
+    }));
+} $unscoped_(TEST_fn);
 ```
 
 ## 📚 Documentation

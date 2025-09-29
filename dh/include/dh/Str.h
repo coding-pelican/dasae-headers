@@ -2,13 +2,13 @@
  * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    Str.h
+ * @file    Sli$u8.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-31 (date of creation)
  * @updated 2025-02-11 (date of last update)
  * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
- * @prefix  Str
+ * @prefix  Sli$u8
  *
  * @brief   String type and manipulation utilities
  * @details Provides string slicing, UTF-8 handling, and string manipulation functions
@@ -22,40 +22,40 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "sli.h"
+#include "prl.h"
 #include "mem/Allocator.h"
 
 /*========== String Types ===================================================*/
 
-/// Unmodifiable raw string (const byte null terminated slice)
-typedef SliZ_const$u8 StrZ_const;
-/// Modifiable raw string (byte null terminated slice)
-typedef SliZ$u8       StrZ;
-/// Using variant type for raw string */
-use_Opt$(StrZ_const);
-use_Opt$(StrZ);
-use_Err$(StrZ_const);
-use_Err$(StrZ);
+// /// Unmodifiable raw string (const byte null terminated slice)
+// typedef SliZ_const$u8 StrZ_const;
+// /// Modifiable raw string (byte null terminated slice)
+// typedef SliZ$u8       StrZ;
+// /// Using variant type for raw string */
+// use_Opt$(StrZ_const);
+// use_Opt$(StrZ);
+// use_Err$(StrZ_const);
+// use_Err$(StrZ);
 
-/// Unmodifiable sentinel string (const byte sentinel terminated slice)
-typedef SliS_const$u8 StrS_const;
-/// Modifiable sentinel string (byte sentinel terminated slice)
-typedef SliS$u8       StrS;
-/// Using variant type for sentinel string */
-use_Opt$(StrS_const);
-use_Opt$(StrS);
-use_Err$(StrS_const);
-use_Err$(StrS);
+// /// Unmodifiable sentinel string (const byte sentinel terminated slice)
+// typedef SliS_const$u8 StrS_const;
+// /// Modifiable sentinel string (byte sentinel terminated slice)
+// typedef SliS$u8       StrS;
+// /// Using variant type for sentinel string */
+// use_Opt$(StrS_const);
+// use_Opt$(StrS);
+// use_Err$(StrS_const);
+// use_Err$(StrS);
 
-/// Unmodifiable string (const byte slice)
-typedef Sli_const$u8 Str_const;
-/// Modifiable string (byte slice)
-typedef Sli$u8       Str;
-/// Using variant type for string */
-use_Opt$(Str_const);
-use_Opt$(Str);
-use_Err$(Str_const);
-use_Err$(Str);
+// /// Unmodifiable string (const byte slice)
+// typedef Sli_const$u8 Sli_const$u8;
+// /// Modifiable string (byte slice)
+// typedef Sli$u8       Sli$u8;
+// /// Using variant type for string */
+// use_Opt$(Sli_const$u8);
+// use_Opt$(Sli$u8);
+// use_Err$(Sli_const$u8);
+// use_Err$(Sli$u8);
 
 /// String hash value type
 typedef u32 StrHash;
@@ -82,82 +82,82 @@ use_Opt$(StrHash);
 #define u8z_s(_literal...) comp_syn__u8z_s(_literal)
 #define u8z_l(_literal...) comp_syn__u8z_l(_literal)
 
-/// Create Str_const from const u8* with explicit length
-extern Str_const Str_view(const u8* ptr, usize len);
-extern Str_const Str_viewZ(const u8* ptr);
-/// Create Str from u8* with explicit length
-extern Str       Str_from(u8 ptr[], usize len);
-extern Str       Str_fromZ(u8 ptr[]);
+/// Create Sli_const$u8 from const u8* with explicit length
+extern Sli_const$u8 Str_view(const u8* ptr, usize len);
+extern Sli_const$u8 Str_viewZ(const u8* ptr);
+/// Create Sli$u8 from u8* with explicit length
+extern Sli$u8       Str_from(u8 ptr[], usize len);
+extern Sli$u8       Str_fromZ(u8 ptr[]);
 
 /*========== String Operations ==============================================*/
 
 /// Get string length in bytes
-extern usize   Str_len(Str_const self);
+extern usize      Str_len(Sli_const$u8 self);
 /// Compare two strings
-extern bool    Str_eql(Str_const lhs, Str_const rhs);
+extern bool       Str_eql(Sli_const$u8 lhs, Sli_const$u8 rhs);
 /// Compare strings ignoring case
-extern bool    Str_eqlNoCase(Str_const lhs, Str_const rhs);
+extern bool       Str_eqlNoCase(Sli_const$u8 lhs, Sli_const$u8 rhs);
 /// Check if string is modifiable
-extern bool    Str_constCastable(Str_const self);
-/// Convert Str_const to Str (if source is modifiable)
-extern Opt$Str Str_constCast(Str_const self);
+extern bool       Sli_const$u8Castable(Sli_const$u8 self);
+/// Convert Sli_const$u8 to Sli$u8 (if source is modifiable)
+extern Opt$Sli$u8 Sli_const$u8Cast(Sli_const$u8 self);
 
 /// Concatenate strings
-extern Err$Str   Str_cat(mem_Allocator allocator, Str_const lhs, Str_const rhs) $must_check;
+extern Err$Sli$u8   Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs) $must_check;
 /// Print string
-extern void      Str_print(Str_const self);
+extern void         Str_print(Sli_const$u8 self);
 /// Print string with newline
-extern void      Str_println(Str_const self);
+extern void         Str_println(Sli_const$u8 self);
 /// Format string with arguments
-extern Err$Str   Str_format(mem_Allocator allocator, const char* format, ...) $must_check;
+extern Err$Sli$u8   Str_format(mem_Allocator allocator, const char* format, ...) $must_check;
 /// Get substring
-extern Str_const Str_slice(Str_const self, usize start, usize end);
+extern Sli_const$u8 Str_slice(Sli_const$u8 self, usize start, usize end);
 /// Remove whitespace from both ends
-extern Str_const Str_trim(Str_const self);
+extern Sli_const$u8 Str_trim(Sli_const$u8 self);
 /// Remove whitespace from start
-extern Str_const Str_ltrim(Str_const self);
+extern Sli_const$u8 Str_ltrim(Sli_const$u8 self);
 /// Remove whitespace from end
-extern Str_const Str_rtrim(Str_const self);
+extern Sli_const$u8 Str_rtrim(Sli_const$u8 self);
 /// Convert to uppercase
-extern Err$Str   Str_upper(mem_Allocator allocator, Str_const str) $must_check;
+extern Err$Sli$u8   Str_upper(mem_Allocator allocator, Sli_const$u8 str) $must_check;
 /// Convert to lowercase
-extern Err$Str   Str_lower(mem_Allocator allocator, Str_const str) $must_check;
+extern Err$Sli$u8   Str_lower(mem_Allocator allocator, Sli_const$u8 str) $must_check;
 
 /// Check if string contains substring
-extern bool      Str_contains(Str_const haystack, Str_const needle);
+extern bool      Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle);
 /// Find first occurrence of substring
-extern Opt$usize Str_find(Str_const haystack, Str_const needle, usize start);
+extern Opt$usize Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start);
 /// Find last occurrence of substring
-extern Opt$usize Str_rfind(Str_const haystack, Str_const needle, usize start);
+extern Opt$usize Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start);
 /// Check if string starts with prefix
 /// Returns index where prefix ends if found, otherwise none
-extern Opt$usize Str_startsWith(Str_const self, Str_const prefix);
+extern Opt$usize Str_startsWith(Sli_const$u8 self, Sli_const$u8 prefix);
 /// Check if string ends with suffix
 /// Returns index where suffix starts if found, otherwise none
-extern Opt$usize Str_endsWith(Str_const self, Str_const suffix);
+extern Opt$usize Str_endsWith(Sli_const$u8 self, Sli_const$u8 suffix);
 
 /// Calculate string hash
-extern StrHash Str_hash(Str_const self);
+extern StrHash Str_hash(Sli_const$u8 self);
 
 /*========== Comparison Operations ==========================================*/
 
-/* Comparison (Str_const) */
-extern cmp_fnCmp(Str_const);
-cmp_fnEq_default(Str_const);
-cmp_fnNe_default(Str_const);
-cmp_fnLt_default(Str_const);
-cmp_fnGt_default(Str_const);
-cmp_fnLe_default(Str_const);
-cmp_fnGe_default(Str_const);
+/* Comparison (Sli_const$u8) */
+extern cmp_fnCmp(Sli_const$u8);
+cmp_fnEq_default(Sli_const$u8);
+cmp_fnNe_default(Sli_const$u8);
+cmp_fnLt_default(Sli_const$u8);
+cmp_fnGt_default(Sli_const$u8);
+cmp_fnLe_default(Sli_const$u8);
+cmp_fnGe_default(Sli_const$u8);
 
 /* Comparison */
-extern cmp_fnCmp(Str);
-cmp_fnEq_default(Str);
-cmp_fnNe_default(Str);
-cmp_fnLt_default(Str);
-cmp_fnGt_default(Str);
-cmp_fnLe_default(Str);
-cmp_fnGe_default(Str);
+extern cmp_fnCmp(Sli$u8);
+cmp_fnEq_default(Sli$u8);
+cmp_fnNe_default(Sli$u8);
+cmp_fnLt_default(Sli$u8);
+cmp_fnGt_default(Sli$u8);
+cmp_fnLe_default(Sli$u8);
+cmp_fnGe_default(Sli$u8);
 
 /*========== UTF-8 Constants ================================================*/
 
@@ -176,22 +176,22 @@ cmp_fnGe_default(Str);
 /*========== UTF-8 Operations ===============================================*/
 
 /// Get number of UTF-8 code points in string
-extern usize   StrUtf8_len(Str_const self);
+extern usize   StrUtf8_len(Sli_const$u8 self);
 /// Get byte length of UTF-8 sequence starting at given position
-extern u8      StrUtf8_seqLen(Str_const self, usize pos);
+extern u8      StrUtf8_seqLen(Sli_const$u8 self, usize pos);
 /// Check if string is valid UTF-8
-extern bool    StrUtf8_isValid(Str_const self);
+extern bool    StrUtf8_isValid(Sli_const$u8 self);
 /// Get UTF-8 code point at position
-extern Opt$u32 StrUtf8_codepointAt(Str_const self, usize pos);
+extern Opt$u32 StrUtf8_codepointAt(Sli_const$u8 self, usize pos);
 
 /// Iterator for UTF-8 code points
 typedef struct StrUtf8Iter {
-    Str_const str;
-    usize     pos;
+    Sli_const$u8 str;
+    usize        pos;
 } StrUtf8Iter;
 
 /// Get iterator for UTF-8 code points
-extern StrUtf8Iter StrUtf8_iter(Str_const self);
+extern StrUtf8Iter StrUtf8_iter(Sli_const$u8 self);
 /// Iterate over UTF-8 code points
 extern bool        StrUtf8Iter_next(StrUtf8Iter* iter, Opt$u32* out_codepoint);
 
@@ -199,16 +199,16 @@ extern bool        StrUtf8Iter_next(StrUtf8Iter* iter, Opt$u32* out_codepoint);
 
 /// Tokenizer for string
 typedef struct StrTokenizer {
-    Str_const str;    // Source string
-    Str_const delims; // Delimiter characters
-    usize     pos;    // Current position
+    Sli_const$u8 str;    // Source string
+    Sli_const$u8 delims; // Delimiter characters
+    usize        pos;    // Current position
 } StrTokenizer;
 use_Opt$(StrTokenizer);
 
 /// Create tokenizer for string with given delimiters
-extern StrTokenizer  Str_tokenizer(Str_const self, Str_const delims);
+extern StrTokenizer     Str_tokenizer(Sli_const$u8 self, Sli_const$u8 delims);
 /// Get next token, returns none when no more tokens
-extern Opt$Str_const StrTokenizer_next(StrTokenizer* self);
+extern Opt$Sli_const$u8 StrTokenizer_next(StrTokenizer* self);
 
 /*========== Implementations ================================================*/
 
@@ -223,9 +223,9 @@ extern Opt$Str_const StrTokenizer_next(StrTokenizer* self);
     ((StrS){ .ptr = lit$(u8[], "" _literal_to_writable), .sentinel = '\0' })
 
 #define comp_syn__Str_l(_literal_as_readonly...) \
-    ((Str_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .len = sizeOf(_literal_as_readonly) - 1 })
+    ((Sli_const$u8){ .ptr = as$(const u8*, "" _literal_as_readonly), .len = sizeOf(_literal_as_readonly) - 1 })
 #define comp_syn__Str_m(_literal_to_writable...) \
-    ((Str){ .ptr = lit$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
+    ((Sli$u8){ .ptr = lit$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
 
 #define comp_syn__u8_a(_literal...) ((Arr$$(sizeOf(_literal) - 1, u8)){ .buf = { _literal } })
 #define comp_syn__u8_s(_literal...) ((Sli$u8){ .ptr = lit$(u8[], "" _literal), .len = sizeOf(_literal) - 1 })

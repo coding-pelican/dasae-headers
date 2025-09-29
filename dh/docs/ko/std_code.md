@@ -55,14 +55,14 @@ const i32 max_retry_count = 5;
 
 ```c
 fn_(calculateSum(i32 a, i32 b), i32);
-fn_(validateInput(Str_const input), bool);
+fn_(validateInput(Sli_const$u8 input), bool);
 fn_(initializeSystem(void), void);
 ```
 
 불리언 값을 반환하는 함수는 `is`, `has`, `can`, `should` 등의 접두사를 사용한다.
 
 ```c
-fn_(isValidInput(Str_const input), bool);
+fn_(isValidInput(Sli_const$u8 input), bool);
 fn_(hasPermission(const User* user), bool);
 ```
 
@@ -113,7 +113,7 @@ config_ErrSet(FileErr
 config_UnionEnum(Value
     (Value_integer_number, struct { i32 value; }),
     (Value_floating_point, struct { f64 value; }),
-    (Value_string_literal, Str_const)
+    (Value_string_literal, Sli_const$u8)
 );
 ```
 
@@ -156,7 +156,7 @@ fn_(calculateSum(i32 a, i32 b), i32) {
 
 // 확장된 스코프가 필요한 함수 정의 (Optional 반환)
 use_Opt$(i32);
-fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32, $scope) {
+fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32 $scope) {
     if (rhs == 0) {
         return_none();
     }
@@ -164,9 +164,9 @@ fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32, $scope) {
 } $unscoped;
 
 // 오류 처리가 필요한 함수
-use_Err$(Str_const);
-fn_(readFile(Str_const path), Err$Str_const) $must_check;
-fn_(readFile(Str_const path), Err$Str_const, $scope) {
+use_Err$(Sli_const$u8);
+fn_(readFile(Sli_const$u8 path), Err$Sli_const$u8) $must_check;
+fn_(readFile(Sli_const$u8 path), Err$Sli_const$u8 $scope) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());
     }
@@ -217,7 +217,7 @@ let rect = make$(Rectangle, .width = 10, .height = 20);
 
 ```c
 // 잘못된 예시
-fn_(processData(void), Err$void, $scope) {
+fn_(processData(void), Err$void $scope) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
 
     // 처리 로직...
@@ -226,7 +226,7 @@ fn_(processData(void), Err$void, $scope) {
 } $unscoped;
 
 // 올바른 예시
-fn_(processData(void), Err$void, $guard) {
+fn_(processData(void), Err$void $guard) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
     defer_(mem_Allocator_free(anySli(buffer)));
 
@@ -240,7 +240,7 @@ fn_(processData(void), Err$void, $guard) {
 파일 열기 후에는 defer를 사용하여 닫기 작업을 명시한다.
 
 ```c
-fn_(readFileContents(Str_const filename), io_Err$Str_const, $guard) {
+fn_(readFileContents(Sli_const$u8 filename), io_Err$Sli_const$u8 $guard) {
     let file = fopen(filename.ptr, "r");
     if (file == null) {
         return_err(io_Err_OpenFailed());
@@ -269,7 +269,7 @@ fn_(findUser(i32 user_id, User** out_user), bool) {
 }
 
 // 올바른 예시
-fn_(findUser(i32 user_id), Opt$Ptr$User, $scope) {
+fn_(findUser(i32 user_id), Opt$Ptr$User $scope) {
     if (user_id <= 0) {
         return_none();
     }

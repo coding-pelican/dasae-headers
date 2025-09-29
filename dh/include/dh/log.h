@@ -49,7 +49,7 @@ typedef struct log_Config {
 } log_Config;
 
 // Initialize logging with a file
-extern io_FileErr$void log_init(const char* filename) $must_check;
+extern fs_FileErr$void log_init(const char* filename) $must_check;
 // Initialize logging with an existing file handle
 extern void            log_initWithFile(FILE* file);
 // Close logging

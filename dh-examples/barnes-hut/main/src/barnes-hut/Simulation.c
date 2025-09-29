@@ -5,7 +5,7 @@
 #include "dh/math.h"
 
 // n target: 100000
-fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation, $guard) {
+fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation $guard) {
     const f32   dt       = 0.05f;
     const f32   theta    = 1.0f;
     const f32   eps      = 1.0f;
@@ -55,7 +55,7 @@ fn_(Simulation_destroy(Simulation* self), void) {
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
 }
 
-fn_(Simulation_step(Simulation* self), Err$void, $scope) {
+fn_(Simulation_step(Simulation* self), Err$void $scope) {
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
@@ -79,7 +79,7 @@ fn_(Simulation_iterate(Simulation* self), void) {
 #define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
-fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
+fn_(Simulation_collide(Simulation* self), Err$void $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled
     self->collision_count = 0;
@@ -88,11 +88,11 @@ fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
     for_slice_indexed (self->bodies.items, body, index) {
         let pos        = body->pos;
         let radius     = body->radius;
-        let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+        let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
         let rect  = Sli_at(self->rects.items, index);
-        rect->min = math_Vec2f_sub(pos, radius_vec);
-        rect->max = math_Vec2f_add(pos, radius_vec);
+        rect->min = m_V2f32_sub(pos, radius_vec);
+        rect->max = m_V2f32_add(pos, radius_vec);
     }
 
     // Note: In a real implementation we would use a spatial partitioning system here
@@ -127,7 +127,7 @@ $static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), 
 ///     AABB Checks Before Distance Calculation:
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
+fn_(Simulation_collide(Simulation* self), Err$void $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count = 0;
@@ -140,11 +140,11 @@ fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
     for_slice_indexed (self->bodies.items, body, index) {
         let pos        = body->pos;
         let radius     = body->radius;
-        let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+        let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
         let rect  = Sli_at(self->rects.items, index);
-        rect->min = math_Vec2f_sub(pos, radius_vec);
-        rect->max = math_Vec2f_add(pos, radius_vec);
+        rect->min = m_V2f32_sub(pos, radius_vec);
+        rect->max = m_V2f32_add(pos, radius_vec);
     }
 
     let indices = self->sort_body_indices_cache;
@@ -154,18 +154,18 @@ fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
 
     // Sort indices using stableSort with comparison function and self pointer
     try_(sort_stableSortUsingTemp(
-            self->sort_rect_indices_cache_as_temp,
-            meta_refSli(indices),
-            wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
-                let idx_lhs  = *as$(const usize*, lhs);
-                let idx_rhs  = *as$(const usize*, rhs);
-                let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
-                let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
-                if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
-                if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
-                return cmp_Ord_eq;
-            })
-        ));
+        self->sort_rect_indices_cache_as_temp,
+        meta_refSli(indices),
+        wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+            let idx_lhs  = *as$(const usize*, lhs);
+            let idx_rhs  = *as$(const usize*, rhs);
+            let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
+            let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
+            if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
+            if (rect_lhs->min.x > rect_rhs->min.x) { return cmp_Ord_gt; }
+            return cmp_Ord_eq;
+        })
+    ));
     // try_(stableSort(indices.ptr, indices.len, sizeof(usize), compareRects, self, self->allocator));
 
     // Sweep through sorted indices and check for AABB overlaps
@@ -197,7 +197,7 @@ fn_(Simulation_collide(Simulation* self), Err$void, $scope) {
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
-fn_(Simulation_attract(Simulation* self), Err$void, $scope) {
+fn_(Simulation_attract(Simulation* self), Err$void $scope) {
     debug_assert_nonnull(self);
 
     try_(QuadTree_build(&self->quadtree, self->bodies.items));
@@ -222,14 +222,14 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     // Calculate distances and radiuses
     let p1 = b1->pos;
     let p2 = b2->pos;
-    let d  = math_Vec2f_sub(p2, p1);
+    let d  = m_V2f32_sub(p2, p1);
 
     let r1 = b1->radius;
     let r2 = b2->radius;
     let r  = r1 + r2;
 
     // Early exit if not colliding
-    scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
+    scope_if(const bool collides = m_V2f32_lenSq(d) < r * r, !collides) { return; }
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count++;
 #endif
@@ -237,9 +237,9 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     // Get velocities and masses
     let v1 = b1->vel;
     let v2 = b2->vel;
-    let v  = math_Vec2f_sub(v2, v1);
+    let v  = m_V2f32_sub(v2, v1);
 
-    let d_dot_v = math_Vec2f_dot(d, v);
+    let d_dot_v = m_V2f32_dot(d, v);
 
     let m1      = b1->mass;
     let m2      = b2->mass;
@@ -247,38 +247,38 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     let weight2 = m1 / (m1 + m2);
 
     // Handle collision based on relative motion
-    if (0.0f <= d_dot_v && math_Vec2f_ne(d, math_Vec2f_zero)) {
-        let tmp = math_Vec2f_scale(d, r / math_Vec2f_len(d) - 1.0f);
-        math_Vec2f_subAsg(&b1->pos, math_Vec2f_scale(tmp, weight1));
-        math_Vec2f_addAsg(&b2->pos, math_Vec2f_scale(tmp, weight2));
+    if (0.0f <= d_dot_v && m_V2f32_ne(d, m_V2f32_zero)) {
+        let tmp = m_V2f32_scale(d, r / m_V2f32_len(d) - 1.0f);
+        m_V2f32_subAsg(&b1->pos, m_V2f32_scale(tmp, weight1));
+        m_V2f32_addAsg(&b2->pos, m_V2f32_scale(tmp, weight2));
         return;
     }
 
-    let v_sq = math_Vec2f_lenSq(v);
-    let d_sq = math_Vec2f_lenSq(d);
+    let v_sq = m_V2f32_lenSq(v);
+    let d_sq = m_V2f32_lenSq(d);
     let r_sq = r * r;
 
     let t = (d_dot_v + sqrtf(fmaxf(d_dot_v * d_dot_v - v_sq * (d_sq - r_sq), 0.0f))) / v_sq;
 
     // Move to collision point
-    math_Vec2f_subAsg(&b1->pos, math_Vec2f_scale(v1, t));
-    math_Vec2f_subAsg(&b2->pos, math_Vec2f_scale(v2, t));
+    m_V2f32_subAsg(&b1->pos, m_V2f32_scale(v1, t));
+    m_V2f32_subAsg(&b2->pos, m_V2f32_scale(v2, t));
 
     // Update distances post-collision
     let p1_new      = b1->pos;
     let p2_new      = b2->pos;
-    let d_new       = math_Vec2f_sub(p2_new, p1_new);
-    let d_dot_v_new = math_Vec2f_dot(d_new, v);
-    let d_sq_new    = math_Vec2f_lenSq(d_new);
+    let d_new       = m_V2f32_sub(p2_new, p1_new);
+    let d_dot_v_new = m_V2f32_dot(d_new, v);
+    let d_sq_new    = m_V2f32_lenSq(d_new);
 
     // Calculate collision response
-    let tmp    = math_Vec2f_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
-    let v1_new = math_Vec2f_add(v1, math_Vec2f_scale(tmp, weight1));
-    let v2_new = math_Vec2f_sub(v2, math_Vec2f_scale(tmp, weight2));
+    let tmp    = m_V2f32_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
+    let v1_new = m_V2f32_add(v1, m_V2f32_scale(tmp, weight1));
+    let v2_new = m_V2f32_sub(v2, m_V2f32_scale(tmp, weight2));
 
     // Update velocities and positions
     b1->vel = v1_new;
     b2->vel = v2_new;
-    math_Vec2f_addAsg(&b1->pos, math_Vec2f_scale(v1_new, t));
-    math_Vec2f_addAsg(&b2->pos, math_Vec2f_scale(v2_new, t));
+    m_V2f32_addAsg(&b1->pos, m_V2f32_scale(v1_new, t));
+    m_V2f32_addAsg(&b2->pos, m_V2f32_scale(v2_new, t));
 }

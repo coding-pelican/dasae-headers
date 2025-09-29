@@ -14,8 +14,8 @@
 #include "Body.h"
 
 typedef struct Rect {
-    math_Vec2f min;
-    math_Vec2f max;
+    m_V2f32 min;
+    m_V2f32 max;
 } Rect;
 use_Sli$(Rect);
 use_Arr$(2, Rect);

@@ -162,133 +162,126 @@ dh-c test
 ```c
 // 프로그램 진입점을 제공하는 메인 헤더 포함
 #include "dh/main.h"
-// 텍스트 작업을 위한 문자열 유틸리티 포함
-#include "dh/Str.h"
+#include "dh/io/stream.h"
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
     $ignore = args;
 
-    // Str_l로 문자열 리터럴 생성
-    let hello_world = Str_l("Hello, world!");
-
+    // u8_l로 문자열 리터럴 생성
+    let hello = u8_l("Hello");
     // 문자열을 콘솔에 줄바꿈과 함께 출력
-    Str_println(hello_world);
+    io_stream_println(u8_l("{:s}, world!"), hello);
 
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
-} $unscoped; // 범위 블록 종료
+} $unscoped_(fn); // 범위 블록 종료
 ```
 
 ### 🔍 Optional Values 예제
 
 ```c
-fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
-    for_slice_indexed (items, item, index) {
+fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32 $scope)) {
+    for_s((items), (item, index)) {
         if (*item != value) { continue; }
-        return_some(index); // 값이 있음을 반환
+        return_some(index); // 인덱스를 반환
     }
-    return_none(); // 값이 없음을 반환
-} $unscoped;
+    return_none(); // 인덱스 없음을 반환
+} $unscoped_(fn);
 
-fn_(example(void), void) {
-    Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
+fn_((example(void))(void)) {
+    var_(nums, Arr$$(5, i32)) = Arr_init({ 10, 20, 30, 40, 50 });
 
     // Optional 값 생성
-    let opt_value = some$(Opt$i32, 42);
-    let opt_empty = none$(Opt$i32);
+    let opt_value = some$((Opt$i32)(42));
+    let opt_empty = none$((Opt$i32));
 
     // 배열에서 값 찾기
-    let found = findValueIndex(30, Sli_arr$(Sli_const$i32, nums));
-
+    let found = findValueIndex(30, Arr_ref$(Sli$usize, nums).as_const);
     // Optional 값 확인
-    if_some(found, index) {
-        printf("찾은 위치: %d\n", index);
+    if_some((found), (index)) {
+        io_stream_println(u8_l("Found at: {:zu}"), index);
     } else_none {
-        printf("찾지 못함\n");
+        io_stream_println(u8_l("Not found"));
     }
 
     // 기본값 설정
-    let value = orelse(found, -1); // 찾지 못한 경우 -1 사용
-
+    let value = orelse_((found)(-1)); // 찾지 못한 경우 -1 사용
     // 안전하지 않은 추출 (옵션이 none인 경우 assertion 발생)
-    let unsafe_value = unwrap(opt_value);
+    let unsafe_value = unwrap_(opt_value);
 }
 ```
 
 ### 🔄 Error Results 예제
 
 ```c
-config_ErrSet(math_Err,
-    DivisionByZero,
-    Overflow,
-    Underflow
-);
+use_Errset_((math_Err)(
+    math_Err_DivisionByZero,
+    math_Err_Overflow,
+    math_Err_Underflow
+));
 
-use_ErrSet$(math_Err, i32); // 또는 일반적으로 `use_Err$(i32)`
-fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
+Errset_useT$(math_Err, i32); // 또는 일반적으로 `Err_useT$(i32)`
+fn_((safeDivI32(i32 lhs, i32 rhs))(math_Err$i32 $scope)) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(example(void), Err$void, $guard) {
+fn_((example(void))(Err$void $guard)) {
     // 리소스 할당
-    var buffer = meta_cast$(Sli$i32,
-        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))
-    );
+    var buffer = meta_cast$((Sli$i32)(
+        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 128))
+    ));
     // 함수가 반환될 때 항상 정리됨
     defer_(mem_Allocator_free(allocator, anySli(buffer)));
     // 오류가 발생하고 전파될 때만 정리됨
-    errdefer_(log_error("오류 발생!"));
+    errdefer_($ignore_capture, io_stream_eprintln(u8_l("Occurred error!")));
 
     // 오류 전파 (조기 반환)
-    let result_invalid = try_(safeDivide(10, 0));
-
+    let result_invalid = try_(safeDivI32(10, 0));
     // 기본값으로 오류 처리
-    let result_default = catch_(safeDivide(10, 0), 1);
-
+    let result_default = catch_((safeDivI32(10, 0))($ignore_capture, 1));
     // 오류 페이로드 캡처를 통한 오류 처리
-    let result_handling = catch_from(safeDivide(10, 0), err, eval({
-        Err_print(err);   // 오류 출력
-        ErrTrace_print(); // 오류 추적 출력
+    let result_handling = catch_((safeDivI32(10, 0))(err, {
+        printErr(err);
+        printErrTrace();
         return_err(err);  // 오류를 반환
     }));
 
     // 정상 반환
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 ```
 
 ### 🤝 Pattern Matching 예제
 
 ```c
-config_UnionEnum(InputEvent,
+typedef variant_((InputEvent)(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
-);
-use_Opt$(InputEvent);
-fn_(pullInputEvent(void), Opt$InputEvent);
+)) InputEvent;
+Opt_useT$(InputEvent);
+fn_((pullInputEvent(void))(Opt$InputEvent));
 
-fn_(example(void), void) {
+fn_((example(void))(void)) {
     if_some(pullInputEvent(), event) {
         match_(event) {
-        pattern_(InputEvent_press_key, on_pressed) {
+        pattern_(InputEvent_press_key, on_pressed, {
             debug_assert_true_fmt(
                 -1 < on_pressed->key && on_pressed->key <= 255,
-                "key is out of range"
+                u8_l("key is out of range")
             );
-        } break;
-        pattern_(InputEvent_release_button, on_released) {
+        }) break;
+        pattern_(InputEvent_release_button, on_released, {
             debug_assert_true_fmt(
                 -1 < on_released->button && on_released->button <= 5,
-                "button is out of range"
+                u8_l("button is out of range")
             );
-        } break;
-        fallback_()
-            claim_unreachable;
+        }) break;
+        fallback_(claim_unreachable);
         }
     }
 }
@@ -303,32 +296,35 @@ dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제�
 #include "dh/TEST.h"
 
 // 테스트 대상 함수 정의
-fn_(mathAdd(i32 a, i32 b), i32) {
+fn_((math_addI32(i32 a, i32 b))(i32)) {
     return a + b;
 }
 
-fn_(mathMultiply(i32 a, i32 b), i32) {
+fn_((math_mulI32(i32 a, i32 b))(i32)) {
     return a * b;
 }
 
 // 테스트 케이스 정의
-TEST_fn_("기본 수학 연산 테스트", $scope) {
+TEST_fn_("기본 수학 연산 테스트" $scope) {
     // 덧셈 테스트
-    let a = 5;
-    let b = 7;
-    let sum = mathAdd(a, b);
+    let_(a, i32)   = 5;
+    let_(b, i32)   = 7;
+    let_(sum, i32) = math_addI32(a, b);
 
     // 결과 검증
     try_(TEST_expect(sum == 12));
-    try_(TEST_expectMsg(sum > 10, "합계는 10보다 커야 합니다"));
+    try_(TEST_expectMsg(10 < sum , "Sum should be greater than 10"));
 
     // 곱셈 테스트
-    let product = mathMultiply(a, b);
+    let_(product, i32) = math_mulI32(a, b);
     try_(TEST_expect(product == 35));
 
     // 실패하는 테스트 (의도적인 오류 발생)
-    // try_(TEST_expect(product == 30)); // 실패: 35 != 30
-} $unscoped_TEST;
+    catch_((TEST_expect(product == 30))($ignore_capture, {
+        // 실패: 35 != 30
+        io_stream_eprintln(u8_l("Product should be 30, but got {:d}"), product);
+    }));
+} $unscoped_(TEST_fn);
 ```
 
 ## 📚 문서

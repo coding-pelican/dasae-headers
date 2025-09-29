@@ -22,8 +22,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/sli.h"
+#include "dh/prl.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -295,10 +294,10 @@ union Grid {
     } \
 })
 #define comp_syn__for_grid_item_w_tuple_x_y_idx_w_tuple_width_height_len(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len, _Body...) eval({ \
-    let       __grid   = _Grid; \
-    const u32 __width  = Grid_width(__grid); \
-    const u32 __height = Grid_height(__grid); \
-    const usize __len  = Sli_len(__grid.items); \
+    let         __grid   = _Grid; \
+    const u32   __width  = Grid_width(__grid); \
+    const u32   __height = Grid_height(__grid); \
+    const usize __len    = Sli_len(__grid.items); \
     for (u32 __y = 0; __y < __height; ++__y) { \
         for (u32 __x = 0; __x < __width; ++__x) { \
             let pp_Tuple_get1st _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len \

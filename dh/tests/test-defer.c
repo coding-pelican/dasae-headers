@@ -20,14 +20,14 @@ static fn_(testDeferWithReturnScope(void), void);
 static fn_(testBlockDeferScope(void), void);
 
 // Test basic defer functionality
-TEST_fn_("test basic defer", $scope) {
+TEST_fn_("test basic defer" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     try_(testBasicDeferScope());
     try_(TEST_expect(s_test_state.counter == 2));
     return_ok({});
 } $unscoped_TEST_fn
 
-static fn_(testBasicDeferScope(void), Err$void, $guard) {
+static fn_(testBasicDeferScope(void), Err$void $guard) {
     s_test_state.counter = 1;
     defer_(s_test_state.counter = 2);
     try_(TEST_expect(s_test_state.counter == 1));
@@ -35,7 +35,7 @@ static fn_(testBasicDeferScope(void), Err$void, $guard) {
 } $unguarded
 
 // Test multiple defers (LIFO order)
-TEST_fn_("test multiple defers", $scope) {
+TEST_fn_("test multiple defers" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testMultipleDeferScope();
     // Verify LIFO order: 3, 2, 1
@@ -45,7 +45,7 @@ TEST_fn_("test multiple defers", $scope) {
     return_ok({});
 } $unscoped_TEST_fn
 
-static fn_(testMultipleDeferScope(void), void, $guard) {
+static fn_(testMultipleDeferScope(void), void $guard) {
     defer_(recordCleanup(1));
     defer_(recordCleanup(2));
     defer_(recordCleanup(3));
@@ -53,7 +53,7 @@ static fn_(testMultipleDeferScope(void), void, $guard) {
 } $unguarded
 
 // Test defer with early return
-TEST_fn_("test defer with early return", $scope) {
+TEST_fn_("test defer with early return" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testDeferWithReturnScope();
     // Verify cleanup executed in correct order despite early return
@@ -63,7 +63,7 @@ TEST_fn_("test defer with early return", $scope) {
     return_ok({});
 } $unscoped_TEST_fn
 
-static fn_(testDeferWithReturnScope(void), void, $guard) {
+static fn_(testDeferWithReturnScope(void), void $guard) {
     defer_(recordCleanup(1));
     if (true) {
         defer_(recordCleanup(2));
@@ -74,7 +74,7 @@ static fn_(testDeferWithReturnScope(void), void, $guard) {
 } $unguarded
 
 // Test block defer
-TEST_fn_("test block defer", $scope) {
+TEST_fn_("test block defer" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testBlockDeferScope();
     // Verify block defer behavior
@@ -86,15 +86,14 @@ TEST_fn_("test block defer", $scope) {
     return_ok({});
 } $unscoped_TEST_fn
 
-static fn_(testBlockDeferScope(void), void, $guard) {
+static fn_(testBlockDeferScope(void), void $guard) {
     defer_(recordCleanup(1));
 
     block_defer {
         defer_(recordCleanup(2));
         if (true) {
             defer_(recordCleanup(3));
-            defer_break
-            ;
+            defer_break;
         }
         recordCleanup(4); // Should not be executed
     } block_deferral;

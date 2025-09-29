@@ -56,8 +56,11 @@ extern "C" {
 #define isNone(val_opt...) comp_op__isNone(val_opt)
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
-#define orelse(_Expr, _Default_Or_Eval...) comp_op__orelse(pp_uniqTok(result), _Expr, _Default_Or_Eval)
-#define unwrap(_Expr...)                   comp_op__unwrap(_Expr)
+#define orelse_(_Expr...) /* orelse_((_Expr...)(_DefaultExpr_OR_Body...)) */ \
+    pp_expand(pp_defer(orelse)(pp_Tuple_unwrapSufCommaExpand _Expr))
+#define unwrap_(_Expr...)                      comp_op__unwrap(_Expr)
+#define orelse(_Expr, _DefaultExpr_OR_Body...) comp_op__orelse(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
+#define unwrap(_Expr...)                       comp_op__unwrap(_Expr)
 
 /* Converts optional value to pointer */
 #define Opt_asPtr$(T_OptPtr, var_addr_opt...) comp_op__Opt_asPtr$(pp_uniqTok(addr_opt), T_OptPtr, var_addr_opt)
@@ -142,21 +145,42 @@ extern "C" {
 #define comp_syn__return_some(val_some...) return_(some(val_some))
 #define comp_syn__return_none()            return_(none())
 
-#define comp_op__orelse(__result, _Expr, _Default_Or_Eval...) eval({ \
-    var __result = _Expr; \
-    if (isNone(__result)) { \
-        __result.value = bti_Generic_match$( \
-            TypeOf(_Default_Or_Eval), \
-            bti_Generic_pattern$(void) eval({ \
-                $ignore_void _Default_Or_Eval; \
-                eval_return make$(TypeOf(__result.value)); \
-            }), \
-            bti_Generic_fallback_ _Default_Or_Eval \
-        ); \
-    } \
-    eval_return __result.value; \
-})
-#define comp_op__unwrap(_Expr...) orelse(_Expr, claim_unreachable)
+
+#define genericIf$(_Expr, _T, _True, _False...) _Generic(TypeUnqualOf(_Expr), _T: _True, default: _False)
+#define genericExprOrDefaultEvaledIfVoid$(_Expr, _T...) \
+    genericIf$(_Expr, void, ({ $ignore_void(_Expr); make$(TypeOf(_T)); }), (_Expr))
+#define genericExprOrDefaultIfNotT$(_Expr, _T...) \
+    genericIf$(_Expr, _T, (_Expr), make$(_T))
+
+// #define defaultEvaledIfVoid$(_T, _Expr...) bti_Generic_match$( \
+//     TypeUnqualOf(_Expr), \
+//     bti_Generic_pattern$(void)({ \
+//         $ignore_void(_Expr); \
+//         make$(TypeOf(_T)); \
+//     }), \
+//     bti_Generic_fallback_(_Expr) \
+// )
+
+#define comp_op__orelse(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    eval({ \
+        var __result = _Expr; \
+        if (isNone(__result)) { \
+            __result.value = bti_Generic_match$( \
+                TypeUnqualOf(_DefaultExpr_OR_Body), \
+                bti_Generic_pattern$(void) eval({ \
+                    $ignore_void _DefaultExpr_OR_Body; \
+                    eval_return make$(TypeOf(__result.value)); \
+                }), \
+                bti_Generic_fallback_ _DefaultExpr_OR_Body \
+            ); \
+        } \
+        eval_return __result.value; \
+    }) \
+)
+#define comp_op__unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
 
 #define comp_op__Opt_asPtr$(__addr_opt, T_OptPtr, var_addr_opt...) eval({ \
     let __addr_opt = var_addr_opt; \

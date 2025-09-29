@@ -23,9 +23,6 @@ extern "C" {
 #define var_const_(_identifier, _Type...) comp_syn__var_const_(_identifier, _Type)
 #define let_const_(_identifier, _Type...) comp_syn__let_const_(_identifier, _Type)
 
-#define var_type(_identifier, _Type, _Expr...) comp_syn__var_type(_identifier, _Type, _Expr)
-#define let_type(_identifier, _Type, _Expr...) comp_syn__let_type(_identifier, _Type, _Expr)
-
 /*========== Macros and Implementations =====================================*/
 
 #if defined(__cplusplus)
@@ -68,9 +65,6 @@ extern "C" {
 
 #define comp_syn__var_const_(_identifier, _Type...) const _Type _identifier
 #define comp_syn__let_const_(_identifier, _Type...) const _Type const _identifier
-
-#define comp_syn__var_type(_identifier, _Type, _Expr...) _Type _identifier = type$(_Type, _Expr)
-#define comp_syn__let_type(_identifier, _Type, _Expr...) _Type const _identifier = type$(_Type, _Expr)
 
 #if defined(__cplusplus)
 } /* extern "C" */

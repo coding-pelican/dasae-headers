@@ -11,7 +11,7 @@ int TEST_func() {
     __builtin_unreachable();
 }
 
-Err$void dh_main(Sli$Str_const args) {
+Err$void dh_main(Sli$Sli_const$u8 args) {
     reserveReturn(Err$void);
     $unused(args);
     int value = TEST_func();

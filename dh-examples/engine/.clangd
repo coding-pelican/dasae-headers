@@ -8,11 +8,11 @@ CompileFlags:
     - -Werror
     - -funsigned-char
     - -fblocks
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh\include
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh\libs\BlocksRuntime\include
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\engine\src
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\engine\include
-    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\engine\lib\deps
+    - -IC:\dev\dasae-headers\dh\include
+    - -IC:\dev\dasae-headers\dh\libs\BlocksRuntime\include
+    - -IC:\dev\dasae-headers\dh-examples\engine\src
+    - -IC:\dev\dasae-headers\dh-examples\engine\include
+    - -IC:\dev\dasae-headers\dh-examples\engine\lib\deps
 InlayHints:
   Enabled: true
   TypeNameLimit: 24

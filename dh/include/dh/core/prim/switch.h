@@ -31,30 +31,28 @@ extern "C" {
      */ \
     comp_attr__$fallthrough
 
-#define case_return(_Expr...) \
+#define case_(_Enum, _Body...) \
     /** \
-     * @brief case return for `switch` internal \
+     * @brief case for `switch` internal \
      */ \
-    comp_syn__case_return(_Expr)
-
-#define default_return \
+    comp_syn__case_(_Enum, _Body)
+#define default_(_Body...) \
     /** \
-     * @brief default return for `switch` internal \
+     * @brief default for `switch` internal \
      */ \
-    comp_syn__default_return
+    comp_syn__default_(_Body)
 
 /*========== Macro Implementations ==========================================*/
 
 #define comp_attr__$fallthrough \
     __attribute__((fallthrough))
 
-#define comp_syn__case_return(_Expr...) \
-    case _Expr: \
-        return
-
-#define comp_syn__default_return \
+#define comp_syn__case_(_Enum, _Body...) \
+    case _Enum: \
+        _Body
+#define comp_syn__default_(_Body...) \
     default: \
-        return
+        _Body
 
 #if defined(__cplusplus)
 } /* extern "C" */

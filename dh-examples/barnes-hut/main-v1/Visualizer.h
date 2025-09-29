@@ -23,8 +23,8 @@ use_ArrList$(Visualizer_QuadCache);
 use_ArrList$(u8);
 typedef struct Visualizer {
     // View state
-    math_Vec2f pos;   // Camera center in world coords
-    f32        scale; // Current zoom factor
+    m_V2f32 pos;   // Camera center in world coords
+    f32     scale; // Current zoom factor
 
     // For panning:
     Vec2i pan_screen_begin; // Mouse's screen-pixel coords when middle-click started
@@ -98,15 +98,15 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
     // Calculate screen center offsets (handles even/odd dimensions)
     let center_x = as$(i32, (self->canvas->width - (~self->canvas->width & 1)) >> 1);
     let center_y = as$(i32, (self->canvas->height - (~self->canvas->height & 1)) >> 1);
-    return math_Vec2i_from(center_x, center_y);
+    return m_V2i32_from(center_x, center_y);
 }
 /// Unified coordinate system transformations
 /// screen_px == (world_px - screen_center_px) * scale
 /// screen_py == (screen_center_py - world_py) * scale
 $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
-    let p_sub_center        = math_Vec2f_sub(world_pos, self->pos);
-    let p_sub_center_scaled = math_Vec2f_scale(p_sub_center, Visualizer_scale(self));
-    return math_Vec2i_from(
+    let p_sub_center        = m_V2f32_sub(world_pos, self->pos);
+    let p_sub_center_scaled = m_V2f32_scale(p_sub_center, Visualizer_scale(self));
+    return m_V2i32_from(
         as$(i32, roundf(p_sub_center_scaled.x)),
         as$(i32, roundf(p_sub_center_scaled.y))
     );
@@ -115,12 +115,12 @@ $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos)
 /// world_px == screen_center_px + (screen_px * 1/scale)
 /// world_py == screen_center_py - (screen_py * 1/scale)
 $inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
-    let p = math_Vec2f_from(
+    let p = m_V2f32_from(
         as$(f32, screen_pos.x),
         as$(f32, -screen_pos.y)
     );
-    let p_inv_scaled = math_Vec2f_scale(p, Visualizer_scaleInv(self));
-    return math_Vec2f_add(self->pos, p_inv_scaled);
+    let p_inv_scaled = m_V2f32_scale(p, Visualizer_scaleInv(self));
+    return m_V2f32_add(self->pos, p_inv_scaled);
 } */
 
 #endif /* VISUALIZER_INCLUDED */

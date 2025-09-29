@@ -1,10 +1,10 @@
 #include "mockup-async_ex.h"
 
-#include "dh/sli.h"
 #include "dh/Arr.h"
+#include "dh/sli.h"
+#include "dh/Str.h"
 #include "dh/time.h"
-
-#include <stdio.h>
+#include "dh/io/stream.h"
 
 /// \brief Task to be executed
 typedef struct Task {
@@ -23,7 +23,7 @@ static fn_(exec_runLoop(bool endless), void) {
     use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
 
-    printf("looping events y'all\n");
+    io_stream_print(u8_l("looping events y'all\n"));
     while (true) {
         let  now   = time_Instant_now();
         bool any   = false;
@@ -32,7 +32,7 @@ static fn_(exec_runLoop(bool endless), void) {
             if_some(Opt_asPtr(task_remaining), task) {
                 any = true;
                 if (time_Instant_le(task->expires, now)) {
-                    printf("sleep over y'all\n");
+                    io_stream_print(u8_l("sleep over y'all\n"));
                     Opt_asg(&frame, some(task->frame));
                     Opt_asg(task_remaining, none());
                     break;
@@ -90,16 +90,16 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_(report(Str_const label, const char* fmt, ...), void) {
-    printf("[ThrdId(%zu): %*s] ", Thrd_getCurrentId(), as$(i32, label.len), label.ptr);
+fn_(report(Sli_const$u8 label, Sli_const$u8 fmt, ...), void) {
+    io_stream_print(u8_l("[ThrdId({:zu}): {:s}] "), Thrd_getCurrentId(), label);
     va_list args = {};
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+    with_fini_(va_start(args, fmt), va_end(args)) {
+        io_stream_printVaArgs(fmt, args);
+    }
 }
 
 use_Co_Ctx$(f64);
-async_fn_(count, (var_(caller, Opt$$(Co_Ctx*)); var_(n, usize); var_(interval, f64); var_(label, Str_const);), f64);
+async_fn_(count, (var_(caller, Opt$$(Co_Ctx*)); var_(n, usize); var_(interval, f64); var_(label, Sli_const$u8);), f64);
 async_fn_scope(count, {
     var_(start, time_Instant);
     var_(wait_ms, u64);
@@ -108,7 +108,7 @@ async_fn_scope(count, {
     var_(total, f64);
 }) {
     locals->start = time_Instant_now();
-    report(args->label, "before loop %f\n", args->interval);
+    report(args->label, u8_l("before loop {:f}\n"), args->interval);
     locals->wait_ms = as$(u64, (args->interval * time_millis_per_sec));
 
     locals->iter = 0;
@@ -116,7 +116,7 @@ async_fn_scope(count, {
         // locals->sleep_ctx = *async_ctx((exec_sleep)(ctx->anyraw, locals->wait_ms));
         // while (resume_(&locals->sleep_ctx)->state == Co_State_suspended) { suspend_(); }
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(ctx->anyraw), locals->wait_ms));
-        report(args->label, "slept %f | i: %zu < n: %zu\n", args->interval, locals->iter, args->n);
+        report(args->label, u8_l("slept {:f} | i: {:zu} < n: {:zu}\n"), args->interval, locals->iter, args->n);
         locals->iter++;
     }
 
@@ -126,13 +126,13 @@ async_fn_scope(count, {
         static let now      = time_Instant_now;
         eval_return asSecs(durSince(now(), locals->start));
     });
-    report(args->label, "after loop %f\n", locals->total);
+    report(args->label, u8_l("after loop %f\n"), locals->total);
     areturn_(locals->total);
 } $unscoped_async_fn;
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
-async_fn_(runMain, (Sli$Str_const args;), f64);
+async_fn_(runMain, (Sli$Sli_const$u8 args;), f64);
 async_fn_scope(runMain, {
     var_(tasks, Arr$$(2, Co_CtxFn$(count)));
     var_(total, f64);
@@ -140,7 +140,7 @@ async_fn_scope(runMain, {
     var_(await_curr, Co_CtxFn$(count)*);
 }) {
     $ignore = args;
-    printf("begin\n");
+    io_stream_print(u8_l("begin\n"));
 
     // clang-format off
     Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_CtxFn$(count)), {
@@ -150,25 +150,25 @@ async_fn_scope(runMain, {
     for_array (locals->tasks, task) { resume_(task); }
     // clang-format on
 
-    printf("count size: %zu\n", sizeOf(Arr_getAt(locals->tasks, 0)));
+    io_stream_print(u8_l("count size: {:zu}\n"), sizeOf(Arr_getAt(locals->tasks, 0)));
 
     locals->total = 0.0;
     for (locals->await_idx = 0; locals->await_idx < Arr_len(locals->tasks); ++locals->await_idx) {
         locals->await_curr = Arr_at(locals->tasks, locals->await_idx);
         await_(locals->await_curr);
-        locals->total += locals->await_curr->ret->value;
+        locals->total += Co_Ctx_returned(locals->await_curr);
     }
 
-    printf("end\n");
+    io_stream_print(u8_l("end\n"));
     areturn_(locals->total);
 } $unscoped_async_fn;
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     var task = async_((runMain)(args));
-    printf("run size: %zu\n", sizeOf(*task));
+    io_stream_print(u8_l("run size: {:zu}\n"), sizeOf(*task));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));
     let total = task->ret->value;
-    printf("total: %f\n", total);
+    io_stream_print(u8_l("total: {:f}\n"), total);
     return_ok({});
 } $unscoped;

@@ -27,11 +27,12 @@ extern "C" {
 #include "dh/sli.h"
 #include "dh/opt.h"
 #include "dh/err_res.h"
-#include "dh/union_enum.h"
+#include "dh/variant.h"
 
 /*========== Macros and Declarations ========================================*/
 
-config_UnionEnum(AnyType,
+typedef variant_(
+    (AnyType),
     (AnyType_ptr, struct {
         union {
             TypeInfo type;
@@ -72,7 +73,7 @@ config_UnionEnum(AnyType,
             };
         };
         anyptr addr;
-        usize len;
+        usize  len;
     }),
     (AnyType_opt, struct {
         union {
@@ -82,7 +83,7 @@ config_UnionEnum(AnyType,
                 u32 align;
             };
         };
-        bool has_value;
+        bool   has_value;
         anyptr addr;
     }),
     (AnyType_err_res, struct {
@@ -95,11 +96,11 @@ config_UnionEnum(AnyType,
         };
         bool is_err;
         union {
-            Err err;
+            Err    err;
             anyptr addr;
         } data;
     })
-);
+) AnyType;
 
 #define anyPtr(var_ptr...)        comp_op__anyPtr(var_ptr)
 #define anySliZ(var_sli...)       comp_op__anySliZ(var_sli) /* Not implemented */
@@ -110,41 +111,33 @@ config_UnionEnum(AnyType,
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_op__anyPtr(var_ptr...) eval({                                                                                              \
-    let __ptr = var_ptr;                                                                                                                \
+#define comp_op__anyPtr(var_ptr...) eval({ \
+    let __ptr = var_ptr; \
     claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Ptr), "`meta_Ptr` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Sli), "`meta_Sli` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
-    eval_return tagUnion$(AnyType, AnyType_ptr, { .type = typeInfo$(TypeOf(*__ptr)), .addr = __ptr });                                           \
+    eval_return variant_of$(AnyType, AnyType_ptr, { .type = typeInfo$(TypeOf(*__ptr)), .addr = __ptr }); \
 })
-#define comp_op__anySliZ(var_sli...) eval({          \
-    let __sli = var_sli;                             \
-    eval_return tagUnion$(AnyType, AnyType_sli_z, {  }); \
+#define comp_op__anySliZ(var_sli...) eval({ \
+    let __sli = var_sli; \
+    eval_return variant_of$(AnyType, AnyType_sli_z, {}); \
 })
-#define comp_op__anySliS(var_sli...) eval({          \
-    let __sli = var_sli;                             \
-    eval_return tagUnion$(AnyType, AnyType_sli_s, {  }); \
+#define comp_op__anySliS(var_sli...) eval({ \
+    let __sli = var_sli; \
+    eval_return variant_of$(AnyType, AnyType_sli_s, {}); \
 })
-#define comp_op__anySli(var_sli...) eval({                                                                                              \
-    let __sli = var_sli;                                                                                                                \
+#define comp_op__anySli(var_sli...) eval({ \
+    let __sli = var_sli; \
     claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Ptr), "`meta_Ptr` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Sli), "`meta_Sli` is not compatible with `anySli`. Use `meta_sliToAny`."); \
-    eval_return tagUnion$(AnyType, AnyType_sli, { .type = typeInfo$(TypeOf(*__sli.ptr)), .addr = __sli.ptr, .len = __sli.len });                    \
+    eval_return variant_of$(AnyType, AnyType_sli, { .type = typeInfo$(TypeOf(*__sli.ptr)), .addr = __sli.ptr, .len = __sli.len }); \
 })
-#define comp_op__anyOpt(var_opt...) eval({                                                                                           \
-    let __opt = var_opt;                                                                                                             \
-    eval_return tagUnion(AnyType, AnyType_opt, { \
-        .type = typeInfo$(TypeOf(*__opt.value)), \
-        .has_value = __opt.has_value, \
-        .value = __opt.value \
-    }); \
+#define comp_op__anyOpt(var_opt...) eval({ \
+    let __opt = var_opt; \
+    eval_return variant_of(AnyType, AnyType_opt, { .type = typeInfo$(TypeOf(*__opt.value)), .has_value = __opt.has_value, .value = __opt.value }); \
 })
-#define comp_op__anyErrSet(var_err_res...) eval({                                                                                              \
-    let __err_res = var_err_res;                                                                                                               \
-    eval_return tagUnion(AnyType, AnyType_err_res, { \
-        .type = typeInfo$(TypeOf(*__err_res.data.ok)), \
-        .is_err = __err_res.is_err, \
-        .data = __err_res.data \
-    }); \
+#define comp_op__anyErrSet(var_err_res...) eval({ \
+    let __err_res = var_err_res; \
+    eval_return variant_of(AnyType, AnyType_err_res, { .type = typeInfo$(TypeOf(*__err_res.data.ok)), .is_err = __err_res.is_err, .data = __err_res.data }); \
 })
 
 #if defined(__cplusplus)

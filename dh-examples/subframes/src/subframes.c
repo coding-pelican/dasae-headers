@@ -64,7 +64,7 @@ static fn_(getGameMemory(void), heap_Fixed) {
     return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
 }
 
-fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-complexity) */
+fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-complexity) */
     Random_init();
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -94,12 +94,7 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
     log_info("allocator reserved for game");
 
     // Create window
-    let window = try_(engine_Window_init(create$(engine_Window_Config,
-        .allocator     = some(allocator_engine),
-        .rect_size     = { .x = window_res_width, .y = window_res_height },
-        .default_color = some({ .packed = 0x181818FF }),
-        .title         = some(u8_l("Subframes")),
-    )));
+    let window = try_(engine_Window_init(create$(engine_Window_Config, .allocator = some(allocator_engine), .rect_size = { .x = window_res_width, .y = window_res_height }, .default_color = some({ .packed = 0x181818FF }), .title = some(u8_l("Subframes")), )));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
@@ -192,7 +187,7 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
     log_info("game loop started");
 
     // Initialize window variables
-    var prev_winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+    var prev_winpos = m_V_as$(Vec2f, engine_Window_getPos(window));
 
     bool is_running = true;
     while (is_running) {
@@ -204,9 +199,9 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
         let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
 
         // 3) Check for window movement
-        let winpos = math_Vec_as$(Vec2f, engine_Window_getPos(window));
+        let winpos = m_V_as$(Vec2f, engine_Window_getPos(window));
         debug_only({
-            if (math_Vec2f_neApx(winpos, prev_winpos, state_vec2f_threshold)) {
+            if (m_V2f32_neApx(winpos, prev_winpos, state_vec2f_threshold)) {
                 log_info("window moved");
                 log_info("old winpos: %.2f %.2f", prev_winpos.x, prev_winpos.y);
                 log_info("new winpos: %.2f %.2f", winpos.x, winpos.y);
@@ -214,18 +209,18 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
         });
         let dwinpos = eval({
             // Calculate world scale (ratio of physical screen size to world space size)
-            let window_dim = math_Vec_as$(math_Vec2f, engine_Window_getDim(window)); // Physical screen dimensions
-            let window_res = math_Vec_as$(math_Vec2f, engine_Window_getRes(window)); // World space dimensions
+            let window_dim = m_V_as$(m_V2f32, engine_Window_getDim(window)); // Physical screen dimensions
+            let window_res = m_V_as$(m_V2f32, engine_Window_getRes(window)); // World space dimensions
 
             // Calculate scale factors for each dimension
-            let world_scale = math_Vec2f_from(
+            let world_scale = m_V2f32_from(
                 window_dim.x / window_res.x,
                 window_dim.y / window_res.y
             );
 
             // Use world_scale to properly convert window position change to world space
-            eval_return math_Vec2f_div(
-                math_Vec2f_sub(winpos, prev_winpos),
+            eval_return m_V2f32_div(
+                m_V2f32_sub(winpos, prev_winpos),
                 world_scale
             );
         });
@@ -242,23 +237,20 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
             log_debug("esc pressed");
         }
 
-        with_(let left_space = Arr_from$(bool, {
-            [0] = engine_Mouse_held(input->mouse, engine_MouseButton_left),
-            [1] = engine_Keyboard_held(input->keyboard, engine_KeyCode_space)
-        })) {
+        with_(let left_space = Arr_from$(bool, { [0] = engine_Mouse_held(input->mouse, engine_MouseButton_left), [1] = engine_Keyboard_held(input->keyboard, engine_KeyCode_space) })) {
             if (Arr_getAt(left_space, 0) || Arr_getAt(left_space, 1)) {
                 debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
                 debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
 
                 with_(let pos = meta_cast$(Vec2f*, try_(ArrList_addBackOne(positions.base)))) {
-                    *pos = math_Vec_as$(Vec2f, engine_Mouse_getPos(input->mouse));
+                    *pos = m_V_as$(Vec2f, engine_Mouse_getPos(input->mouse));
                 }
 
                 with_(let vel = meta_cast$(Vec2f*, try_(ArrList_addBackOne(velocities.base)))) {
                     *vel = eval({
                         let angle = (math_f32_pi / 180.0f) * as$(f32, Random_range_i64(0, 360));
-                        let r     = math_Vec2f_sincos(angle);
-                        eval_return(math_Vec2f_scale(r, 50.0f));
+                        let r     = m_V2f32_sincos(angle);
+                        eval_return(m_V2f32_scale(r, 50.0f));
                     });
                 }
 
@@ -278,7 +270,7 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
                 const f32 h = as$(f32, engine_Window_getRes(window).y);
                 const f32 f = as$(f32, t / time_dt);
 
-                math_Vec2f_subAsg(&ps.ptr[i], math_Vec2f_scale(dwinpos, update_target_spf / time_dt));
+                m_V2f32_subAsg(&ps.ptr[i], m_V2f32_scale(dwinpos, update_target_spf / time_dt));
                 vs.ptr[i].y += state_gravity * update_target_spf;
 
                 const f32 nx = ps.ptr[i].x + vs.ptr[i].x * update_target_spf;
@@ -309,37 +301,37 @@ fn_(dh_main(void), Err$void, $guard) { /* NOLINT(readability-function-cognitive-
 
                 // Add circle-circle collision detection
                 for (usize j = i + 1; j < ps.len; ++j) {
-                    Vec2f dist_vec = math_Vec2f_sub(ps.ptr[j], ps.ptr[i]);
-                    f32   distance = math_Vec2f_len(dist_vec);
+                    Vec2f dist_vec = m_V2f32_sub(ps.ptr[j], ps.ptr[i]);
+                    f32   distance = m_V2f32_len(dist_vec);
 
                     if (distance < radius * 2) {
                         // Normalize the distance vector
-                        Vec2f normal  = math_Vec2f_scale(dist_vec, 1.0f / distance);
-                        Vec2f tangent = math_Vec2f_perp(normal);
+                        Vec2f normal  = m_V2f32_scale(dist_vec, 1.0f / distance);
+                        Vec2f tangent = m_V2f32_perp(normal);
 
                         // Project velocities
-                        f32 dp_tan_1  = math_Vec2f_dot(vs.ptr[i], tangent);
-                        f32 dp_tan_2  = math_Vec2f_dot(vs.ptr[j], tangent);
-                        f32 dp_norm_1 = math_Vec2f_dot(vs.ptr[i], normal);
-                        f32 dp_norm_2 = math_Vec2f_dot(vs.ptr[j], normal);
+                        f32 dp_tan_1  = m_V2f32_dot(vs.ptr[i], tangent);
+                        f32 dp_tan_2  = m_V2f32_dot(vs.ptr[j], tangent);
+                        f32 dp_norm_1 = m_V2f32_dot(vs.ptr[i], normal);
+                        f32 dp_norm_2 = m_V2f32_dot(vs.ptr[j], normal);
 
                         // Calculate new velocities (assuming equal mass)
                         f32 momentum_1 = dp_norm_2;
                         f32 momentum_2 = dp_norm_1;
 
                         // Update velocities
-                        vs.ptr[i] = pipe(math_Vec2f_scale(tangent, dp_tan_1),
-                            (math_Vec2f_add,(math_Vec2f_scale(normal, momentum_1 * state_collision_damping)))
+                        vs.ptr[i] = pipe(m_V2f32_scale(tangent, dp_tan_1),
+                            (m_V2f32_add,(m_V2f32_scale(normal, momentum_1 * state_collision_damping)))
                         );
-                        vs.ptr[j] = pipe(math_Vec2f_scale(tangent, dp_tan_2),
-                            (math_Vec2f_add,(math_Vec2f_scale(normal, momentum_2 * state_collision_damping)))
+                        vs.ptr[j] = pipe(m_V2f32_scale(tangent, dp_tan_2),
+                            (m_V2f32_add,(m_V2f32_scale(normal, momentum_2 * state_collision_damping)))
                         );
 
                         // Separate the circles
                         f32   overlap    = radius * 2 - distance;
-                        Vec2f separation = math_Vec2f_scale(normal, overlap * 0.5f);
-                        math_Vec2f_subAsg(&ps.ptr[i], separation);
-                        math_Vec2f_addAsg(&ps.ptr[j], separation);
+                        Vec2f separation = m_V2f32_scale(normal, overlap * 0.5f);
+                        m_V2f32_subAsg(&ps.ptr[i], separation);
+                        m_V2f32_addAsg(&ps.ptr[j], separation);
                     }
                 }
 

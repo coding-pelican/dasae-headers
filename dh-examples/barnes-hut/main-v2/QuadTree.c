@@ -21,7 +21,7 @@ Quad Quad_newContaining(const Sli$Body bodies) {
         max_y = fmaxf(max_y, body->pos.y);
     }
 
-    let center = math_Vec2f_scale(math_Vec2f_from(min_x + max_x, min_y + max_y), 0.5f);
+    let center = m_V2f32_scale(m_V2f32_from(min_x + max_x, min_y + max_y), 0.5f);
     let size   = fmaxf(max_x - min_x, max_y - min_y);
 
     return (Quad){
@@ -52,7 +52,7 @@ QuadNode QuadNode_new(usize next, Quad quad, Range bodies) {
     return (QuadNode){
         .children = 0,
         .next     = next,
-        .pos      = math_Vec2f_zero,
+        .pos      = m_V2f32_zero,
         .mass     = 0.0f,
         .quad     = quad,
         .bodies   = bodies
@@ -110,7 +110,7 @@ void QuadTree_clear(QuadTree* self) {
 }
 
 // Partition function
-$inline_always usize partition(Sli$Body self, bool (*predFn)(const Body* self, math_Vec2f center), math_Vec2f center) {
+$inline_always usize partition(Sli$Body self, bool (*predFn)(const Body* self, m_V2f32 center), m_V2f32 center) {
     if (self.len == 0) { return 0; }
     usize lhs = 0;
     usize rhs = self.len - 1;
@@ -126,10 +126,10 @@ $inline_always usize partition(Sli$Body self, bool (*predFn)(const Body* self, m
     return lhs;
 }
 // Predicates
-static $inline bool predLtX(const Body* body, math_Vec2f center) {
+static $inline bool predLtX(const Body* body, m_V2f32 center) {
     return body->pos.x < center.x;
 }
-static $inline bool predLtY(const Body* body, math_Vec2f center) {
+static $inline bool predLtY(const Body* body, m_V2f32 center) {
     return body->pos.y < center.y;
 }
 
@@ -173,7 +173,8 @@ static Err$void QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, 
             &self->nodes.base,
             meta_refPtr(createFrom$(
                 QuadNode, QuadNode_new(*Sli_at(nexts, index), *Arr_at(quads, index), bodies)
-            )) ));
+            ))
+        ));
     }
     return_void();
 }
@@ -195,9 +196,9 @@ void QuadTree_propagate(QuadTree* self) {
         // Calculate total mass and weighted position for all children
         curr->pos = eval({
             var p = c0->pos;
-            math_Vec2f_addTo(&p, c1->pos);
-            math_Vec2f_addTo(&p, c2->pos);
-            math_Vec2f_addTo(&p, c3->pos);
+            m_V2f32_addTo(&p, c1->pos);
+            m_V2f32_addTo(&p, c2->pos);
+            m_V2f32_addTo(&p, c3->pos);
             eval_return p;
         });
 
@@ -207,7 +208,7 @@ void QuadTree_propagate(QuadTree* self) {
                    + c3->mass;
     }
     for_slice (self->nodes.items, node) {
-        math_Vec2f_scaleInvTo(&node->pos, prim_max(node->mass, f32_limit_min));
+        m_V2f32_scaleInvTo(&node->pos, prim_max(node->mass, f32_limit_min));
     }
 }
 
@@ -222,8 +223,7 @@ Err$void QuadTree_build(QuadTree* self, Sli$Body bodies) {
         meta_refPtr(createFrom$(
             QuadNode, QuadNode_new(0, quad, Range_from(0, bodies.len))
         ))
-        )
-        );
+    ));
 
     usize node = 0;
     while (node < self->nodes.items.len) {
@@ -232,9 +232,9 @@ Err$void QuadTree_build(QuadTree* self, Sli$Body bodies) {
             QuadTree_subdivide(self, node, bodies, range);
         } else {
             for (usize idx = range.begin; idx < range.end; ++idx) {
-                math_Vec2f_addTo(
+                m_V2f32_addTo(
                     &Sli_at(self->nodes.items, node)->pos,
-                    math_Vec2f_scale(Sli_at(bodies, idx)->pos, Sli_at(bodies, idx)->mass)
+                    m_V2f32_scale(Sli_at(bodies, idx)->pos, Sli_at(bodies, idx)->mass)
                 );
                 Sli_at(self->nodes.items, node)->mass += Sli_at(bodies, idx)->mass;
             }
@@ -246,16 +246,16 @@ Err$void QuadTree_build(QuadTree* self, Sli$Body bodies) {
     return_void();
 }
 
-math_Vec2f QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies) {
+m_V2f32 QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, Sli$Body bodies) {
     debug_assert_nonnull(self);
 
-    var acc  = math_Vec2f_zero;
+    var acc  = m_V2f32_zero;
     var node = QuadTree_root;
     while (true) {
         let n = *Sli_at(self->nodes.items, node);
 
-        let d    = math_Vec2f_sub(n.pos, pos);
-        let d_sq = math_Vec2f_lenSq(d);
+        let d    = m_V2f32_sub(n.pos, pos);
+        let d_sq = m_V2f32_lenSq(d);
 
         const bool is_leaf            = QuadNode_isLeaf(&n);
         const bool is_far_enough_away = (n.quad.size * n.quad.size) < (d_sq * self->theta_sq);
@@ -265,16 +265,16 @@ math_Vec2f QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bo
             if (is_far_enough_away) {
                 // add force from the node's total mass
                 let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
-                math_Vec2f_addTo(&acc, math_Vec2f_scale(d, n.mass / denom));
+                m_V2f32_addTo(&acc, m_V2f32_scale(d, n.mass / denom));
             } else {
                 // It's a leaf, sum contributions from the actual bodies
                 for (usize idx = n.bodies.begin; idx < n.bodies.end; ++idx) {
                     let body = Sli_at(bodies, idx);
-                    let d    = math_Vec2f_sub(body->pos, pos);
-                    let d_sq = math_Vec2f_lenSq(d);
+                    let d    = m_V2f32_sub(body->pos, pos);
+                    let d_sq = m_V2f32_lenSq(d);
 
                     let denom = (d_sq + self->eps_sq) * sqrtf(d_sq);
-                    math_Vec2f_addTo(&acc, math_Vec2f_scale(d, prim_min(body->mass / denom, f32_limit_max)));
+                    m_V2f32_addTo(&acc, m_V2f32_scale(d, prim_min(body->mass / denom, f32_limit_max)));
                 }
             }
 

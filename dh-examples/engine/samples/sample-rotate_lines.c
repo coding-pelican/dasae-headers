@@ -35,7 +35,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("engine initialized\n");
 
         // Create canvases
-        let game_canvas = catch (engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
+        let game_canvas = catch(engine_Canvas_create(80, 50, engine_CanvasType_rgba), err, {
             log_error("Failed to create canvas: %s\n", err);
             return_err(err);
         });
@@ -70,7 +70,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             }
 
             // Update with render to canvas
-            let   r = math_Vec2f_sincos((f32)t * 0.05f);
+            let   r = m_V2f32_sincos((f32)t * 0.05f);
             Vec2f o = cleared();
             Vec2f p = { .x = 50.0f, .y = 0.0f };
 
@@ -82,13 +82,13 @@ Err$void dh_main(int argc, const char* argv[]) {
                     const f32   canvas_scale  = 0.25f; // cuz logic based on 4x scale (320x200)
                     const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
 
-                    draw_origin   = math_Vec2f_scale(draw_origin, canvas_scale);
+                    draw_origin   = m_V2f32_scale(draw_origin, canvas_scale);
                     draw_origin.y = -draw_origin.y;
-                    draw_origin   = math_Vec2f_add(draw_origin, canvas_center);
+                    draw_origin   = m_V2f32_add(draw_origin, canvas_center);
 
-                    draw_point   = math_Vec2f_scale(draw_point, canvas_scale);
+                    draw_point   = m_V2f32_scale(draw_point, canvas_scale);
                     draw_point.y = -draw_point.y;
-                    draw_point   = math_Vec2f_add(draw_point, canvas_center);
+                    draw_point   = m_V2f32_add(draw_point, canvas_center);
                 }
                 engine_Canvas_drawLine(game_canvas, (i32)draw_origin.x, (i32)draw_origin.y, (i32)draw_point.x, (i32)draw_point.y, Color_white);
 
@@ -106,5 +106,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }

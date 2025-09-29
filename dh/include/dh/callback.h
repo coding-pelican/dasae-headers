@@ -69,13 +69,15 @@ extern "C" {
         } callback; \
         bool is_lam; \
     }
-typedef struct T_Callback {
-    union {
-        fn_((*lamObj)_Params, T_Return);
-        fn_((*fnPtr)_Params, T_Return);
-    } callback;
-    bool is_lam;
-} T_Callback
+#define comp_gen__use_Callback(T_Callback, _Params, T_Return...) \
+    typedef struct T_Callback {
+union {
+    fn_((*lamObj)_Params, T_Return);
+    fn_((*fnPtr)_Params, T_Return);
+} callback;
+bool is_lam;
+}
+T_Callback
 #endif /* others */
 
 #define comp_op__wrapLam(val_callbackLamObj...) { \
@@ -103,7 +105,7 @@ typedef struct T_Callback {
 
 #if EXAMPLE_USAGE /* Demonstrates usage of the callback compatibility layer */
 // Example: Comparison function type
-config_Callback(sort_CmpFn_compat, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
+use_Callback(sort_CmpFn_compat, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
 
 // Example: Invoke a comparison function
 $inline_always fn_(sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
@@ -145,7 +147,7 @@ fn_(operateCompat(i32 a, i32 b, IntBinOp_compat op),
 fn_(funcAdd(i32 lhs, i32 rhs),
     i32) { return lhs + rhs; }
 // Example main function showing how to use the compatibility layer
-fn_(dh_main(void), Err$void, $guard) {
+fn_(dh_main(void), Err$void $guard) {
     // Create a block/lambda
     let lambdaAdd = lam_((i32 lhs, i32 rhs), i32) { return lhs + rhs; };
 

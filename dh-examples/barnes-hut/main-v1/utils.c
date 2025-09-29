@@ -64,9 +64,7 @@ void utils_insertionSortWithArg(
 
 // TODO: 와 큰일 날 뻔... 직접적인 meta_Sli 생성은 금지해야겠다. meta_Sli_slice 함수 작성이 시급하다.
 Err$void utils_mergeSortUsingTempRecur( // NOLINT
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+    Sli$u8 temp_buffer, meta_Sli base_slice, cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
 ) {
     reserveReturn(Err$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
@@ -140,10 +138,7 @@ Err$void utils_mergeSortUsingTempRecur( // NOLINT
 }
 
 Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+    Sli$u8 temp_buffer, meta_Sli base_slice, cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), anyptr_const arg
 ) {
     reserveReturn(Err$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
@@ -281,8 +276,8 @@ Err$void utils_stableSortWithArgUsingTemp(
 static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
-    let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
-    let rhs_dist = math_Vec2f_lenSq(rhs_body->pos);
+    let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
+    let rhs_dist = m_V2f32_lenSq(rhs_body->pos);
     if (lhs_dist < rhs_dist) { return cmp_Ord_lt; }
     if (lhs_dist > rhs_dist) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
@@ -306,24 +301,23 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
     try(ArrList_append(
         &bodies.base,
         meta_refPtr(createFrom$(
-            Body, Body_new(math_Vec2f_zero, math_Vec2f_zero, m, inner_radius)
+            Body, Body_new(m_V2f32_zero, m_V2f32_zero, m, inner_radius)
         ))
-        )
-    );
+    ));
 
     // Generate outer bodies
     while (bodies.items.len < n) {
         // Random angle
         let a    = Random_f32() * math_f32_tau;
-        let sc_a = math_Vec2f_sincos(a);
+        let sc_a = m_V2f32_sincos(a);
 
         // Random radius with inner cutoff
         let t = inner_radius / outer_radius;
         let r = Random_f32() * (1.0f - t * t) + t * t;
 
         // Calculate position and initial velocity direction
-        let pos = math_Vec2f_scale(sc_a, outer_radius * sqrtf(r));
-        let vel = math_Vec2f_from(sc_a.y, -sc_a.x);
+        let pos = m_V2f32_scale(sc_a, outer_radius * sqrtf(r));
+        let vel = m_V2f32_from(sc_a.y, -sc_a.x);
 
         // Set mass and radius
         const f32 mass   = 1.0f;
@@ -333,8 +327,7 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
         try(ArrList_append(
             &bodies.base,
             meta_refPtr(createFrom$(Body, Body_new(pos, vel, mass, radius)))
-            )
-        );
+        ));
     }
 
     // Sort by distance from center and adjust velocities
@@ -346,13 +339,13 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
         mass += Sli_at(bodies.items, index)->mass;
 
         // Skip center body
-        if (math_Vec2f_eq(Sli_at(bodies.items, index)->pos, math_Vec2f_zero)) { continue; }
+        if (m_V2f32_eq(Sli_at(bodies.items, index)->pos, m_V2f32_zero)) { continue; }
 
         // Calculate orbital velocity based on enclosed mass
-        let dist = math_Vec2f_len(Sli_at(bodies.items, index)->pos);
+        let dist = m_V2f32_len(Sli_at(bodies.items, index)->pos);
         let v    = sqrtf(mass / dist);
 
-        math_Vec2f_scaleTo(&Sli_at(bodies.items, index)->vel, v);
+        m_V2f32_scaleTo(&Sli_at(bodies.items, index)->vel, v);
     }
 
     return_ok(bodies);
@@ -371,12 +364,7 @@ $inline_always Err$usize mulSafe(usize lhs, usize rhs) {
 }
 // Modernized merge sort with temporary buffer (stable sort)
 static Err$void mergeSortWithTmpRecur( // NOLINT
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr arg,
-    Sli$u8 temp_buffer
+    anyptr base, usize num, usize size, cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), anyptr arg, Sli$u8 temp_buffer
 ) {
     scope_reserveReturn(Err$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }

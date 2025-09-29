@@ -4,151 +4,193 @@
 #include "dh/core/pp.h"
 #include "dh/core/prim.h"
 
-#define using_math_Vec$(T) \
-    using_math_Vec2$(T);   \
-    using_math_Vec3$(T);   \
-    using_math_Vec4$(T)
+#define using_m_V$(T) \
+    using_m_V2$(T); \
+    using_m_V3$(T); \
+    using_m_V4$(T)
 
-#define using_math_Vec2$(T)                                          \
-    typedef union pp_join($, math_Vec2, T) pp_join($, math_Vec2, T); \
-    union pp_join($, math_Vec2, T) {                                 \
-        T s[2];                                                      \
-        struct {                                                     \
-            T x, y;                                                  \
-        };                                                           \
+#define using_m_V2$(T) \
+    typedef union pp_join($, m_V2, T) pp_join($, m_V2, T); \
+    union pp_join($, m_V2, T) { \
+        T s[2]; \
+        struct { \
+            T x, y; \
+        }; \
     }
 
-#define using_math_Vec3$(T)                                          \
-    typedef union pp_join($, math_Vec3, T) pp_join($, math_Vec3, T); \
-    union pp_join($, math_Vec3, T) {                                 \
-        T s[3];                                                      \
-        struct {                                                     \
-            T x, y, z;                                               \
-        };                                                           \
+#define using_m_V3$(T) \
+    typedef union pp_join($, m_V3, T) pp_join($, m_V3, T); \
+    union pp_join($, m_V3, T) { \
+        T s[3]; \
+        struct { \
+            T x, y, z; \
+        }; \
     }
 
-#define using_math_Vec4$(T)                                          \
-    typedef union pp_join($, math_Vec4, T) pp_join($, math_Vec4, T); \
-    union pp_join($, math_Vec4, T) {                                 \
-        T s[4];                                                      \
-        struct {                                                     \
-            T x, y, z, w;                                            \
-        };                                                           \
+#define using_m_V4$(T) \
+    typedef union pp_join($, m_V4, T) pp_join($, m_V4, T); \
+    union pp_join($, m_V4, T) { \
+        T s[4]; \
+        struct { \
+            T x, y, z, w; \
+        }; \
     }
 
-using_math_Vec$(u8);
-using_math_Vec$(u16);
-using_math_Vec$(u32);
-using_math_Vec$(u64);
-using_math_Vec$(usize);
+using_m_V$(u8);
+using_m_V$(u16);
+using_m_V$(u32);
+using_m_V$(u64);
+using_m_V$(usize);
 
-using_math_Vec$(i8);
-using_math_Vec$(i16);
-using_math_Vec$(i32);
-using_math_Vec$(i64);
-using_math_Vec$(isize);
+using_m_V$(i8);
+using_m_V$(i16);
+using_m_V$(i32);
+using_m_V$(i64);
+using_m_V$(isize);
 
-// using_math_Vec$(f16);
-using_math_Vec$(f32);
-using_math_Vec$(f64);
+// using_m_V$(f16);
+using_m_V$(f32);
+using_m_V$(f64);
 
-#undef using_math_Vec$
-#undef using_math_Vec2$
-#undef using_math_Vec3$
-#undef using_math_Vec4$
+#undef using_m_V$
+#undef using_m_V2$
+#undef using_m_V3$
+#undef using_m_V4$
 
-typedef math_Vec2$u8    math_Vec2ub;
-typedef math_Vec2$u16   math_Vec2us;
-typedef math_Vec2$u32   math_Vec2u;
-typedef math_Vec2$u64   math_Vec2ul;
-typedef math_Vec2$usize math_Vec2uz;
-typedef math_Vec3$u8    math_Vec3ub;
-typedef math_Vec3$u16   math_Vec3us;
-typedef math_Vec3$u32   math_Vec3u;
-typedef math_Vec3$u64   math_Vec3ul;
-typedef math_Vec3$usize math_Vec3uz;
-typedef math_Vec4$u8    math_Vec4ub;
-typedef math_Vec4$u16   math_Vec4us;
-typedef math_Vec4$u32   math_Vec4u;
-typedef math_Vec4$u64   math_Vec4ul;
-typedef math_Vec4$usize math_Vec4uz;
+typedef m_V2$u8    m_V2u8;
+typedef m_V2$u16   m_V2u16;
+typedef m_V2$u32   m_V2u32;
+typedef m_V2$u64   m_V2u64;
+typedef m_V2$usize m_V2usize;
+typedef m_V3$u8    m_V3u8;
+typedef m_V3$u16   m_V3u16;
+typedef m_V3$u32   m_V3u32;
+typedef m_V3$u64   m_V3u64;
+typedef m_V3$usize m_V3usize;
+typedef m_V4$u8    m_V4u8;
+typedef m_V4$u16   m_V4u16;
+typedef m_V4$u32   m_V4u32;
+typedef m_V4$u64   m_V4u64;
+typedef m_V4$usize m_V4usize;
 
-typedef math_Vec2$i8    math_Vec2b;
-typedef math_Vec2$i16   math_Vec2s;
-typedef math_Vec2$i32   math_Vec2i;
-typedef math_Vec2$i64   math_Vec2l;
-typedef math_Vec2$isize math_Vec2z;
-typedef math_Vec3$i8    math_Vec3b;
-typedef math_Vec3$i16   math_Vec3s;
-typedef math_Vec3$i32   math_Vec3i;
-typedef math_Vec3$i64   math_Vec3l;
-typedef math_Vec3$isize math_Vec3z;
-typedef math_Vec4$i8    math_Vec4b;
-typedef math_Vec4$i16   math_Vec4s;
-typedef math_Vec4$i32   math_Vec4i;
-typedef math_Vec4$i64   math_Vec4l;
-typedef math_Vec4$isize math_Vec4z;
+typedef m_V2u8    m_V2ub;
+typedef m_V2u16   m_V2us;
+typedef m_V2u32   m_V2u;
+typedef m_V2u64   m_V2ul;
+typedef m_V2usize m_V2uz;
+typedef m_V3u8    m_V3ub;
+typedef m_V3u16   m_V3us;
+typedef m_V3u32   m_V3u;
+typedef m_V3u64   m_V3ul;
+typedef m_V3usize m_V3uz;
+typedef m_V4u8    m_V4ub;
+typedef m_V4u16   m_V4us;
+typedef m_V4u32   m_V4u;
+typedef m_V4u64   m_V4ul;
+typedef m_V4usize m_V4uz;
 
-// typedef math_Vec2$f16 math_Vec2h;
-typedef math_Vec2$f32 math_Vec2f;
-typedef math_Vec2$f64 math_Vec2d;
-// typedef math_Vec3$f16 math_Vec3h;
-typedef math_Vec3$f32 math_Vec3f;
-typedef math_Vec3$f64 math_Vec3d;
-// typedef math_Vec4$f16 math_Vec4h;
-typedef math_Vec4$f32 math_Vec4f;
-typedef math_Vec4$f64 math_Vec4d;
+typedef m_V2$i8    m_V2i8;
+typedef m_V2$i16   m_V2i16;
+typedef m_V2$i32   m_V2i32;
+typedef m_V2$i64   m_V2i64;
+typedef m_V2$isize m_V2isize;
+typedef m_V3$i8    m_V3i8;
+typedef m_V3$i16   m_V3i16;
+typedef m_V3$i32   m_V3i32;
+typedef m_V3$i64   m_V3i64;
+typedef m_V3$isize m_V3isize;
+typedef m_V4$i8    m_V4i8;
+typedef m_V4$i16   m_V4i16;
+typedef m_V4$i32   m_V4i32;
+typedef m_V4$i64   m_V4i64;
+typedef m_V4$isize m_V4isize;
 
-#define math_Vec_as$(TDestVec, src_vec...)      FUNC_math_Vec_as$(TDestVec, src_vec)
-#define FUNC_math_Vec_as$(TDestVec, src_vec...) eval({      \
-    TDestVec    _dest = cleared();                          \
-    let         _src  = (src_vec);                          \
-    const usize _len  = countOf(_dest.s);                   \
-    claim_assert_static(_len == countOf(_src.s));           \
-    for (usize _i = 0; _i < _len; ++_i) {                   \
+typedef m_V2i8    m_V2b;
+typedef m_V2i16   m_V2s;
+typedef m_V2i32   m_V2i;
+typedef m_V2i64   m_V2l;
+typedef m_V2isize m_V2z;
+typedef m_V3i8    m_V3b;
+typedef m_V3i16   m_V3s;
+typedef m_V3i32   m_V3i;
+typedef m_V3i64   m_V3l;
+typedef m_V3isize m_V3z;
+typedef m_V4i8    m_V4b;
+typedef m_V4i16   m_V4s;
+typedef m_V4i32   m_V4i;
+typedef m_V4i64   m_V4l;
+typedef m_V4isize m_V4z;
+
+// typedef m_V2$f16 m_V2f16;
+typedef m_V2$f32 m_V2f32;
+typedef m_V2$f64 m_V2f64;
+// typedef m_V3$f16 m_V3f16;
+typedef m_V3$f32 m_V3f32;
+typedef m_V3$f64 m_V3f64;
+// typedef m_V4$f16 m_V4f16;
+typedef m_V4$f32 m_V4f32;
+typedef m_V4$f64 m_V4f64;
+
+// typedef m_V2f16 m_V2h;
+typedef m_V2f32 m_V2f;
+typedef m_V2f64 m_V2d;
+// typedef m_V3f16 m_V3h;
+typedef m_V3f32 m_V3f;
+typedef m_V3f64 m_V3d;
+// typedef m_V4f16 m_V4h;
+typedef m_V4f32 m_V4f;
+typedef m_V4f64 m_V4d;
+
+#define m_V_as$(TDestVec, src_vec...)      FUNC_m_V_as$(TDestVec, src_vec)
+#define FUNC_m_V_as$(TDestVec, src_vec...) eval({ \
+    TDestVec    _dest = cleared(); \
+    let         _src  = (src_vec); \
+    const usize _len  = countOf(_dest.s); \
+    claim_assert_static(_len == countOf(_src.s)); \
+    for (usize _i = 0; _i < _len; ++_i) { \
         _dest.s[_i] = as$(TypeOf(_dest.s[_i]), _src.s[_i]); \
-    }                                                       \
-    eval_return _dest;                                      \
+    } \
+    eval_return _dest; \
 })
 
-/* #define math_Vec2_Match(T) TypeOf(_Generic( \
+/* #define m_V2_Match(T) TypeOf(_Generic( \
     (T)0,                                   \
-    u8: ((math_Vec2ub){ 0 }),               \
-    u16: ((math_Vec2us){ 0 }),              \
-    u32: ((math_Vec2u){ 0 }),               \
-    u64: ((math_Vec2ul){ 0 }),              \
-    i8: ((math_Vec2b){ 0 }),                \
-    i16: ((math_Vec2s){ 0 }),               \
-    i32: ((math_Vec2i){ 0 }),               \
-    i64: ((math_Vec2l){ 0 }),               \
-    f32: ((math_Vec2f){ 0 }),               \
-    f64: ((math_Vec2d){ 0 })                \
+    u8: ((m_V2ub){ 0 }),               \
+    u16: ((m_V2us){ 0 }),              \
+    u32: ((m_V2u){ 0 }),               \
+    u64: ((m_V2ul){ 0 }),              \
+    i8: ((m_V2b){ 0 }),                \
+    i16: ((m_V2s){ 0 }),               \
+    i32: ((m_V2i){ 0 }),               \
+    i64: ((m_V2l){ 0 }),               \
+    f32: ((m_V2f){ 0 }),               \
+    f64: ((m_V2d){ 0 })                \
 ))
-#define math_Vec3_Match(T) TypeOf(_Generic( \
+#define m_V3_Match(T) TypeOf(_Generic( \
     (T){ 0 },                               \
-    u8: ((math_Vec3ub){ 0 }),               \
-    u16: ((math_Vec3us){ 0 }),              \
-    u32: ((math_Vec3u){ 0 }),               \
-    u64: ((math_Vec3ul){ 0 }),              \
-    i8: ((math_Vec3b){ 0 }),                \
-    i16: ((math_Vec3s){ 0 }),               \
-    i32: ((math_Vec3i){ 0 }),               \
-    i64: ((math_Vec3l){ 0 }),               \
-    f32: ((math_Vec3f){ 0 }),               \
-    f64: ((math_Vec3d{ 0 }))                \
+    u8: ((m_V3ub){ 0 }),               \
+    u16: ((m_V3us){ 0 }),              \
+    u32: ((m_V3u){ 0 }),               \
+    u64: ((m_V3ul){ 0 }),              \
+    i8: ((m_V3b){ 0 }),                \
+    i16: ((m_V3s){ 0 }),               \
+    i32: ((m_V3i){ 0 }),               \
+    i64: ((m_V3l){ 0 }),               \
+    f32: ((m_V3f){ 0 }),               \
+    f64: ((m_V3d{ 0 }))                \
 ))
-#define math_Vec4_Match(T) TypeOf(_Generic( \
+#define m_V4_Match(T) TypeOf(_Generic( \
     (T){ 0 },                               \
-    u8: ((math_Vec4ub){ 0 }),               \
-    u16: ((math_Vec4us){ 0 }),              \
-    u32: ((math_Vec4u){ 0 }),               \
-    u64: ((math_Vec4ul){ 0 }),              \
-    i8: ((math_Vec4b){ 0 }),                \
-    i16: ((math_Vec4s){ 0 }),               \
-    i32: ((math_Vec4i){ 0 }),               \
-    i64: ((math_Vec4l){ 0 }),               \
-    f32: ((math_Vec4f){ 0 }),               \
-    f64: ((math_Vec4d){ 0 })                \
+    u8: ((m_V4ub){ 0 }),               \
+    u16: ((m_V4us){ 0 }),              \
+    u32: ((m_V4u){ 0 }),               \
+    u64: ((m_V4ul){ 0 }),              \
+    i8: ((m_V4b){ 0 }),                \
+    i16: ((m_V4s){ 0 }),               \
+    i32: ((m_V4i){ 0 }),               \
+    i64: ((m_V4l){ 0 }),               \
+    f32: ((m_V4f){ 0 }),               \
+    f64: ((m_V4d){ 0 })                \
 )) */
 
 #endif /* MATH_VEC_TYPES_INCLUDED */

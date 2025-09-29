@@ -125,8 +125,8 @@ union Node$i32 {
 #define only_else
 
 // clang-format off
-$TEST_only(TEST_fn_("meta_Value_load", $scope))
-$release_only(fn_(dh_main(Sli$Str_const args), Err$void, $scope)) {
+$TEST_only(TEST_fn_("meta_Value_load" $scope))
+$release_only(fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope)) {
     $release_only($ignore = args;)
 
     var_type(node, Node$i32*, Node_init(make$(Node$i32).base, meta_create$(i32, 123)));

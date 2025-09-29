@@ -169,66 +169,64 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
-#include "opt.h"
-#include "err_res.h"
+#include "prl.h"
 #include "mem/Allocator.h"
 
 /*========== Macros and Declarations ========================================*/
 
-#define use_ArrList$(T)                                               \
-    /**                                                               \
-     * @brief Declare and implement typed array list                  \
-     * @param T Type of elements to store in the list                 \
-     * @example                                                       \
+#define use_ArrList$(T) \
+    /** \
+     * @brief Declare and implement typed array list \
+     * @param T Type of elements to store in the list \
+     * @example \
      *     use_ArrList$(i32); // Declare and implement i32 array list \
-     */                                                               \
+     */ \
     comp_type_gen__use_ArrList$(T)
-#define decl_ArrList$(T)                                           \
-    /**                                                            \
-     * @brief Declare typed array list structure                   \
-     * @param T Type of elements to store in the list              \
-     * @example                                                    \
+#define decl_ArrList$(T) \
+    /** \
+     * @brief Declare typed array list structure \
+     * @param T Type of elements to store in the list \
+     * @example \
      *     decl_ArrList$(i32); // Declare i32 array list structure \
-     */                                                            \
+     */ \
     comp_type_gen__decl_ArrList$(T)
-#define impl_ArrList$(T)                                                  \
-    /**                                                                   \
-     * @brief Implement typed array list structure                        \
-     * @param T Type of elements to store in the list                     \
-     * @example                                                           \
+#define impl_ArrList$(T) \
+    /** \
+     * @brief Implement typed array list structure \
+     * @param T Type of elements to store in the list \
+     * @example \
      *     impl_ArrList$(i32); // Implement previously declared structure \
-     */                                                                   \
+     */ \
     comp_type_gen__impl_ArrList$(T)
 
-#define ArrList$(T)                                                    \
-    /**                                                                \
-     * @brief Create an array list type                                \
-     * @param T Type of elements to store in the list                  \
-     * @return Array list type alias                                   \
-     * @example                                                        \
+#define ArrList$(T) \
+    /** \
+     * @brief Create an array list type \
+     * @param T Type of elements to store in the list \
+     * @return Array list type alias \
+     * @example \
      *     ArrList$(i32) list; // Create an array list of i32 elements \
-     */                                                                \
+     */ \
     comp_type_alias__ArrList$(T)
-#define ArrList$$(T)                                                               \
-    /**                                                                            \
-     * @brief Create a anonymous array list structure                              \
-     * @param T Type of elements to store in the list                              \
-     * @return Anonymous array list type token                                     \
+#define ArrList$$(T) \
+    /** \
+     * @brief Create a anonymous array list structure \
+     * @param T Type of elements to store in the list \
+     * @return Anonymous array list type token \
      * @details Creates an anonymous union with both base ArrList and typed fields \
-     * @example                                                                    \
-     *     ArrList$$(i32) anon; // Create anonymous array list of i32 elements     \
-     */                                                                            \
+     * @example \
+     *     ArrList$$(i32) anon; // Create anonymous array list of i32 elements \
+     */ \
     comp_type_anon__ArrList$$(T)
-#define ArrList_anonCast$(T_ArrList, var_anon...)                    \
-    /**                                                              \
-     * @brief Cast anonymous array list to a specific type           \
-     * @param T_ArrList Target array list type                       \
-     * @param var_anon Anonymous array list variable                 \
-     * @return Cast array list of specified type                     \
-     * @example                                                      \
+#define ArrList_anonCast$(T_ArrList, var_anon...) \
+    /** \
+     * @brief Cast anonymous array list to a specific type \
+     * @param T_ArrList Target array list type \
+     * @param var_anon Anonymous array list variable \
+     * @return Cast array list of specified type \
+     * @example \
      *     ArrList$i32 typed = ArrList_anonCast$(ArrList$i32, anon); \
-     */                                                              \
+     */ \
     comp_op__ArrList_anonCast$(pp_uniqTok(anon), T_ArrList, var_anon)
 
 /// @brief Dynamic array list structure
@@ -752,48 +750,48 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
 /*========== Macros and Definitions =========================================*/
 
 #define comp_type_gen__use_ArrList$(T) \
-    decl_ArrList$(T);                  \
+    decl_ArrList$(T); \
     impl_ArrList$(T)
 #define comp_type_gen__decl_ArrList$(T) \
     $maybe_unused typedef union ArrList$(T) ArrList$(T)
 #define comp_type_gen__impl_ArrList$(T) \
-    union ArrList$(T) {                 \
-        ArrList base[1];                \
-        struct {                        \
-            TypeInfo type;              \
-            Sli$(T) items;              \
-            usize         cap;          \
-            mem_Allocator allocator;    \
-        };                              \
+    union ArrList$(T) { \
+        ArrList base[1]; \
+        struct { \
+            TypeInfo type; \
+            Sli$(T) items; \
+            usize         cap; \
+            mem_Allocator allocator; \
+        }; \
     }
 
 #define comp_type_alias__ArrList$(T) \
     pp_join($, ArrList, T)
 #define comp_type_anon__ArrList$$(T) \
-    union {                          \
-        ArrList base[1];             \
-        struct {                     \
-            TypeInfo type;           \
-            Sli$$(T) items;          \
-            usize         cap;       \
+    union { \
+        ArrList base[1]; \
+        struct { \
+            TypeInfo type; \
+            Sli$$(T) items; \
+            usize         cap; \
             mem_Allocator allocator; \
-        };                           \
+        }; \
     }
-#define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) eval({                                \
-    let __anon = &var_anon;                                                                              \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList));                                   \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList));                                 \
-    claim_assert_static(validateField(TypeOf(*__anon), base, FieldType$(T_ArrList, base)));              \
-    claim_assert_static(validateField(TypeOf(*__anon), type, FieldType$(T_ArrList, type)));              \
-    claim_assert_static(fieldAnonTypeCastable(T_ArrList, *__anon, Sli, items));                          \
-    claim_assert_static(validateField(TypeOf(*__anon), cap, FieldType$(T_ArrList, cap)));                \
-    claim_assert_static(validateField(TypeOf(*__anon), allocator, FieldType$(T_ArrList, allocator)));    \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), base) == fieldPadding(T_ArrList, base));           \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), type) == fieldPadding(T_ArrList, type));           \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items));         \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap));             \
+#define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) eval({ \
+    let __anon = &var_anon; \
+    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList)); \
+    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList)); \
+    claim_assert_static(validateField(TypeOf(*__anon), base, FieldType$(T_ArrList, base))); \
+    claim_assert_static(validateField(TypeOf(*__anon), type, FieldType$(T_ArrList, type))); \
+    claim_assert_static(fieldAnonTypeCastable(T_ArrList, *__anon, Sli, items)); \
+    claim_assert_static(validateField(TypeOf(*__anon), cap, FieldType$(T_ArrList, cap))); \
+    claim_assert_static(validateField(TypeOf(*__anon), allocator, FieldType$(T_ArrList, allocator))); \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), base) == fieldPadding(T_ArrList, base)); \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), type) == fieldPadding(T_ArrList, type)); \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items)); \
+    claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), allocator) == fieldPadding(T_ArrList, allocator)); \
-    eval_return rawderef(as$(rawptr$(T_ArrList), __anon));                                               \
+    eval_return rawderef(as$(rawptr$(T_ArrList), __anon)); \
 })
 
 #if defined(__cplusplus)

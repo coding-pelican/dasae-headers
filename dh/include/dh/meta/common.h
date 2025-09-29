@@ -61,9 +61,15 @@ extern fn_(meta_Sli_set(meta_Sli, meta_Ptr_const), meta_Sli);
 extern fn_(meta_Sli_copy(meta_Sli, meta_Sli_const), meta_Sli);
 extern fn_(meta_Sli_move(meta_Sli, meta_Sli), meta_Sli);
 
-#define meta_create$(T_Lit, _Initial...) comp_op__meta_create$(T_Lit, _Initial)
-#define meta_refPtr(var_ptr...)          comp_op__meta_refPtr(var_ptr)
-#define meta_refSli(var_sli...)          comp_op__meta_refSli(var_sli)
+#define Opt_some$(T_Lit) pp_defer(some$) pp_Tuple_cat(T_Lit)
+
+#define literal$(T_Lit...) pp_defer(comp_op__literal$) pp_Tuple_cat(T_Lit)
+#define comp_op__literal$(T_Lit, _Initial...) \
+    ((T_Lit)_Initial)
+
+#define meta_create$(T_Lit_Initial...) pp_expand(pp_defer(comp_op__meta_create$)(pp_Tuple_unwrapSufCommaExpand T_Lit_Initial))
+#define meta_refPtr(var_ptr...)        comp_op__meta_refPtr(var_ptr)
+#define meta_refSli(var_sli...)        comp_op__meta_refSli(var_sli)
 
 #define meta_cast$(T_Dest, var_meta...)              comp_op__meta_cast$(T_Dest, var_meta)
 #define meta_castPtr$(T_DestPtr, var_meta_ptr...)    comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr)
@@ -101,7 +107,7 @@ union meta_Sli {
     meta_Sli_const as_const;
 };
 
-#define comp_op__meta_create$(T_Lit, _Initial...) meta_refPtr(create$(T_Lit, _Initial))
+#define comp_op__meta_create$(T_Lit, _Initial...) meta_refPtr(literal$(T_Lit[1])({ [0] = _Initial }))
 #define comp_op__meta_refPtr(var_ptr...)          ((meta_Ptr){ \
     .type = typeInfo$(TypeOf(*var_ptr)), \
     .addr = var_ptr, \
@@ -158,12 +164,12 @@ union meta_Sli {
 #define comp_op__meta_ptrToAny(var_meta_ptr) eval({ \
     const TypeOf(var_meta_ptr) _ptr = var_meta_ptr; \
     claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
-    eval_return tagUnion$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr }); \
+    eval_return variant_of$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr }); \
 })
 #define comp_op__meta_sliToAny(var_meta_sli) eval({ \
     const TypeOf(var_meta_sli) _sli = var_meta_sli; \
     claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
-    eval_return tagUnion$(AnyType, AnyType_sli, { .type = _sli.type, .addr = _sli.addr, .len = _sli.len }); \
+    eval_return variant_of$(AnyType, AnyType_sli, { .type = _sli.type, .addr = _sli.addr, .len = _sli.len }); \
 })
 
 // clang-format off
@@ -179,26 +185,26 @@ use_Err$(meta_Ptr_const); use_Err$(meta_Ptr);
 use_Opt$(meta_Sli_const); use_Opt$(meta_Sli);
 use_Err$(meta_Sli_const); use_Err$(meta_Sli);
 
-/* builtin types */
-use_Ptr$(u8); use_Ptr$(u16); use_Ptr$(u32); use_Ptr$(u64); use_Ptr$(usize);
-use_Sli$(u8); use_Sli$(u16); use_Sli$(u32); use_Sli$(u64); use_Sli$(usize);
-use_Opt$(u8); use_Opt$(u16); use_Opt$(u32); use_Opt$(u64); use_Opt$(usize);
-use_Err$(u8); use_Err$(u16); use_Err$(u32); use_Err$(u64); use_Err$(usize);
+// /* builtin types */
+// use_Ptr$(u8); use_Ptr$(u16); use_Ptr$(u32); use_Ptr$(u64); use_Ptr$(usize);
+// use_Sli$(u8); use_Sli$(u16); use_Sli$(u32); use_Sli$(u64); use_Sli$(usize);
+// use_Opt$(u8); use_Opt$(u16); use_Opt$(u32); use_Opt$(u64); use_Opt$(usize);
+// use_Err$(u8); use_Err$(u16); use_Err$(u32); use_Err$(u64); use_Err$(usize);
 
-use_Ptr$(i8); use_Ptr$(i16); use_Ptr$(i32); use_Ptr$(i64); use_Ptr$(isize);
-use_Sli$(i8); use_Sli$(i16); use_Sli$(i32); use_Sli$(i64); use_Sli$(isize);
-use_Opt$(i8); use_Opt$(i16); use_Opt$(i32); use_Opt$(i64); use_Opt$(isize);
-use_Err$(i8); use_Err$(i16); use_Err$(i32); use_Err$(i64); use_Err$(isize);
+// use_Ptr$(i8); use_Ptr$(i16); use_Ptr$(i32); use_Ptr$(i64); use_Ptr$(isize);
+// use_Sli$(i8); use_Sli$(i16); use_Sli$(i32); use_Sli$(i64); use_Sli$(isize);
+// use_Opt$(i8); use_Opt$(i16); use_Opt$(i32); use_Opt$(i64); use_Opt$(isize);
+// use_Err$(i8); use_Err$(i16); use_Err$(i32); use_Err$(i64); use_Err$(isize);
 
-use_Ptr$(f32); use_Ptr$(f64);
-use_Sli$(f32); use_Sli$(f64);
-use_Opt$(f32); use_Opt$(f64);
-use_Err$(f32); use_Err$(f64);
+// use_Ptr$(f32); use_Ptr$(f64);
+// use_Sli$(f32); use_Sli$(f64);
+// use_Opt$(f32); use_Opt$(f64);
+// use_Err$(f32); use_Err$(f64);
 
-use_Ptr$(bool); use_Ptr$(char);
-use_Sli$(bool); use_Sli$(char);
-use_Opt$(bool); use_Opt$(char);
-use_Err$(bool); use_Err$(char);
+// use_Ptr$(bool); use_Ptr$(char);
+// use_Sli$(bool); use_Sli$(char);
+// use_Opt$(bool); use_Opt$(char);
+// use_Err$(bool); use_Err$(char);
 // clang-format on
 
 #if defined(__cplusplus)

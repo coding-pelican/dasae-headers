@@ -46,6 +46,16 @@ extern "C" {
 #define pp_uniqTok(_Tok...)       pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
 
+#define pp_if_(Cond...)            pp_join(_, __pp_if, Cond)
+#define __pp_if_1(_Than, _Else...) pp_expand _Than
+#define __pp_if_0(_Than, _Else)    pp_expand _Else
+#define pp_than_
+#define pp_else_
+
+#define tpl_id(_tpl, _T...)           pp_join(_, _tpl, _T)
+#define tpl_fn_(_tpl_T, _id, _Ret...) fn_(tpl_id(_tpl_T, _id), _Ret)
+#define tpl_T(_tpl, _T...)            pp_join($, _tpl, _T)
+#define tpl_Ret(_tpl, _T...)          tpl_T(Ret, tpl_id(_tpl, _T))
 
 #define pp_countArgs(_Args...) \
     /** \

@@ -1,16 +1,16 @@
 #include "barnes-hut/Body.h"
 
-fn_(Body_new(math_Vec2f pos, math_Vec2f vel, f32 mass, f32 radius), Body) {
+fn_(Body_new(m_V2f32 pos, m_V2f32 vel, f32 mass, f32 radius), Body) {
     return (Body){
         .pos    = pos,
         .vel    = vel,
-        .acc    = math_Vec2f_zero,
+        .acc    = m_V2f32_zero,
         .mass   = mass,
         .radius = radius,
     };
 }
 
 fn_(Body_update(Body* self, f32 dt), void) {
-    math_Vec2f_addAsg(&self->vel, math_Vec2f_scale(self->acc, dt));
-    math_Vec2f_addAsg(&self->pos, math_Vec2f_scale(self->vel, dt));
+    m_V2f32_addAsg(&self->vel, m_V2f32_scale(self->acc, dt));
+    m_V2f32_addAsg(&self->pos, m_V2f32_scale(self->vel, dt));
 }

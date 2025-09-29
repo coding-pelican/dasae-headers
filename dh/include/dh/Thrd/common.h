@@ -23,12 +23,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/Arr.h"
-#include "dh/sli.h"
-#include "dh/opt.h"
-#include "dh/err_res.h"
-#include "dh/time/common.h"
 #include "dh/mem/Allocator.h"
+#include "dh/time/common.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -94,7 +90,6 @@ extern fn_(Thrd_getHandle(Thrd self), Thrd_Handle);
 // Thread name buffer type
 typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
 use_Opt$(Thrd_NameBuf);
-use_Opt$(Sli_const$u8);
 use_Err$(Opt$Sli_const$u8);
 extern fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8) $must_check;
 extern fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void) $must_check;

@@ -65,10 +65,13 @@ fn_(sort_insertionSortWithArg(
 }
 
 // TODO: 와 큰일 날 뻔... 직접적인 meta_Sli 생성은 금지해야겠다. meta_Sli_slice 함수 작성이 시급하다.
-fn_(sort_mergeSortUsingTempRecur(/* NOLINT(misc-no-recursion) */
-                                 Sli$u8 temp_buf, meta_Sli base_sli, sort_CmpFn cmpFn
+// NOLINTNEXTLINE(misc-no-recursion)
+fn_(sort_mergeSortUsingTempRecur(
+        Sli$u8     temp_buf,
+        meta_Sli   base_sli,
+        sort_CmpFn cmpFn
     ),
-    Err$void, $scope) {
+    Err$void $scope) {
     if (base_sli.len <= sort_stableSort_threshold_merge_to_insertion) {
         sort_insertionSort(base_sli, cmpFn);
         return_ok({});
@@ -82,20 +85,12 @@ fn_(sort_mergeSortUsingTempRecur(/* NOLINT(misc-no-recursion) */
     /* Sort each half recursively */
     try_(sort_mergeSortUsingTempRecur(
         temp_buf,
-        make$(meta_Sli,
-            .type = base_type,
-            .addr = base_bytes,
-            .len = mid_idx
-        ),
+        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
         cmpFn
     ));
     try_(sort_mergeSortUsingTempRecur(
         temp_buf,
-        make$(meta_Sli,
-            .type = base_type,
-            .addr = base_bytes + (mid_idx * base_size),
-            .len = base_len - mid_idx
-        ),
+        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
         cmpFn
     ));
 
@@ -147,10 +142,14 @@ fn_(sort_mergeSortUsingTempRecur(/* NOLINT(misc-no-recursion) */
     return_ok({});
 } $unscoped;
 
-fn_(sort_mergeSortWithArgUsingTempRecur(/* NOLINT(misc-no-recursion) */
-                                        Sli$u8 temp_buf, meta_Sli base_sli, sort_CmpWithArgFn cmpFn, anyptr_const arg
+// NOLINTNEXTLINE(misc-no-recursion)
+fn_(sort_mergeSortWithArgUsingTempRecur(
+        Sli$u8            temp_buf,
+        meta_Sli          base_sli,
+        sort_CmpWithArgFn cmpFn,
+        anyptr_const      arg
     ),
-    Err$void, $scope) {
+    Err$void $scope) {
     if (base_sli.len <= sort_stableSort_threshold_merge_to_insertion) {
         sort_insertionSortWithArg(base_sli, cmpFn, arg);
         return_ok({});
@@ -164,21 +163,13 @@ fn_(sort_mergeSortWithArgUsingTempRecur(/* NOLINT(misc-no-recursion) */
     /* Sort each half recursively */
     try_(sort_mergeSortWithArgUsingTempRecur(
         temp_buf,
-        make$(meta_Sli,
-            .type = base_type,
-            .addr = base_bytes,
-            .len = mid_idx
-        ),
+        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
         cmpFn,
         arg
     ));
     try_(sort_mergeSortWithArgUsingTempRecur(
         temp_buf,
-        make$(meta_Sli,
-            .type = base_type,
-            .addr = base_bytes + (mid_idx * base_size),
-            .len = base_len - mid_idx
-        ),
+        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
         cmpFn,
         arg
     ));
@@ -236,13 +227,9 @@ fn_(sort_stableSort(
         meta_Sli      base_sli,
         sort_CmpFn    cmpFn
     ),
-    Err$void, $guard) {
+    Err$void $guard) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
-    let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(
-        allocator,
-        typeInfo$(u8),
-        checked_size
-    )));
+    let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
     return_ok({});
@@ -254,13 +241,9 @@ fn_(sort_stableSortWithArg(
         sort_CmpWithArgFn cmpFn,
         anyptr_const      arg
     ),
-    Err$void, $guard) {
+    Err$void $guard) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
-    let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(
-        allocator,
-        typeInfo$(u8),
-        checked_size
-    )));
+    let temp_buf     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
     return_ok({});
@@ -271,7 +254,7 @@ fn_(sort_stableSortUsingTemp(
         meta_Sli   base_sli,
         sort_CmpFn cmpFn
     ),
-    Err$void, $scope) {
+    Err$void $scope) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
         return_err(mem_Allocator_Err_OutOfMemory());
@@ -286,7 +269,7 @@ fn_(sort_stableSortWithArgUsingTemp(
         sort_CmpWithArgFn cmpFn,
         anyptr_const      arg
     ),
-    Err$void, $scope) {
+    Err$void $scope) {
     let checked_size = unwrap(usize_chkdMul(base_sli.len, base_sli.type.size));
     if (temp_buf.len < checked_size) {
         return_err(mem_Allocator_Err_OutOfMemory());

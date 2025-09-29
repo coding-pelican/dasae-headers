@@ -48,7 +48,7 @@ extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_gen__use_Ptr$(T)                        \
+#define comp_type_gen__use_Ptr$(T) \
     $maybe_unused typedef rawptr_const$(T) Ptr_const$(T); \
     $maybe_unused typedef rawptr$(T) Ptr$(T)
 
@@ -62,24 +62,24 @@ extern fn_(Ptr_constCastable(anyptr_const ptr), bool);
     T*
 
 #define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) eval({ \
-    const TypeOf(var_ptr) __ptr = var_ptr;                              \
-    Opt$(T_Ptr) __ret           = cleared();                            \
-    if (Ptr_constCastable(__ptr)) {                                     \
-        Opt_asg(&__ret, some(as$(T_Ptr, __ptr)));                       \
-    } else {                                                            \
-        Opt_asg(&__ret, none());                                        \
-    }                                                                   \
-    eval_return __ret;                                                  \
+    const TypeOf(var_ptr) __ptr = var_ptr; \
+    Opt$(T_Ptr) __ret           = cleared(); \
+    if (Ptr_constCastable(__ptr)) { \
+        Opt_asg(&__ret, some(as$(T_Ptr, __ptr))); \
+    } else { \
+        Opt_asg(&__ret, none()); \
+    } \
+    eval_return __ret; \
 })
-#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({   \
-    const TypeOf(var_ptr) __ptr        = var_ptr;                 \
-    Opt$$(TypeUnqualOf(*__ptr)*) __ret = cleared();               \
-    if (Ptr_constCastable(__ptr)) {                               \
+#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({ \
+    const TypeOf(var_ptr) __ptr        = var_ptr; \
+    Opt$$(TypeUnqualOf(*__ptr)*) __ret = cleared(); \
+    if (Ptr_constCastable(__ptr)) { \
         Opt_asg(&__ret, some(as$(TypeUnqualOf(*__ptr)*, __ptr))); \
-    } else {                                                      \
-        Opt_asg(&__ret, none());                                  \
-    }                                                             \
-    eval_return __ret;                                            \
+    } else { \
+        Opt_asg(&__ret, none()); \
+    } \
+    eval_return __ret; \
 })
 
 

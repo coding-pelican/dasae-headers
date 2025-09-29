@@ -1,6 +1,7 @@
 #include "dh/main.h"
 #include "dh/Arr.h"
 
+#undef eval_
 #define eval_(Expr...) ({ \
     Expr; \
 })
@@ -14,6 +15,7 @@
     } \
     __is_broken ? __ret : (T)_Else; \
 })
+#undef break_
 #define break_(Expr...) eval({ \
     __ret       = (TypeOf(__ret))Expr; \
     __is_broken = true; \
@@ -37,7 +39,7 @@
 //     eval_return __ret;                                                 \
 // })
 
-TEST_fn_("test for", $scope) {
+TEST_fn_("test for" $scope) {
     for_((0, 10), i, {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
@@ -48,7 +50,7 @@ TEST_fn_("test for", $scope) {
     try_(TEST_expect(res == 5));
 } $unscoped_TEST_fn;
 
-TEST_fn_("test for with break", $scope) {
+TEST_fn_("test for with break" $scope) {
     for_((0, 10), i, {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
@@ -252,7 +254,7 @@ fn_TEST_scope("test for slice") {
     }                                                                                        \
 }) */
 
-TEST_fn_("test for slices", $scope) {
+TEST_fn_("test for slices" $scope) {
     Arr$$(10, i32) arr = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
 
     let s1 = Arr_slice$(Sli$i32, arr, (0, 5));
@@ -286,7 +288,7 @@ TEST_fn_("test for slices", $scope) {
     });
 } $unscoped_TEST_fn;
 
-TEST_fn_("test for slice with $ignore_capture", $scope) {
+TEST_fn_("test for slice with $ignore_capture" $scope) {
     Arr$$(10, i32) arr  = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
     const Sli$(i32) sli = Arr_slice$(Sli$(i32), arr, (0, 10));
     for_s1i((sli), ($ignore_capture, i), {

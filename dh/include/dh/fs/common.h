@@ -27,9 +27,18 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "dh/prl.h"
+#include "dh/posix.h"
 
-/*========== Macros and definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
+
+config_ErrSet(fs_FileErr,
+    NotFound,
+    AccessDenied,
+    OpenFailed,
+    ReadFailed,
+    WriteFailed
+);
 
 #if defined(__cplusplus)
 } /* extern "C" */

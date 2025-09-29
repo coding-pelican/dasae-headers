@@ -78,7 +78,7 @@ fn_(heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf), bool)
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
+static fn_(heap_Fixed_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -109,7 +109,8 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
     // Verify buffer ownership
     debug_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
-        "Buffer not owned by this allocator");
+        "Buffer not owned by this allocator"
+    );
 
     // If it's not the last allocation, we can only shrink
     if (!heap_Fixed_isLastAllocation(self, buf.as_const)) {
@@ -132,7 +133,7 @@ static fn_(heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
     return true;
 }
 
-static fn_(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8, $scope) {
+static fn_(heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8 $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -152,7 +153,8 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
     // Verify buffer ownership
     debug_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
-        "Buffer not owned by this allocator");
+        "Buffer not owned by this allocator"
+    );
 
     // We can only truly free the last allocation
     if (heap_Fixed_isLastAllocation(self, buf.as_const)) {
@@ -163,7 +165,7 @@ static fn_(heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
 
 /*========== Thread-Safe Implementation =====================================*/
 
-static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
+static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -172,7 +174,8 @@ static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
     // Use atomic operations for thread safety
     usize end_index = atomic_load_explicit(
         as$(_Atomic(usize)*, &self->end_index),
-        memory_order_seq_cst);
+        memory_order_seq_cst
+    );
 
     while (true) {
         // Calculate aligned offset
@@ -194,7 +197,8 @@ static fn_(heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u
                 &expected,
                 new_end_index,
                 memory_order_seq_cst,
-                memory_order_seq_cst)) {
+                memory_order_seq_cst
+            )) {
             // Success, return the allocated pointer
             return_some(intToRawptr$(u8*, aligned_addr));
         }

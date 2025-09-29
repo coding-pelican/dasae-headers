@@ -1,0 +1,307 @@
+## clang-format configurator v2 https://clang-format-configurator.site/
+## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+BasedOnStyle: LLVM
+# Language: Cpp
+Standard: c++20
+ColumnLimit: 0
+TabWidth: 4
+IndentWidth: 4
+IndentExternBlock: NoIndent
+IndentGotoLabels: false
+ObjCBlockIndentWidth: 4
+LambdaBodyIndentation: OuterScope
+AccessModifierOffset: -4
+MaxEmptyLinesToKeep: 5
+InsertNewlineAtEOF: true
+# AlignAfterOpenBracket: Align
+# AlignAfterOpenBracket: DontAlign
+# AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+  AlignCaseArrows: false
+  AlignCaseColons: false
+AlignEscapedNewlines: DontAlign
+AlignOperands: AlignAfterOperator
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLoopsOnASingleLine: true
+BinPackArguments: true
+BinPackParameters: true
+
+InsertBraces: true
+BreakAfterAttributes: Leave
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+Cpp11BracedListStyle: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeComma
+
+# AlwaysBreakAfterReturnType: All
+# ContinuationIndentWidth: 4
+
+PointerAlignment: Left
+SortIncludes: Never
+
+TypeNames:
+  # Inference
+  - let
+  - var
+  - let_
+  - var_
+  - TypeOf
+  - TypeUnqualOf
+  # primitive
+  - u8
+  - u16
+  - u32
+  - u64
+  - usize
+  - i8
+  - i16
+  - i32
+  - i64
+  - isize
+  - f32
+  - f64
+  - bool
+  - char
+  - rawptr_const$
+  - rawptr$
+  - anyptr_const
+  - anyptr
+  - AnyType
+  - Void
+  # Core types
+  - P_const$
+  - P$
+  - PZ_const$
+  - PZ$
+  - S_const$
+  - S$
+  - SZ_const$
+  - SZ$
+  - E$
+  - O$
+  - OP_const$
+  - OP$
+  - OPZ_const$
+  - OPZ$
+  - OS_const$
+  - OS$
+  - OSZ_const$
+  - OSZ$
+  # Pointer
+  - Ptr_const$
+  - Ptr$
+  - Ptr_const$$
+  - Ptr$$
+  # Slice
+  - SliZ_const$
+  - SliZ$
+  - SliZ_const$$
+  - SliZ$$
+  - SliS_const$
+  - SliS$
+  - SliS_const$$
+  - SliS$$
+  - Sli_const$
+  - Sli$
+  - Sli_const$$
+  - Sli$$
+  # Array
+  - Arr$
+  - Arr$$
+  # Optional value
+  - Opt$
+  - Opt$$
+  # Error result
+  - Err$
+  - Err$$
+  - Err$Void
+  - Err$void
+  # Atomic
+  - atomic_Value$
+  - atomic_Value$$
+Macros:
+  - "$static=$static"
+  - "$extern=$extern"
+  - "some(_)=_"
+  - "none()={}"
+  - "unwrap(_)=_"
+  - "try_(expr)=try_(expr)"
+  # Control flow
+  - "if_(init, cond)=if (init; cond)"
+  - "else_(init)=else if (init; true)"
+  - "switch_(init, cond)=switch (init; cond)"
+  - "while_(init, cond)=while (init; cond)"
+  # Optional value
+  - "if_some(expr, capture)=if (capture)"
+  - "if_none(expr)=if ()"
+  - "else_none=else"
+  - "else_some(expr)=else if ()"
+  # Error result
+  - "if_err(_,_)=if (_)"
+  - "if_ok(_,_)=if (_)"
+  - "if_void(_)=if (_)"
+  - "else_ok(_)=else if (_)"
+  - "else_void=else"
+  - "else_err(_)=else if (_)"
+  # Union enum
+  # - tagUnion(tag,expr)=/**/
+  # - tagUnion$(T,tag,expr)=/**/
+  # - toTagUnion(addr,tag,expr)=/**/
+  # Match
+  # - "match_(expr)=switch (expr)"
+  # - "pattern_(tag, capture)=case tag:"
+  # - "fallback_(_)=default:"
+  # Eval
+  - "eval_(_)=({ _; })"
+  - "eval_(T,_)=(T)({ _; })"
+  - "eval_return_(_)=return _"
+  - "asg_eval(_)=({ _; })"
+  # # Scope
+  - "block_defer=do { /**/ } while (false)"
+  - "block_deferral=/**/"
+  - "defer_break=goto __step_deferred"
+  - $unscoped=/**/
+  - $unscoped_=/**/
+  - $unguarded=/**/
+  - $unguarded_=/**/
+  - $unscoped_TEST_fn=/**/
+  - $unguarded_TEST_fn=/**/
+  - $unscoped_Thrd_fn=/**/
+  - $unguarded_Thrd_fn=/**/
+  - $unscoped_async_fn=/**/
+  - $unguarded_async_fn=/**/
+ForEachMacros:
+  - pp_foreach
+  - for_slice
+  - for_slice_indexed
+  - for_slice_rev
+  - for_slice_rev_indexed
+  - for_array
+  - for_array_indexed
+  - for_array_rev
+  - for_array_rev_indexed
+AttributeMacros:
+  - $static
+  - $extern
+
+  - $inline
+  - $inline_always
+  - $inline_never
+
+  - $on_load
+  - $on_exit
+
+  - $must_check
+  - $must_use
+  - $maybe_unused
+  - $no_return
+
+  - $ignore
+  - $ignore_void
+  - $ignore_capture
+
+  - $deprecated
+  - $deprecated_msg
+  - $deprecated_instead
+
+  - $nullable
+  - $nonnull
+StatementAttributeLikeMacros:
+  - $ignore
+  - $ignore_void
+  - eval_return
+  - type$
+  - make$
+  - create$
+  - initial
+  - cleared
+  # - unwrap
+  # - orelse
+  # - try_
+  # - catch_
+  # - catch_from
+WhitespaceSensitiveMacros:
+  # - return_
+  - return_void
+  - return_some
+  - return_none
+  - return_ok
+  - return_err
+  - pipe
+  - config_ErrSet
+  - config_UnionEnum
+  - config_UnionEnumAsField
+  # - fn_
+  # - fn_scope
+  # - fn_scope_ext
+  # - with_
+  # - try_
+  # - catch_
+  # - catch_from
+  # - unwrap
+  # - orelse
+  # - meta_refPtr
+  # - meta_refSli
+  # - meta_refPtr_const
+  # - meta_refSli_const
+  # - meta_castPtr$
+  # - meta_castSli$
+  # - meta_cast$
+  # - meta_ptrToAny
+  # - meta_sliToAny
+  # - make$
+  # - create$

@@ -45,6 +45,9 @@ static bool TypeInfo_eq(TypeInfo, TypeInfo);
 #define type$(T_Dest, val_src... /* T_Dest */)                 comp_op__type$(pp_uniqTok(src), T_Dest, val_src)
 #define typeAsg(var_addr_dest, val_src... /* var_addr_dest */) comp_op__typeAsg(pp_uniqTok(addr_dest), var_addr_dest, val_src)
 
+#define typeCast$(TDest_w_ValSrc...) \
+    pp_expand(pp_defer(type$)(pp_Tuple_unwrapSufCommaExpand TDest_w_ValSrc))
+
 /*========== Macros and Implementations =====================================*/
 
 #define comp_op__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
@@ -54,22 +57,22 @@ $inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
 }
 #endif /* COMP_TIME */
 
-#define comp_op__type$(__src, T_Dest, val_src...) eval({                  \
-    var __src = val_src;                                                  \
-    claim_assert_static_msg(                                              \
-        !isSameType(TypeOf(__src), meta_Ptr),                             \
+#define comp_op__type$(__src, T_Dest, val_src...) eval({ \
+    var __src = val_src; \
+    claim_assert_static_msg( \
+        !isSameType(TypeOf(__src), meta_Ptr), \
         "`meta_Ptr` is not compatible with `type$`. Use `meta_castPtr$`." \
-    );                                                                    \
-    claim_assert_static_msg(                                              \
-        !isSameType(TypeOf(__src), meta_Sli),                             \
+    ); \
+    claim_assert_static_msg( \
+        !isSameType(TypeOf(__src), meta_Sli), \
         "`meta_Sli` is not compatible with `type$`. Use `meta_castSli$`." \
-    );                                                                    \
-    eval_return(*((T_Dest*)&(__src)));                                    \
+    ); \
+    eval_return(*((T_Dest*)&(__src))); \
 })
 #define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) eval({ \
-    let __addr_dest = var_addr_dest;                                    \
-    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_src);           \
-    eval_return __addr_dest;                                            \
+    let __addr_dest = var_addr_dest; \
+    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_src); \
+    eval_return __addr_dest; \
 })
 
 #if defined(__cplusplus)

@@ -47,7 +47,7 @@ fn_(getModel(void), union Model) {
     name0        = __$tuple._n0; \
     name1        = __$tuple._n1
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     $ignore = args;
 
     {

@@ -50,11 +50,11 @@ typedef struct GameOfLife {
 static fn_(GameOfLife_update(GameOfLife* self, f64 dt), void);
 static fn_(GameOfLife_entireCells(const GameOfLife* self), Grid$i8);
 static fn_(GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state), void);
-static fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
-static fn_(GameOfLife_setCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
-static fn_(GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state), void);
-static fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
-static fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_setCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state), void);
+$maybe_unused static fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
 
 typedef struct State {
     mem_Allocator  allocator;
@@ -84,7 +84,7 @@ $static fn_(State_render(const State* self, engine_Canvas* canvas, f64 dt), void
 
 
 
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     $ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -110,8 +110,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
             .y = window_res_height,
         },
         .default_color = some(Color_blue),
-        .title         = some(u8_l("Game of Life"))
-    }));
+        .title         = some(u8_l("Game of Life")) }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
@@ -240,17 +239,17 @@ fn_(State_init(
         usize          states_width,
         usize          states_height
     ),
-    Err$State, $guard) {
+    Err$State $guard) {
     const usize buffer_width  = states_width + 2;
     const usize buffer_height = states_height + 2;
     const usize buffer_size   = buffer_width * buffer_height;
 
     let mem_curr_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-    errdefer_(mem_Allocator_free(allocator, anySli(mem_curr_states)));
+    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(mem_curr_states)));
     memset(mem_curr_states.ptr, 0, buffer_size);
 
     let mem_next_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-    errdefer_(mem_Allocator_free(allocator, anySli(mem_next_states)));
+    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(mem_next_states)));
     memset(mem_next_states.ptr, 0, buffer_size);
 
     return_ok({

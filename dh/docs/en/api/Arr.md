@@ -140,7 +140,7 @@ Sli$i32 suffix = Arr_suffix(arr, 1);  // Last 2 elements
 #include "dh/main.h"
 #include "dh/Arr.h"
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     // Declare and initialize a fixed-size array
     Arr$(3, i32) numbers = Arr_init({ 10, 20, 30 });
 

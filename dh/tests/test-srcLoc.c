@@ -1,13 +1,15 @@
 #define main_no_args (1)
 #include "dh/main.h"
 
-fn_(dh_main(void), Err$void, $scope) {
+#include "dh/io/stream.h"
+
+func((dh_main(void))(Err$void)$scope) {
     let loc = srcLoc();
-    printf("file_path: %s\n", loc.file_path);
-    printf("file_name: %s\n", loc.file_name);
-    printf("fn_name:   %s\n", loc.fn_name);
-    printf("line:      %d\n", loc.line);
-    printf("column:    %d\n", loc.column);
-    printf("%s:%d:%d\n", loc.file_path, loc.line, loc.column);
+    io_stream_print(u8_l("file_path: {:z}\n"), loc.file_path);
+    io_stream_print(u8_l("file_name: {:z}\n"), loc.file_name);
+    io_stream_print(u8_l("fn_name:   {:z}\n"), loc.fn_name);
+    io_stream_print(u8_l("line:      {:u}\n"), loc.line);
+    io_stream_print(u8_l("column:    {:u}\n"), loc.column);
+    io_stream_print(u8_l("{:z}:{:u}:{:u}\n"), loc.file_path, loc.line, loc.column);
     return_ok({});
 } $unscoped;

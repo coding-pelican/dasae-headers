@@ -91,7 +91,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_(report(Str_const label, const char* fmt, ...), void) {
+fn_(report(Sli_const$u8 label, const char* fmt, ...), void) {
     printf("[ThrdId(%zu): %*s] ", Thrd_getCurrentId(), as$(i32, label.len), label.ptr);
     va_list args = {};
     va_start(args, fmt);
@@ -137,7 +137,7 @@ fn_(Terminal_readBytes(Arr$1024$u8* mem), Sli$u8) {
 /// \param interval Seconds to wait between each character
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectWithInterval, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Str_const); var_(interval, f64); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectWithInterval, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(interval, f64); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectWithInterval, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -161,7 +161,7 @@ async_fn_scope(typeEffectWithInterval, {
 /// \param duration Total time in seconds to complete typing
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectOverDuration, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Str_const); var_(duration, f64); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectOverDuration, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(duration, f64); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectOverDuration, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -187,7 +187,7 @@ async_fn_scope(typeEffectOverDuration, {
 /// \param add_randomness Whether to add random variation to typing speed
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectRealistic, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Str_const); var_(base_interval, f64); var_(add_randomness, bool); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectRealistic, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(base_interval, f64); var_(add_randomness, bool); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectRealistic, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -231,9 +231,9 @@ async_fn_scope(typeEffectRealistic, {
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
-async_fn_(runMain, (Sli$Str_const args;), Void);
+async_fn_(runMain, (Sli$Sli_const$u8 args;), Void);
 async_fn_scope(runMain, {
-    var_(sample_text, Str_const);
+    var_(sample_text, Sli_const$u8);
     var_(line, u32);
     struct {
         var_(type_ctx, Co_CtxFn$(typeEffectWithInterval));
@@ -357,7 +357,7 @@ async_fn_scope(runMain, {
     areturn_({});
 } $unscoped_async_fn;
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     var task = async_((runMain)(args));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));

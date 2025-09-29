@@ -72,7 +72,7 @@ Err$void Simulation_step(Simulation* self) {
 void Simulation_iterate(Simulation* self) {
     debug_assert_nonnull(self);
 
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         Body_update(body, self->dt);
     }
 }
@@ -89,14 +89,14 @@ Err$void Simulation_collide(Simulation* self) {
     self->collision_count = 0;
 #endif
     // Update collision rects for current frame
-    for_slice_indexed(self->bodies.items, body, index) {
+    for_slice_indexed (self->bodies.items, body, index) {
         let pos        = body->pos;
         let radius     = body->radius;
-        let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+        let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
         let rect  = Sli_at(self->rects.items, index);
-        rect->min = math_Vec2f_sub(pos, radius_vec);
-        rect->max = math_Vec2f_add(pos, radius_vec);
+        rect->min = m_V2f32_sub(pos, radius_vec);
+        rect->max = m_V2f32_add(pos, radius_vec);
     }
 
     // Note: In a real implementation we would use a spatial partitioning system here
@@ -141,18 +141,18 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         // Update collision rects for current frame
-        for_slice_indexed(self->bodies.items, body, index) {
+        for_slice_indexed (self->bodies.items, body, index) {
             let pos        = body->pos;
             let radius     = body->radius;
-            let radius_vec = math_Vec2f_scale(math_Vec2f_one, radius);
+            let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
             let rect  = Sli_at(self->rects.items, index);
-            rect->min = math_Vec2f_sub(pos, radius_vec);
-            rect->max = math_Vec2f_add(pos, radius_vec);
+            rect->min = m_V2f32_sub(pos, radius_vec);
+            rect->max = m_V2f32_add(pos, radius_vec);
         }
 
         let indices = self->sort_body_indices_cache;
-        for_slice_indexed(indices, index, i) {
+        for_slice_indexed (indices, index, i) {
             *index = i;
         }
 
@@ -198,7 +198,7 @@ Err$void Simulation_attract(Simulation* self) {
     try(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
-    for_slice(self->bodies.items, body) {
+    for_slice (self->bodies.items, body) {
         body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
@@ -217,14 +217,14 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     // Calculate distances and radiuses
     let p1 = b1->pos;
     let p2 = b2->pos;
-    let d  = math_Vec2f_sub(p2, p1);
+    let d  = m_V2f32_sub(p2, p1);
 
     let r1 = b1->radius;
     let r2 = b2->radius;
     let r  = r1 + r2;
 
     // Early exit if not colliding
-    scope_if(const bool collides = math_Vec2f_lenSq(d) < r * r, !collides) { return; }
+    scope_if(const bool collides = m_V2f32_lenSq(d) < r * r, !collides) { return; }
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count++;
 #endif
@@ -232,9 +232,9 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     // Get velocities and masses
     let v1 = b1->vel;
     let v2 = b2->vel;
-    let v  = math_Vec2f_sub(v2, v1);
+    let v  = m_V2f32_sub(v2, v1);
 
-    let d_dot_v = math_Vec2f_dot(d, v);
+    let d_dot_v = m_V2f32_dot(d, v);
 
     let m1      = b1->mass;
     let m2      = b2->mass;
@@ -242,38 +242,38 @@ void Simulation_resolve(Simulation* self, usize lhs, usize rhs) {
     let weight2 = m1 / (m1 + m2);
 
     // Handle collision based on relative motion
-    if (0.0f <= d_dot_v && math_Vec2f_ne(d, math_Vec2f_zero)) {
-        let tmp = math_Vec2f_scale(d, r / math_Vec2f_len(d) - 1.0f);
-        math_Vec2f_subTo(&b1->pos, math_Vec2f_scale(tmp, weight1));
-        math_Vec2f_addTo(&b2->pos, math_Vec2f_scale(tmp, weight2));
+    if (0.0f <= d_dot_v && m_V2f32_ne(d, m_V2f32_zero)) {
+        let tmp = m_V2f32_scale(d, r / m_V2f32_len(d) - 1.0f);
+        m_V2f32_subTo(&b1->pos, m_V2f32_scale(tmp, weight1));
+        m_V2f32_addTo(&b2->pos, m_V2f32_scale(tmp, weight2));
         return;
     }
 
-    let v_sq = math_Vec2f_lenSq(v);
-    let d_sq = math_Vec2f_lenSq(d);
+    let v_sq = m_V2f32_lenSq(v);
+    let d_sq = m_V2f32_lenSq(d);
     let r_sq = r * r;
 
     let t = (d_dot_v + sqrtf(fmaxf(d_dot_v * d_dot_v - v_sq * (d_sq - r_sq), 0.0f))) / v_sq;
 
     // Move to collision point
-    math_Vec2f_subTo(&b1->pos, math_Vec2f_scale(v1, t));
-    math_Vec2f_subTo(&b2->pos, math_Vec2f_scale(v2, t));
+    m_V2f32_subTo(&b1->pos, m_V2f32_scale(v1, t));
+    m_V2f32_subTo(&b2->pos, m_V2f32_scale(v2, t));
 
     // Update distances post-collision
     let p1_new      = b1->pos;
     let p2_new      = b2->pos;
-    let d_new       = math_Vec2f_sub(p2_new, p1_new);
-    let d_dot_v_new = math_Vec2f_dot(d_new, v);
-    let d_sq_new    = math_Vec2f_lenSq(d_new);
+    let d_new       = m_V2f32_sub(p2_new, p1_new);
+    let d_dot_v_new = m_V2f32_dot(d_new, v);
+    let d_sq_new    = m_V2f32_lenSq(d_new);
 
     // Calculate collision response
-    let tmp    = math_Vec2f_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
-    let v1_new = math_Vec2f_add(v1, math_Vec2f_scale(tmp, weight1));
-    let v2_new = math_Vec2f_sub(v2, math_Vec2f_scale(tmp, weight2));
+    let tmp    = m_V2f32_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
+    let v1_new = m_V2f32_add(v1, m_V2f32_scale(tmp, weight1));
+    let v2_new = m_V2f32_sub(v2, m_V2f32_scale(tmp, weight2));
 
     // Update velocities and positions
     b1->vel = v1_new;
     b2->vel = v2_new;
-    math_Vec2f_addTo(&b1->pos, math_Vec2f_scale(v1_new, t));
-    math_Vec2f_addTo(&b2->pos, math_Vec2f_scale(v2_new, t));
+    m_V2f32_addTo(&b1->pos, m_V2f32_scale(v1_new, t));
+    m_V2f32_addTo(&b2->pos, m_V2f32_scale(v2_new, t));
 }

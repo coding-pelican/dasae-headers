@@ -48,7 +48,7 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
     let cx = (as$(i32, self->canvas->width) - 1) / 2;
     let cy = (as$(i32, self->canvas->height) - 1) / 2;
-    return math_Vec2i_from(cx, cy);
+    return m_V2i32_from(cx, cy);
 }
 /// @brief Convert a world-space position to screen-space (pixels).
 ///
@@ -61,12 +61,12 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// @return          The corresponding (sx, sy) on the screen in pixels.
 $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
     let center      = Visualizer_screenCenter(self);
-    let w_minus_cam = math_Vec2f_sub(world_pos, self->pos);
-    let divided     = math_Vec2f_scale(w_minus_cam, 1.0f / self->scale);
+    let w_minus_cam = m_V2f32_sub(world_pos, self->pos);
+    let divided     = m_V2f32_scale(w_minus_cam, 1.0f / self->scale);
 
     let sx = as$(i32, roundf(as$(f32, center.x) + divided.x));
     let sy = as$(i32, roundf(as$(f32, center.y) - divided.y));
-    return math_Vec2i_from(sx, sy);
+    return m_V2i32_from(sx, sy);
 }
 /// @brief Convert a screen-space pixel coordinate to world-space.
 ///
@@ -81,9 +81,9 @@ $inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos
     let center     = Visualizer_screenCenter(self);
     let dx         = as$(f32, screen_pos.x - center.x);
     let dy         = as$(f32, center.y - screen_pos.y);
-    let multiplied = math_Vec2f_scale(math_Vec2f_from(dx, dy), self->scale);
+    let multiplied = m_V2f32_scale(m_V2f32_from(dx, dy), self->scale);
 
-    return math_Vec2f_add(self->pos, multiplied);
+    return m_V2f32_add(self->pos, multiplied);
 }
 /// Returns the current mouse position converted to world coords.
 $inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
@@ -94,14 +94,14 @@ $inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
 Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
     reserveReturn(Err$Visualizer);
     return_ok((Visualizer){
-        .pos   = math_Vec2f_zero, // camera center pos
+        .pos   = m_V2f32_zero, // camera center pos
         .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
         // .scale = 3600,
 
-        .pan_screen_begin = math_Vec2i_zero,
-        .pan_cam_begin    = math_Vec2f_zero,
+        .pan_screen_begin = m_V2i32_zero,
+        .pan_cam_begin    = m_V2f32_zero,
 
-        .zoom_anchor_world = math_Vec2f_zero,
+        .zoom_anchor_world = m_V2f32_zero,
 
         .shows_bodies         = true,
         .shows_bodies_vel_vec = false,
@@ -145,10 +145,10 @@ typedef struct Control {
 use_Sli$(Control);
 static Sli_const$Control Control_list(void) {
     static const Control controls[] = {
-        { .key = engine_KeyCode_w, .vec = math_Vec2f_up },
-        { .key = engine_KeyCode_a, .vec = math_Vec2f_left },
-        { .key = engine_KeyCode_s, .vec = math_Vec2f_down },
-        { .key = engine_KeyCode_d, .vec = math_Vec2f_right },
+        { .key = engine_KeyCode_w, .vec = m_V2f32_up },
+        { .key = engine_KeyCode_a, .vec = m_V2f32_left },
+        { .key = engine_KeyCode_s, .vec = m_V2f32_down },
+        { .key = engine_KeyCode_d, .vec = m_V2f32_right },
     };
     static const usize controls_len = countOf(controls);
     return (Sli_const$Control){
@@ -158,7 +158,7 @@ static Sli_const$Control Control_list(void) {
 }
 
 $inline_always void VisualizerInput_resetPos(Visualizer* self) {
-    self->pos = math_Vec2f_zero;
+    self->pos = m_V2f32_zero;
 }
 $inline_always void VisualizerInput_toggleShowingBodies(Visualizer* self) {
     self->shows_bodies = !self->shows_bodies;
@@ -192,18 +192,18 @@ $inline_always void VisualizerInput_handlePan(Visualizer* self) {
 
     // The mouse has moved by (old_mouse_world - new_mouse_world) in world coords
     // So shift the camera by that same difference (so the "under-mouse" point remains under mouse)
-    let diff_world = math_Vec2f_sub(old_mouse_world, new_mouse_world);
+    let diff_world = m_V2f32_sub(old_mouse_world, new_mouse_world);
 
     // Restore the camera to its position at the moment panning began,
     // then offset it by diff_world
-    self->pos = math_Vec2f_add(self->pan_cam_begin, diff_world);
+    self->pos = m_V2f32_add(self->pan_cam_begin, diff_world);
 }
 // Call this when the middle mouse button is released:
 $inline_always void VisualizerInput_onPanEnd(Visualizer* self) {
     self->is_panning = false;
     // // Reset pan screen & cam begin to zero
-    // self->pan_screen_begin = math_Vec2f_zero;
-    // self->pan_cam_begin    = math_Vec2f_zero;
+    // self->pan_screen_begin = m_V2f32_zero;
+    // self->pan_cam_begin    = m_V2f32_zero;
 }
 $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delta) {
     if (scroll_delta == 0) { return; }
@@ -232,8 +232,8 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     // 4) Shift the camera so the "mouse_world_before" is still under the mouse
     //    That is: new camera pos = old camera pos + (before - after)
     //    Because (mouse_world_before - camera_pos) should remain the same
-    let diff  = math_Vec2f_sub(mouse_world_before, mouse_world_after);
-    self->pos = math_Vec2f_add(self->pos, diff);
+    let diff  = m_V2f32_sub(mouse_world_before, mouse_world_after);
+    self->pos = m_V2f32_add(self->pos, diff);
 }
 Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     reserveReturn(Err$void);
@@ -269,7 +269,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     for_slice (controls, control) {
         if (engine_Key_held(control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
-            self->pos = math_Vec2f_add(self->pos, math_Vec2f_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
+            self->pos = m_V2f32_add(self->pos, m_V2f32_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
         }
     }
 
@@ -297,7 +297,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button pressed");
         let world_mouse = Visualizer_mousePosToWorld(self);
 
-        toSome(self->spawn.body, Body_new(world_mouse, math_Vec2f_zero, 1.0f, 1.0f));
+        toSome(self->spawn.body, Body_new(world_mouse, m_V2f32_zero, 1.0f, 1.0f));
         toSome(self->spawn.angle, 0.0f);
         toSome(self->spawn.total, 0.0f);
 
@@ -305,7 +305,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button held");
         if_some_mut(self->spawn.body, body) {
             let world_mouse = Visualizer_mousePosToWorld(self);
-            let d           = math_Vec2f_sub(world_mouse, body->pos);
+            let d           = m_V2f32_sub(world_mouse, body->pos);
             if_some_mut(self->spawn.angle, angle) {
                 let angle2    = atan2f(d.y, d.x);
                 let a         = angle2 - *angle;
@@ -383,11 +383,11 @@ $inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f3
     return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
 $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
-    let view_min = math_Vec2f_from(
+    let view_min = m_V2f32_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    let view_max = math_Vec2f_from(
+    let view_max = m_V2f32_from(
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
@@ -406,11 +406,11 @@ $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
     }
 }
 $inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
-    let view_min = math_Vec2f_from(
+    let view_min = m_V2f32_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    let view_max = math_Vec2f_from(
+    let view_max = m_V2f32_from(
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
@@ -428,19 +428,19 @@ $inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw velocity vector
-        if (0.0f < math_Vec2f_lenSq(body->vel)) {
-            let vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
+        if (0.0f < m_V2f32_lenSq(body->vel)) {
+            let vel_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
             let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
     }
 }
 $inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
-    let view_min = math_Vec2f_from(
+    let view_min = m_V2f32_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    let view_max = math_Vec2f_from(
+    let view_max = m_V2f32_from(
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
@@ -458,19 +458,19 @@ $inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw acceleration vector
-        if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            let acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
+        if (0.0f < m_V2f32_lenSq(body->acc)) {
+            let acc_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
             let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
     }
 }
 $inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
-    let view_min = math_Vec2f_from(
+    let view_min = m_V2f32_from(
         self->pos.x - 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y - 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    let view_max = math_Vec2f_from(
+    let view_max = m_V2f32_from(
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
@@ -488,15 +488,15 @@ $inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Velocity vector
-        if (0.0f < math_Vec2f_lenSq(body->vel)) {
-            let vel_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->vel, Visualizer_scaleInv(self)));
+        if (0.0f < m_V2f32_lenSq(body->vel)) {
+            let vel_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
             let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
 
         // Acceleration vector
-        if (0.0f < math_Vec2f_lenSq(body->acc)) {
-            let acc_end_world  = math_Vec2f_add(body->pos, math_Vec2f_scale(body->acc, Visualizer_scaleInv(self)));
+        if (0.0f < m_V2f32_lenSq(body->acc)) {
+            let acc_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
             let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
@@ -552,8 +552,7 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
         try(ArrList_append(
             &stack->base,
             meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
-            )
-        );
+        ));
 
         var min_depth = usize_limit;
         var max_depth = 0ull;
@@ -570,8 +569,7 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
                 try(ArrList_append(
                     &stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
-                    )
-                );
+                ));
             }
         }
         *depth_range = make$(TypeOf(*depth_range), .min = min_depth, .max = max_depth);
@@ -587,8 +585,7 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
     try(ArrList_append(
         &stack->base,
         meta_refPtr(create$(Visualizer_QuadCache, .node_idx = QuadTree_root, .depth = 0))
-        )
-    );
+    ));
     while_some(ArrList_popOrNull(&stack->base), capture) {
         let item = *meta_cast$(Visualizer_QuadCache*, capture);
         let node = Sli_at(self->nodes.items, item.node_idx);
@@ -598,17 +595,16 @@ static Err$void Visualizer_renderQuadTree(Visualizer* self) {
                 try(ArrList_append(
                     &stack->base,
                     meta_refPtr(create$(Visualizer_QuadCache, .node_idx = node->children + i, .depth = item.depth + 1))
-                    )
-                );
+                ));
             }
             continue;
         }
         if (item.depth < min_depth) { continue; }
 
         let quad = node->quad;
-        let half = math_Vec2f_scale(math_Vec2f_scale(math_Vec2f_one, 0.5f), quad.size);
-        let min  = math_Vec2f_sub(quad.center, half);
-        let max  = math_Vec2f_add(quad.center, half);
+        let half = m_V2f32_scale(m_V2f32_scale(m_V2f32_one, 0.5f), quad.size);
+        let min  = m_V2f32_sub(quad.center, half);
+        let max  = m_V2f32_add(quad.center, half);
 
         let t = as$(f32, item.depth - min_depth + as$(usize, !QuadNode_isEmpty(node)))
               / as$(f32, max_depth - min_depth + 1);

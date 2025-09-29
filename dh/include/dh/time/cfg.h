@@ -23,16 +23,13 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/opt.h"
-
-#include <time.h>
-
+#include "dh/prl.h"
 #if bti_plat_windows
 #include "dh/os/windows/common.h"
 #else /* posix */
 #include <sys/time.h>
 #endif /* posix */
+#include <time.h>
 
 /*========== Macros and Definitions =========================================*/
 

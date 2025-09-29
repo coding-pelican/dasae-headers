@@ -23,10 +23,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/opt.h"
-#include "dh/err_res.h"
-
+#include "dh/prl.h"
 #include <string.h>
 
 /*========== Macros and Definitions =========================================*/

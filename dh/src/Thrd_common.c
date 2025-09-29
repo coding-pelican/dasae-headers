@@ -19,7 +19,7 @@ fn_(Thrd_sleep(time_Duration duration), void) {
     time_sleep(duration);
 }
 
-fn_(Thrd_yield(void), Err$void, $scope) {
+fn_(Thrd_yield(void), Err$void $scope) {
     if_(i32 res = sched_yield(), res != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
@@ -30,7 +30,7 @@ fn_(Thrd_getCurrentId(void), Thrd_Id) {
     return as$(Thrd_Id, pthread_self());
 }
 
-fn_(Thrd_getCpuCount(void), Err$usize, $scope) {
+fn_(Thrd_getCpuCount(void), Err$usize $scope) {
 #if bti_plat_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
@@ -63,7 +63,7 @@ fn_(Thrd_getHandle(Thrd self), Thrd_Handle) {
     return self.handle;
 }
 
-fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8, $scope) {
+fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8 $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(buf_ptr);
 
@@ -81,12 +81,14 @@ fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8, $scope
 
     return_ok(some(Sli_from(buf_ptr->buf, name_len)));
 #else
+    $ignore = self;
+    $ignore = buf_ptr;
     // pthread_getname_np not available (some Windows pthread implementations)
     return_ok(none());
 #endif
 } $unscoped;
 
-fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void, $scope) {
+fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(name.ptr);
 
@@ -119,32 +121,27 @@ fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void, $scope) {
 #endif
     return_ok({});
 #else
+    $ignore = self;
     // pthread_setname_np not available
     return_ok({}); // No-op
 #endif
 } $unscoped;
 
-fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd, $scope) {
+fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd $scope) {
     $ignore = config;
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
     switch_(
         Thrd_Handle handle = {},
-        pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx)
-    ) {
-    case /* SUCCESS */ 0:
-        return_ok({ .handle = handle });
-    case /* AGAIN */ EAGAIN:
-        return_err(Err_Unspecified()); // TODO: Change to specified err
-    case /* PERM */ EPERM:
-        $fallthrough;
-    case /* INVAL */ EINVAL:
-        claim_unreachable;
-    default:
-        return_err(Err_Unexpected());
-    }
-    claim_unreachable;
+        pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx), {
+            case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
+            case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
+            case_(/* PERM */ EPERM, $fallthrough);
+            case_(/* INVAL */ EINVAL, claim_unreachable);
+            fallback_(return_err(Err_Unexpected()));
+        }
+    );
 } $unscoped;
 
 fn_(Thrd_detach(Thrd self), void) {

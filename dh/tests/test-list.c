@@ -2,17 +2,17 @@
 #include "dh/TEST.h"
 #include "dh/list.h"
 
-TEST_fn_("Basic SinglyLinkedList Operations", $guard) {
+TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
     use_ListSgl$(u32);
-    var_type(list, ListSgl$u32, ListSgl_init());
+    var list = make$(ListSgl$u32, .first = none());
 
     try_(TEST_expect(ListSgl_len(list.base) == 0));
 
-    var_type(one, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 1)));
-    var_type(two, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 2)));
-    var_type(three, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 3)));
-    var_type(four, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 4)));
-    var_type(five, ListSgl_Node$u32, ListSgl_Node_init(meta_create$(u32, 5)));
+    var one = make$(ListSgl_Node$u32, .data = 1);
+    var two = make$(ListSgl_Node$u32, .data = 2);
+    var three = make$(ListSgl_Node$u32, .data = 3);
+    var four = make$(ListSgl_Node$u32, .data = 4);
+    var five = make$(ListSgl_Node$u32, .data = 5);
 
     ListSgl_prepend(list.base, two.base);            // {2}
     ListSgl_Node_insertAfter(two.base, five.base);   // {2, 5}
@@ -28,7 +28,7 @@ TEST_fn_("Basic SinglyLinkedList Operations", $guard) {
         u32 index = 1;
         while_some(it, node) block_defer {
             defer_(index += 1, it = node->next);
-            try_(TEST_expect(*node->data == index));
+            try_(TEST_expect(node->data == index));
         } block_deferral;
     }
 
@@ -36,19 +36,19 @@ TEST_fn_("Basic SinglyLinkedList Operations", $guard) {
     ListSgl_remove(list.base, five.base); // {2, 3, 4}
     $ignore = ListSgl_Node_removeNext(two.base);    // {2, 4}
 
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->data),(deref,())) == 2));
-    try_(TEST_expect(*unwrap(list.first)->data == 2));
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data),(deref,())) == 4));
-    try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 4));
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
-    try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->data)) == 2));
+    // try_(TEST_expect(unwrap(list.first)->data == 2));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data)) == 4));
+    // try_(TEST_expect(unwrap(unwrap(list.first)->next)->data == 4));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
+    // try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
 
     ListSgl_Node_reverse(type$(Opt$Ptr$ListSgl_Node*, &list.first));
 
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->data),(deref,())) == 4));
-    try_(TEST_expect(*unwrap(list.first)->data == 4));
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data),(deref,())) == 2));
-    try_(TEST_expect(*unwrap(unwrap(list.first)->next)->data == 2));
-    // try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
-    try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->data)) == 4));
+    // try_(TEST_expect(unwrap(list.first)->data == 4));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->data)) == 2));
+    // try_(TEST_expect(unwrap(unwrap(list.first)->next)->data == 2));
+    try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
+    // try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
 } $unguarded_TEST_fn;

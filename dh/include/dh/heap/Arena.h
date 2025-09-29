@@ -36,7 +36,7 @@ typedef struct heap_Arena_State {
 } heap_Arena_State;
 
 /// Inner state of ArenaAllocator
-extern fn_(heap_Arena_State_promote(heap_Arena_State* self, mem_Allocator child_allocator), heap_Arena);
+extern fn_(heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator), heap_Arena);
 
 struct heap_Arena {
     mem_Allocator    child_allocator;
@@ -48,15 +48,16 @@ extern fn_(heap_Arena_allocator(heap_Arena* self), mem_Allocator);
 
 /// Initialize with child allocator
 extern fn_(heap_Arena_init(mem_Allocator child_allocator), heap_Arena);
-/// Deinitialize and free all memory
+/// Finalize and free all memory
 extern fn_(heap_Arena_fini(heap_Arena self), void);
 
 /// Reset mode for arena reset operation
-config_UnionEnum(heap_Arena_ResetMode,
+typedef variant_(
+    (heap_Arena_ResetMode),
     (heap_Arena_ResetMode_free_all, Void),
     (heap_Arena_ResetMode_retain_capacity, Void),
     (heap_Arena_ResetMode_retain_with_limit, usize)
-);
+) heap_Arena_ResetMode;
 
 /// Query current memory capacity of arena
 extern fn_(heap_Arena_queryCap(const heap_Arena* self), usize);

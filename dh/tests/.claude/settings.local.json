@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/mnt/c/dev/dasae-headers/dh/include/dh/core/pp/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/include/dh/core/pp/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/include/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/include/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/include/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/**)",
+      "Read(/mnt/c/dev/dasae-headers/dh/**)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -107,10 +107,10 @@ static bool visited[maze_size][maze_size];
 
 // Directions for movement (left, right, up, down)
 static Vec2i dirs[] = {
-    math_Vec2i_left,
-    math_Vec2i_right,
-    math_Vec2i_up,
-    math_Vec2i_down
+    m_V2i32_left,
+    m_V2i32_right,
+    m_V2i32_up,
+    m_V2i32_down
 };
 static const usize dirs_size = countOf(dirs);
 
@@ -148,7 +148,7 @@ void* DFS_thread(void* args) {
     Vec2i       start      = { .x = tArgs->start_x, .y = tArgs->start_y };
 
     pthread_mutex_lock(&maze_mutex);
-    catch (Stack_Vec2i_push(&stack, start), err, {
+    catch(Stack_Vec2i_push(&stack, start), err, {
         log_error("Error pushing start point onto stack: %s", Err_codeToCStr(err));
         Stack_Vec2i_destroy(&stack);
         pthread_mutex_unlock(&maze_mutex);
@@ -169,7 +169,7 @@ void* DFS_thread(void* args) {
             if (nx >= 0 && ny >= 0 && nx < maze_size && ny < maze_size && !visited[nx][ny] && maze[nx][ny] != Cell_wall) {
                 visited[nx][ny] = true;
                 Vec2i next      = { .x = nx, .y = ny };
-                catch (Stack_Vec2i_push(&stack, next), err, {
+                catch(Stack_Vec2i_push(&stack, next), err, {
                     log_error("Error pushing next point onto stack: %s", Err_codeToCStr(err));
                     Stack_Vec2i_destroy(&stack);
                     pthread_mutex_unlock(&maze_mutex);
@@ -198,7 +198,7 @@ void* BFS_thread(void* args) {
     Vec2i       start      = { .x = tArgs->start_x, .y = tArgs->start_y };
 
     pthread_mutex_lock(&maze_mutex);
-    catch (Queue_Vec2i_push(&queue, start), err, {
+    catch(Queue_Vec2i_push(&queue, start), err, {
         log_error("Error pushing start point onto queue: %s", Err_codeToCStr(err));
         Queue_Vec2i_destroy(&queue);
         pthread_mutex_unlock(&maze_mutex);
@@ -218,7 +218,7 @@ void* BFS_thread(void* args) {
             if (nx >= 0 && ny >= 0 && nx < maze_size && ny < maze_size && !visited[nx][ny] && maze[nx][ny] != Cell_wall) {
                 visited[nx][ny] = true;
                 Vec2i next      = { .x = nx, .y = ny };
-                catch (Queue_Vec2i_push(&queue, next), err, {
+                catch(Queue_Vec2i_push(&queue, next), err, {
                     log_error("Error pushing next point onto queue: %s", Err_codeToCStr(err));
                     Queue_Vec2i_destroy(&queue);
                     pthread_mutex_unlock(&maze_mutex);
@@ -247,7 +247,7 @@ void* QuantumSearch_thread(void* args) {
     Vec2i       start      = { .x = tArgs->start_x, .y = tArgs->start_y };
 
     pthread_mutex_lock(&maze_mutex);
-    catch (Queue_Vec2i_push(&queue, start), err, {
+    catch(Queue_Vec2i_push(&queue, start), err, {
         log_error("Failed to push start point into queue", Err_codeToCStr(err));
         Queue_Vec2i_destroy(&queue);
         pthread_mutex_unlock(&maze_mutex);
@@ -267,7 +267,7 @@ void* QuantumSearch_thread(void* args) {
             if (nx >= 0 && ny >= 0 && nx < maze_size && ny < maze_size && !visited[nx][ny] && maze[nx][ny] != Cell_wall) {
                 visited[nx][ny] = true;
                 Vec2i next      = { .x = nx, .y = ny };
-                catch (Queue_Vec2i_push(&queue, next), err, {
+                catch(Queue_Vec2i_push(&queue, next), err, {
                     log_error("Failed to push next point into queue", Err_codeToCStr(err));
                     Queue_Vec2i_destroy(&queue);
                     pthread_mutex_unlock(&maze_mutex);
@@ -312,16 +312,16 @@ void DrawMaze(engine_Canvas* canvas) {
                 eval_return c;
             });
 
-            let unit_cell = math_Vec2i_fill(maze_cell_scale);
-            let pos       = math_Vec2i_scale(math_Vec2i_from(i, j), maze_cell_scale);
-            let max       = math_Vec2i_add(pos, unit_cell);
+            let unit_cell = m_V2i32_fill(maze_cell_scale);
+            let pos       = m_V2i32_scale(m_V2i32_from(i, j), maze_cell_scale);
+            let max       = m_V2i32_add(pos, unit_cell);
             engine_Canvas_fillRect(canvas, pos.x, pos.y, max.x, max.y, color);
         }
     }
     pthread_mutex_unlock(&maze_mutex);
 }
 
-Err$void dh_main(Sli$Str_const args) {
+Err$void dh_main(Sli$Sli_const$u8 args) {
     $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file

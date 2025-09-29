@@ -10,19 +10,19 @@
 #include "Body.h"
 
 typedef struct Quad {
-    math_Vec2f center;
-    f32        size;
+    m_V2f32 center;
+    f32     size;
 } Quad;
 use_Sli$(Quad);
 use_Arr$(4, Quad);
 
 typedef struct QuadNode {
-    usize      children;
-    usize      next;
-    math_Vec2f pos;
-    f32        mass;
-    Quad       quad;
-    Range      bodies;
+    usize   children;
+    usize   next;
+    m_V2f32 pos;
+    f32     mass;
+    Quad    quad;
+    Range   bodies;
 } QuadNode;
 
 use_Sli$(QuadNode);
@@ -55,7 +55,7 @@ extern fn_(QuadTree_destroy(QuadTree* self), void);
 extern fn_(QuadTree_clear(QuadTree* self), void);
 extern fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) $must_check;
 extern fn_(QuadTree_propagate(QuadTree* self), void);
-extern fn_(QuadTree_accelerate(const QuadTree* self, math_Vec2f pos, Sli$Body bodies), math_Vec2f);
+extern fn_(QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, Sli$Body bodies), m_V2f32);
 
 static const usize QuadTree_root = 0;
 

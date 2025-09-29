@@ -7,19 +7,19 @@ extern fn_(engine_Canvas_fini(engine_Canvas* self), void);
 extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void) $must_check;
 extern fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color color), void);
 
-fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas, $guard) {
+fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas $guard) {
     debug_assert_nonnull(config);
     debug_assert(0 < config->width);
     debug_assert(0 < config->height);
 
     let allocator = unwrap(config->allocator);
     let self      = meta_cast$(engine_Canvas*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Canvas))));
-    errdefer_(mem_Allocator_destroy(allocator, anyPtr(self)));
+    errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(self)));
     self->allocator = allocator;
 
     let area   = as$(usize, config->width) * config->height;
     let buffer = meta_cast$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), area)));
-    errdefer_(mem_Allocator_free(allocator, anySli(buffer)));
+    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(buffer)));
     self->buffer = Grid_fromSli$(Grid$Color, buffer, config->width, config->height);
 
     let type   = unwrap(config->type);
@@ -37,7 +37,7 @@ fn_(engine_Canvas_fini(engine_Canvas* self), void) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void, $scope) {
+fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 

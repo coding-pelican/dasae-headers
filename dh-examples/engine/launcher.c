@@ -10,8 +10,8 @@
 #include "dh/os/windows.h"
 #include <stdio.h>
 
-static let_(Launcher_window_title, Str_const)     = Str_l("Test Terminal Launcher");
-static var_(Terminal_window_title, Opt$Str_const) = none();
+static let_(Launcher_window_title, Sli_const$u8)     = Str_l("Test Terminal Launcher");
+static var_(Terminal_window_title, Opt$Sli_const$u8) = none();
 static var_(Terminal_window_width, i32)           = 80;
 static var_(Terminal_window_height, i32)          = 25;
 
@@ -20,7 +20,7 @@ static fn_(fmt_parseInt_usize(Sli_const$u8 str), Err$usize);
 static fn_(fmt_parseInt_i32(Sli_const$u8 str), Err$i32);
 static fn_(fmt_parseInt_isize(Sli_const$u8 str), Err$isize);
 
-fn_scope(dh_main(Sli$Str_const args), Err$void) {
+fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {
     if (args.len < 2) {
         printf(
             "[%*s] Usage: %*s <program_to_run> <width> <height>\n",
@@ -236,7 +236,7 @@ fn_scope(fmt_parseInt_isize(Sli_const$u8 str), Err$isize) {
     }));
 } $unscoped;
 
-static $inline fn_(Err_codeToStr(Err err), Str_const) {
+static $inline fn_(Err_codeToStr(Err err), Sli_const$u8) {
     return Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
 }
 

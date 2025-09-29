@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    err_res.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (@dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-26 (date of creation)
  * @updated 2025-03-18 (date of last update)
  * @version v0.1-alpha.3
@@ -62,12 +62,16 @@ extern "C" {
 #define try_(_Expr...) comp_op__try_(pp_uniqTok(result), _Expr)
 
 /* Handles error (similar to Zig's catch_from) */
-#define catch_(_Expr, _Default_Or_Eval...)                       comp_op__catch_(pp_uniqTok(result), _Expr, _Default_Or_Eval)
-#define catch_from(_Expr, _Payload_Capture, _Default_Or_Eval...) comp_op__catch_from(pp_uniqTok(result), _Expr, _Payload_Capture, _Default_Or_Eval)
+#define catch_(_Expr...) /* catch_((_Expr...)(_O_Capture, _DefaultExpr_OR_Body...)) */ \
+    pp_expand(pp_defer(__catch_from)(pp_Tuple_unwrapSufCommaExpand _Expr))
+#define __catch_(_Expr, _DefaultExpr_OR_Body...)                   comp_op__catch_(pp_uniqTok(result), _Expr, _DefaultExpr_OR_Body)
+#define __catch_from(_Expr, _Payload_Capture, _Default_Or_Eval...) comp_op__catch_from(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _Default_Or_Eval; }))
 
 /* Defers when error */
-#define errdefer_(_Expr...)                       comp_syn__errdefer_(_Expr)
-#define errdefer_from(_Payload_Capture, _Expr...) comp_syn__errdefer_from(_Payload_Capture, _Expr)
+#define errdefer_(_Expr...) /* errdefer_(_O_Capture, _Expr...) */ \
+    pp_expand(pp_defer(__errdefer_from)(_Expr))
+#define __errdefer_(_Expr...)                       comp_syn__errdefer_(_Expr)
+#define __errdefer_from(_Payload_Capture, _Expr...) comp_syn__errdefer_from(_Payload_Capture, _Expr)
 
 #define Err_asOpt$(T_Opt, var_err...) comp_op__Err_asOpt$(pp_uniqTok(err), T_Opt, var_err)
 #define Err_asOpt(var_err...)         comp_op__Err_asOpt(var_err)
@@ -175,7 +179,7 @@ typedef struct Err$Void {
 #define comp_op__isOk(val_result...)  (!(val_result).is_err)
 
 #define comp_syn__return_err(val_err...) \
-    $debug_point ErrTrace_captureFrame(); \
+    ($debug_point ErrTrace_captureFrame()); \
     return_(err(val_err))
 #define comp_syn__return_ok(val_ok...) \
     return_(ok(val_ok))
@@ -188,35 +192,48 @@ typedef struct Err$Void {
     eval_return __result.data.ok; \
 })
 
-#define comp_op__catch_(__result, _Expr, _Default_Or_Eval...) eval({ \
-    var __result = _Expr; \
-    if (isErr(__result)) { \
-        __result.data.ok = bti_Generic_match$( \
-            TypeOf(_Default_Or_Eval), \
-            bti_Generic_pattern$(void) eval({ \
-                _Default_Or_Eval; \
-                eval_return make$(TypeOf(__result.data.ok)); \
-            }), \
-            bti_Generic_fallback_ _Default_Or_Eval \
-        ); \
-    } \
-    eval_return ErrTrace_reset(), __result.data.ok; \
-})
-#define comp_op__catch_from(__result, _Expr, _Payload_Capture, _Default_Or_Eval...) eval({ \
-    var __result = _Expr; \
-    if (isErr(__result)) { \
-        let _Payload_Capture = __result.data.err; \
-        __result.data.ok     = bti_Generic_match$( \
-            TypeOf(_Default_Or_Eval), \
-            bti_Generic_pattern$(void) eval({ \
-                _Default_Or_Eval; \
-                eval_return make$(TypeOf(__result.data.ok)); \
+#define comp_op__catch_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    eval({ \
+        var __result = _Expr; \
+        if (isErr(__result)) { \
+            __result.data.ok = bti_Generic_match$( \
+                TypeUnqualOf(_DefaultExpr_OR_Body), \
+                bti_Generic_pattern$(void) eval({ \
+                    (_DefaultExpr_OR_Body); \
+                    eval_return make$(TypeOf(__result.data.ok)); \
                 }), \
-            bti_Generic_fallback_ _Default_Or_Eval \
-        ); \
-    } \
-    eval_return ErrTrace_reset(), __result.data.ok; \
-})
+                bti_Generic_fallback_(_DefaultExpr_OR_Body) \
+            ); \
+            ErrTrace_reset(); \
+        } \
+        eval_return __result.data.ok; \
+    }) \
+)
+#define comp_op__catch_from(__result, _Expr, _Payload_Capture, _Default_Or_Eval...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    eval({ \
+        var __result = _Expr; \
+        if (isErr(__result)) { \
+            let _Payload_Capture \
+                = __result.data.err; \
+            __result.data.ok = bti_Generic_match$( \
+                TypeUnqualOf(_Default_Or_Eval), \
+                bti_Generic_pattern$(void) eval({ \
+                    _Default_Or_Eval; \
+                    eval_return make$(TypeOf(__result.data.ok)); \
+                }), \
+                bti_Generic_fallback_ _Default_Or_Eval \
+            ); \
+            ErrTrace_reset(); \
+        } \
+        eval_return __result.data.ok; \
+    }) \
+)
 
 #define comp_syn__errdefer_(_Expr...) defer_( \
     if (__reserved_return->is_err) { \
@@ -297,20 +314,20 @@ use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
 static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32) $must_check;
 static fn_(test(void), Err$void) $must_check;
 
-static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32, $scope) {
+static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32 $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
 } $unscoped;
-static fn_(test(void), Err$void, $scope) {
+static fn_(test(void), Err$void $scope) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
     let result_handling = catch_from(safeDivide(10, 0), err, eval({
-        Err_print(err);
-        ErrTrace_print();
-        return_err(err);
-    }));
+                                         Err_print(err);
+                                         ErrTrace_print();
+                                         return_err(err);
+                                     }));
     return_ok({});
 } $unscoped;
 #endif /* EXAMPLE_USAGE */

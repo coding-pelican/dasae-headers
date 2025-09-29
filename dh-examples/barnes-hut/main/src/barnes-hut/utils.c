@@ -6,18 +6,17 @@
 #include "dh/Random.h"
 #include "dh/mem/cfg.h"
 
-$maybe_unused
-static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+$maybe_unused static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
-    let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
-    let rhs_dist = math_Vec2f_lenSq(rhs_body->pos);
+    let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
+    let rhs_dist = m_V2f32_lenSq(rhs_body->pos);
     if (lhs_dist < rhs_dist) { return cmp_Ord_lt; }
     if (lhs_dist > rhs_dist) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 }
 
-fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guard) {
+fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body $guard) {
     // Initialize random seed
     Random_initWithSeed(0);
 
@@ -33,24 +32,22 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guar
     const f32 m = 1e6f;
     try_(ArrList_append(
         bodies.base,
-        meta_refPtr(createFrom$(Body,
-            Body_new(math_Vec2f_zero, math_Vec2f_zero, m, inner_radius)
-        ))
+        meta_refPtr(createFrom$(Body, Body_new(m_V2f32_zero, m_V2f32_zero, m, inner_radius)))
     ));
 
     // Generate outer bodies
     while (bodies.items.len < n) {
         // Random angle
         let a    = Random_f32() * math_f32_tau;
-        let sc_a = math_Vec2f_sincos(a);
+        let sc_a = m_V2f32_sincos(a);
 
         // Random radius with inner cutoff
         let t = inner_radius / outer_radius;
         let r = Random_f32() * (1.0f - t * t) + t * t;
 
         // Calculate position and initial velocity direction
-        let pos = math_Vec2f_scale(sc_a, outer_radius * sqrtf(r));
-        let vel = math_Vec2f_from(sc_a.y, -sc_a.x);
+        let pos = m_V2f32_scale(sc_a, outer_radius * sqrtf(r));
+        let vel = m_V2f32_from(sc_a.y, -sc_a.x);
 
         // Set mass and radius
         const f32 mass   = 1.0f;
@@ -59,9 +56,7 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guar
         // Create and add the body
         try_(ArrList_append(
             bodies.base,
-            meta_refPtr(createFrom$(Body,
-                Body_new(pos, vel, mass, radius)
-            ))
+            meta_refPtr(createFrom$(Body, Body_new(pos, vel, mass, radius)))
         ));
     }
 
@@ -72,8 +67,8 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guar
         wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
             let lhs_body = as$(const Body*, lhs);
             let rhs_body = as$(const Body*, rhs);
-            let lhs_dist = math_Vec2f_lenSq(lhs_body->pos);
-            let rhs_dist = math_Vec2f_lenSq(rhs_body->pos);
+            let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
+            let rhs_dist = m_V2f32_lenSq(rhs_body->pos);
             if (lhs_dist < rhs_dist) { return cmp_Ord_lt; }
             if (lhs_dist > rhs_dist) { return cmp_Ord_gt; }
             return cmp_Ord_eq;
@@ -86,13 +81,13 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body, $guar
         mass += Sli_at(bodies.items, index)->mass;
 
         // Skip center body
-        if (math_Vec2f_eq(Sli_at(bodies.items, index)->pos, math_Vec2f_zero)) { continue; }
+        if (m_V2f32_eq(Sli_at(bodies.items, index)->pos, m_V2f32_zero)) { continue; }
 
         // Calculate orbital velocity based on enclosed mass
-        let dist = math_Vec2f_len(Sli_at(bodies.items, index)->pos);
+        let dist = m_V2f32_len(Sli_at(bodies.items, index)->pos);
         let v    = sqrtf(mass / dist);
 
-        math_Vec2f_scaleAsg(&Sli_at(bodies.items, index)->vel, v);
+        m_V2f32_scaleAsg(&Sli_at(bodies.items, index)->vel, v);
     }
 
     return_ok(bodies);

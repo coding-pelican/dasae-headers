@@ -32,7 +32,7 @@ fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope) {
+static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
@@ -49,7 +49,8 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope
         null,
         len, // VirtualAlloc rounds to page size internally
         MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE);
+        PAGE_READWRITE
+    );
     if (addr != null) {
         // Verify returned address meets alignment requirements
         debug_assert_fmt(mem_isAligned(rawptrToInt(addr), align), "VirtualAlloc returned misaligned address");
@@ -70,7 +71,8 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope
             null,
             overalloc_len,
             MEM_RESERVE,
-            PAGE_NOACCESS);
+            PAGE_NOACCESS
+        );
         if (reserved_addr == null) {
             return_none();
         }
@@ -82,7 +84,8 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope
             intToRawptr$(anyptr, aligned_addr),
             aligned_len,
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_READWRITE);
+            PAGE_READWRITE
+        );
         if (addr != null) {
             return_some(addr);
         }
@@ -100,7 +103,8 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope
         PROT_READ | PROT_WRITE,
         MAP_PRIVATE | MAP_ANONYMOUS,
         -1,
-        0);
+        0
+    );
     if (map == MAP_FAILED) { return_none(); }
     debug_assert_fmt(mem_isAligned(rawptrToInt(map), mem_page_size));
     debug_assert_fmt(mem_isAligned(rawptrToInt(map), ptr_align), "mmap returned misaligned address");
@@ -113,7 +117,8 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8, $scope
         new_hint,
         false,
         __ATOMIC_SEQ_CST,
-        __ATOMIC_SEQ_CST);
+        __ATOMIC_SEQ_CST
+    );
     return_some(map);
 #endif /* posix */
 } $unscoped;
@@ -145,7 +150,8 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len
             VirtualFree(
                 intToRawptr$(LPVOID, new_addr_end),
                 old_addr_end - new_addr_end,
-                MEM_DECOMMIT);
+                MEM_DECOMMIT
+            );
         }
         return true;
     }
@@ -179,7 +185,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len
 #endif /* posix */
 }
 
-static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8, $scope) {
+static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8 $scope) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment

@@ -4,7 +4,7 @@
 #include "dh/heap/Fixed.h"
 #include "dh/mem/Allocator.h"
 
-TEST_fn_("Basic Allocator Reallocation Usage", $guard) {
+TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
     var_(buffer, Arr$$(1024, u8)) = Arr_zero();
     var_(fixed, heap_Fixed)       = heap_Fixed_init(Sli_arr$(Sli$u8, buffer));
 

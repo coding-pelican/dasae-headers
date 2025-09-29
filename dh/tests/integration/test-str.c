@@ -15,11 +15,11 @@ static fn_(TEST_string_literals(void), void) {
     Str_println(Str_l("Writable string:"));
     Str_println(str_writable.as_const);
 
-    debug_assert(isNone(Str_constCast(str_readonly)));
-    debug_assert(isSome(Str_constCast(str_writable.as_const)));
+    debug_assert(isNone(Sli_const$u8Cast(str_readonly)));
+    debug_assert(isSome(Sli_const$u8Cast(str_writable.as_const)));
 
     /* UTF-8 test */
-    Str_const utf8_str = Str_l("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
+    Sli_const$u8 utf8_str = Str_l("Hello, 世界! 안녕! 나는 왈도! 강하고 굳센 아침?");
     Str_println(Str_l("\nUTF-8 string:"));
     Str_println(utf8_str);
 

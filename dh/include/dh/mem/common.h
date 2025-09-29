@@ -207,7 +207,7 @@ $inline_always void mem_move(anyptr dest, anyptr src, usize size) {
     memmove(dest, src, size);
 }
 
-$inline_always i32 mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
+$inline_always cmp_Ord mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
     return memcmp(lhs, rhs, size);

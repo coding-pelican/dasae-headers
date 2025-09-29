@@ -46,7 +46,7 @@
 #define update_target_spf (1.0f / update_target_fps)
 
 
-Err$void dh_main(Sli$Str_const args) { // NOLINT
+Err$void dh_main(Sli$Sli_const$u8 args) { // NOLINT
     $unused(args);
     scope_reserveReturn(Err$void) {
         // Initialize logging to a file

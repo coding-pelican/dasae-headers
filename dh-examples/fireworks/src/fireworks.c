@@ -95,7 +95,7 @@ extern fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) $must_check;
 
 
 
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     $ignore = args;
     Random_init();
 
@@ -123,8 +123,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
             .y = window_res_height,
         },
         .default_color = some(Color_black),
-        .title         = some(Str_l("Fireworks"))
-    }));
+        .title         = some(Str_l("Fireworks")) }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
@@ -299,7 +298,7 @@ fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void) {
     );
 }
 
-fn_(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color), Err$Ptr$Firework, $guard) {
+fn_(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket_y, Color effect_base_color), Err$Ptr$Firework $guard) {
     debug_assert_nonnull(f);
     log_debug("Initializing firework(%p) at (%d, %d)\n", f, rocket_x, rocket_y);
     f->allocator = allocator;
@@ -361,7 +360,7 @@ fn_(Firework_isDead(const Firework* f), bool) {
     if (!Firework__deadsAllEffect(f)) { return false; }
     return true;
 }
-fn_(Firework_update(Firework* f, f64 dt), Err$void, $scope) {
+fn_(Firework_update(Firework* f, f64 dt), Err$void $scope) {
     debug_assert_nonnull(f);
     $ignore = dt;
     if_some(f->rocket, rocket) {
@@ -417,7 +416,7 @@ fn_(Firework_render(const Firework* f, engine_Canvas* c, f64 dt), void) {
     }
 }
 
-fn_(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), Err$State, $scope) {
+fn_(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), Err$State $scope) {
     var fireworks = type$(ArrList$Firework, try_(ArrList_initCap(typeInfo$(Firework), allocator, Fireworks_max)));
     return_ok({
         .allocator  = allocator,
@@ -439,7 +438,7 @@ fn_(State_fini(State* s), void) {
 fn_(State_isDead(const State* s), bool) {
     return !deref(s).is_running;
 }
-fn_(State_update(State* s, f64 dt), Err$void, $scope) {
+fn_(State_update(State* s, f64 dt), Err$void $scope) {
     debug_assert_nonnull(s);
 
     /* Add a new rocket with with 5% chance */
@@ -472,9 +471,9 @@ fn_(State_update(State* s, f64 dt), Err$void, $scope) {
     if (engine_Keyboard_pressed(s->input->keyboard, engine_KeyCode_space)) {
         log_debug("pressed space\n");
         let maybe_firework = catch_from(State_spawnFirework(s), err, ({
-            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
-            return_err(err);
-        }));
+                                            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
+                                            return_err(err);
+                                        }));
         if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", Arr_getAt(rocket->position, 0), Arr_getAt(rocket->position, 1));
@@ -484,9 +483,9 @@ fn_(State_update(State* s, f64 dt), Err$void, $scope) {
     if (engine_Mouse_pressed(s->input->mouse, engine_MouseButton_left)) {
         log_debug("pressed left mouse button\n");
         let maybe_firework = catch_from(State_spawnFirework(s), err, ({
-            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
-            return_err(err);
-        }));
+                                            log_error("failed to spawn firework: %s\n", Err_codeToCStr(err));
+                                            return_err(err);
+                                        }));
         if_some(maybe_firework, firework) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", Arr_getAt(rocket->position, 0), Arr_getAt(rocket->position, 1));
@@ -510,7 +509,7 @@ fn_(State_render(const State* s, engine_Canvas* c, f64 dt), void) {
         Firework_render(firework, c, dt);
     }
 }
-fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework, $scope) {
+fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework $scope) {
     debug_assert_nonnull(s);
     log_debug("Spawning new firework...");
     log_debug("%d fireworks remaining: Removing dead fireworks...", s->fireworks.items.len);

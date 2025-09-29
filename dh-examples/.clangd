@@ -45,10 +45,10 @@ CompileFlags:
       -fblocks,
       -funsigned-char,
       -I./include,
-      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh,
-      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh/include,
-      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples,
-      -IC:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh-examples/engine/include,
+      -I/mnt/dev/dasae-headers/dh,
+      -I/mnt/dev/dasae-headers/dh/include,
+      -I/mnt/dev/dasae-headers/dh-examples,
+      -I/mnt/dev/dasae-headers/dh-examples/engine/include,
     ]
 ---
 # Header Configs

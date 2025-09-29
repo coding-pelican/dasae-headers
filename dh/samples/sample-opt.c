@@ -6,7 +6,7 @@
 #include "dh/sli.h"
 
 // Function that may return an optional i32
-static fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
+static func((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32)$scope) {
     for_slice_indexed (items, item, index) {
         if (*item == value) {
             return_some(index); // Return optional with a value
@@ -16,16 +16,16 @@ static fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
 } $unscoped;
 
 // Function that uses unwrap and orelse for default values
-static fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
+static func((demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val))(i32)) {
     // unwrap() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
     let value_unsafe = unwrap(opt);
 
     // orelse returns the default value if opt is none
-    let value_safe = orelse(opt, default_val);
+    let value_safe = orelse_((opt)(default_val));
 
     // orelse with a block allows more complex handling
-    let value_computed = orelse(opt, eval({
+    let value_computed = orelse_((opt)({
         log_debug("Option was none, computing default and returning");
         return default_val * 2;
     }));
@@ -36,13 +36,13 @@ static fn_(demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val), i32) {
 }
 
 // Function showing if_some and else_none pattern
-static fn_(processOptionalValue(Opt$i32 opt), void) {
+static func((processOptionalValue(Opt$i32 opt))(void)) {
     if_some(opt, value) {
         // This block runs if opt has a value
         printf("Found value: %d\n", value);
 
         // You can do complex operations with the value
-        if (value > 10) {
+        if (10 < value) {
             printf("Value is greater than 10\n");
         }
     } else_none {
@@ -52,7 +52,7 @@ static fn_(processOptionalValue(Opt$i32 opt), void) {
 }
 
 // Example of nested optional handling
-static fn_(processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner), i32) {
+static func((processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner))(i32)) {
     if_some(maybe_outer, outer) {
         if_some(maybe_inner, inner) {
             return outer + inner;
@@ -69,7 +69,7 @@ static fn_(processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner), i32
     claim_unreachable;
 }
 
-fn_(dh_main(void), Err$void, $scope) {
+func((dh_main(void))(Err$void)$scope) {
     // Create some optional values
     let opt_with_value = some$(Opt$i32, 42);
     let opt_empty      = none$(Opt$i32);
@@ -124,7 +124,7 @@ fn_(dh_main(void), Err$void, $scope) {
 } $unscoped;
 
 #if README_SAMPLE
-fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
+func((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32)$scope) {
     for_slice_indexed (items, item, index) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
@@ -132,7 +132,7 @@ fn_(findValueIndex(i32 value, Sli_const$i32 items), Opt$i32, $scope) {
     return_none(); // Return with no value
 } $unscoped;
 
-fn_(example(void), void) {
+func((example(void))(void)) {
     Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
 
     // Create optional values

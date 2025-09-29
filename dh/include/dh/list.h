@@ -27,11 +27,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/ptr.h"
-#include "dh/opt.h"
+#include "dh/prl.h"
 #include "dh/meta/common.h"
-#include "dh/TEST.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -47,10 +44,9 @@ use_Ptr$(ListSgl_Node);
 use_Opt$(Ptr$ListSgl_Node);
 struct ListSgl_Node {
     Opt$Ptr$ListSgl_Node next;
-    meta_Ptr             data;
+    u8                   data[];
 };
 
-extern fn_(ListSgl_Node_init(meta_Ptr data), ListSgl_Node);
 extern fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), void);
 extern fn_(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node);
 extern fn_(ListSgl_Node_findLast(ListSgl_Node* node), ListSgl_Node*);
@@ -66,7 +62,6 @@ typedef struct ListSgl {
     Opt$Ptr$ListSgl_Node first;
 } ListSgl;
 
-extern fn_(ListSgl_init(void), ListSgl);
 extern fn_(ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node), void);
 extern fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void);
 extern fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node);
@@ -85,10 +80,8 @@ use_Opt$(Ptr$ListDbl_Node);
 struct ListDbl_Node {
     Opt$Ptr$ListDbl_Node prev;
     Opt$Ptr$ListDbl_Node next;
-    meta_Ptr             data;
+    u8                   data[];
 };
-
-extern fn_(ListDbl_Node_init(meta_Ptr data), ListDbl_Node);
 
 #define use_ListDbl$(T)  comp_type_gen__use_ListDbl$(T)
 #define decl_ListDbl$(T) comp_type_gen__decl_ListDbl$(T)
@@ -101,7 +94,6 @@ typedef struct ListDbl {
     usize                len;
 } ListDbl;
 
-extern fn_(ListDbl_init(void), ListDbl);
 extern fn_(ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void);
 extern fn_(ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void);
 extern fn_(ListDbl_concatByMoving(ListDbl* dst, ListDbl* src), void);
@@ -117,36 +109,35 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
 /* Singly Linked List */
 
 #define comp_type_gen__use_ListSgl_Node$(T) \
-    decl_ListSgl_Node$(T);                  \
+    decl_ListSgl_Node$(T); \
     impl_ListSgl_Node$(T)
-#define comp_type_gen__decl_ListSgl_Node$(T)                       \
+#define comp_type_gen__decl_ListSgl_Node$(T) \
     $maybe_unused typedef union ListSgl_Node$(T) ListSgl_Node$(T); \
-    use_Ptr$(ListSgl_Node$(T));                                    \
+    use_Ptr$(ListSgl_Node$(T)); \
     use_Opt$(Ptr$(ListSgl_Node$(T)))
-#define comp_type_gen__impl_ListSgl_Node$(T)   \
-    union ListSgl_Node$(T) {                   \
-        ListSgl_Node base[1];                  \
-        struct {                               \
+#define comp_type_gen__impl_ListSgl_Node$(T) \
+    union ListSgl_Node$(T) { \
+        ListSgl_Node base[1]; \
+        struct { \
             Opt$(Ptr$(ListSgl_Node$(T))) next; \
-            TypeInfo type;                     \
-            rawptr$(T) data;                   \
-        };                                     \
+            T data; \
+        }; \
     }
 #define comp_type_alias__ListSgl_Node$(T) \
     pp_join($, ListSgl_Node, T)
 
 #define comp_type_gen__use_ListSgl$(T) \
-    use_ListSgl_Node$(T);              \
-    decl_ListSgl$(T);                  \
+    use_ListSgl_Node$(T); \
+    decl_ListSgl$(T); \
     impl_ListSgl$(T)
 #define comp_type_gen__decl_ListSgl$(T) \
     $maybe_unused typedef union ListSgl$(T) ListSgl$(T)
-#define comp_type_gen__impl_ListSgl$(T)         \
-    union ListSgl$(T) {                         \
-        ListSgl base[1];                        \
-        struct {                                \
+#define comp_type_gen__impl_ListSgl$(T) \
+    union ListSgl$(T) { \
+        ListSgl base[1]; \
+        struct { \
             Opt$(Ptr$(ListSgl_Node$(T))) first; \
-        };                                      \
+        }; \
     }
 #define comp_type_alias__ListSgl$(T) \
     pp_join($, ListSgl, T)
@@ -154,38 +145,37 @@ extern fn_(ListDbl_len(const ListDbl* self), usize);
 /* Doubly Linked List */
 
 #define comp_type_gen__use_ListDbl_Node$(T) \
-    decl_ListDbl_Node$(T);                  \
+    decl_ListDbl_Node$(T); \
     impl_ListDbl_Node$(T)
-#define comp_type_gen__decl_ListDbl_Node$(T)                       \
+#define comp_type_gen__decl_ListDbl_Node$(T) \
     $maybe_unused typedef union ListDbl_Node$(T) ListDbl_Node$(T); \
-    use_Ptr$(ListDbl_Node$(T));                                    \
+    use_Ptr$(ListDbl_Node$(T)); \
     use_Opt$(Ptr$(ListDbl_Node$(T)))
-#define comp_type_gen__impl_ListDbl_Node$(T)   \
-    union ListDbl_Node$(T) {                   \
-        ListDbl_Node base[1];                  \
-        struct {                               \
+#define comp_type_gen__impl_ListDbl_Node$(T) \
+    union ListDbl_Node$(T) { \
+        ListDbl_Node base[1]; \
+        struct { \
             Opt$(Ptr$(ListDbl_Node$(T))) prev; \
             Opt$(Ptr$(ListDbl_Node$(T))) next; \
-            TypeInfo type;                     \
-            rawptr$(T) data;                   \
-        };                                     \
+            T data; \
+        }; \
     }
 #define comp_type_alias__ListDbl_Node$(T) \
     pp_join($, ListDbl_Node, T)
 
 #define comp_type_gen__use_ListDbl$(T) \
-    decl_ListDbl$(T);                  \
+    decl_ListDbl$(T); \
     impl_ListDbl$(T)
 #define comp_type_gen__decl_ListDbl$(T) \
     $maybe_unused typedef union ListDbl$(T) ListDbl$(T)
-#define comp_type_gen__impl_ListDbl$(T)         \
-    union ListDbl$(T) {                         \
-        ListDbl base[1];                        \
-        struct {                                \
+#define comp_type_gen__impl_ListDbl$(T) \
+    union ListDbl$(T) { \
+        ListDbl base[1]; \
+        struct { \
             Opt$(Ptr$(ListDbl_Node$(T))) first; \
-            Opt$(Ptr$(ListDbl_Node$(T))) last;  \
-            usize len;                          \
-        };                                      \
+            Opt$(Ptr$(ListDbl_Node$(T))) last; \
+            usize len; \
+        }; \
     }
 #define comp_type_alias__ListDbl$(T) \
     pp_join($, ListDbl, T)

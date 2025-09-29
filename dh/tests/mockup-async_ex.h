@@ -202,3 +202,18 @@ __step_suspend: \
     } \
     blk_break_(__nosuspend, {}); \
 })
+
+#define Co_Ctx_from(_fnName, _args...) comp_inline__Co_Ctx_from(_fnName, _args)
+#define comp_inline__Co_Ctx_from(_fnName, _args...) \
+    ((Co_Ctx$(_fnName)){ \
+        .fn     = as$(Co_FnWork*, _fnName), \
+        .count  = 0, \
+        .state  = Co_State_pending, \
+        .ret    = {}, \
+        .args   = { pp_Tuple_unwrap _args }, \
+        .locals = {}, \
+    })
+
+#define Co_Ctx_returned(_ctx...) comp_inline__Co_Ctx_returned(_ctx)
+#define comp_inline__Co_Ctx_returned(_ctx...) \
+    ((_ctx)->ret->value)

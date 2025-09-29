@@ -6,8 +6,8 @@
  * @file    io.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2025-03-22 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-05-13 (date of last update)
+ * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  io
  *
@@ -25,6 +25,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "io/common.h"
+#include "io/Writer.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -34,8 +34,12 @@ extern "C" {
 #define with_fini_(_Init_Statement, _Fini_Statement...) scope_with_fini(_Init_Statement, _Fini_Statement)
 #define if_(_Init_Statement, _Condition)                scope_if(_Init_Statement, _Condition)
 #define else_(_Init_Statement...)                       scope_else(_Init_Statement)
-#define switch_(_Init_Statement, _Condition)            scope_switch(_Init_Statement, _Condition)
-#define while_(_Init_Statement, _Condition)             scope_while(_Init_Statement, _Condition)
+#define switch_(_InitStatement, _Condition, _Body...)   eval({ \
+    _InitStatement; \
+    switch (_Condition) \
+        _Body \
+})
+#define while_(_Init_Statement, _Condition) scope_while(_Init_Statement, _Condition)
 // case, default, ...
 
 #define scope_with(_Init_Statement...) \
@@ -68,19 +72,19 @@ extern "C" {
 /*========== Macros Implementation ==========================================*/
 
 // NOLINTBEGIN
-#define SYN__scope_with(__run_once, __init_once, _Init_Statement...)                 \
+#define SYN__scope_with(__run_once, __init_once, _Init_Statement...) \
     for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
         for (_Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_with_fini(__run_once, __init_once, _Init_Statement, _Fini_Statement...)            \
-    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false, _Fini_Statement) \
-        for (_Init_Statement; __init_once; __init_once = false)
+#define SYN__scope_with_fini(__run_once, __init_once, _Init_Statement, _Fini_Statement...) \
+    for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
+        for (_Init_Statement; __init_once; __init_once = false, _Fini_Statement)
 
-#define SYN__scope_var(__run_once, __init_once, _Init_Statement...)                  \
+#define SYN__scope_var(__run_once, __init_once, _Init_Statement...) \
     for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
         for (var _Init_Statement; __init_once; __init_once = false)
 
-#define SYN__scope_let(__run_once, __init_once, _Init_Statement...)                  \
+#define SYN__scope_let(__run_once, __init_once, _Init_Statement...) \
     for (bool __run_once = true, __init_once = true; __run_once; __run_once = false) \
         for (let _Init_Statement; __init_once; __init_once = false)
 

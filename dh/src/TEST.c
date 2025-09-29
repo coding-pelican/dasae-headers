@@ -13,8 +13,12 @@
  */
 
 #include "dh/TEST.h"
-#include "dh/mem.h"
 #include "dh/heap/Page.h"
+#include "dh/Str.h"
+#include "dh/io/common.h"
+#include "dh/fs/File.h"
+#include "dh/io/Writer.h"
+#include "dh/ErrTrace.h"
 
 /* ANSI color codes */
 #define TEST_color_reset  "\033[0m"
@@ -33,75 +37,95 @@ fn_(TEST_Framework_instance(void), TEST_Framework*) {
             ArrList$TEST_Case,
             ArrList_init(
                 typeInfo$(TEST_Case),
-                heap_Page_allocator(&s_allocator)));
+                heap_Page_allocator(&s_allocator)
+            )
+        );
         s_is_initialized = true;
     }
     return &s_instance;
 }
 
-fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Str_const name), void) {
+fn_(TEST_Framework_bindCase(TEST_CaseFn fn, Sli_const$u8 name), void) {
     let instance = TEST_Framework_instance();
     let result   = ArrList_append(
         instance->cases.base,
-        meta_refPtr(create$(TEST_Case, .fn = fn, .name = name)) );
+        meta_refPtr(&(TEST_Case){ .fn = fn, .name = name })
+    );
     if (isErr(result)) { return; } /* Occurs when heap is full (Out of memory) */
 }
 
 fn_(TEST_Framework_run(void), void) {
-    let instance = TEST_Framework_instance();
+    static let print    = io_Writer_print;
+    let        out      = fs_File_writer(io_getStdOut());
+    let        instance = TEST_Framework_instance();
 
     // Print header
-    printf("\n");
-    printf(TEST_color_blue "=== Running Tests ===" TEST_color_reset);
-    printf("\n");
+    catch_((print(out, u8_l("\n")))($ignore_capture, claim_unreachable));
+    catch_((print(out, u8_l(TEST_color_blue "=== Running Tests ===" TEST_color_reset)))($ignore_capture, claim_unreachable));
+    catch_((print(out, u8_l("\n")))($ignore_capture, claim_unreachable));
 
     // Run each test case
     let cases = instance->cases.items;
     for_slice (cases, test_case) {
         instance->stats.total++;
-        printf("Running test: %s%.*s%s\n", TEST_color_yellow, as$(i32, test_case->name.len), test_case->name.ptr, TEST_color_reset);
+        catch_((print(
+            out, u8_l("Running test: {:s}{:s}{:s}\n"),
+            u8_l(TEST_color_yellow), test_case->name, u8_l(TEST_color_reset)
+        ))($ignore_capture, claim_unreachable));
 
         // Run the test
         if_err(test_case->fn(), err) {
             instance->stats.failed++;
-            printf("  %s[FAIL]%s: [%s] %s\n", TEST_color_red, TEST_color_reset, Err_domainToCStr(err), Err_codeToCStr(err));
-        } else_void {
+            catch_((print(
+                out, u8_l("    {:s}: [{:s}] {:s}\n"),
+                u8_l(TEST_color_red "[FAIL]" TEST_color_reset),
+                Err_domainToStr(err),
+                Err_codeToStr(err)
+            ))($ignore_capture, claim_unreachable));
+            Err_print(err);
+            ErrTrace_print();
+            ErrTrace_reset();
+        }
+        else_void {
             instance->stats.passed++;
-            printf("  %s[PASS]%s\n", TEST_color_green, TEST_color_reset);
+            catch_((print(
+                out, u8_l("    {:s}\n"),
+                u8_l(TEST_color_green "[PASS]" TEST_color_reset)
+            ))($ignore_capture, claim_unreachable));
         }
     }
 
     // Print summary
-    printf("\n");
+    catch_((print(out, u8_l("\n")))($ignore_capture, claim_unreachable));
     {
-        printf(TEST_color_blue "=== Test Summary ===" TEST_color_reset "\n");
-        printf("Total: %u\n", instance->stats.total);
-        printf(TEST_color_green "Passed: %u" TEST_color_reset "\n", instance->stats.passed);
-        printf(TEST_color_red "Failed: %u" TEST_color_reset "\n", instance->stats.failed);
+        catch_((print(out, u8_l(TEST_color_blue "=== Test Summary ===" TEST_color_reset "\n")))($ignore_capture, claim_unreachable));
+        catch_((print(out, u8_l("Total: {:u}\n"), instance->stats.total))($ignore_capture, claim_unreachable));
+        catch_((print(out, u8_l(TEST_color_green "Passed: {:u}" TEST_color_reset "\n"), instance->stats.passed))($ignore_capture, claim_unreachable));
+        catch_((print(out, u8_l(TEST_color_red "Failed: {:u}" TEST_color_reset "\n"), instance->stats.failed))($ignore_capture, claim_unreachable));
     }
-    printf("\n");
+    catch_((print(out, u8_l("\n")))($ignore_capture, claim_unreachable));
 
     ArrList_fini(instance->cases.base);
 }
 
 /* Debug versions of test functions */
-fn_(TEST_expect_test(bool expr, SrcLoc loc, Str_const expr_str), Err$void, $scope) {
+fn_(TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 expr_str), Err$void $scope) {
     $ignore = loc;
     $ignore = expr_str;
 
     if (!expr) {
-        return_err(Err_InvalidArgument());
+        return_err(TEST_Err_Unexpected());
     }
     return_ok({});
 } $unscoped;
 
-fn_(TEST_expectMsg_test(bool expr, Str_const msg, SrcLoc loc, Str_const expr_str), Err$void, $scope) {
+fn_(TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 expr_str), Err$void $scope) {
     $ignore = msg;
     $ignore = loc;
     $ignore = expr_str;
 
     if (!expr) {
-        return_err(Err_InvalidArgument());
+        return_err(TEST_Err_Unexpected());
     }
     return_ok({});
 } $unscoped;

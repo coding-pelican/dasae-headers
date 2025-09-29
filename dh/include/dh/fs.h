@@ -24,7 +24,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "fs/common.h"
-#include "fs/dir.h"
+#include "fs/File.h"
+#include "fs/Dir.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

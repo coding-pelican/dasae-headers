@@ -106,7 +106,7 @@ my-project/
 #include "dh/main.h"
 #include "dh/Str.h"
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     // 문자열 리터럴 생성
     let hello = Str_l("Hello, dasae-headers!");
 
@@ -128,7 +128,7 @@ dh-c run dev      # 프로그램 실행
 ### 이 예제의 주요 기능
 
 1. `fn_` - 함수 선언
-2. `Sli$Str_const` - 상수 문자열의 슬라이스 (명령줄 인수)
+2. `Sli$Sli_const$u8` - 상수 문자열의 슬라이스 (명령줄 인수)
 3. `Err$void` - void 페이로드가 있는 오류 결과 타입
 7. `$scope` - 페이로드 반환 타입을 위한 확장 범위 함수
 4. `let` - 변수 선언을 위한 타입 추론
@@ -163,7 +163,7 @@ var_(number, i32) = 42; // i32
 `defer`를 사용한 자동 리소스 정리:
 
 ```c
-fn_(readFile(Str_const path), Err$Str, $guard) {
+fn_(readFile(Sli_const$u8 path), Err$Str $guard) {
     let_(file, FILE*) = fopen(path.ptr, "r");
     if (file == null) {
         return_err(fileError("파일을 열 수 없습니다"));
@@ -183,7 +183,7 @@ fn_(readFile(Str_const path), Err$Str, $guard) {
 `try_` 패턴을 사용한 명시적 오류 처리:
 
 ```c
-fn_(processData(void), Err$void, $scope) {
+fn_(processData(void), Err$void $scope) {
     // 실패할 수 있는 함수 호출 및 오류 전파
     let result = try_(getData());
 
@@ -198,7 +198,7 @@ fn_(processData(void), Err$void, $scope) {
 널 값을 안전하게 처리:
 
 ```c
-fn_(findUser(i32 id), Opt$User, $scope) {
+fn_(findUser(i32 id), Opt$User $scope) {
     if (id <= 0) {
         return_none();  // 사용자를 찾을 수 없음
     }

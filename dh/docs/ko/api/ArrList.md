@@ -152,7 +152,7 @@ ArrList_fini(list.base);
 #include "dh/main.h"
 #include "dh/ArrList.h"
 
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     // 배열 리스트 초기화
     ArrList$i32 list = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -190,7 +190,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
 ### 동적 컬렉션
 
 ```c
-fn_(processDynamicData(Sli$i32 input), Err$Sli$i32, $guard) {
+fn_(processDynamicData(Sli$i32 input), Err$Sli$i32 $guard) {
     // 할당자로 초기화
     ArrList$i32 results = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));

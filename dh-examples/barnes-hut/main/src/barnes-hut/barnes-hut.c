@@ -52,7 +52,7 @@ static fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void
 static Thrd_fn_(Simulation_thread, ({}, Err$void));
 
 // Main function
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     $ignore = args;
 
     // Initialize logging to a file
@@ -79,8 +79,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
             .y = main_window_res_height,
         },
         .default_color = some(Color_black),
-        .title         = some(Str_l("Barnes-hut N-Body Simulation"))
-    }));
+        .title         = some(Str_l("Barnes-hut N-Body Simulation")) }));
     defer_(engine_Window_fini(window));
     log_info("engine initialized\n");
 
@@ -148,7 +147,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
     var sim_thread         = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
     defer_(catch_from(
         Thrd_FnCtx_returned(Simulation_thread, Thrd_join(sim_thread)), err,
-            eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
+        eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
     ));
     global_state.paused     = false;
     global_state.is_running = true;
@@ -218,7 +217,7 @@ fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
 }
 #endif /* debug_comp_enabled */
 
-fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void, $scope) {
+fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(wnd);
     debug_assert_nonnull(input);
@@ -251,7 +250,7 @@ fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input
     return_ok({});
 } $unscoped;
 
-fn_(global_update(Visualizer* viz, Simulation* sim), Err$void, $scope) {
+fn_(global_update(Visualizer* viz, Simulation* sim), Err$void $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(sim);
 
@@ -327,7 +326,7 @@ fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
 }
 
 $must_check
-Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture), $guard) {
+Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture)$guard) {
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
     log_info("sim loop started\n");
@@ -361,9 +360,9 @@ Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture), $guard) {
                 // if it is shared with other threads.
                 // log_info("sim_thread update\n");
                 catch_from(Simulation_step(global_state.sim), err, eval({
-                    log_error("Simulation_step failed: %s", Err_codeToCStr(err));
-                    return_err(err);
-                }));
+                               log_error("Simulation_step failed: %s", Err_codeToCStr(err));
+                               return_err(err);
+                           }));
             }
         } block_deferral;
 

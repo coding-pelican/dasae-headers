@@ -1,3 +1,4 @@
+#if DH_DEPRECATED
 /**
  * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
@@ -43,79 +44,79 @@ extern "C" {
 #define extract_mut(var_union_enum, E_UnionEnum_Tag) comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag)
 
 /* Union enum match expr with payload captures */
-#define match_(val_union_enum)                          comp_syn__match_(val_union_enum)
-#define match_mut_(var_union_enum)                      comp_syn__match_mut_(var_union_enum)
-#define pattern_(E_UnionEnum_Tag, _Payload_Capture)     comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture)
-#define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
-#define fallback_()                                     comp_syn__fallback_()
+// #define match_(val_union_enum)                          comp_syn__match_(val_union_enum)
+// #define match_mut_(var_union_enum)                      comp_syn__match_mut_(var_union_enum)
+// #define pattern_(E_UnionEnum_Tag, _Payload_Capture)     comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture)
+// #define pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture)
+// #define fallback_()                                     comp_syn__fallback_()
 
 /*========== Implementations ================================================*/
 
-#define comp_gen__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...)              \
-    typedef struct T_UnionEnum {                                                 \
-        enum {                                                                   \
-            comp_gen__config_UnionEnum__enumTags(T_UnionEnum, Pair_1Tag_2Type)   \
-        } tag;                                                                   \
-        union {                                                                  \
+#define comp_gen__config_UnionEnum(T_UnionEnum, Pair_1Tag_2Type...) \
+    typedef struct T_UnionEnum { \
+        enum { \
+            comp_gen__config_UnionEnum__enumTags(T_UnionEnum, Pair_1Tag_2Type) \
+        } tag; \
+        union { \
             comp_gen__config_UnionEnum__unionTypes(T_UnionEnum, Pair_1Tag_2Type) \
-        } data;                                                                  \
+        } data; \
     } T_UnionEnum
 
-#define comp_gen__config_UnionEnumAsField(Pair_1Tag_2Type...)      \
-    enum {                                                         \
-        comp_gen__config_UnionEnum__enumTags(~, Pair_1Tag_2Type)   \
-    } tag;                                                         \
-    union {                                                        \
+#define comp_gen__config_UnionEnumAsField(Pair_1Tag_2Type...) \
+    enum { \
+        comp_gen__config_UnionEnum__enumTags(~, Pair_1Tag_2Type) \
+    } tag; \
+    union { \
         comp_gen__config_UnionEnum__unionTypes(~, Pair_1Tag_2Type) \
     } data;
 
-#define comp_op__tagUnion(E_UnionEnum_Tag, val_tagged...)                                        \
-    {                                                                                            \
-        .tag  = (E_UnionEnum_Tag),                                                               \
-        .data = {                                                                                \
+#define comp_op__tagUnion(E_UnionEnum_Tag, val_tagged...) \
+    { \
+        .tag  = (E_UnionEnum_Tag), \
+        .data = { \
             .pp_join($, E_UnionEnum_Tag, Tagged) = (struct pp_join($, E_UnionEnum_Tag, Tagged)){ \
-                .value = val_tagged,                                                             \
-            }                                                                                    \
-        }                                                                                        \
+                .value = val_tagged, \
+            } \
+        } \
     }
 
 #define comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
 #define comp_op__toTagUnion(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
-    let __addr_union_enum = var_addr_union_enum;                                                           \
-    debug_assert_nonnull(__addr_union_enum);                                                               \
-    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged);                 \
-    eval_return __addr_union_enum;                                                                         \
+    let __addr_union_enum = var_addr_union_enum; \
+    debug_assert_nonnull(__addr_union_enum); \
+    *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged); \
+    eval_return __addr_union_enum; \
 })
 
-#define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({             \
-    let __union_enum = (val_union_enum);                                     \
-    debug_assert(__union_enum.tag == (E_UnionEnum_Tag));                     \
+#define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({ \
+    let __union_enum = (val_union_enum); \
+    debug_assert(__union_enum.tag == (E_UnionEnum_Tag)); \
     eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
 })
 
-#define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({            \
-    var __union_enum = &(var_union_enum);                                       \
-    debug_assert(__union_enum->tag == (E_UnionEnum_Tag));                       \
+#define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({ \
+    var __union_enum = &(var_union_enum); \
+    debug_assert(__union_enum->tag == (E_UnionEnum_Tag)); \
     eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
 })
 
-#define comp_syn__match_(val_union_enum) \
-    with_(let _union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
+// #define comp_syn__match_(val_union_enum) \
+//     with_(let _union_enum = (val_union_enum)) for (var _union_data = &(_union_enum.data); _union_data; _union_data = null) switch (_union_enum.tag)
 
-#define comp_syn__match_mut_(var_union_enum) \
-    with_(let _union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
+// #define comp_syn__match_mut_(var_union_enum) \
+//     with_(let _union_enum = &(var_union_enum)) for (var _union_data = &(_union_enum->data); _union_data; _union_data = null) switch (_union_enum->tag)
 
-#define comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
-    case E_UnionEnum_Tag:                                     \
-        for (var _Payload_Capture = &as$(const struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
+// #define comp_syn__pattern_(E_UnionEnum_Tag, _Payload_Capture) \
+//     case E_UnionEnum_Tag: \
+//         for (var _Payload_Capture = &as$(const struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) \
-    case E_UnionEnum_Tag:                                         \
-        for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
+// #define comp_syn__pattern_mut_(E_UnionEnum_Tag, _Payload_Capture) \
+//     case E_UnionEnum_Tag: \
+//         for (var _Payload_Capture = &as$(struct pp_join($, E_UnionEnum_Tag, Tagged)*, _union_data)->value; _Payload_Capture; (_Payload_Capture) = null)
 
-#define comp_syn__fallback_() \
-    default:
+// #define comp_syn__fallback_() \
+//     default:
 
 #define comp_gen__config_UnionEnum__enumTags(T_UnionEnum, ...) \
     pp_foreach (comp_gen__config_UnionEnum__enumTag, T_UnionEnum, __VA_ARGS__)
@@ -127,9 +128,9 @@ extern "C" {
     pp_foreach (comp_gen__config_UnionEnum__unionType, T_UnionEnum, __VA_ARGS__)
 
 #define comp_gen__config_UnionEnum__unionType(T_UnionEnum, _Pair) \
-    struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) {             \
-        SECOND_OF_PAIR(_Pair)                                     \
-        value;                                                    \
+    struct pp_join($, FIRST_OF_PAIR(_Pair), Tagged) { \
+        SECOND_OF_PAIR(_Pair) \
+        value; \
     } pp_join($, FIRST_OF_PAIR(_Pair), Tagged);
 
 #define FIRST_OF_PAIR(_Pair)           FIRST_OF_PAIR_IMPL _Pair
@@ -158,12 +159,14 @@ static f32 Shape_getArea(Shape shape) {
     return eval({
         var area = f32_nan;
         match_(shape) {
-        pattern_(Shape_Circ, s) {
-            area = math_f32_pi * s->radius * s->radius;
-        } break;
-        pattern_(Shape_Rect, s) {
-            area = s->width * s->height;
-        } break;
+            pattern_(Shape_Circ, s) {
+                area = math_f32_pi * s->radius * s->radius;
+            }
+            break;
+            pattern_(Shape_Rect, s) {
+                area = s->width * s->height;
+            }
+            break;
             fallback_
                 claim_unreachable;
         }
@@ -203,18 +206,20 @@ extern fn_(pullInputEvent(void), Opt$InputEvent);
 static void example_handleEvent(void) {
     if_some(pullInputEvent(), event) {
         match_(event) {
-        pattern_(InputEvent_press_key, on_pressed) {
-            debug_assert_true_fmt(
-                -1 < on_pressed->key && on_pressed->key <= 255,
-                "key is out of range"
-            );
-        } break;
-        pattern_(InputEvent_release_button, on_released) {
-            debug_assert_true_fmt(
-                -1 < on_released->button && on_released->button <= 5,
-                "button is out of range"
-            );
-        } break;
+            pattern_(InputEvent_press_key, on_pressed) {
+                debug_assert_true_fmt(
+                    -1 < on_pressed->key && on_pressed->key <= 255,
+                    "key is out of range"
+                );
+            }
+            break;
+            pattern_(InputEvent_release_button, on_released) {
+                debug_assert_true_fmt(
+                    -1 < on_released->button && on_released->button <= 5,
+                    "button is out of range"
+                );
+            }
+            break;
             fallback_
                 claim_unreachable;
         }
@@ -246,26 +251,28 @@ typedef struct Shape {
     } data;
 } Shape;
 
-#define union_enum$(E_UnionEnum_Tag, ...)                              \
-    {                                                                  \
-        .tag  = E_UnionEnum_Tag,                                       \
-        .data = {                                                      \
+#define union_enum$(E_UnionEnum_Tag, ...) \
+    { \
+        .tag  = E_UnionEnum_Tag, \
+        .data = { \
             .E_UnionEnum_Tag##Match = (struct E_UnionEnum_Tag##Match){ \
-                .value = { __VA_ARGS__ },                              \
-            },                                                         \
-        },                                                             \
+                .value = { __VA_ARGS__ }, \
+            }, \
+        }, \
     }
 
 void test(void) {
     Shape shape = union_enum$(Shape_Circ, .radius = 1.0f);
     with_(f32 area = 0) {
         match_(shape) {
-        pattern_(Shape_Circ, s) {
-            area = 3.1415926f * s->radius * s->radius;
-        } break;
-        pattern_(Shape_Rect, s) {
-            area = s->width * s->height;
-        } break;
+            pattern_(Shape_Circ, s) {
+                area = 3.1415926f * s->radius * s->radius;
+            }
+            break;
+            pattern_(Shape_Rect, s) {
+                area = s->width * s->height;
+            }
+            break;
         }
         debug_assert(area == 3.1415926f);
     }
@@ -276,3 +283,4 @@ void test(void) {
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* UNION_ENUM_INCLUDED */
+#endif // DH_DEPRECATED

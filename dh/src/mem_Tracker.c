@@ -19,7 +19,7 @@
 #include "dh/ArrList.h"
 #include "dh/err_res.h"
 #include "dh/core/src_loc.h"
-#include "dh/fs/dir.h"
+#include "dh/fs/Dir.h"
 #include "dh/io.h"
 #include "dh/Str.h"
 #include "dh/Arr.h"
@@ -32,7 +32,7 @@
 
 /*========== Constants and Default Configuration ===========================*/
 
-static const Str_const mem_Tracker_default_log_file = Str_l("log/mem.log");
+static const Sli_const$u8 mem_Tracker_default_log_file = Str_l("log/mem.log");
 
 /*========== Tracker Leak Report Types =====================================*/
 
@@ -58,13 +58,13 @@ static mem_Tracker mem_Tracker_s_instance = cleared();
 
 /// Automatic initialization at program start
 static $on_load fn_(mem_Tracker_init(void), void) {
-    catch_from(mem_Tracker_initWithPath(mem_Tracker_default_log_file), err, eval({
-         /* If initialization fails, try to log to stderr */
-        printf("ERROR: Failed to initialize memory tracker: [%s] %s\n",
-            Err_domainToCStr(err), Err_codeToCStr(err)
-        );
-        ErrTrace_print();
-    }));
+    catch_((mem_Tracker_initWithPath(mem_Tracker_default_log_file))(
+        err, eval({
+            /* If initialization fails, try to log to stderr */
+            printf("ERROR: Failed to initialize memory tracker: [%s] %s\n", Err_domainToCStr(err), Err_codeToCStr(err));
+            ErrTrace_print();
+        })
+    ));
     $ignore = atexit(mem_Tracker_finiAndGenerateReport);
 }
 
@@ -75,7 +75,7 @@ static $on_exit fn_(mem_Tracker_fini(void), void) {
 
 /*========== Implementation ================================================*/
 
-fn_(mem_Tracker_initWithPath(Str_const log_path), Err$void, $guard) {
+fn_(mem_Tracker_initWithPath(Sli_const$u8 log_path), Err$void $guard) {
     // Create directory if needed
     let dir_path = Str_l("log");
     try_(fs_dir_create(dir_path));
@@ -86,8 +86,8 @@ fn_(mem_Tracker_initWithPath(Str_const log_path), Err$void, $guard) {
     Arr_setAt(path_str, log_path.len, '\0');
 
     let log_file = fopen(as$(const char*, path_str.buf), "w");
-    if (!log_file) { return_err(io_FileErr_OpenFailed()); }
-    errdefer_($ignore = fclose(log_file));
+    if (!log_file) { return_err(fs_FileErr_OpenFailed()); }
+    errdefer_($ignore_capture, $ignore = fclose(log_file));
 
     // Close previous log file if it exists
     if (mem_Tracker_s_instance.log_file) {
@@ -110,7 +110,7 @@ fn_(mem_Tracker_initWithPath(Str_const log_path), Err$void, $guard) {
     return_ok({});
 } $unguarded;
 
-fn_(mem_Tracker_finiAndGenerateReport(void), void, $guard) {
+fn_(mem_Tracker_finiAndGenerateReport(void), void $guard) {
     if (!mem_Tracker_s_instance.log_file) { return; }
 
     // clang-format off
@@ -176,8 +176,11 @@ fn_(mem_Tracker_finiAndGenerateReport(void), void, $guard) {
 
             if (!found) {
                 // Add new leak site
-                catch_(ArrList_addBackOne(sites.base), ({ $ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
-                }));
+                catch_((ArrList_addBackOne(sites.base))(
+                    $ignore_capture, ({
+                        $ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
+                    })
+                ));
 
                 if_some(ArrList_popOrNull(sites.base), site_ptr) {
                     let site          = meta_cast$(LeakSite*, site_ptr);

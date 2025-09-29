@@ -101,7 +101,7 @@ function Invoke-Compilation {
     }
 
     try {
-        clang -std=c17 -Wall -Wextra -O3 -o "$outputFile" "$sourceFile"
+        clang -std=c17 -Wall -Wextra -O3 -flto -o "$outputFile" "$sourceFile"
 
         if (-not (Test-Path $outputFile)) {
             Write-ColorMessage "Error: Compilation failed." -ForegroundColor $Colors.Error

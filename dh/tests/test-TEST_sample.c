@@ -1,13 +1,13 @@
 #include "dh/main.h"
 #include "dh/TEST.h"
 
-#include <stdio.h>
+#include "dh/io/stream.h"
 
 static fn_(addInt(i32 a, i32 b), i32) {
     return a + b;
 }
 
-TEST_fn_("Basic Addition Operation", $scope) {
+TEST_fn_("Basic Addition Operation" $scope) {
     let a = 1;
     let b = 2;
     let c = addInt(a, b);
@@ -19,20 +19,20 @@ TEST_fn_("Basic Addition Operation", $scope) {
     try_(TEST_expect(f != 5));
 } $unscoped_TEST_fn;
 
-TEST_fn_("Always Fails", $scope) {
+TEST_fn_("Always Fails" $scope) {
     let a = 1;
     let b = 2;
     let c = addInt(a, b);
     try_(TEST_expect(c != 3)); // This will always fail
 } $unscoped_TEST_fn;
 
-fn_(dh_main(Sli$Str_const args), Err$void, $scope) {
+func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
     $ignore = args;
 
     let a = 1;
     let b = 2;
     let c = addInt(a, b);
-    printf("%d\n", c);
+    io_stream_print(u8_l("{:d}\n"), c);
 
     return_ok({});
 } $unscoped;

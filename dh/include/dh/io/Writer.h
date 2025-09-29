@@ -20,8 +20,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/io/common.h"
-#include "dh/meta/common.h"
+#include "dh/prl.h"
+#include <stdarg.h>
 
 /*========== Macros and Declarations ========================================*/
 
@@ -35,6 +35,9 @@ extern fn_(io_Writer_writeAll(io_Writer self, Sli_const$u8 bytes), Err$void) $mu
 extern fn_(io_Writer_writeByte(io_Writer self, u8 byte), Err$void) $must_check;
 extern fn_(io_Writer_writeByteNTimes(io_Writer self, u8 byte, usize n), Err$void) $must_check;
 extern fn_(io_Writer_writeBytesNTimes(io_Writer self, Sli_const$u8 bytes, usize n), Err$void) $must_check;
+
+extern fn_(io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...), Err$void) $must_check;
+extern fn_(io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args), Err$void) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */

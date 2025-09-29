@@ -1,7 +1,7 @@
 #include "dh/main.h"
 #include "dh/Arr.h"
 
-TEST_fn_("test Arr_cat", $scope) {
+TEST_fn_("test Arr_cat" $scope) {
     let arr3_lhs    = Arr_from$(i32, { 0, 1, 2 });
     let arr3_rhs    = Arr_from$(i32, { 3, 4, 5 });
     let res_3_add_3 = Arr_cat(arr3_lhs, arr3_rhs);
@@ -30,7 +30,7 @@ TEST_fn_("test Arr_cat", $scope) {
     }
 } $unscoped_TEST_fn;
 
-TEST_fn_("test Arr_cat$", $scope) {
+TEST_fn_("test Arr_cat$" $scope) {
     use_Arr$(6, i32);
     use_Arr$(8, i32);
     let arr3_lhs    = Arr_from$(i32, { 0, 1, 2 });

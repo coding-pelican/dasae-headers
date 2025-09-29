@@ -26,14 +26,14 @@ typedef struct Circ2f {
     f32   radius;
 } Circ2f;
 $inline_always bool Circ2f_intersects(Circ2f a, Circ2f b) {
-    let diff      = math_Vec2f_sub(b.center, a.center);
-    let dist_sq   = math_Vec2f_lenSq(diff);
+    let diff      = m_V2f32_sub(b.center, a.center);
+    let dist_sq   = m_V2f32_lenSq(diff);
     let sum_radii = a.radius + b.radius;
     return dist_sq <= (sum_radii * sum_radii);
 }
 $inline_always bool Circ2f_containsPoint(Circ2f c, Vec2f point) {
-    let diff    = math_Vec2f_sub(point, c.center);
-    let dist_sq = math_Vec2f_lenSq(diff);
+    let diff    = m_V2f32_sub(point, c.center);
+    let dist_sq = m_V2f32_lenSq(diff);
     return dist_sq <= (c.radius * c.radius);
 }
 
@@ -57,8 +57,8 @@ static Ball Ball_init(f32 x, f32 y, f32 radius) {
             .center = { .x = x, .y = y },
             .radius = radius,
         },
-        .vel  = math_Vec2f_zero,
-        .acc  = math_Vec2f_zero,
+        .vel  = m_V2f32_zero,
+        .acc  = m_V2f32_zero,
         .mass = radius * Ball_mass_scaler_by_radius,
     };
 }
@@ -109,11 +109,11 @@ static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
                     },
                     .radius = Random_range_f64(2.0, 7.0),
                 },
-                .vel  = math_Vec2f_zero,
-                .acc  = math_Vec2f_zero,
+                .vel  = m_V2f32_zero,
+                .acc  = m_V2f32_zero,
                 .mass = 0.0f, // Will be set based on radius
             })
-                        ));
+        ));
     }
 
     // Set masses based on radii
@@ -139,8 +139,8 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
             }
 
             // Calculate collision response
-            Vec2f diff = math_Vec2f_sub(target->transform.center, ball->transform.center);
-            f32   dist = math_Vec2f_len(diff);
+            Vec2f diff = m_V2f32_sub(target->transform.center, ball->transform.center);
+            f32   dist = m_V2f32_len(diff);
 
             // Prevent division by zero
             if (dist <= 0.0001f) {
@@ -151,21 +151,21 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
             f32 overlap = 0.5f * (dist - ball->transform.radius - target->transform.radius);
 
             // Separate balls
-            Vec2f sep_dir = math_Vec2f_scale(diff, 1.0f / dist);
-            Vec2f sep     = math_Vec2f_scale(sep_dir, overlap);
+            Vec2f sep_dir = m_V2f32_scale(diff, 1.0f / dist);
+            Vec2f sep     = m_V2f32_scale(sep_dir, overlap);
 
-            math_Vec2f_subTo(&ball->transform.center, sep);
-            math_Vec2f_addTo(&target->transform.center, sep);
+            m_V2f32_subTo(&ball->transform.center, sep);
+            m_V2f32_addTo(&target->transform.center, sep);
 
             // Calculate collision impulse
             Vec2f normal  = sep_dir;
             Vec2f tangent = { .x = -normal.y, .y = normal.x };
 
             // Project velocities
-            f32 dpTanBall    = math_Vec2f_dot(ball->vel, tangent);
-            f32 dpTanTarget  = math_Vec2f_dot(target->vel, tangent);
-            f32 dpNormBall   = math_Vec2f_dot(ball->vel, normal);
-            f32 dpNormTarget = math_Vec2f_dot(target->vel, normal);
+            f32 dpTanBall    = m_V2f32_dot(ball->vel, tangent);
+            f32 dpTanTarget  = m_V2f32_dot(target->vel, tangent);
+            f32 dpNormBall   = m_V2f32_dot(ball->vel, normal);
+            f32 dpNormTarget = m_V2f32_dot(target->vel, normal);
 
             // Conservation of momentum
             f32 m1              = ball->mass;
@@ -174,13 +174,13 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
             f32 newDpNormTarget = (dpNormTarget * (m2 - m1) + 2.0f * m1 * dpNormBall) / (m1 + m2);
 
             // Apply new velocities
-            ball->vel = math_Vec2f_add(
-                math_Vec2f_scale(tangent, dpTanBall),
-                math_Vec2f_scale(normal, newDpNormBall)
+            ball->vel = m_V2f32_add(
+                m_V2f32_scale(tangent, dpTanBall),
+                m_V2f32_scale(normal, newDpNormBall)
             );
-            target->vel = math_Vec2f_add(
-                math_Vec2f_scale(tangent, dpTanTarget),
-                math_Vec2f_scale(normal, newDpNormTarget)
+            target->vel = m_V2f32_add(
+                m_V2f32_scale(tangent, dpTanTarget),
+                m_V2f32_scale(normal, newDpNormTarget)
             );
         }
     }
@@ -192,16 +192,16 @@ static void BallManager_update(BallManager* self, f32 dt) {
     // Update physics
     for_slice (self->balls.items, ball) {
         // Apply drag
-        ball->acc = math_Vec2f_scale(math_Vec2f_neg(ball->vel), Ball_drag_coefficient);
+        ball->acc = m_V2f32_scale(m_V2f32_neg(ball->vel), Ball_drag_coefficient);
 
         // Update velocity and position
-        math_Vec2f_addTo(&ball->vel, math_Vec2f_scale(ball->acc, dt));
-        math_Vec2f_addTo(&ball->transform.center, math_Vec2f_scale(ball->vel, dt));
+        m_V2f32_addTo(&ball->vel, m_V2f32_scale(ball->acc, dt));
+        m_V2f32_addTo(&ball->transform.center, m_V2f32_scale(ball->vel, dt));
 
         // Screen wrapping
-        let wrap_min = math_Vec2f_from(-window_res_x / 2, -window_res_y / 2);
-        let wrap_max = math_Vec2f_from(window_res_x / 2, window_res_y / 2);
-        let size     = math_Vec2f_sub(wrap_max, wrap_min);
+        let wrap_min = m_V2f32_from(-window_res_x / 2, -window_res_y / 2);
+        let wrap_max = m_V2f32_from(window_res_x / 2, window_res_y / 2);
+        let size     = m_V2f32_sub(wrap_max, wrap_min);
 
         while (ball->transform.center.x < wrap_min.x) {
             ball->transform.center.x += size.x;
@@ -217,8 +217,8 @@ static void BallManager_update(BallManager* self, f32 dt) {
         }
 
         // Damping for very small velocities
-        if (math_Vec2f_lenSq(ball->vel) < Ball_velocity_tolerance) {
-            ball->vel = math_Vec2f_zero;
+        if (m_V2f32_lenSq(ball->vel) < Ball_velocity_tolerance) {
+            ball->vel = m_V2f32_zero;
         }
     }
 }
@@ -230,9 +230,9 @@ $inline_always Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
         .x = as$(f32, canvas->width) * 0.5f,
         .y = as$(f32, canvas->height) * 0.5f
     };
-    var screen_pos = math_Vec2f_scale(pos, scale);
+    var screen_pos = m_V2f32_scale(pos, scale);
     screen_pos.y   = -screen_pos.y;
-    return math_Vec2f_add(screen_pos, center);
+    return m_V2f32_add(screen_pos, center);
 };
 static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     // Draw all balls
@@ -245,7 +245,7 @@ static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     // Draw selected ball highlight and cue line
     if (self->selected_ball) {
         let pos       = worldToScreen(self->selected_ball->transform.center, canvas);
-        let mouse_pos = math_Vec_as$(Vec2f, engine_Mouse_getPosition());
+        let mouse_pos = m_V_as$(Vec2f, engine_Mouse_getPosition());
         engine_Canvas_drawLine(canvas, as$(i32, pos.x), as$(i32, pos.y), as$(i32, mouse_pos.x), as$(i32, mouse_pos.y), Color_blue);
     }
 }
@@ -260,9 +260,9 @@ $inline_always Vec2f screenToWorld(Vec2i screen_pos) {
         .x = window_res_x * 0.5f, // Hardcoded canvas size for now
         .y = window_res_y * 0.5f
     };
-    pos   = math_Vec2f_sub(pos, center);
+    pos   = m_V2f32_sub(pos, center);
     pos.y = -pos.y;
-    return math_Vec2f_scale(pos, scale);
+    return m_V2f32_scale(pos, scale);
 }
 static void BallManager_processInput(BallManager* self) {
     // Ball selection
@@ -281,7 +281,7 @@ static void BallManager_processInput(BallManager* self) {
     if (engine_Mouse_held(engine_MouseButton_left)) {
         if (self->selected_ball) {
             self->selected_ball->transform.center = screenToWorld(engine_Mouse_getPosition());
-            self->selected_ball->vel              = math_Vec2f_zero;
+            self->selected_ball->vel              = m_V2f32_zero;
         }
     }
 
@@ -289,11 +289,11 @@ static void BallManager_processInput(BallManager* self) {
     if (engine_Mouse_released(engine_MouseButton_right)) {
         if (self->selected_ball) {
             let world_pos  = screenToWorld(engine_Mouse_getPosition());
-            let launch_dir = math_Vec2f_sub(
+            let launch_dir = m_V2f32_sub(
                 self->selected_ball->transform.center,
                 world_pos
             );
-            self->selected_ball->vel = math_Vec2f_scale(launch_dir, 5.0f);
+            self->selected_ball->vel = m_V2f32_scale(launch_dir, 5.0f);
             self->selected_ball      = null;
         }
     }

@@ -229,7 +229,7 @@ $maybe_unused static $inline_always fn_(needsResizeAbstractWindow(engine_core_Vt
 /// Perform an actual resize of the abstract window/buffer, and also
 /// reconfigure the console screen buffer size if needed.
 $maybe_unused
-fn_(resizeAbstractWindow(engine_core_Vt100* self), Err$void, $scope) {
+fn_(resizeAbstractWindow(engine_core_Vt100* self), Err$void $scope) {
     // 1. Re-size the console’s screen buffer
     let rect = abstractWindowRect(self);
     if (!SetConsoleScreenBufferSize(self->client.handle.output, (COORD){ as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
@@ -240,12 +240,13 @@ fn_(resizeAbstractWindow(engine_core_Vt100* self), Err$void, $scope) {
     // 2. Re-size your ArrList if needed
     let needed = calcAbstractBufferSize(rect.x, rect.y);
     try_(
-    ArrList_resize(self->abstract.buffer.base, needed));
+        ArrList_resize(self->abstract.buffer.base, needed)
+    );
 
     return_ok({});
 } $unscoped;
 
-fn_(syncWindowMetrics(engine_core_Vt100* self), Err$void, $scope) {
+fn_(syncWindowMetrics(engine_core_Vt100* self), Err$void $scope) {
     let handle_window = self->client.handle.window;
     let window_rect   = eval({
         var rect = make$(RECT);
@@ -326,13 +327,15 @@ fn_(syncWindowMetrics(engine_core_Vt100* self), Err$void, $scope) {
         self->client.metrics.res.curr.y
     );
     try_(
-    ArrList_resize(self->abstract.buffer.base, needed));
+        ArrList_resize(self->abstract.buffer.base, needed)
+    );
     try_(
-    engine_Canvas_resize(
-        self->abstract.window->composite_buffer,
-        self->client.metrics.res.curr.x,
-        self->client.metrics.res.curr.y
-    ));
+        engine_Canvas_resize(
+            self->abstract.window->composite_buffer,
+            self->client.metrics.res.curr.x,
+            self->client.metrics.res.curr.y
+        )
+    );
 
     return_ok({});
 } $unscoped;
@@ -426,7 +429,7 @@ config_ErrSet(ConfigConsoleOutputErr,
     FailedSetMode
 );
 /// Function to initialize console-specific configurations like screen buffer size
-fn_(configureConsoleOutput(engine_core_Vt100* self), Err$void, $scope) {
+fn_(configureConsoleOutput(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.output;
 
     // Initialize console window size to minimum, so ScreenBuffer can shrink
@@ -478,7 +481,7 @@ config_ErrSet(ConfigConsoleInputErr,
     FailedSetMode
 );
 /// Function to configure console input mode
-fn_(configureConsoleInput(engine_core_Vt100* self), Err$void, $scope) {
+fn_(configureConsoleInput(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.input;
     // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
@@ -499,7 +502,7 @@ config_ErrSet(ConfigConsoleCursorErr,
     FailedShow,
     FailedResetPos
 );
-fn_(hideConsoleCursor(engine_core_Vt100* self), Err$void, $scope) {
+fn_(hideConsoleCursor(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, false })) {
         log_error("Failed to hide console cursor: %d", GetLastError());
@@ -508,7 +511,7 @@ fn_(hideConsoleCursor(engine_core_Vt100* self), Err$void, $scope) {
     return_ok({});
 } $unscoped;
 
-fn_(showConsoleCursor(engine_core_Vt100* self), Err$void, $scope) {
+fn_(showConsoleCursor(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.output;
     if (!SetConsoleCursorInfo(handle, &(CONSOLE_CURSOR_INFO){ 1, true })) {
         log_error("Failed to show console cursor: %d", GetLastError());
@@ -517,7 +520,7 @@ fn_(showConsoleCursor(engine_core_Vt100* self), Err$void, $scope) {
     return_ok({});
 } $unscoped;
 
-fn_(resetConsoleCursorPos(engine_core_Vt100* self), Err$void, $scope) {
+fn_(resetConsoleCursorPos(engine_core_Vt100* self), Err$void $scope) {
     let handle  = self->client.handle.output;
     let command = Str_l("\033[H");
     if_(DWORD written = 0,
@@ -551,19 +554,19 @@ fn_(processConsoleKeyboardKey(engine_core_Vt100* self, engine_KeyCode key, bool 
             *curr_state |= engine_KeyButtonStates_pressed;
 
             // Create pressed event
-            engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_press, { .key = key }));
+            engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_key_press, { .key = key }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
 
         // Create held event
-        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_hold, { .key = key }));
+        engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_key_hold, { .key = key }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
 
         // Create released event
-        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_key_release, { .key = key }));
+        engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_key_release, { .key = key }));
     }
 }
 
@@ -588,7 +591,7 @@ config_ErrSet(ConfigConsoleMouseErr,
     FailedDisableSetMode
 );
 /// Enable mouse input through the console.
-fn_(enableConsoleMouse(engine_core_Vt100* self), Err$void, $scope) {
+fn_(enableConsoleMouse(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.input;
     // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
@@ -605,7 +608,7 @@ fn_(enableConsoleMouse(engine_core_Vt100* self), Err$void, $scope) {
     return_ok({});
 } $unscoped;
 /// Disable mouse input in the console.
-fn_(disableConsoleMouse(engine_core_Vt100* self), Err$void, $scope) {
+fn_(disableConsoleMouse(engine_core_Vt100* self), Err$void $scope) {
     let handle = self->client.handle.input;
     // debug_only(if (IsDebuggerPresent()) { return_void(); }); // Skip logic for debugging via debugger
     if_(DWORD in_mode = 0, !GetConsoleMode(handle, &in_mode)) {
@@ -638,19 +641,19 @@ fn_(processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton button
             *curr_state |= engine_KeyButtonStates_pressed;
 
             // Create pressed event
-            engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_press, { .button = button }));
+            engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_mouse_press, { .button = button }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
 
         // Create held event
-        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_hold, { .button = button }));
+        engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_mouse_hold, { .button = button }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
 
         // Create released event
-        engine_InputEventBuffer_push(input, tagUnion$(engine_InputEvent, engine_InputEvent_mouse_release, { .button = button }));
+        engine_InputEventBuffer_push(input, variant_of$(engine_InputEvent, engine_InputEvent_mouse_release, { .button = button }));
     }
 }
 /// Read and process mouse-related events from the console input.
@@ -729,10 +732,10 @@ fn_(processConsoleMouseEvents(engine_core_Vt100* self), void) {
                     // Create wheel event if needed
                     engine_InputEventBuffer_push(
                         self->input,
-                        tagUnion$(
+                        variant_of$(
                             engine_InputEvent,
                             engine_InputEvent_mouse_scroll,
-                            { .delta = math_Vec2f_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
+                            { .delta = m_V2f32_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
                         )
                     );
                 }
@@ -746,10 +749,10 @@ fn_(processConsoleMouseEvents(engine_core_Vt100* self), void) {
 
                     engine_InputEventBuffer_push(
                         self->input,
-                        tagUnion$(
+                        variant_of$(
                             engine_InputEvent,
                             engine_InputEvent_mouse_scroll,
-                            { .delta = math_Vec2f_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
+                            { .delta = m_V2f32_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
                         )
                     );
                 }
@@ -817,14 +820,14 @@ config_ErrSet(InitErr,
     FailedGetConsoleOutputHandle,
     FailedGetConsoleInputHandle
 );
-fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engine_core_Vt100, $guard) {
+fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engine_core_Vt100 $guard) {
     debug_assert_nonnull(config);
     debug_assert_nonnull(config->window);
     debug_assert_nonnull(config->input);
 
-    let allocator = unwrap( config->allocator);
+    let allocator = unwrap(config->allocator);
     let self      = meta_cast$(engine_core_Vt100*, try_(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
-    errdefer_(mem_Allocator_destroy(allocator, anyPtr(self)));
+    errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(self)));
 
     self->allocator       = allocator;
     self->abstract.window = eval({
@@ -836,9 +839,9 @@ fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engi
         let allocator = self->allocator;
         let window    = self->abstract.window;
         let size      = calcAbstractBufferSize(Grid_width(window->composite_buffer->buffer), Grid_height(window->composite_buffer->buffer));
-        eval_return type$(ArrList$u8, try_( ArrList_initCap(typeInfo$(u8), allocator, size)));
+        eval_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
     });
-    errdefer_(ArrList_fini(self->abstract.buffer.base));
+    errdefer_($ignore_capture, ArrList_fini(self->abstract.buffer.base));
     self->input = eval({
         let input = config->input;
         toSome(&input->backend, engine_core_Vt100_backend(self));
@@ -890,14 +893,18 @@ fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engi
     });
 
     try_(
-    configureConsoleOutput(self));
+        configureConsoleOutput(self)
+    );
     try_(
-    configureConsoleInput(self));
+        configureConsoleInput(self)
+    );
 
     try_(
-    hideConsoleCursor(self));
+        hideConsoleCursor(self)
+    );
     try_(
-    enableConsoleMouse(self));
+        enableConsoleMouse(self)
+    );
 
     self->client.is_focused   = true;
     self->client.is_minimized = false;
@@ -911,12 +918,12 @@ fn_(engine_core_Vt100_fini(engine_core_Vt100* self), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self);
 
-    catch_from(disableConsoleMouse(self), err, eval({
+    catch_((disableConsoleMouse(self))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
     }));
-    catch_from(showConsoleCursor(self), err, eval({
+    catch_((showConsoleCursor(self))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -943,21 +950,21 @@ fn_(processEvents(anyptr ctx), void) {
     } else {
         const bool is_minimized = placement.showCmd == SW_SHOWMINIMIZED;
         const bool is_maximized = placement.showCmd == SW_SHOWMAXIMIZED;
-        const bool is_focused   = eval({
+        const bool is_focused   = eval_(bool $scope) {
             let handle = GetForegroundWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 log_error("Failed to get foreground window: %d", GetLastError());
                 claim_unreachable;
             }
-            eval_return handle == self->client.handle.window;
-          });
+            eval_break_(handle == self->client.handle.window);
+        } $unscoped_eval;
 
         self->client.is_minimized = is_minimized;
         self->client.is_maximized = is_maximized;
         self->client.is_focused   = is_focused;
     }
 
-    catch_from(syncWindowMetrics(self), err, eval({
+    catch_((syncWindowMetrics(self))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -1023,7 +1030,7 @@ fn_(presentBuffer(anyptr ctx), void) {
     }
     self->abstract.buffer.items.ptr[--self->abstract.buffer.items.len] = '\0';
 
-    catch_from(resetConsoleCursorPos(self), err, eval({
+    catch_((resetConsoleCursorPos(self))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -1032,21 +1039,12 @@ fn_(presentBuffer(anyptr ctx), void) {
         let handle = self->client.handle.output;
         let ptr    = self->abstract.buffer.items.ptr;
         let len    = self->abstract.buffer.items.len;
-        if_(DWORD written = 0,
-           !WriteConsoleA(
-               handle,
-               ptr,
-               len,
-               &written,
-               null
-           )
-           || written != len
-        ) {
+        if_(DWORD written = 0, !WriteConsoleA(handle, ptr, len, &written, null) || written != len) {
             log_error("Failed to write console buffer content: %d", GetLastError());
             claim_unreachable;
         }
     }
-    catch_from(resetConsoleCursorPos(self), err, eval({
+    catch_((resetConsoleCursorPos(self))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
@@ -1083,13 +1081,13 @@ fn_(getWindowMaxRes(const anyptr ctx), Vec2u) {
     return self->client.metrics.res.max;
 }
 
-fn_(setWindowMinRes(anyptr ctx, Vec2u size), Err$void, $scope) {
+fn_(setWindowMinRes(anyptr ctx, Vec2u size), Err$void $scope) {
     debug_assert_nonnull(ctx);
     $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 } $unscoped;
 
-fn_(setWindowMaxRes(anyptr ctx, Vec2u size), Err$void, $scope) {
+fn_(setWindowMaxRes(anyptr ctx, Vec2u size), Err$void $scope) {
     debug_assert_nonnull(ctx);
     $unused(ctx), $unused(size);
     return_err(Err_NotImplemented()); /* TODO: Implement this function */

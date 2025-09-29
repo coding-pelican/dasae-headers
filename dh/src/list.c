@@ -6,10 +6,9 @@
 
 /*========== Singly Linked List ============================================*/
 
-fn_(ListSgl_Node_init(meta_Ptr data), ListSgl_Node) {
+fn_(ListSgl_Node_init(), ListSgl_Node) {
     return (ListSgl_Node){
-        .next = none(),
-        .data = data
+        .next = none()
     };
 }
 
@@ -21,14 +20,10 @@ fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), void) 
     toSome(&node->next, new_node);
 }
 
-fn_(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node, $scope) {
+fn_(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node $scope) {
     debug_assert_nonnull(node);
-    if_none(node->next) {
-        return_none();
-    }
-    let next_node = unwrap(node->next);
+    let next_node = orelse_((node->next)(return_none()));
     node->next    = next_node->next;
-    toNone(&next_node->next);
     return_some(next_node);
 } $unscoped;
 
@@ -104,7 +99,7 @@ fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
     }
 }
 
-fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node, $scope) {
+fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node $scope) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();
@@ -126,11 +121,10 @@ fn_(ListSgl_len(const ListSgl* self), usize) {
 
 /*========== Doubly Linked List ============================================*/
 
-fn_(ListDbl_Node_init(meta_Ptr data), ListDbl_Node) {
+fn_(ListDbl_Node_init(void), ListDbl_Node) {
     return (ListDbl_Node){
         .prev = none(),
         .next = none(),
-        .data = data
     };
 }
 
@@ -244,7 +238,7 @@ fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
     self->len--;
 }
 
-fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node, $scope) {
+fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
     debug_assert_nonnull(self);
     if_none(self->last) {
         return_none();
@@ -254,7 +248,7 @@ fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node, $scope) {
     return_some(last);
 } $unscoped;
 
-fn_(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node, $scope) {
+fn_(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();

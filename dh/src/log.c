@@ -1,5 +1,6 @@
 #include "dh/log.h"
-#include "dh/fs/dir.h"
+#include "dh/fs/Dir.h"
+#include "dh/Str.h"
 
 #include <stdarg.h>
 #include <time.h>
@@ -14,7 +15,7 @@ static log_Config log_s_config = {
     .shows_function  = true            // Show function name by default
 };
 
-fn_(log_init(const char* filename), io_FileErr$void, $guard) {
+fn_(log_init(const char* filename), fs_FileErr$void $guard) {
     // Extract directory path
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -27,8 +28,8 @@ fn_(log_init(const char* filename), io_FileErr$void, $guard) {
     }
 
     let file = fopen(filename, "w");
-    if (!file) { return_err(io_FileErr_OpenFailed()); }
-    errdefer_($ignore = fclose(file));
+    if (!file) { return_err(fs_FileErr_OpenFailed()); }
+    errdefer_($ignore_capture, $ignore = fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
         $ignore = fclose(log_s_config.output_file);

@@ -49,6 +49,7 @@ typedef enum {
 // Optimization level enum
 typedef enum {
     OPT_NONE,        // -O0: No optimization
+    OPT_DEBUG,       // -Og: Smallest for debugging
     OPT_BASIC,       // -O1: Basic optimizations
     OPT_BALANCED,    // -O2: Good balance
     OPT_AGGRESSIVE,  // -O3: Maximum performance
@@ -168,7 +169,7 @@ void create_templates_directory(const char* dh_path, bool verbose);
 BuildConfigPreset build_presets[] = {
     { .name               = "dev",
       .debug_level        = DEBUG_EXTENDED,
-      .optimization_level = OPT_NONE,
+      .optimization_level = OPT_DEBUG,
       .assertions_enabled = true,
       .extra_flags        = { NULL, 0 } },
     { .name               = "test",
@@ -252,9 +253,9 @@ void find_source_files(const char* dir_path, char*** sources, int* source_count)
                 // Recurse into subdirectory
                 find_source_files(path, sources, source_count);
             } else if (S_ISREG(st.st_mode)) {
-                // Check if it's a C source file
+                // Check if it's a C source file or object file (for BlocksRuntime)
                 const char* ext = strrchr(entry->d_name, '.');
-                if (ext && strcmp(ext, ".c") == 0) {
+                if (ext && (strcmp(ext, ".c") == 0 || strcmp(ext, ".o") == 0)) {
                     // Add to sources array
                     *sources = realloc(*sources, (*source_count + 1) * sizeof(char*));
                     if (*sources == NULL) {
@@ -588,20 +589,36 @@ void add_dh_sources(BuildConfig* config, char*** sources, int* source_count) {
         }
     }
 
-    // Add DH source files
-    char dh_src_glob[1024] = {};
-    (void)snprintf(dh_src_glob, sizeof(dh_src_glob), "%s%ssrc%s*.c", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR);
-
     // Find dh source files
     char dh_src_dir[1024] = {};
     (void)snprintf(dh_src_dir, sizeof(dh_src_dir), "%s%ssrc", config->dh_path, PATH_SEPARATOR);
-
     if (dir_exists(dh_src_dir)) {
         find_source_files(dh_src_dir, sources, source_count);
     }
 
     // For BlocksRuntime, we'll now check for the static library instead of directly adding source files
     // We'll handle linking the library separately in the build_project function
+    char blocks_data_path[1024] = {};
+    (void)snprintf(blocks_data_path, sizeof(blocks_data_path), "%s%slibs%sBlocksRuntime%ssrc%sdata.c", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    char blocks_runtime_path[1024] = {};
+    (void)snprintf(blocks_runtime_path, sizeof(blocks_runtime_path), "%s%slibs%sBlocksRuntime%sobj%sruntime.o", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+
+    if (file_exists(blocks_data_path)) {
+        char** new_sources = realloc(*sources, (*source_count + 1) * sizeof(char*));
+        if (new_sources != NULL) {
+            *sources                  = new_sources;
+            (*sources)[*source_count] = strdup(blocks_data_path);
+            (*source_count)++;
+        }
+    }
+    if (file_exists(blocks_runtime_path)) {
+        char** new_sources = realloc(*sources, (*source_count + 1) * sizeof(char*));
+        if (new_sources != NULL) {
+            *sources                  = new_sources;
+            (*sources)[*source_count] = strdup(blocks_runtime_path);
+            (*source_count)++;
+        }
+    }
 }
 
 // Collect all include paths
@@ -775,6 +792,8 @@ const char* optimization_level_to_flag(OptimizationLevel level) {
     switch (level) {
     case OPT_NONE:
         return "-O0";
+    case OPT_DEBUG:
+        return "-Og";
     case OPT_BASIC:
         return "-O1";
     case OPT_BALANCED:
@@ -1031,7 +1050,7 @@ const char* DEFAULT_CLANG_FORMAT_TEMPLATE
       "  - $must_check=/**/\n"
       "  # Eval\n"
       "  - eval_(_)=({ _; })\n"
-      "  - eval$(T,_)=(T)({ _; })\n"
+      "  - eval_(T,_)=(T)({ _; })\n"
       "  - eval_return_(_)=return _\n"
       "  - asg_eval(_)=({ _; })\n"
       "  # Scope\n"
@@ -1972,7 +1991,7 @@ void write_example_files(const char* project_path) {
           "    try_(TEST_expect(1 + 1 == 2));\n"
           "} TEST_unscoped;\n"
           "\n"
-          "fn_scope(dh_main(Sli$Str_const args), Err$void) {\n"
+          "fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {\n"
           "    $ignore args;\n"
           "    let message = Str_l(\"Hello, world!\");\n"
           "    Str_println(message);\n"
@@ -2497,7 +2516,7 @@ void apply_build_preset(BuildConfig* config, const char* preset_name) {
     if (!preset_found) {
         // Set default values directly rather than recursively calling
         config->debug_level        = DEBUG_EXTENDED;
-        config->optimization_level = OPT_NONE;
+        config->optimization_level = OPT_DEBUG;
         config->assertions_enabled = true;
         strcpy(config->build_config_name, "dev");
 

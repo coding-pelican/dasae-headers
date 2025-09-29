@@ -152,7 +152,7 @@ ArrList_fini(list.base);
 #include "dh/main.h"
 #include "dh/ArrList.h"
 
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     // Initialize array list
     ArrList$i32 list = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));
@@ -190,7 +190,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
 ### Dynamic Collection
 
 ```c
-fn_(processDynamicData(Sli$i32 input), Err$Sli$i32, $guard) {
+fn_(processDynamicData(Sli$i32 input), Err$Sli$i32 $guard) {
     // Initialize with allocator
     ArrList$i32 results = type$(ArrList$i32,
         ArrList_init(typeInfo$(i32), heap_allocator));

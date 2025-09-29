@@ -37,10 +37,10 @@ fn_(engine_Mouse_getPos(const engine_Mouse* self), Vec2i) {
 
 fn_(engine_Mouse_getPosDelta(const engine_Mouse* self), Vec2i) {
     debug_assert_nonnull(self);
-    return math_Vec2i_sub(self->cursor.curr_pos, self->cursor.prev_pos);
+    return m_V2i32_sub(self->cursor.curr_pos, self->cursor.prev_pos);
 }
 
 fn_(engine_Mouse_getWheelScrollDelta(const engine_Mouse* self), Vec2f) {
     debug_assert_nonnull(self);
-    return math_Vec2f_sub(self->wheel.curr_scroll_amount, self->wheel.prev_scroll_amount);
+    return m_V2f32_sub(self->wheel.curr_scroll_amount, self->wheel.prev_scroll_amount);
 }

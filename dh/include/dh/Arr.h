@@ -512,6 +512,12 @@ extern "C" {
 #define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self; \
     const usize __index             = usize_index; \
+    claim_assert_static_msg( \
+        __builtin_constant_p(__index) \
+            ? (__index < Arr_len(*__self)) \
+            : true, \
+        "index out of bounds" \
+    ); \
     debug_assert_fmt( \
         __index < Arr_len(*__self), \
         "Index out of bounds: %zu >= %zu", \

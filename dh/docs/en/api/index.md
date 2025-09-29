@@ -16,7 +16,7 @@ This section provides detailed documentation for all modules in the dasae-header
 - [Fixed-Size Arrays (Arr)](./Arr.md) - Type-safe fixed-size arrays with bounds checking
 - [Dynamic Array Lists (ArrList)](./ArrList.md) - Automatically resizing arrays
 - Slices - View into arrays and other sequences
-- Strings - UTF-8 string handling
+- [String Processing (Str)](./Str.md) - String, ASCII, and UTF-8 utilities
 - Hash Maps - Key-value associative arrays
 
 ## Memory Management

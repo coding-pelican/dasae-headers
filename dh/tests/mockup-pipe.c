@@ -150,18 +150,16 @@ typedef struct Foo {
     var_(mem, mem_Allocator);
 } Foo;
 use_Err$(Foo);
-static fn_(Foo_init(mem_Allocator allocator), Err$Ptr$Foo) $must_check;
-static fn_(Foo_fini(Foo* self), void);
-static fn_(Foo_setA(Foo* self, i32 a), Foo*);
-static fn_(Foo_setB(Foo* self, i32 b), Foo*);
-static fn_(Foo_eval(Foo* self), Foo*);
-static fn_(Foo_merge(Foo* self, const Foo* other), Foo*);
-static fn_(Foo_baz(const Foo* self), i32);
+static func((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)) $must_check;
+static func((Foo_fini(Foo* const self))(void));
+static func((Foo_setA(Foo* const self, i32 a))(Foo*));
+static func((Foo_setB(Foo* const self, i32 b))(Foo*));
+static func((Foo_eval(Foo* const self))(Foo*));
+static func((Foo_merge(Foo* const self, const Foo* other))(Foo*));
+static func((Foo_baz(const Foo* const self))(i32));
 
-$maybe_unused static $inline fn_(i32_add(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
-$maybe_unused static $inline fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return deref(lhs) += rhs, lhs; }
-
-
+$maybe_unused static $inline func((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
+$maybe_unused static $inline func((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
 /* fn_(enhancePipeExpanding(Foo foo), void) {
     // PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC (deref_,().value), PIPE_GET_ARGS (deref_,().value))
@@ -205,7 +203,7 @@ $maybe_unused static $inline fn_(i32_addAsg(i32* lhs, i32 rhs), i32*) { return d
 
 
 
-fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
+func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
     $ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
@@ -269,7 +267,7 @@ fn_(dh_main(Sli$Str_const args), Err$void, $guard) {
 #define fn_scope_$scope  fn_scope_ext
 #define $unscoped_$scope $unguarded
 
-func_(runPipeExampleUsage(Sli$Str_const args), Err$void, $scope, {
+func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
     $ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
@@ -297,32 +295,30 @@ func_(runPipeExampleUsage(Sli$Str_const args), Err$void, $scope, {
 
 
 // Example functions that would typically be used in a chain
-fn_(Foo_init(mem_Allocator allocator), Err$Ptr$Foo, $scope) {
-    let foo    = meta_cast$(Foo*,
-        try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo)))))
-    );
+func((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)$scope) {
+    let foo    = meta_cast$(Foo*, try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))))));
     foo->mem   = allocator;
     foo->a     = 0;
     foo->b     = 0;
     foo->value = 0;
     return_ok(foo);
 } $unscoped;
-fn_(Foo_fini(Foo* self), void) {
+func((Foo_fini(Foo* const self))(void)) {
     mem_Allocator_destroy(deref(self).mem, anyPtr(self));
 }
-fn_(Foo_setA(Foo* self, i32 a), Foo*) {
+func((Foo_setA(Foo* const self, i32 a))(Foo*)) {
     return deref(self).a = a, self;
 }
-fn_(Foo_setB(Foo* self, i32 b), Foo*) {
+func((Foo_setB(Foo* const self, i32 b))(Foo*)) {
     return deref(self).b = b, self;
 }
-fn_(Foo_eval(Foo* self), Foo*) {
+func((Foo_eval(Foo* const self))(Foo*)) {
     debug_assert_nonnull(self);
     return self->value = self->a + self->b, self;
 }
-fn_(Foo_merge(Foo* self, const Foo* other), Foo*) {
+func((Foo_merge(Foo* const self, const Foo* const other))(Foo*)) {
     return deref(self).value += deref(other).value, self;
 }
-fn_(Foo_baz(const Foo* self), i32) {
+func((Foo_baz(const Foo* const self))(i32)) {
     return deref(self).value;
 }

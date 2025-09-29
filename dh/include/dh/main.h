@@ -23,17 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
-
-#include "dh/scope.h"
-#include "dh/fn.h"
-#include "dh/pipe.h"
-
-#include "dh/union_enum.h"
-#include "dh/opt.h"
-#include "dh/err_res.h"
-#include "dh/Err.h"
-#include "dh/ErrTrace.h"
-
+#include "dh/prl.h"
 #include "dh/Str.h"
 #include "dh/TEST.h"
 
@@ -62,11 +52,9 @@ extern fn_(dh_main(void), void);
 #elif main_no_args && !main_no_returns_err
 extern fn_(dh_main(void), Err$void) $must_check;
 #elif !main_no_args && main_no_returns_err
-use_Sli$(Str_const);
-extern fn_(dh_main(Sli$Str_const args), void);
+extern fn_(dh_main(Sli$Sli_const$u8 args), void);
 #else  /* !main_no_args && !main_no_returns_err */
-use_Sli$(Str_const);
-extern fn_(dh_main(Sli$Str_const args), Err$void) $must_check;
+extern fn_(dh_main(Sli$Sli_const$u8 args), Err$void) $must_check;
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -75,52 +63,52 @@ extern fn_(dh_main(Sli$Str_const args), Err$void) $must_check;
 #define MAIN_ROOT_INCLUDED (1)
 
 #if !TEST_comp_enabled
-fn_(
+func((
 #if main_no_args && main_no_returns_err
-main(void)
+    main(void)
 #elif main_no_args && !main_no_returns_err
-main(void)
+    main(void)
 #elif !main_no_args && main_no_returns_err
-main(int argc, const char* argv[])
-#else  /* !main_no_args && !main_no_returns_err */
-main(int argc, const char* argv[])
-#endif /* !main_no_args && !main_no_returns_err */
-, int) {
+    main(int argc, const char* argv[])
+#else /* !main_no_args && !main_no_returns_err */
+    main(int argc, const char* argv[])
+#endif
+)(int)) {
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
-    catch_from(dh_main(), err, eval({
+    catch_((dh_main())(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$(Str_const*, bti_alloca(sizeOf$(Str_const) * argc));
-    let args     = eval({
+    let args_buf = as$(Sli_const$u8*, bti_alloca(sizeOf$(Sli_const$u8) * argc));
+    let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return Sli_from$(Sli$Str_const, args_buf, argc);
+        eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });
     dh_main(args);
-#else  /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$(Str_const*, bti_alloca(sizeOf$(Str_const) * argc));
-    let args     = eval({
+#else /* !main_no_args && !main_no_returns_err */
+    let args_buf = as$(Sli_const$u8*, bti_alloca(sizeOf$(Sli_const$u8) * argc));
+    let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
         }
-        eval_return Sli_from$(Sli$Str_const, args_buf, argc);
+        eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });
-    catch_from(dh_main(args), err, eval({
+    catch_((dh_main(args))(err, {
         Err_print(err);
         ErrTrace_print();
         claim_unreachable;
     }));
-#endif /* !main_no_args && !main_no_returns_err */
+#endif
     return 0;
 }
 #else  /* TEST_comp_enabled */
-fn_(main(void), int) {
+func((main(void))(int)) {
     TEST_Framework_run();
     return 0;
 }

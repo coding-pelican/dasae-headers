@@ -45,28 +45,16 @@ typedef struct mem_Tracker {
 /*========== Memory Tracker Interface ======================================*/
 
 /// Initialize memory tracker with custom log path
-extern fn_(mem_Tracker_initWithPath(Str_const log_path), Err$void) $must_check;
+extern fn_(mem_Tracker_initWithPath(Sli_const$u8 log_path), Err$void) $must_check;
 /// Generate final report and cleanup
 extern fn_(mem_Tracker_finiAndGenerateReport(void), void);
 
 /// Register allocation (e.g., alloc, create)
-extern fn_(mem_Tracker_registerAlloc(
-    anyptr      ptr,
-    usize       size,
-    SrcLoc      src_loc
-), void);
+extern fn_(mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc), void);
 /// Register memory remapping (e.g., resize/realloc)
-extern fn_(mem_Tracker_registerRemap(
-    anyptr      old_ptr,
-    anyptr      new_ptr,
-    usize       new_size,
-    SrcLoc      src_loc
-), void);
+extern fn_(mem_Tracker_registerRemap(anyptr old_ptr, anyptr new_ptr, usize new_size, SrcLoc src_loc), void);
 /// Register deallocation (e.g., free, destroy)
-extern fn_(mem_Tracker_registerFree(
-    anyptr      ptr,
-    SrcLoc      src_loc
-), bool);
+extern fn_(mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc), bool);
 
 /// Get singleton instance
 extern fn_(mem_Tracker_instance(void), mem_Tracker*);

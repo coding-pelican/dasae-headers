@@ -98,13 +98,13 @@ Err$void dh_main(int argc, const char* argv[]) {
                 Vec2f p1 = bezierQuad(a, b, c, t1);
 
                 // Transform points to screen space
-                p0   = math_Vec2f_scale(p0, canvas_scale);
+                p0   = m_V2f32_scale(p0, canvas_scale);
                 p0.y = -p0.y;
-                p0   = math_Vec2f_add(p0, canvas_center);
+                p0   = m_V2f32_add(p0, canvas_center);
 
-                p1   = math_Vec2f_scale(p1, canvas_scale);
+                p1   = m_V2f32_scale(p1, canvas_scale);
                 p1.y = -p1.y;
-                p1   = math_Vec2f_add(p1, canvas_center);
+                p1   = m_V2f32_add(p1, canvas_center);
 
                 engine_Canvas_drawLine(game_canvas, as$(i32, p0.x), as$(i32, p0.y), as$(i32, p1.x), as$(i32, p1.y), Color_white);
                 t0 = t1;
@@ -114,17 +114,17 @@ Err$void dh_main(int argc, const char* argv[]) {
             f32   pt            = (math_cos((f32)t) + 1.0f) * 0.5f;
             Vec2f box_center    = bezierQuad(a, b, c, pt);
             Vec2f box_half_size = { .x = 2.5f, .y = 2.5f };
-            Vec2f box_min       = math_Vec2f_sub(box_center, box_half_size);
-            Vec2f box_max       = math_Vec2f_add(box_center, box_half_size);
+            Vec2f box_min       = m_V2f32_sub(box_center, box_half_size);
+            Vec2f box_max       = m_V2f32_add(box_center, box_half_size);
 
             // Transform box to screen space
-            box_min   = math_Vec2f_scale(box_min, canvas_scale);
+            box_min   = m_V2f32_scale(box_min, canvas_scale);
             box_min.y = -box_min.y;
-            box_min   = math_Vec2f_add(box_min, canvas_center);
+            box_min   = m_V2f32_add(box_min, canvas_center);
 
-            box_max   = math_Vec2f_scale(box_max, canvas_scale);
+            box_max   = m_V2f32_scale(box_max, canvas_scale);
             box_max.y = -box_max.y;
-            box_max   = math_Vec2f_add(box_max, canvas_center);
+            box_max   = m_V2f32_add(box_max, canvas_center);
 
             engine_Canvas_drawRect(game_canvas, as$(i32, box_min.x), as$(i32, box_min.y), as$(i32, box_max.x), as$(i32, box_max.y), Color_white);
 
@@ -138,5 +138,6 @@ Err$void dh_main(int argc, const char* argv[]) {
             prev_time = curr_time;
         }
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }

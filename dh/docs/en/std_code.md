@@ -55,14 +55,14 @@ Function names start with a verb and use camelCase.
 
 ```c
 fn_(calculateSum(i32 a, i32 b), i32);
-fn_(validateInput(Str_const input), bool);
+fn_(validateInput(Sli_const$u8 input), bool);
 fn_(initializeSystem(void), void);
 ```
 
 Functions that return boolean values use prefixes such as `is`, `has`, `can`, `should`, etc.
 
 ```c
-fn_(isValidInput(Str_const input), bool);
+fn_(isValidInput(Sli_const$u8 input), bool);
 fn_(hasPermission(const User* user), bool);
 ```
 
@@ -113,7 +113,7 @@ config_ErrSet(FileErr
 config_UnionEnum(Value
     (Value_integer_number, struct { i32 value; }),
     (Value_floating_point, struct { f64 value; }),
-    (Value_string_literal, Str_const)
+    (Value_string_literal, Sli_const$u8)
 );
 ```
 
@@ -156,7 +156,7 @@ fn_(calculateSum(i32 a, i32 b), i32) {
 
 // Function definition requiring extended scope (Optional return)
 use_Opt$(i32);
-fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32, $scope) {
+fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32 $scope) {
     if (rhs == 0) {
         return_none();
     }
@@ -164,9 +164,9 @@ fn_(divideNumbers(i32 lhs, i32 rhs), Opt$i32, $scope) {
 } $unscoped;
 
 // Function requiring error handling
-use_Err$(Str_const);
-fn_(readFile(Str_const path), Err$Str_const) $must_check;
-fn_(readFile(Str_const path), Err$Str_const, $scope) {
+use_Err$(Sli_const$u8);
+fn_(readFile(Sli_const$u8 path), Err$Sli_const$u8) $must_check;
+fn_(readFile(Sli_const$u8 path), Err$Sli_const$u8 $scope) {
     if (Str_isEmpty(path)) {
         return_err(Err_EmptyPathProvided());
     }
@@ -217,7 +217,7 @@ After resource allocation, use defer to specify cleanup operations.
 
 ```c
 // Incorrect example
-fn_(processData(void), Err$void, $scope) {
+fn_(processData(void), Err$void $scope) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
 
     // Processing logic...
@@ -226,7 +226,7 @@ fn_(processData(void), Err$void, $scope) {
 } $unscoped;
 
 // Correct example
-fn_(processData(void), Err$void, $guard) {
+fn_(processData(void), Err$void $guard) {
     let buffer = meta_cast$(Sli$i8, try_(mam_Allocator_alloc(typeInfo$(i8), buffer_size)));
     defer_(mem_Allocator_free(anySli(buffer)));
 
@@ -240,7 +240,7 @@ fn_(processData(void), Err$void, $guard) {
 After opening a file, use defer to specify closing operations.
 
 ```c
-fn_(readFileContents(Str_const filename), io_Err$Str_const, $guard) {
+fn_(readFileContents(Sli_const$u8 filename), io_Err$Sli_const$u8 $guard) {
     let file = fopen(filename.ptr, "r");
     if (file == null) {
         return_err(io_Err_OpenFailed());
@@ -269,7 +269,7 @@ fn_(findUser(i32 user_id, User** out_user), bool) {
 }
 
 // Correct example
-fn_(findUser(i32 user_id), Opt$Ptr$User, $scope) {
+fn_(findUser(i32 user_id), Opt$Ptr$User $scope) {
     if (user_id <= 0) {
         return_none();
     }
