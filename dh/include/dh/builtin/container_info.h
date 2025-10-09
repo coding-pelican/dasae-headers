@@ -27,140 +27,123 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* Container Operations */
-#define offsetTo(_Type, _field)                                        \
-    /**                                                                \
+#define offsetTo(_T, _field...) \
+    /** \
      * @brief Get byte offset of a field within a type at compile time \
-     *                                                                 \
-     * @param _Type The container type                                 \
-     * @param _field The field name within the container               \
-     * @return usize Byte offset of the field                          \
-     */                                                                \
-    FUNC__offsetTo(_Type, _field)
+     * \
+     * @param _T The container type \
+     * @param _field The field name within the container \
+     * @return usize Byte offset of the field \
+     */ \
+    block_inline__offsetTo(_T, _field)
 
-#define containerOf(_ptr, _Type, _field)                           \
-    /**                                                            \
-     * @brief Get containing struct from pointer to member         \
-     *                                                             \
+#define structPtrFrom(_p_field, _T, _field...) \
+    /** \
+     * @brief Get containing struct from pointer to member \
+     * \
      * This is an optimized version that assumes type correctness. \
-     * Use safeContainerOf for additional type checking.           \
-     *                                                             \
-     * @param _ptr Pointer to the member field                     \
-     * @param _Type Type of the container struct                   \
-     * @param _field Name of the member field                      \
-     * @return Pointer to the containing struct                    \
-     */                                                            \
-    FUNC__containerOf(_ptr, _Type, _field)
+     * Use safeContainerOf for additional type checking. \
+     * \
+     * @param _p_field Pointer to the member field \
+     * @param _T Type of the container struct \
+     * @param _field Name of the member field \
+     * @return Pointer to the containing struct \
+     */ \
+    block_inline__structPtrFrom(_p_field, _T, _field)
 
-#define safeContainerOf(_ptr, _Type, _field)                    \
-    /**                                                         \
-     * @brief Type-safe version of containerOf                  \
-     *                                                          \
-     * Includes additional type checking to ensure type safety. \
-     * Preferred over containerOf when type safety is critical. \
-     *                                                          \
-     * @param _ptr Pointer to the member field                  \
-     * @param _Type Type of the container struct                \
-     * @param _field Name of the member field                   \
-     * @return Pointer to the containing struct                 \
-     */                                                         \
-    FUNC__safeContainerOf(_ptr, _Type, _field)
-
-/* Field Type Operations */
-#define FieldType$(_Type, _field)                             \
-    /**                                                       \
+#define FieldTypeOf(_T, _field...) \
+    /** \
      * @brief Get the type of a field within a container type \
-     *                                                        \
-     * @param _Type The container type                        \
-     * @param _field The field name                           \
-     * @return The type of the specified field                \
-     */                                                       \
-    FUNC__FieldType$(_Type, _field)
+     * \
+     * @param _T The container type \
+     * @param _field The field name \
+     * @return The type of the specified field \
+     */ \
+    block_inline__FieldTypeOf(_T, _field)
 
-/* Field Validation */
-#define hasField(_Type, _field)                                    \
-    /**                                                            \
-     * @brief Check if a type has a specific field at compile time \
-     *                                                             \
-     * @param _Type The type to check                              \
-     * @param _field The field name to look for                    \
-     * @return bool True if the field exists                       \
-     */                                                            \
-    FUNC__hasField(_Type, _field)
+#define FieldTypeOfUnqual(_T, _field...) \
+    /** \
+     * @brief Get the type of a field within a container type \
+     * \
+     * @param _T The container type \
+     * @param _field The field name \
+     * @return The type of the specified field \
+     */ \
+    block_inline__FieldTypeOfUnqual(_T, _field)
 
-#define validateField(_Type, _field, _ExpectedType)                  \
-    /**                                                              \
-     * @brief Validate that a field's type matches the expected type \
-     *                                                               \
-     * @param _Type The container type                               \
-     * @param _field The field name to check                         \
-     * @param _ExpectedType The type to compare against              \
-     * @return bool True if types match                              \
-     */                                                              \
-    FUNC__validateField(_Type, _field, _ExpectedType)
+#define sameFieldType(_T, _field, _TExpected...) \
+    /** \
+     * @brief Check if a field has the expected type \
+     * \
+     * @param _T The container type \
+     * @param _field The field name \
+     * @param _TExpected The expected type \
+     * @return True if the field has the expected type, false otherwise \
+     */ \
+    block_inline__sameFieldType(_T, _field, _TExpected)
 
-/* Field Access Utilities */
-#define fieldPtrFrom(_container_ptr, _field)            \
-    /**                                                 \
+#define sameFieldTypeUnqual(_T, _field, _TExpected...) \
+    /** \
+     * @brief Check if a field has the expected type \
+     * \
+     * @param _T The container type \
+     * @param _field The field name \
+     * @param _TExpected The expected type \
+     * @return True if the field has the expected type, false otherwise \
+     */ \
+    block_inline__sameFieldTypeUnqual(_T, _field, _TExpected)
+
+#define fieldPtrFrom(_p_struct, _field) \
+    /** \
      * @brief Get pointer to a field within a container \
-     *                                                  \
-     * @param _container_ptr Pointer to the container   \
-     * @param _field Name of the field to access        \
-     * @return Pointer to the field                     \
-     */                                                 \
-    FUNC__fieldPtrFrom(_container_ptr, _field)
+     * \
+     * @param _p_struct Pointer to the container \
+     * @param _field Name of the field to access \
+     * @return Pointer to the field \
+     */ \
+    block_inline__fieldPtrFrom(_p_struct, _field)
 
-#define fieldPadding(_Type, _field)                           \
-    /**                                                       \
-     * @brief Calculate padding before a field in bytes       \
-     *                                                        \
-     * @param _Type The container type                        \
-     * @param _field The field to check                       \
+#define fieldPadding(_T, _field) \
+    /** \
+     * @brief Calculate padding before a field in bytes \
+     * \
+     * @param _T The container type \
+     * @param _field The field to check \
      * @return usize Number of padding bytes before the field \
-     */                                                       \
-    FUNC__fieldPadding(_Type, _field)
+     */ \
+    block_inline__fieldPadding(pp_uniqTok(offset), pp_uniqTok(align), _T, _field)
 
 /*========== Implementation Macros =========================================*/
 
-/* Core operations implementations */
-#define FUNC__offsetTo(Type, field) \
-    __builtin_offsetof(Type, field)
+#define block_inline__offsetTo(_T, _field...) \
+    __builtin_offsetof(_T, _field)
 
-#define FUNC__containerOf(ptr, Type, field) eval({             \
-    const TypeOf(((Type*)0)->field)* __mptr = (ptr);           \
-    eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
+#define block_inline__structPtrFrom(_p_field, _T, _field...) \
+    as$(_T*, as$(u8*, (FieldTypeOf(_T, _field)*, _p_field)) - offsetTo(_T, _field))
+
+#define block_inline__FieldTypeOf(_T, _field...) \
+    TypeOf((as$(_T*, 0))->_field)
+
+#define block_inline__FieldTypeOfUnqual(_T, _field...) \
+    TypeOfUnqual((as$(_T*, 0))->_field)
+
+#define block_inline__sameFieldType(_T, _field, _TExpected...) \
+    isSameType(FieldTypeOf(_T, _field), _TExpected)
+
+#define block_inline__sameFieldTypeUnqual(_T, _field, _TExpected...) \
+    isSameTypeUnqual(FieldTypeOfUnqual(_T, _field), _TExpected)
+
+#define block_inline__fieldPtrFrom(_p_struct, _field...) \
+    (&((_p_struct)->_field))
+
+#define block_inline__fieldPadding(__offset, __align, _T, _field...) ({ \
+    const usize __offset = offsetTo(_T, _field); \
+    const usize __align  = alignOf(FieldTypeOf(_T, _field)); \
+    __offset - (__offset & ~(__align - 1)); \
 })
 
-#define FUNC__safeContainerOf(ptr, Type, field) eval({         \
-    var __mptr = as$(FieldType$(Type, field)*, ptr);           \
-    eval_return((Type*)((u8*)__mptr - offsetTo(Type, field))); \
-})
-
-/* Field operations implementations */
-#define FUNC__FieldType$(Type, field) \
-    TypeOf(((Type*)0)->field)
-
-#define FUNC__hasField(Type, field) eval({                              \
-    _Generic(                                                           \
-        (Type){ 0 },                                                    \
-        default: (isConstantExpr(offsetTo(TypeOf((Type){ 0 }), field))) \
-    );                                                                  \
-})
-
-#define FUNC__validateField(Type, field, ExpectedType) \
-    isSameType(FieldType$(Type, field), ExpectedType)
-
-#define FUNC__fieldPtrFrom(container_ptr, field) \
-    (&(container_ptr)->field)
-
-#define FUNC__fieldPadding(Type, field) eval({               \
-    const usize __offset = offsetTo(Type, field);            \
-    const usize __align  = alignOf(FieldType$(Type, field)); \
-    eval_return(__offset - (__offset & ~(__align - 1)));     \
-})
-
-#define fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field))
+#define block_inline__fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
+    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field_))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

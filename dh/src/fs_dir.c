@@ -1,4 +1,4 @@
-#include "dh/fs/Dir.h"
+#include "dh/fs/dir.h"
 #include "dh/io/common.h"
 
 #include <sys/stat.h>

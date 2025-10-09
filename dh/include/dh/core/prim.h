@@ -42,31 +42,31 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define prim_cmp(val_lhs, val_rhs) FUNC__prim_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_eq(val_lhs, val_rhs)  FUNC__prim_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_ne(val_lhs, val_rhs)  FUNC__prim_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_lt(val_lhs, val_rhs)  FUNC__prim_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_gt(val_lhs, val_rhs)  FUNC__prim_gt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_le(val_lhs, val_rhs)  FUNC__prim_le(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_ge(val_lhs, val_rhs)  FUNC__prim_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_cmp(val_lhs, val_rhs) comp_inline__prim_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_eq(val_lhs, val_rhs)  comp_inline__prim_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_ne(val_lhs, val_rhs)  comp_inline__prim_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_lt(val_lhs, val_rhs)  comp_inline__prim_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_gt(val_lhs, val_rhs)  comp_inline__prim_gt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_le(val_lhs, val_rhs)  comp_inline__prim_le(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_ge(val_lhs, val_rhs)  comp_inline__prim_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 
-#define prim_min(val_lhs, val_rhs)          FUNC__prim_min(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max(val_lhs, val_rhs)          FUNC__prim_max(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_clamp(val_x, val_min, val_max) FUNC__prim_clamp(val_x, val_min, val_max)
-#define prim_wrap(val_x, val_min, val_max)  FUNC__prim_wrap(val_x, val_min, val_max)
+#define prim_min(val_lhs, val_rhs)          comp_inline__prim_min(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max(val_lhs, val_rhs)          comp_inline__prim_max(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_clamp(val_x, val_min, val_max) comp_inline__prim_clamp(val_x, val_min, val_max)
+#define prim_wrap(val_x, val_min, val_max)  comp_inline__prim_wrap(val_x, val_min, val_max)
 
-#define prim_swap(val_lhs, val_rhs) FUNC__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
+#define prim_swap(val_lhs, val_rhs) comp_inline__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
 
-#define prim_divisible(val_lhs, val_rhs) FUNC__prim_divisible(val_lhs, val_rhs)
-#define prim_sign(val_x)                 FUNC__prim_sign(val_x)
+#define prim_divisible(val_lhs, val_rhs) comp_inline__prim_divisible(val_lhs, val_rhs)
+#define prim_sign(val_x)                 comp_inline__prim_sign(val_x)
 
 typedef struct Void {
-    u8 bytes_zero[0];
+    u8 _bytes_zero[0];
 } Void;
 
 /*========== Macros Implementation ==========================================*/
 
-#define FUNC__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return( \
@@ -75,51 +75,51 @@ typedef struct Void {
                               : 0  /* cmp_Ord_eq */ \
     ); \
 })
-#define FUNC__prim_eq(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_eq(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs == (__rhs); \
 })
-#define FUNC__prim_ne(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_ne(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs != (__rhs); \
 })
-#define FUNC__prim_lt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_lt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs < (__rhs); \
 })
-#define FUNC__prim_gt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_gt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs > (__rhs); \
 })
-#define FUNC__prim_le(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_le(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs <= (__rhs); \
 })
-#define FUNC__prim_ge(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_ge(__lhs, __rhs, val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __lhs >= (__rhs); \
 })
 
-#define FUNC__prim_min(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_min(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs < (__rhs) ? (__lhs) : (__rhs); \
+    eval_return __rhs < __lhs ? __rhs : __lhs; \
 })
-#define FUNC__prim_max(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_max(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs > (__rhs) ? (__lhs) : (__rhs); \
+    eval_return __rhs > __lhs ? __rhs : __lhs; \
 })
-#define FUNC__prim_clamp(val_x, val_min, val_max) \
+#define comp_inline__prim_clamp(val_x, val_min, val_max) \
     prim_min(prim_max(val_x, val_min), val_max)
 
-#define FUNC__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) eval({ \
     let __lhs = &(val_lhs); \
     let __rhs = &(val_rhs); \
     let __tmp = *(__lhs); \
@@ -128,16 +128,54 @@ typedef struct Void {
     eval_return{}; \
 })
 
-#define FUNC__prim_divisible(val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_divisible(val_lhs, val_rhs) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
 })
-#define FUNC__prim_sign(val_x) eval({ \
+#define comp_inline__prim_sign(val_x) eval({ \
     let __scalar = (val_x); \
     eval_return as$(TypeOf(__scalar), __scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0)); \
 })
 
+#if NEXT_UPDATE
+#define let_ignore \
+    __attribute__((unused)) let pp_uniqTok(ignored)
+#define $ignore \
+    __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
+    let_ignore
+#define $ignore_void (void)
+
+#define as$(/*(T)(Expr)*/...)           pp_expand(pp_defer(block_inline__as$)(param_expand__as$ __VA_ARGS__))
+#define param_expand__as$(...)          __VA_ARGS__, pp_expand
+#define block_inline__as$(_T, _Expr...) ((_T)(_Expr))
+
+#define swap$(/*(T)(p_lhs, p_rhs)*/...)         pp_expand(pp_defer(block_inline__swap$)(param_expand__swap$ __VA_ARGS__))
+#define param_expand__swap$(...)                __VA_ARGS__, pp_expand
+#define block_inline__swap$(_T, _p_lhs, _p_rhs) ({ \
+    p$(_T) __lhs = (__p_lhs); \
+    p$(_T) __rhs = (__p_rhs); \
+    _T __tmp     = *__lhs; \
+    *__lhs       = *__rhs; \
+    *__rhs       = __tmp; \
+    ({}); \
+})
+
+#define min$(/*(T)(lhs, rhs)*/...)         pp_expand(pp_defer(block_inline__min$)(param_expand__min$ __VA_ARGS__))
+#define param_expand__min$(...)            __VA_ARGS__, pp_expand
+#define block_inline__min$(_T, _lhs, _rhs) ({ \
+    const _T __lhs = (_lhs); \
+    const _T __rhs = (_rhs); \
+    __rhs < __lhs ? __rhs : __lhs; \
+})
+#define max$(/*(T)(lhs, rhs)*/...)         pp_expand(pp_defer(block_inline__max$)(param_expand__max$ __VA_ARGS__))
+#define param_expand__max$(...)            __VA_ARGS__, pp_expand
+#define block_inline__max$(_T, _lhs, _rhs) ({ \
+    const _T __lhs = (_lhs); \
+    const _T __rhs = (_rhs); \
+    __rhs > __lhs ? __rhs : __lhs; \
+})
+#endif /* NEXT_UPDATE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

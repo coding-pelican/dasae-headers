@@ -139,7 +139,7 @@ fn_(biSearch_raw(
 } $unscoped;
 
 #define valueOrDefault$(T, val...) \
-    _Generic(TypeUnqualOf(val), T: val, default: make$(T))
+    _Generic(TypeOfUnqual(val), T: val, default: make$(T))
 
 #define addVoid(lhs, rhs...) ({ \
     (void)lhs; \
@@ -160,7 +160,7 @@ fn_(biSearch_raw(
 })
 
 #define genAdd(lhs, rhs...) _Generic( \
-    TypeUnqualOf(lhs), \
+    TypeOfUnqual(lhs), \
     i32: addInt(lhs, rhs), \
     f32: addFloat(lhs, rhs), \
     void: addVoid(lhs, rhs), \
@@ -182,11 +182,11 @@ fn_(biSearch_raw(
 
 #define genOldAdd(lhs, rhs...) ({ \
     __builtin_choose_expr( \
-        __builtin_types_compatible_p(TypeUnqualOf(lhs), isize), addInt(lhs, rhs), \
+        __builtin_types_compatible_p(TypeOfUnqual(lhs), isize), addInt(lhs, rhs), \
         __builtin_choose_expr( \
-            __builtin_types_compatible_p(TypeUnqualOf(lhs), f64), addFloat(lhs, rhs), \
+            __builtin_types_compatible_p(TypeOfUnqual(lhs), f64), addFloat(lhs, rhs), \
             __builtin_choose_expr( \
-                __builtin_types_compatible_p(TypeUnqualOf(lhs), void), addVoid(lhs, rhs), \
+                __builtin_types_compatible_p(TypeOfUnqual(lhs), void), addVoid(lhs, rhs), \
                 claim_unreachable \
             ) \
         ) \

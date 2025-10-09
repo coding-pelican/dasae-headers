@@ -28,126 +28,137 @@ extern "C" {
 
 /* Type Size and Alignment */
 #define sizeOf$(T...) sizeOf(T)
-#define sizeOf(T_or_val...)                               \
-    /**                                                   \
+#define sizeOf(T_or_val...) \
+    /** \
      * @brief Get size of a type or value at compile time \
-     *                                                    \
-     * @param T_or_val Type or value to measure           \
-     * @return usize Size in bytes                        \
-     */                                                   \
+     * \
+     * @param T_or_val Type or value to measure \
+     * @return usize Size in bytes \
+     */ \
     FUNC__sizeOf(T_or_val)
 
 #define alignOf$(T...) alignOf(T)
-#define alignOf(T...)                               \
-    /**                                             \
-     * @brief Get alignment requirement of a type   \
-     *                                              \
-     * @param T Type to check alignment of          \
+#define alignOf(T...) \
+    /** \
+     * @brief Get alignment requirement of a type \
+     * \
+     * @param T Type to check alignment of \
      * @return usize Alignment requirement in bytes \
-     */                                             \
+     */ \
     FUNC__alignOf(T)
 
-#define alignAs(val_align...)                          \
-    /**                                                \
+#define alignAs(val_align...) \
+    /** \
      * @brief Specify alignment requirement for a type \
-     *                                                 \
-     * @param val_align Alignment value in bytes       \
-     * @return Alignment specifier                     \
-     */                                                \
+     * \
+     * @param val_align Alignment value in bytes \
+     * @return Alignment specifier \
+     */ \
     FUNC__alignAs(val_align)
 
-#define countOf(var_arr...)                      \
-    /**                                          \
+#define countOf(var_arr...) \
+    /** \
      * @brief Get number of elements in an array \
-     *                                           \
+     * \
      * @param var_arr Array to count elements of \
-     * @return usize Number of elements          \
-     */                                          \
+     * @return usize Number of elements \
+     */ \
     FUNC__countOf(var_arr)
 
 /* Type Information */
-#define TypeOf(_Expr...)                                \
-    /**                                                 \
+#define TypeOf(_Expr...) \
+    /** \
      * @brief Get type of an expression at compile time \
-     *                                                  \
-     * @param _Expr Value or expression to get type of  \
-     * @return Type of the expression                   \
-     */                                                 \
+     * \
+     * @param _Expr Value or expression to get type of \
+     * @return Type of the expression \
+     */ \
     FUNC__TypeOf(_Expr)
 
-#define TypeUnqualOf(_Expr...)                                      \
-    /**                                                             \
+#define TypeOfUnqual(_Expr...) \
+    /** \
      * @brief Get unqualified type of an expression at compile time \
-     *                                                              \
-     * @param _Expr Value or expression to get type of              \
-     * @return Unqualified type of the expression                   \
-     */                                                             \
-    FUNC__TypeUnqualOf(_Expr)
+     * \
+     * @param _Expr Value or expression to get type of \
+     * @return Unqualified type of the expression \
+     */ \
+    FUNC__TypeOfUnqual(_Expr)
 
-#define isConstantExpr(_Expr...)                           \
-    /**                                                    \
+#define isConstExpr(_Expr...) \
+    /** \
      * @brief Check if expression is compile-time constant \
-     *                                                     \
-     * @param _Expr Expression to check                    \
-     * @return bool True if constant expression            \
-     */                                                    \
-    FUNC__isConstantExpr(_Expr)
+     * \
+     * @param _Expr Expression to check \
+     * @return bool True if constant expression \
+     */ \
+    FUNC__isConstExpr(_Expr)
 
 #define isSameType$(T_lhs, T_rhs...) isSameType(T_lhs, T_rhs)
-#define isSameType(T_lhs, T_rhs...)            \
-    /**                                        \
-     * @brief Compare two types for equality   \
-     *                                         \
-     * @param T_lhs First type to compare      \
-     * @param T_rhs Second type to compare     \
+#define isSameType(T_lhs, T_rhs...) \
+    /** \
+     * @brief Compare two types for equality \
+     * \
+     * @param T_lhs First type to compare \
+     * @param T_rhs Second type to compare \
      * @return bool True if types are the same \
-     */                                        \
+     */ \
     FUNC__isSameType(T_lhs, T_rhs)
 
+#define isSameTypeUnqual$(T_lhs, T_rhs...) isSameTypeUnqual(T_lhs, T_rhs)
+#define isSameTypeUnqual(T_lhs, T_rhs...) \
+    /** \
+     * @brief Compare two types for equality \
+     * \
+     * @param T_lhs First type to compare \
+     * @param T_rhs Second type to compare \
+     * @return bool True if types are the same \
+     */ \
+    FUNC__isSameTypeUnqual(T_lhs, T_rhs)
+
 /* Type Classification */
-#define isUnsigned(T)                              \
-    /**                                            \
+#define isUnsigned(T) \
+    /** \
      * @brief Check if type is an unsigned integer \
-     *                                             \
-     * @param T Type to check                      \
-     * @return bool True if unsigned integer type  \
-     */                                            \
+     * \
+     * @param T Type to check \
+     * @return bool True if unsigned integer type \
+     */ \
     FUNC__isUnsigned(T)
 
-#define isSigned(T)                             \
-    /**                                         \
+#define isSigned(T) \
+    /** \
      * @brief Check if type is a signed integer \
-     *                                          \
-     * @param T Type to check                   \
+     * \
+     * @param T Type to check \
      * @return bool True if signed integer type \
-     */                                         \
+     */ \
     FUNC__isSigned(T)
 
-#define isInt(T)                                \
-    /**                                         \
+#define isInt(T) \
+    /** \
      * @brief Check if type is any integer type \
-     *                                          \
-     * @param T Type to check                   \
-     * @return bool True if integer type        \
-     */                                         \
+     * \
+     * @param T Type to check \
+     * @return bool True if integer type \
+     */ \
     FUNC__isInt(T)
 
-#define isFlt(T)                                     \
-    /**                                              \
+#define isFlt(T) \
+    /** \
      * @brief Check if type is a floating point type \
-     *                                               \
-     * @param T Type to check                        \
-     * @return bool True if floating point type      \
-     */                                              \
+     * \
+     * @param T Type to check \
+     * @return bool True if floating point type \
+     */ \
     FUNC__isFlt(T)
 
-#define isBool(T)                             \
-    /**                                       \
+#define isBool(T) \
+    /** \
      * @brief Check if type is a boolean type \
-     *                                        \
-     * @param T Type to check                 \
-     * @return bool True if boolean type      \
-     */                                       \
+     * \
+     * @param T Type to check \
+     * @return bool True if boolean type \
+     */ \
     FUNC__isBool(T)
 
 /*========== Macros and Implementations =====================================*/
@@ -167,47 +178,50 @@ extern "C" {
 #define FUNC__TypeOf(_Expr...) \
     __typeof__(_Expr)
 
-#define FUNC__TypeUnqualOf(_Expr...) \
+#define FUNC__TypeOfUnqual(_Expr...) \
     __typeof_unqual(_Expr)
 
-#define FUNC__isConstantExpr(_Expr...) \
+#define FUNC__isConstExpr(_Expr...) \
     __builtin_constant_p(_Expr)
 
 #define FUNC__isSameType(T_lhs, T_rhs...) \
     __builtin_types_compatible_p(T_lhs, T_rhs)
 
+#define FUNC__isSameTypeUnqual(T_lhs, T_rhs...) \
+    __builtin_types_compatible_p(T_lhs, T_rhs)
+
 #define FUNC__isUnsigned(T) _Generic( \
-    (T){ 0 },                         \
-    u8: true,                         \
-    u16: true,                        \
-    u32: true,                        \
-    u64: true,                        \
-    default: false                    \
+    (T){ 0 }, \
+    u8: true, \
+    u16: true, \
+    u32: true, \
+    u64: true, \
+    default: false \
 )
 
 #define FUNC__isSigned(T) _Generic( \
-    (T){ 0 },                       \
-    i8: true,                       \
-    i16: true,                      \
-    i32: true,                      \
-    i64: true,                      \
-    default: false                  \
+    (T){ 0 }, \
+    i8: true, \
+    i16: true, \
+    i32: true, \
+    i64: true, \
+    default: false \
 )
 
 #define FUNC__isInt(T) \
     (isUnsigned(T) || isSigned(T))
 
 #define FUNC__isFlt(T) _Generic( \
-    (T){ 0 },                    \
-    f32: true,                   \
-    f64: true,                   \
-    default: false               \
+    (T){ 0 }, \
+    f32: true, \
+    f64: true, \
+    default: false \
 )
 
 #define FUNC__isBool(T) _Generic( \
-    (T){ 0 },                     \
-    bool: true,                   \
-    default: false                \
+    (T){ 0 }, \
+    bool: true, \
+    default: false \
 )
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/

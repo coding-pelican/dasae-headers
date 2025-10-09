@@ -214,11 +214,11 @@ __step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->base; \
     } \
 }
 
-#define comp_syn__Thrd_fn_impl_w_type$scope(_fnName, _Tuple_Args_Ret, _Tuple_Captures) \
+#define comp_syn__Thrd_fn_impl_w_type$_scope(_fnName, _Tuple_Args_Ret, _Tuple_Captures) \
 comp_syn__Thrd_fn_decl_w_type(_fnName, _Tuple_Args_Ret); \
 comp_syn__Thrd_fn_impl$scope(_fnName, _Tuple_Captures)
 
-#define comp_syn__Thrd_fn_impl_w_type$guard(_fnName, _Tuple_Args_Ret, _Tuple_Captures) \
+#define comp_syn__Thrd_fn_impl_w_type$_guard(_fnName, _Tuple_Args_Ret, _Tuple_Captures) \
 comp_syn__Thrd_fn_decl_w_type(_fnName, _Tuple_Args_Ret); \
 comp_syn__Thrd_fn_impl$guard(_fnName, _Tuple_Captures)
 // clang-format on

@@ -33,23 +33,25 @@ extern "C" {
 #define $scope , $_scope
 #define $guard , $_guard
 
-#define func(_Expr...) /* fn_((_Name(_Params...))(T_Return)) */ \
-    pp_expand(pp_defer(fn_)(pp_Tuple_unwrapSufCommaExpand _Expr))
-#define fn_(_Name_With_Params, T_Return...) \
-    pp_overload(__fn, T_Return)(_Name_With_Params, T_Return)
-#define __fn_1(_Name_With_Params, T_Return...) \
-    comp_syn__fn_(_Name_With_Params, T_Return)
-#define __fn_2(_Name_With_Params, T_Return, _Extension...) \
-    pp_join(_, fn, _Extension)(_Name_With_Params, T_Return)
+#define func(/*_ident(_Params...))(_TReturn) <$ext>*/...) \
+    pp_expand(pp_defer(fn_)(pp_Tuple_unwrapSufCommaExpand __VA_ARGS__))
+#define fn_(_ident_w_Params, _TReturn...) \
+    pp_overload(__fn, _TReturn)(_ident_w_Params, _TReturn)
+#define __fn_1(_ident_w_Params, _TReturn...) \
+    comp_syn__fn_(_ident_w_Params, _TReturn)
+#define __fn_2(_ident_w_Params, _TReturn, _Extension...) \
+    pp_join(_, fn, _Extension)(_ident_w_Params, _TReturn)
 
-#define fn_$_scope(_Name_With_Params, T_Return...) comp_syn__fn_$_scope(_Name_With_Params, T_Return)
-#define $unscoped                                  comp_syn__$unscoped
+#define fn_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(_ident_w_Params, _TReturn)
+#define $unscoped_fn                             comp_syn__$unscoped_fn
+#define $unscoped                                /* deprecated */ $unscoped_fn
 
-#define fn_$_guard(_Name_With_Params, T_Return...) comp_syn__fn_$_guard(_Name_With_Params, T_Return)
-#define $unguarded                                 comp_syn__$unguarded
+#define fn_$_guard(_ident_w_Params, _TReturn...) comp_syn__fn_$_guard(_ident_w_Params, _TReturn)
+#define $unguarded_fn                            comp_syn__$unguarded_fn
+#define $unguarded                               /* deprecated */ $unguarded_fn
 
-#define return_(_Expr...) comp_syn__return_(_Expr)
-#define return_void(...)  pp_overload(comp_syn__return_void, __VA_ARGS__)(__VA_ARGS__)
+#define return_(_Expr...)     comp_syn__return_(_Expr)
+#define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
 
 /*
 #define return_ok(_Expr...)   comp_syn__return_ok(_Expr)
@@ -71,26 +73,26 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_syn__fn_(_Name_With_Params, T_Return...) \
-    T_Return _Name_With_Params
+#define comp_syn__fn_(_ident_w_Params, _TReturn...) \
+    _TReturn _ident_w_Params
 
 // clang-format off
-#define comp_syn__fn_$_scope(_Name_With_Params, T_Return...) \
-T_Return _Name_With_Params {                               \
-    let __reserved_return = as$(T_Return*,                 \
-        (u8[bti_Generic_match$(T_Return,                   \
-            bti_Generic_pattern$(void) 0,                  \
-            bti_Generic_fallback_ sizeOf$(T_Return))]){}); \
-    if (false) { __step_return: goto __step_unscope; }     \
+#define comp_syn__fn_$_scope(_ident_w_Params, _TReturn...) \
+_TReturn _ident_w_Params { \
+    let __reserved_return = as$(_TReturn*, \
+        (u8[bti_Generic_match$(_TReturn, \
+            bti_Generic_pattern$(void) 0, \
+            bti_Generic_fallback_ sizeOf$(_TReturn))]){}); \
+    if (false) { __step_return: goto __step_unscope; } \
     do
-#define comp_syn__$unscoped                    \
-    while (false);                            \
-    if (false) { __step_unscope:              \
-        if (bti_Generic_match$(TypeOf(*__reserved_return),  \
+#define comp_syn__$unscoped_fn \
+    while (false); \
+    if (false) { __step_unscope: \
+        if (bti_Generic_match$(TypeOf(*__reserved_return), \
             bti_Generic_pattern$(void) false, \
-            bti_Generic_fallback_ true)       \
-        ) { return __reserved_return[0]; }    \
-    }                                         \
+            bti_Generic_fallback_ true) \
+        ) { return __reserved_return[0]; } \
+    } \
 }
 // clang-format on
 
@@ -99,31 +101,31 @@ struct fn__ScopeCounter {
     u32 current_line : 31;
 };
 // clang-format off
-#define comp_syn__fn_$_guard(_Name_With_Params, T_Return...) \
-T_Return _Name_With_Params {                                   \
-    let __reserved_return = as$(T_Return*,                     \
-        (u8[bti_Generic_match$(T_Return,                       \
-            bti_Generic_pattern$(void) 0,                      \
-            bti_Generic_fallback_ sizeOf$(T_Return))]){});     \
-    var __scope_counter   = (struct fn__ScopeCounter){           \
-        .is_returning = false, .current_line = __LINE__        \
-    };                                                         \
-    if (false) { __step_return:                                \
-        __scope_counter.is_returning = true;                   \
-        goto __step_deferred;                                  \
-    }                                                          \
-__step_deferred: switch (__scope_counter.current_line) {       \
-    default: { goto __step_unscope; } break;                   \
+#define comp_syn__fn_$_guard(_ident_w_Params, _TReturn...) \
+_TReturn _ident_w_Params { \
+    let __reserved_return = as$(_TReturn*, \
+        (u8[bti_Generic_match$(_TReturn, \
+            bti_Generic_pattern$(void) 0, \
+            bti_Generic_fallback_ sizeOf$(_TReturn))]){}); \
+    var __scope_counter   = (struct fn__ScopeCounter){ \
+        .is_returning = false, .current_line = __LINE__ \
+    }; \
+    if (false) { __step_return: \
+        __scope_counter.is_returning = true; \
+        goto __step_deferred; \
+    } \
+__step_deferred: switch (__scope_counter.current_line) { \
+    default: { goto __step_unscope; } break; \
     case __LINE__: __scope_counter.current_line = __LINE__ - 1;
-#define comp_syn__$unguarded                             \
-        break;                                             \
-    }                                                      \
-    if (false) { __step_unscope:                           \
+#define comp_syn__$unguarded_fn \
+        break; \
+    } \
+    if (false) { __step_unscope: \
         if (bti_Generic_match$(TypeOf(*__reserved_return), \
-            bti_Generic_pattern$(void) false,              \
-            bti_Generic_fallback_ true)                    \
-        ) { return __reserved_return[0]; }                 \
-    }                                                      \
+            bti_Generic_pattern$(void) false, \
+            bti_Generic_fallback_ true) \
+        ) { return __reserved_return[0]; } \
+    } \
 }
 // clang-format on
 
@@ -188,10 +190,10 @@ __step_deferred: switch (__scope_counter.current_line) {       \
         } \
     }
 
-#define callFn(_fn_and_Args...) \
-    pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma _fn_and_Args))
-#define __exec_callFn()         __callFn
-#define __callFn(_fn, _Args...) (ensureNonnull(_fn)(_Args))
+#define callFn(/*(_ident)(_Args...)*/) \
+    pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
+#define __exec_callFn()            __callFn
+#define __callFn(_ident, _Args...) (ensureNonnull(_ident)(_Args))
 
 // clang-format off
 #define eval_(T_Break_w_Ext...) comp_syn__eval_test(T_Break_w_Ext)
@@ -258,6 +260,60 @@ __step_deferred: switch (__scope_counter.current_line) { \
 })
 // clang-format on
 
+// clang-format off
+#define expr_(/*<_TBreak $ext>|<else>*/...) inline__expr(__VA_ARGS__) pp_expand
+#define inline__expr(...) pp_overload(inline__expr, __VA_ARGS__)(__VA_ARGS__)
+#define inline__expr_1(_else...) ; if (__has_broken) { goto __step_break; } _else
+#define inline__expr_2(_TBreak, _ext...) pp_cat(inline__expr_2, _ext)(_TBreak)
+#define inline__expr_2$_scope(_TBreak...) ({ \
+    local_label __step_break; \
+    let __reserved_break = as$(_TBreak*, (u8[_Generic(_TBreak, \
+        void: 0, \
+        default: sizeOf$(_TBreak) \
+    )]){}); \
+    $maybe_unused bool __has_broken = false;\
+    /* do */
+#define $unscoped_expr comp_syn__expr_$unscoped
+#define comp_syn__expr_$unscoped \
+    /* while(false) */; \
+    __step_break: \
+    _Generic(TypeOf(*__reserved_break), \
+        void: ({}), \
+        default: __reserved_break[0] \
+    ); \
+})
+// clang-format on
+
+// clang-format off
+#define $break_(_Expr...) ({ \
+    bti_memcpy( \
+        as$(u8*, __reserved_break), \
+        as$(u8*, (TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
+        sizeOf$(*__reserved_break) \
+    ); \
+    __has_broken = true; \
+    goto __step_break; \
+})
+// clang-format on
+
+#define $unscoped_(_keyword) \
+    pp_cat(inline__$unscoped_, _keyword)()
+#define inline__$unscoped_fn()       $unscoped
+#define inline__$unscoped_async_fn() $unscoped_async_fn
+#define inline__$unscoped_Thrd_fn()  $unscoped_Thrd_fn
+#define inline__$unscoped_TEST_fn()  $unscoped_TEST_fn
+#define inline__$unscoped_eval()     $unscoped_eval
+#define inline__$unscoped_expr()     $unscoped_expr
+
+#define $unguarded_(_keyword) \
+    pp_cat(inline__$unguarded_, _keyword)()
+#define inline__$unguarded_fn()       $unguarded
+#define inline__$unguarded_async_fn() $unguarded_async_fn
+#define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
+#define inline__$unguarded_TEST_fn()  $unguarded_TEST_fn
+#define inline__$unguarded_eval()     $unguarded_eval
+#define inline__$unguarded_expr()     $unguarded_expr
+
 /*========== Example usage ==================================================*/
 
 #if EXAMPLE_USAGE
@@ -267,27 +323,28 @@ __step_deferred: switch (__scope_counter.current_line) { \
 
 /* declarations =============================================================*/
 use_ErrSet$(math_Err, i32);
-static fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32) $must_check;
+$static $must_check
+fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32));
 
 /* main */
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
-    catch_from(math_divideSafe(10, 0), err, {
+    catch_((math_divideSafe(10, 0))(err, {
         let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
-        debug_assert_true(Sli_const$u8_eq(err_code, Str_l("DivisionByZero")));
+        debug_assert_true(Sli_const$u8_eq(err_code, u8_l("DivisionByZero")));
         return_err(err);
-    });
-    return_(ok({}));
-} $unscoped;
+    }));
+    return_ok({});
+} $unscoped_(fn);
 
 /* definitions */
-fn_(math_divideSafe(i32 lhs, i32 rhs), math_Err$i32 $scope) {
+fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
     if (rhs == 0) {
-        return_(err(math_Err_DivisionByZero()));
+        return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
-} $unscoped;
+} $unscoped_(fn);
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

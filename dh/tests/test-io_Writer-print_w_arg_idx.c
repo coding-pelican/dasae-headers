@@ -304,9 +304,10 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     $ignore = args;
 
     use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
-    io_Writer  writer = test_Buf_writer(&buf);
+    Arr$256$u8 mem       = Arr_zero();
+    let        mem_slice = Arr_ref$(Sli$u8, mem);
+    test_Buf   buf       = test_Buf_init(mem_slice);
+    io_Writer  writer    = test_Buf_writer(&buf);
 
     // Test indexed access with format flags
     try_(io_Writer_print(writer, u8_l("{0:+d} {1:#x} {0: d}"), 42, 255U));

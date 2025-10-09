@@ -5,7 +5,7 @@ static fn_(alwaysFailure(void), Err$void $scope) {
     return_err(Err_Unexpected());
 } $unscoped;
 
-static fn_(func3(void), Err$void $scope) {
+static fn_(func3(void), Err$void $scope)  {
     return_ok(try_(alwaysFailure()));
 } $unscoped;
 

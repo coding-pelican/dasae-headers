@@ -35,6 +35,11 @@ extern "C" {
 #undef fallback_
 #undef comp_syn__fallback_
 
+#define enum_of$(/*(_Alias)(_value)*/...) \
+    pp_expand(pp_defer(block_inline__enum_of$)(comp_param__enum_of$ _value))
+#define comp_param__enum_of$(_value...)   _value, pp_expand
+#define block_inline__enum_of$(_value...) as$(_Alias, _value)
+
 #define variant_(_alias, ...) \
     comp_gen__variant_(_alias, __VA_ARGS__)
 

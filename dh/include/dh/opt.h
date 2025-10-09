@@ -114,10 +114,10 @@ extern "C" {
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Opt)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Opt)); \
     claim_assert_static(hasField(TypeOf(__anon), has_value)); \
-    claim_assert_static(validateField(TypeOf(__anon), has_value, FieldType$(T_Opt, has_value))); \
+    claim_assert_static(validateField(TypeOf(__anon), has_value, FieldTypeOf(T_Opt, has_value))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), has_value) == fieldPadding(T_Opt, has_value)); \
     claim_assert_static(hasField(TypeOf(__anon), value)); \
-    claim_assert_static(validateField(TypeOf(__anon), value, FieldType$(T_Opt, value))); \
+    claim_assert_static(validateField(TypeOf(__anon), value, FieldTypeOf(T_Opt, value))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), value) == fieldPadding(T_Opt, value)); \
     eval_return(*(T_Opt*)&__anon); \
 })
@@ -146,14 +146,14 @@ extern "C" {
 #define comp_syn__return_none()            return_(none())
 
 
-#define genericIf$(_Expr, _T, _True, _False...) _Generic(TypeUnqualOf(_Expr), _T: _True, default: _False)
+#define genericIf$(_Expr, _T, _True, _False...) _Generic(TypeOfUnqual(_Expr), _T: _True, default: _False)
 #define genericExprOrDefaultEvaledIfVoid$(_Expr, _T...) \
     genericIf$(_Expr, void, ({ $ignore_void(_Expr); make$(TypeOf(_T)); }), (_Expr))
 #define genericExprOrDefaultIfNotT$(_Expr, _T...) \
     genericIf$(_Expr, _T, (_Expr), make$(_T))
 
 // #define defaultEvaledIfVoid$(_T, _Expr...) bti_Generic_match$( \
-//     TypeUnqualOf(_Expr), \
+//     TypeOfUnqual(_Expr), \
 //     bti_Generic_pattern$(void)({ \
 //         $ignore_void(_Expr); \
 //         make$(TypeOf(_T)); \
@@ -169,7 +169,7 @@ extern "C" {
         var __result = _Expr; \
         if (isNone(__result)) { \
             __result.value = bti_Generic_match$( \
-                TypeUnqualOf(_DefaultExpr_OR_Body), \
+                TypeOfUnqual(_DefaultExpr_OR_Body), \
                 bti_Generic_pattern$(void) eval({ \
                     $ignore_void _DefaultExpr_OR_Body; \
                     eval_return make$(TypeOf(__result.value)); \
@@ -191,7 +191,7 @@ extern "C" {
     }; \
 })
 #define comp_op__Opt_asPtr(var_addr_opt...) \
-    Opt_asPtr$(Opt$$(FieldType$(TypeOf(*var_addr_opt), value)*), var_addr_opt)
+    Opt_asPtr$(Opt$$(FieldTypeOf(TypeOf(*var_addr_opt), value)*), var_addr_opt)
 
 #define comp_syn__if_some(val_opt, _Payload_Capture...) \
     if_(let _result = (val_opt), _result.has_value) \

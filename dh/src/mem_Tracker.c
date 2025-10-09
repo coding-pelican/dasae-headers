@@ -19,7 +19,7 @@
 #include "dh/ArrList.h"
 #include "dh/err_res.h"
 #include "dh/core/src_loc.h"
-#include "dh/fs/Dir.h"
+#include "dh/fs/dir.h"
 #include "dh/io.h"
 #include "dh/Str.h"
 #include "dh/Arr.h"

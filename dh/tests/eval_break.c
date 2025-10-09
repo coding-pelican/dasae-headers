@@ -31,11 +31,11 @@ __step_unscope: \
 })
 // clang-format on
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
+func((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     $ignore = args;
     return_(eval_(Err$void $scope) if (true) {
         eval_break_(ok({}));
     } else {
         eval_break_(err(Err_NotImplemented()));
     } $unscoped_eval);
-} $unscoped;
+} $unscoped_(fn);

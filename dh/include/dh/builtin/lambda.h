@@ -31,7 +31,28 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define la_(/*(_Params...)(_TReturn) <$ext>*/...) \
+    pp_expand(pp_defer(block_expand__la_)(param_expand__la_ __VA_ARGS__))
+#define param_expand__la_(...)                         (__VA_ARGS__), pp_expand
+#define block_expand__la_(...)                         pp_overload(block_expand__la, __VA_ARGS__)(__VA_ARGS__)
+#define block_expand__la_2(_Params, _TReturn)          impl_comp_syn__lam_(_Params, _TReturn)
+#define block_expand__la_3(_Params, _TReturn, _Ext...) pp_defer(pp_cat)(block_expand__la_, _Ext)(_Params, _TReturn)
+#define block_expand__la_$_scope(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_scope(_Params, _TReturn)
+#define block_expand__la_$_guard(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_guard(_Params, _TReturn)
+#define $unscoped_la                                   /* TODO: Implement */
+#define $unguarded_la                                  /* TODO: Implement */
+
 #define lam_(_Parens_Params, T_Return...) comp_syn__lam_(_Parens_Params, T_Return)
+
+#define a_init$(_N_T__initial...) \
+    pp_expand(pp_defer(comp_inline_block__a_init$)(comp_expand_param__a_init$ _N_T__initial))
+#define comp_expand_param__a_init$(_N_T...) pp_countArgs(_N_T), (_N_T), pp_expand
+#define comp_inline_block__a_init$(_count_args, _N_T, _initial...) \
+    pp_defer(pp_cat3)(comp_inline, _count_args, __a_init$)(_N_T, _initial)
+#define comp_inline_block1__a_init$(_a$N$T, _initial...) \
+    (_a$N$T{ .buf = _initial })
+#define comp_inline_block2__a_init$(_N_T, _initial...) \
+    ((a$ _N_T){ .buf = _initial })
 
 /*========== Macros and Definitions =========================================*/
 

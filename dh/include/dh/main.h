@@ -63,6 +63,7 @@ extern fn_(dh_main(Sli$Sli_const$u8 args), Err$void) $must_check;
 #define MAIN_ROOT_INCLUDED (1)
 
 #if !TEST_comp_enabled
+
 func((
 #if main_no_args && main_no_returns_err
     main(void)

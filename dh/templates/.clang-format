@@ -68,7 +68,7 @@ TypeNames:
   - let_
   - var_
   - TypeOf
-  - TypeUnqualOf
+  - TypeOfUnqual
   # primitive
   - u8
   - u16

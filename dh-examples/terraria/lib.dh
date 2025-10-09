@@ -1,0 +1,5 @@
+[engine]
+path=../engine
+profile=default
+linking=static
+no-libdh=false

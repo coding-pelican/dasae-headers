@@ -1,5 +1,5 @@
 #include "dh/log.h"
-#include "dh/fs/Dir.h"
+#include "dh/fs/dir.h"
 #include "dh/Str.h"
 
 #include <stdarg.h>

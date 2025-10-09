@@ -967,7 +967,7 @@ const char* DEFAULT_CLANG_FORMAT_TEMPLATE
       "  - let_\n"
       "  - var_\n"
       "  - TypeOf\n"
-      "  - TypeUnqualOf\n"
+      "  - TypeOfUnqual\n"
       "  # primitive\n"
       "  - u8\n"
       "  - u16\n"

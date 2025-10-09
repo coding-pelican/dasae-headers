@@ -282,6 +282,12 @@ func((Vertex_init(m_V3f64 position, mem_Allocator allocator))(Err$Vertex)$scope)
 } $unscoped;
 
 func((Vertex_addFace(Vertex* vertex, i32 face_id))(Err$void)$scope) {
+    catch_((ArrList_append(vertex->face_ids.base, meta_refPtr(&face_id)))(my_err, {
+        Err_print(my_err);
+        ErrTrace_print();
+        return_err(my_err);
+    }));
+
     try_(ArrList_append(vertex->face_ids.base, meta_refPtr(&face_id)));
     return_ok({});
 } $unscoped;

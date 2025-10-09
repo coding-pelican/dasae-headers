@@ -31,13 +31,13 @@
     }
 
 #define a_init$(_N_T__initial...) \
-    pp_expand(pp_defer(comp_inline__a_init$)(comp_param__a_init$ _N_T__initial))
-#define comp_param__a_init$(_N_T...) pp_countArgs(_N_T), (_N_T), pp_expand
-#define comp_inline__a_init$(_count_args, _N_T, _initial...) \
+    pp_expand(pp_defer(comp_inline_block__a_init$)(comp_expand_param__a_init$ _N_T__initial))
+#define comp_expand_param__a_init$(_N_T...) pp_countArgs(_N_T), (_N_T), pp_expand
+#define comp_inline_block__a_init$(_count_args, _N_T, _initial...) \
     pp_defer(pp_cat3)(comp_inline, _count_args, __a_init$)(_N_T, _initial)
-#define comp_inline1__a_init$(_a$N$T, _initial...) \
+#define comp_inline_block1__a_init$(_a$N$T, _initial...) \
     (_a$N$T{ .buf = _initial })
-#define comp_inline2__a_init$(_N_T, _initial...) \
+#define comp_inline_block2__a_init$(_N_T, _initial...) \
     ((a$ _N_T){ .buf = _initial })
 
 #define a_from$(_T__initial...) \

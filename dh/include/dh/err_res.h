@@ -145,13 +145,13 @@ typedef struct Err$Void {
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes)); \
     claim_assert_static(hasField(TypeOf(__anon), is_err)); \
-    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldType$(T_ErrRes, is_err))); \
+    claim_assert_static(validateField(TypeOf(__anon), is_err, FieldTypeOf(T_ErrRes, is_err))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), is_err) == fieldPadding(T_ErrRes, is_err)); \
     claim_assert_static(hasField(TypeOf(__anon), data.err)); \
-    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldType$(T_ErrRes, data.err))); \
+    claim_assert_static(validateField(TypeOf(__anon), data.err, FieldTypeOf(T_ErrRes, data.err))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.err) == fieldPadding(T_ErrRes, data.err)); \
     claim_assert_static(hasField(TypeOf(__anon), data.ok)); \
-    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldType$(T_ErrRes, data.ok))); \
+    claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldTypeOf(T_ErrRes, data.ok))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.ok) == fieldPadding(T_ErrRes, data.ok)); \
     eval_return(*(T_ErrRes*)&__anon); \
 })
@@ -200,7 +200,7 @@ typedef struct Err$Void {
         var __result = _Expr; \
         if (isErr(__result)) { \
             __result.data.ok = bti_Generic_match$( \
-                TypeUnqualOf(_DefaultExpr_OR_Body), \
+                TypeOfUnqual(_DefaultExpr_OR_Body), \
                 bti_Generic_pattern$(void) eval({ \
                     (_DefaultExpr_OR_Body); \
                     eval_return make$(TypeOf(__result.data.ok)); \
@@ -222,7 +222,7 @@ typedef struct Err$Void {
             let _Payload_Capture \
                 = __result.data.err; \
             __result.data.ok = bti_Generic_match$( \
-                TypeUnqualOf(_Default_Or_Eval), \
+                TypeOfUnqual(_Default_Or_Eval), \
                 bti_Generic_pattern$(void) eval({ \
                     _Default_Or_Eval; \
                     eval_return make$(TypeOf(__result.data.ok)); \
@@ -255,7 +255,7 @@ typedef struct Err$Void {
     }; \
 })
 #define comp_op__Err_asOpt(var_err...) \
-    Err_asOpt$(Opt$$(FieldType$(TypeOf(({ var_err; })), data.ok)), var_err)
+    Err_asOpt$(Opt$$(FieldTypeOf(TypeOf(({ var_err; })), data.ok)), var_err)
 
 #define comp_syn__if_err(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), _result.is_err) \

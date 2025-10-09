@@ -54,7 +54,7 @@ static fn_(Writer_init(fs_File file), Writer) {
     return (Writer){ .ctx = file, .write = Writer_VT_write };
 }
 static fn_(Writer_VT_write(const anyptr ctx, Sli_const$u8 bytes), Err$usize) {
-    let self = as$(FieldType$(Writer, ctx)*, &ctx);
+    let self = as$(FieldTypeOf(Writer, ctx)*, &ctx);
     return pp_if_(bti_plat_windows)(
         pp_than_(windows_WriteFile(self->handle, bytes)),
         pp_else_(linux_write(self->handle, bytes))

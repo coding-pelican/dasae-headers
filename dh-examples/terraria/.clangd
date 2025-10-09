@@ -96,3 +96,17 @@ CompileFlags:
     - -Wno-unused-function
     - -Wno-unused-variable
     - -Wno-unused-const-variable
+# Project ==========
+---
+If:
+  PathMatch:
+    - .*\.c
+    - .*\.h
+CompileFlags:
+  Add:
+    - -I/mnt/c/dev/dasae-headers/dh-examples/terraria/src
+    - -I/mnt/c/dev/dasae-headers/dh-examples/terraria/include
+    - -I/mnt/c/dev/dasae-headers/dh-examples/terraria/lib/deps
+    - -IC:/dev/dasae-headers/dh-examples/terraria/src
+    - -IC:/dev/dasae-headers/dh-examples/terraria/include
+    - -IC:/dev/dasae-headers/dh-examples/terraria/lib/deps

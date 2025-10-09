@@ -125,8 +125,8 @@ union Grid {
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Grid)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Grid)); \
     claim_assert_static(fieldAnonTypeCastable(T_Grid, __anon, Sli, items)); \
-    claim_assert_static(validateField(__anon, width, FieldType$(u32, width))); \
-    claim_assert_static(validateField(__anon, height, FieldType$(u32, height))); \
+    claim_assert_static(validateField(__anon, width, FieldTypeOf(u32, width))); \
+    claim_assert_static(validateField(__anon, height, FieldTypeOf(u32, height))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \

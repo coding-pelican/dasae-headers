@@ -1,176 +1,54 @@
-/**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
- * @license   MIT License - see LICENSE file for details
- *
- * @file    ArrList.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
- * @date    2025-01-09 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha.5
- * @ingroup dasae-headers(dh)
- * @prefix  ArrList
- *
- * @brief   Dynamic array list implementation
- * @details This header provides an array list implementation with dynamic memory allocation.
- *          The array list automatically resizes as elements are added or removed.
- *          Supports operations for initialization, modification, and element access.
- */
+#include "dh/err_res.h"
+#include "dh/meta/common.h"
+#include "dh/prl.h"
+#include "dh/mem/Allocator.h"
 
-/*========== Cheat Sheet ====================================================*/
 
-#if CHEAT_SHEET
-/* Type Declarations */
-ArrList     list        = ArrList_init(typeInfo$(i32), heap_allocator);                     // Initialize empty list
-ArrList$i32 list        = type$(ArrList$i32, ArrList_init(typeInfo$(i32), heap_allocator)); // Typed list
-Err$ArrList initWithCap = ArrList_initCap(typeInfo$(f32), heap_allocator, 10);              // With capacity
 
-/* Operations */
-ArrList_append(list.base, ptr_to_item);        // Add item to end
-ArrList_prepend(list.base, ptr_to_item);       // Add item to front
-meta_Ptr item = ArrList_addBackOne(list.base); // Add and get pointer to n`ew item
-ArrList_resize(list.base, 5);                  // Resize to specific length
-ArrList_clearRetainingCap(list.base);          // Clear but keep capacity
-ArrList_fini(list.base);                       // Free resources
+typedef struct ArrList ArrList;
+struct ArrList {
+    Sli   items;
+    usize cap;
+};
+use_Err$(ArrList);
 
-/* API Reference List =======================================================*/
+func((ArrList_empty(void))(ArrList));
+func((ArrList_initCap(TypeInfo type, mem_Allocator gpa))(Err$ArrList));
+func((ArrList_initBuf(Sli buf))(ArrList));
+func((ArrList_fini(mem_Allocator gpa))(void));
 
-/* Type Definitions */
-/// Base dynamic array list structure
-typedef struct ArrList {
-    meta_Sli      items;     ///< Slice containing the elements with meta
-    usize         cap;       ///< Current capacity of the list
-    mem_Allocator allocator; ///< Memory allocator to use
-} ArrList;
-/// Typed dynamic array list structure
-typedef union ArrList$T {
-    ArrList base[1]; ///< Base array list structure
-    struct {
-        TypeInfo      type;      ///< Type information for the elements
-        Sli$T         items;     ///< Slice containing the elements
-        usize         cap;       ///< Current capacity of the list
-        mem_Allocator allocator; ///< Memory allocator to use
-    };
-} ArrList$T;
+func((ArrList_at(Ptr$$(const ArrList) self))(Ptr_const));
+func((ArrList_atMut(Ptr$$(ArrList) self))(Ptr));
+func((ArrList_len(ArrList self))(usize));
 
-/* Type Generations */
-/// Declare and implement typed array list
-#define use_ArrList$(T)  ...
-/// Declare typed array list
-#define decl_ArrList$(T) ...
-/// Implement typed array list
-#define impl_ArrList$(T) ...
+func((ArrList_addBack(Ptr$$(ArrList) self))(Err$Ptr));
+func((ArrList_addBackN(Ptr$$(ArrList) self, usize n))(Err$Sli));
+func((ArrList_addBackWithin(Ptr$$(ArrList) self))(Ptr));
+func((ArrList_addBackWithinN(Ptr$$(ArrList) self, usize n))(Sli));
+func((ArrList_addFront(Ptr$$(ArrList) self))(Err$Ptr));
+func((ArrList_addFrontN(Ptr$$(ArrList) self, usize n))(Err$Sli));
+func((ArrList_addFrontWithin(Ptr$$(ArrList) self))(Ptr));
+func((ArrList_addFrontWithinN(Ptr$$(ArrList) self, usize n))(Sli));
 
-/* Type Alias and Anonymous Types */
-/// Create array list type
-#define ArrList$(T)                               ...
-/// Create anonymous array list
-#define ArrList$$(T)                              ...
-/// Convert anonymous array list to specific type
-#define ArrList_anonCast$(T_ArrList, var_anon...) ...
+func((ArrList_append(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
+func((ArrList_appendN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
+func((ArrList_appendSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
+func((ArrList_prepend(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
+func((ArrList_prependN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
+func((ArrList_prependSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
 
-/* Initialization/Finalization */
-/// Initialize an array list
-fn_(ArrList_init(TypeInfo type, mem_Allocator allocator), ArrList);
-/// Initialize an array list with pre-allocated capacity
-fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), mem_Allocator_Err$ArrList);
-/// Finalize an array list
-fn_(ArrList_fini(ArrList* self), void);
+func((ArrList_pop(Ptr$$(ArrList) self))(void));
+func((ArrList_popOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
+func((ArrList_shift(Ptr$$(ArrList) self))(void));
+func((ArrList_shiftOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
 
-/* Conversion */
-/// Convert array list to owned slice
-fn_(ArrList_toOwnedSli(ArrList* self), mem_Allocator_Err$meta_Sli);
-/// Create array list from owned slice
-fn_(ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice), ArrList);
-/// Clone an array list
-fn_(ArrList_clone(const ArrList* self), mem_Allocator_Err$ArrList);
+#define use_ArrList_pop$()
+#define use_ArrList_popOrNull$()
+#define use_ArrList_shift$()
+#define use_ArrList_shiftOrNull$()
 
-/* Capacity Management */
-/// Ensure total capacity of the array list
-fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), mem_Allocator_Err$void);
-/// Ensure precise total capacity of the array list
-fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), mem_Allocator_Err$void);
-/// Ensure unused capacity of the array list
-fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), mem_Allocator_Err$void);
 
-/* Size Operations */
-/// Resize the array list to a new length
-fn_(ArrList_resize(ArrList* self, usize new_len), mem_Allocator_Err$void);
-/// Shrink the array list and free excess memory
-fn_(ArrList_shrinkAndFree(ArrList* self, usize new_len), void);
-/// Shrink the array list without freeing memory
-fn_(ArrList_shrinkRetainingCap(ArrList* self, usize new_len), void);
-/// Expand the array list to its full capacity
-fn_(ArrList_expandToCap(ArrList* self), void);
 
-/* Adding Elements */
-/// Add an element to the end of the array list
-fn_(ArrList_append(ArrList* self, meta_Ptr item), mem_Allocator_Err$void);
-/// Add a slice of elements to the end of the array list
-fn_(ArrList_appendSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void);
-/// Add an element a specified number of times to the end of the array list
-fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator_Err$void);
-/// Add an element to the front of the array list
-fn_(ArrList_prepend(ArrList* self, meta_Ptr item), mem_Allocator_Err$void);
-/// Add a slice of elements to the front of the array list
-fn_(ArrList_prependSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void);
-/// Add an element a specified number of times to the front of the array list
-fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator_Err$void);
-
-/// Add one element to the end of the array list
-fn_(ArrList_addBackOne(ArrList* self), mem_Allocator_Err$meta_Ptr);
-/// Add one element to the end of the array list
-fn_(ArrList_addBackOneAssumeCap(ArrList* self), meta_Ptr);
-/// Add multiple elements to the end of the array list as a slice
-fn_(ArrList_addBackManyAsSli(ArrList* self, usize n), mem_Allocator_Err$meta_Sli);
-/// Add multiple elements to the end of the array list as a slice
-fn_(ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli);
-
-/// Add one element to the front of the array list
-fn_(ArrList_addFrontOne(ArrList* self), mem_Allocator_Err$meta_Ptr);
-/// Add one element to the front of the array list
-fn_(ArrList_addFrontOneAssumeCap(ArrList* self), meta_Ptr);
-/// Add multiple elements to the front of the array list as a slice
-fn_(ArrList_addFrontManyAsSli(ArrList* self, usize n), mem_Allocator_Err$meta_Sli);
-/// Add multiple elements to the front of the array list as a slice
-fn_(ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli);
-
-/* Inserting Elements */
-/// Insert an element at a specified index
-fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), mem_Allocator_Err$void);
-/// Insert a slice of elements at a specified index
-fn_(ArrList_insertSli(ArrList* self, usize index, meta_Sli items), mem_Allocator_Err$void);
-
-/* Removing Elements */
-/// Remove and return the last element from the array list
-fn_(ArrList_pop(ArrList* self), void);
-/// Remove and return the last element from the array list
-fn_(ArrList_popOrNull(ArrList* self), Opt$meta_Ptr);
-/// Remove and return the first element from the array list
-fn_(ArrList_shift(ArrList* self), void);
-/// Remove and return the first element from the array list
-fn_(ArrList_shiftOrNull(ArrList* self), Opt$meta_Ptr);
-/// Remove an element at a specified index in order
-fn_(ArrList_removeOrdered(ArrList* self, usize index), meta_Ptr);
-/// Remove an element at a specified index by swapping with the last element
-fn_(ArrList_removeSwap(ArrList* self, usize index), meta_Ptr);
-
-/* Clearing */
-/// Clear the array list and retain the allocated capacity
-fn_(ArrList_clearRetainingCap(ArrList* self), void);
-/// Clear the array list and free all allocated memory
-fn_(ArrList_clearAndFree(ArrList* self), void);
-#endif /* CHEAT_SHEET */
-
-#ifndef ARR_LIST_INCLUDED
-#define ARR_LIST_INCLUDED (1)
-#if defined(__cplusplus)
-extern "C" {
-#endif /* defined(__cplusplus) */
-
-/*========== Includes =======================================================*/
-
-#include "prl.h"
-#include "mem/Allocator.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -793,8 +671,3 @@ extern fn_(ArrList_clearAndFree(ArrList* self), void);
     claim_assert_static(fieldPadding(TypeOf(*__anon), allocator) == fieldPadding(T_ArrList, allocator)); \
     eval_return rawderef(as$(rawptr$(T_ArrList), __anon)); \
 })
-
-#if defined(__cplusplus)
-} /* extern "C" */
-#endif /* defined(__cplusplus) */
-#endif /* ARR_LIST_INCLUDED */

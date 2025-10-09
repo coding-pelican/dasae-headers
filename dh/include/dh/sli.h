@@ -308,8 +308,8 @@ union __AssociationTypes_Sli {
     let_(__anon, TypeOf(&var_anon)) = &var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Sli)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Sli)); \
-    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldType$(T_Sli, ptr))); \
-    claim_assert_static(validateField(TypeOf(__anon), len, FieldType$(T_Sli, len))); \
+    claim_assert_static(validateField(TypeOf(__anon), ptr, FieldTypeOf(T_Sli, ptr))); \
+    claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
     eval_return_(*as$(rawptr$(T_Sli), &__anon)); \
@@ -393,8 +393,8 @@ union __AssociationTypes_Sli {
     let_(__self, TypeOf(var_self)) = var_self; \
     let_(__range, Range)           = Range_from range_index_begin_end; \
     debug_assert_fmt( \
-        __range.begin < __range.end, \
-        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin <= __range.end, \
+        "Invalid slice range: begin(%zu) > end(%zu)", \
         __range.begin, \
         __range.end \
     ); \
@@ -414,8 +414,8 @@ union __AssociationTypes_Sli {
     let_(__self, TypeOf(var_self)) = var_self; \
     let_(__range, Range)           = Range_from range_index_begin_end; \
     debug_assert_fmt( \
-        __range.begin < __range.end, \
-        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin <= __range.end, \
+        "Invalid slice range: begin(%zu) > end(%zu)", \
         __range.begin, \
         __range.end \
     ); \
@@ -443,8 +443,8 @@ union __AssociationTypes_Sli {
     let_(__range, Range)                   = Range_from range_index_begin_end; \
     let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
     debug_assert_fmt( \
-        __range.begin < __range.end, \
-        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin <= __range.end, \
+        "Invalid slice range: begin(%zu) > end(%zu)", \
         __range.begin, \
         __range.end \
     ); \
@@ -519,7 +519,7 @@ union __AssociationTypes_Sli {
     let_(__self, TypeOf(var_self)) = var_self; \
     let_(__begin, usize)           = usize_index_begin; \
     debug_assert_fmt( \
-        __begin < __self.len, \
+        __begin <= __self.len, \
         "Index out of bounds: %zu > %zu", \
         __begin, \
         __self.len \
@@ -534,7 +534,7 @@ union __AssociationTypes_Sli {
     let_(__self, TypeOf(var_self)) = var_self; \
     let_(__begin, usize)           = usize_index_begin; \
     debug_assert_fmt( \
-        __begin < __self.len, \
+        __begin <= __self.len, \
         "Index out of bounds: %zu > %zu", \
         __begin, \
         __self.len \
@@ -557,7 +557,7 @@ union __AssociationTypes_Sli {
     let_(__begin, usize)                   = usize_index_begin; \
     let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
     debug_assert_fmt( \
-        __begin < __self.len, \
+        __begin <= __self.len, \
         "Index out of bounds: %zu > %zu", \
         __begin, \
         __self.len \

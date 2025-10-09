@@ -199,6 +199,16 @@ extern "C" {
      */ \
     comp_type_gen__impl_Arr$(N, T)
 
+#define Arr_const$(N, T) \
+    /** \
+     * @brief Creates a constant array type \
+     * @param N Size of the array \
+     * @param T Element type of the array \
+     * @return Constant array type alias \
+     * @example \
+     */ \
+    comp_type_alias__Arr_const$(N, T)
+
 #define Arr$(N, T) \
     /** \
      * @brief Creates an array type \
@@ -452,12 +462,19 @@ extern "C" {
     decl_Arr$(N, T); \
     impl_Arr$(N, T)
 #define comp_type_gen__decl_Arr$(N, T) \
-    $maybe_unused typedef struct Arr$(N, T) Arr$(N, T)
-#define comp_type_gen__impl_Arr$(N, T) \
-    struct Arr$(N, T) { \
-        T buf[N]; \
+    $maybe_unused typedef union Arr_const$(N, T) Arr_const$(N, T); \
+    $maybe_unused typedef union Arr$(N, T) Arr$(N, T);
+#define comp_type_gen__impl_Arr$(N, T...) \
+    union Arr_const$(N, T) { \
+        TypeOf(const T[N]) buf; \
+    }; \
+    union Arr$(N, T) { \
+        TypeOf(T[N]) buf; \
+        Arr_const$(N, T) as_const; \
     }
 
+#define comp_type_alias__Arr_const$(N, T) \
+    pp_join3($, Arr_const, N, T)
 #define comp_type_alias__Arr$(N, T) \
     pp_join3($, Arr, N, T)
 #define comp_type_anon__Arr$$(N, T) \
@@ -473,7 +490,7 @@ extern "C" {
     let_(__anon, TypeOf(&var_anon)) = &var_anon; \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(_Arr$T)); \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(_Arr$T)); \
-    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldType$(_Arr$T, buf))); \
+    claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(_Arr$T, buf))); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(_Arr$T, buf)); \
     eval_return rawderef(as$(rawptr$(_Arr$T), __anon)); \
 })
@@ -519,8 +536,8 @@ extern "C" {
         "index out of bounds" \
     ); \
     debug_assert_fmt( \
-        __index < Arr_len(*__self), \
-        "Index out of bounds: %zu >= %zu", \
+        __index <= Arr_len(*__self), \
+        "Index out of bounds: %zu > %zu", \
         __index, \
         Arr_len(*__self) \
     ); \
@@ -530,8 +547,8 @@ extern "C" {
     const TypeOf(&var_self) __self = &var_self; \
     const usize __index            = usize_index; \
     debug_assert_fmt( \
-        __index < Arr_len(*__self), \
-        "Index out of bounds: %zu >= %zu", \
+        __index <= Arr_len(*__self), \
+        "Index out of bounds: %zu > %zu", \
         __index, \
         Arr_len(*__self) \
     ); \
@@ -541,8 +558,8 @@ extern "C" {
     const TypeOf(&var_self) __self = &var_self; \
     const usize __index            = usize_index; \
     debug_assert_fmt( \
-        __index < Arr_len(*__self), \
-        "Index out of bounds: %zu >= %zu", \
+        __index <= Arr_len(*__self), \
+        "Index out of bounds: %zu > %zu", \
         __index, \
         Arr_len(*__self) \
     ); \
@@ -580,8 +597,8 @@ extern "C" {
     let_(__self, TypeOf(var_self)*) = &var_self; \
     let_(__range, Range)            = Range_from range_index_begin_end; \
     debug_assert_fmt( \
-        __range.begin < __range.end, \
-        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin <= __range.end, \
+        "Invalid slice range: begin(%zu) > end(%zu)", \
         __range.begin, \
         __range.end \
     ); \
@@ -601,8 +618,8 @@ extern "C" {
     let_(__self, TypeOf(&var_self)) = &var_self; \
     let_(__range, Range)            = Range_from range_index_begin_end; \
     debug_assert_fmt( \
-        __range.begin < __range.end, \
-        "Invalid slice range: begin(%zu) >= end(%zu)", \
+        __range.begin <= __range.end, \
+        "Invalid slice range: begin(%zu) > end(%zu)", \
         __range.begin, \
         __range.end \
     ); \

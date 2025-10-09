@@ -1,33 +1,80 @@
-############ Global ############
-################################
+# ========== Global ==========
 ---
 Index:
   Background: Skip
-  StandardLibrary: No
-InlayHints:
-  Enabled: true
-  TypeNameLimit: 24
-  DeducedTypes: true
-  ParameterNames: true
-  Designators: true
-  BlockEnd: false
-Hover:
-  ShowAKA: true
+  StandardLibrary: false
 Diagnostics:
-  # Suppress diagnostics for paths containing '/include/c++/' or '/include/c/', which are typically the locations of system headers.
   Suppress:
     - ".*include/c/.*"
     - ".*include/c\\+\\+/.*"
   UnusedIncludes: None
   MissingIncludes: None
+  ClangTidy:
+    FastCheckFilter: Loose
+    Add:
+      - clang-analyzer-*
+      - bugprone-*
+      - cert-*
+      - llvm-*
+      # - llvmlibc-*
+      - portability-*
+      - performance-*
+      - concurrency-*
+      - readability-*
+      - misc-*
+      - cppcoreguidelines-*
+      - hicpp-*
+    Remove:
+      - bugprone-assignment-in-if-condition
+      - bugprone-easily-swappable-parameters
+      - bugprone-reserved-identifier
+      - cert-dcl37-c
+      - cert-dcl51-cpp
+      - llvm-include-order
+      - readability-avoid-const-params-in-decls
+      - readability-braces-around-statements
+      - readability-identifier-length
+      - readability-magic-numbers
+      - readability-named-parameter
+      - readability-uppercase-literal-suffix
+      - readability-function-cognitive-complexity
+      - readability-function-size
+      - misc-misplaced-const
+      - misc-non-private-member-variables-in-classes
+      - cppcoreguidelines-avoid-magic-numbers
+      - cppcoreguidelines-avoid-non-const-global-variables
+      - cppcoreguidelines-macro-to-enum
+      - cppcoreguidelines-macro-usage
+      - hicpp-signed-bitwise
+      - hicpp-uppercase-literal-suffix
+Completion:
+  AllScopes: true
+  ArgumentLists: FullPlaceholders
+  # HeaderInsertion: IWYU
+  # CodePatterns: All
+InlayHints:
+  BlockEnd: false
+  Designators: true
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  DefaultArguments: false
+  TypeNameLimit: 24
+Hover:
+  ShowAKA: true
+  # MacroContentsLimit: 2048
+# Documentation:
+#   CommentFormat: Doxygen
+# ========== Excludes ==========
 ---
-If: # Apply this config conditionally
-  PathMatch: .*\.h # to all headers...
+If:
   PathExclude:
-    - ".archive/.*" # except those under .archive/
-    - "drafts/.*" # or those under drafts/
+    - .*archive*/.*
+    - .*backup*/.*
+    - .*draft*/.*
+    - .*temp*/.*
+# ========== C Sources ==========
 ---
-# C Configs
 If:
   PathMatch:
     - .*\.c
@@ -35,28 +82,47 @@ If:
 CompileFlags:
   Compiler: clang
   Add:
-    [
-      -xc,
-      -std=c17,
-      -I/mnt/c/dev/dasae-headers/dh,
-      -I/mnt/c/dev/dasae-headers/dh/include,
-      -I/mnt/c/dev/dasae-headers/dh/libs/BlocksRuntime/include,
-      -I/mnt/c/dev/dasae-headers/dh-examples,
-      -I/mnt/c/dev/dasae-headers/dh-examples/include,
-      -IC:/dev/dasae-headers/dh,
-      -IC:/dev/dasae-headers/dh/include,
-      -IC:/dev/dasae-headers/dh/libs/BlocksRuntime/include,
-      -IC:/dev/dasae-headers/dh-examples,
-      -IC:/dev/dasae-headers/dh-examples/include,
-      -Wall,
-      -Wextra,
-      -Werror,
-      -funsigned-char,
-      -fblocks,
-      -Wno-header-ordering,
-    ]
+    - -xc
+    - -std=c17
+    - -I/mnt/c/dev/dasae-headers/dh
+    - -I/mnt/c/dev/dasae-headers/dh/include
+    - -I/mnt/c/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -IC:/dev/dasae-headers/dh
+    - -IC:/dev/dasae-headers/dh/include
+    - -IC:/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -funsigned-char
+    - -fblocks
+# ========== C++ Sources ==========
 ---
-# Header Configs
+If:
+  PathMatch:
+    - .*\.cc
+    - .*\.cxx
+    - .*\.cpp
+    - .*\.hh
+    - .*\.hxx
+    - .*\.hpp
+CompileFlags:
+  Compiler: clang++
+  Add:
+    - -xc++
+    - -std=c++20
+    - -I/mnt/c/dev/dasae-headers/dh
+    - -I/mnt/c/dev/dasae-headers/dh/include
+    - -I/mnt/c/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -IC:/dev/dasae-headers/dh
+    - -IC:/dev/dasae-headers/dh/include
+    - -IC:/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -funsigned-char
+    - -fblocks
+# ========== Headers ==========
+---
 If:
   PathMatch:
     - .*\.h
@@ -64,7 +130,43 @@ If:
     - .*\.hxx
     - .*\.hpp
 CompileFlags:
-  Add: [-Wno-unused-function, -Wno-unused-variable, -Wno-unused-const-variable]
+  Add:
+    - -Wno-unused-function
+    - -Wno-unused-variable
+    - -Wno-unused-const-variable
+# ========== C Project ==========
+# ---
+# If:
+#   PathMatch:
+#     - .*\.c
+#     - .*\.h
+# CompileFlags:
+#   Add:
+#     - -I/mnt/c/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dev/dh-workspace/hello-world/include
+#     - -I/mnt/c/dev/dh-workspace/hello-world/lib/deps
+#     - -IC:/dev/dh-workspace/hello-world/src
+#     - -IC:/dev/dh-workspace/hello-world/include
+#     - -IC:/dev/dh-workspace/hello-world/lib/deps
+# ========== C++ Project ==========
+# ---
+# If:
+#   PathMatch:
+#     - .*\.cc
+#     - .*\.cxx
+#     - .*\.cpp
+#     - .*\.hh
+#     - .*\.hxx
+#     - .*\.hpp
+# CompileFlags:
+#   Add:
+#     - -I/mnt/c/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dev/dh-workspace/hello-world/include
+#     - -I/mnt/c/dev/dh-workspace/hello-world/lib/deps
+#     - -IC:/dev/dh-workspace/hello-world/src
+#     - -IC:/dev/dh-workspace/hello-world/include
+#     - -IC:/dev/dh-workspace/hello-world/lib/deps
+########################################################################
 ################################
 #### Compiler Command Order ####
 ## -------------------------- ##

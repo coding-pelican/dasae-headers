@@ -100,7 +100,7 @@ TypeNames:
   - let_
   - var_
   - TypeOf
-  - TypeUnqualOf
+  - TypeOfUnqual
   # primitive
   - u8
   - u16
@@ -216,8 +216,12 @@ Macros:
   - "block_defer=/*do { /**/ } while (false)*/"
   - "block_deferral=/**/"
   - "defer_break=goto __step_deferred"
+  # - "expr_(keyword)=if (true) {} keyword"
+  # - "expr_(Expr)=({"
+  # - "$unscoped_expr=})"
+  # - "expr_else=else pp_expand"
   - $unscoped=/**/
-  - $unscoped_=/**/
+  - $unscoped_(keyword)=/**/
   - $unguarded=/**/
   - $unguarded_=/**/
   - $unscoped_TEST_fn=/**/
@@ -228,6 +232,11 @@ Macros:
   - $unguarded_async_fn=/**/
   - $unscoped_eval=/**/
   - "eval_=lam_((void), void)"
+  - "expr_(Expr)=Expr"
+  - "fn_(Expr)=;pp_expand Expr"
+  - "la_(Expr)=;pp_expand Expr"
+  - "func(Expr)=;pp_expand Expr"
+  - "lam_(Expr)=;pp_expand Expr"
 ForEachMacros:
   - pp_foreach
   - for_slice

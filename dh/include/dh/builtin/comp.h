@@ -140,6 +140,7 @@ extern "C" {
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
 #define $like_ptr comp_attr__$like_ptr
+#define $flexible comp_attr__$flexible
 
 #define pragma_guard_(_push, _ctx, _pop, _code...) \
     _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
@@ -248,7 +249,7 @@ extern "C" {
 #define comp_syn__createCleared$(T_Lit) \
     (&*lit$(T_Lit[1], [0] = makeCleared$(T_Lit)))
 #define comp_syn__createFrom(var_src...) \
-    (&*lit$(TypeUnqualOf(var_src)[1], [0] = var_src))
+    (&*lit$(TypeOfUnqual(var_src)[1], [0] = var_src))
 #define comp_syn__createFrom$(T_Lit, var_src...) \
     (&*lit$(T_Lit[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
@@ -269,6 +270,7 @@ T:
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 
 #define comp_attr__$like_ptr [1]
+#define comp_attr__$flexible [0]
 
 #if defined(__cplusplus)
 } /* extern "C" */

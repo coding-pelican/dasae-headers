@@ -16,10 +16,10 @@ TEST_fn_("Arr_ref" $scope) {
 #include "dh/io/Writer.h"
 
 static fn_(test_io_printBits(io_Writer out, u8 byte), void) {
-    catch_(io_Writer_print(out, u8_l("{:08b}"), byte), claim_unreachable);
+    catch_((io_Writer_print(out, u8_l("{:08b}"), byte))($ignore_capture, claim_unreachable));
 }
 static fn_(test_io_feedLine(io_Writer out), void) {
-    catch_(io_Writer_print(out, u8_l("\n")), claim_unreachable);
+    catch_((io_Writer_print(out, u8_l("\n")))($ignore_capture, claim_unreachable));
 }
 
 TEST_fn_("Sli_deref" $scope) {
