@@ -32,7 +32,7 @@
 
 /*========== Constants and Default Configuration ===========================*/
 
-static const Sli_const$u8 mem_Tracker_default_log_file = Str_l("log/mem.log");
+static const Sli_const$u8 mem_Tracker_default_log_file = u8_l(".log/mem.log");
 
 /*========== Tracker Leak Report Types =====================================*/
 
@@ -58,13 +58,11 @@ static mem_Tracker mem_Tracker_s_instance = cleared();
 
 /// Automatic initialization at program start
 static $on_load fn_(mem_Tracker_init(void), void) {
-    catch_((mem_Tracker_initWithPath(mem_Tracker_default_log_file))(
-        err, eval({
-            /* If initialization fails, try to log to stderr */
-            printf("ERROR: Failed to initialize memory tracker: [%s] %s\n", Err_domainToCStr(err), Err_codeToCStr(err));
-            ErrTrace_print();
-        })
-    ));
+    catch_((mem_Tracker_initWithPath(mem_Tracker_default_log_file))(err, {
+        /* If initialization fails, try to log to stderr */
+        printf("ERROR: Failed to initialize memory tracker: [%s] %s\n", Err_domainToCStr(err), Err_codeToCStr(err));
+        ErrTrace_print();
+    }));
     $ignore = atexit(mem_Tracker_finiAndGenerateReport);
 }
 
@@ -77,7 +75,7 @@ static $on_exit fn_(mem_Tracker_fini(void), void) {
 
 fn_(mem_Tracker_initWithPath(Sli_const$u8 log_path), Err$void $guard) {
     // Create directory if needed
-    let dir_path = Str_l("log");
+    let dir_path = u8_l(".log");
     try_(fs_dir_create(dir_path));
 
     // Open log file
