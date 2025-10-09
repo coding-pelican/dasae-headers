@@ -94,12 +94,17 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
     log_info("allocator reserved for game");
 
     // Create window
-    let window = try_(engine_Window_init(create$(engine_Window_Config, .allocator = some(allocator_engine), .rect_size = { .x = window_res_width, .y = window_res_height }, .default_color = some({ .packed = 0x181818FF }), .title = some(u8_l("Subframes")), )));
+    let window = try_(engine_Window_init((engine_Window_Config){
+        .allocator = some(allocator_engine),
+        .rect_size = { .x = window_res_width, .y = window_res_height },
+        .default_color = some({ .packed = 0x181818FF }),
+        .title = some(u8_l("Subframes"))
+    }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
-    let game_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
+    let game_canvas = try_(engine_Canvas_init((engine_Canvas_Config){
         .allocator     = some(allocator_engine),
         .width         = window_res_width,
         .height        = window_res_height,
@@ -113,7 +118,7 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendView(
             window,
-            &(engine_CanvasView_Config){
+            (engine_CanvasView_Config){
                 .canvas      = game_canvas,
                 .pos         = { .x = 0, .y = 0 },
                 .size        = { .x = window_res_width, .y = window_res_height },
@@ -125,7 +130,7 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
-    let overlay_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
+    let overlay_canvas = try_(engine_Canvas_init((engine_Canvas_Config){
         .allocator     = some(allocator_engine),
         .width         = window_res_width,
         .height        = window_res_height,
@@ -139,7 +144,7 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
         engine_Window_appendView(
             window,
-            &(engine_CanvasView_Config){
+            (engine_CanvasView_Config){
                 .canvas      = overlay_canvas,
                 .pos         = { .x = 0, .y = 0 },
                 .size        = { .x = window_res_width, .y = window_res_height },
@@ -157,7 +162,7 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+    let core = try_(engine_core_Vt100_init((engine_core_Vt100_Config){
         .allocator = some(allocator_engine),
         .window    = window,
         .input     = input,

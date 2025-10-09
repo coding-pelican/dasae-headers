@@ -2,30 +2,24 @@
 #include "dh/math/common.h"
 #include "dh/mem/cfg.h"
 
-extern fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas) $must_check;
-extern fn_(engine_Canvas_fini(engine_Canvas* self), void);
-extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void) $must_check;
-extern fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color color), void);
+fn_(engine_Canvas_init(engine_Canvas_Config config), Err$Ptr$engine_Canvas $guard) {
+    debug_assert(0 < config.width);
+    debug_assert(0 < config.height);
 
-fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas $guard) {
-    debug_assert_nonnull(config);
-    debug_assert(0 < config->width);
-    debug_assert(0 < config->height);
-
-    let allocator = unwrap(config->allocator);
+    let allocator = unwrap(config.allocator);
     let self      = meta_cast$(engine_Canvas*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Canvas))));
     errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(self)));
     self->allocator = allocator;
 
-    let area   = as$(usize, config->width) * config->height;
+    let area   = as$(usize, config.width) * config.height;
     let buffer = meta_cast$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), area)));
     errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(buffer)));
-    self->buffer = Grid_fromSli$(Grid$Color, buffer, config->width, config->height);
+    self->buffer = Grid_fromSli$(Grid$Color, buffer, config.width, config.height);
 
-    let type   = unwrap(config->type);
+    let type   = unwrap(config.type);
     self->type = type;
 
-    self->default_color = orelse(config->default_color, Color_blank);
+    self->default_color = orelse(config.default_color, Color_blank);
     engine_Canvas_clear(self, none$(Opt$Color));
 
     return_ok(self);
@@ -67,7 +61,7 @@ $inline_always Color Color_blendAlpha(Color src, Color dst) {
     let d_a = as$(f32, dst.a) / as$(f32, ColorChannel_max_value);
 
     // Final alpha = alpha_src + alpha_dst * (1 - alpha_src)
-    let out_a = s_a + d_a * (1.0f - s_a);
+    let out_a = s_a + (d_a * (1.0f - s_a));
 
     // If the result is fully transparent, just return transparent
     if (out_a <= as$(f32, ColorChannel_min_value)) { return Color_blank; }
@@ -85,7 +79,7 @@ $inline_always Color Color_blendAlpha(Color src, Color dst) {
         as$(u8, out_r + 0.5f),
         as$(u8, out_g + 0.5f),
         as$(u8, out_b + 0.5f),
-        as$(u8, out_a* as$(f32, ColorChannel_max_value) + 0.5f)
+        as$(u8, (out_a * as$(f32, ColorChannel_max_value)) + 0.5f)
     );
 }
 

@@ -24,7 +24,7 @@ use_Sli$(engine_UnicodeCanvas);
 use_Opt$(engine_UnicodeCanvas);
 use_Err$(engine_UnicodeCanvas);
 
-extern fn_(engine_UnicodeCanvas_init(const engine_UnicodeCanvas_Config* config), Err$Ptr$engine_UnicodeCanvas) $must_check;
+extern fn_(engine_UnicodeCanvas_init(engine_UnicodeCanvas_Config config), Err$Ptr$engine_UnicodeCanvas) $must_check;
 extern fn_(engine_UnicodeCanvas_fini(engine_UnicodeCanvas* self), void);
 extern fn_(engine_UnicodeCanvas_resize(engine_UnicodeCanvas* self, u32 width, u32 height), Err$void) $must_check;
 extern fn_(engine_UnicodeCanvas_clear(engine_UnicodeCanvas* self, Opt$Color color, Opt$Sli$u8 typo), void);

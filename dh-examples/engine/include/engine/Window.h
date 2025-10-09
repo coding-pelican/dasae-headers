@@ -41,14 +41,14 @@ typedef struct engine_Window_Config {
 
 /* Window management =========================================================*/
 
-extern fn_(engine_Window_init(const engine_Window_Config* config), Err$Ptr$engine_Window) $must_check;
+extern fn_(engine_Window_init(engine_Window_Config config), Err$Ptr$engine_Window) $must_check;
 extern fn_(engine_Window_fini(engine_Window* self), void);
 extern fn_(engine_Window_update(engine_Window* self), Err$void) $must_check;
 extern fn_(engine_Window_present(engine_Window* self), void);
 
 /* Canvas view management ====================================================*/
 
-extern fn_(engine_Window_appendView(engine_Window* self, const engine_CanvasView_Config* config), Opt$u32);
+extern fn_(engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config), Opt$u32);
 extern fn_(engine_Window_removeView(engine_Window* self, u32 view_id), void);
 
 /* Window metrics queries ===================================================*/

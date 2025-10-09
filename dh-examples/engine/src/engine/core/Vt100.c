@@ -820,18 +820,17 @@ config_ErrSet(InitErr,
     FailedGetConsoleOutputHandle,
     FailedGetConsoleInputHandle
 );
-fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engine_core_Vt100 $guard) {
-    debug_assert_nonnull(config);
-    debug_assert_nonnull(config->window);
-    debug_assert_nonnull(config->input);
+fn_(engine_core_Vt100_init(engine_core_Vt100_Config config), Err$Ptr$engine_core_Vt100 $guard) {
+    debug_assert_nonnull(config.window);
+    debug_assert_nonnull(config.input);
 
-    let allocator = unwrap(config->allocator);
+    let allocator = unwrap(config.allocator);
     let self      = meta_cast$(engine_core_Vt100*, try_(mem_Allocator_create(allocator, typeInfo$(engine_core_Vt100))));
     errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(self)));
 
     self->allocator       = allocator;
     self->abstract.window = eval({
-        let window = config->window;
+        let window = config.window;
         toSome(&window->backend, engine_core_Vt100_backend(self));
         eval_return window;
     });
@@ -843,7 +842,7 @@ fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engi
     });
     errdefer_($ignore_capture, ArrList_fini(self->abstract.buffer.base));
     self->input = eval({
-        let input = config->input;
+        let input = config.input;
         toSome(&input->backend, engine_core_Vt100_backend(self));
         eval_return input;
     });
@@ -892,19 +891,11 @@ fn_(engine_core_Vt100_init(const engine_core_Vt100_Config* config), Err$Ptr$engi
         eval_return handle;
     });
 
-    try_(
-        configureConsoleOutput(self)
-    );
-    try_(
-        configureConsoleInput(self)
-    );
+    try_(configureConsoleOutput(self));
+    try_(configureConsoleInput(self));
 
-    try_(
-        hideConsoleCursor(self)
-    );
-    try_(
-        enableConsoleMouse(self)
-    );
+    try_(hideConsoleCursor(self));
+    try_(enableConsoleMouse(self));
 
     self->client.is_focused   = true;
     self->client.is_minimized = false;
@@ -944,7 +935,8 @@ fn_(processEvents(anyptr ctx), void) {
     let self = as$(engine_core_Vt100*, ctx);
 
     // Update window state
-    if_(WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) }, !GetWindowPlacement(self->client.handle.window, &placement)) {
+    if_(WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) },
+        !GetWindowPlacement(self->client.handle.window, &placement)) {
         log_error("Failed to get window placement: %d", GetLastError());
         claim_unreachable;
     } else {

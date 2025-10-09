@@ -31,7 +31,7 @@ typedef struct engine_Canvas_Config {
 } engine_Canvas_Config;
 
 /// Canvas creation with specific type
-extern fn_(engine_Canvas_init(const engine_Canvas_Config* config), Err$Ptr$engine_Canvas) $must_check;
+extern fn_(engine_Canvas_init(engine_Canvas_Config config), Err$Ptr$engine_Canvas) $must_check;
 extern fn_(engine_Canvas_fini(engine_Canvas* self), void);
 extern fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void) $must_check;
 extern fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color color), void);

@@ -2,32 +2,31 @@
 #include "engine/Canvas.h"
 #include "Backend_Internal.h"
 
-fn_(engine_Window_init(const engine_Window_Config* config), Err$Ptr$engine_Window $guard) {
-    debug_assert_nonnull(config);
-    debug_assert(0 < config->rect_size.x);
-    debug_assert(0 < config->rect_size.y);
+fn_(engine_Window_init(engine_Window_Config config), Err$Ptr$engine_Window $guard) {
+    debug_assert(0 < config.rect_size.x);
+    debug_assert(0 < config.rect_size.y);
 
     /* Create window */
-    let allocator = unwrap(config->allocator);
+    let allocator = unwrap(config.allocator);
     let window    = meta_cast$(engine_Window*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Window))));
     errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(window)));
     window->allocator = allocator;
     /* Create composite buffer */
-    let rect_size        = config->rect_size;
-    let composite_buffer = try_(engine_Canvas_init(&(engine_Canvas_Config){
+    let rect_size        = config.rect_size;
+    let composite_buffer = try_(engine_Canvas_init((engine_Canvas_Config){
         .allocator     = some(allocator),
         .width         = rect_size.x,
         .height        = rect_size.y,
         .type          = some(engine_CanvasType_rgba),
-        .default_color = some(eval_(Color $scope) if_none(config->default_color) {
-            eval_break_(engine_Window_composite_buffer_color_default);
-        } else_some(color) {
-            eval_break_(eval_(Color $scope) if (color.a != ColorChannel_alpha_opaque) {
-                eval_break_(engine_Window_composite_buffer_color_default);
-            } else {
-                eval_break_(color);
-            } $unscoped_eval);
-        } $unscoped_eval),
+        .default_color = some(expr_(Color $scope)(if_none(config.default_color) {
+            $break_(engine_Window_composite_buffer_color_default);
+        }) else_some(color)({
+            $break_(expr_(Color $scope)(if (color.a != ColorChannel_alpha_opaque) {
+                $break_(engine_Window_composite_buffer_color_default);
+            }) expr_(else)({
+                $break_(color);
+            }) $unscoped_(expr));
+        }) $unscoped_(expr)),
     }));
     errdefer_($ignore_capture, engine_Canvas_fini(composite_buffer));
     window->composite_buffer = composite_buffer;
@@ -102,20 +101,19 @@ fn_(engine_Window_present(engine_Window* self), void) {
     engine_Backend_presentBuffer(unwrap(self->backend));
 }
 
-fn_(engine_Window_appendView(engine_Window* self, const engine_CanvasView_Config* config), Opt$u32 $scope) {
+fn_(engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config), Opt$u32 $scope) {
     debug_assert_nonnull(self);
-    debug_assert_nonnull(config);
 
     if (engine_Window_view_count_limit <= self->view.count) { return_none(); }
     return_some(eval({
         let view                     = Arr_at(self->view.list, self->view.count);
-        view->canvas                 = config->canvas;
-        view->pos_on_window.top_left = config->pos;
-        view->rect.size              = config->size;
-        view->rect.scale             = config->scale;
-        view->rect.resizable.x       = config->resizable_x;
-        view->rect.resizable.y       = config->resizable_y;
-        view->visible                = config->visible;
+        view->canvas                 = config.canvas;
+        view->pos_on_window.top_left = config.pos;
+        view->rect.size              = config.size;
+        view->rect.scale             = config.scale;
+        view->rect.resizable.x       = config.resizable_x;
+        view->rect.resizable.y       = config.resizable_y;
+        view->visible                = config.visible;
         eval_return self->view.count++;
     }));
 } $unscoped;
