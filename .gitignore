@@ -133,15 +133,35 @@ ipch/
 ######## VS Code ######################
 
 # VS Code settings
-.vscode/
+**/.vscode/
 
 ######## Cursor #######################
 
 # Cursor settings
-.cursor/
+**/.cursor/
+
+######## Claude ######################
+
+# Claude settings
+**/.claude/
 
 ######## dh-c #########################
 
-log/
-lib/deps/
-lib/deps/.obj/
+*.tmp*
+*.temp*
+*.bak*
+*.backup*
+*.log*
+
+**/.tmp*/
+**/.temp*/
+**/.bak*/
+**/.backup*/
+**/.archive*/
+**/.draft*/
+**/.mock*/
+**/.log*/
+
+**/libs/
+**/lib/deps/
+**/lib/deps/.obj/
