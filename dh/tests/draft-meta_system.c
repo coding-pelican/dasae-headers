@@ -249,32 +249,32 @@ struct e$raw {
 
 /* Operations ========================================================*/
 
-#define a_zeros()                             { .buf = { 0 } }
-#define s_zeros()                             { .ptr = null, .len = 0 }
-#define a_zeros$(/*(_N, _T)*/...)             /* TODO: Implement */
-#define s_zeros$(/*(_T)*/...)                 /* TODO: Implement */
-#define a_init(_initial...)                   { .buf = _initial }
-#define s_init(_ptr, _len...)                 { .ptr = (_ptr), .len = (_len) }
-#define a_init$(/*(_N, _T)(_initial...)*/...) /* TODO: Implement */
-#define s_init$(/*(_T)(_ptr, _len)*/...)      /* TODO: Implement */
+#define zeros$a()                             { .buf = { 0 } }
+#define zeros$a$(/*(_N, _T)*/...)             /* TODO: Implement */
+#define zeros$s()                             { .ptr = null, .len = 0 }
+#define zeros$s$(/*(_T)*/...)                 /* TODO: Implement */
+#define init$a(_initial...)                   { .buf = _initial }
+#define init$a$(/*(_N, _T)(_initial...)*/...) /* TODO: Implement */
+#define init$s(_ptr, _len...)                 { .ptr = (_ptr), .len = (_len) }
+#define init$s$(/*(_T)(_ptr, _len)*/...)      /* TODO: Implement */
 
-#define v_ref(_v...) ref(_v)
-#define a_ref$(/*(_T)(_a...)*/...) \
-    pp_expand(pp_defer(block_inline__a_ref$)(param_expand__a_ref$ __VA_ARGS__))
-#define param_expand__a_ref$(...)       __VA_ARGS__, pp_expand
-#define block_inline__a_ref$(_T, _a...) ((s$(_T)){ \
-    .ptr = a_ptr(_a), \
-    .len = a_len(_a), \
+#define ref$v(_v...) ref(_v)
+#define ref$a$(/*(_T)(_a...)*/...) \
+    pp_expand(pp_defer(block_inline__ref$a$)(param_expand__ref$a$ __VA_ARGS__))
+#define param_expand__ref$a$(...)       __VA_ARGS__, pp_expand
+#define block_inline__ref$a$(_T, _a...) ((s$(_T)){ \
+    .ptr = ptr$a(_a), \
+    .len = len$a(_a), \
 })
 
-#define p_deref(_p...) deref(_p)
-#define s_deref$(/*(_N, _T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__s_deref$)(param_expand__s_deref$ __VA_ARGS__))
-#define param_expand__s_deref$(...)                __VA_ARGS__, pp_uniqTok(s), pp_expand
-#define block_inline__s_deref$(_N, _T, __s, _s...) (*({ \
+#define deref$p(_p...) deref(_p)
+#define deref$s$(/*(_N, _T)(_Expr...)*/...) \
+    pp_expand(pp_defer(block_inline__deref$s$)(param_expand__deref$s$ __VA_ARGS__))
+#define param_expand__deref$s$(...)                __VA_ARGS__, pp_uniqTok(s), pp_expand
+#define block_inline__deref$s$(_N, _T, __s, _s...) (*({ \
     let_(__s, TypeOf(_s)) = (_s); \
-    debug_assert_fmt(s_len(__s) == _N, "length mismatch: %zu != %zu", s_len(__s), _N); \
-    as$(a$(_N, _T)*, ensureNonnull(s_ptr(__s))); \
+    debug_assert_fmt(len$s(__s) == _N, "length mismatch: %zu != %zu", len$s(__s), _N); \
+    as$(a$(_N, _T)*, ensureNonnull(ptr$s(__s))); \
 }))
 
 #define a_claim_assert_staticSameType(_p_lhs, _p_rhs...) a_claim_assert_staticSameType1(_p_lhs, _p_rhs)
@@ -283,73 +283,73 @@ struct e$raw {
 #define comp_inline__a_claim_assert_staticSameType1(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(a_len(*__p_lhs) == a_len(*__p_rhs)); \
+    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    claim_assert_static(isSameType$(TypeOf(a_buf(*__p_lhs)), TypeOf(a_buf(*__p_rhs)))); \
+    claim_assert_static(isSameType$(TypeOf(buf$a(*__p_lhs)), TypeOf(buf$a(*__p_rhs)))); \
 })
 #define a_claim_assert_staticSameType2(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType2(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType2(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(a_len(*__p_lhs) == a_len(*__p_rhs)); \
+    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType1(&a_buf(*__p_lhs)[0], &a_buf(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType1(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType3(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType3(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType3(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(a_len(*__p_lhs) == a_len(*__p_rhs)); \
+    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType2(&a_buf(*__p_lhs)[0], &a_buf(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType2(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType4(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType4(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType4(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(a_len(*__p_lhs) == a_len(*__p_rhs)); \
+    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType3(&a_buf(*__p_lhs)[0], &a_buf(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType3(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
 })
 
-#define a_asg(_p_lhs, _rhs...) a_asg1(_p_lhs, _rhs)
-#define a_asg1(_p_lhs, _rhs...) \
-    comp_inline__a_asg1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__a_asg1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$a(_p_lhs, _rhs...) asg$a1(_p_lhs, _rhs)
+#define asg$a1(_p_lhs, _rhs...) \
+    comp_inline__asg$a1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$a1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType1(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define a_asg2(_p_lhs, _rhs...) \
-    comp_inline__a_asg2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__a_asg2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$a2(_p_lhs, _rhs...) \
+    comp_inline__asg$a2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$a2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType2(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define a_asg3(_p_lhs, _rhs...) \
-    comp_inline__a_asg3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__a_asg3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$a3(_p_lhs, _rhs...) \
+    comp_inline__asg$a3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$a3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType3(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define a_asg4(_p_lhs, _rhs...) \
-    comp_inline__a_asg4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__a_asg4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$a4(_p_lhs, _rhs...) \
+    comp_inline__asg$a4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$a4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType4(__p_lhs, &__rhs); \
@@ -365,7 +365,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(s_ptr(__lhs)), TypeOf(s_ptr(__rhs)))); \
+    claim_assert_static(isSameType$(TypeOf(ptr$s(__lhs)), TypeOf(ptr$s(__rhs)))); \
 })
 #define s_claim_assert_staticSameType2(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType2(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -374,7 +374,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType1(s_ptr(__lhs)[0], s_ptr(__rhs)[0]); \
+    s_claim_assert_staticSameType1(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
 })
 #define s_claim_assert_staticSameType3(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType3(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -383,7 +383,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType2(s_ptr(__lhs)[0], s_ptr(__rhs)[0]); \
+    s_claim_assert_staticSameType2(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
 })
 #define s_claim_assert_staticSameType4(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType4(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -392,40 +392,40 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType3(s_ptr(__lhs)[0], s_ptr(__rhs)[0]); \
+    s_claim_assert_staticSameType3(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
 })
 
-#define s_asg(_p_lhs, _rhs...) s_asg1(_p_lhs, _rhs)
-#define s_asg1(_p_lhs, _rhs...) \
-    comp_inline__s_asg1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__s_asg1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$s(_p_lhs, _rhs...) asg$s1(_p_lhs, _rhs)
+#define asg$s1(_p_lhs, _rhs...) \
+    comp_inline__asg$s1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$s1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType1(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define s_asg2(_p_lhs, _rhs...) \
-    comp_inline__s_asg2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__s_asg2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$s2(_p_lhs, _rhs...) \
+    comp_inline__asg$s2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$s2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType2(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define s_asg3(_p_lhs, _rhs...) \
-    comp_inline__s_asg3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__s_asg3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$s3(_p_lhs, _rhs...) \
+    comp_inline__asg$s3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$s3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType3(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define s_asg4(_p_lhs, _rhs...) \
-    comp_inline__s_asg4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__s_asg4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$s4(_p_lhs, _rhs...) \
+    comp_inline__asg$s4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$s4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType4(__lhs, __rhs); \
@@ -433,43 +433,69 @@ struct e$raw {
     __p_lhs; \
 })
 
-#define p_mutCast(_p...)   as$(const TypeOfUnqual(*_p)*, _p)
-#define p_constCast(_p...) /* TODO: Implement */
-#define a_mutCast(_a...)   (_a.as_const)
-#define a_constCast(_a...) /* TODO: Implement */
-#define s_mutCast(_s...)   (_s.as_const)
-#define s_constCast(_s...) /* TODO: Implement */
+#define mutCast$p(_p...)   as$(const TypeOfUnqual(*_p)*, _p)
+#define constCast$p(_p...) /* TODO: Implement */
+#define mutCast$a(_a...)   (_a.as_const)
+#define constCast$a(_a...) /* TODO: Implement */
+#define mutCast$s(_s...)   (_s.as_const)
+#define constCast$s(_s...) /* TODO: Implement */
 
-#define a_buf(_a...) ((_a).buf)
-#define a_ptr(_a...) (&*a_buf(_a))
-#define s_ptr(_s...) ((_s).ptr)
+#define buf$a(_a...) ((_a).buf)
+#define ptr$a(_a...) (&*buf$a(_a))
+#define ptr$s(_s...) ((_s).ptr)
 
-#define a_len(_a...) countOf((_a).buf)
-#define s_len(_s...) ((_s).len)
+#define len$a(_a...) countOf((_a).buf)
+#define len$s(_s...) ((_s).len)
 
-#define a_at(_a, _idx...) \
-    pp_expand(pp_defer(block_inline__a_at)(param_expand__a_at(_a, _idx)))
-#define param_expand__a_at(_a, _idx...)             pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
-#define block_inline__a_at(__a, __idx, _a, _idx...) ({ \
+#define at$a(_a, _idx...) \
+    pp_expand(pp_defer(block_inline__at$a)(param_expand__at$a(_a, _idx)))
+#define param_expand__at$a(_a, _idx...)             pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
+#define block_inline__at$a(__a, __idx, _a, _idx...) ({ \
     let_(__a, TypeOf(&_a)) = &(_a); \
     let_(__idx, usize)     = (_idx); \
-    claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < a_len(*__a)) : true, "index out of bounds"); \
-    debug_assert_fmt(__idx < a_len(*__a), "Index out of bounds: %zu >= %zu", __idx, a_len(*__a)); \
-    &a_buf(*__a)[__idx]; \
+    claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$a(*__a)) : true, "index out of bounds"); \
+    debug_assert_fmt(__idx < len$a(*__a), "Index out of bounds: %zu >= %zu", __idx, len$a(*__a)); \
+    &buf$a(*__a)[__idx]; \
 })
-#define s_at(_s, _idx...) \
-    pp_expand(pp_defer(block_inline__s_at)(param_expand__s_at(_s, _idx)))
-#define param_expand__s_at(_s, _idx...)             pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
-#define block_inline__s_at(__s, __idx, _s, _idx...) ({ \
+#define at$s(_s, _idx...) \
+    pp_expand(pp_defer(block_inline__at$s)(param_expand__at$s(_s, _idx)))
+#define param_expand__at$s(_s, _idx...)             pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
+#define block_inline__at$s(__s, __idx, _s, _idx...) ({ \
     let_(__s, TypeOf(_s)) = (_s); \
     let_(__idx, usize)    = (_idx); \
-    debug_assert_fmt(__idx < s_len(__s), "Index out of bounds: %zu >= %zu", __idx, s_len(__s)); \
-    &s_ptr(__s)[__idx]; \
+    debug_assert_fmt(__idx < len$s(__s), "Index out of bounds: %zu >= %zu", __idx, len$s(__s)); \
+    &ptr$s(__s)[__idx]; \
 })
 
-#define p_slice(/*(_p)(_begin:0, _end:1)*/...) /* TODO: Implement */
-#define a_slice(/*(_a)(_begin, _end)*/...)     /* TODO: Implement */
-#define s_slice(/*(_s)(_begin, _end)*/...)     /* TODO: Implement */
+#define slice$p(/*(_p)(_begin:0, _end:1)*/...) /* TODO: Implement */
+#define slice$p$()
+#define slice$a(/*(_a)(_begin, _end)*/...) /* TODO: Implement */
+#define slice$a$()
+#define slice$s(/*(_s)(_begin, _end)*/...) /* TODO: Implement */
+#define slice$s$()
+
+#define init$o()
+#define init$o$()
+#define asg$o()
+#define asg$o$()
+#define some()
+#define none()
+#define isSome()
+#define isNone()
+#define unwrap_()
+#define orelse_()
+
+#define init$e()
+#define init$e$()
+#define asg$e()
+#define asg$e$()
+#define ok()
+#define err()
+#define isOk()
+#define isErr()
+#define try_()
+#define catch_()
+#define errdefer_()
 
 // ============================================================================
 // Generic Meta Types - The Foundation
@@ -582,7 +608,7 @@ union meta$e {
 // ============================================================================
 
 #define meta_ret$v(_T)     ((meta$v){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
-#define meta_ret$a(_N, _T) ((meta$a){ .inner_type = typeInfo$(FieldTypeOf(a$(_N, _T), buf[0])), .inner = a_ref((a$(_N, _T)){}) })
+#define meta_ret$a(_N, _T) ((meta$a){ .inner_type = typeInfo$(FieldTypeOf(a$(_N, _T), buf[0])), .inner = ref$a((a$(_N, _T)){}) })
 #define meta_ret$o(_T)     ((meta$o){ .inner_type = typeInfo$(FieldTypeOf(o$(_T), payload->some)), .inner = ((o$(_T)){}).ref_raw })
 #define meta_ret$e(_T)     ((meta$e){ .inner_type = typeInfo$(FieldTypeOf(e$(_T), payload->ok)), .inner = ((e$(_T)){}).ref_raw })
 
@@ -592,7 +618,7 @@ union meta$e {
 #define s_metaMut(_sli...) ((meta$s){ .type = typeInfo$(TypeOf(*(_sli).ptr)), .raw = (_sli).as_raw })
 
 #define v_meta(_val...) ((meta$v){ .inner_type = typeInfo$(TypeOf(_val)), .inner = &(_val) })
-#define a_meta(_arr...) ((meta$a){ .inner_type = typeInfo$(TypeOf(*(_arr).buf)), .inner = a_ref(_arr).as_raw })
+#define a_meta(_arr...) ((meta$a){ .inner_type = typeInfo$(TypeOf(*(_arr).buf)), .inner = ref$a(_arr).as_raw })
 #define o_meta(_opt...) ((meta$o){ .inner_type = typeInfo$(TypeOf((_opt).payload.some)), .inner = &(_opt).as_raw })
 #define e_meta(_err...) ((meta$e){ .inner_type = typeInfo$(TypeOf((_err).payload.ok)), .inner = &(_err).as_raw })
 
@@ -1137,3 +1163,39 @@ DEFINE_ERROR_UNION(int);
     CALL_E_META(e$##_T, _func(__VA_ARGS__, TO_E_META(_T, &(e$##_T){}))) */
 
 #endif // META_OPS_H
+
+typedef struct O$i32 {
+    bool is_some;
+    union {
+        Void none;
+        i32  some;
+    } payload[1];
+} O$i32;
+
+typedef struct meta$O {
+    bool is_some;
+    union {
+        union {
+            Void   none;
+            meta$v some;
+        } payload[1];
+        meta$v inner;
+    };
+} meta$O;
+
+#define O_meta(_o...) ({ \
+    let __o = ((TypeOf(_o)[1]){ [0] = _o }); \
+    ((meta$O){ .is_some = __o->is_some, .payload = { { .some = v_meta(__o->payload->some) } } }); \
+})
+
+#include <stdio.h>
+
+int main(void) {
+    var o     = (O$i32){ .is_some = true, .payload = { { .some = 123 } } };
+    let meta  = O_meta(o);
+    let value = meta_v$((i32)(meta.payload->some));
+    printf("o.some: %p\n", &o.payload->some);
+    printf("meta.some: %p\n", meta.payload->some.inner);
+    printf("value: %d\n", value);
+    return 0;
+}

@@ -35,15 +35,15 @@ extern "C" {
 #else
 /* C99 compatibility */
 typedef _Bool bool;
-#define true  (1)
-#define false (0)
+#define true  ((bool)1)
+#define false ((bool)0)
 #endif
 #else
 /* Pre-C99 compatibility */
 typedef unsigned char _Bool;
 typedef _Bool bool;
-#define true  (1)
-#define false (0)
+#define true  ((bool)1)
+#define false ((bool)0)
 #endif
 #endif
 

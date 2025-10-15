@@ -6,7 +6,7 @@
 
 TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
     var_(buffer, Arr$$(1024, u8)) = Arr_zero();
-    var_(fixed, heap_Fixed)       = heap_Fixed_init(Sli_arr$(Sli$u8, buffer));
+    var_(fixed, heap_Fixed)       = heap_Fixed_init(Arr_ref$(Sli$u8, buffer));
 
     let allocator = heap_Fixed_allocator(&fixed);
     var sli       = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), 10)));

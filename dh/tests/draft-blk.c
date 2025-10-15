@@ -57,16 +57,14 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
 
     {
         i32 key   = 7;
-        let value = eval_(i32 $scope) {
+        let value = expr_(i32 $scope)({
             i32 sum = 0;
             while_((i32 i = 0), (i < 10), (i += 1), {
-                if (i == key) {
-                    eval_break_(sum + 100);
-                }
+                if (i == key) $break_(sum + 100);
                 sum += i;
             });
-            eval_break_(sum);
-        } $unscoped_eval;
+            $break_(sum);
+        }) $unscoped_expr;
         printf("value: %d\n", value);
     }
 

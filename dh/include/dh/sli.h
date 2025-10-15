@@ -391,7 +391,7 @@ union __AssociationTypes_Sli {
 
 #define comp_op__Sli_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
     let_(__self, TypeOf(var_self)) = var_self; \
-    let_(__range, Range)           = Range_from range_index_begin_end; \
+    let_(__range, R)               = range_index_begin_end; \
     debug_assert_fmt( \
         __range.begin <= __range.end, \
         "Invalid slice range: begin(%zu) > end(%zu)", \
@@ -407,12 +407,12 @@ union __AssociationTypes_Sli {
     eval_return make$( \
         TypeOf(__self), \
         .ptr = __self.ptr + __range.begin, \
-        .len = Range_len(__range) \
+        .len = R_len(__range) \
     ); \
 })
 #define comp_op__Sli_sliceZ(__self, __range, var_self, range_index_begin_end...) eval({ \
     let_(__self, TypeOf(var_self)) = var_self; \
-    let_(__range, Range)           = Range_from range_index_begin_end; \
+    let_(__range, R)               = range_index_begin_end; \
     debug_assert_fmt( \
         __range.begin <= __range.end, \
         "Invalid slice range: begin(%zu) > end(%zu)", \
@@ -440,7 +440,7 @@ union __AssociationTypes_Sli {
 })
 #define comp_op__Sli_sliceS(__self, __range, __sentinel, var_self, range_index_begin_end, val_sentinel...) eval({ \
     let_(__self, TypeOf(var_self))         = var_self; \
-    let_(__range, Range)                   = Range_from range_index_begin_end; \
+    let_(__range, R)                       = range_index_begin_end; \
     let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
     debug_assert_fmt( \
         __range.begin <= __range.end, \

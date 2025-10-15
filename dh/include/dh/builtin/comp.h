@@ -126,6 +126,8 @@ extern "C" {
 #define createCleared$(T_Lit /*Ptr$T*/)          comp_syn__createCleared$(T_Lit)
 #define createFrom(var_src... /*Ptr$T*/)         comp_syn__createFrom(var_src)
 #define createFrom$(T_Lit, var_src... /*Ptr$T*/) comp_syn__createFrom$(T_Lit, var_src)
+#define move(_p_val... /*(TypeOf(*_p_val))*/)    comp_syn__move(_p_val)
+#define copy(_val... /*(TypeOf(_val))*/)         comp_syn__copy(_val)
 
 #define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
@@ -253,6 +255,15 @@ extern "C" {
 #define comp_syn__createFrom$(T_Lit, var_src...) \
     (&*lit$(T_Lit[1], [0] = var_src))
 // NOLINTEND(bugprone-macro-parentheses)
+
+#define comp_syn__move(_p_val...) ({ \
+    let_(__p_val, TypeOf(_p_val)) = _p_val; \
+    let_(__val, TypeOf(*__p_val)) = *__p_val; \
+    *__p_val                      = ((TypeOf(__val)){}); \
+    __val; \
+})
+#define comp_syn__copy(_val...) \
+    (*&*((TypeOf(_val)[1]){ [0] = _val }))
 
 #define comp_syn__bti_Generic_match$(T, _Pattern...) \
     _Generic(T, _Pattern)

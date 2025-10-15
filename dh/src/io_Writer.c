@@ -30,7 +30,7 @@ fn_(io_Writer_writeByteNTimes(io_Writer self, u8 byte, usize n), Err$void $scope
     usize remaining = n;
     while (0 < remaining) {
         let to_write = prim_min(remaining, Arr_len(bytes));
-        try_(io_Writer_writeAll(self, Arr_slice$(Sli_const$u8, bytes, (0, to_write))));
+        try_(io_Writer_writeAll(self, Arr_slice$(Sli_const$u8, bytes, $r(0, to_write))));
         remaining -= to_write;
     }
     return_ok({});

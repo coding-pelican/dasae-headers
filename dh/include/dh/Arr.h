@@ -507,7 +507,7 @@ extern "C" {
     Arr_init$(Arr$$(eval({ eval_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial) \
 )
 #else /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
-#define comp_op__Arr_from$(_T, _Initial...) Arr_init$(Arr$$(pp_countArgs(_Initial), _T), _Initial)
+#define comp_op__Arr_from$(_T, _Initial...) Arr_init$(Arr$$(pp_countArg(_Initial), _T), _Initial)
 #endif /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
 #define comp_op__Arr_asg(var_self, var_other...) eval({ \
     let __self  = &var_self; \
@@ -595,7 +595,7 @@ extern "C" {
 
 #define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
     let_(__self, TypeOf(var_self)*) = &var_self; \
-    let_(__range, Range)            = Range_from range_index_begin_end; \
+    let_(__range, R)                = range_index_begin_end; \
     debug_assert_fmt( \
         __range.begin <= __range.end, \
         "Invalid slice range: begin(%zu) > end(%zu)", \
@@ -611,12 +611,12 @@ extern "C" {
     eval_return make$( \
         Sli$$(TypeOf(__self->buf[0])), \
         .ptr = __self->buf + __range.begin, \
-        .len = Range_len(__range) \
+        .len = R_len(__range) \
     ); \
 })
 #define comp_op__Arr_slice$(T_Sli, __self, __range, var_self, range_index_begin_end...) eval({ \
     let_(__self, TypeOf(&var_self)) = &var_self; \
-    let_(__range, Range)            = Range_from range_index_begin_end; \
+    let_(__range, R)                = range_index_begin_end; \
     debug_assert_fmt( \
         __range.begin <= __range.end, \
         "Invalid slice range: begin(%zu) > end(%zu)", \
@@ -632,7 +632,7 @@ extern "C" {
     eval_return make$( \
         T_Sli, \
         .ptr = __self->buf + __range.begin, \
-        .len = Range_len(__range) \
+        .len = R_len(__range) \
     ); \
 })
 

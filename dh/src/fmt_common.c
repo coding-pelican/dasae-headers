@@ -243,7 +243,7 @@ static fn_(fmt_writeInt(io_Writer writer, u64 value, fmt_FormatSpec spec), Err$v
         }
     }
 
-    try_(fmt_writeStr(writer, Sli_slice(out_slice.as_const, (0, out_pos))));
+    try_(fmt_writeStr(writer, Sli_slice(out_slice.as_const, $r(0, out_pos))));
 
     return_ok({});
 } $unscoped;
@@ -333,7 +333,7 @@ static fn_(fmt_writeFlt(io_Writer writer, f64 value, fmt_FormatSpec spec), Err$v
     try_(fmt_writeStr(writer, int_slice));
     if (precision > 0) {
         try_(fmt_writeChar(writer, '.'));
-        try_(fmt_writeStr(writer, Sli_slice(frac_slice.as_const, (0, precision))));
+        try_(fmt_writeStr(writer, Sli_slice(frac_slice.as_const, $r(0, precision))));
     }
 
     if (spec.align == fmt_AlignType_left) {
@@ -571,11 +571,11 @@ fn_(fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args), Err$v
             }
 
             // Parse format specification
-            let spec_str = Sli_slice(fmt, (spec_start, spec_end));
+            let spec_str = Sli_slice(fmt, $r(spec_start, spec_end));
             let spec_opt = fmt_parseFormatSpec(spec_str);
             if (isNone(spec_opt)) {
                 // Malformed specifier, write literally
-                try_(fmt_writeStr(writer, Sli_slice(fmt, (pos, spec_end + 1))));
+                try_(fmt_writeStr(writer, Sli_slice(fmt, $r(pos, spec_end + 1))));
                 pos = spec_end + 1;
                 continue;
             }
@@ -735,7 +735,7 @@ fn_(fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args), Err$v
                             var value = va_arg(args, Sli_const$u8);
                             if_some(spec.precision, precision) {
                                 if (precision < value.len) {
-                                    value = Sli_slice(value, (0, precision));
+                                    value = Sli_slice(value, $r(0, precision));
                                 }
                             }
                             try_(fmt_writeStr(writer, value));
@@ -744,7 +744,7 @@ fn_(fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args), Err$v
                             var value = Str_viewZ(va_arg(args, const u8*));
                             if_some(spec.precision, precision) {
                                 if (precision < value.len) {
-                                    value = Sli_slice(value, (0, precision));
+                                    value = Sli_slice(value, $r(0, precision));
                                 }
                             }
                             try_(fmt_writeStr(writer, value));
@@ -914,7 +914,7 @@ static fn_(fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_Fo
         var value = stored_arg.value.str_slice_val;
         if_some(spec.precision, precision) {
             if (precision < value.len) {
-                value = Sli_slice(value, (0, precision));
+                value = Sli_slice(value, $r(0, precision));
             }
         }
         try_(fmt_writeStr(writer, value));
@@ -923,7 +923,7 @@ static fn_(fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_Fo
         var value = Str_viewZ(stored_arg.value.str_ptr_val);
         if_some(spec.precision, precision) {
             if (precision < value.len) {
-                value = Sli_slice(value, (0, precision));
+                value = Sli_slice(value, $r(0, precision));
             }
         }
         try_(fmt_writeStr(writer, value));

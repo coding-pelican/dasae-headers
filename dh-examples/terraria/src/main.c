@@ -14,18 +14,16 @@
 // ============================================================================
 
 // Background tiles (walls, decorative)
-typedef u8 BgTile;
-enum BgTile {
+typedef enum BgTile : u8 {
     BgTile_none       = 0,
     BgTile_stone_wall = 1,
     BgTile_dirt_wall  = 2,
     BgTile_wood_wall  = 3,
     BgTile_glass_wall = 4,
-};
+} BgTile;
 
 // Foreground block types (solid terrain)
-typedef u8 FgTile;
-enum FgTile {
+typedef enum FgTile : u8 {
     FgTile_air         = 0,
     FgTile_stone       = 1,
     FgTile_dirt        = 2,
@@ -38,11 +36,10 @@ enum FgTile {
     FgTile_gold_ore    = 9,
     FgTile_diamond_ore = 10,
     FgTile_bedrock     = 11,
-};
+} FgTile;
 
 // Entity tiles (furniture, interactive objects)
-typedef u8 EntityTileType;
-enum EntityTileType {
+typedef enum EntityTileType : u8 {
     EntityTileType_none           = 0,
     // Passable (can walk through, can stand on)
     EntityTileType_platform       = 1,
@@ -62,7 +59,7 @@ enum EntityTileType {
     // Lighting
     EntityTileType_torch          = 30,
     EntityTileType_lantern        = 31,
-};
+} EntityTileType;
 typedef struct EntityTile {
     EntityTileType type;
     m_V2i32        origin;    // For multi-tile objects, points to top-left tile
@@ -78,8 +75,7 @@ typedef struct TileProps {
     u8      light_level; // Light emission (0-15)
 } TileProps;
 
-typedef u16 ItemType;
-enum ItemType {
+typedef enum ItemType : u16 {
     ItemType_none            = 0,
     // Blocks
     ItemType_stone           = 1,
@@ -107,20 +103,19 @@ enum ItemType {
     ItemType_iron_ore        = 201,
     ItemType_gold_ore        = 202,
     ItemType_diamond         = 203,
-};
+} ItemType;
 typedef struct ItemStack {
     ItemType item_type;
     u16      count;
 } ItemStack;
 
 typedef u32 EntityId;
-typedef u8  EntityType;
-enum EntityType {
+typedef enum EntityType : u8 {
     EntityType_player    = 0,
     EntityType_item_drop = 1,
     EntityType_zombie    = 2,
     EntityType_skeleton  = 3,
-};
+} EntityType;
 typedef struct Entity {
     EntityId   id;
     EntityType entity_type;
@@ -589,8 +584,8 @@ func((Game_init(mem_Allocator allocator))(GameState*)) {
     self->world.state.tick_count           = 0;
 
     // Initialize empty world
-    for (usize y = 0; y < Game_world_height; ++y) {
-        for (usize x = 0; x < Game_world_width; ++x) {
+    for_($r(0, Game_world_height), y) {
+        for_($r(0, Game_world_width), x) {
             self->world.layer.fg_tiles[y][x]     = FgTile_air;
             self->world.layer.bg_tiles[y][x]     = BgTile_none;
             self->world.layer.entity_tiles[y][x] = (EntityTile){ 0 };
@@ -599,7 +594,7 @@ func((Game_init(mem_Allocator allocator))(GameState*)) {
     }
 
     // Initialize inventory
-    for (usize i = 0; i < Game_inventory_size; ++i) {
+    for_($r(0, Game_inventory_size), i) {
         self->player.data.inventory[i] = (ItemStack){ .item_type = ItemType_none, .count = 0 };
     }
 
@@ -653,13 +648,12 @@ func((Game_fini(GameState* self, mem_Allocator allocator))(void)) {
 func((Game_genWorld(GameState* self))(void)) {
     const usize surface_height = Game_world_height / 2;
     // Generate terrain
-    for (usize x = 0; x < Game_world_width; ++x) {
+    for_($r(0, Game_world_width), x) {
         let height_variation = sinf(as$(f32, x) * 0.05f) * 10.0f;
         let height           = as$(i32, surface_height) + as$(i32, height_variation);
 
-        for (usize y = 0; y < Game_world_height; ++y) {
-            let iy = as$(i32, y);
-            if (iy > height + 30) {
+        for_($r(0, Game_world_height), y) {
+            if_(let iy = as$(i32, y), (iy > height + 30)) {
                 self->world.layer.fg_tiles[y][x] = FgTile_bedrock;
             } else if (iy > height + 15) {
                 const u32 rand = hash2D(x, y) % 100;
@@ -699,7 +693,7 @@ func((Game_genWorld(GameState* self))(void)) {
             let base_y      = as$(usize, height - 1);
             if (base_y > (tree_height + 3)) {
                 // Trunk as entity tiles (나무 기둥을 엔티티 타일로)
-                for (usize ty = 1; ty <= tree_height; ++ty) {
+                for_($r(1, tree_height + 1), ty) {
                     let trunk_y                                = base_y - ty;
                     self->world.layer.entity_tiles[trunk_y][x] = (EntityTile){
                         .type      = EntityTileType_tree_trunk,
@@ -714,8 +708,8 @@ func((Game_genWorld(GameState* self))(void)) {
                     const i32 leaf_offsets_x[] = { -2, -1, 0, 1, 2 };
                     const i32 leaf_offsets_y[] = { -1, 0, 1, 2 };
 
-                    for (usize dx_idx = 0; dx_idx < 5; ++dx_idx) {
-                        for (usize dy_idx = 0; dy_idx < 4; ++dy_idx) {
+                    for_($r(0, 5), dx_idx) {
+                        for_($r(0, 4), dy_idx) {
                             let lx = as$(i32, x) + leaf_offsets_x[dx_idx];
                             let ly = as$(i32, leaf_start) + leaf_offsets_y[dy_idx];
 
@@ -742,8 +736,8 @@ func((Game_genWorld(GameState* self))(void)) {
 func((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool)) {
     const TileProps props = EntityTile_props(tile_type);
     // Check if space is available
-    for (i32 dy = 0; dy < props.size.y; ++dy) {
-        for (i32 dx = 0; dx < props.size.x; ++dx) {
+    for_($r(0, props.size.y), dy) {
+        for_($r(0, props.size.x), dx) {
             let tx = x + dx;
             let ty = y + dy;
             if ((tx < 0 || Game_world_width <= tx) || (ty < 0 || Game_world_height <= ty)) { return false; }
@@ -756,8 +750,8 @@ func((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_ty
         }
     }
     // Place the multi-tile object
-    for (i32 dy = 0; dy < props.size.y; ++dy) {
-        for (i32 dx = 0; dx < props.size.x; ++dx) {
+    for_($r(0, props.size.y), dy) {
+        for_($r(0, props.size.x), dx) {
             let tx  = x + dx;
             let ty  = y + dy;
             let utx = as$(usize, tx);
@@ -788,8 +782,8 @@ func((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) 
     let props        = EntityTile_props(tile.type);
     let removed_type = tile.type;
 
-    for (i32 dy = 0; dy < props.size.y; ++dy) {
-        for (i32 dx = 0; dx < props.size.x; ++dx) {
+    for_($r(0, props.size.y), dy) {
+        for_($r(0, props.size.x), dx) {
             let tx = origin.x + dx;
             let ty = origin.y + dy;
             if ((0 <= tx && tx < Game_world_width) && (0 <= ty && ty < Game_world_height)) {
@@ -808,15 +802,15 @@ func((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) 
 
 func((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
     // 위쪽으로 올라가면서 나무 기둥과 잎을 파괴
-    for (usize check_y = y; check_y > 0; --check_y) {
-        let entity_tile = &self->world.layer.entity_tiles[check_y - 1][x];
-        let fg_tile     = self->world.layer.fg_tiles[check_y - 1][x];
+    for_($rev $r(0, y), check_y) {
+        let entity_tile = &self->world.layer.entity_tiles[check_y][x];
+        let fg_tile     = self->world.layer.fg_tiles[check_y][x];
 
         // 나무 기둥 파괴
         if (entity_tile->type == EntityTileType_tree_trunk) {
             let item_type = Item_entityTileToItem(entity_tile->type);
             if (item_type != ItemType_none) {
-                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32, x) + 0.5f, .y = as$(f32, check_y - 1) + 0.5f }, item_type, 1);
+                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32, x) + 0.5f, .y = as$(f32, check_y) + 0.5f }, item_type, 1);
             }
             *entity_tile = (EntityTile){ 0 };
         }
@@ -825,9 +819,9 @@ func((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
         if (fg_tile == FgTile_leaves) {
             let item_type = Item_blockToItem(fg_tile);
             if (item_type != ItemType_none) {
-                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32, x) + 0.5f, .y = as$(f32, check_y - 1) + 0.5f }, item_type, 1);
+                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32, x) + 0.5f, .y = as$(f32, check_y) + 0.5f }, item_type, 1);
             }
-            self->world.layer.fg_tiles[check_y - 1][x] = FgTile_air;
+            self->world.layer.fg_tiles[check_y][x] = FgTile_air;
         }
     }
 }
@@ -854,7 +848,7 @@ func((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
 
 
 func((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity) $scope) {
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
     }
@@ -862,7 +856,7 @@ func((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Enti
 } $unscoped_(fn);
 
 func((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scope) {
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
     }
@@ -871,7 +865,7 @@ func((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scop
 
 func((Game_removeDeadEntities(GameState* self))(void)) {
     usize write_idx = 0;
-    for (usize read_idx = 0; read_idx < self->entities.count; ++read_idx) {
+    for_($r(0, self->entities.count), read_idx) {
         if (self->entities.data[read_idx].alive) {
             if (write_idx != read_idx) {
                 self->entities.data[write_idx] = self->entities.data[read_idx];
@@ -936,7 +930,7 @@ func((Item_blockToItem(FgTile block))(ItemType)) {
     case FgTile_dirt:
         return ItemType_dirt;
     case FgTile_grass:
-        return FgTile_grass;
+        return ItemType_grass;
     case FgTile_wood:
         return ItemType_wood;
     case FgTile_sand:
@@ -1041,7 +1035,7 @@ func((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 
 
 func((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
     // Try to stack with existing items
-    for (usize i = 0; i < Game_inventory_size; ++i) {
+    for_($r(0, Game_inventory_size), i) {
         if (self->player.data.inventory[i].item_type == stack.item_type) {
             const u16 space = 64 - self->player.data.inventory[i].count;
             if (space >= stack.count) {
@@ -1051,7 +1045,7 @@ func((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
         }
     }
     // Find empty slot
-    for (usize i = 0; i < Game_inventory_size; ++i) {
+    for_($r(0, Game_inventory_size), i) {
         if (self->player.data.inventory[i].item_type == ItemType_none || self->player.data.inventory[i].count == 0) {
             self->player.data.inventory[i] = stack;
             return true;
@@ -1061,7 +1055,7 @@ func((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
 }
 
 func((Game_pickUpItems(GameState* self, Entity* player))(void)) {
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         let item = &self->entities.data[i];
         if (!item->alive || item->entity_type != EntityType_item_drop) { continue; }
 
@@ -1092,8 +1086,8 @@ func((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check
     let min_y = as$(i32, floorf(pos.y - (size.y / 2.0f)));
     let max_y = as$(i32, ceilf(pos.y + (size.y / 2.0f)));
 
-    for (i32 y = min_y; y <= max_y; ++y) {
-        for (i32 x = min_x; x <= max_x; ++x) {
+    for_($r(min_y, max_y + 1), y) {
+        for_($r(min_x, max_x + 1), x) {
             if ((x < 0 || Game_world_width <= x) || (y < 0 || Game_world_height <= y)) {
                 return_({
                     .collided    = true,
@@ -1207,7 +1201,7 @@ func((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(v
 // ============================================================================
 
 func((Game_updatePhysics(GameState* self, f32 delta_time))(void)) {
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         let entity = &self->entities.data[i];
         if (!entity->alive) { continue; }
         // Apply gravity
@@ -1423,7 +1417,7 @@ func((Game_handleInteraction(GameState* self))(void)) {
 
 func((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
     $ignore = delta_time;
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         let entity = &self->entities.data[i];
         if (!entity->alive) { continue; }
 
@@ -1662,8 +1656,8 @@ func((Render_world(GameState* self))(void)) {
     max_y = (max_y >= Game_world_height) ? (Game_world_height - 1) : max_y;
 
     // Render background tiles
-    for (i32 y = min_y; y <= max_y; ++y) {
-        for (i32 x = min_x; x <= max_x; ++x) {
+    for_($r(min_y, max_y + 1), y) {
+        for_($r(min_x, max_x + 1), x) {
             let bg_tile = self->world.layer.bg_tiles[y][x];
             if (bg_tile != BgTile_none) {
                 let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32, x), .y = as$(f32, y) });
@@ -1676,8 +1670,8 @@ func((Render_world(GameState* self))(void)) {
     }
 
     // Render foreground tiles
-    for (i32 y = min_y; y <= max_y; ++y) {
-        for (i32 x = min_x; x <= max_x; ++x) {
+    for_($r(min_y, max_y + 1), y) {
+        for_($r(min_x, max_x + 1), x) {
             let fg_tile = self->world.layer.fg_tiles[y][x];
             if (fg_tile != FgTile_air) {
                 let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32, x), .y = as$(f32, y) });
@@ -1690,16 +1684,16 @@ func((Render_world(GameState* self))(void)) {
     }
 
     // Render entity tiles
-    for (i32 y = min_y; y <= max_y; ++y) {
-        for (i32 x = min_x; x <= max_x; ++x) {
+    for_($r(min_y, max_y + 1), y) {
+        for_($r(min_x, max_x + 1), x) {
             let entity_tile = self->world.layer.entity_tiles[y][x];
             if (entity_tile.type != EntityTileType_none && entity_tile.is_origin) {
                 let props = EntityTile_props(entity_tile.type);
                 let color = Render_getEntityTileColor(entity_tile.type);
 
                 // 타일 크기에 따라 렌더링
-                for (i32 dy = 0; dy < props.size.y; ++dy) {
-                    for (i32 dx = 0; dx < props.size.x; ++dx) {
+                for_($r(0, props.size.y), dy) {
+                    for_($r(0, props.size.x), dx) {
                         let tile_x     = x + dx;
                         let tile_y     = y + dy;
                         let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32, tile_x), .y = as$(f32, tile_y) });
@@ -1740,8 +1734,8 @@ func((Render_player(GameState* self))(void)) {
     let min_y = prim_min(screen_bottom.y, screen_top.y);
     let max_y = prim_max(screen_bottom.y, screen_top.y);
 
-    for (i32 y = min_y; y <= max_y; ++y) {
-        for (i32 x = min_x; x <= max_x; ++x) {
+    for_($r(min_y, max_y + 1), y) {
+        for_($r(min_x, max_x + 1), x) {
             engine_Canvas_drawPixel(canvas, x, y, color);
         }
     }
@@ -1751,7 +1745,7 @@ func((Render_entities(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
     let camera = &self->renderer.camera;
 
-    for (usize i = 0; i < self->entities.count; ++i) {
+    for_($r(0, self->entities.count), i) {
         let entity = &self->entities.data[i];
         if (!entity->alive) { continue; }
 
@@ -1764,8 +1758,8 @@ func((Render_entities(GameState* self))(void)) {
         let size_pixels_x = as$(i32, entity->size.x* Render_tile_size);
         let size_pixels_y = as$(i32, entity->size.y* Render_tile_size);
 
-        for (i32 dy = 0; dy < size_pixels_y; ++dy) {
-            for (i32 dx = 0; dx < size_pixels_x; ++dx) {
+        for_($r(0, size_pixels_y), dy) {
+            for_($r(0, size_pixels_x), dx) {
                 let world_pos = (m_V2f32){
                     .x = entity->position.x - (entity->size.x / 2.0f) + (as$(f32, dx) / Render_tile_size),
                     .y = entity->position.y - (entity->size.y / 2.0f) + (as$(f32, dy) / Render_tile_size)
@@ -1803,7 +1797,7 @@ func((Render_hotbar(GameState* self))(void)) {
     engine_Canvas_drawRect(canvas, 0, hotbar_y, Render_screen_width - 1, Render_screen_height - 1, literal_Color_fromOpaque(50, 50, 50));
 
     // 핫바 슬롯들
-    for (usize i = 0; i < Game_hotbar_size; ++i) {
+    for_($r(0, Game_hotbar_size), i) {
         let slot_x = as$(i32, i* slot_size);
         let slot_y = hotbar_y + 1;
 
@@ -1863,7 +1857,7 @@ func((Render_cursor(GameState* self))(void)) {
 
     // 커서 표시 (십자가 모양)
     let cursor_color = literal_Color_fromOpaque(255, 255, 255);
-    if (mouse_x >= 0 && mouse_x < Render_screen_width && mouse_y >= 0 && mouse_y < Render_screen_height) {
+    if (0 <= mouse_x && mouse_x < Render_screen_width && 0 <= mouse_y && mouse_y < Render_screen_height) {
         // 수평선
         engine_Canvas_drawPixel(canvas, mouse_x - 1, mouse_y, cursor_color);
         engine_Canvas_drawPixel(canvas, mouse_x + 1, mouse_y, cursor_color);

@@ -132,16 +132,13 @@ fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd $scope) {
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
-    switch_(
-        Thrd_Handle handle = {},
-        pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx), {
-            case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
-            case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
-            case_(/* PERM */ EPERM, $fallthrough);
-            case_(/* INVAL */ EINVAL, claim_unreachable);
-            fallback_(return_err(Err_Unexpected()));
-        }
-    );
+    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx), {
+        case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
+        case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
+        case_(/* PERM */ EPERM, $fallthrough);
+        case_(/* INVAL */ EINVAL, claim_unreachable);
+        fallback_(return_err(Err_Unexpected()));
+    });
 } $unscoped;
 
 fn_(Thrd_detach(Thrd self), void) {

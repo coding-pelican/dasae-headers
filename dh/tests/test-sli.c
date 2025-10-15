@@ -23,7 +23,7 @@ fn_(slice_example(void), void) {
         let length = Sli_len(slice);         // Get the length (10)
 
         // Range-based operations
-        let middle = Sli_slice(slice, (2, 7));
+        let middle = Sli_slice(slice, $r(2, 7));
         for_slice (middle, item) {
             printf("%d ", *item);
         }
@@ -39,12 +39,12 @@ fn_(slice_example(void), void) {
         }
         printf("\n");
 
-        let terminated_0 = Sli_sliceZ(slice, (0, 10));
+        let terminated_0 = Sli_sliceZ(slice, $r(0, 10));
         for (var iter = SliZ_at(terminated_0, 0); deref(iter) != 0; ++iter) {
             printf("%d ", deref(iter));
         }
         printf("\n");
-        let terminated_10 = Sli_sliceS(slice, (0, 9), 10);
+        let terminated_10 = Sli_sliceS(slice, $r(0, 9), 10);
         for (var iter = SliS_at(terminated_10, 0); deref(iter) != terminated_10.sentinel; ++iter) {
             printf("%d ", deref(iter));
         }

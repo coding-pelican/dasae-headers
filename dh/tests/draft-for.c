@@ -22,13 +22,6 @@
     break; \
 })
 
-#define for_(_Range, _Iter, _Expr...) eval({ \
-    let_(__range, Range) = Range_from _Range; \
-    for (var_(__i, usize) = __range.begin; __i < __range.end; ++__i) { \
-        let_(_Iter, usize) = __i; \
-        _Expr; \
-    } \
-})
 // #define for$(T, _Range, _Iter, _Expr...) eval({                        \
 //     var_(__ret, T)       = {};                                         \
 //     let_(__range, Range) = Range_from _Range;                          \
@@ -40,10 +33,10 @@
 // })
 
 TEST_fn_("test for" $scope) {
-    for_((0, 10), i, {
+    for_((0, 10), i) {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
-    });
+    }
 
     let res = for$(i32, (0, 10), i, {
         if (i == 5) { break_(i); } continue; }, 0);
@@ -51,15 +44,16 @@ TEST_fn_("test for" $scope) {
 } $unscoped_TEST_fn;
 
 TEST_fn_("test for with break" $scope) {
-    for_((0, 10), i, {
+    for_((0, 10), i) {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
-    });
+    }
 
-    let res = for$(Opt$i32, (0, 10), i, {
+    let res = for$(Opt$i32, (0, 10), i) {
         if (i == 5) {
             break_(some(i));
-        } }, some(-1));
+        }
+    }) some(-1);
     try_(TEST_expect(unwrap(res) == 5));
 } $unscoped_TEST_fn;
 
@@ -415,4 +409,8 @@ TEST_fn_("test eval function" $scope) {
     } $unscoped_(expr);
 
     try_(TEST_expect(Str_eql(value_for, value_if)));
+} $unscoped_(TEST_fn);
+
+TEST_fn_("test for" $scope){
+    for_(($s((sli1)(i, 0)))($s((sli2)(i, 0))))
 } $unscoped_(TEST_fn);

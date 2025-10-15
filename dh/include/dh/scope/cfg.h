@@ -24,6 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/Range.h"
 
 #if defined(__cplusplus)
 }

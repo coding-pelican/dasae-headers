@@ -57,12 +57,12 @@ extern "C" {
 #define tpl_T(_tpl, _T...)            pp_join($, _tpl, _T)
 #define tpl_Ret(_tpl, _T...)          tpl_T(Ret, tpl_id(_tpl, _T))
 
-#define pp_countArgs(_Args...) \
+#define pp_countArg(_Args...) \
     /** \
      * @note handles up to 16 arguments \
      * \
-     * pp_countArgs() => 0 \
-     * pp_countArgs(x, y, z) => 16 \
+     * pp_countArg() => 0 \
+     * pp_countArg(x, y, z) => 16 \
      */ \
     pp_exec_countArgs(_Args)
 #define pp_overload(_Name, ...) \
@@ -125,7 +125,7 @@ extern "C" {
 #define pp_exec_countArgs__argN( \
     _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _N, ... \
 )                                    _N
-#define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArgs(__VA_ARGS__))
+#define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArg(__VA_ARGS__))
 
 // pp_foreach _Macro implementation (handles up to 16 arguments)
 #define pp_exec_foreach_(N, _Macro, _Name, ...) \
@@ -157,7 +157,7 @@ extern "C" {
 #define pp_exec_foreach__16(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__15(_Macro, _Name, __VA_ARGS__)
 
 #define comp_syn__lit_num(_Comma_Sep_Lits...) \
-    pp_join(__, comp_syn__lit_num, pp_countArgs(_Comma_Sep_Lits))(_Comma_Sep_Lits)
+    pp_join(__, comp_syn__lit_num, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
 /* Handle different numbers of arguments */
 #define comp_syn__lit_num__1(_Num1) \
     _Num1

@@ -24,7 +24,7 @@ fn_(ascii_makeUppers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
     for (usize i = 0; i < ascii_str.len; ++i) {
         buf.ptr[i] = ascii_toUpper(ascii_str.ptr[i]);
     }
-    return Sli_slice(buf, (0, ascii_str.len));
+    return Sli_slice(buf, $r(0, ascii_str.len));
 }
 
 fn_(ascii_makeLowers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
@@ -35,7 +35,7 @@ fn_(ascii_makeLowers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
     for (usize i = 0; i < ascii_str.len; ++i) {
         buf.ptr[i] = ascii_toLower(ascii_str.ptr[i]);
     }
-    return Sli_slice(buf, (0, ascii_str.len));
+    return Sli_slice(buf, $r(0, ascii_str.len));
 }
 
 fn_(ascii_allocUppers(mem_Allocator allocator, Sli_const$u8 ascii_str), Err$Sli$u8 $scope) {
@@ -76,7 +76,7 @@ fn_(ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr
 
     if (ascii_substr.len == 0) { return_some(start_front); }
     if (ascii_str.len < start_front + ascii_substr.len) { return_none(); }
-    let search_slice = Sli_slice(ascii_str, (start_front, ascii_str.len));
+    let search_slice = Sli_slice(ascii_str, $r(start_front, ascii_str.len));
     if_some(ascii_idxOfIgnoreCase(search_slice, ascii_substr), idx) {
         return_some(start_front + idx);
     }

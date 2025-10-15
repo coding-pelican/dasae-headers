@@ -184,9 +184,9 @@ fn_(sort_mergeSortWithArgUsingTempRecur(
 
     /* Merge the sorted halves using the temporary buffer */
     var left_ptr  = base_bytes;
-    var left_end  = left_ptr + mid_idx * base_size;
-    var right_ptr = base_bytes + mid_idx * base_size;
-    var right_end = base_bytes + base_len * base_size;
+    var left_end  = left_ptr + (mid_idx * base_size);
+    var right_ptr = base_bytes + (mid_idx * base_size);
+    var right_end = base_bytes + (base_len * base_size);
     var temp_ptr  = temp_buf.ptr;
 
     while (left_ptr < left_end && right_ptr < right_end) {

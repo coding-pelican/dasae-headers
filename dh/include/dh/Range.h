@@ -8,14 +8,11 @@
  * @updated 2025-04-18 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
- * @prefix  Range
- *
- * @brief   Range type implementation
- * @details Provides a range type that can be used to represent a range of values.
+ * @prefix  R
  */
 
-#ifndef RANGE_INCLUDED
-#define RANGE_INCLUDED (1)
+#ifndef R_INCLUDED
+#define R_INCLUDED (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -27,52 +24,101 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// Range type for slice indexing operations
-typedef struct Range {
+#define $incl(_point...) R_Bound_incl, _point
+#define $excl(_point...) R_Bound_excl, _point
+
+#define $r(_begin, _end...)                  R_from($r_begin(_begin), $r_end(_end))
+#define $r_begin(...)                        pp_overload(__$r_begin, __VA_ARGS__)(__VA_ARGS__)
+#define __$r_begin_1(_point...)              R_Bound_begin(R_Bound_incl, _point)
+#define __$r_begin_2(_bound_type, _point...) R_Bound_begin(_bound_type, _point)
+#define $r_end(...)                          pp_overload(__$r_end, __VA_ARGS__)(__VA_ARGS__)
+#define __$r_end_1(_point...)                R_Bound_end(R_Bound_excl, _point)
+#define __$r_end_2(_bound_type, _point...)   R_Bound_end(_bound_type, _point)
+
+#define from$R   R_from
+#define prefix$R R_prefix
+#define suffix$R R_suffix
+
+#define len$R      R_len
+#define contains$R R_contains
+#define isValid$R  R_isValid
+
+#define eq$R R_eq
+#define ne$R R_ne
+
+typedef enum R_Bound : u8 {
+    R_Bound_incl = 0,
+    R_Bound_excl = 1,
+} R_Bound;
+/// default: incl
+$static $inline_always
+fn_(R_Bound_begin(R_Bound bound, usize point), usize);
+/// default: excl
+$static $inline_always
+fn_(R_Bound_end(R_Bound bound, usize point), usize);
+
+typedef struct R {
     usize begin; ///< Beginning index (inclusive)
     usize end;   ///< Ending index (exclusive)
-} Range;
+} R;
+/// [begin..end] => [begin, end)
+$static $inline_always
+fn_(R_from(usize begin, usize end), R);
+/// [begin..] => [begin, self.end)
+$static $inline_always
+fn_(R_prefix(R self, usize end), R);
+/// [..end] => [self.begin, end)
+$static $inline_always
+fn_(R_suffix(R self, usize begin), R);
 
-/// Create a Range from begin and end indices (exclusive) [begin..end] => [begin, end)
-$inline_always fn_(Range_from(usize begin, usize end), Range);
-/// Create a Range from begin to specified end (exclusive) [begin..] => [begin, self.end)
-$inline_always fn_(Range_prefix(Range self, usize end), Range);
-/// Create a Range from specified begin to end (exclusive) [..end] => [self.begin, end)
-$inline_always fn_(Range_suffix(Range self, usize begin), Range);
-/// Get the length of a Range
-$inline_always fn_(Range_len(Range self), usize);
-/// Check if an index is within a Range
-$inline_always fn_(Range_contains(Range self, usize index), bool);
-/// Check if Range is valid (begin < end)
-$inline_always fn_(Range_isValid(Range self), bool);
+$static $inline_always
+fn_(R_len(R self), usize);
+$static $inline_always
+fn_(R_contains(R self, usize index), bool);
+$static $inline_always
+/// begin <= end
+fn_(R_isValid(R self), bool);
 
-/// Compare two Ranges for equality
-$inline_always fn_(Range_eq(Range lhs, Range rhs), bool);
-/// Compare two Ranges for inequality
-$inline_always fn_(Range_ne(Range lhs, Range rhs), bool);
+$static $inline_always
+fn_(R_eq(R lhs, R rhs), bool);
+$static $inline_always
+fn_(R_ne(R lhs, R rhs), bool);
 
 /*========== Macros and Definitions =========================================*/
 
-$inline_always fn_(Range_from(usize begin, usize end), Range) {
-    debug_assert_fmt(begin < end, "Invalid range: begin(%zu) >= end(%zu)", begin, end);
-    return (Range){ .begin = begin, .end = end };
-}
-$inline_always fn_(Range_prefix(Range self, usize end), Range) {
-    debug_assert_fmt(end > self.begin, "Invalid range: end(%zu) <= begin(%zu)", end, self.begin);
-    return (Range){ .begin = self.begin, .end = end };
-}
-$inline_always fn_(Range_suffix(Range self, usize begin), Range) {
-    debug_assert_fmt(begin < self.end, "Invalid range: begin(%zu) >= end(%zu)", begin, self.end);
-    return (Range){ .begin = begin, .end = self.end };
-}
-$inline_always fn_(Range_len(Range self), usize) { return self.end - self.begin; }
-$inline_always fn_(Range_contains(Range self, usize index), bool) { return self.begin <= index && index < self.end; }
-$inline_always fn_(Range_isValid(Range self), bool) { return self.begin < self.end; }
+$static $inline_always
+fn_(R_Bound_begin(R_Bound bound, usize point), usize) { return bound == R_Bound_incl ? point : point + 1; }
+$static $inline_always
+fn_(R_Bound_end(R_Bound bound, usize point), usize) { return bound == R_Bound_excl ? point : point + 1; }
 
-$inline_always fn_(Range_eq(Range lhs, Range rhs), bool) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
-$inline_always fn_(Range_ne(Range lhs, Range rhs), bool) { return !Range_eq(lhs, rhs); }
+$static $inline_always
+fn_(R_from(usize begin, usize end), R) {
+    debug_assert_fmt(begin <= end, "Invalid range: begin(%zu) > end(%zu)", begin, end);
+    return (R){ .begin = begin, .end = end };
+}
+$static $inline_always
+fn_(R_prefix(R self, usize end), R) {
+    debug_assert_fmt(self.begin <= end, "Invalid range: begin(%zu) > end(%zu)", self.begin, end);
+    return (R){ .begin = self.begin, .end = end };
+}
+$static $inline_always
+fn_(R_suffix(R self, usize begin), R) {
+    debug_assert_fmt(begin <= self.end, "Invalid range: begin(%zu) > end(%zu)", begin, self.end);
+    return (R){ .begin = begin, .end = self.end };
+}
+$static $inline_always
+fn_(R_len(R self), usize) { return self.end - self.begin; }
+$static $inline_always
+fn_(R_contains(R self, usize index), bool) { return self.begin <= index && index < self.end; }
+$static $inline_always
+fn_(R_isValid(R self), bool) { return self.begin <= self.end; }
+
+$static $inline_always
+fn_(R_eq(R lhs, R rhs), bool) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
+$static $inline_always
+fn_(R_ne(R lhs, R rhs), bool) { return !R_eq(lhs, rhs); }
 
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */
-#endif /* RANGE_INCLUDED */
+#endif /* R_INCLUDED */

@@ -28,7 +28,7 @@
     $unscoped
 
 use_biSearch$(i32);
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
+func((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     $ignore = args;
 
     let stream = fs_File_writer(io_getStdOut());

@@ -57,7 +57,7 @@ static fn_(test_Buf_clear(test_Buf* self), void) {
 static fn_(test_Buf_view(test_Buf self), Sli_const$u8) {
     // TODO: use Sli_sliceZ
     if (self.pos == 0) { return Sli_from$(Sli_const$u8, self.data.ptr, 0); }
-    return Sli_slice(self.data, (0, self.pos)).as_const;
+    return Sli_slice(self.data, $r(0, self.pos)).as_const;
 }
 
 /*========== Simple Format Tests ============================================*/
