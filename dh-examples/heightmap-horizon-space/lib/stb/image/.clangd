@@ -1,0 +1,31 @@
+CompileFlags:
+  Compiler: clang
+  Add:
+    - -xc
+    - -std=c17
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\lib\stb\image\src
+    - -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\dasae-src\dasae-headers\dh-examples\heightmap-horizon-space\lib\stb\image\include
+InlayHints:
+  Enabled: true
+  TypeNameLimit: 24
+  DeducedTypes: true
+  ParameterNames: true
+  Designators: true
+  BlockEnd: false
+Hover:
+  ShowAKA: true
+---
+If:
+  PathMatch:
+    - .*\.h
+    - .*\.hh
+    - .*\.hpp
+    - .*\.hxx
+CompileFlags:
+  Add:
+    - -Wno-unused-function
+    - -Wno-unused-variable
+    - -Wno-unused-const-variable
