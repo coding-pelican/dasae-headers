@@ -19,29 +19,29 @@
   </div>
 </div>
 
-## 📋 목차
+## 목차
 
 - [dasae-headers](#dasae-headers)
-  - [📋 목차](#-목차)
-  - [🌟 소개](#-소개)
-  - [🛡️ 주요 특징](#️-주요-특징)
-  - [🌐 플랫폼 지원](#-플랫폼-지원)
+  - [목차](#목차)
+  - [소개](#소개)
+  - [주요 특징](#주요-특징)
+  - [플랫폼 지원](#플랫폼-지원)
   - [🚀 시작하기](#-시작하기)
     - [💽 설치](#-설치)
     - [🔨 빌드 및 실행](#-빌드-및-실행)
-  - [⚡ 코드 샘플](#-코드-샘플)
-    - [👋 Hello, world!](#-hello-world)
-    - [🔍 Optional Values 예제](#-optional-values-예제)
-    - [🔄 Error Results 예제](#-error-results-예제)
-    - [🤝 Pattern Matching 예제](#-pattern-matching-예제)
-    - [🧪 Testing 예제](#-testing-예제)
-  - [📚 문서](#-문서)
-  - [🚧 현재 상태](#-현재-상태)
-  - [🙏 기여](#-기여)
-  - [📧 연락처](#-연락처)
-  - [📜 라이센스](#-라이센스)
+  - [코드 샘플](#코드-샘플)
+    - [Hello, world!](#hello-world)
+    - [Optional Values 예제](#optional-values-예제)
+    - [Error Results 예제](#error-results-예제)
+    - [Pattern Matching 예제](#pattern-matching-예제)
+    - [Testing 예제](#testing-예제)
+  - [문서](#문서)
+  - [현재 상태](#현재-상태)
+  - [기여](#기여)
+  - [연락처](#연락처)
+  - [라이센스](#라이센스)
 
-## 🌟 소개
+## 소개
 
 > "Make C Great Again"
 
@@ -49,7 +49,7 @@ dasae-headers는 C언어에 현대적인 프로그래밍 패러다임을 적용�
 
 현재 개발 초기 단계인 dasae-headers는 C의 전처리기를 트랜스파일러로서 사용하며, C 표준 라이브러리의 고질적인 문제들을 해결하는 동시에 점진적으로 독립적인 언어로 발전시키는 과정에 있습니다.
 
-## 🛡️ 주요 특징
+## 주요 특징
 
 dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 받아 개발되었습니다:
 
@@ -62,7 +62,7 @@ dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 �
 
 **타입 시스템 강화**
 - 컴파일 타임 검사를 통한 향상된 타입 안전성
-- 패턴 매칭과 `match` 구문을 사용한 대수적 데이터 타입(union enum)
+- 패턴 매칭과 `match` 구문을 사용한 대수적 데이터 타입(variant)
 - `some`/`none` 키워드와 `unwrap`/`orelse` 패턴을 사용한 옵셔널 타입을 통한 null 안전성
 
 **오류 처리 및 디버깅**
@@ -80,13 +80,13 @@ dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 �
 **개발 도구**
 - 단위 및 통합 테스트를 위한 내장 테스트 프레임워크
 - 다양한 아키텍처에 대한 멀티 플랫폼 지원
-- 주요 컴파일러 호환성(clang, gcc, msvc)
+- 주요 컴파일러 호환성(clang, gcc (planned), msvc-cl (planned))
 
-## 🌐 플랫폼 지원
+## 플랫폼 지원
 
-- **운영체제**: Windows, Unix, Linux, macOS, Android 등
+- **운영체제**: Windows, Unix, Linux, macOS, etc.
 - **CPU 아키텍처**: 64/32비트 아키텍처 고려
-- **컴파일러 호환성**: clang(우선), gcc, msvc 등
+- **컴파일러 호환성**: clang, gcc (planned), msvc-cl (planned), etc.
 
 ## 🚀 시작하기
 
@@ -128,8 +128,8 @@ cd myproject
 
 ```c
 #include "dh/main.h"
-#include "dh/opt.h"
-#include "dh/err_res.h"
+#include "dh/io/stream.h"
+#include "dh/ArrList.h"
 // 필요한 기능에 따라 추가 헤더 포함
 ```
 
@@ -155,9 +155,9 @@ dh-c test
 
 더 자세한 내용은 [빠른 시작 가이드](./dh/docs/ko/quick-start.md)를 참조하세요.
 
-## ⚡ 코드 샘플
+## 코드 샘플
 
-### 👋 Hello, world!
+### Hello, world!
 
 ```c
 // 프로그램 진입점을 제공하는 메인 헤더 포함
@@ -166,88 +166,84 @@ dh-c test
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
-
     // u8_l로 문자열 리터럴 생성
     let message = u8_l("Hello");
-    // 문자열을 콘솔에 줄바꿈과 함께 출력
+    // 문자열을 터미널에 줄바꿈과 함께 출력
     io_stream_println(u8_l("{:s}, world!"), message);
-
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
 } $unscoped_(fn); // 범위 블록 종료
 ```
 
-### 🔍 Optional Values 예제
+### Optional Values 예제
 
 ```c
-fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
-    for_s((items), (item, index)) {
-        if (*item != value) { continue; }
-        return_some(index); // 인덱스를 반환
+fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
+    for_($s(items, item)) {
+        if (*item != value) { return_some(index); } // 값이 있음을 반환
     }
-    return_none(); // 인덱스 없음을 반환
+    return_none(); // 값이 없음을 반환
 } $unscoped_(fn);
 
 fn_((example(void))(void)) {
-    var_(nums, Arr$$(5, i32)) = Arr_init({ 10, 20, 30, 40, 50 });
+    // 5개의 요소를 가진 배열 생성
+    var nums = init$A$$((5, i32)({ 10, 20, 30, 40, 50 }));
 
     // Optional 값 생성
-    let opt_value = some$((Opt$i32)(42));
-    let opt_empty = none$((Opt$i32));
+    let opt_value = some$((i32)(42));
+    let opt_empty = none$(i32);
 
     // 배열에서 값 찾기
-    let found = findValueIndex(30, Arr_ref$(Sli$usize, nums).as_const);
+    let found = findValueIndex(30, ref$A$((i32)(nums)).as_const);
     // Optional 값 확인
-    if_some((found), (index)) {
-        io_stream_println(u8_l("Found at: {:zu}"), index);
+    if_some(found, index) {
+        io_stream_println(u8_("Found at: {:d}"), index);
     } else_none {
-        io_stream_println(u8_l("Not found"));
+        io_stream_println(u8_("Not found"));
     }
 
     // 기본값 설정
     let value = orelse_((found)(-1)); // 찾지 못한 경우 -1 사용
-    // 안전하지 않은 추출 (옵션이 none인 경우 assertion 발생)
-    let unsafe_value = unwrap_(opt_value);
+    // 단언된 추출 (옵션이 none인 경우 assertion 발생)
+    let value_assumed = unwrap_(opt_value);
 }
 ```
 
-### 🔄 Error Results 예제
+### Error Results 예제
 
 ```c
-use_Errset_((math_Err)(
+config_ErrSet((math_Err)(
     math_Err_DivisionByZero,
     math_Err_Overflow,
     math_Err_Underflow
 ));
 
-Errset_useT$(math_Err, i32); // 또는 일반적으로 `Err_useT$(i32)`
-fn_((safeDivI32(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
+use_ErrSet$(math_Err, i32); // 또는 일반적으로 `tpl$E$(i32)`
+fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
 } $unscoped_(fn);
 
-fn_((example(void))(Err$void) $guard) {
+fn_((example(void))(E$void) $guard) {
     // 리소스 할당
-    var buffer = meta_cast$((Sli$i32)(
-        try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 128))
-    ));
-    // 함수가 반환될 때 항상 정리됨
-    defer_(mem_Allocator_free(allocator, anySli(buffer)));
-    // 오류가 발생하고 전파될 때만 정리됨
-    errdefer_($ignore, io_stream_eprintln(u8_l("Occurred error!")));
+    var buffer = meta_s$((i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
+    // 함수가 반환될 때 항상 실행됨
+    defer_(mem_Allocator_free(allocator, meta_any(buffer)));
+    // 오류가 발생하고 전파될 때만 실행됨
+    errdefer_(err, io_stream_eprintln(u8_("Occurred error!: {:s}"), Err_codeToStr(err)));
 
     // 오류 전파 (조기 반환)
-    let result_invalid = try_(safeDivI32(10, 0));
+    let result_invalid = try_(safeDivide(10, 0));
     // 기본값으로 오류 처리
-    let result_default = catch_((safeDivI32(10, 0))($ignore, 1));
+    let result_default = catch_((safeDivide(10, 0))($ignore, 1));
     // 오류 페이로드 캡처를 통한 오류 처리
-    let result_handling = catch_((safeDivI32(10, 0))(err, {
-        printErr(err);
-        printErrTrace();
+    let result_handling = catch_((safeDivide(10, 0))(err, {
+        Err_print(err);   // 오류 출력
+        ErrTrace_print(); // 오류 추적 출력
         return_err(err);  // 오류를 반환
     }));
 
@@ -256,38 +252,38 @@ fn_((example(void))(Err$void) $guard) {
 } $unguarded_(fn);
 ```
 
-### 🤝 Pattern Matching 예제
+### Pattern Matching 예제
 
 ```c
 typedef variant_((InputEvent)(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
 )) InputEvent;
-Opt_useT$(InputEvent);
-fn_((pullInputEvent(void))(Opt$InputEvent));
+tpl$O$(InputEvent);
+fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
     if_some(pullInputEvent(), event) {
         match_(event) {
-        pattern_(InputEvent_press_key, on_pressed, {
-            debug_assert_true_fmt(
-                -1 < on_pressed->key && on_pressed->key <= 255,
-                u8_l("key is out of range")
-            );
-        }) break;
-        pattern_(InputEvent_release_button, on_released, {
-            debug_assert_true_fmt(
-                -1 < on_released->button && on_released->button <= 5,
-                u8_l("button is out of range")
-            );
-        }) break;
-        fallback_(claim_unreachable);
+            pattern_(InputEvent_press_key, on_pressed, {
+                debug_assert_true_fmt(
+                    -1 < on_pressed->key && on_pressed->key <= 255,
+                    "key is out of range"
+                );
+            }) break;
+            pattern_(InputEvent_release_button, on_released, {
+                debug_assert_true_fmt(
+                    -1 < on_released->button && on_released->button <= 5,
+                    "button is out of range"
+                );
+            }) break;
+            fallback_(claim_unreachable);
         }
     }
 }
 ```
 
-### 🧪 Testing 예제
+### Testing 예제
 
 dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제공합니다. `TEST.h` 헤더를 통해 단위 테스트를 쉽게 작성하고 실행할 수 있습니다.
 
@@ -296,11 +292,11 @@ dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제�
 #include "dh/TEST.h"
 
 // 테스트 대상 함수 정의
-fn_((math_addI32(i32 a, i32 b))(i32)) {
+fn_((mathAdd(i32 a, i32 b))(i32)) {
     return a + b;
 }
 
-fn_((math_mulI32(i32 a, i32 b))(i32)) {
+fn_((mathMul(i32 a, i32 b))(i32)) {
     return a * b;
 }
 
@@ -313,21 +309,18 @@ TEST_fn_("기본 수학 연산 테스트" $scope) {
 
     // 결과 검증
     try_(TEST_expect(sum == 12));
-    try_(TEST_expectMsg(10 < sum , "Sum should be greater than 10"));
+    try_(TEST_expectMsg(sum > 10, "Sum should be greater than 10"));
 
     // 곱셈 테스트
-    let_(product, i32) = math_mulI32(a, b);
+    let product = mathMul(a, b);
     try_(TEST_expect(product == 35));
 
     // 실패하는 테스트 (의도적인 오류 발생)
-    catch_((TEST_expect(product == 30))($ignore, {
-        // 실패: 35 != 30
-        io_stream_eprintln(u8_l("Product should be 30, but got {:d}"), product);
-    }));
+    // try_(TEST_expect(product == 30)); // 실패: 35 != 30
 } $unscoped_(TEST_fn);
 ```
 
-## 📚 문서
+## 문서
 
 자세한 문서는 다음 위치에서 확인할 수 있습니다:
 
@@ -341,14 +334,14 @@ TEST_fn_("기본 수학 연산 테스트" $scope) {
 - [예제 코드](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
 - [테스트](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
 
-## 🚧 현재 상태
+## 현재 상태
 
 이 프로젝트는 적극적으로 개발 중이며 API는 아직 안정화되지 않았습니다. 실험적인 프로젝트에서 사용하고 피드백을 제공해 주시면 감사하겠습니다.
 프로젝트 개선에 관심이 있으시다면 [contribution.md](./dh/docs/ko/contributing.md)를 참조해 주세요.
 
 "dasae-headers"라는 이름은 자주 사용하는 C 유틸리티 코드를 모은 헤더 전용 라이브러리로 시작된 것에서 유래했습니다. 아직 확정된 이름은 아닙니다. 좋은 이름 제안이 있으시다면 알려주세요 :D
 
-## 🙏 기여
+## 기여
 
 이슈, 풀 리퀘스트, 그리고 피드백은 언제나 환영합니다!
 
@@ -356,12 +349,12 @@ TEST_fn_("기본 수학 연산 테스트" $scope) {
 2. 코드 기여: 기능 추가 / 버그 수정
 3. 문서화: 문서 개선 / 예제 코드 추가
 
-## 📧 연락처
+## 연락처
 
 문의사항이 있으시다면 프로젝트 작성자에게 연락해 주세요:
-- 김경태(dev-dasae) <<codingpelican@gmail.com>>
+- 김경태 (dev-dasae) <<codingpelican@gmail.com>>
 
-## 📜 라이센스
+## 라이센스
 
 이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
 
