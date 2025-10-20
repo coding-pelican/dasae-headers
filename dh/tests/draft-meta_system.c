@@ -249,6 +249,7 @@ struct E$raw {
 #define init$S(_ptr, _len...)                        { .ptr = _ptr, .len = _len }
 #define init$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$(_T))*/) \
     __step_inline__init$S$(pp_defer(__emit_inline__init$S$)(__param_parse__init$S$ __VA_ARGS__))
+#define __step_inline__init$S$(...)               __VA_ARGS__
 #define __param_parse__init$S$(...)               __VA_ARGS__, __param_next__init$S$
 #define __param_next__init$S$(...)                __VA_ARGS__
 #define __emit_inline__init$S$(_T, _ptr, _len...) ((S$(_T))init$S(_ptr, _len))
@@ -491,16 +492,51 @@ struct E$raw {
     let_(__range, R)      = _range; \
     debug_assert_fmt(__range.begin == 0, "Invalid slice range: begin(%zu) != 0", __range.begin); \
     debug_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); \
-    init$S$$((TypeOf(__p))(__p, len$R(__range))); \
+    init$S$$((TypeOf(*__p))(__p, len$R(__range))); \
 })
-#define slice$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S$(_T))*/) __param_expand__slice$P$(__VA_ARGS__)
-#define __param_expand__slice$P$(_T, _p, _range...)                              __block_inline__slice$P$(_T, pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define slice$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__slice$P$)(__param_expand__slice$P$ __VA_ARGS__))
+#define __param_expand__slice$P$(...)                                            __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(range), __param_next__slice$P$
+#define __param_next__slice$P$(...)                                              __VA_ARGS__
 #define __block_inline__slice$P$(_T, __p, __range, _p, _range...)                ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R)      = _range; \
     debug_assert_fmt(__range.begin == 0, "Invalid slice range: begin(%zu) != 0", __range.begin); \
     debug_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); \
     init$S$((_T)(__p, len$R(__range))); \
+})
+#define prefix$P(/*_p: P$$(_T), _end: usize*/... /*(S$$(_T))*/) __param_expand__prefix$P(__VA_ARGS__)
+#define __param_expand__prefix$P(_p, _end...)                   __block_inline__prefix$P(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
+#define __block_inline__prefix$P(__p, __end, _p, _end...)       ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__end, usize)    = _end; \
+    debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
+    init$S$$((TypeOf(*__p))(__p, __end)); \
+})
+#define prefix$P$(/*(_T)(_p: P$$(_T), _end: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$P$)(__param_expand__prefix$P$ __VA_ARGS__))
+#define __param_expand__prefix$P$(...)                                __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(end), __param_next__prefix$P$
+#define __param_next__prefix$P$(...)                                  __VA_ARGS__
+#define __block_inline__prefix$P$(_T, __p, __end, _p, _end...)        ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__end, usize)    = _end; \
+    debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
+    init$S$((_T)(__p, __end)); \
+})
+#define suffix$P(/*_p: P$$(_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$P(__VA_ARGS__)
+#define __param_expand__suffix$P(_p, _begin...)                   __block_inline__suffix$P(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
+#define __block_inline__suffix$P(__p, __begin, _p, _begin...)     ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__begin, usize)  = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    init$S$$((TypeOf(*__p))(__p, __begin)); \
+})
+#define suffix$P$(/*(_T)(_p: P$$(_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$P$)(__param_expand__suffix$P$ __VA_ARGS__))
+#define __param_expand__suffix$P$(...)                                  __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(begin), __param_next__suffix$P$
+#define __param_next__suffix$P$(...)                                    __VA_ARGS__
+#define __block_inline__suffix$P$(_T, __p, __begin, _p, _begin...)      ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__begin, usize)  = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    init$S$((_T)(__p, __begin)); \
 })
 
 #define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S$$(_T))*/) __param_expand__slice$A(__VA_ARGS__)
@@ -511,13 +547,48 @@ struct E$raw {
     debug_assert_fmt(__range.end <= len$A(*__a), "Index out of bounds: %zu > %zu", __range.end, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(&buf$A(*__a)[__range.begin], len$R(__range))); \
 })
-#define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) __param_expand__slice$A$(__VA_ARGS__)
-#define __param_expand__slice$A$(_T, _a, _range...)                             __block_inline__slice$A$(_T, pp_uniqTok(a), pp_uniqTok(range), _a, _range)
+#define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__slice$A$)(__param_expand__slice$A$ __VA_ARGS__))
+#define __param_expand__slice$A$(...)                                           __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__slice$A$
+#define __param_next__slice$A$(...)                                             __VA_ARGS__
 #define __block_inline__slice$A$(_T, __a, __range, _a, _range...)               ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__range, R)         = _range; \
     debug_assert_fmt(__range.end <= len$A(*__a), "Index out of bounds: %zu > %zu", __range.end, len$A(*__a)); \
     init$S$((_T)(&buf$A(*__a)[__range.begin], len$R(__range))); \
+})
+#define prefix$A(/*_a: A$$(_N,_T), _end: usize*/... /*(S$$(_T))*/) __param_expand__prefix$A(__VA_ARGS__)
+#define __param_expand__prefix$A(_a, _end...)                      __block_inline__prefix$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
+#define __block_inline__prefix$A(__a, __end, _a, _end...)          ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__end, usize)       = _end; \
+    debug_assert_fmt(__end <= len$A(*__a), "Index out of bounds: %zu > %zu", __end, len$A(*__a)); \
+    init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a), __end)); \
+})
+#define prefix$A$(/*(_T)(_a: A$$(_N,_T), _end: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$A$)(__param_expand__prefix$A$ __VA_ARGS__))
+#define __param_expand__prefix$A$(...)                                   __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefix$A$
+#define __param_next__prefix$A$(...)                                     __VA_ARGS__
+#define __block_inline__prefix$A$(_T, __a, __end, _a, _end...)           ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__end, usize)       = _end; \
+    debug_assert_fmt(__end <= len$A(*__a), "Index out of bounds: %zu > %zu", __end, len$A(*__a)); \
+    init$S$((_T)(ptr$A(*__a), __end)); \
+})
+#define suffix$A(/*_a: A$$(_N,_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$A(__VA_ARGS__)
+#define __param_expand__suffix$A(_a, _begin...)                      __block_inline__suffix$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
+#define __block_inline__suffix$A(__a, __begin, _a, _begin...)        ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__begin, usize)     = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
+})
+#define suffix$A$(/*(_T)(_a: A$$(_N,_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$A$)(__param_expand__suffix$A$ __VA_ARGS__))
+#define __param_expand__suffix$A$(...)                                     __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffix$A$
+#define __param_next__suffix$A$(...)                                       __VA_ARGS__
+#define __block_inline__suffix$A$(_T, __a, __begin, _a, _begin...)         ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__begin, usize)     = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    init$S$((_T)(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 
 #define slice$S(/*_s: S$$(_T), $r(_begin, _end): R*/... /*(S$$(_T))*/) __param_expand__slice$S(__VA_ARGS__)
@@ -528,13 +599,48 @@ struct E$raw {
     debug_assert_fmt(__range.end <= len$S(__s), "Index out of bounds: %zu > %zu", __range.end, len$S(__s)); \
     (TypeOf(__s)) init$S(&ptr$S(__s)[__range.begin], len$R(__range)); \
 })
-#define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) __param_expand__slice$S$(__VA_ARGS__)
-#define __param_expand__slice$S$(_T, _s, _range...)                          __block_inline__slice$S$(_T, pp_uniqTok(s), pp_uniqTok(range), _s, _range)
+#define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__slice$S$)(__param_expand__slice$S$ __VA_ARGS__))
+#define __param_expand__slice$S$(...)                                        __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__slice$S$
+#define __param_next__slice$S$(...)                                          __VA_ARGS__
 #define __block_inline__slice$S$(_T, __s, __range, _s, _range...)            ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R)      = _range; \
     debug_assert_fmt(__range.end <= len$S(__s), "Index out of bounds: %zu > %zu", __range.end, len$S(__s)); \
     init$S$((_T)(&ptr$S(__s)[__range.begin], len$R(__range))); \
+})
+#define prefix$S(/*_s: S$$(_T), _end: usize*/... /*(S$$(_T))*/) __param_expand__prefix$S(__VA_ARGS__)
+#define __param_expand__prefix$S(_s, _end...)                   __block_inline__prefix$S(pp_uniqTok(s), pp_uniqTok(end), _s, _end)
+#define __block_inline__prefix$S(__s, __end, _s, _end...)       ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__end, usize)    = _end; \
+    debug_assert_fmt(__end <= len$S(__s), "Index out of bounds: %zu > %zu", __end, len$S(__s)); \
+    (TypeOf(__s)) init$S(ptr$S(__s), __end); \
+})
+#define prefix$S$(/*(_T)(_s: S$$(_T), _end: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$S$)(__param_expand__prefix$S$ __VA_ARGS__))
+#define __param_expand__prefix$S$(...)                                __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(end), __param_next__prefix$S$
+#define __param_next__prefix$S$(...)                                  __VA_ARGS__
+#define __block_inline__prefix$S$(_T, __s, __end, _s, _end...)        ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__end, usize)    = _end; \
+    debug_assert_fmt(__end <= len$S(__s), "Index out of bounds: %zu > %zu", __end, len$S(__s)); \
+    init$S$((_T)(ptr$S(__s), __end)); \
+})
+#define suffix$S(/*_s: S$$(_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$S(__VA_ARGS__)
+#define __param_expand__suffix$S(_s, _begin...)                   __block_inline__suffix$S(pp_uniqTok(s), pp_uniqTok(begin), _s, _begin)
+#define __block_inline__suffix$S(__s, __begin, _s, _begin...)     ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__begin, usize)  = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    (TypeOf(__s)) init$S(ptr$S(__s) + __begin, len$S(__s) - __begin); \
+})
+#define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
+#define __param_expand__suffix$S$(...)                                  __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffix$S$
+#define __param_next__suffix$S$(...)                                    __VA_ARGS__
+#define __block_inline__suffix$S$(_T, __s, __begin, _s, _begin...)      ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__begin, usize)  = _begin; \
+    debug_assert_fmt(__begin == 0, "Invalid slice range: begin(%zu) != 0", __begin); \
+    init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 
 // #define init$O()
@@ -995,7 +1101,6 @@ typedef struct meta$E {
 
 
 
-
 #include <stdio.h>
 
 tpl$P$(u32);
@@ -1018,9 +1123,9 @@ int main(void) {
              usize idx;
          } __state
          = {
-             .sli_u   = ref$A$((u32)(arr_u)), // suffix$A$((u32)(arr_u, 0))
-             .sli_i   = ref$A$((i32)(arr_i)), // suffix$A$((i32)(arr_i, 1))
-             .sli_f   = ref$A$((f32)(arr_f)), // suffix$A$((f32)(arr_f, 2))
+             .sli_u   = suffix$A$((u32)(arr_u, 0)), // suffix$A$((u32)(arr_u, 0))
+             .sli_i   = suffix$A$((i32)(arr_i, 1)), // suffix$A$((i32)(arr_i, 1))
+             .sli_f   = suffix$A$((f32)(arr_f, 2)), // suffix$A$((f32)(arr_f, 2))
              .range_r = suffix$R(range, 3),
              .idx     = 0,
          };
@@ -1039,15 +1144,185 @@ int main(void) {
         printf("item_r[%zu]: %zu\n", idx_r, item_r);
     }
 
-    for (struct {
-             S$(i32) sli;
-             usize idx;
-         } __state
-         = {
-             .sli = ref$A$((i32)(arr_i)),
-             .idx = 0,
-         };
-         __state.idx < __state.sli.len; ++__state.idx) {
+    ({
+        let         __s0        = suffix$A(arr_u, 0);
+        const usize __s0_offset = 0;
+        let         __s1        = suffix$A(arr_i, 1);
+        const usize __s1_offset = 1;
+        let         __s2        = suffix$A(arr_f, 2);
+        const usize __s2_offset = 2;
+        let         __r3        = suffix$R(range, 3);
+        const usize __r3_offset = 3;
+        let         __len       = prim_min4(len$S(__s0), len$S(__s1), len$S(__s2), len$R(__r3));
+        for (usize __i = 0; __i < __len; ++__i) {
+            let         item_u = at$S(__s0, __i);
+            const usize idx_u  = __i + __s0_offset;
+            let         item_i = at$S(__s1, __i);
+            const usize idx_i  = __i + __s1_offset;
+            let         item_f = at$S(__s2, __i);
+            const usize idx_f  = __i + __s2_offset;
+            let         item_r = at$R(__r3, __i);
+            const usize idx_r  = __i + __r3_offset;
+            printf("item_u[%zu]: %u\n", idx_u, *item_u);
+            printf("item_i[%zu]: %d\n", idx_i, *item_i);
+            printf("item_f[%zu]: %f\n", idx_f, *item_f);
+            printf("item_r[%zu]: %zu\n", idx_r, item_r);
+        }
+    });
+
+#define for_iter_init(__offset, __r, _target, _offset...) \
+    const R     __r      = _target; \
+    const usize __offset = _offset
+#define for_iter_init_$s(__offset, __s, _target, _offset...) \
+    let         __s      = _target; \
+    const usize __offset = _offset
+#define for_iter_init_$a(__offset, __a, _target, _offset...) \
+    let         __a      = _target; \
+    const usize __offset = _offset
+
+#define for_iter_capture(__idx, _c_offset, _c_r, __r, _offset...) \
+    const R _c_r      = at$R(__r, __idx); \
+    let     _c_offset = __idx + _offset
+#define for_iter_capture_$s(__idx, _c_offset, _c_s, __s, _offset...) \
+    let _c_s      = at$S(__s, __idx); \
+    let _c_offset = __idx + _offset
+#define for_iter_capture_$a(__idx, _c_offset, _c_a, __a, _offset...) \
+    let _c_a      = at$A(__a, __idx); \
+    let _c_offset = __idx + _offset
+
+    foreach_((
+        $a(arr_u, (item_u, idx_u)),
+        $s(suffix$A(arr_i, 1), (item_i, idx_i, 1)),
+        $s(suffix$A(arr_f, 2), (item_f, idx_f, 2)),
+        (range, (item_r, idx_r))
+    ) {
+        printf("item_u[%zu]: %u\n", idx_u, *item_u);
+        printf("item_i[%zu]: %d\n", idx_i, *item_i);
+        printf("item_f[%zu]: %f\n", idx_f, *item_f);
+        printf("item_r[%zu]: %zu\n", idx_r, item_r);
+    });
+#define $a(_a...) ($A, _a)
+#define $s(_s...) ($S, _s)
+
+#define foreach_(/*(<$a|$s>(range|slice, (iter, index, offset))...) { ... }*/...) \
+    __foreach_exec(pp_defer(__foreach_impl)(__foreach_sep __VA_ARGS__))
+#define __foreach_exec(...)              __VA_ARGS__
+#define __foreach_sep(...)               (__VA_ARGS__),
+#define __foreach_expandIters(...)       __VA_ARGS__
+#define __foreach_impl(_Iters, _Expr...) pp_overload(__foreach_impl, __foreach_expandIters _Iters)(_Iters, _Expr)
+
+#define __foreach_impl_1(_Iters, _Expr...)                 __foreach_1(pp_uniqTok(len), pp_uniqTok(i), ((pp_uniqTok(r0), pp_uniqTok(o0))), _Iters, _Expr)
+#define __foreach_1(__len, __i, __Names, _Iters, _Expr...) ({ \
+    __foreach_1_initIters(__Names, _Iters); \
+    const usize __len = __foreach_1_measureLen(__Names, _Iters); \
+    for (usize __i = 0; __i < __len; ++__i) { \
+        __foreach_1_captureIters(__i, __Names, _Iters); \
+        _Expr; \
+    } \
+})
+
+#define __foreach_expandIter(/*_Tag,_Target,_Captures*/...)  __foreach_expandIter_Next(__VA_ARGS__)
+#define __foreach_expandIter_Next(...)                       __VA_ARGS__
+#define __foreach_expandName(/*_Name,_Offset*/...)           __foreach_expandName_Next(__VA_ARGS__)
+#define __foreach_expandName_Next(...)                       __VA_ARGS__
+#define __foreach_expandCapture(/*_Elem,_Index,_Offset*/...) __foreach_expandCapture_Next(__VA_ARGS__)
+#define __foreach_expandCapture_Next(...)                    __VA_ARGS__
+#define __foreach_initIter_getOffsetOrZero_1(_Captures...)   0
+#define __foreach_initIter_getOffsetOrZero_2(_Captures...)   0
+#define __foreach_initIter_getOffsetOrZero_3(_Captures...)   pp_Tuple_get3rd _Captures
+
+#define __foreach_1_initIters(__Names, _Iters...) \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters)
+#define __foreach_initIter_2(...)          __foreach_initIter_2Tuple_get(__VA_ARGS__)
+#define __foreach_initIter_2Tuple_get(...) __foreach_initIter_2expand(__VA_ARGS__)
+#define __foreach_initIter_2expand(__Name, __Offset, _TargetRange, _Captures...) \
+    const R __Name = _TargetRange; \
+    /* const usize __Offset = pp_overload(__foreach_initIter_getOffsetOrZero, __foreach_expandCapture _Captures)(_Captures) */ \
+    __foreach_initIter_defOffset(__Offset, _Captures)
+#define __foreach_initIter_3(...)          __foreach_initIter_3Tuple_get(__VA_ARGS__)
+#define __foreach_initIter_3Tuple_get(...) __foreach_initIter_3expand(__VA_ARGS__)
+#define __foreach_initIter_3expand(__Name, __Offset, _Tag, _Target, _Captures...) \
+    let __Name = _Target; \
+    /* const usize __Offset = pp_overload(__foreach_initIter_getOffsetOrZero, __foreach_expandCapture _Captures)(_Captures) */ \
+    __foreach_initIter_defOffset(__Offset, _Captures)
+
+#define __foreach_initIter_defOffset(__Offset, _Captures...) \
+    pp_overload(__foreach_initIter_defOffset, __foreach_expandCapture _Captures)(__Offset, _Captures)
+#define __foreach_initIter_defOffset_1(__Offset, _Captures...)
+#define __foreach_initIter_defOffset_2(__Offset, _Captures...)
+#define __foreach_initIter_defOffset_3(__Offset, _Captures...) const usize __Offset = pp_Tuple_get3rd _Captures
+
+
+#define __foreach_1_measureLen(__Names, _Iters...) \
+    pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters)
+#define __foreach_lenMethod_2(...)          __foreach_lenMethod_2Tuple_get(__VA_ARGS__)
+#define __foreach_lenMethod_2Tuple_get(...) __foreach_lenMethod_2expand(__VA_ARGS__)
+#define __foreach_lenMethod_2expand(__Name, __Offset, _TargetRange, _Captures...) \
+    len$R(__Name)
+#define __foreach_lenMethod_3(...)          __foreach_lenMethod_3Tuple_get(__VA_ARGS__)
+#define __foreach_lenMethod_3Tuple_get(...) __foreach_lenMethod_3expand(__VA_ARGS__)
+#define __foreach_lenMethod_3expand(__Name, __Offset, _Tag, _Target, _Capture...) \
+    pp_cat(len, _Tag)(__Name)
+
+#define __foreach_1_captureIters(__i, __Names, _Iters...) \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters)
+#define __foreach_captureIters_1(...)          __foreach_captureIters_1Tuple_get(__VA_ARGS__)
+#define __foreach_captureIters_1Tuple_get(...) __foreach_captureIters_1expand(__VA_ARGS__)
+#define __foreach_captureIters_1expand(__i, __Name, __Offset, _TargetRange, _Captures...) \
+    let pp_Tuple_get1st _Captures = at$R(__Name, __i)
+#define __foreach_captureIters_2(...)          __foreach_captureIters_2Tuple_get(__VA_ARGS__)
+#define __foreach_captureIters_2Tuple_get(...) __foreach_captureIters_2expand(__VA_ARGS__)
+#define __foreach_captureIters_2expand(__i, __Name, __Offset, _TargetRange, _Captures...) \
+    let pp_Tuple_get1st _Captures = at$R(__Name, __i); \
+    let pp_Tuple_get2nd _Captures = __i
+#define __foreach_captureIters_3(...)          __foreach_captureIters_3Tuple_get(__VA_ARGS__)
+#define __foreach_captureIters_3Tuple_get(...) __foreach_captureIters_3expand(__VA_ARGS__)
+#define __foreach_captureIters_3expand(__i, __Name, __Offset, _Tag, _Target, _Captures...) \
+    let pp_Tuple_get1st _Captures = pp_cat(at, _Tag)(__Name, __i); \
+    let pp_Tuple_get2nd _Captures = __i + __Offset
+
+    foreach_((
+        $a(range, (item_r, idx_r))
+    ){
+
+    })
+
+
+
+#define __foreach_2(__len, __i, __Names, _Iters, _Expr...) ({ \
+    __foreach_2_initIters(__Names, _Iters); \
+    const usize __len = __foreach_2_measureLen(__Names, _Iters); \
+    for (usize __i = 0; __i < __len; ++i) { \
+        __foreach_2_captureIters(__i, __Names, _Iters); \
+        _Expr; \
+    } \
+})
+#define __foreach_3(__len, __i, __Names, _Iters, _Expr...) ({ \
+    __foreach_3_initIters(__Names, _Iters); \
+    const usize __len = __foreach_3_measureLen(__Names, _Iters); \
+    for (usize __i = 0; __i < __len; ++i) { \
+        __foreach_3_captureIters(__i, __Names, _Iters); \
+        _Expr; \
+    } \
+})
+#define __foreach_4(__len, __i, __Names, _Iters, _Expr...) ({ \
+    __foreach_4_initIters(__Names, _Iters); \
+    const usize __len = __foreach_4_measureLen(__Names, _Iters); \
+    for (usize __i = 0; __i < __len; ++i) { \
+        __foreach_4_captureIters(__i, __Names, _Iters); \
+        _Expr; \
+    } \
+})
+
+        for (struct {
+                 S$(i32) sli;
+                 usize idx;
+             } __state
+             = {
+                 .sli = ref$A$((i32)(arr_i)),
+                 .idx = 0,
+             };
+             __state.idx < __state.sli.len; ++__state.idx) {
         let item = at$S(__state.sli, __state.idx);
         let idx  = __state.idx;
         printf("item: %d\n", *item);
