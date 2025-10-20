@@ -2,7 +2,7 @@
  * dh-c - Build tool for DH-C projects
  *
  * Compilation:
- * - clang -std=c17 -Wall -Wextra -O3 -o dh-c dh-c.c -static
+ * - clang -std=c17 -Wall -Wextra -O3 -flto -o dh-c dh-c.c -static
  *
  * Features:
  * - Detects clang toolchain
@@ -602,7 +602,7 @@ void add_dh_sources(BuildConfig* config, char*** sources, int* source_count) {
     char blocks_data_path[1024] = {};
     (void)snprintf(blocks_data_path, sizeof(blocks_data_path), "%s%slibs%sBlocksRuntime%ssrc%sdata.c", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
     char blocks_runtime_path[1024] = {};
-    (void)snprintf(blocks_runtime_path, sizeof(blocks_runtime_path), "%s%slibs%sBlocksRuntime%sobj%sruntime.o", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    (void)snprintf(blocks_runtime_path, sizeof(blocks_runtime_path), "%s%slibs%sBlocksRuntime%s.obj%sruntime.o", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
     if (file_exists(blocks_data_path)) {
         char** new_sources = realloc(*sources, (*source_count + 1) * sizeof(char*));
@@ -1613,7 +1613,7 @@ void build_project(BuildConfig* config) {
             // Create a path for the new library
             char lib_dir[1024] = {};
 
-            (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%slib", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+            (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%s.bin", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
             if (!dir_exists(lib_dir)) {
                 create_directory(lib_dir);
@@ -2627,7 +2627,7 @@ bool check_blocksruntime_lib(const char* dh_path, char* out_lib_path, size_t pat
     }
 
     char lib_dir[1024] = {};
-    (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%slib", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    (void)snprintf(lib_dir, sizeof(lib_dir), "%s%slibs%sBlocksRuntime%s.bin", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
     if (!dir_exists(lib_dir)) {
         return false;
@@ -2665,7 +2665,7 @@ bool compile_blocksruntime_lib(const char* dh_path, const char* out_lib_path, bo
 
     // Create object files directory
     char obj_dir[1024] = {};
-    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%slibs%sBlocksRuntime%sobj", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
+    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%slibs%sBlocksRuntime%s.obj", dh_path, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR);
 
     if (!dir_exists(obj_dir)) {
         create_directory(obj_dir);

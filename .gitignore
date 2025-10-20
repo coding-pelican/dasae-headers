@@ -244,6 +244,7 @@ CMakeUserPresets.json
 # DH-C library files
 **/lib/deps/
 **/lib/deps/.obj/
+**/lib/deps/.bin/
 
 ### Project Specific ###
 
