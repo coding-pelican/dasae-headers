@@ -1190,6 +1190,7 @@ int main(void) {
     let _c_a      = at$A(__a, __idx); \
     let _c_offset = __idx + _offset
 
+#if CONCEPT
     foreach_((
         $a(arr_u, (item_u, idx_u)),
         $s(suffix$A(arr_i, 1), (item_i, idx_i, 1)),
@@ -1201,6 +1202,8 @@ int main(void) {
         printf("item_f[%zu]: %f\n", idx_f, *item_f);
         printf("item_r[%zu]: %zu\n", idx_r, item_r);
     });
+#endif /* CONCEPT */
+
 #define $a(_a...) ($A, _a)
 #define $s(_s...) ($S, _s)
 
@@ -1236,22 +1239,19 @@ int main(void) {
 #define __foreach_initIter_2(...)          __foreach_initIter_2Tuple_get(__VA_ARGS__)
 #define __foreach_initIter_2Tuple_get(...) __foreach_initIter_2expand(__VA_ARGS__)
 #define __foreach_initIter_2expand(__Name, __Offset, _TargetRange, _Captures...) \
-    const R __Name = _TargetRange; \
-    /* const usize __Offset = pp_overload(__foreach_initIter_getOffsetOrZero, __foreach_expandCapture _Captures)(_Captures) */ \
-    __foreach_initIter_defOffset(__Offset, _Captures)
+    const R __Name = _TargetRange __foreach_initIter_defOffset(__Offset, _Captures)
 #define __foreach_initIter_3(...)          __foreach_initIter_3Tuple_get(__VA_ARGS__)
 #define __foreach_initIter_3Tuple_get(...) __foreach_initIter_3expand(__VA_ARGS__)
 #define __foreach_initIter_3expand(__Name, __Offset, _Tag, _Target, _Captures...) \
-    let __Name = _Target; \
-    /* const usize __Offset = pp_overload(__foreach_initIter_getOffsetOrZero, __foreach_expandCapture _Captures)(_Captures) */ \
-    __foreach_initIter_defOffset(__Offset, _Captures)
+    let __Name = _Target __foreach_initIter_defOffset(__Offset, _Captures)
 
 #define __foreach_initIter_defOffset(__Offset, _Captures...) \
     pp_overload(__foreach_initIter_defOffset, __foreach_expandCapture _Captures)(__Offset, _Captures)
 #define __foreach_initIter_defOffset_1(__Offset, _Captures...)
 #define __foreach_initIter_defOffset_2(__Offset, _Captures...)
-#define __foreach_initIter_defOffset_3(__Offset, _Captures...) const usize __Offset = pp_Tuple_get3rd _Captures
-
+#define __foreach_initIter_defOffset_3(__Offset, _Captures...) \
+    ; \
+    const usize __Offset = pp_Tuple_get3rd _Captures
 
 #define __foreach_1_measureLen(__Names, _Iters...) \
     pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters)
@@ -1266,63 +1266,153 @@ int main(void) {
 
 #define __foreach_1_captureIters(__i, __Names, _Iters...) \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters)
-#define __foreach_captureIters_1(...)          __foreach_captureIters_1Tuple_get(__VA_ARGS__)
-#define __foreach_captureIters_1Tuple_get(...) __foreach_captureIters_1expand(__VA_ARGS__)
-#define __foreach_captureIters_1expand(__i, __Name, __Offset, _TargetRange, _Captures...) \
-    let pp_Tuple_get1st _Captures = at$R(__Name, __i)
 #define __foreach_captureIters_2(...)          __foreach_captureIters_2Tuple_get(__VA_ARGS__)
 #define __foreach_captureIters_2Tuple_get(...) __foreach_captureIters_2expand(__VA_ARGS__)
 #define __foreach_captureIters_2expand(__i, __Name, __Offset, _TargetRange, _Captures...) \
-    let pp_Tuple_get1st _Captures = at$R(__Name, __i); \
-    let pp_Tuple_get2nd _Captures = __i
+    let pp_Tuple_get1st _Captures = at$R(__Name, __i) __foreach_captureIters_defOffset(__i, __Offset, _Captures)
 #define __foreach_captureIters_3(...)          __foreach_captureIters_3Tuple_get(__VA_ARGS__)
 #define __foreach_captureIters_3Tuple_get(...) __foreach_captureIters_3expand(__VA_ARGS__)
 #define __foreach_captureIters_3expand(__i, __Name, __Offset, _Tag, _Target, _Captures...) \
-    let pp_Tuple_get1st _Captures = pp_cat(at, _Tag)(__Name, __i); \
+    let pp_Tuple_get1st _Captures = pp_cat(at, _Tag)(__Name, __i) __foreach_captureIters_defOffset(__i, __Offset, _Captures)
+
+#define __foreach_captureIters_defOffset(__i, __Offset, _Captures...) \
+    pp_overload(__foreach_captureIters_defOffset, __foreach_expandCapture _Captures)(__i, __Offset, _Captures)
+#define __foreach_captureIters_defOffset_1(__i, __Offset, _Captures...)
+#define __foreach_captureIters_defOffset_2(__i, __Offset, _Captures...) \
+    ; \
+    let pp_Tuple_get2nd _Captures = __i
+#define __foreach_captureIters_defOffset_3(__i, __Offset, _Captures...) \
+    ; \
     let pp_Tuple_get2nd _Captures = __i + __Offset
 
-    foreach_((
-        $a(range, (item_r, idx_r))
-    ){
 
-    })
-
-
-
+#define __foreach_impl_2(_Iters, _Expr...) __foreach_2( \
+    pp_uniqTok(len), pp_uniqTok(i), \
+    ( \
+        (pp_uniqTok(r0), pp_uniqTok(o0)), \
+        (pp_uniqTok(r1), pp_uniqTok(o1)) \
+    ), \
+    _Iters, _Expr \
+)
 #define __foreach_2(__len, __i, __Names, _Iters, _Expr...) ({ \
     __foreach_2_initIters(__Names, _Iters); \
     const usize __len = __foreach_2_measureLen(__Names, _Iters); \
-    for (usize __i = 0; __i < __len; ++i) { \
+    for (usize __i = 0; __i < __len; ++__i) { \
         __foreach_2_captureIters(__i, __Names, _Iters); \
         _Expr; \
     } \
 })
+#define __foreach_2_initIters(__Names, _Iters...) \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters)
+#define __foreach_2_measureLen(__Names, _Iters...) \
+    prim_min2(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters))
+#define __foreach_2_captureIters(__i, __Names, _Iters...) \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters)
+
+
+#define __foreach_impl_3(_Iters, _Expr...) __foreach_3( \
+    pp_uniqTok(len), pp_uniqTok(i), \
+    ( \
+        (pp_uniqTok(r0), pp_uniqTok(o0)), \
+        (pp_uniqTok(r1), pp_uniqTok(o1)), \
+        (pp_uniqTok(r2), pp_uniqTok(o2)) \
+    ), \
+    _Iters, _Expr \
+)
 #define __foreach_3(__len, __i, __Names, _Iters, _Expr...) ({ \
     __foreach_3_initIters(__Names, _Iters); \
     const usize __len = __foreach_3_measureLen(__Names, _Iters); \
-    for (usize __i = 0; __i < __len; ++i) { \
+    for (usize __i = 0; __i < __len; ++__i) { \
         __foreach_3_captureIters(__i, __Names, _Iters); \
         _Expr; \
     } \
 })
+#define __foreach_3_initIters(__Names, _Iters...) \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters)
+#define __foreach_3_measureLen(__Names, _Iters...) \
+    prim_min3(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters))
+#define __foreach_3_captureIters(__i, __Names, _Iters...) \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get3rd _Iters)(__i, __foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters)
+
+#define __foreach_impl_4(_Iters, _Expr...) __foreach_4( \
+    pp_uniqTok(len), pp_uniqTok(i), \
+    ( \
+        (pp_uniqTok(r0), pp_uniqTok(o0)), \
+        (pp_uniqTok(r1), pp_uniqTok(o1)), \
+        (pp_uniqTok(r2), pp_uniqTok(o2)), \
+        (pp_uniqTok(r3), pp_uniqTok(o3)) \
+    ), \
+    _Iters, _Expr \
+)
 #define __foreach_4(__len, __i, __Names, _Iters, _Expr...) ({ \
     __foreach_4_initIters(__Names, _Iters); \
     const usize __len = __foreach_4_measureLen(__Names, _Iters); \
-    for (usize __i = 0; __i < __len; ++i) { \
+    for (usize __i = 0; __i < __len; ++__i) { \
         __foreach_4_captureIters(__i, __Names, _Iters); \
         _Expr; \
     } \
 })
+#define __foreach_4_initIters(__Names, _Iters...) \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters); \
+    pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get4th _Iters)(__foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters)
+#define __foreach_4_measureLen(__Names, _Iters...) \
+    prim_min4(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get4th _Iters)(__foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters))
+#define __foreach_4_captureIters(__i, __Names, _Iters...) \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get3rd _Iters)(__i, __foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters); \
+    pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get4th _Iters)(__i, __foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters)
 
-        for (struct {
-                 S$(i32) sli;
-                 usize idx;
-             } __state
-             = {
-                 .sli = ref$A$((i32)(arr_i)),
-                 .idx = 0,
-             };
-             __state.idx < __state.sli.len; ++__state.idx) {
+
+
+    const A$$(8, u32) arr_u  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
+    const A$$(9, i32) arr_i  = init$A({ 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+    const A$$(10, f32) arr_f = init$A({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f });
+    const R range       = $r(3, 15);
+
+    foreach_(($a(arr_u, (item_u))) {
+        try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
+        io_stream_println(u8_l("item_u: {:u}\n"), *item_u);
+    });
+
+    foreach_(((range, (item_r))) {
+        try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
+        io_stream_println(u8_l("item_r: {:zu}\n"), item_r);
+    });
+
+    foreach_((
+        $a(arr_u, (item_u, idx_u)),
+        $s(suffix$A(arr_i, 1), (item_i, idx_i, 1)),
+        $s(suffix$A(arr_f, 2), (item_f, idx_f, 2)),
+        (range, (item_r, idx_r))
+    ) {
+        try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
+        io_stream_println(u8_l("item_u[{:zu}]: {:u}\n"), idx_u, *item_u);
+        try_(TEST_expect(isSameType$(TypeOf(*item_i), i32)));
+        io_stream_println(u8_l("item_i[{:zu}]: {:d}\n"), idx_i, *item_i);
+        try_(TEST_expect(isSameType$(TypeOf(*item_f), f32)));
+        io_stream_println(u8_l("item_f[{:zu}]: {:f}\n"), idx_f, *item_f);
+        try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
+        io_stream_println(u8_l("item_r[{:zu}]: {:zu}\n"), idx_r, item_r);
+    });
+
+    for (struct {
+             S$(i32) sli;
+             usize idx;
+         } __state
+         = {
+             .sli = ref$A$((i32)(arr_i)),
+             .idx = 0,
+         };
+         __state.idx < __state.sli.len; ++__state.idx) {
         let item = at$S(__state.sli, __state.idx);
         let idx  = __state.idx;
         printf("item: %d\n", *item);
