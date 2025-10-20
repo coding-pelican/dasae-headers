@@ -242,7 +242,6 @@ CMakeUserPresets.json
 **/.log*/
 
 # DH-C library files
-**/lib/
 **/lib/deps/
 **/lib/deps/.obj/
 
