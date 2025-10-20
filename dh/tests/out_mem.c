@@ -14,7 +14,7 @@ typedef struct m_OutVal {
 }){ .info = typeInfo$(_T) })
 
 
-fn_(someNeededSameStackMemFn(m_OutVal* out_val), m_OutVal*) {
+fn_((someNeededSameStackMemFn(m_OutVal* out_val))(m_OutVal*)) {
     struct {
         TypeInfo info;
         u8*      bytes;
@@ -24,7 +24,7 @@ fn_(someNeededSameStackMemFn(m_OutVal* out_val), m_OutVal*) {
     return out_val;
 }
 
-TEST_fn_("test" $scope) {
+TEST_fn_("out_mem: test" $scope) {
     // as$(typeUnit$(i32)*, someNeededSameStackMemFn(typeUnit$(i32).base))->value;
     //
     // i32 a = castOut$(i32, type, someNeededSameStackMemFn(type));

@@ -170,7 +170,7 @@ fn_(readFile(Sli_const$u8 path), Err$Str $guard) {
     }
 
     // 함수가 종료될 때 실행됨
-    defer_($ignore = fclose(file));
+    defer_(let_ignore = fclose(file));
 
     // 파일 처리...
 

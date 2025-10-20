@@ -7,7 +7,7 @@
 
 // Coroutine state
 typedef struct Co_Ctx Co_Ctx;
-typedef fn_(Co_FnWork(Co_Ctx* ctx), Co_Ctx*);
+typedef fn_((Co_FnWork(Co_Ctx* ctx))(Co_Ctx*));
 typedef u32 Co_Count;
 typedef enum Co_State {
     Co_State_pending = 0,
@@ -97,11 +97,11 @@ typedef struct Co_Ctx {
     use_Co_CtxArgs$(_fnName, Args); \
     use_Co_CtxFnBase$(_fnName, T_Return); \
     decl_Co_CtxFn$(_fnName); \
-    fn_(_fnName(Co_CtxFn$(_fnName) * ctx), Co_CtxFnBase$(_fnName)*)
+    fn_((_fnName(Co_CtxFn$(_fnName) * ctx))(Co_CtxFnBase$(_fnName)*))
 
 #define async_fn_scope(_fnName, Locals...) \
     impl_Co_CtxFn$(_fnName, Locals); \
-    fn_(_fnName(Co_CtxFn$(_fnName) * ctx), Co_CtxFnBase$(_fnName)*) { \
+    fn_((_fnName(Co_CtxFn$(_fnName) * ctx))(Co_CtxFnBase$(_fnName)*)) { \
         let args              = &ctx->args; \
         let locals            = &ctx->locals; \
         let __reserved_return = &ctx->ret->value; \

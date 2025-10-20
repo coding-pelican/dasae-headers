@@ -1,9 +1,9 @@
 #include "engine/Input.h"
 #include "dh/mem/common.h"
 
-fn_(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input $guard) {
+fn_((engine_Input_init(mem_Allocator allocator))(Err$Ptr$engine_Input) $guard) {
     let input = meta_cast$(engine_Input*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Input))));
-    errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(input)));
+    errdefer_($ignore, mem_Allocator_destroy(allocator, anyPtr(input)));
     input->allocator = allocator;
 
     with_(let event_buffer = &input->event_buffer) {
@@ -31,36 +31,36 @@ fn_(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input $guard) {
 
     toNone(&input->backend);
     return_ok(input);
-} $unguarded;
+} $unguarded_(fn);
 
-fn_(engine_Input_fini(engine_Input* self), void) {
+fn_((engine_Input_fini(engine_Input* self))(void)) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_(engine_Input_update(engine_Input* self), Err$void $scope) {
+fn_((engine_Input_update(engine_Input* self))(Err$void) $scope) {
     $unused(self);
     return_err(Err_NotImplemented());
     /* TODO: Implement this function */
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event), void) {
+fn_((engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event))(void)) {
     $unused(self), $unused(event);
     /* TODO: Implement this function */
 }
 
-fn_(engine_InputEventBuffer_pop(engine_Input* self), Opt$engine_InputEvent $scope) {
+fn_((engine_InputEventBuffer_pop(engine_Input* self))(Opt$engine_InputEvent) $scope) {
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(engine_InputEventBuffer_peek(engine_Input* self), Opt$engine_InputEvent $scope) {
+fn_((engine_InputEventBuffer_peek(engine_Input* self))(Opt$engine_InputEvent) $scope) {
     $unused(self);
     return_none();
     /* TODO: Implement this function */
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(engine_InputEventBuffer_clear(engine_Input* self), void) {
+fn_((engine_InputEventBuffer_clear(engine_Input* self))(void)) {
     $unused(self);
     /* TODO: Implement this function */
 }

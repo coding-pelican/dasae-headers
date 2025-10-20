@@ -50,10 +50,14 @@ extern "C" {
 #define prim_le(val_lhs, val_rhs)  comp_inline__prim_le(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 #define prim_ge(val_lhs, val_rhs)  comp_inline__prim_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 
-#define prim_min(val_lhs, val_rhs)          comp_inline__prim_min(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max(val_lhs, val_rhs)          comp_inline__prim_max(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_clamp(val_x, val_min, val_max) comp_inline__prim_clamp(val_x, val_min, val_max)
-#define prim_wrap(val_x, val_min, val_max)  comp_inline__prim_wrap(val_x, val_min, val_max)
+#define prim_min(val_lhs, val_rhs)                    comp_inline__prim_min(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min3(val_1st, val_2nd, val_3rd)          comp_inline__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_min4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_max(val_lhs, val_rhs)                    comp_inline__prim_max(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max3(val_1st, val_2nd, val_3rd)          comp_inline__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_max4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_clamp(val_x, val_min, val_max)           comp_inline__prim_clamp(val_x, val_min, val_max)
+#define prim_wrap(val_x, val_min, val_max)            comp_inline__prim_wrap(val_x, val_min, val_max)
 
 #define prim_swap(val_lhs, val_rhs) comp_inline__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
 
@@ -111,10 +115,36 @@ typedef struct Void {
     let __rhs = (val_rhs); \
     eval_return __rhs < __lhs ? __rhs : __lhs; \
 })
+#define comp_inline__prim_min3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) eval({ \
+    let __1st = (val_1st); \
+    let __2nd = (val_2nd); \
+    let __3rd = (val_3rd); \
+    eval_return prim_min(prim_min(__1st, __2nd), __3rd); \
+})
+#define comp_inline__prim_min4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) eval({ \
+    let __1st = (val_1st); \
+    let __2nd = (val_2nd); \
+    let __3rd = (val_3rd); \
+    let __4th = (val_4th); \
+    eval_return prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
+})
 #define comp_inline__prim_max(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __rhs > __lhs ? __rhs : __lhs; \
+})
+#define comp_inline__prim_max3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) eval({ \
+    let __1st = (val_1st); \
+    let __2nd = (val_2nd); \
+    let __3rd = (val_3rd); \
+    eval_return prim_max(prim_max(__1st, __2nd), __3rd); \
+})
+#define comp_inline__prim_max4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) eval({ \
+    let __1st = (val_1st); \
+    let __2nd = (val_2nd); \
+    let __3rd = (val_3rd); \
+    let __4th = (val_4th); \
+    eval_return prim_max(prim_max(prim_max(__1st, __2nd), __3rd), __4th); \
 })
 #define comp_inline__prim_clamp(val_x, val_min, val_max) \
     prim_min(prim_max(val_x, val_min), val_max)
@@ -141,7 +171,7 @@ typedef struct Void {
 #if NEXT_UPDATE
 #define let_ignore \
     __attribute__((unused)) let pp_uniqTok(ignored)
-#define $ignore \
+#define let_ignore \
     __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
     let_ignore
 #define $ignore_void (void)

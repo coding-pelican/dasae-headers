@@ -52,8 +52,8 @@
 #define while_none(_init, _opt, _cont, _expr...) \
     While_((var __opt = (_opt); pp_expand _init), (isNone(__opt)), (), (pp_expand _cont; __opt = (_opt)), _expr)
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
+    let_ignore = args;
 
     {
         i32 key   = 7;
@@ -68,7 +68,7 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
         printf("value: %d\n", value);
     }
 
-    extern fn_(getNext(void), Opt$i32);
+    extern fn_((getNext(void))(Opt$i32));
     while_some((), (getNext()), (value), (), {
         printf("value: %d\n", value);
     });
@@ -106,7 +106,7 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
     //     printf("value: %d\n", *p);
     // });
     return_ok({});
-} $unscoped;
+} $unscoped_fn;
 
 // #define pp_ignore2_expand1_ignores(...) pp_ignore1_expand1_ignores
 // #define pp_ignore1_expand1_ignores(...) pp_expand1_ignores

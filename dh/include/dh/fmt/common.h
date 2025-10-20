@@ -32,21 +32,21 @@ config_ErrSet(fmt_Err,
     InvalidBoolFormat
 );
 
-extern fn_(fmt_format(io_Writer writer, Sli_const$u8 fmt, ...), Err$void) $must_check;
-extern fn_(fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args), Err$void) $must_check;
+extern fn_((fmt_format(io_Writer writer, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
+extern fn_((fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
 
-extern fn_(fmt_parseInt_usize(Sli_const$u8 str, u8 base), Err$usize) $must_check;
-extern fn_(fmt_parseInt_u64(Sli_const$u8 str, u8 base), Err$u64) $must_check;
-extern fn_(fmt_parseInt_u32(Sli_const$u8 str, u8 base), Err$u32) $must_check;
+extern fn_((fmt_parseInt_usize(Sli_const$u8 str, u8 base))(Err$usize)) $must_check;
+extern fn_((fmt_parseInt_u64(Sli_const$u8 str, u8 base))(Err$u64)) $must_check;
+extern fn_((fmt_parseInt_u32(Sli_const$u8 str, u8 base))(Err$u32)) $must_check;
 
-extern fn_(fmt_parseInt_isize(Sli_const$u8 str, u8 base), Err$isize) $must_check;
-extern fn_(fmt_parseInt_i64(Sli_const$u8 str, u8 base), Err$i64) $must_check;
-extern fn_(fmt_parseInt_i32(Sli_const$u8 str, u8 base), Err$i32) $must_check;
+extern fn_((fmt_parseInt_isize(Sli_const$u8 str, u8 base))(Err$isize)) $must_check;
+extern fn_((fmt_parseInt_i64(Sli_const$u8 str, u8 base))(Err$i64)) $must_check;
+extern fn_((fmt_parseInt_i32(Sli_const$u8 str, u8 base))(Err$i32)) $must_check;
 
-extern fn_(fmt_parseFlt_f64(Sli_const$u8 str), Err$f64) $must_check;
-extern fn_(fmt_parseFlt_f32(Sli_const$u8 str), Err$f32) $must_check;
+extern fn_((fmt_parseFlt_f64(Sli_const$u8 str))(Err$f64)) $must_check;
+extern fn_((fmt_parseFlt_f32(Sli_const$u8 str))(Err$f32)) $must_check;
 
-extern fn_(fmt_parseBool(Sli_const$u8 str), Err$bool) $must_check;
+extern fn_((fmt_parseBool(Sli_const$u8 str))(Err$bool)) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */

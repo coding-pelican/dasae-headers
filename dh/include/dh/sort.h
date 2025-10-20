@@ -41,80 +41,63 @@ use_Callback(sort_CmpWithArgFn, (anyptr_const lhs, anyptr_const rhs, anyptr_cons
 /*========== Function Prototypes ============================================*/
 
 /// Insertion sort for small arrays
-$extern fn_(
-    sort_insertionSort(
-        meta_Sli   base_sli,
-        sort_CmpFn cmpFn
-    ),
-    void
-);
+$extern
+fn_((sort_insertionSort(
+    meta_Sli   base_sli,
+    sort_CmpFn cmpFn
+))(void));
+$extern
 /// Insertion sort with arg
-$extern fn_(
-    sort_insertionSortWithArg(
-        meta_Sli          base_sli,
-        sort_CmpWithArgFn cmpFn,
-        anyptr_const      arg
-    ),
-    void
-);
-/// Modernized merge sort using temporary buffer instead of allocating new
-/// memory
-$extern fn_(
-    sort_mergeSortUsingTempRecur(
-        Sli$u8     temp_buf,
-        meta_Sli   base_sli,
-        sort_CmpFn cmpFn
-    ),
-    Err$void
-) $must_check;
+fn_((sort_insertionSortWithArg(
+    meta_Sli          base_sli,
+    sort_CmpWithArgFn cmpFn,
+    anyptr_const      arg
+))(void));
+/// Modernized merge sort using temporary buffer instead of allocating new memory
+$extern $must_check
+fn_((sort_mergeSortUsingTempRecur(
+    Sli$u8     temp_buf,
+    meta_Sli   base_sli,
+    sort_CmpFn cmpFn
+))(Err$void));
 /// Modernized merge sort using temporary buffer with arg
-$extern fn_(
-    sort_mergeSortWithArgUsingTempRecur(
-        Sli$u8            temp_buf,
-        meta_Sli          base_sli,
-        sort_CmpWithArgFn cmpFn,
-        anyptr_const      arg
-    ),
-    Err$void
-) $must_check;
+$extern $must_check
+fn_((sort_mergeSortWithArgUsingTempRecur(
+    Sli$u8            temp_buf,
+    meta_Sli          base_sli,
+    sort_CmpWithArgFn cmpFn,
+    anyptr_const      arg
+))(Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
-$extern fn_(
-    sort_stableSort(
-        mem_Allocator allocator,
-        meta_Sli      base_sli,
-        sort_CmpFn    cmpFn
-    ),
-    Err$void
-) $must_check;
+$extern $must_check
+fn_((sort_stableSort(
+    mem_Allocator allocator,
+    meta_Sli      base_sli,
+    sort_CmpFn    cmpFn
+))(Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
-$extern fn_(
-    sort_stableSortWithArg(
-        mem_Allocator     allocator,
-        meta_Sli          base_sli,
-        sort_CmpWithArgFn cmpFn,
-        anyptr_const      arg
-    ),
-    Err$void
-) $must_check;
+$extern $must_check
+fn_((sort_stableSortWithArg(
+    mem_Allocator     allocator,
+    meta_Sli          base_sli,
+    sort_CmpWithArgFn cmpFn,
+    anyptr_const      arg
+))(Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
-$extern fn_(
-    sort_stableSortUsingTemp(
-        Sli$u8     temp_buf,
-        meta_Sli   base_sli,
-        sort_CmpFn cmpFn
-    ),
-    Err$void
-) $must_check;
+$extern $must_check
+fn_((sort_stableSortUsingTemp(
+    Sli$u8     temp_buf,
+    meta_Sli   base_sli,
+    sort_CmpFn cmpFn
+))(Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
-$extern fn_(
-    sort_stableSortWithArgUsingTemp(
-        Sli$u8            temp_buf,
-        meta_Sli          base_sli,
-        sort_CmpWithArgFn cmpFn,
-        anyptr_const      arg
-    ),
-    Err$void
-) $must_check;
+$extern $must_check
+fn_((sort_stableSortWithArgUsingTemp(
+    Sli$u8            temp_buf,
+    meta_Sli          base_sli,
+    sort_CmpWithArgFn cmpFn,
+    anyptr_const      arg
+))(Err$void));
 
 #if defined(__cplusplus)
 } /* $extern "C" */

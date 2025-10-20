@@ -96,7 +96,7 @@ extern fn_(State_spawnFirework(State* s), Err$Opt$Ptr$Firework) $must_check;
 
 
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+    let_ignore = args;
     Random_init();
 
     // Initialize logging to a file
@@ -173,7 +173,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     defer_(State_fini(&state));
     log_info("game state created");
 
-    $ignore = engine_utils_getch();
+    let_ignore = engine_utils_getch();
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs_f64(target_spf);
@@ -266,7 +266,7 @@ fn_(Particle_isDead(const Particle* p), bool) {
 }
 fn_(Particle_update(Particle* p, f64 dt), void) {
     debug_assert_nonnull(p);
-    $ignore = dt;
+    let_ignore = dt;
     if (Particle_isDead(p)) { return; }
 
     *Arr_at(p->speed, 0) += Arr_getAt(p->acceleration, 0);
@@ -280,7 +280,7 @@ fn_(Particle_update(Particle* p, f64 dt), void) {
 fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(p);
     debug_assert_nonnull(c);
-    $ignore = dt;
+    let_ignore = dt;
     if (Particle_isDead(p)) { return; }
 
     let render_color = Color_fromOpaque(
@@ -362,7 +362,7 @@ fn_(Firework_isDead(const Firework* f), bool) {
 }
 fn_(Firework_update(Firework* f, f64 dt), Err$void $scope) {
     debug_assert_nonnull(f);
-    $ignore = dt;
+    let_ignore = dt;
     if_some(f->rocket, rocket) {
         Particle_update(rocket, dt);
         if (-0.2 <= Arr_getAt(rocket->speed, 1)) {

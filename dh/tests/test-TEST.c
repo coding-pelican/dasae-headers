@@ -16,7 +16,7 @@ TEST_fn_("Basic Math Operations" $scope) {
     // Testing with expressions
     try_(TEST_expect(3 < 5));
     try_(TEST_expect(10 % 3 == 1));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /// Test side effects of increment operators
 TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
@@ -53,7 +53,7 @@ TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
     let cnt_pre_inc_with_align_of = alignOf(TypeOf(++cnt)); // ++cnt side effect is not applied here
     try_(TEST_expect(cnt_pre_inc_with_align_of == alignOf(TypeOf(cnt))));
     try_(TEST_expect(cnt == 125));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /// Test type comparison
 TEST_fn_("Simply Type Comparison with Failing Test" $scope) {
@@ -61,11 +61,11 @@ TEST_fn_("Simply Type Comparison with Failing Test" $scope) {
     const f32 floating = 10.0f;
     try_(TEST_expect(!isSameType(TypeOf(integer), TypeOf(floating))));
     try_(TEST_expect(isSameType(TypeOf(integer), TypeOf(floating)))); // This will always fail
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /// Sample main function
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
-    $ignore = args;
-    io_stream_print(u8_l("Hello, world!\n"));
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
+    let_ignore = args;
+    io_stream_println(u8_l("Hello, world!"));
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

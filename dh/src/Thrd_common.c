@@ -15,22 +15,22 @@
 #include <sys/sysctl.h>
 #endif
 
-fn_(Thrd_sleep(time_Duration duration), void) {
+fn_((Thrd_sleep(time_Duration duration))(void)) {
     time_sleep(duration);
 }
 
-fn_(Thrd_yield(void), Err$void $scope) {
+fn_((Thrd_yield(void))(Err$void) $scope) {
     if_(i32 res = sched_yield(), res != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
     return_ok({});
 } $unscoped;
 
-fn_(Thrd_getCurrentId(void), Thrd_Id) {
+fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
     return as$(Thrd_Id, pthread_self());
 }
 
-fn_(Thrd_getCpuCount(void), Err$usize $scope) {
+fn_((Thrd_getCpuCount(void))(Err$usize) $scope) {
 #if bti_plat_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
@@ -59,11 +59,11 @@ fn_(Thrd_getCpuCount(void), Err$usize $scope) {
 #endif
 } $unscoped;
 
-fn_(Thrd_getHandle(Thrd self), Thrd_Handle) {
+fn_((Thrd_getHandle(Thrd self))(Thrd_Handle)) {
     return self.handle;
 }
 
-fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8 $scope) {
+fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(buf_ptr);
 
@@ -81,14 +81,14 @@ fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8 $scope)
 
     return_ok(some(Sli_from(buf_ptr->buf, name_len)));
 #else
-    $ignore = self;
-    $ignore = buf_ptr;
+    let_ignore = self;
+    let_ignore = buf_ptr;
     // pthread_getname_np not available (some Windows pthread implementations)
     return_ok(none());
 #endif
 } $unscoped;
 
-fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void $scope) {
+fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(name.ptr);
 
@@ -121,18 +121,18 @@ fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void $scope) {
 #endif
     return_ok({});
 #else
-    $ignore = self;
+    let_ignore = self;
     // pthread_setname_np not available
     return_ok({}); // No-op
 #endif
 } $unscoped;
 
-fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd $scope) {
-    $ignore = config;
+fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(Err$Thrd) $scope) {
+    let_ignore = config;
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
-    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$(fn_((*)(void* thrd_ctx), void*), fn_ctx->fn), fn_ctx), {
+    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$(fn_(((*)(void* thrd_ctx))(void*)), fn_ctx->fn), fn_ctx), {
         case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
         case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
         case_(/* PERM */ EPERM, $fallthrough);
@@ -141,14 +141,14 @@ fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd $scope) {
     });
 } $unscoped;
 
-fn_(Thrd_detach(Thrd self), void) {
+fn_((Thrd_detach(Thrd self))(void)) {
     debug_assert(self.handle != 0);
-    $ignore = pthread_detach(self.handle); // TODO: handle err
+    let_ignore = pthread_detach(self.handle); // TODO: handle err
 }
 
-fn_(Thrd_join(Thrd self), Thrd_FnCtx*) {
+fn_((Thrd_join(Thrd self))(Thrd_FnCtx*)) {
     debug_assert(self.handle != 0);
     anyptr ctx_ptr = null;
-    $ignore        = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
+    let_ignore        = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
     return as$(Thrd_FnCtx*, ctx_ptr);
 }

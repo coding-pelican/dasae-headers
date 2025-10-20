@@ -31,9 +31,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-extern fn_(io_getStdIn(void), fs_File);
-extern fn_(io_getStdOut(void), fs_File);
-extern fn_(io_getStdErr(void), fs_File);
+extern fn_((io_getStdIn(void))(fs_File));
+extern fn_((io_getStdOut(void))(fs_File));
+extern fn_((io_getStdErr(void))(fs_File));
 
 #if defined(__cplusplus)
 } /* extern "C" */

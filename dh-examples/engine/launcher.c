@@ -15,12 +15,12 @@ static var_(Terminal_window_title, Opt$Sli_const$u8) = none();
 static var_(Terminal_window_width, i32)           = 80;
 static var_(Terminal_window_height, i32)          = 25;
 
-static fn_(fmt_parseInt_u32(Sli_const$u8 str), Err$u32);
-static fn_(fmt_parseInt_usize(Sli_const$u8 str), Err$usize);
-static fn_(fmt_parseInt_i32(Sli_const$u8 str), Err$i32);
-static fn_(fmt_parseInt_isize(Sli_const$u8 str), Err$isize);
+static fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32));
+static fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize));
+static fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32));
+static fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize));
 
-fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     if (args.len < 2) {
         printf(
             "[%*s] Usage: %*s <program_to_run> <width> <height>\n",
@@ -57,7 +57,7 @@ fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {
 
     // Prepare the command string
     Arr$$(1024, u8) command = Arr_zero();
-    $ignore                 = snprintf(
+    let_ignore                 = snprintf(
         as$(char*, command.buf),
         Arr_len(command),
         "wt --size %d,%d -d . cmd /k .\\%*s %d %d",
@@ -111,7 +111,7 @@ fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {
         Launcher_window_title.ptr
     );
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 config_ErrSet(fmt_ParseIntErr,
     EmptyStr,
@@ -119,7 +119,7 @@ config_ErrSet(fmt_ParseIntErr,
     InvalidFormat,
     Overflow
 );
-fn_scope(fmt_parseInt_u32(Sli_const$u8 str), Err$u32) {
+fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(eval({
@@ -135,8 +135,8 @@ fn_scope(fmt_parseInt_u32(Sli_const$u8 str), Err$u32) {
         }
         eval_return parsed;
     }));
-} $unscoped;
-fn_scope(fmt_parseInt_usize(Sli_const$u8 str), Err$usize) {
+} $unscoped_(fn);
+fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(eval({
@@ -152,8 +152,8 @@ fn_scope(fmt_parseInt_usize(Sli_const$u8 str), Err$usize) {
         }
         eval_return parsed;
     }));
-} $unscoped;
-fn_scope(fmt_parseInt_i32(Sli_const$u8 str), Err$i32) {
+} $unscoped_(fn);
+fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(eval({
@@ -168,7 +168,7 @@ fn_scope(fmt_parseInt_i32(Sli_const$u8 str), Err$i32) {
             }
 
             // Special case for INT32_MIN (-2147483648)
-            if (str.len == 11 && Str_eql(Str_l("2147483648"), Sli_slice(str, (1, 11)))) {
+            if (str.len == 11 && Str_eql(Str_l("2147483648"), Sli_slice(str, $r(1, 11)))) {
                 return_ok(-2147483648); // INT32_MIN
             }
         } else if (Sli_getAt(str, 0) == '+') {
@@ -198,8 +198,8 @@ fn_scope(fmt_parseInt_i32(Sli_const$u8 str), Err$i32) {
         }
         eval_return parsed;
     }));
-} $unscoped;
-fn_scope(fmt_parseInt_isize(Sli_const$u8 str), Err$isize) {
+} $unscoped_(fn);
+fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(eval({
@@ -234,13 +234,9 @@ fn_scope(fmt_parseInt_isize(Sli_const$u8 str), Err$isize) {
         }
         eval_return parsed;
     }));
-} $unscoped;
+} $unscoped_(fn);
 
-static $inline fn_(Err_codeToStr(Err err), Sli_const$u8) {
-    return Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
-}
-
-fn_TEST_scope("fmt_parseInt_u32") {
+TEST_fn_("fmt_parseInt_u32" $scope) {
     // Valid inputs
     let ok_val = try_(fmt_parseInt_u32(Str_l("123")));
     try_(TEST_expect(ok_val == 123));
@@ -282,10 +278,9 @@ fn_TEST_scope("fmt_parseInt_u32") {
             Str_l("Expected Overflow error")
         ));
     }
-}
-TEST_unscoped;
+} $unscoped_(TEST_fn);
 
-fn_TEST_scope("fmt_parseInt_usize") {
+TEST_fn_("fmt_parseInt_usize" $scope) {
     // Valid inputs
     let ok_val = try_(fmt_parseInt_usize(Str_l("123")));
     try_(TEST_expect(ok_val == 123));
@@ -327,10 +322,9 @@ fn_TEST_scope("fmt_parseInt_usize") {
             Str_l("Expected Overflow error")
         ));
     }
-}
-TEST_unscoped;
+} $unscoped_(TEST_fn);
 
-fn_TEST_scope("fmt_parseInt_i32") {
+TEST_fn_("fmt_parseInt_i32" $scope) {
     // Valid positive
     let pos_val = try_(fmt_parseInt_i32(Str_l("123")));
     try_(TEST_expect(pos_val == 123));
@@ -411,10 +405,9 @@ fn_TEST_scope("fmt_parseInt_i32") {
             Str_l("Expected Overflow error")
         ));
     }
-}
-TEST_unscoped;
+} $unscoped_(TEST_fn);
 
-fn_TEST_scope("fmt_parseInt_isize") {
+TEST_fn_("fmt_parseInt_isize" $scope) {
     // Valid positive
     let pos_val = try_(fmt_parseInt_isize(Str_l("123")));
     try_(TEST_expect(pos_val == 123));
@@ -483,5 +476,4 @@ fn_TEST_scope("fmt_parseInt_isize") {
             Str_l("Expected Overflow error")
         ));
     }
-}
-TEST_unscoped;
+} $unscoped_(TEST_fn);

@@ -31,4 +31,4 @@ TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
     try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, sli.as_const)));
 
     for (usize i = 0; i < 10; ++i) { try_(TEST_expect(Sli_getAt(sli, i) == i)); }
-} $unguarded_TEST_fn;
+} $unguarded_(TEST_fn);

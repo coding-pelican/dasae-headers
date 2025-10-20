@@ -18,7 +18,6 @@
 
 /* Includes =================================================================*/
 
-#define main_no_args (1)
 #include "dh/main.h"
 
 #include "dh/ptr.h"
@@ -85,17 +84,17 @@ use_Err$(tetris_PlayField);
 
 /* Function Prototypes ======================================================*/
 
-static fn_(tetris_Console_bootup(void), Err$void) $must_check;
-static fn_(tetris_Console_shutdown(void), void);
+static fn_((tetris_Console_bootup(void))(Err$void)) $must_check;
+static fn_((tetris_Console_shutdown(void))(void));
 
-static fn_(tetris_isKeyPressed(i32 key), bool);
+static fn_((tetris_isKeyPressed(i32 key))(bool));
 
-static fn_(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField) $must_check;
-static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void) $must_check;
-static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32);
-static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool);
-static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32) $must_check;
-static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void);
+static fn_((tetris_PlayField_init(mem_Allocator allocator))(Err$tetris_PlayField)) $must_check;
+static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score))(Err$void)) $must_check;
+static fn_((tetris_rotate(i32 px, i32 py, i32 r))(i32));
+static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y))(bool));
+static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines))(Err$i32)) $must_check;
+static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void));
 
 #if bti_plat_windows
 use_Sli$(wchar_t);
@@ -107,7 +106,9 @@ struct termios tetris_Console_original = cleared();
 
 /* Main Function ============================================================*/
 
-fn_(dh_main(void), Err$void $guard) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+    let_ignore = args;
+
     /* Initialize random number generator */
     Random_init();
 
@@ -228,11 +229,12 @@ fn_(dh_main(void), Err$void $guard) {
 #endif
 
     return_ok({});
-} $unguarded;
+}
+$unguarded;
 
 /* Function Implementations =================================================*/
 
-static fn_(tetris_Console_bootup(void), Err$void pp_if_(bti_plat_windows)(pp_than_($guard), pp_else_($scope))) {
+static fn_((tetris_Console_bootup(void))(Err$void) pp_if_(bti_plat_windows)(pp_than_($guard), pp_else_($scope))) {
 #if bti_plat_windows
     /* Set up Windows console */
     var screen_size = tetris_screen_width * tetris_screen_height;
@@ -241,7 +243,7 @@ static fn_(tetris_Console_bootup(void), Err$void pp_if_(bti_plat_windows)(pp_tha
     var allocator                = heap_Page_allocator(create$(heap_Page));
     var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar_t), screen_size));
     tetris_Console_screen_buffer = meta_castSli$(Sli$wchar_t, screen_buffer);
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
+    errdefer_($ignore, mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
 
     /* Initialize buffer with spaces */
     for_slice (tetris_Console_screen_buffer, cell) {
@@ -259,7 +261,7 @@ static fn_(tetris_Console_bootup(void), Err$void pp_if_(bti_plat_windows)(pp_tha
     if (tetris_Console_output_handle == INVALID_HANDLE_VALUE) {
         return_err(Err_Unexpected());
     }
-    errdefer_($ignore_capture, CloseHandle(tetris_Console_output_handle));
+    errdefer_($ignore, CloseHandle(tetris_Console_output_handle));
 
     if (!SetConsoleActiveScreenBuffer(tetris_Console_output_handle)) {
         return_err(Err_Unexpected());
@@ -285,10 +287,9 @@ static fn_(tetris_Console_bootup(void), Err$void pp_if_(bti_plat_windows)(pp_tha
 #endif
 
     return_ok({});
-}
-pp_if_(bti_plat_windows)(pp_than_($unguarded), pp_else_($unscoped));
+} $un_(pp_if_(bti_plat_windows)(pp_than_(guarded), pp_else_(scoped)))(fn);
 
-static fn_(tetris_Console_shutdown(void), void) {
+static fn_((tetris_Console_shutdown(void))(void)) {
 #if bti_plat_windows
     var allocator = heap_Page_allocator(create$(heap_Page));
     mem_Allocator_free(allocator, anySli(tetris_Console_screen_buffer));
@@ -299,7 +300,7 @@ static fn_(tetris_Console_shutdown(void), void) {
 #endif /* others */
 }
 
-static fn_(tetris_isKeyPressed(i32 key), bool) {
+static fn_((tetris_isKeyPressed(i32 key))(bool)) {
 #if bti_plat_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
     static const Arr$$(5, i8) s_key_map = Arr_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
@@ -325,7 +326,7 @@ static fn_(tetris_isKeyPressed(i32 key), bool) {
 #endif /* others */
 }
 
-static fn_(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField $scope) {
+static fn_((tetris_PlayField_init(mem_Allocator allocator))(Err$tetris_PlayField) $scope) {
     /* Allocate grid for field with proper type information */
     var items = try_(mem_Allocator_alloc(allocator, typeInfo$(u8), tetris_field_width * tetris_field_height));
 
@@ -344,9 +345,9 @@ static fn_(tetris_PlayField_init(mem_Allocator allocator), Err$tetris_PlayField 
     }
 
     return_ok({ .grid = field });
-} $unscoped;
+} $unscoped_(fn);
 
-static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score), Err$void $scope) {
+static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score))(Err$void) $scope) {
 #if bti_plat_windows
     /* Clear screen buffer */
     for_slice (tetris_Console_screen_buffer, cell) {
@@ -387,7 +388,7 @@ static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curren
 
     /* Draw score */
     wchar_t score_text[32] = { 0 };
-    $ignore                = swprintf(score_text, 32, L"SCORE: %8d", score);
+    let_ignore             = swprintf(score_text, 32, L"SCORE: %8d", score);
     for (i32 i = 0; score_text[i] != L'\0'; ++i) {
         Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, score_text[i]);
     }
@@ -458,9 +459,9 @@ static fn_(tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curren
 #endif /* others */
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32 $scope) {
+static fn_((tetris_rotate(i32 px, i32 py, i32 r))(i32) $scope) {
     switch (r % 4) {
         case_(0 /* 0 degrees */, return_(py * 4 + px));
         case_(1 /* 90 degrees */, return_(12 + py - (px * 4)));
@@ -468,9 +469,9 @@ static fn_(tetris_rotate(i32 px, i32 py, i32 r), i32 $scope) {
         case_(3 /* 270 degrees */, return_(3 - py + (px * 4)));
         default_(claim_unreachable);
     }
-} $unscoped;
+} $unscoped_(fn);
 
-static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y), bool) {
+static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y))(bool)) {
     for (i32 py = 0; py < 4; ++py) {
         for (i32 px = 0; px < 4; ++px) {
             /* Get index into piece */
@@ -494,7 +495,7 @@ static fn_(tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetr
     return true;
 }
 
-static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines), Err$i32 $scope) {
+static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines))(Err$i32) $scope) {
     ArrList_clearRetainingCap(lines->base);
 
     /* Check for complete lines */
@@ -540,9 +541,9 @@ static fn_(tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lin
     }
 
     return_ok(as$(i32, lines->items.len));
-} $unscoped;
+} $unscoped_(fn);
 
-static fn_(tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y), void) {
+static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void)) {
     for (i32 py = 0; py < 4; ++py) {
         for (i32 px = 0; px < 4; ++px) {
             let pi  = tetris_rotate(px, py, rotation);

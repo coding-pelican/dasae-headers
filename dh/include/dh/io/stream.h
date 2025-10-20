@@ -25,10 +25,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-extern fn_(io_stream_print(Sli_const$u8 fmt, ...), void);
-extern fn_(io_stream_printVaArgs(Sli_const$u8 fmt, va_list va_args), void);
-extern fn_(io_stream_eprint(Sli_const$u8 fmt, ...), void);
-extern fn_(io_stream_eprintVaArgs(Sli_const$u8 fmt, va_list va_args), void);
+extern fn_((io_stream_print(Sli_const$u8 fmt, ...))(void));
+extern fn_((io_stream_printVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
+extern fn_((io_stream_println(Sli_const$u8 fmt, ...))(void));
+extern fn_((io_stream_printlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
+
+extern fn_((io_stream_eprint(Sli_const$u8 fmt, ...))(void));
+extern fn_((io_stream_eprintVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
+extern fn_((io_stream_eprintln(Sli_const$u8 fmt, ...))(void));
+extern fn_((io_stream_eprintlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

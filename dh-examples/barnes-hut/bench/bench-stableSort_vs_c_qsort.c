@@ -166,7 +166,7 @@ static mem_Allocator testAllocator(void) {
             const clock_t overhead_begin = clock();                                              \
             memcpy(WORK_ARR, SRC_ARR, (ARR_LEN) * sizeof(i32));                                  \
             overhead_time += (clock() - overhead_begin);                                         \
-            $ignore = BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                            \
+            let_ignore = BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                            \
         }                                                                                        \
         const clock_t end      = clock();                                                        \
         const f64     total_ms = ((f64)(end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC; \
@@ -267,6 +267,6 @@ int main(void) {
 
     printf("\ndone.\n");
 
-    $ignore = getchar();
+    let_ignore = getchar();
     return 0;
 }

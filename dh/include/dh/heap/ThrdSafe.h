@@ -30,7 +30,7 @@ typedef struct heap_ThrdSafe {
 } heap_ThrdSafe;
 
 /// Get allocator interface for instance
-extern fn_(heap_ThrdSafe_allocator(heap_ThrdSafe* self), mem_Allocator);
+extern fn_((heap_ThrdSafe_allocator(heap_ThrdSafe* self))(mem_Allocator));
 
 #if defined(__cplusplus)
 } /* extern "C" */

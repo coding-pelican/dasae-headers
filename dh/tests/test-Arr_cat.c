@@ -28,7 +28,7 @@ TEST_fn_("test Arr_cat" $scope) {
     for_array_indexed (res_6_add_2, item, idx) {
         try_(TEST_expect(*item == as$(i32, idx)));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("test Arr_cat$" $scope) {
     use_Arr$(6, i32);
@@ -59,4 +59,4 @@ TEST_fn_("test Arr_cat$" $scope) {
     for_array_indexed (res_6_add_2, item, idx) {
         try_(TEST_expect(*item == as$(i32, idx)));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

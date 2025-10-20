@@ -101,7 +101,7 @@ fn_scope_ext(func(void), Err$void) {
 } $unguarded;
 
 fn_scope_ext(dh_main(Sli$Sli_const$u8 args), Err$void) {
-    $ignore = args;
+    let_ignore = args;
     printf("begin\n");
     {
         u32 _defer_scope_prev        = __scope_counter.current_line;
@@ -136,7 +136,7 @@ fn_scope_ext(dh_main(Sli$Sli_const$u8 args), Err$void) {
 //         printf("case begin\n");
 //         __scope_counter.current_line = 98 - 1;
 //         {
-//             $ignore = args;
+//             let_ignore = args;
 //             printf("hello\n");
 //         }
 //         printf("case end\n");
@@ -196,7 +196,7 @@ __deferred:
     case 0:
         __scope_defer.curr = -1;
         { // main begin
-            $ignore = args;
+            let_ignore = args;
             return_void();
         } // main end
 #if COMP_TIME
@@ -300,7 +300,7 @@ __deferred:
     case __LINE__:
         __scope_defer.curr = __LINE__ - 1;
         { // main begin
-            $ignore = args;
+            let_ignore = args;
             return_void();
         } // main end
 #if COMP_TIME

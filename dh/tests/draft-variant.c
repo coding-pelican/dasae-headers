@@ -178,4 +178,4 @@ TEST_fn_("variant: basic" $scope) {
     try_(TEST_expect(obj.tag == Obj_scalar));
     let scalar = variant_as(&obj, Obj_scalar);
     try_(TEST_expect(variant_extract(*scalar, Obj_Scalar_i32) == -123));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

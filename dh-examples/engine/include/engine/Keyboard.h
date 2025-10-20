@@ -19,16 +19,16 @@ use_Opt$(engine_Keyboard);
 use_Err$(engine_Keyboard);
 
 /// Get all states for a key
-extern fn_(engine_Keyboard_getState(const engine_Keyboard* self, engine_KeyCode key), engine_KeyButtonStates);
+extern fn_((engine_Keyboard_getState(const engine_Keyboard* self, engine_KeyCode key))(engine_KeyButtonStates));
 /// Queries input state for a specific state
-extern fn_(engine_Keyboard_isState(const engine_Keyboard* self, engine_KeyCode key, engine_KeyButtonStates state), bool);
+extern fn_((engine_Keyboard_isState(const engine_Keyboard* self, engine_KeyCode key, engine_KeyButtonStates state))(bool));
 
 /// Return true if the key was just pressed this frame
-extern fn_(engine_Keyboard_pressed(const engine_Keyboard* self, engine_KeyCode key), bool);
+extern fn_((engine_Keyboard_pressed(const engine_Keyboard* self, engine_KeyCode key))(bool));
 /// Return true if the key is being held down
-extern fn_(engine_Keyboard_held(const engine_Keyboard* self, engine_KeyCode key), bool);
+extern fn_((engine_Keyboard_held(const engine_Keyboard* self, engine_KeyCode key))(bool));
 /// Return true if the key was just released this frame
-extern fn_(engine_Keyboard_released(const engine_Keyboard* self, engine_KeyCode key), bool);
+extern fn_((engine_Keyboard_released(const engine_Keyboard* self, engine_KeyCode key))(bool));
 
 #if defined(__cplusplus)
 } /* extern "C" */

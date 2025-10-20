@@ -46,6 +46,28 @@ extern "C" {
 #define pp_uniqTok(_Tok...)       pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
 
+#define pp_not_(_Cond...) pp_join(_, __pp_not, _Cond)
+#define __pp_not_1        0
+#define __pp_not_0        1
+
+#define pp_and_(_Lhs, _Rhs...) pp_join3(_, __pp_and, _Lhs, _Rhs)
+#define __pp_and_0_0           0
+#define __pp_and_0_1           0
+#define __pp_and_1_0           0
+#define __pp_and_1_1           1
+
+#define pp_or_(_Lhs, _Rhs...) pp_join3(_, __pp_or, _Lhs, _Rhs)
+#define __pp_or_0_0           0
+#define __pp_or_0_1           1
+#define __pp_or_1_0           0
+#define __pp_or_1_1           1
+
+#define pp_xor_(_Lhs, _Rhs...) pp_join3(_, __pp_xor, _Lhs, _Rhs)
+#define __pp_xor_0_0           0
+#define __pp_xor_0_1           1
+#define __pp_xor_1_0           1
+#define __pp_xor_1_1           0
+
 #define pp_if_(Cond...)            pp_join(_, __pp_if, Cond)
 #define __pp_if_1(_Than, _Else...) pp_expand _Than
 #define __pp_if_0(_Than, _Else)    pp_expand _Else
@@ -53,7 +75,7 @@ extern "C" {
 #define pp_else_
 
 #define tpl_id(_tpl, _T...)           pp_join(_, _tpl, _T)
-#define tpl_fn_(_tpl_T, _id, _Ret...) fn_(tpl_id(_tpl_T, _id), _Ret)
+#define tpl_fn_(_tpl_T, _id, _Ret...) fn_((tpl_id(_tpl_T, _id))(_Ret))
 #define tpl_T(_tpl, _T...)            pp_join($, _tpl, _T)
 #define tpl_Ret(_tpl, _T...)          tpl_T(Ret, tpl_id(_tpl, _T))
 

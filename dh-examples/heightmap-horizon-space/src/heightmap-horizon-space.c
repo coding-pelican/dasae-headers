@@ -93,7 +93,7 @@ static fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void
 
 
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+    let_ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     {
@@ -421,7 +421,7 @@ fn_(State_updateCamera(State* self, f64 dt), void) {
 fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
     debug_assert_nonnull(state);
     debug_assert_nonnull(canvas);
-    $ignore = dt;
+    let_ignore = dt;
 
     // Extract parameters from state
     const f64   phi          = state->camera_angle;

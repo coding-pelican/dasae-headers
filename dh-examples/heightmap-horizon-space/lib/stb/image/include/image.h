@@ -4369,7 +4369,7 @@ static stbi_uc* load_jpeg_image(stbi__jpeg* z, int* out_x, int* out_y, int* comp
                             out[2]    = stbi__blinn_8x8(255 - out[2], m);
                             out += n;
                         }
-                    } else { // YCbCr + alpha?  $ignore the fourth channel for now
+                    } else { // YCbCr + alpha?  let_ignore the fourth channel for now
                         z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
                     }
                 } else {
@@ -6533,7 +6533,7 @@ static int stbi__tga_info(stbi__context* s, int* x, int* y, int* comp) {
         return 0; // test height
     }
     tga_bits_per_pixel = stbi__get8(s); // bits per pixel
-    stbi__get8(s);                      // $ignore alpha bits
+    stbi__get8(s);                      // let_ignore alpha bits
     if (tga_colormap_bpp != 0) {
         if ((tga_bits_per_pixel != 8) && (tga_bits_per_pixel != 16)) {
             // when using a colormap, tga_bits_per_pixel is the size of the indexes

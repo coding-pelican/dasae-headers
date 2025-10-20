@@ -76,7 +76,7 @@ struct Node {
     var_(data, meta_Value);
 };
 
-fn_(Node_init(Node* self, meta_Ptr ptr), Node*) {
+fn_((Node_init(Node* self, meta_Ptr ptr))(Node*)) {
     toNoneptr(&self->next);
     self->data.ref.type = ptr.type;
     self->data.ref.addr = self->data.data;
@@ -84,7 +84,7 @@ fn_(Node_init(Node* self, meta_Ptr ptr), Node*) {
     return self;
 }
 
-fn_(Node_data(Node* self), meta_Value) {
+fn_((Node_data(Node* self))(meta_Value)) {
     return self->data;
 }
 
@@ -126,8 +126,8 @@ union Node$i32 {
 
 // clang-format off
 $TEST_only(TEST_fn_("meta_Value_load" $scope))
-$release_only(fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope)) {
-    $release_only($ignore = args;)
+$release_only(fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope)) {
+    $release_only(let_ignore = args;)
 
     var_type(node, Node$i32*, Node_init(make$(Node$i32).base, meta_create$(i32, 123)));
     i32 x = meta_Value_load$(i32, Node_data(node->base));
@@ -138,6 +138,6 @@ $release_only(fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope)) {
     try_(TEST_expect(y == 123));
 
     $release_only(return_ok({});)
-} $TEST_only($unscoped_TEST_fn)
-$release_only($unscoped);
+} $TEST_only($unscoped_(TEST_fn))
+$release_only($unscoped_(fn));
 // clang-format on

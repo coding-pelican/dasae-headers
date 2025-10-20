@@ -30,47 +30,48 @@
         raw$$a$(_N, _T) buf; \
     }
 
-#define a_init$(_N_T__initial...) \
-    pp_expand(pp_defer(comp_inline_block__a_init$)(comp_expand_param__a_init$ _N_T__initial))
-#define comp_expand_param__a_init$(_N_T...) pp_countArg(_N_T), (_N_T), pp_expand
-#define comp_inline_block__a_init$(_count_args, _N_T, _initial...) \
-    pp_defer(pp_cat3)(comp_inline, _count_args, __a_init$)(_N_T, _initial)
-#define comp_inline_block1__a_init$(_a$N$T, _initial...) \
+#define init$a(_initial...) { .buf = _initial }
+#define init$a$(_N_T__initial...) \
+    pp_expand(pp_defer(comp_inline_block__init$a$)(comp_expand_param__init$a$ _N_T__initial))
+#define comp_expand_param__init$a$(_N_T...) pp_countArg(_N_T), (_N_T), pp_expand
+#define comp_inline_block__init$a$(_count_args, _N_T, _initial...) \
+    pp_defer(pp_cat3)(comp_inline_block, _count_args, __init$a$)(_N_T, _initial)
+#define comp_inline_block1__init$a$(_a$N$T, _initial...) \
     (_a$N$T{ .buf = _initial })
-#define comp_inline_block2__a_init$(_N_T, _initial...) \
+#define comp_inline_block2__init$a$(_N_T, _initial...) \
     ((a$ _N_T){ .buf = _initial })
 
-#define a_from$(_T__initial...) \
-    pp_expand(pp_defer(comp_inline__a_from$)(comp_param__a_from$ _T__initial))
-#define comp_param__a_from$(_T...)            _T, pp_expand
-#define comp_inline__a_from$(_T, _initial...) ((struct { \
+#define from$a$(_T__initial...) \
+    pp_expand(pp_defer(comp_inline__from$a$)(comp_param__from$a$ _T__initial))
+#define comp_param__from$a$(_T...)            _T, pp_expand
+#define comp_inline__from$a$(_T, _initial...) ((struct { \
     raw$$a$(sizeOf$((_T[])_initial) / sizeOf$(_T), _T) buf; \
 }){ .buf = _initial })
 
-#define a_buf(_a...) ((_a).buf)
-#define a_ptr(_a...) (&*a_buf(_a))
-#define a_len(_a...) countOf((_a).buf)
+#define buf$a(_a...) ((_a).buf)
+#define ptr$a(_a...) (&*buf$a(_a))
+#define len$a(_a...) countOf((_a).buf)
 
-#define a_asg(_p_lhs, _rhs...) \
-    comp_inline__a_asg(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__a_asg(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$a(_p_lhs, _rhs...) \
+    comp_inline__asg$a(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$a(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*_p_lhs; \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(a_buf(*__p_lhs)), TypeOf(a_buf(__rhs)))); \
+    claim_assert_static(isSameType$(TypeOf(buf$a(*__p_lhs)), TypeOf(buf$a(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
 
-#define a_at(_a, _index...) \
-    comp_inline__a_at(pp_uniqTok(a), pp_uniqTok(index), _a, _index)
-#define comp_inline__a_at(__a, __index, _a, _index...) ({ \
+#define at$a(_a, _index...) \
+    comp_inline__at$a(pp_uniqTok(a), pp_uniqTok(index), _a, _index)
+#define comp_inline__at$a(__a, __index, _a, _index...) ({ \
     let_(__a, TypeOf(&_a)) = &_a; \
     let_(__index, usize)   = _index; \
-    claim_assert_static_msg(__builtin_constant_p(__index) ? (__index < a_len(*__a)) : true, "index out of bounds"); \
-    debug_assert_fmt(__index < a_len(*__a), "Index out of bounds: %zu >= %zu", __index, a_len(*__a)); \
-    &a_buf(*__a)[__index]; \
+    claim_assert_static_msg(__builtin_constant_p(__index) ? (__index < len$a(*__a)) : true, "index out of bounds"); \
+    debug_assert_fmt(__index < len$a(*__a), "Index out of bounds: %zu >= %zu", __index, len$a(*__a)); \
+    &buf$a(*__a)[__index]; \
 })
 
 #define s$(_T...)  pp_join($, s, _T)
@@ -81,25 +82,25 @@
         usize len; \
     } s$(_T)
 
-#define s_ptr(_s...) ((_s).ptr)
-#define s_len(_s...) ((_s).len)
-#define s_asg(_p_lhs, _rhs...) \
-    comp_inline__s_asg(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__s_asg(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define ptr$s(_s...) ((_s).ptr)
+#define len$s(_s...) ((_s).len)
+#define asg$s(_p_lhs, _rhs...) \
+    comp_inline__asg$s(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$s(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*_p_lhs; \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(s_ptr(*__p_lhs)), TypeOf(s_ptr(__rhs)))); \
+    claim_assert_static(isSameType$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
 
-#define a_ref(_T, _p_a...) ((s$(_T)){ \
-    .ptr = a_buf(*(_p_a)), \
-    .len = a_len(*(_p_a)), \
+#define ref$a(_T, _p_a...) ((s$(_T)){ \
+    .ptr = buf$a(*(_p_a)), \
+    .len = len$a(*(_p_a)), \
 })
-#define s_deref(_N, _T, _s...) (&*({ \
+#define deref$s(_N, _T, _s...) (&*({ \
     let __result = &*({ \
         typedef a$$$(_N, _T) a$(_N, _T); \
         let_(__n, usize) = _N; \
@@ -107,10 +108,10 @@
         debug_assert_fmt(__s.len == __n, "length mismatch: %zu != %zu", __s.len, __n); \
         as$(a$(_N, _T)*, __s.ptr); \
     }); \
-    _Generic(__result, a$(_N, _T) *: __result, default: as$(a$(_N, _T)*, __result)); \
+    _Generic(__result, a$(_N, _T)*: __result, default: as$(a$(_N, _T)*, __result)); \
     __result; \
 }))
-// #define s_deref(_N, _T, _s...) (&*({ \
+// #define deref$s(_N, _T, _s...) (&*({ \
 //     typedef a$$$(_N, _T) a$(_N, _T); \
 //     let_(__n, usize) = _N; \
 //     let __s          = _s; \
@@ -133,44 +134,44 @@ tpl$(p$)(const$i32);
 tpl$(s$)(const$i32);
 tpl$(a$)(4, i32);
 TEST_fn_("test" $scope) {
-    var a = a_from$((i32)({ 0, 1, 2, 3 }));
-    let b = a_from$((i32)({ 4, 5, 6, 7 }));
-    var c = a_init$((4, i32)({ [0] = 0, [1] = 1, [2] = 2, [3] = 3 }));
-    var d = a_init$((a$(4, i32))({ [0] = 0, [1] = 1, [2] = 2, [3] = 3 }));
-    let e = a_asg(&a, b);
+    var a = from$a$((i32)({ 0, 1, 2, 3 }));
+    let b = from$a$((i32)({ 4, 5, 6, 7 }));
+    var c = init$a$((4, i32)({ [0] = 0, [1] = 1, [2] = 2, [3] = 3 }));
+    var d = init$a$((a$(4, i32))({ [0] = 0, [1] = 1, [2] = 2, [3] = 3 }));
+    let e = asg$a(&a, b);
 
-    var s = a_ref(i32, &a);
-    var t = (s$$(i32)){ .ptr = a_ptr(a), .len = a_len(a) };
+    var s = ref$a(i32, &a);
+    var t = (s$$(i32)){ .ptr = ptr$a(a), .len = len$a(a) };
 
-    a$$(4, a$(4, i32)) mat0 = { {
-        { 0, 1, 2, 3 },
-        { 4, 5, 6, 7 },
-        { 8, 9, 10, 11 },
-        { 12, 13, 14, 15 },
-    } };
-    a$$(4, a$(4, i32)) mat1 = { {
-        { 0, 1, 2, 3 },
-        { 4, 5, 6, 7 },
-        { 8, 9, 10, 11 },
-        { 12, 13, 14, 15 },
-    } };
-    a_asg(&mat0, mat1);
+    a$$(4, a$(4, i32)) mat0 = init$a({
+        init$a({ 0, 1, 2, 3 }),
+        init$a({ 4, 5, 6, 7 }),
+        init$a({ 8, 9, 10, 11 }),
+        init$a({ 12, 13, 14, 15 }),
+    });
+    a$$(4, a$(4, i32)) mat1 = init$a({
+        init$a({ 0, 1, 2, 3 }),
+        init$a({ 4, 5, 6, 7 }),
+        init$a({ 8, 9, 10, 11 }),
+        init$a({ 12, 13, 14, 15 }),
+    });
+    asg$a(&mat0, mat1);
 
-    $ignore = c;
-    $ignore = d;
-    $ignore = s;
-    $ignore = t;
+    let_ignore = c;
+    let_ignore = d;
+    let_ignore = s;
+    let_ignore = t;
 
-    try_(TEST_expect(*a_at(a, 0) == *a_at(b, 0)));
-    try_(TEST_expect(*a_at(a, 1) == *a_at(b, 1)));
-    try_(TEST_expect(*a_at(a, 2) == *a_at(b, 2)));
-    try_(TEST_expect(*a_at(a, 3) == *a_at(b, 3)));
+    try_(TEST_expect(*at$a(a, 0) == *at$a(b, 0)));
+    try_(TEST_expect(*at$a(a, 1) == *at$a(b, 1)));
+    try_(TEST_expect(*at$a(a, 2) == *at$a(b, 2)));
+    try_(TEST_expect(*at$a(a, 3) == *at$a(b, 3)));
 
     try_(TEST_expect(e == &a));
-    try_(TEST_expect(a_at(*e, 0) == a_at(a, 0)));
-    try_(TEST_expect(a_at(*e, 1) == a_at(a, 1)));
-    try_(TEST_expect(a_at(*e, 2) == a_at(a, 2)));
-    try_(TEST_expect(a_at(*e, 3) == a_at(a, 3)));
+    try_(TEST_expect(at$a(*e, 0) == at$a(a, 0)));
+    try_(TEST_expect(at$a(*e, 1) == at$a(a, 1)));
+    try_(TEST_expect(at$a(*e, 2) == at$a(a, 2)));
+    try_(TEST_expect(at$a(*e, 3) == at$a(a, 3)));
 
     // int a[4] = {};
     // index(a, 0);
@@ -182,17 +183,16 @@ TEST_fn_("test" $scope) {
     // const usize n = t;
     // index(a, n);
 
-    // let s = a_ref(i32, &a_from(i32, { 0, 1, 2, 3 }));
-    // var a = s_deref(4, i32, s);
-    // var b = s_deref(4, i32, s);
+    // let s = ref$a(i32, &a_from(i32, { 0, 1, 2, 3 }));
+    // var a = deref$s(4, i32, s);
+    // var b = deref$s(4, i32, s);
     // a     = b;
-    // try_(TEST_expect(*a_at(*a, 0) == 0));
-    // try_(TEST_expect(*a_at(*a, 1) == 1));
-    // try_(TEST_expect(*a_at(*a, 2) == 2));
+    // try_(TEST_expect(*at$a(*a, 0) == 0));
+    // try_(TEST_expect(*at$a(*a, 1) == 1));
+    // try_(TEST_expect(*at$a(*a, 2) == 2));
 
-    // try_(TEST_expect(s.ptr == a_ptr(*a)));
-    // try_(TEST_expect(s.len == a_len(*a)));
+    // try_(TEST_expect(s.ptr == ptr$a(*a)));
+    // try_(TEST_expect(s.len == len$a(*a)));
 
     // var c = ~(-3);
-} $unscoped_TEST_fn
-;
+} $unscoped_(TEST_fn);

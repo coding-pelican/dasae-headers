@@ -94,7 +94,7 @@ time_Duration op_fnDivAsgBy(time_Duration, u64) {
     return *self = op_divBy(time_Duration, u64)(*self, other);
 }
 
-fn_(time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs), Opt$time_Duration $scope) {
+fn_((time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs))(Opt$time_Duration) $scope) {
     let total_nanos = (lhs.secs * time_nanos_per_sec + lhs.nanos)
                     + (rhs.secs * time_nanos_per_sec + rhs.nanos);
     // Check for overflow in nanoseconds
@@ -107,7 +107,7 @@ fn_(time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs), Opt$time_Durati
     return_some(literal_time_Duration_from(secs, nanos));
 } $unscoped;
 
-fn_(time_Duration_chkdSub(time_Duration lhs, time_Duration rhs), Opt$time_Duration $scope) {
+fn_((time_Duration_chkdSub(time_Duration lhs, time_Duration rhs))(Opt$time_Duration) $scope) {
     let lhs_total_nanos = lhs.secs * time_nanos_per_sec + lhs.nanos;
     let rhs_total_nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
     // Check for underflow
@@ -120,7 +120,7 @@ fn_(time_Duration_chkdSub(time_Duration lhs, time_Duration rhs), Opt$time_Durati
     return_some(literal_time_Duration_from(secs, nanos));
 } $unscoped;
 
-fn_(time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs), Opt$time_Duration $scope) {
+fn_((time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $scope) {
     // Check for overflow
     if ((u32_limit - rhs) < lhs.nanos || (u64_limit / rhs) < lhs.secs) {
         return_none();
@@ -129,7 +129,7 @@ fn_(time_Duration_chkdMul_u64(time_Duration lhs, u64 rhs), Opt$time_Duration $sc
     return_some(literal_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
 } $unscoped;
 
-fn_(time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs), Opt$time_Duration $scope) {
+fn_((time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $scope) {
     // Check for division by zero or overflow
     if (rhs == 0 || (u64_limit / rhs) < lhs.secs || (u32_limit / rhs) < lhs.nanos) {
         return_none();

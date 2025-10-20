@@ -77,7 +77,7 @@
 #define mem_startsWith$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _prefix... /* Opt$usize */) \
     tpl_id(mem_startsWith, _T)(_haystack, _prefix)
 #define mem_startsWith_useT$(_T...) \
-    static fn_(tpl_id(mem_startsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) prefix), Opt$usize) { \
+    static fn_((tpl_id(mem_startsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) prefix))(Opt$usize)) { \
         return mem_bytes_startsWith( \
             typeInfo$(_T), \
             Sli_from$(Sli_const$u8, as$(const u8*, haystack.ptr), haystack.len), \
@@ -88,7 +88,7 @@
 #define mem_endsWith$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _suffix... /* Opt$usize */) \
     tpl_id(mem_endsWith, _T)(_haystack, _suffix)
 #define mem_endsWith_useT$(_T...) \
-    static fn_(tpl_id(mem_endsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) suffix), Opt$usize) { \
+    static fn_((tpl_id(mem_endsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) suffix))(Opt$usize)) { \
         return mem_bytes_endsWith( \
             typeInfo$(_T), \
             Sli_from$(Sli_const$u8, as$(const u8*, haystack.ptr), haystack.len), \
@@ -96,13 +96,13 @@
         ); \
     }
 
-static $inline_always fn_(mem_bytes_eql(TypeInfo type, Sli_const$u8 lhs, Sli_const$u8 rhs), bool) {
+static $inline_always fn_((mem_bytes_eql(TypeInfo type, Sli_const$u8 lhs, Sli_const$u8 rhs))(bool)) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
     if (lhs.len != rhs.len) { return false; }
     return mem_cmp(lhs.ptr, rhs.ptr, lhs.len * type.size) == 0;
 }
-static $inline_always fn_(mem_bytes_startsWith(TypeInfo type, Sli_const$u8 haystack, Sli_const$u8 prefix), Opt$usize $scope) {
+static $inline_always fn_((mem_bytes_startsWith(TypeInfo type, Sli_const$u8 haystack, Sli_const$u8 prefix))(Opt$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(prefix.ptr);
     let haystack_bytes = haystack.len * type.size;
@@ -111,7 +111,7 @@ static $inline_always fn_(mem_bytes_startsWith(TypeInfo type, Sli_const$u8 hayst
     if (!mem_eqlBytes(haystack.ptr, prefix.ptr, prefix_bytes)) { return_none(); }
     return_some(prefix.len);
 } $unscoped;
-static $inline_always fn_(mem_bytes_endsWith(TypeInfo type, Sli_const$u8 haystack, Sli_const$u8 suffix), Opt$usize $scope) {
+static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, Sli_const$u8 haystack, Sli_const$u8 suffix))(Opt$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(suffix.ptr);
     let haystack_bytes = haystack.len * type.size;

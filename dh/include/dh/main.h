@@ -48,13 +48,13 @@ extern "C" {
 #else /* !main_no_hijack */
 
 #if main_no_args && main_no_returns_err
-extern fn_(dh_main(void), void);
+extern fn_((dh_main(void))(void));
 #elif main_no_args && !main_no_returns_err
-extern fn_(dh_main(void), Err$void) $must_check;
+extern fn_((dh_main(void))(Err$void)) $must_check;
 #elif !main_no_args && main_no_returns_err
-extern fn_(dh_main(Sli$Sli_const$u8 args), void);
+extern fn_((dh_main(Sli$Sli_const$u8 args))(void));
 #else  /* !main_no_args && !main_no_returns_err */
-extern fn_(dh_main(Sli$Sli_const$u8 args), Err$void) $must_check;
+extern fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)) $must_check;
 #endif /* !main_no_args && !main_no_returns_err */
 
 /*========== Root main ======================================================*/
@@ -64,7 +64,7 @@ extern fn_(dh_main(Sli$Sli_const$u8 args), Err$void) $must_check;
 
 #if !TEST_comp_enabled
 
-func((
+fn_((
 #if main_no_args && main_no_returns_err
     main(void)
 #elif main_no_args && !main_no_returns_err
@@ -109,7 +109,7 @@ func((
     return 0;
 }
 #else  /* TEST_comp_enabled */
-func((main(void))(int)) {
+fn_((main(void))(int)) {
     TEST_Framework_run();
     return 0;
 }

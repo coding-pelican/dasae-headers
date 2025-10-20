@@ -4,12 +4,12 @@
 #include <stdlib.h>
 
 // Forward declarations for allocator vtable functions
-static fn_(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
-static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
-static fn_(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
-static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
+static fn_((heap_Classic_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8));
+static fn_((heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
+static fn_((heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
+static fn_((heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
 
-fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
+fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
     debug_assert_nonnull(self);
     // VTable for Classic allocator
     static const mem_Allocator_VT vt[1] = { {
@@ -26,7 +26,7 @@ fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope) {
+static fn_((heap_Classic_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     $unused(ctx);
 
@@ -62,13 +62,13 @@ static fn_(heap_Classic_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $sco
     return_none();
 } $unscoped;
 
-static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
+static fn_((heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    $ignore = ctx;
-    $ignore = buf_align;
+    let_ignore = ctx;
+    let_ignore = buf_align;
 
     // Get current allocation size
     let ptr = buf.ptr;
@@ -91,7 +91,7 @@ static fn_(heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_
     return false;
 }
 
-static fn_(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8 $scope) {
+static fn_((heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
@@ -151,13 +151,13 @@ static fn_(heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_l
     return_none();
 } $unscoped;
 
-static fn_(heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
+static fn_((heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    $ignore = ctx;
-    $ignore = buf_align;
+    let_ignore = ctx;
+    let_ignore = buf_align;
 
     var raw_ptr = as$(anyptr, buf.ptr);
     if (raw_ptr == null) { return; }

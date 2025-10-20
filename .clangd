@@ -35,8 +35,10 @@ Diagnostics:
       - readability-braces-around-statements
       - readability-identifier-length
       - readability-magic-numbers
+      - readability-math-missing-parentheses
       - readability-named-parameter
       - readability-uppercase-literal-suffix
+      - readability-use-concise-preprocessor-directives
       - readability-function-cognitive-complexity
       - readability-function-size
       - misc-misplaced-const
@@ -84,12 +86,12 @@ CompileFlags:
   Add:
     - -xc
     - -std=c17
-    - -I/mnt/c/dev/dasae-headers/dh
-    - -I/mnt/c/dev/dasae-headers/dh/include
-    - -I/mnt/c/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -IC:/dev/dasae-headers/dh
-    - -IC:/dev/dasae-headers/dh/include
-    - -IC:/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Ic:/dasae/dev/dasae-headers/dh
+    - -Ic:/dasae/dev/dasae-headers/dh/include
+    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Wall
     - -Wextra
     - -Werror
@@ -110,12 +112,12 @@ CompileFlags:
   Add:
     - -xc++
     - -std=c++20
-    - -I/mnt/c/dev/dasae-headers/dh
-    - -I/mnt/c/dev/dasae-headers/dh/include
-    - -I/mnt/c/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -IC:/dev/dasae-headers/dh
-    - -IC:/dev/dasae-headers/dh/include
-    - -IC:/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Ic:/dasae/dev/dasae-headers/dh
+    - -Ic:/dasae/dev/dasae-headers/dh/include
+    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Wall
     - -Wextra
     - -Werror
@@ -142,12 +144,12 @@ CompileFlags:
 #     - .*\.h
 # CompileFlags:
 #   Add:
-#     - -I/mnt/c/dev/dh-workspace/hello-world/src
-#     - -I/mnt/c/dev/dh-workspace/hello-world/include
-#     - -I/mnt/c/dev/dh-workspace/hello-world/lib/deps
-#     - -IC:/dev/dh-workspace/hello-world/src
-#     - -IC:/dev/dh-workspace/hello-world/include
-#     - -IC:/dev/dh-workspace/hello-world/lib/deps
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/lib/deps
 # ========== C++ Project ==========
 # ---
 # If:
@@ -160,12 +162,12 @@ CompileFlags:
 #     - .*\.hpp
 # CompileFlags:
 #   Add:
-#     - -I/mnt/c/dev/dh-workspace/hello-world/src
-#     - -I/mnt/c/dev/dh-workspace/hello-world/include
-#     - -I/mnt/c/dev/dh-workspace/hello-world/lib/deps
-#     - -IC:/dev/dh-workspace/hello-world/src
-#     - -IC:/dev/dh-workspace/hello-world/include
-#     - -IC:/dev/dh-workspace/hello-world/lib/deps
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/lib/deps
 ########################################################################
 ################################
 #### Compiler Command Order ####

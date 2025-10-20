@@ -104,12 +104,6 @@ extern Opt$Sli$u8 Sli_const$u8Cast(Sli_const$u8 self);
 
 /// Concatenate strings
 extern Err$Sli$u8   Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs) $must_check;
-/// Print string
-extern void         Str_print(Sli_const$u8 self);
-/// Print string with newline
-extern void         Str_println(Sli_const$u8 self);
-/// Format string with arguments
-extern Err$Sli$u8   Str_format(mem_Allocator allocator, const char* format, ...) $must_check;
 /// Get substring
 extern Sli_const$u8 Str_slice(Sli_const$u8 self, usize start, usize end);
 /// Remove whitespace from both ends

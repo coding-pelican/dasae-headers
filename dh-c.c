@@ -456,6 +456,7 @@ bool find_dh_path(BuildConfig* config) {
 
     // Try to locate dh in standard locations
     const char* standard_locations[] = {
+        "C:/dev/dasae/dasae-headers/dh",
         "C:/dasae-storage/dev/source/c-cpp-workspace/projects/dasae-src/dasae-headers/dh",
         "../dh",
         "../../dh",
@@ -1985,18 +1986,18 @@ void write_example_files(const char* project_path) {
           "/// @brief Example DH-C program\n"
           "\n"
           "#include <dh/main.h>\n"
-          "#include <dh/Str.h>\n"
+          "#include <dh/io/stream.h>\n"
           "\n"
-          "fn_TEST_scope(\"simple test\") {\n"
+          "TEST_fn_(\"simple test\" $scope) {\n"
           "    try_(TEST_expect(1 + 1 == 2));\n"
-          "} TEST_unscoped;\n"
+          "} $unscoped_(TEST_fn);\n"
           "\n"
-          "fn_scope(dh_main(Sli$Sli_const$u8 args), Err$void) {\n"
-          "    $ignore args;\n"
-          "    let message = Str_l(\"Hello, world!\");\n"
-          "    Str_println(message);\n"
+          "fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {\n"
+          "    let_ignore = args;\n"
+          "    let message = u8_l(\"Hello\");\n"
+          "    io_stream_println(u8_l(\"{:s}, world!\"), message);\n"
           "    return_ok({});\n"
-          "} $unscoped;\n";
+          "} $unscoped_(fn);\n";
 
     write_file(main_path, main_content);
 }

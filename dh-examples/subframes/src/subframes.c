@@ -81,14 +81,14 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
     // Initialize heap allocator and page pool
     var memory_engine    = getEngineMemory();
     var arena_engine     = heap_Arena_init(heap_Fixed_allocator(&memory_engine));
-    $ignore              = arena_engine;
+    let_ignore              = arena_engine;
     // var allocator_engine = heap_Arena_allocator(&arena_engine);
     var allocator_engine = heap_Page_allocator(&(heap_Page){});
     log_info("allocator reserved for engine");
 
     var memory_game    = getGameMemory();
     var arena_game     = heap_Arena_init(heap_Fixed_allocator(&memory_game));
-    $ignore            = arena_game;
+    let_ignore            = arena_game;
     // var allocator_game = heap_Arena_allocator(&arena_game);
     var allocator_game = heap_Page_allocator(&(heap_Page){});
     log_info("allocator reserved for game");
@@ -184,7 +184,7 @@ fn_(dh_main(void), Err$void $guard) { /* NOLINT(readability-function-cognitive-c
 
     const f32 radius = 2.5f;
     log_info("game state created");
-    $ignore = engine_utils_getch();
+    let_ignore = engine_utils_getch();
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);

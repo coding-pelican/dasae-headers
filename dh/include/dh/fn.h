@@ -15,8 +15,8 @@
  *          function declarations, and function implementations.
  */
 
-#ifndef FN_INCLUDED
-#define FN_INCLUDED (1)
+#ifndef fn__included
+#define fn__included (1)
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -33,13 +33,13 @@ extern "C" {
 #define $scope , $_scope
 #define $guard , $_guard
 
-#define func(/*_ident(_Params...))(_TReturn) <$ext>*/...) \
-    pp_expand(pp_defer(fn_)(pp_Tuple_unwrapSufCommaExpand __VA_ARGS__))
-#define fn_(_ident_w_Params, _TReturn...) \
-    pp_overload(__fn, _TReturn)(_ident_w_Params, _TReturn)
-#define __fn_1(_ident_w_Params, _TReturn...) \
+#define fn_(/*(_ident(_Params...))(_TReturn) <$ext>*/...) \
+    pp_expand(pp_defer(block_inline__fn_)(param_expand__fn_ __VA_ARGS__))
+#define param_expand__fn_(...) __VA_ARGS__, pp_expand
+#define block_inline__fn_(...) pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
+#define __block_inline__fn_2(_ident_w_Params, _TReturn...) \
     comp_syn__fn_(_ident_w_Params, _TReturn)
-#define __fn_2(_ident_w_Params, _TReturn, _Extension...) \
+#define __block_inline__fn_3(_ident_w_Params, _TReturn, _Extension...) \
     pp_join(_, fn, _Extension)(_ident_w_Params, _TReturn)
 
 #define fn_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(_ident_w_Params, _TReturn)
@@ -87,6 +87,11 @@ _TReturn _ident_w_Params { \
     do
 #define comp_syn__$unscoped_fn \
     while (false); \
+    _Generic(TypeOf(*__reserved_return), \
+        void: ({ goto __step_return; }), \
+        Void: ({ goto __step_return; }), \
+        default: ({}) \
+    ); \
     if (false) { __step_unscope: \
         if (bti_Generic_match$(TypeOf(*__reserved_return), \
             bti_Generic_pattern$(void) false, \
@@ -120,6 +125,11 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__$unguarded_fn \
         break; \
     } \
+    _Generic(TypeOf(*__reserved_return), \
+        void: ({ goto __step_return; }), \
+        Void: ({ goto __step_return; }), \
+        default: ({}) \
+    ); \
     if (false) { __step_unscope: \
         if (bti_Generic_match$(TypeOf(*__reserved_return), \
             bti_Generic_pattern$(void) false, \
@@ -196,6 +206,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define __callFn(_ident, _Args...) (ensureNonnull(_ident)(_Args))
 
 // clang-format off
+/* if-else as expression block */
 #define eval_(T_Break_w_Ext...) comp_syn__eval_test(T_Break_w_Ext)
 #define comp_syn__eval_test(T_Break, _Ext...) pp_cat(comp_syn__eval_, _Ext)(T_Break)
 #define comp_syn__eval_$_scope(T_Break...) ({ \
@@ -204,6 +215,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
         void: 0, \
         default: sizeOf$(T_Break) \
     )]){}); \
+    $maybe_unused bool __has_broken = false; /* for integration with `expr_` */ \
     if (false) { __step_break: goto __step_unscope; } \
     /* do */
 #define $unscoped_eval comp_syn__eval_$unscoped
@@ -260,7 +272,9 @@ __step_deferred: switch (__scope_counter.current_line) { \
 })
 // clang-format on
 
+/* TODO: else로 끝나지 않으면 컴파일 에러를 발생시키도록 만들기 */
 // clang-format off
+/* [for|while|switch|match]-else as expression block (supports else) */
 #define expr_(/*<_TBreak $ext>|<else>*/...) inline__expr(__VA_ARGS__) pp_expand
 #define inline__expr(...) pp_overload(inline__expr, __VA_ARGS__)(__VA_ARGS__)
 #define inline__expr_1(_else...) ; if (__has_broken) { goto __step_break; } _else
@@ -296,21 +310,25 @@ __step_deferred: switch (__scope_counter.current_line) { \
 })
 // clang-format on
 
-#define $unscoped_(_keyword) \
-    pp_cat(inline__$unscoped_, _keyword)()
+#define $un_(_keyword)        pp_cat(inline__$un_, _keyword)()
+#define inline__$un_scoped()  $unscoped_
+#define inline__$un_guarded() $unguarded_
+
+#define $unscoped_(_keyword)         pp_cat(inline__$unscoped_, _keyword)()
 #define inline__$unscoped_fn()       $unscoped
-#define inline__$unscoped_async_fn() $unscoped_async_fn
-#define inline__$unscoped_Thrd_fn()  $unscoped_Thrd_fn
 #define inline__$unscoped_TEST_fn()  $unscoped_TEST_fn
-#define inline__$unscoped_eval()     $unscoped_eval
+#define inline__$unscoped_Thrd_fn()  $unscoped_Thrd_fn
+#define inline__$unscoped_async_fn() $unscoped_async_fn
+#define inline__$unscoped_la()       $unscoped_la
+#define inline__$unscoped_$eval()    $unscoped_eval
 #define inline__$unscoped_expr()     $unscoped_expr
 
-#define $unguarded_(_keyword) \
-    pp_cat(inline__$unguarded_, _keyword)()
+#define $unguarded_(_keyword)         pp_cat(inline__$unguarded_, _keyword)()
 #define inline__$unguarded_fn()       $unguarded
-#define inline__$unguarded_async_fn() $unguarded_async_fn
-#define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
 #define inline__$unguarded_TEST_fn()  $unguarded_TEST_fn
+#define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
+#define inline__$unguarded_async_fn() $unguarded_async_fn
+#define inline__$unguarded_la()       $unguarded_la
 #define inline__$unguarded_eval()     $unguarded_eval
 #define inline__$unguarded_expr()     $unguarded_expr
 
@@ -350,4 +368,4 @@ fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* FN_INCLUDED */
+#endif /* fn__included */

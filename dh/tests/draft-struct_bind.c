@@ -16,7 +16,7 @@ union Model {
     };
 };
 
-fn_(getModel(void), union Model) {
+fn_((getModel(void))(union Model)) {
     static usize index = 0;
     static Foo   foo   = { .a = 1, .b = 2 };
     return (union Model){
@@ -47,15 +47,15 @@ fn_(getModel(void), union Model) {
     name0        = __$tuple._n0; \
     name1        = __$tuple._n1
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+    let_ignore = args;
 
     {
         let __$ret = getModel();
         let a      = __$ret._field.n0;
         let b      = __$ret._field.n1;
-        $ignore    = a;
-        $ignore    = b;
+        let_ignore = a;
+        let_ignore = b;
     }
 
     {
@@ -63,13 +63,13 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
         var b = 2;
         let c = tuple(a, b);
         untuple(c, var n0, let n1);
-        $ignore = n0;
-        $ignore = n1;
+        let_ignore = n0;
+        let_ignore = n1;
 
-        var d   = tuple_at(&c, 0);
-        let e   = tuple_atMut(&c, 0);
-        $ignore = d;
-        $ignore = e;
+        var d      = tuple_at(&c, 0);
+        let e      = tuple_atMut(&c, 0);
+        let_ignore = d;
+        let_ignore = e;
     }
 
     return_ok({});

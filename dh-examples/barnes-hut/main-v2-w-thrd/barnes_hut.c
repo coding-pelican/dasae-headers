@@ -123,7 +123,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        $ignore = getchar();
+        let_ignore = getchar();
 
         // Create threads for simulation and visualization
         pthread_t sim_thread = 0;

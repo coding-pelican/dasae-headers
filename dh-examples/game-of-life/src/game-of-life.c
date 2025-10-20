@@ -85,7 +85,7 @@ $static fn_(State_render(const State* self, engine_Canvas* canvas, f64 dt), void
 
 
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+    let_ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     defer_(log_fini());
@@ -173,7 +173,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     }
     log_info("game state created\n");
 
-    $ignore = engine_utils_getch();
+    let_ignore = engine_utils_getch();
 
     // Initialize timing variables
     let target_frame_time = time_Duration_fromSecs_f64(target_spf);
@@ -245,11 +245,11 @@ fn_(State_init(
     const usize buffer_size   = buffer_width * buffer_height;
 
     let mem_curr_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(mem_curr_states)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_curr_states)));
     memset(mem_curr_states.ptr, 0, buffer_size);
 
     let mem_next_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(mem_next_states)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_next_states)));
     memset(mem_next_states.ptr, 0, buffer_size);
 
     return_ok({
@@ -308,7 +308,7 @@ fn_(State_update(State* self, f64 dt), void) {
 fn_(State_render(const State* self, engine_Canvas* canvas, f64 dt), void) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(canvas);
-    $ignore = dt;
+    let_ignore = dt;
 
     let cells  = GameOfLife_entireCells(&self->cells);
     let buffer = canvas->buffer;
@@ -329,7 +329,7 @@ fn_(State_render(const State* self, engine_Canvas* canvas, f64 dt), void) {
 }
 fn_(GameOfLife_update(GameOfLife* self, f64 dt), void) {
     debug_assert_nonnull(self);
-    $ignore = dt;
+    let_ignore = dt;
 
     if (self->tick_current < self->tick_threshold) {
         self->tick_current++;

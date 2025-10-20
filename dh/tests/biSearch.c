@@ -10,7 +10,7 @@
 
 #define biSearch$(T) pp_join($, BiSearch, T)
 #define use_biSearch$(T) \
-    func((biSearch$(T)(Sli$(T) sli, T val))(Opt$(usize))$scope) { \
+    fn_((biSearch$(T)(Sli$(T) sli, T val))(Opt$(usize))$scope) { \
         let_(len, usize) = sli.len; \
         var_(lhs, usize) = 0; \
         var_(rhs, usize) = len - 1; \
@@ -25,11 +25,11 @@
         } \
         return_none(); \
     } \
-    $unscoped
+    $unscoped_(fn)
 
 use_biSearch$(i32);
-func((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+    let_ignore = args;
 
     let stream = fs_File_writer(io_getStdOut());
     try_(io_Writer_print(stream, u8_l("hello, world!\n")));
@@ -44,7 +44,7 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     }
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 
 typedef void untyped;
@@ -97,12 +97,11 @@ typedef variant_(
 ) TypeOrPrimNum;
 
 
-fn_(biSearch_raw(
-        TypeOrPrimNum     type_or_prim_num,
-        Sli_const$untyped sli,
-        Ptr_const$untyped val
-    ),
-    Opt$usize $scope) {
+fn_((biSearch_raw(
+    TypeOrPrimNum     type_or_prim_num,
+    Sli_const$untyped sli,
+    Ptr_const$untyped val
+))(Opt$usize) $scope) {
     let_(len, usize) = sli.len;
     var_(lhs, usize) = 0;
     var_(rhs, usize) = len - 1;
@@ -136,7 +135,7 @@ fn_(biSearch_raw(
         }
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 #define valueOrDefault$(T, val...) \
     _Generic(TypeOfUnqual(val), T: val, default: make$(T))
@@ -193,8 +192,8 @@ fn_(biSearch_raw(
     ); \
 })
 
-func((testVoid(void))(void));
-func((genericTest(void))(void)) {
+fn_((testVoid(void))(void));
+fn_((genericTest(void))(void)) {
     genAdd(testVoid(), 2);
     genOldAdd(testVoid(), 2.0f);
     genNewAdd(testVoid(), 2.0f);

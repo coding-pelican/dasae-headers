@@ -29,8 +29,8 @@ typedef struct test_Buf {
     Sli$u8 data;
     usize  pos;
 } test_Buf;
-$must_check
-$static fn_(test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes), Err$usize $scope) {
+$static $must_check
+fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope) {
     let self      = as$(test_Buf*, ctx);
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
@@ -39,22 +39,26 @@ $static fn_(test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes), Err$usize $
         self->pos += to_write;
     }
     return_ok(to_write);
-} $unscoped;
-static fn_(test_Buf_init(Sli$u8 data), test_Buf) {
+} $unscoped_(fn);
+$static
+fn_((test_Buf_init(Sli$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
         .pos  = 0
     };
 }
-static fn_(test_Buf_writer(test_Buf* self), io_Writer) {
+$static
+fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     debug_assert_nonnull(self);
     return make$(io_Writer, .ctx = self, .write = test_Buf_VT_write);
 }
-static fn_(test_Buf_clear(test_Buf* self), void) {
+$static $maybe_unused
+fn_((test_Buf_clear(test_Buf* self))(void)) {
     debug_assert_nonnull(self);
     self->pos = 0;
 }
-static fn_(test_Buf_view(test_Buf self), Sli_const$u8) {
+$static
+fn_((test_Buf_view(test_Buf self))(Sli_const$u8)) {
     // TODO: use Sli_sliceZ
     if (self.pos == 0) { return Sli_from$(Sli_const$u8, self.data.ptr, 0); }
     return Sli_slice(self.data, $r(0, self.pos)).as_const;
@@ -74,7 +78,7 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("42"))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     use_Arr$(64, u8);
@@ -88,7 +92,7 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("A"))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     use_Arr$(64, u8);
@@ -102,4 +106,4 @@ TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("ff"))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

@@ -87,16 +87,16 @@ use_Err$(engine_Input);
 
 /* Input management ==========================================================*/
 
-extern fn_(engine_Input_init(mem_Allocator allocator), Err$Ptr$engine_Input) $must_check;
-extern fn_(engine_Input_fini(engine_Input* self), void);
-extern fn_(engine_Input_update(engine_Input* self), Err$void) $must_check;
+extern fn_((engine_Input_init(mem_Allocator allocator))(Err$Ptr$engine_Input)) $must_check;
+extern fn_((engine_Input_fini(engine_Input* self))(void));
+extern fn_((engine_Input_update(engine_Input* self))(Err$void)) $must_check;
 
 /* Event buffer management ===================================================*/
 
-extern fn_(engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event), void);
-extern fn_(engine_InputEventBuffer_pop(engine_Input* self), Opt$engine_InputEvent);
-extern fn_(engine_InputEventBuffer_peek(engine_Input* self), Opt$engine_InputEvent);
-extern fn_(engine_InputEventBuffer_clear(engine_Input* self), void);
+extern fn_((engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event))(void));
+extern fn_((engine_InputEventBuffer_pop(engine_Input* self))(Opt$engine_InputEvent));
+extern fn_((engine_InputEventBuffer_peek(engine_Input* self))(Opt$engine_InputEvent));
+extern fn_((engine_InputEventBuffer_clear(engine_Input* self))(void));
 
 
 #if defined(__cplusplus)

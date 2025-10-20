@@ -8,11 +8,11 @@ CompileFlags:
     - -Werror
     - -funsigned-char
     - -fblocks
-    - -IC:\dev\dasae-headers\dh\include
-    - -IC:\dev\dasae-headers\dh\libs\BlocksRuntime\include
-    - -IC:\dev\dasae-headers\dh-examples\subframes\src
-    - -IC:\dev\dasae-headers\dh-examples\subframes\include
-    - -IC:\dev\dasae-headers\dh-examples\subframes\lib\deps
+    - -Ic:/dasae/dev/dasae-headers\dh\include
+    - -Ic:/dasae/dev/dasae-headers\dh\libs\BlocksRuntime\include
+    - -Ic:/dasae/dev/dasae-headers\dh-examples\subframes\src
+    - -Ic:/dasae/dev/dasae-headers\dh-examples\subframes\include
+    - -Ic:/dasae/dev/dasae-headers\dh-examples\subframes\lib\deps
 # Diagnostics:
 #   UnusedIncludes: Strict
 #   MissingIncludes: Strict

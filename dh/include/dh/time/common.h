@@ -51,11 +51,11 @@ static const u64 time_hours_per_day = 24ull;
 static const u64 time_days_per_week = 7ull;
 
 /* Sleep */
-extern fn_(time_sleep(time_Duration duration), void);
-extern fn_(time_sleepSecs(u64 secs), void);
-extern fn_(time_sleepMillis(u64 millis), void);
-extern fn_(time_sleepMicros(u64 micros), void);
-extern fn_(time_sleepNanos(u32 nanos), void);
+extern fn_((time_sleep(time_Duration duration))(void));
+extern fn_((time_sleepSecs(u64 secs))(void));
+extern fn_((time_sleepMillis(u64 millis))(void));
+extern fn_((time_sleepMicros(u64 micros))(void));
+extern fn_((time_sleepNanos(u32 nanos))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

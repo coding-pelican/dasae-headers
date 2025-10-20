@@ -14,8 +14,8 @@
 
 #include "dh/io/stream.h"
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+    let_ignore = args;
 
     let page = heap_Page_allocator(create$(heap_Page));
 
@@ -39,21 +39,21 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     io_stream_print(u8_l("\n"));
 
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 
 #define tpl_id$T(_id, _T)                                        pp_join($, _id, _T)
 #define tpl_id$1T$2U(_id, _T, _U)                                pp_join($, _id, pp_cat(pp_cat($1, _T), pp_cat($2, _U)))
 #define tpl_id$2T$2U$3V(_id, _T, _U, _V)                         pp_join($, _id, pp_cat(pp_cat(pp_cat($1, _T), pp_cat($2, _U)), pp_cat($3, _V)))
-#define tpl_fn$T(_id_w_T_and_Params, _ReturnT...)                fn_(tpl_id$T _id_w_T_and_Params, _ReturnT)
-#define tpl_fn$1T$2U(_id_w_T_w_U_and_Params, _ReturnT...)        fn_(tpl_id$1T$2U _id_w_T_w_U_and_Params, _ReturnT)
-#define tpl_fn$2T$2U$3V(_id_w_T_w_U_w_V_and_Params, _ReturnT...) fn_(tpl_id$2T$2U$3V _id_w_T_w_U_w_V_and_Params, _ReturnT)
+#define tpl_fn$T(_id_w_T_and_Params, _ReturnT...)                fn_((tpl_id$T _id_w_T_and_Params)(_ReturnT))
+#define tpl_fn$1T$2U(_id_w_T_w_U_and_Params, _ReturnT...)        fn_((tpl_id$1T$2U _id_w_T_w_U_and_Params)(_ReturnT))
+#define tpl_fn$2T$2U$3V(_id_w_T_w_U_w_V_and_Params, _ReturnT...) fn_((tpl_id$2T$2U$3V _id_w_T_w_U_w_V_and_Params)(_ReturnT))
 
 #define swap$T(_T) \
     static tpl_fn$T((swap, _T)(Ptr$$(_T) lhs, Ptr$$(_T) rhs), void) { \
         swap_raw(typeInfo$(_T), lhs, rhs); \
     }
-static $inline fn_(swap_raw(TypeInfo type, void* lhs, void* rhs), void) {
+static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
     let tmp = as$(void*, bti_alloca(type.size));
     bti_memcpy(tmp, lhs, type.size);
     bti_memcpy(lhs, rhs, type.size);

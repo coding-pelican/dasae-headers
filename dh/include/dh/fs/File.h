@@ -33,14 +33,9 @@ typedef posix_mode_t fs_File_Mode;
 /// the `touch` command, which would correspond to `0o644`. However, POSIX
 /// libc implementations use `0666` inside `fopen` and then rely on the
 /// process-scoped "umask" setting to adjust this number for file creation.
-static const fs_File_Mode fs_file_default_mode = (
-#if bti_plat_windows
-    0
-#elif bti_plat_wasi
-    0
-#else
-    0666
-#endif
+static const fs_File_Mode fs_file_default_mode = pp_if_(bti_plat_posix)(
+    pp_than_(0666),
+    pp_else_(0)
 );
 
 typedef enum fs_File_OpenMode {
@@ -68,9 +63,9 @@ static const fs_File_OpenFlags fs_File_OpenFlags_default = {
     .allow_ctty       = false,
 };
 $static $inline_always
-fn_(fs_File_OpenFlags_isRead(fs_File_OpenFlags self), bool) { return self.mode != fs_File_OpenMode_write_only; }
+fn_((fs_File_OpenFlags_isRead(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_write_only; }
 $static $inline_always
-fn_(fs_File_OpenFlags_isWrite(fs_File_OpenFlags self), bool) { return self.mode != fs_File_OpenMode_read_only; }
+fn_((fs_File_OpenFlags_isWrite(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_read_only; }
 
 typedef struct fs_File_CreateFlags {
     bool         read;
@@ -93,8 +88,8 @@ typedef struct fs_File {
     fs_File_Handle handle;
 } fs_File;
 use_Err$(fs_File);
-extern fn_(fs_File_close(fs_File file), void);
-extern fn_(fs_File_writer(fs_File file), io_Writer);
+extern fn_((fs_File_close(fs_File file))(void));
+extern fn_((fs_File_writer(fs_File file))(io_Writer));
 
 #if defined(__cplusplus)
 } /* extern "C" */

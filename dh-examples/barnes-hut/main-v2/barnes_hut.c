@@ -170,7 +170,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         global_state.viz = &viz;
         log_info("visualizer created\n");
 
-        $ignore = getchar();
+        let_ignore = getchar();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);

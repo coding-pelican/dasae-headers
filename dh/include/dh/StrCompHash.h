@@ -110,7 +110,7 @@ typedef struct StrCompHash {
 /// @example
 ///   u32 hash = StrCompHash_calculateRaw("hello");
 ///   // hash now contains the 32-bit hash value for "hello"
-$inline_always fn_(StrCompHash_calculateRaw(const char* raw_str), u32);
+$inline_always fn_((StrCompHash_calculateRaw(const char* raw_str))(u32));
 
 /// @brief  Create a StrCompHash from a null-terminated string
 /// @param  raw_str Null-terminated string to hash
@@ -118,7 +118,7 @@ $inline_always fn_(StrCompHash_calculateRaw(const char* raw_str), u32);
 /// @example
 ///   StrCompHash hash = StrCompHash_createRaw("hello");
 ///   // hash.value now contains the hash for "hello"
-$inline_always fn_(StrCompHash_createRaw(const char* raw_str), StrCompHash);
+$inline_always fn_((StrCompHash_createRaw(const char* raw_str))(StrCompHash));
 #endif /* !COMP_TIME */
 
 /// @brief  Calculate hash value from a byte array with specified length
@@ -129,7 +129,7 @@ $inline_always fn_(StrCompHash_createRaw(const char* raw_str), StrCompHash);
 ///   const u8* data = as$(const u8*, "hello");
 ///   u32 hash = StrCompHash_calculate(data, 5);
 ///   // hash now contains the 32-bit hash value for "hello"
-$inline_always fn_(StrCompHash_calculate(const u8* ptr, usize len), u32);
+$inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32));
 
 /// @brief  Create a StrCompHash from a Sli_const$u8
 /// @param  str Constant string to hash
@@ -138,7 +138,7 @@ $inline_always fn_(StrCompHash_calculate(const u8* ptr, usize len), u32);
 ///   Sli_const$u8 str = Str_fromRaw("hello");
 ///   StrCompHash hash = StrCompHash_create(str);
 ///   // hash.value now contains the hash for "hello"
-$inline_always fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash);
+$inline_always fn_((StrCompHash_create(Sli_const$u8 str))(StrCompHash));
 
 /// @brief  Extract the hash value from a StrCompHash structure
 /// @param  self StrCompHash structure
@@ -147,7 +147,7 @@ $inline_always fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash);
 ///   StrCompHash hash = StrCompHash_create(Str_fromRaw("hello"));
 ///   u32 value = StrCompHash_value(hash);
 ///   // value now contains the 32-bit hash value
-$inline_always fn_(StrCompHash_value(StrCompHash self), u32);
+$inline_always fn_((StrCompHash_value(StrCompHash self))(u32));
 
 /* Base cases for recursive macro-based hashing =============================*/
 
@@ -208,7 +208,7 @@ $inline_always fn_(StrCompHash_value(StrCompHash self), u32);
 ///   const u8* data = as$(const u8*, "hello";
 ///   u32 hash = StrCompHash__recur(data, 5);
 ///   // hash now contains the 32-bit hash value for "hello"
-static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32);
+static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -227,7 +227,7 @@ static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32);
 #define comp_op__StrCompHash__char2(_raw_str) (as$(u32, (_raw_str)[1] + 65599 * (_raw_str)[0]))
 #define comp_op__StrCompHash__char3(_raw_str) (as$(u32, (_raw_str)[2] + 65599 * StrCompHash__char2(_raw_str)))
 #define comp_op__StrCompHash__char4(_raw_str) (as$(u32, (_raw_str)[3] + 65599 * StrCompHash__char3(_raw_str)))
-static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32) { /* NOLINT(misc-no-recursion) */
+static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32)) { /* NOLINT(misc-no-recursion) */
     if (len == 1) { return StrCompHash__char1(ptr[0]); }
     if (len == 2) { return StrCompHash__char2(ptr); }
     if (len == 3) { return StrCompHash__char3(ptr); }
@@ -242,13 +242,13 @@ static $inline fn_(StrCompHash__recur(const u8* ptr, usize len), u32) { /* NOLIN
     // clang-format on
 }
 
-$inline_always fn_(StrCompHash_calculate(const u8* ptr, usize len), u32) {
+$inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32)) {
     return StrCompHash__recur(ptr, len);
 }
-$inline_always fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash) {
+$inline_always fn_((StrCompHash_create(Sli_const$u8 str))(StrCompHash)) {
     return (StrCompHash){ .value = StrCompHash_calculate(str.ptr, str.len) };
 }
-$inline_always fn_(StrCompHash_value(StrCompHash self), u32) {
+$inline_always fn_((StrCompHash_value(StrCompHash self))(u32)) {
     return self.value;
 }
 

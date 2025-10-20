@@ -9,15 +9,15 @@ static struct TestState {
 } s_test_state = cleared();
 
 // Helper to record cleanup order
-static fn_(recordCleanup(i32 value), void) {
+static fn_((recordCleanup(i32 value))(void)) {
     Arr_setAt(s_test_state.cleanup_orders, s_test_state.cleanup_index++, value);
 }
 
 // Forward declarations of test scope functions
-static fn_(testBasicDeferScope(void), Err$void) $must_check;
-static fn_(testMultipleDeferScope(void), void);
-static fn_(testDeferWithReturnScope(void), void);
-static fn_(testBlockDeferScope(void), void);
+static fn_((testBasicDeferScope(void))(Err$void)) $must_check;
+static fn_((testMultipleDeferScope(void))(void));
+static fn_((testDeferWithReturnScope(void))(void));
+static fn_((testBlockDeferScope(void))(void));
 
 // Test basic defer functionality
 TEST_fn_("test basic defer" $scope) {
@@ -25,14 +25,14 @@ TEST_fn_("test basic defer" $scope) {
     try_(testBasicDeferScope());
     try_(TEST_expect(s_test_state.counter == 2));
     return_ok({});
-} $unscoped_TEST_fn
+} $unscoped_(TEST_fn);
 
-static fn_(testBasicDeferScope(void), Err$void $guard) {
+static fn_((testBasicDeferScope(void))(Err$void $guard)) {
     s_test_state.counter = 1;
     defer_(s_test_state.counter = 2);
     try_(TEST_expect(s_test_state.counter == 1));
     return_ok({});
-} $unguarded
+} $unguarded_(fn);
 
 // Test multiple defers (LIFO order)
 TEST_fn_("test multiple defers" $scope) {
@@ -43,14 +43,14 @@ TEST_fn_("test multiple defers" $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 2));
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 2) == 1));
     return_ok({});
-} $unscoped_TEST_fn
+} $unscoped_(TEST_fn);
 
-static fn_(testMultipleDeferScope(void), void $guard) {
+static fn_((testMultipleDeferScope(void))(void $guard)) {
     defer_(recordCleanup(1));
     defer_(recordCleanup(2));
     defer_(recordCleanup(3));
     return_void();
-} $unguarded
+} $unguarded_(fn);
 
 // Test defer with early return
 TEST_fn_("test defer with early return" $scope) {
@@ -61,9 +61,9 @@ TEST_fn_("test defer with early return" $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 2));
     return_ok({});
-} $unscoped_TEST_fn
+} $unscoped_(TEST_fn);
 
-static fn_(testDeferWithReturnScope(void), void $guard) {
+static fn_((testDeferWithReturnScope(void))(void $guard)) {
     defer_(recordCleanup(1));
     if (true) {
         defer_(recordCleanup(2));
@@ -71,7 +71,7 @@ static fn_(testDeferWithReturnScope(void), void $guard) {
     }
     recordCleanup(3); // Should not be executed
     return_void();
-} $unguarded
+} $unguarded_(fn);
 
 // Test block defer
 TEST_fn_("test block defer" $scope) {
@@ -84,9 +84,9 @@ TEST_fn_("test block defer" $scope) {
     try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 3) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 4));
     return_ok({});
-} $unscoped_TEST_fn
+} $unscoped_(TEST_fn);
 
-static fn_(testBlockDeferScope(void), void $guard) {
+static fn_((testBlockDeferScope(void))(void $guard)) {
     defer_(recordCleanup(1));
 
     block_defer {
@@ -100,4 +100,4 @@ static fn_(testBlockDeferScope(void), void $guard) {
 
     defer_(recordCleanup(5));
     return_void();
-} $unguarded
+} $unguarded_(fn);

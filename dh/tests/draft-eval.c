@@ -50,7 +50,7 @@
 #define comp_syn__asg_eval(var_addr, _Expr...) \
     *var_addr = eval_(TypeOf(*var_addr), _Expr);
 
-fn_(dh_main(void), Err$void $scope) {
+fn_((dh_main(void))(Err$void) $scope) {
     let scope_1 = eval_(i32, let a = 1; let b = 2; let c = a + b; if (0 < c) {
         eval_return_(c);
     } eval_return_(-1););
@@ -102,7 +102,7 @@ T: \
     default: \
         _Expr
 
-    $ignore = eval(
+    let_ignore = eval(
         i32 _return_val;
         var _then = match$(TypeOf(eval(0)), case$(void, eval($ignore_void eval(0); eval_return make$(TypeOf(_return_val)))), otherwise(eval(0)));
         var _else = match$(TypeOf(eval(claim_unreachable)), case$(void, eval($ignore_void eval(claim_unreachable); eval_return make$(TypeOf(_return_val)))), otherwise(eval(claim_unreachable)));
@@ -121,4 +121,4 @@ T: \
     printf("%d\n", c);
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

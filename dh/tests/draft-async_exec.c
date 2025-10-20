@@ -19,7 +19,7 @@ use_Opt$(Task);
 static var_(exec_s_task_list, Arr$$(10, Opt$Task)) = {};
 /// \brief Run the event loop
 /// \param endless Whether to run the loop endlessly
-static fn_(exec_runLoop(bool endless), void) {
+static fn_((exec_runLoop(bool endless))(void)) {
     use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
 
@@ -48,7 +48,7 @@ static fn_(exec_runLoop(bool endless), void) {
 
 /// \brief Find a slot for a task
 /// \return The slot for the task
-static fn_(exec_findSlot(void), Opt$Task*) {
+static fn_((exec_findSlot(void))(Opt$Task*)) {
     use_Sli$(Opt$Task);
 
     Opt$Task* slot = null;
@@ -68,7 +68,7 @@ use_Co_Ctx$(Void);
 /// \param ms The duration to sleep in milliseconds
 async_fn_(exec_sleep, (var_(caller, Opt$$(Co_Ctx*)); var_(ms, u64);), Void);
 async_fn_scope(exec_sleep, {}) {
-    $ignore = locals;
+    let_ignore = locals;
     suspend_({
         let slot = exec_findSlot();
         let time = eval({
@@ -80,7 +80,7 @@ async_fn_scope(exec_sleep, {}) {
         Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 #include "dh/main.h"
 #include "dh/Thrd.h"
@@ -90,7 +90,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_(report(Sli_const$u8 label, Sli_const$u8 fmt, ...), void) {
+fn_((report(Sli_const$u8 label, Sli_const$u8 fmt, ...))(void)) {
     io_stream_print(u8_l("[ThrdId({:zu}): {:s}] "), Thrd_getCurrentId(), label);
     va_list args = {};
     with_fini_(va_start(args, fmt), va_end(args)) {
@@ -139,7 +139,7 @@ async_fn_scope(runMain, {
     var_(await_idx, usize);
     var_(await_curr, Co_CtxFn$(count)*);
 }) {
-    $ignore = args;
+    let_ignore = args;
     io_stream_print(u8_l("begin\n"));
 
     // clang-format off
@@ -161,9 +161,9 @@ async_fn_scope(runMain, {
 
     io_stream_print(u8_l("end\n"));
     areturn_(locals->total);
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     var task = async_((runMain)(args));
     io_stream_print(u8_l("run size: {:zu}\n"), sizeOf(*task));
     exec_runLoop(false);
@@ -171,4 +171,4 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     let total = task->ret->value;
     io_stream_print(u8_l("total: {:f}\n"), total);
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

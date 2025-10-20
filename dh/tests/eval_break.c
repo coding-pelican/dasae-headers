@@ -31,8 +31,8 @@ __step_unscope: \
 })
 // clang-format on
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+    let_ignore = args;
     return_(eval_(Err$void $scope) if (true) {
         eval_break_(ok({}));
     } else {

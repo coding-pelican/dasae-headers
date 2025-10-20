@@ -2,18 +2,18 @@
 #include "dh/math/common.h"
 #include "dh/mem/cfg.h"
 
-fn_(engine_Canvas_init(engine_Canvas_Config config), Err$Ptr$engine_Canvas $guard) {
+fn_((engine_Canvas_init(engine_Canvas_Config config)) (Err$Ptr$engine_Canvas) $guard)  {
     debug_assert(0 < config.width);
     debug_assert(0 < config.height);
 
     let allocator = unwrap(config.allocator);
     let self      = meta_cast$(engine_Canvas*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Canvas))));
-    errdefer_($ignore_capture, mem_Allocator_destroy(allocator, anyPtr(self)));
+    errdefer_($ignore, mem_Allocator_destroy(allocator, anyPtr(self)));
     self->allocator = allocator;
 
     let area   = as$(usize, config.width) * config.height;
     let buffer = meta_cast$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), area)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(buffer)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(buffer)));
     self->buffer = Grid_fromSli$(Grid$Color, buffer, config.width, config.height);
 
     let type   = unwrap(config.type);
@@ -23,15 +23,15 @@ fn_(engine_Canvas_init(engine_Canvas_Config config), Err$Ptr$engine_Canvas $guar
     engine_Canvas_clear(self, none$(Opt$Color));
 
     return_ok(self);
-} $unguarded;
+} $unguarded_(fn);
 
-fn_(engine_Canvas_fini(engine_Canvas* self), void) {
+fn_((engine_Canvas_fini(engine_Canvas* self))(void)) {
     if (!self) { return; }
     mem_Allocator_free(self->allocator, anySli(self->buffer.items));
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void $scope) {
+fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(Err$void) $scope)  {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 
@@ -43,9 +43,9 @@ fn_(engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height), Err$void $
     log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color), void) {
+fn_((engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 

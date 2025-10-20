@@ -85,9 +85,9 @@ C C_withA(A* a) {
 
 int main(void) {
     test();
-    C  my_c = C_withA(&copy(getA()));
-    A* a    = move(&my_c.a);
-    $ignore = a;
+    C  my_c    = C_withA(&copy(getA()));
+    A* a       = move(&my_c.a);
+    let_ignore = a;
     return 0;
 }
 

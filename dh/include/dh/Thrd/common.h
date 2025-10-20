@@ -48,7 +48,7 @@ typedef struct Thrd_FnRet {
     u8 data[0];
 } Thrd_FnRet;
 // Thread function type
-typedef fn_((*Thrd_WorkFn)(Thrd_FnCtx* thrd_ctx), Thrd_FnCtx*);
+typedef fn_(((*Thrd_WorkFn)(Thrd_FnCtx* thrd_ctx))(Thrd_FnCtx*));
 struct Thrd_FnCtx {
     Thrd_WorkFn fn;
     union {
@@ -75,24 +75,24 @@ struct Thrd_FnCtx {
 #define $unguarded_Thrd_fn comp_syn__$unguarded_Thrd_fn
 
 // Thread functions
-extern fn_(Thrd_sleep(time_Duration duration), void);
-extern fn_(Thrd_yield(void), Err$void) $must_check;
-extern fn_(Thrd_getCurrentId(void), Thrd_Id);
-extern fn_(Thrd_getCpuCount(void), Err$usize) $must_check;
+extern fn_((Thrd_sleep(time_Duration duration))(void));
+extern fn_((Thrd_yield(void))(Err$void)) $must_check;
+extern fn_((Thrd_getCurrentId(void))(Thrd_Id));
+extern fn_((Thrd_getCpuCount(void))(Err$usize)) $must_check;
 
 // Thread type
 typedef struct Thrd {
     Thrd_Handle handle;
 } Thrd;
 use_Err$(Thrd);
-extern fn_(Thrd_getHandle(Thrd self), Thrd_Handle);
+extern fn_((Thrd_getHandle(Thrd self))(Thrd_Handle));
 
 // Thread name buffer type
 typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
 use_Opt$(Thrd_NameBuf);
 use_Err$(Opt$Sli_const$u8);
-extern fn_(Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr), Err$Opt$Sli_const$u8) $must_check;
-extern fn_(Thrd_setName(Thrd self, Sli_const$u8 name), Err$void) $must_check;
+extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8)) $must_check;
+extern fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void)) $must_check;
 
 // Thread spawn configuration
 typedef struct Thrd_SpawnConfig {
@@ -104,9 +104,9 @@ static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
     .stack_size = Thrd_SpawnConfig_default_stack_size,
     .allocator  = none()
 };
-extern fn_(Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx), Err$Thrd) $must_check;
-extern fn_(Thrd_detach(Thrd self), void);
-extern fn_(Thrd_join(Thrd self), Thrd_FnCtx*);
+extern fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(Err$Thrd)) $must_check;
+extern fn_((Thrd_detach(Thrd self))(void));
+extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 
 // Mutex type
 typedef struct Thrd_Mtx    Thrd_Mtx;

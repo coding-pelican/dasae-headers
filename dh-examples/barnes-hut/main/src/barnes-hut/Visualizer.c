@@ -208,7 +208,7 @@ static $inline_always fn_(VisualizerInput_handlePan(Visualizer* self, engine_Mou
 }
 // Call this when the middle mouse button is released:
 static $inline_always fn_(VisualizerInput_onPanEnd(Visualizer* self, engine_Mouse* mouse), void) {
-    $ignore          = mouse;
+    let_ignore          = mouse;
     self->is_panning = false;
     // // Reset pan screen & cam begin to zero
     // self->pan_screen_begin = m_V2f32_zero;
@@ -246,7 +246,7 @@ static $inline_always fn_(VisualizerInput_handleZoom(Visualizer* self, i32 scrol
 }
 fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void $scope) {
     debug_assert_nonnull(self);
-    $ignore = window;
+    let_ignore = window;
 
     let keyboard = input->keyboard;
     let mouse    = input->mouse;

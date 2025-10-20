@@ -95,13 +95,18 @@ SortIncludes: Never
 
 TypeNames:
   # Inference
-  - let
   - var
-  - let_
+  - let
   - var_
+  - let_
+  - var_const
+  - let_const
+  - var_const_
+  - let_const_
   - TypeOf
   - TypeOfUnqual
   # primitive
+  - bool
   - u8
   - u16
   - u32
@@ -114,66 +119,73 @@ TypeNames:
   - isize
   - f32
   - f64
-  - bool
-  - char
-  - rawptr_const$
-  - rawptr$
+  - Void
   - anyptr_const
   - anyptr
-  - AnyType
-  - Void
+  - $P_const$
+  # - $P$
+  # - $A$
+  # Raw types
+  - P_const$raw
+  - P$raw
+  - S_const$raw
+  - S$raw
+  - A$raw
   # Core types
+  - P_const$$
+  # - P$$
   - P_const$
-  - P$
-  - PZ_const$
-  - PZ$
+  # - P$
+  - S_const$$
+  # - S$$
   - S_const$
-  - S$
-  - SZ_const$
-  - SZ$
-  - E$
-  - O$
-  - OP_const$
-  - OP$
-  - OPZ_const$
-  - OPZ$
-  - OS_const$
-  - OS$
-  - OSZ_const$
-  - OSZ$
+  # - S$
+  # - A$$
+  # - A$
+  # - O$$
+  # - O$
+  # - E$$
+  # - E$
+  - E$Void
+  - E$void
+  # Legacy types
   # Pointer
-  - Ptr_const$
-  - Ptr$
   - Ptr_const$$
   - Ptr$$
+  - Ptr_const$
+  - Ptr$
   # Slice
-  - SliZ_const$
-  - SliZ$
-  - SliZ_const$$
-  - SliZ$$
-  - SliS_const$
-  - SliS$
-  - SliS_const$$
-  - SliS$$
-  - Sli_const$
-  - Sli$
   - Sli_const$$
   - Sli$$
+  - Sli_const$
+  - Sli$
   # Array
-  - Arr$
   - Arr$$
+  - Arr$
   # Optional value
-  - Opt$
   - Opt$$
+  - Opt$
   # Error result
-  - Err$
   - Err$$
+  - Err$
   - Err$Void
   - Err$void
   # Atomic
   - atomic_Value$
   - atomic_Value$$
 Macros:
+  - "$P$(T)=T*"
+  - "$A$(N,T)=T[N]"
+  - "P$$(T)=T*"
+  - "P$(T)=T*"
+  - "S$$(T)=T[]"
+  - "S$(T)=T[]"
+  - "A$$(N,T)=T[N]"
+  - "A$(N,T)=T[N]"
+  - "O$$(T)=T"
+  - "O$(T)=T"
+  - "E$$(T)=T"
+  - "E$(T)=T"
   - "$static=$static"
   - "$extern=$extern"
   # - "some(_)=_"
@@ -220,23 +232,31 @@ Macros:
   # - "expr_(Expr)=({"
   # - "$unscoped_expr=})"
   # - "expr_else=else pp_expand"
-  - $unscoped=/**/
+  - "pp_if_(Cond)=pp_expand"
+  - "pp_than_(Expr)=Expr"
+  - "pp_else_(Expr)=Expr"
+  - "fn_(Expr)=;pp_expand Expr"
+  - "la_(Expr)=;pp_expand Expr"
+  - "eval_=la_((void)(void))"
+  - "expr_(Expr)=Expr"
+  - $un_(keyword)=/**/pp_expand
   - $unscoped_(keyword)=/**/
-  - $unguarded=/**/
-  - $unguarded_=/**/
+  - $unguarded_(keyword)=/**/
+  - $unscoped_fn=/**/
+  - $unguarded_fn=/**/
   - $unscoped_TEST_fn=/**/
   - $unguarded_TEST_fn=/**/
   - $unscoped_Thrd_fn=/**/
   - $unguarded_Thrd_fn=/**/
   - $unscoped_async_fn=/**/
   - $unguarded_async_fn=/**/
+  - $unscoped_la=/**/
+  - $unguarded_la=/**/
   - $unscoped_eval=/**/
-  - "eval_=lam_((void), void)"
-  - "expr_(Expr)=Expr"
-  - "fn_(Expr)=;pp_expand Expr"
-  - "la_(Expr)=;pp_expand Expr"
-  - "func(Expr)=;pp_expand Expr"
-  - "lam_(Expr)=;pp_expand Expr"
+  - $unguarded_eval=/**/
+  - $unscoped_expr=/**/
+  - $unguarded_expr=/**/
+
 ForEachMacros:
   - pp_foreach
   - for_slice
@@ -263,9 +283,9 @@ AttributeMacros:
   - $maybe_unused
   - $no_return
 
-  - $ignore
   - $ignore_void
-  - $ignore_capture
+  - $ignore
+  - let_ignore
 
   - $deprecated
   - $deprecated_msg

@@ -1,6 +1,6 @@
 #include "dh/ascii.h"
 
-fn_(ascii_toUppers(Sli$u8 ascii_str), Sli$u8) {
+fn_((ascii_toUppers(Sli$u8 ascii_str))(Sli$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
     for (usize i = 0; i < ascii_str.len; ++i) {
         ascii_str.ptr[i] = ascii_toUpper(ascii_str.ptr[i]);
@@ -8,7 +8,7 @@ fn_(ascii_toUppers(Sli$u8 ascii_str), Sli$u8) {
     return ascii_str;
 }
 
-fn_(ascii_toLowers(Sli$u8 ascii_str), Sli$u8) {
+fn_((ascii_toLowers(Sli$u8 ascii_str))(Sli$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
     for (usize i = 0; i < ascii_str.len; ++i) {
         ascii_str.ptr[i] = ascii_toLower(ascii_str.ptr[i]);
@@ -16,7 +16,15 @@ fn_(ascii_toLowers(Sli$u8 ascii_str), Sli$u8) {
     return ascii_str;
 }
 
-fn_(ascii_makeUppers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
+fn_((ascii_toggleCases(Sli$u8 ascii_str))(Sli$u8)) {
+    debug_assert_nonnull(ascii_str.ptr);
+    for (usize i = 0; i < ascii_str.len; ++i) {
+        ascii_str.ptr[i] = ascii_toggleCase(ascii_str.ptr[i]);
+    }
+    return ascii_str;
+}
+
+fn_((ascii_makeUppers(Sli$u8 buf, Sli_const$u8 ascii_str))(Sli$u8)) {
     debug_assert_nonnull(buf.ptr);
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
@@ -27,7 +35,7 @@ fn_(ascii_makeUppers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
     return Sli_slice(buf, $r(0, ascii_str.len));
 }
 
-fn_(ascii_makeLowers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
+fn_((ascii_makeLowers(Sli$u8 buf, Sli_const$u8 ascii_str))(Sli$u8)) {
     debug_assert_nonnull(buf.ptr);
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
@@ -38,19 +46,36 @@ fn_(ascii_makeLowers(Sli$u8 buf, Sli_const$u8 ascii_str), Sli$u8) {
     return Sli_slice(buf, $r(0, ascii_str.len));
 }
 
-fn_(ascii_allocUppers(mem_Allocator allocator, Sli_const$u8 ascii_str), Err$Sli$u8 $scope) {
+fn_((ascii_makeToggledCases(Sli$u8 buf, Sli_const$u8 ascii_str))(Sli$u8)) {
+    debug_assert_nonnull(buf.ptr);
+    debug_assert_nonnull(ascii_str.ptr);
+    debug_assert(ascii_str.len <= buf.len);
+
+    for (usize i = 0; i < ascii_str.len; ++i) {
+        buf.ptr[i] = ascii_toggleCase(ascii_str.ptr[i]);
+    }
+    return Sli_slice(buf, $r(0, ascii_str.len));
+}
+
+fn_((ascii_allocUppers(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
     return_ok(ascii_makeUppers(result, ascii_str));
 } $unscoped;
 
-fn_(ascii_allocLowers(mem_Allocator allocator, Sli_const$u8 ascii_str), Err$Sli$u8 $scope) {
+fn_((ascii_allocLowers(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
     return_ok(ascii_makeLowers(result, ascii_str));
 } $unscoped;
 
-fn_(ascii_idxOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr), Opt$usize $scope) {
+fn_((ascii_allocToggledCases(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli$u8) $scope) {
+    debug_assert_nonnull(ascii_str.ptr);
+    let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
+    return_ok(ascii_makeToggledCases(result, ascii_str));
+} $unscoped;
+
+fn_((ascii_idxOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_substr.ptr);
 
@@ -69,7 +94,7 @@ fn_(ascii_idxOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr), Op
     return_none();
 } $unscoped;
 
-fn_(ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_front), Opt$usize $scope) {
+fn_((ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_front))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_substr.ptr);
     debug_assert(start_front <= ascii_str.len);
@@ -83,7 +108,7 @@ fn_(ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr
     return_none();
 } $unscoped;
 
-fn_(ascii_idxLastOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_back), Opt$usize $scope) {
+fn_((ascii_idxLastOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_back))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_substr.ptr);
     debug_assert(start_back <= ascii_str.len);
@@ -105,7 +130,7 @@ fn_(ascii_idxLastOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr,
     return_none();
 } $unscoped;
 
-fn_(ascii_startsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_prefix), bool) {
+fn_((ascii_startsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_prefix))(bool)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_prefix.ptr);
 
@@ -117,7 +142,7 @@ fn_(ascii_startsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_prefix
     return true;
 }
 
-fn_(ascii_endsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_suffix), bool) {
+fn_((ascii_endsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_suffix))(bool)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_suffix.ptr);
 
@@ -130,12 +155,12 @@ fn_(ascii_endsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_suffix),
     return true;
 }
 
-fn_(ascii_cmp(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs, bool ignores_case), cmp_Ord) {
+fn_((ascii_cmp(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs, bool ignores_case))(cmp_Ord)) {
     let cmpFn = ignores_case ? ascii_cmpIgnoreCase : ascii_cmpSenseCase;
     return cmpFn(ascii_lhs, ascii_rhs);
 }
 
-fn_(ascii_cmpSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), cmp_Ord) {
+fn_((ascii_cmpSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs))(cmp_Ord)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
 
@@ -151,7 +176,7 @@ fn_(ascii_cmpSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), cmp_Ord)
     return prim_cmp(ascii_lhs.len, ascii_rhs.len);
 }
 
-fn_(ascii_cmpIgnoreCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), cmp_Ord) {
+fn_((ascii_cmpIgnoreCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs))(cmp_Ord)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
 
@@ -167,12 +192,12 @@ fn_(ascii_cmpIgnoreCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), cmp_Ord
     return prim_cmp(ascii_lhs.len, ascii_rhs.len);
 }
 
-fn_(ascii_eql(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs, bool ignores_case), bool) {
+fn_((ascii_eql(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs, bool ignores_case))(bool)) {
     let eqlFn = ignores_case ? ascii_eqlIgnoreCase : ascii_eqlSenseCase;
     return eqlFn(ascii_lhs, ascii_rhs);
 }
 
-fn_(ascii_eqlSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), bool) {
+fn_((ascii_eqlSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs))(bool)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
 
@@ -184,7 +209,7 @@ fn_(ascii_eqlSenseCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), bool) {
     return true;
 }
 
-fn_(ascii_eqlIgnoreCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs), bool) {
+fn_((ascii_eqlIgnoreCase(Sli_const$u8 ascii_lhs, Sli_const$u8 ascii_rhs))(bool)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
 

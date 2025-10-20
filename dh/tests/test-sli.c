@@ -2,13 +2,13 @@
 #include "dh/main.h"
 #include "dh/sli.h"
 
-static fn_(slice_example(void), void);
-fn_(dh_main(void), Err$void $scope) {
+static fn_((slice_example(void))(void));
+fn_((dh_main(void))(Err$void $scope)) {
     slice_example();
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(slice_example(void), void) {
+fn_((slice_example(void))(void)) {
     decl_Sli$(u8);
     decl_Sli$(i32);
     // Create a slice from an array
@@ -50,12 +50,12 @@ fn_(slice_example(void), void) {
         }
         printf("\n");
 
-        $ignore = third_ptr;
-        $ignore = value;
-        $ignore = length;
-        $ignore = middle;
-        $ignore = first_half;
-        $ignore = second_half;
+        let_ignore = third_ptr;
+        let_ignore = value;
+        let_ignore = length;
+        let_ignore = middle;
+        let_ignore = first_half;
+        let_ignore = second_half;
     }
 
     // Create a null-terminated string
@@ -66,7 +66,7 @@ fn_(slice_example(void), void) {
         let ch    = SliZ_getAt(str_z, 1); // 'e'
         // let hello_sli = SliZ_toSli$(Sli$u8, str_z); // Convert to regular slice
         printf("%s\n", str_z.ptr);
-        $ignore = ch;
+        let_ignore = ch;
     }
 
     // Working with sentinel-terminated slices (SliS)
@@ -86,7 +86,7 @@ fn_(slice_example(void), void) {
             printf("%d ", deref(iter));
         }
         printf("\n");
-        $ignore = num;
+        let_ignore = num;
     }
 
     // Type casting example

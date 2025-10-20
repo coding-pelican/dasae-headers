@@ -245,7 +245,7 @@ fn_(readFileContents(Sli_const$u8 filename), io_Err$Sli_const$u8 $guard) {
     if (file == null) {
         return_err(io_Err_OpenFailed());
     }
-    defer_($ignore = fclose(file));
+    defer_(let_ignore = fclose(file));
 
     // File processing...
 

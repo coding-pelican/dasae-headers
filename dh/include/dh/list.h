@@ -47,11 +47,11 @@ struct ListSgl_Node {
     u8                   data[];
 };
 
-extern fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), void);
-extern fn_(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node);
-extern fn_(ListSgl_Node_findLast(ListSgl_Node* node), ListSgl_Node*);
-extern fn_(ListSgl_Node_countChildren(const ListSgl_Node* node), usize);
-extern fn_(ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect), void);
+extern fn_((ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node))(void));
+extern fn_((ListSgl_Node_removeNext(ListSgl_Node* node))(Opt$Ptr$ListSgl_Node));
+extern fn_((ListSgl_Node_findLast(ListSgl_Node* node))(ListSgl_Node*));
+extern fn_((ListSgl_Node_countChildren(const ListSgl_Node* node))(usize));
+extern fn_((ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect))(void));
 
 #define use_ListSgl$(T)  comp_type_gen__use_ListSgl$(T)
 #define decl_ListSgl$(T) comp_type_gen__decl_ListSgl$(T)
@@ -62,10 +62,10 @@ typedef struct ListSgl {
     Opt$Ptr$ListSgl_Node first;
 } ListSgl;
 
-extern fn_(ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node), void);
-extern fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void);
-extern fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node);
-extern fn_(ListSgl_len(const ListSgl* self), usize);
+extern fn_((ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node))(void));
+extern fn_((ListSgl_remove(ListSgl* self, ListSgl_Node* node))(void));
+extern fn_((ListSgl_popFirst(ListSgl* self))(Opt$Ptr$ListSgl_Node));
+extern fn_((ListSgl_len(const ListSgl* self))(usize));
 
 /* Doubly Linked List */
 
@@ -94,15 +94,15 @@ typedef struct ListDbl {
     usize                len;
 } ListDbl;
 
-extern fn_(ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void);
-extern fn_(ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void);
-extern fn_(ListDbl_concatByMoving(ListDbl* dst, ListDbl* src), void);
-extern fn_(ListDbl_append(ListDbl* self, ListDbl_Node* new_node), void);
-extern fn_(ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node), void);
-extern fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void);
-extern fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node);
-extern fn_(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node);
-extern fn_(ListDbl_len(const ListDbl* self), usize);
+extern fn_((ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node))(void));
+extern fn_((ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node))(void));
+extern fn_((ListDbl_concatByMoving(ListDbl* dst, ListDbl* src))(void));
+extern fn_((ListDbl_append(ListDbl* self, ListDbl_Node* new_node))(void));
+extern fn_((ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node))(void));
+extern fn_((ListDbl_remove(ListDbl* self, ListDbl_Node* node))(void));
+extern fn_((ListDbl_pop(ListDbl* self))(Opt$Ptr$ListDbl_Node));
+extern fn_((ListDbl_popFirst(ListDbl* self))(Opt$Ptr$ListDbl_Node));
+extern fn_((ListDbl_len(const ListDbl* self))(usize));
 
 /*========== Macros and Definitions =========================================*/
 

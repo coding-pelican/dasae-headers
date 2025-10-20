@@ -1,5 +1,5 @@
 #include "dh/log.h"
-#include "dh/fs/dir.h"
+#include "dh/fs/Dir.h"
 #include "dh/Str.h"
 
 #include <stdarg.h>
@@ -15,7 +15,7 @@ static log_Config log_s_config = {
     .shows_function  = true            // Show function name by default
 };
 
-fn_(log_init(const char* filename), fs_FileErr$void $guard) {
+fn_((log_init(const char* filename))(fs_FileErr$void) $guard) {
     // Extract directory path
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -24,63 +24,63 @@ fn_(log_init(const char* filename), fs_FileErr$void $guard) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        try_(fs_dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
+        try_(fs_Dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
     }
 
     let file = fopen(filename, "w");
     if (!file) { return_err(fs_FileErr_OpenFailed()); }
-    errdefer_($ignore_capture, $ignore = fclose(file));
+    errdefer_($ignore, let_ignore = fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        $ignore = fclose(log_s_config.output_file);
+        let_ignore = fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
     return_ok({});
 } $unguarded;
 
-fn_(log_initWithFile(FILE* file), void) {
+fn_((log_initWithFile(FILE* file))(void)) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        $ignore = fclose(log_s_config.output_file);
+        let_ignore = fclose(log_s_config.output_file);
     }
     log_s_config.output_file = file;
 }
 
-fn_(log_fini(void), void) {
+fn_((log_fini(void))(void)) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        $ignore                  = fclose(log_s_config.output_file);
+        let_ignore                  = fclose(log_s_config.output_file);
         log_s_config.output_file = stderr;
     }
 }
 
-fn_(log_setLevel(log_Level level), void) {
+fn_((log_setLevel(log_Level level))(void)) {
     log_s_config.min_level = level;
 }
 
-fn_(log_showTimestamp(bool shows), void) {
+fn_((log_showTimestamp(bool shows))(void)) {
     log_s_config.shows_timestamp = shows;
 }
 
-fn_(log_showLevel(bool shows), void) {
+fn_((log_showLevel(bool shows))(void)) {
     log_s_config.shows_level = shows;
 }
 
-fn_(log_showLocation(bool shows), void) {
+fn_((log_showLocation(bool shows))(void)) {
     log_s_config.shows_location = shows;
 }
 
-fn_(log_showFunction(bool shows), void) {
+fn_((log_showFunction(bool shows))(void)) {
     log_s_config.shows_function = shows;
 }
 
-fn_(log_getLevel(void), log_Level) {
+fn_((log_getLevel(void))(log_Level)) {
     return log_s_config.min_level;
 }
 
-fn_(log_getOutputFile(void), FILE*) {
+fn_((log_getOutputFile(void))(FILE*)) {
     return log_s_config.output_file ? log_s_config.output_file : stderr;
 }
 
-fn_(log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...), void) {
+fn_((log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...))(void)) {
     if (level < log_s_config.min_level) { return; }
 
     let output = log_getOutputFile();
@@ -90,8 +90,8 @@ fn_(log_message(log_Level level, const char* file, int line, const char* func, c
         time_t     t            = time(null);
         struct tm* lt           = localtime(&t);
         char       time_str[16] = cleared();
-        $ignore                 = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        $ignore                 = fprintf(output, "[%s]", time_str);
+        let_ignore                 = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
+        let_ignore                 = fprintf(output, "[%s]", time_str);
     }
 
     // Add level if needed
@@ -113,17 +113,17 @@ fn_(log_message(log_Level level, const char* file, int line, const char* func, c
         default:
             claim_unreachable;
         }
-        $ignore = fprintf(output, "[%s]", level_str);
+        let_ignore = fprintf(output, "[%s]", level_str);
     }
 
     // Add location if needed
     if (log_s_config.shows_location) {
-        $ignore = fprintf(output, "[%s:%d]", file, line);
+        let_ignore = fprintf(output, "[%s:%d]", file, line);
     }
 
     // Add function name if needed
     if (log_s_config.shows_function) {
-        $ignore = fprintf(output, "[%s]", func);
+        let_ignore = fprintf(output, "[%s]", func);
     }
 
     // Add a space before the message if we added any prefixes
@@ -131,17 +131,17 @@ fn_(log_message(log_Level level, const char* file, int line, const char* func, c
         || log_s_config.shows_level
         || log_s_config.shows_location
         || log_s_config.shows_function) {
-        $ignore = fprintf(output, " ");
+        let_ignore = fprintf(output, " ");
     }
 
     // Print the actual message
     scope_with(va_list args = null) {
         va_start(args, fmt);
-        $ignore = vfprintf(output, fmt, args);
+        let_ignore = vfprintf(output, fmt, args);
         va_end(args);
     }
 
     // Add newline and flush
-    $ignore = fprintf(output, "\n");
-    $ignore = fflush(output);
+    let_ignore = fprintf(output, "\n");
+    let_ignore = fflush(output);
 }

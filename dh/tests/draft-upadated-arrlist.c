@@ -12,35 +12,35 @@ struct ArrList {
 };
 use_Err$(ArrList);
 
-func((ArrList_empty(void))(ArrList));
-func((ArrList_initCap(TypeInfo type, mem_Allocator gpa))(Err$ArrList));
-func((ArrList_initBuf(Sli buf))(ArrList));
-func((ArrList_fini(mem_Allocator gpa))(void));
+fn_((ArrList_empty(void))(ArrList));
+fn_((ArrList_initCap(TypeInfo type, mem_Allocator gpa))(Err$ArrList));
+fn_((ArrList_initBuf(Sli buf))(ArrList));
+fn_((ArrList_fini(mem_Allocator gpa))(void));
 
-func((ArrList_at(Ptr$$(const ArrList) self))(Ptr_const));
-func((ArrList_atMut(Ptr$$(ArrList) self))(Ptr));
-func((ArrList_len(ArrList self))(usize));
+fn_((ArrList_at(Ptr$$(const ArrList) self))(Ptr_const));
+fn_((ArrList_atMut(Ptr$$(ArrList) self))(Ptr));
+fn_((ArrList_len(ArrList self))(usize));
 
-func((ArrList_addBack(Ptr$$(ArrList) self))(Err$Ptr));
-func((ArrList_addBackN(Ptr$$(ArrList) self, usize n))(Err$Sli));
-func((ArrList_addBackWithin(Ptr$$(ArrList) self))(Ptr));
-func((ArrList_addBackWithinN(Ptr$$(ArrList) self, usize n))(Sli));
-func((ArrList_addFront(Ptr$$(ArrList) self))(Err$Ptr));
-func((ArrList_addFrontN(Ptr$$(ArrList) self, usize n))(Err$Sli));
-func((ArrList_addFrontWithin(Ptr$$(ArrList) self))(Ptr));
-func((ArrList_addFrontWithinN(Ptr$$(ArrList) self, usize n))(Sli));
+fn_((ArrList_addBack(Ptr$$(ArrList) self))(Err$Ptr));
+fn_((ArrList_addBackN(Ptr$$(ArrList) self, usize n))(Err$Sli));
+fn_((ArrList_addBackWithin(Ptr$$(ArrList) self))(Ptr));
+fn_((ArrList_addBackWithinN(Ptr$$(ArrList) self, usize n))(Sli));
+fn_((ArrList_addFront(Ptr$$(ArrList) self))(Err$Ptr));
+fn_((ArrList_addFrontN(Ptr$$(ArrList) self, usize n))(Err$Sli));
+fn_((ArrList_addFrontWithin(Ptr$$(ArrList) self))(Ptr));
+fn_((ArrList_addFrontWithinN(Ptr$$(ArrList) self, usize n))(Sli));
 
-func((ArrList_append(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
-func((ArrList_appendN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
-func((ArrList_appendSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
-func((ArrList_prepend(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
-func((ArrList_prependN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
-func((ArrList_prependSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
+fn_((ArrList_append(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
+fn_((ArrList_appendN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
+fn_((ArrList_appendSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
+fn_((ArrList_prepend(Ptr$$(ArrList) self, Ptr_const item))(Err$void));
+fn_((ArrList_prependN(Ptr$$(ArrList) self, Ptr_const item, usize n))(Err$void));
+fn_((ArrList_prependSli(Ptr$$(ArrList) self, Sli_const items))(Err$void));
 
-func((ArrList_pop(Ptr$$(ArrList) self))(void));
-func((ArrList_popOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
-func((ArrList_shift(Ptr$$(ArrList) self))(void));
-func((ArrList_shiftOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
+fn_((ArrList_pop(Ptr$$(ArrList) self))(void));
+fn_((ArrList_popOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
+fn_((ArrList_shift(Ptr$$(ArrList) self))(void));
+fn_((ArrList_shiftOrNull(Ptr$$(ArrList) self, Ptr out_item))(Err$Ptr));
 
 #define use_ArrList_pop$()
 #define use_ArrList_popOrNull$()

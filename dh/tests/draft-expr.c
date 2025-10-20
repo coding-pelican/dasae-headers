@@ -75,7 +75,7 @@
 
 
 // func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
-//     $ignore = args;
+//     let_ignore = args;
 //
 //     //     ({
 //     //         local_label __step_break;
@@ -103,12 +103,14 @@
 TEST_fn_("test eval function" $scope) {
     const usize key = 12;
 
-    let value_for = expr_(Sli_const$u8 $scope)(for_($r(0, 10), i) {
-        io_stream_print(u8_l("i: {:llu}\n"), i);
-        if (i % 2 == 0) { continue; }
-        if (i == 5) { break; }
-        if (i == key) { $break_(u8_l("first")); }
-    }) expr_(else)(for_($r(10, 20), j) {
+    let value_for = expr_(Sli_const$u8 $scope)(
+        for_($r(0, 10), i) {
+            io_stream_print(u8_l("i: {:llu}\n"), i);
+            if (i % 2 == 0) { continue; }
+            if (i == 5) { break; }
+            if (i == key) { $break_(u8_l("first")); }
+        }
+    ) expr_(else)(for_($r(10, 20), j) {
         io_stream_print(u8_l("j: {:llu}\n"), j);
         if (j == key) { $break_(u8_l("second")); }
     }) expr_(else)({

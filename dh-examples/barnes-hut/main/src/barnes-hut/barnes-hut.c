@@ -53,7 +53,7 @@ static Thrd_fn_(Simulation_thread, ({}, Err$void));
 
 // Main function
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+    let_ignore = args;
 
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -138,7 +138,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     defer_(Visualizer_destroy(&viz));
     log_info("visualizer created\n");
 
-    $ignore = engine_utils_getch();
+    let_ignore = engine_utils_getch();
 
     // Create threads for simulation and visualization
     var sim_mutex = Thrd_Mtx_init();
@@ -326,7 +326,7 @@ fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
 }
 
 $must_check
-Thrd_fn_(Simulation_thread, ($ignore_capture, $ignore_capture)$guard) {
+Thrd_fn_(Simulation_thread, ($ignore, $ignore)$guard) {
     // Initialize timing variables
     let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
     log_info("sim loop started\n");

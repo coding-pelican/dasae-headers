@@ -64,10 +64,10 @@ typedef struct Vec {
     usize         cap;
     mem_Allocator allocator;
 } Vec;
-static fn_(Vec_init(TypeInfo type, mem_Allocator allocator), Vec);
-static fn_(Vec_push(Vec* self, m_Val val), Err$void) $must_check;
-static fn_(Vec_pop(Vec* self, m_Val mem), m_Opt$Val);
-static fn_(Vec_fini(Vec* self), void);
+static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec));
+static fn_((Vec_push(Vec* self, m_Val val))(Err$void)) $must_check;
+static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val));
+static fn_((Vec_fini(Vec* self))(void));
 
 #define Vec$(T) tpl_T(Vec, T)
 #define Vec_useT$(T) \
@@ -119,8 +119,8 @@ static fn_(Vec_fini(Vec* self), void);
 
 Vec_useT$(i32);
 // TEST_fn_("Vec: push and pop" $guard) {
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+    let_ignore = args;
 
     let allocator = heap_Page_allocator(&(heap_Page){});
     var vec       = Vec$i32_init(allocator);
@@ -136,19 +136,19 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     printf("done");
 
     return_ok({});
-}$unguarded;
+}$unguarded_(fn);
 // } $unguarded_TEST_fn;
 
-static fn_(Vec_init(TypeInfo type, mem_Allocator allocator), Vec $scope) {
+static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec) $scope) {
     let init_len = 8;
-    let data     = catch_((mem_Allocator_alloc(allocator, type, init_len))($ignore_capture, claim_unreachable));
+    let data     = catch_((mem_Allocator_alloc(allocator, type, init_len))($ignore, claim_unreachable));
     return_({
         .allocator = allocator,
         .data      = { .ptr = { .info = data.type, .addr = data.addr }, .len = 0 },
         .cap       = init_len,
     });
 } $unscoped;
-static fn_(Vec_push(Vec* self, m_Val val), Err$void $scope) {
+static fn_((Vec_push(Vec* self, m_Val val))(Err$void) $scope) {
     if (self->data.len < self->cap) {
         bti_memcpy(
             self->data.ptr.addr + (self->data.len * self->data.ptr.info.size),
@@ -160,7 +160,7 @@ static fn_(Vec_push(Vec* self, m_Val val), Err$void $scope) {
     }
     return_err(Err_Unsupported());
 } $unscoped;
-static fn_(Vec_pop(Vec* self, m_Val mem), m_Opt$Val $scope) {
+static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val) $scope) {
     if (0 < self->data.len) {
         bti_memcpy(
             mem.ref,
@@ -172,7 +172,7 @@ static fn_(Vec_pop(Vec* self, m_Val mem), m_Opt$Val $scope) {
     }
     return_none();
 } $unscoped;
-static fn_(Vec_fini(Vec* self), void) {
-    $ignore = self;
+static fn_((Vec_fini(Vec* self))(void)) {
+    let_ignore = self;
     // mem_Allocator_free(self->allocator, anySli(self->data.ptr.addr));
 }

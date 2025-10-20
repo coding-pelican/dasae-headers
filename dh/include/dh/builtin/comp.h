@@ -61,20 +61,23 @@ extern "C" {
      *          not return a value \
      */ \
     comp_attr__$no_return
+
 #define $ignore_void \
     /** \
-     * @brief Attribute explicitly $ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values \
+     * @brief Ignores expression or return value \
      */ \
     comp_attr__$ignore_void
 #define $ignore \
     /** \
-     * @brief Attribute explicitly $ignores an expression or return value \
-     * @details Used to suppress compiler warnings about unused values \
+     * @brief Ignores payload capture \
      */ \
     comp_attr__$ignore
-#define $ignore_capture \
-    comp_attr__$ignore_capture
+#define let_ignore \
+    /** \
+     * @brief Ignores expression or return value \
+     */ \
+    comp_attr__let_ignore
+
 
 #define $used(_Expr... /*void*/) \
     /** \
@@ -163,10 +166,10 @@ extern "C" {
 #define comp_attr__$must_check  BUILTIN_COMP_MUST_CHECK
 #define comp_attr__$no_return   BUILTIN_COMP_NO_RETURN
 #define comp_attr__$ignore_void (void)
-#define comp_attr__$ignore      __attribute__((unused)) let pp_uniqTok(ignored)
-#define comp_attr__$ignore_capture \
+#define comp_attr__$ignore \
     __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
-    $ignore
+    let_ignore
+#define comp_attr__let_ignore __attribute__((unused)) let pp_uniqTok(ignored)
 
 
 #define comp_attr__$used(_Expr...) _Expr

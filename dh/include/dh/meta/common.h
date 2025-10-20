@@ -43,23 +43,23 @@ typedef union meta_Ptr        meta_Ptr;
 typedef struct meta_Sli_const meta_Sli_const;
 typedef union meta_Sli        meta_Sli;
 
-extern fn_(meta_Ptr_constCast(meta_Ptr_const), meta_Ptr);
-extern fn_(meta_Ptr_mutCast(meta_Ptr), meta_Ptr_const);
-extern fn_(meta_Ptr_toSli(meta_Ptr, TypeInfo type), meta_Sli);
+extern fn_((meta_Ptr_constCast(meta_Ptr_const))(meta_Ptr));
+extern fn_((meta_Ptr_mutCast(meta_Ptr))(meta_Ptr_const));
+extern fn_((meta_Ptr_toSli(meta_Ptr, TypeInfo type))(meta_Sli));
 
-extern fn_(meta_Ptr_copy(meta_Ptr, meta_Ptr_const), meta_Ptr);
-extern fn_(meta_Ptr_move(meta_Ptr, meta_Ptr), meta_Ptr);
+extern fn_((meta_Ptr_copy(meta_Ptr, meta_Ptr_const))(meta_Ptr));
+extern fn_((meta_Ptr_move(meta_Ptr, meta_Ptr))(meta_Ptr));
 
-extern fn_(meta_Sli_constCast(meta_Sli_const), meta_Sli);
-extern fn_(meta_Sli_mutCast(meta_Sli), meta_Sli_const);
-extern fn_(meta_Sli_asPtr(meta_Sli), meta_Ptr);
-extern fn_(meta_Sli_len(meta_Sli), usize);
-extern fn_(meta_Sli_at(meta_Sli, usize index), meta_Ptr);
-extern fn_(meta_Sli_slice(meta_Sli, usize begin, usize end), meta_Sli);
+extern fn_((meta_Sli_constCast(meta_Sli_const))(meta_Sli));
+extern fn_((meta_Sli_mutCast(meta_Sli))(meta_Sli_const));
+extern fn_((meta_Sli_asPtr(meta_Sli))(meta_Ptr));
+extern fn_((meta_Sli_len(meta_Sli))(usize));
+extern fn_((meta_Sli_at(meta_Sli, usize index))(meta_Ptr));
+extern fn_((meta_Sli_slice(meta_Sli, usize begin, usize end))(meta_Sli));
 
-extern fn_(meta_Sli_set(meta_Sli, meta_Ptr_const), meta_Sli);
-extern fn_(meta_Sli_copy(meta_Sli, meta_Sli_const), meta_Sli);
-extern fn_(meta_Sli_move(meta_Sli, meta_Sli), meta_Sli);
+extern fn_((meta_Sli_set(meta_Sli, meta_Ptr_const))(meta_Sli));
+extern fn_((meta_Sli_copy(meta_Sli, meta_Sli_const))(meta_Sli));
+extern fn_((meta_Sli_move(meta_Sli, meta_Sli))(meta_Sli));
 
 #define Opt_some$(T_Lit) pp_defer(some$) pp_Tuple_cat(T_Lit)
 

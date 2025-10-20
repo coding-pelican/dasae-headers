@@ -52,13 +52,13 @@ extern "C" {
 #define PIPE_APPLY(value, func, args...)        PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
 
 // Process a single step in the pipe
-#define PIPE_STEP(prev_result_var, step_num, func, args...)             \
-    var ret##step_num = bti_Generic_match$(                             \
-        TypeOf(PIPE_APPLY((prev_result_var), func, args)),              \
-        bti_Generic_pattern$(void) eval({                               \
-            $ignore = PIPE_APPLY((prev_result_var), func, args);        \
-            eval_return make$(Void);                                    \
-        }),                                                             \
+#define PIPE_STEP(prev_result_var, step_num, func, args...) \
+    var ret##step_num = bti_Generic_match$( \
+        TypeOf(PIPE_APPLY((prev_result_var), func, args)), \
+        bti_Generic_pattern$(void) eval({ \
+            let_ignore = PIPE_APPLY((prev_result_var), func, args); \
+            eval_return make$(Void); \
+        }), \
         bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
     );
 
@@ -68,7 +68,7 @@ extern "C" {
 // Main pipe implementation
 #define pipe(initial_value...)             comp_syn__pipe(initial_value)
 #define comp_syn__pipe(initial_value, ...) ({ \
-    var __pipe_initial = initial_value;       \
+    var __pipe_initial = initial_value; \
     PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
 })
 
@@ -84,57 +84,57 @@ extern "C" {
 #define PIPE_COUNT_ARGS(arg1, arg2, arg3, arg4, arg5, _func, ...) _func
 
 // Implementation for different numbers of pipe steps
-#define PIPE1(_initial_value, _func_args1)                                             \
+#define PIPE1(_initial_value, _func_args1) \
     PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
     PIPE_RESULT(0)
-#define PIPE2(_initial_value, _func_args1, _func_args2)                                \
+#define PIPE2(_initial_value, _func_args1, _func_args2) \
     PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
     PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
     PIPE_RESULT(1)
-#define PIPE3(_initial_value, _func_args1, _func_args2, _func_args3)                   \
+#define PIPE3(_initial_value, _func_args1, _func_args2, _func_args3) \
     PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
     PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
     PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
     PIPE_RESULT(2)
-#define PIPE4(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4)      \
+#define PIPE4(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4) \
     PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
     PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
     PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
     PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
     PIPE_RESULT(3)
 #define PIPE5(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1)         \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2)         \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3)         \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4)         \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5)         \
+    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
+    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
+    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
+    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
+    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
     PIPE_RESULT(4)
 #define PIPE6(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1)                      \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2)                      \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3)                      \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4)                      \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5)                      \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6)                      \
+    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
+    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
+    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
+    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
+    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
+    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
     PIPE_RESULT(5)
 #define PIPE7(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6, _func_args7) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1)                                   \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2)                                   \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3)                                   \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4)                                   \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5)                                   \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6)                                   \
-    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7)                                   \
+    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
+    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
+    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
+    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
+    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
+    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
+    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7) \
     PIPE_RESULT(6)
 #define PIPE8(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6, _func_args7, _func_args8) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1)                                                \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2)                                                \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3)                                                \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4)                                                \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5)                                                \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6)                                                \
-    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7)                                                \
-    PIPE_STEP(PIPE_RESULT(6), 7, PIPE_GET_FUNC _func_args8, PIPE_GET_ARGS _func_args8)                                                \
+    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
+    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
+    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
+    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
+    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
+    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
+    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7) \
+    PIPE_STEP(PIPE_RESULT(6), 7, PIPE_GET_FUNC _func_args8, PIPE_GET_ARGS _func_args8) \
     PIPE_RESULT(7)
 
 #if defined(__cplusplus)

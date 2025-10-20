@@ -32,13 +32,13 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define la_(/*(_Params...)(_TReturn) <$ext>*/...) \
-    pp_expand(pp_defer(block_expand__la_)(param_expand__la_ __VA_ARGS__))
+    pp_expand(pp_defer(block_inline__la_)(param_expand__la_ __VA_ARGS__))
 #define param_expand__la_(...)                         (__VA_ARGS__), pp_expand
-#define block_expand__la_(...)                         pp_overload(block_expand__la, __VA_ARGS__)(__VA_ARGS__)
-#define block_expand__la_2(_Params, _TReturn)          impl_comp_syn__lam_(_Params, _TReturn)
-#define block_expand__la_3(_Params, _TReturn, _Ext...) pp_defer(pp_cat)(block_expand__la_, _Ext)(_Params, _TReturn)
-#define block_expand__la_$_scope(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_scope(_Params, _TReturn)
-#define block_expand__la_$_guard(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_guard(_Params, _TReturn)
+#define block_inline__la_(...)                         pp_overload(block_inline__la, __VA_ARGS__)(__VA_ARGS__)
+#define block_inline__la_2(_Params, _TReturn)          impl_comp_syn__lam_(_Params, _TReturn)
+#define block_inline__la_3(_Params, _TReturn, _Ext...) pp_defer(pp_cat)(block_inline__la_, _Ext)(_Params, _TReturn)
+#define block_inline__la_$_scope(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_scope(_Params, _TReturn)
+#define block_inline__la_$_guard(_Params, _TReturn)    /* TODO: Implement */ impl_comp_syn__lam_$_guard(_Params, _TReturn)
 #define $unscoped_la                                   /* TODO: Implement */
 #define $unguarded_la                                  /* TODO: Implement */
 

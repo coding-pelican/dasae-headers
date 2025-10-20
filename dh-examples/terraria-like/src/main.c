@@ -236,7 +236,7 @@ typedef struct GameState {
 // ============================================================================
 
 // Background tile colors
-func((Render_getBgTileColor(BgTile tile))(Color)) {
+fn_((Render_getBgTileColor(BgTile tile))(Color)) {
     switch (tile) {
     case BgTile_none:
         return Color_transparent;
@@ -254,7 +254,7 @@ func((Render_getBgTileColor(BgTile tile))(Color)) {
 }
 
 // Foreground tile colors
-func((Render_getFgTileColor(FgTile tile))(Color)) {
+fn_((Render_getFgTileColor(FgTile tile))(Color)) {
     switch (tile) {
     case FgTile_air:
         return Color_transparent;
@@ -285,7 +285,7 @@ func((Render_getFgTileColor(FgTile tile))(Color)) {
     }
 }
 
-func((FgTile_isSolid(FgTile tile))(bool)) {
+fn_((FgTile_isSolid(FgTile tile))(bool)) {
     switch (tile) {
     case FgTile_air:
     case FgTile_leaves: // 나무 잎은 통과 가능
@@ -307,7 +307,7 @@ func((FgTile_isSolid(FgTile tile))(bool)) {
 }
 
 // Entity tile colors
-func((Render_getEntityTileColor(EntityTileType tile))(Color)) {
+fn_((Render_getEntityTileColor(EntityTileType tile))(Color)) {
     switch (tile) {
     case EntityTileType_none:
         return Color_transparent;
@@ -331,7 +331,6 @@ func((Render_getEntityTileColor(EntityTileType tile))(Color)) {
     case EntityTileType_anvil:
         return literal_Color_fromOpaque(192, 192, 192); // Silver
     case EntityTileType_door_closed:
-        return literal_Color_fromOpaque(101, 67, 33); // Dark brown
     case EntityTileType_door_open:
         return literal_Color_fromOpaque(101, 67, 33); // Dark brown
     case EntityTileType_torch:
@@ -344,7 +343,7 @@ func((Render_getEntityTileColor(EntityTileType tile))(Color)) {
 }
 
 // Entity colors
-func((Render_getEntityColor(EntityType entity_type))(Color)) {
+fn_((Render_getEntityColor(EntityType entity_type))(Color)) {
     switch (entity_type) {
     case EntityType_player:
         return literal_Color_fromOpaque(0, 0, 255); // Blue
@@ -363,73 +362,73 @@ func((Render_getEntityColor(EntityType entity_type))(Color)) {
 // FORWARD DECLARATIONS
 // ============================================================================
 
-func((Game_init(mem_Allocator allocator))(GameState*));
-func((Game_fini(GameState* self, mem_Allocator allocator))(void));
-func((Game_genWorld(GameState* self))(void));
+fn_((Game_init(mem_Allocator allocator))(GameState*));
+fn_((Game_fini(GameState* self, mem_Allocator allocator))(void));
+fn_((Game_genWorld(GameState* self))(void));
 
 use_Opt$(EntityTileType);
-func((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool));
-func((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType));
-func((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void));
+fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool));
+fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType));
+fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void));
 
 use_Opt$(EntityId);
 use_Opt$(Entity);
-func((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId));
-func((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity));
-func((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity));
-func((Game_removeDeadEntities(GameState* self))(void));
+fn_((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId));
+fn_((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity));
+fn_((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity));
+fn_((Game_removeDeadEntities(GameState* self))(void));
 
-func((Item_miningPower(ItemType item_type))(u8));
-func((Item_blockHardness(FgTile block))(u8));
-func((Item_blockToItem(FgTile block))(ItemType));
-func((Item_itemToBlock(ItemType item))(FgTile));
-func((Item_itemToEntityTile(ItemType item))(EntityTileType));
-func((Item_entityTileToItem(EntityTileType tile))(ItemType));
+fn_((Item_miningPower(ItemType item_type))(u8));
+fn_((Item_blockHardness(FgTile block))(u8));
+fn_((Item_blockToItem(FgTile block))(ItemType));
+fn_((Item_itemToBlock(ItemType item))(FgTile));
+fn_((Item_itemToEntityTile(ItemType item))(EntityTileType));
+fn_((Item_entityTileToItem(EntityTileType tile))(ItemType));
 
-func((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void));
-func((Game_addToInventory(GameState* self, ItemStack stack))(bool));
-func((Game_pickUpItems(GameState* self, Entity* player))(void));
+fn_((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void));
+fn_((Game_addToInventory(GameState* self, ItemStack stack))(bool));
+fn_((Game_pickUpItems(GameState* self, Entity* player))(void));
 
-func((Game_processInput(GameState* self))(void));
-func((Game_handleMining(GameState* self))(void));
-func((Game_handleBlockPlacement(GameState* self))(void));
-func((Game_handleInteraction(GameState* self))(void));
+fn_((Game_processInput(GameState* self))(void));
+fn_((Game_handleMining(GameState* self))(void));
+fn_((Game_handleBlockPlacement(GameState* self))(void));
+fn_((Game_handleInteraction(GameState* self))(void));
 
-func((Game_updatePhysics(GameState* self, f32 delta_time))(void));
-func((Game_updateEntityAI(GameState* self, f32 delta_time))(void));
-func((Game_update(GameState* self, f32 delta_time))(void));
+fn_((Game_updatePhysics(GameState* self, f32 delta_time))(void));
+fn_((Game_updateEntityAI(GameState* self, f32 delta_time))(void));
+fn_((Game_update(GameState* self, f32 delta_time))(void));
 
-func((Game_setInput(GameState* self, InputState input))(void));
-func((Game_getPlayerPosition(GameState* self))(m_V2f32));
-func((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile));
-func((Game_getFgTile(GameState* self, usize x, usize y))(FgTile));
-func((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile));
-func((Game_getInventorySlot(GameState* self, usize slot))(ItemStack));
-func((Game_getSelectedHotbarSlot(GameState* self))(u8));
-func((Game_getTimeOfDay(GameState* self))(f32));
-func((Game_getEntityCount(GameState* self))(u32));
-func((Game_getEntity(GameState* self, usize index))(Opt$Entity));
+fn_((Game_setInput(GameState* self, InputState input))(void));
+fn_((Game_getPlayerPosition(GameState* self))(m_V2f32));
+fn_((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile));
+fn_((Game_getFgTile(GameState* self, usize x, usize y))(FgTile));
+fn_((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile));
+fn_((Game_getInventorySlot(GameState* self, usize slot))(ItemStack));
+fn_((Game_getSelectedHotbarSlot(GameState* self))(u8));
+fn_((Game_getTimeOfDay(GameState* self))(f32));
+fn_((Game_getEntityCount(GameState* self))(u32));
+fn_((Game_getEntity(GameState* self, usize index))(Opt$Entity));
 
 // Rendering functions
-func((Render_init(mem_Allocator allocator))(Renderer*));
-func((Render_fini(Renderer* self, mem_Allocator allocator))(void));
-func((Render_worldToScreen(const Camera* camera, m_V2f32 world_pos))(m_V2i32));
-func((Render_screenToWorld(const Camera* camera, m_V2i32 screen_pos))(m_V2f32));
-func((Render_updateCamera(Renderer* self, const GameState* game))(void));
-func((Render_world(GameState* self))(void));
-func((Render_entities(GameState* self))(void));
-func((Render_ui(GameState* self))(void));
-func((Render_hotbar(GameState* self))(void));
-func((Render_selectedItemInfo(GameState* self))(void));
-func((Render_cursor(GameState* self))(void));
-func((Render_playerStatus(GameState* self))(void));
-func((Game_render(GameState* self))(void));
+fn_((Render_init(mem_Allocator allocator))(Renderer*));
+fn_((Render_fini(Renderer* self, mem_Allocator allocator))(void));
+fn_((Render_worldToScreen(const Camera* camera, m_V2f32 world_pos))(m_V2i32));
+fn_((Render_screenToWorld(const Camera* camera, m_V2i32 screen_pos))(m_V2f32));
+fn_((Render_updateCamera(Renderer* self, const GameState* game))(void));
+fn_((Render_world(GameState* self))(void));
+fn_((Render_entities(GameState* self))(void));
+fn_((Render_ui(GameState* self))(void));
+fn_((Render_hotbar(GameState* self))(void));
+fn_((Render_selectedItemInfo(GameState* self))(void));
+fn_((Render_cursor(GameState* self))(void));
+fn_((Render_playerStatus(GameState* self))(void));
+fn_((Game_render(GameState* self))(void));
 
 // ============================================================================
 // TILE PROPERTIES LOOKUP
 // ============================================================================
 
-func((EntityTile_props(EntityTileType tile_type))(TileProps)) {
+fn_((EntityTile_props(EntityTileType tile_type))(TileProps)) {
     switch (tile_type) {
     case EntityTileType_none:
         return (TileProps){
@@ -557,7 +556,7 @@ func((EntityTile_props(EntityTileType tile_type))(TileProps)) {
 // UTILITY FUNCTIONS
 // ============================================================================
 
-func((hash2D(usize x, usize y))(u32)) {
+fn_((hash2D(usize x, usize y))(u32)) {
     let h1 = (as$(u32, x) * lit_num$(u32, 374, 761, 393)) + (as$(u32, y) * lit_num$(u32, 668, 265, 263));
     let h2 = (h1 ^ (h1 >> 13)) * lit_num$(u32, 1, 274, 126, 177);
     return h2 ^ (h2 >> 16);
@@ -567,11 +566,11 @@ func((hash2D(usize x, usize y))(u32)) {
 // INITIALIZATION
 // ============================================================================
 
-func((Game_init(mem_Allocator allocator))(GameState*)) {
+fn_((Game_init(mem_Allocator allocator))(GameState*)) {
     let self = meta_cast$(
         GameState*,
         catch_((mem_Allocator_create(allocator, typeInfo$(GameState)))(
-            $ignore_capture, claim_unreachable
+            $ignore, claim_unreachable
         ))
     );
 
@@ -640,12 +639,12 @@ func((Game_init(mem_Allocator allocator))(GameState*)) {
     return self;
 }
 
-func((Game_fini(GameState* self, mem_Allocator allocator))(void)) {
+fn_((Game_fini(GameState* self, mem_Allocator allocator))(void)) {
     Render_fini(&self->renderer, allocator);
     mem_Allocator_destroy(allocator, anyPtr(self));
 }
 
-func((Game_genWorld(GameState* self))(void)) {
+fn_((Game_genWorld(GameState* self))(void)) {
     const usize surface_height = Game_world_height / 2;
     // Generate terrain
     for_($r(0, Game_world_width), x) {
@@ -733,7 +732,7 @@ func((Game_genWorld(GameState* self))(void)) {
 // ENTITY TILE MANAGEMENT
 // ============================================================================
 
-func((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool)) {
+fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool)) {
     const TileProps props = EntityTile_props(tile_type);
     // Check if space is available
     for_($r(0, props.size.y), dy) {
@@ -768,7 +767,7 @@ func((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_ty
     return true;
 }
 
-func((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) $scope) {
+fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) $scope) {
     if (x < 0 || Game_world_width <= x || y < 0 || Game_world_height <= y) { return_none(); }
 
     let ux = as$(usize, x);
@@ -800,7 +799,7 @@ func((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) 
     return_some(removed_type);
 } $unscoped_(fn);
 
-func((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
+fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
     // 위쪽으로 올라가면서 나무 기둥과 잎을 파괴
     for_($rev $r(0, y), check_y) {
         let entity_tile = &self->world.layer.entity_tiles[check_y][x];
@@ -830,7 +829,7 @@ func((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
 // ENTITY MANAGEMENT
 // ============================================================================
 
-func((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
+fn_((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
     if (Game_max_entities <= self->entities.count) {
         return_none();
     }
@@ -847,7 +846,7 @@ func((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
 } $unscoped_(fn);
 
 
-func((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity) $scope) {
+fn_((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity) $scope) {
     for_($r(0, self->entities.count), i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
@@ -855,7 +854,7 @@ func((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Enti
     return_none();
 } $unscoped_(fn);
 
-func((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scope) {
+fn_((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scope) {
     for_($r(0, self->entities.count), i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
@@ -863,7 +862,7 @@ func((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scop
     return_none();
 } $unscoped_(fn);
 
-func((Game_removeDeadEntities(GameState* self))(void)) {
+fn_((Game_removeDeadEntities(GameState* self))(void)) {
     usize write_idx = 0;
     for_($r(0, self->entities.count), read_idx) {
         if (self->entities.data[read_idx].alive) {
@@ -880,7 +879,7 @@ func((Game_removeDeadEntities(GameState* self))(void)) {
 // CONVERSION FUNCTIONS
 // ============================================================================
 
-func((Item_miningPower(ItemType item_type))(u8)) {
+fn_((Item_miningPower(ItemType item_type))(u8)) {
     switch (item_type) {
     case ItemType_wooden_pickaxe:
     case ItemType_wooden_axe:
@@ -896,7 +895,7 @@ func((Item_miningPower(ItemType item_type))(u8)) {
     }
 }
 
-func((Item_blockHardness(FgTile block))(u8)) {
+fn_((Item_blockHardness(FgTile block))(u8)) {
     switch (block) {
     case FgTile_air:
         return 0;
@@ -923,7 +922,7 @@ func((Item_blockHardness(FgTile block))(u8)) {
     }
 }
 
-func((Item_blockToItem(FgTile block))(ItemType)) {
+fn_((Item_blockToItem(FgTile block))(ItemType)) {
     switch (block) {
     case FgTile_stone:
         return ItemType_stone;
@@ -948,7 +947,7 @@ func((Item_blockToItem(FgTile block))(ItemType)) {
     }
 }
 
-func((Item_itemToBlock(ItemType item))(FgTile)) {
+fn_((Item_itemToBlock(ItemType item))(FgTile)) {
     switch (item) {
     case ItemType_stone:
         return FgTile_stone;
@@ -965,7 +964,7 @@ func((Item_itemToBlock(ItemType item))(FgTile)) {
     }
 }
 
-func((Item_itemToEntityTile(ItemType item))(EntityTileType)) {
+fn_((Item_itemToEntityTile(ItemType item))(EntityTileType)) {
     switch (item) {
     case ItemType_platform:
         return EntityTileType_platform;
@@ -986,7 +985,7 @@ func((Item_itemToEntityTile(ItemType item))(EntityTileType)) {
     }
 }
 
-func((Item_entityTileToItem(EntityTileType tile))(ItemType)) {
+fn_((Item_entityTileToItem(EntityTileType tile))(ItemType)) {
     switch (tile) {
     case EntityTileType_platform:
         return ItemType_platform;
@@ -1012,7 +1011,7 @@ func((Item_entityTileToItem(EntityTileType tile))(ItemType)) {
 // ITEM AND INVENTORY MANAGEMENT
 // ============================================================================
 
-func((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void)) {
+fn_((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void)) {
     let pos_x_hash = as$(u32, pos.x);
     let pos_y_hash = as$(u32, pos.y);
     let rand_x     = as$(f32, ((hash2D(pos_x_hash, pos_y_hash) % 100) - 50) * 0.01f);
@@ -1033,7 +1032,7 @@ func((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 
     Game_appendEntity(self, entity);
 }
 
-func((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
+fn_((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
     // Try to stack with existing items
     for_($r(0, Game_inventory_size), i) {
         if (self->player.data.inventory[i].item_type == stack.item_type) {
@@ -1054,7 +1053,7 @@ func((Game_addToInventory(GameState* self, ItemStack stack))(bool)) {
     return false;
 }
 
-func((Game_pickUpItems(GameState* self, Entity* player))(void)) {
+fn_((Game_pickUpItems(GameState* self, Entity* player))(void)) {
     for_($r(0, self->entities.count), i) {
         let item = &self->entities.data[i];
         if (!item->alive || item->entity_type != EntityType_item_drop) { continue; }
@@ -1080,7 +1079,7 @@ typedef struct CollisionResult {
     bool is_platform;
 } CollisionResult;
 
-func((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_platforms))(CollisionResult) $scope) {
+fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_platforms))(CollisionResult) $scope) {
     let min_x = as$(i32, floorf(pos.x - (size.x / 2.0f)));
     let max_x = as$(i32, ceilf(pos.x + (size.x / 2.0f)));
     let min_y = as$(i32, floorf(pos.y - (size.y / 2.0f)));
@@ -1145,7 +1144,7 @@ func((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check
     });
 } $unscoped_(fn);
 
-func((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(void)) {
+fn_((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(void)) {
     let move_x = entity->velocity.x * delta_time;
     let move_y = entity->velocity.y * delta_time;
 
@@ -1200,7 +1199,7 @@ func((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(v
 // PHYSICS SYSTEM
 // ============================================================================
 
-func((Game_updatePhysics(GameState* self, f32 delta_time))(void)) {
+fn_((Game_updatePhysics(GameState* self, f32 delta_time))(void)) {
     for_($r(0, self->entities.count), i) {
         let entity = &self->entities.data[i];
         if (!entity->alive) { continue; }
@@ -1228,26 +1227,26 @@ typedef variant_(
     (Shape_rect, struct { f32 width; f32 height; })
 ) Shape;
 
-func((Game_processInput(GameState* self))(void)) {
+fn_((Game_processInput(GameState* self))(void)) {
     let player = orelse_((Game_idxMutEntityById(self, self->player.data.entity_id))(return));
 
 
-    player->velocity.x = expr_(f32 $scope)(if (self->player.input.move_left) {
+    player->velocity.x = eval_(f32 $scope) if (self->player.input.move_left) {
         $break_(-Game_player_speed_x);
-    }) expr_(else)(if (self->player.input.move_right) {
+    } else if (self->player.input.move_right) {
         $break_(Game_player_speed_x);
-    }) expr_(else)({
+    } else {
         $break_(player->velocity.x * 0.8f);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 
     // Movement
-    player->velocity.x = expr_(f32 $scope)(if (self->player.input.move_left) {
+    player->velocity.x = eval_(f32 $scope) if (self->player.input.move_left) {
         $break_(-Game_player_speed_x);
-    }) expr_(else)(if (self->player.input.move_right) {
+    } else if (self->player.input.move_right) {
         $break_(Game_player_speed_x);
-    }) expr_(else)({
+    } else {
         $break_(player->velocity.x * 0.8f);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 
     // Jumping
     if (self->player.input.jump && (player->grounded || player->on_platform)) {
@@ -1278,7 +1277,7 @@ func((Game_processInput(GameState* self))(void)) {
     }
 }
 
-func((Game_handleMining(GameState* self))(void)) {
+fn_((Game_handleMining(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
     let block_x    = (i32)floorf(cursor_pos.x);
     let block_y    = (i32)floorf(cursor_pos.y);
@@ -1325,7 +1324,7 @@ func((Game_handleMining(GameState* self))(void)) {
     }
 }
 
-func((Game_handleBlockPlacement(GameState* self))(void)) {
+fn_((Game_handleBlockPlacement(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
     let block_x    = (i32)floorf(cursor_pos.x);
     let block_y    = (i32)floorf(cursor_pos.y);
@@ -1367,7 +1366,7 @@ func((Game_handleBlockPlacement(GameState* self))(void)) {
     }
 }
 
-func((Game_handleInteraction(GameState* self))(void)) {
+fn_((Game_handleInteraction(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
     let block_x    = (i32)floorf(cursor_pos.x);
     let block_y    = (i32)floorf(cursor_pos.y);
@@ -1387,14 +1386,14 @@ func((Game_handleInteraction(GameState* self))(void)) {
     switch (tile->type) {
     case EntityTileType_door_closed: {
         // Open door - change type and update all parts
-        $ignore = Game_removeEntityTile(self, tile->origin.x, tile->origin.y);
-        $ignore = Game_placeEntityTile(self, tile->origin.x, tile->origin.y, EntityTileType_door_open);
+        let_ignore = Game_removeEntityTile(self, tile->origin.x, tile->origin.y);
+        let_ignore = Game_placeEntityTile(self, tile->origin.x, tile->origin.y, EntityTileType_door_open);
         break;
     }
     case EntityTileType_door_open: {
         // Close door
-        $ignore = Game_removeEntityTile(self, tile->origin.x, tile->origin.y);
-        $ignore = Game_placeEntityTile(self, tile->origin.x, tile->origin.y, EntityTileType_door_closed);
+        let_ignore = Game_removeEntityTile(self, tile->origin.x, tile->origin.y);
+        let_ignore = Game_placeEntityTile(self, tile->origin.x, tile->origin.y, EntityTileType_door_closed);
         break;
     }
     case EntityTileType_chest: {
@@ -1415,8 +1414,8 @@ func((Game_handleInteraction(GameState* self))(void)) {
 // ENTITY AI
 // ============================================================================
 
-func((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
-    $ignore = delta_time;
+fn_((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
+    let_ignore = delta_time;
     for_($r(0, self->entities.count), i) {
         let entity = &self->entities.data[i];
         if (!entity->alive) { continue; }
@@ -1443,7 +1442,7 @@ func((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
 // GAME LOGIC UPDATE
 // ============================================================================
 
-func((Game_update(GameState* self, f32 delta_time))(void)) {
+fn_((Game_update(GameState* self, f32 delta_time))(void)) {
     self->world.state.time_of_day += delta_time * 0.01f;
     if (self->world.state.time_of_day > 1.0f) {
         self->world.state.time_of_day -= 1.0f;
@@ -1459,79 +1458,79 @@ func((Game_update(GameState* self, f32 delta_time))(void)) {
 // PUBLIC INTERFACE
 // ============================================================================
 
-func((Game_setInput(GameState* self, InputState input))(void)) {
+fn_((Game_setInput(GameState* self, InputState input))(void)) {
     self->player.input = input;
 }
 
-func((Game_getPlayerPosition(GameState* self))(m_V2f32)) {
-    return expr_(m_V2f32 $scope)(if_some(Game_idxEntityById(self, self->player.data.entity_id), player) {
+fn_((Game_getPlayerPosition(GameState* self))(m_V2f32)) {
+    return eval_(m_V2f32 $scope) if_some(Game_idxEntityById(self, self->player.data.entity_id), player) {
         $break_(player->position);
-    }) expr_(else)({
+    } else {
         $break_(m_V2f32_zero);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 }
 
-func((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile)) {
-    return expr_(BgTile $scope)(if (Game_world_width <= x || Game_world_height <= y) {
+fn_((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile)) {
+    return eval_(BgTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_(BgTile_none);
-    }) expr_(else)({
+    } else {
         $break_(self->world.layer.bg_tiles[y][x]);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 }
 
-func((Game_getFgTile(GameState* self, usize x, usize y))(FgTile)) {
-    return expr_(FgTile $scope)(if (Game_world_width <= x || Game_world_height <= y) {
+fn_((Game_getFgTile(GameState* self, usize x, usize y))(FgTile)) {
+    return eval_(FgTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_(FgTile_bedrock);
-    }) expr_(else)({
+    } else {
         $break_(self->world.layer.fg_tiles[y][x]);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 }
 
-func((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile)) {
-    return expr_(EntityTile $scope)(if (Game_world_width <= x || Game_world_height <= y) {
+fn_((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile)) {
+    return eval_(EntityTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_((EntityTile){ .type = EntityTileType_none, .origin = m_V2i32_zero, .is_origin = false, .metadata = 0 });
-    }) expr_(else)({
+    } else {
         $break_(self->world.layer.entity_tiles[y][x]);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 }
 
-func((Game_getInventorySlot(GameState* self, usize slot))(ItemStack)) {
-    return expr_(ItemStack $scope)(if (Game_inventory_size <= slot) {
+fn_((Game_getInventorySlot(GameState* self, usize slot))(ItemStack)) {
+    return eval_(ItemStack $scope) if (Game_inventory_size <= slot) {
         $break_((ItemStack){ .item_type = ItemType_none, .count = 0 });
-    }) expr_(else)({
+    } else {
         $break_(self->player.data.inventory[slot]);
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 }
 
-func((Game_getSelectedHotbarSlot(GameState* self))(u8)) {
+fn_((Game_getSelectedHotbarSlot(GameState* self))(u8)) {
     return self->player.data.selected_hotbar_slot;
 }
 
-func((Game_getTimeOfDay(GameState* self))(f32)) {
+fn_((Game_getTimeOfDay(GameState* self))(f32)) {
     return self->world.state.time_of_day;
 }
 
-func((Game_getEntityCount(GameState* self))(u32)) {
+fn_((Game_getEntityCount(GameState* self))(u32)) {
     return self->entities.count;
 }
 
-func((Game_getEntity(GameState* self, usize index))(Opt$Entity)) {
-    return expr_(Opt$Entity $scope)(if (self->entities.count <= index) {
+fn_((Game_getEntity(GameState* self, usize index))(Opt$Entity)) {
+    return eval_(Opt$Entity $scope) if (self->entities.count <= index) {
         $break_(none());
-    }) expr_(else)({
+    } else {
         $break_(some(self->entities.data[index]));
-    }) $unscoped_(expr);
+    } $unscoped_($eval);
 };
 
 // ============================================================================
 // RENDERING SYSTEM
 // ============================================================================
 
-func((Render_init(mem_Allocator allocator))(Renderer*)) {
+fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
     let self = meta_cast$(
         Renderer*,
         catch_((mem_Allocator_create(allocator, typeInfo$(Renderer)))(
-            $ignore_capture, claim_unreachable
+            $ignore, claim_unreachable
         ))
     );
 
@@ -1540,10 +1539,10 @@ func((Render_init(mem_Allocator allocator))(Renderer*)) {
         .allocator     = some(allocator),
         .rect_size     = { .x = Render_screen_width, .y = Render_screen_height },
         .default_color = some(Color_black),
-        .title         = some(u8_l("Terraria Game")),
+        .title         = some(u8_l("Terraria-like Game")),
     };
-    self->window = catch_((engine_Window_init(&window_config))(
-        $ignore_capture, claim_unreachable
+    self->window = catch_((engine_Window_init(window_config))(
+        $ignore, claim_unreachable
     ));
 
     // Create canvas
@@ -1554,14 +1553,14 @@ func((Render_init(mem_Allocator allocator))(Renderer*)) {
         .default_color = some(Color_black),
         .type          = some(engine_CanvasType_rgba),
     };
-    self->canvas = catch_((engine_Canvas_init(&canvas_config))(
-        $ignore_capture, claim_unreachable
+    self->canvas = catch_((engine_Canvas_init(canvas_config))(
+        $ignore, claim_unreachable
     ));
 
     // Add canvas to window
     engine_Window_appendView(
         self->window,
-        &(engine_CanvasView_Config){
+        (engine_CanvasView_Config){
             .canvas      = self->canvas,
             .pos         = { .x = 0, .y = 0 },
             .size        = { .x = Render_screen_width, .y = Render_screen_height },
@@ -1574,16 +1573,16 @@ func((Render_init(mem_Allocator allocator))(Renderer*)) {
 
     // Create input system
     self->input = catch_((engine_Input_init(allocator))(
-        $ignore_capture, claim_unreachable
+        $ignore, claim_unreachable
     ));
 
     // Bind engine core (Vt100 terminal backend)
-    self->core = catch_((engine_core_Vt100_init(&(engine_core_Vt100_Config){
+    self->core = catch_((engine_core_Vt100_init((engine_core_Vt100_Config){
         .allocator = some(allocator),
         .window    = self->window,
         .input     = self->input,
     }))(
-        $ignore_capture, claim_unreachable
+        $ignore, claim_unreachable
     ));
 
     // Initialize camera
@@ -1597,42 +1596,34 @@ func((Render_init(mem_Allocator allocator))(Renderer*)) {
     return self;
 }
 
-func((Render_fini(Renderer* self, mem_Allocator allocator))(void)) {
-    if (self->core) {
-        engine_core_Vt100_fini(self->core);
-    }
-    if (self->input) {
-        engine_Input_fini(self->input);
-    }
-    if (self->canvas) {
-        engine_Canvas_fini(self->canvas);
-    }
-    if (self->window) {
-        engine_Window_fini(self->window);
-    }
+fn_((Render_fini(Renderer* self, mem_Allocator allocator))(void)) {
+    if (self->core) { engine_core_Vt100_fini(self->core); }
+    if (self->input) { engine_Input_fini(self->input); }
+    if (self->canvas) { engine_Canvas_fini(self->canvas); }
+    if (self->window) { engine_Window_fini(self->window); }
     mem_Allocator_destroy(allocator, anyPtr(self));
 }
 
-func((Render_worldToScreen(const Camera* camera, m_V2f32 world_pos))(m_V2i32)) {
+fn_((Render_worldToScreen(const Camera* camera, m_V2f32 world_pos))(m_V2i32)) {
     let screen_x = as$(i32, (world_pos.x - camera->position.x) * camera->zoom + (Render_screen_width / 2.0f));
     let screen_y = as$(i32, (world_pos.y - camera->position.y) * camera->zoom + (Render_screen_height / 2.0f));
     return (m_V2i32){ .x = screen_x, .y = screen_y };
 }
 
-func((Render_screenToWorld(const Camera* camera, m_V2i32 screen_pos))(m_V2f32)) {
+fn_((Render_screenToWorld(const Camera* camera, m_V2i32 screen_pos))(m_V2f32)) {
     let world_x = (as$(f32, screen_pos.x) - (Render_screen_width / 2.0f)) / camera->zoom + camera->position.x;
     let world_y = (as$(f32, screen_pos.y) - (Render_screen_height / 2.0f)) / camera->zoom + camera->position.y;
     return (m_V2f32){ .x = world_x, .y = world_y };
 }
 
-func((Render_updateCamera(Renderer* self, const GameState* game))(void)) {
+fn_((Render_updateCamera(Renderer* self, const GameState* game))(void)) {
     // Follow player
     if_some(Game_idxEntityById(game, game->player.data.entity_id), player) {
         self->camera.position = player->position;
     }
 }
 
-func((Render_world(GameState* self))(void)) {
+fn_((Render_world(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
     let camera = &self->renderer.camera;
 
@@ -1656,8 +1647,8 @@ func((Render_world(GameState* self))(void)) {
     max_y = (max_y >= Game_world_height) ? (Game_world_height - 1) : max_y;
 
     // Render background tiles
-    for_($r(min_y, max_y + 1), y) {
-        for_($r(min_x, max_x + 1), x) {
+    for_($r(min_y, $incl(max_y)), y) {
+        for_($r(min_x, $incl(max_x)), x) {
             let bg_tile = self->world.layer.bg_tiles[y][x];
             if (bg_tile != BgTile_none) {
                 let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32, x), .y = as$(f32, y) });
@@ -1670,8 +1661,8 @@ func((Render_world(GameState* self))(void)) {
     }
 
     // Render foreground tiles
-    for_($r(min_y, max_y + 1), y) {
-        for_($r(min_x, max_x + 1), x) {
+    for_($r(min_y, $incl(max_y)), y) {
+        for_($r(min_x, $incl(max_x)), x) {
             let fg_tile = self->world.layer.fg_tiles[y][x];
             if (fg_tile != FgTile_air) {
                 let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32, x), .y = as$(f32, y) });
@@ -1684,8 +1675,8 @@ func((Render_world(GameState* self))(void)) {
     }
 
     // Render entity tiles
-    for_($r(min_y, max_y + 1), y) {
-        for_($r(min_x, max_x + 1), x) {
+    for_($r(min_y, $incl(max_y)), y) {
+        for_($r(min_x, $incl(max_x)), x) {
             let entity_tile = self->world.layer.entity_tiles[y][x];
             if (entity_tile.type != EntityTileType_none && entity_tile.is_origin) {
                 let props = EntityTile_props(entity_tile.type);
@@ -1707,7 +1698,7 @@ func((Render_world(GameState* self))(void)) {
     }
 }
 
-func((Render_player(GameState* self))(void)) {
+fn_((Render_player(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
     let camera = &self->renderer.camera;
 
@@ -1734,14 +1725,14 @@ func((Render_player(GameState* self))(void)) {
     let min_y = prim_min(screen_bottom.y, screen_top.y);
     let max_y = prim_max(screen_bottom.y, screen_top.y);
 
-    for_($r(min_y, max_y + 1), y) {
-        for_($r(min_x, max_x + 1), x) {
-            engine_Canvas_drawPixel(canvas, x, y, color);
+    for_($r(min_y, $incl(max_y)), y) {
+        for_($r(min_x, $incl(max_x)), x) {
+            engine_Canvas_drawPixel(canvas, as$(i32, x), as$(i32, y), color);
         }
     }
 }
 
-func((Render_entities(GameState* self))(void)) {
+fn_((Render_entities(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
     let camera = &self->renderer.camera;
 
@@ -1773,7 +1764,7 @@ func((Render_entities(GameState* self))(void)) {
     }
 }
 
-func((Render_ui(GameState* self))(void)) {
+fn_((Render_ui(GameState* self))(void)) {
     // 1. 핫바 UI (화면 하단)
     Render_hotbar(self);
 
@@ -1787,7 +1778,7 @@ func((Render_ui(GameState* self))(void)) {
     Render_playerStatus(self);
 }
 
-func((Render_hotbar(GameState* self))(void)) {
+fn_((Render_hotbar(GameState* self))(void)) {
     let canvas        = self->renderer.canvas;
     let hotbar_height = 5;
     let hotbar_y      = Render_screen_height - hotbar_height;
@@ -1798,7 +1789,7 @@ func((Render_hotbar(GameState* self))(void)) {
 
     // 핫바 슬롯들
     for_($r(0, Game_hotbar_size), i) {
-        let slot_x = as$(i32, i* slot_size);
+        let slot_x = as$(i32, i * slot_size);
         let slot_y = hotbar_y + 1;
 
         // 슬롯 배경
@@ -1820,7 +1811,7 @@ func((Render_hotbar(GameState* self))(void)) {
     }
 }
 
-func((Render_selectedItemInfo(GameState* self))(void)) {
+fn_((Render_selectedItemInfo(GameState* self))(void)) {
     let canvas        = self->renderer.canvas;
     let selected_slot = self->player.data.selected_hotbar_slot;
     let item          = self->player.data.inventory[selected_slot];
@@ -1846,7 +1837,7 @@ func((Render_selectedItemInfo(GameState* self))(void)) {
     }
 }
 
-func((Render_cursor(GameState* self))(void)) {
+fn_((Render_cursor(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
     let input  = self->renderer.input;
 
@@ -1869,7 +1860,7 @@ func((Render_cursor(GameState* self))(void)) {
     }
 }
 
-func((Render_playerStatus(GameState* self))(void)) {
+fn_((Render_playerStatus(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
 
     if_some(Game_idxEntityById(self, self->player.data.entity_id), player) {
@@ -1884,9 +1875,9 @@ func((Render_playerStatus(GameState* self))(void)) {
     }
 }
 
-func((Game_render(GameState* self))(void)) {
+fn_((Game_render(GameState* self))(void)) {
     // Process window events
-    $ignore = engine_Window_update(self->renderer.window);
+    let_ignore = engine_Window_update(self->renderer.window);
 
     Render_updateCamera(&self->renderer, self);
     Render_world(self);
@@ -1902,14 +1893,14 @@ func((Game_render(GameState* self))(void)) {
 // MAIN ENTRY POINT
 // ============================================================================
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+    let_ignore = args;
 
     let allocator = heap_Page_allocator(&(heap_Page){});
     let game      = Game_init(allocator);
     defer_(Game_fini(game, allocator));
 
-    io_stream_print(u8_l("Terraria-inspired game with dual-layer system initialized!\n"));
+    io_stream_print(u8_l("Terraria-like game with dual-layer system initialized!\n"));
     io_stream_print(u8_l("World size: {:d}x{:d}\n"), Game_world_width, Game_world_height);
     io_stream_print(u8_l("Features:\n"));
     io_stream_print(u8_l("- Background layer (walls)\n"));

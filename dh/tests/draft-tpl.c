@@ -263,10 +263,10 @@
 /* Example usage ============================================================*/
 T_use$(i32, (P, PZ, S, SZ, E, O, OP, OPZ, OS, OSZ));
 
-fn_(sample(void), Err$i32 $scope) {
-    i32 x   = 123;
-    $ignore = P_makeRef(x);
-    $ignore = P_makeRef_mut(x);
-    $ignore = P_makeRef_const(x);
+fn_((sample(void))(Err$i32) $scope) {
+    i32 x      = 123;
+    let_ignore = P_makeRef(x);
+    let_ignore = P_makeRef_mut(x);
+    let_ignore = P_makeRef_const(x);
     return_ok(x);
-} $unscoped;
+} $unscoped_(fn);

@@ -21,6 +21,7 @@ extern "C" {
 #include "dh/Grid.h"
 
 #include "dh/math/common.h"
+#include "dh/math/vec_types.h"
 #include "dh/math/vec.h"
 
 #include "dh/time.h"

@@ -166,13 +166,13 @@ dh-c test
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+    let_ignore = args;
 
     // u8_l로 문자열 리터럴 생성
-    let hello = u8_l("Hello");
+    let message = u8_l("Hello");
     // 문자열을 콘솔에 줄바꿈과 함께 출력
-    io_stream_println(u8_l("{:s}, world!"), hello);
+    io_stream_println(u8_l("{:s}, world!"), message);
 
     // 성공 반환 (오류 없는 void 값)
     return_ok({});
@@ -182,7 +182,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
 ### 🔍 Optional Values 예제
 
 ```c
-fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32 $scope)) {
+fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
     for_s((items), (item, index)) {
         if (*item != value) { continue; }
         return_some(index); // 인덱스를 반환
@@ -223,14 +223,14 @@ use_Errset_((math_Err)(
 ));
 
 Errset_useT$(math_Err, i32); // 또는 일반적으로 `Err_useT$(i32)`
-fn_((safeDivI32(i32 lhs, i32 rhs))(math_Err$i32 $scope)) {
+fn_((safeDivI32(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // 오류를 반환
     }
     return_ok(lhs / rhs); // 값을 반환
 } $unscoped_(fn);
 
-fn_((example(void))(Err$void $guard)) {
+fn_((example(void))(Err$void) $guard) {
     // 리소스 할당
     var buffer = meta_cast$((Sli$i32)(
         try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 128))
@@ -238,12 +238,12 @@ fn_((example(void))(Err$void $guard)) {
     // 함수가 반환될 때 항상 정리됨
     defer_(mem_Allocator_free(allocator, anySli(buffer)));
     // 오류가 발생하고 전파될 때만 정리됨
-    errdefer_($ignore_capture, io_stream_eprintln(u8_l("Occurred error!")));
+    errdefer_($ignore, io_stream_eprintln(u8_l("Occurred error!")));
 
     // 오류 전파 (조기 반환)
     let result_invalid = try_(safeDivI32(10, 0));
     // 기본값으로 오류 처리
-    let result_default = catch_((safeDivI32(10, 0))($ignore_capture, 1));
+    let result_default = catch_((safeDivI32(10, 0))($ignore, 1));
     // 오류 페이로드 캡처를 통한 오류 처리
     let result_handling = catch_((safeDivI32(10, 0))(err, {
         printErr(err);
@@ -320,7 +320,7 @@ TEST_fn_("기본 수학 연산 테스트" $scope) {
     try_(TEST_expect(product == 35));
 
     // 실패하는 테스트 (의도적인 오류 발생)
-    catch_((TEST_expect(product == 30))($ignore_capture, {
+    catch_((TEST_expect(product == 30))($ignore, {
         // 실패: 35 != 30
         io_stream_eprintln(u8_l("Product should be 30, but got {:d}"), product);
     }));

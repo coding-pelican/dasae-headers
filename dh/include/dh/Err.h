@@ -42,27 +42,27 @@ enum ErrCode {
     ErrCode_None            = 0
 };
 struct ErrVT {
-    fn_((*domainToCStr)(ErrCode ctx), const char*);
-    fn_((*codeToCStr)(ErrCode ctx), const char*);
+    fn_(((*domainToCStr)(ErrCode ctx))(const char*));
+    fn_(((*codeToCStr)(ErrCode ctx))(const char*));
 };
 struct Err {
     ErrCode      ctx;
     const ErrVT* vt;
 };
 decl_Sli$(u8);
-static $inline fn_(Err_domainToCStr(Err self), const char*);
-extern fn_(Err_domainToStr(Err self), Sli_const$u8);
-static $inline fn_(Err_codeToCStr(Err self), const char*);
-extern fn_(Err_codeToStr(Err self), Sli_const$u8);
-extern fn_(Err_print(Err self), void);
+static $inline fn_((Err_domainToCStr(Err self))(const char*));
+extern fn_((Err_domainToStr(Err self))(Sli_const$u8));
+static $inline fn_((Err_codeToCStr(Err self))(const char*));
+extern fn_((Err_codeToStr(Err self))(Sli_const$u8));
+extern fn_((Err_print(Err self))(void));
 
-static $inline fn_(Err_Unknown(void), Err);
-static $inline fn_(Err_Unexpected(void), Err);
-static $inline fn_(Err_Unspecified(void), Err);
-static $inline fn_(Err_Unsupported(void), Err);
-static $inline fn_(Err_NotImplemented(void), Err);
-static $inline fn_(Err_InvalidArgument(void), Err);
-static $inline fn_(Err_None(void), Err);
+static $inline fn_((Err_Unknown(void))(Err));
+static $inline fn_((Err_Unexpected(void))(Err));
+static $inline fn_((Err_Unspecified(void))(Err));
+static $inline fn_((Err_Unsupported(void))(Err));
+static $inline fn_((Err_NotImplemented(void))(Err));
+static $inline fn_((Err_InvalidArgument(void))(Err));
+static $inline fn_((Err_None(void))(Err));
 
 #define config_ErrSet(Name, members...) \
     /* Implement error interface */ \
@@ -101,14 +101,14 @@ config_ErrSet(mem_AllocErr,
 
 /*========== Implementations ================================================*/
 
-static $inline fn_(Err_domainToCStr(Err self), const char*) { return self.vt->domainToCStr(self.ctx); }
-static $inline fn_(Err_codeToCStr(Err self), const char*) { return self.vt->codeToCStr(self.ctx); }
+static $inline fn_((Err_domainToCStr(Err self))(const char*)) { return self.vt->domainToCStr(self.ctx); }
+static $inline fn_((Err_codeToCStr(Err self))(const char*)) { return self.vt->codeToCStr(self.ctx); }
 
-static $inline fn_(GeneralErr_domainToCStr(ErrCode ctx), const char*) {
-    $unused(ctx);
+static $inline fn_((GeneralErr_domainToCStr(ErrCode ctx))(const char*)) {
+    let_ignore = ctx;
     return "GeneralErr";
 }
-static $inline fn_(GeneralErr_codeToCStr(ErrCode ctx), const char*) {
+static $inline fn_((GeneralErr_codeToCStr(ErrCode ctx))(const char*)) {
     let code = as$(ErrCode, ctx);
     switch (code) {
     case ErrCode_Unknown:
@@ -129,7 +129,7 @@ static $inline fn_(GeneralErr_codeToCStr(ErrCode ctx), const char*) {
         claim_unreachable_fmt("Unknown error code (code: %d)", code);
     }
 }
-static $inline fn_(GeneralErr_err(ErrCode self), Err) {
+static $inline fn_((GeneralErr_err(ErrCode self))(Err)) {
     static const ErrVT vt[1] = { {
         .domainToCStr = GeneralErr_domainToCStr,
         .codeToCStr   = GeneralErr_codeToCStr,
@@ -140,13 +140,13 @@ static $inline fn_(GeneralErr_err(ErrCode self), Err) {
     };
 }
 
-static $inline fn_(Err_Unknown(void), Err) { return GeneralErr_err(ErrCode_Unknown); }
-static $inline fn_(Err_Unexpected(void), Err) { return GeneralErr_err(ErrCode_Unexpected); }
-static $inline fn_(Err_Unspecified(void), Err) { return GeneralErr_err(ErrCode_Unspecified); }
-static $inline fn_(Err_Unsupported(void), Err) { return GeneralErr_err(ErrCode_Unsupported); }
-static $inline fn_(Err_NotImplemented(void), Err) { return GeneralErr_err(ErrCode_NotImplemented); }
-static $inline fn_(Err_InvalidArgument(void), Err) { return GeneralErr_err(ErrCode_InvalidArgument); }
-static $inline fn_(Err_None(void), Err) { return GeneralErr_err(ErrCode_None); }
+static $inline fn_((Err_Unknown(void))(Err)) { return GeneralErr_err(ErrCode_Unknown); }
+static $inline fn_((Err_Unexpected(void))(Err)) { return GeneralErr_err(ErrCode_Unexpected); }
+static $inline fn_((Err_Unspecified(void))(Err)) { return GeneralErr_err(ErrCode_Unspecified); }
+static $inline fn_((Err_Unsupported(void))(Err)) { return GeneralErr_err(ErrCode_Unsupported); }
+static $inline fn_((Err_NotImplemented(void))(Err)) { return GeneralErr_err(ErrCode_NotImplemented); }
+static $inline fn_((Err_InvalidArgument(void))(Err)) { return GeneralErr_err(ErrCode_InvalidArgument); }
+static $inline fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
 
 #define GEN__config_ErrSet(Name, ...) \
     typedef enum pp_cat(Name, Code) { \
@@ -160,11 +160,11 @@ static $inline fn_(Err_None(void), Err) { return GeneralErr_err(ErrCode_None); }
         ) \
     } pp_cat(Name, Code); \
     typedef Err    Name; \
-    static $inline fn_(pp_join(_, Name, domainToCStr)(ErrCode ctx), const char*) { \
+    static $inline fn_((pp_join(_, Name, domainToCStr)(ErrCode ctx))(const char*)) { \
         $unused(ctx); \
         return #Name; \
     } \
-    static $inline fn_(pp_join(_, Name, codeToCStr)(ErrCode ctx), const char*) { \
+    static $inline fn_((pp_join(_, Name, codeToCStr)(ErrCode ctx))(const char*)) { \
         let code = as$(pp_cat(Name, Code), ctx); \
         switch (code) { \
             GEN__config_ErrSet__FN__codeToCStr__cases( \
@@ -177,7 +177,7 @@ static $inline fn_(Err_None(void), Err) { return GeneralErr_err(ErrCode_None); }
             ) \
         } \
     } \
-    static $inline fn_(pp_join(_, Name, err)(pp_cat(Name, Code) self), Err) { \
+    static $inline fn_((pp_join(_, Name, err)(pp_cat(Name, Code) self))(Err)) { \
         static const ErrVT vt[1] = { { \
             .domainToCStr = pp_join(_, Name, domainToCStr), \
             .codeToCStr   = pp_join(_, Name, codeToCStr), \
@@ -218,7 +218,7 @@ static $inline fn_(Err_None(void), Err) { return GeneralErr_err(ErrCode_None); }
         claim_unreachable_fmt("Unknown error code (code: %d)", code);
 
 #define GEN__config_ErrSet__FN__ctorTemplates(Name, ...) \
-    static $inline $maybe_unused fn_(pp_cat(Name, _None)(void), Err) { \
+    static $inline $maybe_unused fn_((pp_cat(Name, _None)(void))(Err)) { \
         return pp_join(_, Name, err)(pp_cat(Name, Code_None)); \
     } \
     __VA_ARGS__
@@ -232,7 +232,7 @@ static $inline fn_(Err_None(void), Err) { return GeneralErr_err(ErrCode_None); }
         return #Value;
 
 #define GEN__config_ErrSet__FN__ctorTemplate(Name, Value) \
-    static $inline $maybe_unused fn_(pp_join(_, Name, Value)(void), Err) { \
+    static $inline $maybe_unused fn_((pp_join(_, Name, Value)(void))(Err)) { \
         return pp_join(_, Name, err)(pp_cat3(Name, Code_, Value)); \
     }
 

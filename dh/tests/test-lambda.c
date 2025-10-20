@@ -5,21 +5,23 @@
 #include <stdio.h>
 
 // Original function pointer
-typedef fn_((*IntBinaryOp)(i32, i32), i32);
+typedef fn_(((*IntBinaryOp)(i32, i32))(i32));
 // Compatible callback type that works with both function pointers and blocks
 use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
 
 // Function that accepts only function pointers
-static fn_(operateFnptr(i32 a, i32 b, IntBinaryOp op), void) {
+static fn_((operateFnptr(i32 a, i32 b, IntBinaryOp op))(void)) {
     printf("Result: %d\n", op(a, b));
 }
 // Function that accepts the compatible callback type
-static fn_(operateCompat(i32 a, i32 b, IntBinOp_compat op), void) {
+static fn_((operateCompat(i32 a, i32 b, IntBinOp_compat op))(void)) {
     printf("Result: %d\n", invoke(op, a, b));
 }
 
 // Function that adds two integers
-static fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
+static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
+    return lhs + rhs;
+}
 
 #include "dh/ArrList.h"
 #include "dh/heap/Page.h"
@@ -37,7 +39,7 @@ static fn_(funcAdd(i32 lhs, i32 rhs), i32) { return lhs + rhs; }
 })
 
 // Example main function showing how to use the compatibility layer
-fn_(dh_main(void), Err$void $guard) {
+fn_((dh_main(void))(Err$void $guard)) {
     var i32_list = type$(ArrList$$(i32), try_(ArrList_initCap(typeInfo$(i32), heap_Page_allocator(&(heap_Page){}), 8)));
     defer_(ArrList_fini(i32_list.base));
     i32_list.items.len = 8;
@@ -75,4 +77,4 @@ fn_(dh_main(void), Err$void $guard) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-} $unguarded;
+} $unguarded_(fn);

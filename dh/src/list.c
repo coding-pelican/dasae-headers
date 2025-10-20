@@ -6,13 +6,13 @@
 
 /*========== Singly Linked List ============================================*/
 
-fn_(ListSgl_Node_init(), ListSgl_Node) {
+fn_((ListSgl_Node_init())(ListSgl_Node)) {
     return (ListSgl_Node){
         .next = none()
     };
 }
 
-fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), void) {
+fn_((ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node))(void)) {
     debug_assert_nonnull(node);
     debug_assert_nonnull(new_node);
 
@@ -20,14 +20,14 @@ fn_(ListSgl_Node_insertAfter(ListSgl_Node* node, ListSgl_Node* new_node), void) 
     toSome(&node->next, new_node);
 }
 
-fn_(ListSgl_Node_removeNext(ListSgl_Node* node), Opt$Ptr$ListSgl_Node $scope) {
+fn_((ListSgl_Node_removeNext(ListSgl_Node* node))(Opt$Ptr$ListSgl_Node) $scope) {
     debug_assert_nonnull(node);
     let next_node = orelse_((node->next)(return_none()));
     node->next    = next_node->next;
     return_some(next_node);
 } $unscoped;
 
-fn_(ListSgl_Node_findLast(ListSgl_Node* node), ListSgl_Node*) {
+fn_((ListSgl_Node_findLast(ListSgl_Node* node))(ListSgl_Node*)) {
     debug_assert_nonnull(node);
     var current = node;
     while_some(current->next, next) {
@@ -36,7 +36,7 @@ fn_(ListSgl_Node_findLast(ListSgl_Node* node), ListSgl_Node*) {
     return current;
 }
 
-fn_(ListSgl_Node_countChildren(const ListSgl_Node* node), usize) {
+fn_((ListSgl_Node_countChildren(const ListSgl_Node* node))(usize)) {
     debug_assert_nonnull(node);
     usize count   = 0;
     var   current = node;
@@ -47,7 +47,7 @@ fn_(ListSgl_Node_countChildren(const ListSgl_Node* node), usize) {
     return count;
 }
 
-fn_(ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect), void) {
+fn_((ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect))(void)) {
     debug_assert_nonnull(indirect);
     if_none(*indirect) {
         return;
@@ -63,13 +63,13 @@ fn_(ListSgl_Node_reverse(Opt$Ptr$ListSgl_Node* indirect), void) {
     *indirect = prev;
 }
 
-fn_(ListSgl_init(void), ListSgl) {
+fn_((ListSgl_init(void))(ListSgl)) {
     return (ListSgl){
         .first = none()
     };
 }
 
-fn_(ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node), void) {
+fn_((ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(new_node);
 
@@ -77,7 +77,7 @@ fn_(ListSgl_prepend(ListSgl* self, ListSgl_Node* new_node), void) {
     toSome(&self->first, new_node);
 }
 
-fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
+fn_((ListSgl_remove(ListSgl* self, ListSgl_Node* node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
 
@@ -99,7 +99,7 @@ fn_(ListSgl_remove(ListSgl* self, ListSgl_Node* node), void) {
     }
 }
 
-fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node $scope) {
+fn_((ListSgl_popFirst(ListSgl* self))(Opt$Ptr$ListSgl_Node) $scope) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();
@@ -110,7 +110,7 @@ fn_(ListSgl_popFirst(ListSgl* self), Opt$Ptr$ListSgl_Node $scope) {
     return_some(first);
 } $unscoped;
 
-fn_(ListSgl_len(const ListSgl* self), usize) {
+fn_((ListSgl_len(const ListSgl* self))(usize)) {
     debug_assert_nonnull(self);
     usize len = 0;
     if_some(self->first, first) {
@@ -121,14 +121,14 @@ fn_(ListSgl_len(const ListSgl* self), usize) {
 
 /*========== Doubly Linked List ============================================*/
 
-fn_(ListDbl_Node_init(void), ListDbl_Node) {
+fn_((ListDbl_Node_init(void))(ListDbl_Node)) {
     return (ListDbl_Node){
         .prev = none(),
         .next = none(),
     };
 }
 
-fn_(ListDbl_init(void), ListDbl) {
+fn_((ListDbl_init(void))(ListDbl)) {
     return (ListDbl){
         .first = none(),
         .last  = none(),
@@ -136,7 +136,7 @@ fn_(ListDbl_init(void), ListDbl) {
     };
 }
 
-fn_(ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void) {
+fn_((ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
     debug_assert_nonnull(new_node);
@@ -152,7 +152,7 @@ fn_(ListDbl_insertAfter(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_nod
     self->len++;
 }
 
-fn_(ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node), void) {
+fn_((ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
     debug_assert_nonnull(new_node);
@@ -168,7 +168,7 @@ fn_(ListDbl_insertBefore(ListDbl* self, ListDbl_Node* node, ListDbl_Node* new_no
     self->len++;
 }
 
-fn_(ListDbl_concatByMoving(ListDbl* dst, ListDbl* src), void) {
+fn_((ListDbl_concatByMoving(ListDbl* dst, ListDbl* src))(void)) {
     debug_assert_nonnull(dst);
     debug_assert_nonnull(src);
 
@@ -189,7 +189,7 @@ fn_(ListDbl_concatByMoving(ListDbl* dst, ListDbl* src), void) {
     src->len = 0;
 }
 
-fn_(ListDbl_append(ListDbl* self, ListDbl_Node* new_node), void) {
+fn_((ListDbl_append(ListDbl* self, ListDbl_Node* new_node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(new_node);
 
@@ -204,7 +204,7 @@ fn_(ListDbl_append(ListDbl* self, ListDbl_Node* new_node), void) {
     }
 }
 
-fn_(ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node), void) {
+fn_((ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(new_node);
 
@@ -219,7 +219,7 @@ fn_(ListDbl_prepend(ListDbl* self, ListDbl_Node* new_node), void) {
     }
 }
 
-fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
+fn_((ListDbl_remove(ListDbl* self, ListDbl_Node* node))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(node);
 
@@ -238,7 +238,7 @@ fn_(ListDbl_remove(ListDbl* self, ListDbl_Node* node), void) {
     self->len--;
 }
 
-fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
+fn_((ListDbl_pop(ListDbl* self))(Opt$Ptr$ListDbl_Node) $scope) {
     debug_assert_nonnull(self);
     if_none(self->last) {
         return_none();
@@ -248,7 +248,7 @@ fn_(ListDbl_pop(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
     return_some(last);
 } $unscoped;
 
-fn_(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
+fn_((ListDbl_popFirst(ListDbl* self))(Opt$Ptr$ListDbl_Node) $scope) {
     debug_assert_nonnull(self);
     if_none(self->first) {
         return_none();
@@ -258,7 +258,7 @@ fn_(ListDbl_popFirst(ListDbl* self), Opt$Ptr$ListDbl_Node $scope) {
     return_some(first);
 } $unscoped;
 
-fn_(ListDbl_len(const ListDbl* self), usize) {
+fn_((ListDbl_len(const ListDbl* self))(usize)) {
     debug_assert_nonnull(self);
     return self->len;
 }

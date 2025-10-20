@@ -27,7 +27,8 @@ static bool                 s_pref_initialized  = false;
 
 /* Initialization */
 /// Initialize performance counter frequency and offset.
-static $on_load fn_(init(void), void) {
+$static $on_load
+fn_((init(void))(void)) {
     if (s_pref_initialized) { return; }
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if (!QueryPerformanceFrequency(&s_perf_freq)) {
@@ -98,7 +99,7 @@ time_Duration time_SysTime_durationSince(time_SysTime later, time_SysTime earlie
     return unwrap(time_SysTime_chkdDurationSince(later, earlier));
 }
 
-fn_(time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier), Opt$time_Duration $scope) {
+fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(Opt$time_Duration) $scope) {
     if (time_SysTime_lt(later, earlier)) {
         return_none();
     }
@@ -106,7 +107,7 @@ fn_(time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier), Op
     // Calculate the difference in ticks
     let diff  = as$(f64, later.impl_.QuadPart - earlier.impl_.QuadPart);
     // Convert ticks to nanoseconds
-    let nanos = as$(u64, diff* time_SysTime_nanos_per_sec* freqInv());
+    let nanos = as$(u64, diff * time_SysTime_nanos_per_sec * freqInv());
 #else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     // Calculate the difference in seconds and nanoseconds
     var diff    = makeCleared$(time_SysTimePlatform);
@@ -140,7 +141,7 @@ time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
     return *self = op_subBy(time_SysTime, time_Duration)(*self, other);
 }
 
-fn_(time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime $scope) {
+fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_max - as$(u64, lhs.impl_.QuadPart))) {
@@ -159,7 +160,7 @@ fn_(time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs), Opt$time_
     return_none();
 } $unscoped;
 
-fn_(time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs), Opt$time_SysTime $scope) {
+fn_((time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_min + as$(u64, lhs.impl_.QuadPart))) {

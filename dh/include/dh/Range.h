@@ -24,15 +24,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define $incl(_point...) R_Bound_incl, _point
-#define $excl(_point...) R_Bound_excl, _point
+#define $incl(_point...) comp_expand__$incl(_point)
+#define $excl(_point...) comp_expand__$excl(_point)
 
-#define $r(_begin, _end...)                  R_from($r_begin(_begin), $r_end(_end))
+#define $r(_begin, _end...)                  comp_expand__$r(_begin, _end)
 #define $r_begin(...)                        pp_overload(__$r_begin, __VA_ARGS__)(__VA_ARGS__)
-#define __$r_begin_1(_point...)              R_Bound_begin(R_Bound_incl, _point)
+#define __$r_begin_1(_point...)              (_point)
 #define __$r_begin_2(_bound_type, _point...) R_Bound_begin(_bound_type, _point)
 #define $r_end(...)                          pp_overload(__$r_end, __VA_ARGS__)(__VA_ARGS__)
-#define __$r_end_1(_point...)                R_Bound_end(R_Bound_excl, _point)
+#define __$r_end_1(_point...)                (_point)
 #define __$r_end_2(_bound_type, _point...)   R_Bound_end(_bound_type, _point)
 
 #define from$R   R_from
@@ -40,6 +40,7 @@ extern "C" {
 #define suffix$R R_suffix
 
 #define len$R      R_len
+#define at$R       R_at
 #define contains$R R_contains
 #define isValid$R  R_isValid
 
@@ -52,10 +53,10 @@ typedef enum R_Bound : u8 {
 } R_Bound;
 /// default: incl
 $static $inline_always
-fn_(R_Bound_begin(R_Bound bound, usize point), usize);
+fn_((R_Bound_begin(R_Bound bound, usize point))(usize));
 /// default: excl
 $static $inline_always
-fn_(R_Bound_end(R_Bound bound, usize point), usize);
+fn_((R_Bound_end(R_Bound bound, usize point))(usize));
 
 typedef struct R {
     usize begin; ///< Beginning index (inclusive)
@@ -63,60 +64,80 @@ typedef struct R {
 } R;
 /// [begin..end] => [begin, end)
 $static $inline_always
-fn_(R_from(usize begin, usize end), R);
+fn_((R_from(usize begin, usize end))(R));
 /// [begin..] => [begin, self.end)
 $static $inline_always
-fn_(R_prefix(R self, usize end), R);
+fn_((R_prefix(R self, usize end))(R));
 /// [..end] => [self.begin, end)
 $static $inline_always
-fn_(R_suffix(R self, usize begin), R);
+fn_((R_suffix(R self, usize begin))(R));
 
 $static $inline_always
-fn_(R_len(R self), usize);
+fn_((R_len(R self))(usize));
 $static $inline_always
-fn_(R_contains(R self, usize index), bool);
+fn_((R_at(R self, usize index))(usize));
+$static $inline_always
+fn_((R_contains(R self, usize index))(bool));
 $static $inline_always
 /// begin <= end
-fn_(R_isValid(R self), bool);
+fn_((R_isValid(R self))(bool));
 
 $static $inline_always
-fn_(R_eq(R lhs, R rhs), bool);
+fn_((R_eq(R lhs, R rhs))(bool));
 $static $inline_always
-fn_(R_ne(R lhs, R rhs), bool);
+fn_((R_ne(R lhs, R rhs))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-$static $inline_always
-fn_(R_Bound_begin(R_Bound bound, usize point), usize) { return bound == R_Bound_incl ? point : point + 1; }
-$static $inline_always
-fn_(R_Bound_end(R_Bound bound, usize point), usize) { return bound == R_Bound_excl ? point : point + 1; }
+#if !COMP_TIME
+#define comp_expand__$incl(_point...)    _point
+#define comp_expand__$excl(_point...)    _point
+#define comp_expand__$r(_begin, _end...) R_from(_begin, _end)
+#else
+#define comp_expand__$incl(_point...)    R_Bound_incl, _point
+#define comp_expand__$excl(_point...)    R_Bound_excl, _point
+#define comp_expand__$r(_begin, _end...) R_from($r_begin(_begin), $r_end(_end))
+#endif
 
 $static $inline_always
-fn_(R_from(usize begin, usize end), R) {
+fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return bound == R_Bound_incl ? point : point + 1; }
+$static $inline_always
+fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return bound == R_Bound_excl ? point : point + 1; }
+
+$static $inline_always
+fn_((R_from(usize begin, usize end))(R)) {
     debug_assert_fmt(begin <= end, "Invalid range: begin(%zu) > end(%zu)", begin, end);
     return (R){ .begin = begin, .end = end };
 }
 $static $inline_always
-fn_(R_prefix(R self, usize end), R) {
-    debug_assert_fmt(self.begin <= end, "Invalid range: begin(%zu) > end(%zu)", self.begin, end);
-    return (R){ .begin = self.begin, .end = end };
+fn_((R_prefix(R self, usize end))(R)) {
+    debug_assert_fmt(self.begin + end <= self.end, "Invalid range: begin(%zu) + %zu > end(%zu)", self.begin, end, self.end);
+    return (R){ .begin = self.begin, .end = self.begin + end };
 }
 $static $inline_always
-fn_(R_suffix(R self, usize begin), R) {
-    debug_assert_fmt(begin <= self.end, "Invalid range: begin(%zu) > end(%zu)", begin, self.end);
-    return (R){ .begin = begin, .end = self.end };
+fn_((R_suffix(R self, usize begin))(R)) {
+    debug_assert_fmt(self.begin + begin <= self.end, "Invalid range: begin(%zu) + %zu > end(%zu)", self.begin, begin, self.end);
+    return (R){ .begin = self.begin + begin, .end = self.end };
 }
 $static $inline_always
-fn_(R_len(R self), usize) { return self.end - self.begin; }
+fn_((R_len(R self))(usize)) {
+    debug_assert_fmt(self.begin <= self.end, "Invalid range: begin(%zu) > end(%zu)", self.begin, self.end);
+    return self.end - self.begin;
+}
 $static $inline_always
-fn_(R_contains(R self, usize index), bool) { return self.begin <= index && index < self.end; }
+fn_((R_at(R self, usize index))(usize)) {
+    debug_assert_fmt(self.begin + index < self.end, "Index out of bounds: begin(%zu) + index(%zu) >= end(%zu)", self.begin, index, self.end);
+    return self.begin + index;
+}
 $static $inline_always
-fn_(R_isValid(R self), bool) { return self.begin <= self.end; }
+fn_((R_contains(R self, usize index))(bool)) { return self.begin <= index && index < self.end; }
+$static $inline_always
+fn_((R_isValid(R self))(bool)) { return self.begin <= self.end; }
 
 $static $inline_always
-fn_(R_eq(R lhs, R rhs), bool) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
+fn_((R_eq(R lhs, R rhs))(bool)) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
 $static $inline_always
-fn_(R_ne(R lhs, R rhs), bool) { return !R_eq(lhs, rhs); }
+fn_((R_ne(R lhs, R rhs))(bool)) { return !R_eq(lhs, rhs); }
 
 #if defined(__cplusplus)
 }

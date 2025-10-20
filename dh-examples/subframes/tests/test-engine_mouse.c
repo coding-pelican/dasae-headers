@@ -89,7 +89,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) { // NOLINT
         var allocator = heap_Page_allocator(&(heap_Page){});
 
         log_info("game state created\n");
-        $ignore = getchar();
+        let_ignore = getchar();
 
         // Initialize timing variables
         let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);

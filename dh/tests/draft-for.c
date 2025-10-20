@@ -33,27 +33,27 @@
 // })
 
 TEST_fn_("test for" $scope) {
-    for_((0, 10), i) {
+    for_($r(0, 10), i) {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
     }
 
-    let res = for$(i32, (0, 10), i, {
-        if (i == 5) { break_(i); } continue; }, 0);
+    let res = expr_(i32 $scope)(for_($r(0, 10), i) {
+        if (i == 5) { $break_(i); }
+        continue;
+    }) expr_(else)({ $break_(0); }) $unscoped_(expr);
     try_(TEST_expect(res == 5));
 } $unscoped_TEST_fn;
 
 TEST_fn_("test for with break" $scope) {
-    for_((0, 10), i) {
+    for_($r(0, 10), i) {
         if (i == 5) { break; }
         try_(TEST_expect(i != 5));
     }
 
-    let res = for$(Opt$i32, (0, 10), i) {
-        if (i == 5) {
-            break_(some(i));
-        }
-    }) some(-1);
+    let res = expr_(Opt$i32 $scope)(for_($r(0, 10), i) {
+        if (i == 5) { $break_(some(i)); }
+    }) expr_(else)({ $break_(some(-1)); }) $unscoped_(expr);
     try_(TEST_expect(unwrap(res) == 5));
 } $unscoped_TEST_fn;
 
@@ -73,7 +73,7 @@ TEST_fn_("test for with break" $scope) {
 
 
 
-#define $ignore_capture                                     \
+#define $ignore                                     \
     __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
     $ignore
 
@@ -124,7 +124,7 @@ fn_TEST_scope("test for slice") {
         }
     }
 
-    for_s((pre, suf), (p, $ignore_capture), {
+    for_s((pre, suf), (p, $ignore), {
         printf("%d\n", *p);
     });
     let __s0 = pre;
@@ -133,7 +133,7 @@ fn_TEST_scope("test for slice") {
     for (usize __i = 0; __i < __s0.len; ++__i) {
         let                         p                   = Sli_at(__s0, __i);
         var __attribute__((unused)) pp_uniqTok(ignored) = (Void){};
-        $ignore                                         = Sli_at(__s1, __i);
+        let_ignore                                         = Sli_at(__s1, __i);
         {
             printf("%d\n", *p);
         }
@@ -143,8 +143,8 @@ fn_TEST_scope("test for slice") {
 
 
 
-// #define $ignore_capture comp_attr__$ignore_capture(pp_uniqTok(ignored))
-// #define comp_attr__$ignore_capture(_ignored) \
+// #define $ignore comp_attr__$ignore(pp_uniqTok(ignored))
+// #define comp_attr__$ignore(_ignored) \
 //     $maybe_unused _ignored = (Void){}; \
 //     $ignore
 
@@ -282,10 +282,10 @@ TEST_fn_("test for slices" $scope) {
     });
 } $unscoped_TEST_fn;
 
-TEST_fn_("test for slice with $ignore_capture" $scope) {
+TEST_fn_("test for slice with $ignore" $scope) {
     Arr$$(10, i32) arr  = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
     const Sli$(i32) sli = Arr_slice$(Sli$(i32), arr, (0, 10));
-    for_s1i((sli), ($ignore_capture, i), {
+    for_s1i((sli), ($ignore, i), {
         printf("%llu\n", i);
     });
 } $unscoped_TEST_fn;
@@ -366,7 +366,7 @@ typedef struct R {
 
 
 // func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
-//     $ignore = args;
+//     let_ignore = args;
 
 
 //     //     ({

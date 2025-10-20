@@ -102,13 +102,13 @@ func((Screen_init(m_V2i32 dimension, mem_Allocator allocator))(Err$Screen)$guard
     screen.dimension = dimension;
     let pixel_count = as$(usize, dimension.x) * dimension.y;
     screen.prev_color_buffer = meta_cast$(Sli$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(screen.prev_color_buffer)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.prev_color_buffer)));
     screen.color_buffer = meta_cast$(Sli$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(screen.color_buffer)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.color_buffer)));
     screen.depth_buffer = meta_cast$(Sli$f64, try_(mem_Allocator_alloc(allocator, typeInfo$(f64), pixel_count)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(screen.depth_buffer)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.depth_buffer)));
     screen.dirty_pixels = meta_cast$(Sli$bool, try_(mem_Allocator_alloc(allocator, typeInfo$(bool), pixel_count)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(screen.dirty_pixels)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.dirty_pixels)));
 
     return_ok(screen);
 } $unguarded;
@@ -305,11 +305,11 @@ func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(Err$HexSphere)$guar
 
     // Initialize ArrLists
     hex_sphere.vertices.base[0] = ArrList_init(typeInfo$(Vertex), allocator);
-    errdefer_($ignore_capture, ArrList_fini(hex_sphere.vertices.base));
+    errdefer_($ignore, ArrList_fini(hex_sphere.vertices.base));
     hex_sphere.faces.base[0] = ArrList_init(typeInfo$(Face), allocator);
-    errdefer_($ignore_capture, ArrList_fini(hex_sphere.faces.base));
+    errdefer_($ignore, ArrList_fini(hex_sphere.faces.base));
     hex_sphere.tiles.base[0] = ArrList_init(typeInfo$(Tile), allocator);
-    errdefer_($ignore_capture, ArrList_fini(hex_sphere.tiles.base));
+    errdefer_($ignore, ArrList_fini(hex_sphere.tiles.base));
 
     let t = math_f64_golden_ratio;
     let s = math_sqrt(1 + t * t);
@@ -422,7 +422,7 @@ func((HexSphere_generateTiles(HexSphere* self, mem_Allocator allocator))(Err$voi
 
         // Initialize boundary ArrList
         tile.boundary.base[0] = ArrList_init(typeInfo$(m_V3f64), allocator);
-        errdefer_($ignore_capture, ArrList_fini(tile.boundary.base));
+        errdefer_($ignore, ArrList_fini(tile.boundary.base));
 
         // Sort face centroids around vertex
         try_(sortCentroidsAroundVertex(&vertex, self, &tile.boundary));
@@ -522,8 +522,8 @@ void Screen_renderHexSphere(Screen* self, f64 rotation_x, f64 rotation_y, mem_Al
     }
 
     // HexSphere 생성
-    var hex_sphere = catch_((HexSphere_init(0.95, allocator))($ignore_capture, claim_unreachable));
-    catch_((HexSphere_generateTiles(&hex_sphere, allocator))($ignore_capture, claim_unreachable));
+    var hex_sphere = catch_((HexSphere_init(0.95, allocator))($ignore, claim_unreachable));
+    catch_((HexSphere_generateTiles(&hex_sphere, allocator))($ignore, claim_unreachable));
 
     // 변환 행렬 설정
     let model = m_M4x4_rotation(rotation_y, rotation_x, 0);
@@ -582,7 +582,7 @@ func((Screen_display(Screen* self))(void)) {
         if_(let handle =GetStdHandle(STD_OUTPUT_HANDLE), handle != INVALID_HANDLE_VALUE) {
             if_(DWORD mode = 0, GetConsoleMode(handle, &mode)) {
                 mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                $ignore = SetConsoleMode(handle, mode);
+                let_ignore = SetConsoleMode(handle, mode);
                 s_console_initialized = true;
             }
         }
@@ -606,7 +606,7 @@ func((Screen_display(Screen* self))(void)) {
         catch_((ArrList_resize(
             output_buffer.base,
             buffer_size
-        ))($ignore_capture, claim_unreachable));
+        ))($ignore, claim_unreachable));
     }
 
     var buffer_ptr = output_buffer.items.ptr;
@@ -655,7 +655,7 @@ func((Screen_display(Screen* self))(void)) {
 
 
 func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
-    $ignore = args;
+    let_ignore = args;
 
     // 스크린 버퍼 할당
     var page = make$(heap_Page);

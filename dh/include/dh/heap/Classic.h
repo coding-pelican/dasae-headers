@@ -34,7 +34,7 @@ typedef struct heap_Classic {
 } heap_Classic;
 
 /// Get allocator interface for instance
-extern fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator);
+extern fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator));
 
 /*========== Macros and Declarations ========================================*/
 
@@ -51,7 +51,7 @@ extern fn_(heap_Classic_allocator(heap_Classic* self), mem_Allocator);
 #else
 #endif
 /// Get underlying malloc_size if available
-$inline_always fn_( heap_Classic_mallocSize(anyptr ptr), usize) {
+$inline_always fn_((heap_Classic_mallocSize(anyptr ptr))(usize)) {
 #if defined(__GLIBC__)
     return malloc_usable_size(ptr);
 #elif defined(__APPLE__)

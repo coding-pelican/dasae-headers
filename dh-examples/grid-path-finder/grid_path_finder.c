@@ -361,7 +361,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) {
         InitMaze();
         log_info("maze initialized\n");
 
-        $ignore = getchar();
+        let_ignore = getchar();
 
         // Run each algorithm for 5 seconds
         pthread_t navigation_thread = 0;

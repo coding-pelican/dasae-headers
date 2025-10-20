@@ -190,7 +190,7 @@ See the [Quick Start Guide](./dh/docs/en/quick-start.md) for more details.
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
-    $ignore = args;
+    let_ignore = args;
 
     // Create a string literal using u8_l
     let hello = u8_l("Hello");
@@ -261,12 +261,12 @@ fn_((example(void))(Err$void $guard)) {
     // Cleanup always when function returns
     defer_(mem_Allocator_free(allocator, anySli(buffer)));
     // Cleanup only when an error occurs and propagates
-    errdefer_($ignore_capture, io_stream_eprintln(u8_l("Occurred error!")));
+    errdefer_($ignore, io_stream_eprintln(u8_l("Occurred error!")));
 
     // Error propagation (early return)
     let result_invalid = try_(safeDivI32(10, 0));
     // Error handling with default value
-    let result_default = catch_((safeDivI32(10, 0))($ignore_capture, 1));
+    let result_default = catch_((safeDivI32(10, 0))($ignore, 1));
     // Error handling with error payload capture
     let result_handling = catch_((safeDivI32(10, 0))(err, {
         printErr(err);
@@ -343,7 +343,7 @@ TEST_fn_("Basic Math Operations Test" $scope) {
     try_(TEST_expect(product == 35));
 
     // Failing test (intentional error)
-    catch_((TEST_expect(product == 30))($ignore_capture, {
+    catch_((TEST_expect(product == 30))($ignore, {
         // Fails: 35 != 30
         io_stream_eprintln(u8_l("Product should be 30, but got {:d}"), product);
     }));

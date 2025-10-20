@@ -207,7 +207,7 @@ BenchResult benchmark_stableSort(BenchParams params) {
         let overhead_begin = clock();
         memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
         overhead_time += (clock() - overhead_begin);
-        $ignore = stableSort(c_data.ptr, c_data.len, sizeof(TestElem), compareTestElem, nullptr, allocator);
+        let_ignore = stableSort(c_data.ptr, c_data.len, sizeof(TestElem), compareTestElem, nullptr, allocator);
     }
     let end      = clock();
     let total_ms = (as$(f64, end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC;
@@ -290,6 +290,6 @@ int main(void) {
 
     printf("\ndone.\n");
 
-    $ignore = getchar();
+    let_ignore = getchar();
     return 0;
 }

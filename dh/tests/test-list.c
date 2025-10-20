@@ -32,9 +32,9 @@ TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
         } block_deferral;
     }
 
-    $ignore = ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
+    let_ignore = ListSgl_popFirst(list.base);          // {2, 3, 4, 5}
     ListSgl_remove(list.base, five.base); // {2, 3, 4}
-    $ignore = ListSgl_Node_removeNext(two.base);    // {2, 4}
+    let_ignore = ListSgl_Node_removeNext(two.base);    // {2, 4}
 
     try_(TEST_expect(pipe(list.first,(unwrap,()->data)) == 2));
     // try_(TEST_expect(unwrap(list.first)->data == 2));
@@ -51,4 +51,4 @@ TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
     // try_(TEST_expect(unwrap(unwrap(list.first)->next)->data == 2));
     try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
     // try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
-} $unguarded_TEST_fn;
+} $unguarded_(TEST_fn);

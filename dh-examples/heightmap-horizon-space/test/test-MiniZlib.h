@@ -72,7 +72,7 @@ static $inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 t
     $unused(self);
     $unused(type);
     // *** You would handle Type=1 and Type=2 here with Huffman decoding ***
-    $ignore = fprintf(stderr, "Compressed block not supported in this minimal example.\n");
+    let_ignore = fprintf(stderr, "Compressed block not supported in this minimal example.\n");
     return -1;
 }
 

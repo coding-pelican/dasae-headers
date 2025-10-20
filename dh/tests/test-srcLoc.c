@@ -3,7 +3,7 @@
 
 #include "dh/io/stream.h"
 
-func((dh_main(void))(Err$void) $scope) {
+fn_((dh_main(void))(Err$void) $scope) {
     let loc = srcLoc();
     io_stream_print(u8_l("file_path: {:z}\n"), loc.file_path);
     io_stream_print(u8_l("file_name: {:z}\n"), loc.file_name);
@@ -12,4 +12,4 @@ func((dh_main(void))(Err$void) $scope) {
     io_stream_print(u8_l("column:    {:u}\n"), loc.column);
     io_stream_print(u8_l("{:z}:{:u}:{:u}\n"), loc.file_path, loc.line, loc.column);
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

@@ -33,7 +33,7 @@ typedef struct heap_Page {
 } heap_Page;
 
 /// Get allocator interface for instance
-extern fn_(heap_Page_allocator(heap_Page* self), mem_Allocator);
+extern fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator));
 
 /*========== Implementation Details =========================================*/
 

@@ -27,17 +27,17 @@ extern "C" {
 
 typedef struct io_Writer {
     const anyptr ctx;
-    fn_((*const write)(const anyptr ctx, Sli_const$u8 bytes), Err$usize) $must_check;
+    fn_(((*const write)(const anyptr ctx, Sli_const$u8 bytes))(Err$usize)) $must_check;
 } io_Writer;
 
-extern fn_(io_Writer_write(io_Writer self, Sli_const$u8 bytes), Err$usize) $must_check;
-extern fn_(io_Writer_writeAll(io_Writer self, Sli_const$u8 bytes), Err$void) $must_check;
-extern fn_(io_Writer_writeByte(io_Writer self, u8 byte), Err$void) $must_check;
-extern fn_(io_Writer_writeByteNTimes(io_Writer self, u8 byte, usize n), Err$void) $must_check;
-extern fn_(io_Writer_writeBytesNTimes(io_Writer self, Sli_const$u8 bytes, usize n), Err$void) $must_check;
+extern fn_((io_Writer_write(io_Writer self, Sli_const$u8 bytes))(Err$usize)) $must_check;
+extern fn_((io_Writer_writeAll(io_Writer self, Sli_const$u8 bytes))(Err$void)) $must_check;
+extern fn_((io_Writer_writeByte(io_Writer self, u8 byte))(Err$void)) $must_check;
+extern fn_((io_Writer_writeByteNTimes(io_Writer self, u8 byte, usize n))(Err$void)) $must_check;
+extern fn_((io_Writer_writeBytesNTimes(io_Writer self, Sli_const$u8 bytes, usize n))(Err$void)) $must_check;
 
-extern fn_(io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...), Err$void) $must_check;
-extern fn_(io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args), Err$void) $must_check;
+extern fn_((io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
+extern fn_((io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */

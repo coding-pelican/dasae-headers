@@ -4,15 +4,15 @@
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
 
-fn_(Err_domainToStr(Err self), Sli_const$u8) {
+fn_((Err_domainToStr(Err self))(Sli_const$u8)) {
     return Str_viewZ(as$(const u8*, self.vt->domainToCStr(self.ctx)));
 }
 
-fn_(Err_codeToStr(Err self), Sli_const$u8) {
+fn_((Err_codeToStr(Err self))(Sli_const$u8)) {
     return Str_viewZ(as$(const u8*, self.vt->codeToCStr(self.ctx)));
 }
 
-fn_(Err_print(Err self), void) {
+fn_((Err_print(Err self))(void)) {
     let domain = Err_domainToStr(self);
     let code   = Err_codeToStr(self);
 
@@ -20,5 +20,5 @@ fn_(Err_print(Err self), void) {
     catch_((io_Writer_print(
         out, u8_l("Program failed: [{:s}] {:s}({:d})\n"),
         domain, code, self.ctx
-    ))($ignore_capture, claim_unreachable));
+    ))($ignore, claim_unreachable));
 }

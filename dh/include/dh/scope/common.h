@@ -104,7 +104,7 @@ extern "C"
 
 #define SYN__scope_with_fini(__run_once, __init_once, _Init, _Fini...) \
     for (bool __run_once = false, __init_once = false; !__run_once; __run_once = true) \
-        for (_Init; !__init_once; __init_once = true, _Fini)
+        for (_Init; !__init_once; ({ __init_once = true; _Fini; }))
 
 #define SYN__scope_var(__run_once, __init_once, _Init...) \
     for (bool __run_once = false, __init_once = false; !__run_once; __run_once = true) \

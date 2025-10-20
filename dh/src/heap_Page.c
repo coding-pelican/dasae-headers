@@ -10,12 +10,12 @@
 #include <stdatomic.h> // Required for atomic operations
 
 // Forward declarations for allocator vtable functions
-static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8);
-static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool);
-static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8);
-static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void);
+static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8));
+static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
+static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
+static fn_((heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
 
-fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
+fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
     debug_assert_nonnull(self);
     // VTable for Page allocator
     static const mem_Allocator_VT vt[1] = { {
@@ -32,7 +32,7 @@ fn_(heap_Page_allocator(heap_Page* self), mem_Allocator) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope) {
+static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
@@ -123,7 +123,7 @@ static fn_(heap_Page_alloc(anyptr ctx, usize len, u32 align), Opt$Ptr$u8 $scope)
 #endif /* posix */
 } $unscoped;
 
-static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), bool) {
+static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -185,7 +185,7 @@ static fn_(heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len
 #endif /* posix */
 }
 
-static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len), Opt$Ptr$u8 $scope) {
+static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
@@ -227,14 +227,14 @@ static fn_(heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len)
 #endif /* posix */
 } $unscoped;
 
-static fn_(heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align), void) {
+static fn_((heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
     debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
-    $ignore = ctx;
-    $ignore = buf_align;
+    let_ignore = ctx;
+    let_ignore = buf_align;
 
 #if bti_plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);

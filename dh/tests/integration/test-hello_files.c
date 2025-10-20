@@ -34,25 +34,25 @@ fn_(loadFiles(void), Err$Arr$4$Ptr$FILE $guard) {
     if (fp1 == null) {
         return_err(LoadFileErr_FailedOpenFile());
     }
-    errdefer_($ignore_capture, $ignore = fclose(fp1));
+    errdefer_($ignore, let_ignore = fclose(fp1));
 
     let fp2 = try_(loadFile(Str_l("hello2.txt")));
-    errdefer_($ignore_capture, $ignore = fclose(fp2));
+    errdefer_($ignore, let_ignore = fclose(fp2));
 
     let fp3 = try_(loadFile(Str_l("hello3.txt")));
-    errdefer_($ignore_capture, $ignore = fclose(fp3));
+    errdefer_($ignore, let_ignore = fclose(fp3));
 
     let fp4 = try_(loadFile(Str_l("hello4.txt")));
-    errdefer_($ignore_capture, $ignore = fclose(fp4));
+    errdefer_($ignore, let_ignore = fclose(fp4));
 
     return_ok({ fp1, fp2, fp3, fp4 });
 } $unguarded;
 
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
-    $ignore   = args;
-    let files = try_(loadFiles());
+    let_ignore = args;
+    let files  = try_(loadFiles());
     for_array (files, file) {
-        $ignore = fclose(*file);
+        let_ignore = fclose(*file);
     }
     return_ok({});
 } $unscoped;

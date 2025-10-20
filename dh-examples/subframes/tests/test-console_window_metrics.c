@@ -101,6 +101,6 @@ int main(void) {
         }
         Sleep(100);
     }
-    $ignore = getchar();
+    let_ignore = getchar();
     return 0;
 }

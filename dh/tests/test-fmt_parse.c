@@ -43,7 +43,7 @@ TEST_fn_("fmt_parseInt_u64: Basic and different bases" $scope) {
     // Positive sign
     let res6 = try_(fmt_parseInt_u64(u8_l("+42"), 10));
     try_(TEST_expect(res6 == 42ULL));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_u64: Edge cases and errors" $scope) {
     // Max value
@@ -65,7 +65,7 @@ TEST_fn_("fmt_parseInt_u64: Edge cases and errors" $scope) {
     // Just a sign
     let res_sign = fmt_parseInt_u64(u8_l("+"), 10);
     try_(TEST_expect(isErr(res_sign)));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_u32: Edge cases and errors" $scope) {
     // Max value
@@ -75,13 +75,13 @@ TEST_fn_("fmt_parseInt_u32: Edge cases and errors" $scope) {
     // Overflow
     let res_overflow = fmt_parseInt_u32(u8_l("4294967296"), 10);
     try_(TEST_expect(isErr(res_overflow)));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_usize: Basic test" $scope) {
     // A reasonably large number that should fit in usize
     let res = try_(fmt_parseInt_usize(u8_l("12345678"), 10));
     try_(TEST_expect(res == 12345678UL));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /*========== Signed Integer Parsing Tests ===================================*/
 
@@ -97,7 +97,7 @@ TEST_fn_("fmt_parseInt_i64: Basic and signs" $scope) {
     // Positive with sign
     let res3 = try_(fmt_parseInt_i64(u8_l("+99"), 10));
     try_(TEST_expect(res3 == 99LL));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_i64: Edge cases and errors" $scope) {
     // Max value
@@ -115,7 +115,7 @@ TEST_fn_("fmt_parseInt_i64: Edge cases and errors" $scope) {
     // Underflow
     let res_underflow = fmt_parseInt_i64(u8_l("-9223372036854775809"), 10);
     try_(TEST_expect(isErr(res_underflow)));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_i32: Edge cases and errors" $scope) {
     // Max value
@@ -133,14 +133,14 @@ TEST_fn_("fmt_parseInt_i32: Edge cases and errors" $scope) {
     // Underflow
     let res_underflow = fmt_parseInt_i32(u8_l("-2147483649"), 10);
     try_(TEST_expect(isErr(res_underflow)));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseInt_isize: Basic test" $scope) {
     let res_pos = try_(fmt_parseInt_isize(u8_l("12345"), 10));
     try_(TEST_expect(res_pos == 12345L));
     let res_neg = try_(fmt_parseInt_isize(u8_l("-54321"), 10));
     try_(TEST_expect(res_neg == -54321L));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /*========== Floating Point Parsing Tests ===================================*/
 
@@ -174,7 +174,7 @@ TEST_fn_("fmt_parseFlt_f64: Basic and scientific notation" $scope) {
     // Scientific notation with negative exponent
     let res7 = try_(fmt_parseFlt_f64(u8_l("1.23e-2")));
     try_(TEST_expect(math_abs(res7 - 0.0123) < epsilon));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseFlt_f64: Errors" $scope) {
     // Empty
@@ -187,13 +187,13 @@ TEST_fn_("fmt_parseFlt_f64: Errors" $scope) {
     try_(TEST_expect(isErr(fmt_parseFlt_f64(u8_l("1.23e+")))));
     try_(TEST_expect(isErr(fmt_parseFlt_f64(u8_l(".")))));
     try_(TEST_expect(isErr(fmt_parseFlt_f64(u8_l("1a")))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseFlt_f32: Basic test" $scope) {
     let epsilon = 1e-6f;
     let res     = try_(fmt_parseFlt_f32(u8_l("12.34")));
     try_(TEST_expect(math_abs(res - 12.34f) < epsilon));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /*========== Boolean Parsing Tests ==========================================*/
 
@@ -207,7 +207,7 @@ TEST_fn_("fmt_parseBool: Valid values" $scope) {
     try_(TEST_expect(!try_(fmt_parseBool(u8_l("false")))));
     try_(TEST_expect(!try_(fmt_parseBool(u8_l("FALSE")))));
     try_(TEST_expect(!try_(fmt_parseBool(u8_l("0")))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("fmt_parseBool: Errors" $scope) {
     // Empty
@@ -217,4 +217,4 @@ TEST_fn_("fmt_parseBool: Errors" $scope) {
     try_(TEST_expect(isErr(fmt_parseBool(u8_l("t")))));
     try_(TEST_expect(isErr(fmt_parseBool(u8_l("yes")))));
     try_(TEST_expect(isErr(fmt_parseBool(u8_l("2")))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

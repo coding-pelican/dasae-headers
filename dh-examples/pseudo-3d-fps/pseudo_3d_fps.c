@@ -64,7 +64,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         defer(game_State_destroy(state));
 
         log_info("game state created\n");
-        $ignore = getchar();
+        let_ignore = getchar();
 
         var curr_time   = time_Instant_now();
         var prev_time   = curr_time;

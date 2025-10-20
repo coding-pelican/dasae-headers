@@ -8,7 +8,7 @@
 
 // Coroutine state
 typedef struct Co_Ctx Co_Ctx;
-typedef fn_(Co_FnWork(Co_Ctx* ctx), Co_Ctx*);
+typedef fn_((Co_FnWork(Co_Ctx* ctx))(Co_Ctx*));
 typedef u32 Co_Count;
 typedef enum Co_State {
     Co_State_pending = 0,
@@ -47,7 +47,7 @@ typedef struct Co_Ctx {
 
 
 #define async_fn(_fnName) \
-    fn_(_fnName(Co_Ctx* ctx), Co_Ctx*)
+    fn_((_fnName(Co_Ctx * ctx))(Co_Ctx*))
 #define async_fn_scope(_fnName) \
     async_fn(_fnName) { \
         let self   = as$(Co_Ctx$(_fnName)*, ensureNonnull(ctx)); \

@@ -34,7 +34,7 @@ TEST_fn_("io_common: Check `io_getStdIn` is valid handle" $scope) {
         pp_else_(posix_STDIN_FILENO)
     );
     try_(TEST_expect(std_in.handle == handle));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_common: Check `io_getStdOut` is valid handle" $scope) {
     let std_out = io_getStdOut();
@@ -43,7 +43,7 @@ TEST_fn_("io_common: Check `io_getStdOut` is valid handle" $scope) {
         pp_else_(posix_STDOUT_FILENO)
     );
     try_(TEST_expect(std_out.handle == handle));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_common: Check `io_getStdErr` is valid handle" $scope) {
     let std_err = io_getStdErr();
@@ -52,4 +52,4 @@ TEST_fn_("io_common: Check `io_getStdErr` is valid handle" $scope) {
         pp_else_(posix_STDERR_FILENO)
     );
     try_(TEST_expect(std_err.handle == handle));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

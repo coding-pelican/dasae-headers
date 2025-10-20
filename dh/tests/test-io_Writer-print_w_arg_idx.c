@@ -29,8 +29,9 @@ typedef struct test_Buf {
     Sli$u8 data;
     usize  pos;
 } test_Buf;
-$must_check
-$static fn_(test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes), Err$usize $scope) {
+
+$static $must_check
+fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope) {
     let self      = as$(test_Buf*, ctx);
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
@@ -39,22 +40,26 @@ $static fn_(test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes), Err$usize $
         self->pos += to_write;
     }
     return_ok(to_write);
-} $unscoped;
-static fn_(test_Buf_init(Sli$u8 data), test_Buf) {
+} $unscoped_(fn);
+$static
+fn_((test_Buf_init(Sli$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
         .pos  = 0
     };
 }
-static fn_(test_Buf_writer(test_Buf* self), io_Writer) {
+$static
+fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     debug_assert_nonnull(self);
     return make$(io_Writer, .ctx = self, .write = test_Buf_VT_write);
 }
-static fn_(test_Buf_clear(test_Buf* self), void) {
+$static
+fn_((test_Buf_clear(test_Buf* self))(void)) {
     debug_assert_nonnull(self);
     self->pos = 0;
 }
-static fn_(test_Buf_view(test_Buf self), Sli_const$u8) {
+$static
+fn_((test_Buf_view(test_Buf self))(Sli_const$u8)) {
     // TODO: use Sli_sliceZ
     if (self.pos == 0) { return Sli_from$(Sli_const$u8, self.data.ptr, 0); }
     return Sli_slice(self.data, $r(0, self.pos)).as_const;
@@ -84,7 +89,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Basic indexed arguments" $scope) {
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("5 + 5 = 10"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $scope) {
     use_Arr$(256, u8);
@@ -110,7 +115,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $sc
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("15 = 0xf = 0b1111"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
     use_Arr$(256, u8);
@@ -134,7 +139,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("1 3"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope) {
     use_Arr$(256, u8);
@@ -159,7 +164,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("very  0007 ver"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope) {
     use_Arr$(256, u8);
@@ -186,7 +191,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope
         try_(TEST_expect(Str_contains(result, u8_l("-6789"))));
         try_(TEST_expect(Str_contains(result, u8_l("12345"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings" $scope) {
     use_Arr$(256, u8);
@@ -208,7 +213,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings
         try_(TEST_expect(Str_contains(result, u8_l("slice"))));   // slice string
         try_(TEST_expect(Str_contains(result, u8_l("cst"))));     // truncated c-string
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) {
     use_Arr$(512, u8);
@@ -237,7 +242,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) 
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("Value: 42 (hex: 0x2a, octal: 052, binary: 101010)"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) {
     use_Arr$(256, u8);
@@ -274,7 +279,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) 
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{index 5}"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $scope) {
     use_Arr$(256, u8);
@@ -298,10 +303,10 @@ TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $sco
         printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{abc:d}"))));
     }
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+    let_ignore = args;
 
     use_Arr$(256, u8);
     Arr$256$u8 mem       = Arr_zero();
@@ -328,4 +333,4 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
     }
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

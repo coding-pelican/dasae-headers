@@ -1,12 +1,13 @@
 #include "dh/time.h"
 
-fn_(time_sleep(time_Duration duration), void) {
+fn_((time_sleep(time_Duration duration))(void)) {
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     HANDLE timer = CreateWaitableTimerExW(
         null,
         null,
         CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
-        TIMER_ALL_ACCESS);
+        TIMER_ALL_ACCESS
+    );
     if (timer == null) {
         Sleep((DWORD)((duration.secs * time_millis_per_sec) + (duration.nanos / time_nanos_per_milli)));
         return;
@@ -38,19 +39,19 @@ fn_(time_sleep(time_Duration duration), void) {
 #endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
 }
 
-fn_(time_sleepSecs(u64 secs), void) {
+fn_((time_sleepSecs(u64 secs))(void)) {
     time_sleep(time_Duration_fromSecs(secs));
 }
 
-fn_(time_sleepMillis(u64 millis), void) {
+fn_((time_sleepMillis(u64 millis))(void)) {
     time_sleep(time_Duration_fromMillis(millis));
 }
 
-fn_(time_sleepMicros(u64 micros), void) {
+fn_((time_sleepMicros(u64 micros))(void)) {
     time_sleep(time_Duration_fromMicros(micros));
 }
 
-fn_(time_sleepNanos(u32 nanos), void) {
+fn_((time_sleepNanos(u32 nanos))(void)) {
     time_sleep(time_Duration_fromNanos(nanos));
 }
 

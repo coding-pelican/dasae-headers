@@ -350,7 +350,7 @@ sync_mpsc_useT$(i32);
 #include "dh/Thrd.h"
 #include "dh/time/Duration.h"
 
-Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore_capture, args)$guard) {
+Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore, args)$guard) {
     let sender = args->sender;
     defer_(sync_mpsc_Sender_drop$i32(sender));
     for (i32 i = 0; i < 10; ++i) {
@@ -364,7 +364,7 @@ Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore_capture, 
 #include "dh/fs/File.h"
 
 fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+    let_ignore = args;
 
     let channels = sync_mpsc_channel$i32(heap_Page_allocator(&(heap_Page){}));
     defer_(sync_mpsc_Receiver_drop$i32(channels.receiver));

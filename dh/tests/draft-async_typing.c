@@ -20,7 +20,7 @@ use_Opt$(Task);
 static var_(exec_s_task_list, Arr$$(32, Opt$Task)) = {};
 /// \brief Run the event loop
 /// \param endless Whether to run the loop endlessly
-static fn_(exec_runLoop(bool endless), void) {
+static fn_((exec_runLoop(bool endless))(void)) {
     use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
 
@@ -49,7 +49,7 @@ static fn_(exec_runLoop(bool endless), void) {
 
 /// \brief Find a slot for a task
 /// \return The slot for the task
-static fn_(exec_findSlot(void), Opt$Task*) {
+static fn_((exec_findSlot(void))(Opt$Task*)) {
     use_Sli$(Opt$Task);
 
     Opt$Task* slot = null;
@@ -69,7 +69,7 @@ use_Co_Ctx$(Void);
 /// \param ms The duration to sleep in milliseconds
 async_fn_(exec_sleep, (var_(caller, Opt$$(Co_Ctx*)); var_(ms, u64);), Void);
 async_fn_scope(exec_sleep, {}) {
-    $ignore = locals;
+    let_ignore = locals;
     suspend_({
         let slot = exec_findSlot();
         let time = eval({
@@ -81,7 +81,7 @@ async_fn_scope(exec_sleep, {}) {
         Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 #include "dh/main.h"
 #include "dh/Thrd.h"
@@ -91,7 +91,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_(report(Sli_const$u8 label, const char* fmt, ...), void) {
+fn_((report(Sli_const$u8 label, const char* fmt, ...))(void)) {
     printf("[ThrdId(%zu): %*s] ", Thrd_getCurrentId(), as$(i32, label.len), label.ptr);
     va_list args = {};
     va_start(args, fmt);
@@ -99,36 +99,36 @@ fn_(report(Sli_const$u8 label, const char* fmt, ...), void) {
     va_end(args);
 }
 
-fn_(Terminal_clear(void), void) { printf("\x1b[2J\x1b[H"); }
-fn_(Terminal_home(void), void) { printf("\x1b[1;1H"); }
-fn_(Terminal_feedLine(void), void) { printf("\n"); }
-fn_(Terminal_moveCursor(u32 x, u32 y), void) { printf("\x1b[%u;%uH", y + 1, x + 1); }
-fn_(Terminal_writeByte(u8 byte), void) { printf("%c", byte); }
-fn_(Terminal_writeByteAt(u32 x, u32 y, u8 byte), void) {
+fn_((Terminal_clear(void))(void)) { printf("\x1b[2J\x1b[H"); };
+fn_((Terminal_home(void))(void)) { printf("\x1b[1;1H"); };
+fn_((Terminal_feedLine(void))(void)) { printf("\n"); };
+fn_((Terminal_moveCursor(u32 x, u32 y))(void)) { printf("\x1b[%u;%uH", y + 1, x + 1); };
+fn_((Terminal_writeByte(u8 byte))(void)) { printf("%c", byte); };
+fn_((Terminal_writeByteAt(u32 x, u32 y, u8 byte))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeByte(byte);
-}
-fn_(Terminal_writeBytes(Sli_const$u8 bytes), void) { printf("%*s", as$(i32, bytes.len), bytes.ptr); }
-fn_(Terminal_writeBytesAt(u32 x, u32 y, Sli_const$u8 bytes), void) {
+};
+fn_((Terminal_writeBytes(Sli_const$u8 bytes))(void)) { printf("%*s", as$(i32, bytes.len), bytes.ptr); };
+fn_((Terminal_writeBytesAt(u32 x, u32 y, Sli_const$u8 bytes))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeBytes(bytes);
-}
-fn_(Terminal_writeTypo(u8 typo), void) { printf("%c", typo); }
-fn_(Terminal_writeTypoAt(u32 x, u32 y, u8 typo), void) {
+};
+fn_((Terminal_writeTypo(u8 typo))(void)) { printf("%c", typo); };
+fn_((Terminal_writeTypoAt(u32 x, u32 y, u8 typo))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeTypo(typo);
-}
-fn_(Terminal_writeText(Sli_const$u8 text), void) { printf("%*s", as$(i32, text.len), text.ptr); }
-fn_(Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text), void) {
+};
+fn_((Terminal_writeText(Sli_const$u8 text))(void)) { printf("%*s", as$(i32, text.len), text.ptr); };
+fn_((Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeText(text);
-}
+};
 
 use_Arr$(1024, u8);
-fn_(Terminal_readBytes(Arr$1024$u8* mem), Sli$u8) {
-    $ignore = fgets(as$(char*, mem->buf), as$(i32, Arr_len(*mem)), stdin);
+fn_((Terminal_readBytes(Arr$1024$u8* mem))(Sli$u8)) {
+    let_ignore = fgets(as$(char*, mem->buf), as$(i32, Arr_len(*mem)), stdin);
     return Str_fromZ(mem->buf);
-}
+};
 
 
 /// \brief Types out a string character by character with specified interval between characters
@@ -178,7 +178,7 @@ async_fn_scope(typeEffectOverDuration, {
     }
 
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 /// \brief Advanced typing effect with realistic variable speeds
 /// \param caller The caller context
@@ -227,7 +227,7 @@ async_fn_scope(typeEffectRealistic, {
     }
 
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
@@ -265,7 +265,7 @@ async_fn_scope(runMain, {
         var_(type_realistic, Co_CtxFn$(typeEffectRealistic));
     } interactive_ctx;
 }) {
-    $ignore = args;
+    let_ignore = args;
 
     locals->line = 0;
     Terminal_clear();
@@ -305,7 +305,7 @@ async_fn_scope(runMain, {
     await_(&locals->demo7.type_ctx);
 
     Terminal_moveCursor(0, locals->line);
-    $ignore = getchar(); // TODO: use a better way to wait for user input
+    let_ignore = getchar(); // TODO: use a better way to wait for user input
 
     // Interactive example
     Terminal_moveCursor(0, locals->line);
@@ -346,23 +346,23 @@ async_fn_scope(runMain, {
             exec_runLoop(false);
             await_(&locals->interactive_ctx.type_realistic);
         }
-        $ignore = getchar();
+        let_ignore = getchar();
     }
 
     Terminal_feedLine();
     Terminal_writeText(u8_l("Press any key to exit..."));
     Terminal_feedLine();
-    $ignore = getchar(); // TODO: use a better way to wait for user input
+    let_ignore = getchar(); // TODO: use a better way to wait for user input
 
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     var task = async_((runMain)(args));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 /*
 public

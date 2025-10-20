@@ -8,7 +8,7 @@
 #include <unistd.h>
 #endif /* posix */
 
-fn_(Ptr_constCastable(anyptr_const ptr), bool) {
+fn_((Ptr_constCastable(anyptr_const ptr))(bool)) {
     debug_assert_nonnull(ptr);
 #if bti_plat_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();

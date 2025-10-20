@@ -3,7 +3,7 @@
 #include "dh/debug/assert.h"
 
 // Utility functions
-static fn_(ArrList_growCap(usize current, usize minimum), usize) {
+static fn_((ArrList_growCap(usize current, usize minimum))(usize)) {
     debug_assert_fmt(0 < minimum, "Minimum capacity must be positive");
 
     if (usize_limit / 2 < minimum) {
@@ -16,7 +16,7 @@ static fn_(ArrList_growCap(usize current, usize minimum), usize) {
     return new_cap < minimum ? minimum : new_cap;
 }
 
-fn_(ArrList_init(TypeInfo type, mem_Allocator allocator), ArrList) {
+fn_((ArrList_init(TypeInfo type, mem_Allocator allocator))(ArrList)) {
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
     debug_assert_nonnull_fmt(allocator.ptr, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
@@ -28,7 +28,7 @@ fn_(ArrList_init(TypeInfo type, mem_Allocator allocator), ArrList) {
     };
 }
 
-fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), mem_Allocator_Err$ArrList $scope) {
+fn_((ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap))(mem_Allocator_Err$ArrList) $scope) {
     debug_assert_fmt(0 < type.size, "Type size must be greater than 0");
     debug_assert_nonnull_fmt(allocator.ptr, "Allocator context cannot be null");
     debug_assert_nonnull_fmt(allocator.vt, "Allocator vtable cannot be null");
@@ -45,9 +45,9 @@ fn_(ArrList_initCap(TypeInfo type, mem_Allocator allocator, usize cap), mem_Allo
     list.items.len = 0;
     list.cap       = cap;
     return_ok(list);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_fini(ArrList* self), void) {
+fn_((ArrList_fini(ArrList* self))(void)) {
     debug_assert_nonnull(self);
 
     if (self->items.addr == null) { return; }
@@ -59,7 +59,7 @@ fn_(ArrList_fini(ArrList* self), void) {
     mem_Allocator_free(self->allocator, meta_sliToAny(actual_mem));
 }
 
-fn_(ArrList_toOwnedSli(ArrList* self), mem_Allocator_Err$meta_Sli $scope) {
+fn_((ArrList_toOwnedSli(ArrList* self))(mem_Allocator_Err$meta_Sli) $scope) {
     debug_assert_nonnull(self);
 
     let actual_mem = (meta_Sli){
@@ -85,9 +85,9 @@ fn_(ArrList_toOwnedSli(ArrList* self), mem_Allocator_Err$meta_Sli $scope) {
 
     *self = ArrList_init(self->items.type, self->allocator);
     return_ok(new_mem);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice), ArrList) {
+fn_((ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice))(ArrList)) {
     return (ArrList){
         .items     = slice,
         .cap       = slice.len,
@@ -95,7 +95,7 @@ fn_(ArrList_fromOwnedSli(mem_Allocator allocator, meta_Sli slice), ArrList) {
     };
 }
 
-fn_(ArrList_clone(const ArrList* self), mem_Allocator_Err$ArrList $scope) {
+fn_((ArrList_clone(const ArrList* self))(mem_Allocator_Err$ArrList) $scope) {
     debug_assert_nonnull(self);
 
     var new_list = try_(ArrList_initCap(
@@ -110,9 +110,9 @@ fn_(ArrList_clone(const ArrList* self), mem_Allocator_Err$ArrList $scope) {
     );
     new_list.items.len = self->items.len;
     return_ok(new_list);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), mem_Allocator_Err$void $scope) {
+fn_((ArrList_ensureTotalCap(ArrList* self, usize new_cap))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     if (self->cap >= new_cap) {
@@ -127,9 +127,9 @@ fn_(ArrList_ensureTotalCap(ArrList* self, usize new_cap), mem_Allocator_Err$void
     }
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), mem_Allocator_Err$void $scope) {
+fn_((ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     if (new_cap <= self->cap) {
@@ -162,24 +162,24 @@ fn_(ArrList_ensureTotalCapPrecise(ArrList* self, usize new_cap), mem_Allocator_E
     self->items.addr = new_mem.addr;
     self->cap        = new_cap;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_ensureUnusedCap(ArrList* self, usize additional), mem_Allocator_Err$void $scope) {
+fn_((ArrList_ensureUnusedCap(ArrList* self, usize additional))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureTotalCap(self, self->items.len + additional));
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_resize(ArrList* self, usize new_len), mem_Allocator_Err$void $scope) {
+fn_((ArrList_resize(ArrList* self, usize new_len))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureTotalCap(self, new_len));
     self->items.len = new_len;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_shrinkAndFree(ArrList* self, usize new_len), void) {
+fn_((ArrList_shrinkAndFree(ArrList* self, usize new_len))(void)) {
     debug_assert_nonnull(self);
     debug_assert(new_len <= self->items.len);
 
@@ -198,20 +198,20 @@ fn_(ArrList_shrinkAndFree(ArrList* self, usize new_len), void) {
     self->items.len = new_len;
 }
 
-fn_(ArrList_shrinkRetainingCap(ArrList* self, usize new_len), void) {
+fn_((ArrList_shrinkRetainingCap(ArrList* self, usize new_len))(void)) {
     debug_assert_nonnull(self);
     debug_assert(new_len <= self->items.len);
 
     self->items.len = new_len;
 }
 
-fn_(ArrList_expandToCap(ArrList* self), void) {
+fn_((ArrList_expandToCap(ArrList* self))(void)) {
     debug_assert_nonnull(self);
 
     self->items.len = self->cap;
 }
 
-fn_(ArrList_append(ArrList* self, meta_Ptr item), mem_Allocator_Err$void $scope) {
+fn_((ArrList_append(ArrList* self, meta_Ptr item))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
@@ -225,9 +225,9 @@ fn_(ArrList_append(ArrList* self, meta_Ptr item), mem_Allocator_Err$void $scope)
     );
     self->items.len += 1;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_appendSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void $scope) {
+fn_((ArrList_appendSli(ArrList* self, meta_Sli items))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, items.len));
@@ -239,9 +239,9 @@ fn_(ArrList_appendSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void $sc
     );
     self->items.len += items.len;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator_Err$void $scope) {
+fn_((ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -255,9 +255,9 @@ fn_(ArrList_appendNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator_
     }
     self->items.len += n;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_prepend(ArrList* self, meta_Ptr item), mem_Allocator_Err$void $scope) {
+fn_((ArrList_prepend(ArrList* self, meta_Ptr item))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(item.addr);
     debug_assert(item.type.size == self->items.type.size);
@@ -279,9 +279,9 @@ fn_(ArrList_prepend(ArrList* self, meta_Ptr item), mem_Allocator_Err$void $scope
     );
     self->items.len += 1;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_prependSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void $scope) {
+fn_((ArrList_prependSli(ArrList* self, meta_Sli items))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, items.len));
@@ -301,9 +301,9 @@ fn_(ArrList_prependSli(ArrList* self, meta_Sli items), mem_Allocator_Err$void $s
     );
     self->items.len += items.len;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator_Err$void $scope) {
+fn_((ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
@@ -325,16 +325,16 @@ fn_(ArrList_prependNTimes(ArrList* self, meta_Ptr value, usize n), mem_Allocator
     }
     self->items.len += n;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_addBackOne(ArrList* self), mem_Allocator_Err$meta_Ptr $scope) {
+fn_((ArrList_addBackOne(ArrList* self))(mem_Allocator_Err$meta_Ptr) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, 1));
     return_ok(ArrList_addBackOneAssumeCap(self));
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_addBackOneAssumeCap(ArrList* self), meta_Ptr) {
+fn_((ArrList_addBackOneAssumeCap(ArrList* self))(meta_Ptr)) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len < self->cap);
 
@@ -345,14 +345,14 @@ fn_(ArrList_addBackOneAssumeCap(ArrList* self), meta_Ptr) {
     };
 }
 
-fn_(ArrList_addBackManyAsSli(ArrList* self, usize n), mem_Allocator_Err$meta_Sli $scope) {
+fn_((ArrList_addBackManyAsSli(ArrList* self, usize n))(mem_Allocator_Err$meta_Sli) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
     return_ok(ArrList_addBackManyAsSliAssumeCap(self, n));
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli) {
+fn_((ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n))(meta_Sli)) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len + n <= self->cap);
 
@@ -365,14 +365,14 @@ fn_(ArrList_addBackManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli) {
     };
 }
 
-fn_(ArrList_addFrontOne(ArrList* self), mem_Allocator_Err$meta_Ptr $scope) {
+fn_((ArrList_addFrontOne(ArrList* self))(mem_Allocator_Err$meta_Ptr) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, 1));
     return_ok(ArrList_addFrontOneAssumeCap(self));
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_addFrontOneAssumeCap(ArrList* self), meta_Ptr) {
+fn_((ArrList_addFrontOneAssumeCap(ArrList* self))(meta_Ptr)) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len < self->cap);
 
@@ -391,14 +391,14 @@ fn_(ArrList_addFrontOneAssumeCap(ArrList* self), meta_Ptr) {
     };
 }
 
-fn_(ArrList_addFrontManyAsSli(ArrList* self, usize n), mem_Allocator_Err$meta_Sli $scope) {
+fn_((ArrList_addFrontManyAsSli(ArrList* self, usize n))(mem_Allocator_Err$meta_Sli) $scope) {
     debug_assert_nonnull(self);
 
     try_(ArrList_ensureUnusedCap(self, n));
     return_ok(ArrList_addFrontManyAsSliAssumeCap(self, n));
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli) {
+fn_((ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n))(meta_Sli)) {
     debug_assert_nonnull(self);
     debug_assert(self->items.len + n <= self->cap);
 
@@ -418,7 +418,7 @@ fn_(ArrList_addFrontManyAsSliAssumeCap(ArrList* self, usize n), meta_Sli) {
     };
 }
 
-fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), mem_Allocator_Err$void $scope) {
+fn_((ArrList_insert(ArrList* self, usize index, meta_Ptr item))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
@@ -440,9 +440,9 @@ fn_(ArrList_insert(ArrList* self, usize index, meta_Ptr item), mem_Allocator_Err
 
     self->items.len += 1;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_insertSli(ArrList* self, usize index, meta_Sli items), mem_Allocator_Err$void $scope) {
+fn_((ArrList_insertSli(ArrList* self, usize index, meta_Sli items))(mem_Allocator_Err$void) $scope) {
     debug_assert_nonnull(self);
     debug_assert(index <= self->items.len);
 
@@ -464,23 +464,23 @@ fn_(ArrList_insertSli(ArrList* self, usize index, meta_Sli items), mem_Allocator
 
     self->items.len += items.len;
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_pop(ArrList* self), void) {
+fn_((ArrList_pop(ArrList* self))(void)) {
     debug_assert_nonnull(self);
     debug_assert(0 < self->items.len);
     self->items.len--;
 }
 
-fn_(ArrList_popOrNull(ArrList* self), Opt$meta_Ptr $scope) {
+fn_((ArrList_popOrNull(ArrList* self))(Opt$meta_Ptr) $scope) {
     debug_assert_nonnull(self);
     if (self->items.len == 0) { return_none(); }
     let ptr = meta_Sli_at(self->items, self->items.len - 1);
     self->items.len--;
     return_some(ptr);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_shift(ArrList* self), void) {
+fn_((ArrList_shift(ArrList* self))(void)) {
     debug_assert_nonnull(self);
     debug_assert(0 < self->items.len);
 
@@ -508,7 +508,7 @@ fn_(ArrList_shift(ArrList* self), void) {
     self->items.len--;
 }
 
-fn_(ArrList_shiftOrNull(ArrList* self), Opt$meta_Ptr $scope) {
+fn_((ArrList_shiftOrNull(ArrList* self))(Opt$meta_Ptr) $scope) {
     debug_assert_nonnull(self);
     if (self->items.len == 0) { return_none(); }
 
@@ -535,9 +535,9 @@ fn_(ArrList_shiftOrNull(ArrList* self), Opt$meta_Ptr $scope) {
     }
     self->items.len--;
     return_some(result);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(ArrList_removeOrdered(ArrList* self, usize index), meta_Ptr) {
+fn_((ArrList_removeOrdered(ArrList* self, usize index))(meta_Ptr)) {
     debug_assert_nonnull(self);
     debug_assert(index < self->items.len);
 
@@ -558,7 +558,7 @@ fn_(ArrList_removeOrdered(ArrList* self, usize index), meta_Ptr) {
     return result;
 }
 
-fn_(ArrList_removeSwap(ArrList* self, usize index), meta_Ptr) {
+fn_((ArrList_removeSwap(ArrList* self, usize index))(meta_Ptr)) {
     debug_assert_nonnull(self);
     debug_assert(index < self->items.len);
 
@@ -597,12 +597,12 @@ fn_(ArrList_removeSwap(ArrList* self, usize index), meta_Ptr) {
     return result;
 }
 
-fn_(ArrList_clearRetainingCap(ArrList* self), void) {
+fn_((ArrList_clearRetainingCap(ArrList* self))(void)) {
     debug_assert_nonnull(self);
     self->items.len = 0;
 }
 
-fn_(ArrList_clearAndFree(ArrList* self), void) {
+fn_((ArrList_clearAndFree(ArrList* self))(void)) {
     debug_assert_nonnull(self);
 
     if (self->items.addr != null) {

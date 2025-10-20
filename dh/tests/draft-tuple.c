@@ -29,9 +29,9 @@
 #define pp_TupleChain_collect0(_cache0, _cache1, _cache2, _cache3, _cache4, _cache5, _cache6, _cache7, _cache8, ...) \
     (_cache0, _cache1, _cache2, _cache3, _cache4, _cache5, _cache6, _cache7, _cache8)
 
-pp_expand(pp_TupleChain_collect8 TUPLE_0_to_8)
+// pp_expand(pp_TupleChain_collect8 TUPLE_0_to_8)
 
-    pp_expand(pp_TupleChain_ignore6 TUPLE_0_to_8) pp_expand(pp)
+// pp_expand(pp_TupleChain_ignore6 TUPLE_0_to_8) pp_expand(pp)
 
 // Extract 1st tuple (index 0) from chain of 3
 #define pp_get1st(chain)                   pp_expand(pp_TupleChain_expand1_ignore2 chain)
@@ -51,8 +51,8 @@ pp_expand(pp_TupleChain_collect8 TUPLE_0_to_8)
 #define pp_TupleChain_ignore1_expand1(...) pp_TupleChain_expand1
 #define pp_TupleChain_expand1(...)         __VA_ARGS__
 
-        TEST_fn_("TupleList get n'th" $scope) {
+TEST_fn_("TupleList get n'th" $scope) {
     try_(TEST_expect(Str_eql(u8_l(pp_stringify(pp_get1st((a, b)()(c)))), u8_l("(a, b)"))));
     try_(TEST_expect(Str_eql(u8_l(pp_stringify(pp_get2nd((a, b)()(c)))), u8_l("()"))));
     try_(TEST_expect(Str_eql(u8_l(pp_stringify(pp_get3rd((a, b)()(c)))), u8_l("(c)"))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

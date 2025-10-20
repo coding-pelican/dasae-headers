@@ -3,7 +3,7 @@
 #if bti_plat_windows
 #include "dh/os/windows.h"
 
-fn_(engine_utils_getch(void), u8) {
+fn_((engine_utils_getch(void))(u8)) {
     let console_input_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (console_input_handle == INVALID_HANDLE_VALUE) { return 0; }
 
@@ -23,7 +23,7 @@ fn_(engine_utils_getch(void), u8) {
     return character_buffer;
 }
 
-fn_(engine_utils_kbhit(void), bool) {
+fn_((engine_utils_kbhit(void))(bool)) {
     let console_input_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (console_input_handle == INVALID_HANDLE_VALUE) { return false; }
 
@@ -48,7 +48,7 @@ fn_(engine_utils_kbhit(void), bool) {
 #include <termios.h>
 #include <unistd.h>
 
-fn_(engine_utils_getch(void), u8) {
+fn_((engine_utils_getch(void))(u8)) {
     struct termios original_terminal_attrs = {};
     if (tcgetattr(STDIN_FILENO, &original_terminal_attrs) < 0) { return 0; }
 
@@ -62,7 +62,7 @@ fn_(engine_utils_getch(void), u8) {
     return character_buffer;
 }
 
-fn_(engine_utils_kbhit(void), bool) {
+fn_((engine_utils_kbhit(void))(bool)) {
     struct termios original_terminal_attrs = {};
     if (tcgetattr(STDIN_FILENO, &original_terminal_attrs) < 0) { return false; }
 

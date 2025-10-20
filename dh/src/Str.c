@@ -12,11 +12,12 @@
 #include <unistd.h>
 #endif /* posix */
 
-static $on_load fn_(init(void), void) {
+$static $on_load
+fn_((init(void))(void)) {
     static bool s_initialized = false;
     if (s_initialized) { return; }
     /* Set locale for proper UTF-8 handling */
-    $ignore       = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
+    let_ignore    = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
     s_initialized = true;
 }
 
@@ -88,7 +89,7 @@ Opt$Sli$u8 Sli_const$u8Cast(Sli_const$u8 self) {
     return some$(Opt$Sli$u8, Str_from(as$(u8*, self.ptr), self.len));
 }
 
-fn_(Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs), Err$Sli$u8 $scope) {
+fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
@@ -97,21 +98,9 @@ fn_(Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs), Err$Sl
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(Str_print(Sli_const$u8 self), void) {
-    debug_assert_nonnull(self.ptr);
-    if (self.len <= 0) { return; }
-    printf("%.*s", as$(i32, self.len), self.ptr);
-}
-
-fn_(Str_println(Sli_const$u8 self), void) {
-    debug_assert_nonnull(self.ptr);
-    Str_print(self);
-    $ignore = putchar('\n');
-}
-
-fn_(Str_format(mem_Allocator allocator, const char* format, ...), Err$Sli$u8 $guard) {
+/* fn_((Str_format(mem_Allocator allocator, const char* format, ...))(Err$Sli$u8) $guard) {
     va_list args1 = {};
     va_start(args1, format);
     defer_(va_end(args1));
@@ -127,13 +116,13 @@ fn_(Str_format(mem_Allocator allocator, const char* format, ...), Err$Sli$u8 $gu
     });
 
     var result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(result)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(result)));
     {
-        $ignore    = vsnprintf((char*)result.ptr, len + 1, format, args2);
+        let_ignore = vsnprintf((char*)result.ptr, len + 1, format, args2);
         result.len = len;
     }
     return_ok(result);
-} $unguarded;
+} $unguarded_(fn); */
 
 Sli_const$u8 Str_slice(Sli_const$u8 self, usize start, usize end) {
     debug_assert_nonnull(self.ptr);
@@ -168,7 +157,7 @@ Sli_const$u8 Str_rtrim(Sli_const$u8 self) {
     return Str_slice(self, 0, end);
 }
 
-fn_(Str_upper(mem_Allocator allocator, Sli_const$u8 str), Err$Sli$u8 $scope) {
+fn_((Str_upper(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -176,9 +165,9 @@ fn_(Str_upper(mem_Allocator allocator, Sli_const$u8 str), Err$Sli$u8 $scope) {
         *ch = as$(u8, toupper(*Sli_at(str, i)));
     }
     return_ok(result);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(Str_lower(mem_Allocator allocator, Sli_const$u8 str), Err$Sli$u8 $scope) {
+fn_((Str_lower(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
@@ -186,7 +175,7 @@ fn_(Str_lower(mem_Allocator allocator, Sli_const$u8 str), Err$Sli$u8 $scope) {
         *ch = as$(u8, tolower(*Sli_at(str, i)));
     }
     return_ok(result);
-} $unscoped;
+} $unscoped_(fn);
 
 bool Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle) {
     debug_assert_nonnull(haystack.ptr);
@@ -201,7 +190,7 @@ bool Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle) {
     return false;
 }
 
-fn_(Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start), Opt$usize $scope) {
+fn_((Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -212,9 +201,9 @@ fn_(Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start), Opt$usize
         }
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start), Opt$usize $scope) {
+fn_((Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -225,21 +214,21 @@ fn_(Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start), Opt$usiz
         }
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(Str_startsWith(Sli_const$u8 self, Sli_const$u8 prefix), Opt$usize $scope) {
+fn_((Str_startsWith(Sli_const$u8 self, Sli_const$u8 prefix))(Opt$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < prefix.len) { return_none(); }
     if (!mem_eqlBytes(self.ptr, prefix.ptr, prefix.len)) { return_none(); }
     return_some(prefix.len);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(Str_endsWith(Sli_const$u8 self, Sli_const$u8 suffix), Opt$usize $scope) {
+fn_((Str_endsWith(Sli_const$u8 self, Sli_const$u8 suffix))(Opt$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < suffix.len) { return_none(); }
     if (!mem_eqlBytes(self.ptr + self.len - suffix.len, suffix.ptr, suffix.len)) { return_none(); }
     return_some(self.len - suffix.len);
-} $unscoped;
+} $unscoped_(fn);
 
 static u32 hashMurmur3(const u8* data, usize len) {
     const u32 c1 = 0xcc9e2d51;
@@ -364,7 +353,7 @@ bool StrUtf8_isValid(Sli_const$u8 self) {
     return true;
 }
 
-fn_(StrUtf8_codepointAt(Sli_const$u8 self, usize pos), Opt$u32 $scope) {
+fn_((StrUtf8_codepointAt(Sli_const$u8 self, usize pos))(Opt$u32) $scope) {
     debug_assert_nonnull(self.ptr);
     debug_assert(pos < self.len);
 
@@ -398,7 +387,7 @@ fn_(StrUtf8_codepointAt(Sli_const$u8 self, usize pos), Opt$u32 $scope) {
     }
 
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 StrUtf8Iter StrUtf8_iter(Sli_const$u8 self) {
     debug_assert_nonnull(self.ptr);
@@ -427,7 +416,7 @@ StrTokenizer Str_tokenizer(Sli_const$u8 self, Sli_const$u8 delims) {
     };
 }
 
-fn_(StrTokenizer_next(StrTokenizer* self), Opt$Sli_const$u8 $scope) {
+fn_((StrTokenizer_next(StrTokenizer* self))(Opt$Sli_const$u8) $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->str.ptr);
     debug_assert_nonnull(self->delims.ptr);
@@ -464,4 +453,4 @@ fn_(StrTokenizer_next(StrTokenizer* self), Opt$Sli_const$u8 $scope) {
     }
 
     return_some(Str_slice(self->str, start, self->pos));
-} $unscoped;
+} $unscoped_(fn);

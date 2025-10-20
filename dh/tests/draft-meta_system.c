@@ -2,362 +2,381 @@
 #define META_OPS_H
 
 #include "dh/core.h"
+#include "dh/Range.h"
+#include "dh/core/pp/common.h"
 
 /* Raw Types =========================================================*/
 
-typedef const void* p_const$raw;
-typedef void*       p$raw;
+typedef const void* P_const$raw;
+typedef void* P$raw;
 
-typedef struct v_const$raw v_const$raw;
-struct v_const$raw {
-    const u8 val $flexible;
-};
-typedef union v$raw v$raw;
-union v$raw {
-    struct {
-        u8 val $flexible;
-    };
-    v_const$raw as_const;
-};
+typedef union V$raw {
+    u8 inner $flexible;
+} V$raw;
 
-typedef struct s_const$raw s_const$raw;
-struct s_const$raw {
-    p_const$raw ptr;
+typedef struct S_const$raw {
+    P_const$raw ptr;
     usize       len;
-};
-typedef union s$raw s$raw;
-union s$raw {
+} S_const$raw;
+typedef union S$raw {
     struct {
-        p$raw ptr;
+        P$raw ptr;
         usize len;
     };
-    s_const$raw as_const;
-};
+    S_const$raw as_const;
+} S$raw;
 
-typedef struct a_const$raw a_const$raw;
-struct a_const$raw {
-    const u8 arr $flexible;
-};
-typedef union a$raw a$raw;
-union a$raw {
-    struct {
-        u8 arr $flexible;
-    };
-    a_const$raw as_const;
-};
+typedef struct A$raw {
+    u8 inner $flexible;
+} A$raw;
 
-typedef union o_payload$raw o_payload$raw;
-union o_payload$raw {
+typedef union O_Payload$raw {
     Void    none;
     u8 some $flexible;
-};
-typedef struct o$raw o$raw;
-struct o$raw {
+} O_Payload$raw;
+typedef struct O$raw {
     bool is_some;
     union {
         Void          none;
         u8 some       $flexible;
-        o_payload$raw raw[1];
+        O_Payload$raw raw[1];
     } payload[1];
-};
+} O$raw;
 
-typedef union e_payload$raw e_payload$raw;
-union e_payload$raw {
+typedef i32 ErrCode;
+enum ErrCode {
+    ErrCode_Unknown         = -6,
+    ErrCode_Unexpected      = -5,
+    ErrCode_Unspecified     = -4,
+    ErrCode_Unsupported     = -3,
+    ErrCode_NotImplemented  = -2,
+    ErrCode_InvalidArgument = -1,
+    ErrCode_None            = 0
+};
+typedef struct Err_VT Err_VT;
+typedef struct Err {
+    ErrCode       ctx;
+    const Err_VT* vt;
+} Err;
+
+typedef union E_Payload$raw E_Payload$raw;
+union E_Payload$raw {
     u32   err;
     u8 ok $flexible;
 };
 
-typedef struct e$raw e$raw;
-struct e$raw {
+typedef struct E$raw E$raw;
+struct E$raw {
     bool is_ok;
     union {
         u32           err;
         u8 ok         $flexible;
-        e_payload$raw raw[1];
+        E_Payload$raw raw[1];
     } payload[1];
 };
 
 /* Base Types ========================================================*/
 
-#define $p_const$(_T...)     TypeOf(const _T*)
-#define $p$(_T...)           TypeOf(_T*)
-#define $a_const$(_N, _T...) TypeOf(const _T[_N])
-#define $a$(_N, _T...)       TypeOf(_T[_N])
+#define $P_const$(_T...) TypeOf(const _T*)
+#define $P$(_T...)       TypeOf(_T*)
+#define $A$(_N, _T...)   TypeOf(_T[_N])
 
 /* Pointer Type ======================================================*/
 
 /* Pointer Anonymous */
-#define p_const$$(_T...) $p_const$(_T)
-#define p$$(_T...)       $p$(_T)
+#define P_const$$(_T...) $P_const$(_T)
+#define P$$(_T...)       $P$(_T)
 /* Pointer Alias */
-#define p_const$(_T...)  pp_join($, p_const, _T)
-#define p$(_T...)        pp_join($, p, _T)
+#define P_const$(_T...)  pp_join($, P_const, _T)
+#define P$(_T...)        pp_join($, P, _T)
 /* Pointer Template */
-#define tpl$p$(_T...) \
-    typedef $p_const$(_T) p_const$(_T); \
-    typedef $p$(_T) p$(_T);
+#define tpl$P$(_T...) \
+    typedef $P_const$(_T) P_const$(_T); \
+    typedef $P$(_T) P$(_T)
 
 /* Slice Type ========================================================*/
 
 /* Slice Anonymous */
-#define s_const$$(_T...) \
+#define S_const$$(_T...) \
     union { \
         struct { \
-            p_const$$(_T) ptr; \
-            usize len; \
+            var_(ptr, P_const$$(_T)); \
+            var_(len, usize); \
         }; \
-        s_const$raw         as_raw; \
-        s_const$raw ref_raw $like_ptr; \
+        var_(as_raw, S_const$raw); \
+        var_(ref_raw, TypeOf(S_const$raw $like_ptr)); \
     }
-#define s$$(_T...) \
+#define S$$(_T...) gen__S$$(_T)
+#define gen__S$$(_T...) \
     union { \
         struct { \
-            p$$(_T) ptr; \
-            usize len; \
+            var_(ptr, P$$(_T)); \
+            var_(len, usize); \
         }; \
-        s$raw         as_raw; \
-        s$raw ref_raw $like_ptr; \
-        s_const$$(_T) as_const; \
+        var_(as_raw, S$raw); \
+        var_(ref_raw, TypeOf(S$raw $like_ptr)); \
+        var_(as_const, S_const$$(_T)); \
     }
 /* Slice Alias */
-#define s_const$(_T...) pp_join($, s_const, _T)
-#define s$(_T...)       pp_join($, s, _T)
+#define S_const$(_T...) pp_join($, S_const, _T)
+#define S$(_T...)       pp_join($, S, _T)
 /* Slice Template */
-#define tpl$s$(_T...) \
-    typedef union s_const$(_T) s_const$(_T); \
-    union s_const$(_T) { \
+#define tpl$S$(_T...) \
+    typedef union S_const$(_T) { \
         struct { \
-            p_const$(_T) ptr; \
-            usize len; \
+            var_(ptr, P_const$(_T)); \
+            var_(len, usize); \
         }; \
-        s_const$raw         as_raw; \
-        s_const$raw ref_raw $like_ptr; \
-    }; \
-    typedef union s$(_T) s$(_T); \
-    union s$(_T) { \
+        var_(as_raw, S_const$raw); \
+        var_(ref_raw, TypeOf(S_const$raw $like_ptr)); \
+    } S_const$(_T); \
+    typedef union S$(_T) { \
         struct { \
-            p$(_T) ptr; \
-            usize len; \
+            var_(ptr, P$(_T)); \
+            var_(len, usize); \
         }; \
-        s$raw         as_raw; \
-        s$raw ref_raw $like_ptr; \
-        s_const$(_T) as_const; \
-    }
+        var_(as_raw, S$raw); \
+        var_(ref_raw, TypeOf(S$raw $like_ptr)); \
+        var_(as_const, S_const$(_T)); \
+    } S$(_T)
 
 /* Array Type ========================================================*/
 
 /* Array Anonymous */
-#define a_const$$(_N, _T...) \
+#define A$$(_N, _T...) \
     union { \
-        $a_const$(_N, _T) buf; \
-        a_const$raw         as_raw; \
-        a_const$raw ref_raw $like_ptr; \
-    }
-#define a$$(_N, _T...) \
-    union { \
-        $a$(_N, _T) buf; \
-        a$raw         as_raw; \
-        a$raw ref_raw $like_ptr; \
-        a_const$$(_N, _T) as_const; \
+        var_(buf, $A$(_N, _T)); \
+        var_(as_raw, A$raw); \
+        var_(ref_raw, TypeOf(A$raw $like_ptr)); \
     }
 /* Array Alias */
-#define a_const$(_N, _T...) pp_join3($, a_const, _N, _T)
-#define a$(_N, _T...)       pp_join3($, a, _N, _T)
+#define A$(_N, _T...) pp_join3($, A, _N, _T)
 /* Array Template */
-#define tpl$a$(_N, _T...) \
-    typedef union a_const$(_N, _T) a_const$(_N, _T); \
-    union a_const$(_N, _T) { \
-        $a_const$(_N, _T) buf; \
-        a_const$raw         as_raw; \
-        a_const$raw ref_raw $like_ptr; \
-    }; \
-    typedef union a$(_N, _T) a$(_N, _T); \
-    union a$(_N, _T) { \
-        $a$(_N, _T) buf; \
-        a$raw         as_raw; \
-        a$raw ref_raw $like_ptr; \
-        a_const$(_N, _T) as_const; \
-    }
+#define tpl$A$(_N, _T...) \
+    typedef union A$(_N, _T) { \
+        var_(buf, $A$(_N, _T)); \
+        var_(as_raw, A$raw); \
+        var_(ref_raw, TypeOf(A$raw $like_ptr)); \
+    } A$(_N, _T)
 
 /* Optional Type =====================================================*/
 
 /* Optional Anonymous */
-#define o$$(_T...) \
+#define O$$(_T...) \
     union { \
         struct { \
-            bool is_some; \
-            union { \
-                Void          none; \
-                _T            some; \
-                o_payload$raw raw[1]; \
-            } payload[1]; \
+            var_(is_some, bool); \
+            TypeOf(union { \
+                var_(none, Void); \
+                var_(some, _T); \
+                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
+            } $like_ptr) payload; \
         }; \
-        o$raw         as_raw; \
-        o$raw ref_raw $like_ptr; \
+        var_(as_raw, O$raw); \
+        var_(ref_raw, TypeOf(O$raw $like_ptr)); \
     }
 /* Optional Alias */
-#define o$(_T...) pp_join($, o, _T)
+#define O$(_T...) pp_join($, O, _T)
 /* Optional Template */
-#define tpl$o$(_T...) \
-    typedef union o$(_T) o$(_T); \
-    union o$(_T) { \
+#define tpl$O$(_T...) \
+    typedef union O$(_T) { \
         struct { \
-            bool is_some; \
-            union { \
-                Void          none; \
-                _T            some; \
-                o_payload$raw raw[1]; \
-            } payload[1]; \
+            var_(is_some, bool); \
+            TypeOf(union { \
+                var_(none, Void); \
+                var_(some, _T); \
+                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
+            } $like_ptr) payload; \
         }; \
-        o$raw         as_raw; \
-        o$raw ref_raw $like_ptr; \
-    }
+        var_(as_raw, O$raw); \
+        var_(ref_raw, TypeOf(O$raw $like_ptr)); \
+    } O$(_T)
 
 /* Result Type =======================================================*/
 
 /* Result Anonymous */
-#define e$$(_T...) \
+#define E$$(_T...) \
     union { \
         struct { \
-            bool is_ok; \
-            union { \
-                u32           err; \
-                _T            ok; \
-                e_payload$raw raw[1]; \
-            } payload[1]; \
+            var_(is_ok, bool); \
+            TypeOf(union { \
+                var_(err, Err); \
+                var_(ok, _T); \
+                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
+            } $like_ptr) payload; \
         }; \
-        e$raw         as_raw; \
-        e$raw ref_raw $like_ptr; \
+        var_(as_raw, E$raw); \
+        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
     }
 /* Result Alias */
-#define e$(_T...) pp_join($, e, _T)
+#define E$(_T...) pp_join($, E, _T)
 /* Result Template */
-#define tpl$e$(_T...) \
-    typedef union e$(_T) e$(_T); \
-    union e$(_T) { \
+#define tpl$E$(_T...) \
+    typedef union E$(_T) { \
         struct { \
-            bool is_ok; \
-            union { \
-                u32           err; \
-                _T            ok; \
-                e_payload$raw raw[1]; \
-            } payload[1]; \
+            var_(is_ok, bool); \
+            TypeOf(union { \
+                var_(err, Err); \
+                var_(ok, _T); \
+                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
+            } $like_ptr) payload; \
         }; \
-        e$raw         as_raw; \
-        e$raw ref_raw $like_ptr; \
-    }
+        var_(as_raw, E$raw); \
+        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
+    } E$(_T)
 
 /* Operations ========================================================*/
 
-#define zeros$a()                             { .buf = { 0 } }
-#define zeros$a$(/*(_N, _T)*/...)             /* TODO: Implement */
-#define zeros$s()                             { .ptr = null, .len = 0 }
-#define zeros$s$(/*(_T)*/...)                 /* TODO: Implement */
-#define init$a(_initial...)                   { .buf = _initial }
-#define init$a$(/*(_N, _T)(_initial...)*/...) /* TODO: Implement */
-#define init$s(_ptr, _len...)                 { .ptr = (_ptr), .len = (_len) }
-#define init$s$(/*(_T)(_ptr, _len)*/...)      /* TODO: Implement */
+#define zero$A()                                  { .buf = { 0 } }
+#define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/)   ((A$ __VA_ARGS__)zero$A())
+#define zero$A$$(/*(_N,_T)*/... /*(A$$(_N,_T))*/) ((A$$ __VA_ARGS__)zero$A())
+#define zero$S()                                  { .ptr = null, .len = 0 }
+#define zero$S$(/*(_T)*/... /*(S$(_T))*/)         ((S$ __VA_ARGS__)zero$S())
+#define zero$S$$(/*(_T)*/... /*(S$$(_T))*/)       ((S$$ __VA_ARGS__)zero$S())
+#define init$A(_initial...)                       { .buf = _initial }
+#define init$A$(/*(_N, _T)(_initial...)*/... /*(A$(_N,_T))*/) \
+    __step_inline__init$A$(pp_defer(__emit_inline__init$A$)(__param_parse__init$A$ __VA_ARGS__))
+#define __step_inline__init$A$(...)                 __VA_ARGS__
+#define __param_parse__init$A$(...)                 __VA_ARGS__, __param_next__init$A$
+#define __param_next__init$A$(...)                  __VA_ARGS__
+#define __emit_inline__init$A$(_N, _T, _initial...) ((A$(_N, _T))init$A(_initial))
+#define init$A$$(/*(_N, _T)(_initial...)*/... /*(A$$(_N,_T))*/) \
+    __step_inline__init$A$$(pp_defer(__emit_inline__init$A$$)(__param_parse__init$A$$ __VA_ARGS__))
+#define __step_inline__init$A$$(...)                 __VA_ARGS__
+#define __param_parse__init$A$$(...)                 __VA_ARGS__, __param_next__init$A$$
+#define __param_next__init$A$$(...)                  __VA_ARGS__
+#define __emit_inline__init$A$$(_N, _T, _initial...) ((A$$(_N, _T))init$A(_initial))
+#define init$S(_ptr, _len...)                        { .ptr = _ptr, .len = _len }
+#define init$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$(_T))*/) \
+    __step_inline__init$S$(pp_defer(__emit_inline__init$S$)(__param_parse__init$S$ __VA_ARGS__))
+#define __param_parse__init$S$(...)               __VA_ARGS__, __param_next__init$S$
+#define __param_next__init$S$(...)                __VA_ARGS__
+#define __emit_inline__init$S$(_T, _ptr, _len...) ((S$(_T))init$S(_ptr, _len))
+#define init$S$$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$$(_T))*/) \
+    __step_inline__init$S$$(pp_defer(__emit_inline__init$S$$)(__param_parse__init$S$$ __VA_ARGS__))
+#define __step_inline__init$S$$(...)               __VA_ARGS__
+#define __param_parse__init$S$$(...)               __VA_ARGS__, __param_next__init$S$$
+#define __param_next__init$S$$(...)                __VA_ARGS__
+#define __emit_inline__init$S$$(_T, _ptr, _len...) ((S$$(_T))init$S(_ptr, _len))
 
-#define ref$v(_v...) ref(_v)
-#define ref$a$(/*(_T)(_a...)*/...) \
-    pp_expand(pp_defer(block_inline__ref$a$)(param_expand__ref$a$ __VA_ARGS__))
-#define param_expand__ref$a$(...)       __VA_ARGS__, pp_expand
-#define block_inline__ref$a$(_T, _a...) ((s$(_T)){ \
-    .ptr = ptr$a(_a), \
-    .len = len$a(_a), \
+#define ref$V(_v /*: T*/... /*P$$(_T)*/)            ref(_v)
+#define ref$A(_a /*: A$$(_N,_T)*/... /*(S$$(_T))*/) ((S$$(TypeOf(*ptr$A(_a)))){ \
+    .ptr = ptr$A(_a), \
+    .len = len$A(_a), \
+})
+#define ref$A$(/*(_T)(_a: A$$(_N,_T))*/... /*(S$(_T))*/) \
+    __step_inline__ref$A$(pp_defer(__emit_inline__ref$A$)(__param_parse__ref$A$ __VA_ARGS__))
+#define __step_inline__ref$A$(...)       __VA_ARGS__
+#define __param_parse__ref$A$(...)       __VA_ARGS__, __param_next__ref$A$
+#define __param_next__ref$A$(...)        __VA_ARGS__
+#define __emit_inline__ref$A$(_T, _a...) ((S$(_T)){ \
+    .ptr = ptr$A(_a), \
+    .len = len$A(_a), \
 })
 
-#define deref$p(_p...) deref(_p)
-#define deref$s$(/*(_N, _T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__deref$s$)(param_expand__deref$s$ __VA_ARGS__))
-#define param_expand__deref$s$(...)                __VA_ARGS__, pp_uniqTok(s), pp_expand
-#define block_inline__deref$s$(_N, _T, __s, _s...) (*({ \
-    let_(__s, TypeOf(_s)) = (_s); \
-    debug_assert_fmt(len$s(__s) == _N, "length mismatch: %zu != %zu", len$s(__s), _N); \
-    as$(a$(_N, _T)*, ensureNonnull(ptr$s(__s))); \
+#define deref$P(_p /*: P$$(_T)*/... /*(_T)*/) deref(_p)
+#define deref$S$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$(_N,_T))*/) \
+    __step_inline__deref$S$(pp_defer(__emit_inline__deref$S$)(__param_parse__deref$S$ __VA_ARGS__))
+#define __step_inline__deref$S$(...)                __VA_ARGS__
+#define __param_parse__deref$S$(...)                __VA_ARGS__, __param_next__deref$S$
+#define __param_next__deref$S$(...)                 __VA_ARGS__
+#define __emit_inline__deref$S$(_N, _T, __s, _s...) (*({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    debug_assert_fmt(len$S(__s) == _N, "length mismatch: %zu != %zu", len$S(__s), _N); \
+    as$(A$(_N, _T)*, ensureNonnull(ptr$S(__s))); \
+}))
+#define deref$S$$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$$(_N,_T))*/) \
+    __step_inline__deref$S$$(pp_defer(__emit_inline__deref$S$$)(__param_parse__deref$S$$ __VA_ARGS__))
+#define __step_inline__deref$S$$(...)            __VA_ARGS__
+#define __param_parse__deref$S$$(...)            __VA_ARGS__, __param_next__deref$S$$
+#define __param_next__deref$S$$(...)             __VA_ARGS__
+#define __emit_inline__deref$S$$(_N, _T, __s...) (*({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    debug_assert_fmt(len$S(__s) == _N, "length mismatch: %zu != %zu", len$S(__s), _N); \
+    as$(A$$(_N, _T)*, ensureNonnull(ptr$S(__s))); \
 }))
 
-#define a_claim_assert_staticSameType(_p_lhs, _p_rhs...) a_claim_assert_staticSameType1(_p_lhs, _p_rhs)
+/* #define a_claim_assert_staticSameType(_p_lhs, _p_rhs...) a_claim_assert_staticSameType1(_p_lhs, _p_rhs)
 #define a_claim_assert_staticSameType1(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType1(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType1(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
+    claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    claim_assert_static(isSameType$(TypeOf(buf$a(*__p_lhs)), TypeOf(buf$a(*__p_rhs)))); \
+    claim_assert_static(isSameTypE$(TypeOf(buf$A(*__p_lhs)), TypeOf(buf$A(*__p_rhs)))); \
 })
 #define a_claim_assert_staticSameType2(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType2(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType2(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
+    claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType1(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType1(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType3(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType3(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType3(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
+    claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType2(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType2(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType4(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType4(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
 #define comp_inline__a_claim_assert_staticSameType4(__p_lhs, __p_rhs, _p_lhs, _p_rhs...) ({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     let_(__p_rhs, TypeOf(&*_p_rhs)) = &*(_p_rhs); \
-    claim_assert_static(len$a(*__p_lhs) == len$a(*__p_rhs)); \
+    claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType3(&buf$a(*__p_lhs)[0], &buf$a(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType3(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
 })
 
-#define asg$a(_p_lhs, _rhs...) asg$a1(_p_lhs, _rhs)
-#define asg$a1(_p_lhs, _rhs...) \
-    comp_inline__asg$a1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$a1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$A(_p_lhs, _rhs...) asg$A1(_p_lhs, _rhs)
+#define asg$A1(_p_lhs, _rhs...) \
+    comp_inline__asg$A1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$A1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType1(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define asg$a2(_p_lhs, _rhs...) \
-    comp_inline__asg$a2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$a2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$A2(_p_lhs, _rhs...) \
+    comp_inline__asg$A2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$A2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType2(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define asg$a3(_p_lhs, _rhs...) \
-    comp_inline__asg$a3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$a3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$A3(_p_lhs, _rhs...) \
+    comp_inline__asg$A3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$A3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType3(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
-#define asg$a4(_p_lhs, _rhs...) \
-    comp_inline__asg$a4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$a4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$A4(_p_lhs, _rhs...) \
+    comp_inline__asg$A4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$A4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType4(__p_lhs, &__rhs); \
     bti_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
-})
+}) */
 
-#define s_claim_assert_staticSameType(_lhs, _rhs...) s_claim_assert_staticSameType1(_lhs, _rhs)
+/* #define s_claim_assert_staticSameType(_lhs, _rhs...) s_claim_assert_staticSameType1(_lhs, _rhs)
 #define s_claim_assert_staticSameType1(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType1(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define comp_inline__s_claim_assert_staticSameType1(__lhs, __rhs, _lhs, _rhs...) ({ \
@@ -365,7 +384,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(ptr$s(__lhs)), TypeOf(ptr$s(__rhs)))); \
+    claim_assert_static(isSameTypE$(TypeOf(ptr$S(__lhs)), TypeOf(ptr$S(__rhs)))); \
 })
 #define s_claim_assert_staticSameType2(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType2(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -374,7 +393,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType1(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
+    s_claim_assert_staticSameType1(ptr$S(__lhs)[0], ptr$S(__rhs)[0]); \
 })
 #define s_claim_assert_staticSameType3(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType3(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -383,7 +402,7 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType2(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
+    s_claim_assert_staticSameType2(ptr$S(__lhs)[0], ptr$S(__rhs)[0]); \
 })
 #define s_claim_assert_staticSameType4(_lhs, _rhs...) \
     comp_inline__s_claim_assert_staticSameType4(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -392,775 +411,528 @@ struct e$raw {
     let_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(__lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(__lhs)) == alignOf$(TypeOf(__rhs))); \
-    s_claim_assert_staticSameType3(ptr$s(__lhs)[0], ptr$s(__rhs)[0]); \
+    s_claim_assert_staticSameType3(ptr$S(__lhs)[0], ptr$S(__rhs)[0]); \
 })
 
-#define asg$s(_p_lhs, _rhs...) asg$s1(_p_lhs, _rhs)
-#define asg$s1(_p_lhs, _rhs...) \
-    comp_inline__asg$s1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$s1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$S(_p_lhs, _rhs...) asg$S1(_p_lhs, _rhs)
+#define asg$S1(_p_lhs, _rhs...) \
+    comp_inline__asg$S1(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$S1(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType1(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define asg$s2(_p_lhs, _rhs...) \
-    comp_inline__asg$s2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$s2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$S2(_p_lhs, _rhs...) \
+    comp_inline__asg$S2(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$S2(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType2(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define asg$s3(_p_lhs, _rhs...) \
-    comp_inline__asg$s3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$s3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$S3(_p_lhs, _rhs...) \
+    comp_inline__asg$S3(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$S3(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType3(*__p_lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
 })
-#define asg$s4(_p_lhs, _rhs...) \
-    comp_inline__asg$s4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define comp_inline__asg$s4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
+#define asg$S4(_p_lhs, _rhs...) \
+    comp_inline__asg$S4(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define comp_inline__asg$S4(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     s_claim_assert_staticSameType4(__lhs, __rhs); \
     *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
     __p_lhs; \
+}) */
+
+#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$(const TypeOfUnqual(*_p)*, _p)
+#define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
+#define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/)   (_s.as_const)
+#define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
+
+#define buf$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).buf)
+#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*buf$A(_a))
+#define ptr$S(_s /*: S$$(_T)*/... /*(P$$(_T))*/)       ((_s).ptr)
+
+#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf((_a).buf)
+#define len$S(_s /*: S$$(_T)*/... /*(usize)*/)    ((_s).len)
+
+#define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
+    pp_expand(pp_defer(block_inline__at$A)(param_expand__at$A(_a, _idx)))
+#define param_expand__at$A(_a, _idx...)             pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
+#define block_inline__at$A(__a, __idx, _a, _idx...) ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__idx, usize)       = _idx; \
+    claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$A(*__a)) : true, "index out of bounds"); \
+    debug_assert_fmt(__idx < len$A(*__a), "Index out of bounds: %zu >= %zu", __idx, len$A(*__a)); \
+    &buf$A(*__a)[__idx]; \
+})
+#define at$S(_s /*: S$$(_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
+    pp_expand(pp_defer(block_inline__at$S)(param_expand__at$S(_s, _idx)))
+#define param_expand__at$S(_s, _idx...)             pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
+#define block_inline__at$S(__s, __idx, _s, _idx...) ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__idx, usize)    = _idx; \
+    debug_assert_fmt(__idx < len$S(__s), "Index out of bounds: %zu >= %zu", __idx, len$S(__s)); \
+    &ptr$S(__s)[__idx]; \
 })
 
-#define mutCast$p(_p...)   as$(const TypeOfUnqual(*_p)*, _p)
-#define constCast$p(_p...) /* TODO: Implement */
-#define mutCast$a(_a...)   (_a.as_const)
-#define constCast$a(_a...) /* TODO: Implement */
-#define mutCast$s(_s...)   (_s.as_const)
-#define constCast$s(_s...) /* TODO: Implement */
-
-#define buf$a(_a...) ((_a).buf)
-#define ptr$a(_a...) (&*buf$a(_a))
-#define ptr$s(_s...) ((_s).ptr)
-
-#define len$a(_a...) countOf((_a).buf)
-#define len$s(_s...) ((_s).len)
-
-#define at$a(_a, _idx...) \
-    pp_expand(pp_defer(block_inline__at$a)(param_expand__at$a(_a, _idx)))
-#define param_expand__at$a(_a, _idx...)             pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
-#define block_inline__at$a(__a, __idx, _a, _idx...) ({ \
-    let_(__a, TypeOf(&_a)) = &(_a); \
-    let_(__idx, usize)     = (_idx); \
-    claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$a(*__a)) : true, "index out of bounds"); \
-    debug_assert_fmt(__idx < len$a(*__a), "Index out of bounds: %zu >= %zu", __idx, len$a(*__a)); \
-    &buf$a(*__a)[__idx]; \
+#define slice$P(/*_p: P$$(_T), $r(_begin:0, _end:1): R*/... /*(S$$(_T))*/) __param_expand__slice$P(__VA_ARGS__)
+#define __param_expand__slice$P(_p, _range...)                             __block_inline__slice$P(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define __block_inline__slice$P(__p, __range, _p, _range...)               ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__range, R)      = _range; \
+    debug_assert_fmt(__range.begin == 0, "Invalid slice range: begin(%zu) != 0", __range.begin); \
+    debug_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); \
+    init$S$$((TypeOf(__p))(__p, len$R(__range))); \
 })
-#define at$s(_s, _idx...) \
-    pp_expand(pp_defer(block_inline__at$s)(param_expand__at$s(_s, _idx)))
-#define param_expand__at$s(_s, _idx...)             pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
-#define block_inline__at$s(__s, __idx, _s, _idx...) ({ \
-    let_(__s, TypeOf(_s)) = (_s); \
-    let_(__idx, usize)    = (_idx); \
-    debug_assert_fmt(__idx < len$s(__s), "Index out of bounds: %zu >= %zu", __idx, len$s(__s)); \
-    &ptr$s(__s)[__idx]; \
+#define slice$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S$(_T))*/) __param_expand__slice$P$(__VA_ARGS__)
+#define __param_expand__slice$P$(_T, _p, _range...)                              __block_inline__slice$P$(_T, pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define __block_inline__slice$P$(_T, __p, __range, _p, _range...)                ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__range, R)      = _range; \
+    debug_assert_fmt(__range.begin == 0, "Invalid slice range: begin(%zu) != 0", __range.begin); \
+    debug_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); \
+    init$S$((_T)(__p, len$R(__range))); \
 })
 
-#define slice$p(/*(_p)(_begin:0, _end:1)*/...) /* TODO: Implement */
-#define slice$p$()
-#define slice$a(/*(_a)(_begin, _end)*/...) /* TODO: Implement */
-#define slice$a$()
-#define slice$s(/*(_s)(_begin, _end)*/...) /* TODO: Implement */
-#define slice$s$()
+#define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S$$(_T))*/) __param_expand__slice$A(__VA_ARGS__)
+#define __param_expand__slice$A(_a, _range...)                            __block_inline__slice$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
+#define __block_inline__slice$A(__a, __range, _a, _range...)              ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__range, R)         = _range; \
+    debug_assert_fmt(__range.end <= len$A(*__a), "Index out of bounds: %zu > %zu", __range.end, len$A(*__a)); \
+    init$S$$((TypeOf(*ptr$A(*__a)))(&buf$A(*__a)[__range.begin], len$R(__range))); \
+})
+#define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) __param_expand__slice$A$(__VA_ARGS__)
+#define __param_expand__slice$A$(_T, _a, _range...)                             __block_inline__slice$A$(_T, pp_uniqTok(a), pp_uniqTok(range), _a, _range)
+#define __block_inline__slice$A$(_T, __a, __range, _a, _range...)               ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__range, R)         = _range; \
+    debug_assert_fmt(__range.end <= len$A(*__a), "Index out of bounds: %zu > %zu", __range.end, len$A(*__a)); \
+    init$S$((_T)(&buf$A(*__a)[__range.begin], len$R(__range))); \
+})
 
-#define init$o()
-#define init$o$()
-#define asg$o()
-#define asg$o$()
-#define some()
-#define none()
-#define isSome()
-#define isNone()
-#define unwrap_()
-#define orelse_()
+#define slice$S(/*_s: S$$(_T), $r(_begin, _end): R*/... /*(S$$(_T))*/) __param_expand__slice$S(__VA_ARGS__)
+#define __param_expand__slice$S(_s, _range...)                         __block_inline__slice$S(pp_uniqTok(s), pp_uniqTok(range), _s, _range)
+#define __block_inline__slice$S(__s, __range, _s, _range...)           ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__range, R)      = _range; \
+    debug_assert_fmt(__range.end <= len$S(__s), "Index out of bounds: %zu > %zu", __range.end, len$S(__s)); \
+    (TypeOf(__s)) init$S(&ptr$S(__s)[__range.begin], len$R(__range)); \
+})
+#define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) __param_expand__slice$S$(__VA_ARGS__)
+#define __param_expand__slice$S$(_T, _s, _range...)                          __block_inline__slice$S$(_T, pp_uniqTok(s), pp_uniqTok(range), _s, _range)
+#define __block_inline__slice$S$(_T, __s, __range, _s, _range...)            ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__range, R)      = _range; \
+    debug_assert_fmt(__range.end <= len$S(__s), "Index out of bounds: %zu > %zu", __range.end, len$S(__s)); \
+    init$S$((_T)(&ptr$S(__s)[__range.begin], len$R(__range))); \
+})
 
-#define init$e()
-#define init$e$()
-#define asg$e()
-#define asg$e$()
-#define ok()
-#define err()
-#define isOk()
-#define isErr()
-#define try_()
-#define catch_()
-#define errdefer_()
+// #define init$O()
+// #define init$O$()
+// #define asg$O()
+// #define asg$O$()
+
+#define some(_val...) { \
+    .is_some    = true, \
+    .payload[0] = { .some = _val }, \
+}
+#define some$(/*(_T)(_val: _T))*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
+#define __param_expand__some$(...)                   __VA_ARGS__, pp_expand
+#define __block_inline__some$(...)                   __block_inline1__some$(__VA_ARGS__)
+#define __block_inline1__some$(_T, _val...)          ((O$(_T))some(_val))
+#define some$$(/*(_T)(_val: _T))*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__some$$)(__param_expand__some$$ __VA_ARGS__))
+#define __param_expand__some$$(...)                  __VA_ARGS__, pp_expand
+#define __block_inline__some$$(...)                  __block_inline1__some$$$(__VA_ARGS__)
+#define __block_inline1__some$$$(_T, _val...)        ((O$$(_T))some(_val))
+
+#define none()                                    { .is_some = false }
+#define none$(/*(_T)(none())*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
+#define __param_expand__none$(...)                __VA_ARGS__, pp_expand
+#define __block_inline__none$(...)                __block_inline1__none$(__VA_ARGS__)
+#define __block_inline1__none$(_T, _val...)       ((O$(_T))none())
+#define none$$(/*(_T)(none())*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__none$$)(__param_expand__none$$ __VA_ARGS__))
+#define __param_expand__none$$(...)               __VA_ARGS__, pp_expand
+#define __block_inline__none$$(...)               __block_inline1__none$$$(__VA_ARGS__)
+#define __block_inline1__none$$$(_T, _val...)     ((O$$(_T))none())
+
+#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool, (_o).is_some)
+#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool, !(_o).is_some)
+
+#define return_some(_val...) \
+    return_(some(_val))
+#define return_none() \
+    return_(none())
+
+#define orelse_(/*(_Expr: O$$(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
+    pp_expand(pp_defer(__block_inline__orelse_)(__param_expand__orelse_ __VA_ARGS__))
+#define __param_expand__orelse_(...)                                       __VA_ARGS__, pp_expand
+#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...)            __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
+#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    ({ \
+        var __result = _Expr; \
+        if (isNone(__result)) { \
+            __result.payload->some = _Generic( \
+                TypeOfUnqual(_DefaultExpr_OR_Body), \
+                void: ({ \
+                    $ignore_void _DefaultExpr_OR_Body; \
+                    ((TypeOf(__result.payload->some)){}); \
+                }), \
+                default: _DefaultExpr_OR_Body \
+            ); \
+        } \
+        __result.payload->some; \
+    }) \
+)
+#define unwrap_(/*(_Expr: O$$(_T))*/... /*(_T)*/) \
+    __unwrap(__VA_ARGS__)
+#define __unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
+
+// #define init$E()
+// #define init$E$()
+// #define asg$E()
+// #define asg$E$()
+
+#define ok(_val...) { \
+    .is_ok      = true, \
+    .payload[0] = { .ok = _val }, \
+}
+#define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/)   pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
+#define __param_expand__ok$(...)                   __VA_ARGS__, pp_expand
+#define __block_inline__ok$(...)                   __block_inline1__ok$(__VA_ARGS__)
+#define __block_inline1__ok$(_T, _val...)          ((E$(_T))ok(_val))
+#define ok$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) pp_expand(pp_defer(__block_inline__ok$$)(__param_expand__ok$$ __VA_ARGS__))
+#define __param_expand__ok$$(...)                  __VA_ARGS__, pp_expand
+#define __block_inline__ok$$(...)                  __block_inline1__ok$$$(__VA_ARGS__)
+#define __block_inline1__ok$$$(_T, _val...)        ((E$$(_T))ok(_val))
+
+#define err(_val...) { \
+    .is_err     = true, \
+    .payload[0] = { .err = _val }, \
+}
+#define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/)   pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
+#define __param_expand__err$(...)                   __VA_ARGS__, pp_expand
+#define __block_inline__err$(...)                   __block_inline1__err$(__VA_ARGS__)
+#define __block_inline1__err$(_T, _val...)          ((E$(_T))err(_val))
+#define err$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) pp_expand(pp_defer(__block_inline__err$$)(__param_expand__err$$ __VA_ARGS__))
+#define __param_expand__err$$(...)                  __VA_ARGS__, pp_expand
+#define __block_inline__err$$(...)                  __block_inline1__err$$$(__VA_ARGS__)
+#define __block_inline1__err$$$(_T, _val...)        ((E$$(_T))err(_val))
+
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$(bool, (_e).is_ok)
+#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool, !(_e).is_ok)
+
+#define return_ok(_val...) \
+    return_(ok(_val))
+#define return_err(_val...) \
+    ($debug_point ErrTrace_captureFrame()); \
+    return_(err(_val))
+
+#define try_(/*(_Expr: E$$(_T))*/... /*(_T)*/) \
+    __try_(pp_uniqTok(result), __VA_ARGS__)
+#define __try_(__result, _Expr...) ({ \
+    let __result = _Expr; \
+    if (isErr(__result)) { \
+        return_err(__result.payload->err); \
+    } \
+    __result.payload->ok; \
+})
+
+#define catch_(/*(_Expr: E$$(_T))(_Capture|$ignore, _DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
+    pp_expand(pp_defer(__block_inline__catch_)(__param_expand__catch_ __VA_ARGS__))
+#define __param_expand__catch_(...)                                                         __VA_ARGS__, pp_expand
+#define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...)            __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
+#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    ({ \
+        var __result = _Expr; \
+        if (isErr(__result)) { \
+            let _Payload_Capture = __result.payload->err; \
+            __result.payload->ok = _Generic( \
+                TypeOfUnqual(_DefaultExpr_OR_Body), \
+                void: ({ \
+                    _DefaultExpr_OR_Body; \
+                    ((TypeOf(__result.payload->ok)){}); \
+                }), \
+                default: _DefaultExpr_OR_Body \
+            ); \
+            ErrTrace_reset(); \
+        } \
+        __result.payload->ok; \
+    }) \
+)
+#define errdefer_(/*(_O_Capture|$ignore, _Expr_OR_Body...:void)*/... /*(void)*/) \
+    __errdefer_(__VA_ARGS__)
+#define __errdefer_(_Payload_Capture, _Expr...) defer_(if (__reserved_return->is_err) { \
+    let _Payload_Capture = __reserved_return->data.err; \
+    _Expr; \
+})
 
 // ============================================================================
 // Generic Meta Types - The Foundation
 // ============================================================================
 
-typedef struct meta$p_const meta$p_const;
-struct meta$p_const {
+typedef struct meta_P_const {
     TypeInfo type;
     union {
-        p_const$raw ptr;
-        p_const$raw raw;
+        P_const$raw ptr;
+        P_const$raw raw;
     };
-};
-typedef union meta$p meta$p;
-union meta$p {
+} meta_P_const$raw;
+typedef union meta_P$raw {
     struct {
         TypeInfo type;
         union {
-            p$raw ptr;
-            p$raw raw;
+            P$raw ptr;
+            P$raw raw;
         };
     };
-    meta$p_const as_const;
-};
+    meta_P_const$raw as_const;
+} meta_P$raw;
 
-typedef union meta$v_const meta$v_const;
-union meta$v_const {
-    struct {
-        TypeInfo    inner_type;
-        p_const$raw inner;
-    };
-    meta$p_const ref;
-};
-
-typedef union meta$v meta$v;
-union meta$v {
+typedef union meta_V$raw {
     struct {
         TypeInfo inner_type;
-        p$raw    inner;
+        P$raw    inner;
     };
-    meta$p       ref;
-    meta$v_const as_const;
-};
+    meta_P$raw ref;
+} meta_V$raw;
 
-typedef struct meta$s_const meta$s_const;
-struct meta$s_const {
+typedef struct meta_S_const$raw {
     TypeInfo type;
     union {
         struct {
-            p_const$raw ptr;
+            P_const$raw ptr;
             usize       len;
         };
-        s_const$raw raw;
+        S_const$raw raw;
     };
-};
-typedef union meta$s meta$s;
-union meta$s {
+} meta_S_const$raw;
+typedef union meta_S$raw {
     struct {
         TypeInfo type;
         union {
             struct {
-                p$raw ptr;
+                P$raw ptr;
                 usize len;
             };
-            s$raw raw;
+            S$raw raw;
         };
     };
-    meta$s_const as_const;
-};
+    meta_S_const$raw as_const;
+} meta_S$raw;
 
-typedef union meta$a_const meta$a_const;
-union meta$a_const {
-    struct {
-        TypeInfo    inner_type;
-        s_const$raw inner;
-    };
-    meta$s_const ref;
-};
-
-typedef union meta$a meta$a;
-union meta$a {
+typedef union meta_A$raw {
     struct {
         TypeInfo inner_type;
-        s$raw    inner;
+        S$raw    inner;
     };
-    meta$s_const ref;
-    meta$a_const as_const;
-};
+    meta_S$raw ref;
+} meta_A$raw;
 
-typedef union meta$o meta$o;
-union meta$o {
-    struct {
-        TypeInfo inner_type; // Type of T in Optional<T>
-        o$raw*   inner;      // Points to {is_some, {T}} structure
+typedef struct meta_O$raw {
+    bool is_some;
+    union {
+        union {
+            Void       none;
+            meta_V$raw some;
+        } payload[1];
+        meta_V$raw inner;
     };
-    meta$v as_value;
-};
+} meta_O$raw;
 
-typedef union meta$e meta$e;
-union meta$e {
-    struct {
-        TypeInfo inner_type; // Type of T in Result<T>
-        e$raw*   inner;      // Points to {is_ok, {err, T}}} structure
+typedef struct meta_E$raw {
+    bool is_ok;
+    union {
+        union {
+            ErrCode    err;
+            meta_V$raw ok;
+        } payload[1];
+        meta_V$raw inner;
     };
-    meta$v as_value;
-};
+} meta_E$raw;
 
 // ============================================================================
 // Conversion Patterns - The Core Innovation
 // ============================================================================
 
-#define meta_ret$v(_T)     ((meta$v){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
-#define meta_ret$a(_N, _T) ((meta$a){ .inner_type = typeInfo$(FieldTypeOf(a$(_N, _T), buf[0])), .inner = ref$a((a$(_N, _T)){}) })
-#define meta_ret$o(_T)     ((meta$o){ .inner_type = typeInfo$(FieldTypeOf(o$(_T), payload->some)), .inner = ((o$(_T)){}).ref_raw })
-#define meta_ret$e(_T)     ((meta$e){ .inner_type = typeInfo$(FieldTypeOf(e$(_T), payload->ok)), .inner = ((e$(_T)){}).ref_raw })
+#define as$$(/*(_T)(_Expr...)*/... /*(_T)*/) __mx_exec__as$(pp_defer(__mx_emit__as$)(__mx_split__as$ __VA_ARGS__))
+#define __mx_exec__as$(...)                  __VA_ARGS__
+#define __mx_split__as$(...)                 __VA_ARGS__, __mx_next__as$
+#define __mx_next__as$(...)                  __VA_ARGS__
+#define __mx_emit__as$(_T, _Expr...)         ((_T)(_Expr))
+
+#define meta_create(_type...) ({ \
+    const TypeInfo __type = _type; \
+    const P$raw    __ptr  = bti_alloca(__type.size); \
+    bti_memset(__ptr, 0, __type.size); \
+    ((meta_P$raw){ .type = __type, .ptr = __ptr }); \
+})
+#define meta_alloc(_type, _len...) ({ \
+    const TypeInfo __type = _type; \
+    const usize    __len  = _len; \
+    const P$raw    __ptr  = bti_alloca(__type.size * __len); \
+    bti_memset(__ptr, 0, __type.size * __len); \
+    ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
+})
+
+#define meta_ret$V(_T)     ((meta_V$raw){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
+#define meta_ret$A(_N, _T) ((meta_A$raw){ .inner_type = typeInfo$(FieldTypeOf(A$$(_N, _T), buf[0])), .inner = ref$A((A$$(_N, _T)){}) })
+#define meta_ret$O(_T)     ((meta_O$raw){ .inner_type = typeInfo$(FieldTypeOf(O$$(_T), payload->some)), .inner = ((O$$(_T)){}).ref_raw })
+#define meta_ret$E(_T)     ((meta_E$raw){ .inner_type = typeInfo$(FieldTypeOf(E$$(_T), payload->ok)), .inner = ((E$$(_T)){}).ref_raw })
+
+#define metaRef$P(_p...) ((meta_P_const$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
+#define metaMut$P(_p...) ((meta_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
+#define metaRef$S(_s...) ((meta_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
+#define metaMut$S(_s...) ((meta_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
+
+#define meta$V(_v...) ({ \
+    let __p_v = &copy(_v); \
+    ((meta_V$raw){ .inner_type = typeInfo$(TypeOf(*__p_v)), .inner = __p_v }); \
+})
+#define meta$A(_a...) ({ \
+    let __p_a = &copy(_a); \
+    ((meta_A$raw){ .inner_type = typeInfo$(TypeOf(*__p_a->buf)), .inner = ref$A(*__p_a).as_raw }); \
+})
+#define meta$O(_o...) ({ \
+    let __p_o = &copy(_o); \
+    __p_o->is_some \
+        ? (meta_O$raw)some(meta$V(__p_o->payload->some)) \
+        : (meta_O$raw)none(); \
+})
+#define meta$E(_e...) ({ \
+    let __p_e = &copy(_e); \
+    __p_e->is_ok \
+        ? (meta_E$raw)ok(meta$V(__p_e->payload->ok)) \
+        : (meta_E$raw)err(__p_e->payload->err); \
+})
+
+#define meta_pRef$(/*(_T)(_Expr...)*/... /*(P_const$(_T))*/) \
+    __step_inline__meta_pRef$(pp_defer(__emit_inline__meta_pRef$)(__param_parse__meta_pRef$ __VA_ARGS__))
+#define __step_inline__meta_pRef$(...)          __VA_ARGS__
+#define __param_parse__meta_pRef$(...)          __VA_ARGS__, __param_next__meta_pRef$
+#define __param_next__meta_pRef$(...)           __VA_ARGS__
+#define __emit_inline__meta_pRef$(_T, _meta...) (*as$$((P_const$(_T)*)(&__meta.raw)))
+#define meta_pRef$$(/*(_T)(_Expr...)*/... /*(P_const$$(_T))*/) \
+    __step_inline__meta_pRef$$(pp_defer(__emit_inline__meta_pRef$$)(__param_parse__meta_pRef$$ __VA_ARGS__))
+#define __step_inline__meta_pRef$$(...)          __VA_ARGS__
+#define __param_parse__meta_pRef$$(...)          __VA_ARGS__, __param_next__meta_pRef$$
+#define __param_next__meta_pRef$$(...)           __VA_ARGS__
+#define __emit_inline__meta_pRef$$(_T, _meta...) (*as$$((P_const$$(_T)*)(&__meta.raw)))
+
+#define meta_pMut$(/*(_T)(_Expr...)*/... /*(P$(_T))*/) \
+    __step_inline__meta_pMut$(pp_defer(__emit_inline__meta_pMut$)(__param_parse__meta_pMut$ __VA_ARGS__))
+#define __param_parse__meta_pMut$(...)          __VA_ARGS__, __param_next__meta_pMut$
+#define __param_next__meta_pMut$(...)           __VA_ARGS__
+#define __emit_inline__meta_pMut$(_T, _meta...) (*as$$((P$(_T)*)(&__meta.raw)))
+#define meta_pMut$$(/*(_T)(_Expr...)*/... /*(P$$(_T))*/) \
+    __step_inline__meta_pMut$$(pp_defer(__emit_inline__meta_pMut$$)(__param_parse__meta_pMut$$ __VA_ARGS__))
+#define __param_parse__meta_pMut$$(...)          __VA_ARGS__, __param_next__meta_pMut$$
+#define __param_next__meta_pMut$$(...)           __VA_ARGS__
+#define __emit_inline__meta_pMut$$(_T, _meta...) (*as$$((P$$(_T)*)(&__meta.raw)))
+
+#define meta_v$(/*(_T)(_Expr...)*/... /*(_T)*/) \
+    __step_inline__meta_v$(pp_defer(__emit_inline__meta_v$)(__param_parse__meta_v$ __VA_ARGS__))
+#define __step_inline__meta_v$(...)          __VA_ARGS__
+#define __param_parse__meta_v$(...)          __VA_ARGS__, __param_next__meta_v$
+#define __param_next__meta_v$(...)           __VA_ARGS__
+#define __emit_inline__meta_v$(_T, _meta...) (*as$$((_T*)(_meta.inner)))
+
+#define meta_sRef$(/*(_T)(_Expr...)*/... /*(S_const$(_T))*/) \
+    __step_inline__meta_sRef$(pp_defer(__emit_inline__meta_sRef$)(__param_parse__meta_sRef$ __VA_ARGS__))
+#define __step_inline__meta_sRef$(...)          __VA_ARGS__
+#define __param_parse__meta_sRef$(...)          __VA_ARGS__, __param_next__meta_sRef$
+#define __param_next__meta_sRef$(...)           __VA_ARGS__
+#define __emit_inline__meta_sRef$(_T, _meta...) (*as$$((S_const$(_T)*)(&__meta.raw)))
+#define meta_sRef$$(/*(_T)(_Expr...)*/... /*(S_const$$(_T))*/) \
+    __step_inline__meta_sRef$$(pp_defer(__emit_inline__meta_sRef$$)(__param_parse__meta_sRef$$ __VA_ARGS__))
+#define __step_inline__meta_sRef$$(...)          __VA_ARGS__
+#define __param_parse__meta_sRef$$(...)          __VA_ARGS__, __param_next__meta_sRef$$
+#define __param_next__meta_sRef$$(...)           __VA_ARGS__
+#define __emit_inline__meta_sRef$$(_T, _meta...) (*as$$((S_const$$(_T)*)(&__meta.raw)))
+
+#define meta_sMut$(/*(_T)(_Expr...)*/... /*(S$(_T))*/) \
+    __step_inline__meta_sMut$(pp_defer(__emit_inline__meta_sMut$)(__param_parse__meta_sMut$ __VA_ARGS__))
+#define __step_inline__meta_sMut$(...)          __VA_ARGS__
+#define __param_parse__meta_sMut$(...)          __VA_ARGS__, __param_next__meta_sMut$
+#define __param_next__meta_sMut$(...)           __VA_ARGS__
+#define __emit_inline__meta_sMut$(_T, _meta...) (*as$$((S$(_T)*)(&__meta.raw)))
+#define meta_sMut$$(/*(_T)(_Expr...)*/... /*(S$$(_T))*/) \
+    __step_inline__meta_sMut$$(pp_defer(__emit_inline__meta_sMut$$)(__param_parse__meta_sMut$$ __VA_ARGS__))
+#define __step_inline__meta_sMut$$(...)          __VA_ARGS__
+#define __param_parse__meta_sMut$$(...)          __VA_ARGS__, __param_next__meta_sMut$$
+#define __param_next__meta_sMut$$(...)           __VA_ARGS__
+#define __emit_inline__meta_sMut$$(_T, _meta...) (*as$$((S$$(_T)*)(&__meta.raw)))
+
+#define meta_a$(/*(_N,_T)(_Expr...)*/... /*(A$(_N,_T))*/) \
+    __step_inline__meta_a$(pp_defer(__emit_inline__meta_a$)(__param_parse__meta_a$ __VA_ARGS__))
+#define __step_inline__meta_a$(...)              __VA_ARGS__
+#define __param_parse__meta_a$(...)              __VA_ARGS__, __param_next__meta_a$
+#define __param_next__meta_a$(...)               __VA_ARGS__
+#define __emit_inline__meta_a$(_N, _T, _meta...) (*as$$((A$(_N, _T)*)(__meta.inner)))
+#define meta_a$$(/*(_N,_T)(_Expr...)*/... /*(A$$(_N,_T))*/) \
+    __step_inline__meta_a$$(pp_defer(__emit_inline__meta_a$$)(__param_parse__meta_a$$ __VA_ARGS__))
+#define __step_inline__meta_a$$(...)              __VA_ARGS__
+#define __param_parse__meta_a$$(...)              __VA_ARGS__, __param_next__meta_a$$
+#define __param_next__meta_a$$(...)               __VA_ARGS__
+#define __emit_inline__meta_a$$(_N, _T, _meta...) (*as$$((A$$(_N, _T)*)(__meta.inner)))
+
+#define meta_o$(/*(_T)(_Expr...)*/... /*(O$(_T))*/) \
+    pp_expand(pp_defer(__block_inline__meta_o$)(__param_expand__meta_o$ __VA_ARGS__))
+#define __param_expand__meta_o$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$
+#define __param_expand1__meta_o$(...)                 __VA_ARGS__
+#define __block_inline__meta_o$(__meta, _T, _meta...) ({ \
+    let __meta = _meta; \
+    __meta.is_some \
+        ? ((O$(_T))some(*as$$((_T*)(__meta.payload->some.inner)))) \
+        : ((O$(_T))none()); \
+})
+#define meta_o$$(/*(_T)(_Expr...)*/... /*(O$$(_T))*/) \
+    pp_expand(pp_defer(__block_inline__meta_o$$)(__param_expand__meta_o$$ __VA_ARGS__))
+#define __param_expand__meta_o$$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$$
+#define __param_expand1__meta_o$$(...)                 __VA_ARGS__
+#define __block_inline__meta_o$$(__meta, _T, _meta...) ({ \
+    let __meta = _meta; \
+    __meta.is_some \
+        ? ((O$$(_T))some(*as$$((_T*)(__meta.payload->some.inner)))) \
+        : ((O$$(_T))none()); \
+})
+
+#define meta_e$(/*(_T)(_Expr...)*/... /*(E$(_T))*/) \
+    pp_expand(pp_defer(__block_inline__meta_e$)(__param_expand__meta_e$ __VA_ARGS__))
+#define __param_expand__meta_e$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$
+#define __param_expand1__meta_e$(...)                 __VA_ARGS__
+#define __block_inline__meta_e$(__meta, _T, _meta...) ({ \
+    let __meta = _meta; \
+    __meta.is_ok \
+        ? ((E$(_T))ok(meta_v$((_T)(__meta.payload->ok)))) \
+        : ((E$(_T))err(__meta.payload->err)); \
+})
+#define meta_e$$(/*(_T)(_Expr...)*/... /*(E$$(_T))*/) \
+    pp_expand(pp_defer(__block_inline__meta_e$$)(__param_expand__meta_e$$ __VA_ARGS__))
+#define __param_expand__meta_e$$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$$
+#define __param_expand1__meta_e$$(...)                 __VA_ARGS__
+#define __block_inline__meta_e$$(__meta, _T, _meta...) ({ \
+    let __meta = _meta; \
+    __meta.is_ok \
+        ? ((E$$(_T))ok(meta_v$((_T)(__meta.payload->ok)))) \
+        : ((E$$(_T))err(__meta.payload->err)); \
+})
 
-#define p_meta(_ptr...)    ((meta$p_const){ .type = typeInfo$(TypeOf(*_ptr)), .raw = (_ptr) })
-#define p_metaMut(_ptr...) ((meta$p){ .type = typeInfo$(TypeOf(*_ptr)), .raw = (_ptr) })
-#define s_meta(_sli...)    ((meta$s_const){ .type = typeInfo$(TypeOf(*(_sli).ptr)), .raw = (_sli).as_raw })
-#define s_metaMut(_sli...) ((meta$s){ .type = typeInfo$(TypeOf(*(_sli).ptr)), .raw = (_sli).as_raw })
-
-#define v_meta(_val...) ((meta$v){ .inner_type = typeInfo$(TypeOf(_val)), .inner = &(_val) })
-#define a_meta(_arr...) ((meta$a){ .inner_type = typeInfo$(TypeOf(*(_arr).buf)), .inner = ref$a(_arr).as_raw })
-#define o_meta(_opt...) ((meta$o){ .inner_type = typeInfo$(TypeOf((_opt).payload.some)), .inner = &(_opt).as_raw })
-#define e_meta(_err...) ((meta$e){ .inner_type = typeInfo$(TypeOf((_err).payload.ok)), .inner = &(_err).as_raw })
-
-#define meta$p$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_p$)(param_expand__meta_p$ __VA_ARGS__))
-#define param_expand__meta_p$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_p$(_T, _meta...) (*as$(p_const$(_T)*, &(_meta).raw))
-
-#define meta_pMut$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_pMut$)(param_expand__meta_pMut$ __VA_ARGS__))
-#define param_expand__meta_pMut$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_pMut$(_T, _meta...) (*as$(p$(_T)*, &(_meta).raw))
-
-#define meta_v$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_v$)(param_expand__meta_v$ __VA_ARGS__))
-#define param_expand__meta_v$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_v$(_T, _meta...) (*as$(_T*, (_meta).inner))
-
-#define meta_s$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_s$)(param_expand__meta_s$ __VA_ARGS__))
-#define param_expand__meta_s$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_s$(_T, _meta...) (*as$(s_const$(_T)*, &(_meta).raw))
-
-#define meta_sMut$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_sMut$)(param_expand__meta_sMut$ __VA_ARGS__))
-#define param_expand__meta_sMut$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_sMut$(_T, _meta...) (*as$(s$(_T)*, &(_meta).raw))
-
-#define meta_a$(/*(_N, _T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_a$)(param_expand__meta_a$ __VA_ARGS__))
-#define param_expand__meta_a$(...)              __VA_ARGS__, pp_expand
-#define block_inline__meta_a$(_N, _T, _meta...) (*as$(a$(_N, _T)*, (_meta).inner))
-
-#define meta_o$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_o$)(param_expand__meta_o$ __VA_ARGS__))
-#define param_expand__meta_o$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_o$(_T, _meta...) (*as$(o$(_T)*, (_meta).inner))
-
-#define meta_e$(/*(_T)(_Expr...)*/...) \
-    pp_expand(pp_defer(block_inline__meta_e$)(param_expand__meta_e$ __VA_ARGS__))
-#define param_expand__meta_e$(...)          __VA_ARGS__, pp_expand
-#define block_inline__meta_e$(_T, _meta...) (*as$(e$(_T)*, (_meta).inner))
-
-// ============================================================================
-// Core Operations for Generic Programming
-// ============================================================================
-
-static inline meta$p_const meta_ref$v(meta$v_const self) {
-    return (meta$p_const){ .type = self.inner_type, .ptr = self.inner };
-}
-static inline meta$p meta_refMut$v(meta$v self) {
-    return (meta$p){ .type = self.inner_type, .ptr = self.inner };
-}
-static inline meta$v_const meta_deref$p(meta$p_const self) {
-    return (meta$v_const){ .inner_type = self.type, .inner = self.ptr };
-}
-static inline meta$v meta_derefMut$p(meta$p self) {
-    return (meta$v){ .inner_type = self.type, .inner = self.ptr };
-}
-
-static inline meta$p meta_zero$v(meta$p self) {
-    debug_assert_nonnull(self.ptr);
-    bti_memset(self.ptr, 0, self.type.size);
-    return (meta$p){ .type = self.type, .ptr = self.ptr };
-}
-static inline meta$s meta_zero$a(meta$s self) {
-    debug_assert_nonnull(self.ptr);
-    bti_memset(self.ptr, 0, self.type.size * self.len);
-    return (meta$s){ .type = self.type, .ptr = self.ptr, .len = self.len };
-}
-
-static inline meta$p meta_set$p(meta$p lhs_dest, meta$v_const rhs_src) {
-    debug_assert(lhs_dest.type.size == rhs_src.inner_type.size);
-    debug_assert(lhs_dest.type.align == rhs_src.inner_type.align);
-    debug_assert_nonnull(lhs_dest.ptr);
-    debug_assert_nonnull(rhs_src.inner);
-
-    bti_memcpy(lhs_dest.ptr, rhs_src.inner, rhs_src.inner_type.size);
-    return lhs_dest;
-}
-static inline meta$s meta_set$s(meta$s lhs_dest, meta$a_const rhs_src) {
-    debug_assert(lhs_dest.type.size == rhs_src.inner_type.size);
-    debug_assert(lhs_dest.type.align == rhs_src.inner_type.align);
-    debug_assert_nonnull(lhs_dest.ptr);
-    debug_assert_nonnull(rhs_src.inner.ptr);
-
-    bti_memcpy(lhs_dest.ptr, rhs_src.inner.ptr, rhs_src.inner_type.size * rhs_src.inner.len);
-    return lhs_dest;
-}
-
-static inline meta$p meta_asg$v(meta$p lhs_dest, meta$v_const rhs_src) {
-    return meta_set$p(lhs_dest, rhs_src);
-}
-static inline meta$s meta_asg$a(meta$s lhs_dest, meta$a_const rhs_src) {
-    return meta_set$s(lhs_dest, rhs_src);
-}
-
-static inline meta$p meta_copy$v(meta$p lhs_dest, meta$v_const rhs_src, usize len) {
-    debug_assert(lhs_dest.type.size == rhs_src.inner_type.size);
-    debug_assert(lhs_dest.type.align == rhs_src.inner_type.align);
-    debug_assert_nonnull(lhs_dest.ptr);
-    debug_assert_nonnull(rhs_src.inner);
-
-    bti_memcpy(lhs_dest.ptr, rhs_src.inner, rhs_src.inner_type.size * len);
-    return lhs_dest;
-}
-static inline meta$s meta_copy$a(meta$s lhs_dest, meta$a_const rhs_src) {
-    debug_assert(lhs_dest.type.size == rhs_src.inner_type.size);
-    debug_assert(lhs_dest.type.align == rhs_src.inner_type.align);
-    debug_assert(lhs_dest.len == rhs_src.inner.len);
-    debug_assert_nonnull(lhs_dest.ptr);
-    debug_assert_nonnull(rhs_src.inner.ptr);
-
-    bti_memcpy(lhs_dest.ptr, rhs_src.inner.ptr, rhs_src.inner_type.size * lhs_dest.len);
-    return lhs_dest;
-}
-
-static inline void meta_swap$v(meta$p lhs, meta$p rhs) {
-    debug_assert(lhs.type.size == rhs.type.size);
-    debug_assert(lhs.type.align == rhs.type.align);
-    debug_assert_nonnull(lhs.ptr);
-    debug_assert_nonnull(rhs.ptr);
-
-    let tmp = (meta$v){ .inner_type = lhs.type, .inner = bti_alloca(lhs.type.size) };
-    meta_asg$v(tmp.ref, meta_deref$p(lhs.as_const));
-    meta_asg$v(lhs, meta_deref$p(rhs.as_const));
-    meta_asg$v(rhs, tmp.as_const);
-}
-
-// ============================================================================
-// Slice Operations
-// ============================================================================
-
-static inline meta$p_const meta_at$s(meta$s_const self, usize index) {
-    debug_assert(index < self.len);
-    let elem_ptr = as$(const u8*, self.ptr) + (index * self.type.size);
-    return (meta$p_const){ .type = self.type, .ptr = elem_ptr };
-}
-
-static inline meta$p meta_atMut$s(meta$s self, usize index) {
-    debug_assert(index < self.len);
-    let elem_ptr = as$(u8*, self.ptr) + (index * self.type.size);
-    return (meta$p){ .type = self.type, .ptr = elem_ptr };
-}
-
-static inline meta$s_const meta_slice$s(meta$s_const self, usize begin, usize end) {
-    debug_assert(begin < end);
-    debug_assert(end <= self.len);
-    return (meta$s_const){
-        .type = self.type,
-        .ptr  = as$(const u8*, self.ptr) + (begin * self.type.size),
-        .len  = end - begin
-    };
-}
-
-static inline meta$s meta_sliceMut$s(meta$s self, usize begin, usize end) {
-    debug_assert(begin < end);
-    debug_assert(end <= self.len);
-    return (meta$s){
-        .type = self.type,
-        .ptr  = as$(u8*, self.ptr) + (begin * self.type.size),
-        .len  = end - begin
-    };
-}
-
-static inline bool meta_isSome$o(meta$o self) {
-    return self.inner->is_some;
-}
-static inline bool meta_isNone$o(meta$o self) {
-    return !self.inner->is_some;
-}
-
-static inline meta$p_const meta_unwrap$o(meta$o self) {
-    debug_assert(meta_isSome$o(self));
-    return (meta$p_const){ .type = self.inner_type, .ptr = self.inner->payload->some };
-}
-static inline meta$p meta_unwrapMut$o(meta$o self) {
-    debug_assert(meta_isSome$o(self));
-    return (meta$p){ .type = self.inner_type, .ptr = self.inner->payload->some };
-}
-
-static inline meta$o meta_asgNone$o(meta$o self) {
-    self.inner->is_some = false;
-    meta_zero$v(meta_unwrapMut$o(self));
-    return self;
-}
-static inline meta$o meta_asgSome$o(meta$o self, meta$v_const value) {
-    debug_assert(self.inner_type.size == value.inner_type.size);
-    debug_assert(self.inner_type.align == value.inner_type.align);
-    self.inner->is_some = true;
-    meta_asg$v(meta_unwrapMut$o(self), value);
-    return self;
-}
-
-static inline bool meta_isOk$e(meta$e self) {
-    return self.inner->is_ok;
-}
-static inline bool meta_isErr$e(meta$e self) {
-    return !self.inner->is_ok;
-}
-
-static inline meta$p_const meta_unwrapOk$e(meta$e self) {
-    debug_assert(meta_isOk$e(self));
-    return (meta$p_const){ .type = self.inner_type, .ptr = self.inner->payload->ok };
-}
-static inline meta$p meta_unwrapOkMut$e(meta$e self) {
-    debug_assert(meta_isOk$e(self));
-    return (meta$p){ .type = self.inner_type, .ptr = self.inner->payload->ok };
-}
-
-static inline const u32* meta_unwrapErr$e(meta$e self) {
-    debug_assert(meta_isErr$e(self));
-    return &self.inner->payload->err;
-}
-static inline u32* meta_unwrapErrMut$e(meta$e self) {
-    debug_assert(meta_isErr$e(self));
-    return &self.inner->payload->err;
-}
-
-static inline meta$e meta_asgOk$e(meta$e self, meta$v_const value) {
-    debug_assert(self.inner_type.size == value.inner_type.size);
-    debug_assert(self.inner_type.align == value.inner_type.align);
-    self.inner->is_ok = true;
-    meta_asg$v(meta_unwrapOkMut$e(self), value);
-    return self;
-}
-static inline meta$e meta_asgErr$e(meta$e self, u32 err) {
-    debug_assert(err != 0);
-    self.inner->is_ok          = false;
-    *meta_unwrapErrMut$e(self) = err;
-    return self;
-}
-/* // Reverse a slice in place
-static inline void s$reverse(s$meta slice) {
-    if (slice.len <= 1) {
-        return;
-    }
-
-    char* start = (char*)slice.ptr;
-    char* end   = start + ((slice.len - 1) * slice.elem_type.size);
-
-    // Use stack buffer for swapping
-    if (slice.elem_type.size <= 256) {
-        char temp[256];
-        while (start < end) {
-            mem_copy_bytes(temp, start, slice.elem_type.size);
-            mem_copy_bytes(start, end, slice.elem_type.size);
-            mem_copy_bytes(end, temp, slice.elem_type.size);
-            start += slice.elem_type.size;
-            end -= slice.elem_type.size;
-        }
-    } else {
-        // Byte-by-byte swap for large elements
-        for (usize i = 0; i < slice.len / 2; i++) {
-            char* a = (char*)slice.ptr + (i * slice.elem_type.size);
-            char* b = (char*)slice.ptr + ((slice.len - 1 - i) * slice.elem_type.size);
-            for (usize j = 0; j < slice.elem_type.size; j++) {
-                char temp = a[j];
-                a[j]      = b[j];
-                b[j]      = temp;
-            }
-        }
-    }
-}
-
-// Find element in slice (returns index or SIZE_MAX if not found)
-static inline usize s$find(s$meta slice, const void* value) {
-    char* ptr = (char*)slice.ptr;
-    for (usize i = 0; i < slice.len; i++) {
-        if (mem_compare_bytes(ptr, value, slice.elem_type.size) == 0) {
-            return i;
-        }
-        ptr += slice.elem_type.size;
-    }
-    return SIZE_MAX;
-}
-
-// Check if slice contains element
-static inline bool s$contains(s$meta slice, const void* value) {
-    return s$find(slice, value) != SIZE_MAX;
-}
-
-// Rotate slice left by n positions
-static inline void s$rotate_left(s$meta slice, usize n) {
-    if (slice.len <= 1 || n == 0) {
-        return;
-    }
-    n = n % slice.len; // Handle n > len
-    if (n == 0) {
-        return;
-    }
-
-    // Create three slices: [0..n), [n..len), entire
-    s$meta left  = s$range(slice, 0, n);
-    s$meta right = s$range(slice, n, slice.len);
-
-    // Reverse each part then reverse whole
-    s$reverse(left);
-    s$reverse(right);
-    s$reverse(slice);
-}
-
-// Rotate slice right by n positions
-static inline void s$rotate_right(s$meta slice, usize n) {
-    if (slice.len <= 1 || n == 0) {
-        return;
-    }
-    n = n % slice.len;
-    s$rotate_left(slice, slice.len - n);
-}
- */
-
-/* // ============================================================================
-// Optionalal Type Definition and Operations
-// ============================================================================
-
-// Generic optional structure (what o$T expands to)
-#define DEFINE_OPTIONAL(_T) \
-    typedef struct o$##_T { \
-        bool is_some; \
-        _T   value; \
-    } o$##_T
-
-// Calculate optional size/alignment from inner type
-static inline TypeInfo o$type_info(TypeInfo inner) {
-    usize offset = sizeOf$(bool) + padding_for(sizeOf$(bool), inner.align);
-    return (TypeInfo){
-        .size  = offset + inner.size,
-        .align = inner.align > alignOf$(bool) ? inner.align : alignOf$(bool)
-    };
-}
-
-// Generic optional operations - work with meta$o
-static inline meta$o o$some(meta$o opt, const void* value) {
-    bool* is_some = (bool*)opt.ptr;
-    usize offset    = sizeOf$(bool) + padding_for(sizeOf$(bool), opt.inner_type.align);
-    void* value_ptr = (char*)opt.ptr + offset;
-
-    *is_some = true;
-    mem_copy_bytes(value_ptr, value, opt.inner_type.size);
-    return opt;
-}
-
-static inline meta$o o$none(meta$o opt) {
-    bool* is_some = (bool*)opt.ptr;
-    usize offset    = sizeOf$(bool) + padding_for(sizeOf$(bool), opt.inner_type.align);
-    void* value_ptr = (char*)opt.ptr + offset;
-
-    *is_some = false;
-    mem_set_bytes(value_ptr, 0, opt.inner_type.size);
-    return opt;
-}
-
-static inline bool o$is_some(meta$o opt) {
-    return *(bool*)opt.ptr;
-}
-
-static inline meta o$unwrap(meta$o opt) {
-    debug_assert(o$is_some(opt));
-    usize offset    = sizeOf$(bool) + padding_for(sizeOf$(bool), opt.inner_type.align);
-    void* value_ptr = (char*)opt.ptr + offset;
-    return (meta){ .type = opt.inner_type, .ptr = value_ptr };
-}
-
-// ============================================================================
-// Error Union Type Definition and Operations
-// ============================================================================
-
-typedef uint32_t ErrorCode;
-
-// Generic error union structure (what e$T expands to)
-#define DEFINE_ERROR_UNION(_T) \
-    typedef struct e$##_T { \
-        ErrorCode error; \
-        _T        value; \
-    } e$##_T
-
-// Calculate error union size/alignment from inner type
-static inline TypeInfo e$type_info(TypeInfo inner) {
-    usize offset = sizeOf$(ErrorCode) + padding_for(sizeOf$(ErrorCode), inner.align);
-    return (TypeInfo){
-        .size  = offset + inner.size,
-        .align = inner.align > alignOf$(ErrorCode) ? inner.align : alignOf$(ErrorCode)
-    };
-}
-
-// Generic error union operations - work with meta$e
-static inline meta$e e$ok(meta$e eu, const void* value) {
-    ErrorCode* error     = (ErrorCode*)eu.ptr;
-    usize      offset    = sizeOf$(ErrorCode) + padding_for(sizeOf$(ErrorCode), eu.inner_type.align);
-    void*      value_ptr = (char*)eu.ptr + offset;
-
-    *error = 0; // 0 = success
-    mem_copy_bytes(value_ptr, value, eu.inner_type.size);
-    return eu;
-}
-
-static inline meta$e e$err(meta$e eu, ErrorCode error) {
-    debug_assert(error != 0); // 0 is reserved for success
-    ErrorCode* error_ptr = (ErrorCode*)eu.ptr;
-    usize      offset    = sizeOf$(ErrorCode) + padding_for(sizeOf$(ErrorCode), eu.inner_type.align);
-    void*      value_ptr = (char*)eu.ptr + offset;
-
-    *error_ptr = error;
-    mem_set_bytes(value_ptr, 0, eu.inner_type.size);
-    return eu;
-}
-
-static inline bool e$is_ok(meta$e eu) {
-    return *(ErrorCode*)eu.ptr == 0;
-}
-
-static inline ErrorCode e$get_err(meta$e eu) {
-    ErrorCode err = *(ErrorCode*)eu.ptr;
-    debug_assert(err != 0);
-    return err;
-}
-
-static inline meta e$unwrap(meta$e eu) {
-    debug_assert(e$is_ok(eu));
-    usize offset    = sizeOf$(ErrorCode) + padding_for(sizeOf$(ErrorCode), eu.inner_type.align);
-    void* value_ptr = (char*)eu.ptr + offset;
-    return (meta){ .type = eu.inner_type, .ptr = value_ptr };
-} */
-
-
-// ============================================================================
-// Example Generic Data Structure Pattern
-// ============================================================================
-
-// Generic ArrayList operations that work with meta
-typedef struct ArrList$raw {
-    meta$s items;
-    usize  cap;
-} ArrList$raw;
-
-#define ArrList$(_T...) pp_join($, ArrList, _T)
-#define tpl$ArrList$(_T...) \
-    typedef union ArrList$(_T) ArrList$(_T); \
-    union ArrList$(_T) { \
-        struct { \
-            TypeInfo type; \
-            s$(_T) items; \
-            usize cap; \
-        }; \
-        ArrList$raw         as_raw; \
-        ArrList$raw ref_raw $like_ptr; \
-    }
-
-tpl$p$(i32);
-tpl$s$(i32);
-tpl$ArrList$(i32);
-
-static inline ArrList$raw ArrList_empty(TypeInfo type) {
-    return (ArrList$raw){
-        .items = {
-            .type = type,
-            .ptr  = null,
-            .len  = 0,
-        },
-        .cap = 0,
-    };
-}
-#define tpl$ArrList_empty$(_T...) \
-    static ArrList$(_T) pp_join($, ArrList_empty, _T)(void) { \
-        return (ArrList$(_T)){ .as_raw = ArrList_empty(typeInfo$(_T)) }; \
-    }
-
-// Example: Generic pop that returns optional
-static inline meta$o ArrList_popOrNull(ArrList$raw* self, meta$o ret) {
-    if (self->items.len == 0) {
-        return meta_asgNone$o(ret);
-    }
-    self->items.len--;
-    let last = meta_at$s(self->items.as_const, self->items.len);
-    return meta_asgSome$o(ret, meta_deref$p(last));
-}
-#define tpl$ArrList_popOrNull$(_T...) \
-    static o$(_T) pp_join($, ArrList_popOrNull, _T)(ArrList$(_T) * self) { \
-        return meta_o$((_T)(ArrList_popOrNull(self->ref_raw, meta_ret$o(_T)))); \
-    }
-
-// Example: Generic get that returns error union
-static inline meta$e ArrList_get(ArrList$raw* self, usize index, meta$e ret) {
-    if (index >= self->items.len) {
-        return meta_asgErr$e(ret, 1); // Error: index out of boundsZ
-    }
-    let elem = meta_at$s(self->items.as_const, index);
-    return meta_asgOk$e(ret, meta_deref$p(elem));
-}
-
-static inline meta$v ArrList_getWithin(ArrList$raw* self, usize index, meta$v ret) {
-    let elem = meta_at$s(self->items.as_const, index);
-    return meta_derefMut$p(meta_asg$v(ret.ref, meta_deref$p(elem)));
-}
-
-tpl$o$(i32);
-tpl$ArrList_empty$(i32);
-tpl$ArrList_popOrNull$(i32);
-void test() {
-    var list = ArrList_empty$i32();
-    $ignore  = meta_o$((i32)(ArrList_popOrNull(&list.as_raw, meta_ret$o(i32))));
-    $ignore  = ArrList_popOrNull$i32(&list);
-    $ignore  = meta_v$((i32)(ArrList_getWithin(&list.as_raw, 0, meta_ret$v(i32))));
-}
-
-/* // ============================================================================
-// Usage Examples
-// ============================================================================
-
-// Define concrete optional and error types
-DEFINE_OPTIONAL(int);
-DEFINE_ERROR_UNION(int);
-
-// Example of how users would use the API:
-//
-// // Generic function that returns optional
-// meta$o some_generic_func(void* data, meta$o out) {
-//     if (condition) {
-//         int value = 42;
-//         return o$some(out, &value);
-//     }
-//     return o$none(out);
-// }
-//
-// // User code - no wrapper needed!
-// o$int result;
-// some_generic_func(data, TO_O_META(int, &result));
-// if (o$is_some(TO_O_META(int, &result))) {
-//     int value = CALL_META(int, o$unwrap(TO_O_META(int, &result)));
-//     // use value...
-// }
-//
-// // Or with a simple one-liner:
-// o$int opt = CALL_O_META(o$int, some_generic_func(data, TO_O_META(int, &(o$int){})));
-
-// Convenience macro for the full pattern
-#define CALL_GENERIC_OPTIONAL(_T, _func, ...) \
-    CALL_O_META(o$##_T, _func(__VA_ARGS__, TO_O_META(_T, &(o$##_T){})))
-
-#define CALL_GENERIC_ERROR(_T, _func, ...) \
-    CALL_E_META(e$##_T, _func(__VA_ARGS__, TO_E_META(_T, &(e$##_T){}))) */
 
 #endif // META_OPS_H
 
@@ -1172,30 +944,130 @@ typedef struct O$i32 {
     } payload[1];
 } O$i32;
 
+typedef struct E$i32 {
+    bool is_ok;
+    union {
+        u32 err;
+        i32 ok;
+    } payload[1];
+} E$i32;
+
 typedef struct meta$O {
     bool is_some;
     union {
         union {
-            Void   none;
-            meta$v some;
+            Void       none;
+            meta_V$raw some;
         } payload[1];
-        meta$v inner;
+        meta_V$raw inner;
     };
 } meta$O;
 
-#define O_meta(_o...) ({ \
-    let __o = ((TypeOf(_o)[1]){ [0] = _o }); \
-    ((meta$O){ .is_some = __o->is_some, .payload = { { .some = v_meta(__o->payload->some) } } }); \
+typedef struct meta$E {
+    bool is_ok;
+    union {
+        union {
+            u32        err;
+            meta_V$raw ok;
+        } payload[1];
+        meta_V$raw inner;
+    };
+} meta$E;
+
+/* #define meta$O(_o...) ({ \
+    let __p_o = &copy(_o); \
+    __p_o->is_some \
+        ? ((meta$O){ .is_some = __p_o->is_some, .payload = { [0] = { .some = meta$V(__p_o->payload->some) } } }) \
+        : ((meta$O){ .is_some = __p_o->is_some, .payload = { [0] = { .none = __p_o->payload->none } } }); \
 })
+
+#define meta$E(_e...) ({ \
+    let __p_e = &copy(_e); \
+    __p_e->is_ok \
+        ? ((meta$E){ .is_ok = __p_e->is_ok, .payload = { [0] = { .ok = meta$V(__p_e->payload->ok) } } }) \
+        : ((meta$E){ .is_ok = __p_e->is_ok, .payload = { [0] = { .err = __p_e->payload->err } } }); \
+}) */
+
+/* #define meta$O(_o...) ({ \
+    let __o = ((TypeOf(_o)[1]){ [0] = _o }); \
+    ((meta$O){ .is_some = __o->is_some, .payload = { { .some = meta$V(__o->payload->some) } } }); \
+}) */
+
+
+
 
 #include <stdio.h>
 
+tpl$P$(u32);
+tpl$S$(u32);
+tpl$P$(i32);
+tpl$S$(i32);
+tpl$P$(f32);
+tpl$S$(f32);
 int main(void) {
-    var o     = (O$i32){ .is_some = true, .payload = { { .some = 123 } } };
-    let meta  = O_meta(o);
-    let value = meta_v$((i32)(meta.payload->some));
+    var arr_u = init$A$$((8, u32)({ 0, 1, 2, 3, 4, 5, 6, 7 }));
+    var arr_i = init$A$$((9, i32)({ 8, 9, 10, 11, 12, 13, 14, 15, 16 }));
+    var arr_f = init$A$$((10, f32)({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f }));
+    var range = $r(3, 15);
+
+    for (struct {
+             S$u32 sli_u;
+             S$i32 sli_i;
+             S$f32 sli_f;
+             R     range_r;
+             usize idx;
+         } __state
+         = {
+             .sli_u   = ref$A$((u32)(arr_u)), // suffix$A$((u32)(arr_u, 0))
+             .sli_i   = ref$A$((i32)(arr_i)), // suffix$A$((i32)(arr_i, 1))
+             .sli_f   = ref$A$((f32)(arr_f)), // suffix$A$((f32)(arr_f, 2))
+             .range_r = suffix$R(range, 3),
+             .idx     = 0,
+         };
+         __state.idx < prim_min4(__state.sli_u.len, __state.sli_i.len, __state.sli_f.len, len$R(__state.range_r)); ++__state.idx) {
+        let item_u = at$S(__state.sli_u, __state.idx);
+        let item_i = at$S(__state.sli_i, __state.idx);
+        let item_f = at$S(__state.sli_f, __state.idx);
+        let item_r = at$R(__state.range_r, __state.idx);
+        let idx_u  = __state.idx + 0;
+        let idx_i  = __state.idx + 1;
+        let idx_f  = __state.idx + 2;
+        let idx_r  = __state.idx + 3;
+        printf("item_u[%zu]: %u\n", idx_u, *item_u);
+        printf("item_i[%zu]: %d\n", idx_i, *item_i);
+        printf("item_f[%zu]: %f\n", idx_f, *item_f);
+        printf("item_r[%zu]: %zu\n", idx_r, item_r);
+    }
+
+    for (struct {
+             S$(i32) sli;
+             usize idx;
+         } __state
+         = {
+             .sli = ref$A$((i32)(arr_i)),
+             .idx = 0,
+         };
+         __state.idx < __state.sli.len; ++__state.idx) {
+        let item = at$S(__state.sli, __state.idx);
+        let idx  = __state.idx;
+        printf("item: %d\n", *item);
+        printf("idx: %zu\n", idx);
+    }
+
+    var o      = some$((i32)(123));
+    let meta   = meta$O(o);
+    let value1 = unwrap_(meta_o$((i32)(meta)));
+    let value2 = meta_v$((i32)(unwrap_(meta)));
+
+    // var o     = (O$i32){ .is_some = true, .payload = { { .some = 123 } } };
+    // let meta  = meta$O(o);
+    // let value = meta_V$((i32)(meta.payload->some));
+
     printf("o.some: %p\n", &o.payload->some);
     printf("meta.some: %p\n", meta.payload->some.inner);
-    printf("value: %d\n", value);
+    printf("value1: %d\n", value1);
+    printf("value2: %d\n", value2);
+
+    let_ignore = as$$((bool)(as$$((u32)(as$$((isize)(null))))));
     return 0;
 }

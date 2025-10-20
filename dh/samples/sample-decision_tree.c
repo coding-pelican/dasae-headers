@@ -45,13 +45,20 @@ use_Err$(Ptr$TreeNode);
 
 // Forward declarations
 
-$static fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode) $must_use;
-$static fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode) $must_use;
-$static fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void);
-$static fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32);
-$static fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void);
-$static fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void) $must_use;
-$static fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode) $must_use;
+$static $must_use
+fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(Err$Ptr$TreeNode));
+$static $must_use
+fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(Err$Ptr$TreeNode));
+$static
+fn_((TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node))(void));
+$static
+fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features))(i32));
+$static
+fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void));
+$static $must_use
+fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void));
+$static $must_use
+fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$TreeNode));
 
 // Dataset structure
 typedef struct Dataset {
@@ -63,12 +70,15 @@ typedef struct Dataset {
 use_Err$(Dataset);
 
 // Forward declarations
-static fn_(Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header), Err$Dataset) $must_check;
-static fn_(Dataset_destroy(Dataset* dataset), void);
+$static $must_use
+fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header))(Err$Dataset));
+$static
+fn_((Dataset_destroy(Dataset* dataset))(void));
+
 
 // Main function
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
-    $ignore = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+    let_ignore = args;
 
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -136,7 +146,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
         }
 
         try_(TreeNode_saveToFileRecur(root, save_file));
-        $ignore = fclose(save_file);
+        let_ignore = fclose(save_file);
         log_info("Saved decision tree to decision_tree.bin");
     }
 
@@ -149,7 +159,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
         }
 
         let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
-        $ignore    = fclose(load_file);
+        let_ignore    = fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
         eval_return loaded;
@@ -174,22 +184,22 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
 
     log_info("Decision tree application completed successfully");
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 // Implementation of TreeNode functions
-fn_(TreeNode_createLeaf(mem_Allocator allocator, i32 class_label), Err$Ptr$TreeNode $scope) {
+fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(Err$Ptr$TreeNode) $scope) {
     let node = meta_castPtr$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
     variant_asg(node, variant_of(TreeNode_leaf, { .class_label = class_label }));
     return_ok(node);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right), Err$Ptr$TreeNode $scope) {
+fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(Err$Ptr$TreeNode) $scope) {
     let node = meta_castPtr$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
     variant_asg(node, variant_of(TreeNode_decision, { .feature_index = feature_index, .threshold = threshold, .left = left, .right = right }));
     return_ok(node);
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node))(void)) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
     match_(deref(node), {
         pattern_(TreeNode_leaf, break);
@@ -205,7 +215,7 @@ fn_(TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node), void) /* NOL
     mem_Allocator_destroy(allocator, anyPtr(node));
 }
 
-fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features), i32) {
+fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features))(i32)) {
     var current = node;
     while (true) {
         match_(deref(current), {
@@ -232,7 +242,7 @@ fn_(TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features),
     }
 }
 
-fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void)) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
 
     // Create indentation
@@ -259,7 +269,7 @@ fn_(TreeNode_printRecur(const TreeNode* node, u32 depth), void) /* NOLINT(misc-n
     });
 }
 
-fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void $scope) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void) $scope) /* NOLINT(misc-no-recursion) */ {
     if (fwrite(&node->tag, sizeof(node->tag), 1, file) != 1) {
         log_error("Failed to write node tag");
         return_err(fs_FileErr_WriteFailed());
@@ -289,9 +299,9 @@ fn_(TreeNode_saveToFileRecur(const TreeNode* node, FILE* file), Err$void $scope)
     });
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
-fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$TreeNode $scope) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$TreeNode) $scope) /* NOLINT(misc-no-recursion) */ {
     let tag = eval({
         int tag = 0;
         if (fread(&tag, sizeof(tag), 1, file) != 1) {
@@ -326,13 +336,13 @@ fn_(TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file), Err$Ptr$Tre
         log_error("Invalid node tag found in file: %d", tag);
         return_err(fs_FileErr_ReadFailed());
     }
-} $unscoped;
+} $unscoped_(fn);
 
 // Implementation of Dataset functions
-fn_(Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header), Err$Dataset $guard) {
+fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header))(Err$Dataset) $guard) {
     // Convert Sli_const$u8 to C string for compatibility with fopen
     let filename_buf = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1)));
-    errdefer_($ignore_capture, mem_Allocator_free(allocator, anySli(filename_buf)));
+    errdefer_($ignore, mem_Allocator_free(allocator, anySli(filename_buf)));
 
     mem_copy(filename_buf.ptr, filename.ptr, filename.len);
     filename_buf.ptr[filename.len] = '\0';
@@ -342,7 +352,7 @@ fn_(Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has
         log_error("Failed to open file: %.*s", (int)filename.len, filename.ptr);
         return_err(fs_FileErr_OpenFailed());
     }
-    defer_($ignore = fclose(file));
+    defer_(let_ignore = fclose(file));
 
     // First pass: count lines and features
     u32 line_count    = 0;
@@ -377,10 +387,10 @@ fn_(Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has
 
     // Allocate memory for features and labels
     typeAsg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$(usize, line_count) * actual_feature_count)));
-    errdefer_($ignore_capture, ArrList_fini(dataset.features.base));
+    errdefer_($ignore, ArrList_fini(dataset.features.base));
 
     typeAsg(&dataset.labels, try_(ArrList_initCap(typeInfo$(i32), allocator, line_count)));
-    errdefer_($ignore_capture, ArrList_fini(dataset.labels.base));
+    errdefer_($ignore, ArrList_fini(dataset.labels.base));
 
     // Second pass: read data
     rewind(file); // NOLINT
@@ -425,9 +435,9 @@ fn_(Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has
     mem_Allocator_free(allocator, anySli(filename_buf));
 
     return_ok(dataset);
-} $unguarded;
+} $unguarded_(fn);
 
-fn_(Dataset_destroy(Dataset* dataset), void) {
+fn_((Dataset_destroy(Dataset* dataset))(void)) {
     if (dataset == null) { return; }
 
     ArrList_fini(dataset->features.base);

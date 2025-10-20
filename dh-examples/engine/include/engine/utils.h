@@ -6,8 +6,8 @@ extern "C" {
 
 #include "engine/common.h"
 
-extern fn_(engine_utils_getch(void), u8);
-extern fn_(engine_utils_kbhit(void), bool);
+extern fn_((engine_utils_getch(void))(u8));
+extern fn_((engine_utils_kbhit(void))(bool));
 
 #if defined(__cplusplus)
 } /* extern "C" */

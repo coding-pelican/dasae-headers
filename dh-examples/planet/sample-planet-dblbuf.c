@@ -1835,13 +1835,13 @@ func((stream_fastOut(Sli_const$u8 data))(void)) {
 #endif
 #else /* bti_plat_unix */
 #if !stream_fastOut__comp_unix_allow_bulk
-    $ignore = write(stream_out, data.ptr, data.len); // Direct syscall, bypasses stdio
+    let_ignore = write(stream_out, data.ptr, data.len); // Direct syscall, bypasses stdio
 #else /* stream_fastOut__comp_unix_allow_bulk */
     const usize chunk_len   = 65536; // 64KB chunks
     usize       written_len = 0;
     while (written_len < data.len) {
         let to_write = prim_min(chunk_len, data.len - written_len);
-        $ignore      = write(stream_out, data.ptr + written_len, to_write);
+        let_ignore      = write(stream_out, data.ptr + written_len, to_write);
         written_len += to_write;
     }
 #endif

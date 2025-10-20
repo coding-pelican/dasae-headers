@@ -319,7 +319,8 @@ static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32 $scope) {
         return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
-} $unscoped;
+}
+$unscoped;
 static fn_(test(void), Err$void $scope) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
@@ -329,7 +330,8 @@ static fn_(test(void), Err$void $scope) {
                                          return_err(err);
                                      }));
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

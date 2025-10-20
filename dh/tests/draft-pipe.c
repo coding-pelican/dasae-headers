@@ -53,7 +53,7 @@
     var ret##step_num = bti_Generic_match$( \
         TypeOf(PIPE_APPLY((prev_result_var), func, args)), \
         bti_Generic_pattern$(void) eval({ \
-            $ignore = PIPE_APPLY((prev_result_var), func, args); \
+            let_ignore = PIPE_APPLY((prev_result_var), func, args); \
             eval_return make$(Void); \
         }), \
         bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
@@ -150,16 +150,16 @@ typedef struct Foo {
     var_(mem, mem_Allocator);
 } Foo;
 use_Err$(Foo);
-static func((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)) $must_check;
-static func((Foo_fini(Foo* const self))(void));
-static func((Foo_setA(Foo* const self, i32 a))(Foo*));
-static func((Foo_setB(Foo* const self, i32 b))(Foo*));
-static func((Foo_eval(Foo* const self))(Foo*));
-static func((Foo_merge(Foo* const self, const Foo* other))(Foo*));
-static func((Foo_baz(const Foo* const self))(i32));
+static fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)) $must_check;
+static fn_((Foo_fini(Foo* const self))(void));
+static fn_((Foo_setA(Foo* const self, i32 a))(Foo*));
+static fn_((Foo_setB(Foo* const self, i32 b))(Foo*));
+static fn_((Foo_eval(Foo* const self))(Foo*));
+static fn_((Foo_merge(Foo* const self, const Foo* other))(Foo*));
+static fn_((Foo_baz(const Foo* const self))(i32));
 
-$maybe_unused static $inline func((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
-$maybe_unused static $inline func((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
+$maybe_unused static $inline fn_((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
+$maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
 /* fn_(enhancePipeExpanding(Foo foo), void) {
     // PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC (deref_,().value), PIPE_GET_ARGS (deref_,().value))
@@ -186,9 +186,9 @@ $maybe_unused static $inline func((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { retur
     //     var foo = meta_cast$(Foo*, pipe(pipe(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
     //     var foo = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
 
-    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ $ignore = err; claim_unreachable;}))));
+    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ let_ignore = err; claim_unreachable;}))));
     // var foo      = meta_cast$(Foo*, pipe_ret);
-    // $ignore = foo;
+    // let_ignore = foo;
 
     let pipe_foo = pipe(pipe(meta_cast$(Foo*, pipe(allocator,
         (mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
@@ -198,13 +198,13 @@ $maybe_unused static $inline func((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { retur
         (Foo_eval,()),
         (Foo_baz,())
     );
-    $ignore = pipe_foo;
+    let_ignore = pipe_foo;
 } */
 
 
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
-    $ignore       = args;
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
+    let_ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     // Traditional approach
@@ -250,7 +250,7 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
     } block_deferral;
 
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 
 
@@ -268,7 +268,7 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
 #define $unscoped_$scope $unguarded
 
 func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
-    $ignore       = args;
+    let_ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     let bar = pipe(try_(Foo_init(allocator)),
@@ -295,30 +295,30 @@ func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
 
 
 // Example functions that would typically be used in a chain
-func((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)$scope) {
+fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)$scope) {
     let foo    = meta_cast$(Foo*, try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))))));
     foo->mem   = allocator;
     foo->a     = 0;
     foo->b     = 0;
     foo->value = 0;
     return_ok(foo);
-} $unscoped;
-func((Foo_fini(Foo* const self))(void)) {
+} $unscoped_(fn);
+fn_((Foo_fini(Foo* const self))(void)) {
     mem_Allocator_destroy(deref(self).mem, anyPtr(self));
 }
-func((Foo_setA(Foo* const self, i32 a))(Foo*)) {
+fn_((Foo_setA(Foo* const self, i32 a))(Foo*)) {
     return deref(self).a = a, self;
 }
-func((Foo_setB(Foo* const self, i32 b))(Foo*)) {
+fn_((Foo_setB(Foo* const self, i32 b))(Foo*)) {
     return deref(self).b = b, self;
 }
-func((Foo_eval(Foo* const self))(Foo*)) {
+fn_((Foo_eval(Foo* const self))(Foo*)) {
     debug_assert_nonnull(self);
     return self->value = self->a + self->b, self;
 }
-func((Foo_merge(Foo* const self, const Foo* const other))(Foo*)) {
+fn_((Foo_merge(Foo* const self, const Foo* const other))(Foo*)) {
     return deref(self).value += deref(other).value, self;
 }
-func((Foo_baz(const Foo* const self))(i32)) {
+fn_((Foo_baz(const Foo* const self))(i32)) {
     return deref(self).value;
 }
