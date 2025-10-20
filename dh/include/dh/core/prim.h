@@ -50,10 +50,12 @@ extern "C" {
 #define prim_le(val_lhs, val_rhs)  comp_inline__prim_le(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 #define prim_ge(val_lhs, val_rhs)  comp_inline__prim_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 
-#define prim_min(val_lhs, val_rhs)                    comp_inline__prim_min(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min(val_lhs, val_rhs)                    comp_inline__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min2(val_lhs, val_rhs)                   comp_inline__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 #define prim_min3(val_1st, val_2nd, val_3rd)          comp_inline__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
 #define prim_min4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
-#define prim_max(val_lhs, val_rhs)                    comp_inline__prim_max(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max(val_lhs, val_rhs)                    comp_inline__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max2(val_lhs, val_rhs)                   comp_inline__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
 #define prim_max3(val_1st, val_2nd, val_3rd)          comp_inline__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
 #define prim_max4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
 #define prim_clamp(val_x, val_min, val_max)           comp_inline__prim_clamp(val_x, val_min, val_max)
@@ -110,7 +112,7 @@ typedef struct Void {
     eval_return __lhs >= (__rhs); \
 })
 
-#define comp_inline__prim_min(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
+#define comp_inline__prim_min2(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __rhs < __lhs ? __rhs : __lhs; \
@@ -128,7 +130,7 @@ typedef struct Void {
     let __4th = (val_4th); \
     eval_return prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
 })
-#define comp_inline__prim_max(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
+#define comp_inline__prim_max2(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     eval_return __rhs > __lhs ? __rhs : __lhs; \

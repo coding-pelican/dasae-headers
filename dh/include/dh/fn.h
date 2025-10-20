@@ -32,15 +32,20 @@ extern "C" {
 
 #define $scope , $_scope
 #define $guard , $_guard
+#define $T     , $_T
 
-#define fn_(/*(_ident(_Params...))(_TReturn) <$ext>*/...) \
-    pp_expand(pp_defer(block_inline__fn_)(param_expand__fn_ __VA_ARGS__))
-#define param_expand__fn_(...) __VA_ARGS__, pp_expand
-#define block_inline__fn_(...) pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
-#define __block_inline__fn_2(_ident_w_Params, _TReturn...) \
-    comp_syn__fn_(_ident_w_Params, _TReturn)
-#define __block_inline__fn_3(_ident_w_Params, _TReturn, _Extension...) \
-    pp_join(_, fn, _Extension)(_ident_w_Params, _TReturn)
+#define fn_(/*(_ident(_Params...))(_TReturn) <$ext> | (_Params...)(_TReturn) $T*/...) \
+    pp_expand(pp_defer(__block_inline__fn_)(__param_expand__fn_ __VA_ARGS__))
+#define __param_expand__fn_(...) (__VA_ARGS__), pp_expand
+#define __block_inline__fn_(...) \
+    pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
+#define __block_inline__fn_2(_ident_w_Params, _TReturn...) comp_syn__fn_(__param_extract__fn_ _ident_w_Params, _TReturn)
+#define __block_inline__fn_3(_ident_w_Params_OR_Params, _TReturn, _$ext...) \
+    pp_join(_, __block_inline__fn_3, _$ext)(_ident_w_Params_OR_Params, _TReturn)
+#define __block_inline__fn_3_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(__param_extract__fn_ _ident_w_Params, _TReturn)
+#define __block_inline__fn_3_$_guard(_ident_w_Params, _TReturn...) comp_syn__fn_$_guard(__param_extract__fn_ _ident_w_Params, _TReturn)
+#define __block_inline__fn_3_$_T(_Params, _TReturn...)             comp_syn__fn_$_T(_Params, _TReturn)
+#define __param_extract__fn_(...)                                  __VA_ARGS__
 
 #define fn_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(_ident_w_Params, _TReturn)
 #define $unscoped_fn                             comp_syn__$unscoped_fn
@@ -72,6 +77,9 @@ extern "C" {
  */
 
 /*========== Macros and Definitions =========================================*/
+
+#define comp_syn__fn_$_T(_Params, _TReturn...) \
+    TypeOf(_TReturn _Params)
 
 #define comp_syn__fn_(_ident_w_Params, _TReturn...) \
     _TReturn _ident_w_Params

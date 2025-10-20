@@ -188,7 +188,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Allocator_Err$
         .type = type,
         .addr = mem_opt.value,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_destroy(mem_Allocator self, AnyType ptr))(void)) {
     let info = variant_extract(ptr, AnyType_ptr);
@@ -236,7 +236,7 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Al
         .addr = mem_opt.value,
         .len  = count,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len))(bool)) {
     let info = variant_extract(old_mem, AnyType_sli);
@@ -321,7 +321,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Op
         .addr = new_ptr.value,
         .len  = new_len,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Allocator_Err$meta_Sli) $scope) {
     let info = variant_extract(old_mem, AnyType_sli);
@@ -392,7 +392,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(
         .addr = new_mem.value,
         .len  = new_len,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_free(mem_Allocator self, AnyType memory))(void)) {
     let info = variant_extract(memory, AnyType_sli);
@@ -423,7 +423,7 @@ fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$met
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
@@ -450,7 +450,7 @@ fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$me
         .addr = new_mem.addr,
         .len = src.len,  // Note: we preserve original length, sentinel is separate
     });
-} $unscoped;
+} $unscoped_(fn);
 
 #else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
 
@@ -477,7 +477,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
         .type = type,
         .addr = mem_opt.value,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc))(void)) {
     let info = variant_extract(ptr, AnyType_ptr);
@@ -525,7 +525,7 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
         .addr = mem_opt.value,
         .len  = count,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(bool)) {
     let info = variant_extract(old_mem, AnyType_sli);
@@ -607,7 +607,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_le
         .addr = new_ptr.value,
         .len = new_len,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
     let info = variant_extract(old_mem, AnyType_sli);
@@ -678,7 +678,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_
         .addr = new_mem.value,
         .len  = new_len,
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc))(void)) {
     let info = variant_extract(mem, AnyType_sli);
@@ -707,7 +707,7 @@ fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
@@ -734,6 +734,6 @@ fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc)
         .addr = new_mem.addr,
         .len = src.len,  // Note: we preserve original length, sentinel is separate
     });
-} $unscoped;
+} $unscoped_(fn);
 
 #endif /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */

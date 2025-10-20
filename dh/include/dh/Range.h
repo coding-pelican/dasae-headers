@@ -36,6 +36,7 @@ extern "C" {
 #define __$r_end_2(_bound_type, _point...)   R_Bound_end(_bound_type, _point)
 
 #define from$R   R_from
+#define slice$R  R_slice
 #define prefix$R R_prefix
 #define suffix$R R_suffix
 
@@ -65,10 +66,13 @@ typedef struct R {
 /// [begin..end] => [begin, end)
 $static $inline_always
 fn_((R_from(usize begin, usize end))(R));
-/// [begin..] => [begin, self.end)
+/// self[begin..end] => [self.begin + range.begin, self.begin + range.end)
+$static $inline_always
+fn_((R_slice(R self, R range))(R));
+/// self[..end] => [self.begin, self.begin + end)
 $static $inline_always
 fn_((R_prefix(R self, usize end))(R));
-/// [..end] => [self.begin, end)
+/// self[begin..] => [self.begin + begin, self.end)
 $static $inline_always
 fn_((R_suffix(R self, usize begin))(R));
 
@@ -110,13 +114,20 @@ fn_((R_from(usize begin, usize end))(R)) {
     return (R){ .begin = begin, .end = end };
 }
 $static $inline_always
+fn_((R_slice(R self, R range))(R)) {
+    debug_assert_fmt(range.begin <= range.end, "Invalid range: range.begin(%zu) > range.end(%zu)", range.begin, range.end);
+    debug_assert_fmt(self.begin + range.begin <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, range.begin, self.end);
+    debug_assert_fmt(self.begin + range.end <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, range.end, self.end);
+    return (R){ .begin = self.begin + range.begin, .end = self.begin + range.end };
+}
+$static $inline_always
 fn_((R_prefix(R self, usize end))(R)) {
-    debug_assert_fmt(self.begin + end <= self.end, "Invalid range: begin(%zu) + %zu > end(%zu)", self.begin, end, self.end);
+    debug_assert_fmt(self.begin + end <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, end, self.end);
     return (R){ .begin = self.begin, .end = self.begin + end };
 }
 $static $inline_always
 fn_((R_suffix(R self, usize begin))(R)) {
-    debug_assert_fmt(self.begin + begin <= self.end, "Invalid range: begin(%zu) + %zu > end(%zu)", self.begin, begin, self.end);
+    debug_assert_fmt(self.begin + begin <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, begin, self.end);
     return (R){ .begin = self.begin + begin, .end = self.end };
 }
 $static $inline_always

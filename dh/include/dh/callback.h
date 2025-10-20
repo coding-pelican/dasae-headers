@@ -127,7 +127,7 @@ fn_((sort_insertionSort_compat(
 #include <stdio.h>
 
 // Original function pointer
-typedef fn_(((*IntBinaryOp)(i32, i32))(i32));
+typedef fn_((i32, i32)(i32) $T)* IntBinaryOp;
 // Compatible callback type that works with both function pointers and blocks
 use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
 
@@ -166,7 +166,7 @@ fn_((dh_main(void))(Err$void) $guard) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-} $unguarded;
+} $unguarded_(fn);
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
