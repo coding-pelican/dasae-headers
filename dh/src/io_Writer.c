@@ -48,9 +48,31 @@ fn_((io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...))(Err$void) $guard) {
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(io_Writer_printVaArgs(self, fmt, va_args)));
-}
-$unguarded;
+} $unguarded_(fn);
 
 fn_((io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void) $scope) {
     return_ok(try_(fmt_formatVaArgs(self, fmt, va_args)));
+} $unscoped_(fn);
+
+fn_((io_Writer_println(io_Writer self, Sli_const$u8 fmt, ...))(Err$void) $guard) {
+    va_list va_args = {};
+    va_start(va_args, fmt);
+    defer_(va_end(va_args));
+    return_ok(try_(io_Writer_printlnVaArgs(self, fmt, va_args)));
+} $unguarded_(fn);
+
+fn_((io_Writer_printlnVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void) $scope) {
+    try_(fmt_formatVaArgs(self, fmt, va_args));
+    try_(io_Writer_printLineFeed(self));
+    return_ok({});
+} $unscoped_(fn);
+
+fn_((io_Writer_printLineFeed(io_Writer self))(Err$void) $scope) {
+    static let s_line_feed = pp_if_(bti_plat_windows)(
+        pp_than_(u8_l("\r\n")),
+        pp_else_('\n'));
+    try_(pp_if_(bti_plat_windows)(
+        pp_than_(io_Writer_write),
+        pp_else_(io_Writer_writeByte))(self, s_line_feed));
+    return_ok({});
 } $unscoped_(fn);

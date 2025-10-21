@@ -255,7 +255,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
     default: { goto __step_unscope; } break; \
     case __LINE__: __scope_counter.current_line = __LINE__ - 1; \
         /* do */
-#define $unguarded_eval comp_syn__eval_$unguarded_eval
+#define $unguarded_eval comp_syn__eval_$unguarded
 #define comp_syn__eval_$unguarded \
         /* while(false) */; \
         break; \
@@ -337,7 +337,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
 #define inline__$unguarded_async_fn() $unguarded_async_fn
 #define inline__$unguarded_la()       $unguarded_la
-#define inline__$unguarded_eval()     $unguarded_eval
+#define inline__$unguarded_$eval()    $unguarded_eval
 #define inline__$unguarded_expr()     $unguarded_expr
 
 /*========== Example usage ==================================================*/

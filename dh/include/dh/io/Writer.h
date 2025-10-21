@@ -38,6 +38,9 @@ extern fn_((io_Writer_writeBytesNTimes(io_Writer self, Sli_const$u8 bytes, usize
 
 extern fn_((io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
 extern fn_((io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
+extern fn_((io_Writer_println(io_Writer self, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
+extern fn_((io_Writer_printlnVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
+extern fn_((io_Writer_printLineFeed(io_Writer self))(Err$void)) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */
