@@ -1371,12 +1371,10 @@ int main(void) {
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get3rd _Iters)(__i, __foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters); \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get4th _Iters)(__i, __foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters)
 
-
-
-    const A$$(8, u32) arr_u  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
-    const A$$(9, i32) arr_i  = init$A({ 8, 9, 10, 11, 12, 13, 14, 15, 16 });
-    const A$$(10, f32) arr_f = init$A({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f });
-    const R range       = $r(3, 15);
+    var_(arr_u, A$$(8, u32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
+    var_(arr_i, A$$(9, i32))  = init$A({ 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+    var_(arr_f, A$$(10, f32)) = init$A({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f });
+    var_(range, R)            = $r(3, 15);
 
     foreach_(($a(arr_u, (item_u))) {
         try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
@@ -1406,7 +1404,7 @@ int main(void) {
 
     for (struct {
              S$(i32) sli;
-             usize idx;
+             usize   idx;
          } __state
          = {
              .sli = ref$A$((i32)(arr_i)),

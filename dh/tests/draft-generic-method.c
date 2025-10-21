@@ -8,7 +8,7 @@
         return type$(ArrList$(T), ArrList_init(typeInfo$(T), allocator)); \
     }
 #define ArrList_append$(T...) \
-    lam_((ArrList$(T) * self, T item), mem_Allocator_Err$void) { \
+    lam_((ArrList$(T) * self, T item), mem_Err$void) { \
         return ArrList_append(self->base, meta_refPtr(&item)); \
     }
 

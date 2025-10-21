@@ -111,7 +111,7 @@ fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$S
 
     let len = eval({
         let res = vsnprintf(null, 0, format, args1);
-        if (res < 0) { return_err(mem_Allocator_Err_OutOfMemory()); }
+        if (res < 0) { return_err(mem_Err_OutOfMemory()); }
         eval_return as$(usize, res);
     });
 

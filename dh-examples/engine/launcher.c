@@ -12,8 +12,8 @@
 
 static let_(Launcher_window_title, Sli_const$u8)     = Str_l("Test Terminal Launcher");
 static var_(Terminal_window_title, Opt$Sli_const$u8) = none();
-static var_(Terminal_window_width, i32)           = 80;
-static var_(Terminal_window_height, i32)          = 25;
+static var_(Terminal_window_width, i32)              = 80;
+static var_(Terminal_window_height, i32)             = 25;
 
 static fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32));
 static fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize));
@@ -57,7 +57,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 
     // Prepare the command string
     Arr$$(1024, u8) command = Arr_zero();
-    let_ignore                 = snprintf(
+    let_ignore              = snprintf(
         as$(char*, command.buf),
         Arr_len(command),
         "wt --size %d,%d -d . cmd /k .\\%*s %d %d",
@@ -130,7 +130,7 @@ fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32) $scope) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(u32_chkdMul(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(u32_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
             parsed   += digit;
         }
         eval_return parsed;
@@ -147,7 +147,7 @@ fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize) $scope) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(usize_chkdMul(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(usize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
             parsed   += digit;
         }
         eval_return parsed;
@@ -226,7 +226,7 @@ fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(isize_chkdMul(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(isize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
             parsed   += digit;
         }
         if (negative) {

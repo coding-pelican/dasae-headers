@@ -247,6 +247,7 @@ __step_unscope: \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
+    $maybe_unused bool __has_broken = false; /* for integration with `expr_` */ \
     if (false) { __step_break: \
         __scope_counter.is_returning = true; \
         goto __step_deferred; \

@@ -36,6 +36,8 @@ extern "C" {
 
 #define mem_trace_enabled (MEM_TRACE_ENABLED)
 
+config_ErrSet(mem_Err, OutOfMemory);
+
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */

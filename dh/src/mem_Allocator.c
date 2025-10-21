@@ -167,7 +167,7 @@ fn_((
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 
-fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Allocator_Err$meta_Ptr) $scope) {
+fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$meta_Ptr) $scope) {
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
@@ -178,7 +178,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Allocator_Err$
 
     let mem_opt = mem_Allocator_rawAlloc(self, type.size, type.align);
     if_none(mem_opt) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Initialize memory to undefined pattern
@@ -207,7 +207,7 @@ fn_((mem_Allocator_destroy(mem_Allocator self, AnyType ptr))(void)) {
     mem_Allocator_rawFree(self, mem, info.align);
 }
 
-fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$meta_Sli) $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
@@ -218,14 +218,14 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Al
     }
 
     // Check for overflow in multiplication
-    let byte_count = usize_chkdMul(type.size, count);
+    let byte_count = usize_mulChkd(type.size, count);
     if_none(byte_count) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     let mem_opt = mem_Allocator_rawAlloc(self, byte_count.value, type.align);
     if_none(mem_opt) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Initialize memory to undefined pattern
@@ -264,7 +264,7 @@ fn_((mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len))(b
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
         return false;
     }
@@ -307,7 +307,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Op
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
         return_none();
     }
@@ -323,7 +323,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Op
     });
 } $unscoped_(fn);
 
-fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Err$meta_Sli) $scope) {
     let info = variant_extract(old_mem, AnyType_sli);
 
     // Special case for empty old memory
@@ -358,9 +358,9 @@ fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Try to remap first (which may be in-place resize or may relocate)
@@ -376,7 +376,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(
     // Remap failed, need to allocate new memory and copy
     let new_mem = mem_Allocator_rawAlloc(self, new_byte_count.value, info.align);
     if_none(new_mem) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Copy the data from old memory to new memory (use smaller of the two sizes)
@@ -413,7 +413,7 @@ fn_((mem_Allocator_free(mem_Allocator self, AnyType memory))(void)) {
 
 /*========== Helper Functions ===============================================*/
 
-fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
 
@@ -425,7 +425,7 @@ fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$met
     return_ok(new_mem);
 } $unscoped_(fn);
 
-fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
 
@@ -456,7 +456,7 @@ fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$me
 
 /*========== Debug Versions of Functions ====================================*/
 
-fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Allocator_Err$meta_Ptr) $scope) {
+fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Err$meta_Ptr) $scope) {
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
@@ -467,7 +467,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
 
     let mem_opt = mem_Allocator_rawAlloc_debug(self, type.size, type.align, src_loc);
     if_none(mem_opt) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Initialize memory to undefined pattern
@@ -496,7 +496,7 @@ fn_((mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc
     mem_Allocator_rawFree_debug(self, mem, info.align, src_loc);
 }
 
-fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$meta_Sli) $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
@@ -507,14 +507,14 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
     }
 
     // Check for overflow in multiplication
-    let byte_count = usize_chkdMul(type.size, count);
+    let byte_count = usize_mulChkd(type.size, count);
     if_none(byte_count) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     let mem_opt = mem_Allocator_rawAlloc_debug(self, byte_count.value, type.align, src_loc);
     if_none(mem_opt) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Initialize memory to undefined pattern
@@ -552,7 +552,7 @@ fn_((mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_l
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
         return false;
     }
@@ -594,7 +594,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_le
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
         return_none();
     }
@@ -609,7 +609,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_le
     });
 } $unscoped_(fn);
 
-fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Err$meta_Sli) $scope) {
     let info = variant_extract(old_mem, AnyType_sli);
 
     // Special case for empty old memory
@@ -644,9 +644,9 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_
     };
 
     // Check for overflow in multiplication
-    let new_byte_count = usize_chkdMul(info.size, new_len);
+    let new_byte_count = usize_mulChkd(info.size, new_len);
     if_none(new_byte_count) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Try to remap first (which may be in-place resize or may relocate)
@@ -662,7 +662,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_
     // Remap failed, need to allocate new memory and copy
     let new_mem = mem_Allocator_rawAlloc_debug(self, new_byte_count.value, info.align, src_loc);
     if_none(new_mem) {
-        return_err(mem_Allocator_Err_OutOfMemory());
+        return_err(mem_Err_OutOfMemory());
     }
 
     // Copy the data from old memory to new memory (use smaller of the two sizes)
@@ -697,7 +697,7 @@ fn_((mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc))(
     mem_Allocator_rawFree_debug(self, bytes, info.align, src_loc);
 }
 
-fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
 
@@ -709,7 +709,7 @@ fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))
     return_ok(new_mem);
 } $unscoped_(fn);
 
-fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli) $scope) {
+fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli) $scope) {
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len + 1, src_loc));
 

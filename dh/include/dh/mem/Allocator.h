@@ -25,11 +25,6 @@ extern "C" {
 #include "cfg.h"
 #include "dh/meta/common.h"
 
-/*========== Memory Error ===================================================*/
-
-/// Allocation Error type
-config_ErrSet(mem_Allocator_Err, OutOfMemory);
-
 /*========== Allocator Interface ============================================*/
 
 /// Allocator vtable
@@ -46,8 +41,8 @@ typedef struct mem_Allocator {
     const mem_Allocator_VT* vt;  /**< Virtual table */
 } mem_Allocator;
 use_Opt$(mem_Allocator);
-use_ErrSet$(mem_Allocator_Err, meta_Ptr);
-use_ErrSet$(mem_Allocator_Err, meta_Sli);
+use_ErrSet$(mem_Err, meta_Ptr);
+use_ErrSet$(mem_Err, meta_Sli);
 
 /*========== Common VTable Functions ========================================*/
 
@@ -76,26 +71,26 @@ extern fn_((mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, u32 buf_align)
 /*========== High-level Allocator Functions =================================*/
 
 /// Single-item allocation
-extern fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Allocator_Err$meta_Ptr)) $must_check;
+extern fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$meta_Ptr)) $must_check;
 /// Free single-item
 extern fn_((mem_Allocator_destroy(mem_Allocator self, AnyType ptr))(void));
 /// Slice allocation
-extern fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$meta_Sli)) $must_check;
 /// Try to resize slice in-place
 extern fn_((mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len))(bool));
 /// Try to resize slice, allowing relocation
 extern fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Opt$meta_Sli));
 /// Reallocate slice with new size
-extern fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Err$meta_Sli)) $must_check;
 /// Free slice
 extern fn_((mem_Allocator_free(mem_Allocator self, AnyType mem))(void));
 
 /*========== Helper Functions ===============================================*/
 
 /// Duplicate slice
-extern fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli)) $must_check;
 /// Duplicate slice with terminated zero sentinel value
-extern fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli)) $must_check;
 
 #else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
 
@@ -104,16 +99,16 @@ extern fn_((mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 bu
 extern fn_((mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc))(Opt$Ptr$u8));
 extern fn_((mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLoc src_loc))(void));
 
-extern fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Allocator_Err$meta_Ptr)) $must_check;
+extern fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Err$meta_Ptr)) $must_check;
 extern fn_((mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc))(void));
-extern fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
 extern fn_((mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(bool));
 extern fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(Opt$meta_Sli));
-extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
 extern fn_((mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc))(void));
 
-extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli)) $must_check;
-extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Allocator_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
 
 /*========== Macros and Declarations ========================================*/
 
