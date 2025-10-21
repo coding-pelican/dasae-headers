@@ -179,7 +179,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
     comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
 // clang-format off
-#define comp_syn__block_defer do { \
+#define comp_syn__block_defer { do { \
     comp_syn__defer__op_snapshot( \
         if (__scope_counter.is_returning) { \
             goto __step_deferred; \
@@ -191,7 +191,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__block_deferral \
     while(false); \
     goto __step_deferred; \
-} while (false)
+} while (false); }
 // clang-format on
 
 #define comp_syn__defer_break \
@@ -239,7 +239,8 @@ __step_unscope: \
 
 // clang-format off
 #define comp_syn__eval_$_guard(T_Break...) ({ \
-    local_label __step_break, __step_deferred, __step_unscope; \
+    local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
+    if (false) { __step_return_inner: goto __step_return; } \
     let __reserved_break = as$(T_Break*, (u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
@@ -247,21 +248,24 @@ __step_unscope: \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
-    $maybe_unused bool __has_broken = false; /* for integration with `expr_` */ \
-    if (false) { __step_break: \
-        __scope_counter.is_returning = true; \
-        goto __step_deferred; \
-    } \
+    bool __has_broken = false; /* for integration with `expr_` */ { \
+        local_label __step_return; \
+        if (false) { __step_return: __step_break: \
+            __scope_counter.is_returning = true; \
+            goto __step_deferred; \
+        } \
 __step_deferred: switch (__scope_counter.current_line) { \
-    default: { goto __step_unscope; } break; \
-    case __LINE__: __scope_counter.current_line = __LINE__ - 1; \
-        /* do */
+        default: { goto __step_unscope; } break; \
+        case __LINE__: __scope_counter.current_line = __LINE__ - 1; \
+            /* do */
 #define $unguarded_eval comp_syn__eval_$unguarded
 #define comp_syn__eval_$unguarded \
-        /* while(false) */; \
-        break; \
+            /* while(false) */; \
+            break; \
+        } \
     } \
     __step_unscope: \
+    if (!__has_broken) { goto __step_return_inner; } \
     _Generic(TypeOf(*__reserved_break), \
         void: ({}), \
         default: __reserved_break[0] \

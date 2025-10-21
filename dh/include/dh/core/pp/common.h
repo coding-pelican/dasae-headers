@@ -33,7 +33,7 @@ extern "C" {
 #define pp_defer(...)   pp_exec_defer(__VA_ARGS__)
 
 #define pp_stringify(_Tok...) pp_exec_stringify(_Tok)
-#define nameOf(_Tok...)       comp_op__nameOf(_Tok)
+#define nameOf(_Tok...)       comp_op__nameOf(_Tok, #_Tok)
 
 #define pp_cat(_LhsTok, _RhsTok...)            pp_exec_cat(_LhsTok, _RhsTok)
 #define pp_cat2(_LhsTok, _RhsTok...)           pp_exec_cat2(_LhsTok, _RhsTok)
@@ -123,7 +123,7 @@ extern "C" {
 #define pp_exec_defer(...)  __VA_ARGS__ pp_exec_nothing()
 
 #define pp_exec_stringify(_Tok...) #_Tok
-#define comp_op__nameOf(_Tok...)   ((void)(_Tok), #_Tok)
+#define comp_op__nameOf(_Tok, _Str...)   ((void)(_Tok), #_Str)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...)            _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...)           _LhsTok##_RhsTok
