@@ -11,8 +11,8 @@
  * @prefix  R
  */
 
-#ifndef R_INCLUDED
-#define R_INCLUDED (1)
+#ifndef Range__included
+#define Range__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -153,4 +153,4 @@ fn_((R_ne(R lhs, R rhs))(bool)) { return !R_eq(lhs, rhs); }
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */
-#endif /* R_INCLUDED */
+#endif /* Range__included */

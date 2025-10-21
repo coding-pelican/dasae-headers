@@ -18,8 +18,8 @@
  *          - Floating point type utilities
  */
 
-#ifndef CORE_PRIM_FLTS_INCLUDED
-#define CORE_PRIM_FLTS_INCLUDED (1)
+#ifndef core_prim_flt__included
+#define core_prim_flt__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -84,4 +84,4 @@ typedef double_t f64;
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_PRIM_FLTS_INCLUDED */
+#endif /* core_prim_flt__included */

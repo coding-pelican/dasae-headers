@@ -14,8 +14,8 @@
  * @details Provides a prelude for dh.
  */
 
-#ifndef PRL_INCLUDED
-#define PRL_INCLUDED (1)
+#ifndef prl__included
+#define prl__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -80,4 +80,4 @@ useT$(voidptr_const);
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* PRL_INCLUDED */
+#endif /* prl__included */
