@@ -59,6 +59,7 @@ fn_((R_Bound_begin(R_Bound bound, usize point))(usize));
 $static $inline_always
 fn_((R_Bound_end(R_Bound bound, usize point))(usize));
 
+/// (0 <= begin) && (begin <= end)
 typedef struct R {
     usize begin; ///< Beginning index (inclusive)
     usize end;   ///< Ending index (exclusive)
@@ -67,6 +68,7 @@ typedef struct R {
 $static $inline_always
 fn_((R_from(usize begin, usize end))(R));
 /// self[begin..end] => [self.begin + range.begin, self.begin + range.end)
+/// (self.begin <= range.begin) && (range.begin <= range.end) && (range.end <= self.end)
 $static $inline_always
 fn_((R_slice(R self, R range))(R));
 /// self[..end] => [self.begin, self.begin + end)
@@ -76,15 +78,19 @@ fn_((R_prefix(R self, usize end))(R));
 $static $inline_always
 fn_((R_suffix(R self, usize begin))(R));
 
+/// self.end - self.begin
 $static $inline_always
 fn_((R_len(R self))(usize));
+/// self.begin + idx
 $static $inline_always
-fn_((R_at(R self, usize index))(usize));
+fn_((R_at(R self, usize idx))(usize));
+
+/// self.begin <= self.end
 $static $inline_always
-fn_((R_contains(R self, usize index))(bool));
-$static $inline_always
-/// begin <= end
 fn_((R_isValid(R self))(bool));
+/// (self.begin <= idx) && (idx < self.end)
+$static $inline_always
+fn_((R_contains(R self, usize idx))(bool));
 
 $static $inline_always
 fn_((R_eq(R lhs, R rhs))(bool));
@@ -115,35 +121,42 @@ fn_((R_from(usize begin, usize end))(R)) {
 }
 $static $inline_always
 fn_((R_slice(R self, R range))(R)) {
-    debug_assert_fmt(range.begin <= range.end, "Invalid range: range.begin(%zu) > range.end(%zu)", range.begin, range.end);
-    debug_assert_fmt(self.begin + range.begin <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, range.begin, self.end);
-    debug_assert_fmt(self.begin + range.end <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, range.end, self.end);
+    debug_assert_fmt(R_isValid(self), "Invalid range: self.begin(%zu) > self.end(%zu)", self.begin, self.end);
+    debug_assert_fmt(self.begin <= range.begin, "Invalid slice range: self.begin(%zu) > range.begin(%zu)", self.begin, range.begin);
+    debug_assert_fmt(R_isValid(range), "Invalid range: range.begin(%zu) > range.end(%zu)", range.begin, range.end);
+    debug_assert_fmt(range.end <= self.end, "Invalid slice range: range.end(%zu) > self.end(%zu)", range.end, self.end);
     return (R){ .begin = self.begin + range.begin, .end = self.begin + range.end };
 }
 $static $inline_always
 fn_((R_prefix(R self, usize end))(R)) {
-    debug_assert_fmt(self.begin + end <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, end, self.end);
+    debug_assert_fmt(R_isValid(self), "Invalid range: self.begin(%zu) > self.end(%zu)", self.begin, self.end);
+    debug_assert_fmt(self.begin + end <= self.end, "Invalid slice range: self.begin(%zu) + end(%zu) > self.end(%zu)", self.begin, end, self.end);
     return (R){ .begin = self.begin, .end = self.begin + end };
 }
 $static $inline_always
 fn_((R_suffix(R self, usize begin))(R)) {
-    debug_assert_fmt(self.begin + begin <= self.end, "Invalid range: begin(%zu + %zu) > end(%zu)", self.begin, begin, self.end);
+    debug_assert_fmt(R_isValid(self), "Invalid range: self.begin(%zu) > self.end(%zu)", self.begin, self.end);
+    debug_assert_fmt(self.begin + begin <= self.end, "Invalid slice range: self.begin(%zu) + begin(%zu) > self.end(%zu)", self.begin, begin, self.end);
     return (R){ .begin = self.begin + begin, .end = self.end };
 }
 $static $inline_always
 fn_((R_len(R self))(usize)) {
-    debug_assert_fmt(self.begin <= self.end, "Invalid range: begin(%zu) > end(%zu)", self.begin, self.end);
+    debug_assert_fmt(R_isValid(self), "Invalid range: self.begin(%zu) > self.end(%zu)", self.begin, self.end);
     return self.end - self.begin;
 }
 $static $inline_always
-fn_((R_at(R self, usize index))(usize)) {
-    debug_assert_fmt(self.begin + index < self.end, "Index out of bounds: begin(%zu) + index(%zu) >= end(%zu)", self.begin, index, self.end);
-    return self.begin + index;
+fn_((R_at(R self, usize idx))(usize)) {
+    debug_assert_fmt(R_contains(self, self.begin + idx), "Index out of bounds: self.begin(%zu) + idx(%zu) >= self.end(%zu)", self.begin, idx, self.end);
+    return self.begin + idx;
 }
-$static $inline_always
-fn_((R_contains(R self, usize index))(bool)) { return self.begin <= index && index < self.end; }
+
 $static $inline_always
 fn_((R_isValid(R self))(bool)) { return self.begin <= self.end; }
+$static $inline_always
+fn_((R_contains(R self, usize idx))(bool)) {
+    debug_assert_fmt(R_isValid(self), "Invalid range: self.begin(%zu) > self.end(%zu)", self.begin, self.end);
+    return self.begin <= idx && idx < self.end;
+}
 
 $static $inline_always
 fn_((R_eq(R lhs, R rhs))(bool)) { return lhs.begin == rhs.begin && lhs.end == rhs.end; }
