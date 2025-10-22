@@ -1757,14 +1757,10 @@ void build_project(BuildConfig* config) {
         strcat(command, "\"");
     }
 
-    // Add linked libraries
-    if (config->linked_libraries[0] != '\0') {
-        strcat(command, " ");
-        strcat(command, config->linked_libraries);
-    }
-
-    // Add library linking flags from lib.dh
+    // Add library linking flags from lib.dh first (this also includes linked_libraries from link.dhc)
     add_lib_dh_libraries(config);
+
+    // Add all linked libraries (includes both link.dhc and lib.dh libraries)
     if (config->linked_libraries[0] != '\0') {
         strcat(command, " ");
         strcat(command, config->linked_libraries);
@@ -2816,7 +2812,7 @@ bool parse_lib_dh_file(BuildConfig* config, const char* lib_dh_path) {
             strncpy(current_lib.library_name, line + 1, strlen(line) - 2);
             current_lib.library_name[strlen(line) - 2] = '\0';
             current_lib.no_libdh                       = false; // Default to using dh
-            strcpy(current_lib.profile, "dev");                 // Default profile
+            strcpy(current_lib.profile, "default");             // Default profile: follow main project
             in_section = true;
             continue;
         }
@@ -3124,10 +3120,21 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
             strcat(command, " -DNDEBUG");
         }
 
-        // Add extra flags from the profile
+        // Add extra flags from the profile, but skip -flto for static libraries
+        // (LTO object files can't be properly archived with standard ar tool)
         for (int i = 0; i < profile_preset->extra_flags.count; ++i) {
+            const char* flag = profile_preset->extra_flags.flags[i];
+
+            // Skip -flto for static libraries
+            if (strcmp(lib_config->linking_type, "static") == 0 && strcmp(flag, "-flto") == 0) {
+                if (config->verbose) {
+                    printf("Skipping -flto flag for static library (not compatible with ar)\n");
+                }
+                continue;
+            }
+
             strcat(command, " ");
-            strcat(command, profile_preset->extra_flags.flags[i]);
+            strcat(command, flag);
         }
 
         if (config->verbose) {

@@ -56,12 +56,12 @@
 
 $static
 fn_((getEngineMemory(void))(heap_Fixed)) {
-    static var_(memory, Arr$$(1024 * 16 * 16 * 16, u8)) = Arr_zero();
+    static var_(memory, Arr$$(1024 * 1024, u8)) = Arr_zero();
     return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
 }
 $static
 fn_((getGameMemory(void))(heap_Fixed)) {
-    static var_(memory, Arr$$(1024 * 16 * 16 * 16, u8)) = Arr_zero();
+    static var_(memory, Arr$$(1024 * 1024, u8)) = Arr_zero();
     return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
 }
 
@@ -412,7 +412,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
         // 8) Subtract from our target
         if_some(time_Duration_subChkd(time_frame_target, time_frame_used), leftover) {
-            log_debug("sleeping for %6.2f seconds", time_Duration_asSecs_f64(leftover));
+            debug_only(log_debug("sleeping for %6.2f seconds", time_Duration_asSecs_f64(leftover)));
             time_sleep(leftover);
         }
         time_frame_prev = time_frame_curr;
