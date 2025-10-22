@@ -30,10 +30,10 @@ extern "C" {
 #define $r(_begin, _end...)                  comp_expand__$r(_begin, _end)
 #define $r_begin(...)                        pp_overload(__$r_begin, __VA_ARGS__)(__VA_ARGS__)
 #define __$r_begin_1(_point...)              (_point)
-#define __$r_begin_2(_bound_type, _point...) R_Bound_begin(_bound_type, _point)
+#define __$r_begin_2(_bound_type, _point...) (R_Bound_begin(_bound_type, _point))
 #define $r_end(...)                          pp_overload(__$r_end, __VA_ARGS__)(__VA_ARGS__)
 #define __$r_end_1(_point...)                (_point)
-#define __$r_end_2(_bound_type, _point...)   R_Bound_end(_bound_type, _point)
+#define __$r_end_2(_bound_type, _point...)   (R_Bound_end(_bound_type, _point))
 
 #define from$R   R_from
 #define slice$R  R_slice
@@ -96,11 +96,11 @@ fn_((R_ne(R lhs, R rhs))(bool));
 #if !COMP_TIME
 #define comp_expand__$incl(_point...)    _point
 #define comp_expand__$excl(_point...)    _point
-#define comp_expand__$r(_begin, _end...) R_from(_begin, _end)
+#define comp_expand__$r(_begin, _end...) (R_from(_begin, _end))
 #else
 #define comp_expand__$incl(_point...)    R_Bound_incl, _point
 #define comp_expand__$excl(_point...)    R_Bound_excl, _point
-#define comp_expand__$r(_begin, _end...) R_from($r_begin(_begin), $r_end(_end))
+#define comp_expand__$r(_begin, _end...) (R_from($r_begin(_begin), $r_end(_end)))
 #endif
 
 $static $inline_always

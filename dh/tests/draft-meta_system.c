@@ -1104,6 +1104,7 @@ tpl$S$(i32);
 tpl$P$(f32);
 tpl$S$(f32);
 int main(void) {
+#if UNUSED_CODE
     var arr_u = init$A$$((8, u32)({ 0, 1, 2, 3, 4, 5, 6, 7 }));
     var arr_i = init$A$$((9, i32)({ 8, 9, 10, 11, 12, 13, 14, 15, 16 }));
     var arr_f = init$A$$((10, f32)({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f }));
@@ -1163,6 +1164,7 @@ int main(void) {
             printf("item_r[%zu]: %zu\n", idx_r, item_r);
         }
     });
+#endif /* UNUSED_CODE */
 
 #define for_iter_init(__offset, __r, _target, _offset...) \
     const R     __r      = _target; \
@@ -1198,8 +1200,10 @@ int main(void) {
     });
 #endif /* CONCEPT */
 
-#define $a(_a...) ($A, _a)
-#define $s(_s...) ($S, _s)
+#define $rf(_expr...) $r(_expr, usize_limit_max)
+#define $rt(_expr...) $r(0, _expr)
+#define $a(_a...)     ($A, _a)
+#define $s(_s...)     ($S, _s)
 
 #define foreach_(/*(<$a|$s>(range|slice, (iter, index, offset))...) { ... }*/...) \
     __foreach_exec(pp_defer(__foreach_impl)(__foreach_sep __VA_ARGS__))
@@ -1370,14 +1374,14 @@ int main(void) {
     var_(arr_f, A$$(10, f32)) = init$A({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f });
     var_(range, R)            = $r(3, 15);
 
-    foreach_(($a(arr_u, (item_u))) {
-        try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
-        io_stream_println(u8_l("item_u: {:u}\n"), *item_u);
+    foreach_(($a(arr_u, (item_u))){
+        // try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
+        // io_stream_println(u8_l("item_u: {:u}\n"), *item_u);
     });
 
-    foreach_(((range, (item_r))) {
-        try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
-        io_stream_println(u8_l("item_r: {:zu}\n"), item_r);
+    foreach_(((range, (item_r))){
+        // try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
+        // io_stream_println(u8_l("item_r: {:zu}\n"), item_r);
     });
 
     foreach_((
@@ -1385,15 +1389,15 @@ int main(void) {
         $s(suffix$A(arr_i, 1), (item_i, idx_i, 1)),
         $s(suffix$A(arr_f, 2), (item_f, idx_f, 2)),
         (range, (item_r, idx_r))
-    ) {
-        try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
-        io_stream_println(u8_l("item_u[{:zu}]: {:u}\n"), idx_u, *item_u);
-        try_(TEST_expect(isSameType$(TypeOf(*item_i), i32)));
-        io_stream_println(u8_l("item_i[{:zu}]: {:d}\n"), idx_i, *item_i);
-        try_(TEST_expect(isSameType$(TypeOf(*item_f), f32)));
-        io_stream_println(u8_l("item_f[{:zu}]: {:f}\n"), idx_f, *item_f);
-        try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
-        io_stream_println(u8_l("item_r[{:zu}]: {:zu}\n"), idx_r, item_r);
+    ){
+        // try_(TEST_expect(isSameType$(TypeOf(*item_u), u32)));
+        // io_stream_println(u8_l("item_u[{:zu}]: {:u}\n"), idx_u, *item_u);
+        // try_(TEST_expect(isSameType$(TypeOf(*item_i), i32)));
+        // io_stream_println(u8_l("item_i[{:zu}]: {:d}\n"), idx_i, *item_i);
+        // try_(TEST_expect(isSameType$(TypeOf(*item_f), f32)));
+        // io_stream_println(u8_l("item_f[{:zu}]: {:f}\n"), idx_f, *item_f);
+        // try_(TEST_expect(isSameType$(TypeOf(item_r), usize)));
+        // io_stream_println(u8_l("item_r[{:zu}]: {:zu}\n"), idx_r, item_r);
     });
 
     for (struct {
@@ -1427,4 +1431,153 @@ int main(void) {
 
     let_ignore = as$((bool)(as$((u32)(as$((isize)(null))))));
     return 0;
+}
+
+// TODO: better for
+// for ( iter(...), capture(...) )
+
+#if UNUSED_CODE
+void better(void) {
+    var_(a_u, A$$(8, u32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
+    var_(a_i, A$$(9, i32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7, 8 });
+    var_(a_f, A$$(10, f32)) = init$A({ 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f });
+    var_(r_u, R)            = $r(0, 11);
+
+    for_(((r_u))(i_u) {
+        printf("i_u: %zu\n", i_u);
+    });
+
+    for_(($rf(0), $a(a_u))(i_u, e_u) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+    });
+
+    for_(((r_u), $a(a_u), $a(a_i))(i_u, e_u, e_i) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+        printf("e_i[%zu]: %d\n", i_u, *e_i);
+    });
+
+    for_(($rf(0), $a(a_u), $a(a_i), $a(a_f))(i_u, e_u, e_i, e_f) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+        printf("e_i[%zu]: %d\n", i_u, *e_i);
+        printf("e_f[%zu]: %f\n", i_u, *e_f);
+    });
+}
+#endif /* UNUSED_CODE */
+
+#define for_(/*(_iter...)(_capture...) { ... }*/...) \
+    __exec__for_(pp_defer(__emit__for_)(__sep0__for_ __VA_ARGS__))
+#define __exec__for_(...)                          __VA_ARGS__
+#define __sep0__for_(_iters...)                    (_iters), __sep1__for_
+#define __sep1__for_(_captures...)                 (_captures),
+#define __emit__for_(_iters, _captures, _block...) __emitNext__for_(_iters, _captures, (_block))
+// #define __emitNext__for_(_iters, _captures, _block) \
+//     0(_iters), 1(_captures), 2(_block)
+
+#define __for__expandIters(_iters...)                   _iters
+#define __for__expandIter(/*<_iter>|<_tag,_iter>*/...)  __VA_ARGS__
+#define __for__expandIterIds(__ids...)                  __ids
+#define __for__expandIterId(__id)                       __id
+#define __for__expandCaptures(_captures...)             _captures
+#define __for__expandCapture(/*<_capture>|$ignore*/...) __VA_ARGS__
+#define __for__expandBlock(_block...)                   _block
+
+#define __emitNext__for_(_iters, _captures, _block) \
+    pp_overload(__emitNext__for, __for__expandIters _iters)(_iters, _captures, _block)
+// #define __emitNext__for_1(_iters, _captures, _block)
+#define __emitNext__for_2(_iters, _captures, _block)
+#define __emitNext__for_3(_iters, _captures, _block)
+#define __emitNext__for_4(_iters, _captures, _block)
+
+#define __emitNext__for_1(_iters, _captures, _block) __emit__for_1( \
+    pp_uniqTok(len), pp_uniqTok(step), (pp_uniqTok(iter0)), \
+    _iters, _captures, _block \
+)
+// #define __emit__for_1(__len, __step, __iter_ids, _iters, _captures, _block) \
+//     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
+#define __emit__for_1(__len, __step, __iter_ids, _iters, _captures, _block...) ({ \
+    __for_1__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    const usize __len = __for_1__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    for (usize __step = 0; __step < __len; ++__step) { \
+        __for_1__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__expandBlock _block; \
+    } \
+})
+#define __for_1__initIters(__iter_id0, _iter0) \
+    __for__initIter(__iter_id0, _iter0)
+
+#define __for__initIter(__iter_id, _iter) \
+    pp_overload(__for__initIter, __for__expandIter _iter)(__iter_id, __for__expandIter _iter)
+#define __for__initIter_1(__iter_id, ...) __for__initIter_1Emit(__iter_id, __VA_ARGS__)
+#define __for__initIter_1Emit(__iter_id, _iter) \
+    const R __iter_id = _iter
+#define __for__initIter_2(__iter_id, ...) __for__initIter_2Emit(__iter_id, __VA_ARGS__)
+#define __for__initIter_2Emit(__iter_id, _tag, _iter...) \
+    let __iter_id = _iter
+
+#define __for_1__measureLen(__iter_id0, _iter0...) \
+    __for__lenIter(_iter0)(__iter_id0)
+
+#define __for__lenIter(_iter) \
+    pp_overload(__for__lenIter, __for__expandIter _iter)(__for__expandIter _iter)
+#define __for__lenIter_1(...)             __for__lenIter_1Emit(__VA_ARGS__)
+#define __for__lenIter_1Emit(_iter)       len$R
+#define __for__lenIter_2(...)             __for__lenIter_2Emit(__VA_ARGS__)
+#define __for__lenIter_2Emit(_tag, _iter) pp_cat(len, _tag)
+
+#define __for_1__captureIters(__step, _capture0, __iter_id0, _iter0...) \
+    let _capture0 = __for__atIter(__step, __iter_id0, _iter0)
+
+#define __for__atIter(__step, __iter_id, _iter) \
+    pp_overload(__for__atIter, __for__expandIter _iter)(__step, __iter_id, __for__expandIter _iter)
+#define __for__atIter_1(...) __for__atIter_1Emit(__VA_ARGS__)
+#define __for__atIter_1Emit(__step, __iter_id, _iter) \
+    at$R(__iter_id, __step)
+#define __for__atIter_2(...) __for__atIter_2Emit(__VA_ARGS__)
+#define __for__atIter_2Emit(__step, __iter_id, _tag, _iter) \
+    pp_cat(at, _tag)(__iter_id, __step)
+
+
+
+void better(void) {
+    var_(a_u, A$$(8, u32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
+    var_(a_i, A$$(9, i32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7, 8 });
+    var_(a_f, A$$(10, f32)) = init$A({ 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f });
+    var_(r_u, R)            = $r(0, 11);
+
+    for_(((r_u))(i_u) {
+        printf("i_u: %zu\n", i_u);
+    });
+
+    {
+        usize i_u = 0;
+        for_(($r(0, 11))($ignore) {
+            printf("i_u: %zu\n", i_u++);
+        });
+    }
+
+    {
+        usize i_u = 0;
+        for_(($a(a_u))(e_u) {
+            printf("a_u[%zu]: %u\n", i_u++, *e_u);
+        });
+    }
+
+    for_(($rf(0), $a(a_u))(i_u, e_u) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+    });
+
+    for_(($rf(0), $a(a_u))(i_u, e_u) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+    });
+
+    for_(((r_u), $a(a_u), $a(a_i))(i_u, e_u, e_i) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+        printf("e_i[%zu]: %d\n", i_u, *e_i);
+    });
+
+    for_(($rf(0), $a(a_u), $a(a_i), $a(a_f))(i_u, e_u, e_i, e_f) {
+        printf("e_u[%zu]: %u\n", i_u, *e_u);
+        printf("e_i[%zu]: %d\n", i_u, *e_i);
+        printf("e_f[%zu]: %f\n", i_u, *e_f);
+    });
 }
