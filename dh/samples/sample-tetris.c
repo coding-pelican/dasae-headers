@@ -97,9 +97,9 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
 static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void));
 
 #if bti_plat_windows
-use_Sli$(wchar_t);
-static HANDLE      tetris_Console_output_handle = null;
-static Sli$wchar_t tetris_Console_screen_buffer = cleared();
+use_Sli$(wchar);
+static HANDLE    tetris_Console_output_handle = null;
+static Sli$wchar tetris_Console_screen_buffer = cleared();
 #else  /* others */
 struct termios tetris_Console_original = cleared();
 #endif /* others */
@@ -240,14 +240,14 @@ static fn_((tetris_Console_bootup(void))(Err$void) pp_if_(bti_plat_windows)(pp_t
 
     /* Use safe allocation with proper type information */
     var allocator                = heap_Page_allocator(create$(heap_Page));
-    var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar_t), screen_size));
-    tetris_Console_screen_buffer = meta_castSli$(Sli$wchar_t, screen_buffer);
+    var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar), screen_size));
+    tetris_Console_screen_buffer = meta_castSli$(Sli$wchar, screen_buffer);
     errdefer_($ignore, mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
 
     /* Initialize buffer with spaces */
-    for_slice (tetris_Console_screen_buffer, cell) {
+    for_(($s(tetris_Console_screen_buffer))(cell) {
         *cell = L' ';
-    }
+    });
 
     /* Create console buffer with proper error handling */
     tetris_Console_output_handle = CreateConsoleScreenBuffer(
@@ -333,15 +333,15 @@ static fn_((tetris_PlayField_init(mem_Allocator allocator))(Err$tetris_PlayField
     let field = Grid_fromSli$(Grid$u8, meta_castSli$(Sli$u8, items), tetris_field_width, tetris_field_height);
 
     /* Initialize field - borders are 9, inside is 0 */
-    for (u32 y = 0; y < tetris_field_height; ++y) {
-        for (u32 x = 0; x < tetris_field_width; ++x) {
+    for_(($r(0, tetris_field_height))(y) {
+        for_(($r(0, tetris_field_width))(x) {
             if (x == 0 || x == tetris_field_width - 1 || y == tetris_field_height - 1) {
                 Grid_setAt(field, x, y, 9); /* Border */
             } else {
                 Grid_setAt(field, x, y, 0); /* Empty */
             }
-        }
-    }
+        });
+    });
 
     return_ok({ .grid = field });
 } $unscoped_(fn);
@@ -349,15 +349,15 @@ static fn_((tetris_PlayField_init(mem_Allocator allocator))(Err$tetris_PlayField
 static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score))(Err$void) $scope) {
 #if bti_plat_windows
     /* Clear screen buffer */
-    for_slice (tetris_Console_screen_buffer, cell) {
+    for_(($s(tetris_Console_screen_buffer))(cell) {
         *cell = L' ';
-    }
+    });
 
     /* Draw field */
-    for (u32 y = 0; y < field->grid.height; ++y) {
-        for (u32 x = 0; x < field->grid.width; ++x) {
-            let     cell = Grid_getAt(field->grid, x, y);
-            wchar_t c    = L' ';
+    for_(($r(0, field->grid.height))(y) {
+        for_(($r(0, field->grid.width))(x) {
+            let   cell = Grid_getAt(field->grid, x, y);
+            wchar c    = L' ';
 
             if (cell == 0) {
                 c = L' '; /* Empty */
@@ -370,27 +370,28 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
             }
 
             Sli_setAt(tetris_Console_screen_buffer, (y + 2) * tetris_screen_width + (x + 2), c);
-        }
-    }
+        });
+    });
 
     /* Draw current piece */
-    for (i32 py = 0; py < 4; ++py) {
-        for (i32 px = 0; px < 4; ++px) {
+    for_(($r(0, 4))(py) {
+        for_(($r(0, 4))(px) {
             let pi  = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             if (Arr_getAt(tetris_tetrominos, current_piece) & bit) {
                 Sli_setAt(tetris_Console_screen_buffer, (pos_y + py + 2) * tetris_screen_width + (pos_x + px + 2), L'A' + current_piece);
             }
-        }
-    }
+        });
+    });
 
     /* Draw score */
-    wchar_t score_text[32] = { 0 };
-    let_ignore             = swprintf(score_text, 32, L"SCORE: %8d", score);
-    for (i32 i = 0; score_text[i] != L'\0'; ++i) {
-        Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, score_text[i]);
-    }
+    wchar score_text_buf[32] = { 0 };
+    let   score_text_len     = swprintf(score_text_buf, 32, L"SCORE: %8d", score);
+    let   score_text         = (Sli$$(wchar))Sli_from(score_text_buf, score_text_len);
+    for_(($rf(0), $s(score_text))(i, typo) {
+        Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, *typo);
+    });
 
     /* Output to console */
     DWORD dwBytesWritten = 0;
@@ -471,15 +472,15 @@ static fn_((tetris_rotate(i32 px, i32 py, i32 r))(i32) $scope) {
 } $unscoped_(fn);
 
 static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tetromino, i32 rotation, i32 pos_x, i32 pos_y))(bool)) {
-    for (i32 py = 0; py < 4; ++py) {
-        for (i32 px = 0; px < 4; ++px) {
+    for_(($r(0, 4))(py) {
+        for_(($r(0, 4))(px) {
             /* Get index into piece */
             let pi  = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             /* Check if we're in bounds */
-            if (0 <= pos_x + px && pos_x + px < as$((i32)(field->grid.width))
-                && 0 <= pos_y + py && pos_y + py < as$((i32)(field->grid.height))) {
+            if (0 <= pos_x + px && pos_x + px < field->grid.width
+                && 0 <= pos_y + py && pos_y + py < field->grid.height) {
                 /* In bounds, do collision check */
                 if ((Arr_getAt(tetris_tetrominos, tetromino) & bit)
                     && Grid_getAt(field->grid, pos_x + px, pos_y + py) != 0) {
@@ -489,8 +490,8 @@ static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tet
                 /* Out of bounds with a filled tetromino cell */
                 return false;
             }
-        }
-    }
+        });
+    });
     return true;
 }
 
@@ -498,25 +499,25 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
     ArrList_clearRetainingCap(lines->base);
 
     /* Check for complete lines */
-    for (u32 y = 0; y < field->grid.height - 1; ++y) {
+    for_(($r(0, field->grid.height - 1))(y) {
         bool is_line = true;
 
         /* Check if every cell in the line is filled */
-        for (u32 x = 1; x < field->grid.width - 1; ++x) {
+        for_(($r(1, field->grid.width - 1))(x) {
             is_line &= Grid_getAt(field->grid, x, y) != 0;
-        }
+        });
 
         if (is_line) {
             /* Mark line for removal */
-            for (u32 x = 1; x < field->grid.width - 1; ++x) {
+            for_(($r(1, field->grid.width - 1))(x) {
                 Grid_setAt(field->grid, x, y, 8);
-            }
+            });
 
             /* Add to lines list */
             var line_y = as$((i32)(y));
             try_(ArrList_append(lines->base, meta_refPtr(&line_y)));
         }
-    }
+    });
 
     /* If we have lines to clear, animate and remove them */
     if (0 < lines->items.len) {
@@ -524,33 +525,31 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
         time_sleep(time_Duration_fromMillis(400));
 
         /* Then clear and move lines down */
-        for_slice (lines->items, line) {
+        for_(($s(lines->items))(line) {
             let y = *line;
-
-            for (i32 x = 1; x < as$((i32)(field->grid.width)) - 1; ++x) {
+            for_(($r(1, (field->grid.width)))(x) {
                 /* Move all lines above down by one */
-                for (i32 k = y; k > 0; k--) {
+                for_($rev($r(0, y))(k) {
                     Grid_setAt(field->grid, x, k, Grid_getAt(field->grid, x, k - 1));
-                }
-
+                });
                 /* Clear top line */
                 Grid_setAt(field->grid, x, 0, 0);
-            }
-        }
+            });
+        });
     }
 
     return_ok(as$((i32)(lines->items.len)));
 } $unscoped_(fn);
 
 static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void)) {
-    for (i32 py = 0; py < 4; ++py) {
-        for (i32 px = 0; px < 4; ++px) {
+    for_(($r(0, 4))(py) {
+        for_(($r(0, 4))(px) {
             let pi  = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             if (Arr_getAt(tetris_tetrominos, piece) & bit) {
                 Grid_setAt(field->grid, pos_x + px, pos_y + py, piece + 1);
             }
-        }
-    }
+        });
+    });
 }

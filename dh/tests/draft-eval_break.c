@@ -2,9 +2,9 @@
 
 #if UNUSED_CODE
 // clang-format off
-#define eval_(T_Break_w_Ext...) comp_syn__eval_test(T_Break_w_Ext)
-#define comp_syn__eval_test(T_Break, _Ext...) pp_cat(comp_syn__eval_, _Ext)(T_Break)
-#define comp_syn__eval_$_scope(T_Break...) ({ \
+#define expr_(T_Break_w_Ext...) comp_syn__expr_test(T_Break_w_Ext)
+#define comp_syn__expr_test(T_Break, _Ext...) pp_cat(comp_syn__expr_, _Ext)(T_Break)
+#define comp_syn__expr_$_scope(T_Break...) ({ \
     local_label __step_break, __step_unscope; \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
@@ -12,8 +12,8 @@
     )]){})); \
     if (false) { __step_break: goto __step_unscope; } \
     do
-#define $unscoped_eval comp_syn__eval_$unscoped
-#define comp_syn__eval_$unscoped \
+#define $unscoped_eval comp_syn__expr_$unscoped
+#define comp_syn__expr_$unscoped \
     while (false); \
 __step_unscope: \
     _Generic(TypeOf(*__reserved_break), \
@@ -21,8 +21,8 @@ __step_unscope: \
         default: __reserved_break[0] \
     ); \
 })
-#define eval_break_(_Expr...) comp_syn__eval_break_(_Expr)
-#define comp_syn__eval_break_(_Expr...) eval({ \
+#define $break_(_Expr...) comp_syn__$break_(_Expr)
+#define comp_syn__$break_(_Expr...) blk({ \
     bti_memcpy( \
         as$((u8*)(__reserved_break)), \
         as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
@@ -35,9 +35,9 @@ __step_unscope: \
 
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     let_ignore = args;
-    return_(eval_(Err$void $scope) if (true) {
-        eval_break_(ok({}));
+    return_(expr_(Err$void $scope) if (true) {
+        $break_(ok({}));
     } else {
-        eval_break_(err(Err_NotImplemented()));
-    } $unscoped_eval);
+        $break_(err(Err_NotImplemented()));
+    } $unscoped_(expr));
 } $unscoped_(fn);

@@ -777,7 +777,7 @@ extern fn_((ArrList_clearAndFree(ArrList* self))(void));
             mem_Allocator allocator; \
         }; \
     }
-#define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) eval({ \
+#define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) blk({ \
     let __anon = &var_anon; \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList)); \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList)); \
@@ -791,7 +791,7 @@ extern fn_((ArrList_clearAndFree(ArrList* self))(void));
     claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), allocator) == fieldPadding(T_ArrList, allocator)); \
-    eval_return rawderef(as$((rawptr$(T_ArrList))(__anon))); \
+    blk_return rawderef(as$((rawptr$(T_ArrList))(__anon))); \
 })
 
 #if defined(__cplusplus)

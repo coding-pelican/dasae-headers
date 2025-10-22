@@ -66,14 +66,14 @@ $inline_always time_SysTime offset(void) {
 }
 $inline_always time_SysTime value(void) {
     return ensureInit(), (time_SysTime){
-        .impl_ = eval({
+        .impl_ = blk({
             var current = makeCleared$(time_SysTimePlatform);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
             QueryPerformanceCounter(&current);
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
             clock_gettime(CLOCK_MONOTONIC, &current);
 #endif
-            eval_return current;
+            blk_return current;
         })
     };
 }
@@ -96,10 +96,10 @@ time_Duration time_SysTime_elapsed(time_SysTime self) {
 }
 
 time_Duration time_SysTime_durationSince(time_SysTime later, time_SysTime earlier) {
-    return unwrap(time_SysTime_chkdDurationSince(later, earlier));
+    return unwrap(time_SysTime_durationSinceChkd(later, earlier));
 }
 
-fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(Opt$time_Duration) $scope) {
+fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(Opt$time_Duration) $scope) {
     if (time_SysTime_lt(later, earlier)) {
         return_none();
     }
@@ -126,7 +126,7 @@ fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(O
 /*========== Arithmetic Operations ==========================================*/
 
 time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
-    return unwrap(time_SysTime_chkdAddDuration(self, other));
+    return unwrap(time_SysTime_addChkdDuration(self, other));
 }
 
 time_SysTime op_fnAddAsgBy(time_SysTime, time_Duration) {
@@ -134,14 +134,14 @@ time_SysTime op_fnAddAsgBy(time_SysTime, time_Duration) {
 }
 
 time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
-    return unwrap(time_SysTime_chkdSubDuration(self, other));
+    return unwrap(time_SysTime_subChkdDuration(self, other));
 }
 
 time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
     return *self = op_subBy(time_SysTime, time_Duration)(*self, other);
 }
 
-fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
+fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_max - as$((u64)(lhs.impl_.QuadPart)))) {
@@ -160,7 +160,7 @@ fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time
     return_none();
 } $unscoped_(fn);
 
-fn_((time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
+fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_min + as$((u64)(lhs.impl_.QuadPart)))) {

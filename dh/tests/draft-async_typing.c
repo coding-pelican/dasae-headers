@@ -1,6 +1,7 @@
 #include "draft-async_ex.h"
 
 #include "dh/sli.h"
+#include "dh/Str.h"
 #include "dh/Arr.h"
 #include "dh/time.h"
 #include "dh/Random.h"
@@ -17,29 +18,26 @@ use_Sli$(Task);
 use_Opt$(Task);
 
 /// \brief List of tasks to be executed
-static var_(exec_s_task_list, Arr$$(32, Opt$Task)) = {};
+static var_(exec_s_task_list, Arr$$(10, Opt$Task)) = {};
 /// \brief Run the event loop
 /// \param endless Whether to run the loop endlessly
 static fn_((exec_runLoop(bool endless))(void)) {
-    use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
 
-    // printf("looping events y'all\n");
+    io_stream_println(u8_l("looping events y'all"));
     while (true) {
-        let  now   = time_Instant_now();
-        bool any   = false;
-        var  frame = none$(Opt$Ptr$Co_Ctx);
-        for_slice (Sli_arr$(Sli$Opt$Task, exec_s_task_list), task_remaining) {
-            if_some(Opt_asPtr(task_remaining), task) {
-                any = true;
-                if (time_Instant_le(task->expires, now)) {
-                    // printf("sleep over y'all\n");
-                    Opt_asg(&frame, some(task->frame));
-                    Opt_asg(task_remaining, none());
-                    break;
-                }
+        let now   = time_Instant_now();
+        var any   = false;
+        var frame = eval_(Opt$Ptr$Co_Ctx $scope)(for_(($s(ref$A(exec_s_task_list)))(task_remaining) {
+            let task = orelse_((Opt_asPtr(task_remaining))(continue));
+            any      = true;
+            if (time_Instant_le(task->expires, now)) {
+                io_stream_println(u8_l("sleep over y'all"));
+                let frame = task->frame;
+                Opt_asg(task_remaining, none());
+                $break_(some(frame));
             }
-        }
+        })) eval_(else)($break_(none())) $unscoped_(eval);
         if_some(frame, ctx) {
             resume_(ctx);
         }
@@ -50,16 +48,11 @@ static fn_((exec_runLoop(bool endless))(void)) {
 /// \brief Find a slot for a task
 /// \return The slot for the task
 static fn_((exec_findSlot(void))(Opt$Task*)) {
-    use_Sli$(Opt$Task);
-
-    Opt$Task* slot = null;
-    for_slice (Sli_arr$(Sli$Opt$Task, exec_s_task_list), task) {
-        if_none(*task) {
-            slot = task;
-            break;
-        }
-    }
-    if (slot == null) { claim_unreachable; }
+    let slot = eval_(Ptr$$(Opt$Task) $scope)(
+        for_(($s(ref$A(exec_s_task_list)))(task) {
+            if_none(*task) $break_(task);
+        })
+    ) eval_(else)(claim_unreachable) $unscoped_(eval);
     return slot;
 }
 
@@ -72,11 +65,11 @@ async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
     suspend_({
         let slot = exec_findSlot();
-        let time = eval({
+        let time = blk({
             static let fromMs = time_Duration_fromMillis;
             static let addDur = time_Instant_addDuration;
             static let now    = time_Instant_now;
-            eval_return addDur(now(), fromMs(args->ms));
+            blk_return addDur(now(), fromMs(args->ms));
         });
         Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });

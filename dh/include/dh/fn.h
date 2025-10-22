@@ -67,10 +67,10 @@ extern "C" {
 
 #define defer_(_Expr...) comp_syn__defer(_Expr)
 
-#define block_defer    comp_syn__block_defer
-#define block_deferral comp_syn__block_deferral
+#define blk_defer    comp_syn__blk_defer
+#define blk_deferral comp_syn__blk_deferral
 
-#define defer_break comp_syn__defer_break
+#define break_defer comp_syn__break_defer
 
 /*
 #define errdefer_(_Expr...) comp_syn__errdefer_(_Expr)
@@ -149,7 +149,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 }
 // clang-format on
 
-#define comp_syn__return_(_Expr...) eval({ \
+#define comp_syn__return_(_Expr...) blk({ \
     bti_memcpy( \
         as$((u8*)(__reserved_return)), \
         as$((u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr })), \
@@ -157,14 +157,14 @@ __step_deferred: switch (__scope_counter.current_line) { \
     ); \
     goto __step_return; \
 })
-#define comp_syn__return_void_0() eval({ \
+#define comp_syn__return_void_0() blk({ \
     claim_assert_static( \
         isSameType(TypeOf(*__reserved_return), TypeOf(void)) \
         || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
     ); \
     goto __step_return; \
 })
-#define comp_syn__return_void_1(_Expr...) eval({ \
+#define comp_syn__return_void_1(_Expr...) blk({ \
     claim_assert_static( \
         isSameType(TypeOf(*__reserved_return), TypeOf(void)) \
         || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
@@ -181,7 +181,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
     comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
 // clang-format off
-#define comp_syn__block_defer { do { \
+#define comp_syn__blk_defer { do { \
     comp_syn__defer__op_snapshot( \
         if (__scope_counter.is_returning) { \
             goto __step_deferred; \
@@ -190,13 +190,13 @@ __step_deferred: switch (__scope_counter.current_line) { \
         } \
     ) \
     do
-#define comp_syn__block_deferral \
+#define comp_syn__blk_deferral \
     while(false); \
     goto __step_deferred; \
 } while (false); }
 // clang-format on
 
-#define comp_syn__defer_break \
+#define comp_syn__break_defer \
     goto __step_deferred
 
 #define comp_syn__defer__op_snapshot(_Expr...) \
@@ -217,19 +217,19 @@ __step_deferred: switch (__scope_counter.current_line) { \
 
 // clang-format off
 /* if-else as expression block */
-#define eval_(T_Break_w_Ext...) comp_syn__eval_test(T_Break_w_Ext)
-#define comp_syn__eval_test(T_Break, _Ext...) pp_cat(comp_syn__eval_, _Ext)(T_Break)
-#define comp_syn__eval_$_scope(T_Break...) ({ \
+#define expr_(T_Break_w_Ext...) comp_syn__expr_(T_Break_w_Ext)
+#define comp_syn__expr_(T_Break, _Ext...) pp_cat(comp_syn__expr_, _Ext)(T_Break)
+#define comp_syn__expr_$_scope(T_Break...) ({ \
     local_label __step_break, __step_unscope; \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
     )]){})); \
-    $maybe_unused bool __has_broken = false; /* for integration with `expr_` */ \
+    $maybe_unused bool __has_broken = false; /* for integration with `eval_` */ \
     if (false) { __step_break: goto __step_unscope; } \
     /* do */
-#define $unscoped_eval comp_syn__eval_$unscoped
-#define comp_syn__eval_$unscoped \
+#define $unscoped_expr comp_syn__expr_$unscoped
+#define comp_syn__expr_$unscoped \
     /* while(false) */; \
 __step_unscope: \
     _Generic(TypeOf(*__reserved_break), \
@@ -240,7 +240,7 @@ __step_unscope: \
 // clang-format on
 
 // clang-format off
-#define comp_syn__eval_$_guard(T_Break...) ({ \
+#define comp_syn__expr_$_guard(T_Break...) ({ \
     local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
@@ -250,7 +250,7 @@ __step_unscope: \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
-    bool __has_broken = false; /* for integration with `expr_` */ { \
+    bool __has_broken = false; { \
         local_label __step_return; \
         if (false) { __step_return: __step_break: \
             __scope_counter.is_returning = true; \
@@ -260,52 +260,14 @@ __step_deferred: switch (__scope_counter.current_line) { \
         default: { goto __step_unscope; } break; \
         case __LINE__: __scope_counter.current_line = __LINE__ - 1; \
             /* do */
-#define $unguarded_eval comp_syn__eval_$unguarded
-#define comp_syn__eval_$unguarded \
+#define $unguarded_expr comp_syn__expr_$unguarded
+#define comp_syn__expr_$unguarded \
             /* while(false) */; \
             break; \
         } \
     } \
     __step_unscope: \
     if (!__has_broken) { goto __step_return_inner; } \
-    _Generic(TypeOf(*__reserved_break), \
-        void: ({}), \
-        default: __reserved_break[0] \
-    ); \
-})
-// clang-format on
-
-// clang-format off
-#define eval_break_(_Expr...) comp_syn__eval_break_(_Expr)
-#define comp_syn__eval_break_(_Expr...) eval({ \
-    bti_memcpy( \
-        as$((u8*)(__reserved_break)), \
-        as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
-        sizeOf$(*__reserved_break) \
-    ); \
-    goto __step_break; \
-})
-// clang-format on
-
-/* TODO: else로 끝나지 않으면 컴파일 에러를 발생시키도록 만들기 */
-// clang-format off
-/* [for|while|switch|match]-else as expression block (supports else) */
-#define expr_(/*<_TBreak $ext>|<else>*/...) inline__expr(__VA_ARGS__) pp_expand
-#define inline__expr(...) pp_overload(inline__expr, __VA_ARGS__)(__VA_ARGS__)
-#define inline__expr_1(_else...) ; if (__has_broken) { goto __step_break; } _else
-#define inline__expr_2(_TBreak, _ext...) pp_cat(inline__expr_2, _ext)(_TBreak)
-#define inline__expr_2$_scope(_TBreak...) ({ \
-    local_label __step_break; \
-    let __reserved_break = as$((_TBreak*)((u8[_Generic(_TBreak, \
-        void: 0, \
-        default: sizeOf$(_TBreak) \
-    )]){})); \
-    $maybe_unused bool __has_broken = false;\
-    /* do */
-#define $unscoped_expr comp_syn__expr_$unscoped
-#define comp_syn__expr_$unscoped \
-    /* while(false) */; \
-    __step_break: \
     _Generic(TypeOf(*__reserved_break), \
         void: ({}), \
         default: __reserved_break[0] \
@@ -323,6 +285,53 @@ __step_deferred: switch (__scope_counter.current_line) { \
     __has_broken = true; \
     goto __step_break; \
 })
+
+#define $break_void(_Expr...) pp_overload(comp_syn__$break_void, _Expr)(_Expr)
+#define comp_syn__$break_void_0() blk({ \
+    claim_assert_static( \
+        isSameType(TypeOf(*__reserved_break), TypeOf(void)) \
+        || isSameType(TypeOf(*__reserved_break), TypeOf(Void)) \
+    ); \
+    goto __step_break; \
+})
+#define comp_syn__$break_void_1(_Expr...) blk({ \
+    claim_assert_static( \
+        isSameType(TypeOf(*__reserved_break), TypeOf(void)) \
+        || isSameType(TypeOf(*__reserved_break), TypeOf(Void)) \
+    ); \
+    claim_assert_static( \
+        isSameType(TypeOf(({ _Expr; })), TypeOf(void)) \
+        || isSameType(TypeOf(({ _Expr; })), TypeOf(Void)) \
+    ); \
+    _Expr; \
+    goto __step_break; \
+})
+// clang-format on
+
+/* TODO: else로 끝나지 않으면 컴파일 에러를 발생시키도록 만들기 */
+// clang-format off
+/* [for|while|switch|match]-else as expression block (supports else) */
+#define eval_(/*<_TBreak $ext>|<else>*/...) inline__eval_(__VA_ARGS__) pp_expand
+#define inline__eval_(...) pp_overload(inline__eval, __VA_ARGS__)(__VA_ARGS__)
+#define inline__eval_1(_else...) ; if (__has_broken) { goto __step_break; } _else
+#define inline__eval_2(_TBreak, _ext...) pp_cat(inline__eval_2, _ext)(_TBreak)
+#define inline__eval_2$_scope(_TBreak...) ({ \
+    local_label __step_break; \
+    let __reserved_break = as$((_TBreak*)((u8[_Generic(_TBreak, \
+        void: 0, \
+        default: sizeOf$(_TBreak) \
+    )]){})); \
+    $maybe_unused bool __has_broken = false;\
+    /* do */
+#define $unscoped_eval comp_syn__eval_$unscoped
+#define comp_syn__eval_$unscoped \
+    /* while(false) */; \
+    __step_break: \
+    _Generic(TypeOf(*__reserved_break), \
+        void: ({}), \
+        default: __reserved_break[0] \
+    ); \
+})
 // clang-format on
 
 #define $un_(_keyword)        pp_cat(inline__$un_, _keyword)()
@@ -335,8 +344,8 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__$unscoped_Thrd_fn()  $unscoped_Thrd_fn
 #define inline__$unscoped_async_fn() $unscoped_async_fn
 #define inline__$unscoped_la()       $unscoped_la
-#define inline__$unscoped_$eval()    $unscoped_eval
 #define inline__$unscoped_expr()     $unscoped_expr
+#define inline__$unscoped_eval()     $unscoped_eval
 
 #define $unguarded_(_keyword)         pp_cat(inline__$unguarded_, _keyword)()
 #define inline__$unguarded_fn()       $unguarded
@@ -344,8 +353,8 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
 #define inline__$unguarded_async_fn() $unguarded_async_fn
 #define inline__$unguarded_la()       $unguarded_la
-#define inline__$unguarded_$eval()    $unguarded_eval
 #define inline__$unguarded_expr()     $unguarded_expr
+#define inline__$unguarded_eval()     $unguarded_eval
 
 /*========== Example usage ==================================================*/
 

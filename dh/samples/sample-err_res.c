@@ -48,7 +48,7 @@ fn_((handleDivision(i32 a, i32 b))(i32)) {
     return catch_((safeDivide(a, b))(
         err, ({
             io_stream_eprintln(u8_l("Division error: [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err));
-            eval_return 0;
+            blk_return 0;
         })
     ));
 }

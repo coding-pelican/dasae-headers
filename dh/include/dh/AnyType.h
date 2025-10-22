@@ -111,33 +111,33 @@ typedef variant_(
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_op__anyPtr(var_ptr...) eval({ \
+#define comp_op__anyPtr(var_ptr...) blk({ \
     let __ptr = var_ptr; \
     claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Ptr), "`meta_Ptr` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Sli), "`meta_Sli` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
-    eval_return variant_of$(AnyType, AnyType_ptr, { .type = typeInfo$(TypeOf(*__ptr)), .addr = __ptr }); \
+    blk_return variant_of$(AnyType, AnyType_ptr, { .type = typeInfo$(TypeOf(*__ptr)), .addr = __ptr }); \
 })
-#define comp_op__anySliZ(var_sli...) eval({ \
+#define comp_op__anySliZ(var_sli...) blk({ \
     let __sli = var_sli; \
-    eval_return variant_of$(AnyType, AnyType_sli_z, {}); \
+    blk_return variant_of$(AnyType, AnyType_sli_z, {}); \
 })
-#define comp_op__anySliS(var_sli...) eval({ \
+#define comp_op__anySliS(var_sli...) blk({ \
     let __sli = var_sli; \
-    eval_return variant_of$(AnyType, AnyType_sli_s, {}); \
+    blk_return variant_of$(AnyType, AnyType_sli_s, {}); \
 })
-#define comp_op__anySli(var_sli...) eval({ \
+#define comp_op__anySli(var_sli...) blk({ \
     let __sli = var_sli; \
     claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Ptr), "`meta_Ptr` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
     claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Sli), "`meta_Sli` is not compatible with `anySli`. Use `meta_sliToAny`."); \
-    eval_return variant_of$(AnyType, AnyType_sli, { .type = typeInfo$(TypeOf(*__sli.ptr)), .addr = __sli.ptr, .len = __sli.len }); \
+    blk_return variant_of$(AnyType, AnyType_sli, { .type = typeInfo$(TypeOf(*__sli.ptr)), .addr = __sli.ptr, .len = __sli.len }); \
 })
-#define comp_op__anyOpt(var_opt...) eval({ \
+#define comp_op__anyOpt(var_opt...) blk({ \
     let __opt = var_opt; \
-    eval_return variant_of(AnyType, AnyType_opt, { .type = typeInfo$(TypeOf(*__opt.value)), .has_value = __opt.has_value, .value = __opt.value }); \
+    blk_return variant_of(AnyType, AnyType_opt, { .type = typeInfo$(TypeOf(*__opt.value)), .has_value = __opt.has_value, .value = __opt.value }); \
 })
-#define comp_op__anyErrSet(var_err_res...) eval({ \
+#define comp_op__anyErrSet(var_err_res...) blk({ \
     let __err_res = var_err_res; \
-    eval_return variant_of(AnyType, AnyType_err_res, { .type = typeInfo$(TypeOf(*__err_res.data.ok)), .is_err = __err_res.is_err, .data = __err_res.data }); \
+    blk_return variant_of(AnyType, AnyType_err_res, { .type = typeInfo$(TypeOf(*__err_res.data.ok)), .is_err = __err_res.is_err, .data = __err_res.data }); \
 })
 
 #if defined(__cplusplus)

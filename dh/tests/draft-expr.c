@@ -22,9 +22,9 @@ typedef struct R {
         }
 
 // // clang-format off
-// #define expr_(...) pp_overload(inline__expr, __VA_ARGS__)(__VA_ARGS__)
-// #define inline__expr_1(_keyword...) if (!__has_broken) {} _keyword
-// #define inline__expr_2(T, _keyword...) ({ T __reserved_break; bool __has_broken = false;
+// #define eval_(...) pp_overload(inline__expr, __VA_ARGS__)(__VA_ARGS__)
+// #define inline__eval_1(_keyword...) if (!__has_broken) {} _keyword
+// #define inline__eval_2(T, _keyword...) ({ T __reserved_break; bool __has_broken = false;
 // #define inline__$unscoped_expr() __reserved_break; })
 #define $break_(_Expr...) ({ \
     bti_memcpy( \
@@ -40,11 +40,11 @@ typedef struct R {
 
 
 // clang-format off
-#define expr_(T_Break_w_Ext...) inline__expr(T_Break_w_Ext)
+#define eval_(T_Break_w_Ext...) inline__expr(T_Break_w_Ext)
 #define inline__expr(T_Break_w_Ext...) pp_overload(inline__expr, T_Break_w_Ext)(T_Break_w_Ext)
-#define inline__expr_1(_keyword...) ; if (__has_broken) { goto __step_break; } _keyword
-#define inline__expr_2(T_Break, _Ext...) pp_cat(inline__expr_2, _Ext)(T_Break)
-#define inline__expr_2$_scope(T_Break...) ({ \
+#define inline__eval_1(_keyword...) ; if (__has_broken) { goto __step_break; } _keyword
+#define inline__eval_2(T_Break, _Ext...) pp_cat(inline__eval_2, _Ext)(T_Break)
+#define inline__eval_2$_scope(T_Break...) ({ \
     local_label __step_break; \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
@@ -52,8 +52,8 @@ typedef struct R {
     )]){})); \
     $maybe_unused bool __has_broken = false;\
     /* do */
-#define $unscoped_expr comp_syn__expr_$unscoped
-#define comp_syn__expr_$unscoped \
+#define $unscoped_expr comp_syn__eval_$unscoped
+#define comp_syn__eval_$unscoped \
     /* while(false) */; \
     __step_break: \
     _Generic(TypeOf(*__reserved_break), \
@@ -104,36 +104,36 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 TEST_fn_("test eval function" $scope) {
     const usize key = 12;
 
-    let value_for = expr_(Sli_const$u8 $scope)(
-        for_($r(0, 10), i) {
+    let value_for = eval_(Sli_const$u8 $scope)(
+        for_(($r(0, 10))(i) {
             io_stream_print(u8_l("i: {:llu}\n"), i);
             if (i % 2 == 0) { continue; }
             if (i == 5) { break; }
             if (i == key) { $break_(u8_l("first")); }
-        }
-    ) expr_(else)(for_($r(10, 20), j) {
+        })
+    ) eval_(else)(for_(($r(10, 20))(j) {
         io_stream_print(u8_l("j: {:llu}\n"), j);
         if (j == key) { $break_(u8_l("second")); }
-    }) expr_(else)({
+    })) eval_(else)({
         $break_(u8_l("third"));
-    }) $unscoped_(expr);
+    }) $unscoped_(eval);
 
 #if UNUSED_CODE
-    let value_if = expr_(Sli_const$u8 $scope)(if (false) {
+    let value_if = eval_(Sli_const$u8 $scope)(if (false) {
         $break_(u8_l("first"));
-    }) expr_(else)(if (true) {
+    }) eval_(else)(if (true) {
         $break_(u8_l("second"));
-    }) expr_(else)({
+    }) eval_(else)({
         claim_unreachable;
     }) $unscoped_(expr);
 #endif /* UNUSED_CODE */
-    let value_if = eval_(Sli_const$u8 $scope) if (false) {
+    let value_if = expr_(Sli_const$u8 $scope) if (false) {
         $break_(u8_l("first"));
     } else if (true) {
         $break_(u8_l("second"));
     } else {
         claim_unreachable;
-    } $unscoped_($eval);
+    } $unscoped_(expr);
 
     io_stream_print(u8_l("value_for: {:s}\n"), value_for);
     io_stream_print(u8_l("value_if: {:s}\n"), value_if);

@@ -28,17 +28,17 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
     } else if (total_nanos < time_nanos_per_milli) { // < 1 ms
         written = try_(io_writeFmt(
             buf, u8_l("%g μs"),
-            as$((f64)(total_nanos) / time_nanos_per_micro)
+            as$((f64)(total_nanos)) / time_nanos_per_micro
         ));
     } else if (total_nanos < time_nanos_per_sec) { // < 1 s
         written = try_(io_writeFmt(
             buf, u8_l("%g ms"),
-            as$((f64)(total_nanos) / time_nanos_per_milli)
+            as$((f64)(total_nanos)) / time_nanos_per_milli
         ));
     } else if (self.secs < time_secs_per_min) { // < 1 min
         written = try_(io_writeFmt(
             buf, u8_l("%g s"),
-            as$((f64)(total_nanos) / time_nanos_per_sec)
+            as$((f64)(total_nanos)) / time_nanos_per_sec
         ));
     } else if (self.secs < time_secs_per_min * time_mins_per_hour) { // < 1 hour
         let mins = self.secs / time_secs_per_min;
@@ -47,7 +47,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu min %g s"),
-            mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
+            mins, as$((f64)(secs)) + as$((f64)(self.nanos)) / time_nanos_per_sec
         ));
     } else if (self.secs < time_secs_per_min * time_mins_per_hour * time_hours_per_day) { // < 1 day
         let hours = self.secs / (time_secs_per_min * time_mins_per_hour);
@@ -57,7 +57,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu h %llu min %g s"),
-            hours, mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
+            hours, mins, as$((f64)(secs)) + as$((f64)(self.nanos)) / time_nanos_per_sec
         ));
     } else {
         let days  = self.secs / (time_secs_per_min * time_mins_per_hour * time_hours_per_day);
@@ -69,7 +69,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu d %llu h %llu min %g s"),
-            days, hours, mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
+            days, hours, mins, as$((f64)(secs)) + as$((f64)(self.nanos)) / time_nanos_per_sec
         ));
     }
 
@@ -315,7 +315,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
 
         var mem = (Arr$$(128, u8)){};
         var buf = Arr_slice$(Sli$u8, mem, $r(0, 128));
-        for_slice (times.items, time) {
+        for_slice(times.items, time) {
             let point = time_Instant_addDuration(start, *time);
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(point, buf)));
             let dur = time_Instant_durationSince(point, start);
@@ -330,7 +330,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
                 return time_Duration_cmp(*dur_lhs, *dur_rhs);
             })
         ));
-        for_slice (times.items, time) {
+        for_slice(times.items, time) {
             let point = time_Instant_addDuration(start, *time);
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(point, buf)));
             let dur = time_Instant_durationSince(point, start);
@@ -372,7 +372,7 @@ async_fn_scope(asyncMain, {
 
 
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
-    for_slice_indexed (args, arg, idx) {
+    for_slice_indexed(args, arg, idx) {
         io_stream_print(u8_l("args[{:zu}]: {:s}\n"), idx, arg);
     }
     io_stream_print(u8_l("\n"));
@@ -391,7 +391,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     {
         var mem = (Arr$$(128, u8)){};
         var buf = Arr_slice$(Sli$u8, mem, $r(0, 128));
-        for_slice (timer_queue.list.items, time) {
+        for_slice(timer_queue.list.items, time) {
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(time->expires, buf)));
         }
     }

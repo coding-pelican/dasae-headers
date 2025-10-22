@@ -57,7 +57,7 @@ $inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
 }
 #endif /* COMP_TIME */
 
-#define comp_op__type$(__src, T_Dest, val_src...) eval({ \
+#define comp_op__type$(__src, T_Dest, val_src...) blk({ \
     var __src = val_src; \
     claim_assert_static_msg( \
         !isSameType(TypeOf(__src), meta_Ptr), \
@@ -67,12 +67,12 @@ $inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
         !isSameType(TypeOf(__src), meta_Sli), \
         "`meta_Sli` is not compatible with `type$`. Use `meta_castSli$`." \
     ); \
-    eval_return(*((T_Dest*)&(__src))); \
+    blk_return(*((T_Dest*)&(__src))); \
 })
-#define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) eval({ \
+#define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) blk({ \
     let __addr_dest = var_addr_dest; \
     *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_src); \
-    eval_return __addr_dest; \
+    blk_return __addr_dest; \
 })
 
 #if defined(__cplusplus)

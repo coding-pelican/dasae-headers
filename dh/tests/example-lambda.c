@@ -27,15 +27,15 @@ static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
 #include "dh/heap/Page.h"
 
 #define cinq_select(var_collection, _PayloadCapture, _Body...)           comp_syn__cinq_select(var_collection, _PayloadCapture, _Body)
-#define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) eval({ \
+#define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) blk({ \
     let __collection = var_collection; \
     var __temp       = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \
     for_slice (__collection.items, __iter_elem) { \
         var _PayloadCapture = *__iter_elem; \
-        var __item          = eval({ _Body; }); \
+        var __item          = blk({ _Body; }); \
         try_(ArrList_append(&__temp, meta_refPtr(&__item))); \
     }; \
-    eval_return type$(TypeOf(__collection), __temp); \
+    blk_return type$(TypeOf(__collection), __temp); \
 })
 
 // Example main function showing how to use the compatibility layer

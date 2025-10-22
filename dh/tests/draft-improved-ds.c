@@ -35,11 +35,12 @@ extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_c
 
 $static $inline $must_check
 fn_((addOrOutOfMemory(usize a, usize b))(Err$usize)) {
-    return eval_(Err$usize $scope) if_none(usize_chkdAdd(a, b)) {
+    return expr_(Err$usize $scope) if_none(usize_addChkd(a, b)) {
         $break_(err(mem_Err_OutOfMemory()));
-    } else_some(result) {
+    }
+    else_some(result) {
         $break_(ok(result));
-    } $unscoped_($eval);
+    } $unscoped_(expr);
 }
 
 fn_((ArrDeq_growCap(usize current, usize minimum))(usize)) {
@@ -80,7 +81,8 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity
             }
             self->buf = new_buf;
         }
-    } else {
+    }
+    else {
         let new_buf = try_(mem_Allocator_alloc(gpa, self->items.type, new_capacity));
         if (self->head < old_buf.len - self->len) {
             meta_Sli_copy(meta_Sli_prefix(new_buf, self->len), meta_Sli_prefix(meta_Sli_suffix(old_buf, self->head), self->len));

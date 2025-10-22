@@ -7,11 +7,11 @@
 // Function that may return an optional i32
 $static
 fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
-    for_slice_indexed (items, item, index) {
+    for_(($rf(0), $s(items))(index, item) {
         if (*item == value) {
             return_some(index); // Return optional with a value
         }
-    }
+    });
     return_none(); // Return optional with no value
 } $unscoped_(fn);
 
@@ -130,10 +130,10 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 
 #if README_SAMPLE
 $static fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
-    for_slice_indexed (items, item, index) {
+    for_(($rf(0), $s(items))(index, item) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
-    }
+    });
     return_none(); // Return with no value
 } $unscoped_(fn);
 

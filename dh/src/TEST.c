@@ -65,8 +65,7 @@ fn_((TEST_Framework_run(void))(void)) {
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
 
     // Run each test case
-    let cases = instance->cases.items;
-    for_slice (cases, test_case) {
+    for_(($s(instance->cases.items))(test_case) {
         instance->stats.total++;
         catch_((print(
             out, u8_l("Running test: {:s}{:s}{:s}\n"),
@@ -85,15 +84,14 @@ fn_((TEST_Framework_run(void))(void)) {
             Err_print(err);
             ErrTrace_print();
             ErrTrace_reset();
-        }
-        else_void {
+        } else_void {
             instance->stats.passed++;
             catch_((print(
                 out, u8_l("    {:s}\n"),
                 u8_l(TEST_color_green "[PASS]" TEST_color_reset)
             ))($ignore, claim_unreachable));
         }
-    }
+    });
 
     // Print summary
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
@@ -109,9 +107,9 @@ fn_((TEST_Framework_run(void))(void)) {
 }
 
 /* Debug versions of test functions */
-fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 expr_str))(Err$void) $scope) {
+fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 eval_str))(Err$void) $scope) {
     let_ignore = loc;
-    let_ignore = expr_str;
+    let_ignore = eval_str;
 
     if (!expr) {
         return_err(TEST_Err_Unexpected());
@@ -119,10 +117,10 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 expr_str))(Err$void) $
     return_ok({});
 } $unscoped_(fn);
 
-fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 expr_str))(Err$void) $scope) {
+fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 eval_str))(Err$void) $scope) {
     let_ignore = msg;
     let_ignore = loc;
-    let_ignore = expr_str;
+    let_ignore = eval_str;
 
     if (!expr) {
         return_err(TEST_Err_Unexpected());

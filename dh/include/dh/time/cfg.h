@@ -34,12 +34,14 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #if bti_plat_windows
-typedef LARGE_INTEGER       time_SysTimeWindows;
-typedef time_SysTimeWindows time_SysTimePlatform;
-#else  /* posix */
-typedef struct timespec  time_SysTimeUnix;
-typedef time_SysTimeUnix time_SysTimePlatform;
-#endif /* posix */
+typedef LARGE_INTEGER time_SysTimeWindows;
+#else /* posix */
+typedef struct timespec time_SysTimeUnix;
+#endif
+typedef pp_if_(bti_plat_windows)(
+    pp_than_(time_SysTimeWindows),
+    pp_else_(time_SysTimeUnix)
+) time_SysTimePlatform;
 
 #if defined(__cplusplus)
 } /* extern "C" */

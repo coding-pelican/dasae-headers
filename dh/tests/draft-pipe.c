@@ -53,9 +53,9 @@
 #define PIPE_STEP(prev_result_var, step_num, func, args...) \
     var ret##step_num = bti_Generic_match$( \
         TypeOf(PIPE_APPLY((prev_result_var), func, args)), \
-        bti_Generic_pattern$(void) eval({ \
+        bti_Generic_pattern$(void) blk({ \
             let_ignore = PIPE_APPLY((prev_result_var), func, args); \
-            eval_return make$(Void); \
+            blk_return make$(Void); \
         }), \
         bti_Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
     );
@@ -154,7 +154,7 @@ static fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)) $must_check;
 static fn_((Foo_fini(Foo* const self))(void));
 static fn_((Foo_setA(Foo* const self, i32 a))(Foo*));
 static fn_((Foo_setB(Foo* const self, i32 b))(Foo*));
-static fn_((Foo_eval(Foo* const self))(Foo*));
+static fn_((Foo_blk(Foo* const self))(Foo*));
 static fn_((Foo_merge(Foo* const self, const Foo* other))(Foo*));
 static fn_((Foo_baz(const Foo* const self))(i32));
 
@@ -206,12 +206,12 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     // Traditional approach
-    block_defer {
+    blk_defer {
         let bar = try_(Foo_init(allocator));
         {
             Foo_setA(bar, 5);
             Foo_setB(bar, 15);
-            Foo_eval(bar);
+            Foo_blk(bar);
         }
         defer_(Foo_fini(bar));
 
@@ -219,15 +219,15 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         defer_(Foo_fini(foo));
         Foo_setA(foo, 10);
         Foo_setB(foo, 20);
-        Foo_eval(foo);
+        Foo_blk(foo);
         Foo_merge(foo, bar);
         let result = Foo_baz(foo);
 
         io_stream_println(u8_l("Traditional result: {:d}\n"), result);
-    } block_deferral;
+    } blk_deferral;
 
     // Using pipe macro
-    block_defer {
+    blk_defer {
         let bar = pipe(try_(Foo_init(allocator)),
             (Foo_setA,(5)),
             (Foo_setB,(15)),
@@ -245,7 +245,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
             (Foo_baz,())
         );
         io_stream_println(u8_l("Pipe result: {:d}\n"), result);
-    } block_deferral;
+    } blk_deferral;
 
     return_ok({});
 } $unguarded_(fn);
@@ -310,7 +310,7 @@ fn_((Foo_setA(Foo* const self, i32 a))(Foo*)) {
 fn_((Foo_setB(Foo* const self, i32 b))(Foo*)) {
     return deref(self).b = b, self;
 }
-fn_((Foo_eval(Foo* const self))(Foo*)) {
+fn_((Foo_blk(Foo* const self))(Foo*)) {
     debug_assert_nonnull(self);
     return self->value = self->a + self->b, self;
 }

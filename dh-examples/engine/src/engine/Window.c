@@ -18,15 +18,15 @@ fn_((engine_Window_init(engine_Window_Config config))(Err$Ptr$engine_Window) $gu
         .width         = rect_size.x,
         .height        = rect_size.y,
         .type          = some(engine_CanvasType_rgba),
-        .default_color = some(expr_(Color $scope)(if_none(config.default_color) {
+        .default_color = some(expr_(Color $scope)if_none(config.default_color) {
             $break_(engine_Window_composite_buffer_color_default);
-        }) else_some(color)({
-            $break_(expr_(Color $scope)(if (color.a != ColorChannel_alpha_opaque) {
+        } else_some(color) {
+            $break_(expr_(Color $scope) if (color.a != ColorChannel_alpha_opaque) {
                 $break_(engine_Window_composite_buffer_color_default);
-            }) expr_(else)({
+            } else {
                 $break_(color);
-            }) $unscoped_(expr));
-        }) $unscoped_(expr)),
+            } $unscoped_(expr));
+        } $unscoped_(expr)),
     }));
     errdefer_($ignore, engine_Canvas_fini(composite_buffer));
     window->composite_buffer = composite_buffer;
@@ -56,11 +56,11 @@ fn_((engine_Window_update(engine_Window* self))(Err$void) $scope) {
     for (u32 id = 0; id < self->view.count; ++id) {
         let view = Arr_at(self->view.list, id);
         if (!view->visible) { continue; }
-        let size = eval({
+        let size = blk({
             var full = view->rect.size;
             if (view->rect.resizable.x) { full.x = res.x; }
             if (view->rect.resizable.y) { full.y = res.y; }
-            eval_return full;
+            blk_return full;
         });
         try_(engine_Canvas_resize(
             view->canvas,
@@ -92,8 +92,8 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
         engine_Canvas_blit(
             self->composite_buffer,
             view->canvas,
-            as$(i32, view->pos_on_window.top_left.x),
-            as$(i32, view->pos_on_window.top_left.y)
+            as$((i32)(view->pos_on_window.top_left.x)),
+            as$((i32)(view->pos_on_window.top_left.y))
         );
     }
 
@@ -105,7 +105,7 @@ fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config conf
     debug_assert_nonnull(self);
 
     if (engine_Window_view_count_limit <= self->view.count) { return_none(); }
-    return_some(eval({
+    return_some(blk({
         let view                     = Arr_at(self->view.list, self->view.count);
         view->canvas                 = config.canvas;
         view->pos_on_window.top_left = config.pos;
@@ -114,7 +114,7 @@ fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config conf
         view->rect.resizable.x       = config.resizable_x;
         view->rect.resizable.y       = config.resizable_y;
         view->visible                = config.visible;
-        eval_return self->view.count++;
+        blk_return self->view.count++;
     }));
 } $unscoped_(fn);
 

@@ -109,7 +109,7 @@ extern "C" {
         T    value; \
         bool has_value; \
     }
-#define comp_op__Opt_anonCast$(T_Opt, var_anon...) eval({ \
+#define comp_op__Opt_anonCast$(T_Opt, var_anon...) blk({ \
     let __anon = var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Opt)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Opt)); \
@@ -119,7 +119,7 @@ extern "C" {
     claim_assert_static(hasField(TypeOf(__anon), value)); \
     claim_assert_static(validateField(TypeOf(__anon), value, FieldTypeOf(T_Opt, value))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), value) == fieldPadding(T_Opt, value)); \
-    eval_return(*(T_Opt*)&__anon); \
+    blk_return(*(T_Opt*)&__anon); \
 })
 
 #define comp_op__some(val_some...)         { .has_value = true, .value = val_some }
@@ -127,11 +127,11 @@ extern "C" {
 #define comp_op__none()                    { .has_value = false }
 #define comp_op__none$(T_Opt)              ((T_Opt)none())
 
-#define comp_op__Opt_asg$(__addr_opt, T_Opt, var_addr_opt, val_opt...) eval({ \
+#define comp_op__Opt_asg$(__addr_opt, T_Opt, var_addr_opt, val_opt...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     *__addr_opt = *(T_Opt[1]){ [0] = val_opt }; \
-    eval_return __addr_opt; \
+    blk_return __addr_opt; \
 })
 #define comp_op__Opt_asg(var_addr_opt, val_opt...)         Opt_asg$(TypeOf(*var_addr_opt), var_addr_opt, val_opt)
 #define comp_op__toSome$(T_Opt, var_addr_opt, val_some...) Opt_asg$(T_Opt, var_addr_opt, some(val_some))
@@ -165,24 +165,24 @@ extern "C" {
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
-    eval({ \
+    blk({ \
         var __result = _Expr; \
         if (isNone(__result)) { \
             __result.value = bti_Generic_match$( \
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
-                bti_Generic_pattern$(void) eval({ \
+                bti_Generic_pattern$(void) blk({ \
                     $ignore_void _DefaultExpr_OR_Body; \
-                    eval_return make$(TypeOf(__result.value)); \
+                    blk_return make$(TypeOf(__result.value)); \
                 }), \
                 bti_Generic_fallback_ _DefaultExpr_OR_Body \
             ); \
         } \
-        eval_return __result.value; \
+        blk_return __result.value; \
     }) \
 )
 #define comp_op__unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
 
-#define comp_op__Opt_asPtr$(__addr_opt, T_OptPtr, var_addr_opt...) eval({ \
+#define comp_op__Opt_asPtr$(__addr_opt, T_OptPtr, var_addr_opt...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     (T_OptPtr){ \

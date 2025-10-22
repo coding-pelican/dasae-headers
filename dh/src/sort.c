@@ -119,17 +119,17 @@ fn_((sort_mergeSortUsingTempRecur(
 
     /* Copy remaining elements */
     if (left_ptr < left_end) {
-        temp_ptr += eval({
+        temp_ptr += blk({
             let bytes_left = left_end - left_ptr;
             memcpy(temp_ptr, left_ptr, bytes_left);
-            eval_return bytes_left;
+            blk_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
-        temp_ptr += eval({
+        temp_ptr += blk({
             let bytes_right = right_end - right_ptr;
             memcpy(temp_ptr, right_ptr, bytes_right);
-            eval_return bytes_right;
+            blk_return bytes_right;
         });
     }
 
@@ -198,17 +198,17 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
 
     /* Copy remaining elements */
     if (left_ptr < left_end) {
-        temp_ptr += eval({
+        temp_ptr += blk({
             let bytes_left = left_end - left_ptr;
             memcpy(temp_ptr, left_ptr, bytes_left);
-            eval_return bytes_left;
+            blk_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
-        temp_ptr += eval({
+        temp_ptr += blk({
             let bytes_right = right_end - right_ptr;
             memcpy(temp_ptr, right_ptr, bytes_right);
-            eval_return bytes_right;
+            blk_return bytes_right;
         });
     }
 

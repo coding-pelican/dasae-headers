@@ -92,9 +92,9 @@ T_Callback
 #define comp_op__wrapLam$(T_Callback, val_callbackLamObj...) ((T_Callback)wrapLam(val_callbackLamObj))
 #define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...)   ((T_Callback)wrapFn(val_callbackFnPtr))
 
-#define comp_op__invoke(__wrapper, val_wrapper, _Args...) eval({ \
+#define comp_op__invoke(__wrapper, val_wrapper, _Args...) blk({ \
     let __wrapper = val_wrapper; \
-    eval_return( \
+    blk_return( \
         (__wrapper).is_lam \
             ? (__wrapper).callback.lamObj(_Args) \
             : (__wrapper).callback.fnPtr(_Args) \

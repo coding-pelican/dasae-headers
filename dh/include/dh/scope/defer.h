@@ -36,9 +36,9 @@ extern "C" {
 
 #define defer(_Statement...) SYN__defer(_Statement)
 
-#define block_defer    SYN__block_defer
-#define block_deferral SYN__block_deferral
-#define defer_break    SYN__defer_break
+#define blk_defer    SYN__blk_defer
+#define blk_deferral SYN__blk_deferral
+#define break_defer  SYN__break_defer
 
 #define scope_defer                 SYN___scope_defer
 #define scope_deferral              SYN___scope_deferral
@@ -48,9 +48,9 @@ extern "C" {
 
 #define defer_(_Statement...) SYN__defer(_Statement)
 
-#define block_defer    SYN__block_defer
-#define block_deferral SYN__block_deferral
-#define defer_break    SYN__break_defer
+#define blk_defer    SYN__blk_defer
+#define blk_deferral SYN__blk_deferral
+#define break_defer  SYN__break_defer
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
@@ -62,7 +62,7 @@ extern "C" {
 #define SYN__defer(_Statement...) \
     defer__snapshot(_Statement; goto __deferred)
 
-#define SYN__block_defer \
+#define SYN__blk_defer \
     do { \
     defer__snapshot( \
         if (__scope_defer.returns) { \
@@ -72,12 +72,12 @@ extern "C" {
         } \
     )
 
-#define SYN__block_deferral \
+#define SYN__blk_deferral \
     goto __deferred; \
     } \
     while (false)
 
-#define SYN__defer_break \
+#define SYN__break_defer \
     { \
         goto __deferred; \
     }

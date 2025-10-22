@@ -40,8 +40,8 @@ extern "C" {
 #define prefix$R R_prefix
 #define suffix$R R_suffix
 
-#define len$R      R_len
-#define at$R       R_at
+#define len$R      comp_expand__len$R
+#define at$R       comp_expand__at$R
 #define contains$R R_contains
 #define isValid$R  R_isValid
 
@@ -103,10 +103,16 @@ fn_((R_ne(R lhs, R rhs))(bool));
 #define comp_expand__$incl(_point...)    _point
 #define comp_expand__$excl(_point...)    _point
 #define comp_expand__$r(_begin, _end...) (R_from(_begin, _end))
+$extern fn_((R__len(R))(usize));
+$extern fn_((R__at(R, usize))(usize));
+#define comp_expand__len$R               R__len
+#define comp_expand__at$R                R__at
 #else
 #define comp_expand__$incl(_point...)    R_Bound_incl, _point
 #define comp_expand__$excl(_point...)    R_Bound_excl, _point
 #define comp_expand__$r(_begin, _end...) (R_from($r_begin(_begin), $r_end(_end)))
+#define comp_expand__len$R               R_len
+#define comp_expand__at$R                R_at
 #endif
 
 $static $inline_always

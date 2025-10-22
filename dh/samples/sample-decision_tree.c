@@ -151,7 +151,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     }
 
     // Load the tree from the file
-    let loaded_tree = eval({
+    let loaded_tree = blk({
         var load_file = fopen("decision_tree.bin", "rb");
         if (!load_file) {
             log_error("Failed to open file for reading: decision_tree.bin");
@@ -162,7 +162,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         let_ignore = fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
-        eval_return loaded;
+        blk_return loaded;
     });
     defer_(TreeNode_destroyRecur(allocator, loaded_tree));
 
@@ -302,13 +302,13 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void) $scop
 } $unscoped_(fn);
 
 fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$TreeNode) $scope) /* NOLINT(misc-no-recursion) */ {
-    let tag = eval({
+    let tag = blk({
         int tag = 0;
         if (fread(&tag, sizeof(tag), 1, file) != 1) {
             log_error("Failed to read node tag");
             return_err(fs_FileErr_ReadFailed());
         }
-        eval_return tag;
+        blk_return tag;
     });
 
     if (tag == TreeNode_leaf) {

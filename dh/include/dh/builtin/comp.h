@@ -138,9 +138,9 @@ extern "C" {
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
 #define bti_Generic_fallback_              comp_syn__bti_Generic_fallback_
 
-#define eval              comp_syn__eval
-#define eval_return       comp_syn__eval_return
-#define eval_return_(...) comp_syn__eval_return_(__VA_ARGS__)
+#define blk              comp_syn__blk
+#define blk_return       comp_syn__blk_return
+#define blk_return_(...) comp_syn__blk_return_(__VA_ARGS__)
 
 #define local_label                 comp_syn__local_label
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
@@ -281,9 +281,9 @@ T:
 #define comp_syn__bti_Generic_fallback_ \
     default:
 
-#define comp_syn__eval              /* just comment for expr stmt ({...}) */
-#define comp_syn__eval_return       /* just comment for expr stmt ({...}) */
-#define comp_syn__eval_return_(...) __VA_ARGS__
+#define comp_syn__blk              /* just comment for compound statement expression ({...}) */
+#define comp_syn__blk_return       /* just comment for compound statement expression ({...}) */
+#define comp_syn__blk_return_(...) __VA_ARGS__
 
 #define comp_syn__local_label        __label__
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)

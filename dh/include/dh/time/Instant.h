@@ -42,7 +42,7 @@ impl_Opt$(time_Instant);
 extern time_Instant      time_Instant_now(void);
 extern time_Duration     time_Instant_elapsed(time_Instant self);
 extern time_Duration     time_Instant_durationSince(time_Instant later, time_Instant earlier);
-extern Opt$time_Duration time_Instant_chkdDurationSince(time_Instant later, time_Instant earlier);
+extern Opt$time_Duration time_Instant_durationSinceChkd(time_Instant later, time_Instant earlier);
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -54,8 +54,8 @@ extern time_Instant op_fnSubBy(time_Instant, time_Duration);
 extern time_Instant op_fnSubAsgBy(time_Instant, time_Duration);
 static op_fnWrapSubBy(subDuration, time_Instant, time_Duration, time_Instant);
 static op_fnWrapSubAsgBy(subAsgDuration, time_Instant, time_Duration, time_Instant);
-extern Opt$time_Instant time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs);
-extern Opt$time_Instant time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs);
+extern Opt$time_Instant time_Instant_addChkdDuration(time_Instant lhs, time_Duration rhs);
+extern Opt$time_Instant time_Instant_subChkdDuration(time_Instant lhs, time_Duration rhs);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

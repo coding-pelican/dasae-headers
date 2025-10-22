@@ -134,7 +134,7 @@ __step_unscope: \
 // clang-format on
 
 #define areturn_(_expr...)           comp_syn__areturn_(_expr)
-#define comp_syn__areturn_(_expr...) eval({ \
+#define comp_syn__areturn_(_expr...) blk({ \
     debug_assert_nonnull(ctx); \
     *__reserved_return = *(TypeOf(ctx->ret->value)[1]){ [0] = _expr }; \
     goto __step_return; \
@@ -179,7 +179,7 @@ __step_unscope: \
     } while (false)
 
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__resume_(__ctx, _ctx...) eval({ \
+#define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
     __callFn(as$((Co_FnWork*)(__ctx->fn)), as$((Co_Ctx*)(__ctx))); \
 })

@@ -120,7 +120,7 @@ union Grid {
         u32 width; \
         u32 height; \
     };
-#define comp_op__Grid_anonCast$(__anon, T_Grid, var_anon...) eval({ \
+#define comp_op__Grid_anonCast$(__anon, T_Grid, var_anon...) blk({ \
     const TypeOf(var_anon) __anon = var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Grid)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Grid)); \
@@ -130,10 +130,10 @@ union Grid {
     claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \
-    eval_return rawderef(as$((rawptr$(T_Grid))(&__anon))); \
+    blk_return rawderef(as$((rawptr$(T_Grid))(&__anon))); \
 })
 
-#define comp_op__Grid_fromSli$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) eval({ \
+#define comp_op__Grid_fromSli$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) blk({ \
     const TypeOf(var_sli) __sli = var_sli; \
     const u32 __width           = u32_width; \
     const u32 __height          = u32_height; \
@@ -144,7 +144,7 @@ union Grid {
         __width, \
         __height \
     ); \
-    eval_return make$( \
+    blk_return make$( \
         T_Grid, \
         .items  = __sli, \
         .width  = __width, \
@@ -154,7 +154,7 @@ union Grid {
 
 #define comp_op__Grid_width(var_self...)                              ((var_self).width)
 #define comp_op__Grid_height(var_self...)                             ((var_self).height)
-#define comp_op__Grid_at(__self, __x, __y, var_self, u32_x, u32_y...) eval({ \
+#define comp_op__Grid_at(__self, __x, __y, var_self, u32_x, u32_y...) blk({ \
     let       __self = var_self; \
     const u32 __x    = u32_x; \
     const u32 __y    = u32_y; \
@@ -170,12 +170,12 @@ union Grid {
         __y, \
         __self.height \
     ); \
-    eval_return Sli_at( \
+    blk_return Sli_at( \
         __self.items, \
         as$((usize)(__x)) + (as$((usize)(__y)) * __self.width) \
     ); \
 })
-#define comp_op__Grid_getAt(__self, __x, __y, var_self, u32_x, u32_y...) eval({ \
+#define comp_op__Grid_getAt(__self, __x, __y, var_self, u32_x, u32_y...) blk({ \
     let       __self = var_self; \
     const u32 __x    = u32_x; \
     const u32 __y    = u32_y; \
@@ -191,12 +191,12 @@ union Grid {
         __y, \
         __self.height \
     ); \
-    eval_return Sli_getAt( \
+    blk_return Sli_getAt( \
         __self.items, \
         as$((usize)(__x)) + (as$((usize)(__y)) * __self.width) \
     ); \
 })
-#define comp_op__Grid_setAt(__self, __x, __y, var_self, u32_x, u32_y, val_item...) eval({ \
+#define comp_op__Grid_setAt(__self, __x, __y, var_self, u32_x, u32_y, val_item...) blk({ \
     let       __self = var_self; \
     const u32 __x    = u32_x; \
     const u32 __y    = u32_y; \
@@ -212,14 +212,14 @@ union Grid {
         __y, \
         __self.height \
     ); \
-    eval_return Sli_setAt( \
+    blk_return Sli_setAt( \
         __self.items, \
         as$((usize)(__x)) + (as$((usize)(__y)) * __self.width), \
         val_item \
     ); \
 })
 
-#define comp_syn__for_grid_item(_Grid, _Tuple_Item, _Body...) eval({ \
+#define comp_syn__for_grid_item(_Grid, _Tuple_Item, _Body...) blk({ \
     let       __grid   = _Grid; \
     const u32 __width  = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -230,7 +230,7 @@ union Grid {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y(_Grid, _Tuple_Item_w_Tuple_X_Y, _Body...) eval({ \
+#define comp_syn__for_grid_item_w_tuple_x_y(_Grid, _Tuple_Item_w_Tuple_X_Y, _Body...) blk({ \
     let       __grid   = _Grid; \
     const u32 __width  = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -248,7 +248,7 @@ union Grid {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_idx(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx, _Body...) eval({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_idx(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx, _Body...) blk({ \
     let       __grid   = _Grid; \
     const u32 __width  = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -269,7 +269,7 @@ union Grid {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_w_tuple_width_height(_Grid, _Tuple_Item_w_Tuple_X_Y_w_Tuple_Width_Height, _Body...) eval({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_w_tuple_width_height(_Grid, _Tuple_Item_w_Tuple_X_Y_w_Tuple_Width_Height, _Body...) blk({ \
     let       __grid   = _Grid; \
     const u32 __width  = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -293,7 +293,7 @@ union Grid {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_idx_w_tuple_width_height_len(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len, _Body...) eval({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_idx_w_tuple_width_height_len(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len, _Body...) blk({ \
     let         __grid   = _Grid; \
     const u32   __width  = Grid_width(__grid); \
     const u32   __height = Grid_height(__grid); \

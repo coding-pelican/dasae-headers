@@ -115,9 +115,9 @@ typedef ptrdiff_t   ptrdiff;
 #define comp_op__rawptrIsNull(var_rawptr)    ((var_rawptr) == null)
 #define comp_op__rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
 
-#define comp_op__ensureNonnull(__ptr, val_ptr...) eval({ \
+#define comp_op__ensureNonnull(__ptr, val_ptr...) blk({ \
     TypeOf(*val_ptr)* __ptr = val_ptr; \
-    eval_return debug_assert_nonnull(__ptr), __ptr; \
+    blk_return debug_assert_nonnull(__ptr), __ptr; \
 })
 
 #define comp_op__rawref(var_src...)   (&(var_src))

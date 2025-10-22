@@ -7,7 +7,7 @@
     pp_overload(__blk, _BreakType_and_Body)(_label, _BreakType_and_Body)
 #define __blk_1(_label, _Body...)                    comp_syn__blk_((_label, Void), _Body)
 #define __blk_2(_label, _RetType, _Body...)          comp_syn__blk_((_label, _RetType), _Body)
-#define comp_syn__blk_(_Label_and_RetType, _Body...) eval({ \
+#define comp_syn__blk_(_Label_and_RetType, _Body...) blk({ \
     local_label pp_Tuple_get1st _Label_and_RetType; \
     var pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType) = _Generic( \
         TypeOf(pp_Tuple_get2nd _Label_and_RetType), \
@@ -26,7 +26,7 @@
 
 #define for_(_Begin_to_End, _Iter, _Expr...) \
     comp_syn__for_(pp_uniqTok(range), pp_uniqTok(i), _Begin_to_End, _Iter, _Expr)
-#define comp_syn__for_(__range, __i, _Begin_to_End, _Iter, _Expr...) eval({ \
+#define comp_syn__for_(__range, __i, _Begin_to_End, _Iter, _Expr...) blk({ \
     let_(__range, R) = _Begin_to_End; \
     for (usize __i = __range.begin; __i < __range.end; ++__i) { \
         let _Iter = __i; \
@@ -53,15 +53,17 @@
 #define while_none(_init, _opt, _cont, _expr...) \
     While_((var __opt = (_opt); pp_expand _init), (isNone(__opt)), (), (pp_expand _cont; __opt = (_opt)), _expr)
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     let_ignore = args;
 
     {
         i32 key   = 7;
-        let value = expr_(i32 $scope)({
+        let value = eval_(i32 $scope)({
             i32 sum = 0;
             while_((i32 i = 0), (i < 10), (i += 1), {
-                if (i == key) $break_(sum + 100);
+                if (i == key) {
+                    $break_(sum + 100);
+                }
                 sum += i;
             });
             $break_(sum);
@@ -79,24 +81,24 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
 
     {
         i32 key   = 23;
-        let value = eval_(i32 $scope) {
+        let value = expr_(i32 $scope) {
             for_($r(0, 10), (i), {
                 if (i == as$((usize)(key))) {
-                    eval_break_(5);
+                    $break_(5);
                 }
             });
             for_($r(10, 20), (i), {
                 if (i == as$((usize)(key))) {
-                    eval_break_(15);
+                    $break_(15);
                 }
             });
             for_($r(20, 30), (i), {
                 if (i == as$((usize)(key))) {
-                    eval_break_(25);
+                    $break_(25);
                 }
             });
             claim_unreachable;
-        } $unscoped_($eval);
+        } $unscoped_(expr);
         printf("value: %d\n", value);
     }
 

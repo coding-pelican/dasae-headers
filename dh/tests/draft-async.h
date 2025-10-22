@@ -115,7 +115,7 @@ typedef struct Co_Ctx {
     } while (false)
 
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__resume_(__ctx, _ctx...) eval({ \
+#define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
     callFn((__ctx->fn)(as$((Co_Ctx*)(__ctx)))); \
 })
@@ -125,9 +125,9 @@ typedef struct Co_Ctx {
     while (deref(_ctx).state != Co_State_ready) { suspend_(); }
 
 #define nosuspend_await_(_ctx)                     comp_syn__nosuspend_await_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__nosuspend_await_(__ctx, _ctx...) eval({ \
+#define comp_syn__nosuspend_await_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
     if (__ctx->state != Co_State_ready) { resume_(__ctx); } \
     debug_assert(__ctx->state == Co_State_ready); \
-    eval_return __ctx->ret; \
+    blk_return __ctx->ret; \
 })

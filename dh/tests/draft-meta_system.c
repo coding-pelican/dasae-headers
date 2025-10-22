@@ -1207,8 +1207,8 @@ int  main(void) {
 
 #define $rf(_expr...) $r(_expr, usize_limit_max)
 #define $rt(_expr...) $r(0, _expr)
-#define $a(_a...)     ($A, _a)
-#define $s(_s...)     ($S, _s)
+#define $a(_a...)     ($A, (_a))
+#define $s(_s...)     ($S, (_s))
 
 #define foreach_(/*(<$a|$s>(range|slice, (iter, index, offset))...) { ... }*/...) \
     __foreach_exec(pp_defer(__foreach_impl)(__foreach_sep __VA_ARGS__))
@@ -1483,17 +1483,17 @@ void better(void) {
     __exec__for_(pp_defer(__emit__for_$_fwd)(__sep0__for_ __VA_ARGS__))
 #define __for_2(_$dir_type, /*(_iter...)(_capture...) { ... }*/...) \
     __exec__for_(pp_defer(pp_cat(__emit__for_, _$dir_type))(__sep0__for_ __VA_ARGS__))
-#define __exec__for_(...)                               __VA_ARGS__
-#define __sep0__for_(_iters...)                         (_iters), __sep1__for_
-#define __sep1__for_(_captures...)                      (_captures),
-#define __emit__for_$_fwd(_iters, _captures, _block...) __emitNext__for_(_iters, _captures, (_block))
+#define __exec__for_(...)                                __VA_ARGS__
+#define __sep0__for_(_iters...)                          (_iters), __sep1__for_
+#define __sep1__for_(_captures...)                       (_captures),
+#define __emit__for_$_fwd(_iters, _captures, _block...)  __emitNext__for_(_iters, _captures, (_block))
 // #define __emitNext__for_(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
-#define __emit__for_$_rev(_iters, _captures, _block...) __emitNext__for_$_rev(_iters, _captures, (_block))
+#define __emit__for_$_rev(_iters, _captures, _block...)  __emitNext__for_$_rev(_iters, _captures, (_block))
 // #define __emitNext__for_$_rev(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
-#define __emit_for_$_asc(_iters, _captures, _block...)  __emitNext__for_(_iters, _captures, (_block))
-#define __emit_for_$_desc(_iters, _captures, _block...) __emitNext__for_$_rev(_iters, _captures, (_block))
+#define __emit__for_$_asc(_iters, _captures, _block...)  __emitNext__for_(_iters, _captures, (_block))
+#define __emit__for_$_desc(_iters, _captures, _block...) __emitNext__for_$_rev(_iters, _captures, (_block))
 
 /* for: implementation ======================================================*/
 /* for - common functions ===================================================*/

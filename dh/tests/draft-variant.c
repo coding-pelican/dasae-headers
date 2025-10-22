@@ -45,25 +45,25 @@
 #define comp_op__variant_of$(T_variant, _tag, _payload...) \
     ((T_variant)variant_of(_tag, _payload))
 
-#define comp_op__variant_asg$(__addr_variant, T_Variant, var_addr_variant, val_variant...) eval({ \
+#define comp_op__variant_asg$(__addr_variant, T_Variant, var_addr_variant, val_variant...) blk({ \
     let __addr_variant = var_addr_variant; \
     debug_assert_nonnull(__addr_variant); \
     *__addr_variant = *(T_Variant[1]){ [0] = val_variant }; \
-    eval_return __addr_variant; \
+    blk_return __addr_variant; \
 })
 #define comp_op__variant_asg(var_addr_variant, val_variant...) \
     variant_asg$(TypeOf(*var_addr_variant), var_addr_variant, val_variant)
 
-#define comp_op__variant_as(__addr_variant, _addr_variant, _tag...) eval({ \
+#define comp_op__variant_as(__addr_variant, _addr_variant, _tag...) blk({ \
     let __addr_variant = _addr_variant; \
     debug_assert(__addr_variant->tag == _tag); \
-    eval_return __addr_variant->payload.pp_join($, tagged, _tag); \
+    blk_return __addr_variant->payload.pp_join($, tagged, _tag); \
 })
 
-#define comp_op__variant_extract(__var_variant, _var_variant, _tag...) eval({ \
+#define comp_op__variant_extract(__var_variant, _var_variant, _tag...) blk({ \
     let __var_variant = _var_variant; \
     debug_assert(__var_variant.tag == _tag); \
-    eval_return __var_variant.payload.pp_join($, tagged, _tag)[0]; \
+    blk_return __var_variant.payload.pp_join($, tagged, _tag)[0]; \
 })
 
 typedef variant_(
@@ -78,7 +78,7 @@ typedef variant_(
 //     with_(let __variant = (_Variant)) switch (__variant.tag)
 #define match_(_Variant, _Body...) \
     comp_syn__match_(_Variant, _Body)
-#define comp_syn__match_(_Variant, _Body...) eval({ \
+#define comp_syn__match_(_Variant, _Body...) blk({ \
     let __variant = _Variant; \
     switch (__variant.tag) \
         _Body \

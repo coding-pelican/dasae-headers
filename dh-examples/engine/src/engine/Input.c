@@ -7,7 +7,7 @@ fn_((engine_Input_init(mem_Allocator allocator))(Err$Ptr$engine_Input) $guard) {
     input->allocator = allocator;
 
     with_(let event_buffer = &input->event_buffer) {
-        mem_setBytes(as$(u8*, event_buffer->events.buf), 0, sizeOf(event_buffer->events.buf));
+        mem_setBytes(as$((u8*)(event_buffer->events.buf)), 0, sizeOf(event_buffer->events.buf));
         event_buffer->count = 0;
         event_buffer->head  = 0;
         event_buffer->tail  = 0;

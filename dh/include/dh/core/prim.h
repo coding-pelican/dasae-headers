@@ -72,102 +72,102 @@ typedef struct Void {
 
 /*========== Macros Implementation ==========================================*/
 
-#define comp_inline__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return( \
+    blk_return( \
         ((__lhs) < (__rhs))   ? -1 /* cmp_Ord_lt */ \
         : ((__lhs) > (__rhs)) ? 1  /* cmp_Ord_gt */ \
                               : 0  /* cmp_Ord_eq */ \
     ); \
 })
-#define comp_inline__prim_eq(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_eq(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs == (__rhs); \
+    blk_return __lhs == (__rhs); \
 })
-#define comp_inline__prim_ne(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_ne(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs != (__rhs); \
+    blk_return __lhs != (__rhs); \
 })
-#define comp_inline__prim_lt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_lt(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs < (__rhs); \
+    blk_return __lhs < (__rhs); \
 })
-#define comp_inline__prim_gt(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_gt(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs > (__rhs); \
+    blk_return __lhs > (__rhs); \
 })
-#define comp_inline__prim_le(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_le(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs <= (__rhs); \
+    blk_return __lhs <= (__rhs); \
 })
-#define comp_inline__prim_ge(__lhs, __rhs, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_ge(__lhs, __rhs, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __lhs >= (__rhs); \
+    blk_return __lhs >= (__rhs); \
 })
 
-#define comp_inline__prim_min2(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
+#define comp_inline__prim_min2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __rhs < __lhs ? __rhs : __lhs; \
+    blk_return __rhs < __lhs ? __rhs : __lhs; \
 })
-#define comp_inline__prim_min3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) eval({ \
+#define comp_inline__prim_min3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
     let __1st = (val_1st); \
     let __2nd = (val_2nd); \
     let __3rd = (val_3rd); \
-    eval_return prim_min(prim_min(__1st, __2nd), __3rd); \
+    blk_return prim_min(prim_min(__1st, __2nd), __3rd); \
 })
-#define comp_inline__prim_min4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) eval({ \
+#define comp_inline__prim_min4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
     let __1st = (val_1st); \
     let __2nd = (val_2nd); \
     let __3rd = (val_3rd); \
     let __4th = (val_4th); \
-    eval_return prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
+    blk_return prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
 })
-#define comp_inline__prim_max2(__lhs, __rhs, val_lhs, val_rhs...) eval({ \
+#define comp_inline__prim_max2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return __rhs > __lhs ? __rhs : __lhs; \
+    blk_return __rhs > __lhs ? __rhs : __lhs; \
 })
-#define comp_inline__prim_max3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) eval({ \
+#define comp_inline__prim_max3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
     let __1st = (val_1st); \
     let __2nd = (val_2nd); \
     let __3rd = (val_3rd); \
-    eval_return prim_max(prim_max(__1st, __2nd), __3rd); \
+    blk_return prim_max(prim_max(__1st, __2nd), __3rd); \
 })
-#define comp_inline__prim_max4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) eval({ \
+#define comp_inline__prim_max4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
     let __1st = (val_1st); \
     let __2nd = (val_2nd); \
     let __3rd = (val_3rd); \
     let __4th = (val_4th); \
-    eval_return prim_max(prim_max(prim_max(__1st, __2nd), __3rd), __4th); \
+    blk_return prim_max(prim_max(prim_max(__1st, __2nd), __3rd), __4th); \
 })
 #define comp_inline__prim_clamp(val_x, val_min, val_max) \
     prim_min(prim_max(val_x, val_min), val_max)
 
-#define comp_inline__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) blk({ \
     let __lhs = &(val_lhs); \
     let __rhs = &(val_rhs); \
     let __tmp = *(__lhs); \
     *(__lhs)  = *(__rhs); \
     *(__rhs)  = __tmp; \
-    eval_return{}; \
+    blk_return{}; \
 })
 
-#define comp_inline__prim_divisible(val_lhs, val_rhs) eval({ \
+#define comp_inline__prim_divisible(val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    eval_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
+    blk_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
 })
-#define comp_inline__prim_sign(val_x) eval({ \
+#define comp_inline__prim_sign(val_x) blk({ \
     let __scalar = (val_x); \
-    eval_return as$((TypeOf(__scalar))(__scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0))); \
+    blk_return as$((TypeOf(__scalar))(__scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0))); \
 })
 
 #if NEXT_UPDATE

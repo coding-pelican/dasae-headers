@@ -28,7 +28,7 @@
 #define defer(F) \
     defer__snapshot(F; goto __deferred)
 
-#define block_defer          \
+#define blk_defer          \
     do {                     \
     defer__snapshot(         \
         if (_defer_return) { \
@@ -38,7 +38,7 @@
         }                    \
     )
 
-#define defer_break      \
+#define break_defer      \
     {                    \
         goto __deferred; \
     }
@@ -71,7 +71,7 @@ int main(void) {
         );
         printf("6\n");
 
-        block_defer {
+        blk_defer {
             printf("7\n");
             FILE* info_log_file = fopen("info_log.txt", "w");
             if (!info_log_file) {
@@ -123,8 +123,8 @@ int main(void) {
 }
 
 /*
-#define block_defer
-#define block_defer_return return
+#define blk_defer
+#define blk_defer_return return
 #define defer
 
 // output order
@@ -136,7 +136,7 @@ int main(void) {
 //  8
 void defer_usage() {
     printf("0\n");
-    block_defer {
+    blk_defer {
         printf("1\n");
         defer printf("2\n");
         printf("3\n");

@@ -63,7 +63,7 @@ extern time_Duration     time_SysTime_elapsed(time_SysTime self);
 /// Get the duration since another time point.
 extern time_Duration     time_SysTime_durationSince(time_SysTime later, time_SysTime earlier);
 /// Get the duration since another time point with overflow checking.
-extern Opt$time_Duration time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier);
+extern Opt$time_Duration time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier);
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -78,9 +78,9 @@ extern time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration);
 static op_fnWrapSubBy(subDuration, time_SysTime, time_Duration, time_SysTime);
 static op_fnWrapSubAsgBy(subAsgDuration, time_SysTime, time_Duration, time_SysTime);
 /// Add a duration to the time with overflow checking.
-extern Opt$time_SysTime time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs);
+extern Opt$time_SysTime time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs);
 /// Sub a duration from the time with underflow checking.
-extern Opt$time_SysTime time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs);
+extern Opt$time_SysTime time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

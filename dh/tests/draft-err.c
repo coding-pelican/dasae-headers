@@ -128,12 +128,12 @@ typedef struct io_Err {
         });
 
         // Set up backend interface
-        backend->base = eval({
+        backend->base = blk({
             var vt           = engine_RenderBackend_createNoOp();
             vt.type          = engine_RenderBackendType_custom;
             vt.destroy       = NotepadBackend_destroy;
             vt.presentBuffer = NotepadBackend_presentBuffer;
-            eval_return vt;
+            blk_return vt;
         });
         return_ok(&backend->base);
     }

@@ -157,8 +157,8 @@ static fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)); /* TODO:
 /*========== Implementations ================================================*/
 
     static $inline_always fn_((calcAbstractBufferSize(u32 width, u32 height))(usize)) {
-    return (as$(usize, width) + 1)
-         * (as$(usize, height) + 1)
+    return (as$((usize)(width)) + 1)
+         * (as$((usize)(height)) + 1)
          * (sizeof("\033[38;2;255;255;255;48;2;255;255;255m▀") - 1);
 }
 
@@ -219,9 +219,9 @@ static $inline_always fn_((abstractBufferCapSize(engine_core_Vt100* self))(usize
 $maybe_unused static $inline_always fn_((needsResizeAbstractWindow(engine_core_Vt100* self))(bool)) {
     let current_size = abstractBufferCapSize(self);
     // Compare with the expected size from your function
-    let needed_size  = eval({
+    let needed_size  = blk({
         let rect = abstractWindowRect(self);
-        eval_return calcAbstractBufferSize(rect.x, rect.y);
+        blk_return calcAbstractBufferSize(rect.x, rect.y);
     });
     return current_size != needed_size;
 }
@@ -232,7 +232,7 @@ $maybe_unused
 fn_((resizeAbstractWindow(engine_core_Vt100* self))(Err$void) $scope) {
     // 1. Re-size the console’s screen buffer
     let rect = abstractWindowRect(self);
-    if (!SetConsoleScreenBufferSize(self->client.handle.output, (COORD){ as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
+    if (!SetConsoleScreenBufferSize(self->client.handle.output, (COORD){ as$((SHORT)(rect.x)), as$((SHORT)(rect.y)) })) {
         // If you have specific error sets for failing to resize, return them here
         return_err(Err_Unspecified());
     }
@@ -248,13 +248,13 @@ fn_((resizeAbstractWindow(engine_core_Vt100* self))(Err$void) $scope) {
 
 fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
     let handle_window = self->client.handle.window;
-    let window_rect   = eval({
+    let window_rect   = blk({
         var rect = make$(RECT);
         GetWindowRect(handle_window, &rect);
-        eval_return rect;
+        blk_return rect;
     });
     // log_debug("Window rect: %d,%d,%d,%d", window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
-    let client_rect   = eval({
+    let client_rect   = blk({
         var rect = make$(RECT);
         GetClientRect(handle_window, &rect);
         rect.top += 40;
@@ -262,14 +262,14 @@ fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
         rect.left += 12;
         rect.right -= 12;
         rect.bottom += 12;
-        eval_return rect;
+        blk_return rect;
     });
     // log_debug("Client rect: %d,%d,%d,%d", client_rect.left, client_rect.top, client_rect.right, client_rect.bottom);
-    let corner_point  = eval({
+    let corner_point  = blk({
         // Convert the client area (0,0) to screen coords
         var point = make$(POINT);
         ClientToScreen(handle_window, &point);
-        eval_return point;
+        blk_return point;
     });
     // log_debug("Corner point: %d,%d", corner_point.x, corner_point.y);
 
@@ -287,14 +287,14 @@ fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
     self->client.pos_on_display.top_left.y = corner_point.y + 40 + 12; // i.e. window_rect.top  + borderY
 
     let handle_output    = self->client.handle.output;
-    let buffer_info      = eval({
+    let buffer_info      = blk({
         var info = make$(CONSOLE_SCREEN_BUFFER_INFO);
         if (!GetConsoleScreenBufferInfo(handle_output, &info)) {
             return_err(Err_Unspecified());
         }
-        eval_return info;
+        blk_return info;
     });
-    let font_info        = eval({
+    let font_info        = blk({
         var info = make$(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
         if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
             return_err(Err_Unspecified());
@@ -302,7 +302,7 @@ fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
         /* if (info.dwFontSize.X == 0) {
             info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
         } */
-        eval_return info;
+        blk_return info;
     });
     let usable_font_info = make$(bool, font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0);
     if (usable_font_info) {
@@ -344,26 +344,26 @@ fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
 //     reserveReturn(Err$void);
 
 //     let handle_window = self->client.handle.window;
-//     let window_rect   = eval({
+//     let window_rect   = blk({
 //         var rect = make$(RECT);
 //         GetWindowRect(handle_window, &rect);
-//         eval_return rect;
+//         blk_return rect;
 //     });
-//     let client_rect   = eval({
+//     let client_rect   = blk({
 //         var rect = make$(RECT);
 //         GetClientRect(handle_window, &rect);
-//         eval_return rect;
+//         blk_return rect;
 //     });
 
 //     let handle_output = self->client.handle.output;
-//     let buffer_info   = eval({
+//     let buffer_info   = blk({
 //         var info = make$(CONSOLE_SCREEN_BUFFER_INFO);
 //         if (!GetConsoleScreenBufferInfo(handle_output, &info)) {
 //             return_err(Err_Unspecified());
 //         }
-//         eval_return info;
+//         blk_return info;
 //     });
-//     let font_info     = eval({
+//     let font_info     = blk({
 //         var info = make$(CONSOLE_FONT_INFOEX, .cbSize = sizeof(CONSOLE_FONT_INFOEX));
 //         if (!GetCurrentConsoleFontEx(handle_output, false, &info)) {
 //             return_err(Err_Unspecified());
@@ -371,7 +371,7 @@ fn_((syncWindowMetrics(engine_core_Vt100* self))(Err$void) $scope) {
 //         /* if (info.dwFontSize.X == 0) {
 //             info.dwFontSize.X = as$(SHORT, info.dwFontSize.Y / 2);
 //         } */
-//         eval_return info;
+//         blk_return info;
 //     });
 
 //     let usable_font_info = font_info.dwFontSize.X != 0 && font_info.dwFontSize.Y != 0;
@@ -440,7 +440,7 @@ fn_((configureConsoleOutput(engine_core_Vt100* self))(Err$void) $scope) {
 
     // Configure screen buffer size for the console
     let rect = abstractWindowRect(self);
-    if (!SetConsoleScreenBufferSize(handle, (COORD){ as$(SHORT, rect.x), as$(SHORT, rect.y) })) {
+    if (!SetConsoleScreenBufferSize(handle, (COORD){ as$((SHORT)(rect.x)), as$((SHORT)(rect.y)) })) {
         log_error("Failed to set console screen buffer size: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetScreenBufferSize());
     }
@@ -450,7 +450,7 @@ fn_((configureConsoleOutput(engine_core_Vt100* self))(Err$void) $scope) {
         return_err(ConfigConsoleOutputErr_FailedAssignScreenBuffer());
     }
     // Set physical console window size
-    if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, as$(SHORT, rect.x - 1), as$(SHORT, rect.y - 1) })) {
+    if (!SetConsoleWindowInfo(handle, true, &(SMALL_RECT){ 0, 0, as$((SHORT)(rect.x - 1)), as$((SHORT)(rect.y - 1)) })) {
         log_error("Failed to set console window info: %d", GetLastError());
         return_err(ConfigConsoleOutputErr_FailedSetWindowInfo());
     }
@@ -577,7 +577,7 @@ fn_((processConsoleKeyboardEvents(engine_core_Vt100* self))(void)) {
     memcpy(keyboard->keys.prev_states.buf, keyboard->keys.curr_states.buf, sizeOf(keyboard->keys.curr_states.buf));
 
     // Process each key
-    for (engine_KeyCode key = engine_KeyCode_none + 1; key < as$(engine_KeyCode, engine_KeyCode_count); ++key) {
+    for (engine_KeyCode key = engine_KeyCode_none + 1; key < as$((engine_KeyCode)(engine_KeyCode_count)); ++key) {
         let  key_state = GetAsyncKeyState(key);
         bool is_down   = (key_state & 0x8000) != 0;
         processConsoleKeyboardKey(self, key, is_down);
@@ -629,8 +629,8 @@ fn_((processConsoleMouseButton(engine_core_Vt100* self, engine_MouseButton butto
     let input = self->input;
     let mouse = input->mouse;
 
-    let curr_state = Arr_at(mouse->buttons.curr_states, as$(usize, button));
-    let prev_state = *Arr_at(mouse->buttons.prev_states, as$(usize, button));
+    let curr_state = Arr_at(mouse->buttons.curr_states, as$((usize)(button)));
+    let prev_state = *Arr_at(mouse->buttons.prev_states, as$((usize)(button)));
 
     // Clear previous state flags
     *curr_state = engine_KeyButtonStates_none;
@@ -727,7 +727,7 @@ fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)) {
 
                     // Update mouse wheel data
                     self->input->mouse->wheel.prev_scroll_amount = self->input->mouse->wheel.curr_scroll_amount;
-                    self->input->mouse->wheel.curr_scroll_amount.y += as$(f32, wheel_delta) / as$(f32, WHEEL_DELTA);
+                    self->input->mouse->wheel.curr_scroll_amount.y += as$((f32)(wheel_delta)) / as$((f32)(WHEEL_DELTA));
 
                     // Create wheel event if needed
                     engine_InputEventBuffer_push(
@@ -735,7 +735,7 @@ fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)) {
                         variant_of$(
                             engine_InputEvent,
                             engine_InputEvent_mouse_scroll,
-                            { .delta = m_V2f32_from(0, wheel_delta / as$(f32, WHEEL_DELTA)) }
+                            { .delta = m_V2f32_from(0, wheel_delta / as$((f32)(WHEEL_DELTA))) }
                         )
                     );
                 }
@@ -745,14 +745,14 @@ fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)) {
                     SHORT wheel_delta = HIWORD(mouseEvent.dwButtonState);
 
                     self->input->mouse->wheel.prev_scroll_amount = self->input->mouse->wheel.curr_scroll_amount;
-                    self->input->mouse->wheel.curr_scroll_amount.x += as$(f32, wheel_delta) / as$(f32, WHEEL_DELTA);
+                    self->input->mouse->wheel.curr_scroll_amount.x += as$((f32)(wheel_delta)) / as$((f32)(WHEEL_DELTA));
 
                     engine_InputEventBuffer_push(
                         self->input,
                         variant_of$(
                             engine_InputEvent,
                             engine_InputEvent_mouse_scroll,
-                            { .delta = m_V2f32_from(wheel_delta / as$(f32, WHEEL_DELTA), 0) }
+                            { .delta = m_V2f32_from(wheel_delta / as$((f32)(WHEEL_DELTA)), 0) }
                         )
                     );
                 }
@@ -782,8 +782,8 @@ fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)) {
         i32 fontHeight = fontInfo.dwFontSize.Y;
         if (fontWidth <= 0 || fontHeight <= 0) {
             // Fallback if cannot get the font size
-            fontWidth  = as$(i32, self->client.metrics.dim.x) / bufferInfo.dwSize.X;
-            fontHeight = as$(i32, self->client.metrics.dim.y) / bufferInfo.dwSize.Y;
+            fontWidth  = as$((i32)(self->client.metrics.dim.x)) / bufferInfo.dwSize.X;
+            fontHeight = as$((i32)(self->client.metrics.dim.y)) / bufferInfo.dwSize.Y;
         }
 
         // Protect against negative positions (mouse outside the client area).
@@ -804,11 +804,11 @@ fn_((processConsoleMouseEvents(engine_core_Vt100* self))(void)) {
         // Clamp to valid resolution
         self->input->mouse->cursor.curr_pos.x = prim_min(
             self->input->mouse->cursor.curr_pos.x,
-            as$(i32, self->client.metrics.res.curr.x) - 1
+            as$((i32)(self->client.metrics.res.curr.x)) - 1
         );
         self->input->mouse->cursor.curr_pos.y = prim_min(
             self->input->mouse->cursor.curr_pos.y,
-            as$(i32, self->client.metrics.res.curr.y) - 1
+            as$((i32)(self->client.metrics.res.curr.y)) - 1
         );
     }
 }
@@ -829,44 +829,44 @@ fn_((engine_core_Vt100_init(engine_core_Vt100_Config config))(Err$Ptr$engine_cor
     errdefer_($ignore, mem_Allocator_destroy(allocator, anyPtr(self)));
 
     self->allocator       = allocator;
-    self->abstract.window = eval({
+    self->abstract.window = blk({
         let window = config.window;
         toSome(&window->backend, engine_core_Vt100_backend(self));
-        eval_return window;
+        blk_return window;
     });
-    self->abstract.buffer = eval({
+    self->abstract.buffer = blk({
         let allocator = self->allocator;
         let window    = self->abstract.window;
         let size      = calcAbstractBufferSize(Grid_width(window->composite_buffer->buffer), Grid_height(window->composite_buffer->buffer));
-        eval_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
+        blk_return type$(ArrList$u8, try_(ArrList_initCap(typeInfo$(u8), allocator, size)));
     });
     errdefer_($ignore, ArrList_fini(self->abstract.buffer.base));
-    self->input = eval({
+    self->input = blk({
         let input = config.input;
         toSome(&input->backend, engine_core_Vt100_backend(self));
-        eval_return input;
+        blk_return input;
     });
 
-    self->client.handle.window = eval({
+    self->client.handle.window = blk({
         let handle = GetForegroundWindow();
         if (!handle || handle == INVALID_HANDLE_VALUE) {
             log_error("Failed to get foreground window: %d", GetLastError());
             return_err(InitErr_FailedGetConsoleWindowHandle());
         }
-        eval_return handle;
+        blk_return handle;
     });
 #define engine_core_Vt100_comp_using_screen_buffer 0
 #if !engine_core_Vt100_comp_using_screen_buffer
-    self->client.handle.output = eval({
+    self->client.handle.output = blk({
         let handle = GetStdHandle(STD_OUTPUT_HANDLE);
         if (!handle || handle == INVALID_HANDLE_VALUE) {
             log_error("Failed to get standard output handle: %d", GetLastError());
             return_err(InitErr_FailedGetConsoleOutputHandle());
         }
-        eval_return handle;
+        blk_return handle;
     });
 #else
-    self->client.handle.output = eval({
+    self->client.handle.output = blk({
         // Create a new console screen buffer
         let handle = CreateConsoleScreenBuffer(
             GENERIC_READ | GENERIC_WRITE,       // access
@@ -879,16 +879,16 @@ fn_((engine_core_Vt100_init(engine_core_Vt100_Config config))(Err$Ptr$engine_cor
             log_error("Failed to create console screen buffer: %d", GetLastError());
             return_err(InitErr_FailedGetConsoleOutputHandle());
         }
-        eval_return handle;
+        blk_return handle;
     });
 #endif
-    self->client.handle.input = eval({
+    self->client.handle.input = blk({
         let handle = GetStdHandle(STD_INPUT_HANDLE);
         if (!handle || handle == INVALID_HANDLE_VALUE) {
             log_error("Failed to get standard input handle: %d", GetLastError());
             return_err(InitErr_FailedGetConsoleInputHandle());
         }
-        eval_return handle;
+        blk_return handle;
     });
 
     try_(configureConsoleOutput(self));
@@ -932,7 +932,7 @@ fn_((engine_core_Vt100_fini(engine_core_Vt100* self))(void)) {
 /// - Update your engine’s internal state
 fn_((processEvents(anyptr ctx))(void)) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$((engine_core_Vt100*)(ctx));
 
     // Update window state
     if_(WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) },
@@ -942,14 +942,14 @@ fn_((processEvents(anyptr ctx))(void)) {
     } else {
         const bool is_minimized = placement.showCmd == SW_SHOWMINIMIZED;
         const bool is_maximized = placement.showCmd == SW_SHOWMAXIMIZED;
-        const bool is_focused   = eval_(bool $scope) {
+        const bool is_focused   = blk({
             let handle = GetForegroundWindow();
             if (!handle || handle == INVALID_HANDLE_VALUE) {
                 log_error("Failed to get foreground window: %d", GetLastError());
                 claim_unreachable;
             }
-            eval_break_(handle == self->client.handle.window);
-        } $unscoped_eval;
+            blk_return handle == self->client.handle.window;
+        });
 
         self->client.is_minimized = is_minimized;
         self->client.is_maximized = is_maximized;
@@ -971,7 +971,7 @@ fn_((processEvents(anyptr ctx))(void)) {
 /// If you’re storing color/ANSI sequences, handle them accordingly.
 fn_((presentBuffer(anyptr ctx))(void)) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_Vt100*, ctx);
+    let self = as$((engine_core_Vt100*)(ctx));
     if (self->client.is_minimized) { return; }
 
     // Clear buffer for draw a new content. This is a simple way to reset the console.
@@ -1004,7 +1004,7 @@ fn_((presentBuffer(anyptr ctx))(void)) {
 
             // Write color sequence
             self->abstract.buffer.items.len += sprintf(
-                as$(char*, self->abstract.buffer.items.ptr + self->abstract.buffer.items.len),
+                as$((char*)(self->abstract.buffer.items.ptr + self->abstract.buffer.items.len)),
                 "\033[38;2;%d;%d;%d;48;2;%d;%d;%dm",
                 upper.r, upper.g, upper.b,
                 lower.r, lower.g, lower.b
@@ -1045,31 +1045,31 @@ fn_((presentBuffer(anyptr ctx))(void)) {
 
 fn_((getWindowPos(const anyptr ctx))(Vec2i)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.pos_on_display.top_left;
 }
 
 fn_((getWindowDim(const anyptr ctx))(Vec2u)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.metrics.dim;
 }
 
 fn_((getWindowRes(const anyptr ctx))(Vec2u)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.metrics.res.curr;
 }
 
 fn_((getWindowMinRes(const anyptr ctx))(Vec2u)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.metrics.res.min;
 }
 
 fn_((getWindowMaxRes(const anyptr ctx))(Vec2u)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.metrics.res.max;
 }
 
@@ -1085,99 +1085,99 @@ fn_((setWindowMaxRes(anyptr ctx, Vec2u size))(Err$void) $scope) {
     return_err(Err_NotImplemented()); /* TODO: Implement this function */
 } $unscoped_(fn);
 
-    fn_((isWindowFocused(const anyptr ctx))(bool)) {
+fn_((isWindowFocused(const anyptr ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.is_focused;
 }
 
 fn_((isWindowMinimized(const anyptr ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.is_minimized;
 }
 
 fn_((isWindowMaximized(const anyptr ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return self->client.is_maximized;
 }
 
 fn_((getKeyboardState(const anyptr ctx, engine_KeyCode key))(u8)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Keyboard_getState(self->input->keyboard, key);
 }
 
 fn_((isKeyboardState(const anyptr ctx, engine_KeyCode key, engine_KeyButtonStates state))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Keyboard_isState(self->input->keyboard, key, state);
 }
 
 fn_((pressedKeyboard(const anyptr ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Keyboard_pressed(self->input->keyboard, key);
 }
 
 fn_((heldKeyboard(const anyptr ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Keyboard_held(self->input->keyboard, key);
 }
 
 fn_((releasedKeyboard(const anyptr ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Keyboard_released(self->input->keyboard, key);
 }
 
 fn_((getMouseState(const anyptr ctx, engine_MouseButton button))(u8)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_getState(self->input->mouse, button);
 }
 
 fn_((isMouseState(const anyptr ctx, engine_MouseButton button, engine_KeyButtonStates state))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_isState(self->input->mouse, button, state);
 }
 
 fn_((pressedMouse(const anyptr ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_pressed(self->input->mouse, button);
 }
 
 fn_((heldMouse(const anyptr ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_held(self->input->mouse, button);
 }
 
 fn_((releasedMouse(const anyptr ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_released(self->input->mouse, button);
 }
 
 fn_((getMousePos(const anyptr ctx))(Vec2i)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_getPos(self->input->mouse);
 }
 
 fn_((getMousePosDelta(const anyptr ctx))(Vec2i)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_getPosDelta(self->input->mouse);
 }
 
 fn_((getMouseWheelScrollDelta(const anyptr ctx))(Vec2f)) {
     debug_assert_nonnull(ctx);
-    let self = as$(const engine_core_Vt100*, ctx);
+    let self = as$((const engine_core_Vt100*)(ctx));
     return engine_Mouse_getWheelScrollDelta(self->input->mouse);
 }
 

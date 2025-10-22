@@ -74,10 +74,10 @@ fn_((slice_example(void))(void)) {
     i32 numbers_with_sentinel[] = { 1, 2, 3, 4, 5, -1, 6, 7 }; // -1 is sentinel
     {
         let nums_s    = SliS_from$(SliS$i32, numbers_with_sentinel, -1);
-        let num_s_len = eval({
+        let num_s_len = blk({
             usize len = 0;
             for (var iter = SliS_at(nums_s, 0); deref(iter) != nums_s.sentinel; ++iter) { len++; }
-            eval_return len;
+            blk_return len;
         }); // 5 (up to but not including -1)
         printf("%llu\n", num_s_len);
 

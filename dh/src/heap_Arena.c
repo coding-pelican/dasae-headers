@@ -68,11 +68,11 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
     debug_assert_nonnull(self);
 
     // Calculate requested capacity based on mode
-    let requested_capacity = eval_(usize $scope) match_(mode, {
-        pattern_(heap_Arena_ResetMode_free_all, eval_break_(0));
-        pattern_(heap_Arena_ResetMode_retain_capacity, eval_break_(heap_Arena_queryCap(self)));
-        pattern_(heap_Arena_ResetMode_retain_with_limit, (limit), eval_break_(prim_min(*limit, heap_Arena_queryCap(self))));
-    }) $unscoped_($eval);
+    let requested_capacity = expr_(usize $scope) match_(mode, {
+        pattern_(heap_Arena_ResetMode_free_all, $break_(0));
+        pattern_(heap_Arena_ResetMode_retain_capacity, $break_(heap_Arena_queryCap(self)));
+        pattern_(heap_Arena_ResetMode_retain_with_limit, (limit), $break_(prim_min(*limit, heap_Arena_queryCap(self))));
+    }) $unscoped_(expr);
     if (requested_capacity == 0) {
         // Free all memory and reset state
         heap_Arena_fini(*self);
@@ -83,15 +83,15 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
     let total_size       = requested_capacity + sizeOf(ListSgl_Node$usize);
     // Free all nodes except the last one
     var it               = self->state.buffer_list.first;
-    var maybe_first_node = eval_(Opt$Ptr$ListSgl_Node$usize $scope) while_some(it, node) {
+    var maybe_first_node = expr_(Opt$Ptr$ListSgl_Node$usize $scope) while_some(it, node) {
         let next_it = node->next;
         if_none(next_it) {
-            eval_break_(some(node));
+            $break_(some(node));
         }
         let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
         it = next_it;
-    } $unscoped_($eval);
+    } $unscoped_(expr);
 
     // Reset end index before resizing buffers
     self->state.end_index = 0;
@@ -132,13 +132,13 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     let ptr_align = align;
 
     // 문제로 예상되는 지점
-    var cur_node = eval_(ListSgl_Node$usize* $scope) if_some(self->state.buffer_list.first, first_node) {
-        eval_break_(first_node);
+    var cur_node = expr_(ListSgl_Node$usize * $scope) if_some(self->state.buffer_list.first, first_node) {
+        $break_(first_node);
     } else_none {
-        eval_break_(orelse_((heap_Arena_createNode(self, 0, len + ptr_align))(
+        $break_(orelse_((heap_Arena_createNode(self, 0, len + ptr_align))(
             return_none()
         )));
-    } $unscoped_($eval);
+    } $unscoped_(expr);
     while (true) {
         let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
         let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);
@@ -177,8 +177,8 @@ static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_l
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$((heap_Arena*)(ctx));
-    let_ignore  = buf_align;
+    let self   = as$((heap_Arena*)(ctx));
+    let_ignore = buf_align;
 
     // Check if this is the most recent allocation
     if_none(self->state.buffer_list.first) {
@@ -218,8 +218,8 @@ static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$((heap_Arena*)(ctx));
-    let_ignore  = buf_align;
+    let self   = as$((heap_Arena*)(ctx));
+    let_ignore = buf_align;
 
     // Only free if it's the most recent allocation
     if_none(self->state.buffer_list.first) {

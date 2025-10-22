@@ -85,55 +85,55 @@ extern "C" {
 #define comp_op__Res_detFirst$(T_Res, val_first...)   ((T_Res)Res_detFirst(val_first))
 #define comp_op__Res_detSecond$(T_Res, val_second...) ((T_Res)Res_detSecond(val_second))
 
-#define comp_op__Res_detFirstAsg(__addr_res, var_addr_res, val_first...) eval({ \
+#define comp_op__Res_detFirstAsg(__addr_res, var_addr_res, val_first...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_nonnull(__addr_res); \
     *__addr_res = Res_detFirst$(TypeOf(*var_addr_res), val_first); \
-    eval_return __addr_res; \
+    blk_return __addr_res; \
 })
-#define comp_op__Res_detSecondAsg(__addr_res, var_addr_res, val_second...) eval({ \
+#define comp_op__Res_detSecondAsg(__addr_res, var_addr_res, val_second...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_nonnull(__addr_res); \
     *__addr_res = Res_detSecond$(TypeOf(*var_addr_res), val_second); \
-    eval_return __addr_res; \
+    blk_return __addr_res; \
 })
 
 #define comp_op__Res_isFirst(val_res...)  ((val_res).is_first == true)
 #define comp_op__Res_isSecond(val_res...) ((val_res).is_first == false)
 
-#define comp_op__Res_first(__addr_res, var_addr_res...) eval({ \
+#define comp_op__Res_first(__addr_res, var_addr_res...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_true(Res_isFirst(*__addr_res)); \
-    eval_return & __addr_res->data[0].first; \
+    blk_return & __addr_res->data[0].first; \
 })
-#define comp_op__Res_second(__addr_res, var_addr_res...) eval({ \
+#define comp_op__Res_second(__addr_res, var_addr_res...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_true(Res_isSecond(*__addr_res)); \
-    eval_return & __addr_res->data[0].second; \
+    blk_return & __addr_res->data[0].second; \
 })
 
-#define comp_op__Res_getFirst(__res, val_res...) eval({ \
+#define comp_op__Res_getFirst(__res, val_res...) blk({ \
     const TypeOf(val_res) __res = val_res; \
     debug_assert_true(Res_isFirst(__res)); \
-    eval_return __res.data[0].first; \
+    blk_return __res.data[0].first; \
 })
-#define comp_op__Res_getSecond(__res, val_res...) eval({ \
+#define comp_op__Res_getSecond(__res, val_res...) blk({ \
     const TypeOf(val_res) __res = val_res; \
     debug_assert_true(Res_isSecond(__res)); \
-    eval_return __res.data[0].second; \
+    blk_return __res.data[0].second; \
 })
 
-#define comp_op__Res_setFirst(__addr_res, var_addr_res, val_first...) eval({ \
+#define comp_op__Res_setFirst(__addr_res, var_addr_res, val_first...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_true(Res_isFirst(*__addr_res)); \
     __addr_res->data[0].first = val_first; \
-    eval_return __addr_res; \
+    blk_return __addr_res; \
 })
-#define comp_op__Res_setSecond(__addr_res, var_addr_res, val_second...) eval({ \
+#define comp_op__Res_setSecond(__addr_res, var_addr_res, val_second...) blk({ \
     const TypeOf(var_addr_res) __addr_res = var_addr_res; \
     debug_assert_true(Res_isSecond(*__addr_res)); \
     __addr_res->data[0].second = val_second; \
-    eval_return __addr_res; \
+    blk_return __addr_res; \
 })
 
 #if defined(__cplusplus)

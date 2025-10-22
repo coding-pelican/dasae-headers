@@ -16,12 +16,12 @@
 #undef mem_toBytes
 
 #define mem_asBytes_const$(_T, /* const T* */ _val... /* Sli_const$u8 */)  tpl_id(mem_asBytes_const, _T)(_val)
-#define mem_asBytes_const$$(_T, /* const T* */ _val... /* Sli_const$u8 */) eval({ \
+#define mem_asBytes_const$$(_T, /* const T* */ _val... /* Sli_const$u8 */) blk({ \
     let __val = _val; \
     Sli_from$(Sli_const$u8, as$((const u8*)(__val)), sizeOf(*__val)); \
 })
 #define mem_asBytes$(_T, /* T* */ _val... /* Sli$u8 */)  tpl_id(mem_asBytes, _T)(_val)
-#define mem_asBytes$$(_T, /* T* */ _val... /* Sli$u8 */) eval({ \
+#define mem_asBytes$$(_T, /* T* */ _val... /* Sli$u8 */) blk({ \
     let __val = _val; \
     Sli_from$(Sli$u8, as$((u8*)(__val)), sizeOf(*__val)); \
 })
@@ -55,7 +55,7 @@
     pp_Tuple_get1st $_T_$_val, \
     pp_Tuple_get2nd $_T_$_val \
 )
-#define comp_inline_eval__mem_toBytes$(__val, _RetT, _mem_asBytes, _T, _val...) eval({ \
+#define comp_inline_eval__mem_toBytes$(__val, _RetT, _mem_asBytes, _T, _val...) blk({ \
     let __val = _val; \
     Sli_deref$(_RetT, mem_asBytes$$(_T, &__val)); \
 })

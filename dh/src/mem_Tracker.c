@@ -156,10 +156,7 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
             let_ignore = fprintf(mem_Tracker_s_instance.log_file, "  Age: %.2f seconds\n", age_secs);
 
             // Find or add to leak sites
-            bool found = false;
-            for_slice_indexed (sites.items, site_ptr, i) {
-                LeakSite* site = site_ptr;
-
+            eval_(void $scope)(for_(($s(sites.items))(site) {
                 // Check if it's the same location
                 if (Str_eql(Str_viewZ(as$((u8*)(site->src_loc.file_name))), Str_viewZ(as$((u8*)(curr->src_loc.file_name))))
                     && site->src_loc.line == curr->src_loc.line
@@ -167,12 +164,9 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
 
                     site->count++;
                     site->total_bytes += curr->size;
-                    found = true;
-                    break;
+                    $break_void();
                 }
-            }
-
-            if (!found) {
+            })) eval_(else)({
                 // Add new leak site
                 catch_((ArrList_addBackOne(sites.base))(
                     $ignore, ({
@@ -186,8 +180,7 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
                     site->count       = 1;
                     site->total_bytes = curr->size;
                 }
-            }
-
+            }) $unscoped_(eval);
             curr = curr->next;
         }
 
@@ -195,7 +188,7 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "\nLeak Summary by Location:\n");
         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "=====================================\n");
 
-        for_slice (sites.items, site) {
+        for_(($s(sites.items))(site) {
             let_ignore = fprintf(
                 mem_Tracker_s_instance.log_file,
                 "Location: %s:%d in %s\n"
@@ -207,7 +200,7 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
                 site->count,
                 site->total_bytes
             );
-        }
+        });
 
         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "\nTotal leaked memory: %zu bytes\n", total_leaked);
     }

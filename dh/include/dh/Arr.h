@@ -143,17 +143,17 @@ Arr_setAt(arr, 1, 5);          // Set element value (bounds-checked)
 
 /* Iteration Examples =======================================================*/
 
-for_array (arr, item) {   // Forward iteration
+for_array(arr, item) {    // Forward iteration
     printf("%d ", *item); // Prints: 1 2 3
 }
-for_array_indexed (arr, item, idx) { // Forward with index
+for_array_indexed(arr, item, idx) {  // Forward with index
     printf("[%zu]=%d ", idx, *item); // Prints: [0]=1 [1]=2 [2]=3
 }
-for_array_rev (arr, item) { // Reverse iteration
-    printf("%d ", *item);   // Prints: 3 2 1
+for_array_rev(arr, item) { // Reverse iteration
+    printf("%d ", *item);  // Prints: 3 2 1
 }
-for_array_rev_indexed (arr, item, idx) { // Reverse with index
-    printf("[%zu]=%d ", idx, *item);     // Prints: [2]=3 [1]=2 [0]=1
+for_array_rev_indexed(arr, item, idx) { // Reverse with index
+    printf("[%zu]=%d ", idx, *item);    // Prints: [2]=3 [1]=2 [0]=1
 }
 #endif /* CHEAT_SHEET */
 
@@ -298,11 +298,18 @@ extern "C" {
     comp_op__Arr_from$(T, _Initial)
 #define Arr_asg(var_self, var_other...) comp_op__Arr_asg(var_self, var_other)
 
+#define ref$A(var_self...) comp_op__Arr_ref(var_self)
+
 #define Arr_ref$(_Sli$T, _val_arr...) comp_op__Arr_ref$(_Sli$T, _val_arr)
 #define Arr_ref(_val_arr...)          comp_op__Arr_ref(_val_arr)
 
-#define Arr_ptr(var_self...) comp_op__Arr_ptr(var_self)
+#define buf$A(var_self...)             comp_op__Arr_buf(var_self)
+#define ptr$A(var_self...)             comp_op__Arr_ptr(var_self)
+#define len$A(var_self...)             comp_op__Arr_len(var_self)
+#define at$A(var_self, usize_index...) Arr_at(var_self, usize_index)
+
 #define Arr_buf(var_self...) comp_op__Arr_buf(var_self)
+#define Arr_ptr(var_self...) comp_op__Arr_ptr(var_self)
 #define Arr_len(var_self...) \
     /** \
      * @brief `arr.len` | Get number of elements in array \
@@ -378,6 +385,10 @@ extern "C" {
      *     // arr3 = {1, 2, 3, 4, 5, 6} \
      */ \
     comp_op__Arr_cat$(pp_uniqTok(temp), _Arr$T, var_self, var_other)
+
+#define slice$A(var_self, range_index_begin_end...) Arr_slice(var_self, range_index_begin_end)
+#define prefix$A(var_self, usize_index_end...)      Arr_prefix(var_self, usize_index_end)
+#define suffix$A(var_self, usize_index_begin...)    Arr_suffix(var_self, usize_index_begin)
 
 #define Arr_slice(var_self, range_index_begin_end...) \
     /** \
@@ -486,13 +497,13 @@ extern "C" {
         T buf[(N) + 1]; \
     }
 
-#define comp_op__Arr_anonCast$(__anon, _Arr$T, var_anon...) eval({ \
+#define comp_op__Arr_anonCast$(__anon, _Arr$T, var_anon...) blk({ \
     let_(__anon, TypeOf(&var_anon)) = &var_anon; \
     claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(_Arr$T)); \
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(_Arr$T)); \
     claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(_Arr$T, buf))); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(_Arr$T, buf)); \
-    eval_return rawderef(as$((rawptr$(_Arr$T))(__anon))); \
+    blk_return rawderef(as$((rawptr$(_Arr$T))(__anon))); \
 })
 
 #define comp_op__Arr_zero()                     { .buf = { 0 } }
@@ -504,18 +515,18 @@ extern "C" {
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wgnu-folding-constant\"", \
     "clang diagnostic pop", \
-    Arr_init$(Arr$$(eval({ eval_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial) \
+    Arr_init$(Arr$$(blk({ blk_return sizeOf((_T[])_Initial) / sizeOf(_T); }), _T), _Initial) \
 )
 #else /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
 #define comp_op__Arr_from$(_T, _Initial...) Arr_init$(Arr$$(pp_countArg(_Initial), _T), _Initial)
 #endif /* !comp_Arr_allows_gnu_folding_constant_for_inferred_len */
-#define comp_op__Arr_asg(var_self, var_other...) eval({ \
+#define comp_op__Arr_asg(var_self, var_other...) blk({ \
     let __self  = &var_self; \
     let __other = &var_other; \
     claim_assert_static(sizeOf(TypeOf(*__self)) == sizeOf(TypeOf(*__other))); \
     claim_assert_static(alignOf(TypeOf(*__self)) == alignOf(TypeOf(*__other))); \
     claim_assert_static(isSameType(TypeOf((*__self).buf), TypeOf((*__other).buf))); \
-    eval_return deref(__self) = deref(as$((TypeOf(__self))(__other))); \
+    blk_return deref(__self) = deref(as$((TypeOf(__self))(__other))); \
 })
 
 #define comp_op__Arr_ref$(_Sli$T, _val_arr...) \
@@ -526,7 +537,7 @@ extern "C" {
 #define comp_op__Arr_buf(var_self...)                              ((var_self).buf)
 #define comp_op__Arr_ptr(var_self...)                              (&*Arr_buf(var_self))
 #define comp_op__Arr_len(var_self...)                              countOf((var_self).buf)
-#define comp_op__Arr_at(__self, __index, var_self, usize_index...) eval({ \
+#define comp_op__Arr_at(__self, __index, var_self, usize_index...) blk({ \
     let_(__self, TypeOf(&var_self)) = &var_self; \
     const usize __index             = usize_index; \
     claim_assert_static_msg( \
@@ -541,9 +552,9 @@ extern "C" {
         __index, \
         Arr_len(*__self) \
     ); \
-    eval_return rawref(__self->buf[__index]); \
+    blk_return rawref(__self->buf[__index]); \
 })
-#define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) eval({ \
+#define comp_op__Arr_getAt(__self, __index, var_self, usize_index...) blk({ \
     const TypeOf(&var_self) __self = &var_self; \
     const usize __index            = usize_index; \
     debug_assert_fmt( \
@@ -552,9 +563,9 @@ extern "C" {
         __index, \
         Arr_len(*__self) \
     ); \
-    eval_return __self->buf[__index]; \
+    blk_return __self->buf[__index]; \
 })
-#define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) eval({ \
+#define comp_op__Arr_setAt(__self, __index, var_self, usize_index, var_value...) blk({ \
     const TypeOf(&var_self) __self = &var_self; \
     const usize __index            = usize_index; \
     debug_assert_fmt( \
@@ -564,10 +575,10 @@ extern "C" {
         Arr_len(*__self) \
     ); \
     __self->buf[__index] = as$((TypeOf(__self->buf[0]))(var_value)); \
-    eval_return __self; \
+    blk_return __self; \
 })
 
-#define comp_op__Arr_cat(__temp, var_self, var_other...) eval({ \
+#define comp_op__Arr_cat(__temp, var_self, var_other...) blk({ \
     claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
     union { \
         Arr$$( \
@@ -579,9 +590,9 @@ extern "C" {
             TypeOf(var_other) rhs; \
         }; \
     } __temp = { .lhs = var_self, .rhs = var_other }; \
-    eval_return __temp.concatted; \
+    blk_return __temp.concatted; \
 })
-#define comp_op__Arr_cat$(__temp, _Arr$T, var_self, var_other...) eval({ \
+#define comp_op__Arr_cat$(__temp, _Arr$T, var_self, var_other...) blk({ \
     claim_assert_static(isSameType(TypeOf(var_self.buf[0]), TypeOf(var_other.buf[0]))); \
     union { \
         _Arr$T concatted; \
@@ -590,10 +601,10 @@ extern "C" {
             TypeOf(var_other) rhs; \
         }; \
     } __temp = { .lhs = var_self, .rhs = var_other }; \
-    eval_return __temp.concatted; \
+    blk_return __temp.concatted; \
 })
 
-#define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) eval({ \
+#define comp_op__Arr_slice(__self, __range, var_self, range_index_begin_end...) blk({ \
     let_(__self, TypeOf(var_self)*) = &var_self; \
     let_(__range, R)                = range_index_begin_end; \
     debug_assert_fmt( \
@@ -608,13 +619,13 @@ extern "C" {
         __range.end, \
         Arr_len(*__self) \
     ); \
-    eval_return make$( \
+    blk_return make$( \
         Sli$$(TypeOf(__self->buf[0])), \
         .ptr = __self->buf + __range.begin, \
         .len = R_len(__range) \
     ); \
 })
-#define comp_op__Arr_slice$(T_Sli, __self, __range, var_self, range_index_begin_end...) eval({ \
+#define comp_op__Arr_slice$(T_Sli, __self, __range, var_self, range_index_begin_end...) blk({ \
     let_(__self, TypeOf(&var_self)) = &var_self; \
     let_(__range, R)                = range_index_begin_end; \
     debug_assert_fmt( \
@@ -629,7 +640,7 @@ extern "C" {
         __range.end, \
         Arr_len(*__self) \
     ); \
-    eval_return make$( \
+    blk_return make$( \
         T_Sli, \
         .ptr = __self->buf + __range.begin, \
         .len = R_len(__range) \

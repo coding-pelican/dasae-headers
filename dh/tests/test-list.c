@@ -26,10 +26,10 @@ TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
     {
         var it    = list.first;
         u32 index = 1;
-        while_some(it, node) block_defer {
+        while_some(it, node) blk_defer {
             defer_(index += 1, it = node->next);
             try_(TEST_expect(node->data == index));
-        } block_deferral;
+        } blk_deferral;
     }
 
     let_ignore = ListSgl_popFirst(list.base);          // {2, 3, 4, 5}

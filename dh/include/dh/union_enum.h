@@ -82,23 +82,23 @@ extern "C" {
 
 #define comp_op__tagUnion$(T_UnionEnum, E_UnionEnum_Tag, val_tagged...) ((T_UnionEnum)tagUnion(E_UnionEnum_Tag, val_tagged))
 
-#define comp_op__toTagUnion(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) eval({ \
+#define comp_op__toTagUnion(__addr_union_enum, var_addr_union_enum, E_UnionEnum_Tag, val_tagged...) blk({ \
     let __addr_union_enum = var_addr_union_enum; \
     debug_assert_nonnull(__addr_union_enum); \
     *__addr_union_enum = tagUnion$(TypeOf(*__addr_union_enum), E_UnionEnum_Tag, val_tagged); \
-    eval_return __addr_union_enum; \
+    blk_return __addr_union_enum; \
 })
 
-#define comp_op__extract(val_union_enum, E_UnionEnum_Tag) eval({ \
+#define comp_op__extract(val_union_enum, E_UnionEnum_Tag) blk({ \
     let __union_enum = (val_union_enum); \
     debug_assert(__union_enum.tag == (E_UnionEnum_Tag)); \
-    eval_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
+    blk_return __union_enum.data.pp_join($, E_UnionEnum_Tag, Tagged).value; \
 })
 
-#define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) eval({ \
+#define comp_op__extract_mut(var_union_enum, E_UnionEnum_Tag) blk({ \
     var __union_enum = &(var_union_enum); \
     debug_assert(__union_enum->tag == (E_UnionEnum_Tag)); \
-    eval_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
+    blk_return&(__union_enum->data.pp_join($, E_UnionEnum_Tag, Tagged).value); \
 })
 
 // #define comp_syn__match_(val_union_enum) \
@@ -156,7 +156,7 @@ config_UnionEnum(Shape,
     (Shape_Rect, Rect)
 );
 static f32 Shape_getArea(Shape shape) {
-    return eval({
+    return blk({
         var area = f32_nan;
         match_(shape) {
             pattern_(Shape_Circ, s) {
@@ -170,7 +170,7 @@ static f32 Shape_getArea(Shape shape) {
             fallback_
                 claim_unreachable;
         }
-        eval_return area;
+        blk_return area;
     });
     /* return eval_match(shape, {
         pattern_case(Shape_Circ, s) {

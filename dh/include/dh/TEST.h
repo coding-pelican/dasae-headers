@@ -149,15 +149,15 @@ fn_((TEST_expectMsg(bool expr, Sli_const$u8 msg))(Err$void));
 
 #if COMP_TIME
 $extern $must_check
-fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 expr_str))(Err$void));
+fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 eval_str))(Err$void));
 $extern $must_check
-fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 expr_str))(Err$void));
+fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 eval_str))(Err$void));
 
 #define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), Str_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), Str_l(#_expr))
 
-#define TEST_expect_callTest(_expr, _loc, _expr_str)          TEST_expect_test(_expr, _loc, _expr_str)
-#define TEST_expectMsg_callTest(_expr, _msg, _loc, _expr_str) TEST_expectMsg_test(_expr, _msg, _loc, _expr_str)
+#define TEST_expect_callTest(_expr, _loc, _eval_str)          TEST_expect_test(_expr, _loc, _eval_str)
+#define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)
 #endif /* COMP_TIME */
 
 #if defined(__cplusplus)

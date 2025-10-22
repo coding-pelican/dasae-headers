@@ -186,6 +186,9 @@ Macros:
   - "O$(T)=O$<T>"
   - "E$$(T)=E$$<T>"
   - "E$(T)=E$<T>"
+
+  - "as$(_Expr)=pp_ignore _Expr"
+
   - "$static=$static"
   - "$extern=$extern"
   # - "some(_)=_"
@@ -198,10 +201,16 @@ Macros:
   - "switch_(init, cond)=switch (init; cond)"
   - "while_(init, cond)=while (init; cond)"
   # Optional value
-  - "if_some(expr, capture)=if (capture)"
-  - "if_none(expr)=if ()"
-  - "else_none=else"
-  - "else_some(expr)=else if ()"
+  # - "if_some(expr,capture)=if (expr)"
+  # - "if_none(expr)=if ()"
+  # - "else_none=else"
+  # - "else_some(expr)=else if ()"
+  # - "if_ok(expr,capture)=if (capture)"
+  # - "if_err(expr,capture)=if (capture)"
+  # - "if_void(expr)=if ()"
+  # - "else_ok(capture)=else if (capture)"
+  # - "else_err(capture)=else if (capture)"
+  # - "else_void=else"
   # # Error result
   # - "if_err(_,_)=if (_)"
   # - "if_ok(_,_)=if (_)"
@@ -225,9 +234,10 @@ Macros:
   # # Scope
   - $block_guard=/**/
   - $block_unguarded=/**/
-  - "block_defer=/*do { /**/ } while (false)*/"
-  - "block_deferral=/**/"
-  - "defer_break=goto __step_deferred"
+  - "blk_defer=/*do { /**/ } while (false)*/"
+  - "blk_deferral=/**/"
+  - "blk_return=return"
+  - "break_defer=goto __step_deferred"
   # - "expr_(keyword)=if (true) {} keyword"
   # - "expr_(Expr)=({"
   # - "$unscoped_expr=})"
@@ -237,8 +247,8 @@ Macros:
   # - "pp_else_(Expr)=Expr"
   - "fn_(Expr)=;pp_expand Expr"
   - "la_(Expr)=;pp_expand Expr"
-  - "eval_=la_((void)(void))"
-  - "expr_(Expr)=Expr"
+  - "expr_=la_((void)(void))"
+  - "eval_(Expr)=Expr"
   - $un_(keyword)=/**/pp_expand
   - $unscoped_(keyword)=/**/
   - $unguarded_(keyword)=/**/
@@ -252,22 +262,13 @@ Macros:
   - $unguarded_async_fn=/**/
   - $unscoped_la=/**/
   - $unguarded_la=/**/
-  - $unscoped_eval=/**/
-  - $unguarded_eval=/**/
   - $unscoped_expr=/**/
   - $unguarded_expr=/**/
-  - "as$(_Expr)=pp_ignore _Expr"
+  - $unscoped_eval=/**/
+  - $unguarded_eval=/**/
 
 ForEachMacros:
   - pp_foreach
-  - for_slice
-  - for_slice_indexed
-  - for_slice_rev
-  - for_slice_rev_indexed
-  - for_array
-  - for_array_indexed
-  - for_array_rev
-  - for_array_rev_indexed
 AttributeMacros:
   - $static
   - $extern

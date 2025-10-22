@@ -58,18 +58,18 @@ extern bool debug_isDebuggerPresent(void);
 /* Only trigger debug break if a debugger is attached */
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#define comp_op__debug_break() eval({ \
+#define comp_op__debug_break() blk({ \
     if (debug_isDebuggerPresent()) { __builtin_debugtrap(); } \
 })
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#define comp_op__debug_break() eval({ \
+#define comp_op__debug_break() blk({ \
     if (debug_isDebuggerPresent()) { __debugbreak(); } \
 })
 #else /* others */
 /* Fallback using signal */
 #include <signal.h>
-#define comp_op__debug_break() eval({ \
+#define comp_op__debug_break() blk({ \
     if (debug_isDebuggerPresent()) { raise(SIGTRAP); } \
 })
 #endif /* others */

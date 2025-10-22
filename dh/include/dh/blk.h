@@ -33,7 +33,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 // clang-format off
-#define comp_syn__blk_(_Label_and_RetType, _Body...) eval({ \
+#define comp_syn__blk_(_Label_and_RetType, _Body...) blk({ \
     local_label pp_Tuple_get1st _Label_and_RetType; \
     var pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType) = _Generic( \
         TypeOf(pp_Tuple_get2nd _Label_and_RetType), \
@@ -42,7 +42,7 @@ extern "C" {
     ); \
     _Body; \
     pp_Tuple_get1st _Label_and_RetType: \
-    eval_return pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType); \
+    blk_return pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType); \
 })
 #define comp_syn__blk_break_(__reserved_val, _label, ...) \
     __reserved_val = *(TypeOf(__reserved_val)[1]){ [0] = __VA_ARGS__ }; \

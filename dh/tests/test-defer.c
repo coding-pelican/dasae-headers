@@ -94,14 +94,14 @@ $static
 fn_((testBlockDeferScope(void))(void $guard)) {
     defer_(recordCleanup(1));
 
-    block_defer {
+    blk_defer {
         defer_(recordCleanup(2));
         if (true) {
             defer_(recordCleanup(3));
-            defer_break;
+            break_defer;
         }
         recordCleanup(4); // Should not be executed
-    } block_deferral;
+    } blk_deferral;
 
     defer_(recordCleanup(5));
     return_void();

@@ -4,7 +4,7 @@ fn_((engine_Keyboard_getState(const engine_Keyboard* self, engine_KeyCode key))(
     debug_assert_nonnull(self);
     debug_assert_true(engine_KeyCode_none < key);
     debug_assert_true(key < engine_KeyCode_count);
-    return Arr_getAt(self->keys.curr_states, as$(usize, key));
+    return Arr_getAt(self->keys.curr_states, as$((usize)(key)));
 }
 
 fn_((engine_Keyboard_isState(const engine_Keyboard* self, engine_KeyCode key, engine_KeyButtonStates state))(bool)) {

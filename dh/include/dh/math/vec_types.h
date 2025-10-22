@@ -142,7 +142,7 @@ typedef m_V4f32 m_V4f;
 typedef m_V4f64 m_V4d;
 
 #define m_V_as$(TDestVec, src_vec...)      FUNC_m_V_as$(TDestVec, src_vec)
-#define FUNC_m_V_as$(TDestVec, src_vec...) eval({ \
+#define FUNC_m_V_as$(TDestVec, src_vec...) blk({ \
     TDestVec    _dest = cleared(); \
     let         _src  = (src_vec); \
     const usize _len  = countOf(_dest.s); \
@@ -150,7 +150,7 @@ typedef m_V4f64 m_V4d;
     for (usize _i = 0; _i < _len; ++_i) { \
         _dest.s[_i] = as$((TypeOf(_dest.s[_i]))(_src.s[_i])); \
     } \
-    eval_return _dest; \
+    blk_return _dest; \
 })
 
 /* #define m_V2_Match(T) TypeOf(_Generic( \

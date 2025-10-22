@@ -61,7 +61,7 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
 #define comp_type_raw__Ptr$$(T) \
     T*
 
-#define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) eval({ \
+#define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) blk({ \
     const TypeOf(var_ptr) __ptr = var_ptr; \
     Opt$(T_Ptr) __ret           = cleared(); \
     if (Ptr_constCastable(__ptr)) { \
@@ -69,9 +69,9 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
     } else { \
         Opt_asg(&__ret, none()); \
     } \
-    eval_return __ret; \
+    blk_return __ret; \
 })
-#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) eval({ \
+#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) blk({ \
     const TypeOf(var_ptr) __ptr        = var_ptr; \
     Opt$$(TypeOfUnqual(*__ptr)*) __ret = cleared(); \
     if (Ptr_constCastable(__ptr)) { \
@@ -79,7 +79,7 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
     } else { \
         Opt_asg(&__ret, none()); \
     } \
-    eval_return __ret; \
+    blk_return __ret; \
 })
 
 

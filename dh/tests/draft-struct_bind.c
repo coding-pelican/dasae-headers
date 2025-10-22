@@ -25,7 +25,7 @@ fn_((getModel(void))(union Model)) {
     };
 }
 
-#define tuple(field0, field1...) eval({ \
+#define tuple(field0, field1...) blk({ \
     (struct { \
         TypeOf(field0) _n0; \
         TypeOf(field1) _n1; \
@@ -34,13 +34,13 @@ fn_((getModel(void))(union Model)) {
         ._n1 = field1 \
     }; \
 })
-#define tuple_at(tuple_addr, index) eval({ \
+#define tuple_at(tuple_addr, index) blk({ \
     let __$tuple = tuple_addr; \
-    eval_return __$tuple->_n##index; \
+    blk_return __$tuple->_n##index; \
 })
-#define tuple_atMut(tuple_addr, index) eval({ \
+#define tuple_atMut(tuple_addr, index) blk({ \
     let __$tuple = tuple_addr; \
-    eval_return & __$tuple->_n##index; \
+    blk_return & __$tuple->_n##index; \
 })
 #define untuple(tuple, name0, name1...) \
     let __$tuple = tuple; \

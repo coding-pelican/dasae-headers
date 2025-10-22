@@ -46,7 +46,7 @@ T_Return _Name_With_Params {                               \
 }
 // clang-format on
 
-#define comp_syn__return_(_Expr...) eval({                        \
+#define comp_syn__return_(_Expr...) blk({                        \
     bti_memcpy(                                                   \
         as$(u8*, __reserved_return),                              \
         as$(u8*, (TypeOf(*__reserved_return)[1]){ [0] = _Expr }), \
@@ -58,7 +58,7 @@ T_Return _Name_With_Params {                               \
 #define comp_syn__return_err(_Expr...)  return_(err(_Expr))
 #define comp_syn__return_some(_Expr...) return_(some(_Expr))
 #define comp_syn__return_none()         return_(none())
-#define comp_syn__return_void()         eval({                                 \
+#define comp_syn__return_void()         blk({                                 \
     claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
@@ -245,11 +245,11 @@ T_Return _Name_With_Params {                                    \
     );                                                                      \
     goto __step_return */
 
-/* #define ret_void eval({                                                        \
+/* #define ret_void blk({                                                        \
     claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
-#define ret_(_Expr...) eval({                                       \
+#define ret_(_Expr...) blk({                                       \
     bti_memcpy(                                                     \
         (anyptr)__reserved_return,                                  \
         (anyptr)&*((TypeOf(*__reserved_return)[1]){ [0] = _Expr }), \

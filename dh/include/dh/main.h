@@ -14,8 +14,9 @@
  * @details Provides a hijacked main function for error handling.
  */
 
-#ifndef MAIN_INCLUDED
-#define MAIN_INCLUDED (1)
+#include "dh/debug/common.h"
+#ifndef main__included
+#define main__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -59,10 +60,19 @@ extern fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)) $must_check;
 
 /*========== Root main ======================================================*/
 
-#ifndef MAIN_ROOT_INCLUDED
-#define MAIN_ROOT_INCLUDED (1)
+#ifndef main__root_included
+#define main__root_included 1
 
 #if !TEST_comp_enabled
+
+// $static $inline_always
+// fn_((dh_main__finiMemTrace(void))(void)) {
+// #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
+// #else
+//     extern fn_((mem_Tracker_finiAndGenerateReport(void))(void));
+//     mem_Tracker_finiAndGenerateReport();
+// #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */
+// }
 
 fn_((
 #if main_no_args && main_no_returns_err
@@ -81,7 +91,7 @@ fn_((
     catch_((dh_main())(err, {
         Err_print(err);
         ErrTrace_print();
-        claim_unreachable;
+        return (debug_break(), 1);
     }));
 #elif !main_no_args && main_no_returns_err
     let args_buf = as$((Sli_const$u8*)(bti_alloca(sizeOf$(Sli_const$u8) * argc)));
@@ -89,7 +99,7 @@ fn_((
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
+        Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
@@ -98,12 +108,12 @@ fn_((
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
+        blk_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });
     catch_((dh_main(args))(err, {
         Err_print(err);
         ErrTrace_print();
-        claim_unreachable;
+        return (debug_break(), 1);
     }));
 #endif
     return 0;
@@ -115,11 +125,11 @@ fn_((main(void))(int)) {
 }
 #endif /* TEST_comp_enabled */
 
-#endif /* MAIN_ROOT_INCLUDED */
+#endif /* main__root_included */
 
 #endif /* !main_no_hijack */
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* MAIN_INCLUDED */
+#endif /* main__included */

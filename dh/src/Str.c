@@ -109,10 +109,10 @@ fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$S
     va_copy(args2, args1);
     defer_(va_end(args2));
 
-    let len = eval({
+    let len = blk({
         let res = vsnprintf(null, 0, format, args1);
         if (res < 0) { return_err(mem_Err_OutOfMemory()); }
-        eval_return as$(usize, res);
+        blk_return as$(usize, res);
     });
 
     var result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
@@ -161,9 +161,9 @@ fn_((Str_upper(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
-    for_slice_indexed (result, ch, i) {
-        *ch = as$((u8)(toupper(*Sli_at(str, i))));
-    }
+    for_(($s(result), $s(str))(dst, src) {
+        *dst = as$((u8)(toupper(*src)));
+    });
     return_ok(result);
 } $unscoped_(fn);
 
@@ -171,9 +171,9 @@ fn_((Str_lower(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
-    for_slice_indexed (result, ch, i) {
-        *ch = as$((u8)(tolower(*Sli_at(str, i))));
-    }
+    for_(($s(result), $s(str))(dst, src) {
+        *dst = as$((u8)(tolower(*src)));
+    });
     return_ok(result);
 } $unscoped_(fn);
 
@@ -182,12 +182,11 @@ bool Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle) {
     debug_assert_nonnull(needle.ptr);
 
     if (haystack.len < needle.len) { return false; }
-    for (usize i = 0; i <= haystack.len - needle.len; ++i) {
+    return eval_(bool $scope)(for_(($r(0, $incl(haystack.len - needle.len)))(i) {
         if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
-            return true;
+            $break_(true);
         }
-    }
-    return false;
+    })) eval_(else)({ $break_(false); }) $unscoped_(eval);
 }
 
 fn_((Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {
@@ -195,12 +194,11 @@ fn_((Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usiz
     debug_assert_nonnull(needle.ptr);
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
-    for (usize i = start; i <= haystack.len - needle.len; ++i) {
+    return eval_(Opt$usize $scope)(for_(($r(start, $incl(haystack.len - needle.len)))(i) {
         if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
-            return_some(i);
+            $break_(some(i));
         }
-    }
-    return_none();
+    })) eval_(else)({ $break_(none()); }) $unscoped_(eval);
 } $unscoped_(fn);
 
 fn_((Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {

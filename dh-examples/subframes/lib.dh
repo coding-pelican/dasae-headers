@@ -1,5 +1,5 @@
 [engine]
-path=C:\dev\dasae-headers\dh-examples\engine
+path=../engine
 profile=default
 linking=static
 no-libdh=false

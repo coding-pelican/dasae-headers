@@ -68,10 +68,10 @@ extern time_Duration op_fnMulAsgBy(time_Duration, u64);
 extern time_Duration op_fnDivBy(time_Duration, u64);
 extern time_Duration op_fnDivAsgBy(time_Duration, u64);
 
-extern Opt$time_Duration time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs);
-extern Opt$time_Duration time_Duration_chkdSub(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_addChkd(time_Duration lhs, time_Duration rhs);
+extern Opt$time_Duration time_Duration_subChkd(time_Duration lhs, time_Duration rhs);
 extern Opt$time_Duration time_Duration_mulChkd_u64(time_Duration lhs, u64 rhs);
-extern Opt$time_Duration time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs);
+extern Opt$time_Duration time_Duration_divChkd_u64(time_Duration lhs, u64 rhs);
 
 /* Comparison */
 $inline_always cmp_fnCmp(time_Duration) {

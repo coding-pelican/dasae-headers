@@ -140,7 +140,7 @@ typedef struct Err$Void {
         } data; \
         bool is_err; \
     }
-#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) eval({ \
+#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) blk({ \
     let __anon = var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes)); \
@@ -153,7 +153,7 @@ typedef struct Err$Void {
     claim_assert_static(hasField(TypeOf(__anon), data.ok)); \
     claim_assert_static(validateField(TypeOf(__anondata.), ok, FieldTypeOf(T_ErrRes, data.ok))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), data.ok) == fieldPadding(T_ErrRes, data.ok)); \
-    eval_return(*(T_ErrRes*)&__anon); \
+    blk_return(*(T_ErrRes*)&__anon); \
 })
 
 #define comp_op__err(val_err...) { .is_err = true, .data.err = val_err }
@@ -162,17 +162,17 @@ typedef struct Err$Void {
 #define comp_op__err$(T_ErrRes, val_err...) ((T_ErrRes)err(val_err))
 #define comp_op__ok$(T_ErrRes, val_ok...)   ((T_ErrRes)ok(val_ok))
 
-#define comp_op__toErr(__addr_result, var_addr_result, val_err...) eval({ \
+#define comp_op__toErr(__addr_result, var_addr_result, val_err...) blk({ \
     const TypeOf(var_addr_result) __addr_result \
         = var_addr_result; \
     *__addr_result = err$(TypeOf(*__addr_result), val_err); \
-    eval_return __addr_result; \
+    blk_return __addr_result; \
 })
-#define comp_op__toOk(__addr_result, var_result, val_ok...) eval({ \
+#define comp_op__toOk(__addr_result, var_result, val_ok...) blk({ \
     const TypeOf(var_result) __addr_result \
         = var_result; \
     *__addr_result = ok$(TypeOf(*__addr_result), val_ok); \
-    eval_return __addr_result; \
+    blk_return __addr_result; \
 })
 
 #define comp_op__isErr(val_result...) ((val_result).is_err)
@@ -184,54 +184,54 @@ typedef struct Err$Void {
 #define comp_syn__return_ok(val_ok...) \
     return_(ok(val_ok))
 
-#define comp_op__try_(__result, _Expr...) eval({ \
+#define comp_op__try_(__result, _Expr...) blk({ \
     let __result = _Expr; \
     if (isErr(__result)) { \
         return_err(__result.data.err); \
     } \
-    eval_return __result.data.ok; \
+    blk_return __result.data.ok; \
 })
 
 #define comp_op__catch_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
-    eval({ \
+    blk({ \
         var __result = _Expr; \
         if (isErr(__result)) { \
             __result.data.ok = bti_Generic_match$( \
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
-                bti_Generic_pattern$(void) eval({ \
+                bti_Generic_pattern$(void) blk({ \
                     (_DefaultExpr_OR_Body); \
-                    eval_return make$(TypeOf(__result.data.ok)); \
+                    blk_return make$(TypeOf(__result.data.ok)); \
                 }), \
                 bti_Generic_fallback_(_DefaultExpr_OR_Body) \
             ); \
             ErrTrace_reset(); \
         } \
-        eval_return __result.data.ok; \
+        blk_return __result.data.ok; \
     }) \
 )
 #define comp_op__catch_from(__result, _Expr, _Payload_Capture, _Default_Or_Eval...) pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
-    eval({ \
+    blk({ \
         var __result = _Expr; \
         if (isErr(__result)) { \
             let _Payload_Capture \
                 = __result.data.err; \
             __result.data.ok = bti_Generic_match$( \
                 TypeOfUnqual(_Default_Or_Eval), \
-                bti_Generic_pattern$(void) eval({ \
+                bti_Generic_pattern$(void) blk({ \
                     _Default_Or_Eval; \
-                    eval_return make$(TypeOf(__result.data.ok)); \
+                    blk_return make$(TypeOf(__result.data.ok)); \
                 }), \
                 bti_Generic_fallback_ _Default_Or_Eval \
             ); \
             ErrTrace_reset(); \
         } \
-        eval_return __result.data.ok; \
+        blk_return __result.data.ok; \
     }) \
 )
 
@@ -247,7 +247,7 @@ typedef struct Err$Void {
     } \
 )
 
-#define comp_op__Err_asOpt$(__err, T_Opt, var_err...) eval({ \
+#define comp_op__Err_asOpt$(__err, T_Opt, var_err...) blk({ \
     let __err = var_err; \
     (T_Opt){ \
         .value     = __err.data.ok, \
@@ -324,7 +324,7 @@ $unscoped;
 static fn_(test(void), Err$void $scope) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
-    let result_handling = catch_from(safeDivide(10, 0), err, eval({
+    let result_handling = catch_from(safeDivide(10, 0), err, blk({
                                          Err_print(err);
                                          ErrTrace_print();
                                          return_err(err);

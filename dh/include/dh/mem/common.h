@@ -217,13 +217,13 @@ $inline_always cmp_Ord mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
     Sli_from$(Sli$(u8), as$((u8*)(_ptr)), sizeOf(*_ptr))
 #define comp_inline__mem_asBytes_const(_ptr...) \
     Sli_from$(Sli_const$(u8), as$((const u8*)(_ptr)), sizeOf(*_ptr))
-#define comp_inline__mem_toBytes$(__val, _Arr$N$u8, _val...) eval({ \
+#define comp_inline__mem_toBytes$(__val, _Arr$N$u8, _val...) blk({ \
     var __val = _val; \
-    eval_return Sli_deref$(_Arr$N$u8, mem_asBytes(&__val)); \
+    blk_return Sli_deref$(_Arr$N$u8, mem_asBytes(&__val)); \
 })
-#define comp_inline__mem_toBytes_const$(__val, _Arr$N$u8, _val...) eval({ \
+#define comp_inline__mem_toBytes_const$(__val, _Arr$N$u8, _val...) blk({ \
     let __val = _val; \
-    eval_return Sli_deref$(_Arr$N$u8, mem_asBytes_const(&__val)); \
+    blk_return Sli_deref$(_Arr$N$u8, mem_asBytes_const(&__val)); \
 })
 #define comp_inline__mem_toBytes(_val...) \
     mem_toBytes$(Arr$$(sizeOf(_val), u8), _val)

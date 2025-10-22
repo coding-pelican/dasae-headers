@@ -71,14 +71,14 @@ typedef enum atomic_MemOrd {
     typedef __attribute__((aligned(sizeOf$(T)))) struct pp_join($, atomic_Value, T) { \
         volatile T raw; \
     } pp_join($, atomic_Value, T)
-#define atomic_Value_anonCast$(TNamedValue, var_unnamed_value) eval({ \
+#define atomic_Value_anonCast$(TNamedValue, var_unnamed_value) blk({ \
     let _unnamed_value = var_unnamed_value; \
     claim_assert_static(sizeOf(TypeOf(_unnamed_value)) == sizeOf(TNamedValue)); \
     claim_assert_static(alignOf(TypeOf(_unnamed_value)) == alignOf(TNamedValue)); \
     claim_assert_static(hasField(TypeOf(_unnamed_value), raw)); \
     claim_assert_static(validateField(TypeOf(_unnamed_value), raw, FieldTypeOf(TNamedValue, raw))); \
     claim_assert_static(fieldPadding(TypeOf(_unnamed_value), raw) == fieldPadding(TNamedValue, raw)); \
-    eval_return(*(TNamedValue*)&_unnamed_value); \
+    blk_return(*(TNamedValue*)&_unnamed_value); \
 })
 
 /*========== Value Operations ============================================*/
@@ -96,9 +96,9 @@ typedef enum atomic_MemOrd {
  */
 #define atomic_load$(T, _ptr, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_load_n((_ptr), (val_order)))
-#define atomic_load(var_self, val_order) eval({ \
+#define atomic_load(var_self, val_order) blk({ \
     let __self = &(var_self); \
-    eval_return atomic_load$(TypeOf(__self->raw), &__self->raw, val_order); \
+    blk_return atomic_load$(TypeOf(__self->raw), &__self->raw, val_order); \
 })
 
 /**
@@ -106,9 +106,9 @@ typedef enum atomic_MemOrd {
  */
 #define atomic_store$(T, _ptr, val_raw, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_store_n((_ptr), (val_raw), (val_order)))
-#define atomic_store(var_self, val_raw, val_order) eval({ \
+#define atomic_store(var_self, val_raw, val_order) blk({ \
     let __self = &(var_self); \
-    eval_return atomic_store$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
+    blk_return atomic_store$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
 })
 
 /**
@@ -116,9 +116,9 @@ typedef enum atomic_MemOrd {
  */
 #define atomic_swap$(T, _ptr, val_raw, val_order) \
     _Generic((_ptr), volatile rawptr$(T): __atomic_exchange_n((_ptr), (val_raw), (val_order)))
-#define atomic_swap(var_self, val_raw, val_order) eval({ \
+#define atomic_swap(var_self, val_raw, val_order) blk({ \
     let __self = &(var_self); \
-    eval_return atomic_swap$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
+    blk_return atomic_swap$(TypeOf(__self->raw), &__self->raw, val_raw, val_order); \
 })
 
 /**
@@ -130,11 +130,11 @@ typedef enum atomic_MemOrd {
     const bool __success  = __atomic_compare_exchange_n( \
         (_ptr), (_expected_ptr), (_desired_val), true, (_success_order), (_fail_order) \
     ); \
-    eval_return __success ? null : __expected; \
+    blk_return __success ? null : __expected; \
 })
-#define atomic_cmpxchgWeak(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) eval({ \
+#define atomic_cmpxchgWeak(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) blk({ \
     let __self = &(var_self); \
-    eval_return atomic_cmpxchgWeak$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
+    blk_return atomic_cmpxchgWeak$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
 })
 
 /**
@@ -146,11 +146,11 @@ typedef enum atomic_MemOrd {
     const bool __success  = __atomic_compare_exchange_n( \
         (_ptr), (_expected_ptr), (_desired_val), false, (_success_order), (_fail_order) \
     ); \
-    eval_return __success ? null : __expected; \
+    blk_return __success ? null : __expected; \
 })
-#define atomic_cmpxchgStrong(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) eval({ \
+#define atomic_cmpxchgStrong(var_self, _expected_ptr, _desired_val, _success_order, _fail_order) blk({ \
     let __self = &(var_self); \
-    eval_return atomic_cmpxchgStrong$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
+    blk_return atomic_cmpxchgStrong$(TypeOf(__self->raw), &__self->raw, _expected_ptr, _desired_val, _success_order, _fail_order); \
 })
 
 /**

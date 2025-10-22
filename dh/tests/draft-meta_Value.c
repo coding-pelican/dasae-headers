@@ -41,27 +41,27 @@
 #define noneptr()                            { .addr = null }
 #define someptr$(T, ...)                     ((T)someptr(__VA_ARGS__))
 #define noneptr$(T)                          ((T)noneptr())
-#define toSomeptr(var_addr_opt, val_some...) eval({ \
+#define toSomeptr(var_addr_opt, val_some...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     *__addr_opt = someptr$(TypeOf(*__addr_opt), val_some); \
-    eval_return __addr_opt; \
+    blk_return __addr_opt; \
 })
-#define toNoneptr(var_addr_opt...) eval({ \
+#define toNoneptr(var_addr_opt...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     *__addr_opt = noneptr$(TypeOf(*__addr_opt)); \
-    eval_return __addr_opt; \
+    blk_return __addr_opt; \
 })
 
-#define unwrapptr(var_ptr) eval({ \
+#define unwrapptr(var_ptr) blk({ \
     let __ptr = var_ptr; \
     debug_assert_nonnull(__ptr.addr); \
-    eval_return __ptr.addr; \
+    blk_return __ptr.addr; \
 })
-#define orelseptr(var_ptr, val_orelse) eval({ \
+#define orelseptr(var_ptr, val_orelse) blk({ \
     let __ptr = var_ptr; \
-    eval_return __ptr.addr ? __ptr.addr : val_orelse; \
+    blk_return __ptr.addr ? __ptr.addr : val_orelse; \
 })
 
 typedef struct meta_Value {
@@ -102,7 +102,7 @@ union Node$i32 {
     };
 };
 
-#define meta_Value_load$(T, _self...) eval({ \
+#define meta_Value_load$(T, _self...) blk({ \
     union { \
         meta_Value meta; \
         struct { \
@@ -112,7 +112,7 @@ union Node$i32 {
     } __self = { .meta = _self }; \
     debug_assert(TypeInfo_eq(typeInfo$(T), __self.meta.ref.type)); \
     __self.value.data = deref(as$((rawptr$(T))(__self.meta.ref.addr))); \
-    eval_return __self.value.data; \
+    blk_return __self.value.data; \
 })
 
 #define $TEST_only TEST_only

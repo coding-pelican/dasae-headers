@@ -1,6 +1,6 @@
 #include "dh/main.h"
 
-#define eval_(...) ({ __VA_ARGS__; })
+#define expr_(...) ({ __VA_ARGS__; })
 
 /* Template Operators ========================================================*/
 
