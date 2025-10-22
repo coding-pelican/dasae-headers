@@ -1374,6 +1374,7 @@ int  main(void) {
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get3rd _Iters)(__i, __foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters); \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get4th _Iters)(__i, __foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters)
 
+#if UNUSED_CODE
     var_(arr_u, A$$(8, u32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
     var_(arr_i, A$$(9, i32))  = init$A({ 8, 9, 10, 11, 12, 13, 14, 15, 16 });
     var_(arr_f, A$$(10, f32)) = init$A({ 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f, 25.0f, 26.0f });
@@ -1419,6 +1420,7 @@ int  main(void) {
         printf("item: %d\n", *item);
         printf("idx: %zu\n", idx);
     }
+#endif /* UNUSED_CODE */
 
     var o      = some$((i32)(123));
     let meta   = meta$O(o);
@@ -1470,14 +1472,65 @@ void better(void) {
 }
 #endif /* UNUSED_CODE */
 
-#define for_(/*(_iter...)(_capture...) { ... }*/...) \
-    __exec__for_(pp_defer(__emit__for_)(__sep0__for_ __VA_ARGS__))
-#define __exec__for_(...)                          __VA_ARGS__
-#define __sep0__for_(_iters...)                    (_iters), __sep1__for_
-#define __sep1__for_(_captures...)                 (_captures),
-#define __emit__for_(_iters, _captures, _block...) __emitNext__for_(_iters, _captures, (_block))
+/* for: declaration =========================================================*/
+#define $fwd  $_fwd,
+#define $rev  $_rev,
+#define $asc  $_asc,
+#define $desc $_desc,
+
+#define for_(...) pp_overload(__for, __VA_ARGS__)(__VA_ARGS__)
+#define __for_1(/*(_iter...)(_capture...) { ... }*/...) \
+    __exec__for_(pp_defer(__emit__for_$_fwd)(__sep0__for_ __VA_ARGS__))
+#define __for_2(_$dir_type, /*(_iter...)(_capture...) { ... }*/...) \
+    __exec__for_(pp_defer(pp_cat(__emit__for_, _$dir_type))(__sep0__for_ __VA_ARGS__))
+#define __exec__for_(...)                               __VA_ARGS__
+#define __sep0__for_(_iters...)                         (_iters), __sep1__for_
+#define __sep1__for_(_captures...)                      (_captures),
+#define __emit__for_$_fwd(_iters, _captures, _block...) __emitNext__for_(_iters, _captures, (_block))
 // #define __emitNext__for_(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
+#define __emit__for_$_rev(_iters, _captures, _block...) __emitNext__for_$_rev(_iters, _captures, (_block))
+// #define __emitNext__for_$_rev(_iters, _captures, _block) \
+//     0(_iters), 1(_captures), 2(_block)
+#define __emit_for_$_asc(_iters, _captures, _block...)  __emitNext__for_(_iters, _captures, (_block))
+#define __emit_for_$_desc(_iters, _captures, _block...) __emitNext__for_$_rev(_iters, _captures, (_block))
+
+/* for: implementation ======================================================*/
+/* for - common functions ===================================================*/
+#define __for__expandIters(_iters...)                   _iters
+#define __for__expandIter(/*<_iter>|<_tag,_iter>*/...)  __VA_ARGS__
+#define __for__expandIterIds(__ids...)                  __ids
+#define __for__expandIterId(__id)                       __id
+#define __for__expandCaptures(_captures...)             _captures
+#define __for__expandCapture(/*<_capture>|$ignore*/...) __VA_ARGS__
+#define __for__expandBlock(_block...)                   _block
+
+#define __for__initIter(__iter_id, _iter) \
+    pp_overload(__for__initIter, __for__expandIter _iter)(__iter_id, __for__expandIter _iter)
+#define __for__initIter_1(__iter_id, ...) __for__initIter_1Emit(__iter_id, __VA_ARGS__)
+#define __for__initIter_1Emit(__iter_id, _iter) \
+    const R __iter_id = _iter
+#define __for__initIter_2(__iter_id, ...) __for__initIter_2Emit(__iter_id, __VA_ARGS__)
+#define __for__initIter_2Emit(__iter_id, _tag, _iter...) \
+    let __iter_id = _iter
+
+#define __for__lenIter(_iter) \
+    pp_overload(__for__lenIter, __for__expandIter _iter)(__for__expandIter _iter)
+#define __for__lenIter_1(...)             __for__lenIter_1Emit(__VA_ARGS__)
+#define __for__lenIter_1Emit(_iter)       len$R
+#define __for__lenIter_2(...)             __for__lenIter_2Emit(__VA_ARGS__)
+#define __for__lenIter_2Emit(_tag, _iter) pp_cat(len, _tag)
+
+#define __for__atIter(__step, __iter_id, _iter) \
+    pp_overload(__for__atIter, __for__expandIter _iter)(__step, __iter_id, __for__expandIter _iter)
+#define __for__atIter_1(...) __for__atIter_1Emit(__VA_ARGS__)
+#define __for__atIter_1Emit(__step, __iter_id, _iter) \
+    at$R(__iter_id, __step)
+#define __for__atIter_2(...) __for__atIter_2Emit(__VA_ARGS__)
+#define __for__atIter_2Emit(__step, __iter_id, _tag, _iter) \
+    pp_cat(at, _tag)(__iter_id, __step)
+
+/* for - emitters (forward) =================================================*/
 #define __emitNext__for_(_iters, _captures, _block) \
     pp_overload(__emitNext__for, __for__expandIters _iters)(_iters, _captures, _block)
 #define __emitNext__for_1(_iters, _captures, _block) __emit__for_1( \
@@ -1511,39 +1564,6 @@ void better(void) {
     ), \
     _iters, _captures, _block \
 )
-
-#define __for__expandIters(_iters...)                   _iters
-#define __for__expandIter(/*<_iter>|<_tag,_iter>*/...)  __VA_ARGS__
-#define __for__expandIterIds(__ids...)                  __ids
-#define __for__expandIterId(__id)                       __id
-#define __for__expandCaptures(_captures...)             _captures
-#define __for__expandCapture(/*<_capture>|$ignore*/...) __VA_ARGS__
-#define __for__expandBlock(_block...)                   _block
-
-#define __for__initIter(__iter_id, _iter) \
-    pp_overload(__for__initIter, __for__expandIter _iter)(__iter_id, __for__expandIter _iter)
-#define __for__initIter_1(__iter_id, ...) __for__initIter_1Emit(__iter_id, __VA_ARGS__)
-#define __for__initIter_1Emit(__iter_id, _iter) \
-    const R __iter_id = _iter
-#define __for__initIter_2(__iter_id, ...) __for__initIter_2Emit(__iter_id, __VA_ARGS__)
-#define __for__initIter_2Emit(__iter_id, _tag, _iter...) \
-    let __iter_id = _iter
-
-#define __for__lenIter(_iter) \
-    pp_overload(__for__lenIter, __for__expandIter _iter)(__for__expandIter _iter)
-#define __for__lenIter_1(...)             __for__lenIter_1Emit(__VA_ARGS__)
-#define __for__lenIter_1Emit(_iter)       len$R
-#define __for__lenIter_2(...)             __for__lenIter_2Emit(__VA_ARGS__)
-#define __for__lenIter_2Emit(_tag, _iter) pp_cat(len, _tag)
-
-#define __for__atIter(__step, __iter_id, _iter) \
-    pp_overload(__for__atIter, __for__expandIter _iter)(__step, __iter_id, __for__expandIter _iter)
-#define __for__atIter_1(...) __for__atIter_1Emit(__VA_ARGS__)
-#define __for__atIter_1Emit(__step, __iter_id, _iter) \
-    at$R(__iter_id, __step)
-#define __for__atIter_2(...) __for__atIter_2Emit(__VA_ARGS__)
-#define __for__atIter_2Emit(__step, __iter_id, _tag, _iter) \
-    pp_cat(at, _tag)(__iter_id, __step)
 
 // #define __emit__for_1(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
@@ -1646,6 +1666,85 @@ void better(void) {
     let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
     let _capture3 = __for__atIter(__step, __iter_id3, _iter3)
 
+/* for - emitters (reverse) =================================================*/
+#define __emitNext__for_$_rev(_iters, _captures, _block) \
+    pp_overload(__emitNext__for_$_rev, __for__expandIters _iters)(_iters, _captures, _block)
+#define __emitNext__for_$_rev_1(_iters, _captures, _block) __emit__for_$_rev_1( \
+    pp_uniqTok(len), pp_uniqTok(step), (pp_uniqTok(iter_id0)), \
+    _iters, _captures, _block \
+)
+#define __emitNext__for_$_rev_2(_iters, _captures, _block) __emit__for_$_rev_2( \
+    pp_uniqTok(len), pp_uniqTok(step), \
+    ( \
+        pp_uniqTok(iter_id0), \
+        pp_uniqTok(iter_id1) \
+    ), \
+    _iters, _captures, _block \
+)
+#define __emitNext__for_$_rev_3(_iters, _captures, _block) __emit__for_$_rev_3( \
+    pp_uniqTok(len), pp_uniqTok(step), \
+    ( \
+        pp_uniqTok(iter_id0), \
+        pp_uniqTok(iter_id1), \
+        pp_uniqTok(iter_id2) \
+    ), \
+    _iters, _captures, _block \
+)
+#define __emitNext__for_$_rev_4(_iters, _captures, _block) __emit__for_$_rev_4( \
+    pp_uniqTok(len), pp_uniqTok(step), \
+    ( \
+        pp_uniqTok(iter_id0), \
+        pp_uniqTok(iter_id1), \
+        pp_uniqTok(iter_id2), \
+        pp_uniqTok(iter_id3) \
+    ), \
+    _iters, _captures, _block \
+)
+
+// #define __emit__for_$_rev_1(__len, __step, __iter_ids, _iters, _captures, _block) \
+//     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
+#define __emit__for_$_rev_1(__len, __step, __iter_ids, _iters, _captures, _block...) ({ \
+    __for_1__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    const usize __len = __for_1__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    for (usize __step = __len; __step > 0; --__step) { \
+        __for_1__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__expandBlock _block; \
+    } \
+})
+
+// #define __emit__for_$_rev_2(__len, __step, __iter_ids, _iters, _captures, _block) \
+//     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
+#define __emit__for_$_rev_2(__len, __step, __iter_ids, _iters, _captures, _block...) ({ \
+    __for_2__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    const usize __len = __for_2__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    for (usize __step = __len; __step > 0; --__step) { \
+        __for_2__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__expandBlock _block; \
+    } \
+})
+
+// #define __emit__for_$_rev_3(__len, __step, __iter_ids, _iters, _captures, _block) \
+//     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
+#define __emit__for_$_rev_3(__len, __step, __iter_ids, _iters, _captures, _block...) ({ \
+    __for_3__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    const usize __len = __for_3__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    for (usize __step = __len; __step > 0; --__step) { \
+        __for_3__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__expandBlock _block; \
+    } \
+})
+
+// #define __emit__for_$_rev_4(__len, __step, __iter_ids, _iters, _captures, _block) \
+//     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
+#define __emit__for_$_rev_4(__len, __step, __iter_ids, _iters, _captures, _block...) ({ \
+    __for_4__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    const usize __len = __for_4__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+    for (usize __step = __len; __step > 0; --__step) { \
+        __for_4__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__expandBlock _block; \
+    } \
+})
+
 void better(void) {
     var_(a_u, A$$(8, u32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7 });
     var_(a_i, A$$(9, i32))  = init$A({ 0, 1, 2, 3, 4, 5, 6, 7, 8 });
@@ -1682,13 +1781,19 @@ void better(void) {
     });
 
     printf("--- for_(((r_u), $a(a_u), $a(a_i))(i_u, e_u, e_i) {}) ---\n");
-    for_(((r_u), $a(a_u), $a(a_i))(i_u, e_u, e_i) {
+    for_($rev((r_u), $a(a_u), $a(a_i))(i_u, e_u, e_i) {
         printf("- e_u[%zu]: %u\n", i_u, *e_u);
         printf("- e_i[%zu]: %d\n", i_u, *e_i);
     });
 
     printf("--- for_(($rf(0), $a(a_u), $s(suffix$A(a_i, 7)), $a(a_f))(i_u, e_u, e_i, e_f) {}) ---\n");
     for_(($rf(0), $a(a_u), $s(suffix$A(a_i, 3)), $a(a_f))(i_u, e_u, e_i, e_f) {
+        printf("- e_u[%zu]: %u\n", i_u, *e_u);
+        printf("- e_i[%zu]: %d\n", i_u, *e_i);
+        printf("- e_f[%zu]: %.2f\n", i_u, *e_f);
+    });
+    printf("--- for_(($rf(0), $a(a_u), $s(suffix$A(a_i, 7)), $a(a_f))(i_u, e_u, e_i, e_f) {}) ---\n");
+    for_($rev($rf(0), $a(a_u), $s(suffix$A(a_i, 3)), $a(a_f))(i_u, e_u, e_i, e_f) {
         printf("- e_u[%zu]: %u\n", i_u, *e_u);
         printf("- e_i[%zu]: %d\n", i_u, *e_i);
         printf("- e_f[%zu]: %.2f\n", i_u, *e_f);
