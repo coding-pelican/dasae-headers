@@ -126,7 +126,7 @@ $inline_always fn_((StrCompHash_createRaw(const char* raw_str))(StrCompHash));
 /// @param  len Length of the byte array
 /// @return 32-bit hash value
 /// @example
-///   const u8* data = as$(const u8*, "hello");
+///   const u8* data = as$((const u8*)("hello"));
 ///   u32 hash = StrCompHash_calculate(data, 5);
 ///   // hash now contains the 32-bit hash value for "hello"
 $inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32));
@@ -205,7 +205,7 @@ $inline_always fn_((StrCompHash_value(StrCompHash self))(u32));
 /// @details Uses specialized base cases for strings of length 1-4 and recursion for longer strings.
 ///          Implements a variant of the DJB hash algorithm with multiplier 65599.
 /// @example
-///   const u8* data = as$(const u8*, "hello";
+///   const u8* data = as$((const u8*)("hello"));
 ///   u32 hash = StrCompHash__recur(data, 5);
 ///   // hash now contains the 32-bit hash value for "hello"
 static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32));
@@ -223,10 +223,10 @@ static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32));
     /** Create a StrCompHash from a compile-time string literal */ \
     ((StrCompHash){ .value = StrCompHash_calculateRaw(_raw_str) })
 
-#define comp_op__StrCompHash__char1(_raw_ch)  (as$(u32, _raw_ch))
-#define comp_op__StrCompHash__char2(_raw_str) (as$(u32, (_raw_str)[1] + 65599 * (_raw_str)[0]))
-#define comp_op__StrCompHash__char3(_raw_str) (as$(u32, (_raw_str)[2] + 65599 * StrCompHash__char2(_raw_str)))
-#define comp_op__StrCompHash__char4(_raw_str) (as$(u32, (_raw_str)[3] + 65599 * StrCompHash__char3(_raw_str)))
+#define comp_op__StrCompHash__char1(_raw_ch)  (as$((u32)(_raw_ch)))
+#define comp_op__StrCompHash__char2(_raw_str) (as$((u32)((_raw_str)[1] + 65599 * (_raw_str)[0])))
+#define comp_op__StrCompHash__char3(_raw_str) (as$((u32)((_raw_str)[2] + 65599 * StrCompHash__char2(_raw_str))))
+#define comp_op__StrCompHash__char4(_raw_str) (as$((u32)((_raw_str)[3] + 65599 * StrCompHash__char3(_raw_str))))
 static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32)) { /* NOLINT(misc-no-recursion) */
     if (len == 1) { return StrCompHash__char1(ptr[0]); }
     if (len == 2) { return StrCompHash__char2(ptr); }

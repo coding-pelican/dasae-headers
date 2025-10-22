@@ -5,11 +5,11 @@
 #include "dh/io/Writer.h"
 
 fn_((Err_domainToStr(Err self))(Sli_const$u8)) {
-    return Str_viewZ(as$(const u8*, self.vt->domainToCStr(self.ctx)));
+    return Str_viewZ(as$((const u8*)(self.vt->domainToCStr(self.ctx))));
 }
 
 fn_((Err_codeToStr(Err self))(Sli_const$u8)) {
-    return Str_viewZ(as$(const u8*, self.vt->codeToCStr(self.ctx)));
+    return Str_viewZ(as$((const u8*)(self.vt->codeToCStr(self.ctx))));
 }
 
 fn_((Err_print(Err self))(void)) {

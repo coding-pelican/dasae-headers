@@ -492,7 +492,7 @@ extern "C" {
     claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(_Arr$T)); \
     claim_assert_static(validateField(TypeOf(*__anon), buf, FieldTypeOf(_Arr$T, buf))); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), buf) == fieldPadding(_Arr$T, buf)); \
-    eval_return rawderef(as$(rawptr$(_Arr$T), __anon)); \
+    eval_return rawderef(as$((rawptr$(_Arr$T))(__anon))); \
 })
 
 #define comp_op__Arr_zero()                     { .buf = { 0 } }
@@ -515,7 +515,7 @@ extern "C" {
     claim_assert_static(sizeOf(TypeOf(*__self)) == sizeOf(TypeOf(*__other))); \
     claim_assert_static(alignOf(TypeOf(*__self)) == alignOf(TypeOf(*__other))); \
     claim_assert_static(isSameType(TypeOf((*__self).buf), TypeOf((*__other).buf))); \
-    eval_return deref(__self) = deref(as$(TypeOf(__self), __other)); \
+    eval_return deref(__self) = deref(as$((TypeOf(__self))(__other))); \
 })
 
 #define comp_op__Arr_ref$(_Sli$T, _val_arr...) \
@@ -563,7 +563,7 @@ extern "C" {
         __index, \
         Arr_len(*__self) \
     ); \
-    __self->buf[__index] = as$(TypeOf(__self->buf[0]), var_value); \
+    __self->buf[__index] = as$((TypeOf(__self->buf[0]))(var_value)); \
     eval_return __self; \
 })
 

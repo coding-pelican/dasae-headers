@@ -87,10 +87,11 @@ extern "C" {
 // clang-format off
 #define comp_syn__fn_$_scope(_ident_w_Params, _TReturn...) \
 _TReturn _ident_w_Params { \
-    let __reserved_return = as$(_TReturn*, \
+    let __reserved_return = as$((_TReturn*)( \
         (u8[bti_Generic_match$(_TReturn, \
             bti_Generic_pattern$(void) 0, \
-            bti_Generic_fallback_ sizeOf$(_TReturn))]){}); \
+            bti_Generic_fallback_ sizeOf$(_TReturn))]){} \
+    )); \
     if (false) { __step_return: goto __step_unscope; } \
     do
 #define comp_syn__$unscoped_fn \
@@ -116,10 +117,11 @@ struct fn__ScopeCounter {
 // clang-format off
 #define comp_syn__fn_$_guard(_ident_w_Params, _TReturn...) \
 _TReturn _ident_w_Params { \
-    let __reserved_return = as$(_TReturn*, \
+    let __reserved_return = as$((_TReturn*)( \
         (u8[bti_Generic_match$(_TReturn, \
             bti_Generic_pattern$(void) 0, \
-            bti_Generic_fallback_ sizeOf$(_TReturn))]){}); \
+            bti_Generic_fallback_ sizeOf$(_TReturn))]){} \
+    )); \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -149,8 +151,8 @@ __step_deferred: switch (__scope_counter.current_line) { \
 
 #define comp_syn__return_(_Expr...) eval({ \
     bti_memcpy( \
-        as$(u8*, __reserved_return), \
-        as$(u8*, (TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
+        as$((u8*)(__reserved_return)), \
+        as$((u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr })), \
         sizeOf$(*__reserved_return) \
     ); \
     goto __step_return; \
@@ -219,10 +221,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__eval_test(T_Break, _Ext...) pp_cat(comp_syn__eval_, _Ext)(T_Break)
 #define comp_syn__eval_$_scope(T_Break...) ({ \
     local_label __step_break, __step_unscope; \
-    let __reserved_break = as$(T_Break*, (u8[_Generic(T_Break, \
+    let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
-    )]){}); \
+    )]){})); \
     $maybe_unused bool __has_broken = false; /* for integration with `expr_` */ \
     if (false) { __step_break: goto __step_unscope; } \
     /* do */
@@ -241,10 +243,10 @@ __step_unscope: \
 #define comp_syn__eval_$_guard(T_Break...) ({ \
     local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
-    let __reserved_break = as$(T_Break*, (u8[_Generic(T_Break, \
+    let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
-    )]){}); \
+    )]){})); \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -277,8 +279,8 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define eval_break_(_Expr...) comp_syn__eval_break_(_Expr)
 #define comp_syn__eval_break_(_Expr...) eval({ \
     bti_memcpy( \
-        as$(u8*, __reserved_break), \
-        as$(u8*, (TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
+        as$((u8*)(__reserved_break)), \
+        as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
         sizeOf$(*__reserved_break) \
     ); \
     goto __step_break; \
@@ -294,10 +296,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__expr_2(_TBreak, _ext...) pp_cat(inline__expr_2, _ext)(_TBreak)
 #define inline__expr_2$_scope(_TBreak...) ({ \
     local_label __step_break; \
-    let __reserved_break = as$(_TBreak*, (u8[_Generic(_TBreak, \
+    let __reserved_break = as$((_TBreak*)((u8[_Generic(_TBreak, \
         void: 0, \
         default: sizeOf$(_TBreak) \
-    )]){}); \
+    )]){})); \
     $maybe_unused bool __has_broken = false;\
     /* do */
 #define $unscoped_expr comp_syn__expr_$unscoped
@@ -314,8 +316,8 @@ __step_deferred: switch (__scope_counter.current_line) { \
 // clang-format off
 #define $break_(_Expr...) ({ \
     bti_memcpy( \
-        as$(u8*, __reserved_break), \
-        as$(u8*, (TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
+        as$((u8*)(__reserved_break)), \
+        as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
         sizeOf$(*__reserved_break) \
     ); \
     __has_broken = true; \
@@ -362,7 +364,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
     catch_((math_divideSafe(10, 0))(err, {
-        let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
+        let err_code = Str_viewZ(as$((const u8*)(Err_codeToCStr(err))));
         debug_assert_true(Sli_const$u8_eq(err_code, u8_l("DivisionByZero")));
         return_err(err);
     }));

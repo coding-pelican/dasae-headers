@@ -83,7 +83,7 @@ fn_((mem_Tracker_initWithPath(Sli_const$u8 log_path))(Err$void) $guard) {
     mem_copy(path_str.buf, log_path.ptr, log_path.len);
     Arr_setAt(path_str, log_path.len, '\0');
 
-    let log_file = fopen(as$(const char*, path_str.buf), "w");
+    let log_file = fopen(as$((const char*)(path_str.buf)), "w");
     if (!log_file) { return_err(fs_FileErr_OpenFailed()); }
     errdefer_($ignore, let_ignore = fclose(log_file));
 
@@ -161,9 +161,9 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
                 LeakSite* site = site_ptr;
 
                 // Check if it's the same location
-                if (Str_eql(Str_viewZ(as$(u8*, site->src_loc.file_name)), Str_viewZ(as$(u8*, curr->src_loc.file_name)))
+                if (Str_eql(Str_viewZ(as$((u8*)(site->src_loc.file_name))), Str_viewZ(as$((u8*)(curr->src_loc.file_name))))
                     && site->src_loc.line == curr->src_loc.line
-                    && Str_eql(Str_viewZ(as$(u8*, site->src_loc.fn_name)), Str_viewZ(as$(u8*, curr->src_loc.fn_name)))) {
+                    && Str_eql(Str_viewZ(as$((u8*)(site->src_loc.fn_name))), Str_viewZ(as$((u8*)(curr->src_loc.fn_name))))) {
 
                     site->count++;
                     site->total_bytes += curr->size;
@@ -230,7 +230,7 @@ fn_((mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc))(void)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return; }
 
     // Create new allocation record
-    let alloc = as$(mem_Allocation*, malloc(sizeof(mem_Allocation)));
+    let alloc = as$((mem_Allocation*)(malloc(sizeof(mem_Allocation))));
     if (!alloc) {
         // clang-format off
         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n",

@@ -122,8 +122,8 @@ extern "C" {
 #define pp_exec_expand(...) __VA_ARGS__
 #define pp_exec_defer(...)  __VA_ARGS__ pp_exec_nothing()
 
-#define pp_exec_stringify(_Tok...) #_Tok
-#define comp_op__nameOf(_Tok, _Str...)   ((void)(_Tok), #_Str)
+#define pp_exec_stringify(_Tok...)     #_Tok
+#define comp_op__nameOf(_Tok, _Str...) ((void)(_Tok), #_Str)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...)            _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...)           _LhsTok##_RhsTok
@@ -198,7 +198,7 @@ extern "C" {
 #define comp_syn__lit_num__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
     pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
 #define comp_syn__lit_num$(T, _Comma_Sep_Lits...) \
-    as$(T, lit_num(_Comma_Sep_Lits))
+    as$((T)(lit_num(_Comma_Sep_Lits)))
 
 #if defined(__cplusplus)
 } /* extern "C" */

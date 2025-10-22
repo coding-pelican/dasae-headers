@@ -6,7 +6,7 @@ $inline_always
 fn_((mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs))(void)) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
-    let tmp_ptr = as$(u8*, bti_alloca(tmp_len));
+    let tmp_ptr = as$((u8*)(bti_alloca(tmp_len)));
     memcpy(tmp_ptr, lhs.ptr, lhs.len);
     memcpy(lhs.ptr, rhs.ptr, rhs.len);
     memcpy(rhs.ptr, tmp_ptr, tmp_len);
@@ -15,7 +15,7 @@ fn_((mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs))(void)) {
 /// Swap two elements of given size
 $inline_always
 fn_((sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len))(void)) {
-    let tmp = as$(u8*, bti_alloca(byte_len));
+    let tmp = as$((u8*)(bti_alloca(byte_len)));
     memcpy(tmp, lhs, byte_len);
     memcpy(lhs, rhs, byte_len);
     memcpy(rhs, tmp, byte_len);
@@ -25,7 +25,7 @@ fn_((sort_insertionSort(
     meta_Sli   base_sli,
     sort_CmpFn cmpFn
 ))(void)) {
-    let ptr  = as$(u8*, base_sli.addr);
+    let ptr  = as$((u8*)(base_sli.addr));
     let len  = base_sli.len;
     let size = base_sli.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
@@ -46,7 +46,7 @@ fn_((sort_insertionSortWithArg(
     sort_CmpWithArgFn cmpFn,
     anyptr_const      arg
 ))(void)) {
-    let ptr  = as$(u8*, base_sli.addr);
+    let ptr  = as$((u8*)(base_sli.addr));
     let len  = base_sli.len;
     let size = base_sli.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
@@ -74,7 +74,7 @@ fn_((sort_mergeSortUsingTempRecur(
         return_ok({});
     }
     let base_type  = base_sli.type;
-    let base_bytes = as$(u8*, base_sli.addr);
+    let base_bytes = as$((u8*)(base_sli.addr));
     let base_len   = base_sli.len;
     let base_size  = base_sli.type.size;
     let mid_idx    = base_len / 2;
@@ -152,7 +152,7 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
         return_ok({});
     }
     let base_type  = base_sli.type;
-    let base_bytes = as$(u8*, base_sli.addr);
+    let base_bytes = as$((u8*)(base_sli.addr));
     let base_len   = base_sli.len;
     let base_size  = base_sli.type.size;
     let mid_idx    = base_len / 2;

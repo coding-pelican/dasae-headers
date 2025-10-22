@@ -8,7 +8,7 @@ TEST_fn_("test Arr_cat" $scope) {
 
     try_(TEST_expect(Arr_len(res_3_add_3) == 6));
     for_array_indexed (res_3_add_3, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 
     let arr2_lhs    = Arr_from$(i32, { 0, 1 });
@@ -17,7 +17,7 @@ TEST_fn_("test Arr_cat" $scope) {
 
     try_(TEST_expect(Arr_len(res_2_add_8) == 8));
     for_array_indexed (res_2_add_8, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 
     let arr6_lhs    = Arr_from$(i32, { 0, 1, 2, 3, 4, 5 });
@@ -26,7 +26,7 @@ TEST_fn_("test Arr_cat" $scope) {
 
     try_(TEST_expect(Arr_len(res_6_add_2) == 8));
     for_array_indexed (res_6_add_2, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 } $unscoped_(TEST_fn);
 
@@ -39,7 +39,7 @@ TEST_fn_("test Arr_cat$" $scope) {
 
     try_(TEST_expect(Arr_len(res_3_add_3) == 6));
     for_array_indexed (res_3_add_3, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 
     let arr2_lhs    = Arr_from$(i32, { 0, 1 });
@@ -48,7 +48,7 @@ TEST_fn_("test Arr_cat$" $scope) {
 
     try_(TEST_expect(Arr_len(res_2_add_8) == 8));
     for_array_indexed (res_2_add_8, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 
     let arr6_lhs    = Arr_from$(i32, { 0, 1, 2, 3, 4, 5 });
@@ -57,6 +57,6 @@ TEST_fn_("test Arr_cat$" $scope) {
 
     try_(TEST_expect(Arr_len(res_6_add_2) == 8));
     for_array_indexed (res_6_add_2, item, idx) {
-        try_(TEST_expect(*item == as$(i32, idx)));
+        try_(TEST_expect(*item == as$((i32)(idx))));
     }
 } $unscoped_(TEST_fn);

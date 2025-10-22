@@ -109,7 +109,7 @@ static $inline fn_((GeneralErr_domainToCStr(ErrCode ctx))(const char*)) {
     return "GeneralErr";
 }
 static $inline fn_((GeneralErr_codeToCStr(ErrCode ctx))(const char*)) {
-    let code = as$(ErrCode, ctx);
+    let code = as$((ErrCode)(ctx));
     switch (code) {
     case ErrCode_Unknown:
         return "Unknown";
@@ -165,7 +165,7 @@ static $inline fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None);
         return #Name; \
     } \
     static $inline fn_((pp_join(_, Name, codeToCStr)(ErrCode ctx))(const char*)) { \
-        let code = as$(pp_cat(Name, Code), ctx); \
+        let code = as$((pp_cat(Name, Code))(ctx)); \
         switch (code) { \
             GEN__config_ErrSet__FN__codeToCStr__cases( \
                 Name, \

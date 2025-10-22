@@ -214,9 +214,9 @@ $inline_always cmp_Ord mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
 }
 
 #define comp_inline__mem_asBytes(_ptr...) \
-    Sli_from$(Sli$(u8), as$(u8*, _ptr), sizeOf(*_ptr))
+    Sli_from$(Sli$(u8), as$((u8*)(_ptr)), sizeOf(*_ptr))
 #define comp_inline__mem_asBytes_const(_ptr...) \
-    Sli_from$(Sli_const$(u8), as$(const u8*, _ptr), sizeOf(*_ptr))
+    Sli_from$(Sli_const$(u8), as$((const u8*)(_ptr)), sizeOf(*_ptr))
 #define comp_inline__mem_toBytes$(__val, _Arr$N$u8, _val...) eval({ \
     var __val = _val; \
     eval_return Sli_deref$(_Arr$N$u8, mem_asBytes(&__val)); \

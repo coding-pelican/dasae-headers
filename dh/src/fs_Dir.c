@@ -5,7 +5,7 @@
 #include <errno.h>
 
 $inline_always fn_((makeDir(Sli_const$u8 path))(i32)) {
-    return mkdir(as$(const char*, path.ptr) pp_if_(bti_plat_windows)(
+    return mkdir(as$((const char*)(path.ptr)) pp_if_(bti_plat_windows)(
         pp_than_(pp_ignore))(, 0755));
 }
 

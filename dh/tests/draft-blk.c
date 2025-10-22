@@ -26,7 +26,7 @@
 #define for_(_Begin_to_End, _Iter, _Expr...) \
     comp_syn__for_(pp_uniqTok(range), pp_uniqTok(i), _Begin_to_End, _Iter, _Expr)
 #define comp_syn__for_(__range, __i, _Begin_to_End, _Iter, _Expr...) eval({ \
-    let_(__range, Range) = Range_from _Begin_to_End; \
+    let_(__range, R) = _Begin_to_End; \
     for (usize __i = __range.begin; __i < __range.end; ++__i) { \
         let _Iter = __i; \
         _Expr; \
@@ -79,18 +79,18 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
     {
         i32 key   = 23;
         let value = eval_(i32 $scope) {
-            for_((0, 10), (i), {
-                if (i == as$(usize, key)) {
+            for_($r(0, 10), (i), {
+                if (i == as$((usize)(key))) {
                     eval_break_(5);
                 }
             });
-            for_((10, 20), (i), {
-                if (i == as$(usize, key)) {
+            for_($r(10, 20), (i), {
+                if (i == as$((usize)(key))) {
                     eval_break_(15);
                 }
             });
-            for_((20, 30), (i), {
-                if (i == as$(usize, key)) {
+            for_($r(20, 30), (i), {
+                if (i == as$((usize)(key))) {
                     eval_break_(25);
                 }
             });

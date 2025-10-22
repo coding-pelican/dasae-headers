@@ -159,7 +159,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         }
 
         let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
-        let_ignore    = fclose(load_file);
+        let_ignore = fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
         eval_return loaded;
@@ -386,7 +386,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool ha
     };
 
     // Allocate memory for features and labels
-    typeAsg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$(usize, line_count) * actual_feature_count)));
+    typeAsg(&dataset.features, try_(ArrList_initCap(typeInfo$(f32), allocator, as$((usize)(line_count)) * actual_feature_count)));
     errdefer_($ignore, ArrList_fini(dataset.features.base));
 
     typeAsg(&dataset.labels, try_(ArrList_initCap(typeInfo$(i32), allocator, line_count)));
@@ -409,14 +409,14 @@ fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool ha
         u32   col_idx = 0;
 
         while (token && col_idx < feature_count) {
-            var value = as$(f32, atof(token));
+            var value = as$((f32)(atof(token)));
 
             if (col_idx < actual_feature_count) {
                 // Feature value
                 try_(ArrList_append(dataset.features.base, meta_refPtr(&value)));
             } else {
                 // Label (assumed to be the last column)
-                var label = as$(i32, value);
+                var label = as$((i32)(value));
                 try_(ArrList_append(dataset.labels.base, meta_refPtr(&label)));
             }
 

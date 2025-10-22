@@ -81,7 +81,7 @@ typedef struct Co_Ctx {
     }
 
 #define Co_CtxFn_init$(fnName) ((Co_CtxFn$(fnName)){ \
-    .fn     = as$(Co_FnWork*, fnName), \
+    .fn     = as$((Co_FnWork*)(fnName)), \
     .count  = 0, \
     .state  = Co_State_pending, \
     .ret    = {}, \
@@ -149,15 +149,15 @@ __step_unscope: \
 
 #define __exec_async_() comp_syn__async_
 #define comp_syn__async_(_fnAsync, _args...) \
-    as$(Co_CtxFn$(_fnAsync)*, _fnAsync(&(Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*, _fnAsync), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
+    as$((Co_CtxFn$(_fnAsync)*)(_fnAsync(&(Co_CtxFn$(_fnAsync)){ .fn = as$((Co_FnWork*)(_fnAsync)), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })))
 
 #define __exec_async_ctx() comp_syn__async_ctx
 #define comp_syn__async_ctx(_fnAsync, _args...) \
-    (&(Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*, _fnAsync), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })
+    (&(Co_CtxFn$(_fnAsync)){ .fn = as$((Co_FnWork*)(_fnAsync)), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })
 
 #define __exec_callAsync() comp_syn__callAsync
 #define comp_syn__callAsync(_ctx_async, _fnAsync, _args...) \
-    *(_ctx_async) = *(&(Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*, _fnAsync), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }); \
+    *(_ctx_async) = *(&(Co_CtxFn$(_fnAsync)){ .fn = as$((Co_FnWork*)(_fnAsync)), .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }); \
     while (resume_(_ctx_async)->state == Co_State_suspended) { suspend_(); }
 
 #define await_(_co_ctx...) comp_syn__await_(_co_ctx)
@@ -181,7 +181,7 @@ __step_unscope: \
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) eval({ \
     let __ctx = ensureNonnull(_ctx); \
-    __callFn(as$(Co_FnWork*, __ctx->fn), as$(Co_Ctx*, __ctx)); \
+    __callFn(as$((Co_FnWork*)(__ctx->fn)), as$((Co_Ctx*)(__ctx))); \
 })
 
 #define nosuspend_(_expr...)           comp_syn__nosuspend_(_expr)
@@ -206,7 +206,7 @@ __step_suspend: \
 #define Co_Ctx_from(_fnName, _args...) comp_inline__Co_Ctx_from(_fnName, _args)
 #define comp_inline__Co_Ctx_from(_fnName, _args...) \
     ((Co_Ctx$(_fnName)){ \
-        .fn     = as$(Co_FnWork*, _fnName), \
+        .fn     = as$((Co_FnWork*)(_fnName)), \
         .count  = 0, \
         .state  = Co_State_pending, \
         .ret    = {}, \

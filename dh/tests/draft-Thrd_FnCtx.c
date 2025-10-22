@@ -21,7 +21,7 @@ typedef union FnCtx$demoThrd {
 } FnCtx$demoThrd;
 
 fn_((demoThrd(Thrd_FnCtx* ctx))(Thrd_FnRet*)) {
-    let self = as$(FnCtx$demoThrd*, ctx);
+    let self = as$((FnCtx$demoThrd*)(ctx));
     let arg  = self->arg;
 
     i32          cnt   = 0;
@@ -35,11 +35,11 @@ fn_((demoThrd(Thrd_FnCtx* ctx))(Thrd_FnRet*)) {
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     let_ignore = args;
 
-    let direct_run = *as$(
-        TypeOf(((FnCtx$demoThrd*)0)->ret.value)*,
+    let direct_run = *as$((TypeOf(((FnCtx$demoThrd*)0)->ret.value)*)(
         demoThrd((FnCtx$demoThrd){ .arg = { time_Duration_secs } }.base)
-    );
+    ));
     printf("direct_run: %d\n", direct_run);
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;

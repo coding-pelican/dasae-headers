@@ -84,19 +84,19 @@ fn_((
         claim_unreachable;
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$(Sli_const$u8*, bti_alloca(sizeOf$(Sli_const$u8) * argc));
+    let args_buf = as$((Sli_const$u8*)(bti_alloca(sizeOf$(Sli_const$u8) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
-            args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
+            args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
         eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$(Sli_const$u8*, bti_alloca(sizeOf$(Sli_const$u8) * argc));
+    let args_buf = as$((Sli_const$u8*)(bti_alloca(sizeOf$(Sli_const$u8) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
-            args_buf[i] = Str_viewZ(as$(const u8*, argv[i]));
+            args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
         eval_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
     });

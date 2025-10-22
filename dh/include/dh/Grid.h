@@ -130,7 +130,7 @@ union Grid {
     claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \
-    eval_return rawderef(as$(rawptr$(T_Grid), &__anon)); \
+    eval_return rawderef(as$((rawptr$(T_Grid))(&__anon))); \
 })
 
 #define comp_op__Grid_fromSli$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) eval({ \
@@ -138,7 +138,7 @@ union Grid {
     const u32 __width           = u32_width; \
     const u32 __height          = u32_height; \
     debug_assert_fmt( \
-        __sli.len == as$(usize, __width) * __height, \
+        __sli.len == as$((usize)(__width)) * __height, \
         "width and height mismatch: %zu != %zu * %zu", \
         __sli.len, \
         __width, \
@@ -172,7 +172,7 @@ union Grid {
     ); \
     eval_return Sli_at( \
         __self.items, \
-        as$(usize, __x) + (as$(usize, __y) * __self.width) \
+        as$((usize)(__x)) + (as$((usize)(__y)) * __self.width) \
     ); \
 })
 #define comp_op__Grid_getAt(__self, __x, __y, var_self, u32_x, u32_y...) eval({ \
@@ -193,7 +193,7 @@ union Grid {
     ); \
     eval_return Sli_getAt( \
         __self.items, \
-        as$(usize, __x) + (as$(usize, __y) * __self.width) \
+        as$((usize)(__x)) + (as$((usize)(__y)) * __self.width) \
     ); \
 })
 #define comp_op__Grid_setAt(__self, __x, __y, var_self, u32_x, u32_y, val_item...) eval({ \
@@ -214,7 +214,7 @@ union Grid {
     ); \
     eval_return Sli_setAt( \
         __self.items, \
-        as$(usize, __x) + (as$(usize, __y) * __self.width), \
+        as$((usize)(__x)) + (as$((usize)(__y)) * __self.width), \
         val_item \
     ); \
 })

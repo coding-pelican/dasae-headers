@@ -1,7 +1,12 @@
-#include "dh/io/Writer.h"
 #include "dh/io/stream.h"
 #include "dh/io/common.h"
+#include "dh/io/Writer.h"
 #include "dh/fs/File.h"
+
+fn_((io_stream_nl(void))(void)) {
+    let stream_out = fs_File_writer(io_getStdOut());
+    catch_((io_Writer_nl(stream_out))($ignore, claim_unreachable));
+}
 
 fn_((io_stream_print(Sli_const$u8 fmt, ...))(void)) {
     va_list va_args = {};
@@ -25,6 +30,11 @@ fn_((io_stream_println(Sli_const$u8 fmt, ...))(void)) {
 fn_((io_stream_printlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void)) {
     let stream_out = fs_File_writer(io_getStdOut());
     catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, claim_unreachable));
+}
+
+fn_((io_stream_enl(void))(void)) {
+    let stream_err = fs_File_writer(io_getStdErr());
+    catch_((io_Writer_nl(stream_err))($ignore, claim_unreachable));
 }
 
 fn_((io_stream_eprint(Sli_const$u8 fmt, ...))(void)) {

@@ -27,8 +27,8 @@
 // // #define inline__$unscoped_expr() __reserved_break; })
 // #define $break_(_Expr...) ({ \
 //     bti_memcpy( \
-//         as$(u8*, __reserved_break), \
-//         as$(u8*, (TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
+//         as$((u8*)(__reserved_break)), \
+//         as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
 //         sizeOf$(*__reserved_break) \
 //     ); \
 //     __has_broken = true; \
@@ -45,10 +45,10 @@
 // #define inline__expr_2(T_Break, _Ext...) pp_cat(inline__expr_2, _Ext)(T_Break)
 // #define inline__expr_2$_scope(T_Break...) ({ \
 //     local_label __step_break; \
-//     let __reserved_break = as$(T_Break*, (u8[_Generic(T_Break, \
+//     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
 //         void: 0, \
 //         default: sizeOf$(T_Break) \
-//     )]){}); \
+//     )]){})); \
 //     $maybe_unused bool __has_broken = false;\
 //     /* do */
 // #define $unscoped_expr comp_syn__expr_$unscoped

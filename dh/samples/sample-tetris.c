@@ -129,7 +129,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
     /* Game state variables */
     bool is_gameover      = false;
-    i32  current_piece    = as$(i32, Random_range_i64(0, tetris_Tetrominos_count - 1));
+    i32  current_piece    = as$((i32)(Random_range_i64(0, tetris_Tetrominos_count - 1)));
     i32  current_rotation = 0;
     i32  current_x        = (tetris_field_width / 2) - 2;
     i32  current_y        = 0;
@@ -206,7 +206,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
                 current_x        = (tetris_field_width / 2) - 2;
                 current_y        = 0;
                 current_rotation = 0;
-                current_piece    = as$(i32, Random_range_i64(0, tetris_Tetrominos_count - 1));
+                current_piece    = as$((i32)(Random_range_i64(0, tetris_Tetrominos_count - 1)));
 
                 /* Check if game over - can't place new piece */
                 is_gameover = !tetris_PlayField_doesPieceFit(&field, current_piece, current_rotation, current_x, current_y);
@@ -408,9 +408,9 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     printf("+\n");
 
     /* Draw field */
-    for (i32 y = 0; y < as$(i32, field->grid.height); ++y) {
+    for (i32 y = 0; y < as$((i32)(field->grid.height)); ++y) {
         printf("|");
-        for (i32 x = 0; x < as$(i32, field->grid.width); ++x) {
+        for (i32 x = 0; x < as$((i32)(field->grid.width)); ++x) {
             u8 c = ' ';
 
             /* Check if current position has the active piece */
@@ -479,8 +479,8 @@ static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tet
             let bit = 1 << pi;
 
             /* Check if we're in bounds */
-            if (0 <= pos_x + px && pos_x + px < as$(i32, field->grid.width)
-                && 0 <= pos_y + py && pos_y + py < as$(i32, field->grid.height)) {
+            if (0 <= pos_x + px && pos_x + px < as$((i32)(field->grid.width))
+                && 0 <= pos_y + py && pos_y + py < as$((i32)(field->grid.height))) {
                 /* In bounds, do collision check */
                 if ((Arr_getAt(tetris_tetrominos, tetromino) & bit)
                     && Grid_getAt(field->grid, pos_x + px, pos_y + py) != 0) {
@@ -514,7 +514,7 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
             }
 
             /* Add to lines list */
-            var line_y = as$(i32, y);
+            var line_y = as$((i32)(y));
             try_(ArrList_append(lines->base, meta_refPtr(&line_y)));
         }
     }
@@ -528,7 +528,7 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
         for_slice (lines->items, line) {
             let y = *line;
 
-            for (i32 x = 1; x < as$(i32, field->grid.width) - 1; ++x) {
+            for (i32 x = 1; x < as$((i32)(field->grid.width)) - 1; ++x) {
                 /* Move all lines above down by one */
                 for (i32 k = y; k > 0; k--) {
                     Grid_setAt(field->grid, x, k, Grid_getAt(field->grid, x, k - 1));
@@ -540,7 +540,7 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
         }
     }
 
-    return_ok(as$(i32, lines->items.len));
+    return_ok(as$((i32)(lines->items.len)));
 } $unscoped_(fn);
 
 static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void)) {

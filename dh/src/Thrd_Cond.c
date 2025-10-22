@@ -18,8 +18,8 @@ fn_((Thrd_Cond_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
 
 fn_((Thrd_Cond_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(bool)) {
     const struct timespec ts = {
-        .tv_sec  = as$(time_t, duration.secs),
-        .tv_nsec = as$(long, duration.nanos),
+        .tv_sec  = as$((time_t)(duration.secs)),
+        .tv_nsec = as$((long)(duration.nanos)),
     };
     return pthread_cond_timedwait(&self->impl, &mtx->impl, &ts) == 0;
 }

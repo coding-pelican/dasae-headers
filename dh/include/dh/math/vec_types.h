@@ -148,7 +148,7 @@ typedef m_V4f64 m_V4d;
     const usize _len  = countOf(_dest.s); \
     claim_assert_static(_len == countOf(_src.s)); \
     for (usize _i = 0; _i < _len; ++_i) { \
-        _dest.s[_i] = as$(TypeOf(_dest.s[_i]), _src.s[_i]); \
+        _dest.s[_i] = as$((TypeOf(_dest.s[_i]))(_src.s[_i])); \
     } \
     eval_return _dest; \
 })

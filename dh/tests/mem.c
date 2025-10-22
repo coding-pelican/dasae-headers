@@ -19,10 +19,10 @@
 #define mem_asBytes$(_T, /* T* */ _val... /* Sli$u8 */)                   tpl_id(mem_asBytes, _T)(_val) z
 #define mem_asBytes_useT$(_T...) \
     static fn_((tpl_id(mem_asBytes_const, _T)(const _T* val))(Sli_const$u8)) { \
-        return Sli_from$(Sli_const$u8, as$(const u8*, val), sizeOf(*val)); \
+        return Sli_from$(Sli_const$u8, as$((const u8*)(val)), sizeOf(*val)); \
     } \
     static fn_((tpl_id(mem_asBytes, _T)(_T * val))(Sli$u8)) { \
-        return Sli_from$(Sli$u8, as$(u8*, val), sizeOf(*val)); \
+        return Sli_from$(Sli$u8, as$((u8*)(val)), sizeOf(*val)); \
     }
 
 #define mem_toBytes$(_T, /* T */ _val... /* Arr$$(sizeOf(_T), _T) */) tpl_id(mem_toBytes, _T)(_val)
@@ -39,8 +39,8 @@
     static fn_((tpl_id(mem_eql, _T)(Sli_const$(_T) lhs, Sli_const$(_T) rhs))(bool)) { \
         return mem_bytes_eql( \
             typeInfo$(_T), \
-            Sli_from$(Sli_const$u8, as$(const u8*, lhs.ptr), lhs.len), \
-            Sli_from$(Sli_const$u8, as$(const u8*, rhs.ptr), rhs.len) \
+            Sli_from$(Sli_const$u8, as$((const u8*)(lhs.ptr)), lhs.len), \
+            Sli_from$(Sli_const$u8, as$((const u8*)(rhs.ptr)), rhs.len) \
         ); \
     }
 
@@ -51,8 +51,8 @@
     static fn_((tpl_id(mem_startsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) prefix))(Opt$usize)) { \
         return mem_bytes_startsWith( \
             typeInfo$(_T), \
-            Sli_from$(Sli_const$u8, as$(const u8*, haystack.ptr), haystack.len), \
-            Sli_from$(Sli_const$u8, as$(const u8*, prefix.ptr), prefix.len) \
+            Sli_from$(Sli_const$u8, as$((const u8*)(haystack.ptr)), haystack.len), \
+            Sli_from$(Sli_const$u8, as$((const u8*)(prefix.ptr)), prefix.len) \
         ); \
     } \
 //   Returns true if haystack ends with suffix
@@ -61,8 +61,8 @@
     static fn_((tpl_id(mem_endsWith, _T)(Sli_const$(_T) haystack, Sli_const$(_T) suffix))(Opt$usize)) { \
         return mem_bytes_endsWith( \
             typeInfo$(_T), \
-            Sli_from$(Sli_const$u8, as$(const u8*, haystack.ptr), haystack.len), \
-            Sli_from$(Sli_const$u8, as$(const u8*, suffix.ptr), suffix.len) \
+            Sli_from$(Sli_const$u8, as$((const u8*)(haystack.ptr)), haystack.len), \
+            Sli_from$(Sli_const$u8, as$((const u8*)(suffix.ptr)), suffix.len) \
         ); \
     }
 
@@ -80,7 +80,8 @@ static $inline_always fn_((mem_bytes_startsWith(TypeInfo type, Sli_const$u8 hays
     if (haystack_bytes < prefix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr, prefix.ptr, prefix_bytes)) { return_none(); }
     return_some(prefix.len);
-} $unscoped;
+}
+$unscoped;
 static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, Sli_const$u8 haystack, Sli_const$u8 suffix))(Opt$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(suffix.ptr);
@@ -89,7 +90,8 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, Sli_const$u8 haysta
     if (haystack_bytes < suffix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr + haystack_bytes - suffix_bytes, suffix.ptr, suffix_bytes)) { return_none(); }
     return_some(haystack.len - suffix.len);
-} $unscoped;
+}
+$unscoped;
 #elif CASE == 2
 // PREFIX/SUFFIX OPERATIONS
 //   Returns true if haystack starts with prefix

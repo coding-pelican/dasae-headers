@@ -5,7 +5,7 @@
 #include "dh/time.h"
 #include "dh/Random.h"
 
-#include <stdio.h>
+#include "dh/io/stream.h"
 
 /// \brief Task to be executed
 typedef struct Task {
@@ -91,34 +91,25 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_((report(Sli_const$u8 label, const char* fmt, ...))(void)) {
-    printf("[ThrdId(%zu): %*s] ", Thrd_getCurrentId(), as$(i32, label.len), label.ptr);
+fn_((report(Sli_const$u8 label, Sli_const$u8 fmt, ...))(void)) {
+    io_stream_print(u8_l("[ThrdId({:zu}): {:s}] "), Thrd_getCurrentId(), label);
     va_list args = {};
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+    with_fini_(va_start(args, fmt), va_end(args)) {
+        io_stream_printVaArgs(fmt, args);
+    }
+    io_stream_nl();
 }
 
-fn_((Terminal_clear(void))(void)) { printf("\x1b[2J\x1b[H"); };
-fn_((Terminal_home(void))(void)) { printf("\x1b[1;1H"); };
-fn_((Terminal_feedLine(void))(void)) { printf("\n"); };
-fn_((Terminal_moveCursor(u32 x, u32 y))(void)) { printf("\x1b[%u;%uH", y + 1, x + 1); };
-fn_((Terminal_writeByte(u8 byte))(void)) { printf("%c", byte); };
-fn_((Terminal_writeByteAt(u32 x, u32 y, u8 byte))(void)) {
-    Terminal_moveCursor(x, y);
-    Terminal_writeByte(byte);
-};
-fn_((Terminal_writeBytes(Sli_const$u8 bytes))(void)) { printf("%*s", as$(i32, bytes.len), bytes.ptr); };
-fn_((Terminal_writeBytesAt(u32 x, u32 y, Sli_const$u8 bytes))(void)) {
-    Terminal_moveCursor(x, y);
-    Terminal_writeBytes(bytes);
-};
-fn_((Terminal_writeTypo(u8 typo))(void)) { printf("%c", typo); };
+fn_((Terminal_clear(void))(void)) { io_stream_print(u8_l("\x1b[2J\x1b[H")); };
+fn_((Terminal_home(void))(void)) { io_stream_print(u8_l("\x1b[1;1H")); };
+fn_((Terminal_nl(void))(void)) { io_stream_nl(); };
+fn_((Terminal_moveCursor(u32 x, u32 y))(void)) { io_stream_print(u8_l("\x1b[{:u};{:u}H"), y + 1, x + 1); };
+fn_((Terminal_writeTypo(u8 typo))(void)) { io_stream_print(u8_l("{:c}"), typo); };
 fn_((Terminal_writeTypoAt(u32 x, u32 y, u8 typo))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeTypo(typo);
 };
-fn_((Terminal_writeText(Sli_const$u8 text))(void)) { printf("%*s", as$(i32, text.len), text.ptr); };
+fn_((Terminal_writeText(Sli_const$u8 text))(void)) { io_stream_print(u8_l("{:s}"), text); };
 fn_((Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeText(text);
@@ -126,7 +117,7 @@ fn_((Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text))(void)) {
 
 use_Arr$(1024, u8);
 fn_((Terminal_readBytes(Arr$1024$u8* mem))(Sli$u8)) {
-    let_ignore = fgets(as$(char*, mem->buf), as$(i32, Arr_len(*mem)), stdin);
+    let_ignore = fgets(as$((char*)(mem->buf)), as$((i32)(Arr_len(*mem))), stdin);
     return Str_fromZ(mem->buf);
 };
 
@@ -146,9 +137,9 @@ async_fn_scope(typeEffectWithInterval, {
     if (args->text.len == 0) { areturn_({}); }
     debug_assert_nonnull(args->text.ptr);
 
-    locals->delay_ms = as$(u64, (args->interval * time_millis_per_sec));
+    locals->delay_ms = as$((u64)(args->interval * time_millis_per_sec));
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
-        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, Sli_getAt(args->text, locals->iter_typo));
+        Terminal_writeTypoAt(args->x + as$((u32)(locals->iter_typo)), args->y, Sli_getAt(args->text, locals->iter_typo));
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse(args->caller, ctx->anyraw)), locals->delay_ms));
     }
 
@@ -170,10 +161,10 @@ async_fn_scope(typeEffectOverDuration, {
     if (args->text.len == 0) { areturn_({}); }
     debug_assert_nonnull(args->text.ptr);
 
-    let interval     = args->duration / as$(f64, args->text.len);
-    locals->delay_ms = as$(u64, (interval * time_millis_per_sec));
+    let interval     = args->duration / as$((f64)(args->text.len));
+    locals->delay_ms = as$((u64)(interval * time_millis_per_sec));
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
-        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, Sli_getAt(args->text, locals->iter_typo));
+        Terminal_writeTypoAt(args->x + as$((u32)(locals->iter_typo)), args->y, Sli_getAt(args->text, locals->iter_typo));
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse(args->caller, ctx->anyraw)), locals->delay_ms));
     }
 
@@ -201,13 +192,13 @@ async_fn_scope(typeEffectRealistic, {
 
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
         let current_char = Sli_getAt(args->text, locals->iter_typo);
-        Terminal_writeTypoAt(args->x + as$(u32, locals->iter_typo), args->y, current_char);
+        Terminal_writeTypoAt(args->x + as$((u32)(locals->iter_typo)), args->y, current_char);
 
-        locals->delay_ms = as$(u64, (args->base_interval * time_millis_per_sec));
+        locals->delay_ms = as$((u64)(args->base_interval * time_millis_per_sec));
         if (args->add_randomness) {
             // Add randomness to make it feel more natural (-30 to +50 ms variation)
             let random_variation = Random_range_i64(-30, 50);
-            locals->delay_ms     = as$(u64, prim_max(10, as$(i64, locals->delay_ms) + random_variation));
+            locals->delay_ms     = as$((u64)(prim_max(10, as$((i64)(locals->delay_ms) + random_variation))));
 
             // Longer pauses after punctuation
             if (current_char == '.' || current_char == '!' || current_char == '?') {
@@ -271,7 +262,7 @@ async_fn_scope(runMain, {
     Terminal_clear();
     Terminal_home();
     Terminal_writeText(u8_l("=== Typing Effect Demo ==="));
-    Terminal_feedLine();
+    Terminal_nl();
 
     locals->sample_text = u8_l("Hello, World! This is a typing effect demonstration.");
 
@@ -309,10 +300,10 @@ async_fn_scope(runMain, {
 
     // Interactive example
     Terminal_moveCursor(0, locals->line);
-    Terminal_feedLine();
+    Terminal_nl();
     locals->line++;
     Terminal_writeText(u8_l("=== Interactive Mode ==="));
-    Terminal_feedLine();
+    Terminal_nl();
     locals->line++;
 
     Terminal_writeText(u8_l("Enter text to type: "));
@@ -323,24 +314,24 @@ async_fn_scope(runMain, {
         Terminal_writeText(u8_l("Enter interval in seconds (e.g., 0.1): "));
         if (scanf("%lf", &locals->interval) == 1) {
             locals->line++;
-            Terminal_feedLine();
+            Terminal_nl();
             locals->line++;
             let message = u8_l("Typing your text: ");
             Terminal_writeText(message);
             locals->interactive_ctx.type_interval = *async_ctx(
-                (typeEffectWithInterval)(none(), locals->user_text.as_const, locals->interval, .x = as$(u32, message.len), .y = locals->line++)
+                (typeEffectWithInterval)(none(), locals->user_text.as_const, locals->interval, .x = as$((u32)(message.len)), .y = locals->line++)
             );
             resume_(&locals->interactive_ctx.type_interval);
             exec_runLoop(false);
             await_(&locals->interactive_ctx.type_interval);
         } else {
             locals->line++;
-            Terminal_feedLine();
+            Terminal_nl();
             locals->line++;
             let message = u8_l("Using default realistic typing: ");
             Terminal_writeText(message);
             locals->interactive_ctx.type_realistic = *async_ctx(
-                (typeEffectRealistic)(none(), locals->user_text.as_const, 0.08, true, .x = as$(u32, message.len), .y = locals->line++)
+                (typeEffectRealistic)(none(), locals->user_text.as_const, 0.08, true, .x = as$((u32)(message.len)), .y = locals->line++)
             );
             resume_(&locals->interactive_ctx.type_realistic);
             exec_runLoop(false);
@@ -349,9 +340,9 @@ async_fn_scope(runMain, {
         let_ignore = getchar();
     }
 
-    Terminal_feedLine();
+    Terminal_nl();
     Terminal_writeText(u8_l("Press any key to exit..."));
-    Terminal_feedLine();
+    Terminal_nl();
     let_ignore = getchar(); // TODO: use a better way to wait for user input
 
     areturn_({});

@@ -60,7 +60,7 @@
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     claim_assert_static(isSameType$(TypeOf(buf$a(*__p_lhs)), TypeOf(buf$a(__rhs)))); \
-    *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
+    *__p_lhs = *as$((TypeOf(__p_lhs)*)(&__rhs)); \
     __p_lhs; \
 })
 
@@ -92,7 +92,7 @@
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     claim_assert_static(isSameType$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
-    *__p_lhs = *as$(TypeOf(__p_lhs), &__rhs); \
+    *__p_lhs = *as$((TypeOf(__p_lhs)*)(&__rhs)); \
     __p_lhs; \
 })
 
@@ -106,7 +106,7 @@
         let_(__n, usize) = _N; \
         let __s          = _s; \
         debug_assert_fmt(__s.len == __n, "length mismatch: %zu != %zu", __s.len, __n); \
-        as$(a$(_N, _T)*, __s.ptr); \
+        as$((a$(_N, _T)*)(__s.ptr)); \
     }); \
     _Generic(__result, a$(_N, _T)*: __result, default: as$(a$(_N, _T)*, __result)); \
     __result; \
@@ -116,7 +116,7 @@
 //     let_(__n, usize) = _N; \
 //     let __s          = _s; \
 //     debug_assert_fmt(__s.len == __n, "length mismatch: %zu != %zu", __s.len, __n); \
-//     as$(a$(_N, _T)*, __s.ptr); \
+//     as$((a$(_N, _T)*)(__s.ptr)); \
 // }))
 
 // #define index(_arr, _idx) ({ \

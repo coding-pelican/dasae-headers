@@ -45,7 +45,7 @@ fn_((dh_main(void))(Err$void $guard)) {
     i32_list.items.len = 8;
     printf("origin: ");
     for_slice_indexed (i32_list.items, item, index) {
-        deref(item) = as$(i32, index) + 1;
+        deref(item) = as$((i32)(index)) + 1;
         printf("%d ", deref(item));
     }
     printf("\n");

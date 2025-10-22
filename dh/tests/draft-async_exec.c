@@ -23,7 +23,7 @@ static fn_((exec_runLoop(bool endless))(void)) {
     use_Sli$(Opt$Task);
     use_Opt$(Co_Ctx);
 
-    io_stream_print(u8_l("looping events y'all\n"));
+    io_stream_println(u8_l("looping events y'all"));
     while (true) {
         let  now   = time_Instant_now();
         bool any   = false;
@@ -32,7 +32,7 @@ static fn_((exec_runLoop(bool endless))(void)) {
             if_some(Opt_asPtr(task_remaining), task) {
                 any = true;
                 if (time_Instant_le(task->expires, now)) {
-                    io_stream_print(u8_l("sleep over y'all\n"));
+                    io_stream_println(u8_l("sleep over y'all"));
                     Opt_asg(&frame, some(task->frame));
                     Opt_asg(task_remaining, none());
                     break;
@@ -96,6 +96,7 @@ fn_((report(Sli_const$u8 label, Sli_const$u8 fmt, ...))(void)) {
     with_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_printVaArgs(fmt, args);
     }
+    io_stream_nl();
 }
 
 use_Co_Ctx$(f64);
@@ -108,15 +109,15 @@ async_fn_scope(count, {
     var_(total, f64);
 }) {
     locals->start = time_Instant_now();
-    report(args->label, u8_l("before loop {:f}\n"), args->interval);
-    locals->wait_ms = as$(u64, (args->interval * time_millis_per_sec));
+    report(args->label, u8_l("before loop {:f}"), args->interval);
+    locals->wait_ms = as$((u64)(args->interval * time_millis_per_sec));
 
     locals->iter = 0;
     while (locals->iter < args->n) {
         // locals->sleep_ctx = *async_ctx((exec_sleep)(ctx->anyraw, locals->wait_ms));
         // while (resume_(&locals->sleep_ctx)->state == Co_State_suspended) { suspend_(); }
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(ctx->anyraw), locals->wait_ms));
-        report(args->label, u8_l("slept {:f} | i: {:zu} < n: {:zu}\n"), args->interval, locals->iter, args->n);
+        report(args->label, u8_l("slept {:f} | i: {:zu} < n: {:zu}"), args->interval, locals->iter, args->n);
         locals->iter++;
     }
 
@@ -126,7 +127,7 @@ async_fn_scope(count, {
         static let now      = time_Instant_now;
         eval_return asSecs(durSince(now(), locals->start));
     });
-    report(args->label, u8_l("after loop %f\n"), locals->total);
+    report(args->label, u8_l("after loop %f"), locals->total);
     areturn_(locals->total);
 } $unscoped_async_fn;
 
@@ -140,7 +141,7 @@ async_fn_scope(runMain, {
     var_(await_curr, Co_CtxFn$(count)*);
 }) {
     let_ignore = args;
-    io_stream_print(u8_l("begin\n"));
+    io_stream_println(u8_l("begin"));
 
     // clang-format off
     Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_CtxFn$(count)), {
@@ -150,7 +151,7 @@ async_fn_scope(runMain, {
     for_array (locals->tasks, task) { resume_(task); }
     // clang-format on
 
-    io_stream_print(u8_l("count size: {:zu}\n"), sizeOf(Arr_getAt(locals->tasks, 0)));
+    io_stream_println(u8_l("count size: {:zu}"), sizeOf(Arr_getAt(locals->tasks, 0)));
 
     locals->total = 0.0;
     for (locals->await_idx = 0; locals->await_idx < Arr_len(locals->tasks); ++locals->await_idx) {
@@ -159,16 +160,17 @@ async_fn_scope(runMain, {
         locals->total += Co_Ctx_returned(locals->await_curr);
     }
 
-    io_stream_print(u8_l("end\n"));
+    io_stream_println(u8_l("end"));
     areturn_(locals->total);
 } $unscoped_(async_fn);
 
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
-    var task = async_((runMain)(args));
-    io_stream_print(u8_l("run size: {:zu}\n"), sizeOf(*task));
+    let_ignore = args;
+    var task   = async_((runMain)(args));
+    io_stream_println(u8_l("run size: {:zu}"), sizeOf(*task));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));
     let total = task->ret->value;
-    io_stream_print(u8_l("total: {:f}\n"), total);
+    io_stream_println(u8_l("total: {:f}"), total);
     return_ok({});
 } $unscoped_(fn);

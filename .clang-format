@@ -232,9 +232,9 @@ Macros:
   # - "expr_(Expr)=({"
   # - "$unscoped_expr=})"
   # - "expr_else=else pp_expand"
-  - "pp_if_(Cond)=pp_expand"
-  - "pp_than_(Expr)=Expr"
-  - "pp_else_(Expr)=Expr"
+  # - "pp_if_(Cond)=pp_expand"
+  # - "pp_than_(Expr)=Expr"
+  # - "pp_else_(Expr)=Expr"
   - "fn_(Expr)=;pp_expand Expr"
   - "la_(Expr)=;pp_expand Expr"
   - "eval_=la_((void)(void))"
@@ -256,6 +256,7 @@ Macros:
   - $unguarded_eval=/**/
   - $unscoped_expr=/**/
   - $unguarded_expr=/**/
+  - "as$(_Expr)=pp_ignore _Expr"
 
 ForEachMacros:
   - pp_foreach

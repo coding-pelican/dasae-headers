@@ -34,7 +34,7 @@ fn_((init(void))(void)) {
     if (!QueryPerformanceFrequency(&s_perf_freq)) {
         claim_unreachable_msg("Failed to query performance frequency");
     }
-    s_perf_freq_inv = 1.0 / as$(f64, s_perf_freq.QuadPart);
+    s_perf_freq_inv = 1.0 / as$((f64)(s_perf_freq.QuadPart));
     QueryPerformanceCounter(&s_pref_offset_value);
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     var value = makeCleared$(time_SysTimePlatform);
@@ -44,7 +44,7 @@ fn_((init(void))(void)) {
     // Assuming 1 second = 1 billion nanoseconds (nanoseconds per second)
     s_perf_freq.tv_sec  = 1;                          // 1 second
     s_perf_freq.tv_nsec = time_SysTime_nanos_per_sec; // 1 billion nanoseconds (nanosecond precision)
-    s_perf_freq_inv     = 1.0 / as$(f64, time_SysTime_nanos_per_sec);
+    s_perf_freq_inv     = 1.0 / as$((f64)(time_SysTime_nanos_per_sec));
     // Set the initial offset value to the current time
     s_pref_offset_value = value;
 #endif
@@ -105,9 +105,9 @@ fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(O
     }
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
     // Calculate the difference in ticks
-    let diff  = as$(f64, later.impl_.QuadPart - earlier.impl_.QuadPart);
+    let diff  = as$((f64)(later.impl_.QuadPart - earlier.impl_.QuadPart));
     // Convert ticks to nanoseconds
-    let nanos = as$(u64, diff * time_SysTime_nanos_per_sec * freqInv());
+    let nanos = as$((u64)(diff * time_SysTime_nanos_per_sec * freqInv()));
 #else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     // Calculate the difference in seconds and nanoseconds
     var diff    = makeCleared$(time_SysTimePlatform);
@@ -118,7 +118,7 @@ fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(O
     } else {
         diff.tv_nsec = later.impl_.tv_nsec - earlier.impl_.tv_nsec;
     }
-    let nanos = as$(u64, diff.tv_sec* time_SysTime_nanos_per_sec) + diff.tv_nsec;
+    let nanos = as$((u64)(diff.tv_sec* time_SysTime_nanos_per_sec) + diff.tv_nsec);
 #endif /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     return_some(time_Duration_fromNanos(nanos));
 } $unscoped;
@@ -144,11 +144,11 @@ time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
 fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
-    if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_max - as$(u64, lhs.impl_.QuadPart))) {
-        return_some({ .impl_.QuadPart = as$(LONGLONG, lhs.impl_.QuadPart + ticks) });
+    if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_max - as$((u64)(lhs.impl_.QuadPart)))) {
+        return_some({ .impl_.QuadPart = as$((LONGLONG)(lhs.impl_.QuadPart + ticks)) });
     }
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
-    if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max - as$(u64, lhs.impl_.tv_sec))) {
+    if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max - as$((u64)(lhs.impl_.tv_sec)))) {
         return_some({
             .impl_ = {
                 .tv_sec  = lhs.impl_.tv_sec + (ticks / time_SysTime_nanos_per_sec),
@@ -163,11 +163,11 @@ fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time
 fn_((time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
-    if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_min + as$(u64, lhs.impl_.QuadPart))) {
-        return_some({ .impl_.QuadPart = as$(LONGLONG, lhs.impl_.QuadPart - ticks) });
+    if ((0 <= lhs.impl_.QuadPart) && ticks <= (u64_limit_min + as$((u64)(lhs.impl_.QuadPart)))) {
+        return_some({ .impl_.QuadPart = as$((LONGLONG)(lhs.impl_.QuadPart - ticks)) });
     }
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
-    if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max + as$(u64, lhs.impl_.tv_sec))) {
+    if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max + as$((u64)(lhs.impl_.tv_sec)))) {
         return_some({
             .impl_ = {
                 .tv_sec  = lhs.impl_.tv_sec - (ticks / time_SysTime_nanos_per_sec),
@@ -188,7 +188,7 @@ time_SysTime time_SysTime_fromUnixEpoch(u64 secs) {
     return (time_SysTime){
         .impl_ = {
 #if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
-            .QuadPart = time_SysTime_unix_epoch.impl_.QuadPart + as$(LONGLONG, intervals),
+            .QuadPart = time_SysTime_unix_epoch.impl_.QuadPart + as$((LONGLONG)(intervals)),
 #else /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
             .tv_sec  = time_SysTime_unix_epoch.impl_.tv_sec + (intervals / time_SysTime_nanos_per_sec),
             .tv_nsec = time_SysTime_unix_epoch.impl_.tv_nsec + (intervals % time_SysTime_nanos_per_sec),
@@ -205,7 +205,7 @@ u64 time_SysTime_toUnixEpoch(time_SysTime self) {
     let diff = self.impl_.tv_sec - time_SysTime_unix_epoch.impl_.tv_sec;
 #endif
     // Convert the difference to seconds
-    return as$(u64, diff / time_SysTime_intervals_per_sec);
+    return as$((u64)(diff / time_SysTime_intervals_per_sec));
 }
 
 /*========== Comparison =====================================================*/

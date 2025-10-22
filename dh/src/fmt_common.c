@@ -76,7 +76,7 @@ static fn_((fmt_writeChar(io_Writer writer, u8 ch))(Err$void)) {
 }
 
 static fn_((fmt_writeStr(io_Writer writer, Sli_const$u8 str))(Err$void)) {
-    return io_Writer_writeAll(writer, str);
+    return io_Writer_writeBytes(writer, str);
 }
 
 static fn_((fmt_writeInt(io_Writer writer, u64 value, fmt_FormatSpec spec))(Err$void) $scope) {
@@ -91,9 +91,9 @@ static fn_((fmt_writeInt(io_Writer writer, u64 value, fmt_FormatSpec spec))(Err$
 
     if (is_signed_type) {
         // Treat as signed integer
-        i64 signed_value = as$(i64, value);
+        i64 signed_value = as$((i64)(value));
         is_negative      = signed_value < 0;
-        abs_value        = is_negative ? as$(u64, -signed_value) : as$(u64, signed_value);
+        abs_value        = is_negative ? as$((u64)(-signed_value)) : as$((u64)(signed_value));
     }
 
     let original_abs_value = abs_value;
@@ -246,7 +246,7 @@ static fn_((fmt_writeInt(io_Writer writer, u64 value, fmt_FormatSpec spec))(Err$
     try_(fmt_writeStr(writer, Sli_slice(out_slice.as_const, $r(0, out_pos))));
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((fmt_writeFlt(io_Writer writer, f64 value, fmt_FormatSpec spec))(Err$void) $scope) {
     // Handle NaN and Infinity
@@ -341,7 +341,7 @@ static fn_((fmt_writeFlt(io_Writer writer, f64 value, fmt_FormatSpec spec))(Err$
     }
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((fmt_writePtr(io_Writer writer, const anyptr ptr))(Err$void) $scope) {
     use_Arr$(32, u8);
@@ -372,7 +372,7 @@ static fn_((fmt_writePtr(io_Writer writer, const anyptr ptr))(Err$void) $scope) 
     let result_slice = Sli_suffix(buffer_slice, pos);
     try_(fmt_writeStr(writer, result_slice));
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 use_Opt$(fmt_FormatSpec);
 static let spec_default = (fmt_FormatSpec){
@@ -519,14 +519,14 @@ parse_width:
     }
 
     return_some(out_spec);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_format(io_Writer writer, Sli_const$u8 fmt, ...))(Err$void) $guard) {
     va_list va_args = {};
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(fmt_formatVaArgs(writer, fmt, va_args)));
-} $unguarded;
+} $unguarded_(fn);
 
 static fn_((fmt_determineArgType(fmt_FormatSpec spec))(fmt_ArgType));
 static fn_((fmt_storeArg(fmt_StoredArg* stored_arg, fmt_ArgType type, va_list* args))(void));
@@ -698,13 +698,13 @@ fn_((fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args))(Err$
                         case 'd': {
                             if (spec.is_64bit_type) {
                                 let value = va_arg(args, i64);
-                                try_(fmt_writeInt(writer, as$(u64, value), spec));
+                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
                             } else if (spec.is_size_type) {
                                 let value = va_arg(args, isize);
-                                try_(fmt_writeInt(writer, as$(u64, value), spec));
+                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
                             } else {
                                 let value = va_arg(args, i32);
-                                try_(fmt_writeInt(writer, as$(u64, value), spec));
+                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
                             }
                         } break;
                         case 'u':
@@ -721,14 +721,14 @@ fn_((fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args))(Err$
                                 try_(fmt_writeInt(writer, value, spec));
                             } else if (spec.is_size_type) {
                                 let value = va_arg(args, usize);
-                                try_(fmt_writeInt(writer, as$(u64, value), spec));
+                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
                             } else {
                                 let value = va_arg(args, u32);
-                                try_(fmt_writeInt(writer, as$(u64, value), spec));
+                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
                             }
                         } break;
                         case 'c': {
-                            let value = as$(u8, va_arg(args, i32));
+                            let value = as$((u8)(va_arg(args, i32)));
                             try_(fmt_writeChar(writer, value));
                         } break;
                         case 's': {
@@ -797,7 +797,7 @@ fn_((fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args))(Err$
         }
     }
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 use_Arr$(32, fmt_FormatSpec);
 use_Arr$(32, fmt_StoredArg);
@@ -868,7 +868,7 @@ static fn_((fmt_storeArg(fmt_StoredArg* stored_arg, fmt_ArgType type, va_list* a
         stored_arg->value.f64_val = va_arg(*args, f64);
     } break;
     case fmt_ArgType_char: {
-        stored_arg->value.char_val = as$(u8, va_arg(*args, i32));
+        stored_arg->value.char_val = as$((u8)(va_arg(*args, i32)));
     } break;
     case fmt_ArgType_str_slice: {
         stored_arg->value.str_slice_val = va_arg(*args, Sli_const$u8);
@@ -890,22 +890,22 @@ static fn_((fmt_storeArg(fmt_StoredArg* stored_arg, fmt_ArgType type, va_list* a
 static fn_((fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_FormatSpec spec))(Err$void) $scope) {
     switch (stored_arg.type) {
     case fmt_ArgType_i32: {
-        try_(fmt_writeInt(writer, as$(u64, stored_arg.value.i32_val), spec));
+        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.i32_val)), spec));
     } break;
     case fmt_ArgType_i64: {
-        try_(fmt_writeInt(writer, as$(u64, stored_arg.value.i64_val), spec));
+        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.i64_val)), spec));
     } break;
     case fmt_ArgType_isize: {
-        try_(fmt_writeInt(writer, as$(u64, stored_arg.value.isize_val), spec));
+        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.isize_val)), spec));
     } break;
     case fmt_ArgType_u32: {
-        try_(fmt_writeInt(writer, as$(u64, stored_arg.value.u32_val), spec));
+        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.u32_val)), spec));
     } break;
     case fmt_ArgType_u64: {
         try_(fmt_writeInt(writer, stored_arg.value.u64_val, spec));
     } break;
     case fmt_ArgType_usize: {
-        try_(fmt_writeInt(writer, as$(u64, stored_arg.value.usize_val), spec));
+        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.usize_val)), spec));
     } break;
     case fmt_ArgType_char: {
         try_(fmt_writeChar(writer, stored_arg.value.char_val));
@@ -941,7 +941,7 @@ static fn_((fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_F
         claim_unreachable;
     }
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_u64(Sli_const$u8 str, u8 base))(Err$u64) $scope) {
     if (str.len == 0) { return_err(fmt_Err_InvalidIntegerFormat()); }
@@ -977,19 +977,19 @@ fn_((fmt_parseInt_u64(Sli_const$u8 str, u8 base))(Err$u64) $scope) {
     }
 
     return_ok(result);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_usize(Sli_const$u8 str, u8 base))(Err$usize) $scope) {
     let result = try_(fmt_parseInt_u64(str, base));
     if (usize_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    return_ok(as$(usize, result));
-} $unscoped;
+    return_ok(as$((usize)(result)));
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_u32(Sli_const$u8 str, u8 base))(Err$u32) $scope) {
     let result = try_(fmt_parseInt_u64(str, base));
     if (u32_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    return_ok(as$(u32, result));
-} $unscoped;
+    return_ok(as$((u32)(result)));
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_i64(Sli_const$u8 str, u8 base))(Err$i64) $scope) {
     if (str.len == 0) { return_err(fmt_Err_InvalidIntegerFormat()); }
@@ -1011,7 +1011,7 @@ fn_((fmt_parseInt_i64(Sli_const$u8 str, u8 base))(Err$i64) $scope) {
 
     u64 max_val = 0;
     if (is_negative) {
-        max_val = as$(u64, i64_limit_max) + 1;
+        max_val = as$((u64)(i64_limit_max)) + 1;
     } else {
         max_val = i64_limit_max;
     }
@@ -1040,23 +1040,23 @@ fn_((fmt_parseInt_i64(Sli_const$u8 str, u8 base))(Err$i64) $scope) {
     }
 
     if (is_negative) {
-        return_ok(-as$(i64, result));
+        return_ok(-as$((i64)(result)));
     } else {
-        return_ok(as$(i64, result));
+        return_ok(as$((i64)(result)));
     }
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_isize(Sli_const$u8 str, u8 base))(Err$isize) $scope) {
     let result = try_(fmt_parseInt_i64(str, base));
     if (result < isize_limit_min || isize_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    return_ok(as$(isize, result));
-} $unscoped;
+    return_ok(as$((isize)(result)));
+} $unscoped_(fn);
 
 fn_((fmt_parseInt_i32(Sli_const$u8 str, u8 base))(Err$i32) $scope) {
     let result = try_(fmt_parseInt_i64(str, base));
     if (result < i32_limit_min || i32_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    return_ok(as$(i32, result));
-} $unscoped;
+    return_ok(as$((i32)(result)));
+} $unscoped_(fn);
 
 static fn_((fmt_parseFlt(Sli_const$u8 str))(Err$f64) $scope) {
     if (str.len == 0) { return_err(fmt_Err_InvalidFloatFormat()); }
@@ -1125,20 +1125,20 @@ static fn_((fmt_parseFlt(Sli_const$u8 str))(Err$f64) $scope) {
     if (pos != str.len) { return_err(fmt_Err_InvalidFloatFormat()); }
 
     return_ok(result * sign);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_parseFlt_f64(Sli_const$u8 str))(Err$f64) $scope) {
     return_ok(try_(fmt_parseFlt(str)));
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((fmt_parseFlt_f32(Sli_const$u8 str))(Err$f32) $scope) {
     let res = try_(fmt_parseFlt(str));
     // TODO: Add proper overflow/underflow check for f32
-    return_ok(as$(f32, res));
-} $unscoped;
+    return_ok(as$((f32)(res)));
+} $unscoped_(fn);
 
 fn_((fmt_parseBool(Sli_const$u8 str))(Err$bool) $scope) {
     if (Str_eqlNoCase(str, u8_l("1")) || Str_eqlNoCase(str, u8_l("true"))) { return_ok(true); }
     if (Str_eqlNoCase(str, u8_l("0")) || Str_eqlNoCase(str, u8_l("false"))) { return_ok(false); }
     return_err(fmt_Err_InvalidBoolFormat());
-} $unscoped;
+} $unscoped_(fn);

@@ -46,7 +46,7 @@ extern fn_((heap_Arena_fini(heap_Arena self))(void)) {
     while_some(it, node) {
         // Save next pointer before freeing current node
         let next_it   = node->next;
-        let alloc_buf = Sli_from$(Sli$u8, as$(u8*, node), node->data);
+        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
         mem_Allocator_rawFree(self.child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
         it = next_it;
     }
@@ -88,7 +88,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         if_none(next_it) {
             eval_break_(some(node));
         }
-        let alloc_buf = Sli_from$(Sli$u8, as$(u8*, node), node->data);
+        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
         it = next_it;
     } $unscoped_eval;
@@ -104,7 +104,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         }
 
         // Try to resize the buffer
-        let alloc_buf = Sli_from$(Sli$u8, as$(u8*, first_node), first_node->data);
+        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(first_node)), first_node->data);
         if (mem_Allocator_rawResize(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize), total_size)) {
             first_node->data = total_size;
             return true;
@@ -114,7 +114,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         let new_ptr = orelse_((mem_Allocator_rawAlloc(self->child_allocator, total_size, alignOf(ListSgl_Node$usize)))(return false));
         // Free old buffer and update state
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
-        let new_node                  = as$(ListSgl_Node$usize*, new_ptr);
+        let new_node                  = as$((ListSgl_Node$usize*)(new_ptr));
         *new_node                     = make$(ListSgl_Node$usize, .data = total_size);
         self->state.buffer_list.first = some$(Opt$Ptr$ListSgl_Node$usize, new_node);
     }
@@ -128,7 +128,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
-    let self      = as$(heap_Arena*, ctx);
+    let self      = as$((heap_Arena*)(ctx));
     let ptr_align = align;
 
     // 문제로 예상되는 지점
@@ -140,7 +140,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
         )));
     } $unscoped_eval;
     while (true) {
-        let cur_buf     = as$(u8*, cur_node) + sizeOf(ListSgl_Node$usize);
+        let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
         let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);
 
         let addr           = rawptrToInt(cur_buf) + self->state.end_index;
@@ -155,7 +155,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
 
         // Try to resize current buffer
         let bigger_buf_size = sizeOf(ListSgl_Node$usize) + new_end_index;
-        let cur_alloc_buf   = Sli_from$(Sli$u8, as$(u8*, cur_node), cur_node->data);
+        let cur_alloc_buf   = Sli_from$(Sli$u8, as$((u8*)(cur_node)), cur_node->data);
 
         if (mem_Allocator_rawResize(
                 self->child_allocator,
@@ -171,13 +171,13 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
             ));
         }
     }
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Arena*, ctx);
+    let self = as$((heap_Arena*)(ctx));
     let_ignore  = buf_align;
 
     // Check if this is the most recent allocation
@@ -185,7 +185,7 @@ static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_l
         return false;
     }
     let cur_node    = unwrap(self->state.buffer_list.first);
-    let cur_buf     = as$(u8*, cur_node) + sizeOf(ListSgl_Node$usize);
+    let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
     let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);
 
     if (rawptrToInt(cur_buf) + self->state.end_index != rawptrToInt(buf.ptr) + buf.len) {
@@ -212,13 +212,13 @@ static fn_((heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
         return_some(buf.ptr);
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Arena*, ctx);
+    let self = as$((heap_Arena*)(ctx));
     let_ignore  = buf_align;
 
     // Only free if it's the most recent allocation
@@ -226,7 +226,7 @@ static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
         return;
     }
     let cur_node = unwrap(self->state.buffer_list.first);
-    let cur_buf  = as$(u8*, cur_node) + sizeOf(ListSgl_Node$usize);
+    let cur_buf  = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
 
     if (rawptrToInt(cur_buf) + self->state.end_index == rawptrToInt(buf.ptr) + buf.len) {
         self->state.end_index -= buf.len;
@@ -245,10 +245,10 @@ static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimu
 
     // Allocate new buffer
     let ptr  = orelse_((mem_Allocator_rawAlloc(self->child_allocator, len, alignOf(ListSgl_Node$usize)))(return_none()));
-    let node = as$(ListSgl_Node$usize*, ptr);
+    let node = as$((ListSgl_Node$usize*)(ptr));
     *node    = make$(ListSgl_Node$usize, .data = len);
     ListSgl_prepend(self->state.buffer_list.base, node->base);
     self->state.end_index = 0;
 
     return_some(node);
-} $unscoped;
+} $unscoped_(fn);

@@ -791,7 +791,7 @@ extern fn_((ArrList_clearAndFree(ArrList* self))(void));
     claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), allocator) == fieldPadding(T_ArrList, allocator)); \
-    eval_return rawderef(as$(rawptr$(T_ArrList), __anon)); \
+    eval_return rawderef(as$((rawptr$(T_ArrList))(__anon))); \
 })
 
 #if defined(__cplusplus)

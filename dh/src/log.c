@@ -24,7 +24,7 @@ fn_((log_init(const char* filename))(fs_FileErr$void) $guard) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        try_(fs_Dir_create(Str_view(as$(const u8*, dir_path), dir_len)));
+        try_(fs_Dir_create(Str_view(as$((const u8*)(dir_path)), dir_len)));
     }
 
     let file = fopen(filename, "w");
@@ -36,7 +36,7 @@ fn_((log_init(const char* filename))(fs_FileErr$void) $guard) {
     }
     log_s_config.output_file = file;
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 fn_((log_initWithFile(FILE* file))(void)) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
@@ -47,7 +47,7 @@ fn_((log_initWithFile(FILE* file))(void)) {
 
 fn_((log_fini(void))(void)) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        let_ignore                  = fclose(log_s_config.output_file);
+        let_ignore               = fclose(log_s_config.output_file);
         log_s_config.output_file = stderr;
     }
 }
@@ -90,8 +90,8 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
         time_t     t            = time(null);
         struct tm* lt           = localtime(&t);
         char       time_str[16] = cleared();
-        let_ignore                 = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        let_ignore                 = fprintf(output, "[%s]", time_str);
+        let_ignore              = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
+        let_ignore              = fprintf(output, "[%s]", time_str);
     }
 
     // Add level if needed

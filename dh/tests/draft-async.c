@@ -10,8 +10,8 @@ static fn_((io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...))(Err$usize) $gu
     va_start(args, format);
     defer_(va_end(args));
     let written = vsnprintf(
-        as$(char*, stream.ptr), stream.len,
-        as$(const char*, format.ptr), args
+        as$((char*)(stream.ptr)), stream.len,
+        as$((const char*)(format.ptr)), args
     );
     if (written < 0) { return_err(Err_Unexpected()); }
     return_ok(written);
@@ -29,17 +29,17 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
     } else if (total_nanos < time_nanos_per_milli) { // < 1 ms
         written = try_(io_writeFmt(
             buf, u8_l("%g μs"),
-            as$(f64, total_nanos) / time_nanos_per_micro
+            as$((f64)(total_nanos) / time_nanos_per_micro)
         ));
     } else if (total_nanos < time_nanos_per_sec) { // < 1 s
         written = try_(io_writeFmt(
             buf, u8_l("%g ms"),
-            as$(f64, total_nanos) / time_nanos_per_milli
+            as$((f64)(total_nanos) / time_nanos_per_milli)
         ));
     } else if (self.secs < time_secs_per_min) { // < 1 min
         written = try_(io_writeFmt(
             buf, u8_l("%g s"),
-            as$(f64, total_nanos) / time_nanos_per_sec
+            as$((f64)(total_nanos) / time_nanos_per_sec)
         ));
     } else if (self.secs < time_secs_per_min * time_mins_per_hour) { // < 1 hour
         let mins = self.secs / time_secs_per_min;
@@ -48,7 +48,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu min %g s"),
-            mins, as$(f64, secs) + (as$(f64, self.nanos) / time_nanos_per_sec)
+            mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
         ));
     } else if (self.secs < time_secs_per_min * time_mins_per_hour * time_hours_per_day) { // < 1 day
         let hours = self.secs / (time_secs_per_min * time_mins_per_hour);
@@ -58,7 +58,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu h %llu min %g s"),
-            hours, mins, as$(f64, secs) + (as$(f64, self.nanos) / time_nanos_per_sec)
+            hours, mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
         ));
     } else {
         let days  = self.secs / (time_secs_per_min * time_mins_per_hour * time_hours_per_day);
@@ -70,7 +70,7 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
         written = try_(io_writeFmt(
             buf,
             u8_l("%llu d %llu h %llu min %g s"),
-            days, hours, mins, as$(f64, secs) + (as$(f64, self.nanos) / time_nanos_per_sec)
+            days, hours, mins, as$((f64)(secs) + (as$((f64)(self.nanos) / time_nanos_per_sec)))
         ));
     }
 
@@ -233,9 +233,9 @@ async_fn_scope(waitForTime, {}) {
                 .expires = addDur(now(), fromMs(args->ms)),
             }))
         ))($ignore, claim_unreachable));
-        printf("debug: [waitForTime(%zx)] suspending -> [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
+        printf("debug: [waitForTime(%zx)] suspending -> [%*s(%zx)]\n", as$((u64)(ctx->base)), as$((i32)(args->name.len)), args->name.ptr, as$((u64)(orelse(args->caller, ctx->anyraw))));
     });
-    printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$(u64, ctx->base), as$(i32, args->name.len), args->name.ptr, as$(u64, orelse(args->caller, ctx->anyraw)));
+    printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$((u64)(ctx->base)), as$((i32)(args->name.len)), args->name.ptr, as$((u64)(orelse(args->caller, ctx->anyraw))));
     areturn_({});
 } $unscoped_async_fn;
 
@@ -246,24 +246,24 @@ async_fn_scope(waitUntilAndPrint, {
     Co_CtxFn$(waitForTime) wait_ctx;
 }) {
     locals->start = time_Instant_now();
-    printf("debug: [%*s(%zx)] starting <- [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base));
+    printf("debug: [%*s(%zx)] starting <- [asyncMain]\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)));
 
     // locals->wait_ctx = *async_ctx((waitForTime)(orelse(args->caller, ctx->anyraw), args->name, args->time1));
     // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
-    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base)));
+    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base))));
     // }
     callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
     debug_assert(locals->wait_ctx.state == Co_State_ready);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base), args->time1);
+    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)), args->time1);
     {
         static let asSecs   = time_Duration_asSecs_f64;
         static let durSince = time_Instant_durationSince;
         static let now      = time_Instant_now;
         printf(
             "[%*s] it is now %zu ms since start!\n",
-            as$(i32, args->name.len),
+            as$((i32)(args->name.len)),
             args->name.ptr,
-            as$(u64, asSecs(durSince(now(), locals->start)) * 1000.0)
+            as$((u64)(asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
@@ -273,20 +273,20 @@ async_fn_scope(waitUntilAndPrint, {
     // }
     callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
     debug_assert(locals->wait_ctx.state == Co_State_ready);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base), args->time2);
+    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)), args->time2);
     {
         static let asSecs   = time_Duration_asSecs_f64;
         static let durSince = time_Instant_durationSince;
         static let now      = time_Instant_now;
         printf(
             "[%*s] it is now %zu ms since start!\n",
-            as$(i32, args->name.len),
+            as$((i32)(args->name.len)),
             args->name.ptr,
-            as$(u64, asSecs(durSince(now(), locals->start)) * 1000.0)
+            as$((u64)(asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
-    printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base));
+    printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)));
     areturn_({});
 } $unscoped_async_fn;
 
@@ -326,8 +326,8 @@ TEST_fn_("Test time_Duration sort" $guard) {
 
         try_(sort_stableSort(
             times.allocator, times.base->items, wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
-                let dur_lhs = as$(const time_Duration*, lhs);
-                let dur_rhs = as$(const time_Duration*, rhs);
+                let dur_lhs = as$((const time_Duration*)(lhs));
+                let dur_rhs = as$((const time_Duration*)(rhs));
                 return time_Duration_cmp(*dur_lhs, *dur_rhs);
             })
         ));
@@ -381,8 +381,8 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     *timer_queue.base = try_(PQue_initCap(
         typeInfo$(Task), heap_Page_allocator(&(heap_Page){}), 32,
         wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
-            let lhs_task = as$(const Task*, lhs);
-            let rhs_task = as$(const Task*, rhs);
+            let lhs_task = as$((const Task*)(lhs));
+            let rhs_task = as$((const Task*)(rhs));
             return time_Instant_cmp(lhs_task->expires, rhs_task->expires);
         })
     ));
@@ -402,10 +402,11 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         if (time_Instant_lt(now, delay->expires)) {
             time_sleep(time_Instant_durationSince(delay->expires, now));
         }
-        io_stream_print(u8_l("debug: [event loop] resuming task ({:zx})\n"), as$(u64, delay->frame));
+        io_stream_print(u8_l("debug: [event loop] resuming task ({:zx})\n"), as$((u64)(delay->frame)));
         resume_(delay->frame);
     }
 
     nosuspend_(await_(resume_(main_task)));
     return_ok({});
-} $unguarded;
+}
+$unguarded;

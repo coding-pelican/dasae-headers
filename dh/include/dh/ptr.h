@@ -65,7 +65,7 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
     const TypeOf(var_ptr) __ptr = var_ptr; \
     Opt$(T_Ptr) __ret           = cleared(); \
     if (Ptr_constCastable(__ptr)) { \
-        Opt_asg(&__ret, some(as$(T_Ptr, __ptr))); \
+        Opt_asg(&__ret, some(as$((T_Ptr)(__ptr)))); \
     } else { \
         Opt_asg(&__ret, none()); \
     } \
@@ -75,7 +75,7 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
     const TypeOf(var_ptr) __ptr        = var_ptr; \
     Opt$$(TypeOfUnqual(*__ptr)*) __ret = cleared(); \
     if (Ptr_constCastable(__ptr)) { \
-        Opt_asg(&__ret, some(as$(TypeOfUnqual(*__ptr)*, __ptr))); \
+        Opt_asg(&__ret, some(as$((TypeOfUnqual(*__ptr)*)(__ptr)))); \
     } else { \
         Opt_asg(&__ret, none()); \
     } \
@@ -83,7 +83,7 @@ extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
 })
 
 
-#define comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr...) as$(T_Ptr_const, var_ptr)
+#define comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr...) as$((T_Ptr_const)(var_ptr))
 #define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(const TypeOf(*var_ptr)*, var_ptr)
 
 #if defined(__cplusplus)

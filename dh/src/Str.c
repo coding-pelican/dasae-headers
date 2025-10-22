@@ -28,7 +28,7 @@ Sli_const$u8 Str_view(const u8* ptr, usize len) {
 
 Sli_const$u8 Str_viewZ(const u8* ptr) {
     debug_assert_nonnull(ptr);
-    return Str_view(ptr, strlen(as$(const char*, ptr)));
+    return Str_view(ptr, strlen(as$((const char*)(ptr))));
 }
 
 Sli$u8 Str_from(u8 ptr[], usize len) {
@@ -38,7 +38,7 @@ Sli$u8 Str_from(u8 ptr[], usize len) {
 
 Sli$u8 Str_fromZ(u8 ptr[]) {
     debug_assert_nonnull(ptr);
-    return Str_from(ptr, strlen(as$(char*, ptr)));
+    return Str_from(ptr, strlen(as$((char*)(ptr))));
 }
 
 usize Str_len(Sli_const$u8 self) {
@@ -86,7 +86,7 @@ bool Sli_const$u8Castable(Sli_const$u8 self) {
 Opt$Sli$u8 Sli_const$u8Cast(Sli_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     if (!Sli_const$u8Castable(self)) { return none$(Opt$Sli$u8); }
-    return some$(Opt$Sli$u8, Str_from(as$(u8*, self.ptr), self.len));
+    return some$(Opt$Sli$u8, Str_from(as$((u8*)(self.ptr)), self.len));
 }
 
 fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$Sli$u8) $scope) {
@@ -162,7 +162,7 @@ fn_((Str_upper(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
     for_slice_indexed (result, ch, i) {
-        *ch = as$(u8, toupper(*Sli_at(str, i)));
+        *ch = as$((u8)(toupper(*Sli_at(str, i))));
     }
     return_ok(result);
 } $unscoped_(fn);
@@ -172,7 +172,7 @@ fn_((Str_lower(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
 
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
     for_slice_indexed (result, ch, i) {
-        *ch = as$(u8, tolower(*Sli_at(str, i)));
+        *ch = as$((u8)(tolower(*Sli_at(str, i))));
     }
     return_ok(result);
 } $unscoped_(fn);
@@ -208,7 +208,7 @@ fn_((Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usi
     debug_assert_nonnull(needle.ptr);
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
-    for (usize i = prim_min(start, haystack.len - needle.len); i != as$(usize, -1); i--) {
+    for (usize i = prim_min(start, haystack.len - needle.len); i != as$((usize)(-1)); i--) {
         if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
             return_some(i);
         }
@@ -240,8 +240,8 @@ static u32 hashMurmur3(const u8* data, usize len) {
 
     u32 hash = 0;
 
-    let nblocks = as$(i32, len / 4);
-    let blocks  = as$(const u32*, data);
+    let nblocks = as$((i32)(len / 4));
+    let blocks  = as$((const u32*)(data));
 
     for (i32 i = 0; i < nblocks; ++i) {
         u32 k = blocks[i];
@@ -253,7 +253,7 @@ static u32 hashMurmur3(const u8* data, usize len) {
         hash = ((hash << r2) | (hash >> (32 - r2))) * m + n;
     }
 
-    let tail = data + as$(ptrdiff, nblocks * 4);
+    let tail = data + as$((ptrdiff_t)(nblocks * 4));
     u32 k1   = 0;
     switch (len & 3) {
     case 3:

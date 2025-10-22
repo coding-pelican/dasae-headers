@@ -125,17 +125,17 @@ static let ascii_whitespaces = Arr_from$(u8, { ' ', '\t', '\n', '\r', ascii_Ctrl
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 static $inline fn_((ascii_toUpper(u8 c))(u8)) {
-    let mask = as$(u8, ascii_isLower(c)) << 5;
+    let mask = as$((u8)(ascii_isLower(c))) << 5;
     return c ^ mask;
 }
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
 static $inline fn_((ascii_toLower(u8 c))(u8)) {
-    let mask = as$(u8, ascii_isUpper(c)) << 5;
+    let mask = as$((u8)(ascii_isUpper(c))) << 5;
     return c | mask;
 }
 /// Toggles the case of the character && returns it as-is if not a letter.
 static $inline fn_((ascii_toggleCase(u8 c))(u8)) {
-    let mask = as$(u8, ascii_isAlpha(c)) << 5;
+    let mask = as$((u8)(ascii_isAlpha(c))) << 5;
     return c ^ mask;
 }
 

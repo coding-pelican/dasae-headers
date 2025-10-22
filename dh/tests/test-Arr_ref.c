@@ -61,10 +61,10 @@ TEST_fn_("Sli_deref" $scope) {
 
 #define mem_asBytes_useT$(_T...) \
     $maybe_unused static fn_((tpl_id(mem_asBytes, _T)(_T * val))(Sli$u8)) { \
-        return Sli_from$(Sli$u8, as$(u8*, val), sizeOf(*val)); \
+        return Sli_from$(Sli$u8, as$((u8*)(val)), sizeOf(*val)); \
     } \
     $maybe_unused static fn_((tpl_id(mem_asBytes_const, _T)(const _T* val))(Sli_const$u8)) { \
-        return Sli_from$(Sli_const$u8, as$(const u8*, val), sizeOf(*val)); \
+        return Sli_from$(Sli_const$u8, as$((const u8*)(val)), sizeOf(*val)); \
     }
 #define mem_toBytes_useT$(_T...) \
     $maybe_unused typedef Arr$$(sizeOf(_T), _T) tpl_Ret(mem_toBytes, _T); \

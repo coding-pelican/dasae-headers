@@ -109,7 +109,7 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
     debug_assert_fmt(mem_isAligned(rawptrToInt(map), mem_page_size));
     debug_assert_fmt(mem_isAligned(rawptrToInt(map), ptr_align), "mmap returned misaligned address");
 
-    let new_hint = as$(anyptr, as$(u8*, map) + aligned_len);
+    let new_hint = as$((anyptr)(as$((u8*)(map) + aligned_len)));
     // Here use atomic operations to update the hint
     __atomic_compare_exchange_n(
         &heap_Page_s_next_mmap_addr_hint,
@@ -121,7 +121,7 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
     );
     return_some(map);
 #endif /* posix */
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
@@ -163,7 +163,7 @@ static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
 #else /* posix */
 
     if (new_size_aligned < buf_aligned_len) {
-        let ptr = as$(u8*, buf.ptr) + new_size_aligned;
+        let ptr = as$((u8*)(buf.ptr)) + new_size_aligned;
         munmap(ptr, buf_aligned_len - new_size_aligned);
         return true;
     }
@@ -225,7 +225,7 @@ static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return_none();
 #endif /* posix */
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");

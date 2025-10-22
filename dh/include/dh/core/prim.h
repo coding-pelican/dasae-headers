@@ -167,7 +167,7 @@ typedef struct Void {
 })
 #define comp_inline__prim_sign(val_x) eval({ \
     let __scalar = (val_x); \
-    eval_return as$(TypeOf(__scalar), __scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0)); \
+    eval_return as$((TypeOf(__scalar))(__scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0))); \
 })
 
 #if NEXT_UPDATE

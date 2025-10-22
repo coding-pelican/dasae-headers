@@ -72,6 +72,9 @@ use_Opt$(StrHash);
 #define Str_l(_literal_as_readonly...) /* For read-only string literals */ comp_syn__Str_l(_literal_as_readonly)
 #define Str_m(_literal_to_writable...) /* For writable string literals */ comp_syn__Str_m(_literal_to_writable)
 
+#define u8_c(_literal...)  comp_syn__u8_c(_literal)
+#define u16_c(_literal...) comp_syn__u16_c(_literal)
+#define u32_c(_literal...) comp_syn__u32_c(_literal)
 #define u8_a(_literal...)  comp_syn__u8_a(_literal)
 #define u8_s(_literal...)  comp_syn__u8_s(_literal)
 #define u8_l(_literal...)  comp_syn__u8_l(_literal)
@@ -207,31 +210,35 @@ extern Opt$Sli_const$u8 StrTokenizer_next(StrTokenizer* self);
 /*========== Implementations ================================================*/
 
 #define comp_syn__StrZ_l(_literal_as_readonly...) \
-    ((StrZ_const){ .ptr = as$(const u8*, "" _literal_as_readonly) })
+    ((StrZ_const){ .ptr = as$((const u8*)("" _literal_as_readonly)) })
 #define comp_syn__StrZ_m(_literal_to_writable...) \
     ((StrZ){ .ptr = lit$(u8[], "" _literal_to_writable) })
 
 #define comp_syn__StrS_l(_literal_as_readonly...) \
-    ((StrS_const){ .ptr = as$(const u8*, "" _literal_as_readonly), .sentinel = '\0' })
+    ((StrS_const){ .ptr = as$((const u8*)("" _literal_as_readonly)), .sentinel = '\0' })
 #define comp_syn__StrS_m(_literal_to_writable...) \
     ((StrS){ .ptr = lit$(u8[], "" _literal_to_writable), .sentinel = '\0' })
 
 #define comp_syn__Str_l(_literal_as_readonly...) \
-    ((Sli_const$u8){ .ptr = as$(const u8*, "" _literal_as_readonly), .len = sizeOf(_literal_as_readonly) - 1 })
+    ((Sli_const$u8){ .ptr = as$((const u8*)("" _literal_as_readonly)), .len = sizeOf(_literal_as_readonly) - 1 })
 #define comp_syn__Str_m(_literal_to_writable...) \
     ((Sli$u8){ .ptr = lit$(u8[], "" _literal_to_writable), .len = sizeOf(_literal_to_writable) - 1 })
 
+#define comp_syn__u8_c(_literal...)  as$((u8)(_literal))
+#define comp_syn__u16_c(_literal...) as$((u16)(u##_literal))
+#define comp_syn__u32_c(_literal...) as$((u32)(U##_literal))
+
 #define comp_syn__u8_a(_literal...) ((Arr$$(sizeOf(_literal) - 1, u8)){ .buf = { _literal } })
 #define comp_syn__u8_s(_literal...) ((Sli$u8){ .ptr = lit$(u8[], "" _literal), .len = sizeOf(_literal) - 1 })
-#define comp_syn__u8_l(_literal...) ((Sli_const$u8){ .ptr = as$(const u8*, "" _literal), .len = sizeOf(_literal) - 1 })
+#define comp_syn__u8_l(_literal...) ((Sli_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf(_literal) - 1 })
 
 #define comp_syn__u8_az(_literal...) ((Arr$$(sizeOf(_literal), u8)){ .buf = { _literal } })
 #define comp_syn__u8_sz(_literal...) ((Sli$u8){ .ptr = lit$(u8[], "" _literal), .len = sizeOf(_literal) })
-#define comp_syn__u8_lz(_literal...) ((Sli_const$u8){ .ptr = as$(const u8*, "" _literal), .len = sizeOf(_literal) })
+#define comp_syn__u8_lz(_literal...) ((Sli_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf(_literal) })
 
 #define comp_syn__u8z_a(_literal...) ((ArrZ$$(sizeOf(_literal) - 1, u8)){ .buf = { _literal } })
 #define comp_syn__u8z_s(_literal...) ((SliZ$u8){ .ptr = lit$(u8[], "" _literal), .len = sizeOf(_literal) - 1 })
-#define comp_syn__u8z_l(_literal...) ((SliZ_const$u8){ .ptr = as$(const u8*, "" _literal), .len = sizeOf(_literal) - 1 })
+#define comp_syn__u8z_l(_literal...) ((SliZ_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf(_literal) - 1 })
 
 #if defined(__cplusplus)
 } /* extern "C" */

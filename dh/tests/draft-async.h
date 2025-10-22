@@ -50,7 +50,7 @@ typedef struct Co_Ctx {
     fn_((_fnName(Co_Ctx * ctx))(Co_Ctx*))
 #define async_fn_scope(_fnName) \
     async_fn(_fnName) { \
-        let self   = as$(Co_Ctx$(_fnName)*, ensureNonnull(ctx)); \
+        let self   = as$((Co_Ctx$(_fnName)*)(ensureNonnull(ctx))); \
         let args   = &self->args; \
         let locals = &self->locals; \
         switch (self->count) { \
@@ -92,7 +92,7 @@ typedef struct Co_Ctx {
 
 #define __exec_async_() __async_
 #define __async_(_fnAsync, _args...) \
-    as$(Co_Ctx$(_fnAsync)*, _fnAsync((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))
+    as$((Co_Ctx$(_fnAsync)*)(_fnAsync((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base)))
 
 #define __exec_async_ctx() __async_ctx
 #define __async_ctx(_fnAsync, _args...) \
@@ -117,7 +117,7 @@ typedef struct Co_Ctx {
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) eval({ \
     let __ctx = ensureNonnull(_ctx); \
-    callFn((__ctx->fn)(as$(Co_Ctx*, __ctx))); \
+    callFn((__ctx->fn)(as$((Co_Ctx*)(__ctx)))); \
 })
 
 #define await_(_ctx...) comp_syn__await_(_ctx)

@@ -54,7 +54,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         swap_raw(typeInfo$(_T), lhs, rhs); \
     }
 static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
-    let tmp = as$(void*, bti_alloca(type.size));
+    let tmp = as$((void*)(bti_alloca(type.size)));
     bti_memcpy(tmp, lhs, type.size);
     bti_memcpy(lhs, rhs, type.size);
     bti_memcpy(rhs, tmp, type.size);
@@ -62,14 +62,14 @@ static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
 
 // #define ArrList_atRo$T(_T) \
 //     static tpl_fn$T((ArrList_atRo, _T)(Ptr_const$$(ArrList$(_T)) self, usize index), Ptr_const$$(_T)) { \
-//         return as$(Ptr_const$$(_T), ArrList_atRo_raw(self->base, index)); \
+//         return as$((Ptr_const$$(_T))(ArrList_atRo_raw(self->base, index))); \
 //     }
 // static $inline fn_(ArrList_atRo_raw(const ArrList* self, usize index), const void*) {
 //     return self->items.addr + (index * self->items.type.size);
 // }
 // #define ArrList_atRw$T(_T) \
 //     static tpl_fn$T((ArrList_atRw, _T)(Ptr$$(ArrList$(_T)) self, usize index), Ptr$$(_T)) { \
-//         return as$(Ptr$$(_T), ArrList_atRw_raw(self->base, index)); \
+//         return as$((Ptr$$(_T))(ArrList_atRw_raw(self->base, index))); \
 //     }
 // static $inline fn_(ArrList_atRw_raw(ArrList* self, usize index), void*) {
 //     return self->items.addr + (index * self->items.type.size);

@@ -18,7 +18,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     printf("Hello World!\n");
     catch_((math_divideSafe(10, 0))(err, {
         printf("Occurs error\n");
-        let err_code = Str_viewZ(as$(const u8*, Err_codeToCStr(err)));
+        let err_code = Str_viewZ(as$((const u8*)(Err_codeToCStr(err))));
         let_ignore   = err_code;
         debug_assert_true(Sli_const$u8_eq(err_code, u8_l("DivisionByZero")));
         Err_print(err);

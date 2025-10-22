@@ -312,7 +312,7 @@ union __AssociationTypes_Sli {
     claim_assert_static(validateField(TypeOf(__anon), len, FieldTypeOf(T_Sli, len))); \
     claim_assert_static(fieldPadding(TypeOf(__anon), ptr) == fieldPadding(T_Sli, ptr)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), len) == fieldPadding(T_Sli, len)); \
-    eval_return_(*as$(rawptr$(T_Sli), &__anon)); \
+    eval_return_(*as$((rawptr$(T_Sli))(&__anon))); \
 })
 
 #define comp_op__Sli_from(val_ptr, val_len...)         { .ptr = ensureNonnull(val_ptr), .len = val_len }
@@ -342,7 +342,7 @@ union __AssociationTypes_Sli {
 #define comp_op__Sli_deref$(_Arr$N$T, _val_sli...) (*eval({ \
     let __sli = _val_sli; \
     debug_assert_nonnull(__sli.ptr); \
-    let __arr_ptr = as$(_Arr$N$T*, __sli.ptr); \
+    let __arr_ptr = as$((_Arr$N$T*)(__sli.ptr)); \
     debug_assert(__sli.len == Arr_len(*__arr_ptr)); \
     eval_return __arr_ptr; \
 }))
@@ -427,8 +427,8 @@ union __AssociationTypes_Sli {
     ); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__range.end]), \
-            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            as$((u8*)(&__self.ptr[__range.end])), \
+            as$((u8*)(&make$(TypeOf(*__self.ptr)))), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not zero-terminated" \
@@ -456,8 +456,8 @@ union __AssociationTypes_Sli {
     ); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__range.end]), \
-            as$(u8*, &__sentinel), \
+            as$((u8*)(&__self.ptr[__range.end])), \
+            as$((u8*)(&__sentinel)), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not sentinel-terminated" \
@@ -487,8 +487,8 @@ union __AssociationTypes_Sli {
     let_(__self, TypeOf(var_self)) = var_self; \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__self.len]), \
-            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            as$((u8*)(&__self.ptr[__self.len])), \
+            as$((u8*)(&make$(TypeOf(*__self.ptr)))), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not zero-terminated" \
@@ -503,8 +503,8 @@ union __AssociationTypes_Sli {
     let_(__sentinel, TypeOf(val_sentinel)) = val_sentinel; \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__self.len]), \
-            as$(u8*, &__sentinel), \
+            as$((u8*)(&__self.ptr[__self.len])), \
+            as$((u8*)(&__sentinel)), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not sentinel-terminated" \
@@ -541,8 +541,8 @@ union __AssociationTypes_Sli {
     ); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__self.len]), \
-            as$(u8*, &make$(TypeOf(*__self.ptr))), \
+            as$((u8*)(&__self.ptr[__self.len])), \
+            as$((u8*)(&make$(TypeOf(*__self.ptr)))), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not zero-terminated" \
@@ -564,8 +564,8 @@ union __AssociationTypes_Sli {
     ); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &__self.ptr[__self.len]), \
-            as$(u8*, &__sentinel), \
+            as$((u8*)(&__self.ptr[__self.len])), \
+            as$((u8*)(&__sentinel)), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not sentinel-terminated" \
@@ -906,8 +906,8 @@ extern "C" {
     debug_assert(__index <= __self.len); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &(__self.ptr + __self.len)), \
-            as$(u8*, &(TypeOf(*__self.ptr){})), \
+            as$((u8*)(&(__self.ptr + __self.len))), \
+            as$((u8*)(&(TypeOf(*__self.ptr)){})), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not zero-terminated" \
@@ -931,8 +931,8 @@ extern "C" {
     debug_assert(__end <= __self.len); \
     debug_assert_fmt( \
         bti_memcmp( \
-            as$(u8*, &(__self.ptr + __end)), \
-            as$(u8*, &(TypeOf(*__self.ptr){})), \
+            as$((u8*)(&(__self.ptr + __end))), \
+            as$((u8*)(&(TypeOf(*__self.ptr){}))), \
             sizeOf$(TypeOf(*__self.ptr)) \
         ) == 0, \
         "The slice is not zero-terminated" \

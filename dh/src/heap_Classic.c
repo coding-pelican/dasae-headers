@@ -60,7 +60,7 @@ static fn_((heap_Classic_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $s
 
     // Failed to allocate memory
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Classic_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
@@ -149,7 +149,7 @@ static fn_((heap_Classic_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_
     return new_buf;
 #endif
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
@@ -159,7 +159,7 @@ static fn_((heap_Classic_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 
-    var raw_ptr = as$(anyptr, buf.ptr);
+    var raw_ptr = as$((anyptr)(buf.ptr));
     if (raw_ptr == null) { return; }
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)

@@ -12,8 +12,9 @@ static fn_((windows_WriteFile(HANDLE handle, Sli_const$u8 bytes))(Err$usize) $sc
     if (!WriteFile(handle, bytes.ptr, bytes.len, &bytes_written, null)) {
         return_err(fs_FileErr_WriteFailed());
     }
-    return_ok(as$(usize, bytes_written));
-} $unscoped;
+    return_ok(as$((usize)(bytes_written)));
+}
+$unscoped;
 #else
 #include <unistd.h>
 static fn_((linux_close(posix_fd_t handle))(void)) {
@@ -24,15 +25,15 @@ static fn_((linux_write(posix_fd_t handle, Sli_const$u8 bytes))(Err$usize) $scop
     if (write(handle, bytes.ptr, bytes.len) == -1) {
         return_err(fs_FileErr_WriteFailed());
     }
-    return_ok(as$(usize, bytes_written));
-} $unscoped;
+    return_ok(as$((usize)(bytes_written)));
+}
+$unscoped;
 #endif
 
 fn_((fs_File_close(fs_File file))(void)) {
     return pp_if_(bti_plat_windows)(
         pp_than_(windows_CloseHandle),
-        pp_else_(linux_close)
-    )(file.handle);
+        pp_else_(linux_close))(file.handle);
 }
 
 typedef union Writer {
@@ -54,9 +55,8 @@ static fn_((Writer_init(fs_File file))(Writer)) {
     return (Writer){ .ctx = file, .write = Writer_VT_write };
 }
 static fn_((Writer_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize)) {
-    let self = as$(FieldTypeOf(Writer, ctx)*, &ctx);
+    let self = as$((FieldTypeOf(Writer, ctx)*)(&ctx));
     return pp_if_(bti_plat_windows)(
         pp_than_(windows_WriteFile),
-        pp_else_(linux_write)
-    )(self->handle, bytes);
+        pp_else_(linux_write))(self->handle, bytes);
 }

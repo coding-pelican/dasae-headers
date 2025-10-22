@@ -82,7 +82,7 @@ static fn_((heap_Fixed_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Fixed*, ctx);
+    let self = as$((heap_Fixed*)(ctx));
 
     // Calculate aligned offset
     let ptr_addr       = rawptrToInt(self->buffer.ptr) + self->end_index;
@@ -97,13 +97,13 @@ static fn_((heap_Fixed_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     // Update allocation position
     self->end_index = new_end_index;
     return_some(intToRawptr$(u8*, aligned_addr));
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Fixed_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Fixed*, ctx);
+    let self = as$((heap_Fixed*)(ctx));
     $unused(buf_align);
 
     // Verify buffer ownership
@@ -141,13 +141,13 @@ static fn_((heap_Fixed_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
         return_some(buf.ptr);
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_((heap_Fixed_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Fixed*, ctx);
+    let self = as$((heap_Fixed*)(ctx));
     $unused(buf_align);
 
     // Verify buffer ownership
@@ -169,11 +169,11 @@ static fn_((heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
-    let self = as$(heap_Fixed*, ctx);
+    let self = as$((heap_Fixed*)(ctx));
 
     // Use atomic operations for thread safety
     usize end_index = atomic_load_explicit(
-        as$(_Atomic(usize)*, &self->end_index),
+        as$((_Atomic(usize)*)(&self->end_index)),
         memory_order_seq_cst
     );
 
@@ -193,7 +193,7 @@ static fn_((heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$
         // Try to atomically update the end_index
         usize expected = end_index;
         if (atomic_compare_exchange_strong_explicit(
-                as$(_Atomic(usize)*, &self->end_index),
+                as$((_Atomic(usize)*)(&self->end_index)),
                 &expected,
                 new_end_index,
                 memory_order_seq_cst,
@@ -206,7 +206,7 @@ static fn_((heap_Fixed_thrdSafeAlloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$
         // Another thread modified end_index, try again with the new value
         end_index = expected;
     }
-} $unscoped;
+} $unscoped_(fn);
 
 /*========== Utility Functions ==============================================*/
 

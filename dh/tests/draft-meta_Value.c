@@ -111,7 +111,7 @@ union Node$i32 {
         } value; \
     } __self = { .meta = _self }; \
     debug_assert(TypeInfo_eq(typeInfo$(T), __self.meta.ref.type)); \
-    __self.value.data = deref(as$(rawptr$(T), __self.meta.ref.addr)); \
+    __self.value.data = deref(as$((rawptr$(T))(__self.meta.ref.addr))); \
     eval_return __self.value.data; \
 })
 

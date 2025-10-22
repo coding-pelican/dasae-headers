@@ -39,7 +39,7 @@ fn_((calculateRatio(i32 a, i32 b, i32 c, i32 d))(math_Err$f32) $scope) {
     let second_result = try_(safeDivide(c, d));
 
     // Calculate the ratio
-    return_ok(as$(f32, first_result) / as$(f32, second_result));
+    return_ok(as$((f32)(first_result)) / as$((f32)(second_result)));
 } $unscoped_(fn);
 
 // Function demonstrating catch_from for error handling

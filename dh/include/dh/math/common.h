@@ -191,12 +191,12 @@ config_ErrSet(math_Err,
     default: 0 \
 )
 
-#define VAL_math_f32_pi           as$(f32, math_pi)
-#define VAL_math_f32_tau          as$(f32, math_tau)
-#define VAL_math_f32_e            as$(f32, math_e)
-#define VAL_math_f32_golden_ratio as$(f32, math_golden_ratio)
-#define VAL_math_f32_sqrt_2       as$(f32, math_sqrt_2)
-#define VAL_math_f32_sqrt_3       as$(f32, math_sqrt_3)
+#define VAL_math_f32_pi           as$((f32)(math_pi))
+#define VAL_math_f32_tau          as$((f32)(math_tau))
+#define VAL_math_f32_e            as$((f32)(math_e))
+#define VAL_math_f32_golden_ratio as$((f32)(math_golden_ratio))
+#define VAL_math_f32_sqrt_2       as$((f32)(math_sqrt_2))
+#define VAL_math_f32_sqrt_3       as$((f32)(math_sqrt_3))
 #define VAL_math_f32_eps          f32_eps
 #define VAL_math_f32_nan          f32_nan
 #define VAL_math_f32_inf          f32_inf
@@ -261,9 +261,9 @@ config_ErrSet(math_Err,
     let    __rhs = (val_rhs); \
     anyptr __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero))); \
+        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero)))); \
     } else { \
-        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok((__lhs) / (__rhs))); \
+        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok((__lhs) / (__rhs)))); \
     } \
     eval_return( \
         *as$(Err$(TypeOf(__lhs))*, __ret) \
@@ -275,9 +275,9 @@ config_ErrSet(math_Err,
     var __ret = makeCleared$(TypeOf(__lhs)); \
     if ((__rhs) != 0) { \
         if (isFlt(TypeOf(__ret))) { \
-            (__ret) = as$(TypeOf(__ret), fmod(as$(f64, __lhs), as$(f64, __rhs))); \
+            (__ret) = as$((TypeOf(__ret))(fmod(as$((f64)(__lhs)), as$((f64)(__rhs))))); \
         } else { \
-            (__ret) = as$(TypeOf(__ret), as$(i64, __lhs) % as$(i64, __rhs)); \
+            (__ret) = as$((TypeOf(__ret))(as$((i64)(__lhs)) % as$((i64)(__rhs)))); \
         } \
     } \
     eval_return __ret; \
@@ -287,12 +287,12 @@ config_ErrSet(math_Err,
     let    __rhs = (val_rhs); \
     anyptr __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero))); \
+        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero)))); \
     } else { \
         if (isFlt(TypeOf(__ret))) { \
-            (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok(fmod(as$(f64, __lhs), as$(f64, __rhs)))); \
+            (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok(fmod(as$((f64)(__lhs)), as$((f64)(__rhs)))))); \
         } else { \
-            (__ret) = as$(anyptr, &(Err$(TypeOf(__lhs)))ok(as$(i64, __lhs) % as$(i64, __rhs))); \
+            (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok(as$((i64)(__lhs)) % as$((i64)(__rhs))))); \
         } \
     } \
     eval_return( \
@@ -304,7 +304,7 @@ config_ErrSet(math_Err,
 #define FUNC_math_abs(_x, val_x) eval({ \
     var _x = (val_x); \
     if (isFlt(TypeOf(_x))) { \
-        (_x) = as$(TypeOf(_x), fabs(as$(f64, _x))); \
+        (_x) = as$((TypeOf(_x))(fabs(as$((f64)(_x))))); \
     } else { \
         (_x) = (_x) < 0 ? -(_x) : (_x); \
     } \
@@ -352,19 +352,19 @@ config_ErrSet(math_Err,
 /* Rounding functions */
 #define FUNC_math_floor(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), floor(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(floor(as$((f64)(_x))))); \
 })
 #define FUNC_math_ceil(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), ceil(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(ceil(as$((f64)(_x))))); \
 })
 #define FUNC_math_round(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), round(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(round(as$((f64)(_x))))); \
 })
 #define FUNC_math_trunc(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), trunc(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(trunc(as$((f64)(_x))))); \
 })
 
 /* Exponential/logarithmic functions */
@@ -372,7 +372,7 @@ config_ErrSet(math_Err,
     let _x    = (val_x); \
     var __ret = makeCleared$(TypeOf(_x)); \
     if (0 <= _x) { \
-        __ret = as$(TypeOf(__ret), sqrt(as$(f64, _x))); \
+        __ret = as$((TypeOf(__ret))(sqrt(as$((f64)(_x))))); \
     } \
     eval_return __ret; \
 })
@@ -383,7 +383,7 @@ config_ErrSet(math_Err,
         /* Square root of negative number */ \
         __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$(TypeOf(__ret), sqrt(as$(f64, _x)))); \
+        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$((TypeOf(__ret))(sqrt(as$((f64)(_x)))))); \
     } \
     eval_return(*(Err$(TypeOf(_x))*)__ret); \
 })
@@ -392,7 +392,7 @@ config_ErrSet(math_Err,
     let _exp  = (val_exp); \
     var __ret = makeCleared$(TypeOf(_base)); \
     if (_base != 0 || 0 < _exp) { \
-        __ret = as$(TypeOf(__ret), pow(as$(f64, _base), as$(f64, _exp))); \
+        __ret = as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp))))); \
     } \
     eval_return __ret; \
 })
@@ -404,7 +404,7 @@ config_ErrSet(math_Err,
         /* Invalid base/exponent combination */ \
         __ret = (anyptr)&(Err$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_base)))ok(as$(TypeOf(__ret), pow(as$(f64, _base), as$(f64, _exp)))); \
+        __ret = (anyptr)&(Err$(TypeOf(_base)))ok(as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp)))))); \
     } \
     eval_return(*(Err$(TypeOf(_x))*)__ret); \
 })
@@ -412,7 +412,7 @@ config_ErrSet(math_Err,
     let _x    = (val_x); \
     var __ret = makeCleared$(TypeOf(_x)); \
     if (0 < _x) { \
-        __ret = as$(TypeOf(__ret), 1.0 / sqrt(as$(f64, _x))); \
+        __ret = as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x))))); \
     } \
     eval_return __ret; \
 })
@@ -423,7 +423,7 @@ config_ErrSet(math_Err,
         /* Invalid input for inverse square root */ \
         __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$(TypeOf(__ret), 1.0 / sqrt(as$(f64, _x)))); \
+        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x)))))); \
     } \
     eval_return(*(Err$(TypeOf(_x))*)__ret); \
 })
@@ -431,15 +431,15 @@ config_ErrSet(math_Err,
 /* Trigonometric functions */
 #define FUNC_math_sin(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), sin(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(sin(as$((f64)(_x))))); \
 })
 #define FUNC_math_cos(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), cos(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(cos(as$((f64)(_x))))); \
 })
 #define FUNC_math_tan(val_x) eval({ \
     let _x = (val_x); \
-    eval_return as$(TypeOf(_x), tan(as$(f64, _x))); \
+    eval_return as$((TypeOf(_x))(tan(as$((f64)(_x))))); \
 })
 #define FUNC_math_asin(val_x) eval({ \
     let _x    = (val_x); \

@@ -30,7 +30,7 @@ typedef struct test_Buf {
 } test_Buf;
 $static $must_check
 fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope) {
-    let self      = as$(test_Buf*, ctx);
+    let self      = as$((test_Buf*)(ctx));
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
     if (0 < to_write) {
@@ -99,7 +99,7 @@ TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("42"))));
     }
 
@@ -108,7 +108,7 @@ TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), -123));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("-123"))));
     }
 
@@ -117,16 +117,16 @@ TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:lld}"), 9223372036854775807LL));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("9223372036854775807"))));
     }
 
     // Test with isize
     test_Buf_clear(&buf);
-    try_(io_Writer_print(writer, u8_l("{:zd}"), as$(isize, 12345)));
+    try_(io_Writer_print(writer, u8_l("{:zd}"), as$((isize)(12345))));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("12345"))));
     }
 } $unscoped_(TEST_fn);
@@ -141,7 +141,7 @@ TEST_fn_("io_Writer-print: Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:u}"), 42U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("42"))));
     }
 
@@ -150,7 +150,7 @@ TEST_fn_("io_Writer-print: Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:u}"), UINT32_MAX));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("4294967295"))));
     }
 
@@ -159,7 +159,7 @@ TEST_fn_("io_Writer-print: Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:llu}"), 18446744073709551615ULL));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("18446744073709551615"))));
     }
 } $unscoped_(TEST_fn);
@@ -174,7 +174,7 @@ TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("ff"))));
     }
 
@@ -183,7 +183,7 @@ TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:X}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("FF"))));
     }
 
@@ -192,7 +192,7 @@ TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#x}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0xff"))));
     }
 
@@ -200,7 +200,7 @@ TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#X}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0XFF"))));
     }
 } $unscoped_(TEST_fn);
@@ -215,7 +215,7 @@ TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:b}"), 5U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("101"))));
     }
 
@@ -224,7 +224,7 @@ TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#b}"), 5U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0b101"))));
     }
 
@@ -233,7 +233,7 @@ TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:o}"), 64U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("100"))));
     }
 
@@ -242,7 +242,7 @@ TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#o}"), 64U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0100"))));
     }
 } $unscoped_(TEST_fn);
@@ -259,7 +259,7 @@ TEST_fn_("io_Writer-print: Character formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("A"))));
     }
 
@@ -268,7 +268,7 @@ TEST_fn_("io_Writer-print: Character formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 65));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("A"))));
     }
 } $unscoped_(TEST_fn);
@@ -284,7 +284,7 @@ TEST_fn_("io_Writer-print: String slice formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:s}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("Hello, World!"))));
     }
 
@@ -293,7 +293,7 @@ TEST_fn_("io_Writer-print: String slice formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:.5s}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("Hello"))));
     }
 } $unscoped_(TEST_fn);
@@ -309,7 +309,7 @@ TEST_fn_("io_Writer-print: Null-terminated string formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:z}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("Hello, C!"))));
     }
 
@@ -318,7 +318,7 @@ TEST_fn_("io_Writer-print: Null-terminated string formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:.5z}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("Hello"))));
     }
 } $unscoped_(TEST_fn);
@@ -333,7 +333,7 @@ TEST_fn_("io_Writer-print: Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:p}"), null));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0x0"))));
     }
 
@@ -343,7 +343,7 @@ TEST_fn_("io_Writer-print: Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:p}"), &dummy));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(result.len >= 3)); // At least "0x" + digits
         try_(TEST_expect(result.ptr[0] == '0'));
         try_(TEST_expect(result.ptr[1] == 'x'));
@@ -360,7 +360,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f}"), 123.456));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("123.456000")))); // Default precision is 6
     }
 
@@ -369,7 +369,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:.2f}"), 123.456));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("123.46")))); // Should round
     }
 
@@ -378,7 +378,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f}"), -0.123));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("-0.123000"))));
     }
 
@@ -387,7 +387,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f} {:F}"), f32_nan, f32_nan));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("nan NAN"))));
     }
 
@@ -395,7 +395,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f} {:F}"), f32_inf, f32_inf));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("inf INF"))));
     }
 } $unscoped_(TEST_fn);
@@ -412,7 +412,7 @@ TEST_fn_("io_Writer-print: Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{:+d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("+42"))));
     }
 
@@ -421,7 +421,7 @@ TEST_fn_("io_Writer-print: Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{:+d}"), -42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("-42"))));
     }
 
@@ -430,7 +430,7 @@ TEST_fn_("io_Writer-print: Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{: d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l(" 42"))));
     }
 
@@ -439,7 +439,7 @@ TEST_fn_("io_Writer-print: Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{: d}"), -42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("-42"))));
     }
 } $unscoped_(TEST_fn);
@@ -456,7 +456,7 @@ TEST_fn_("io_Writer-print: Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("{{")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{"))));
     }
 
@@ -464,7 +464,7 @@ TEST_fn_("io_Writer-print: Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("}}")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("}"))));
     }
 
@@ -473,7 +473,7 @@ TEST_fn_("io_Writer-print: Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("{{value: {:d}}}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{value: 42}"))));
     }
 } $unscoped_(TEST_fn);
@@ -488,7 +488,7 @@ TEST_fn_("io_Writer-print: Multiple arguments" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d} {:c} {:x} {:s}"), 42, 'A', 255U, u8_l("test")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("42 A ff test"))));
     }
 } $unscoped_(TEST_fn);
@@ -503,7 +503,7 @@ TEST_fn_("io_Writer-print: Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("{")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{"))));
     }
 
@@ -512,7 +512,7 @@ TEST_fn_("io_Writer-print: Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("}")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("}"))));
     }
 
@@ -521,7 +521,7 @@ TEST_fn_("io_Writer-print: Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("{:q}"), 42)); // 'q' is not a valid type
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("{:q}")))); // Should write literally
     }
 } $unscoped_(TEST_fn);
@@ -547,7 +547,7 @@ TEST_fn_("io_Writer-print: Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 0));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0"))));
     }
 
@@ -555,7 +555,7 @@ TEST_fn_("io_Writer-print: Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0"))));
     }
 
@@ -563,7 +563,7 @@ TEST_fn_("io_Writer-print: Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:b}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0"))));
     }
 
@@ -572,7 +572,7 @@ TEST_fn_("io_Writer-print: Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#x}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+        printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
         try_(TEST_expect(Str_eql(result, u8_l("0"))));
     }
 } $unscoped_(TEST_fn);
@@ -598,7 +598,7 @@ TEST_fn_("io_Writer-print: Complex format combinations" $scope) {
     ));
 
     let result = test_Buf_view(buf);
-    printf("Result: '%.*s' (len=%zu)\n", as$(i32, result.len), result.ptr, result.len);
+    printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
     try_(TEST_expect(Str_contains(result, u8_l("User: Alice"))));
     try_(TEST_expect(Str_contains(result, u8_l("Age: 25"))));
     try_(TEST_expect(Str_contains(result, u8_l("ID: 2a3b"))));

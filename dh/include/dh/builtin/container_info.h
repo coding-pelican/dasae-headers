@@ -119,13 +119,13 @@ extern "C" {
     __builtin_offsetof(_T, _field)
 
 #define block_inline__structPtrFrom(_p_field, _T, _field...) \
-    as$(_T*, as$(u8*, (FieldTypeOf(_T, _field)*, _p_field)) - offsetTo(_T, _field))
+    as$((_T*)(as$((u8*)((FieldTypeOf(_T, _field)*, _p_field))) - offsetTo(_T, _field)))
 
 #define block_inline__FieldTypeOf(_T, _field...) \
-    TypeOf((as$(_T*, 0))->_field)
+    TypeOf((as$((_T*)(0)))->_field)
 
 #define block_inline__FieldTypeOfUnqual(_T, _field...) \
-    TypeOfUnqual((as$(_T*, 0))->_field)
+    TypeOfUnqual((as$((_T*)(0)))->_field)
 
 #define block_inline__sameFieldType(_T, _field, _TExpected...) \
     isSameType(FieldTypeOf(_T, _field), _TExpected)

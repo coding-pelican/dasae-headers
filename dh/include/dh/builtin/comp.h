@@ -97,15 +97,17 @@ extern "C" {
 #define $maybe_unused comp_attr__$maybe_unused
 #define $must_use     comp_attr__$must_use
 
-#define as$(T_Dest, val_src... /*T_Dest*/) \
+
+#define as$(/*(_TDest)(_src...)*/... /*(_TDest)*/) \
     /** \
      * @brief Cast macro for converting a value to a different type \
      * @details This macro is used to cast a value from one type to another \
-     * @param T_Dest The destination type to cast to \
-     * @param val_src The value to cast \
+     * @param _TDest The destination type to cast to \
+     * @param _src The value to cast \
      * @return The casted value \
      */ \
-    comp_syn__as$(T_Dest, val_src)
+    __comp_exec__as$(pp_defer(__comp_emit__as$)(__comp_split__as$ __VA_ARGS__))
+
 #define lit$(T_Lit, _Inital... /*T_Lit*/) \
     /** \
      * @brief Literal macro for creating a compound lit \
@@ -223,11 +225,15 @@ extern "C" {
 #define comp_attr__$maybe_unused __attribute__((unused))
 #define comp_attr__$must_use     __attribute__((warn_unused_result))
 
+#define __comp_exec__as$(...)  __VA_ARGS__
+#define __comp_split__as$(...) __VA_ARGS__, __comp_next__as$
+#define __comp_next__as$(...)  __VA_ARGS__
 #if defined(__cplusplus)
-#define comp_syn__as$(T_Dest, val_src...) (static_cast<T_Dest>(val_src))
+#define __comp_emit__as$(_TDest, _src...) (static_cast<_TDest>(_src))
 #else
-#define comp_syn__as$(T_Dest, val_src...) ((T_Dest)(val_src))
+#define __comp_emit__as$(_TDest, _src...) ((_TDest)(_src))
 #endif
+
 #if defined(__cplusplus)
 #define comp_syn__lit$(T_Lit, _Inital...) \
     T_Lit { _Inital }

@@ -29,14 +29,14 @@ extern fn_((ArrDeq_from(meta$s buf))(ArrDeq));
 extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator allocator, usize cap))(Err$ArrDeq));
 extern fn_((ArrDeq_fini(mem_Allocator allocator))(void));
 extern fn_((ArrDeq_growCap(usize current, usize minimum))(usize));
-extern fn_((ArrDeq_ensureCap(ArrDeq* self, mem_Allocator gpa, usize new_cap))(mem_Allocator_Err$void));
-extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity))(mem_Allocator_Err$void));
+extern fn_((ArrDeq_ensureCap(ArrDeq* self, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity))(mem_Err$void));
 
 
 $static $inline $must_check
 fn_((addOrOutOfMemory(usize a, usize b))(Err$usize)) {
     return eval_(Err$usize $scope) if_none(usize_chkdAdd(a, b)) {
-        $break_(err(mem_Allocator_Err_OutOfMemory()));
+        $break_(err(mem_Err_OutOfMemory()));
     } else_some(result) {
         $break_(ok(result));
     } $unscoped_($eval);
@@ -55,13 +55,13 @@ fn_((ArrDeq_growCap(usize current, usize minimum))(usize)) {
 }
 
 $must_check
-fn_((ArrDeq_ensureCap(ArrDeq* self, mem_Allocator gpa, usize new_cap))(mem_Allocator_Err$void) $scope) {
+fn_((ArrDeq_ensureCap(ArrDeq* self, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
     if (new_cap <= self->buf.len) { return_ok({}); }
     return ArrDeq_ensureCapPrecise(self, gpa, ArrDeq_growCap(self->buf.len, new_cap));
 } $unscoped_(fn);
 
 $must_check
-fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity))(mem_Allocator_Err$void) $scope) {
+fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity))(mem_Err$void) $scope) {
     if (new_capacity <= self->buf.len) { return_ok({}); }
     let old_buf = self->buf;
     if_some(mem_Allocator_remap(gpa, anySli(old_buf), new_capacity), new_buf) {

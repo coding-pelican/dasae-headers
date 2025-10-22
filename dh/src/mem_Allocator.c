@@ -200,7 +200,7 @@ fn_((mem_Allocator_destroy(mem_Allocator self, AnyType ptr))(void)) {
 
     // Convert to slice for freeing
     Sli$u8 mem = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size,
     };
 
@@ -302,7 +302,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Op
 
     // Create byte slice from the old memory
     Sli$u8 old_bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -353,7 +353,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(
 
     // Create byte slice from the old memory
     Sli$u8 old_bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -404,7 +404,7 @@ fn_((mem_Allocator_free(mem_Allocator self, AnyType memory))(void)) {
 
     // Create byte slice from memory and free it
     Sli$u8 bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -418,8 +418,8 @@ fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli) $sc
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
 
     // Copy data from source to new memory
-    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
-    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    let src_bytes = Sli_from$(Sli$u8, as$((u8*)(src.addr)), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$((u8*)(new_mem.addr)), src.type.size * src.len);
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
@@ -430,19 +430,19 @@ fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli) $s
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
 
     // Copy data from source to new memory
-    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
-    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    let src_bytes = Sli_from$(Sli$u8, as$((u8*)(src.addr)), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$((u8*)(new_mem.addr)), src.type.size * src.len);
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
     mem_set(dst_bytes.ptr, 0, dst_bytes.len);
 
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel
-    //     as$(u8*, new_mem.addr)[src.len] = 0;
+    //     as$((u8*)(new_mem.addr))[src.len] = 0;
     // } else {
     //     // For larger elements, we'd need to know the exact type to properly set the sentinel
     //     // This simple implementation assumes sentinel is just the first byte of the element
-    //     bti_memset(as$(u8*, new_mem.addr) + (src.len * src.type.size), 0, 1);
+    //     bti_memset(as$((u8*)(new_mem.addr)) + (src.len * src.type.size), 0, 1);
     // }
 
     return_ok({
@@ -489,7 +489,7 @@ fn_((mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc
 
     // Convert to slice for freeing
     Sli$u8 mem = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size,
     };
 
@@ -589,7 +589,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_le
 
     // Create byte slice from the old memory
     Sli$u8 old_bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -639,7 +639,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_
 
     // Create byte slice from the old memory
     Sli$u8 old_bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -690,7 +690,7 @@ fn_((mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc))(
 
     // Create byte slice from memory and free it
     Sli$u8 bytes = {
-        .ptr = as$(u8*, info.addr),
+        .ptr = as$((u8*)(info.addr)),
         .len = info.size * info.len,
     };
 
@@ -702,8 +702,8 @@ fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
 
     // Copy data from source to new memory
-    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
-    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    let src_bytes = Sli_from$(Sli$u8, as$((u8*)(src.addr)), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$((u8*)(new_mem.addr)), src.type.size * src.len);
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
@@ -714,19 +714,19 @@ fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc)
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len + 1, src_loc));
 
     // Copy data from source to new memory
-    let src_bytes = Sli_from$(Sli$u8, as$(u8*, src.addr), src.type.size * src.len);
-    let dst_bytes = Sli_from$(Sli$u8, as$(u8*, new_mem.addr), src.type.size * src.len);
+    let src_bytes = Sli_from$(Sli$u8, as$((u8*)(src.addr)), src.type.size * src.len);
+    let dst_bytes = Sli_from$(Sli$u8, as$((u8*)(new_mem.addr)), src.type.size * src.len);
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
     mem_set(dst_bytes.ptr, 0, dst_bytes.len);
 
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel
-    //     as$(u8*, new_mem.addr)[src.len] = 0;
+    //     as$((u8*)(new_mem.addr))[src.len] = 0;
     // } else {
     //     // For larger elements, we'd need to know the exact type to properly set the sentinel
     //     // This simple implementation assumes sentinel is just the first byte of the element
-    //       bti_memset(as$(u8*, new_mem.addr) + (src.len * src.type.size), 0, 1);
+    //       bti_memset(as$((u8*)(new_mem.addr)) + (src.len * src.type.size), 0, 1);
     // }
 
     return_ok({

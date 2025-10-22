@@ -378,13 +378,13 @@ $inline_always isize isize_powSat(isize base, u32 exp);
 /// Unsigned integer basic arithmetic implementations
 
 $inline_always u8 u8_add(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u8){})), as$(u8, lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u8){})), as$((u8)(lhs + rhs));
 }
 $inline_always u8 u8_sub(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u8){})), as$(u8, lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u8){})), as$((u8)(lhs - rhs));
 }
 $inline_always u8 u8_mul(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u8){})), as$(u8, lhs* rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u8){})), as$((u8)(lhs * rhs));
 }
 $inline_always u8 u8_div(u8 lhs, u8 rhs) {
     return debug_assert(rhs != 0), lhs / rhs;
@@ -397,25 +397,25 @@ $inline_always u8 u8_pow(u8 base, u32 exp) {
     u8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
         debug_assert(!__builtin_mul_overflow(result, base, &(u8){}));
-        result = as$(u8, result* base);
+        result = as$((u8)(result * base));
     }
     return result;
 }
 $inline_always u8 u8_shl(u8 x, u32 shift) {
-    return debug_assert(shift < 8), as$(u8, x << shift);
+    return debug_assert(shift < 8), as$((u8)(x << shift));
 }
 $inline_always u8 u8_shr(u8 x, u32 shift) {
-    return debug_assert(shift < 8), as$(u8, x >> shift);
+    return debug_assert(shift < 8), as$((u8)(x >> shift));
 }
 
 $inline_always u16 u16_add(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u16){})), as$(u16, lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u16){})), as$((u16)(lhs + rhs));
 }
 $inline_always u16 u16_sub(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u16){})), as$(u16, lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u16){})), as$((u16)(lhs - rhs));
 }
 $inline_always u16 u16_mul(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u16){})), as$(u16, lhs* rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u16){})), as$((u16)(lhs * rhs));
 }
 $inline_always u16 u16_div(u16 lhs, u16 rhs) {
     return debug_assert(rhs != 0), lhs / rhs;
@@ -428,15 +428,15 @@ $inline_always u16 u16_pow(u16 base, u32 exp) {
     u16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
         debug_assert(!__builtin_mul_overflow(result, base, &(u16){}));
-        result = as$(u16, result* base);
+        result = as$((u16)(result * base));
     }
     return result;
 }
 $inline_always u16 u16_shl(u16 x, u32 shift) {
-    return debug_assert(shift < 16), as$(u16, x << shift);
+    return debug_assert(shift < 16), as$((u16)(x << shift));
 }
 $inline_always u16 u16_shr(u16 x, u32 shift) {
-    return debug_assert(shift < 16), as$(u16, x >> shift);
+    return debug_assert(shift < 16), as$((u16)(x >> shift));
 }
 
 $inline_always u32 u32_add(u32 lhs, u32 rhs) {
@@ -535,77 +535,77 @@ $inline_always usize usize_shr(usize x, u32 shift) {
 /// Signed integer basic arithmetic implementations
 
 $inline_always i8 i8_add(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i8){})), as$(i8, lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i8){})), as$((i8)(lhs + rhs));
 }
 $inline_always i8 i8_sub(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i8){})), as$(i8, lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i8){})), as$((i8)(lhs - rhs));
 }
 $inline_always i8 i8_mul(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i8){})), as$(i8, lhs* rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i8){})), as$((i8)(lhs * rhs));
 }
 $inline_always i8 i8_div(i8 lhs, i8 rhs) {
-    return debug_assert(rhs != 0), debug_assert(!(lhs == i8_limit_min && rhs == -1)), as$(i8, lhs / rhs);
+    return debug_assert(rhs != 0), debug_assert(!(lhs == i8_limit_min && rhs == -1)), as$((i8)(lhs / rhs));
 }
 $inline_always i8 i8_mod(i8 lhs, i8 rhs) {
-    return debug_assert(rhs != 0), debug_assert(!(lhs == i8_limit_min && rhs == -1)), as$(i8, lhs % rhs);
+    return debug_assert(rhs != 0), debug_assert(!(lhs == i8_limit_min && rhs == -1)), as$((i8)(lhs % rhs));
 }
 $inline_always i8 i8_neg(i8 x) {
-    return debug_assert(x != i8_limit_min), as$(i8, -x);
+    return debug_assert(x != i8_limit_min), as$((i8)(-x));
 }
 $inline_always i8 i8_abs(i8 x) {
-    return debug_assert(x != i8_limit_min), as$(i8, (x < 0) ? -x : x);
+    return debug_assert(x != i8_limit_min), as$((i8)((x < 0) ? -x : x));
 }
 $inline_always i8 i8_pow(i8 base, u32 exp) {
     if (exp == 0) { return 1; }
     i8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
         debug_assert(!__builtin_mul_overflow(result, base, &(i8){}));
-        result = as$(i8, result* base);
+        result = as$((i8)(result * base));
     }
     return result;
 }
 $inline_always i8 i8_shl(i8 x, u32 shift) {
-    return debug_assert(shift < 8), debug_assert(x >= 0), as$(i8, x << shift);
+    return debug_assert(shift < 8), debug_assert(x >= 0), as$((i8)(x << shift));
 }
 $inline_always i8 i8_shr(i8 x, u32 shift) {
-    return debug_assert(shift < 8), as$(i8, x >> shift);
+    return debug_assert(shift < 8), as$((i8)(x >> shift));
 }
 
 $inline_always i16 i16_add(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i16){})), as$(i16, lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i16){})), as$((i16)(lhs + rhs));
 }
 $inline_always i16 i16_sub(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i16){})), as$(i16, lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i16){})), as$((i16)(lhs - rhs));
 }
 $inline_always i16 i16_mul(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i16){})), as$(i16, lhs* rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i16){})), as$((i16)(lhs * rhs));
 }
 $inline_always i16 i16_div(i16 lhs, i16 rhs) {
-    return debug_assert(rhs != 0), debug_assert(!(lhs == i16_limit_min && rhs == -1)), as$(i16, lhs / rhs);
+    return debug_assert(rhs != 0), debug_assert(!(lhs == i16_limit_min && rhs == -1)), as$((i16)(lhs / rhs));
 }
 $inline_always i16 i16_mod(i16 lhs, i16 rhs) {
-    return debug_assert(rhs != 0), debug_assert(!(lhs == i16_limit_min && rhs == -1)), as$(i16, lhs % rhs);
+    return debug_assert(rhs != 0), debug_assert(!(lhs == i16_limit_min && rhs == -1)), as$((i16)(lhs % rhs));
 }
 $inline_always i16 i16_neg(i16 x) {
-    return debug_assert(x != i16_limit_min), as$(i16, -x);
+    return debug_assert(x != i16_limit_min), as$((i16)(-x));
 }
 $inline_always i16 i16_abs(i16 x) {
-    return debug_assert(x != i16_limit_min), as$(i16, (x < 0) ? -x : x);
+    return debug_assert(x != i16_limit_min), as$((i16)((x < 0) ? -x : x));
 }
 $inline_always i16 i16_pow(i16 base, u32 exp) {
     if (exp == 0) { return 1; }
     i16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
         debug_assert(!__builtin_mul_overflow(result, base, &(i16){}));
-        result = as$(i16, result* base);
+        result = as$((i16)(result * base));
     }
     return result;
 }
 $inline_always i16 i16_shl(i16 x, u32 shift) {
-    return debug_assert(shift < 16), debug_assert(x >= 0), as$(i16, x << shift);
+    return debug_assert(shift < 16), debug_assert(x >= 0), as$((i16)(x << shift));
 }
 $inline_always i16 i16_shr(i16 x, u32 shift) {
-    return debug_assert(shift < 16), as$(i16, x >> shift);
+    return debug_assert(shift < 16), as$((i16)(x >> shift));
 }
 
 $inline_always i32 i32_add(i32 lhs, i32 rhs) {
@@ -758,11 +758,11 @@ $inline_always Opt$u8 u8_shlChkd(u8 x, u32 shift) {
     if (shift >= 8) { return none$(Opt$u8); }
     if (shift == 0) { return some$(Opt$u8, x); }
     if (x > (u8_limit_max >> shift)) { return none$(Opt$u8); }
-    return some$(Opt$u8, as$(u8, x << shift));
+    return some$(Opt$u8, as$((u8)(x << shift)));
 }
 $inline_always Opt$u8 u8_shrChkd(u8 x, u32 shift) {
     if (shift >= 8) { return none$(Opt$u8); }
-    return some$(Opt$u8, as$(u8, x >> shift));
+    return some$(Opt$u8, as$((u8)(x >> shift)));
 }
 
 $inline_always Opt$u16 u16_addChkd(u16 lhs, u16 rhs) {
@@ -800,11 +800,11 @@ $inline_always Opt$u16 u16_shlChkd(u16 x, u32 shift) {
     if (shift >= 16) { return none$(Opt$u16); }
     if (shift == 0) { return some$(Opt$u16, x); }
     if (x > (u16_limit_max >> shift)) { return none$(Opt$u16); }
-    return some$(Opt$u16, as$(u16, x << shift));
+    return some$(Opt$u16, as$((u16)(x << shift)));
 }
 $inline_always Opt$u16 u16_shrChkd(u16 x, u32 shift) {
     if (shift >= 16) { return none$(Opt$u16); }
-    return some$(Opt$u16, as$(u16, x >> shift));
+    return some$(Opt$u16, as$((u16)(x >> shift)));
 }
 
 $inline_always Opt$u32 u32_addChkd(u32 lhs, u32 rhs) {
@@ -952,19 +952,19 @@ $inline_always Opt$i8 i8_mulChkd(i8 lhs, i8 rhs) {
 }
 $inline_always Opt$i8 i8_divChkd(i8 lhs, i8 rhs) {
     if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, lhs / rhs));
+    return some$(Opt$i8, as$((i8)(lhs / rhs)));
 }
 $inline_always Opt$i8 i8_modChkd(i8 lhs, i8 rhs) {
     if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, lhs % rhs));
+    return some$(Opt$i8, as$((i8)(lhs % rhs)));
 }
 $inline_always Opt$i8 i8_negChkd(i8 x) {
     if (x == i8_limit_min) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, -x));
+    return some$(Opt$i8, as$((i8)(-x)));
 }
 $inline_always Opt$i8 i8_absChkd(i8 x) {
     if (x == i8_limit_min) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, (x < 0) ? -x : x));
+    return some$(Opt$i8, as$((i8)((x < 0) ? -x : x)));
 }
 $inline_always Opt$i8 i8_powChkd(i8 base, u32 exp) {
     if (exp == 0) { return some$(Opt$i8, 1); }
@@ -979,11 +979,11 @@ $inline_always Opt$i8 i8_shlChkd(i8 x, u32 shift) {
     if (shift == 0) { return some$(Opt$i8, x); }
     if (x < 0) { return none$(Opt$i8); }
     if (x > (i8_limit_max >> shift)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, x << shift));
+    return some$(Opt$i8, as$((i8)(x << shift)));
 }
 $inline_always Opt$i8 i8_shrChkd(i8 x, u32 shift) {
     if (shift >= 8) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$(i8, x >> shift));
+    return some$(Opt$i8, as$((i8)(x >> shift)));
 }
 
 $inline_always Opt$i16 i16_addChkd(i16 lhs, i16 rhs) {
@@ -1003,19 +1003,19 @@ $inline_always Opt$i16 i16_mulChkd(i16 lhs, i16 rhs) {
 }
 $inline_always Opt$i16 i16_divChkd(i16 lhs, i16 rhs) {
     if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, lhs / rhs));
+    return some$(Opt$i16, as$((i16)(lhs / rhs)));
 }
 $inline_always Opt$i16 i16_modChkd(i16 lhs, i16 rhs) {
     if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, lhs % rhs));
+    return some$(Opt$i16, as$((i16)(lhs % rhs)));
 }
 $inline_always Opt$i16 i16_negChkd(i16 x) {
     if (x == i16_limit_min) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, -x));
+    return some$(Opt$i16, as$((i16)(-x)));
 }
 $inline_always Opt$i16 i16_absChkd(i16 x) {
     if (x == i16_limit_min) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, (x < 0) ? -x : x));
+    return some$(Opt$i16, as$((i16)((x < 0) ? -x : x)));
 }
 $inline_always Opt$i16 i16_powChkd(i16 base, u32 exp) {
     if (exp == 0) { return some$(Opt$i16, 1); }
@@ -1030,11 +1030,11 @@ $inline_always Opt$i16 i16_shlChkd(i16 x, u32 shift) {
     if (shift == 0) { return some$(Opt$i16, x); }
     if (x < 0) { return none$(Opt$i16); }
     if (x > (i16_limit_max >> shift)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, x << shift));
+    return some$(Opt$i16, as$((i16)(x << shift)));
 }
 $inline_always Opt$i16 i16_shrChkd(i16 x, u32 shift) {
     if (shift >= 16) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$(i16, x >> shift));
+    return some$(Opt$i16, as$((i16)(x >> shift)));
 }
 
 $inline_always Opt$i32 i32_addChkd(i32 lhs, i32 rhs) {
@@ -1194,17 +1194,17 @@ $inline_always Opt$isize isize_shrChkd(isize x, u32 shift) {
 
 /// Unsigned integer wrapping implementations
 
-$inline_always u8 u8_addWrap(u8 lhs, u8 rhs) { return as$(u8, lhs + rhs); }
-$inline_always u8 u8_subWrap(u8 lhs, u8 rhs) { return as$(u8, lhs - rhs); }
-$inline_always u8 u8_mulWrap(u8 lhs, u8 rhs) { return as$(u8, lhs* rhs); }
-$inline_always u8 u8_shlWrap(u8 x, u32 shift) { return as$(u8, x << (shift & 7)); }
-$inline_always u8 u8_shrWrap(u8 x, u32 shift) { return as$(u8, x >> (shift & 7)); }
+$inline_always u8 u8_addWrap(u8 lhs, u8 rhs) { return as$((u8)(lhs + rhs)); }
+$inline_always u8 u8_subWrap(u8 lhs, u8 rhs) { return as$((u8)(lhs - rhs)); }
+$inline_always u8 u8_mulWrap(u8 lhs, u8 rhs) { return as$((u8)(lhs * rhs)); }
+$inline_always u8 u8_shlWrap(u8 x, u32 shift) { return as$((u8)(x << (shift & 7))); }
+$inline_always u8 u8_shrWrap(u8 x, u32 shift) { return as$((u8)(x >> (shift & 7))); }
 
-$inline_always u16 u16_addWrap(u16 lhs, u16 rhs) { return as$(u16, lhs + rhs); }
-$inline_always u16 u16_subWrap(u16 lhs, u16 rhs) { return as$(u16, lhs - rhs); }
-$inline_always u16 u16_mulWrap(u16 lhs, u16 rhs) { return as$(u16, lhs* rhs); }
-$inline_always u16 u16_shlWrap(u16 x, u32 shift) { return as$(u16, x << (shift & 15)); }
-$inline_always u16 u16_shrWrap(u16 x, u32 shift) { return as$(u16, x >> (shift & 15)); }
+$inline_always u16 u16_addWrap(u16 lhs, u16 rhs) { return as$((u16)(lhs + rhs)); }
+$inline_always u16 u16_subWrap(u16 lhs, u16 rhs) { return as$((u16)(lhs - rhs)); }
+$inline_always u16 u16_mulWrap(u16 lhs, u16 rhs) { return as$((u16)(lhs * rhs)); }
+$inline_always u16 u16_shlWrap(u16 x, u32 shift) { return as$((u16)(x << (shift & 15))); }
+$inline_always u16 u16_shrWrap(u16 x, u32 shift) { return as$((u16)(x >> (shift & 15))); }
 
 $inline_always u32 u32_addWrap(u32 lhs, u32 rhs) { return lhs + rhs; }
 $inline_always u32 u32_subWrap(u32 lhs, u32 rhs) { return lhs - rhs; }
@@ -1230,19 +1230,19 @@ $inline_always usize usize_shrWrap(usize x, u32 shift) {
 
 /// Signed integer wrapping implementations
 
-$inline_always i8 i8_addWrap(i8 lhs, i8 rhs) { return as$(i8, lhs + rhs); }
-$inline_always i8 i8_subWrap(i8 lhs, i8 rhs) { return as$(i8, lhs - rhs); }
-$inline_always i8 i8_mulWrap(i8 lhs, i8 rhs) { return as$(i8, lhs* rhs); }
-$inline_always i8 i8_negWrap(i8 x) { return as$(i8, -x); }
-$inline_always i8 i8_shlWrap(i8 x, u32 shift) { return as$(i8, x << (shift & 7)); }
-$inline_always i8 i8_shrWrap(i8 x, u32 shift) { return as$(i8, x >> (shift & 7)); }
+$inline_always i8 i8_addWrap(i8 lhs, i8 rhs) { return as$((i8)(lhs + rhs)); }
+$inline_always i8 i8_subWrap(i8 lhs, i8 rhs) { return as$((i8)(lhs - rhs)); }
+$inline_always i8 i8_mulWrap(i8 lhs, i8 rhs) { return as$((i8)(lhs * rhs)); }
+$inline_always i8 i8_negWrap(i8 x) { return as$((i8)(-x)); }
+$inline_always i8 i8_shlWrap(i8 x, u32 shift) { return as$((i8)(x << (shift & 7))); }
+$inline_always i8 i8_shrWrap(i8 x, u32 shift) { return as$((i8)(x >> (shift & 7))); }
 
-$inline_always i16 i16_addWrap(i16 lhs, i16 rhs) { return as$(i16, lhs + rhs); }
-$inline_always i16 i16_subWrap(i16 lhs, i16 rhs) { return as$(i16, lhs - rhs); }
-$inline_always i16 i16_mulWrap(i16 lhs, i16 rhs) { return as$(i16, lhs* rhs); }
-$inline_always i16 i16_negWrap(i16 x) { return as$(i16, -x); }
-$inline_always i16 i16_shlWrap(i16 x, u32 shift) { return as$(i16, x << (shift & 15)); }
-$inline_always i16 i16_shrWrap(i16 x, u32 shift) { return as$(i16, x >> (shift & 15)); }
+$inline_always i16 i16_addWrap(i16 lhs, i16 rhs) { return as$((i16)(lhs + rhs)); }
+$inline_always i16 i16_subWrap(i16 lhs, i16 rhs) { return as$((i16)(lhs - rhs)); }
+$inline_always i16 i16_mulWrap(i16 lhs, i16 rhs) { return as$((i16)(lhs * rhs)); }
+$inline_always i16 i16_negWrap(i16 x) { return as$((i16)(-x)); }
+$inline_always i16 i16_shlWrap(i16 x, u32 shift) { return as$((i16)(x << (shift & 15))); }
+$inline_always i16 i16_shrWrap(i16 x, u32 shift) { return as$((i16)(x >> (shift & 15))); }
 
 $inline_always i32 i32_addWrap(i32 lhs, i32 rhs) { return lhs + rhs; }
 $inline_always i32 i32_subWrap(i32 lhs, i32 rhs) { return lhs - rhs; }
@@ -1420,15 +1420,15 @@ $inline_always i8 i8_mulSat(i8 lhs, i8 rhs) {
 $inline_always i8 i8_divSat(i8 lhs, i8 rhs) {
     if (rhs == 0) { return (lhs >= 0) ? i8_limit_max : i8_limit_min; }
     if (lhs == i8_limit_min && rhs == -1) { return i8_limit_max; }
-    return as$(i8, lhs / rhs);
+    return as$((i8)(lhs / rhs));
 }
 $inline_always i8 i8_negSat(i8 x) {
     if (x == i8_limit_min) { return i8_limit_max; }
-    return as$(i8, -x);
+    return as$((i8)(-x));
 }
 $inline_always i8 i8_absSat(i8 x) {
     if (x == i8_limit_min) { return i8_limit_max; }
-    return as$(i8, (x < 0) ? -x : x);
+    return as$((i8)((x < 0) ? -x : x));
 }
 $inline_always i8 i8_powSat(i8 base, u32 exp) {
     if (exp == 0) { return 1; }
@@ -1468,15 +1468,15 @@ $inline_always i16 i16_mulSat(i16 lhs, i16 rhs) {
 $inline_always i16 i16_divSat(i16 lhs, i16 rhs) {
     if (rhs == 0) { return (lhs >= 0) ? i16_limit_max : i16_limit_min; }
     if (lhs == i16_limit_min && rhs == -1) { return i16_limit_max; }
-    return as$(i16, lhs / rhs);
+    return as$((i16)(lhs / rhs));
 }
 $inline_always i16 i16_negSat(i16 x) {
     if (x == i16_limit_min) { return i16_limit_max; }
-    return as$(i16, -x);
+    return as$((i16)(-x));
 }
 $inline_always i16 i16_absSat(i16 x) {
     if (x == i16_limit_min) { return i16_limit_max; }
-    return as$(i16, (x < 0) ? -x : x);
+    return as$((i16)((x < 0) ? -x : x));
 }
 $inline_always i16 i16_powSat(i16 base, u32 exp) {
     if (exp == 0) { return 1; }

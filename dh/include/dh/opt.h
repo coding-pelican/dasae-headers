@@ -139,8 +139,8 @@ extern "C" {
 #define comp_op__toNone$(T_Opt, var_addr_opt...)           Opt_asg$(T_Opt, var_addr_opt, none())
 #define comp_op__toNone(var_addr_opt...)                   toNone$(TypeOf(*var_addr_opt), var_addr_opt)
 
-#define comp_op__isSome(val_opt...) (as$(bool, (val_opt).has_value))
-#define comp_op__isNone(val_opt...) (as$(bool, !(val_opt).has_value))
+#define comp_op__isSome(val_opt...) as$((bool)((val_opt).has_value))
+#define comp_op__isNone(val_opt...) as$((bool)((!(val_opt).has_value)))
 
 #define comp_syn__return_some(val_some...) return_(some(val_some))
 #define comp_syn__return_none()            return_(none())

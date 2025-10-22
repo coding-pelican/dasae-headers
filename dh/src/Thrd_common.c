@@ -24,10 +24,10 @@ fn_((Thrd_yield(void))(Err$void) $scope) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
-    return as$(Thrd_Id, pthread_self());
+    return as$((Thrd_Id)(pthread_self()));
 }
 
 fn_((Thrd_getCpuCount(void))(Err$usize) $scope) {
@@ -36,28 +36,28 @@ fn_((Thrd_getCpuCount(void))(Err$usize) $scope) {
 #ifdef _SC_NPROCESSORS_ONLN
     let cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
     if (0 < cpu_count) {
-        return_ok(as$(usize, cpu_count));
+        return_ok(as$((usize)(cpu_count)));
     }
 #endif
     // Fallback to Windows API
     SYSTEM_INFO sysInfo = {};
     GetSystemInfo(&sysInfo);
-    return_ok(as$(usize, sysInfo.dwNumberOfProcessors));
+    return_ok(as$((usize)(sysInfo.dwNumberOfProcessors)));
 #elif defined(__APPLE__) && defined(__MACH__)
     i32   cpu_count = 0;
     usize size      = sizeOf(cpu_count);
     if (sysctlbyname("hw.ncpu", &cpu_count, &size, null, 0) != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
-    return_ok(as$(usize, cpu_count));
+    return_ok(as$((usize)(cpu_count)));
 #else /* Linux and other Unix platforms */
     let cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
     if (cpu_count <= 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
-    return_ok(as$(usize, cpu_count));
+    return_ok(as$((usize)(cpu_count)));
 #endif
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((Thrd_getHandle(Thrd self))(Thrd_Handle)) {
     return self.handle;
@@ -71,7 +71,7 @@ fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scop
 #ifdef pthread_getname_np
     let result = pthread_getname_np(
         self.handle,
-        as$(char*, buf_ptr->buf),
+        as$((char*)(buf_ptr->buf)),
         Arr_len(*buf_ptr)
     );
     if (result != 0) { return_ok(none()); }
@@ -86,7 +86,7 @@ fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scop
     // pthread_getname_np not available (some Windows pthread implementations)
     return_ok(none());
 #endif
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
     debug_assert(self.handle != 0);
@@ -106,7 +106,7 @@ fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
 #if defined(__APPLE__) && defined(__MACH__)
     // On macOS, pthread_setname_np only works for the current thread
     if (pthread_equal(pthread_self(), self.handle)) {
-        if (pthread_setname_np(as$(const char*, name_mem.buf)) != 0) {
+        if (pthread_setname_np(as$((const char*)(name_mem.buf))) != 0) {
             return_err(Err_Unspecified()); // TODO: Change to specified err
         }
     } else {
@@ -115,7 +115,7 @@ fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
     }
 #else
     // On Linux/Unix and Windows with pthread support
-    if (pthread_setname_np(self.handle, as$(const char*, name_mem.buf)) != 0) {
+    if (pthread_setname_np(self.handle, as$((const char*)(name_mem.buf))) != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
 #endif
@@ -125,21 +125,21 @@ fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
     // pthread_setname_np not available
     return_ok({}); // No-op
 #endif
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(Err$Thrd) $scope) {
     let_ignore = config;
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
-    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$(fn_(((*)(void* thrd_ctx))(void*)), fn_ctx->fn), fn_ctx), {
+    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$((fn_(((*)(void* thrd_ctx))(void*)))(fn_ctx->fn)), fn_ctx), {
         case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
         case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
         case_(/* PERM */ EPERM, $fallthrough);
         case_(/* INVAL */ EINVAL, claim_unreachable);
         fallback_(return_err(Err_Unexpected()));
     });
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((Thrd_detach(Thrd self))(void)) {
     debug_assert(self.handle != 0);
@@ -150,5 +150,5 @@ fn_((Thrd_join(Thrd self))(Thrd_FnCtx*)) {
     debug_assert(self.handle != 0);
     anyptr ctx_ptr = null;
     let_ignore        = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
-    return as$(Thrd_FnCtx*, ctx_ptr);
+    return as$((Thrd_FnCtx*)(ctx_ptr));
 }
