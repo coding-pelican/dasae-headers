@@ -80,9 +80,7 @@ typedef enum {
     if (!atomic_load(&(chan)->disconnected)) { \
         let new_node = meta_cast$( \
             Ptr$$(sync_mpmc_Node$(T)), \
-            catch_( \
-                (mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))(claim_unreachable) \
-            ) \
+            catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
         ); \
         new_node->data = (value); \
         atomic_store(&new_node->next, null); \
@@ -164,18 +162,14 @@ typedef enum {
     /* Create dummy node for MPMC queue */ \
     let dummy = meta_cast$( \
         Ptr$$(sync_mpmc_Node$(T)), \
-        catch_( \
-            (mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))(claim_unreachable) \
-        ) \
+        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&dummy->next, null); \
 \
     /* Create internal MPMC channel */ \
     let mpmc_chan = meta_cast$( \
         Ptr$$(sync_mpmc_Channel$(T)), \
-        catch_( \
-            (mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Channel$(T))))(claim_unreachable) \
-        ) \
+        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Channel$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&mpmc_chan->head, dummy); \
     atomic_store(&mpmc_chan->tail, dummy); \
@@ -187,9 +181,7 @@ typedef enum {
     /* Create reference counter */ \
     let counter = meta_cast$( \
         Ptr$$(sync_mpmc_Counter$(T)), \
-        catch_( \
-            (mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Counter$(T))))(claim_unreachable) \
-        ) \
+        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Counter$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&counter->senders, 1); \
     atomic_store(&counter->receivers, 1); \
@@ -209,7 +201,7 @@ typedef enum {
     sync_mpsc_Sender_useT$(T); \
     sync_mpsc_Receiver_useT$(T); \
     sync_mpsc_Channel_useT$(T); \
-    fn_(sync_mpsc_channel$(T)(mem_Allocator allocator), sync_mpsc_Channel$(T)) { \
+    fn_((sync_mpsc_channel$(T)(mem_Allocator allocator))(sync_mpsc_Channel$(T))) { \
         return sync_mpsc_channel$$(T, allocator); \
     }
 
@@ -219,7 +211,7 @@ typedef enum {
     sync_mpmc_Channel_send$$(T, (sender).allocator, (sender).counter->chan, value); \
 })
 #define sync_mpsc_Sender_send_useT$(T) \
-    fn_(sync_mpsc_Sender_send$(T)(sync_mpsc_Sender$(T) sender, T value), sync_mpsc_SendResult) { \
+    fn_((sync_mpsc_Sender_send$(T)(sync_mpsc_Sender$(T) sender, T value))(sync_mpsc_SendResult)) { \
         return sync_mpsc_Sender_send$$(T, sender, value); \
     }
 
@@ -228,7 +220,7 @@ typedef enum {
     sync_mpsc_Sender_send$$(T, sender, value); \
 })
 #define sync_mpsc_Sender_trySend_useT$(T) \
-    fn_(sync_mpsc_Sender_trySend$(T)(sync_mpsc_Sender$(T) sender, T value), sync_mpsc_SendResult) { \
+    fn_((sync_mpsc_Sender_trySend$(T)(sync_mpsc_Sender$(T) sender, T value))(sync_mpsc_SendResult)) { \
         return sync_mpsc_Sender_trySend$$(T, sender, value); \
     }
 
@@ -244,7 +236,7 @@ typedef enum {
     cloned; \
 })
 #define sync_mpsc_Sender_clone_useT$(T) \
-    fn_(sync_mpsc_Sender_clone$(T)(sync_mpsc_Sender$(T) sender), sync_mpsc_Sender$(T)) { \
+    fn_((sync_mpsc_Sender_clone$(T)(sync_mpsc_Sender$(T) sender))(sync_mpsc_Sender$(T))) { \
         return sync_mpsc_Sender_clone$$(T, sender); \
     }
 
@@ -277,7 +269,7 @@ typedef enum {
     } \
 })
 #define sync_mpsc_Sender_drop_useT$(T) \
-    fn_(sync_mpsc_Sender_drop$(T)(sync_mpsc_Sender$(T) sender), void) { \
+    fn_((sync_mpsc_Sender_drop$(T)(sync_mpsc_Sender$(T) sender))(void)) { \
         sync_mpsc_Sender_drop$$(T, sender); \
     }
 
@@ -287,7 +279,7 @@ typedef enum {
     sync_mpmc_Channel_recv$$(T, (receiver).allocator, (receiver).counter->chan); \
 })
 #define sync_mpsc_Receiver_recv_useT$(T) \
-    fn_(sync_mpsc_Receiver_recv$(T)(sync_mpsc_Receiver$(T) receiver), Opt$(T)) { \
+    fn_((sync_mpsc_Receiver_recv$(T)(sync_mpsc_Receiver$(T) receiver))(Opt$(T))) { \
         return sync_mpsc_Receiver_recv$$(T, receiver); \
     }
 
@@ -296,7 +288,7 @@ typedef enum {
     sync_mpmc_Channel_tryRecv$$(T, (receiver).allocator, (receiver).counter->chan); \
 })
 #define sync_mpsc_Receiver_tryRecv_useT$(T) \
-    fn_(sync_mpsc_Receiver_tryRecv$(T)(sync_mpsc_Receiver$(T) receiver), Opt$(T)) { \
+    fn_((sync_mpsc_Receiver_tryRecv$(T)(sync_mpsc_Receiver$(T) receiver))(Opt$(T))) { \
         return sync_mpsc_Receiver_tryRecv$$(T, receiver); \
     }
 
@@ -329,7 +321,7 @@ typedef enum {
     } \
 })
 #define sync_mpsc_Receiver_drop_useT$(T) \
-    fn_(sync_mpsc_Receiver_drop$(T)(sync_mpsc_Receiver$(T) receiver), void) { \
+    fn_((sync_mpsc_Receiver_drop$(T)(sync_mpsc_Receiver$(T) receiver))(void)) { \
         sync_mpsc_Receiver_drop$$(T, receiver); \
     }
 
@@ -358,12 +350,12 @@ Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore, args)$gu
         Thrd_sleep(time_Duration_fromSecs(1));
     }
     return_({});
-} $unguarded_Thrd_fn;
+} $unguarded_(Thrd_fn);
 
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     let_ignore = args;
 
     let channels = sync_mpsc_channel$i32(heap_Page_allocator(&(heap_Page){}));
@@ -379,4 +371,4 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     }
 
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);

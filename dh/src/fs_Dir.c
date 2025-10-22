@@ -4,9 +4,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-$inline_always fn_((makeDir(Sli_const$u8 path))(i32)) {
+$static $inline_always
+fn_((makeDir(Sli_const$u8 path))(i32)) {
     return mkdir(as$((const char*)(path.ptr)) pp_if_(bti_plat_windows)(
-        pp_than_(pp_ignore))(, 0755));
+        pp_than_(pp_ignore)
+    )(, 0755));
 }
 
 fn_((fs_Dir_create(Sli_const$u8 path))(Err$void) $scope) {
@@ -18,5 +20,4 @@ fn_((fs_Dir_create(Sli_const$u8 path))(Err$void) $scope) {
         }
     }
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);

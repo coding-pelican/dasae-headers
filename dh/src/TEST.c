@@ -117,7 +117,7 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 expr_str))(Err$void) $
         return_err(TEST_Err_Unexpected());
     }
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 expr_str))(Err$void) $scope) {
     let_ignore = msg;
@@ -128,4 +128,4 @@ fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 e
         return_err(TEST_Err_Unexpected());
     }
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

@@ -144,7 +144,7 @@ async_fn_scope(typeEffectWithInterval, {
     }
 
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 /// \brief Types out a string over a specified total duration
 /// \param caller The caller context

@@ -34,4 +34,4 @@ TEST_fn_("out_mem: test" $scope) {
         as$((TypeOf(typeUnit$(i32))*)(someNeededSameStackMemFn(type)))->value;
     });
     try_(TEST_expect(a == as$((i32)(0xAAAAAAAA))));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);

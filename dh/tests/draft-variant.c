@@ -1,6 +1,7 @@
 #include "dh/core.h"
 #include "dh/main.h"
 
+#if UNUSED_CODE
 #define variant_(_alias, ...) \
     comp_gen__variant_(_alias, __VA_ARGS__)
 #define variant_of(_tag, _payload...) \
@@ -99,8 +100,10 @@ typedef variant_(
         let pp_Tuple_unwrap _Capture = __variant.payload.pp_join($, tagged, _Tag); \
         _Body; \
     }
+#endif /* UNUSED_CODE */
 
 #include "dh/blk.h"
+#include "dh/io/stream.h"
 
 // fn_(Shape_calcArea(Shape self), f32 $scope) {
 //     match_(self, {
@@ -111,7 +114,7 @@ typedef variant_(
 //             return_(r->width * r->height);
 //         });
 //     });
-// } $unscoped;
+// } $unscoped_(fn);
 
 // fn_(Shape_calcArea(Shape self), f32 $scope) {
 //     return_(blk_(area, f32, {
@@ -124,7 +127,7 @@ typedef variant_(
 //             });
 //         });
 //     }));
-// } $unscoped;
+// } $unscoped_(fn);
 
 // fn_(Shape_calcArea(Shape self), f32) {
 //     return blk_(area, f32, {
@@ -156,21 +159,21 @@ TEST_fn_("variant: basic" $scope) {
     let obj = variant_of$(Obj, Obj_scalar, variant_of(Obj_Scalar_i32, -123));
     match_(obj, {
         pattern_(Obj_none, {
-            printf("none\n");
+            io_stream_println(u8_l("none\n"));
         }) break;
         pattern_(Obj_bool, (b), {
-            printf("bool: %d\n", *b);
+            io_stream_println(u8_l("bool: {:d}\n"), *b);
         }) break;
         pattern_(Obj_scalar, (s), {
             match_(*s, {
                 pattern_(Obj_Scalar_u32, (u), {
-                    printf("u32: %u\n", *u);
+                    io_stream_println(u8_l("u32: {:u}\n"), *u);
                 }) break;
                 pattern_(Obj_Scalar_i32, (i), {
-                    printf("i32: %d\n", *i);
+                    io_stream_println(u8_l("i32: {:d}\n"), *i);
                 }) break;
                 pattern_(Obj_Scalar_f32, (f), {
-                    printf("f32: %f\n", *f);
+                    io_stream_println(u8_l("f32: {:f}\n"), *f);
                 }) break;
             });
         }) break;

@@ -41,5 +41,4 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     printf("direct_run: %d\n", direct_run);
 
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);

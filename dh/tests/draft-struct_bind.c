@@ -73,4 +73,4 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     }
 
     return_ok({});
-} $unscoped;
+} $unscoped_(fn);

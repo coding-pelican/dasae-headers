@@ -72,7 +72,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         pattern_(heap_Arena_ResetMode_free_all, eval_break_(0));
         pattern_(heap_Arena_ResetMode_retain_capacity, eval_break_(heap_Arena_queryCap(self)));
         pattern_(heap_Arena_ResetMode_retain_with_limit, (limit), eval_break_(prim_min(*limit, heap_Arena_queryCap(self))));
-    }) $unscoped_eval;
+    }) $unscoped_($eval);
     if (requested_capacity == 0) {
         // Free all memory and reset state
         heap_Arena_fini(*self);
@@ -91,7 +91,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
         it = next_it;
-    } $unscoped_eval;
+    } $unscoped_($eval);
 
     // Reset end index before resizing buffers
     self->state.end_index = 0;
@@ -138,7 +138,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
         eval_break_(orelse_((heap_Arena_createNode(self, 0, len + ptr_align))(
             return_none()
         )));
-    } $unscoped_eval;
+    } $unscoped_($eval);
     while (true) {
         let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
         let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);

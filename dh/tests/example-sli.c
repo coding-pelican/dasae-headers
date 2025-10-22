@@ -2,8 +2,9 @@
 #include "dh/main.h"
 #include "dh/sli.h"
 
-static fn_((slice_example(void))(void));
-fn_((dh_main(void))(Err$void $scope)) {
+$static
+fn_((slice_example(void))(void));
+fn_((dh_main(void))(Err$void) $scope) {
     slice_example();
     return_ok({});
 } $unscoped_(fn);

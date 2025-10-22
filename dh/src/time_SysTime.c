@@ -118,10 +118,10 @@ fn_((time_SysTime_chkdDurationSince(time_SysTime later, time_SysTime earlier))(O
     } else {
         diff.tv_nsec = later.impl_.tv_nsec - earlier.impl_.tv_nsec;
     }
-    let nanos = as$((u64)(diff.tv_sec* time_SysTime_nanos_per_sec) + diff.tv_nsec);
+    let nanos = as$((u64)(diff.tv_sec * time_SysTime_nanos_per_sec) + diff.tv_nsec);
 #endif /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
     return_some(time_Duration_fromNanos(nanos));
-} $unscoped;
+} $unscoped_(fn);
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -158,7 +158,7 @@ fn_((time_SysTime_chkdAddDuration(time_SysTime lhs, time_Duration rhs))(Opt$time
     }
 #endif
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs))(Opt$time_SysTime) $scope) {
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
@@ -177,7 +177,7 @@ fn_((time_SysTime_chkdSubDuration(time_SysTime lhs, time_Duration rhs))(Opt$time
     }
 #endif
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

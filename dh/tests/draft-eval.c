@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #define main_no_args (1)
 #include "dh/main.h"
 
@@ -122,3 +123,4 @@ T: \
 
     return_ok({});
 } $unscoped_(fn);
+#endif /* UNUSED_CODE */

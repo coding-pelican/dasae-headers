@@ -137,7 +137,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
     return_ok({});
 }$unguarded_(fn);
-// } $unguarded_TEST_fn;
+// } $unguarded_(TEST_fn);
 
 static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec) $scope) {
     let init_len = 8;
@@ -147,7 +147,7 @@ static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec) $scope) {
         .data      = { .ptr = { .info = data.type, .addr = data.addr }, .len = 0 },
         .cap       = init_len,
     });
-} $unscoped;
+} $unscoped_(fn);
 static fn_((Vec_push(Vec* self, m_Val val))(Err$void) $scope) {
     if (self->data.len < self->cap) {
         bti_memcpy(
@@ -159,7 +159,7 @@ static fn_((Vec_push(Vec* self, m_Val val))(Err$void) $scope) {
         return_ok({});
     }
     return_err(Err_Unsupported());
-} $unscoped;
+} $unscoped_(fn);
 static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val) $scope) {
     if (0 < self->data.len) {
         bti_memcpy(
@@ -171,7 +171,7 @@ static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val) $scope) {
         return_some(mem);
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 static fn_((Vec_fini(Vec* self))(void)) {
     let_ignore = self;
     // mem_Allocator_free(self->allocator, anySli(self->data.ptr.addr));

@@ -1,10 +1,12 @@
 #include "dh/prl.h"
 
+#if UNUSED_CODE
 #define pp_if_(Cond...)            pp_join(_, __pp_if, Cond)
 #define __pp_if_1(_Than, _Else...) pp_expand _Than
 #define __pp_if_0(_Than, _Else)    pp_expand _Else
 #define pp_than_
 #define pp_else_
+#endif /* UNUSED_CODE */
 
 #define target_1 0
 #define target_2 1

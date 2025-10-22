@@ -1,5 +1,6 @@
 #include "dh/main.h"
 
+#if UNUSED_CODE
 // clang-format off
 #define eval_(T_Break_w_Ext...) comp_syn__eval_test(T_Break_w_Ext)
 #define comp_syn__eval_test(T_Break, _Ext...) pp_cat(comp_syn__eval_, _Ext)(T_Break)
@@ -30,6 +31,7 @@ __step_unscope: \
     goto __step_break; \
 })
 // clang-format on
+#endif /* UNUSED_CODE */
 
 fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     let_ignore = args;

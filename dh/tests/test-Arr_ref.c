@@ -15,10 +15,12 @@ TEST_fn_("Arr_ref" $scope) {
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
 
-static fn_((test_io_printBits(io_Writer out, u8 byte))(void)) {
+$static
+fn_((test_io_printBits(io_Writer out, u8 byte))(void)) {
     catch_((io_Writer_print(out, u8_l("{:08b}"), byte))($ignore, claim_unreachable));
 }
-static fn_((test_io_feedLine(io_Writer out))(void)) {
+$static
+fn_((test_io_feedLine(io_Writer out))(void)) {
     catch_((io_Writer_print(out, u8_l("\n")))($ignore, claim_unreachable));
 }
 

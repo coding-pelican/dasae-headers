@@ -52,8 +52,7 @@ bool time_Duration_isZero(time_Duration self) {
 time_Duration time_Duration_fromSecs_f64(f64 secs) {
     return time_Duration_from(
         as$((u64)(secs)),
-        as$((u32)((secs - as$((f64)(as$((u64)(secs)))) * as$((f64)(time_nanos_per_sec)))))
-    );
+        as$((u32)((secs - as$((f64)(as$((u64)(secs)))) * as$((f64)(time_nanos_per_sec))))));
 }
 
 f64 time_Duration_asSecs_f64(time_Duration self) {
@@ -105,8 +104,7 @@ fn_((time_Duration_chkdAdd(time_Duration lhs, time_Duration rhs))(Opt$time_Durat
     let secs  = total_nanos / time_nanos_per_sec;
     let nanos = as$((u32)(total_nanos % time_nanos_per_sec));
     return_some(literal_time_Duration_from(secs, nanos));
-}
-$unscoped;
+} $unscoped_(fn);
 
 fn_((time_Duration_chkdSub(time_Duration lhs, time_Duration rhs))(Opt$time_Duration) $scope) {
     let lhs_total_nanos = lhs.secs * time_nanos_per_sec + lhs.nanos;
@@ -119,8 +117,7 @@ fn_((time_Duration_chkdSub(time_Duration lhs, time_Duration rhs))(Opt$time_Durat
     let secs       = diff_nanos / time_nanos_per_sec;
     let nanos      = as$((u32)(diff_nanos % time_nanos_per_sec));
     return_some(literal_time_Duration_from(secs, nanos));
-}
-$unscoped;
+} $unscoped_(fn);
 
 fn_((time_Duration_mulChkd_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $scope) {
     // Check for overflow
@@ -129,8 +126,7 @@ fn_((time_Duration_mulChkd_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $
     }
     let total_nanos = lhs.secs * rhs + lhs.nanos;
     return_some(literal_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
-}
-$unscoped;
+} $unscoped_(fn);
 
 fn_((time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $scope) {
     // Check for division by zero or overflow
@@ -141,5 +137,4 @@ fn_((time_Duration_chkdDiv_u64(time_Duration lhs, u64 rhs))(Opt$time_Duration) $
     let secs        = total_nanos / time_nanos_per_sec;
     let nanos       = as$((u32)(total_nanos % time_nanos_per_sec));
     return_some(literal_time_Duration_from(secs, nanos));
-}
-$unscoped;
+} $unscoped_(fn);

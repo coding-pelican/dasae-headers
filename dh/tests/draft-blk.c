@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #include "dh/main.h"
 
 
@@ -64,7 +65,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
                 sum += i;
             });
             $break_(sum);
-        }) $unscoped_expr;
+        }) $unscoped_(expr);
         printf("value: %d\n", value);
     }
 
@@ -95,7 +96,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
                 }
             });
             claim_unreachable;
-        } $unscoped_eval;
+        } $unscoped_($eval);
         printf("value: %d\n", value);
     }
 
@@ -106,9 +107,10 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
     //     printf("value: %d\n", *p);
     // });
     return_ok({});
-} $unscoped_fn;
+} $unscoped_(fn);
 
 // #define pp_ignore2_expand1_ignores(...) pp_ignore1_expand1_ignores
 // #define pp_ignore1_expand1_ignores(...) pp_expand1_ignores
 // #define pp_expand1_ignores(...)         __VA_ARGS__ pp_ignore
 // pp_expand(pp_ignore2_expand1_ignores(a)(b)(c)())
+#endif /* UNUSED_CODE */

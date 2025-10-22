@@ -1,7 +1,7 @@
 #include "dh/main.h"
 #include "dh/log.h"
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void $scope)) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     let_(opt, Opt$(i32)) = none();
 
     let temp = 123;

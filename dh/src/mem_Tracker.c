@@ -106,7 +106,7 @@ fn_((mem_Tracker_initWithPath(Sli_const$u8 log_path))(Err$void) $guard) {
     let_ignore = fprintf(mem_Tracker_s_instance.log_file, "================================\n");
     // clang-format on
     return_ok({});
-} $unguarded;
+} $unguarded_(fn);
 
 fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
     if (!mem_Tracker_s_instance.log_file) { return; }
@@ -220,11 +220,11 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         curr = next;
     }
 
-    let_ignore                            = fclose(mem_Tracker_s_instance.log_file);
+    let_ignore                         = fclose(mem_Tracker_s_instance.log_file);
     mem_Tracker_s_instance.log_file    = null;
     mem_Tracker_s_instance.allocations = null;
     return_void();
-} $unguarded;
+} $unguarded_(fn);
 
 fn_((mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc))(void)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return; }

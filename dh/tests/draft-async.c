@@ -11,8 +11,7 @@ static fn_((io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...))(Err$usize) $gu
     defer_(va_end(args));
     let written = vsnprintf(
         as$((char*)(stream.ptr)), stream.len,
-        as$((const char*)(format.ptr)), args
-    );
+        as$((const char*)(format.ptr)), args);
     if (written < 0) { return_err(Err_Unexpected()); }
     return_ok(written);
 } $unguarded_(fn);
@@ -237,7 +236,7 @@ async_fn_scope(waitForTime, {}) {
     });
     printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$((u64)(ctx->base)), as$((i32)(args->name.len)), args->name.ptr, as$((u64)(orelse(args->caller, ctx->anyraw))));
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 // Coroutine: waitUntilAndPrint
 async_fn_(waitUntilAndPrint, (var_(caller, Opt$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, Sli_const$u8);), Void);
@@ -288,7 +287,7 @@ async_fn_scope(waitUntilAndPrint, {
 
     printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)));
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 
 
@@ -340,7 +339,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
         io_stream_print(u8_l("\n"));
     }
     return_ok({});
-} $unguarded_TEST_fn;
+} $unguarded_(TEST_fn);
 
 
 
@@ -368,7 +367,7 @@ async_fn_scope(asyncMain, {
 
     io_stream_print(u8_l("debug: [asyncMain] all tasks completed\n"));
     areturn_({});
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 
 
@@ -408,5 +407,4 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
     nosuspend_(await_(resume_(main_task)));
     return_ok({});
-}
-$unguarded;
+} $unguarded_(fn);

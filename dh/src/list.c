@@ -25,7 +25,7 @@ fn_((ListSgl_Node_removeNext(ListSgl_Node* node))(Opt$Ptr$ListSgl_Node) $scope) 
     let next_node = orelse_((node->next)(return_none()));
     node->next    = next_node->next;
     return_some(next_node);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ListSgl_Node_findLast(ListSgl_Node* node))(ListSgl_Node*)) {
     debug_assert_nonnull(node);
@@ -108,7 +108,7 @@ fn_((ListSgl_popFirst(ListSgl* self))(Opt$Ptr$ListSgl_Node) $scope) {
     self->first = first->next;
     toNone(&first->next);
     return_some(first);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ListSgl_len(const ListSgl* self))(usize)) {
     debug_assert_nonnull(self);
@@ -246,7 +246,7 @@ fn_((ListDbl_pop(ListDbl* self))(Opt$Ptr$ListDbl_Node) $scope) {
     var last = unwrap(self->last);
     ListDbl_remove(self, last);
     return_some(last);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ListDbl_popFirst(ListDbl* self))(Opt$Ptr$ListDbl_Node) $scope) {
     debug_assert_nonnull(self);
@@ -256,7 +256,7 @@ fn_((ListDbl_popFirst(ListDbl* self))(Opt$Ptr$ListDbl_Node) $scope) {
     var first = unwrap(self->first);
     ListDbl_remove(self, first);
     return_some(first);
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ListDbl_len(const ListDbl* self))(usize)) {
     debug_assert_nonnull(self);

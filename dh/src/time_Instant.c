@@ -44,14 +44,14 @@ fn_((time_Instant_chkdAddDuration(time_Instant lhs, time_Duration rhs))(Opt$time
         return_some({ .point = opt });
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((time_Instant_chkdSubDuration(time_Instant lhs, time_Duration rhs))(Opt$time_Instant) $scope) {
     if_some(time_SysTime_chkdSubDuration(lhs.point, rhs), opt) {
         return_some({ .point = opt });
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

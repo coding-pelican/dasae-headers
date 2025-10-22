@@ -137,8 +137,7 @@ fn_((sort_mergeSortUsingTempRecur(
     let total_bytes = temp_ptr - temp_buf.ptr;
     memcpy(base_bytes, temp_buf.ptr, total_bytes);
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);
 
 // NOLINTNEXTLINE(misc-no-recursion)
 fn_((sort_mergeSortWithArgUsingTempRecur(
@@ -217,8 +216,7 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
     let total_bytes = temp_ptr - temp_buf.ptr;
     memcpy(base_bytes, temp_buf.ptr, total_bytes);
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);
 
 fn_((sort_stableSort(
     mem_Allocator allocator,
@@ -230,8 +228,7 @@ fn_((sort_stableSort(
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
     return_ok({});
-}
-$unguarded;
+} $unguarded_(fn);
 
 fn_((sort_stableSortWithArg(
     mem_Allocator     allocator,
@@ -244,8 +241,7 @@ fn_((sort_stableSortWithArg(
     defer_(mem_Allocator_free(allocator, anySli(temp_buf)));
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
     return_ok({});
-}
-$unguarded;
+} $unguarded_(fn);
 
 fn_((sort_stableSortUsingTemp(
     Sli$u8     temp_buf,
@@ -258,8 +254,7 @@ fn_((sort_stableSortUsingTemp(
     }
     try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn));
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);
 
 fn_((sort_stableSortWithArgUsingTemp(
     Sli$u8            temp_buf,
@@ -273,5 +268,4 @@ fn_((sort_stableSortWithArgUsingTemp(
     }
     try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg));
     return_ok({});
-}
-$unscoped;
+} $unscoped_(fn);

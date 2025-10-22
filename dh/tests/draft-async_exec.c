@@ -129,7 +129,7 @@ async_fn_scope(count, {
     });
     report(args->label, u8_l("after loop %f"), locals->total);
     areturn_(locals->total);
-} $unscoped_async_fn;
+} $unscoped_(async_fn);
 
 /// \brief Run the main function
 /// \param args The arguments to the main function

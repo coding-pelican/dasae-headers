@@ -229,8 +229,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 #endif
 
     return_ok({});
-}
-$unguarded;
+} $unguarded_(fn);
 
 /* Function Implementations =================================================*/
 

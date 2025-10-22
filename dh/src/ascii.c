@@ -61,19 +61,19 @@ fn_((ascii_allocUppers(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli
     debug_assert_nonnull(ascii_str.ptr);
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
     return_ok(ascii_makeUppers(result, ascii_str));
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_allocLowers(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
     return_ok(ascii_makeLowers(result, ascii_str));
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_allocToggledCases(mem_Allocator allocator, Sli_const$u8 ascii_str))(Err$Sli$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
     let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len)));
     return_ok(ascii_makeToggledCases(result, ascii_str));
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_idxOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -92,7 +92,7 @@ fn_((ascii_idxOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr))(O
         if (matches) { return_some(i); }
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_front))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -106,7 +106,7 @@ fn_((ascii_idxFirstOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_subst
         return_some(start_front + idx);
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_idxLastOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr, usize start_back))(Opt$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -128,7 +128,7 @@ fn_((ascii_idxLastOfIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_substr
         if (matches) { return_some(i); }
     }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_((ascii_startsWithIgnoreCase(Sli_const$u8 ascii_str, Sli_const$u8 ascii_prefix))(bool)) {
     debug_assert_nonnull(ascii_str.ptr);

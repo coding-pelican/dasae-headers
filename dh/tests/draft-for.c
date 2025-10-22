@@ -43,7 +43,7 @@ TEST_fn_("test for" $scope) {
         continue;
     }) expr_(else)({ $break_(0); }) $unscoped_(expr);
     try_(TEST_expect(res == 5));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("test for with break" $scope) {
     for_($r(0, 10), i) {
@@ -55,7 +55,7 @@ TEST_fn_("test for with break" $scope) {
         if (i == 5) { $break_(some(i)); }
     }) expr_(else)({ $break_(some(-1)); }) $unscoped_(expr);
     try_(TEST_expect(unwrap(res) == 5));
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 /*
 #define __for_s__unwrap(_Tuple...) _Tuple
@@ -280,7 +280,7 @@ TEST_fn_("test for slices" $scope) {
     for_s3i((s1, s2, s3), (e1, e2, e3, i), {
         printf("s1[%llu]: %d, s2[%llu]: %d, s3[%llu]: %d\n", i, *e1, i, *e2, i, *e3);
     });
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 TEST_fn_("test for slice with $ignore" $scope) {
     Arr$$(10, i32) arr  = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
@@ -288,7 +288,7 @@ TEST_fn_("test for slice with $ignore" $scope) {
     for_s1i((sli), ($ignore, i), {
         printf("%llu\n", i);
     });
-} $unscoped_TEST_fn;
+} $unscoped_(TEST_fn);
 
 typedef struct {
 } TypeHint$R;
@@ -356,38 +356,13 @@ typedef struct R {
 #define $unscoped_(_keyword) \
     pp_cat(inline__$unscoped_, _keyword)()
 #define inline__$unscoped_fn()      $unscoped
-#define inline__$unscoped_TEST_fn() $unscoped_TEST_fn
+#define inline__$unscoped_(TEST_fn) () $unscoped_(TEST_fn)
 #define inline__$unscoped_eval()    $unscoped_eval
 #define inline__$unscoped_expr()    $unscoped_expr
 
 
 #define $if_(_cond, _body...) \
     if (_cond) _body
-
-
-// func((dh_main(Sli$Sli_const$u8 args))(Err$void)$scope) {
-//     let_ignore = args;
-
-
-//     //     ({
-//     //         local_label __step_break;
-//     //         if (false) {
-//     // __step_break:
-//     //             break; // 이게 원인이네
-//     //         }
-//     //         do {
-//     //             /* code */
-//     //             goto __step_break;
-//     //         } while (true);
-//     //         ({});
-//     //     });
-
-//     // Str_eql(value, u8_l("first"));
-//     // Str_eql(value, u8_l("second"));
-//     // Str_eql(value, u8_l("third"));
-
-//     return_ok({});
-// } $unscoped;
 
 TEST_fn_("test eval function" $scope) {
     const usize key = 12;
@@ -400,17 +375,13 @@ TEST_fn_("test eval function" $scope) {
         $break_(u8_l("third"));
     } $unscoped_(expr);
 
-    let value_if = expr_(Sli_const$u8 $scope) $if_(false, {
+    let value_if = eval_(Sli_const$u8 $scope) if (false) {
         $break_(u8_l("first"));
-    }) expr_(else) $if_(true, {
+    } else if (true) {
         $break_(u8_l("second"));
-    }) expr_(else) {
+    } else {
         claim_unreachable;
-    } $unscoped_(expr);
+    } $unscoped_($eval);
 
     try_(TEST_expect(Str_eql(value_for, value_if)));
-} $unscoped_(TEST_fn);
-
-TEST_fn_("test for" $scope){
-    for_(($s((sli1)(i, 0)))($s((sli2)(i, 0))))
 } $unscoped_(TEST_fn);

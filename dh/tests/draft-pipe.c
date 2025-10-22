@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #ifndef PIPE_INCLUDED
 #define PIPE_INCLUDED
 
@@ -135,12 +136,11 @@
     PIPE_RESULT(7)
 
 #endif /* PIPE_INCLUDED */
-
-
+#endif /* UNUSED_CODE */
 
 #include "dh/main.h"
 #include "dh/heap/Page.h"
-#include <stdio.h>
+#include "dh/io/stream.h"
 
 // Example Foo structure
 typedef struct Foo {
@@ -171,7 +171,7 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
     // PIPE_MAP(deref_, (ret1.value).value)
 
     let value = pipe(&foo,(Foo_setA,(10)),(&Foo_setB,(20)->value),(i32_addAsg,(123)),(deref,()));
-    printf("Enhanced pipe result: %d\n", value);
+    io_stream_println(u8_l("Enhanced pipe result: {:d}\n"), value);
 } */
 
 /* fn_(resolveIssuePipeExpanding(mem_Allocator allocator), void) {
@@ -201,9 +201,7 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
     let_ignore = pipe_foo;
 } */
 
-
-
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
+fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     let_ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
@@ -225,7 +223,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
         Foo_merge(foo, bar);
         let result = Foo_baz(foo);
 
-        printf("Traditional result: %d\n", result);
+        io_stream_println(u8_l("Traditional result: {:d}\n"), result);
     } block_deferral;
 
     // Using pipe macro
@@ -246,7 +244,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
             (Foo_merge,(bar)),
             (Foo_baz,())
         );
-        printf("Pipe result: %d\n", result);
+        io_stream_println(u8_l("Pipe result: {:d}\n"), result);
     } block_deferral;
 
     return_ok({});
@@ -254,7 +252,8 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
 
 
 
-/* #define func_(_Name_With_Params, T_Return, ...) \
+#if UNUSED_CODE
+#define func_(_Name_With_Params, T_Return, ...) \
     pp_overload(func, __VA_ARGS__)(_Name_With_Params, T_Return, __VA_ARGS__)
 #define func_0(_Name_With_Params, T_Return, ...) \
     fn_(_Name_With_Params, T_Return)
@@ -287,12 +286,11 @@ func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
         (Foo_merge,(bar)),
         (Foo_baz,())
     );
-    printf("Pipe result: %d\n", result);
+    io_stream_println(u8_l("Pipe result: {:d}\n"), result);
 
     return_ok({});
-}); */
-
-
+});
+#endif /* UNUSED_CODE */
 
 // Example functions that would typically be used in a chain
 fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)$scope) {
