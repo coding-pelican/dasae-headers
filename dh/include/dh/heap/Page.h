@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Page.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-15 (date of creation)
  * @updated 2025-03-20 (date of last update)
  * @version v0.1-alpha.1

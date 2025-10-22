@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    mem.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-02-12 (date of creation)
  * @updated 2025-02-12 (date of last update)
  * @version v0.1-alpha
@@ -22,28 +22,28 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define bti_popcount(_Expr...)                                               \
-    /*                                                                       \
+#define bti_popcount(_Expr...) \
+    /* \
     This function counts the number of set bits (1s) in an unsigned integer. \
-    For example, __builtin_popcount(5) would return 2,                       \
-    as the binary representation of 5 is 101.                                \
-    */                                                                       \
+    For example, __builtin_popcount(5) would return 2, \
+    as the binary representation of 5 is 101. \
+    */ \
     FUNC__bti_popcount(_Expr)
 
-#define bti_clz(_Expr...)                                                         \
-    /*                                                                            \
+#define bti_clz(_Expr...) \
+    /* \
     This function returns the number of leading zero bits in an unsigned integer. \
-    For instance, __builtin_clz(16) would return 27 on a 32-bit system,           \
-    as the binary representation of 16 is 10000, which has 27 leading zeros.      \
-    */                                                                            \
+    For instance, __builtin_clz(16) would return 27 on a 32-bit system, \
+    as the binary representation of 16 is 10000, which has 27 leading zeros. \
+    */ \
     FUNC__bti_clz(_Expr)
 
-#define bti_ctz(_Expr...)                                                                       \
-    /*                                                                                          \
-    This function counts the number of trailing zero bits in an unsigned integer.               \
+#define bti_ctz(_Expr...) \
+    /* \
+    This function counts the number of trailing zero bits in an unsigned integer. \
     For example, __builtin_ctz(16) would return 4, as the binary representation of 16 is 10000, \
-    which has 4 trailing zeros.                                                                 \
-    */                                                                                          \
+    which has 4 trailing zeros. \
+    */ \
     FUNC__bti_ctz(_Expr)
 
 #define bti_memset(val_ptr, i32_value, usize_len...) \

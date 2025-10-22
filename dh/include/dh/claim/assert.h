@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    assert.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-21 (date of creation)
  * @updated 2025-02-02 (date of last update)
  * @version v0.1-alpha.1
@@ -27,89 +27,89 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define claim_assert(_Expr)      \
-    /**                          \
+#define claim_assert(_Expr) \
+    /** \
      * @brief Assert expression. \
-     */                          \
+     */ \
     comp_inline__claim_assert(_Expr)
 
-#define claim_assert_true(_Expr)              \
-    /**                                       \
+#define claim_assert_true(_Expr) \
+    /** \
      * @brief Assert that expression is true. \
-     */                                       \
+     */ \
     comp_inline__claim_assert_true(_Expr)
 
-#define claim_assert_false(_Expr)              \
-    /**                                        \
+#define claim_assert_false(_Expr) \
+    /** \
      * @brief Assert that expression is false. \
-     */                                        \
+     */ \
     comp_inline__claim_assert_false(_Expr)
 
-#define claim_assert_eq(_Expr1, _Expr2)              \
-    /**                                              \
+#define claim_assert_eq(_Expr1, _Expr2) \
+    /** \
      * @brief Assert that two expressions are equal. \
-     */                                              \
+     */ \
     comp_inline__claim_assert_eq(_Expr1, _Expr2)
 
-#define claim_assert_ne(_Expr1, _Expr2)                  \
-    /**                                                  \
+#define claim_assert_ne(_Expr1, _Expr2) \
+    /** \
      * @brief Assert that two expressions are not equal. \
-     */                                                  \
+     */ \
     comp_inline__claim_assert_ne(_Expr1, _Expr2)
 
-#define claim_assert_null(_Expr)               \
-    /**                                        \
+#define claim_assert_null(_Expr) \
+    /** \
      * @brief Assert that expressions is null. \
-     */                                        \
+     */ \
     comp_inline__claim_assert_null(_Expr)
 
-#define claim_assert_nonnull(_Expr)                \
-    /**                                            \
+#define claim_assert_nonnull(_Expr) \
+    /** \
      * @brief Assert that expressions is non null. \
-     */                                            \
+     */ \
     comp_inline__claim_assert_nonnull(_Expr)
 
 
-#define claim_assert_fmt(_Expr, _fmt...)                \
-    /**                                                 \
+#define claim_assert_fmt(_Expr, _fmt...) \
+    /** \
      * @brief Assert expression with formatted message. \
-     */                                                 \
+     */ \
     comp_inline__claim_assert_fmt(_Expr, _fmt)
 
-#define claim_assert_true_fmt(_Expr, _fmt...)                        \
-    /**                                                              \
+#define claim_assert_true_fmt(_Expr, _fmt...) \
+    /** \
      * @brief Assert that expression is true with formatted message. \
-     */                                                              \
+     */ \
     comp_inline__claim_assert_true_fmt(_Expr, _fmt)
 
-#define claim_assert_false_fmt(_Expr, _fmt...)                        \
-    /**                                                               \
+#define claim_assert_false_fmt(_Expr, _fmt...) \
+    /** \
      * @brief Assert that expression is false with formatted message. \
-     */                                                               \
+     */ \
     comp_inline__claim_assert_false_fmt(_Expr, _fmt)
 
-#define claim_assert_eq_fmt(_Expr1, _Expr2, _fmt...)                        \
-    /**                                                                     \
+#define claim_assert_eq_fmt(_Expr1, _Expr2, _fmt...) \
+    /** \
      * @brief Assert that two expressions are equal with formatted message. \
-     */                                                                     \
+     */ \
     comp_inline__claim_assert_eq_fmt(_Expr1, _Expr2, _fmt)
 
-#define claim_assert_ne_fmt(_Expr1, _Expr2, _fmt...)                            \
-    /**                                                                         \
+#define claim_assert_ne_fmt(_Expr1, _Expr2, _fmt...) \
+    /** \
      * @brief Assert that two expressions are not equal with formatted message. \
-     */                                                                         \
+     */ \
     comp_inline__claim_assert_ne_fmt(_Expr1, _Expr2, _fmt)
 
-#define claim_assert_null_fmt(_Expr, _fmt...)                         \
-    /**                                                               \
+#define claim_assert_null_fmt(_Expr, _fmt...) \
+    /** \
      * @brief Assert that expressions is null with formatted message. \
-     */                                                               \
+     */ \
     comp_inline__claim_assert_null_fmt(_Expr, _fmt)
 
-#define claim_assert_nonnull_fmt(_Expr, _fmt...)                          \
-    /**                                                                   \
+#define claim_assert_nonnull_fmt(_Expr, _fmt...) \
+    /** \
      * @brief Assert that expressions is non null with formatted message. \
-     */                                                                   \
+     */ \
     comp_inline__claim_assert_nonnull_fmt(_Expr, _fmt)
 
 /*========== Macros Implementation ==========================================*/

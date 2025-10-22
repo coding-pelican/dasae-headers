@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Range.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-23 (date of creation)
  * @updated 2025-04-18 (date of last update)
  * @version v0.1-alpha.2

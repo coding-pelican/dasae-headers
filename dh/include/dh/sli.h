@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    sli.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-05 (date of creation)
  * @updated 2025-03-13 (date of last update)
  * @version v0.1-alpha.3

@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    return.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-13 (date of creation)
  * @updated 2025-01-13 (date of last update)
  * @version v0.1-alpha
@@ -102,36 +102,36 @@ extern "C" {
     } */
 // clang-format on
 
-#define SYN__scope_reserveReturn(T_ReservedReturn)      \
+#define SYN__scope_reserveReturn(T_ReservedReturn) \
     rawptr$(T_ReservedReturn) __reserved_return = null; \
-    struct {                                            \
-        i32  curr;                                      \
-        bool returns;                                   \
-    } __scope_defer = { .curr = 0, .returns = false };  \
-    if (0) {                                            \
-    __returned_scope:                                   \
-        goto __ext_unscoped;                            \
-    }                                                   \
-    __deferred:                                         \
-    switch (__scope_defer.curr) {                       \
-    default:                                            \
-        break;                                          \
-    case 0:                                             \
+    struct { \
+        i32  curr; \
+        bool returns; \
+    } __scope_defer = { .curr = 0, .returns = false }; \
+    if (0) { \
+__returned_scope: \
+        goto __ext_unscoped; \
+    } \
+__deferred: \
+    switch (__scope_defer.curr) { \
+    default: \
+        break; \
+    case 0: \
         __scope_defer.curr = -1;
-#define SYN__scope_returnReserved     \
-    goto __returned_scope;            \
-    }                                 \
-    if (0) {                          \
-    __ext_unscoped:                   \
+#define SYN__scope_returnReserved \
+    goto __returned_scope; \
+    } \
+    if (0) { \
+__ext_unscoped: \
         __scope_defer.returns = true; \
-        goto __deferred;              \
-    }                                 \
+        goto __deferred; \
+    } \
     return (eval({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
 
 #define SYN__scope_return(val_return...) \
-    {                                    \
-        setReservedReturn(val_return);   \
-        goto __returned_scope;           \
+    { \
+        setReservedReturn(val_return); \
+        goto __returned_scope; \
     }
 
 #define SYN__return_(val_return...) \
@@ -140,12 +140,12 @@ extern "C" {
 #else
 #endif /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
-#define SYN__reserveReturn(T)                                                   \
-    T* __reserved_return = null;                                                \
-    if (0) {                                                                    \
-    __returned_scope:                                                           \
+#define SYN__reserveReturn(T) \
+    T* __reserved_return = null; \
+    if (0) { \
+__returned_scope: \
         return (debug_assert_nonnull(__reserved_return), __reserved_return[0]); \
-    }                                                                           \
+    } \
     $unused(0)
 
 #define SYN__returnReserved \
@@ -155,8 +155,8 @@ extern "C" {
     (__reserved_return)
 
 #define FUNC__setReservedReturn(val_return...) eval({ \
-    getReservedReturn() = &val_return;                \
-    eval_return getReservedReturn()[0];               \
+    getReservedReturn() = &val_return; \
+    eval_return getReservedReturn()[0]; \
 })
 /* #define FUNC__setReservedReturn(val_return...) eval({ \
     getReservedReturn()[0] = val_return;              \

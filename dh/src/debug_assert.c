@@ -2,7 +2,7 @@
  * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
  *
  * @file    debug_assert.c
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-02 (date of creation)
  * @updated 2025-02-02 (date of last update)
  * @version v0.1-alpha.1

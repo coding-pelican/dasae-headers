@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    unreachable.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
  * @updated 2025-01-15 (date of last update)
  * @version v0.1-alpha
@@ -38,45 +38,45 @@ extern "C" {
 #define BUILTIN_UNREACHABLE $unused(0)
 #endif
 
-#define claim_unreachable                                                                    \
-    /**                                                                                      \
-     * @brief Runtime unreachable - analogous to Rust's unreachable!() macro                 \
-     *                                                                                       \
-     * This should be used in situations where you know a code path is impossible,           \
+#define claim_unreachable \
+    /** \
+     * @brief Runtime unreachable - analogous to Rust's unreachable!() macro \
+     * \
+     * This should be used in situations where you know a code path is impossible, \
      * but the compiler cannot prove it. Using this incorrectly leads to undefined behavior. \
-     *                                                                                       \
-     * In debug builds, this will trigger an assertion.                                      \
-     * In release builds, this tells the compiler the code is unreachable for optimization.  \
-     */                                                                                      \
+     * \
+     * In debug builds, this will trigger an assertion. \
+     * In release builds, this tells the compiler the code is unreachable for optimization. \
+     */ \
     SYN__claim_unreachable
 
-#define claim_unreachable_msg(_msg)                                                  \
-    /**                                                                              \
+#define claim_unreachable_msg(_msg) \
+    /** \
      * @brief Runtime unreachable with message - provides more context for debugging \
-     *                                                                               \
-     * @param _msg The message to display if this is reached in debug mode           \
-     */                                                                              \
+     * \
+     * @param _msg The message to display if this is reached in debug mode \
+     */ \
     FUNC__claim_unreachable_msg(_msg)
 
-#define claim_unreachable_fmt(_msg, _fmt...)                                                   \
-    /**                                                                                        \
+#define claim_unreachable_fmt(_msg, _fmt...) \
+    /** \
      * @brief Runtime unreachable with formatted message - provides more context for debugging \
-     *                                                                                         \
-     * @param _msg The message to display if this is reached in debug mode                     \
-     * @param _fmt The format string and arguments for the message                             \
-     */                                                                                        \
+     * \
+     * @param _msg The message to display if this is reached in debug mode \
+     * @param _fmt The format string and arguments for the message \
+     */ \
     FUNC__claim_unreachable_fmt(_msg, _fmt)
 
-#define claim_unreachable_val$(_T)                                                  \
-    /**                                                                             \
+#define claim_unreachable_val$(_T) \
+    /** \
      * @brief Function implementation of unreachable for use in expression contexts \
-     *                                                                              \
-     * This is useful when you need an expression rather than a statement.          \
+     * \
+     * This is useful when you need an expression rather than a statement. \
      * Returns a value of the specified type, though it will never actually return. \
-     *                                                                              \
-     * @param _T The type to "return" (only used for type checking)                 \
-     * @return Value of type _T (never actually returns)                            \
-     */                                                                             \
+     * \
+     * @param _T The type to "return" (only used for type checking) \
+     * @return Value of type _T (never actually returns) \
+     */ \
     FUNC__claim_unreachable_val$(_T)
 
 /*========== Implementations ================================================*/

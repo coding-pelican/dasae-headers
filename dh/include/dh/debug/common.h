@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
  * @updated 2025-03-28 (date of last update)
  * @version v0.1-alpha.1
@@ -34,13 +34,13 @@ extern "C" {
 /// Function to detect if a debugger is attached
 extern bool debug_isDebuggerPresent(void);
 
-#define $debug_point           \
+#define $debug_point \
     /* breakpoint attribute */ \
     comp_attr__$debug_point
 #define debug_break() \
     /* Breakpoint. */ \
     comp_op__debug_break()
-#define debug_only(...)                        \
+#define debug_only(...) \
     /* Used only when `debug_comp_enabled`. */ \
     comp_syn__debug_only(__VA_ARGS__)
 
@@ -58,18 +58,18 @@ extern bool debug_isDebuggerPresent(void);
 /* Only trigger debug break if a debugger is attached */
 #if defined(__GNUC__) || defined(__clang__)
 /* GCC or Clang */
-#define comp_op__debug_break() eval({                         \
+#define comp_op__debug_break() eval({ \
     if (debug_isDebuggerPresent()) { __builtin_debugtrap(); } \
 })
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */
-#define comp_op__debug_break() eval({                  \
+#define comp_op__debug_break() eval({ \
     if (debug_isDebuggerPresent()) { __debugbreak(); } \
 })
 #else /* others */
 /* Fallback using signal */
 #include <signal.h>
-#define comp_op__debug_break() eval({                  \
+#define comp_op__debug_break() eval({ \
     if (debug_isDebuggerPresent()) { raise(SIGTRAP); } \
 })
 #endif /* others */

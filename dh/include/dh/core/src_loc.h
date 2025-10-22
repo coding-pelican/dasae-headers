@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    src_loc.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-02-12 (date of creation)
  * @updated 2025-02-12 (date of last update)
  * @version v0.1-alpha
@@ -34,19 +34,19 @@ typedef struct SrcLoc {
     u32         line;      /**< Line number */
     u32         column;    /**< Column number */
 } SrcLoc;
-#define srcLoc()                                    \
+#define srcLoc() \
     /* Creates a source location at compile time */ \
     FUNC__srcLoc()
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__srcLoc()               \
-    ((SrcLoc){                       \
+#define FUNC__srcLoc() \
+    ((SrcLoc){ \
         .file_path = bti_filePath(), \
         .file_name = bti_fileName(), \
-        .fn_name   = bti_fnName(),   \
-        .line      = bti_line(),     \
-        .column    = bti_column(),   \
+        .fn_name   = bti_fnName(), \
+        .line      = bti_line(), \
+        .column    = bti_column(), \
     })
 
 #if defined(__cplusplus)

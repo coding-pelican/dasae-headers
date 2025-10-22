@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    posix.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-22 (date of creation)
  * @updated 2025-06-22 (date of last update)
  * @version v0.1-alpha
@@ -32,7 +32,8 @@ extern "C" {
 
 typedef pp_if_(bti_plat_windows)(
     pp_than_(HANDLE),
-    pp_else_(i32)) posix_fd_t;
+    pp_else_(i32)
+) posix_fd_t;
 typedef i32 posix_mode_t;
 
 #define posix_STDIN_FILENO  comp_const__posix_STDIN_FILENO

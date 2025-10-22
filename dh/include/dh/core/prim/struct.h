@@ -3,7 +3,7 @@
  * @license   MIT License - see LICENSE file for details
  *
  * @file    struct.h
- * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
  * @updated 2024-10-27 (date of last update)
  * @version v0.1-alpha
@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define typedef_struct(Alias)   \
+#define typedef_struct(Alias) \
     typedef struct Alias Alias; \
     struct Alias
 
