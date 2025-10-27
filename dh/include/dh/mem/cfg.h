@@ -15,8 +15,8 @@
  *          for memory-related operations and utilities.
  */
 
-#ifndef MEM_CFG_INCLUDED
-#define MEM_CFG_INCLUDED (1)
+#ifndef mem_cfg__included
+#define mem_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -24,7 +24,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include <string.h>
 
 /*========== Macros and Definitions =========================================*/
 
@@ -36,9 +35,9 @@ extern "C" {
 
 #define mem_trace_enabled (MEM_TRACE_ENABLED)
 
-config_ErrSet(mem_Err, OutOfMemory);
+errset_((mem_Err)(OutOfMemory));
 
 #if defined(__cplusplus)
 }
 #endif /* defined(__cplusplus) */
-#endif /* MEM_CFG_INCLUDED */
+#endif /* mem_cfg__included */

@@ -3,10 +3,10 @@
 #include "dh/sort.h"
 #include "dh/core/cmp.h"
 #include "dh/math.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 #include "dh/mem/cfg.h"
 
-$maybe_unused static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+$maybe_unused static $inline fn_(compareBodyDist(P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
@@ -16,9 +16,9 @@ $maybe_unused static $inline fn_(compareBodyDist(anyptr_const lhs, anyptr_const 
     return cmp_Ord_eq;
 }
 
-fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body $guard) {
+fn_(utils_uniformDisc(mem_Allocator allocator, usize n), E$ArrList$Body $guard) {
     // Initialize random seed
-    Random_initWithSeed(0);
+    Rand_initWithSeed(0);
 
     // Set up parameters
     const f32 inner_radius = 25.0f;
@@ -37,13 +37,13 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body $guard
 
     // Generate outer bodies
     while (bodies.items.len < n) {
-        // Random angle
-        let a    = Random_f32() * math_f32_tau;
+        // Rand angle
+        let a    = Rand_f32() * math_f32_tau;
         let sc_a = m_V2f32_sincos(a);
 
-        // Random radius with inner cutoff
+        // Rand radius with inner cutoff
         let t = inner_radius / outer_radius;
-        let r = Random_f32() * (1.0f - t * t) + t * t;
+        let r = Rand_f32() * (1.0f - t * t) + t * t;
 
         // Calculate position and initial velocity direction
         let pos = m_V2f32_scale(sc_a, outer_radius * sqrtf(r));
@@ -64,7 +64,7 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body $guard
     try_(sort_stableSort(
         allocator,
         meta_refSli(bodies.items),
-        wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+        wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
             let lhs_body = as$(const Body*, lhs);
             let rhs_body = as$(const Body*, rhs);
             let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
@@ -91,4 +91,5 @@ fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body $guard
     }
 
     return_ok(bodies);
-} $unguarded;
+}
+$unguarded;

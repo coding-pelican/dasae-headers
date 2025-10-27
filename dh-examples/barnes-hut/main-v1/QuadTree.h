@@ -12,8 +12,8 @@ typedef struct Quad {
     m_V2f32 center;
     f32     size;
 } Quad;
-use_Arr$(4, Quad);
-use_Sli$(Quad);
+use_A$(4, Quad);
+use_S$(Quad);
 use_ArrList$(Quad);
 
 typedef struct QuadNode {
@@ -23,7 +23,7 @@ typedef struct QuadNode {
     f32     mass;
     Quad    quad;
 } QuadNode;
-use_Sli$(QuadNode);
+use_S$(QuadNode);
 use_ArrList$(QuadNode);
 
 use_ArrList$(usize);
@@ -34,13 +34,13 @@ typedef struct QuadTree {
     ArrList$usize    parents;
     mem_Allocator    allocator;
 } QuadTree;
-use_Err$(QuadTree);
+use_E$(QuadTree);
 
 // Quad functions
-extern Quad       Quad_newContaining(const Sli$Body bodies);
-extern usize      Quad_findQuadrant(const Quad* self, m_V2f32 pos);
-extern Quad       Quad_intoQuadrant(Quad self, usize quadrant);
-extern Arr$4$Quad Quad_subdivide(const Quad* self);
+extern Quad     Quad_newContaining(const S$Body bodies);
+extern usize    Quad_findQuadrant(const Quad* self, m_V2f32 pos);
+extern Quad     Quad_intoQuadrant(Quad self, usize quadrant);
+extern A$4$Quad Quad_subdivide(const Quad* self);
 
 // QuadNode functions
 extern QuadNode QuadNode_new(usize next, Quad quad);
@@ -49,12 +49,12 @@ extern bool     QuadNode_isBranch(const QuadNode* self);
 extern bool     QuadNode_isEmpty(const QuadNode* self);
 
 // QuadTree functions
-extern Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) $must_check;
-extern void         QuadTree_destroy(QuadTree* self);
-extern Err$void     QuadTree_clear(QuadTree* self, Quad quad);
-extern Err$void     QuadTree_insert(QuadTree* self, m_V2f32 pos, f32 mass) $must_check;
-extern void         QuadTree_propagate(QuadTree* self);
-extern m_V2f32      QuadTree_accelerate(const QuadTree* self, m_V2f32 pos);
+extern E$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) $must_check;
+extern void       QuadTree_destroy(QuadTree* self);
+extern E$void     QuadTree_clear(QuadTree* self, Quad quad);
+extern E$void     QuadTree_insert(QuadTree* self, m_V2f32 pos, f32 mass) $must_check;
+extern void       QuadTree_propagate(QuadTree* self);
+extern m_V2f32    QuadTree_accelerate(const QuadTree* self, m_V2f32 pos);
 
 static const usize QuadTree_root = 0;
 

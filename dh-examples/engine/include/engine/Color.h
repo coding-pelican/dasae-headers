@@ -94,9 +94,9 @@ union Color {
     };
     u32 packed; // RGBA channel components in [0,255]
 };
-use_Opt$(Color);
-use_Err$(Color);
-use_Sli$(Color);
+use_O$(Color);
+use_E$(Color);
+use_S$(Color);
 use_Grid$(Color);
 
 #define Color_(...)                               make$(Color, __VA_ARGS__)

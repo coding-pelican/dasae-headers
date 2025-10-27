@@ -1,4 +1,4 @@
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 #include "dh/core.h"
 #include "dh/scope.h"
@@ -9,21 +9,21 @@
 typedef struct Point {
     i32 x, y;
 } Point;
-use_Sli$(Point);
+use_S$(Point);
 use_ArrList$(Point);
 
-static $must_check Err$void printPoints(const ArrList$Point* points) {
-    reserveReturn(Err$void);
+static $must_check E$void printPoints(const ArrList$Point* points) {
+    reserveReturn(E$void);
     debug_assert_nonnull(points);
     printf("Points (%zu items):\n", points->items.len);
-    for_slice_indexed (points->items, point, index) {
+    for_slice_indexed(points->items, point, index) {
         printf("  [%zu] = (%d, %d)\n", index, point->x, point->y);
     }
     return_void();
 }
 
-static $must_check Err$void example(void) {
-    scope_reserveReturn(Err$void) {
+static $must_check E$void example(void) {
+    scope_reserveReturn(E$void) {
         // Initialize allocator
         let allocator = heap_Classic_allocator(&(heap_Classic){});
 
@@ -36,7 +36,7 @@ static $must_check Err$void example(void) {
         try_(ArrList_append(points.base, meta_refPtr(&p1)));
 
         // Append multiple items at once
-        Sli$Point more_points = Sli_from(
+        S$Point more_points = Sli_from(
             make$(
                 Point[],
                 { .x = 30, .y = 40 },
@@ -44,7 +44,7 @@ static $must_check Err$void example(void) {
             ),
             2
         );
-        try_(ArrList_appendSli(points.base, meta_refSli(more_points)));
+        try_(ArrList_appendS(points.base, meta_refSli(more_points)));
 
         // Print current state
         try_(printPoints(&points));
@@ -57,19 +57,19 @@ static $must_check Err$void example(void) {
 
         // Remove from middle
         printf("\nRemoved from index 1: ");
-        let removed = meta_castPtr$(Point*, ArrList_removeOrdered(points.base, 1));
+        let removed = meta_castP$(Point*, ArrList_removeOrdered(points.base, 1));
         printf("(%d, %d)\n", removed->x, removed->y);
         try_(printPoints(&points));
 
         // Pop last element
         if_some(ArrList_popOrNull(points.base), item_last) {
-            let last = meta_castPtr$(Point*, item_last);
+            let last = meta_castP$(Point*, item_last);
             printf("\nPopped last element: (%d, %d)\n", last->x, last->y);
             try_(printPoints(&points));
         }
 
         // Add many at once
-        let new_space         = meta_castSli$(Sli$Point, try_(ArrList_addBackManyAsSli(points.base, 2)));
+        let new_space = meta_castS$(S$Point, try_(ArrList_addBackManyAsSli(points.base, 2)));
         *Sli_at(new_space, 0) = (Point){ .x = 90, .y = 100 };
         *Sli_at(new_space, 1) = (Point){ .x = 110, .y = 120 };
         printf("\nAfter adding two more points:\n");
@@ -82,7 +82,7 @@ static $must_check Err$void example(void) {
         try_(printPoints(&cloned));
 
         // Convert to owned slice
-        let owned_slice = meta_castSli$(Sli$Point, try_(ArrList_toOwnedSli(points.base)));
+        let owned_slice = meta_castS$(S$Point, try_(ArrList_toOwnedSli(points.base)));
         printf("\nConverted to owned slice (length: %zu)\n", owned_slice.len);
 
         // Create new list from owned slice
@@ -92,11 +92,12 @@ static $must_check Err$void example(void) {
         try_(printPoints(&from_slice));
 
         return_void();
-    } scope_returnReserved;
+    }
+    scope_returnReserved;
 }
 
-Err$void dh_main(void) {
-    reserveReturn(Err$void);
+E$void dh_main(void) {
+    reserveReturn(E$void);
     try_(example());
     return_void();
 }

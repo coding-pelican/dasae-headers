@@ -14,10 +14,10 @@ typedef struct Body {
     f32     mass;
     f32     radius;
 } Body;
-use_Sli$(Body);
+use_S$(Body);
 use_ArrList$(Body);
-use_Opt$(Body);
-use_Err$(ArrList$Body);
+use_O$(Body);
+use_E$(ArrList$Body);
 
 extern Body Body_new(m_V2f32 pos, m_V2f32 vel, f32 mass, f32 radius);
 extern void Body_update(Body* self, f32 dt);

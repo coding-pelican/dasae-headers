@@ -49,7 +49,8 @@ extern "C"
 #define $asc  $_asc,
 #define $desc $_desc,
 
-#define for_(...) pp_overload(__for, __VA_ARGS__)(__VA_ARGS__)
+/* TODO: add $scope-$unscoped version that doesn't require curly braces inside the calling */
+#define for_(/*<$dir_type>(_iter...)(_capture...) { ... }*/...) pp_overload(__for, __VA_ARGS__)(__VA_ARGS__)
 #define __for_1(/*(_iter...)(_capture...) { ... }*/...) \
     __exec__for_(pp_defer(__emit__for_$_fwd)(__sep0__for_ __VA_ARGS__))
 #define __for_2(_$dir_type, /*(_iter...)(_capture...) { ... }*/...) \

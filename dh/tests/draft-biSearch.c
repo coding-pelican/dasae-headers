@@ -10,7 +10,7 @@
 
 #define biSearch$(T) pp_join($, BiSearch, T)
 #define use_biSearch$(T) \
-    fn_((biSearch$(T)(Sli$(T) sli, T val))(Opt$(usize))$scope) { \
+    fn_((biSearch$(T)(S$(T) sli, T val))(O$(usize))$scope) { \
         let_(len, usize) = sli.len; \
         var_(lhs, usize) = 0; \
         var_(rhs, usize) = len - 1; \
@@ -28,13 +28,13 @@
     $unscoped_(fn)
 
 use_biSearch$(i32);
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let stream = fs_File_writer(io_getStdOut());
     try_(io_Writer_print(stream, u8_l("hello, world!\n")));
 
-    let sli   = Arr_ref$(Sli$(i32), Arr_from$(i32, { 1, 2, 3, 4, 5 }));
+    let sli   = A_ref$(S$(i32), A_from$(i32, { 1, 2, 3, 4, 5 }));
     let val   = 3;
     let found = biSearch$(i32)(sli, val);
     if_some(found, index) {
@@ -48,19 +48,19 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 
 
 typedef void untyped;
-typedef const untyped* Ptr_const$(untyped);
-typedef untyped* Ptr$(untyped);
-typedef struct Sli_const$(untyped) {
-    Ptr_const$(untyped) ptr;
+typedef const untyped* P_const$(untyped);
+typedef untyped* P$(untyped);
+typedef struct S_const$(untyped) {
+    P_const$(untyped) ptr;
     usize len;
-} Sli_const$(untyped);
-typedef union Sli$untyped {
-    Sli_const$(untyped) as_const;
+} S_const$(untyped);
+typedef union S$untyped {
+    S_const$(untyped) as_const;
     struct {
-        Ptr$(untyped) ptr;
-        usize len;
+        P$(untyped) ptr;
+        usize       len;
     };
-} Sli$(untyped);
+} S$(untyped);
 
 
 typedef enum PrimNum {
@@ -98,10 +98,10 @@ typedef variant_(
 
 
 fn_((biSearch_raw(
-    TypeOrPrimNum     type_or_prim_num,
-    Sli_const$untyped sli,
-    Ptr_const$untyped val
-))(Opt$usize) $scope) {
+    TypeOrPrimNum   type_or_prim_num,
+    S_const$untyped sli,
+    P_const$untyped val
+))(O$usize) $scope) {
     let_(len, usize) = sli.len;
     var_(lhs, usize) = 0;
     var_(rhs, usize) = len - 1;

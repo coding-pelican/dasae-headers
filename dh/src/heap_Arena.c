@@ -6,13 +6,13 @@
 #include "dh/debug.h"
 
 // Forward declarations for allocator vtable functions
-static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8));
-static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
-static fn_((heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
-static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
+static fn_((heap_Arena_alloc(P$raw ctx, usize len, u32 align))(O$P$u8));
+static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool));
+static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
+static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u32 buf_align))(void));
 
 // Internal helper functions
-static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(Opt$Ptr$ListSgl_Node$usize));
+static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Node$usize));
 
 extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator))(heap_Arena)) {
     return (heap_Arena){
@@ -31,13 +31,13 @@ extern fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator)) {
         .free   = heap_Arena_free,
     } };
     return (mem_Allocator){
-        .ptr = self,
+        .ctx = self,
         .vt  = vt
     };
 }
 
 extern fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena)) {
-    return heap_Arena_State_promote(make$(heap_Arena_State), child_allocator);
+    return heap_Arena_State_promote(make$((heap_Arena_State){}), child_allocator);
 }
 
 extern fn_((heap_Arena_fini(heap_Arena self))(void)) {
@@ -46,8 +46,8 @@ extern fn_((heap_Arena_fini(heap_Arena self))(void)) {
     while_some(it, node) {
         // Save next pointer before freeing current node
         let next_it   = node->next;
-        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
-        mem_Allocator_rawFree(self.child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
+        let alloc_buf = init$S$((u8)(as$((u8*)(node)), node->data));
+        mem_Allocator_rawFree(self.child_allocator, alloc_buf, alignOf$(ListSgl_Node$usize));
         it = next_it;
     }
 }
@@ -58,7 +58,7 @@ extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize)) {
     var   it   = self->state.buffer_list.first;
     while_some(it, node) {
         // Add buffer size excluding the node header
-        size += node->data - sizeOf(ListSgl_Node$usize);
+        size += node->data - sizeOf$(ListSgl_Node$usize);
         it = node->next;
     }
     return size;
@@ -76,27 +76,27 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
     if (requested_capacity == 0) {
         // Free all memory and reset state
         heap_Arena_fini(*self);
-        self->state = make$(heap_Arena_State);
+        self->state = make$((heap_Arena_State){});
         return true;
     }
     // Calculate total size needed including node header
-    let total_size       = requested_capacity + sizeOf(ListSgl_Node$usize);
+    let total_size       = requested_capacity + sizeOf$(ListSgl_Node$usize);
     // Free all nodes except the last one
     var it               = self->state.buffer_list.first;
-    var maybe_first_node = expr_(Opt$Ptr$ListSgl_Node$usize $scope) while_some(it, node) {
+    var maybe_first_node = expr_(O$P$ListSgl_Node$usize $scope) while_some(it, node) {
         let next_it = node->next;
         if_none(next_it) {
             $break_(some(node));
         }
-        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(node)), node->data);
-        mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
+        let alloc_buf = init$S$((u8)(as$((u8*)(node)), node->data));
+        mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf$(ListSgl_Node$usize));
         it = next_it;
     } $unscoped_(expr);
 
     // Reset end index before resizing buffers
     self->state.end_index = 0;
-    if_some(maybe_first_node, first_node) {
-        self->state.buffer_list.first = some$(Opt$Ptr$ListSgl_Node$usize, first_node);
+    if_some((maybe_first_node)(first_node)) {
+        self->state.buffer_list.first = some$((P$ListSgl_Node$usize)(first_node));
 
         // Perfect size match, no need to resize
         if (first_node->data == total_size) {
@@ -104,19 +104,19 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         }
 
         // Try to resize the buffer
-        let alloc_buf = Sli_from$(Sli$u8, as$((u8*)(first_node)), first_node->data);
-        if (mem_Allocator_rawResize(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize), total_size)) {
+        let alloc_buf = init$S$((u8)(as$((u8*)(first_node)), first_node->data));
+        if (mem_Allocator_rawResize(self->child_allocator, alloc_buf, alignOf$(ListSgl_Node$usize), total_size)) {
             first_node->data = total_size;
             return true;
         }
 
         // Manual reallocation needed
-        let new_ptr = orelse_((mem_Allocator_rawAlloc(self->child_allocator, total_size, alignOf(ListSgl_Node$usize)))(return false));
+        let new_ptr = orelse_((mem_Allocator_rawAlloc(self->child_allocator, total_size, alignOf$(ListSgl_Node$usize)))(return false));
         // Free old buffer and update state
-        mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf(ListSgl_Node$usize));
+        mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf$(ListSgl_Node$usize));
         let new_node                  = as$((ListSgl_Node$usize*)(new_ptr));
-        *new_node                     = make$(ListSgl_Node$usize, .data = total_size);
-        self->state.buffer_list.first = some$(Opt$Ptr$ListSgl_Node$usize, new_node);
+        *new_node                     = make$((ListSgl_Node$usize){ .data = total_size });
+        self->state.buffer_list.first = some$((P$ListSgl_Node$usize)(new_node));
     }
 
     return true;
@@ -124,7 +124,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scope) {
+static fn_((heap_Arena_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
 
@@ -132,7 +132,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     let ptr_align = align;
 
     // 문제로 예상되는 지점
-    var cur_node = expr_(ListSgl_Node$usize * $scope) if_some(self->state.buffer_list.first, first_node) {
+    var cur_node = expr_(ListSgl_Node$usize * $scope) if_some((self->state.buffer_list.first)(first_node)) {
         $break_(first_node);
     } else_none {
         $break_(orelse_((heap_Arena_createNode(self, 0, len + ptr_align))(
@@ -140,27 +140,27 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
         )));
     } $unscoped_(expr);
     while (true) {
-        let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
-        let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);
+        let cur_buf     = as$((u8*)(cur_node)) + sizeOf$(ListSgl_Node$usize);
+        let cur_buf_len = cur_node->data - sizeOf$(ListSgl_Node$usize);
 
-        let addr           = rawptrToInt(cur_buf) + self->state.end_index;
+        let addr           = ptrToInt(cur_buf) + self->state.end_index;
         let aligned_addr   = mem_alignForward(addr, ptr_align);
         let adjusted_index = self->state.end_index + (aligned_addr - addr);
         let new_end_index  = adjusted_index + len;
 
         if (new_end_index <= cur_buf_len) {
             self->state.end_index = new_end_index;
-            return_some(intToRawptr$(u8*, aligned_addr));
+            return_some(intToPtr$(u8*, aligned_addr));
         }
 
         // Try to resize current buffer
-        let bigger_buf_size = sizeOf(ListSgl_Node$usize) + new_end_index;
-        let cur_alloc_buf   = Sli_from$(Sli$u8, as$((u8*)(cur_node)), cur_node->data);
+        let bigger_buf_size = sizeOf$(ListSgl_Node$usize) + new_end_index;
+        let cur_alloc_buf   = init$S$((u8)(as$((u8*)(cur_node)), cur_node->data));
 
         if (mem_Allocator_rawResize(
                 self->child_allocator,
                 cur_alloc_buf,
-                alignOf(ListSgl_Node$usize),
+                alignOf$(ListSgl_Node$usize),
                 bigger_buf_size
             )) {
             cur_node->data = bigger_buf_size;
@@ -173,7 +173,7 @@ static fn_((heap_Arena_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $sco
     }
 } $unscoped_(fn);
 
-static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
+static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -184,11 +184,11 @@ static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_l
     if_none(self->state.buffer_list.first) {
         return false;
     }
-    let cur_node    = unwrap(self->state.buffer_list.first);
-    let cur_buf     = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
-    let cur_buf_len = cur_node->data - sizeOf(ListSgl_Node$usize);
+    let cur_node    = unwrap_(self->state.buffer_list.first);
+    let cur_buf     = as$((u8*)(cur_node)) + sizeOf$(ListSgl_Node$usize);
+    let cur_buf_len = cur_node->data - sizeOf$(ListSgl_Node$usize);
 
-    if (rawptrToInt(cur_buf) + self->state.end_index != rawptrToInt(buf.ptr) + buf.len) {
+    if (ptrToInt(cur_buf) + self->state.end_index != ptrToInt(buf.ptr) + buf.len) {
         // Not the most recent allocation, can only shrink
         return new_len <= buf.len;
     }
@@ -207,14 +207,14 @@ static fn_((heap_Arena_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_l
     return false;
 }
 
-static fn_((heap_Arena_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8) $scope) {
+static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8) $scope) {
     if (heap_Arena_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
     return_none();
 } $unscoped_(fn);
 
-static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
+static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
     debug_assert_nonnull(ctx);
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
 
@@ -225,28 +225,28 @@ static fn_((heap_Arena_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
     if_none(self->state.buffer_list.first) {
         return;
     }
-    let cur_node = unwrap(self->state.buffer_list.first);
-    let cur_buf  = as$((u8*)(cur_node)) + sizeOf(ListSgl_Node$usize);
+    let cur_node = unwrap_(self->state.buffer_list.first);
+    let cur_buf  = as$((u8*)(cur_node)) + sizeOf$(ListSgl_Node$usize);
 
-    if (rawptrToInt(cur_buf) + self->state.end_index == rawptrToInt(buf.ptr) + buf.len) {
+    if (ptrToInt(cur_buf) + self->state.end_index == ptrToInt(buf.ptr) + buf.len) {
         self->state.end_index -= buf.len;
     }
 }
 
 /*========== Internal Helper Functions =====================================*/
 
-static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(Opt$Ptr$ListSgl_Node$usize) $scope) {
+static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Node$usize) $scope) {
     debug_assert_nonnull(self);
 
     // Calculate new buffer size with exponential growth
-    let actual_min_size = minimum_size + (sizeOf(ListSgl_Node$usize) + 16);
+    let actual_min_size = minimum_size + (sizeOf$(ListSgl_Node$usize) + 16);
     let big_enough_len  = prev_len + actual_min_size;
     let len             = big_enough_len + (big_enough_len / 2);
 
     // Allocate new buffer
-    let ptr  = orelse_((mem_Allocator_rawAlloc(self->child_allocator, len, alignOf(ListSgl_Node$usize)))(return_none()));
+    let ptr  = orelse_((mem_Allocator_rawAlloc(self->child_allocator, len, alignOf$(ListSgl_Node$usize)))(return_none()));
     let node = as$((ListSgl_Node$usize*)(ptr));
-    *node    = make$(ListSgl_Node$usize, .data = len);
+    *node    = make$((ListSgl_Node$usize){ .data = len});
     ListSgl_prepend(self->state.buffer_list.base, node->base);
     self->state.end_index = 0;
 

@@ -1825,7 +1825,7 @@ void buffer_set_color_256(ScreenBuffer* buffer, int color) {
 #include <unistd.h>
 #endif /* bti_plat_windows */
 
-func((stream_fastOut(Sli_const$u8 data))(void)) {
+func((stream_fastOut(S_const$u8 data))(void)) {
     let stream_out = io_getStdOut().handle;
 #if bti_plat_windows
 #if !stream_fastOut__comp_windows_allow_ansi
@@ -1849,7 +1849,7 @@ func((stream_fastOut(Sli_const$u8 data))(void)) {
 }
 
 void flush_buffer_to_screen(ScreenBuffer* buffer) {
-    stream_fastOut(Sli_from$(Sli_const$u8, as$(const u8*, buffer->data), buffer->position));
+    stream_fastOut(Sli_from$(S_const$u8, as$(const u8*, buffer->data), buffer->position));
     (void)fflush(stdout); // Explicitly ignore return value
 }
 

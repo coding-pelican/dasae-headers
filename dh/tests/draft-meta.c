@@ -6,34 +6,34 @@
     ((m_Val){ .info = typeInfo$(TypeOf(val)), .ref = &val })
 #define m_Val_into$(T, val) ({ \
     let __val = (val); \
-    debug_assert(__val.info.size == sizeOf(T)); \
-    debug_assert(__val.info.align == alignOf(T)); \
+    debug_assert(__val.info.size == sizeOf$(T)); \
+    debug_assert(__val.info.align == alignOf$(T)); \
     *as$((T*)(__val.ref)); \
 })
-#define m_Opt$Val_into$(Opt$T, opt) ({ \
+#define m_O$Val_into$(O$T, opt) ({ \
     let __opt = (opt); \
     !__opt.has_value \
-        ? none$(Opt$T) \
+        ? none$(O$T) \
         : some$( \
-              Opt$T, \
+              O$T, \
               m_Val_into$( \
-                  FieldTypeOf(Opt$T, value), \
+                  FieldTypeOf(O$T, value), \
                   __opt.value \
               ) \
           ); \
 })
 
 #define m_Val_ref(self)
-#define m_Ptr_deref(self)
+#define m_P_deref(self)
 
 typedef struct m_Val {
     TypeInfo info;
     void*    ref;
 } m_Val;
-typedef struct m_Opt$Val {
+typedef struct m_O$Val {
     bool  has_value;
     m_Val value;
-} m_Opt$Val;
+} m_O$Val;
 
 typedef struct m_P_c$Val {
     TypeInfo    info;
@@ -65,8 +65,8 @@ typedef struct Vec {
     mem_Allocator allocator;
 } Vec;
 static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec));
-static fn_((Vec_push(Vec* self, m_Val val))(Err$void)) $must_check;
-static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val));
+static fn_((Vec_push(Vec* self, m_Val val))(E$void)) $must_check;
+static fn_((Vec_pop(Vec* self, m_Val mem))(m_O$Val));
 static fn_((Vec_fini(Vec* self))(void));
 
 #define Vec$(T) tpl_T(Vec, T)
@@ -75,10 +75,11 @@ static fn_((Vec_fini(Vec* self))(void));
         Vec base[1]; \
         struct { \
             TypeInfo info; \
-            Sli$(T) data; \
+            S$(T) \
+            data; \
         }; \
     } Vec$(T); \
-    use_Ptr$(Vec$(T)); \
+    use_P$(Vec$(T)); \
     /** \
      * @brief Initialize vector \
      * @param allocator allocator to use \
@@ -94,7 +95,7 @@ static fn_((Vec_fini(Vec* self))(void));
      * @return error if allocation fails \
      */ \
     $must_check \
-    tpl_fn_(Vec$(T), push(Ptr$(Vec$(T)) self, T val), Err$void) { \
+    tpl_fn_(Vec$(T), push(P$(Vec$(T)) self, T val), E$void) { \
         return Vec_push(self->base, m_Val_from(val)); \
     } \
     /** \
@@ -102,15 +103,15 @@ static fn_((Vec_fini(Vec* self))(void));
      * @param self vector to pop from \
      * @return value popped from vector \
      */ \
-    tpl_fn_(Vec$(T), pop(Ptr$(Vec$(T)) self), Opt$(T)) { \
-        return m_Opt$Val_into$(Opt$(T), Vec_pop(self->base, m_Val_from((T){}))); \
+    tpl_fn_(Vec$(T), pop(P$(Vec$(T)) self), O$(T)) { \
+        return m_O$Val_into$(O$(T), Vec_pop(self->base, m_Val_from((T){}))); \
     } \
     /** \
      * @brief Finalize vector \
      * @param self vector to finalize \
      * @return void \
      */ \
-    tpl_fn_(Vec$(T), fini(Ptr$(Vec$(T)) self), void) { \
+    tpl_fn_(Vec$(T), fini(P$(Vec$(T)) self), void) { \
         Vec_fini(self->base); \
     }
 
@@ -119,7 +120,7 @@ static fn_((Vec_fini(Vec* self))(void));
 
 Vec_useT$(i32);
 // TEST_fn_("Vec: push and pop" $guard) {
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let allocator = heap_Page_allocator(&(heap_Page){});
@@ -148,7 +149,7 @@ static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec) $scope) {
         .cap       = init_len,
     });
 } $unscoped_(fn);
-static fn_((Vec_push(Vec* self, m_Val val))(Err$void) $scope) {
+static fn_((Vec_push(Vec* self, m_Val val))(E$void) $scope) {
     if (self->data.len < self->cap) {
         bti_memcpy(
             self->data.ptr.addr + (self->data.len * self->data.ptr.info.size),
@@ -158,9 +159,9 @@ static fn_((Vec_push(Vec* self, m_Val val))(Err$void) $scope) {
         self->data.len++;
         return_ok({});
     }
-    return_err(Err_Unsupported());
+    return_err(E_Unsupported());
 } $unscoped_(fn);
-static fn_((Vec_pop(Vec* self, m_Val mem))(m_Opt$Val) $scope) {
+static fn_((Vec_pop(Vec* self, m_Val mem))(m_O$Val) $scope) {
     if (0 < self->data.len) {
         bti_memcpy(
             mem.ref,

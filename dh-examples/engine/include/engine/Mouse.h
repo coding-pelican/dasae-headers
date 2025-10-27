@@ -11,8 +11,8 @@ extern "C" {
 
 typedef struct engine_Mouse {
     struct {
-        var_(curr_states, Arr$$(engine_MouseButton_count, engine_KeyButtonStates)); /**< Bitfield of current button states */
-        var_(prev_states, Arr$$(engine_MouseButton_count, engine_KeyButtonStates)); /**< Bitfield of previous button states */
+        var_(curr_states, A$$(engine_MouseButton_count, engine_KeyButtonStates)); /**< Bitfield of current button states */
+        var_(prev_states, A$$(engine_MouseButton_count, engine_KeyButtonStates)); /**< Bitfield of previous button states */
     } buttons;
     struct {
         var_(prev_pos, Vec2i);
@@ -23,8 +23,8 @@ typedef struct engine_Mouse {
         var_(curr_scroll_amount, Vec2f);
     } wheel;
 } engine_Mouse;
-use_Opt$(engine_Mouse);
-use_Err$(engine_Mouse);
+use_O$(engine_Mouse);
+use_E$(engine_Mouse);
 
 /// Get all states for a button
 extern fn_((engine_Mouse_getState(const engine_Mouse* self, engine_MouseButton button))(engine_KeyButtonStates));

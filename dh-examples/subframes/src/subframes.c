@@ -8,7 +8,7 @@
 #include "dh/ArrList.h"
 
 #include "dh/time.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include "engine.h"
 
@@ -56,42 +56,42 @@
 
 $static
 fn_((getEngineMemory(void))(heap_Fixed)) {
-    static var_(memory, Arr$$(1024 * 1024, u8)) = Arr_zero();
-    return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
+    static var_(memory, A$$(1024 * 1024, u8)) = A_zero();
+    return heap_Fixed_init(Sli_arr$(S$u8, memory));
 }
 $static
 fn_((getGameMemory(void))(heap_Fixed)) {
-    static var_(memory, Arr$$(1024 * 1024, u8)) = Arr_zero();
-    return heap_Fixed_init(Sli_arr$(Sli$u8, memory));
+    static var_(memory, A$$(1024 * 1024, u8)) = A_zero();
+    return heap_Fixed_init(Sli_arr$(S$u8, memory));
 }
 
 use_ArrList$(Vec2f);
-use_Err$(ArrList$Vec2f);
+use_E$(ArrList$Vec2f);
 $static $must_check
-fn_((ArrList_init$Vec2f(mem_Allocator allocator, usize cap))(Err$ArrList$Vec2f) $scope) {
+fn_((ArrList_init$Vec2f(mem_Allocator allocator, usize cap))(E$ArrList$Vec2f) $scope) {
     return_ok({ .base[0] = try_(ArrList_initCap(typeInfo$(Vec2f), allocator, cap)) });
 } $unscoped_(fn);
 $static
 fn_((ArrList_fini$Vec2f(ArrList$Vec2f* self))(void)) { ArrList_fini(self->base); }
 $static
-fn_((ArrList_addBackOne$Vec2f(ArrList$Vec2f* self))(Err$Ptr$Vec2f) $scope) {
-    return_ok(meta_cast$(Ptr$Vec2f, try_(ArrList_addBackOne(self->base))));
+fn_((ArrList_addBackOne$Vec2f(ArrList$Vec2f* self))(E$P$Vec2f) $scope) {
+    return_ok(meta_cast$(P$Vec2f, try_(ArrList_addBackOne(self->base))));
 } $unscoped_(fn);
 
 use_ArrList$(Color);
-use_Err$(ArrList$Color);
-fn_((ArrList_init$Color(mem_Allocator allocator, usize cap))(Err$ArrList$Color) $scope) {
+use_E$(ArrList$Color);
+fn_((ArrList_init$Color(mem_Allocator allocator, usize cap))(E$ArrList$Color) $scope) {
     return_ok({ .base[0] = try_(ArrList_initCap(typeInfo$(Color), allocator, cap)) });
 } $unscoped_(fn);
 fn_((ArrList_fini$Color(ArrList$Color* self))(void)) { ArrList_fini(self->base); }
 $static
-fn_((ArrList_addBackOne$Color(ArrList$Color* self))(Err$Ptr$Color) $scope) {
-    return_ok(meta_cast$(Ptr$Color, try_(ArrList_addBackOne(self->base))));
+fn_((ArrList_addBackOne$Color(ArrList$Color* self))(E$P$Color) $scope) {
+    return_ok(meta_cast$(P$Color, try_(ArrList_addBackOne(self->base))));
 } $unscoped_(fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    Random_init();
+    Rand_init();
     // Initialize logging to a file
     try_(log_init(".log/debug.log"));
     defer_(log_fini());
@@ -138,7 +138,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
-        engine_Canvas_clear(game_canvas, none$(Opt$Color));
+        engine_Canvas_clear(game_canvas, none$(O$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendView(
             window,
@@ -158,13 +158,13 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         .allocator     = some(allocator_engine),
         .width         = window_res_width,
         .height        = window_res_height,
-        .default_color = none$(Opt$Color),
+        .default_color = none$(O$Color),
         .type          = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(overlay_canvas));
     {
         log_info("canvas created: %s", nameOf(overlay_canvas));
-        engine_Canvas_clear(overlay_canvas, none$(Opt$Color));
+        engine_Canvas_clear(overlay_canvas, none$(O$Color));
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
         engine_Window_appendView(
             window,
@@ -209,7 +209,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     let_ignore = engine_utils_getch();
 
     // Initialize timing variables
-    let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
+    let time_frame_target = time_Duration_fromSecs$f64(render_target_spf);
     var time_frame_prev   = time_Instant_now();
     log_info("game loop started");
 
@@ -223,7 +223,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
         // 2) Compute how long since last frame (purely for your dt usage)
         let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-        let time_dt      = as$((f32)(time_Duration_asSecs_f64(time_elapsed)));
+        let time_dt      = as$((f32)(time_Duration_asSecs$f64(time_elapsed)));
 
         // 3) Check for window movement
         let winpos = m_V_as$(Vec2f, engine_Window_getPos(window));
@@ -257,20 +257,20 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         try_(engine_Window_update(window));
 
         // 5) Update game state and Render all views
-        engine_Canvas_clear(game_canvas, none$(Opt$Color));
+        engine_Canvas_clear(game_canvas, none$(O$Color));
 
         if (engine_Keyboard_pressed(input->keyboard, engine_KeyCode_esc)) {
             is_running = false;
             log_debug("esc pressed");
         }
 
-        const Arr$$(2, bool) left_space = Arr_init({
+        const A$$(2, bool) left_space = A_init({
             [0] = engine_Mouse_held(input->mouse, engine_MouseButton_left),
             [1] = engine_Keyboard_held(input->keyboard, engine_KeyCode_space),
         });
-        if (Arr_getAt(left_space, 0) || Arr_getAt(left_space, 1)) {
-            debug_only(if (Arr_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
-            debug_only(if (Arr_getAt(left_space, 1)) { log_debug("space pressed"); });
+        if (A_getAt(left_space, 0) || A_getAt(left_space, 1)) {
+            debug_only(if (A_getAt(left_space, 0)) { log_debug("left mouse pressed"); });
+            debug_only(if (A_getAt(left_space, 1)) { log_debug("space pressed"); });
 
             with_(let pos = try_(ArrList_addBackOne$Vec2f(&positions))) {
                 *pos = m_V_as$(Vec2f, engine_Mouse_getPos(input->mouse));
@@ -278,14 +278,14 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
             with_(let vel = try_(ArrList_addBackOne$Vec2f(&velocities))) {
                 *vel = blk({
-                    let angle = (math_f32_pi / 180.0f) * as$((f32)(Random_range_i64(0, 360)));
+                    let angle = (math_f32_pi / 180.0f) * as$((f32)(Rand_range$i64(0, 360)));
                     let r     = m_V2f32_sincos(angle);
                     blk_return m_V2f32_scale(r, 50.0f);
                 });
             }
 
             with_(let color = try_(ArrList_addBackOne$Color(&colors))) {
-                *color = Color_fromHslOpaque((Hsl){ .channels = { as$((f64)(Random_range_i64(0, 360))), 50.0, 80.0 } });
+                *color = Color_fromHslOpaque((Hsl){ .channels = { as$((f64)(Rand_range$i64(0, 360))), 50.0, 80.0 } });
             }
         }
 
@@ -375,7 +375,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
                 );
             });
         });
-        with_(engine_Canvas_clear(overlay_canvas, none$(Opt$Color))) {
+        with_(engine_Canvas_clear(overlay_canvas, none$(O$Color))) {
             with_(let win_res = engine_Window_getRes(window)) {
                 engine_Canvas_drawRect(overlay_canvas, 0, 0, as$((i32)(win_res.x) - 1), as$((i32)(win_res.y) - 1), Color_white);
             }
@@ -412,7 +412,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
         // 8) Subtract from our target
         if_some(time_Duration_subChkd(time_frame_target, time_frame_used), leftover) {
-            debug_only(log_debug("sleeping for %6.2f seconds", time_Duration_asSecs_f64(leftover)));
+            debug_only(log_debug("sleeping for %6.2f seconds", time_Duration_asSecs$f64(leftover)));
             time_sleep(leftover);
         }
         time_frame_prev = time_frame_curr;

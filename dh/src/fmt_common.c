@@ -1,1144 +1,1122 @@
 #include "dh/fmt/common.h"
-#include "dh/Arr.h"
-#include "dh/Str.h"
 #include "dh/mem/common.h"
-#include "dh/math/common.h"
-#include "dh/core/prim/int.h"
+#include "dh/Str.h"
+#include "dh/ascii.h"
+#include "dh/int.h"
+#include "dh/flt.h"
 
-typedef enum fmt_AlignType {
-    fmt_AlignType_left,
-    fmt_AlignType_right,
-    fmt_AlignType_center
-} fmt_AlignType;
+/*========== Internal Types =================================================*/
 
-typedef struct fmt_FormatSpec {
-    usize arg_index;
-    bool  has_explicit_index;
+/// Alignment type for formatting
+typedef enum fmt_Align : u8 {
+    fmt_Align_left = 0,
+    fmt_Align_center = 1,
+    fmt_Align_right = 2,
+} fmt_Align;
+$maybe_unused static const A$$(3, u8) fmt_Align_values = init$A({
+    [fmt_Align_left] = u8_c('<'),
+    [fmt_Align_center] = u8_c('^'),
+    [fmt_Align_right] = u8_c('>'),
+});
 
-    // Alignment and fill
-    fmt_AlignType align;
-    Opt$u32       fill_char;
+/// Size modifier for integer and float types
+typedef enum fmt_Size : u8 {
+    fmt_Size_8 = 0,  // hh
+    fmt_Size_16 = 1, // h
+    fmt_Size_32 = 2, // (default)
+    fmt_Size_64 = 3, // l
+    fmt_Size_ptr = 4 // z
+} fmt_Size;
 
-    // Flags
-    bool alternate_form;   // #
-    bool uppercase;        // !
-    bool zero_pad;         // 0
-    bool show_sign;        // +
-    bool space_sign;       // ' '
-    bool right_align_flag; // -
+/// Format specifier parsed from format string
+typedef struct {
+    usize index;        // Argument index (0-15)
+    bool has_index;     // Whether index was explicitly specified
+    u8 fill;            // Fill character (default: space)
+    fmt_Align align;    // Alignment
+    usize width;        // Minimum field width
+    bool has_width;     // Whether width was specified
+    usize precision;    // Precision for floats
+    bool has_precision; // Whether precision was specified
+    fmt_Size size;      // Size modifier
+    u8 type;            // Type character
+} fmt_Spec;
 
-    // Width and precision
-    Opt$usize width;
-    Opt$usize precision;
+/// Argument storage (24 bytes each)
+typedef union {
+    u64 as_u64;
+    i64 as_i64;
+    f64 as_f64;
+    const void* as_ptr;
+    struct {
+        const u8* ptr;
+        usize len;
+    } as_slice;
+    struct {
+        u8 tag; // 0=none/err, 1=some/ok
+        u8 padding[7];
+        union {
+            u64 as_u64;
+            i64 as_i64;
+            f64 as_f64;
+            const void* as_ptr;
+        } value;
+    } as_opt_err;
+} fmt_Arg;
 
-    // Type specifier
-    u8   type_char;
-    bool is_64bit_type; // ll prefix
-    bool is_size_type;  // z prefix
-    bool has_type;
-} fmt_FormatSpec;
+/*========== Internal Helpers ===============================================*/
 
-// Argument storage for indexed access
-typedef enum fmt_ArgType {
-    fmt_ArgType_i32,
-    fmt_ArgType_i64,
-    fmt_ArgType_isize,
-    fmt_ArgType_u32,
-    fmt_ArgType_u64,
-    fmt_ArgType_usize,
-    fmt_ArgType_f64,
-    fmt_ArgType_char,
-    fmt_ArgType_str_slice,
-    fmt_ArgType_str_ptr,
-    fmt_ArgType_ptr,
-    fmt_ArgType_unknown
-} fmt_ArgType;
-
-typedef struct fmt_StoredArg {
-    fmt_ArgType type;
-    union {
-        i32          i32_val;
-        i64          i64_val;
-        isize        isize_val;
-        u32          u32_val;
-        u64          u64_val;
-        usize        usize_val;
-        f64          f64_val;
-        u8           char_val;
-        Sli_const$u8 str_slice_val;
-        const u8*    str_ptr_val;
-        const anyptr ptr_val;
-    } value;
-} fmt_StoredArg;
-
-static fn_((fmt_writeChar(io_Writer writer, u8 ch))(Err$void)) {
-    return io_Writer_writeByte(writer, ch);
+static inline fn_((digitToInt(u8 c))(u8)) {
+    debug_assert(ascii_isDigit(c));
+    return c - u8_c('0');
 }
 
-static fn_((fmt_writeStr(io_Writer writer, Sli_const$u8 str))(Err$void)) {
-    return io_Writer_writeBytes(writer, str);
+static inline fn_((strLenZ(const u8* str))(usize)) {
+    debug_assert(str != NULL);
+    usize len = 0;
+    while (str[len] != '\0') { len++; }
+    return len;
 }
 
-static fn_((fmt_writeInt(io_Writer writer, u64 value, fmt_FormatSpec spec))(Err$void) $scope) {
-    use_Arr$(64, u8);
-    Arr$64$u8 buffer = Arr_zero();
-    usize     pos    = Arr_len(buffer);
-
-    // Handle signed vs unsigned interpretation
-    bool is_signed_type = spec.has_type && spec.type_char == 'd';
-    bool is_negative    = false;
-    u64  abs_value      = value;
-
-    if (is_signed_type) {
-        // Treat as signed integer
-        i64 signed_value = as$((i64)(value));
-        is_negative      = signed_value < 0;
-        abs_value        = is_negative ? as$((u64)(-signed_value)) : as$((u64)(signed_value));
+static fn_((skipWhitespace(S_const$u8* str))(void)) {
+    while (str->len > 0 && ascii_isWhitespace(str->ptr[0])) {
+        str->ptr++;
+        str->len--;
     }
-
-    let original_abs_value = abs_value;
-
-    // Choose base
-    u32        base         = 10;
-    static let digits_lower = u8_l("0123456789abcdef");
-    static let digits_upper = u8_l("0123456789ABCDEF");
-    var        digits       = spec.uppercase ? digits_upper : digits_lower;
-    if (spec.has_type) {
-        switch (spec.type_char) {
-        case 'b':
-            base = 2;
-            break;
-        case 'o':
-            base = 8;
-            break;
-        case 'x':
-            base = 16;
-            break;
-        case 'X':
-            base   = 16;
-            digits = digits_upper;
-            break;
-        default:
-            break;
-        }
-    }
-
-    // Convert digits only (no sign or prefix yet)
-    if (abs_value == 0) {
-        Arr_setAt(buffer, --pos, '0');
-    } else {
-        while (abs_value > 0) {
-            Arr_setAt(buffer, --pos, Sli_getAt(digits, abs_value % base));
-            abs_value /= base;
-        }
-    }
-
-    // Get just the digits
-    let buffer_slice = Sli_arr$(Sli_const$u8, buffer);
-    let digits_slice = Sli_suffix(buffer_slice, pos);
-
-    // Determine components
-    Sli_const$u8 sign_str = u8_l("");
-    if (is_signed_type || !spec.has_type) {
-        if (is_negative) {
-            sign_str = u8_l("-");
-        } else if (spec.show_sign) {
-            sign_str = u8_l("+");
-        } else if (spec.space_sign) {
-            sign_str = u8_l(" ");
-        }
-    }
-
-    Sli_const$u8 prefix_str = u8_l("");
-    if (spec.alternate_form && original_abs_value != 0) {
-        switch (spec.type_char) {
-        case 'b':
-            prefix_str = u8_l("0b");
-            break;
-        case 'o':
-            prefix_str = u8_l("0");
-            break;
-        case 'x':
-            prefix_str = u8_l("0x");
-            break;
-        case 'X':
-            prefix_str = u8_l("0X");
-            break;
-        default:
-            break;
-        }
-    }
-
-    // Calculate precision padding (minimum number of digits)
-    usize precision_pad = 0;
-    if_some(spec.precision, p) {
-        if (p > digits_slice.len) {
-            precision_pad = p - digits_slice.len;
-        }
-    }
-
-    // Calculate total content length
-    usize content_len = sign_str.len + prefix_str.len + precision_pad + digits_slice.len;
-
-    // Calculate width padding
-    usize width_pad = 0;
-    if_some(spec.width, w) {
-        if (w > content_len) {
-            width_pad = w - content_len;
-        }
-    }
-
-    // Determine padding character and alignment
-    u8 pad_char = ' ';
-    if (spec.zero_pad && !spec.right_align_flag && isNone(spec.precision)) {
-        pad_char = '0';
-    }
-
-    fmt_AlignType align = spec.align;
-    if (spec.right_align_flag) {
-        align = fmt_AlignType_left;
-    }
-
-    // Build final output
-    use_Arr$(128, u8);
-    Arr$128$u8 final_buffer = Arr_zero();
-    Sli$u8     out_slice    = Sli_arr$(Sli$u8, final_buffer);
-    usize      out_pos      = 0;
-
-    // Right align with spaces (if not zero-padding)
-    if (align == fmt_AlignType_right && pad_char == ' ') {
-        for (usize i = 0; i < width_pad; ++i) {
-            Sli_setAt(out_slice, out_pos++, ' ');
-        }
-    }
-
-    // Sign
-    bti_memcpy(Sli_ptr(out_slice) + out_pos, Sli_ptr(sign_str), sign_str.len);
-    out_pos += sign_str.len;
-
-    // Prefix
-    bti_memcpy(Sli_ptr(out_slice) + out_pos, Sli_ptr(prefix_str), prefix_str.len);
-    out_pos += prefix_str.len;
-
-    // Zero padding for width (goes after sign/prefix but before precision)
-    if (pad_char == '0') {
-        for (usize i = 0; i < width_pad; ++i) {
-            Sli_setAt(out_slice, out_pos++, '0');
-        }
-    }
-
-    // Precision padding (minimum digits)
-    for (usize i = 0; i < precision_pad; ++i) {
-        Sli_setAt(out_slice, out_pos++, '0');
-    }
-
-    // Actual digits
-    bti_memcpy(Sli_ptr(out_slice) + out_pos, Sli_ptr(digits_slice), digits_slice.len);
-    out_pos += digits_slice.len;
-
-    // Left align with spaces (only if not zero-padding)
-    if (align == fmt_AlignType_left && pad_char != '0') {
-        for (usize i = 0; i < width_pad; ++i) {
-            Sli_setAt(out_slice, out_pos++, ' ');
-        }
-    }
-
-    try_(fmt_writeStr(writer, Sli_slice(out_slice.as_const, $r(0, out_pos))));
-
-    return_ok({});
-} $unscoped_(fn);
-
-static fn_((fmt_writeFlt(io_Writer writer, f64 value, fmt_FormatSpec spec))(Err$void) $scope) {
-    // Handle NaN and Infinity
-    if (isnan(value)) {
-        try_(fmt_writeStr(writer, spec.uppercase ? u8_l("NAN") : u8_l("nan")));
-        return_ok({});
-    }
-    if (isinf(value)) {
-        if (value < 0) {
-            try_(fmt_writeStr(writer, spec.uppercase ? u8_l("-INF") : u8_l("-inf")));
-        } else {
-            try_(fmt_writeStr(writer, spec.uppercase ? u8_l("INF") : u8_l("inf")));
-        }
-        return_ok({});
-    }
-
-    // Determine sign
-    Sli_const$u8 sign_str = u8_l("");
-    if (value < 0) {
-        sign_str = u8_l("-");
-    } else if (spec.show_sign) {
-        sign_str = u8_l("+");
-    } else if (spec.space_sign) {
-        sign_str = u8_l(" ");
-    }
-
-    let abs_value = math_abs(value);
-
-    // Get integer and fractional parts
-    f64 int_part_f  = math_floor(abs_value);
-    f64 frac_part_f = abs_value - int_part_f;
-
-    u64 int_part = (u64)int_part_f;
-
-    // Convert integer part to string
-    use_Arr$(64, u8);
-    Arr$64$u8 int_buffer = Arr_zero();
-    usize     int_pos    = Arr_len(int_buffer);
-    if (int_part == 0) {
-        Arr_setAt(int_buffer, --int_pos, '0');
-    } else {
-        u64 temp_int = int_part;
-        while (temp_int > 0) {
-            Arr_setAt(int_buffer, --int_pos, (temp_int % 10) + '0');
-            temp_int /= 10;
-        }
-    }
-    let int_slice = Sli_suffix(Sli_arr$(Sli_const$u8, int_buffer), int_pos);
-
-    // Convert fractional part to string
-    usize     precision   = orelse(spec.precision, 6);
-    Arr$64$u8 frac_buffer = Arr_zero();
-    Sli$u8    frac_slice  = Sli_arr$(Sli$u8, frac_buffer);
-    if (precision > 0) {
-        frac_part_f *= math_pow(10.0, precision);
-        u64 frac_part_u = (u64)(frac_part_f + 0.5); // rounding
-        for (usize i = precision; i > 0; --i) {
-            Sli_setAt(frac_slice, i - 1, (frac_part_u % 10) + '0');
-            frac_part_u /= 10;
-        }
-    }
-
-    // Combine parts
-    usize content_len = sign_str.len + int_slice.len + (precision > 0 ? 1 : 0) + precision;
-    usize width_pad   = 0;
-    if_some(spec.width, w) {
-        if (w > content_len) { width_pad = w - content_len; }
-    }
-
-    u8 pad_char = ' ';
-    if (spec.zero_pad && !spec.right_align_flag) { pad_char = '0'; }
-
-    // Writing
-    if (spec.align != fmt_AlignType_left && pad_char == ' ') {
-        for (usize i = 0; i < width_pad; ++i) { try_(fmt_writeChar(writer, ' ')); }
-    }
-
-    try_(fmt_writeStr(writer, sign_str));
-
-    if (spec.align != fmt_AlignType_left && pad_char == '0') {
-        for (usize i = 0; i < width_pad; ++i) { try_(fmt_writeChar(writer, '0')); }
-    }
-
-    try_(fmt_writeStr(writer, int_slice));
-    if (precision > 0) {
-        try_(fmt_writeChar(writer, '.'));
-        try_(fmt_writeStr(writer, Sli_slice(frac_slice.as_const, $r(0, precision))));
-    }
-
-    if (spec.align == fmt_AlignType_left) {
-        for (usize i = 0; i < width_pad; ++i) { try_(fmt_writeChar(writer, ' ')); }
-    }
-
-    return_ok({});
-} $unscoped_(fn);
-
-static fn_((fmt_writePtr(io_Writer writer, const anyptr ptr))(Err$void) $scope) {
-    use_Arr$(32, u8);
-    Arr$32$u8 buffer = Arr_zero();
-    usize     pos    = Arr_len(buffer);
-
-    var        addr         = intFromRawptr(ptr);
-    static let digits_lower = u8_l("0123456789abcdef");
-    static let digits_upper = u8_l("0123456789ABCDEF");
-    var        digits       = digits_lower;
-
-    // Convert to hex (backwards)
-    if (addr == 0) {
-        Arr_setAt(buffer, --pos, '0');
-    } else {
-        while (addr > 0) {
-            Arr_setAt(buffer, --pos, Sli_getAt(digits, addr % 16));
-            addr /= 16;
-        }
-    }
-
-    // Add 0x prefix
-    Arr_setAt(buffer, --pos, 'x');
-    Arr_setAt(buffer, --pos, '0');
-
-    // Convert to slice and get suffix
-    let buffer_slice = Sli_arr$(Sli_const$u8, buffer);
-    let result_slice = Sli_suffix(buffer_slice, pos);
-    try_(fmt_writeStr(writer, result_slice));
-    return_ok({});
-} $unscoped_(fn);
-
-use_Opt$(fmt_FormatSpec);
-static let spec_default = (fmt_FormatSpec){
-    .arg_index          = 0,
-    .has_explicit_index = false,
-    .align              = fmt_AlignType_left,
-    .fill_char          = none(),
-    .alternate_form     = false,
-    .uppercase          = false,
-    .zero_pad           = false,
-    .show_sign          = false,
-    .space_sign         = false,
-    .right_align_flag   = false,
-    .width              = none(),
-    .precision          = none(),
-    .type_char          = 0,
-    .is_64bit_type      = false,
-    .is_size_type       = false,
-    .has_type           = false
-};
-
-static fn_((fmt_isDigit(u8 ch))(bool)) {
-    return '0' <= ch && ch <= '9';
 }
 
-static fn_((fmt_parseFormatSpec(Sli_const$u8 spec_str))(Opt$fmt_FormatSpec) $scope) {
+/*========== Format Specifier Parser ========================================*/
+
+static fn_((parseFormatSpec(S_const$u8* fmt_str, fmt_Spec* spec))(E$void) $scope) {
     // Initialize with defaults
-    if (spec_str.len == 0) { return_none(); }
+    *spec = (fmt_Spec){
+        .index = 0,
+        .has_index = false,
+        .fill = u8_c(' '),
+        .align = fmt_Align_left,
+        .width = 0,
+        .has_width = false,
+        .precision = 6,
+        .has_precision = false,
+        .size = fmt_Size_32,
+        .type = 0
+    };
 
-    var out_spec = spec_default;
+    if (fmt_str->len == 0) {
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    }
 
     usize pos = 0;
 
-    // Skip leading ':' if present
-    if (pos < spec_str.len && Sli_getAt(spec_str, pos) == ':') {
-        ++pos;
-    }
-
-    // Parse index (if present) - only if digits are followed by ':'
-    if (pos < spec_str.len && fmt_isDigit(Sli_getAt(spec_str, pos))) {
-        // Look ahead to see if this is actually an index (digits followed by ':')
-        usize lookahead_pos = pos;
-        while (lookahead_pos < spec_str.len && fmt_isDigit(Sli_getAt(spec_str, lookahead_pos))) {
-            ++lookahead_pos;
+    // Parse optional index
+    if (ascii_isDigit(fmt_str->ptr[pos])) {
+        usize next_pos = pos;
+        while (next_pos < fmt_str->len && ascii_isDigit(fmt_str->ptr[next_pos])) {
+            next_pos++;
         }
-
-        // Only parse as index if followed by ':'
-        if (lookahead_pos < spec_str.len && Sli_getAt(spec_str, lookahead_pos) == ':') {
-            usize index = 0;
-            while (pos < lookahead_pos) {
-                index = (index * 10) + (Sli_getAt(spec_str, pos) - '0');
-                ++pos;
+        if (next_pos < fmt_str->len && fmt_str->ptr[next_pos] == u8_c(':')) {
+            // This is an index
+            spec->index = 0;
+            for (usize i = pos; i < next_pos; i++) {
+                spec->index = usize_add(usize_mul(spec->index, 10), digitToInt(fmt_str->ptr[i]));
             }
-            out_spec.arg_index          = index;
-            out_spec.has_explicit_index = true;
-
-            // Skip ':'
-            ++pos;
+            if (spec->index >= fmt_max_args) {
+                return_err(fmt_Err_IndexOutOfBounds());
+            }
+            spec->has_index = true;
+            pos = next_pos + 1; // Skip ':'
         }
     }
 
-    // Parse flags and alignment
-    while (pos < spec_str.len) {
-        let ch = Sli_getAt(spec_str, pos);
-        switch (ch) {
-        case '#':
-            out_spec.alternate_form = true;
-            ++pos;
-            break;
-        case '!':
-            out_spec.uppercase = true;
-            ++pos;
-            break;
-        case '0':
-            out_spec.zero_pad = true;
-            ++pos;
-            break;
-        case '+':
-            out_spec.show_sign = true;
-            ++pos;
-            break;
-        case ' ':
-            out_spec.space_sign = true;
-            ++pos;
-            break;
-        case '-':
-            out_spec.right_align_flag = true;
-            ++pos;
-            break;
-        case '<':
-            out_spec.align = fmt_AlignType_left;
-            ++pos;
-            break;
-        case '>':
-            out_spec.align = fmt_AlignType_right;
-            ++pos;
-            break;
-        case '^':
-            out_spec.align = fmt_AlignType_center;
-            ++pos;
-            break;
-        default:
-            goto parse_width;
+    // Parse optional fill and alignment
+    if (pos + 1 < fmt_str->len) {
+        u8 align_char = fmt_str->ptr[pos + 1];
+        if (align_char == u8_c('<') || align_char == u8_c('>') || align_char == u8_c('^')) {
+            spec->fill = fmt_str->ptr[pos];
+            pos += 2;
+
+            switch (align_char) {
+            case '<':
+                spec->align = fmt_Align_left;
+                break;
+            case '>':
+                spec->align = fmt_Align_right;
+                break;
+            case '^':
+                spec->align = fmt_Align_center;
+                break;
+            default:
+                break;
+            }
+        } else if (align_char == u8_c('<') || align_char == u8_c('>') || align_char == u8_c('^')) {
+            pos++;
+            switch (align_char) {
+            case '<':
+                spec->align = fmt_Align_left;
+                break;
+            case '>':
+                spec->align = fmt_Align_right;
+                break;
+            case '^':
+                spec->align = fmt_Align_center;
+                break;
+            default:
+                break;
+            }
         }
     }
 
-parse_width:
-    // Parse width
-    if (pos < spec_str.len && fmt_isDigit(Sli_getAt(spec_str, pos))) {
-        usize width = 0;
-        while (pos < spec_str.len && fmt_isDigit(Sli_getAt(spec_str, pos))) {
-            width = (width * 10) + (Sli_getAt(spec_str, pos) - '0');
-            ++pos;
+    // Parse optional width
+    if (pos < fmt_str->len && ascii_isDigit(fmt_str->ptr[pos])) {
+        spec->width = 0;
+        while (pos < fmt_str->len && ascii_isDigit(fmt_str->ptr[pos])) {
+            spec->width = usize_add(usize_mul(spec->width, 10), digitToInt(fmt_str->ptr[pos]));
+            pos++;
         }
-        Opt_asg(&out_spec.width, some(width));
+        spec->has_width = true;
     }
 
-    // Parse precision
-    if (pos < spec_str.len && Sli_getAt(spec_str, pos) == '.') {
-        ++pos;
-        usize precision = 0;
-        while (pos < spec_str.len && fmt_isDigit(Sli_getAt(spec_str, pos))) {
-            precision = (precision * 10) + (Sli_getAt(spec_str, pos) - '0');
-            ++pos;
+    // Parse optional precision
+    if (pos < fmt_str->len && fmt_str->ptr[pos] == u8_c('.')) {
+        pos++;
+        if (pos >= fmt_str->len || !ascii_isDigit(fmt_str->ptr[pos])) {
+            return_err(fmt_Err_InvalidPrecisionFormat());
         }
-        Opt_asg(&out_spec.precision, some(precision));
+        spec->precision = 0;
+        while (pos < fmt_str->len && ascii_isDigit(fmt_str->ptr[pos])) {
+            spec->precision = usize_add(usize_mul(spec->precision, 10), digitToInt(fmt_str->ptr[pos]));
+            pos++;
+        }
+        spec->has_precision = true;
     }
 
-    // Parse type prefix
-    if (pos + 1 < spec_str.len && Sli_getAt(spec_str, pos) == 'l' && Sli_getAt(spec_str, pos + 1) == 'l') {
-        out_spec.is_64bit_type = true;
-        pos += 2;
-    } else if (pos + 1 < spec_str.len && Sli_getAt(spec_str, pos) == 'z') {
-        // Only treat 'z' as prefix if there's another character after it
-        out_spec.is_size_type = true;
-        ++pos;
+    // Parse optional size modifier
+    if (pos < fmt_str->len) {
+        if (fmt_str->ptr[pos] == u8_c('h')) {
+            pos++;
+            if (pos < fmt_str->len && fmt_str->ptr[pos] == u8_c('h')) {
+                spec->size = fmt_Size_8;
+                pos++;
+            } else {
+                spec->size = fmt_Size_16;
+            }
+        } else if (fmt_str->ptr[pos] == u8_c('l')) {
+            spec->size = fmt_Size_64;
+            pos++;
+        } else if (fmt_str->ptr[pos] == u8_c('z')) {
+            spec->size = fmt_Size_ptr;
+            pos++;
+        }
     }
 
-    // Parse type character
-    if (pos < spec_str.len) {
-        out_spec.type_char = Sli_getAt(spec_str, pos);
-        out_spec.has_type  = true;
-        ++pos;
+    // Parse required type character
+    if (pos >= fmt_str->len) {
+        return_err(fmt_Err_InvalidFormatSpecifier());
     }
+    spec->type = fmt_str->ptr[pos];
+    pos++;
 
-    return_some(out_spec);
+    // Update fmt_str to remaining part
+    fmt_str->ptr += pos;
+    fmt_str->len -= pos;
+
+    return_ok({});
 } $unscoped_(fn);
 
-fn_((fmt_format(io_Writer writer, Sli_const$u8 fmt, ...))(Err$void) $guard) {
+/*========== Argument Collection ============================================*/
+
+static fn_((collectArgs(va_list va_args, usize arg_count, fmt_Arg args[fmt_max_args]))(void)) {
+    for (usize i = 0; i < arg_count && i < fmt_max_args; i++) {
+        // Arguments are collected as raw bytes
+        // The format specifier will determine how to interpret them
+        args[i].as_u64 = va_arg(va_args, u64);
+    }
+}
+
+/*========== Formatting Functions ===========================================*/
+
+static fn_((writeCharN(io_Writer writer, u8 ch, usize count))(E$void) $scope) {
+    for (usize i = 0; i < count; i++) {
+        try_(io_Writer_writeByte(writer, ch));
+    }
+    return_ok({});
+} $unscoped_(fn);
+
+static fn_((writePadded(io_Writer writer, S_const$u8 content, const fmt_Spec* spec))(E$void) $scope) {
+    if (!spec->has_width || content.len >= spec->width) {
+        return io_Writer_writeBytes(writer, content);
+    }
+
+    usize padding = spec->width - content.len;
+
+    switch (spec->align) {
+    case fmt_Align_left:
+        try_(io_Writer_writeBytes(writer, content));
+        try_(writeCharN(writer, spec->fill, padding));
+        break;
+
+    case fmt_Align_right:
+        try_(writeCharN(writer, spec->fill, padding));
+        try_(io_Writer_writeBytes(writer, content));
+        break;
+
+    case fmt_Align_center: {
+        usize left_pad = padding / 2;
+        usize right_pad = padding - left_pad;
+        try_(writeCharN(writer, spec->fill, left_pad));
+        try_(io_Writer_writeBytes(writer, content));
+        try_(writeCharN(writer, spec->fill, right_pad));
+        break;
+    }
+    }
+
+    return_ok({});
+} $unscoped_(fn);
+
+static fn_((formatUnsigned(io_Writer writer, u64 value, const fmt_Spec* spec))(E$void) $scope) {
+    u8 buffer[128];
+    usize pos = sizeof(buffer);
+
+    // Determine base
+    u32 base = 10;
+    const char* digits = "0123456789abcdef";
+
+    switch (spec->type) {
+    case 'x':
+        base = 16;
+        break;
+    case 'X':
+        base = 16;
+        digits = "0123456789ABCDEF";
+        break;
+    case 'o':
+        base = 8;
+        break;
+    case 'b':
+        base = 2;
+        break;
+    case 'u':
+        base = 10;
+        break;
+    default:
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
+
+    // Apply size mask
+    switch (spec->size) {
+    case fmt_Size_8:
+        value &= 0xFF;
+        break;
+    case fmt_Size_16:
+        value &= 0xFFFF;
+        break;
+    case fmt_Size_32:
+        value &= 0xFFFFFFFF;
+        break;
+    default:
+        break;
+    }
+
+    // Convert to string (reverse order)
+    if (value == 0) {
+        buffer[--pos] = u8_c('0');
+    } else {
+        while (value > 0) {
+            buffer[--pos] = digits[value % base];
+            value /= base;
+        }
+    }
+
+    S_const$u8 content = { .ptr = buffer + pos, .len = sizeof(buffer) - pos };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatSigned(
+    io_Writer writer,
+    i64 value,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    u8 buffer[128];
+    usize pos = sizeof(buffer);
+
+    // Apply size extension
+    switch (spec->size) {
+    case fmt_Size_8:
+        value = (i8)value;
+        break;
+    case fmt_Size_16:
+        value = (i16)value;
+        break;
+    case fmt_Size_32:
+        value = (i32)value;
+        break;
+    default:
+        break;
+    }
+
+    bool negative = value < 0;
+    u64 abs_value = negative ? (u64)(-value) : (u64)value;
+
+    // Convert to string (reverse order)
+    if (abs_value == 0) {
+        buffer[--pos] = u8_c('0');
+    } else {
+        while (abs_value > 0) {
+            buffer[--pos] = u8_c('0') + (abs_value % 10);
+            abs_value /= 10;
+        }
+    }
+
+    if (negative) {
+        buffer[--pos] = u8_c('-');
+    }
+
+    S_const$u8 content = { .ptr = buffer + pos, .len = sizeof(buffer) - pos };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatFloat(
+    io_Writer writer,
+    f64 value,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    // Apply size
+    if (spec->size == fmt_Size_32) {
+        value = (f32)value;
+    }
+
+    // Handle special values
+    if (flt_isNan(value)) {
+        return writePadded(writer, u8_l("nan"), spec);
+    }
+    if (flt_isInf(value)) {
+        return writePadded(writer, value < 0 ? u8_l("-inf") : u8_l("inf"), spec);
+    }
+
+    u8 buffer[128];
+    usize pos = 0;
+
+    // Handle sign
+    bool negative = value < 0;
+    if (negative) {
+        buffer[pos++] = u8_c('-');
+        value = -value;
+    }
+
+    // Get precision
+    usize precision = spec->has_precision ? spec->precision : 6;
+
+    // Get integer and fractional parts
+    f64 int_part_f = __builtin_floor(value);
+    f64 frac_part_f = value - int_part_f;
+
+    u64 int_part = (u64)int_part_f;
+
+    // Convert integer part
+    u8 int_buffer[32];
+    usize int_pos = sizeof(int_buffer);
+
+    if (int_part == 0) {
+        int_buffer[--int_pos] = u8_c('0');
+    } else {
+        u64 temp = int_part;
+        while (temp > 0) {
+            int_buffer[--int_pos] = u8_c('0') + (temp % 10);
+            temp /= 10;
+        }
+    }
+
+    // Copy integer part to buffer
+    for (usize i = int_pos; i < sizeof(int_buffer); i++) {
+        buffer[pos++] = int_buffer[i];
+    }
+
+    // Add fractional part if precision > 0
+    if (precision > 0) {
+        buffer[pos++] = u8_c('.');
+
+        // Convert fractional part
+        frac_part_f *= __builtin_pow(10.0, (f64)precision);
+        u64 frac_part_u = (u64)(frac_part_f + 0.5); // Rounding
+
+        // Write fractional digits in reverse order
+        for (usize i = precision; i > 0; i--) {
+            buffer[pos + i - 1] = u8_c('0') + (frac_part_u % 10);
+            frac_part_u /= 10;
+        }
+        pos += precision;
+    }
+
+    S_const$u8 content = { .ptr = buffer, .len = pos };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatBool(
+    io_Writer writer,
+    bool value,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    const char* str = value ? "true" : "false";
+    S_const$u8 content = { .ptr = (const u8*)str, .len = value ? 4 : 5 };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatPointer(
+    io_Writer writer,
+    const void* ptr,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    u8 buffer[32];
+    usize pos = sizeof(buffer);
+
+    // Convert pointer to usize and format as hex
+    usize ptr_val = (usize)ptr;
+
+    // Add "0x" prefix
+    buffer[--pos] = u8_c('x');
+    buffer[--pos] = u8_c('0');
+
+    // Convert to hex (reverse order)
+    if (ptr_val == 0) {
+        buffer[--pos] = u8_c('0');
+    } else {
+        const u8* digits = (const u8*)"0123456789abcdef";
+        while (ptr_val > 0) {
+            buffer[--pos] = digits[ptr_val & 0xF];
+            ptr_val >>= 4;
+        }
+    }
+
+    S_const$u8 content = { .ptr = buffer + pos, .len = sizeof(buffer) - pos };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatChar(
+    io_Writer writer,
+    u8 value,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    u8 buffer[1] = { value };
+    S_const$u8 content = { .ptr = buffer, .len = 1 };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatUTF8(
+    io_Writer writer,
+    u32 codepoint,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    u8 buffer[4];
+    usize len = 0;
+
+    if (codepoint <= 0x7F) {
+        buffer[0] = (u8)codepoint;
+        len = 1;
+    } else if (codepoint <= 0x7FF) {
+        buffer[0] = 0xC0 | (u8)(codepoint >> 6);
+        buffer[1] = 0x80 | (u8)(codepoint & 0x3F);
+        len = 2;
+    } else if (codepoint <= 0xFFFF) {
+        buffer[0] = 0xE0 | (u8)(codepoint >> 12);
+        buffer[1] = 0x80 | (u8)((codepoint >> 6) & 0x3F);
+        buffer[2] = 0x80 | (u8)(codepoint & 0x3F);
+        len = 3;
+    } else if (codepoint <= 0x10FFFF) {
+        buffer[0] = 0xF0 | (u8)(codepoint >> 18);
+        buffer[1] = 0x80 | (u8)((codepoint >> 12) & 0x3F);
+        buffer[2] = 0x80 | (u8)((codepoint >> 6) & 0x3F);
+        buffer[3] = 0x80 | (u8)(codepoint & 0x3F);
+        len = 4;
+    } else {
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    }
+
+    S_const$u8 content = { .ptr = buffer, .len = len };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatString(io_Writer writer, S_const$u8 str, const fmt_Spec* spec))(E$void) $scope) {
+    return writePadded(writer, str, spec);
+} $unscoped_(fn);
+
+static fn_((formatError(io_Writer writer, const void* error_ptr, const fmt_Spec* spec))(E$void) $scope) {
+    // Error format: "[Error] 0x..."
+    // This is a simplified implementation
+    // Real implementation would extract domain and code from error struct
+    u8 buffer[64];
+    usize pos = 0;
+
+    // Add "[Error] 0x" prefix
+    const u8* prefix = (const u8*)"[Error] 0x";
+    const usize prefix_len = 11;
+    for (usize i = 0; i < prefix_len; i++) {
+        buffer[pos++] = prefix[i];
+    }
+
+    // Convert pointer to hex
+    usize ptr_val = (usize)error_ptr;
+    if (ptr_val == 0) {
+        buffer[pos++] = u8_c('0');
+    } else {
+        // Find number of hex digits needed
+        usize temp = ptr_val;
+        usize digit_count = 0;
+        while (temp > 0) {
+            digit_count++;
+            temp >>= 4;
+        }
+
+        // Write hex digits
+        const u8* digits = (const u8*)"0123456789abcdef";
+        for (usize i = digit_count; i > 0; i--) {
+            buffer[pos + i - 1] = digits[ptr_val & 0xF];
+            ptr_val >>= 4;
+        }
+        pos += digit_count;
+    }
+
+    S_const$u8 content = { .ptr = buffer, .len = pos };
+    return writePadded(writer, content, spec);
+} $unscoped_(fn);
+
+static fn_((formatOptional(
+    io_Writer writer,
+    const fmt_Arg* arg,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    bool has_value = arg->as_opt_err.tag != 0;
+
+    if (spec->type == '?') {
+        // Tag only: "some" or "none"
+        const char* str = has_value ? "some" : "none";
+        S_const$u8 content = { .ptr = (const u8*)str, .len = 4 };
+        return writePadded(writer, content, spec);
+    }
+    if (spec->type == '0') {
+        // O$void: "some" or "none"
+        const char* str = has_value ? "some" : "none";
+        S_const$u8 content = { .ptr = (const u8*)str, .len = 4 };
+        return writePadded(writer, content, spec);
+    }
+    // Full: format value or "none"
+    if (!has_value) {
+        S_const$u8 none = { .ptr = (const u8*)"none", .len = 4 };
+        return writePadded(writer, none, spec);
+    }
+
+    // Create new spec without '?' prefix
+    fmt_Spec value_spec = *spec;
+    // Format the inner value based on type
+    switch (spec->type) {
+    case 'd':
+    case 'i':
+        return formatSigned(writer, arg->as_opt_err.value.as_i64, &value_spec);
+    case 'u':
+    case 'x':
+    case 'X':
+    case 'o':
+    case 'b':
+        return formatUnsigned(writer, arg->as_opt_err.value.as_u64, &value_spec);
+    case 'f':
+    case 'F':
+        return formatFloat(writer, arg->as_opt_err.value.as_f64, &value_spec);
+    default:
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    }
+} $unscoped_(fn);
+
+static fn_((formatResult(
+    io_Writer writer,
+    const fmt_Arg* arg,
+    const fmt_Spec* spec
+))(E$void) $scope) {
+    bool is_ok = arg->as_opt_err.tag != 0;
+
+    if (spec->type == '!') {
+        // Tag only: "ok" or "err"
+        const char* str = is_ok ? "ok" : "err";
+        S_const$u8 content = { .ptr = (const u8*)str, .len = 2 };
+        return writePadded(writer, content, spec);
+    }
+    if (spec->type == '0') {
+        // E$void: "ok" or "[Domain] Code"
+        if (is_ok) {
+            S_const$u8 ok = { .ptr = (const u8*)"ok", .len = 2 };
+            return writePadded(writer, ok, spec);
+        }
+        return formatError(writer, arg->as_opt_err.value.as_ptr, spec);
+    }
+    // Full: format value or error
+    if (!is_ok) {
+        return formatError(writer, arg->as_opt_err.value.as_ptr, spec);
+    }
+
+    // Format the inner value
+    fmt_Spec value_spec = *spec;
+    switch (spec->type) {
+    case 'd':
+    case 'i':
+        return formatSigned(writer, arg->as_opt_err.value.as_i64, &value_spec);
+    case 'u':
+    case 'x':
+    case 'X':
+    case 'o':
+    case 'b':
+        return formatUnsigned(writer, arg->as_opt_err.value.as_u64, &value_spec);
+    case 'f':
+    case 'F':
+        return formatFloat(writer, arg->as_opt_err.value.as_f64, &value_spec);
+    case 's': {
+        S_const$u8 str = {
+            .ptr = (const u8*)arg->as_opt_err.value.as_ptr,
+            .len = arg->as_opt_err.value.as_u64 >> 32
+        };
+        return formatString(writer, str, &value_spec);
+    }
+    default:
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    }
+} $unscoped_(fn);
+
+static fn_((formatArg(io_Writer writer, const fmt_Arg* arg, const fmt_Spec* spec))(E$void) $scope) {
+    // Handle Optional types
+    if (spec->type == '?' || (spec->type >= '0' && spec->type <= '9')) {
+        return formatOptional(writer, arg, spec);
+    }
+
+    // Handle Result types
+    if (spec->type == '!') {
+        return formatResult(writer, arg, spec);
+    }
+
+    // Handle regular types
+    switch (spec->type) {
+    case 'd':
+    case 'i':
+        return formatSigned(writer, arg->as_i64, spec);
+
+    case 'u':
+    case 'x':
+    case 'X':
+    case 'o':
+    case 'b':
+        return formatUnsigned(writer, arg->as_u64, spec);
+
+    case 'f':
+    case 'F':
+        return formatFloat(writer, arg->as_f64, spec);
+
+    case 'B':
+        return formatBool(writer, arg->as_u64 != 0, spec);
+
+    case 'p':
+        return formatPointer(writer, arg->as_ptr, spec);
+
+    case 'e':
+        return formatError(writer, arg->as_ptr, spec);
+
+    case 'c':
+        return formatChar(writer, (u8)arg->as_u64, spec);
+
+    case 'C':
+        return formatUTF8(writer, (u32)arg->as_u64, spec);
+
+    case 'z': {
+        const u8* str = (const u8*)arg->as_ptr;
+        usize len = strLenZ(str);
+        S_const$u8 slice = { .ptr = str, .len = len };
+        return formatString(writer, slice, spec);
+    }
+
+    case 's': {
+        S_const$u8 slice = { .ptr = arg->as_slice.ptr, .len = arg->as_slice.len };
+        return formatString(writer, slice, spec);
+    }
+
+    default:
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    }
+} $unscoped_(fn);
+
+/*========== Main Format Functions ==========================================*/
+
+fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void) $scope) {
+    // Collect all arguments first
+    fmt_Arg args[fmt_max_args] = {};
+
+    // First pass: count format specifiers to determine arg count
+    usize arg_count = 0;
+    usize max_index = 0;
+    bool has_indexed = false;
+
+    {
+        S_const$u8 temp_fmt = fmt;
+        while (temp_fmt.len > 0) {
+            if (temp_fmt.ptr[0] == u8_c('{')) {
+                if (temp_fmt.len > 1 && temp_fmt.ptr[1] == u8_c('{')) {
+                    temp_fmt.ptr += 2;
+                    temp_fmt.len -= 2;
+                    continue;
+                }
+
+                temp_fmt.ptr++;
+                temp_fmt.len--;
+
+                usize close_pos = 0;
+                while (close_pos < temp_fmt.len && temp_fmt.ptr[close_pos] != u8_c('}')) {
+                    close_pos++;
+                }
+
+                if (close_pos == temp_fmt.len) {
+                    return_err(fmt_Err_MissingClosingBrace());
+                }
+
+                S_const$u8 spec_str = { .ptr = temp_fmt.ptr, .len = close_pos };
+                fmt_Spec spec;
+                try_(parseFormatSpec(&spec_str, &spec));
+
+                if (spec.has_index) {
+                    has_indexed = true;
+                    if (spec.index > max_index) {
+                        max_index = spec.index;
+                    }
+                } else {
+                    arg_count++;
+                }
+
+                temp_fmt.ptr += close_pos + 1;
+                temp_fmt.len -= close_pos + 1;
+            } else {
+                temp_fmt.ptr++;
+                temp_fmt.len--;
+            }
+        }
+    }
+
+    // Determine total args needed
+    usize total_args = has_indexed ? (max_index + 1) : arg_count;
+    if (total_args > fmt_max_args) {
+        return_err(fmt_Err_TooManyArguments());
+    }
+
+    // Collect arguments
+
+    with_fini_(va_list va_copy = {}, va_end(va_copy)) {
+        va_copy(va_copy, va_args);
+        collectArgs(va_copy, total_args, args);
+    }
+
+    // Second pass: format output
+    usize positional_index = 0;
+
+    while (fmt.len > 0) {
+        // Handle literal characters
+        if (fmt.ptr[0] != u8_c('{')) {
+            try_(io_Writer_writeByte(writer, fmt.ptr[0]));
+            fmt.ptr++;
+            fmt.len--;
+            continue;
+        }
+
+        // Handle escaped braces
+        if (fmt.len > 1 && fmt.ptr[1] == u8_c('{')) {
+            try_(io_Writer_writeByte(writer, u8_c('{')));
+            fmt.ptr += 2;
+            fmt.len -= 2;
+            continue;
+        }
+
+        // Parse format specifier
+        fmt.ptr++; // Skip '{'
+        fmt.len--;
+
+        usize close_pos = 0;
+        while (close_pos < fmt.len && fmt.ptr[close_pos] != u8_c('}')) {
+            close_pos++;
+        }
+
+        if (close_pos == fmt.len) {
+            return_err(fmt_Err_MissingClosingBrace());
+        }
+
+        S_const$u8 spec_str = { .ptr = fmt.ptr, .len = close_pos };
+        fmt_Spec spec;
+        try_(parseFormatSpec(&spec_str, &spec));
+
+        // Determine which argument to use
+        usize arg_index = spec.has_index ? spec.index : positional_index++;
+
+        if (arg_index >= total_args) {
+            return_err(fmt_Err_TooFewArguments());
+        }
+
+        // Format the argument
+        try_(formatArg(writer, &args[arg_index], &spec));
+
+        fmt.ptr += close_pos + 1; // Skip past '}'
+        fmt.len -= close_pos + 1;
+    }
+
+    return_ok({});
+} $unscoped_(fn);
+
+fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void) $guard) {
     va_list va_args = {};
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(fmt_formatVaArgs(writer, fmt, va_args)));
 } $unguarded_(fn);
 
-static fn_((fmt_determineArgType(fmt_FormatSpec spec))(fmt_ArgType));
-static fn_((fmt_storeArg(fmt_StoredArg* stored_arg, fmt_ArgType type, va_list* args))(void));
-static fn_((fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_FormatSpec spec))(Err$void));
+/*========== Parsing Functions ==============================================*/
 
-fn_((fmt_formatVaArgs(io_Writer writer, Sli_const$u8 fmt, va_list va_args))(Err$void) $guard) {
-    use_Arr$(32, fmt_FormatSpec);
-    use_Arr$(32, usize);
-    use_Arr$(32, fmt_StoredArg);
-
-    va_list args = {};
-    va_copy(args, va_args);
-    defer_(va_end(args));
-
-    // First pass: collect all format specifications to determine if indexed access is needed
-    Arr$32$fmt_FormatSpec format_specs        = Arr_zero();
-    Arr$32$usize          spec_positions      = Arr_zero(); // Store positions in format string
-    usize                 format_spec_count   = 0;
-    bool                  uses_indexed_access = false;
-    usize                 max_arg_index       = 0;
-
-    use_Arr$(32, bool);
-    Arr$32$bool is_arg_used         = Arr_zero();
-    usize       next_implicit_index = 0;
-
-    usize pos = 0;
-    while (pos < fmt.len) {
-        let ch = Sli_getAt(fmt, pos);
-        if (ch == '{') {
-            if (pos + 1 < fmt.len && Sli_getAt(fmt, pos + 1) == '{') {
-                pos += 2; // Skip escaped '{'
-                continue;
-            }
-
-            // Find closing '}'
-            usize spec_start = pos + 1;
-            usize spec_end   = spec_start;
-            while (spec_end < fmt.len && Sli_getAt(fmt, spec_end) != '}') { ++spec_end; }
-            if (fmt.len <= spec_end) {
-                pos++;
-                continue; // Malformed - skip
-            }
-
-            // Parse format specification
-            let spec_str = Sli_slice(fmt, $r(spec_start, spec_end));
-            let spec_opt = fmt_parseFormatSpec(spec_str);
-            if (isNone(spec_opt)) {
-                // Malformed specifier, write literally
-                try_(fmt_writeStr(writer, Sli_slice(fmt, $r(pos, spec_end + 1))));
-                pos = spec_end + 1;
-                continue;
-            }
-            var spec = unwrap(spec_opt);
-
-            if (format_spec_count < Arr_len(format_specs)) {
-                if (spec.has_explicit_index) {
-                    uses_indexed_access = true;
-                    if (spec.arg_index < Arr_len(is_arg_used)) {
-                        Arr_setAt(is_arg_used, spec.arg_index, true);
-                    }
-                } else {
-                    while (next_implicit_index < Arr_len(is_arg_used) && Arr_getAt(is_arg_used, next_implicit_index)) {
-                        next_implicit_index++;
-                    }
-                    spec.arg_index = next_implicit_index;
-                    if (next_implicit_index < Arr_len(is_arg_used)) {
-                        Arr_setAt(is_arg_used, next_implicit_index, true);
-                    }
-                    next_implicit_index++;
-                }
-
-                Arr_setAt(format_specs, format_spec_count, spec);
-                Arr_setAt(spec_positions, format_spec_count, pos);
-                max_arg_index = prim_max(max_arg_index, spec.arg_index);
-                format_spec_count++;
-            }
-            pos = spec_end + 1;
-        } else if (ch == '}') {
-            if (pos + 1 < fmt.len && Sli_getAt(fmt, pos + 1) == '}') {
-                pos += 2; // Skip escaped '}'
-                continue;
-            }
-            ++pos;
-        } else {
-            ++pos;
-        }
-    }
-
-    let total_arg_count = prim_max(max_arg_index + 1, next_implicit_index);
-
-    // If indexed access is used, store all arguments in an array
-    Arr$32$fmt_StoredArg stored_args = Arr_zero();
-    if (uses_indexed_access) {
-        if (total_arg_count > Arr_len(stored_args)) {
-            // Handle error: too many arguments for storage
-        } else {
-            // Create an array to track argument types by index
-            use_Arr$(32, fmt_ArgType);
-            Arr$32$fmt_ArgType arg_types = Arr_zero();
-            for (usize i = 0; i < Arr_len(arg_types); ++i) {
-                Arr_setAt(arg_types, i, fmt_ArgType_unknown);
-            }
-
-            // First, determine the type for each argument index
-            for (usize i = 0; i < format_spec_count; ++i) {
-                let spec = Arr_getAt(format_specs, i);
-                if (spec.has_type && spec.arg_index < Arr_len(arg_types)) {
-                    let arg_type = fmt_determineArgType(spec);
-                    if (Arr_getAt(arg_types, spec.arg_index) == fmt_ArgType_unknown) {
-                        Arr_setAt(arg_types, spec.arg_index, arg_type);
-                    }
-                }
-            }
-
-            // Then store arguments in order (0, 1, 2, ...)
-            for (usize arg_index = 0; arg_index < total_arg_count; ++arg_index) {
-                let arg_type = Arr_getAt(arg_types, arg_index);
-                if (arg_type != fmt_ArgType_unknown) {
-                    fmt_storeArg(Arr_at(stored_args, arg_index), arg_type, &args);
-                } else {
-                    // Consume unused arguments as pointers to keep va_list consistent
-                    fmt_storeArg(Arr_at(stored_args, arg_index), fmt_ArgType_ptr, &args);
-                }
-            }
-        }
-    }
-
-    // Second pass: format the string
-    pos                      = 0;
-    usize current_spec_index = 0;
-    while (pos < fmt.len) {
-        let ch = Sli_getAt(fmt, pos);
-        if (ch == '{') {
-            if (pos + 1 < fmt.len && Sli_getAt(fmt, pos + 1) == '{') {
-                // Escaped '{' - write literal '{'
-                try_(fmt_writeChar(writer, '{'));
-                pos += 2;
-                continue;
-            }
-
-            // Find closing '}'
-            usize spec_start = pos + 1;
-            usize spec_end   = spec_start;
-            while (spec_end < fmt.len && Sli_getAt(fmt, spec_end) != '}') { ++spec_end; }
-            if (fmt.len <= spec_end) {
-                // Malformed format string - missing '}'
-                try_(fmt_writeChar(writer, ch));
-                ++pos;
-                continue;
-            }
-
-            // Use stored format specification if available
-            if (current_spec_index < format_spec_count) {
-                let spec = Arr_getAt(format_specs, current_spec_index);
-                current_spec_index++;
-
-                if (spec.has_type) {
-                    if (uses_indexed_access) {
-                        if (spec.arg_index >= total_arg_count) {
-                            return_err(fmt_Err_IndexOutOfBounds());
-                        } else {
-                            // Use stored argument
-                            let stored_arg = Arr_getAt(stored_args, spec.arg_index);
-                            try_(fmt_writeStoredArg(writer, stored_arg, spec));
-                        }
-                    } else {
-                        // Fall back to sequential argument consumption (original behavior)
-                        switch (spec.type_char) {
-                        case 'd': {
-                            if (spec.is_64bit_type) {
-                                let value = va_arg(args, i64);
-                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
-                            } else if (spec.is_size_type) {
-                                let value = va_arg(args, isize);
-                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
-                            } else {
-                                let value = va_arg(args, i32);
-                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
-                            }
-                        } break;
-                        case 'u':
-                            $fallthrough;
-                        case 'b':
-                            $fallthrough;
-                        case 'o':
-                            $fallthrough;
-                        case 'x':
-                            $fallthrough;
-                        case 'X': {
-                            if (spec.is_64bit_type) {
-                                let value = va_arg(args, u64);
-                                try_(fmt_writeInt(writer, value, spec));
-                            } else if (spec.is_size_type) {
-                                let value = va_arg(args, usize);
-                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
-                            } else {
-                                let value = va_arg(args, u32);
-                                try_(fmt_writeInt(writer, as$((u64)(value)), spec));
-                            }
-                        } break;
-                        case 'c': {
-                            let value = as$((u8)(va_arg(args, i32)));
-                            try_(fmt_writeChar(writer, value));
-                        } break;
-                        case 's': {
-                            var value = va_arg(args, Sli_const$u8);
-                            if_some(spec.precision, precision) {
-                                if (precision < value.len) {
-                                    value = Sli_slice(value, $r(0, precision));
-                                }
-                            }
-                            try_(fmt_writeStr(writer, value));
-                        } break;
-                        case 'z': {
-                            var value = Str_viewZ(va_arg(args, const u8*));
-                            if_some(spec.precision, precision) {
-                                if (precision < value.len) {
-                                    value = Sli_slice(value, $r(0, precision));
-                                }
-                            }
-                            try_(fmt_writeStr(writer, value));
-                        } break;
-                        case 'p': {
-                            let value = va_arg(args, const anyptr);
-                            try_(fmt_writePtr(writer, value));
-                        } break;
-                        case 'f':
-                        case 'F': {
-                            let value = va_arg(args, f64);
-                            try_(fmt_writeFlt(writer, value, spec));
-                        } break;
-                        default: {
-                            // Unknown type - write literally
-                            try_(fmt_writeChar(writer, ch));
-                            ++pos;
-                            continue;
-                        } break;
-                        }
-                    }
-                } else {
-                    // No type specified - consume argument but don't format it
-                    if (!uses_indexed_access) {
-                        let_ignore = va_arg(args, anyptr);
-                    }
-                }
-            } else {
-                // No stored spec - write literally
-                try_(fmt_writeChar(writer, ch));
-                ++pos;
-                continue;
-            }
-
-            pos = spec_end + 1;
-        } else if (ch == '}') {
-            if (pos + 1 < fmt.len && Sli_getAt(fmt, pos + 1) == '}') {
-                // Escaped '}' - write literal '}'
-                try_(fmt_writeChar(writer, '}'));
-                pos += 2;
-                continue;
-            }
-            // Unmatched '}' - write literally
-            try_(fmt_writeChar(writer, ch));
-            ++pos;
-        } else {
-            // Regular character
-            try_(fmt_writeChar(writer, ch));
-            ++pos;
-        }
-    }
-    return_ok({});
-} $unguarded_(fn);
-
-use_Arr$(32, fmt_FormatSpec);
-use_Arr$(32, fmt_StoredArg);
-static fn_((fmt_determineArgType(fmt_FormatSpec spec))(fmt_ArgType)) {
-    if (!spec.has_type) { return fmt_ArgType_unknown; }
-    switch (spec.type_char) {
-    case 'd': {
-        if (spec.is_64bit_type) {
-            return fmt_ArgType_i64;
-        }
-        if (spec.is_size_type) {
-            return fmt_ArgType_isize;
-        }
-        return fmt_ArgType_i32;
-    } break;
-    case 'u':
-    case 'b':
-    case 'o':
-    case 'x':
-    case 'X': {
-        if (spec.is_64bit_type) { return fmt_ArgType_u64; }
-        if (spec.is_size_type) { return fmt_ArgType_usize; }
-        return fmt_ArgType_u32;
-    } break;
-    case 'f':
-    case 'F': {
-        return fmt_ArgType_f64;
-    } break;
-    case 'c': {
-        return fmt_ArgType_char;
-    } break;
-    case 's': {
-        return fmt_ArgType_str_slice;
-    } break;
-    case 'z': {
-        return fmt_ArgType_str_ptr;
-    } break;
-    case 'p': {
-        return fmt_ArgType_ptr;
-    } break;
-    default:
-        return fmt_ArgType_unknown;
-    }
-}
-
-static fn_((fmt_storeArg(fmt_StoredArg* stored_arg, fmt_ArgType type, va_list* args))(void)) {
-    stored_arg->type = type;
-    switch (type) {
-    case fmt_ArgType_i32: {
-        stored_arg->value.i32_val = va_arg(*args, i32);
-    } break;
-    case fmt_ArgType_i64: {
-        stored_arg->value.i64_val = va_arg(*args, i64);
-    } break;
-    case fmt_ArgType_isize: {
-        stored_arg->value.isize_val = va_arg(*args, isize);
-    } break;
-    case fmt_ArgType_u32: {
-        stored_arg->value.u32_val = va_arg(*args, u32);
-    } break;
-    case fmt_ArgType_u64: {
-        stored_arg->value.u64_val = va_arg(*args, u64);
-    } break;
-    case fmt_ArgType_usize: {
-        stored_arg->value.usize_val = va_arg(*args, usize);
-    } break;
-    case fmt_ArgType_f64: {
-        stored_arg->value.f64_val = va_arg(*args, f64);
-    } break;
-    case fmt_ArgType_char: {
-        stored_arg->value.char_val = as$((u8)(va_arg(*args, i32)));
-    } break;
-    case fmt_ArgType_str_slice: {
-        stored_arg->value.str_slice_val = va_arg(*args, Sli_const$u8);
-    } break;
-    case fmt_ArgType_str_ptr: {
-        stored_arg->value.str_ptr_val = va_arg(*args, const u8*);
-    } break;
-    case fmt_ArgType_ptr: {
-        stored_arg->value.ptr_val = va_arg(*args, const anyptr);
-    } break;
-    case fmt_ArgType_unknown:
-        $fallthrough;
-    default: {
-        let_ignore = va_arg(*args, anyptr);
-    } break;
-    }
-}
-
-static fn_((fmt_writeStoredArg(io_Writer writer, fmt_StoredArg stored_arg, fmt_FormatSpec spec))(Err$void) $scope) {
-    switch (stored_arg.type) {
-    case fmt_ArgType_i32: {
-        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.i32_val)), spec));
-    } break;
-    case fmt_ArgType_i64: {
-        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.i64_val)), spec));
-    } break;
-    case fmt_ArgType_isize: {
-        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.isize_val)), spec));
-    } break;
-    case fmt_ArgType_u32: {
-        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.u32_val)), spec));
-    } break;
-    case fmt_ArgType_u64: {
-        try_(fmt_writeInt(writer, stored_arg.value.u64_val, spec));
-    } break;
-    case fmt_ArgType_usize: {
-        try_(fmt_writeInt(writer, as$((u64)(stored_arg.value.usize_val)), spec));
-    } break;
-    case fmt_ArgType_char: {
-        try_(fmt_writeChar(writer, stored_arg.value.char_val));
-    } break;
-    case fmt_ArgType_str_slice: {
-        var value = stored_arg.value.str_slice_val;
-        if_some(spec.precision, precision) {
-            if (precision < value.len) {
-                value = Sli_slice(value, $r(0, precision));
-            }
-        }
-        try_(fmt_writeStr(writer, value));
-    } break;
-    case fmt_ArgType_str_ptr: {
-        var value = Str_viewZ(stored_arg.value.str_ptr_val);
-        if_some(spec.precision, precision) {
-            if (precision < value.len) {
-                value = Sli_slice(value, $r(0, precision));
-            }
-        }
-        try_(fmt_writeStr(writer, value));
-    } break;
-    case fmt_ArgType_ptr:
-        try_(fmt_writePtr(writer, stored_arg.value.ptr_val));
-        break;
-    case fmt_ArgType_f64:
-        try_(fmt_writeFlt(writer, stored_arg.value.f64_val, spec));
-        break;
-    case fmt_ArgType_unknown: {
-        // Not implemented or unknown type
-    } break;
-    default:
-        claim_unreachable;
-    }
-    return_ok({});
+fn_((fmt_parseBool(S_const$u8 str))(E$bool) $scope) {
+    skipWhitespace(&str);
+    if (Str_eql(str, mem_asBytes_const(&u8_c('1'))) || Str_eql(str, u8_l("true"))) { return_ok(true); }
+    if (Str_eql(str, mem_asBytes_const(&u8_c('0'))) || Str_eql(str, u8_l("false"))) { return_ok(false); }
+    return_err(fmt_Err_InvalidBoolFormat());
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_u64(Sli_const$u8 str, u8 base))(Err$u64) $scope) {
-    if (str.len == 0) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    if (base < 2 || 36 < base) { return_err(fmt_Err_InvalidIntegerFormat()); }
+fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) { return fmt_parseBool(str); }
 
-    usize pos = 0;
-    if (0 < str.len && Sli_getAt(str, 0) == '+') { pos = 1; }
+fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
+    skipWhitespace(&str);
 
-    if (str.len <= pos) { return_err(fmt_Err_InvalidIntegerFormat()); }
+    if (str.len == 0) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
 
-    u64       result  = 0;
-    const u64 max_div = u64_limit_max / base;
-    const u64 max_rem = u64_limit_max % base;
+    if (base < 2 || base > 36) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
 
-    for (usize i = pos; i < str.len; ++i) {
-        let ch    = Sli_getAt(str, i);
-        u8  digit = 0;
-        if ('0' <= ch && ch <= '9') {
-            digit = ch - '0';
-        } else if ('a' <= ch && ch <= 'z') {
-            digit = ch - 'a' + 10;
-        } else if ('A' <= ch && ch <= 'Z') {
-            digit = ch - 'A' + 10;
+    u64 result = 0;
+
+    for (usize i = 0; i < str.len; i++) {
+        u8 ch = str.ptr[i];
+
+        if (ascii_isWhitespace(ch)) {
+            break;
+        }
+
+        u8 digit_val = 0;
+        if (ascii_isDigit(ch)) {
+            digit_val = ch - u8_c('0');
+        } else if (u8_c('a') <= ch && ch <= u8_c('z')) {
+            digit_val = u8_add(10, ch - u8_c('a'));
+        } else if (u8_c('A') <= ch && ch <= u8_c('Z')) {
+            digit_val = u8_add(10, ch - u8_c('A'));
         } else {
+            if (i == 0) {
+                return_err(fmt_Err_InvalidIntegerFormat());
+            }
+            break;
+        }
+
+        if (digit_val >= base) {
+            if (i == 0) {
+                return_err(fmt_Err_InvalidIntegerFormat());
+            }
+            break;
+        }
+
+        // Check for overflow using checked arithmetic
+        let mul_result = u64_mulChkd(result, base);
+        if (isNone(mul_result)) {
             return_err(fmt_Err_InvalidIntegerFormat());
         }
 
-        if (base <= digit) { return_err(fmt_Err_InvalidIntegerFormat()); }
+        let add_result = u64_addChkd(unwrap_(mul_result), digit_val);
+        if (isNone(add_result)) {
+            return_err(fmt_Err_InvalidIntegerFormat());
+        }
 
-        if (max_div < result || (result == max_div && max_rem < digit)) { return_err(fmt_Err_InvalidIntegerFormat()); }
-
-        result = (result * base) + digit;
+        result = unwrap_(add_result);
     }
 
     return_ok(result);
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_usize(Sli_const$u8 str, u8 base))(Err$usize) $scope) {
-    let result = try_(fmt_parseInt_u64(str, base));
-    if (usize_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    return_ok(as$((usize)(result)));
+fn_((fmt_parse$usize(S_const$u8 str, u8 base))(E$usize) $scope) {
+    return_ok(as$((usize)(try_(fmt_parseUInt(str, base)))));
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_u32(Sli_const$u8 str, u8 base))(Err$u32) $scope) {
-    let result = try_(fmt_parseInt_u64(str, base));
-    if (u32_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
+fn_((fmt_parse$u64(S_const$u8 str, u8 base))(E$u64)) { return fmt_parseUInt(str, base); }
+
+fn_((fmt_parse$u32(S_const$u8 str, u8 base))(E$u32) $scope) {
+    let result = try_(fmt_parseUInt(str, base));
+    if (result > u32_limit_max) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
     return_ok(as$((u32)(result)));
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_i64(Sli_const$u8 str, u8 base))(Err$i64) $scope) {
-    if (str.len == 0) { return_err(fmt_Err_InvalidIntegerFormat()); }
-    if (base < 2 || 36 < base) { return_err(fmt_Err_InvalidIntegerFormat()); }
+fn_((fmt_parse$u16(S_const$u8 str, u8 base))(E$u16) $scope) {
+    let result = try_(fmt_parseUInt(str, base));
+    if (result > u16_limit_max) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
+    return_ok(as$((u16)(result)));
+} $unscoped_(fn);
 
-    usize pos         = 0;
-    bool  is_negative = false;
+fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8) $scope) {
+    let result = try_(fmt_parseUInt(str, base));
+    if (result > u8_limit_max) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
+    return_ok(as$((u8)(result)));
+} $unscoped_(fn);
 
-    if (0 < str.len && Sli_getAt(str, 0) == '+') {
-        pos = 1;
-    } else if (0 < str.len && Sli_getAt(str, 0) == '-') {
-        is_negative = true;
-        pos         = 1;
+fn_((fmt_parseInt(S_const$u8 str, u8 base))(E$i64) $scope) {
+    skipWhitespace(&str);
+
+    if (str.len == 0) {
+        return_err(fmt_Err_InvalidIntegerFormat());
     }
 
-    if (str.len <= pos) { return_err(fmt_Err_InvalidIntegerFormat()); }
-
-    u64 result = 0;
-
-    u64 max_val = 0;
-    if (is_negative) {
-        max_val = as$((u64)(i64_limit_max)) + 1;
-    } else {
-        max_val = i64_limit_max;
+    bool negative = false;
+    if (str.ptr[0] == u8_c('-')) {
+        negative = true;
+        str.ptr++;
+        str.len--;
+    } else if (str.ptr[0] == u8_c('+')) {
+        str.ptr++;
+        str.len--;
     }
 
-    const u64 max_div = max_val / base;
-    const u64 max_rem = max_val % base;
+    let unsigned_result = try_(fmt_parseUInt(str, base));
 
-    for (usize i = pos; i < str.len; ++i) {
-        let ch    = Sli_getAt(str, i);
-        u8  digit = 0;
-        if ('0' <= ch && ch <= '9') {
-            digit = ch - '0';
-        } else if ('a' <= ch && ch <= 'z') {
-            digit = ch - 'a' + 10;
-        } else if ('A' <= ch && ch <= 'Z') {
-            digit = ch - 'A' + 10;
-        } else {
+    if (negative) {
+        const u64 max_neg = as$((u64)(i64_limit_max)) + 1;
+        if (unsigned_result > max_neg) {
             return_err(fmt_Err_InvalidIntegerFormat());
         }
-
-        if (base <= digit) { return_err(fmt_Err_InvalidIntegerFormat()); }
-
-        if (max_div < result || (result == max_div && max_rem < digit)) { return_err(fmt_Err_InvalidIntegerFormat()); }
-
-        result = (result * base) + digit;
-    }
-
-    if (is_negative) {
-        return_ok(-as$((i64)(result)));
+        return_ok(-as$((i64)(unsigned_result)));
     } else {
-        return_ok(as$((i64)(result)));
+        if (unsigned_result > as$((u64)(i64_limit_max))) {
+            return_err(fmt_Err_InvalidIntegerFormat());
+        }
+        return_ok(as$((i64)(unsigned_result)));
     }
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_isize(Sli_const$u8 str, u8 base))(Err$isize) $scope) {
-    let result = try_(fmt_parseInt_i64(str, base));
-    if (result < isize_limit_min || isize_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
+fn_((fmt_parse$isize(S_const$u8 str, u8 base))(E$isize) $scope) {
+    let result = try_(fmt_parseInt(str, base));
     return_ok(as$((isize)(result)));
 } $unscoped_(fn);
 
-fn_((fmt_parseInt_i32(Sli_const$u8 str, u8 base))(Err$i32) $scope) {
-    let result = try_(fmt_parseInt_i64(str, base));
-    if (result < i32_limit_min || i32_limit_max < result) { return_err(fmt_Err_InvalidIntegerFormat()); }
+fn_((fmt_parse$i64(S_const$u8 str, u8 base))(E$i64)) {
+    return fmt_parseInt(str, base);
+}
+
+fn_((fmt_parse$i32(S_const$u8 str, u8 base))(E$i32) $scope) {
+    let result = try_(fmt_parseInt(str, base));
+    if (result < i32_limit_min || i32_limit_max < result) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
     return_ok(as$((i32)(result)));
 } $unscoped_(fn);
 
-static fn_((fmt_parseFlt(Sli_const$u8 str))(Err$f64) $scope) {
-    if (str.len == 0) { return_err(fmt_Err_InvalidFloatFormat()); }
+fn_((fmt_parse$i16(S_const$u8 str, u8 base))(E$i16) $scope) {
+    let result = try_(fmt_parseInt(str, base));
+    if (result < i16_limit_min || i16_limit_max < result) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
+    return_ok(as$((i16)(result)));
+} $unscoped_(fn);
 
-    usize pos          = 0;
-    f64   sign         = 1.0;
-    f64   result       = 0.0;
-    bool  has_int_part = false;
+fn_((fmt_parse$i8(S_const$u8 str, u8 base))(E$i8) $scope) {
+    let result = try_(fmt_parseInt(str, base));
+    if (result < i8_limit_min || i8_limit_max < result) {
+        return_err(fmt_Err_InvalidIntegerFormat());
+    }
+    return_ok(as$((i8)(result)));
+} $unscoped_(fn);
 
-    if (pos < str.len && Sli_getAt(str, pos) == '+') {
+fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
+    skipWhitespace(&str);
+
+    if (str.len == 0) {
+        return_err(fmt_Err_InvalidFloatFormat());
+    }
+
+    usize pos = 0;
+    f64 sign = 1.0;
+    f64 result = 0.0;
+    bool has_int_part = false;
+
+    // Check for sign
+    if (pos < str.len && str.ptr[pos] == u8_c('+')) {
         pos++;
-    } else if (pos < str.len && Sli_getAt(str, pos) == '-') {
+    } else if (pos < str.len && str.ptr[pos] == u8_c('-')) {
         sign = -1.0;
         pos++;
     }
 
-    // Integer part
-    while (pos < str.len && '0' <= Sli_getAt(str, pos) && Sli_getAt(str, pos) <= '9') {
-        result       = (result * 10.0) + (Sli_getAt(str, pos) - '0');
+    // Parse integer part
+    while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
+        result = (result * 10.0) + (str.ptr[pos] - u8_c('0'));
         has_int_part = true;
         pos++;
     }
 
-    // Fractional part
-    if (pos < str.len && Sli_getAt(str, pos) == '.') {
+    // Parse fractional part
+    if (pos < str.len && str.ptr[pos] == u8_c('.')) {
         pos++;
-        f64  power        = 0.1;
-        bool has_fracpart = false;
-        while (pos < str.len && '0' <= Sli_getAt(str, pos) && Sli_getAt(str, pos) <= '9') {
-            result += (Sli_getAt(str, pos) - '0') * power;
+        f64 power = 0.1;
+        bool has_frac_part = false;
+        while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
+            result += (str.ptr[pos] - u8_c('0')) * power;
             power *= 0.1;
-            has_fracpart = true;
+            has_frac_part = true;
             pos++;
         }
-        if (!has_int_part && !has_fracpart) { return_err(fmt_Err_InvalidFloatFormat()); }
+        if (!has_int_part && !has_frac_part) {
+            return_err(fmt_Err_InvalidFloatFormat());
+        }
     } else {
-        if (!has_int_part) { return_err(fmt_Err_InvalidFloatFormat()); }
+        if (!has_int_part) {
+            return_err(fmt_Err_InvalidFloatFormat());
+        }
     }
 
-
-    // Exponent part
-    if (pos < str.len && (Sli_getAt(str, pos) == 'e' || Sli_getAt(str, pos) == 'E')) {
+    // Parse exponent part
+    if (pos < str.len && (str.ptr[pos] == u8_c('e') || str.ptr[pos] == u8_c('E'))) {
         pos++;
-        f64  exp_sign = 1.0;
-        i32  exp_val  = 0;
-        bool has_exp  = false;
+        f64 exp_sign = 1.0;
+        i32 exp_val = 0;
+        bool has_exp = false;
 
-        if (pos < str.len && Sli_getAt(str, pos) == '+') {
+        if (pos < str.len && str.ptr[pos] == u8_c('+')) {
             pos++;
-        } else if (pos < str.len && Sli_getAt(str, pos) == '-') {
+        } else if (pos < str.len && str.ptr[pos] == u8_c('-')) {
             exp_sign = -1.0;
             pos++;
         }
 
-        while (pos < str.len && '0' <= Sli_getAt(str, pos) && Sli_getAt(str, pos) <= '9') {
-            exp_val = (exp_val * 10) + (Sli_getAt(str, pos) - '0');
+        while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
+            exp_val = (exp_val * 10) + (str.ptr[pos] - u8_c('0'));
             has_exp = true;
             pos++;
         }
 
-        if (!has_exp) { return_err(fmt_Err_InvalidFloatFormat()); }
+        if (!has_exp) {
+            return_err(fmt_Err_InvalidFloatFormat());
+        }
 
-        result *= math_pow(10.0, exp_val * exp_sign);
+        result *= __builtin_pow(10.0, exp_val * exp_sign);
     }
 
-    if (pos != str.len) { return_err(fmt_Err_InvalidFloatFormat()); }
+    // Check that we consumed all input
+    if (pos != str.len) {
+        return_err(fmt_Err_InvalidFloatFormat());
+    }
 
     return_ok(result * sign);
 } $unscoped_(fn);
 
-fn_((fmt_parseFlt_f64(Sli_const$u8 str))(Err$f64) $scope) {
-    return_ok(try_(fmt_parseFlt(str)));
-} $unscoped_(fn);
+fn_((fmt_parse$f64(S_const$u8 str))(E$f64)) { return fmt_parseFlt(str); }
 
-fn_((fmt_parseFlt_f32(Sli_const$u8 str))(Err$f32) $scope) {
-    let res = try_(fmt_parseFlt(str));
-    // TODO: Add proper overflow/underflow check for f32
-    return_ok(as$((f32)(res)));
-} $unscoped_(fn);
-
-fn_((fmt_parseBool(Sli_const$u8 str))(Err$bool) $scope) {
-    if (Str_eqlNoCase(str, u8_l("1")) || Str_eqlNoCase(str, u8_l("true"))) { return_ok(true); }
-    if (Str_eqlNoCase(str, u8_l("0")) || Str_eqlNoCase(str, u8_l("false"))) { return_ok(false); }
-    return_err(fmt_Err_InvalidBoolFormat());
+fn_((fmt_parse$f32(S_const$u8 str))(E$f32) $scope) {
+    let result = try_(fmt_parseFlt(str));
+    return_ok(as$((f32)(result)));
 } $unscoped_(fn);

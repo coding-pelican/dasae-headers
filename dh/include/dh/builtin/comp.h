@@ -106,33 +106,83 @@ extern "C" {
      * @param _src The value to cast \
      * @return The casted value \
      */ \
-    __comp_exec__as$(pp_defer(__comp_emit__as$)(__comp_split__as$ __VA_ARGS__))
+    __as$__step(pp_defer(__as$__emit)(__as$__sep __VA_ARGS__))
+#define __as$__step(...)  __VA_ARGS__
+#define __as$__sep(...)   __VA_ARGS__, __as$__next$
+#define __as$__next$(...) __VA_ARGS__
+#if defined(__cplusplus)
+#define __as$__emit(_TDest, _src...) (static_cast<_TDest>(_src))
+#else
+#define __as$__emit(_TDest, _src...) ((_TDest)(_src))
+#endif
 
-#define lit$(T_Lit, _Inital... /*T_Lit*/) \
-    /** \
-     * @brief Literal macro for creating a compound lit \
-     * @details Plain structures in C++ (without constructors) can be \
-     *          initialized with { } This is called aggregate initialization \
-     *          (C++11) \
-     * @note MSVC C++ compiler does not support compound literals (C99) \
-     * @param T_Lit The type of the literal to create \
-     * @param _Inital The initial values for the literal \
-     * @return The created literal \
-     */ \
-    comp_syn__lit$(T_Lit, _Inital)
+#define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __lit$__step(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
+#define __lit$__step(...)             __VA_ARGS__
+#define __lit$__sep(_T...)            _T,
+#define __lit$__emit(_T, _initial...) __lit$__emitNext(_T, (_initial))
+#if defined(__cplusplus)
+#define __lit$__emitNext(_T, _initial...) (_T __lit$__expandInitial _initial)
+#else
+#define __lit$__emitNext(_T, _initial...) ((_T)__lit$__expandInitial _initial)
+#endif
+#define __lit$__expandInitial(_initial...) _initial
 
-#define initial(_Inital...)                      comp_syn__initial(_Inital)
-#define initial$(T_Lit, _Inital... /*T*/)        comp_syn__initial$(T_Lit, _Inital)
-#define cleared()                                comp_syn__cleared()
-#define cleared$(T_Lit /*T*/)                    comp_syn__cleared$(T_Lit)
-#define make$(T_Lit, _Inital... /*T*/)           comp_syn__make$(T_Lit, _Inital)
-#define makeCleared$(T_Lit /*T*/)                comp_syn__makeCleared$(T_Lit)
-#define create$(T_Lit, _Initial... /*Ptr$T*/)    comp_syn__create$(T_Lit, _Initial)
-#define createCleared$(T_Lit /*Ptr$T*/)          comp_syn__createCleared$(T_Lit)
-#define createFrom(var_src... /*Ptr$T*/)         comp_syn__createFrom(var_src)
-#define createFrom$(T_Lit, var_src... /*Ptr$T*/) comp_syn__createFrom$(T_Lit, var_src)
-#define move(_p_val... /*(TypeOf(*_p_val))*/)    comp_syn__move(_p_val)
-#define copy(_val... /*(TypeOf(_val))*/)         comp_syn__copy(_val)
+#define make$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __make$__step(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
+#define __make$__step(...)             __VA_ARGS__
+#define __make$__sep(_T...)            _T,
+#define __make$__emit(_T, _initial...) __make$__emitNext(_T, (_initial))
+#define __make$__emitNext(_T, _initial...) \
+    (*lit$((_T[1]){ [0] = __make$__expandInitial _initial }))
+#define __make$__expandInitial(_initial...) _initial
+
+#define create$(/*(_T){_initial...}*/... /*(P$$(_T))*/) \
+    __create$__step(pp_defer(__create$__emit)(__create$__sep __VA_ARGS__))
+#define __create$__step(...)             __VA_ARGS__
+#define __create$__sep(_T...)            _T,
+#define __create$__emit(_T, _initial...) __create$__emitNext(_T, (_initial))
+#define __create$__emitNext(_T, _initial...) \
+    (&make$((_T)__create$__expandInitial _initial))
+#define __create$__expandInitial(_initial...) _initial
+
+#define type$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    /* TODO: Add type checking */ \
+    __type$__step(pp_defer(__type$__emit)(__type$__sep __VA_ARGS__))
+#define __type$__step(...)             __VA_ARGS__
+#define __type$__sep(_T...)            _T, __type$__sepRaw
+#define __type$__sepRaw(_raw...)       _raw
+#define __type$__emit(_T, _raw...)     __type$__emitNext(_T, _raw)
+#define __type$__emitNext(_T, _raw...) make$((_T){ .as_raw = _raw })
+#define type$O$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$O$__step(pp_defer(__type$O$__emit)(__type$O$__sep __VA_ARGS__))
+#define __type$O$__step(...)             __VA_ARGS__
+#define __type$O$__sep(_T...)            _T, __type$O$__sepRaw
+#define __type$O$__sepRaw(_raw...)       _raw
+#define __type$O$__emit(_T, _raw...)     __type$O$__emitNext(_T, _raw)
+#define __type$O$__emitNext(_T, _raw...) make$((O$(_T)){ .as_raw = _raw.as_raw })
+#define type$E$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$E$__step(pp_defer(__type$E$__emit)(__type$E$__sep __VA_ARGS__))
+#define __type$E$__step(...)             __VA_ARGS__
+#define __type$E$__sep(_T...)            _T, __type$E$__sepRaw
+#define __type$E$__sepRaw(_raw...)       _raw
+#define __type$E$__emit(_T, _raw...)     __type$E$__emitNext(_T, _raw)
+#define __type$E$__emitNext(_T, _raw...) make$((E$(_T)){ .as_raw = _raw.as_raw })
+
+#define cleared() comp_syn__cleared()
+#define comp_syn__cleared() \
+    {}
+
+#define move(_p_val... /*(TypeOf(*_p_val))*/) comp_syn__move(_p_val)
+#define comp_syn__move(_p_val...)             ({ \
+    let_(__p_val, TypeOf(_p_val)) = _p_val; \
+    let_(__val, TypeOf(*__p_val)) = *__p_val; \
+    *__p_val = ((TypeOf(__val)){}); \
+    __val; \
+})
+#define copy(_val... /*(TypeOf(_val))*/) comp_syn__copy(_val)
+#define comp_syn__copy(_val...) \
+    (*&*((TypeOf(_val)[1]){ [0] = _val }))
 
 #define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
 #define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
@@ -224,55 +274,6 @@ extern "C" {
 #define comp_attr__$keep_symbol  __attribute__((used))
 #define comp_attr__$maybe_unused __attribute__((unused))
 #define comp_attr__$must_use     __attribute__((warn_unused_result))
-
-#define __comp_exec__as$(...)  __VA_ARGS__
-#define __comp_split__as$(...) __VA_ARGS__, __comp_next__as$
-#define __comp_next__as$(...)  __VA_ARGS__
-#if defined(__cplusplus)
-#define __comp_emit__as$(_TDest, _src...) (static_cast<_TDest>(_src))
-#else
-#define __comp_emit__as$(_TDest, _src...) ((_TDest)(_src))
-#endif
-
-#if defined(__cplusplus)
-#define comp_syn__lit$(T_Lit, _Inital...) \
-    T_Lit { _Inital }
-#else
-#define comp_syn__lit$(T_Lit, _Inital...) \
-    (T_Lit) { _Inital }
-#endif
-
-#define comp_syn__initial(_Inital...) \
-    { _Inital }
-#define comp_syn__initial$(T_Lit, _Inital... /*T*/) \
-    (lit$(T_Lit, _Inital))
-#define comp_syn__cleared() \
-    {}
-#define comp_syn__cleared$(T_Lit /*T*/) \
-    (lit$(T_Lit))
-
-#define comp_syn__make$(T_Lit, _Inital...) (lit$(T_Lit, _Inital))
-#define comp_syn__makeCleared$(T_Lit)      (lit$(T_Lit))
-
-// NOLINTBEGIN(bugprone-macro-parentheses)
-#define comp_syn__create$(T_Lit, _Inital...) \
-    (&*lit$(T_Lit[1], [0] = make$(T_Lit, _Inital)))
-#define comp_syn__createCleared$(T_Lit) \
-    (&*lit$(T_Lit[1], [0] = makeCleared$(T_Lit)))
-#define comp_syn__createFrom(var_src...) \
-    (&*lit$(TypeOfUnqual(var_src)[1], [0] = var_src))
-#define comp_syn__createFrom$(T_Lit, var_src...) \
-    (&*lit$(T_Lit[1], [0] = var_src))
-// NOLINTEND(bugprone-macro-parentheses)
-
-#define comp_syn__move(_p_val...) ({ \
-    let_(__p_val, TypeOf(_p_val)) = _p_val; \
-    let_(__val, TypeOf(*__p_val)) = *__p_val; \
-    *__p_val                      = ((TypeOf(__val)){}); \
-    __val; \
-})
-#define comp_syn__copy(_val...) \
-    (*&*((TypeOf(_val)[1]){ [0] = _val }))
 
 #define comp_syn__bti_Generic_match$(T, _Pattern...) \
     _Generic(T, _Pattern)

@@ -30,7 +30,7 @@
 //     // TEST_condition(!zero_sli_res.is_err);
 
 //     // if (!zero_sli_res.is_err) {
-//     //     meta_Sli zero_sli = zero_sli_res.ok;
+//     //     meta_S zero_sli = zero_sli_res.ok;
 //     //     // Free the memory using anySli since it's a slice
 //     //     mem_Allocator_free(allocator, meta_sliToAny(zero_sli));
 //     // }
@@ -41,7 +41,7 @@
 //     TEST_condition(!page_res.is_err);
 
 //     if (!page_res.is_err) {
-//         meta_Ptr ptr = page_res.ok;
+//         meta_P ptr = page_res.ok;
 //         TEST_condition(ptr.addr != null);
 //         TEST_condition(mem_isAligned((usize)ptr.addr, mem_page_size));
 
@@ -71,7 +71,7 @@ TEST_Result TEST_heap_Page_Alignment(void) {
         TEST_condition(!res.is_err);
 
         if (!res.is_err) {
-            meta_Ptr ptr = res.ok;
+            meta_P ptr = res.ok;
             TEST_condition(ptr.addr != null);
             TEST_condition(mem_isAligned((usize)ptr.addr, align));
 
@@ -96,7 +96,7 @@ TEST_Result TEST_heap_Page_Slices(void) {
     TEST_condition(!slice_res.is_err);
 
     if (!slice_res.is_err) {
-        meta_Sli slice = slice_res.ok;
+        meta_S slice = slice_res.ok;
         TEST_condition(slice.addr != null);
         TEST_condition(slice.len == 2);
         TEST_condition(mem_isAligned((usize)slice.addr, mem_page_size));
@@ -148,7 +148,7 @@ TEST_Result TEST_heap_Page_LargeAlloc(void) {
     TEST_condition(!valid_res.is_err);
 
     if (!valid_res.is_err) {
-        meta_Sli large_slice = valid_res.ok;
+        meta_S large_slice = valid_res.ok;
         TEST_condition(large_slice.addr != null);
         TEST_condition(large_slice.len == large_but_valid);
         TEST_condition(mem_isAligned((usize)large_slice.addr, mem_page_size));
@@ -195,7 +195,7 @@ TEST_Result TEST_heap_Page_MultiPageAccess(void) {
     TEST_condition(!res.is_err);
 
     if (!res.is_err) {
-        meta_Sli slice = res.ok;
+        meta_S slice = res.ok;
         TEST_condition(slice.addr != null);
         TEST_condition(slice.len == num_pages);
 

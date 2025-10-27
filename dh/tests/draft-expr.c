@@ -75,7 +75,7 @@ typedef struct R {
     if (_cond) _body
 
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     //     ({
@@ -104,7 +104,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 TEST_fn_("test eval function" $scope) {
     const usize key = 12;
 
-    let value_for = eval_(Sli_const$u8 $scope)(
+    let value_for = eval_(S_const$u8 $scope)(
         for_(($r(0, 10))(i) {
             io_stream_print(u8_l("i: {:llu}\n"), i);
             if (i % 2 == 0) { continue; }
@@ -119,7 +119,7 @@ TEST_fn_("test eval function" $scope) {
     }) $unscoped_(eval);
 
 #if UNUSED_CODE
-    let value_if = eval_(Sli_const$u8 $scope)(if (false) {
+    let value_if = eval_(S_const$u8 $scope)(if (false) {
         $break_(u8_l("first"));
     }) eval_(else)(if (true) {
         $break_(u8_l("second"));
@@ -127,7 +127,7 @@ TEST_fn_("test eval function" $scope) {
         claim_unreachable;
     }) $unscoped_(expr);
 #endif /* UNUSED_CODE */
-    let value_if = expr_(Sli_const$u8 $scope) if (false) {
+    let value_if = expr_(S_const$u8 $scope) if (false) {
         $break_(u8_l("first"));
     } else if (true) {
         $break_(u8_l("second"));

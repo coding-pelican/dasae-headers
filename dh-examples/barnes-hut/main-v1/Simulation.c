@@ -4,8 +4,8 @@
 #include "dh/math.h"
 
 // n target: 100000
-Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
-    scope_reserveReturn(Err$Simulation) {
+E$Simulation Simulation_create(mem_Allocator allocator, usize n) {
+    scope_reserveReturn(E$Simulation) {
         const f32 dt    = 0.05f;
         const f32 theta = 1.0f;
         const f32 eps   = 1.0f;
@@ -20,11 +20,11 @@ Err$Simulation Simulation_create(mem_Allocator allocator, usize n) {
         errdefer(QuadTree_destroy(&quadtree));
 
         // Sort body indices based on their AABB's min.x to enable sweep and prune
-        var sort_body_indices_cache = meta_cast$(Sli$usize, try(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
+        var sort_body_indices_cache = meta_cast$(S$usize, try(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
         errdefer(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
 
         // Sort body rects based on their AABB's min.x to enable sweep and prune
-        var sort_rect_indices_cache = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
+        var sort_rect_indices_cache = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
         errdefer(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
         return_ok((Simulation){
@@ -56,8 +56,8 @@ void Simulation_destroy(Simulation* self) {
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
 }
 
-Err$void Simulation_step(Simulation* self) {
-    reserveReturn(Err$void);
+E$void Simulation_step(Simulation* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
@@ -71,7 +71,7 @@ Err$void Simulation_step(Simulation* self) {
 void Simulation_iterate(Simulation* self) {
     debug_assert_nonnull(self);
 
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         Body_update(body, self->dt);
     }
 }
@@ -81,14 +81,14 @@ void Simulation_iterate(Simulation* self) {
 #define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
-Err$void Simulation_collide(Simulation* self) {
-    reserveReturn(Err$void);
+E$void Simulation_collide(Simulation* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 #if debug_comp_enabled
     self->collision_count = 0;
 #endif
     // Update collision rects for current frame
-    for_slice_indexed (self->bodies.items, body, index) {
+    for_slice_indexed(self->bodies.items, body, index) {
         let pos        = body->pos;
         let radius     = body->radius;
         let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
@@ -111,7 +111,7 @@ Err$void Simulation_collide(Simulation* self) {
 #endif /* CollideMethod_simply_o_n_pow_2 */
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
-static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+static cmp_Ord compareRects(P_const$raw lhs, P_const$raw rhs, P_const$raw arg) {
     let self     = as$(const Simulation*, arg);
     let idx_lhs  = *as$(const usize*, lhs);
     let idx_rhs  = *as$(const usize*, rhs);
@@ -129,8 +129,8 @@ static cmp_Ord compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg
 ///     AABB Checks Before Distance Calculation:
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-Err$void Simulation_collide(Simulation* self) {
-    scope_reserveReturn(Err$void) {
+E$void Simulation_collide(Simulation* self) {
+    scope_reserveReturn(E$void) {
         debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
         self->collision_count = 0;
@@ -140,7 +140,7 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         // Update collision rects for current frame
-        for_slice_indexed (self->bodies.items, body, index) {
+        for_slice_indexed(self->bodies.items, body, index) {
             let pos        = body->pos;
             let radius     = body->radius;
             let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
@@ -151,7 +151,7 @@ Err$void Simulation_collide(Simulation* self) {
         }
 
         let indices = self->sort_body_indices_cache;
-        for_slice_indexed (indices, index, i) {
+        for_slice_indexed(indices, index, i) {
             *index = i;
         }
 
@@ -190,8 +190,8 @@ Err$void Simulation_collide(Simulation* self) {
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
-Err$void Simulation_attract(Simulation* self) {
-    reserveReturn(Err$void);
+E$void Simulation_attract(Simulation* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     // Create quad tree for current frame
@@ -199,7 +199,7 @@ Err$void Simulation_attract(Simulation* self) {
     try(QuadTree_clear(&self->quadtree, quad));
 
     // Insert all bodies
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         try(QuadTree_insert(&self->quadtree, body->pos, body->mass));
     }
 
@@ -207,7 +207,7 @@ Err$void Simulation_attract(Simulation* self) {
     QuadTree_propagate(&self->quadtree);
 
     // Calculate accelerations
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         body->acc = QuadTree_accelerate(&self->quadtree, body->pos);
     }
 

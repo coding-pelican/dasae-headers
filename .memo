@@ -1,2 +1,6 @@
-# Search exclusion files
-.clang*, .archive/*, .draft/*, libs/*, .temp/*
+# Search inclusion
+dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh-examples/*
+
+# Search exclusion
+**/lib/*, **/libs/*, **/assets/,
+**/.tmp*/, **/.temp*/, **/.bak*/, **/.backup*/, **/.archive*/, **/.draft*/, **/.mock*/

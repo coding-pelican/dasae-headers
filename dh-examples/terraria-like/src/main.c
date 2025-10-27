@@ -152,7 +152,7 @@ typedef struct Entity {
 
 typedef struct InputState {
     m_V2f32 cursor_world_pos;
-    Opt$u8  hotbar_selection;
+    O$u8  hotbar_selection;
     union {
         u8 states;
         struct {
@@ -366,16 +366,16 @@ fn_((Game_init(mem_Allocator allocator))(GameState*));
 fn_((Game_fini(GameState* self, mem_Allocator allocator))(void));
 fn_((Game_genWorld(GameState* self))(void));
 
-use_Opt$(EntityTileType);
+use_O$(EntityTileType);
 fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool));
-fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType));
+fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType));
 fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void));
 
-use_Opt$(EntityId);
-use_Opt$(Entity);
-fn_((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId));
-fn_((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity));
-fn_((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity));
+use_O$(EntityId);
+use_O$(Entity);
+fn_((Game_appendEntity(GameState* self, Entity entity))(O$EntityId));
+fn_((Game_idxEntityById(const GameState* self, EntityId id))(O$P_const$Entity));
+fn_((Game_idxMutEntityById(GameState* self, EntityId id))(O$P$Entity));
 fn_((Game_removeDeadEntities(GameState* self))(void));
 
 fn_((Item_miningPower(ItemType item_type))(u8));
@@ -407,7 +407,7 @@ fn_((Game_getInventorySlot(GameState* self, usize slot))(ItemStack));
 fn_((Game_getSelectedHotbarSlot(GameState* self))(u8));
 fn_((Game_getTimeOfDay(GameState* self))(f32));
 fn_((Game_getEntityCount(GameState* self))(u32));
-fn_((Game_getEntity(GameState* self, usize index))(Opt$Entity));
+fn_((Game_getEntity(GameState* self, usize index))(O$Entity));
 
 // Rendering functions
 fn_((Render_init(mem_Allocator allocator))(Renderer*));
@@ -598,7 +598,7 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
     });
 
     // Initialize input state
-    self->player.input = (InputState){ .states = 0, .hotbar_selection = (Opt$u8){ .has_value = false } };
+    self->player.input = (InputState){ .states = 0, .hotbar_selection = (O$u8){ .has_value = false } };
 
     // Generate world
     Game_genWorld(self);
@@ -767,7 +767,7 @@ fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_typ
     return true;
 }
 
-fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(Opt$EntityTileType) $scope) {
+fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType) $scope) {
     if (x < 0 || Game_world_width <= x || y < 0 || Game_world_height <= y) { return_none(); }
 
     let ux = as$((usize)(x));
@@ -829,7 +829,7 @@ fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
 // ENTITY MANAGEMENT
 // ============================================================================
 
-fn_((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
+fn_((Game_appendEntity(GameState* self, Entity entity))(O$EntityId) $scope) {
     if (Game_max_entities <= self->entities.count) {
         return_none();
     }
@@ -846,7 +846,7 @@ fn_((Game_appendEntity(GameState* self, Entity entity))(Opt$EntityId) $scope) {
 } $unscoped_(fn);
 
 
-fn_((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entity) $scope) {
+fn_((Game_idxEntityById(const GameState* self, EntityId id))(O$P_const$Entity) $scope) {
     for_(($r(0, self->entities.count))(i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
@@ -854,7 +854,7 @@ fn_((Game_idxEntityById(const GameState* self, EntityId id))(Opt$Ptr_const$Entit
     return_none();
 } $unscoped_(fn);
 
-fn_((Game_idxMutEntityById(GameState* self, EntityId id))(Opt$Ptr$Entity) $scope) {
+fn_((Game_idxMutEntityById(GameState* self, EntityId id))(O$P$Entity) $scope) {
     for_(($r(0, self->entities.count))(i) {
         if (self->entities.data[i].id != id) { continue; }
         return_some(&self->entities.data[i]);
@@ -1514,8 +1514,8 @@ fn_((Game_getEntityCount(GameState* self))(u32)) {
     return self->entities.count;
 }
 
-fn_((Game_getEntity(GameState* self, usize index))(Opt$Entity)) {
-    return expr_(Opt$Entity $scope) if (self->entities.count <= index) {
+fn_((Game_getEntity(GameState* self, usize index))(O$Entity)) {
+    return expr_(O$Entity $scope) if (self->entities.count <= index) {
         $break_(none());
     } else {
         $break_(some(self->entities.data[index]));
@@ -1629,7 +1629,7 @@ fn_((Render_world(GameState* self))(void)) {
 
     // Clear canvas with sky color
     let sky_color = literal_Color_fromOpaque(135, 206, 235); // Sky blue
-    engine_Canvas_clear(canvas, some$(Opt$Color, sky_color));
+    engine_Canvas_clear(canvas, some$(O$Color, sky_color));
 
     // Calculate visible world bounds
     let world_min = Render_screenToWorld(camera, (m_V2i32){ .x = 0, .y = 0 });
@@ -1893,7 +1893,7 @@ fn_((Game_render(GameState* self))(void)) {
 // MAIN ENTRY POINT
 // ============================================================================
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let allocator = heap_Page_allocator(&(heap_Page){});
@@ -1930,7 +1930,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
     // Initialize timing variables
     let target_fps        = 60.0;
-    let target_frame_time = time_Duration_fromSecs_f64(1.0 / target_fps);
+    let target_frame_time = time_Duration_fromSecs$f64(1.0 / target_fps);
     var prev_frame_time   = time_Instant_now();
 
     var running = true;
@@ -1940,7 +1940,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
         // 2) Compute delta time
         let elapsed_time = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-        let dt           = time_Duration_asSecs_f64(elapsed_time);
+        let dt           = time_Duration_asSecs$f64(elapsed_time);
 
         // Handle input
         if (engine_Keyboard_pressed(game->renderer.input->keyboard, engine_KeyCode_esc)) {

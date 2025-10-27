@@ -2,7 +2,7 @@
 #include "dh/math/common.h"
 #include "dh/mem/cfg.h"
 
-fn_((engine_Canvas_init(engine_Canvas_Config config)) (Err$Ptr$engine_Canvas) $guard)  {
+fn_((engine_Canvas_init(engine_Canvas_Config config))(E$P$engine_Canvas) $guard) {
     debug_assert(0 < config.width);
     debug_assert(0 < config.height);
 
@@ -12,15 +12,15 @@ fn_((engine_Canvas_init(engine_Canvas_Config config)) (Err$Ptr$engine_Canvas) $g
     self->allocator = allocator;
 
     let area   = as$((usize)(config.width)) * config.height;
-    let buffer = meta_cast$(Sli$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), area)));
+    let buffer = meta_cast$(S$Color, try_(mem_Allocator_alloc(allocator, typeInfo$(Color), area)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(buffer)));
-    self->buffer = Grid_fromSli$(Grid$Color, buffer, config.width, config.height);
+    self->buffer = Grid_fromS$(Grid$Color, buffer, config.width, config.height);
 
     let type   = unwrap(config.type);
     self->type = type;
 
     self->default_color = orelse(config.default_color, Color_blank);
-    engine_Canvas_clear(self, none$(Opt$Color));
+    engine_Canvas_clear(self, none$(O$Color));
 
     return_ok(self);
 } $unguarded_(fn);
@@ -31,7 +31,7 @@ fn_((engine_Canvas_fini(engine_Canvas* self))(void)) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(Err$void) $scope)  {
+fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(E$void) $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 
@@ -39,18 +39,18 @@ fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(Err$void)
 
     let new_len   = as$((usize)(width)) * height;
     let new_items = try_(mem_Allocator_realloc(self->allocator, anySli(self->buffer.items), new_len));
-    self->buffer  = Grid_fromSli$(Grid$Color, meta_cast$(Sli$Color, new_items), width, height);
+    self->buffer  = Grid_fromS$(Grid$Color, meta_cast$(S$Color, new_items), width, height);
     log_debug("canvas resized: %d x %d -> %d x %d", self->buffer.width, self->buffer.height, width, height);
 
     return_ok({});
 } $unscoped_(fn);
 
-fn_((engine_Canvas_clear(engine_Canvas* self, Opt$Color other_color))(void)) {
+fn_((engine_Canvas_clear(engine_Canvas* self, O$Color other_color))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->buffer.items.ptr);
 
     let color = orelse(other_color, self->default_color);
-    for_slice (self->buffer.items, item) {
+    for_slice(self->buffer.items, item) {
         *item = color;
     }
 }
@@ -79,8 +79,7 @@ $inline_always Color Color_blendAlpha(Color src, Color dst) {
         as$((u8)(out_r + 0.5f)),
         as$((u8)(out_g + 0.5f)),
         as$((u8)(out_b + 0.5f)),
-        as$((u8)(out_a * as$((f32)(ColorChannel_max_value)) + 0.5f))
-    );
+        as$((u8)(out_a * as$((f32)(ColorChannel_max_value)) + 0.5f)));
 }
 
 void engine_Canvas_drawPixel(engine_Canvas* self, i32 x, i32 y, Color color) {

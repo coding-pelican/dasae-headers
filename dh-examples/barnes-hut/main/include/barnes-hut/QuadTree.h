@@ -13,8 +13,8 @@ typedef struct Quad {
     m_V2f32 center;
     f32     size;
 } Quad;
-use_Sli$(Quad);
-use_Arr$(4, Quad);
+use_S$(Quad);
+use_A$(4, Quad);
 
 typedef struct QuadNode {
     usize   children;
@@ -25,7 +25,7 @@ typedef struct QuadNode {
     Range   bodies;
 } QuadNode;
 
-use_Sli$(QuadNode);
+use_S$(QuadNode);
 use_ArrList$(QuadNode);
 use_ArrList$(usize);
 typedef struct QuadTree {
@@ -36,12 +36,12 @@ typedef struct QuadTree {
     ArrList$usize    parents;
     mem_Allocator    allocator;
 } QuadTree;
-use_Err$(QuadTree);
+use_E$(QuadTree);
 
 // Quad functions
-extern fn_(Quad_newContaining(const Sli$Body bodies), Quad);
+extern fn_(Quad_newContaining(const S$Body bodies), Quad);
 extern fn_(Quad_intoQuadrant(Quad self, usize quadrant), Quad);
-extern fn_(Quad_subdivide(const Quad* self), Arr$4$Quad);
+extern fn_(Quad_subdivide(const Quad* self), A$4$Quad);
 
 // QuadNode functions
 extern fn_(QuadNode_new(usize next, Quad quad, Range bodies), QuadNode);
@@ -50,12 +50,12 @@ extern fn_(QuadNode_isBranch(const QuadNode* self), bool);
 extern fn_(QuadNode_isEmpty(const QuadNode* self), bool);
 
 // QuadTree functions
-extern fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize leaf_cap, usize n), Err$QuadTree) $must_check;
+extern fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize leaf_cap, usize n), E$QuadTree) $must_check;
 extern fn_(QuadTree_destroy(QuadTree* self), void);
 extern fn_(QuadTree_clear(QuadTree* self), void);
-extern fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void) $must_check;
+extern fn_(QuadTree_build(QuadTree* self, S$Body bodies), E$void) $must_check;
 extern fn_(QuadTree_propagate(QuadTree* self), void);
-extern fn_(QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, Sli$Body bodies), m_V2f32);
+extern fn_(QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, S$Body bodies), m_V2f32);
 
 static const usize QuadTree_root = 0;
 

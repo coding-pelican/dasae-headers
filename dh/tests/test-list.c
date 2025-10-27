@@ -3,7 +3,7 @@
 #include "dh/list.h"
 
 TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
-    use_ListSgl$(u32);
+    T_use_ListSgl$(u32);
     var list = make$(ListSgl$u32, .first = none());
 
     try_(TEST_expect(ListSgl_len(list.base) == 0));
@@ -43,7 +43,7 @@ TEST_fn_("list: Basic SinglyLinkedList Operations" $guard) {
     try_(TEST_expect(pipe(list.first,(unwrap,()->next),(unwrap,()->next),(isNone,()))));
     // try_(TEST_expect(isNone(unwrap(unwrap(list.first)->next)->next)));
 
-    ListSgl_Node_reverse(type$(Opt$Ptr$ListSgl_Node*, &list.first));
+    ListSgl_Node_reverse(type$(O$P$ListSgl_Node*, &list.first));
 
     try_(TEST_expect(pipe(list.first,(unwrap,()->data)) == 4));
     // try_(TEST_expect(unwrap(list.first)->data == 4));

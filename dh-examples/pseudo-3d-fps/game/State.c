@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-Err$Ptr$game_State game_State_create(void) {
-    reserveReturn(Err$Ptr$game_State);
+E$P$game_State game_State_create(void) {
+    reserveReturn(E$P$game_State);
 
     let state = (game_State*)malloc(sizeof(game_State));
-    if (!state) { return_err(mem_AllocErr_OutOfMemory()); }
+    if (!state) { return_err(mem_AllocE_OutOfMemory()); }
 
     state->player_x     = 5.09f;
     state->player_y     = 14.7f;

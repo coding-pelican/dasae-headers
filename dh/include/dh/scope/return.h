@@ -52,7 +52,7 @@ extern "C" {
 // clang-format off
 #define comp_syn__ext_scope(T_ReservedReturn...)            \
     {                                                       \
-        rawptr$(T_ReservedReturn) __reserved_return = null; \
+        $P$(T_ReservedReturn) __reserved_return = null; \
         struct {                                            \
             i32  curr;                                      \
             bool returns;                                   \
@@ -71,11 +71,11 @@ extern "C" {
 #define comp_syn__ext_unscoped                      \
             goto __returned_scope;                  \
         }                                           \
-        return (blk({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
+        return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
     }
 /* #define comp_syn__ext_scope(T_ReservedReturn...)            \
     {                                                       \
-        rawptr$(T_ReservedReturn) __reserved_return = null; \
+        $P$(T_ReservedReturn) __reserved_return = null; \
         struct {                                            \
             i32  curr;                                      \
             bool returns;                                   \
@@ -103,7 +103,8 @@ extern "C" {
 // clang-format on
 
 #define SYN__scope_reserveReturn(T_ReservedReturn) \
-    rawptr$(T_ReservedReturn) __reserved_return = null; \
+    $P$(T_ReservedReturn) \
+    __reserved_return = null; \
     struct { \
         i32  curr; \
         bool returns; \
@@ -126,7 +127,7 @@ __ext_unscoped: \
         __scope_defer.returns = true; \
         goto __deferred; \
     } \
-    return (blk({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
+    return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
 
 #define SYN__scope_return(val_return...) \
     { \
@@ -149,7 +150,7 @@ __returned_scope: \
     $unused(0)
 
 #define SYN__returnReserved \
-    return (blk({ if (!isSameType(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
+    return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
 
 #define FUNC__getReservedReturn() \
     (__reserved_return)

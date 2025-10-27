@@ -33,11 +33,11 @@ __step_unscope: \
 // clang-format on
 #endif /* UNUSED_CODE */
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
-    return_(expr_(Err$void $scope) if (true) {
+    return_(expr_(E$void $scope) if (true) {
         $break_(ok({}));
     } else {
-        $break_(err(Err_NotImplemented()));
+        $break_(err(E_NotImplemented()));
     } $unscoped_(expr));
 } $unscoped_(fn);

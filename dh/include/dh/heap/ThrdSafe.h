@@ -11,8 +11,8 @@
  * @prefix  heap_ThrdSafe
  */
 
-#ifndef HEAP_THRD_SAFE_INCLUDED
-#define HEAP_THRD_SAFE_INCLUDED (1)
+#ifndef heap_ThrdSafe__included
+#define heap_ThrdSafe__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -35,4 +35,4 @@ extern fn_((heap_ThrdSafe_allocator(heap_ThrdSafe* self))(mem_Allocator));
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_THRD_SAFE_INCLUDED */
+#endif /* heap_ThrdSafe__included */

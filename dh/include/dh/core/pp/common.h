@@ -68,10 +68,11 @@ extern "C" {
 #define __pp_xor_1_0           1
 #define __pp_xor_1_1           0
 
+#define pp_attr_(_Attrs...)        _Attrs
 #define pp_if_(Cond...)            pp_join(_, __pp_if, Cond)
 #define __pp_if_1(_Than, _Else...) pp_expand _Than
 #define __pp_if_0(_Than, _Else)    pp_expand _Else
-#define pp_than_
+#define pp_then_
 #define pp_else_
 
 #define tpl_id(_tpl, _T...)           pp_join(_, _tpl, _T)
@@ -199,6 +200,81 @@ extern "C" {
     pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
 #define comp_syn__lit_num$(T, _Comma_Sep_Lits...) \
     as$((T)(lit_num(_Comma_Sep_Lits)))
+
+#undef pp_not
+#undef __pp_not_0
+#undef __pp_not_1
+#undef pp_if_
+#undef __pp_if_0
+#undef __pp_if_1
+#undef pp_then_
+#undef pp_else_
+
+#define pp_compl(_b) pp_cat(__pp_compl_, _b)
+#define __pp_compl_0 1
+#define __pp_compl_1 0
+
+#define pp_bitand(_x)     pp_cat(__pp_bitand_, _x)
+#define __pp_bitand_0(_y) 0
+#define __pp_bitand_1(_y) _y
+#define pp_bitor(_x)      pp_cat(__pp_bitor_, _x)
+#define __pp_bitor_0(_y)  0
+#define __pp_bitor_1(_y)  _y
+#define pp_bitnot(_x)     pp_cat(__pp_bitnot_, _x)
+#define __pp_bitnot_0     1
+#define __pp_bitnot_1     0
+#define pp_bitxor(_x)     pp_cat(__pp_bitxor_, _x)
+#define __pp_bitxor_0(_y) 0
+#define __pp_bitxor_1(_y) _y
+
+#define __pp_check_n(_x, _n, ...) _n
+#define pp_check(...)             __pp_check_n(__VA_ARGS__, 0, )
+#define pp_probe(_x)              _x, 1,
+
+#define pp_isParen(_x)       pp_check(pp_isParenProbe _x)
+#define pp_isParenProbe(...) pp_probe(~)
+
+#define pp_not(_x) pp_check(pp_cat(__pp_not_, _x))
+#define __pp_not_0 pp_probe(~)
+
+#define pp_bool(_x) pp_compl(pp_not(_x))
+
+#define pp_iif(_c)          pp_cat(__pp_iif_, _c)
+#define __pp_iif_0(_t, ...) __VA_ARGS__
+#define __pp_iif_1(_t, ...) _t
+#define pp_if_(_c)          pp_iif(pp_bool(_c))
+#define pp_then_(...)       __VA_ARGS__
+#define pp_else_(...)       __VA_ARGS__
+
+#define pp_Tok_prim_cmp(x, y) pp_isParen( \
+    pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()) \
+)
+#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
+#define pp_Tok_ne(x, y) \
+    pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))( \
+        pp_Tok_prim_cmp, \
+        1 pp_ignore \
+    )(x, y)
+#define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
+
+#define pp_comma()       ,
+#define pp_comma_if_(_n) pp_if_(_n)(pp_comma, pp_ignore)()
+
+#define pp_Tok_cmp__const(x) x
+#define ignore_and_end(...)  ignore_end ignore_end
+#define ignore_after_const const ignore_and_end(
+#define ignore_open (
+#define ignore_end )
+
+#define Tok_isConst$(_T...) \
+    __isConstType__exec(pp_defer(__isConstType__unwrap) __isConstType__eval(_T))
+#define __isConstType__exec(...)   __VA_ARGS__
+#define __isConstType__unwrap(...) __VA_ARGS__
+#define __isConstType__eval(_T...) \
+    ignore_open pp_defer(pp_Tok_eq)(const, pp_cat(ignore_after_, _T) ignore_end)
+#define Tok_removeConst$(_const_T...) \
+    pp_cat(__Tok_removeConst$__remove_, _const_T)
+#define __Tok_removeConst$__remove_const
 
 #if defined(__cplusplus)
 } /* extern "C" */

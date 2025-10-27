@@ -19,6 +19,7 @@ typedef struct Co_Ret {
 } Co_Ret;
 typedef struct Co_Ctx {
     Co_FnWork* fn;
+    bool       is_init;
     Co_Count   count;
     Co_State   state;
     Co_Ret*    ret;
@@ -35,6 +36,7 @@ typedef struct Co_Ctx {
         Co_Ctx anyraw $like_ptr; \
         struct { \
             Co_FnWork* fn; \
+            bool       is_init; \
             Co_Count   count; \
             Co_State   state; \
             union { \
@@ -72,6 +74,7 @@ typedef struct Co_Ctx {
         Co_CtxFnBase$(fnName) base $like_ptr; \
         struct { \
             Co_FnWork* fn; \
+            bool       is_init; \
             Co_Count   count; \
             Co_State   state; \
             FieldTypeOf(Co_CtxFnBase$(fnName), ret) ret; \
@@ -81,12 +84,13 @@ typedef struct Co_Ctx {
     }
 
 #define Co_CtxFn_init$(fnName) ((Co_CtxFn$(fnName)){ \
-    .fn     = as$((Co_FnWork*)(fnName)), \
-    .count  = 0, \
-    .state  = Co_State_pending, \
-    .ret    = {}, \
-    .args   = {}, \
-    .locals = {}, \
+    .fn      = as$((Co_FnWork*)(fnName)), \
+    .is_init = true, \
+    .count   = 0, \
+    .state   = Co_State_pending, \
+    .ret     = {}, \
+    .args    = {}, \
+    .locals  = {}, \
 })
 
 #endif /* CO_INCLUDED */
@@ -181,13 +185,14 @@ __step_unscope: \
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
+    debug_assert(__ctx->is_init); \
     __callFn(as$((Co_FnWork*)(__ctx->fn)), as$((Co_Ctx*)(__ctx))); \
 })
 
 #define nosuspend_(_expr...)           comp_syn__nosuspend_(_expr)
 #define comp_syn__nosuspend_(_expr...) blk_(__nosuspend, { \
     local_label __step_suspend; \
-    var         ctx = (&(Co_Ctx){ .count = 0, .state = Co_State_pending }); \
+    var         ctx = (&(Co_Ctx){ .is_init = true, .count = 0, .state = Co_State_pending }); \
     switch (ctx->count) { \
     default: { \
         blk_break_(__nosuspend, {}); \
@@ -203,16 +208,16 @@ __step_suspend: \
     blk_break_(__nosuspend, {}); \
 })
 
-#define Co_Ctx_from(_fnName, _args...) comp_inline__Co_Ctx_from(_fnName, _args)
-#define comp_inline__Co_Ctx_from(_fnName, _args...) \
-    ((Co_Ctx$(_fnName)){ \
-        .fn     = as$((Co_FnWork*)(_fnName)), \
-        .count  = 0, \
-        .state  = Co_State_pending, \
-        .ret    = {}, \
-        .args   = { pp_Tuple_unwrap _args }, \
-        .locals = {}, \
-    })
+#define Co_Ctx_from(_fnName, _args...)              comp_inline__Co_Ctx_from(_fnName, _args)
+#define comp_inline__Co_Ctx_from(_fnName, _args...) ((Co_Ctx$(_fnName)){ \
+    .fn      = as$((Co_FnWork*)(_fnName)), \
+    .is_init = true, \
+    .count   = 0, \
+    .state   = Co_State_pending, \
+    .ret     = {}, \
+    .args    = { pp_Tuple_unwrap _args }, \
+    .locals  = {}, \
+})
 
 #define Co_Ctx_returned(_ctx...) comp_inline__Co_Ctx_returned(_ctx)
 #define comp_inline__Co_Ctx_returned(_ctx...) \

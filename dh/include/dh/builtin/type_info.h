@@ -27,43 +27,10 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /* Type Size and Alignment */
-#define sizeOf$(T...) sizeOf(T)
-#define sizeOf(T_or_val...) \
-    /** \
-     * @brief Get size of a type or value at compile time \
-     * \
-     * @param T_or_val Type or value to measure \
-     * @return usize Size in bytes \
-     */ \
-    FUNC__sizeOf(T_or_val)
-
-#define alignOf$(T...) alignOf(T)
-#define alignOf(T...) \
-    /** \
-     * @brief Get alignment requirement of a type \
-     * \
-     * @param T Type to check alignment of \
-     * @return usize Alignment requirement in bytes \
-     */ \
-    FUNC__alignOf(T)
-
-#define alignAs(val_align...) \
-    /** \
-     * @brief Specify alignment requirement for a type \
-     * \
-     * @param val_align Alignment value in bytes \
-     * @return Alignment specifier \
-     */ \
-    FUNC__alignAs(val_align)
-
-#define countOf(var_arr...) \
-    /** \
-     * @brief Get number of elements in an array \
-     * \
-     * @param var_arr Array to count elements of \
-     * @return usize Number of elements \
-     */ \
-    FUNC__countOf(var_arr)
+#define alignAs(_align /*: u32*/...) _Alignas(1ull << (_align))
+#define alignOf$(_T... /*(u32)*/)    as$((u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
+#define sizeOf$(_T... /*(usize)*/)   as$((usize)(sizeof(_T)))
+#define countOf$(_T... /*(usize)*/)  (sizeOf$(_T) / sizeOf$(TypeOf((*as$((_T*)(0)))[0])))
 
 /* Type Information */
 #define TypeOf(_Expr...) \
@@ -73,7 +40,7 @@ extern "C" {
      * @param _Expr Value or expression to get type of \
      * @return Type of the expression \
      */ \
-    FUNC__TypeOf(_Expr)
+    __typeof__(_Expr)
 
 #define TypeOfUnqual(_Expr...) \
     /** \
@@ -82,7 +49,7 @@ extern "C" {
      * @param _Expr Value or expression to get type of \
      * @return Unqualified type of the expression \
      */ \
-    FUNC__TypeOfUnqual(_Expr)
+    __typeof_unqual(_Expr)
 
 #define isConstExpr(_Expr...) \
     /** \
@@ -91,10 +58,9 @@ extern "C" {
      * @param _Expr Expression to check \
      * @return bool True if constant expression \
      */ \
-    FUNC__isConstExpr(_Expr)
+    __builtin_constant_p(_Expr)
 
-#define isSameType$(T_lhs, T_rhs...) isSameType(T_lhs, T_rhs)
-#define isSameType(T_lhs, T_rhs...) \
+#define isSameType$(T_lhs, T_rhs...) \
     /** \
      * @brief Compare two types for equality \
      * \
@@ -102,10 +68,9 @@ extern "C" {
      * @param T_rhs Second type to compare \
      * @return bool True if types are the same \
      */ \
-    FUNC__isSameType(T_lhs, T_rhs)
+    __builtin_types_compatible_p(T_lhs, T_rhs)
 
-#define isSameTypeUnqual$(T_lhs, T_rhs...) isSameTypeUnqual(T_lhs, T_rhs)
-#define isSameTypeUnqual(T_lhs, T_rhs...) \
+#define isSameTypeUnqual$(T_lhs, T_rhs...) \
     /** \
      * @brief Compare two types for equality \
      * \
@@ -113,7 +78,7 @@ extern "C" {
      * @param T_rhs Second type to compare \
      * @return bool True if types are the same \
      */ \
-    FUNC__isSameTypeUnqual(T_lhs, T_rhs)
+    __builtin_types_compatible_p(T_lhs, T_rhs)
 
 /* Type Classification */
 #define isUnsigned(T) \
@@ -163,32 +128,20 @@ extern "C" {
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__sizeOf(T_or_val...) \
-    sizeof(T_or_val)
+#define FUNC__TypeOf(_Expr...)
 
-#define FUNC__alignAs(val_align...) \
-    alignas(val_align)
 
-#define FUNC__alignOf(T...) \
-    alignof(T)
+#define FUNC__TypeOfUnqual(_Expr...)
 
-#define FUNC__countOf(var_arr...) \
-    (sizeof(var_arr) / sizeof(var_arr[0]))
 
-#define FUNC__TypeOf(_Expr...) \
-    __typeof__(_Expr)
+#define FUNC__isConstExpr(_Expr...)
 
-#define FUNC__TypeOfUnqual(_Expr...) \
-    __typeof_unqual(_Expr)
 
-#define FUNC__isConstExpr(_Expr...) \
-    __builtin_constant_p(_Expr)
+#define FUNC__isSameType$(T_lhs, T_rhs...)
 
-#define FUNC__isSameType(T_lhs, T_rhs...) \
-    __builtin_types_compatible_p(T_lhs, T_rhs)
 
-#define FUNC__isSameTypeUnqual(T_lhs, T_rhs...) \
-    __builtin_types_compatible_p(T_lhs, T_rhs)
+#define FUNC__isSameTypeUnqual(T_lhs, T_rhs...)
+
 
 #define FUNC__isUnsigned(T) _Generic( \
     (T){ 0 }, \
@@ -239,7 +192,7 @@ void example_usage(void) {
     usize arr_count = countOf(numbers);
 
     /* Type checking */
-    i32 value                   = 42;
+    i32 value = 42;
     TypeOf(value) another_value = 43;
 
     /* Type classification */
@@ -250,7 +203,7 @@ void example_usage(void) {
     claim_assert_static_msg(isBool(bool), "bool should be boolean type");
 
     /* Type comparison */
-    claim_assert_static_msg(isSameType(TypeOf(value), i32), "Types should match");
+    claim_assert_static_msg(isSameType$(TypeOf(value), i32), "Types should match");
 }
 #endif /* EXAMPLE_USAGE */
 

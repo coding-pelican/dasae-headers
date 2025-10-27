@@ -20,6 +20,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "dh/types/Res.h"
+
+#if UNUSED_CODE
 /*========== Includes =======================================================*/
 
 #include "core.h"
@@ -32,13 +35,13 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error result */
-#define use_Err$(T_Ok)  comp_type_gen__use_Err$(T_Ok)
-#define decl_Err$(T_Ok) comp_type_gen__decl_Err$(T_Ok)
-#define impl_Err$(T_Ok) comp_type_gen__impl_Err$(T_Ok)
+#define use_E$(T_Ok)  comp_type_gen__use_E$(T_Ok)
+#define decl_E$(T_Ok) comp_type_gen__decl_E$(T_Ok)
+#define impl_E$(T_Ok) comp_type_gen__impl_E$(T_Ok)
 
-#define Err$(T_Ok)                           comp_type_alias__Err$(T_Ok)
-#define Err$$(T_Ok)                          comp_type_anon__Err$$(T_Ok)
-#define Err_anonCast$(T_ErrRes, var_anon...) comp_op__ErrRes_anonCast$(T_ErrRes, var_anon)
+#define E$(T_Ok)                           comp_type_alias__E$(T_Ok)
+#define E$$(T_Ok)                          comp_type_anon__E$$(T_Ok)
+#define E_anonCast$(T_ErrRes, var_anon...) comp_op__ErrRes_anonCast$(T_ErrRes, var_anon)
 
 /* Determines error result */
 #define err(val_err...) comp_op__err(val_err)
@@ -73,8 +76,8 @@ extern "C" {
 #define __errdefer_(_Expr...)                       comp_syn__errdefer_(_Expr)
 #define __errdefer_from(_Payload_Capture, _Expr...) comp_syn__errdefer_from(_Payload_Capture, _Expr)
 
-#define Err_asOpt$(T_Opt, var_err...) comp_op__Err_asOpt$(pp_uniqTok(err), T_Opt, var_err)
-#define Err_asOpt(var_err...)         comp_op__Err_asOpt(var_err)
+#define E_asO$(T_Opt, var_err...) comp_op__E_asO$(pp_uniqTok(err), T_Opt, var_err)
+#define E_asOpt(var_err...)       comp_op__E_asOpt(var_err)
 
 /* Error result payload captures */
 #define if_err(val_result, _Payload_Capture) comp_syn__if_err(val_result, _Payload_Capture)
@@ -85,13 +88,13 @@ extern "C" {
 #define else_err(_Payload_Capture)           comp_syn__else_err(_Payload_Capture)
 
 /* Error void result (special case) */
-typedef struct Err$Void {
+typedef struct E$Void {
+    bool is_err;
     union {
         Err  err;
         Void ok;
     } data;
-    bool is_err;
-} Err$Void, Err$void;
+} E$Void, E$void;
 
 /* Error result specific */
 #define use_ErrSet$(T_Err, T_Ok)  comp_type_gen__use_ErrSet$(T_Err, T_Ok)
@@ -100,47 +103,47 @@ typedef struct Err$Void {
 
 /*========== Implementations ================================================*/
 
-#define comp_type_gen__use_Err$(T_Ok) \
-    decl_Err$(T_Ok); \
-    impl_Err$(T_Ok)
-#define comp_type_gen__decl_Err$(T_Ok) \
-    $maybe_unused typedef struct Err$(Ptr_const$(T_Ok)) Err$(Ptr_const$(T_Ok)); \
-    $maybe_unused typedef struct Err$(Ptr$(T_Ok)) Err$(Ptr$(T_Ok)); \
-    $maybe_unused typedef struct Err$(T_Ok) Err$(T_Ok)
-#define comp_type_gen__impl_Err$(T_Ok) \
-    struct Err$(Ptr_const$(T_Ok)) { \
+#define comp_type_gen__use_E$(T_Ok) \
+    decl_E$(T_Ok); \
+    impl_E$(T_Ok)
+#define comp_type_gen__decl_E$(T_Ok) \
+    $maybe_unused typedef struct E$(P_const$(T_Ok)) E$(P_const$(T_Ok)); \
+    $maybe_unused typedef struct E$(P$(T_Ok)) E$(P$(T_Ok)); \
+    $maybe_unused typedef struct E$(T_Ok) E$(T_Ok)
+#define comp_type_gen__impl_E$(T_Ok) \
+    struct E$(P_const$(T_Ok)) { \
+        var_(is_err, bool); \
         union { \
-            Err err; \
-            rawptr_const$(T_Ok) ok; \
+            var_(err, Err); \
+            var_(ok, $P_const$(T_Ok)); \
         } data; \
-        bool is_err; \
     }; \
-    struct Err$(Ptr$(T_Ok)) { \
+    struct E$(P$(T_Ok)) { \
+        var_(is_err, bool); \
         union { \
-            Err err; \
-            rawptr$(T_Ok) ok; \
+            var_(err, Err); \
+            var_(ok, $P$(T_Ok)); \
         } data; \
-        bool is_err; \
     }; \
-    struct Err$(T_Ok) { \
+    struct E$(T_Ok) { \
+        var_(is_err, bool); \
         union { \
-            Err  err; \
-            T_Ok ok; \
+            var_(err, Err); \
+            var_(ok, T_Ok); \
         } data; \
-        bool is_err; \
     }
 
-#define comp_type_alias__Err$(T_Ok) \
-    pp_join($, Err, T_Ok)
-#define comp_type_anon__Err$$(T_Ok) \
+#define comp_type_alias__E$(T_Ok) \
+    pp_join($, E, T_Ok)
+#define comp_type_anon__E$$(T_Ok) \
     struct { \
+        var_(is_err, bool); \
         union { \
-            Err  err; \
-            T_Ok ok; \
+            var_(err, Err); \
+            var_(ok, T_Ok); \
         } data; \
-        bool is_err; \
     }
-#define comp_op__Err_anonCast$(T_ErrRes, var_anon...) blk({ \
+#define comp_op__E_anonCast$(T_ErrRes, var_anon...) blk({ \
     let __anon = var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_ErrRes)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_ErrRes)); \
@@ -247,15 +250,15 @@ typedef struct Err$Void {
     } \
 )
 
-#define comp_op__Err_asOpt$(__err, T_Opt, var_err...) blk({ \
+#define comp_op__E_asO$(__err, T_Opt, var_err...) blk({ \
     let __err = var_err; \
     (T_Opt){ \
         .value     = __err.data.ok, \
         .has_value = !__err.is_err \
     }; \
 })
-#define comp_op__Err_asOpt(var_err...) \
-    Err_asOpt$(Opt$$(FieldTypeOf(TypeOf(({ var_err; })), data.ok)), var_err)
+#define comp_op__E_asOpt(var_err...) \
+    E_asO$(O$$(FieldTypeOf(TypeOf(({ var_err; })), data.ok)), var_err)
 
 #define comp_syn__if_err(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), _result.is_err) \
@@ -276,30 +279,31 @@ typedef struct Err$Void {
     decl_ErrSet$(T_Err, T_Ok); \
     impl_ErrSet$(T_Err, T_Ok)
 #define comp_type_gen__decl_ErrSet$(T_Err, T_Ok) \
-    typedef struct pp_join3($, T_Err, Ptr_const, T_Ok) pp_join3($, T_Err, Ptr_const, T_Ok); \
+    typedef struct pp_join3($, T_Err, P_const, T_Ok) pp_join3($, T_Err, P_const, T_Ok); \
     typedef struct pp_join3($, T_Err, Ptr, T_Ok) pp_join3($, T_Err, Ptr, T_Ok); \
     typedef struct pp_join($, T_Err, T_Ok) pp_join($, T_Err, T_Ok)
 #define comp_type_gen__impl_ErrSet$(T_Err, T_Ok) \
-    struct pp_join3($, T_Err, Ptr_const, T_Ok) { \
+    struct pp_join3($, T_Err, P_const, T_Ok) { \
+        bool is_err; \
         union { \
             T_Err err; \
-            rawptr_const$(T_Ok) ok; \
+            $P_const$(T_Ok) ok; \
         } data; \
-        bool is_err; \
     }; \
-    struct pp_join3($, T_Err, Ptr, T_Ok) { \
+    struct pp_join3($, T_Err, P, T_Ok) { \
+        bool is_err; \
         union { \
             T_Err err; \
-            rawptr$(T_Ok) ok; \
+            $P$(T_Ok) \
+            ok; \
         } data; \
-        bool is_err; \
     }; \
     struct pp_join($, T_Err, T_Ok) { \
+        bool is_err; \
         union { \
             T_Err err; \
             T_Ok  ok; \
         } data; \
-        bool is_err; \
     }
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
@@ -310,18 +314,18 @@ config_ErrSet(math_Err,
     Overflow,
     Underflow
 );
-use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
-static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32) $must_check;
-static fn_(test(void), Err$void) $must_check;
+use_ErrSet$(math_Err, i32); // or Generally `use_E$(i32)`
+static fn_(safeDivide(i32 lhs, i32 rhs), math_E$i32) $must_check;
+static fn_(test(void), E$void) $must_check;
 
-static fn_(safeDivide(i32 lhs, i32 rhs), math_Err$i32 $scope) {
+static fn_(safeDivide(i32 lhs, i32 rhs), math_E$i32 $scope) {
     if (rhs == 0) {
-        return_err(math_Err_DivisionByZero());
+        return_err(math_E_DivisionByZero());
     }
     return_ok(lhs / rhs);
 }
 $unscoped;
-static fn_(test(void), Err$void $scope) {
+static fn_(test(void), E$void $scope) {
     let result_invalid  = try_(safeDivide(10, 0));
     let result_default  = catch_(safeDivide(10, 0), 1);
     let result_handling = catch_from(safeDivide(10, 0), err, blk({
@@ -333,6 +337,7 @@ static fn_(test(void), Err$void $scope) {
 }
 $unscoped;
 #endif /* EXAMPLE_USAGE */
+#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -6,7 +6,7 @@
 
 #include "Body.h"
 
-use_Err$(ArrList$Body);
-extern fn_(utils_uniformDisc(mem_Allocator allocator, usize n), Err$ArrList$Body) $must_check;
+use_E$(ArrList$Body);
+extern fn_(utils_uniformDisc(mem_Allocator allocator, usize n), E$ArrList$Body) $must_check;
 
 #endif /* BARNES_HUT_UTILS_INCLUDED */

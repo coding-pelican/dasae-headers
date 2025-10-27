@@ -3,8 +3,7 @@
 
 #include "dh/io/stream.h"
 
-$static
-fn_((addInt(i32 a, i32 b))(i32)) {
+$static fn_((addInt(i32 a, i32 b))(i32)) {
     return a + b;
 }
 
@@ -27,7 +26,7 @@ TEST_fn_("Always Fails" $scope) {
     try_(TEST_expect(c != 3)); // This will always fail
 } $unscoped_(TEST_fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let a = 1;

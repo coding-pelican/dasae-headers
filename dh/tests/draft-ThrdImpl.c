@@ -83,17 +83,17 @@
 //     u8 data[];
 // } Thrd_FnRet;
 // typedef fn_((*Thrd_WorkFn)(Thrd_FnCtx* ctx), Thrd_FnRet*);
-// typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
-// use_Opt$(Thrd_NameBuf);
+// typedef A$$(Thrd_max_name_len, u8) Thrd_NameBuf;
+// use_O$(Thrd_NameBuf);
 // // Thread implementation
 // struct Thrd {
 //     Thrd_Handle handle;
 // };
-// use_Err$(Thrd);
+// use_E$(Thrd);
 // // Thread spawn configuration
 // typedef struct Thrd_SpawnConfig {
 //     usize             stack_size;
-//     Opt$mem_Allocator allocator;
+//     O$mem_Allocator allocator;
 // } Thrd_SpawnConfig;
 // #define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
 // static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
@@ -106,11 +106,11 @@
 
 
 // // Error sets
-// typedef Err$void  Thrd_YieldError;
-// typedef Err$void  Thrd_SetNameError;
-// typedef Err$usize Thrd_CpuCountError;
-// typedef Err$void  Thrd_GetNameError;
-// typedef Err$Thrd  Thrd_SpawnError;
+// typedef E$void  Thrd_YieldError;
+// typedef E$void  Thrd_SetNameError;
+// typedef E$usize Thrd_CpuCountError;
+// typedef E$void  Thrd_GetNameError;
+// typedef E$Thrd  Thrd_SpawnError;
 
 
 // // RwLock functions

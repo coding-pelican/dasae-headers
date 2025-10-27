@@ -7,6 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/types/Arr.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -55,12 +56,12 @@ extern void ErrTrace_print(void);
 
 struct ErrTrace_Frame {
     SrcLoc src_loc;
-    anyptr ret_addr;
+    P$raw  ret_addr;
 };
 
 struct ErrTrace {
-    ErrTrace_Frame frames[ErrTrace_max_frames];
-    usize          len;
+    var_(frames, A$$(ErrTrace_max_frames, ErrTrace_Frame));
+    var_(len, usize);
 };
 
 #if COMP_TIME
@@ -81,7 +82,7 @@ struct ErrTrace {
 #define ErrTrace_print_callDebug()        ErrTrace_print_debug()
 
 extern void ErrTrace_reset_debug(void);
-extern void ErrTrace_captureFrame_debug(SrcLoc src_loc, anyptr ret_addr);
+extern void ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr);
 extern void ErrTrace_print_debug(void);
 
 #endif /* ErrTrace_comp_enabled */

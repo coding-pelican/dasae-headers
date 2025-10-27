@@ -7,9 +7,9 @@
 
 #include "engine.h"
 
-Err$void dh_main(int argc, const char* argv[]) {
+E$void dh_main(int argc, const char* argv[]) {
     $unused(argc), $unused(argv);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         if_(let debug_file = fopen("sample-rotate_lines-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -51,7 +51,7 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         var curr_time       = time_Instant_now();
         var prev_time       = curr_time;
-        let target_time     = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        let target_time     = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
         var simulation_time = time_Duration_zero;
 
         bool is_running = true;
@@ -61,7 +61,7 @@ Err$void dh_main(int argc, const char* argv[]) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
             simulation_time  = time_Duration_add(simulation_time, elapsed_time);
-            let t            = time_Duration_asSecs_f64(simulation_time);
+            let t            = time_Duration_asSecs$f64(simulation_time);
 
             // Process events
             try(engine_Window_processEvents(window));

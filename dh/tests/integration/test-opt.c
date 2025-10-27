@@ -2,12 +2,12 @@
 #define main_no_returns_err (1)
 #include "dh/main.h"
 
-static fn_(getValueIfPositive(i32 value), Opt$i32 $scope) {
+static fn_(getValueIfPositive(i32 value), O$i32 $scope) {
     if (value <= 0) { return_none(); }
     return_some(value);
 } $unscoped;
 
-static fn_(getCharIfNumeric(u8 value), Opt$u8 $scope) {
+static fn_(getCharIfNumeric(u8 value), O$u8 $scope) {
     if ('0' <= value && value <= '9') { return_some(value); }
     return_none();
 } $unscoped;

@@ -8,7 +8,7 @@
 #include "dh/ArrList.h"
 
 #include "dh/time.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include "engine.h"
 #include "engine/canvas.h"
@@ -46,9 +46,9 @@
 #define update_target_spf (1.0f / update_target_fps)
 
 
-Err$void dh_main(Sli$Sli_const$u8 args) { // NOLINT
+E$void dh_main(S$S_const$u8 args) { // NOLINT
     $unused(args);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("test-engine_mouse-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -92,7 +92,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) { // NOLINT
         let_ignore = getchar();
 
         // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(render_target_spf);
+        let time_frame_target = time_Duration_fromSecs$f64(render_target_spf);
         var time_frame_prev   = time_Instant_now();
         log_info("game loop started\n");
 
@@ -103,7 +103,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) { // NOLINT
 
             // 2) Compute how long since last frame (purely for your dt usage)
             let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt      = as$(f32, time_Duration_asSecs_f64(time_elapsed));
+            let time_dt      = as$(f32, time_Duration_asSecs$f64(time_elapsed));
 
             // 3) Process input/events
             try_(engine_Window_processEvents(window));

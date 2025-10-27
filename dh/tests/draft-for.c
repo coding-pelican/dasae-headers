@@ -52,7 +52,7 @@ TEST_fn_("test for with break" $scope) {
         try_(TEST_expect(i != 5));
     }
 
-    let res = eval_(Opt$i32 $scope)(for_($r(0, 10), i) {
+    let res = eval_(O$i32 $scope)(for_($r(0, 10), i) {
         if (i == 5) { $break_(some(i)); }
     }) eval_(else)({ $break_(some(-1)); }) $unscoped_(expr);
     try_(TEST_expect(unwrap(res) == 5));
@@ -64,7 +64,7 @@ TEST_fn_("test for with break" $scope) {
 #define __for_s__eachIter
 
 #define for_s(_Tuple_Sli, _Tuple_Iter, _Expr) blk({                           \
-    let_(__Tuple_sli, Sli$T) = _Tuple_Sli;                                     \
+    let_(__Tuple_sli, S$T) = _Tuple_Sli;                                     \
     let_(__Tuple_iter, T)    = _Tuple_Iter;                                    \
     for (var_(__i, usize) = __Tuple_sli.begin; __i < __Tuple_sli.end; ++__i) { \
         let_(__Tuple_iter, T) = __Tuple_sli.ptr[__i];                          \
@@ -79,10 +79,10 @@ TEST_fn_("test for with break" $scope) {
     $ignore
 
 fn_TEST_scope("test for slice") {
-    Arr$$(10, i32) arr = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
+    A$$(10, i32) arr = A_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
 
-    let pre = Arr_slice$(Sli$i32, arr, (0, 5));
-    let suf = Arr_slice$(Sli$i32, arr, (5, 10));
+    let pre = A_slice$(S$i32, arr, (0, 5));
+    let suf = A_slice$(S$i32, arr, (5, 10));
 
     for_s((pre), (p), {
         printf("%d\n", *p);
@@ -250,11 +250,11 @@ fn_TEST_scope("test for slice") {
 }) */
 
 TEST_fn_("test for slices" $scope) {
-    Arr$$(10, i32) arr = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
+    A$$(10, i32) arr = A_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
 
-    let s1 = Arr_slice$(Sli$i32, arr, (0, 5));
-    let s2 = Arr_slice$(Sli$i32, arr, (5, 10));
-    let s3 = Arr_slice$(Sli$i32, arr, (0 + (s1.len / 2), 10 - (s2.len / 2 + 1)));
+    let s1 = A_slice$(S$i32, arr, (0, 5));
+    let s2 = A_slice$(S$i32, arr, (5, 10));
+    let s3 = A_slice$(S$i32, arr, (0 + (s1.len / 2), 10 - (s2.len / 2 + 1)));
 
     for_s1((s1), (e1), {
         printf("s1: %d\n", *e1);
@@ -284,8 +284,8 @@ TEST_fn_("test for slices" $scope) {
 } $unscoped_(TEST_fn);
 
 TEST_fn_("test for slice with $ignore" $scope) {
-    Arr$$(10, i32) arr  = Arr_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
-    const Sli$(i32) sli = Arr_slice$(Sli$(i32), arr, (0, 10));
+    A$$(10, i32) arr  = A_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
+    const S$(i32) sli = A_slice$(S$(i32), arr, (0, 10));
     for_s1i((sli), ($ignore, i), {
         printf("%llu\n", i);
     });
@@ -368,7 +368,7 @@ typedef struct R {
 TEST_fn_("test eval function" $scope) {
     const usize key = 12;
 
-    let value_for = eval_(Sli_const$u8 $scope) $for_($r(0, 10), i, {
+    let value_for = eval_(S_const$u8 $scope) $for_($r(0, 10), i, {
         if (i == key) { $break_(u8_l("first")); }
     }) eval_(else) $for_($r(10, 20), i, {
         if (i == key) { $break_(u8_l("second")); }
@@ -376,7 +376,7 @@ TEST_fn_("test eval function" $scope) {
         $break_(u8_l("third"));
     } $unscoped_(expr);
 
-    let value_if = expr_(Sli_const$u8 $scope) if (false) {
+    let value_if = expr_(S_const$u8 $scope) if (false) {
         $break_(u8_l("first"));
     }
     else if (true) {

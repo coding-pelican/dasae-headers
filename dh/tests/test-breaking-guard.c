@@ -4,14 +4,14 @@
 #include "dh/sli.h"
 
 static bool checkFlag(void) { return false; }
-use_Arr$(10, i32);
+use_A$(10, i32);
 TEST_fn_("test breaking guard" $guard) {
-    // use_Arr$(10, i32) arr = Arr_zero();
-    // var deferred_list = Sli_from$(Sli$i32, arr.buf, 0);
-    // Sli$i32 deferred_list = { .ptr = ({ Arr$$(10, i32) a = {}; a; }).buf, .len = 0 };
-    // Sli$i32 deferred_list = { .ptr = (&copy(({ Arr$(10, i32) a = {}; a; })))->buf, .len = 0 };
-    Sli$i32 deferred_list = { .ptr = ((Arr$(10, i32)){}).buf, .len = 0 };
-    let append = la_((Sli$i32* list, i32 val)(void)) { list->ptr[list->len++] = val; };
+    // use_A$(10, i32) arr = A_zero();
+    // var deferred_list = Sli_from$(S$i32, arr.buf, 0);
+    // S$i32 deferred_list = { .ptr = ({ A$$(10, i32) a = {}; a; }).buf, .len = 0 };
+    // S$i32 deferred_list = { .ptr = (&copy(({ A$(10, i32) a = {}; a; })))->buf, .len = 0 };
+    S$i32 deferred_list = { .ptr = ((A$(10, i32)){}).val, .len = 0 };
+    let append = la_((S$i32* list, i32 val)(void)) { list->ptr[list->len++] = val; };
 
     blk_defer {
         defer_({
@@ -52,13 +52,13 @@ TEST_fn_("test breaking guard" $guard) {
         io_stream_println(u8_l("something: {:d}"), something);
     } blk_deferral;
 
-    let expected_list = Arr_from$(i32, { 3, 5, 4, 1 });
+    let expected_list = A_from$(i32, { 3, 5, 4, 1 });
     io_stream_println(u8_l("{:z}: {:d}"), nameOf(deferred_list.len), deferred_list.len);
-    io_stream_println(u8_l("{:z}: {:d}"), nameOf(Arr_len(expected_list)), Arr_len(expected_list));
-    try_(TEST_expect(deferred_list.len == Arr_len(expected_list)));
+    io_stream_println(u8_l("{:z}: {:d}"), nameOf(A_len(expected_list)), A_len(expected_list));
+    try_(TEST_expect(deferred_list.len == A_len(expected_list)));
     for (usize i = 0; i < deferred_list.len; ++i) {
         io_stream_println(u8_l("deferred_list[{:d}]: {:d}"), i, *Sli_at(deferred_list, i));
-        io_stream_println(u8_l("expected_list[{:d}]: {:d}"), i, *Arr_at(expected_list, i));
-        try_(TEST_expect(*Sli_at(deferred_list, i) == *Arr_at(expected_list, i)));
+        io_stream_println(u8_l("expected_list[{:d}]: {:d}"), i, *A_at(expected_list, i));
+        try_(TEST_expect(*Sli_at(deferred_list, i) == *A_at(expected_list, i)));
     }
 } $unguarded_(TEST_fn);

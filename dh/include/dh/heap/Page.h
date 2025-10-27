@@ -15,8 +15,8 @@
  *          Provides a simple interface for allocating and freeing memory.
  */
 
-#ifndef HEAP_PAGE_INCLUDED
-#define HEAP_PAGE_INCLUDED (1)
+#ifndef heap_Page__included
+#define heap_Page__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -38,9 +38,9 @@ extern fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator));
 /*========== Implementation Details =========================================*/
 
 // Get next virtual memory address hint
-static anyptr heap_Page_s_next_mmap_addr_hint = null;
+static P$raw heap_Page_s_next_mmap_addr_hint = null;
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_PAGE_INCLUDED */
+#endif /* heap_Page__included */

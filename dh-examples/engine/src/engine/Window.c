@@ -2,7 +2,7 @@
 #include "engine/Canvas.h"
 #include "Backend_Internal.h"
 
-fn_((engine_Window_init(engine_Window_Config config))(Err$Ptr$engine_Window) $guard) {
+fn_((engine_Window_init(engine_Window_Config config))(E$P$engine_Window) $guard) {
     debug_assert(0 < config.rect_size.x);
     debug_assert(0 < config.rect_size.y);
 
@@ -33,7 +33,7 @@ fn_((engine_Window_init(engine_Window_Config config))(Err$Ptr$engine_Window) $gu
     /* Init canvas views */
     window->view.count = 0;
     /* Reserve backend for init */
-    Opt_asg(&window->backend, none());
+    O_asg(&window->backend, none());
 
     /* Created successfully */
     return_ok(window);
@@ -47,14 +47,14 @@ fn_((engine_Window_fini(engine_Window* self))(void)) {
     mem_Allocator_destroy(self->allocator, anyPtr(self));
 }
 
-fn_((engine_Window_update(engine_Window* self))(Err$void) $scope) {
+fn_((engine_Window_update(engine_Window* self))(E$void) $scope) {
     debug_assert_nonnull(self);
     engine_Backend_processEvents(unwrap(self->backend));
 
     /* resize */
     let res = engine_Window_getRes(self);
     for (u32 id = 0; id < self->view.count; ++id) {
-        let view = Arr_at(self->view.list, id);
+        let view = A_at(self->view.list, id);
         if (!view->visible) { continue; }
         let size = blk({
             var full = view->rect.size;
@@ -81,11 +81,11 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
     if (engine_Window_isMinimized(self)) { return; }
 
     // Clear composite buffer
-    engine_Canvas_clear(self->composite_buffer, none$(Opt$Color));
+    engine_Canvas_clear(self->composite_buffer, none$(O$Color));
 
     // Compose all visible canvas views
     for (u32 id = 0; id < self->view.count; ++id) {
-        let view = Arr_at(self->view.list, id);
+        let view = A_at(self->view.list, id);
         if (!view->visible) { continue; }
         if (!view->canvas) { continue; }
 
@@ -101,12 +101,12 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
     engine_Backend_presentBuffer(unwrap(self->backend));
 }
 
-fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config))(Opt$u32) $scope) {
+fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config))(O$u32) $scope) {
     debug_assert_nonnull(self);
 
     if (engine_Window_view_count_limit <= self->view.count) { return_none(); }
     return_some(blk({
-        let view                     = Arr_at(self->view.list, self->view.count);
+        let view                     = A_at(self->view.list, self->view.count);
         view->canvas                 = config.canvas;
         view->pos_on_window.top_left = config.pos;
         view->rect.size              = config.size;
@@ -127,7 +127,7 @@ fn_((engine_Window_removeView(engine_Window* self, u32 view_id))(void)) {
 
     // Shift remaining views down
     for (u32 id = view_id; id < self->views.count - 1; ++id) {
-        *Arr_at(self->views.list, id) = *Arr_at(self->views.list, id + 1);
+        *A_at(self->views.list, id) = *A_at(self->views.list, id + 1);
     }
     self->views.count--; */
 }
@@ -157,12 +157,12 @@ fn_((engine_Window_getMaxRes(const engine_Window* self))(Vec2u)) {
     return engine_Backend_getWindowMaxRes(unwrap(self->backend));
 }
 
-fn_((engine_Window_setMinRes(engine_Window* self, Vec2u size))(Err$void)) {
+fn_((engine_Window_setMinRes(engine_Window* self, Vec2u size))(E$void)) {
     debug_assert_nonnull(self);
     return engine_Backend_setWindowMinRes(unwrap(self->backend), size);
 }
 
-fn_((engine_Window_setMaxRes(engine_Window* self, Vec2u size))(Err$void)) {
+fn_((engine_Window_setMaxRes(engine_Window* self, Vec2u size))(E$void)) {
     debug_assert_nonnull(self);
     return engine_Backend_setWindowMaxRes(unwrap(self->backend), size);
 }

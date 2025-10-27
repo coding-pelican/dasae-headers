@@ -96,10 +96,10 @@ enum {
     engine_KeyCode_count = (i16)256
 };
 typedef i16 engine_KeyCode;
-use_Ptr$(engine_KeyCode);
-use_Sli$(engine_KeyCode);
-use_Opt$(engine_KeyCode);
-use_Err$(engine_KeyCode);
+use_P$(engine_KeyCode);
+use_S$(engine_KeyCode);
+use_O$(engine_KeyCode);
+use_E$(engine_KeyCode);
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -5,7 +5,7 @@ fn_((engine_Mouse_getState(const engine_Mouse* self, engine_MouseButton button))
     debug_assert_nonnull(self);
     debug_assert_true(engine_MouseButton_none < button);
     debug_assert_true(button < engine_MouseButton_count);
-    return Arr_getAt(self->buttons.curr_states, as$((usize)(button)));
+    return A_getAt(self->buttons.curr_states, as$((usize)(button)));
 }
 
 fn_((engine_Mouse_isState(const engine_Mouse* self, engine_MouseButton button, engine_KeyButtonStates state))(bool)) {

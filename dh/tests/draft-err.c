@@ -13,8 +13,8 @@
 //     Overflow,
 //     Underflow
 // );
-/* const char* Err_type() { return "math_Err"; }
-const char* Err_context() { return "Overflow"; } */
+/* const char* E_type() { return "math_Err"; }
+const char* E_context() { return "Overflow"; } */
 
 /* Approach 1: String Constants Instead of Interfaces  */
 typedef struct Err {
@@ -23,11 +23,11 @@ typedef struct Err {
 } Err;
 
 /* case 1: Based Constants */
-static const Err Err_NotImplemented = {
+static const Err E_NotImplemented = {
     .type    = "Err",
     .context = "NotImplemented",
 };
-static const Err Err_Unknown = {
+static const Err E_Unknown = {
     .type    = "Err",
     .context = "Unknown",
 };
@@ -35,25 +35,25 @@ static const Err Err_Unknown = {
 /* case 2: Based Functions */
 typedef Err math_Err;
 
-extern const math_Err* math_Err_DivisionByZero(void);
-extern const math_Err* math_Err_Overflow(void);
-extern const math_Err* math_Err_Underflow(void);
+extern const math_Err* math_E_DivisionByZero(void);
+extern const math_Err* math_E_Overflow(void);
+extern const math_Err* math_E_Underflow(void);
 
-const math_Err* math_Err_DivisionByZero(void) {
+const math_Err* math_E_DivisionByZero(void) {
     static const math_Err error[1] = { {
         .type    = "math_Err",
         .context = "DivisionByZero",
     } };
     return error;
 }
-const math_Err* math_Err_Overflow(void) {
+const math_Err* math_E_Overflow(void) {
     static const math_Err error[1] = { {
         .type    = "math_Err",
         .context = "Overflow",
     } };
     return error;
 }
-const math_Err* math_Err_Underflow(void) {
+const math_Err* math_E_Underflow(void) {
     static const math_Err error[1] = { {
         .type    = "math_Err",
         .context = "Underflow",
@@ -90,17 +90,17 @@ typedef struct io_Err {
 // 1. 설정된 에러의 정보는 immutable 해야함.
 // 2. 여러 개의 에러를 동시에 처리할 수 있어야 함.
 // 3. 에러 코드가 중복되지 않아야 함.
-// 4. 에러는 보통 Err$T와 같은 result union 타입으로 반환되므로 8-16 바이트 이내의 크기를 가져야 함. (오버헤드를 최소화하기 위함)
+// 4. 에러는 보통 E$T와 같은 result union 타입으로 반환되므로 8-16 바이트 이내의 크기를 가져야 함. (오버헤드를 최소화하기 위함)
 // 5. 메모리 할당의 결정권은 라이브러리 사용자에게 있으므로 절대 동적할당(malloc 등)을 사용하면 안됨됨.
 
 
 // 5. math_Err, io_Err, thrd_Err, engine_CanvasDrawErr 등 다양한 에러들이 정의되었을 때, 각각의 에러 코드가 서로 다른 범위를 가지도록 설계되어야 함.
 
-/* Err$Ptr$engine_RenderBackend NotepadBackend_create(void) {
-    scope_reserveReturn(Err$Ptr$engine_RenderBackend) {
+/* E$P$engine_RenderBackend NotepadBackend_create(void) {
+    scope_reserveReturn(E$P$engine_RenderBackend) {
         let backend = (engine_NotepadBackend*)malloc(sizeof(engine_NotepadBackend));
         if (!backend) {
-            return_err(NotepadBackendErr_OutOfMemoryNotepadBacked));
+            return_err(NotepadBackendE_OutOfMemoryNotepadBacked));
         }
         errdefer(free(backend));
         memset(backend, 0, sizeof(engine_NotepadBackend));
@@ -108,7 +108,7 @@ typedef struct io_Err {
         let capacity = 160ull * 100ull;
         let buffer   = (wchar*)malloc(capacity * sizeof(wchar));
         if (!buffer) {
-            return_err(NotepadBackendErr_OutOfMemoryNotepadBackendBuffer));
+            return_err(NotepadBackendE_OutOfMemoryNotepadBackendBuffer));
         }
         errdefer(free(buffer));
         memset(buffer, 0, capacity * sizeof(wchar));

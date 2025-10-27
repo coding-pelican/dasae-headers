@@ -59,17 +59,17 @@ static struct {
 #if debug_comp_enabled
 static void global_debug_logSimStateFrontBodiesN(usize n);
 #endif /* debug_comp_enabled */
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) $must_check;
-static Err$void global_update(Visualizer* viz, Simulation* sim) $must_check;
-static void     global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
+static E$void global_processInput(Visualizer* viz, engine_Window* window) $must_check;
+static E$void global_update(Visualizer* viz, Simulation* sim) $must_check;
+static void   global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt);
 
 // Thread functions
-static anyptr Simulation_thread(anyptr arg);
+static P$raw Simulation_thread(P$raw arg);
 
 // Main function
-Err$void dh_main(int argc, const char* argv[]) {
+E$void dh_main(int argc, const char* argv[]) {
     $unused(argc), $unused(argv);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -138,7 +138,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         log_info("threads created\n");
 
         // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
+        let time_frame_target = time_Duration_fromSecs$f64(main_target_spf);
         var time_frame_prev   = time_Instant_now();
         log_info("main loop started\n");
 
@@ -146,7 +146,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         while (global_state.is_running) {
             let time_frame_curr = time_Instant_now();
             let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+            let time_dt         = time_Duration_asSecs$f64(time_elapsed);
 
             // 1) Process input
             try(engine_Window_processEvents(window));
@@ -196,8 +196,8 @@ static void global_debug_logSimStateFrontBodiesN(usize n) {
 }
 #endif
 
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
-    reserveReturn(Err$void);
+static E$void global_processInput(Visualizer* viz, engine_Window* window) {
+    reserveReturn(E$void);
     debug_assert_nonnull(viz);
     debug_assert_nonnull(window);
 
@@ -228,8 +228,8 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     return_void();
 }
 
-static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
-    scope_reserveReturn(Err$void) {
+static E$void $must_check global_update(Visualizer* viz, Simulation* sim) {
+    scope_reserveReturn(E$void) {
         debug_assert_nonnull(viz);
         debug_assert_nonnull(sim);
 
@@ -240,7 +240,7 @@ static Err$void $must_check global_update(Visualizer* viz, Simulation* sim) {
         }
 
         // Add spawned bodies to simulation
-        for_slice (global_state.spawn_bodies.items, body) {
+        for_slice(global_state.spawn_bodies.items, body) {
             try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
@@ -306,11 +306,11 @@ static void global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt) {
     printf("\033[0m"); // Reset color
 }
 
-static anyptr Simulation_thread(anyptr arg) {
+static P$raw Simulation_thread(P$raw arg) {
     $unused(arg);
 
     // Initialize timing variables
-    let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
+    let time_update_target = time_Duration_fromSecs$f64(0.001); // 1ms
     log_info("sim loop started\n");
 
     while (true) {
@@ -339,7 +339,7 @@ static anyptr Simulation_thread(anyptr arg) {
             // In your code, you might also need to lock spawn_bodies
             // if it is shared with other threads.
             // log_info("sim_thread update\n");
-            catch (Simulation_step(global_state.sim), err, {
+            catch(Simulation_step(global_state.sim), err, {
                 log_error("Simulation_step failed: %s", Err_codeToCStr(err));
                 pthread_mutex_unlock(&global_state.sim_mutex);
                 break;

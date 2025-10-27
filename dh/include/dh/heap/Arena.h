@@ -15,8 +15,8 @@
  *          where you can allocate without freeing, and then free it all together.
  */
 
-#ifndef HEAP_ARENA_INCLUDED
-#define HEAP_ARENA_INCLUDED (1)
+#ifndef heap_Arena__included
+#define heap_Arena__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -28,7 +28,7 @@ extern "C" {
 
 /*========== Arena Allocator ===============================================*/
 
-use_ListSgl$(usize);
+T_use_ListSgl$(usize);
 typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
     ListSgl$usize buffer_list;
@@ -67,4 +67,4 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_ARENA_INCLUDED */
+#endif /* heap_Arena__included */

@@ -57,16 +57,16 @@ typedef variant_(
     (engine_InputEvent_mouse_motion, engine_InputEvent_MouseMotion),
     (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
 ) engine_InputEvent;
-use_Ptr$(engine_InputEvent);
-use_Sli$(engine_InputEvent);
-use_Opt$(engine_InputEvent);
-use_Err$(engine_InputEvent);
+use_P$(engine_InputEvent);
+use_S$(engine_InputEvent);
+use_O$(engine_InputEvent);
+use_E$(engine_InputEvent);
 
 /// Buffer for input events between updates
 typedef struct engine_InputEventBuffer engine_InputEventBuffer;
 #define engine_InputEventBuffer_size /* Circular buffer for input event stack */ (32)
 struct engine_InputEventBuffer {
-    var_(events, Arr$$(engine_InputEventBuffer_size, engine_InputEvent));
+    var_(events, A$$(engine_InputEventBuffer_size, engine_InputEvent));
     var_(head, i32);
     var_(tail, i32);
     var_(count, i32);
@@ -77,25 +77,25 @@ typedef struct engine_Input {
     var_(event_buffer, engine_InputEventBuffer);
     var_(keyboard, engine_Keyboard) $like_ptr;
     var_(mouse, engine_Mouse) $like_ptr;
-    var_(backend, Opt$engine_Backend);
+    var_(backend, O$engine_Backend);
     var_(allocator, mem_Allocator);
 } engine_Input;
-use_Ptr$(engine_Input);
-use_Sli$(engine_Input);
-use_Opt$(engine_Input);
-use_Err$(engine_Input);
+use_P$(engine_Input);
+use_S$(engine_Input);
+use_O$(engine_Input);
+use_E$(engine_Input);
 
 /* Input management ==========================================================*/
 
-extern fn_((engine_Input_init(mem_Allocator allocator))(Err$Ptr$engine_Input)) $must_check;
+extern fn_((engine_Input_init(mem_Allocator allocator))(E$P$engine_Input)) $must_check;
 extern fn_((engine_Input_fini(engine_Input* self))(void));
-extern fn_((engine_Input_update(engine_Input* self))(Err$void)) $must_check;
+extern fn_((engine_Input_update(engine_Input* self))(E$void)) $must_check;
 
 /* Event buffer management ===================================================*/
 
 extern fn_((engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event))(void));
-extern fn_((engine_InputEventBuffer_pop(engine_Input* self))(Opt$engine_InputEvent));
-extern fn_((engine_InputEventBuffer_peek(engine_Input* self))(Opt$engine_InputEvent));
+extern fn_((engine_InputEventBuffer_pop(engine_Input* self))(O$engine_InputEvent));
+extern fn_((engine_InputEventBuffer_peek(engine_Input* self))(O$engine_InputEvent));
 extern fn_((engine_InputEventBuffer_clear(engine_Input* self))(void));
 
 

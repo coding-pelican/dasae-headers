@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @copyright Copyright (c) 2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
@@ -140,3 +141,4 @@ extern "C" {
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* RES_INCLUDED  */
+#endif /* UNUSED_CODE */

@@ -39,7 +39,7 @@ typedef union Grid        Grid;
 #define Grid$$(T)                           comp_type_anon__Grid$$(T)
 #define Grid_anonCast$(T_Grid, var_anon...) comp_op__Grid_anonCast$(pp_uniqTok(anon), T_Grid, var_anon)
 
-#define Grid_fromSli$(T_Grid, var_sli, u32_width, u32_height...) comp_op__Grid_fromSli$(pp_uniqTok(sli), pp_uniqTok(width), pp_uniqTok(height), T_Grid, var_sli, u32_width, u32_height)
+#define Grid_fromS$(T_Grid, var_sli, u32_width, u32_height...) comp_op__Grid_fromS$(pp_uniqTok(sli), pp_uniqTok(width), pp_uniqTok(height), T_Grid, var_sli, u32_width, u32_height)
 
 #define Grid_width(var_self...)                         comp_op__Grid_width(var_self)
 #define Grid_height(var_self...)                        comp_op__Grid_height(var_self)
@@ -74,9 +74,9 @@ typedef union Grid        Grid;
 /*========== Macros and Definitions =========================================*/
 
 struct Grid_const {
-    Sli_const items;
-    u32       width;
-    u32       height;
+    S_const items;
+    u32     width;
+    u32     height;
 };
 union Grid {
     struct {
@@ -95,7 +95,7 @@ union Grid {
     $maybe_unused typedef union pp_join($, Grid, T) pp_join($, Grid, T)
 #define comp_gen__impl_Grid$(T) \
     struct pp_join($, Grid_const, T) { \
-        pp_join($, Sli_const, T) items; \
+        pp_join($, S_const, T) items; \
         u32 width; \
         u32 height; \
     }; \
@@ -110,13 +110,14 @@ union Grid {
 
 #define comp_type_anon__Grid_const$$(T) \
     struct { \
-        Sli_const$$(T) items; \
+        S_const$$(T) items; \
         u32 width; \
         u32 height; \
     }
 #define comp_type_anon__Grid$$(T) \
     struct { \
-        Sli$$(T) items; \
+        S$$(T) \
+        items; \
         u32 width; \
         u32 height; \
     };
@@ -130,10 +131,10 @@ union Grid {
     claim_assert_static(fieldPadding(TypeOf(__anon), items) == fieldPadding(T_Grid, items)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), width) == fieldPadding(T_Grid, width)); \
     claim_assert_static(fieldPadding(TypeOf(__anon), height) == fieldPadding(T_Grid, height)); \
-    blk_return rawderef(as$((rawptr$(T_Grid))(&__anon))); \
+    blk_return rawderef(as$(($P$(T_Grid))(&__anon))); \
 })
 
-#define comp_op__Grid_fromSli$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) blk({ \
+#define comp_op__Grid_fromS$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) blk({ \
     const TypeOf(var_sli) __sli = var_sli; \
     const u32 __width           = u32_width; \
     const u32 __height          = u32_height; \

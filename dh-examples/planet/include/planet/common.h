@@ -28,11 +28,11 @@ struct planet_TectonicPlate {
     .type    = planet_TectonicPlateType_oceanic,
     .density = 0.0,
 };
-use_Sli$(planet_TectonicPlate);
+use_S$(planet_TectonicPlate);
 
 typedef struct planet_Tectonic planet_Tectonic;
 struct planet_Tectonic {
-    Sli$planet_TectonicPlate plates;
+    S$planet_TectonicPlate plates;
 };
 
 

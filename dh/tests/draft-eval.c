@@ -1,5 +1,5 @@
 #if UNUSED_CODE
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 
 
@@ -51,7 +51,7 @@
 #define comp_syn__asg_blk(var_addr, _Expr...) \
     *var_addr = expr_(TypeOf(*var_addr), _Expr);
 
-fn_((dh_main(void))(Err$void) $scope) {
+fn_((dh_main(void))(E$void) $scope) {
     let scope_1 = expr_(i32, let a = 1; let b = 2; let c = a + b; if (0 < c) {
         blk_return_(c);
     } blk_return_(-1););

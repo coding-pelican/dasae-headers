@@ -32,24 +32,24 @@
 
 /*========== Constants and Default Configuration ===========================*/
 
-static const Sli_const$u8 mem_Tracker_default_log_file = u8_l(".log/mem.log");
+static const S_const$u8 mem_Tracker_default_log_file = u8_l(".log/mem.log");
 
 /*========== Tracker Leak Report Types =====================================*/
 
 /// Individual allocation record
 typedef struct mem_Allocation {
-    anyptr                 ptr;       /* Allocated pointer */
-    usize                  size;      /* Allocation size */
-    SrcLoc                 src_loc;   /* Source location*/
-    time_Instant           timestamp; /* Allocation time */
+    P$raw ptr;              /* Allocated pointer */
+    usize size;             /* Allocation size */
+    SrcLoc src_loc;         /* Source location*/
+    time_Instant timestamp; /* Allocation time */
     struct mem_Allocation* next;
 } mem_Allocation;
 
 /// Leak site for aggregated reporting
 typedef struct LeakSite {
     SrcLoc src_loc;
-    usize  count;
-    usize  total_bytes;
+    usize count;
+    usize total_bytes;
 } LeakSite;
 
 /*========== Singleton Instance ============================================*/
@@ -73,18 +73,18 @@ static $on_exit fn_((mem_Tracker_fini(void))(void)) {
 
 /*========== Implementation ================================================*/
 
-fn_((mem_Tracker_initWithPath(Sli_const$u8 log_path))(Err$void) $guard) {
+fn_((mem_Tracker_initWithPath(S_const$u8 log_path))(E$void) $guard) {
     // Create directory if needed
     let dir_path = u8_l(".log");
     try_(fs_Dir_create(dir_path));
 
     // Open log file
-    Arr$$(256, u8) path_str = Arr_zero();
-    mem_copy(path_str.buf, log_path.ptr, log_path.len);
-    Arr_setAt(path_str, log_path.len, '\0');
+    A$$(256, u8) path_str = zero$A();
+    mem_copy(path_str.val, log_path.ptr, log_path.len);
+    *at$A(path_str, log_path.len) = '\0';
 
-    let log_file = fopen(as$((const char*)(path_str.buf)), "w");
-    if (!log_file) { return_err(fs_FileErr_OpenFailed()); }
+    let log_file = fopen(as$((const char*)(path_str.val)), "w");
+    if (!log_file) { return_err(fs_File_Err_OpenFailed()); }
     errdefer_($ignore, let_ignore = fclose(log_file));
 
     // Close previous log file if it exists
@@ -93,15 +93,15 @@ fn_((mem_Tracker_initWithPath(Sli_const$u8 log_path))(Err$void) $guard) {
     }
 
     // Set up the tracker instance
-    mem_Tracker_s_instance.log_file        = log_file;
-    mem_Tracker_s_instance.allocations     = null;
+    mem_Tracker_s_instance.log_file = log_file;
+    mem_Tracker_s_instance.allocations = null;
     mem_Tracker_s_instance.total_allocated = 0;
-    mem_Tracker_s_instance.active_allocs   = 0;
+    mem_Tracker_s_instance.active_allocs = 0;
 
     // clang-format off
     // Write header
     let_ignore = fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized at %f\n",
-        time_Duration_asSecs_f64(time_Instant_elapsed(time_Instant_now()))
+        time_Duration_asSecs$f64(time_Instant_elapsed(time_Instant_now()))
     );
     let_ignore = fprintf(mem_Tracker_s_instance.log_file, "================================\n");
     // clang-format on
@@ -130,12 +130,12 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         time_Instant now = time_Instant_now();
 
         // Track all leaks
-        mem_Allocation* curr         = mem_Tracker_s_instance.allocations;
-        usize           leak_count   = 0;
-        usize           total_leaked = 0;
+        mem_Allocation* curr = mem_Tracker_s_instance.allocations;
+        usize leak_count = 0;
+        usize total_leaked = 0;
 
         // Create a dynamic array for leak sites
-        var sites = type$(ArrList$$(LeakSite), ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(create$(heap_Classic))));
+        var sites = type$((ArrList$$(LeakSite))(ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(&(heap_Classic){}))));
         defer_(ArrList_fini(sites.base));
 
         // Process each leak
@@ -144,8 +144,8 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
             total_leaked += curr->size;
 
             // Calculate age of leak
-            time_Duration age      = time_Instant_durationSince(now, curr->timestamp);
-            f64           age_secs = time_Duration_asSecs_f64(age);
+            time_Duration age = time_Instant_durationSince(now, curr->timestamp);
+            f64 age_secs = time_Duration_asSecs$f64(age);
 
             // Log individual leak
             let_ignore = fprintf(mem_Tracker_s_instance.log_file, "Leak #%zu:\n", leak_count);
@@ -168,16 +168,16 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
                 }
             })) eval_(else)({
                 // Add new leak site
-                catch_((ArrList_addBackOne(sites.base))(
+                catch_((ArrList_add(sites.base))(
                     $ignore, ({
                         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
                     })
                 ));
 
-                if_some(ArrList_popOrNull(sites.base), site_ptr) {
-                    let site          = meta_cast$(LeakSite*, site_ptr);
-                    site->src_loc     = curr->src_loc;
-                    site->count       = 1;
+                if_some((ArrList_popOrNull(sites.base))(site_ptr)) {
+                    let site = as$((LeakSite*)(site_ptr));
+                    site->src_loc = curr->src_loc;
+                    site->count = 1;
                     site->total_bytes = curr->size;
                 }
             }) $unscoped_(eval);
@@ -213,13 +213,13 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         curr = next;
     }
 
-    let_ignore                         = fclose(mem_Tracker_s_instance.log_file);
-    mem_Tracker_s_instance.log_file    = null;
+    let_ignore = fclose(mem_Tracker_s_instance.log_file);
+    mem_Tracker_s_instance.log_file = null;
     mem_Tracker_s_instance.allocations = null;
     return_void();
 } $unguarded_(fn);
 
-fn_((mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc))(void)) {
+fn_((mem_Tracker_registerAlloc(P$raw ptr, usize size, SrcLoc src_loc))(void)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return; }
 
     // Create new allocation record
@@ -234,13 +234,13 @@ fn_((mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc))(void)) {
     }
 
     // Fill allocation info
-    alloc->ptr       = ptr;
-    alloc->size      = size;
-    alloc->src_loc   = src_loc;
+    alloc->ptr = ptr;
+    alloc->size = size;
+    alloc->src_loc = src_loc;
     alloc->timestamp = time_Instant_now();
 
     // Add to linked list
-    alloc->next                        = mem_Tracker_s_instance.allocations;
+    alloc->next = mem_Tracker_s_instance.allocations;
     mem_Tracker_s_instance.allocations = alloc;
 
     // Update stats
@@ -255,7 +255,7 @@ fn_((mem_Tracker_registerAlloc(anyptr ptr, usize size, SrcLoc src_loc))(void)) {
     // clang-format on
 }
 
-fn_((mem_Tracker_registerRemap(anyptr old_ptr, anyptr new_ptr, usize new_size, SrcLoc src_loc))(void)) {
+fn_((mem_Tracker_registerRemap(P$raw old_ptr, P$raw new_ptr, usize new_size, SrcLoc src_loc))(void)) {
     if (!mem_Tracker_s_instance.log_file) { return; }
 
     // First, find the old allocation
@@ -290,7 +290,7 @@ fn_((mem_Tracker_registerRemap(anyptr old_ptr, anyptr new_ptr, usize new_size, S
     }
 }
 
-fn_((mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc))(bool)) {
+fn_((mem_Tracker_registerFree(P$raw ptr, SrcLoc src_loc))(bool)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return false; }
 
     mem_Allocation** curr = &mem_Tracker_s_instance.allocations;
@@ -311,11 +311,11 @@ fn_((mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc))(bool)) {
     }
 
     // Calculate elapsed time since allocation
-    let elapsed     = time_Instant_durationSince(time_Instant_now(), (*curr)->timestamp);
-    let elapsed_sec = time_Duration_asSecs_f64(elapsed);
+    let elapsed = time_Instant_durationSince(time_Instant_now(), (*curr)->timestamp);
+    let elapsed_sec = time_Duration_asSecs$f64(elapsed);
 
     // Get the original allocation info
-    let orig_size    = (*curr)->size;
+    let orig_size = (*curr)->size;
     let orig_src_loc = (*curr)->src_loc;
 
     // Update stats
@@ -336,7 +336,7 @@ fn_((mem_Tracker_registerFree(anyptr ptr, SrcLoc src_loc))(bool)) {
 
     // Remove from list
     mem_Allocation* to_free = *curr;
-    *curr                   = to_free->next;
+    *curr = to_free->next;
     free(to_free);
     return true;
 }

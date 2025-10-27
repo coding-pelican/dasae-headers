@@ -9,66 +9,66 @@
 
 // Insertion sort for small arrays
 extern void utils_insertionSort(
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 );
 
 // Insertion sort with arg
 extern void utils_insertionSortWithArg(
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 );
 
 // Modernized merge sort using temporary buffer instead of allocating new memory
-extern Err$void utils_mergeSortUsingTempRecur(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+extern E$void utils_mergeSortUsingTempRecur(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) $must_check;
 
 // Modernized merge sort using temporary buffer with arg
-extern Err$void utils_mergeSortWithArgUsingTempRecur(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+extern E$void utils_mergeSortWithArgUsingTempRecur(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) $must_check;
 
 #define utils_stableSort_threshold_merge_to_insertion 32
 
 // Modernized stable sort (using merge sort with insertion sort)
-extern Err$void utils_stableSort(
+extern E$void utils_stableSort(
     mem_Allocator allocator,
-    meta_Sli      base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+    meta_S        base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) $must_check;
 
 // Modernized stable sort with arg (using merge sort with insertion sort)
-extern Err$void utils_stableSortWithArg(
+extern E$void utils_stableSortWithArg(
     mem_Allocator allocator,
-    meta_Sli      base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+    meta_S        base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) $must_check;
 
 // Modernized stable sort (using merge sort with insertion sort)
-extern Err$void utils_stableSortUsingTemp(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+extern E$void utils_stableSortUsingTemp(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) $must_check;
 
 // Modernized stable sort with arg (using merge sort with insertion sort)
-extern Err$void utils_stableSortWithArgUsingTemp(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+extern E$void utils_stableSortWithArgUsingTemp(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) $must_check;
 
 decl_ArrList$(Body);
-decl_Err$(ArrList$Body);
-extern Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) $must_check;
+decl_E$(ArrList$Body);
+extern E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) $must_check;
 
 #endif /* UTILS_INCLUDED */

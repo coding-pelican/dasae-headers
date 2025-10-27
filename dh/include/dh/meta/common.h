@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
@@ -37,31 +38,31 @@ extern "C" {
 
 /*========== Meta Utilities =================================================*/
 
-typedef struct meta_Ptr_const meta_Ptr_const;
-typedef union meta_Ptr        meta_Ptr;
+typedef struct meta_P_const$raw meta_P_const$raw;
+typedef union meta_P$raw        meta_P$raw;
 
-typedef struct meta_Sli_const meta_Sli_const;
-typedef union meta_Sli        meta_Sli;
+typedef struct meta_S_const$raw meta_S_const$raw;
+typedef union meta_S$raw        meta_S$raw;
 
-extern fn_((meta_Ptr_constCast(meta_Ptr_const))(meta_Ptr));
-extern fn_((meta_Ptr_mutCast(meta_Ptr))(meta_Ptr_const));
-extern fn_((meta_Ptr_toSli(meta_Ptr, TypeInfo type))(meta_Sli));
+extern fn_((meta_constCast$P(meta_P_const$raw))(meta_P$raw));
+extern fn_((meta_mutCast$P(meta_P$raw))(meta_P_const$raw));
+extern fn_((meta_P_toSli(meta_P$raw, TypeInfo type))(meta_S$raw));
 
-extern fn_((meta_Ptr_copy(meta_Ptr, meta_Ptr_const))(meta_Ptr));
-extern fn_((meta_Ptr_move(meta_Ptr, meta_Ptr))(meta_Ptr));
+extern fn_((meta_P_copy(meta_P$raw, meta_P_const$raw))(meta_P$raw));
+extern fn_((meta_P_move(meta_P$raw, meta_P$raw))(meta_P$raw));
 
-extern fn_((meta_Sli_constCast(meta_Sli_const))(meta_Sli));
-extern fn_((meta_Sli_mutCast(meta_Sli))(meta_Sli_const));
-extern fn_((meta_Sli_asPtr(meta_Sli))(meta_Ptr));
-extern fn_((meta_Sli_len(meta_Sli))(usize));
-extern fn_((meta_Sli_at(meta_Sli, usize index))(meta_Ptr));
-extern fn_((meta_Sli_slice(meta_Sli, usize begin, usize end))(meta_Sli));
+extern fn_((meta_S_constCast(meta_S_const$raw))(meta_S$raw));
+extern fn_((meta_S_mutCast(meta_S$raw))(meta_S_const$raw));
+extern fn_((meta_S_asPtr(meta_S$raw))(meta_P$raw));
+extern fn_((meta_S_len(meta_S$raw))(usize));
+extern fn_((meta_S_at(meta_S$raw, usize index))(meta_P$raw));
+extern fn_((meta_S_slice(meta_S$raw, usize begin, usize end))(meta_S$raw));
 
-extern fn_((meta_Sli_set(meta_Sli, meta_Ptr_const))(meta_Sli));
-extern fn_((meta_Sli_copy(meta_Sli, meta_Sli_const))(meta_Sli));
-extern fn_((meta_Sli_move(meta_Sli, meta_Sli))(meta_Sli));
+extern fn_((meta_S_set(meta_S$raw, meta_P_const$raw))(meta_S$raw));
+extern fn_((meta_S_copy(meta_S$raw, meta_S_const$raw))(meta_S$raw));
+extern fn_((meta_S_move(meta_S$raw, meta_S$raw))(meta_S$raw));
 
-#define Opt_some$(T_Lit) pp_defer(some$) pp_Tuple_cat(T_Lit)
+#define O_some$(T_Lit) pp_defer(some$) pp_Tuple_cat(T_Lit)
 
 #define literal$(T_Lit...) pp_defer(comp_op__literal$) pp_Tuple_cat(T_Lit)
 #define comp_op__literal$(T_Lit, _Initial...) \
@@ -71,50 +72,50 @@ extern fn_((meta_Sli_move(meta_Sli, meta_Sli))(meta_Sli));
 #define meta_refPtr(var_ptr...)        comp_op__meta_refPtr(var_ptr)
 #define meta_refSli(var_sli...)        comp_op__meta_refSli(var_sli)
 
-#define meta_cast$(T_Dest, var_meta...)              comp_op__meta_cast$(T_Dest, var_meta)
-#define meta_castPtr$(T_DestPtr, var_meta_ptr...)    comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr)
-#define meta_castSli$(T_DestSli, var_meta_sli...)    comp_op__meta_castSli$(T_DestSli, var_meta_sli)
-#define meta_castOpt$(T_DestOpt, var_meta_opt...)    comp_op__meta_castOpt$(T_DestOpt, var_meta_opt)
-#define meta_castErr$(T_DestErrRes, var_meta_err...) comp_op__meta_castErr$(T_DestErrRes, var_meta_err)
+#define meta_cast$(T_Dest, var_meta...)            comp_op__meta_cast$(T_Dest, var_meta)
+#define meta_castP$(T_DestPtr, var_meta_ptr...)    comp_op__meta_castP$(T_DestPtr, var_meta_ptr)
+#define meta_castS$(T_DestSli, var_meta_sli...)    comp_op__meta_castS$(T_DestSli, var_meta_sli)
+#define meta_castO$(T_DestOpt, var_meta_opt...)    comp_op__meta_castO$(T_DestOpt, var_meta_opt)
+#define meta_castE$(T_DestErrRes, var_meta_err...) comp_op__meta_castE$(T_DestErrRes, var_meta_err)
 
 #define meta_ptrToAny(var_meta_ptr...) comp_op__meta_ptrToAny(var_meta_ptr)
 #define meta_sliToAny(var_meta_sli...) comp_op__meta_sliToAny(var_meta_sli)
 
 /* Implementation meta types */
-struct meta_Ptr_const {
-    TypeInfo     type; // Type info first
-    anyptr_const addr; // Then address
+struct meta_P_const$raw {
+    TypeInfo    type; // Type info first
+    P_const$raw addr; // Then address
 };
-union meta_Ptr {
+union meta_P$raw {
     struct {
         TypeInfo type; // Type info first
-        anyptr   addr; // Then address
+        P$raw    addr; // Then address
     };
-    meta_Ptr_const as_const;
+    meta_P_const$raw as_const;
 };
 
-struct meta_Sli_const {
-    TypeInfo     type; // Type info first
-    anyptr_const addr; // Then address
-    usize        len;  // Then length
+struct meta_S_const$raw {
+    TypeInfo    type; // Type info first
+    P_const$raw addr; // Then address
+    usize       len;  // Then length
 };
-union meta_Sli {
+union meta_S$raw {
     struct {
         TypeInfo type; // Type info first
-        anyptr   addr; // Then address
+        P$raw    addr; // Then address
         usize    len;  // Then length
     };
-    meta_Sli_const as_const;
+    meta_S_const$raw as_const;
 };
 
 #define comp_op__meta_create$(T_Lit, _Initial...) meta_refPtr(literal$(T_Lit[1])({ [0] = _Initial }))
-#define comp_op__meta_refPtr(var_ptr...)          ((meta_Ptr){ \
+#define comp_op__meta_refPtr(var_ptr...)          ((meta_P$raw){ \
     .type = typeInfo$(TypeOf(*var_ptr)), \
     .addr = var_ptr, \
 })
 #define comp_op__meta_refSli(var_sli...) blk({ \
     let __sli = var_sli; \
-    blk_return((meta_Sli){ \
+    blk_return((meta_S$raw){ \
         .type = typeInfo$(TypeOf(*__sli.ptr)), \
         .addr = __sli.ptr, \
         .len  = __sli.len, \
@@ -124,23 +125,23 @@ union meta_Sli {
 #define comp_op__meta_cast$(T_Dest, var_meta...) blk({ \
     TypeOf(var_meta) _meta = var_meta; \
     claim_assert_static_msg( \
-        isSameType$(TypeOf(_meta), meta_Ptr_const) || isSameType$(TypeOf(_meta), meta_Ptr) \
-            || isSameType$(TypeOf(_meta), meta_Sli_const) || isSameType$(TypeOf(_meta), meta_Sli), \
+        isSameType$(TypeOf(_meta), meta_P_const$raw) || isSameType$(TypeOf(_meta), meta_P$raw) \
+            || isSameType$(TypeOf(_meta), meta_S_const$raw) || isSameType$(TypeOf(_meta), meta_S$raw), \
         "Invalid meta type" \
     ); \
     blk_return(*((T_Dest*)&_meta.addr)); \
 })
-#define comp_op__meta_castPtr$(T_DestPtr, var_meta_ptr...) blk({ \
+#define comp_op__meta_castP$(T_DestPtr, var_meta_ptr...) blk({ \
     const TypeOf(var_meta_ptr) _ptr = var_meta_ptr; \
-    claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
+    claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_P$raw), "Invalid meta type"); \
     blk_return((T_DestPtr)_ptr.addr); \
 })
-#define comp_op__meta_castSli$(T_DestSli, var_meta_sli...) blk({ \
+#define comp_op__meta_castS$(T_DestSli, var_meta_sli...) blk({ \
     const TypeOf(var_meta_sli) _sli = var_meta_sli; \
-    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
+    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_S$raw), "Invalid meta type"); \
     blk_return((T_DestSli){ .ptr = _sli.addr, .len = _sli.len }); \
 })
-#define comp_op__meta_castOpt$(T_DestOpt, var_meta_opt...) blk({ \
+#define comp_op__meta_castO$(T_DestOpt, var_meta_opt...) blk({ \
     const TypeOf(var_meta_opt) __opt = var_meta_opt; \
     T_DestOpt __result               = cleared(); \
     if (isNone(__opt)) { \
@@ -150,7 +151,7 @@ union meta_Sli {
     } \
     blk_return __result; \
 })
-#define comp_op__meta_castErr$(T_DestErrRes, var_meta_err...) blk({ \
+#define comp_op__meta_castE$(T_DestErrRes, var_meta_err...) blk({ \
     const TypeOf(var_meta_err) __err_res = var_meta_err; \
     T_DestErrRes __result                = cleared(); \
     if (isOk(__err_res)) { \
@@ -163,51 +164,53 @@ union meta_Sli {
 
 #define comp_op__meta_ptrToAny(var_meta_ptr) blk({ \
     const TypeOf(var_meta_ptr) _ptr = var_meta_ptr; \
-    claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_Ptr), "Invalid meta type"); \
+    claim_assert_static_msg(isSameType$(TypeOf(_ptr), meta_P$raw), "Invalid meta type"); \
     blk_return variant_of$(AnyType, AnyType_ptr, { .type = _ptr.type, .addr = _ptr.addr }); \
 })
 #define comp_op__meta_sliToAny(var_meta_sli) blk({ \
     const TypeOf(var_meta_sli) _sli = var_meta_sli; \
-    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_Sli), "Invalid meta type"); \
+    claim_assert_static_msg(isSameType$(TypeOf(_sli), meta_S$raw), "Invalid meta type"); \
     blk_return variant_of$(AnyType, AnyType_sli, { .type = _sli.type, .addr = _sli.addr, .len = _sli.len }); \
 })
 
 // clang-format off
-use_Opt$(Ptr_const); use_Opt$(Ptr);
-use_Err$(Ptr_const); use_Err$(Ptr);
+T_use_O$(P_const$raw); T_use_O$(P$raw);
+T_use_E$(P_const$raw); T_use_E$(P$raw);
 
-use_Opt$(Sli_const); use_Opt$(Sli);
-use_Err$(Sli_const); use_Err$(Sli);
+T_use_O$(S_const$raw); T_use_O$(S$raw);
+T_use_E$(S_const$raw); T_use_E$(S$raw);
 
-use_Opt$(meta_Ptr_const); use_Opt$(meta_Ptr);
-use_Err$(meta_Ptr_const); use_Err$(meta_Ptr);
+T_use_O$(meta_P_const$raw); T_use_O$(meta_P$raw);
+T_use_E$(meta_P_const$raw); T_use_E$(meta_P$raw);
 
-use_Opt$(meta_Sli_const); use_Opt$(meta_Sli);
-use_Err$(meta_Sli_const); use_Err$(meta_Sli);
+T_use_O$(meta_S_const$raw); T_use_O$(meta_S$raw);
+T_use_E$(meta_S_const$raw); T_use_E$(meta_S$raw);
 
 // /* builtin types */
-// use_Ptr$(u8); use_Ptr$(u16); use_Ptr$(u32); use_Ptr$(u64); use_Ptr$(usize);
-// use_Sli$(u8); use_Sli$(u16); use_Sli$(u32); use_Sli$(u64); use_Sli$(usize);
-// use_Opt$(u8); use_Opt$(u16); use_Opt$(u32); use_Opt$(u64); use_Opt$(usize);
-// use_Err$(u8); use_Err$(u16); use_Err$(u32); use_Err$(u64); use_Err$(usize);
+// use_P$(u8); use_P$(u16); use_P$(u32); use_P$(u64); use_P$(usize);
+// use_S$(u8); use_S$(u16); use_S$(u32); use_S$(u64); use_S$(usize);
+// use_O$(u8); use_O$(u16); use_O$(u32); use_O$(u64); use_O$(usize);
+// use_E$(u8); use_E$(u16); use_E$(u32); use_E$(u64); use_E$(usize);
 
-// use_Ptr$(i8); use_Ptr$(i16); use_Ptr$(i32); use_Ptr$(i64); use_Ptr$(isize);
-// use_Sli$(i8); use_Sli$(i16); use_Sli$(i32); use_Sli$(i64); use_Sli$(isize);
-// use_Opt$(i8); use_Opt$(i16); use_Opt$(i32); use_Opt$(i64); use_Opt$(isize);
-// use_Err$(i8); use_Err$(i16); use_Err$(i32); use_Err$(i64); use_Err$(isize);
+// use_P$(i8); use_P$(i16); use_P$(i32); use_P$(i64); use_P$(isize);
+// use_S$(i8); use_S$(i16); use_S$(i32); use_S$(i64); use_S$(isize);
+// use_O$(i8); use_O$(i16); use_O$(i32); use_O$(i64); use_O$(isize);
+// use_E$(i8); use_E$(i16); use_E$(i32); use_E$(i64); use_E$(isize);
 
-// use_Ptr$(f32); use_Ptr$(f64);
-// use_Sli$(f32); use_Sli$(f64);
-// use_Opt$(f32); use_Opt$(f64);
-// use_Err$(f32); use_Err$(f64);
+// use_P$(f32); use_P$(f64);
+// use_S$(f32); use_S$(f64);
+// use_O$(f32); use_O$(f64);
+// use_E$(f32); use_E$(f64);
 
-// use_Ptr$(bool); use_Ptr$(char);
-// use_Sli$(bool); use_Sli$(char);
-// use_Opt$(bool); use_Opt$(char);
-// use_Err$(bool); use_Err$(char);
+// use_P$(bool); use_P$(char);
+// use_S$(bool); use_S$(char);
+// use_O$(bool); use_O$(char);
+// use_E$(bool); use_E$(char);
 // clang-format on
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* META_COMMON_INCLUDED */
+
+#endif /* UNUSED_CODE */

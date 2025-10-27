@@ -12,8 +12,8 @@
 
 // TODO: Testing canvas blit scale behavior, breaking down canvas types and rendering methods
 
-Err$void dh_main(int argc, const char* argv[]) {
-    scope_reserveReturn(Err$void) {
+E$void dh_main(int argc, const char* argv[]) {
+    scope_reserveReturn(E$void) {
         $unused(argc), $unused(argv);
 
         // Initialize logging to a file
@@ -68,13 +68,13 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         var curr_time   = time_Instant_now();
         var prev_time   = curr_time;
-        let target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        let target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
 
         // Game loop
         while (state->is_running) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let dt           = time_Duration_asSecs_f64(elapsed_time);
+            let dt           = time_Duration_asSecs$f64(elapsed_time);
 
             // Process events
             try(engine_Window_processEvents(window));

@@ -11,8 +11,8 @@
  * @prefix  fmt
  */
 
-#ifndef FMT_INCLUDED
-#define FMT_INCLUDED (1)
+#ifndef fmt__included
+#define fmt__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -24,4 +24,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* FMT_INCLUDED */
+#endif /* fmt__included */

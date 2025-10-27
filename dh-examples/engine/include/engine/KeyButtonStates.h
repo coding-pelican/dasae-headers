@@ -14,10 +14,10 @@ enum {
     engine_KeyButtonStates_released = 1 << 2  /**< Key/Button was just released this frame */
 };
 typedef u8 engine_KeyButtonStates;
-use_Ptr$(engine_KeyButtonStates);
-use_Sli$(engine_KeyButtonStates);
-use_Opt$(engine_KeyButtonStates);
-use_Err$(engine_KeyButtonStates);
+use_P$(engine_KeyButtonStates);
+use_S$(engine_KeyButtonStates);
+use_O$(engine_KeyButtonStates);
+use_E$(engine_KeyButtonStates);
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -53,10 +53,10 @@ enum ErrCode {
     ErrCode_InvalidArgument = -1,
     ErrCode_None            = 0
 };
-typedef struct Err_VT Err_VT;
+typedef struct E_VT E_VT;
 typedef struct Err {
-    ErrCode       ctx;
-    const Err_VT* vt;
+    ErrCode     ctx;
+    const E_VT* vt;
 } Err;
 
 typedef union E_Payload$raw E_Payload$raw;
@@ -145,7 +145,7 @@ struct E$raw {
 /* Array Anonymous */
 #define A$$(_N, _T...) \
     union { \
-        var_(buf, $A$(_N, _T)); \
+        var_(val, $A$(_N, _T)); \
         var_(as_raw, A$raw); \
         var_(ref_raw, TypeOf(A$raw $like_ptr)); \
     }
@@ -154,7 +154,7 @@ struct E$raw {
 /* Array Template */
 #define tpl$A$(_N, _T...) \
     typedef union A$(_N, _T) { \
-        var_(buf, $A$(_N, _T)); \
+        var_(val, $A$(_N, _T)); \
         var_(as_raw, A$raw); \
         var_(ref_raw, TypeOf(A$raw $like_ptr)); \
     } A$(_N, _T)
@@ -227,13 +227,13 @@ struct E$raw {
 
 /* Operations ========================================================*/
 
-#define zero$A()                                  { .buf = { 0 } }
+#define zero$A()                                  { .val = { 0 } }
 #define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/)   ((A$ __VA_ARGS__)zero$A())
 #define zero$A$$(/*(_N,_T)*/... /*(A$$(_N,_T))*/) ((A$$ __VA_ARGS__)zero$A())
 #define zero$S()                                  { .ptr = null, .len = 0 }
 #define zero$S$(/*(_T)*/... /*(S$(_T))*/)         ((S$ __VA_ARGS__)zero$S())
 #define zero$S$$(/*(_T)*/... /*(S$$(_T))*/)       ((S$$ __VA_ARGS__)zero$S())
-#define init$A(_initial...)                       { .buf = _initial }
+#define init$A(_initial...)                       { .val = _initial }
 #define init$A$(/*(_N, _T)(_initial...)*/... /*(A$(_N,_T))*/) \
     __step_inline__init$A$(pp_defer(__emit_inline__init$A$)(__param_parse__init$A$ __VA_ARGS__))
 #define __step_inline__init$A$(...)                 __VA_ARGS__
@@ -306,7 +306,7 @@ struct E$raw {
     claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    claim_assert_static(isSameTypE$(TypeOf(buf$A(*__p_lhs)), TypeOf(buf$A(*__p_rhs)))); \
+    claim_assert_static(isSameTypE$(TypeOf(val$A(*__p_lhs)), TypeOf(val$A(*__p_rhs)))); \
 })
 #define a_claim_assert_staticSameType2(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType2(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
@@ -316,7 +316,7 @@ struct E$raw {
     claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType1(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType1(&val$A(*__p_lhs)[0], &val$A(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType3(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType3(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
@@ -326,7 +326,7 @@ struct E$raw {
     claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType2(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType2(&val$A(*__p_lhs)[0], &val$A(*__p_rhs)[0]); \
 })
 #define a_claim_assert_staticSameType4(_p_lhs, _p_rhs...) \
     comp_inline__a_claim_assert_staticSameType4(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), _p_lhs, _p_rhs)
@@ -336,7 +336,7 @@ struct E$raw {
     claim_assert_static(len$A(*__p_lhs) == len$A(*__p_rhs)); \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(*__p_rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(*__p_rhs))); \
-    a_claim_assert_staticSameType3(&buf$A(*__p_lhs)[0], &buf$A(*__p_rhs)[0]); \
+    a_claim_assert_staticSameType3(&val$A(*__p_lhs)[0], &val$A(*__p_rhs)[0]); \
 })
 
 #define asg$A(_p_lhs, _rhs...) asg$A1(_p_lhs, _rhs)
@@ -458,11 +458,11 @@ struct E$raw {
 #define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/)   (_s.as_const)
 #define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
 
-#define buf$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).buf)
-#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*buf$A(_a))
+#define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
+#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*val$A(_a))
 #define ptr$S(_s /*: S$$(_T)*/... /*(P$$(_T))*/)       ((_s).ptr)
 
-#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf((_a).buf)
+#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf$(TypeOf((_a).val))
 #define len$S(_s /*: S$$(_T)*/... /*(usize)*/)    ((_s).len)
 
 #define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
@@ -473,7 +473,7 @@ struct E$raw {
     let_(__idx, usize)       = _idx; \
     claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$A(*__a)) : true, "index out of bounds"); \
     debug_assert_fmt(__idx < len$A(*__a), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, len$A(*__a)); \
-    &buf$A(*__a)[__idx]; \
+    &val$A(*__a)[__idx]; \
 })
 #define at$S(_s /*: S$$(_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
     pp_expand(pp_defer(block_inline__at$S)(param_expand__at$S(_s, _idx)))
@@ -546,7 +546,7 @@ struct E$raw {
     let_(__range, R)         = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
     debug_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$A(*__a)); \
-    init$S$$((TypeOf(*ptr$A(*__a)))(&buf$A(*__a)[__range.begin], len$R(__range))); \
+    init$S$$((TypeOf(*ptr$A(*__a)))(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__slice$A$)(__param_expand__slice$A$ __VA_ARGS__))
 #define __param_expand__slice$A$(...)                                           __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__slice$A$
@@ -556,7 +556,7 @@ struct E$raw {
     let_(__range, R)         = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
     debug_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$A(*__a)); \
-    init$S$((_T)(&buf$A(*__a)[__range.begin], len$R(__range))); \
+    init$S$((_T)(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define prefix$A(/*_a: A$$(_N,_T), _end: usize*/... /*(S$$(_T))*/) __param_expand__prefix$A(__VA_ARGS__)
 #define __param_expand__prefix$A(_a, _end...)                      __block_inline__prefix$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
@@ -895,7 +895,7 @@ typedef struct meta_E$raw {
 })
 
 #define meta_ret$V(_T)     ((meta_V$raw){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
-#define meta_ret$A(_N, _T) ((meta_A$raw){ .inner_type = typeInfo$(FieldTypeOf(A$$(_N, _T), buf[0])), .inner = ref$A((A$$(_N, _T)){}) })
+#define meta_ret$A(_N, _T) ((meta_A$raw){ .inner_type = typeInfo$(FieldTypeOf(A$$(_N, _T), val[0])), .inner = ref$A((A$$(_N, _T)){}) })
 #define meta_ret$O(_T)     ((meta_O$raw){ .inner_type = typeInfo$(FieldTypeOf(O$$(_T), payload->some)), .inner = ((O$$(_T)){}).ref_raw })
 #define meta_ret$E(_T)     ((meta_E$raw){ .inner_type = typeInfo$(FieldTypeOf(E$$(_T), payload->ok)), .inner = ((E$$(_T)){}).ref_raw })
 
@@ -910,7 +910,7 @@ typedef struct meta_E$raw {
 })
 #define meta$A(_a...) ({ \
     let __p_a = &copy(_a); \
-    ((meta_A$raw){ .inner_type = typeInfo$(TypeOf(*__p_a->buf)), .inner = ref$A(*__p_a).as_raw }); \
+    ((meta_A$raw){ .inner_type = typeInfo$(TypeOf(*__p_a->val)), .inner = ref$A(*__p_a).as_raw }); \
 })
 #define meta$O(_o...) ({ \
     let __p_o = &copy(_o); \
@@ -1799,3 +1799,138 @@ void better(void) {
         printf("- e_f[%zu]: %.2f\n", i_u, *e_f);
     });
 }
+
+#undef lit$
+#define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __lit$__exec(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
+#define __lit$__exec(...)             __VA_ARGS__
+#define __lit$__sep(_T...)            _T,
+#define __lit$__emit(_T, _initial...) __lit$__emitNext(_T, (_initial))
+#define __lit$__emitNext(_T, _initial...) \
+    ((_T)__lit$__expandInitial _initial)
+#define __lit$__expandInitial(_initial...) _initial
+
+#undef make$
+#define make$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __make$__exec(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
+#define __make$__exec(...)             __VA_ARGS__
+#define __make$__sep(_T...)            _T,
+#define __make$__emit(_T, _initial...) __make$__emitNext(_T, (_initial))
+#define __make$__emitNext(_T, _initial...) \
+    (*lit$((_T[1]){ [0] = __make$__expandInitial _initial }))
+#define __make$__expandInitial(_initial...) _initial
+
+#undef create$
+#define create$(/*(_T){_initial...}*/... /*(P$$(_T))*/) \
+    __create$__exec(pp_defer(__create$__emit)(__create$__sep __VA_ARGS__))
+#define __create$__exec(...)             __VA_ARGS__
+#define __create$__sep(_T...)            _T,
+#define __create$__emit(_T, _initial...) __create$__emitNext(_T, (_initial))
+#define __create$__emitNext(_T, _initial...) \
+    (&make$((_T)__create$__expandInitial _initial))
+#define __create$__expandInitial(_initial...) _initial
+
+#undef type$
+#define type$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    /* TODO: Add type checking */ \
+    __type$__exec(pp_defer(__type$__emit)(__type$__sep __VA_ARGS__))
+#define __type$__exec(...)             __VA_ARGS__
+#define __type$__sep(_T...)            _T, __type$__sepRaw
+#define __type$__sepRaw(_raw...)       _raw
+#define __type$__emit(_T, _raw...)     __type$__emitNext(_T, _raw)
+#define __type$__emitNext(_T, _raw...) make$((_T){ .as_raw = _raw })
+#define type$O$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$O$__exec(pp_defer(__type$O$__emit)(__type$O$__sep __VA_ARGS__))
+#define __type$O$__exec(...)             __VA_ARGS__
+#define __type$O$__sep(_T...)            _T, __type$O$__sepRaw
+#define __type$O$__sepRaw(_raw...)       _raw
+#define __type$O$__emit(_T, _raw...)     __type$O$__emitNext(_T, _raw)
+#define __type$O$__emitNext(_T, _raw...) make$((O$(_T)){ .as_raw = _raw.as_raw })
+#define type$E$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$E$__exec(pp_defer(__type$E$__emit)(__type$E$__sep __VA_ARGS__))
+#define __type$E$__exec(...)             __VA_ARGS__
+#define __type$E$__sep(_T...)            _T, __type$E$__sepRaw
+#define __type$E$__sepRaw(_raw...)       _raw
+#define __type$E$__emit(_T, _raw...)     __type$E$__emitNext(_T, _raw)
+#define __type$E$__emitNext(_T, _raw...) make$((E$(_T)){ .as_raw = _raw.as_raw })
+
+#undef tpl_id
+#define tpl_id$T(_id, _T) pp_join($, _id, _T)
+
+#define ArrList$(_T...) tpl_id$T(ArrList, _T)
+typedef struct ArrList$raw {
+    var_(type, TypeInfo);
+    var_(items, S$raw);
+    var_(cap, usize);
+} ArrList$raw;
+tpl$E$(ArrList$raw);
+
+typedef struct Foo {
+    usize id;
+    f64   value;
+} Foo;
+tpl$P$(Foo);
+tpl$S$(Foo);
+
+#define tpl$ArrList$(T) \
+    typedef union ArrList$(T) { \
+        ArrList$raw as_raw; \
+        struct { \
+            var_(type, TypeInfo); \
+            var_(items, S$(T)); \
+            var_(cap, usize); \
+        }; \
+    } ArrList$(T)
+
+#define tpl$ArrList_empty$(T...) \
+    $static fn_((tpl_id$T(ArrList_empty, T)(void))(E$(ArrList$(T)))) { \
+        return type$((ArrList$(T))(ArrList_empty$raw(typeInfo$(T)))); \
+    }
+#define tpl$ArrList_init$(T...) \
+    $static fn_((tpl_id$T(ArrList_init, T)(mem_Allocator allocator, usize cap))(E$(ArrList$(T)))) { \
+        return type$E$((ArrList$(T))(ArrList_init$raw(typeInfo$(T), allocator, cap))); \
+    }
+#define tpl$ArrList_initBuf$(T...) \
+    $static fn_((tpl_id$T(ArrList_initBuf, T)(S$(T) buf))(ArrList$(T))) { \
+        return type$((ArrList$(T))(ArrList_initBuf$raw(typeInfo$(T), metaMut$S(buf)))); \
+    }
+#define tpl$ArrList_fini$(T...) \
+    $static fn_((tpl_id$T(ArrList_fini, T)(P$$(ArrList$(T)) self, mem_Allocator allocator))(void)) { \
+        return ArrList_fini$raw(&self->as_raw, allocator); \
+    }
+
+/* typedef struct mem_Allocator {
+} mem_Allocator;
+
+$inline_always
+fn_((ArrList_empty$raw(TypeInfo type))(ArrList$raw)) {
+    return make$((ArrList$raw){ .type = type, .items = { .ptr = null, .len = 0 }, .cap = 0 });
+}
+
+$inline_always
+fn_((ArrList_init$raw(TypeInfo type, mem_Allocator allocator, usize cap))(E$ArrList$raw) $scope) {
+    // let items = try_(mem_Allocator_alloc(allocator, type, cap));
+    // return_ok({ .type = type, .items = items, .cap = cap });
+} $unscoped_(fn);
+
+$inline_always
+fn_((ArrList_initBuf$raw(TypeInfo type, meta_S$raw buf))(ArrList$raw)) {
+    return make$((ArrList$raw){ .type = type, .items = { .ptr = buf.ptr, .len = 0 }, .cap = buf.len });
+}
+
+$inline_always
+fn_((ArrList_fini$raw(ArrList$raw* self, mem_Allocator allocator))(void)) {
+    // mem_Allocator_free(allocator, meta_any(self->items));
+}
+
+tpl$ArrList$(Foo);
+tpl$E$(ArrList$Foo);
+tpl$ArrList_init$(Foo);
+tpl$ArrList_initBuf$(Foo);
+tpl$ArrList_fini$(Foo); */
+
+
+// $inline_always
+// fn_((ArrList_init$Foo(void))(ArrList$Foo)) {
+//     return type$((ArrList$Foo)(ArrList_init$raw(typeInfo$(Foo))));
+// }

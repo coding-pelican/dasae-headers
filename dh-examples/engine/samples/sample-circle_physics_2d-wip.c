@@ -10,7 +10,7 @@
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
 
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include "engine.h"
 
@@ -44,7 +44,7 @@ typedef struct Ball {
     Vec2f  acc;
     f32    mass;
 } Ball;
-use_Sli$(Ball);
+use_S$(Ball);
 use_ArrList$(Ball);
 
 static const f32 Ball_mass_scaler_by_radius = 10.0f;
@@ -68,7 +68,7 @@ typedef struct BallCollisionPair {
     usize collider_index;
     usize collidee_index;
 } BallCollisionPair;
-use_Sli$(BallCollisionPair);
+use_S$(BallCollisionPair);
 use_ArrList$(BallCollisionPair);
 
 // Ball system manager
@@ -77,10 +77,10 @@ typedef struct BallManager {
     Ball*         selected_ball;
     mem_Allocator allocator;
 } BallManager;
-use_Err$(BallManager);
+use_E$(BallManager);
 
-static Err$BallManager BallManager_init(mem_Allocator allocator) {
-    scope_reserveReturn(Err$BallManager) {
+static E$BallManager BallManager_init(mem_Allocator allocator) {
+    scope_reserveReturn(E$BallManager) {
         return_ok((BallManager){
             .balls         = type$(ArrList$Ball, try(ArrList_initCap(typeInfo$(Ball), allocator, 32))),
             .selected_ball = null,
@@ -94,8 +94,8 @@ static void BallManager_fini(BallManager* self) {
     ArrList_fini(&self->balls.base);
 }
 
-static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
-    reserveReturn(Err$void);
+static E$void BallManager_replaceRandly(BallManager* self, u32 count) {
+    reserveReturn(E$void);
 
     ArrList_clearRetainingCap(&self->balls.base);
     for (u32 i = 0; i < count; ++i) {
@@ -104,10 +104,10 @@ static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
             meta_refPtr(&(Ball){
                 .transform = {
                     .center = {
-                        .x = Random_range_f64(-window_res_x / 2, window_res_x / 2),
-                        .y = Random_range_f64(-window_res_y / 2, window_res_y / 2),
+                        .x = Rand_range$f64(-window_res_x / 2, window_res_x / 2),
+                        .y = Rand_range$f64(-window_res_y / 2, window_res_y / 2),
                     },
-                    .radius = Random_range_f64(2.0, 7.0),
+                    .radius = Rand_range$f64(2.0, 7.0),
                 },
                 .vel  = m_V2f32_zero,
                 .acc  = m_V2f32_zero,
@@ -117,15 +117,15 @@ static Err$void BallManager_replaceRandomly(BallManager* self, u32 count) {
     }
 
     // Set masses based on radii
-    for_slice (self->balls.items, ball) {
+    for_slice(self->balls.items, ball) {
         ball->mass = ball->transform.radius * Ball_mass_scaler_by_radius;
     }
 
     return_void();
 }
 
-static Err$void BallManager_resolveCollisions(BallManager* self) {
-    reserveReturn(Err$void);
+static E$void BallManager_resolveCollisions(BallManager* self) {
+    reserveReturn(E$void);
 
     // Quick n^2 collision check between all balls
     for (usize i = 0; i < self->balls.items.len; ++i) {
@@ -190,7 +190,7 @@ static Err$void BallManager_resolveCollisions(BallManager* self) {
 
 static void BallManager_update(BallManager* self, f32 dt) {
     // Update physics
-    for_slice (self->balls.items, ball) {
+    for_slice(self->balls.items, ball) {
         // Apply drag
         ball->acc = m_V2f32_scale(m_V2f32_neg(ball->vel), Ball_drag_coefficient);
 
@@ -236,7 +236,7 @@ $inline_always Vec2f worldToScreen(Vec2f pos, engine_Canvas* canvas) {
 };
 static void BallManager_render(BallManager* self, engine_Canvas* canvas) {
     // Draw all balls
-    for_slice (self->balls.items, ball) {
+    for_slice(self->balls.items, ball) {
         let pos    = worldToScreen(ball->transform.center, canvas);
         let radius = ball->transform.radius * window_res_scale;
         engine_Canvas_drawCircle(canvas, as$(i32, pos.x), as$(i32, pos.y), as$(i32, radius), Color_white);
@@ -269,7 +269,7 @@ static void BallManager_processInput(BallManager* self) {
     if (engine_Mouse_pressed(engine_MouseButton_left) || engine_Mouse_pressed(engine_MouseButton_right)) {
         self->selected_ball = null;
         let world_pos       = screenToWorld(engine_Mouse_getPosition());
-        for_slice (self->balls.items, ball) {
+        for_slice(self->balls.items, ball) {
             if (Circ2f_containsPoint(ball->transform, world_pos)) {
                 self->selected_ball = ball;
                 break;
@@ -299,9 +299,9 @@ static void BallManager_processInput(BallManager* self) {
     }
 }
 
-Err$void dh_main(int argc, const char* argv[]) {
+E$void dh_main(int argc, const char* argv[]) {
     $unused(argc), $unused(argv);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging
         scope_if(let debug_file = fopen("sample-circle_physics_2d-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -337,17 +337,17 @@ Err$void dh_main(int argc, const char* argv[]) {
 
         var manager = try(BallManager_init(allocator));
         defer(BallManager_fini(&manager));
-        try(BallManager_replaceRandomly(&manager, 16));
+        try(BallManager_replaceRandly(&manager, 16));
 
         // Game loop timing setup
-        let  target_time = time_Duration_fromSecs_f64(0.016);
+        let  target_time = time_Duration_fromSecs$f64(0.016);
         var  prev_time   = time_Instant_now();
         var  curr_time   = prev_time;
         bool is_running  = true;
         while (is_running) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let dt           = time_Duration_asSecs_f64(elapsed_time);
+            let dt           = time_Duration_asSecs$f64(elapsed_time);
 
             // Process events
             try(engine_Window_processEvents(window));

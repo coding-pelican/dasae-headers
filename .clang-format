@@ -19,12 +19,15 @@ InsertNewlineAtEOF: true
 # AlignAfterOpenBracket: AlwaysBreak
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments:
-  Enabled: true
+  # Enabled: true
+  Enabled: false
   AcrossEmptyLines: false
-  AcrossComments: true
+  # AcrossComments: true
+  AcrossComments: false
   AlignCompound: false
   AlignFunctionPointers: false
-  PadOperators: true
+  # PadOperators: true
+  PadOperators: false
 AlignConsecutiveBitFields:
   Enabled: true
   AcrossEmptyLines: false
@@ -33,12 +36,15 @@ AlignConsecutiveBitFields:
   AlignFunctionPointers: false
   PadOperators: true
 AlignConsecutiveDeclarations:
-  Enabled: true
+  # Enabled: true
+  Enabled: false
   AcrossEmptyLines: false
-  AcrossComments: true
+  # AcrossComments: true
+  AcrossComments: false
   AlignCompound: false
   AlignFunctionPointers: false
-  PadOperators: true
+  # PadOperators: true
+  PadOperators: false
 AlignConsecutiveMacros:
   Enabled: true
   AcrossEmptyLines: false
@@ -174,6 +180,8 @@ TypeNames:
   - atomic_Value$
   - atomic_Value$$
 Macros:
+  - "TypeOf(T)=T"
+  - "TypeOfUnqual(T)=T"
   - "$P$(T)=$P$<T>"
   - "$A$(N,T)=$A$<N,T*>"
   - "P$$(T)=P$$<T>"
@@ -187,10 +195,17 @@ Macros:
   - "E$$(T)=E$$<T>"
   - "E$(T)=E$<T>"
 
-  - "as$(_Expr)=pp_ignore _Expr"
+  - "as$(Expr)=pp_ignore Expr"
+  - "lit$(Expr)=pp_ignore Expr"
+  - "make$(Expr)=pp_ignore Expr"
+  - "create$(Expr)=pp_ignore Expr"
+  - "type$(Expr)=pp_ignore Expr"
 
-  - "$static=$static"
-  - "$extern=$extern"
+  - "errset_(Expr)=pp_ignore Expr"
+
+  - "pp_attr_(Attrs)=Attrs;"
+  - "$static="
+  - "$extern="
   # - "some(_)=_"
   # - "none()={}"
   # - "unwrap(_)=_"
@@ -201,23 +216,17 @@ Macros:
   - "switch_(init, cond)=switch (init; cond)"
   - "while_(init, cond)=while (init; cond)"
   # Optional value
-  # - "if_some(expr,capture)=if (expr)"
-  # - "if_none(expr)=if ()"
-  # - "else_none=else"
-  # - "else_some(expr)=else if ()"
-  # - "if_ok(expr,capture)=if (capture)"
-  # - "if_err(expr,capture)=if (capture)"
-  # - "if_void(expr)=if ()"
-  # - "else_ok(capture)=else if (capture)"
-  # - "else_err(capture)=else if (capture)"
-  # - "else_void=else"
+  - "if_some(expr)=if (expr)"
+  - "if_none(expr)=if (expr)"
+  - "else_none=else"
+  - "else_some(expr)=else if (expr)"
   # # Error result
-  # - "if_err(_,_)=if (_)"
-  # - "if_ok(_,_)=if (_)"
-  # - "if_void(_)=if (_)"
-  # - "else_ok(_)=else if (_)"
-  # - "else_void=else"
-  # - "else_err(_)=else if (_)"
+  - "if_ok(expr, capture)=if (capture)"
+  - "if_err(expr, capture)=if (capture)"
+  - "if_void(expr)=if (expr)"
+  - "else_ok(capture)=else if (capture)"
+  - "else_err(capture)=else if (capture)"
+  - "else_void=else"
   # Union enum
   # - tagUnion(tag,expr)=/**/
   # - tagUnion$(T,tag,expr)=/**/
@@ -243,7 +252,7 @@ Macros:
   # - "$unscoped_expr=})"
   # - "expr_else=else pp_expand"
   # - "pp_if_(Cond)=pp_expand"
-  # - "pp_than_(Expr)=Expr"
+  # - "pp_then_(Expr)=Expr"
   # - "pp_else_(Expr)=Expr"
   - "fn_(Expr)=;pp_expand Expr"
   - "la_(Expr)=;pp_expand Expr"

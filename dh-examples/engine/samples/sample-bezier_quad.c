@@ -18,9 +18,9 @@ static Vec2f bezierQuad(Vec2f a, Vec2f b, Vec2f c, f32 t) {
     };
 }
 
-Err$void dh_main(int argc, const char* argv[]) {
+E$void dh_main(int argc, const char* argv[]) {
     $unused(argc), $unused(argv);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("sample-bezier_quad-debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -65,14 +65,14 @@ Err$void dh_main(int argc, const char* argv[]) {
         var  zero_time   = time_Instant_now();
         var  curr_time   = zero_time;
         var  prev_time   = curr_time;
-        let  target_time = time_Duration_fromSecs_f64(0.016f); // Assume 62.5 FPS for simplicity
+        let  target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
         bool is_running  = true;
         log_info("game loop started\n");
 
         while (is_running) {
             curr_time        = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let t            = time_Duration_asSecs_f64(time_Instant_durationSince(curr_time, zero_time));
+            let t            = time_Duration_asSecs$f64(time_Instant_durationSince(curr_time, zero_time));
 
             // Process events
             try(engine_Window_processEvents(window));

@@ -5,7 +5,7 @@
 #include "dh/math.h"
 
 // n target: 100000
-fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation $guard) {
+fn_(Simulation_create(mem_Allocator allocator, usize n), E$Simulation $guard) {
     const f32   dt       = 0.05f;
     const f32   theta    = 1.0f;
     const f32   eps      = 1.0f;
@@ -21,11 +21,11 @@ fn_(Simulation_create(mem_Allocator allocator, usize n), Err$Simulation $guard) 
     errdefer_(QuadTree_destroy(&quadtree));
 
     // Sort body indices based on their AABB's min.x to enable sweep and prune
-    var sort_body_indices_cache = meta_cast$(Sli$usize, try_(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
+    var sort_body_indices_cache = meta_cast$(S$usize, try_(mem_Allocator_alloc(allocator, typeInfo$(usize), n)));
     errdefer_(mem_Allocator_free(allocator, anySli(sort_body_indices_cache)));
 
     // Sort body rects based on their AABB's min.x to enable sweep and prune
-    var sort_rect_indices_cache = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
+    var sort_rect_indices_cache = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), n * sizeOf$(usize))));
     errdefer_(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
     return_ok((Simulation){
@@ -55,7 +55,7 @@ fn_(Simulation_destroy(Simulation* self), void) {
     mem_Allocator_free(self->allocator, anySli(self->sort_rect_indices_cache_as_temp));
 }
 
-fn_(Simulation_step(Simulation* self), Err$void $scope) {
+fn_(Simulation_step(Simulation* self), E$void $scope) {
     debug_assert_nonnull(self);
 
     Simulation_iterate(self);
@@ -79,7 +79,7 @@ fn_(Simulation_iterate(Simulation* self), void) {
 #define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
-fn_(Simulation_collide(Simulation* self), Err$void $scope) {
+fn_(Simulation_collide(Simulation* self), E$void $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled
     self->collision_count = 0;
@@ -109,7 +109,7 @@ fn_(Simulation_collide(Simulation* self), Err$void $scope) {
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
 $maybe_unused
-$static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), cmp_Ord) {
+$static fn_(compareRects(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), cmp_Ord) {
     let self     = as$(const Simulation*, arg);
     let idx_lhs  = *as$(const usize*, lhs);
     let idx_rhs  = *as$(const usize*, rhs);
@@ -127,7 +127,7 @@ $static fn_(compareRects(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), 
 ///     AABB Checks Before Distance Calculation:
 ///         Modified Simulation_resolve to first check AABB overlap (already integrated into the sweep and prune), which is computationally cheaper than distance checks.
 /// This approach reduces the complexity from O(n^2) to O(n log n) for sorting plus O(n + k) for checks, where k is the number of overlapping pairs.
-fn_(Simulation_collide(Simulation* self), Err$void $scope) {
+fn_(Simulation_collide(Simulation* self), E$void $scope) {
     debug_assert_nonnull(self);
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     self->collision_count = 0;
@@ -156,7 +156,7 @@ fn_(Simulation_collide(Simulation* self), Err$void $scope) {
     try_(sort_stableSortUsingTemp(
         self->sort_rect_indices_cache_as_temp,
         meta_refSli(indices),
-        wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+        wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
             let idx_lhs  = *as$(const usize*, lhs);
             let idx_rhs  = *as$(const usize*, rhs);
             let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
@@ -197,7 +197,7 @@ fn_(Simulation_collide(Simulation* self), Err$void $scope) {
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
-fn_(Simulation_attract(Simulation* self), Err$void $scope) {
+fn_(Simulation_attract(Simulation* self), E$void $scope) {
     debug_assert_nonnull(self);
 
     try_(QuadTree_build(&self->quadtree, self->bodies.items));

@@ -23,34 +23,34 @@
     typedef raw$$p$(_T) p$(_T)
 
 #define a$(_N, _T...)  pp_join($, a##$##_N, _T)
-#define a$$(_N, _T...) TypeOf(struct { raw$$a$(_N, _T) buf; })
+#define a$$(_N, _T...) TypeOf(struct { raw$$a$(_N, _T) val; })
 #define tpl$a$(_N, _T...) \
     typedef struct a$(_N, _T) a$(_N, _T); \
     struct a$(_N, _T) { \
-        raw$$a$(_N, _T) buf; \
+        raw$$a$(_N, _T) val; \
     }
 
-#define init$a(_initial...) { .buf = _initial }
+#define init$a(_initial...) { .val = _initial }
 #define init$a$(_N_T__initial...) \
     pp_expand(pp_defer(comp_inline_block__init$a$)(comp_expand_param__init$a$ _N_T__initial))
 #define comp_expand_param__init$a$(_N_T...) pp_countArg(_N_T), (_N_T), pp_expand
 #define comp_inline_block__init$a$(_count_args, _N_T, _initial...) \
     pp_defer(pp_cat3)(comp_inline_block, _count_args, __init$a$)(_N_T, _initial)
 #define comp_inline_block1__init$a$(_a$N$T, _initial...) \
-    (_a$N$T{ .buf = _initial })
+    (_a$N$T{ .val = _initial })
 #define comp_inline_block2__init$a$(_N_T, _initial...) \
-    ((a$ _N_T){ .buf = _initial })
+    ((a$ _N_T){ .val = _initial })
 
 #define from$a$(_T__initial...) \
     pp_expand(pp_defer(comp_inline__from$a$)(comp_param__from$a$ _T__initial))
 #define comp_param__from$a$(_T...)            _T, pp_expand
 #define comp_inline__from$a$(_T, _initial...) ((struct { \
-    raw$$a$(sizeOf$((_T[])_initial) / sizeOf$(_T), _T) buf; \
-}){ .buf = _initial })
+    raw$$a$(sizeOf$((_T[])_initial) / sizeOf$(_T), _T) val; \
+}){ .val = _initial })
 
-#define buf$a(_a...) ((_a).buf)
-#define ptr$a(_a...) (&*buf$a(_a))
-#define len$a(_a...) countOf((_a).buf)
+#define val$a(_a...) ((_a).val)
+#define ptr$a(_a...) (&*val$a(_a))
+#define len$a(_a...) countOf$(TypeOf((_a).val))
 
 #define asg$a(_p_lhs, _rhs...) \
     comp_inline__asg$a(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
@@ -59,7 +59,7 @@
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(buf$a(*__p_lhs)), TypeOf(buf$a(__rhs)))); \
+    claim_assert_static(isSameType$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
     *__p_lhs = *as$((TypeOf(__p_lhs)*)(&__rhs)); \
     __p_lhs; \
 })
@@ -71,7 +71,7 @@
     let_(__index, usize)   = _index; \
     claim_assert_static_msg(__builtin_constant_p(__index) ? (__index < len$a(*__a)) : true, "index out of bounds"); \
     debug_assert_fmt(__index < len$a(*__a), "Index out of bounds: %zu >= %zu", __index, len$a(*__a)); \
-    &buf$a(*__a)[__index]; \
+    &val$a(*__a)[__index]; \
 })
 
 #define s$(_T...)  pp_join($, s, _T)
@@ -97,7 +97,7 @@
 })
 
 #define ref$a(_T, _p_a...) ((s$(_T)){ \
-    .ptr = buf$a(*(_p_a)), \
+    .ptr = val$a(*(_p_a)), \
     .len = len$a(*(_p_a)), \
 })
 #define deref$s(_N, _T, _s...) (&*({ \

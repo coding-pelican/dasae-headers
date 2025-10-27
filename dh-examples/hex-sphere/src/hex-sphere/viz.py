@@ -205,7 +205,7 @@ class EarthVisualizer:
             self.current_tiles.extend(next_tiles)
 
         elif self.spread_mode == 'random':
-            # Randomly reveal tiles
+            # Randly reveal tiles
             for i in self.tile_opacities:
                 if self.tile_opacities[i] < 1.0:
                     if random.random() < 0.05:  # 5% chance per frame
@@ -237,7 +237,7 @@ class EarthVisualizer:
 
         # Animation mode radio buttons
         ax_radio = plt.axes([0.02, 0.15, 0.12, 0.08])
-        self.radio_spread = RadioButtons(ax_radio, ('None', 'Wave', 'Random'), active=0)
+        self.radio_spread = RadioButtons(ax_radio, ('None', 'Wave', 'Rand'), active=0)
         self.radio_spread.on_clicked(self.set_spread_mode)
 
         # Speed slider
@@ -520,7 +520,7 @@ if __name__ == "__main__":
     print("  • Spreading animation modes:")
     print("    - None: Show all tiles immediately (default)")
     print("    - Wave: Tiles spread from seed points")
-    print("    - Random: Tiles appear randomly")
+    print("    - Rand: Tiles appear randomly")
     print("  • Auto-rotation with adjustable speed")
     print("  • 2D map projection on the right")
     print("  • Export to OBJ/JSON formats")

@@ -10,7 +10,7 @@
  *  - ThrdSem       (semaphore)
  *
  * This code is simplified for illustration. In a real project:
- *  - You may add robust error handling or convert to your "Err$..." style.
+ *  - You may add robust error handling or convert to your "E$..." style.
  *  - You may need to dynamically load RtlWaitOnAddress from ntdll.dll
  *    if using older Windows toolchains that do not provide WaitOnAddress, etc.
  *  - You might unify them into separate headers or a single library.
@@ -36,12 +36,12 @@ typedef struct Thrd {
     HANDLE handle;
 } Thrd;
 
-/* Example “Err$Thrd” type. Adjust to your own error system. */
+/* Example “E$Thrd” type. Adjust to your own error system. */
 typedef enum ThrdSpawnErr {
-    ThrdSpawnErr_Success = 0,
-    ThrdSpawnErr_QuotaExceeded,
-    ThrdSpawnErr_OutOfMemory,
-    ThrdSpawnErr_Unexpected
+    ThrdSpawnE_Success = 0,
+    ThrdSpawnE_QuotaExceeded,
+    ThrdSpawnE_OutOfMemory,
+    ThrdSpawnE_Unexpected
 } ThrdSpawnErr;
 
 /* For naming threads, we can store them in a small struct passed to CreateThread. */
@@ -67,13 +67,13 @@ static DWORD WINAPI Thrd_WinThreadFunc(LPVOID lpParam) {
 /* Spawns a new thread. Returns an error or the created Thrd. */
 ThrdSpawnErr Thrd_spawn(ThrdStartFn fn, void* arg, /* out */ Thrd* out_thrd) {
     if (!out_thrd) {
-        return ThrdSpawnErr_Unexpected;
+        return ThrdSpawnE_Unexpected;
     }
     /* Windows will create the stack automatically. If you want a custom stack size, pass it to CreateThread. */
 
     ThrdStartupInfo* info = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*info));
     if (!info) {
-        return ThrdSpawnErr_OutOfMemory;
+        return ThrdSpawnE_OutOfMemory;
     }
     info->fn  = fn;
     info->arg = arg;
@@ -94,16 +94,16 @@ ThrdSpawnErr Thrd_spawn(ThrdStartFn fn, void* arg, /* out */ Thrd* out_thrd) {
         switch (err) {
         case ERROR_NOT_ENOUGH_MEMORY:
         case ERROR_OUTOFMEMORY:
-            return ThrdSpawnErr_OutOfMemory;
+            return ThrdSpawnE_OutOfMemory;
         case ERROR_MAX_THRDS_REACHED:
-            return ThrdSpawnErr_QuotaExceeded;
+            return ThrdSpawnE_QuotaExceeded;
         default:
-            return ThrdSpawnErr_Unexpected;
+            return ThrdSpawnE_Unexpected;
         }
     }
 
     out_thrd->handle = h;
-    return ThrdSpawnErr_Success;
+    return ThrdSpawnE_Success;
 }
 
 /* Yields the current thread’s time slice. */
@@ -441,7 +441,7 @@ static int32_t myThreadFunc(void* arg) {
 static void example_Thrd(void) {
     Thrd t;
     int  indexVal = 123;
-    if (Thrd_spawn(myThreadFunc, &indexVal, &t) == ThrdSpawnErr_Success) {
+    if (Thrd_spawn(myThreadFunc, &indexVal, &t) == ThrdSpawnE_Success) {
         /* Optionally set thread name. */
         Thrd_setName(t, "MyWinThread");
 

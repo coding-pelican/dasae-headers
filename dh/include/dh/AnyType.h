@@ -41,7 +41,7 @@ typedef variant_(
                 u32 align;
             };
         };
-        anyptr addr;
+        P$raw addr;
     }),
     (AnyType_sli_z, struct {
         union {
@@ -51,7 +51,7 @@ typedef variant_(
                 u32 align;
             };
         };
-        anyptr addr;
+        P$raw addr;
     }),
     (AnyType_sli_s, struct {
         union {
@@ -61,8 +61,8 @@ typedef variant_(
                 u32 align;
             };
         };
-        anyptr addr;
-        anyptr sentinel;
+        P$raw addr;
+        P$raw sentinel;
     }),
     (AnyType_sli, struct {
         union {
@@ -72,7 +72,7 @@ typedef variant_(
                 u32 align;
             };
         };
-        anyptr addr;
+        P$raw addr;
         usize  len;
     }),
     (AnyType_opt, struct {
@@ -84,7 +84,7 @@ typedef variant_(
             };
         };
         bool   has_value;
-        anyptr addr;
+        P$raw addr;
     }),
     (AnyType_err_res, struct {
         union {
@@ -97,14 +97,14 @@ typedef variant_(
         bool is_err;
         union {
             Err    err;
-            anyptr addr;
+            P$raw addr;
         } data;
     })
 ) AnyType;
 
 #define anyPtr(var_ptr...)        comp_op__anyPtr(var_ptr)
-#define anySliZ(var_sli...)       comp_op__anySliZ(var_sli) /* Not implemented */
-#define anySliS(var_sli...)       comp_op__anySliS(var_sli) /* Not implemented */
+#define anySZ(var_sli...)         comp_op__anySZ(var_sli) /* Not implemented */
+#define anySS(var_sli...)         comp_op__anySS(var_sli) /* Not implemented */
 #define anySli(var_sli...)        comp_op__anySli(var_sli)
 #define anyOpt(var_opt...)        comp_op__anyOpt(var_opt)
 #define anyErrRes(var_err_res...) comp_op__anyErrSet(var_err_res)
@@ -113,30 +113,30 @@ typedef variant_(
 
 #define comp_op__anyPtr(var_ptr...) blk({ \
     let __ptr = var_ptr; \
-    claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Ptr), "`meta_Ptr` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
-    claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_Sli), "`meta_Sli` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
+    claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_P), "`meta_P` is not compatible with `anyPtr`. Use `meta_ptrToAny`."); \
+    claim_assert_static_msg(!isSameType$(TypeOf(__ptr), meta_S), "`meta_S` is not compatible with `anyPtr`. Use `meta_sliToAny`."); \
     blk_return variant_of$(AnyType, AnyType_ptr, { .type = typeInfo$(TypeOf(*__ptr)), .addr = __ptr }); \
 })
-#define comp_op__anySliZ(var_sli...) blk({ \
-    let __sli = var_sli; \
+#define comp_op__anySZ(var_sli...) blk({ \
+    let        __sli = var_sli; \
     blk_return variant_of$(AnyType, AnyType_sli_z, {}); \
 })
-#define comp_op__anySliS(var_sli...) blk({ \
-    let __sli = var_sli; \
+#define comp_op__anySS(var_sli...) blk({ \
+    let        __sli = var_sli; \
     blk_return variant_of$(AnyType, AnyType_sli_s, {}); \
 })
 #define comp_op__anySli(var_sli...) blk({ \
     let __sli = var_sli; \
-    claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Ptr), "`meta_Ptr` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
-    claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_Sli), "`meta_Sli` is not compatible with `anySli`. Use `meta_sliToAny`."); \
+    claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_P), "`meta_P` is not compatible with `anySli`. Use `meta_ptrToAny`."); \
+    claim_assert_static_msg(!isSameType$(TypeOf(__sli), meta_S), "`meta_S` is not compatible with `anySli`. Use `meta_sliToAny`."); \
     blk_return variant_of$(AnyType, AnyType_sli, { .type = typeInfo$(TypeOf(*__sli.ptr)), .addr = __sli.ptr, .len = __sli.len }); \
 })
 #define comp_op__anyOpt(var_opt...) blk({ \
-    let __opt = var_opt; \
+    let        __opt = var_opt; \
     blk_return variant_of(AnyType, AnyType_opt, { .type = typeInfo$(TypeOf(*__opt.value)), .has_value = __opt.has_value, .value = __opt.value }); \
 })
 #define comp_op__anyErrSet(var_err_res...) blk({ \
-    let __err_res = var_err_res; \
+    let        __err_res = var_err_res; \
     blk_return variant_of(AnyType, AnyType_err_res, { .type = typeInfo$(TypeOf(*__err_res.data.ok)), .is_err = __err_res.is_err, .data = __err_res.data }); \
 })
 

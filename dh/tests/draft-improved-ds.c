@@ -23,10 +23,10 @@ typedef union ArrDeq {
     usize  head;
     usize  len;
 } ArrDeq;
-use_Err$(ArrDeq);
+use_E$(ArrDeq);
 extern fn_((ArrDeq_empty(TypeInfo type))(ArrDeq));
 extern fn_((ArrDeq_from(meta$s buf))(ArrDeq));
-extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator allocator, usize cap))(Err$ArrDeq));
+extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator allocator, usize cap))(E$ArrDeq));
 extern fn_((ArrDeq_fini(mem_Allocator allocator))(void));
 extern fn_((ArrDeq_growCap(usize current, usize minimum))(usize));
 extern fn_((ArrDeq_ensureCap(ArrDeq* self, mem_Allocator gpa, usize new_cap))(mem_Err$void));
@@ -34,8 +34,8 @@ extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_c
 
 
 $static $inline $must_check
-fn_((addOrOutOfMemory(usize a, usize b))(Err$usize)) {
-    return expr_(Err$usize $scope) if_none(usize_addChkd(a, b)) {
+fn_((addOrOutOfMemory(usize a, usize b))(E$usize)) {
+    return expr_(E$usize $scope) if_none(usize_addChkd(a, b)) {
         $break_(err(mem_Err_OutOfMemory()));
     }
     else_some(result) {
@@ -69,15 +69,15 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity
         if (old_buf.len - self->len < self->head) {
             // The gap splits the items in the deque into head and tail parts.
             // Choose the shorter part to copy.
-            let head = meta_Sli_slice(new_buf, self->head, old_buf.len);
-            let tail = meta_Sli_slice(new_buf, 0, self->len - head.len);
+            let head = meta_S_slice(new_buf, self->head, old_buf.len);
+            let tail = meta_S_slice(new_buf, 0, self->len - head.len);
             if (head.len > tail.len && new_buf.len - old_buf.len > tail.len) {
-                meta_Sli_copy(meta_Sli_prefix(meta_Sli_suffix(new_buf, old_buf.len), tail.len), tail);
+                meta_S_copy(meta_S_prefix(meta_S_suffix(new_buf, old_buf.len), tail.len), tail);
             } else {
                 // In this case overlap is possible if e.g. the capacity increase is 1
                 // and head.len is greater than 1.
                 self->head = new_buf.len - head.len;
-                meta_Sli_move(meta_Sli_prefix(meta_Sli_suffix(new_buf, self->head), head.len), head);
+                meta_S_move(meta_S_prefix(meta_S_suffix(new_buf, self->head), head.len), head);
             }
             self->buf = new_buf;
         }
@@ -85,12 +85,12 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, mem_Allocator gpa, usize new_capacity
     else {
         let new_buf = try_(mem_Allocator_alloc(gpa, self->items.type, new_capacity));
         if (self->head < old_buf.len - self->len) {
-            meta_Sli_copy(meta_Sli_prefix(new_buf, self->len), meta_Sli_prefix(meta_Sli_suffix(old_buf, self->head), self->len));
+            meta_S_copy(meta_S_prefix(new_buf, self->len), meta_S_prefix(meta_S_suffix(old_buf, self->head), self->len));
         } else {
-            let head = meta_Sli_suffix(old_buf, self->head);
-            let tail = meta_Sli_slice(old_buf, 0, self->len - head.len);
-            meta_Sli_copy(meta_Sli_prefix(new_buf, head.len), head);
-            meta_Sli_copy(meta_Sli_prefix(meta_Sli_suffix(new_buf, tail.len), tail.len), tail);
+            let head = meta_S_suffix(old_buf, self->head);
+            let tail = meta_S_slice(old_buf, 0, self->len - head.len);
+            meta_S_copy(meta_S_prefix(new_buf, head.len), head);
+            meta_S_copy(meta_S_prefix(meta_S_suffix(new_buf, tail.len), tail.len), tail);
         }
         self->head = 0;
         self->buf  = new_buf;
@@ -471,7 +471,7 @@ test "dumb fuzz against ArrayList oracle" {
     const input = try gpa.alloc(u8, 1024);
     defer             gpa.free(input);
 
-    var prng = std.Random.DefaultPrng.init(testing.random_seed);
+    var prng = std.Rand.DefaultPrng.init(testing.random_seed);
     prng.random().bytes(input);
 
     try fuzzAgainstArrayList({}, input);
@@ -490,7 +490,7 @@ fn fuzzAgainstArrayList(_ : void, input : [] const u8) anyerror !void {
         return;
     }
 
-    var prng     = std.Random.DefaultPrng.init(input[0]);
+    var prng     = std.Rand.DefaultPrng.init(input[0]);
     const random = prng.random();
 
     const Action = enum {

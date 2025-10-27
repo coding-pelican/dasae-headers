@@ -21,9 +21,9 @@
 
 #if CHEAT_SHEET
 /* Creating Hash Values */
-StrCompHash  hash1 = StrCompHash_createRaw("hello"); // From raw C string
-Sli_const$u8 str   = Str_fromRaw("world");
-StrCompHash  hash2 = StrCompHash_create(str); // From Sli_const$u8
+StrCompHash hash1 = StrCompHash_createRaw("hello"); // From raw C string
+S_const$u8  str   = Str_fromRaw("world");
+StrCompHash hash2 = StrCompHash_create(str); // From S_const$u8
 
 /* Calculating Hash Values */
 u32 value1 = StrCompHash_calculateRaw("hello"); // From raw C string
@@ -52,8 +52,8 @@ fn_(StrCompHash_createRaw(const char* raw_str), StrCompHash);
 /* Calculating Hash Values */
 /// Calculate hash value from a byte array with specified length
 fn_(StrCompHash_calculate(const u8* ptr, usize len), u32);
-/// Create a StrCompHash from a Sli_const$u8
-fn_(StrCompHash_create(Sli_const$u8 str), StrCompHash);
+/// Create a StrCompHash from a S_const$u8
+fn_(StrCompHash_create(S_const$u8 str), StrCompHash);
 /// Extract the hash value from a StrCompHash structure
 fn_(StrCompHash_value(StrCompHash self), u32);
 
@@ -77,9 +77,9 @@ u32 direct_hash = StrCompHash_calculateRaw("hello");
 const u8* data      = (const u8*)"hello";
 u32       byte_hash = StrCompHash_calculate(data, 5);
 
-// Using with Sli_const$u8 strings
-Sli_const$u8 str      = Str_fromRaw("hello");
-StrCompHash  str_hash = StrCompHash_create(str);
+// Using with S_const$u8 strings
+S_const$u8  str      = Str_fromRaw("hello");
+StrCompHash str_hash = StrCompHash_create(str);
 #endif /* CHEAT_SHEET */
 
 /*========== Header =========================================================*/
@@ -131,14 +131,14 @@ $inline_always fn_((StrCompHash_createRaw(const char* raw_str))(StrCompHash));
 ///   // hash now contains the 32-bit hash value for "hello"
 $inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32));
 
-/// @brief  Create a StrCompHash from a Sli_const$u8
+/// @brief  Create a StrCompHash from a S_const$u8
 /// @param  str Constant string to hash
 /// @return StrCompHash structure containing the hash value
 /// @example
-///   Sli_const$u8 str = Str_fromRaw("hello");
+///   S_const$u8 str = Str_fromRaw("hello");
 ///   StrCompHash hash = StrCompHash_create(str);
 ///   // hash.value now contains the hash for "hello"
-$inline_always fn_((StrCompHash_create(Sli_const$u8 str))(StrCompHash));
+$inline_always fn_((StrCompHash_create(S_const$u8 str))(StrCompHash));
 
 /// @brief  Extract the hash value from a StrCompHash structure
 /// @param  self StrCompHash structure
@@ -245,7 +245,7 @@ static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32)) { /* NOL
 $inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32)) {
     return StrCompHash__recur(ptr, len);
 }
-$inline_always fn_((StrCompHash_create(Sli_const$u8 str))(StrCompHash)) {
+$inline_always fn_((StrCompHash_create(S_const$u8 str))(StrCompHash)) {
     return (StrCompHash){ .value = StrCompHash_calculate(str.ptr, str.len) };
 }
 $inline_always fn_((StrCompHash_value(StrCompHash self))(u32)) {

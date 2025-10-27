@@ -30,12 +30,12 @@
 
 // Global state without thread synchronization
 static struct {
-    Opt$mem_Allocator allocator;
-    ArrList$Body      spawn_bodies;
-    Thrd_Mtx          sim_mutex;
-    Simulation*       sim;
-    bool              paused;
-    bool              is_running;
+    O$mem_Allocator allocator;
+    ArrList$Body    spawn_bodies;
+    Thrd_Mtx        sim_mutex;
+    Simulation*     sim;
+    bool            paused;
+    bool            is_running;
 } global_state = {
     .allocator    = none(),
     .spawn_bodies = cleared(),
@@ -46,13 +46,13 @@ static struct {
 #if debug_comp_enabled
 static fn_(global_debug_logSimStateFrontBodiesN(usize n), void);
 #endif /* debug_comp_enabled */
-static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void) $must_check;
-static fn_(global_update(Visualizer* viz, Simulation* sim), Err$void) $must_check;
+static fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), E$void) $must_check;
+static fn_(global_update(Visualizer* viz, Simulation* sim), E$void) $must_check;
 static fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void);
-static Thrd_fn_(Simulation_thread, ({}, Err$void));
+static Thrd_fn_(Simulation_thread, ({}, E$void));
 
 // Main function
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
+fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     let_ignore = args;
 
     // Initialize logging to a file
@@ -69,7 +69,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
 
     // Create allocator
     var allocator = heap_Page_allocator(&(heap_Page){});
-    Opt_asg(&global_state.allocator, some(allocator));
+    O_asg(&global_state.allocator, some(allocator));
 
     // Create window
     let window = try_(engine_Window_init(&(engine_Window_Config){
@@ -79,7 +79,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
             .y = main_window_res_height,
         },
         .default_color = some(Color_black),
-        .title         = some(Str_l("Barnes-hut N-Body Simulation")) }));
+        .title         = some(u8_l("Barnes-hut N-Body Simulation")) }));
     defer_(engine_Window_fini(window));
     log_info("engine initialized\n");
 
@@ -93,7 +93,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     defer_(engine_Canvas_fini(canvas));
     {
         log_info("canvas created: %s", nameOf(canvas));
-        engine_Canvas_clear(canvas, none$(Opt$Color));
+        engine_Canvas_clear(canvas, none$(O$Color));
         log_info("canvas cleared: %s", nameOf(canvas));
         engine_Window_appendView(
             window,
@@ -154,7 +154,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     log_info("threads created\n");
 
     // Initialize timing variables
-    let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
+    let time_frame_target = time_Duration_fromSecs$f64(main_target_spf);
     var time_frame_prev   = time_Instant_now();
     log_info("main loop started\n");
 
@@ -162,7 +162,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     while (global_state.is_running) {
         let time_frame_curr = time_Instant_now();
         let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-        let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+        let time_dt         = time_Duration_asSecs$f64(time_elapsed);
 
         // 1) Update engine
         try_(engine_Window_update(window));
@@ -197,7 +197,8 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
         time_frame_prev = time_frame_curr;
     }
     return_ok({});
-} $unguarded;
+}
+$unguarded;
 
 #if debug_comp_enabled
 fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
@@ -217,7 +218,7 @@ fn_(global_debug_logSimStateFrontBodiesN(usize n), void) {
 }
 #endif /* debug_comp_enabled */
 
-fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), Err$void $scope) {
+fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input), E$void $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(wnd);
     debug_assert_nonnull(input);
@@ -248,20 +249,21 @@ fn_(global_processInput(Visualizer* viz, engine_Window* wnd, engine_Input* input
 
     try_(Visualizer_processInput(viz, wnd, input));
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
-fn_(global_update(Visualizer* viz, Simulation* sim), Err$void $scope) {
+fn_(global_update(Visualizer* viz, Simulation* sim), E$void $scope) {
     debug_assert_nonnull(viz);
     debug_assert_nonnull(sim);
 
     // Transfer confirmed spawns from Visualizer to global_state
-    if_some(Opt_asPtr(&viz->spawn.confirmed), confirmed) {
+    if_some(O_asPtr(&viz->spawn.confirmed), confirmed) {
         try_(ArrList_append(global_state.spawn_bodies.base, meta_refPtr(confirmed)));
-        Opt_asg(&viz->spawn.confirmed, none());
+        O_asg(&viz->spawn.confirmed, none());
     }
 
     // Add spawned bodies to simulation
-    for_slice (global_state.spawn_bodies.items, body) {
+    for_slice(global_state.spawn_bodies.items, body) {
         try_(ArrList_append(sim->bodies.base, meta_refPtr(body)));
     }
     ArrList_clearRetainingCap(global_state.spawn_bodies.base);
@@ -275,7 +277,8 @@ fn_(global_update(Visualizer* viz, Simulation* sim), Err$void $scope) {
 
     try_(Visualizer_update(viz));
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
 fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
     printf("\033[H\033[40;37m"); // Move cursor to top left
@@ -328,7 +331,7 @@ fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
 $must_check
 Thrd_fn_(Simulation_thread, ($ignore, $ignore)$guard) {
     // Initialize timing variables
-    let time_update_target = time_Duration_fromSecs_f64(0.001); // 1ms
+    let time_update_target = time_Duration_fromSecs$f64(0.001); // 1ms
     log_info("sim loop started\n");
 
     while (true) {
@@ -364,7 +367,8 @@ Thrd_fn_(Simulation_thread, ($ignore, $ignore)$guard) {
                                return_err(err);
                            }));
             }
-        } block_deferral;
+        }
+        block_deferral;
 
         // Optional small sleep to limit sim speed
         // or you can use a time-based approach

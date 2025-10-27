@@ -19,8 +19,8 @@
  *          - Directory utilities
  */
 
-#ifndef FS_DIR_INCLUDED
-#define FS_DIR_INCLUDED (1)
+#ifndef fs_Dir__included
+#define fs_Dir__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -37,28 +37,28 @@ typedef posix_fd_t fs_Dir_Handle;
 typedef struct fs_Dir {
     fs_Dir_Handle handle;
 } fs_Dir;
-use_Err$(fs_Dir);
+T_use_E$(fs_Dir);
 static const fs_File_Mode fs_Dir_default_mode = 0755;
 
-extern fn_((fs_Dir_create(Sli_const$u8 path))(Err$void)) $must_check;
+extern fn_((fs_Dir_create(S_const$u8 path))(E$void)) $must_check;
 
 extern fn_((fs_Dir_close(fs_Dir* self))(void));
-extern fn_((fs_Dir_rename(fs_Dir self, Sli_const$u8 old_sub_path, Sli_const$u8 new_sub_path))(Err$void)) $must_check;
-extern fn_((fs_Dir_makePath(fs_Dir self, Sli_const$u8 sub_path))(Err$void)) $must_check;
-extern fn_((fs_Dir_realpath(fs_Dir self, Sli_const$u8 pathname, Sli$u8 out_buffer))(Err$Sli$u8)) $must_check;
-extern fn_((fs_Dir_realpathAlloc(fs_Dir self, Sli_const$u8 pathname, mem_Allocator allocator))(Err$Sli$u8)) $must_check;
+extern fn_((fs_Dir_rename(fs_Dir self, S_const$u8 old_sub_path, S_const$u8 new_sub_path))(E$void)) $must_check;
+extern fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void)) $must_check;
+extern fn_((fs_Dir_realpath(fs_Dir self, S_const$u8 pathname, S$u8 out_buffer))(E$S$u8)) $must_check;
+extern fn_((fs_Dir_realpathAlloc(fs_Dir self, S_const$u8 pathname, mem_Allocator allocator))(E$S$u8)) $must_check;
 
-extern fn_((fs_Dir_makeDir(fs_Dir self, Sli_const$u8 sub_path))(Err$void)) $must_check;
-extern fn_((fs_Dir_deleteDir(fs_Dir self, Sli_const$u8 sub_path))(Err$void)) $must_check;
-extern fn_((fs_Dir_openDir(fs_Dir self, Sli_const$u8 sub_path, fs_File_OpenFlags flags))(Err$fs_Dir)) $must_check;
+extern fn_((fs_Dir_makeDir(fs_Dir self, S_const$u8 sub_path))(E$void)) $must_check;
+extern fn_((fs_Dir_deleteDir(fs_Dir self, S_const$u8 sub_path))(E$void)) $must_check;
+extern fn_((fs_Dir_openDir(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))(E$fs_Dir)) $must_check;
 
-extern fn_((fs_Dir_createFile(fs_Dir self, Sli_const$u8 sub_path, fs_File_CreateFlags flags))(Err$fs_File));
-extern fn_((fs_Dir_openFile(fs_Dir self, Sli_const$u8 sub_path, fs_File_OpenFlags flags))(Err$fs_File)) $must_check;
-extern fn_((fs_Dir_deleteFile(fs_Dir self, Sli_const$u8 sub_path))(Err$void)) $must_check;
-extern fn_((fs_Dir_readFile(fs_Dir self, Sli_const$u8 file_path, Sli$u8 buffer))(Err$Sli$u8)) $must_check;
-extern fn_((fs_Dir_readFileAlloc(fs_Dir self, Sli_const$u8 file_path, mem_Allocator allocator, usize max_bytes))(Err$Sli$u8)) $must_check;
+extern fn_((fs_Dir_createFile(fs_Dir self, S_const$u8 sub_path, fs_File_CreateFlags flags))(E$fs_File));
+extern fn_((fs_Dir_openFile(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))(E$fs_File)) $must_check;
+extern fn_((fs_Dir_deleteFile(fs_Dir self, S_const$u8 sub_path))(E$void)) $must_check;
+extern fn_((fs_Dir_readFile(fs_Dir self, S_const$u8 file_path, S$u8 buffer))(E$S$u8)) $must_check;
+extern fn_((fs_Dir_readFileAlloc(fs_Dir self, S_const$u8 file_path, mem_Allocator allocator, usize max_bytes))(E$S$u8)) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* FS_DIR_INCLUDED */
+#endif /* fs_Dir__included */

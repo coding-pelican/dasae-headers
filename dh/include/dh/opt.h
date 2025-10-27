@@ -20,6 +20,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "dh/types/Opt.h"
+
+#if UNUSED_CODE
 /*========== Includes =======================================================*/
 
 #include "core.h"
@@ -29,13 +32,13 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Optional value */
-#define use_Opt$(T)  comp_gen__use_Opt$(T)
-#define decl_Opt$(T) comp_gen__decl_Opt$(T)
-#define impl_Opt$(T) comp_gen__impl_Opt$(T)
+#define use_O$(T)  comp_gen__use_O$(T)
+#define decl_O$(T) comp_gen__decl_O$(T)
+#define impl_O$(T) comp_gen__impl_O$(T)
 
-#define Opt$(T)                           comp_type_alias__Opt$(T)
-#define Opt$$(T)                          comp_type_anon__Opt$$(T)
-#define Opt_anonCast$(T_Opt, var_anon...) comp_op__Opt_anonCast$(T_Opt, var_anon)
+#define O$(T)                           comp_type_alias__O$(T)
+#define O$$(T)                          comp_type_anon__O$$(T)
+#define O_anonCast$(T_Opt, var_anon...) comp_op__O_anonCast$(T_Opt, var_anon)
 
 /* Determines optional value */
 #define some(val_some...)         comp_op__some(val_some)
@@ -44,8 +47,8 @@ extern "C" {
 #define none$(T_Opt)              comp_op__none$(T_Opt)
 
 /* Assigns optional value */
-#define Opt_asg$(T_Opt, var_addr_opt, val_opt...) comp_op__Opt_asg$(pp_uniqTok(addr_opt), T_Opt, var_addr_opt, val_opt)
-#define Opt_asg(var_addr_opt, val_opt...)         comp_op__Opt_asg(var_addr_opt, val_opt)
+#define O_asg$(T_Opt, var_addr_opt, val_opt...)   comp_op__O_asg$(pp_uniqTok(addr_opt), T_Opt, var_addr_opt, val_opt)
+#define O_asg(var_addr_opt, val_opt...)           comp_op__O_asg(var_addr_opt, val_opt)
 #define toSome$(T_Opt, var_addr_opt, val_some...) comp_op__toSome$(T_Opt, var_addr_opt, val_some)
 #define toSome(var_addr_opt, val_some...)         comp_op__toSome(var_addr_opt, val_some)
 #define toNone$(T_Opt, var_addr_opt...)           comp_op__toNone$(T_Opt, var_addr_opt)
@@ -63,8 +66,8 @@ extern "C" {
 #define unwrap(_Expr...)                       comp_op__unwrap(_Expr)
 
 /* Converts optional value to pointer */
-#define Opt_asPtr$(T_OptPtr, var_addr_opt...) comp_op__Opt_asPtr$(pp_uniqTok(addr_opt), T_OptPtr, var_addr_opt)
-#define Opt_asPtr(var_addr_opt...)            comp_op__Opt_asPtr(var_addr_opt)
+#define O_asP$(T_OptPtr, var_addr_opt...) comp_op__O_asP$(pp_uniqTok(addr_opt), T_OptPtr, var_addr_opt)
+#define O_asPtr(var_addr_opt...)          comp_op__O_asPtr(var_addr_opt)
 
 /* Returns optional value */
 #define return_some(val_some...) comp_syn__return_some(val_some)
@@ -78,38 +81,43 @@ extern "C" {
 #define while_some(val_opt, _Payload_Capture...) comp_syn__while_some(val_opt, _Payload_Capture)
 #define while_none(val_opt...)                   comp_syn__while_none(val_opt)
 
+/* Optional void value (special case) */
+typedef struct O$Void {
+    bool has_value;
+    Void value;
+} O$Void, O$void;
+
 /*========== Implementations ================================================*/
 
-#define comp_gen__use_Opt$(T) \
-    use_Ptr$(T); \
-    decl_Opt$(T); \
-    impl_Opt$(T)
-#define comp_gen__decl_Opt$(T) \
-    $maybe_unused typedef struct Opt$(Ptr_const$(T)) Opt$(Ptr_const$(T)); \
-    $maybe_unused typedef struct Opt$(Ptr$(T)) Opt$(Ptr$(T)); \
-    $maybe_unused typedef struct Opt$(T) Opt$(T)
-#define comp_gen__impl_Opt$(T) \
-    struct Opt$(Ptr_const$(T)) { \
-        rawptr_const$(T) value; \
-        bool has_value; \
+#define comp_gen__use_O$(T) \
+    decl_O$(T); \
+    impl_O$(T)
+#define comp_gen__decl_O$(T) \
+    $maybe_unused typedef struct O$(P_const$(T)) O$(P_const$(T)); \
+    $maybe_unused typedef struct O$(P$(T)) O$(P$(T)); \
+    $maybe_unused typedef struct O$(T) O$(T)
+#define comp_gen__impl_O$(T) \
+    struct O$(P_const$(T)) { \
+        var_(has_value, bool); \
+        var_(value, $P_const$(T)); \
     }; \
-    struct Opt$(Ptr$(T)) { \
-        rawptr$(T) value; \
-        bool has_value; \
+    struct O$(P$(T)) { \
+        var_(has_value, bool); \
+        var_(value, $P$(T)); \
     }; \
-    struct Opt$(T) { \
-        T    value; \
-        bool has_value; \
+    struct O$(T) { \
+        var_(has_value, bool); \
+        var_(value, T); \
     }
 
-#define comp_type_alias__Opt$(T) \
-    pp_join($, Opt, T)
-#define comp_type_anon__Opt$$(T) \
+#define comp_type_alias__O$(T) \
+    pp_join($, O, T)
+#define comp_type_anon__O$$(T) \
     struct { \
-        T    value; \
-        bool has_value; \
+        var_(has_value, bool); \
+        var_(value, T); \
     }
-#define comp_op__Opt_anonCast$(T_Opt, var_anon...) blk({ \
+#define comp_op__O_anonCast$(T_Opt, var_anon...) blk({ \
     let __anon = var_anon; \
     claim_assert_static(sizeOf(TypeOf(__anon)) == sizeOf(T_Opt)); \
     claim_assert_static(alignOf(TypeOf(__anon)) == alignOf(T_Opt)); \
@@ -127,16 +135,16 @@ extern "C" {
 #define comp_op__none()                    { .has_value = false }
 #define comp_op__none$(T_Opt)              ((T_Opt)none())
 
-#define comp_op__Opt_asg$(__addr_opt, T_Opt, var_addr_opt, val_opt...) blk({ \
+#define comp_op__O_asg$(__addr_opt, T_Opt, var_addr_opt, val_opt...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     *__addr_opt = *(T_Opt[1]){ [0] = val_opt }; \
     blk_return __addr_opt; \
 })
-#define comp_op__Opt_asg(var_addr_opt, val_opt...)         Opt_asg$(TypeOf(*var_addr_opt), var_addr_opt, val_opt)
-#define comp_op__toSome$(T_Opt, var_addr_opt, val_some...) Opt_asg$(T_Opt, var_addr_opt, some(val_some))
+#define comp_op__O_asg(var_addr_opt, val_opt...)           O_asg$(TypeOf(*var_addr_opt), var_addr_opt, val_opt)
+#define comp_op__toSome$(T_Opt, var_addr_opt, val_some...) O_asg$(T_Opt, var_addr_opt, some(val_some))
 #define comp_op__toSome(var_addr_opt, val_some...)         toSome$(TypeOf(*var_addr_opt), var_addr_opt, val_some)
-#define comp_op__toNone$(T_Opt, var_addr_opt...)           Opt_asg$(T_Opt, var_addr_opt, none())
+#define comp_op__toNone$(T_Opt, var_addr_opt...)           O_asg$(T_Opt, var_addr_opt, none())
 #define comp_op__toNone(var_addr_opt...)                   toNone$(TypeOf(*var_addr_opt), var_addr_opt)
 
 #define comp_op__isSome(val_opt...) as$((bool)((val_opt).has_value))
@@ -182,7 +190,7 @@ extern "C" {
 )
 #define comp_op__unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
 
-#define comp_op__Opt_asPtr$(__addr_opt, T_OptPtr, var_addr_opt...) blk({ \
+#define comp_op__O_asP$(__addr_opt, T_OptPtr, var_addr_opt...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
     (T_OptPtr){ \
@@ -190,8 +198,8 @@ extern "C" {
         .has_value = __addr_opt->has_value \
     }; \
 })
-#define comp_op__Opt_asPtr(var_addr_opt...) \
-    Opt_asPtr$(Opt$$(FieldTypeOf(TypeOf(*var_addr_opt), value)*), var_addr_opt)
+#define comp_op__O_asPtr(var_addr_opt...) \
+    O_asP$(O$$(FieldTypeOf(TypeOf(*var_addr_opt), value)*), var_addr_opt)
 
 #define comp_syn__if_some(val_opt, _Payload_Capture...) \
     if_(let _result = (val_opt), _result.has_value) \
@@ -207,6 +215,7 @@ extern "C" {
     with_(let _Payload_Capture = _result.value)
 #define comp_syn__while_none(val_opt...) \
     while_(var _result = (val_opt), !_result.has_value)
+#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

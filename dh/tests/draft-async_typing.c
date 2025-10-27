@@ -4,7 +4,7 @@
 #include "dh/Str.h"
 #include "dh/Arr.h"
 #include "dh/time.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include "dh/io/stream.h"
 
@@ -13,28 +13,28 @@ typedef struct Task {
     var_(frame, Co_Ctx*);
     var_(expires, time_Instant);
 } Task;
-use_Ptr$(Task);
-use_Sli$(Task);
-use_Opt$(Task);
+use_P$(Task);
+use_S$(Task);
+use_O$(Task);
 
 /// \brief List of tasks to be executed
-static var_(exec_s_task_list, Arr$$(10, Opt$Task)) = {};
+static var_(exec_s_task_list, A$$(10, O$Task)) = {};
 /// \brief Run the event loop
 /// \param endless Whether to run the loop endlessly
 static fn_((exec_runLoop(bool endless))(void)) {
-    use_Opt$(Co_Ctx);
+    use_O$(Co_Ctx);
 
     io_stream_println(u8_l("looping events y'all"));
     while (true) {
         let now   = time_Instant_now();
         var any   = false;
-        var frame = eval_(Opt$Ptr$Co_Ctx $scope)(for_(($s(ref$A(exec_s_task_list)))(task_remaining) {
-            let task = orelse_((Opt_asPtr(task_remaining))(continue));
+        var frame = eval_(O$P$Co_Ctx $scope)(for_(($s(ref$A(exec_s_task_list)))(task_remaining) {
+            let task = orelse_((O_asPtr(task_remaining))(continue));
             any      = true;
             if (time_Instant_le(task->expires, now)) {
                 io_stream_println(u8_l("sleep over y'all"));
                 let frame = task->frame;
-                Opt_asg(task_remaining, none());
+                O_asg(task_remaining, none());
                 $break_(some(frame));
             }
         })) eval_(else)($break_(none())) $unscoped_(eval);
@@ -47,8 +47,8 @@ static fn_((exec_runLoop(bool endless))(void)) {
 
 /// \brief Find a slot for a task
 /// \return The slot for the task
-static fn_((exec_findSlot(void))(Opt$Task*)) {
-    let slot = eval_(Ptr$$(Opt$Task) $scope)(
+static fn_((exec_findSlot(void))(O$Task*)) {
+    let slot = eval_(P$$(O$Task) $scope)(
         for_(($s(ref$A(exec_s_task_list)))(task) {
             if_none(*task) $break_(task);
         })
@@ -60,7 +60,7 @@ use_Co_Ctx$(Void);
 /// \brief Sleep for a specified duration
 /// \param caller The caller context
 /// \param ms The duration to sleep in milliseconds
-async_fn_(exec_sleep, (var_(caller, Opt$$(Co_Ctx*)); var_(ms, u64);), Void);
+async_fn_(exec_sleep, (var_(caller, O$$(Co_Ctx*)); var_(ms, u64);), Void);
 async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
     suspend_({
@@ -71,7 +71,7 @@ async_fn_scope(exec_sleep, {}) {
             static let now    = time_Instant_now;
             blk_return addDur(now(), fromMs(args->ms));
         });
-        Opt_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
+        O_asg(slot, some({ .frame = orelse(args->caller, ctx->anyraw), .expires = time }));
     });
     areturn_({});
 } $unscoped_(async_fn);
@@ -84,7 +84,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_((report(Sli_const$u8 label, Sli_const$u8 fmt, ...))(void)) {
+fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(u8_l("[ThrdId({:zu}): {:s}] "), Thrd_getCurrentId(), label);
     va_list args = {};
     with_fini_(va_start(args, fmt), va_end(args)) {
@@ -102,16 +102,16 @@ fn_((Terminal_writeTypoAt(u32 x, u32 y, u8 typo))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeTypo(typo);
 };
-fn_((Terminal_writeText(Sli_const$u8 text))(void)) { io_stream_print(u8_l("{:s}"), text); };
-fn_((Terminal_writeTextAt(u32 x, u32 y, Sli_const$u8 text))(void)) {
+fn_((Terminal_writeText(S_const$u8 text))(void)) { io_stream_print(u8_l("{:s}"), text); };
+fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeText(text);
 };
 
-use_Arr$(1024, u8);
-fn_((Terminal_readBytes(Arr$1024$u8* mem))(Sli$u8)) {
-    let_ignore = fgets(as$((char*)(mem->buf)), as$((i32)(Arr_len(*mem))), stdin);
-    return Str_fromZ(mem->buf);
+use_A$(1024, u8);
+fn_((Terminal_readBytes(A$1024$u8* mem))(S$u8)) {
+    let_ignore = fgets(as$((char*)(mem->val)), as$((i32)(A_len(*mem))), stdin);
+    return Str_fromZ(mem->val);
 };
 
 
@@ -121,7 +121,7 @@ fn_((Terminal_readBytes(Arr$1024$u8* mem))(Sli$u8)) {
 /// \param interval Seconds to wait between each character
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectWithInterval, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(interval, f64); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectWithInterval, (var_(caller, O$$(Co_Ctx*)); var_(text, S_const$u8); var_(interval, f64); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectWithInterval, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -145,7 +145,7 @@ async_fn_scope(typeEffectWithInterval, {
 /// \param duration Total time in seconds to complete typing
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectOverDuration, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(duration, f64); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectOverDuration, (var_(caller, O$$(Co_Ctx*)); var_(text, S_const$u8); var_(duration, f64); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectOverDuration, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -171,7 +171,7 @@ async_fn_scope(typeEffectOverDuration, {
 /// \param add_randomness Whether to add random variation to typing speed
 /// \param x The x coordinate (0-based)
 /// \param y The y coordinate (0-based)
-async_fn_(typeEffectRealistic, (var_(caller, Opt$$(Co_Ctx*)); var_(text, Sli_const$u8); var_(base_interval, f64); var_(add_randomness, bool); var_(x, u32); var_(y, u32);), Void);
+async_fn_(typeEffectRealistic, (var_(caller, O$$(Co_Ctx*)); var_(text, S_const$u8); var_(base_interval, f64); var_(add_randomness, bool); var_(x, u32); var_(y, u32);), Void);
 async_fn_scope(typeEffectRealistic, {
     var_(delay_ms, u64);
     var_(iter_typo, usize);
@@ -181,7 +181,7 @@ async_fn_scope(typeEffectRealistic, {
     debug_assert_nonnull(args->text.ptr);
 
     // Initialize random number generator if randomness is enabled
-    if (args->add_randomness) { Random_init(); }
+    if (args->add_randomness) { Rand_init(); }
 
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
         let current_char = Sli_getAt(args->text, locals->iter_typo);
@@ -190,18 +190,18 @@ async_fn_scope(typeEffectRealistic, {
         locals->delay_ms = as$((u64)(args->base_interval * time_millis_per_sec));
         if (args->add_randomness) {
             // Add randomness to make it feel more natural (-30 to +50 ms variation)
-            let random_variation = Random_range_i64(-30, 50);
+            let random_variation = Rand_rangeInt(-30, 50);
             locals->delay_ms     = as$((u64)(prim_max(10, as$((i64)(locals->delay_ms) + random_variation))));
 
             // Longer pauses after punctuation
             if (current_char == '.' || current_char == '!' || current_char == '?') {
-                let punctuation_delay = Random_range_u64(200, 500);
+                let punctuation_delay = Rand_rangeUInt(200, 500);
                 locals->delay_ms += punctuation_delay;
             } else if (current_char == ',' || current_char == ';') {
-                let comma_delay = Random_range_u64(100, 200);
+                let comma_delay = Rand_rangeUInt(100, 200);
                 locals->delay_ms += comma_delay;
             } else if (current_char == ' ') {
-                let space_delay = Random_range_u64(20, 80);
+                let space_delay = Rand_rangeUInt(20, 80);
                 locals->delay_ms += space_delay;
             }
         }
@@ -215,9 +215,9 @@ async_fn_scope(typeEffectRealistic, {
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
-async_fn_(runMain, (Sli$Sli_const$u8 args;), Void);
+async_fn_(runMain, (S$S_const$u8 args;), Void);
 async_fn_scope(runMain, {
-    var_(sample_text, Sli_const$u8);
+    var_(sample_text, S_const$u8);
     var_(line, u32);
     struct {
         var_(type_ctx, Co_CtxFn$(typeEffectWithInterval));
@@ -240,8 +240,8 @@ async_fn_scope(runMain, {
     struct {
         var_(type_ctx, Co_CtxFn$(typeEffectRealistic));
     } demo7;
-    var_(read_mem, Arr$1024$u8);
-    var_(user_text, Sli$u8);
+    var_(read_mem, A$1024$u8);
+    var_(user_text, S$u8);
     var_(interval, f64);
     union {
         var_(type_interval, Co_CtxFn$(typeEffectWithInterval));
@@ -341,7 +341,7 @@ async_fn_scope(runMain, {
     areturn_({});
 } $unscoped_(async_fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     var task = async_((runMain)(args));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));
@@ -393,21 +393,21 @@ public
     /// </summary>
     /// <param name="text">The text to type out</param>
     /// <param name="baseIntervalMs">Base delay in milliseconds</param>
-    /// <param name="addRandomness">Whether to add random variation to typing speed</param>
+    /// <param name="addRandness">Whether to add random variation to typing speed</param>
 public
-    static async Task TypeRealisticAsync(string text, int baseIntervalMs = 100, bool addRandomness = true) {
+    static async Task TypeRealisticAsync(string text, int baseIntervalMs = 100, bool addRandness = true) {
         if (string.IsNullOrEmpty(text)) {
             return;
         }
 
-        Random random = addRandomness ? new Random() : null;
+        Rand random = addRandness ? new Rand() : null;
 
         foreach(char c in text) {
             Console.Write(c);
 
             int delay = baseIntervalMs;
 
-            if (addRandomness) {
+            if (addRandness) {
                 // Add randomness to make it feel more natural
                 delay += random.Next(-30, 50);
 

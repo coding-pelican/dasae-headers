@@ -29,26 +29,25 @@ extern "C" {
 #include "dh/core.h"
 
 #include "dh/fn.h"
-#include "dh/err_res.h"
+#include "dh/types.h"
 
-#include "dh/sli.h"
 #include "dh/ArrList.h"
 
 /*========== Definitions ====================================================*/
 
 /* Error codes */
-config_ErrSet(TEST_Err, Unexpected);
+errset_((TEST_Err)(Unexpected));
 
 /* Test case function type */
-typedef fn_((((*TEST_CaseFn)(void)))(Err$void));
+typedef fn_((((*TEST_CaseFn)(void)))(E$void));
 
 /* Test case structure */
 typedef struct TEST_Case {
-    TEST_CaseFn  fn;
-    Sli_const$u8 name;
+    TEST_CaseFn fn;
+    S_const$u8  name;
 } TEST_Case;
 /* Use slice for test cases */
-use_Sli$(TEST_Case);
+T_use$(TEST_Case, (P, S));
 /* Use array list for test cases */
 use_ArrList$(TEST_Case);
 
@@ -67,7 +66,7 @@ typedef struct TEST_Framework {
 /// @brief Access test framework singleton instance
 extern fn_((TEST_Framework_instance(void))(TEST_Framework*));
 /// @brief Bind test case to framework
-extern fn_((TEST_Framework_bindCase(TEST_CaseFn fn, Sli_const$u8 name))(void));
+extern fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void));
 /// @brief Run all registered tests
 extern fn_((TEST_Framework_run(void))(void));
 
@@ -89,9 +88,9 @@ extern fn_((TEST_Framework_run(void))(void));
 $extern $must_check
 /// @brief Check expression and record result
 /// @brief Same as TEST_expect but with custom message
-fn_((TEST_expect(bool expr))(Err$void));
+fn_((TEST_expect(bool expr))(E$void));
 $extern $must_check
-fn_((TEST_expectMsg(bool expr, Sli_const$u8 msg))(Err$void));
+fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
 #endif /* !COMP_TIME */
 
 /*========== Implementation Details ========================================*/
@@ -115,11 +114,11 @@ fn_((TEST_expectMsg(bool expr, Sli_const$u8 msg))(Err$void));
 #define TEST__caseFn_ext(_ID_binder, _ID_caseFn...)    comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
 
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...) \
-    $static fn_((_ID_caseFn(void))(Err$void)) $must_check; \
+    $static fn_((_ID_caseFn(void))(E$void)) $must_check; \
     $static comp_fn_gen__TEST__binder__sgn(_ID_binder) { \
         static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) { \
-            TEST_Framework_bindCase(_ID_caseFn, Str_l(_Name)); \
+            TEST_Framework_bindCase(_ID_caseFn, u8_l(_Name)); \
             s_is_bound = true; \
         } \
     }
@@ -133,14 +132,14 @@ fn_((TEST_expectMsg(bool expr, Sli_const$u8 msg))(Err$void));
 // clang-format off
 #define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \
-    $static fn_((_ID_caseFn(void))(Err$void) $scope) {                 \
+    $static fn_((_ID_caseFn(void))(E$void) $scope) {                 \
         _ID_binder();
 #define comp_syn__$unscoped_TEST_fn \
         return_ok({});          \
     } $unscoped
 
 #define comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn...) \
-    $static fn_((_ID_caseFn(void))(Err$void) $guard) {            \
+    $static fn_((_ID_caseFn(void))(E$void) $guard) {            \
         _ID_binder();
 #define comp_syn__$unguarded_TEST_fn \
         return_ok({});              \
@@ -149,12 +148,12 @@ fn_((TEST_expectMsg(bool expr, Sli_const$u8 msg))(Err$void));
 
 #if COMP_TIME
 $extern $must_check
-fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 eval_str))(Err$void));
+fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
 $extern $must_check
-fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 eval_str))(Err$void));
+fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void));
 
-#define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), Str_l(#_expr))
-#define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), Str_l(#_expr))
+#define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
+#define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), u8_l(#_expr))
 
 #define TEST_expect_callTest(_expr, _loc, _eval_str)          TEST_expect_test(_expr, _loc, _eval_str)
 #define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)

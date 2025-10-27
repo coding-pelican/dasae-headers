@@ -30,7 +30,7 @@
 TEST_fn_("io_common: Check `io_getStdIn` is valid handle" $scope) {
     let std_in = io_getStdIn();
     let handle = pp_if_(bti_plat_windows)(
-        pp_than_(GetStdHandle(STD_INPUT_HANDLE)),
+        pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
         pp_else_(posix_STDIN_FILENO)
     );
     try_(TEST_expect(std_in.handle == handle));
@@ -39,7 +39,7 @@ TEST_fn_("io_common: Check `io_getStdIn` is valid handle" $scope) {
 TEST_fn_("io_common: Check `io_getStdOut` is valid handle" $scope) {
     let std_out = io_getStdOut();
     let handle  = pp_if_(bti_plat_windows)(
-        pp_than_(GetStdHandle(STD_OUTPUT_HANDLE)),
+        pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
         pp_else_(posix_STDOUT_FILENO)
     );
     try_(TEST_expect(std_out.handle == handle));
@@ -48,7 +48,7 @@ TEST_fn_("io_common: Check `io_getStdOut` is valid handle" $scope) {
 TEST_fn_("io_common: Check `io_getStdErr` is valid handle" $scope) {
     let std_err = io_getStdErr();
     let handle  = pp_if_(bti_plat_windows)(
-        pp_than_(GetStdHandle(STD_ERROR_HANDLE)),
+        pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
         pp_else_(posix_STDERR_FILENO)
     );
     try_(TEST_expect(std_err.handle == handle));

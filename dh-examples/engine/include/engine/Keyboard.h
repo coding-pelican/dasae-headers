@@ -11,12 +11,12 @@ extern "C" {
 
 typedef struct engine_Keyboard {
     struct {
-        var_(curr_states, Arr$$(engine_KeyCode_count, engine_KeyButtonStates)); /**< Bitfield of current key states */
-        var_(prev_states, Arr$$(engine_KeyCode_count, engine_KeyButtonStates)); /**< Bitfield of previous key states */
+        var_(curr_states, A$$(engine_KeyCode_count, engine_KeyButtonStates)); /**< Bitfield of current key states */
+        var_(prev_states, A$$(engine_KeyCode_count, engine_KeyButtonStates)); /**< Bitfield of previous key states */
     } keys;
 } engine_Keyboard;
-use_Opt$(engine_Keyboard);
-use_Err$(engine_Keyboard);
+use_O$(engine_Keyboard);
+use_E$(engine_Keyboard);
 
 /// Get all states for a key
 extern fn_((engine_Keyboard_getState(const engine_Keyboard* self, engine_KeyCode key))(engine_KeyButtonStates));

@@ -16,8 +16,8 @@
  *          string formatting, and console input/output.
  */
 
-#ifndef IO_INCLUDED
-#define IO_INCLUDED (1)
+#ifndef io__included
+#define io__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -25,9 +25,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "io/common.h"
+#include "io/stream.h"
+#include "io/Reader.h"
 #include "io/Writer.h"
+#include "io/Buf.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* IO_INCLUDED */
+#endif /* io__included */

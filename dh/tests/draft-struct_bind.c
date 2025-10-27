@@ -35,7 +35,7 @@ fn_((getModel(void))(union Model)) {
     }; \
 })
 #define tuple_at(tuple_addr, index) blk({ \
-    let __$tuple = tuple_addr; \
+    let        __$tuple = tuple_addr; \
     blk_return __$tuple->_n##index; \
 })
 #define tuple_atMut(tuple_addr, index) blk({ \
@@ -47,7 +47,7 @@ fn_((getModel(void))(union Model)) {
     name0        = __$tuple._n0; \
     name1        = __$tuple._n1
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     {

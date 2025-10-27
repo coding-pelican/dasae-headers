@@ -63,8 +63,8 @@ extern "C" {
 #define op_fnUn(fnOps, TSelf)               pp_join(_, op, fnOps)(TSelf)(TSelf self)
 #define op_fnBin(fnOps, TSelf)              pp_join(_, op, fnOps)(TSelf)(TSelf self, TSelf other)
 #define op_fnBinBy(fnOps, TSelf, TOther)    pp_join(_, op, fnOps)(TSelf, TOther)(TSelf self, TOther other)
-#define op_fnBinAsg(fnOps, TSelf)           pp_join(_, op, fnOps)(TSelf)(rawptr$(TSelf) self, TSelf other)
-#define op_fnBinAsgBy(fnOps, TSelf, TOther) pp_join(_, op, fnOps)(TSelf, TOther)(rawptr$(TSelf) self, TOther other)
+#define op_fnBinAsg(fnOps, TSelf)           pp_join(_, op, fnOps)(TSelf)($P$(TSelf) self, TSelf other)
+#define op_fnBinAsgBy(fnOps, TSelf, TOther) pp_join(_, op, fnOps)(TSelf, TOther)($P$(TSelf) self, TOther other)
 
 #define op_fnNeg(TSelf)           op_fnUn(neg, TSelf)
 #define op_fnAdd(TSelf)           op_fnBin(add, TSelf)
@@ -103,15 +103,15 @@ extern "C" {
     TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_remBy(TSelf, TOther)(self, other); }
 
 #define op_fnWrapAddAsgBy(fnName, TSelf, TOther, TRet) \
-    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_addAsgBy(TSelf, TOther)(self, other); }
+    TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_addAsgBy(TSelf, TOther)(self, other); }
 #define op_fnWrapSubAsgBy(fnName, TSelf, TOther, TRet) \
-    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_subAsgBy(TSelf, TOther)(self, other); }
+    TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_subAsgBy(TSelf, TOther)(self, other); }
 #define op_fnWrapMulAsgBy(fnName, TSelf, TOther, TRet) \
-    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_mulAsgBy(TSelf, TOther)(self, other); }
+    TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_mulAsgBy(TSelf, TOther)(self, other); }
 #define op_fnWrapDivAsgBy(fnName, TSelf, TOther, TRet) \
-    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_divAsgBy(TSelf, TOther)(self, other); }
+    TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_divAsgBy(TSelf, TOther)(self, other); }
 #define op_fnWrapRemAsgBy(fnName, TSelf, TOther, TRet) \
-    TRet pp_join(_, TSelf, fnName)(rawptr$(TSelf) self, TOther other) { return op_remAsgBy(TSelf, TOther)(self, other); }
+    TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_remAsgBy(TSelf, TOther)(self, other); }
 #else /* COMP_TIME */
 #define op_fnWrapAddBy(fnName, TSelf, TOther, TRet) \
     let pp_join(_, TSelf, fnName) = op_addBy(TSelf, TOther)

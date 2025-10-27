@@ -6,7 +6,7 @@
 #include "dh/meta.h"
 
 #define use_Optptr$(T) \
-    use_Ptr$(T); \
+    use_P$(T); \
     decl_Optptr$(T); \
     impl_Optptr$(T)
 #define decl_Optptr$(T) \
@@ -14,11 +14,12 @@
     typedef union Optptr$(T) Optptr$(T)
 #define impl_Optptr$(T) \
     struct Optptr_const$(T) { \
-        const rawptr$(T) addr; \
+        const $P$(T) addr; \
     }; \
     union Optptr$(T) { \
         struct { \
-            rawptr$(T) addr; \
+            $P$(T) \
+            addr; \
         }; \
         Optptr_const$(T) as_const; \
     }
@@ -27,12 +28,13 @@
 #define Optptr$(T)       pp_join($, Optptr, T)
 #define Optptr_const$$(T) \
     struct { \
-        const rawptr$(T) addr; \
+        const $P$(T) addr; \
     }
 #define Optptr$$(T) \
     union { \
         struct { \
-            rawptr$(T) addr; \
+            $P$(T) \
+            addr; \
         }; \
         Optptr_const$$(T) as_const; \
     }
@@ -65,7 +67,7 @@
 })
 
 typedef struct meta_Value {
-    var_(ref, meta_Ptr);
+    var_(ref, meta_P$raw);
     var_(data[0], u8);
 } meta_Value;
 
@@ -76,11 +78,11 @@ struct Node {
     var_(data, meta_Value);
 };
 
-fn_((Node_init(Node* self, meta_Ptr ptr))(Node*)) {
+fn_((Node_init(Node* self, meta_P$raw ptr))(Node*)) {
     toNoneptr(&self->next);
     self->data.ref.type = ptr.type;
-    self->data.ref.addr = self->data.data;
-    memcpy(self->data.data, ptr.addr, ptr.type.size);
+    self->data.ref.ptr  = self->data.data;
+    memcpy(self->data.data, ptr.ptr, ptr.type.size);
     return self;
 }
 
@@ -106,12 +108,12 @@ union Node$i32 {
     union { \
         meta_Value meta; \
         struct { \
-            meta_Ptr ref; \
-            T        data; \
+            meta_P$raw ref; \
+            T          data; \
         } value; \
     } __self = { .meta = _self }; \
     debug_assert(TypeInfo_eq(typeInfo$(T), __self.meta.ref.type)); \
-    __self.value.data = deref(as$((rawptr$(T))(__self.meta.ref.addr))); \
+    __self.value.data = deref(as$(($P$(T))(__self.meta.ref.addr))); \
     blk_return __self.value.data; \
 })
 
@@ -126,7 +128,7 @@ union Node$i32 {
 
 // clang-format off
 $TEST_only(TEST_fn_("meta_Value_load" $scope))
-$release_only(fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope)) {
+$release_only(fn_((dh_main(S$S_const$u8 args))(E$void) $scope)) {
     $release_only(let_ignore = args;)
 
     var_type(node, Node$i32*, Node_init(make$(Node$i32).base, meta_create$(i32, 123)));

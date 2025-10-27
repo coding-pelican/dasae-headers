@@ -15,8 +15,8 @@
  *          for memory allocation behavior and safety features.
  */
 
-#ifndef HEAP_CFG_INCLUDED
-#define HEAP_CFG_INCLUDED (1)
+#ifndef heap_cfg__included
+#define heap_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -29,4 +29,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_CFG_INCLUDED */
+#endif /* heap_cfg__included */

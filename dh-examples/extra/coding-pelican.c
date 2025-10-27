@@ -1,7 +1,7 @@
 #include "dh/main.h"
 
 /* clang-format off */
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let dev_dasae = SWEngineer_init((SWEngineer_Config){

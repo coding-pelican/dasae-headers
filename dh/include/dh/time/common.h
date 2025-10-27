@@ -32,11 +32,11 @@ extern "C" {
 
 /* Data Types */
 typedef struct time_Duration time_Duration;
-decl_Opt$(time_Duration);
+T_decl_O$(time_Duration);
 typedef struct time_Instant time_Instant;
-decl_Opt$(time_Instant);
+T_decl_O$(time_Instant);
 typedef struct time_SysTime time_SysTime;
-decl_Opt$(time_SysTime);
+T_decl_O$(time_SysTime);
 
 /* Constants */
 static const u32 time_nanos_per_sec   = lit_num(1, 000, 000, 000u);

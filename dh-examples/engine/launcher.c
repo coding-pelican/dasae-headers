@@ -10,17 +10,17 @@
 #include "dh/os/windows.h"
 #include <stdio.h>
 
-static let_(Launcher_window_title, Sli_const$u8)     = Str_l("Test Terminal Launcher");
-static var_(Terminal_window_title, Opt$Sli_const$u8) = none();
-static var_(Terminal_window_width, i32)              = 80;
-static var_(Terminal_window_height, i32)             = 25;
+static let_(Launcher_window_title, S_const$u8)   = u8_l("Test Terminal Launcher");
+static var_(Terminal_window_title, O$S_const$u8) = none();
+static var_(Terminal_window_width, i32)          = 80;
+static var_(Terminal_window_height, i32)         = 25;
 
-static fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32));
-static fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize));
-static fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32));
-static fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize));
+static fn_((fmt_parse_u32(S_const$u8 str))(E$u32));
+static fn_((fmt_parse_usize(S_const$u8 str))(E$usize));
+static fn_((fmt_parse_i32(S_const$u8 str))(E$i32));
+static fn_((fmt_parse_isize(S_const$u8 str))(E$isize));
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     if (args.len < 2) {
         printf(
             "[%*s] Usage: %*s <program_to_run> <width> <height>\n",
@@ -42,8 +42,8 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     );
 
     if (2 < args.len) {
-        Terminal_window_width  = try_(fmt_parseInt_u32(Sli_getAt(args, 2)));
-        Terminal_window_height = try_(fmt_parseInt_u32(Sli_getAt(args, 3)));
+        Terminal_window_width  = try_(fmt_parse_u32(Sli_getAt(args, 2)));
+        Terminal_window_height = try_(fmt_parse_u32(Sli_getAt(args, 3)));
     }
     debug_assert(0 < Terminal_window_width);
     debug_assert(0 < Terminal_window_height);
@@ -56,10 +56,10 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     );
 
     // Prepare the command string
-    Arr$$(1024, u8) command = Arr_zero();
-    let_ignore              = snprintf(
+    A$$(1024, u8) command = A_zero();
+    let_ignore             = snprintf(
         as$(char*, command.buf),
-        Arr_len(command),
+        A_len(command),
         "wt --size %d,%d -d . cmd /k .\\%*s %d %d",
         Terminal_window_width,
         Terminal_window_height,
@@ -95,7 +95,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
             Launcher_window_title.ptr,
             as$(i32, GetLastError())
         );
-        return_err(Err_Unexpected());
+        return_err(E_Unexpected());
     }
 
     // Wait for the process to finish
@@ -119,43 +119,43 @@ config_ErrSet(fmt_ParseIntErr,
     InvalidFormat,
     Overflow
 );
-fn_((fmt_parseInt_u32(Sli_const$u8 str))(Err$u32) $scope) {
+fn_((fmt_parse_u32(S_const$u8 str))(E$u32) $scope) {
     debug_assert_nonnull(str.ptr);
-    if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
+    if (str.len == 0) { return_err(fmt_ParseIntE_EmptyStr()); }
     return_ok(eval({
         u32 parsed = 0;
         for_slice (str, ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
-                return_err(fmt_ParseIntErr_InvalidChar());
+                return_err(fmt_ParseIntE_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(u32_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(u32_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntE_Overflow()); }));
             parsed   += digit;
         }
         eval_return parsed;
     }));
 } $unscoped_(fn);
-fn_((fmt_parseInt_usize(Sli_const$u8 str))(Err$usize) $scope) {
+fn_((fmt_parse_usize(S_const$u8 str))(E$usize) $scope) {
     debug_assert_nonnull(str.ptr);
-    if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
+    if (str.len == 0) { return_err(fmt_ParseIntE_EmptyStr()); }
     return_ok(eval({
         usize parsed = 0;
         for_slice (str, ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
-                return_err(fmt_ParseIntErr_InvalidChar());
+                return_err(fmt_ParseIntE_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(usize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(usize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntE_Overflow()); }));
             parsed   += digit;
         }
         eval_return parsed;
     }));
 } $unscoped_(fn);
-fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32) $scope) {
+fn_((fmt_parse_i32(S_const$u8 str))(E$i32) $scope) {
     debug_assert_nonnull(str.ptr);
-    if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
+    if (str.len == 0) { return_err(fmt_ParseIntE_EmptyStr()); }
     return_ok(eval({
         bool  negative  = false;
         usize start_idx = 0;
@@ -164,17 +164,17 @@ fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32) $scope) {
             negative  = true;
             start_idx = 1;
             if (str.len == 1) {
-                return_err(fmt_ParseIntErr_InvalidFormat());
+                return_err(fmt_ParseIntE_InvalidFormat());
             }
 
             // Special case for INT32_MIN (-2147483648)
-            if (str.len == 11 && Str_eql(Str_l("2147483648"), Sli_slice(str, $r(1, 11)))) {
+            if (str.len == 11 && Str_eql(u8_l("2147483648"), Sli_slice(str, $r(1, 11)))) {
                 return_ok(-2147483648); // INT32_MIN
             }
         } else if (Sli_getAt(str, 0) == '+') {
             start_idx = 1;
             if (str.len == 1) {
-                return_err(fmt_ParseIntErr_InvalidFormat());
+                return_err(fmt_ParseIntE_InvalidFormat());
             }
         }
 
@@ -182,13 +182,13 @@ fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32) $scope) {
         for_slice (Sli_suffix(str, start_idx), ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
-                return_err(fmt_ParseIntErr_InvalidChar());
+                return_err(fmt_ParseIntE_InvalidChar());
             }
             let digit = c - '0';
 
             // Check for overflow explicitly before multiplication
             if (parsed > 214748364 || (parsed == 214748364 && digit > 7)) {
-                return_err(fmt_ParseIntErr_Overflow());
+                return_err(fmt_ParseIntE_Overflow());
             }
 
             parsed = parsed * 10 + digit;
@@ -199,9 +199,9 @@ fn_((fmt_parseInt_i32(Sli_const$u8 str))(Err$i32) $scope) {
         eval_return parsed;
     }));
 } $unscoped_(fn);
-fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
+fn_((fmt_parse_isize(S_const$u8 str))(E$isize) $scope) {
     debug_assert_nonnull(str.ptr);
-    if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
+    if (str.len == 0) { return_err(fmt_ParseIntE_EmptyStr()); }
     return_ok(eval({
         bool  negative  = false;
         usize start_idx = 0;
@@ -210,12 +210,12 @@ fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
             negative  = true;
             start_idx = 1;
             if (str.len == 1) {
-                return_err(fmt_ParseIntErr_InvalidFormat());
+                return_err(fmt_ParseIntE_InvalidFormat());
             }
         } else if (Sli_getAt(str, 0) == '+') {
             start_idx = 1;
             if (str.len == 1) {
-                return_err(fmt_ParseIntErr_InvalidFormat());
+                return_err(fmt_ParseIntE_InvalidFormat());
             }
         }
 
@@ -223,10 +223,10 @@ fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
         for_slice (Sli_suffix(str, start_idx), ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
-                return_err(fmt_ParseIntErr_InvalidChar());
+                return_err(fmt_ParseIntE_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse(isize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntErr_Overflow()); }));
+            parsed    = orelse(isize_mulChkd(parsed, 10), ({ return_err(fmt_ParseIntE_Overflow()); }));
             parsed   += digit;
         }
         if (negative) {
@@ -236,244 +236,244 @@ fn_((fmt_parseInt_isize(Sli_const$u8 str))(Err$isize) $scope) {
     }));
 } $unscoped_(fn);
 
-TEST_fn_("fmt_parseInt_u32" $scope) {
+TEST_fn_("fmt_parse_u32" $scope) {
     // Valid inputs
-    let ok_val = try_(fmt_parseInt_u32(Str_l("123")));
+    let ok_val = try_(fmt_parse_u32(u8_l("123")));
     try_(TEST_expect(ok_val == 123));
 
     // Zero
-    let zero = try_(fmt_parseInt_u32(Str_l("0")));
+    let zero = try_(fmt_parse_u32(u8_l("0")));
     try_(TEST_expect(zero == 0));
 
     // Large number
-    let large = try_(fmt_parseInt_u32(Str_l("4294967295"))); // Max u32
+    let large = try_(fmt_parse_u32(u8_l("4294967295"))); // Max u32
     try_(TEST_expect(large == 4294967295));
 
     // Empty string
-    let empty_err = fmt_parseInt_u32(Str_l(""));
+    let empty_err = fmt_parse_u32(u8_l(""));
     try_(TEST_expect(isErr(empty_err)));
     if_err(empty_err, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("EmptyStr"), Err_codeToStr(err)),
-            Str_l("Expected EmptyStr error")
+            Str_eql(u8_l("EmptyStr"), Err_codeToStr(err)),
+            u8_l("Expected EmptyStr error")
         ));
     }
 
     // Invalid character
-    let invalid_char = fmt_parseInt_u32(Str_l("12a3"));
+    let invalid_char = fmt_parse_u32(u8_l("12a3"));
     try_(TEST_expect(isErr(invalid_char)));
     if_err(invalid_char, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidChar"), Err_codeToStr(err)),
-            Str_l("Expected InvalidChar error")
+            Str_eql(u8_l("InvalidChar"), Err_codeToStr(err)),
+            u8_l("Expected InvalidChar error")
         ));
     }
 
     // Overflow
-    let overflow = fmt_parseInt_u32(Str_l("42949672951")); // Exceeds max u32
+    let overflow = fmt_parse_u32(u8_l("42949672951")); // Exceeds max u32
     try_(TEST_expect(isErr(overflow)));
     if_err(overflow, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("Overflow"), Err_codeToStr(err)),
-            Str_l("Expected Overflow error")
+            Str_eql(u8_l("Overflow"), Err_codeToStr(err)),
+            u8_l("Expected Overflow error")
         ));
     }
 } $unscoped_(TEST_fn);
 
-TEST_fn_("fmt_parseInt_usize" $scope) {
+TEST_fn_("fmt_parse_usize" $scope) {
     // Valid inputs
-    let ok_val = try_(fmt_parseInt_usize(Str_l("123")));
+    let ok_val = try_(fmt_parse_usize(u8_l("123")));
     try_(TEST_expect(ok_val == 123));
 
     // Zero
-    let zero = try_(fmt_parseInt_usize(Str_l("0")));
+    let zero = try_(fmt_parse_usize(u8_l("0")));
     try_(TEST_expect(zero == 0));
 
     // Large number
-    let large = try_(fmt_parseInt_usize(Str_l("65535")));
+    let large = try_(fmt_parse_usize(u8_l("65535")));
     try_(TEST_expect(large == 65535));
 
     // Empty string
-    let empty_err = fmt_parseInt_usize(Str_l(""));
+    let empty_err = fmt_parse_usize(u8_l(""));
     try_(TEST_expect(isErr(empty_err)));
     if_err(empty_err, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("EmptyStr"), Err_codeToStr(err)),
-            Str_l("Expected EmptyStr error")
+            Str_eql(u8_l("EmptyStr"), Err_codeToStr(err)),
+            u8_l("Expected EmptyStr error")
         ));
     }
 
     // Invalid character
-    let invalid_char = fmt_parseInt_usize(Str_l("12a3"));
+    let invalid_char = fmt_parse_usize(u8_l("12a3"));
     try_(TEST_expect(isErr(invalid_char)));
     if_err(invalid_char, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidChar"), Err_codeToStr(err)),
-            Str_l("Expected InvalidChar error")
+            Str_eql(u8_l("InvalidChar"), Err_codeToStr(err)),
+            u8_l("Expected InvalidChar error")
         ));
     }
 
     // Overflow (test with very large number)
-    let overflow = fmt_parseInt_usize(Str_l("184467440737095516151")); // Very large
+    let overflow = fmt_parse_usize(u8_l("184467440737095516151")); // Very large
     try_(TEST_expect(isErr(overflow)));
     if_err(overflow, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("Overflow"), Err_codeToStr(err)),
-            Str_l("Expected Overflow error")
+            Str_eql(u8_l("Overflow"), Err_codeToStr(err)),
+            u8_l("Expected Overflow error")
         ));
     }
 } $unscoped_(TEST_fn);
 
-TEST_fn_("fmt_parseInt_i32" $scope) {
+TEST_fn_("fmt_parse_i32" $scope) {
     // Valid positive
-    let pos_val = try_(fmt_parseInt_i32(Str_l("123")));
+    let pos_val = try_(fmt_parse_i32(u8_l("123")));
     try_(TEST_expect(pos_val == 123));
 
     // Valid negative
-    let neg_val = try_(fmt_parseInt_i32(Str_l("-123")));
+    let neg_val = try_(fmt_parse_i32(u8_l("-123")));
     try_(TEST_expect(neg_val == -123));
 
     // Explicit positive
-    let explicit_pos = try_(fmt_parseInt_i32(Str_l("+123")));
+    let explicit_pos = try_(fmt_parse_i32(u8_l("+123")));
     try_(TEST_expect(explicit_pos == 123));
 
     // Zero
-    let zero = try_(fmt_parseInt_i32(Str_l("0")));
+    let zero = try_(fmt_parse_i32(u8_l("0")));
     try_(TEST_expect(zero == 0));
 
     // Min/Max values
-    let max_i32 = try_(fmt_parseInt_i32(Str_l("2147483647"))); // Max i32
+    let max_i32 = try_(fmt_parse_i32(u8_l("2147483647"))); // Max i32
     try_(TEST_expect(max_i32 == 2147483647));
 
-    let min_i32 = try_(fmt_parseInt_i32(Str_l("-2147483648"))); // Min i32
+    let min_i32 = try_(fmt_parse_i32(u8_l("-2147483648"))); // Min i32
     try_(TEST_expect(min_i32 == -2147483648));
 
     // Empty string
-    let empty_err = fmt_parseInt_i32(Str_l(""));
+    let empty_err = fmt_parse_i32(u8_l(""));
     try_(TEST_expect(isErr(empty_err)));
     if_err(empty_err, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("EmptyStr"), Err_codeToStr(err)),
-            Str_l("Expected EmptyStr error")
+            Str_eql(u8_l("EmptyStr"), Err_codeToStr(err)),
+            u8_l("Expected EmptyStr error")
         ));
     }
 
     // Invalid character
-    let invalid_char = fmt_parseInt_i32(Str_l("12a3"));
+    let invalid_char = fmt_parse_i32(u8_l("12a3"));
     try_(TEST_expect(isErr(invalid_char)));
     if_err(invalid_char, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidChar"), Err_codeToStr(err)),
-            Str_l("Expected InvalidChar error")
+            Str_eql(u8_l("InvalidChar"), Err_codeToStr(err)),
+            u8_l("Expected InvalidChar error")
         ));
     }
 
     // Invalid format (just sign)
-    let invalid_format1 = fmt_parseInt_i32(Str_l("-"));
+    let invalid_format1 = fmt_parse_i32(u8_l("-"));
     try_(TEST_expect(isErr(invalid_format1)));
     if_err(invalid_format1, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidFormat"), Err_codeToStr(err)),
-            Str_l("Expected InvalidFormat error")
+            Str_eql(u8_l("InvalidFormat"), Err_codeToStr(err)),
+            u8_l("Expected InvalidFormat error")
         ));
     }
 
-    let invalid_format2 = fmt_parseInt_i32(Str_l("+"));
+    let invalid_format2 = fmt_parse_i32(u8_l("+"));
     try_(TEST_expect(isErr(invalid_format2)));
     if_err(invalid_format2, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidFormat"), Err_codeToStr(err)),
-            Str_l("Expected InvalidFormat error")
+            Str_eql(u8_l("InvalidFormat"), Err_codeToStr(err)),
+            u8_l("Expected InvalidFormat error")
         ));
     }
 
     // Overflow
-    let overflow_pos = fmt_parseInt_i32(Str_l("2147483648")); // Exceeds max i32
+    let overflow_pos = fmt_parse_i32(u8_l("2147483648")); // Exceeds max i32
     try_(TEST_expect(isErr(overflow_pos)));
     if_err(overflow_pos, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("Overflow"), Err_codeToStr(err)),
-            Str_l("Expected Overflow error")
+            Str_eql(u8_l("Overflow"), Err_codeToStr(err)),
+            u8_l("Expected Overflow error")
         ));
     }
 
-    let overflow_neg = fmt_parseInt_i32(Str_l("-2147483649")); // Exceeds min i32
+    let overflow_neg = fmt_parse_i32(u8_l("-2147483649")); // Exceeds min i32
     try_(TEST_expect(isErr(overflow_neg)));
     if_err(overflow_neg, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("Overflow"), Err_codeToStr(err)),
-            Str_l("Expected Overflow error")
+            Str_eql(u8_l("Overflow"), Err_codeToStr(err)),
+            u8_l("Expected Overflow error")
         ));
     }
 } $unscoped_(TEST_fn);
 
-TEST_fn_("fmt_parseInt_isize" $scope) {
+TEST_fn_("fmt_parse_isize" $scope) {
     // Valid positive
-    let pos_val = try_(fmt_parseInt_isize(Str_l("123")));
+    let pos_val = try_(fmt_parse_isize(u8_l("123")));
     try_(TEST_expect(pos_val == 123));
 
     // Valid negative
-    let neg_val = try_(fmt_parseInt_isize(Str_l("-123")));
+    let neg_val = try_(fmt_parse_isize(u8_l("-123")));
     try_(TEST_expect(neg_val == -123));
 
     // Explicit positive
-    let explicit_pos = try_(fmt_parseInt_isize(Str_l("+123")));
+    let explicit_pos = try_(fmt_parse_isize(u8_l("+123")));
     try_(TEST_expect(explicit_pos == 123));
 
     // Zero
-    let zero = try_(fmt_parseInt_isize(Str_l("0")));
+    let zero = try_(fmt_parse_isize(u8_l("0")));
     try_(TEST_expect(zero == 0));
 
     // Large values (adjust based on platform if needed)
-    let large_pos = try_(fmt_parseInt_isize(Str_l("9223372036854775807"))); // Typical max for 64-bit
+    let large_pos = try_(fmt_parse_isize(u8_l("9223372036854775807"))); // Typical max for 64-bit
     try_(TEST_expect(large_pos == 9223372036854775807));
 
     // Empty string
-    let empty_err = fmt_parseInt_isize(Str_l(""));
+    let empty_err = fmt_parse_isize(u8_l(""));
     try_(TEST_expect(isErr(empty_err)));
     if_err(empty_err, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("EmptyStr"), Err_codeToStr(err)),
-            Str_l("Expected EmptyStr error")
+            Str_eql(u8_l("EmptyStr"), Err_codeToStr(err)),
+            u8_l("Expected EmptyStr error")
         ));
     }
 
     // Invalid character
-    let invalid_char = fmt_parseInt_isize(Str_l("12a3"));
+    let invalid_char = fmt_parse_isize(u8_l("12a3"));
     try_(TEST_expect(isErr(invalid_char)));
     if_err(invalid_char, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidChar"), Err_codeToStr(err)),
-            Str_l("Expected InvalidChar error")
+            Str_eql(u8_l("InvalidChar"), Err_codeToStr(err)),
+            u8_l("Expected InvalidChar error")
         ));
     }
 
     // Invalid format (just sign)
-    let invalid_format1 = fmt_parseInt_isize(Str_l("-"));
+    let invalid_format1 = fmt_parse_isize(u8_l("-"));
     try_(TEST_expect(isErr(invalid_format1)));
     if_err(invalid_format1, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidFormat"), Err_codeToStr(err)),
-            Str_l("Expected InvalidFormat error")
+            Str_eql(u8_l("InvalidFormat"), Err_codeToStr(err)),
+            u8_l("Expected InvalidFormat error")
         ));
     }
 
-    let invalid_format2 = fmt_parseInt_isize(Str_l("+"));
+    let invalid_format2 = fmt_parse_isize(u8_l("+"));
     try_(TEST_expect(isErr(invalid_format2)));
     if_err(invalid_format2, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("InvalidFormat"), Err_codeToStr(err)),
-            Str_l("Expected InvalidFormat error")
+            Str_eql(u8_l("InvalidFormat"), Err_codeToStr(err)),
+            u8_l("Expected InvalidFormat error")
         ));
     }
 
     // Overflow (test with very large number)
-    let overflow = fmt_parseInt_isize(Str_l("19223372036854775808")); // Exceeds max isize
+    let overflow = fmt_parse_isize(u8_l("19223372036854775808")); // Exceeds max isize
     try_(TEST_expect(isErr(overflow)));
     if_err(overflow, err) {
         try_(TEST_expectMsg(
-            Str_eql(Str_l("Overflow"), Err_codeToStr(err)),
-            Str_l("Expected Overflow error")
+            Str_eql(u8_l("Overflow"), Err_codeToStr(err)),
+            u8_l("Expected Overflow error")
         ));
     }
 } $unscoped_(TEST_fn);

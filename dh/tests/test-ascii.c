@@ -25,44 +25,44 @@
 
 TEST_fn_("ascii_toUppers: In-place uppercase conversion" $scope) {
     // Test normal case
-    use_Arr$(20, u8);
-    Arr$20$u8 test_mem = Arr_zero();
-    bti_memcpy(test_mem.buf, "hello world", 11);
-    let test_str = Sli_from$(Sli$u8, test_mem.buf, 11);
+    use_A$(20, u8);
+    A$20$u8 test_mem = A_zero();
+    bti_memcpy(test_mem.val, "hello world", 11);
+    let test_str = Sli_from$(S$u8, test_mem.val, 11);
     let result   = ascii_toUppers(test_str);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("HELLO WORLD"))));
 
     // Test already uppercase
-    bti_memcpy(test_mem.buf, "HELLO", 5);
-    let upper_str    = Sli_from$(Sli$u8, test_mem.buf, 5);
+    bti_memcpy(test_mem.val, "HELLO", 5);
+    let upper_str    = Sli_from$(S$u8, test_mem.val, 5);
     let upper_result = ascii_toUppers(upper_str);
     try_(TEST_expect(Str_eql(Str_view(upper_result.ptr, upper_result.len), u8_l("HELLO"))));
 
     // Test mixed case with numbers
-    bti_memcpy(test_mem.buf, "Test123", 7);
-    let mixed_str    = Sli_from$(Sli$u8, test_mem.buf, 7);
+    bti_memcpy(test_mem.val, "Test123", 7);
+    let mixed_str    = Sli_from$(S$u8, test_mem.val, 7);
     let mixed_result = ascii_toUppers(mixed_str);
     try_(TEST_expect(Str_eql(Str_view(mixed_result.ptr, mixed_result.len), u8_l("TEST123"))));
 } $unscoped_(TEST_fn);
 
 TEST_fn_("ascii_toLowers: In-place lowercase conversion" $scope) {
     // Test normal case
-    use_Arr$(20, u8);
-    Arr$20$u8 test_mem = Arr_zero();
-    bti_memcpy(test_mem.buf, "HELLO WORLD", 11);
-    let test_str = Sli_from$(Sli$u8, test_mem.buf, 11);
+    use_A$(20, u8);
+    A$20$u8 test_mem = A_zero();
+    bti_memcpy(test_mem.val, "HELLO WORLD", 11);
+    let test_str = Sli_from$(S$u8, test_mem.val, 11);
     let result   = ascii_toLowers(test_str);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("hello world"))));
 
     // Test already lowercase
-    bti_memcpy(test_mem.buf, "hello", 5);
-    let lower_str    = Sli_from$(Sli$u8, test_mem.buf, 5);
+    bti_memcpy(test_mem.val, "hello", 5);
+    let lower_str    = Sli_from$(S$u8, test_mem.val, 5);
     let lower_result = ascii_toLowers(lower_str);
     try_(TEST_expect(Str_eql(Str_view(lower_result.ptr, lower_result.len), u8_l("hello"))));
 
     // Test mixed case with symbols
-    bti_memcpy(test_mem.buf, "Test@123", 8);
-    let mixed_str    = Sli_from$(Sli$u8, test_mem.buf, 8);
+    bti_memcpy(test_mem.val, "Test@123", 8);
+    let mixed_str    = Sli_from$(S$u8, test_mem.val, 8);
     let mixed_result = ascii_toLowers(mixed_str);
     try_(TEST_expect(Str_eql(Str_view(mixed_result.ptr, mixed_result.len), u8_l("test@123"))));
 } $unscoped_(TEST_fn);
@@ -70,10 +70,10 @@ TEST_fn_("ascii_toLowers: In-place lowercase conversion" $scope) {
 TEST_fn_("ascii_makeUppers: Copy to buffer with uppercase" $scope) {
     // Test normal case
     let source = u8_l("hello");
-    use_Arr$(10, u8);
-    Arr$10$u8 buffer_mem = Arr_zero();
-    let       buffer     = Sli_from$(Sli$u8, buffer_mem.buf, 10);
-    let       result     = ascii_makeUppers(buffer, source);
+    use_A$(10, u8);
+    A$10$u8 buffer_mem = A_zero();
+    let     buffer     = Sli_from$(S$u8, buffer_mem.val, 10);
+    let     result     = ascii_makeUppers(buffer, source);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("HELLO"))));
     try_(TEST_expect(result.len == 5));
 } $unscoped_(TEST_fn);
@@ -81,10 +81,10 @@ TEST_fn_("ascii_makeUppers: Copy to buffer with uppercase" $scope) {
 TEST_fn_("ascii_makeLowers: Copy to buffer with lowercase" $scope) {
     // Test normal case
     let source = u8_l("WORLD");
-    use_Arr$(10, u8);
-    Arr$10$u8 buffer_mem = Arr_zero();
-    let       buffer     = Sli_from$(Sli$u8, buffer_mem.buf, 10);
-    let       result     = ascii_makeLowers(buffer, source);
+    use_A$(10, u8);
+    A$10$u8 buffer_mem = A_zero();
+    let     buffer     = Sli_from$(S$u8, buffer_mem.val, 10);
+    let     result     = ascii_makeLowers(buffer, source);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("world"))));
     try_(TEST_expect(result.len == 5));
 } $unscoped_(TEST_fn);
@@ -316,15 +316,15 @@ TEST_fn_("ascii functions: Edge cases and special characters" $scope) {
     let special_chars = u8_l("!@#$%^&*()");
 
     // Case conversion should not affect non-alphabetic characters
-    use_Arr$(20, u8);
-    Arr$20$u8 test_mem = Arr_zero();
-    bti_memcpy(test_mem.buf, special_chars.ptr, special_chars.len);
-    let special_slice = Sli_from$(Sli$u8, test_mem.buf, special_chars.len);
+    use_A$(20, u8);
+    A$20$u8 test_mem = A_zero();
+    bti_memcpy(test_mem.val, special_chars.ptr, special_chars.len);
+    let special_slice = Sli_from$(S$u8, test_mem.val, special_chars.len);
 
     let upper_result = ascii_toUppers(special_slice);
     try_(TEST_expect(Str_eql(Str_view(upper_result.ptr, upper_result.len), special_chars)));
 
-    bti_memcpy(test_mem.buf, special_chars.ptr, special_chars.len);
+    bti_memcpy(test_mem.val, special_chars.ptr, special_chars.len);
     let lower_result = ascii_toLowers(special_slice);
     try_(TEST_expect(Str_eql(Str_view(lower_result.ptr, lower_result.len), special_chars)));
 

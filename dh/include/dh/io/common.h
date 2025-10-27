@@ -18,8 +18,8 @@
  *          - Utility functions
  */
 
-#ifndef IO_COMMON_INCLUDED
-#define IO_COMMON_INCLUDED (1)
+#ifndef io_common__included
+#define io_common__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -31,11 +31,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-extern fn_((io_getStdIn(void))(fs_File));
-extern fn_((io_getStdOut(void))(fs_File));
-extern fn_((io_getStdErr(void))(fs_File));
+errset_((io_Err)(
+    UnexpectedEof,
+    BufferTooSmall
+));
+
+$extern fn_((io_getStdIn(void))(fs_File));
+$extern fn_((io_getStdOut(void))(fs_File));
+$extern fn_((io_getStdErr(void))(fs_File));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* IO_COMMON_INCLUDED */
+#endif /* io_common__included */

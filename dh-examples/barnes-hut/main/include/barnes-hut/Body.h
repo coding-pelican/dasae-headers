@@ -12,7 +12,7 @@ typedef struct Body {
     f32     mass;
     f32     radius;
 } Body;
-use_Sli$(Body);
+use_S$(Body);
 use_ArrList$(Body);
 
 extern fn_(Body_new(m_V2f32 pos, m_V2f32 vel, f32 mass, f32 radius), Body);

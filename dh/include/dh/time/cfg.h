@@ -39,7 +39,7 @@ typedef LARGE_INTEGER time_SysTimeWindows;
 typedef struct timespec time_SysTimeUnix;
 #endif
 typedef pp_if_(bti_plat_windows)(
-    pp_than_(time_SysTimeWindows),
+    pp_then_(time_SysTimeWindows),
     pp_else_(time_SysTimeUnix)
 ) time_SysTimePlatform;
 

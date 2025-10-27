@@ -12,7 +12,7 @@ extern "C" {
 #define stream_fastOut__comp_unix_allow_bulk (1)
 #endif
 
-extern func((stream_fastOut(Sli_const$u8 data))(void));
+extern func((stream_fastOut(S_const$u8 data))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

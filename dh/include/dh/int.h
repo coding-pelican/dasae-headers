@@ -133,107 +133,107 @@ $inline_always isize isize_shr(isize x, u32 shift);
 
 /// Unsigned integer overflow checking functions
 
-$inline_always Opt$u8 u8_addChkd(u8 lhs, u8 rhs);
-$inline_always Opt$u8 u8_subChkd(u8 lhs, u8 rhs);
-$inline_always Opt$u8 u8_mulChkd(u8 lhs, u8 rhs);
-$inline_always Opt$u8 u8_divChkd(u8 lhs, u8 rhs);
-$inline_always Opt$u8 u8_modChkd(u8 lhs, u8 rhs);
-$inline_always Opt$u8 u8_powChkd(u8 base, u32 exp);
-$inline_always Opt$u8 u8_shlChkd(u8 x, u32 shift);
-$inline_always Opt$u8 u8_shrChkd(u8 x, u32 shift);
+$inline_always O$u8 u8_addChkd(u8 lhs, u8 rhs);
+$inline_always O$u8 u8_subChkd(u8 lhs, u8 rhs);
+$inline_always O$u8 u8_mulChkd(u8 lhs, u8 rhs);
+$inline_always O$u8 u8_divChkd(u8 lhs, u8 rhs);
+$inline_always O$u8 u8_modChkd(u8 lhs, u8 rhs);
+$inline_always O$u8 u8_powChkd(u8 base, u32 exp);
+$inline_always O$u8 u8_shlChkd(u8 x, u32 shift);
+$inline_always O$u8 u8_shrChkd(u8 x, u32 shift);
 
-$inline_always Opt$u16 u16_addChkd(u16 lhs, u16 rhs);
-$inline_always Opt$u16 u16_subChkd(u16 lhs, u16 rhs);
-$inline_always Opt$u16 u16_mulChkd(u16 lhs, u16 rhs);
-$inline_always Opt$u16 u16_divChkd(u16 lhs, u16 rhs);
-$inline_always Opt$u16 u16_modChkd(u16 lhs, u16 rhs);
-$inline_always Opt$u16 u16_powChkd(u16 base, u32 exp);
-$inline_always Opt$u16 u16_shlChkd(u16 x, u32 shift);
-$inline_always Opt$u16 u16_shrChkd(u16 x, u32 shift);
+$inline_always O$u16 u16_addChkd(u16 lhs, u16 rhs);
+$inline_always O$u16 u16_subChkd(u16 lhs, u16 rhs);
+$inline_always O$u16 u16_mulChkd(u16 lhs, u16 rhs);
+$inline_always O$u16 u16_divChkd(u16 lhs, u16 rhs);
+$inline_always O$u16 u16_modChkd(u16 lhs, u16 rhs);
+$inline_always O$u16 u16_powChkd(u16 base, u32 exp);
+$inline_always O$u16 u16_shlChkd(u16 x, u32 shift);
+$inline_always O$u16 u16_shrChkd(u16 x, u32 shift);
 
-$inline_always Opt$u32 u32_addChkd(u32 lhs, u32 rhs);
-$inline_always Opt$u32 u32_subChkd(u32 lhs, u32 rhs);
-$inline_always Opt$u32 u32_mulChkd(u32 lhs, u32 rhs);
-$inline_always Opt$u32 u32_divChkd(u32 lhs, u32 rhs);
-$inline_always Opt$u32 u32_modChkd(u32 lhs, u32 rhs);
-$inline_always Opt$u32 u32_powChkd(u32 base, u32 exp);
-$inline_always Opt$u32 u32_shlChkd(u32 x, u32 shift);
-$inline_always Opt$u32 u32_shrChkd(u32 x, u32 shift);
+$inline_always O$u32 u32_addChkd(u32 lhs, u32 rhs);
+$inline_always O$u32 u32_subChkd(u32 lhs, u32 rhs);
+$inline_always O$u32 u32_mulChkd(u32 lhs, u32 rhs);
+$inline_always O$u32 u32_divChkd(u32 lhs, u32 rhs);
+$inline_always O$u32 u32_modChkd(u32 lhs, u32 rhs);
+$inline_always O$u32 u32_powChkd(u32 base, u32 exp);
+$inline_always O$u32 u32_shlChkd(u32 x, u32 shift);
+$inline_always O$u32 u32_shrChkd(u32 x, u32 shift);
 
-$inline_always Opt$u64 u64_addChkd(u64 lhs, u64 rhs);
-$inline_always Opt$u64 u64_subChkd(u64 lhs, u64 rhs);
-$inline_always Opt$u64 u64_mulChkd(u64 lhs, u64 rhs);
-$inline_always Opt$u64 u64_divChkd(u64 lhs, u64 rhs);
-$inline_always Opt$u64 u64_modChkd(u64 lhs, u64 rhs);
-$inline_always Opt$u64 u64_powChkd(u64 base, u32 exp);
-$inline_always Opt$u64 u64_shlChkd(u64 x, u32 shift);
-$inline_always Opt$u64 u64_shrChkd(u64 x, u32 shift);
+$inline_always O$u64 u64_addChkd(u64 lhs, u64 rhs);
+$inline_always O$u64 u64_subChkd(u64 lhs, u64 rhs);
+$inline_always O$u64 u64_mulChkd(u64 lhs, u64 rhs);
+$inline_always O$u64 u64_divChkd(u64 lhs, u64 rhs);
+$inline_always O$u64 u64_modChkd(u64 lhs, u64 rhs);
+$inline_always O$u64 u64_powChkd(u64 base, u32 exp);
+$inline_always O$u64 u64_shlChkd(u64 x, u32 shift);
+$inline_always O$u64 u64_shrChkd(u64 x, u32 shift);
 
-$inline_always Opt$usize usize_addChkd(usize lhs, usize rhs);
-$inline_always Opt$usize usize_subChkd(usize lhs, usize rhs);
-$inline_always Opt$usize usize_mulChkd(usize lhs, usize rhs);
-$inline_always Opt$usize usize_divChkd(usize lhs, usize rhs);
-$inline_always Opt$usize usize_modChkd(usize lhs, usize rhs);
-$inline_always Opt$usize usize_powChkd(usize base, u32 exp);
-$inline_always Opt$usize usize_shlChkd(usize x, u32 shift);
-$inline_always Opt$usize usize_shrChkd(usize x, u32 shift);
+$inline_always O$usize usize_addChkd(usize lhs, usize rhs);
+$inline_always O$usize usize_subChkd(usize lhs, usize rhs);
+$inline_always O$usize usize_mulChkd(usize lhs, usize rhs);
+$inline_always O$usize usize_divChkd(usize lhs, usize rhs);
+$inline_always O$usize usize_modChkd(usize lhs, usize rhs);
+$inline_always O$usize usize_powChkd(usize base, u32 exp);
+$inline_always O$usize usize_shlChkd(usize x, u32 shift);
+$inline_always O$usize usize_shrChkd(usize x, u32 shift);
 
 /// Signed integer overflow checking functions
 
-$inline_always Opt$i8 i8_addChkd(i8 lhs, i8 rhs);
-$inline_always Opt$i8 i8_subChkd(i8 lhs, i8 rhs);
-$inline_always Opt$i8 i8_mulChkd(i8 lhs, i8 rhs);
-$inline_always Opt$i8 i8_divChkd(i8 lhs, i8 rhs);
-$inline_always Opt$i8 i8_modChkd(i8 lhs, i8 rhs);
-$inline_always Opt$i8 i8_negChkd(i8 x);
-$inline_always Opt$i8 i8_absChkd(i8 x);
-$inline_always Opt$i8 i8_powChkd(i8 base, u32 exp);
-$inline_always Opt$i8 i8_shlChkd(i8 x, u32 shift);
-$inline_always Opt$i8 i8_shrChkd(i8 x, u32 shift);
+$inline_always O$i8 i8_addChkd(i8 lhs, i8 rhs);
+$inline_always O$i8 i8_subChkd(i8 lhs, i8 rhs);
+$inline_always O$i8 i8_mulChkd(i8 lhs, i8 rhs);
+$inline_always O$i8 i8_divChkd(i8 lhs, i8 rhs);
+$inline_always O$i8 i8_modChkd(i8 lhs, i8 rhs);
+$inline_always O$i8 i8_negChkd(i8 x);
+$inline_always O$i8 i8_absChkd(i8 x);
+$inline_always O$i8 i8_powChkd(i8 base, u32 exp);
+$inline_always O$i8 i8_shlChkd(i8 x, u32 shift);
+$inline_always O$i8 i8_shrChkd(i8 x, u32 shift);
 
-$inline_always Opt$i16 i16_addChkd(i16 lhs, i16 rhs);
-$inline_always Opt$i16 i16_subChkd(i16 lhs, i16 rhs);
-$inline_always Opt$i16 i16_mulChkd(i16 lhs, i16 rhs);
-$inline_always Opt$i16 i16_divChkd(i16 lhs, i16 rhs);
-$inline_always Opt$i16 i16_modChkd(i16 lhs, i16 rhs);
-$inline_always Opt$i16 i16_negChkd(i16 x);
-$inline_always Opt$i16 i16_absChkd(i16 x);
-$inline_always Opt$i16 i16_powChkd(i16 base, u32 exp);
-$inline_always Opt$i16 i16_shlChkd(i16 x, u32 shift);
-$inline_always Opt$i16 i16_shrChkd(i16 x, u32 shift);
+$inline_always O$i16 i16_addChkd(i16 lhs, i16 rhs);
+$inline_always O$i16 i16_subChkd(i16 lhs, i16 rhs);
+$inline_always O$i16 i16_mulChkd(i16 lhs, i16 rhs);
+$inline_always O$i16 i16_divChkd(i16 lhs, i16 rhs);
+$inline_always O$i16 i16_modChkd(i16 lhs, i16 rhs);
+$inline_always O$i16 i16_negChkd(i16 x);
+$inline_always O$i16 i16_absChkd(i16 x);
+$inline_always O$i16 i16_powChkd(i16 base, u32 exp);
+$inline_always O$i16 i16_shlChkd(i16 x, u32 shift);
+$inline_always O$i16 i16_shrChkd(i16 x, u32 shift);
 
-$inline_always Opt$i32 i32_addChkd(i32 lhs, i32 rhs);
-$inline_always Opt$i32 i32_subChkd(i32 lhs, i32 rhs);
-$inline_always Opt$i32 i32_mulChkd(i32 lhs, i32 rhs);
-$inline_always Opt$i32 i32_divChkd(i32 lhs, i32 rhs);
-$inline_always Opt$i32 i32_modChkd(i32 lhs, i32 rhs);
-$inline_always Opt$i32 i32_negChkd(i32 x);
-$inline_always Opt$i32 i32_absChkd(i32 x);
-$inline_always Opt$i32 i32_powChkd(i32 base, u32 exp);
-$inline_always Opt$i32 i32_shlChkd(i32 x, u32 shift);
-$inline_always Opt$i32 i32_shrChkd(i32 x, u32 shift);
+$inline_always O$i32 i32_addChkd(i32 lhs, i32 rhs);
+$inline_always O$i32 i32_subChkd(i32 lhs, i32 rhs);
+$inline_always O$i32 i32_mulChkd(i32 lhs, i32 rhs);
+$inline_always O$i32 i32_divChkd(i32 lhs, i32 rhs);
+$inline_always O$i32 i32_modChkd(i32 lhs, i32 rhs);
+$inline_always O$i32 i32_negChkd(i32 x);
+$inline_always O$i32 i32_absChkd(i32 x);
+$inline_always O$i32 i32_powChkd(i32 base, u32 exp);
+$inline_always O$i32 i32_shlChkd(i32 x, u32 shift);
+$inline_always O$i32 i32_shrChkd(i32 x, u32 shift);
 
-$inline_always Opt$i64 i64_addChkd(i64 lhs, i64 rhs);
-$inline_always Opt$i64 i64_subChkd(i64 lhs, i64 rhs);
-$inline_always Opt$i64 i64_mulChkd(i64 lhs, i64 rhs);
-$inline_always Opt$i64 i64_divChkd(i64 lhs, i64 rhs);
-$inline_always Opt$i64 i64_modChkd(i64 lhs, i64 rhs);
-$inline_always Opt$i64 i64_negChkd(i64 x);
-$inline_always Opt$i64 i64_absChkd(i64 x);
-$inline_always Opt$i64 i64_powChkd(i64 base, u32 exp);
-$inline_always Opt$i64 i64_shlChkd(i64 x, u32 shift);
-$inline_always Opt$i64 i64_shrChkd(i64 x, u32 shift);
+$inline_always O$i64 i64_addChkd(i64 lhs, i64 rhs);
+$inline_always O$i64 i64_subChkd(i64 lhs, i64 rhs);
+$inline_always O$i64 i64_mulChkd(i64 lhs, i64 rhs);
+$inline_always O$i64 i64_divChkd(i64 lhs, i64 rhs);
+$inline_always O$i64 i64_modChkd(i64 lhs, i64 rhs);
+$inline_always O$i64 i64_negChkd(i64 x);
+$inline_always O$i64 i64_absChkd(i64 x);
+$inline_always O$i64 i64_powChkd(i64 base, u32 exp);
+$inline_always O$i64 i64_shlChkd(i64 x, u32 shift);
+$inline_always O$i64 i64_shrChkd(i64 x, u32 shift);
 
-$inline_always Opt$isize isize_addChkd(isize lhs, isize rhs);
-$inline_always Opt$isize isize_subChkd(isize lhs, isize rhs);
-$inline_always Opt$isize isize_mulChkd(isize lhs, isize rhs);
-$inline_always Opt$isize isize_divChkd(isize lhs, isize rhs);
-$inline_always Opt$isize isize_modChkd(isize lhs, isize rhs);
-$inline_always Opt$isize isize_negChkd(isize x);
-$inline_always Opt$isize isize_absChkd(isize x);
-$inline_always Opt$isize isize_powChkd(isize base, u32 exp);
-$inline_always Opt$isize isize_shlChkd(isize x, u32 shift);
-$inline_always Opt$isize isize_shrChkd(isize x, u32 shift);
+$inline_always O$isize isize_addChkd(isize lhs, isize rhs);
+$inline_always O$isize isize_subChkd(isize lhs, isize rhs);
+$inline_always O$isize isize_mulChkd(isize lhs, isize rhs);
+$inline_always O$isize isize_divChkd(isize lhs, isize rhs);
+$inline_always O$isize isize_modChkd(isize lhs, isize rhs);
+$inline_always O$isize isize_negChkd(isize x);
+$inline_always O$isize isize_absChkd(isize x);
+$inline_always O$isize isize_powChkd(isize base, u32 exp);
+$inline_always O$isize isize_shlChkd(isize x, u32 shift);
+$inline_always O$isize isize_shrChkd(isize x, u32 shift);
 
 /// Unsigned integer wrapping arithmetic functions
 
@@ -723,471 +723,471 @@ $inline_always isize isize_shr(isize x, u32 shift) {
 
 /// Unsigned integer overflow checking implementations
 
-$inline_always Opt$u8 u8_addChkd(u8 lhs, u8 rhs) {
+$inline_always O$u8 u8_addChkd(u8 lhs, u8 rhs) {
     u8 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$u8); }
-    return some$(Opt$u8, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(u8); }
+    return some$((u8)(result));
 }
-$inline_always Opt$u8 u8_subChkd(u8 lhs, u8 rhs) {
+$inline_always O$u8 u8_subChkd(u8 lhs, u8 rhs) {
     u8 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$u8); }
-    return some$(Opt$u8, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(u8); }
+    return some$((u8)(result));
 }
-$inline_always Opt$u8 u8_mulChkd(u8 lhs, u8 rhs) {
+$inline_always O$u8 u8_mulChkd(u8 lhs, u8 rhs) {
     u8 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$u8); }
-    return some$(Opt$u8, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(u8); }
+    return some$((u8)(result));
 }
-$inline_always Opt$u8 u8_divChkd(u8 lhs, u8 rhs) {
-    if (rhs == 0) { return none$(Opt$u8); }
-    return some$(Opt$u8, lhs / rhs);
+$inline_always O$u8 u8_divChkd(u8 lhs, u8 rhs) {
+    if (rhs == 0) { return none$(u8); }
+    return some$((u8)(lhs / rhs));
 }
-$inline_always Opt$u8 u8_modChkd(u8 lhs, u8 rhs) {
-    if (rhs == 0) { return none$(Opt$u8); }
-    return some$(Opt$u8, lhs % rhs);
+$inline_always O$u8 u8_modChkd(u8 lhs, u8 rhs) {
+    if (rhs == 0) { return none$(u8); }
+    return some$((u8)(lhs % rhs));
 }
-$inline_always Opt$u8 u8_powChkd(u8 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$u8, 1); }
+$inline_always O$u8 u8_powChkd(u8 base, u32 exp) {
+    if (exp == 0) { return some$((u8)(1)); }
     u8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$u8); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(u8); }
     }
-    return some$(Opt$u8, result);
+    return some$((u8)(result));
 }
-$inline_always Opt$u8 u8_shlChkd(u8 x, u32 shift) {
-    if (shift >= 8) { return none$(Opt$u8); }
-    if (shift == 0) { return some$(Opt$u8, x); }
-    if (x > (u8_limit_max >> shift)) { return none$(Opt$u8); }
-    return some$(Opt$u8, as$((u8)(x << shift)));
+$inline_always O$u8 u8_shlChkd(u8 x, u32 shift) {
+    if (shift >= 8) { return none$(u8); }
+    if (shift == 0) { return some$((u8)(x)); }
+    if (x > (u8_limit_max >> shift)) { return none$(u8); }
+    return some$((u8)(as$((u8)(x << shift))));
 }
-$inline_always Opt$u8 u8_shrChkd(u8 x, u32 shift) {
-    if (shift >= 8) { return none$(Opt$u8); }
-    return some$(Opt$u8, as$((u8)(x >> shift)));
+$inline_always O$u8 u8_shrChkd(u8 x, u32 shift) {
+    if (shift >= 8) { return none$(u8); }
+    return some$((u8)(as$((u8)(x >> shift))));
 }
 
-$inline_always Opt$u16 u16_addChkd(u16 lhs, u16 rhs) {
+$inline_always O$u16 u16_addChkd(u16 lhs, u16 rhs) {
     u16 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$u16); }
-    return some$(Opt$u16, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(u16); }
+    return some$((u16)(result));
 }
-$inline_always Opt$u16 u16_subChkd(u16 lhs, u16 rhs) {
+$inline_always O$u16 u16_subChkd(u16 lhs, u16 rhs) {
     u16 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$u16); }
-    return some$(Opt$u16, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(u16); }
+    return some$((u16)(result));
 }
-$inline_always Opt$u16 u16_mulChkd(u16 lhs, u16 rhs) {
+$inline_always O$u16 u16_mulChkd(u16 lhs, u16 rhs) {
     u16 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$u16); }
-    return some$(Opt$u16, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(u16); }
+    return some$((u16)(result));
 }
-$inline_always Opt$u16 u16_divChkd(u16 lhs, u16 rhs) {
-    if (rhs == 0) { return none$(Opt$u16); }
-    return some$(Opt$u16, lhs / rhs);
+$inline_always O$u16 u16_divChkd(u16 lhs, u16 rhs) {
+    if (rhs == 0) { return none$(u16); }
+    return some$((u16)(lhs / rhs));
 }
-$inline_always Opt$u16 u16_modChkd(u16 lhs, u16 rhs) {
-    if (rhs == 0) { return none$(Opt$u16); }
-    return some$(Opt$u16, lhs % rhs);
+$inline_always O$u16 u16_modChkd(u16 lhs, u16 rhs) {
+    if (rhs == 0) { return none$(u16); }
+    return some$((u16)(lhs % rhs));
 }
-$inline_always Opt$u16 u16_powChkd(u16 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$u16, 1); }
+$inline_always O$u16 u16_powChkd(u16 base, u32 exp) {
+    if (exp == 0) { return some$((u16)(1)); }
     u16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$u16); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(u16); }
     }
-    return some$(Opt$u16, result);
+    return some$((u16)(result));
 }
-$inline_always Opt$u16 u16_shlChkd(u16 x, u32 shift) {
-    if (shift >= 16) { return none$(Opt$u16); }
-    if (shift == 0) { return some$(Opt$u16, x); }
-    if (x > (u16_limit_max >> shift)) { return none$(Opt$u16); }
-    return some$(Opt$u16, as$((u16)(x << shift)));
+$inline_always O$u16 u16_shlChkd(u16 x, u32 shift) {
+    if (shift >= 16) { return none$(u16); }
+    if (shift == 0) { return some$((u16)(x)); }
+    if (x > (u16_limit_max >> shift)) { return none$(u16); }
+    return some$((u16)(as$((u16)(x << shift))));
 }
-$inline_always Opt$u16 u16_shrChkd(u16 x, u32 shift) {
-    if (shift >= 16) { return none$(Opt$u16); }
-    return some$(Opt$u16, as$((u16)(x >> shift)));
+$inline_always O$u16 u16_shrChkd(u16 x, u32 shift) {
+    if (shift >= 16) { return none$(u16); }
+    return some$((u16)(as$((u16)(x >> shift))));
 }
 
-$inline_always Opt$u32 u32_addChkd(u32 lhs, u32 rhs) {
+$inline_always O$u32 u32_addChkd(u32 lhs, u32 rhs) {
     u32 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$u32); }
-    return some$(Opt$u32, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(u32); }
+    return some$((u32)(result));
 }
-$inline_always Opt$u32 u32_subChkd(u32 lhs, u32 rhs) {
+$inline_always O$u32 u32_subChkd(u32 lhs, u32 rhs) {
     u32 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$u32); }
-    return some$(Opt$u32, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(u32); }
+    return some$((u32)(result));
 }
-$inline_always Opt$u32 u32_mulChkd(u32 lhs, u32 rhs) {
+$inline_always O$u32 u32_mulChkd(u32 lhs, u32 rhs) {
     u32 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$u32); }
-    return some$(Opt$u32, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(u32); }
+    return some$((u32)(result));
 }
-$inline_always Opt$u32 u32_divChkd(u32 lhs, u32 rhs) {
-    if (rhs == 0) { return none$(Opt$u32); }
-    return some$(Opt$u32, lhs / rhs);
+$inline_always O$u32 u32_divChkd(u32 lhs, u32 rhs) {
+    if (rhs == 0) { return none$(u32); }
+    return some$((u32)(lhs / rhs));
 }
-$inline_always Opt$u32 u32_modChkd(u32 lhs, u32 rhs) {
-    if (rhs == 0) { return none$(Opt$u32); }
-    return some$(Opt$u32, lhs % rhs);
+$inline_always O$u32 u32_modChkd(u32 lhs, u32 rhs) {
+    if (rhs == 0) { return none$(u32); }
+    return some$((u32)(lhs % rhs));
 }
-$inline_always Opt$u32 u32_powChkd(u32 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$u32, 1); }
+$inline_always O$u32 u32_powChkd(u32 base, u32 exp) {
+    if (exp == 0) { return some$((u32)(1)); }
     u32 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$u32); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(u32); }
     }
-    return some$(Opt$u32, result);
+    return some$((u32)(result));
 }
-$inline_always Opt$u32 u32_shlChkd(u32 x, u32 shift) {
-    if (shift >= 32) { return none$(Opt$u32); }
-    if (shift == 0) { return some$(Opt$u32, x); }
-    if (x > (u32_limit_max >> shift)) { return none$(Opt$u32); }
-    return some$(Opt$u32, x << shift);
+$inline_always O$u32 u32_shlChkd(u32 x, u32 shift) {
+    if (shift >= 32) { return none$(u32); }
+    if (shift == 0) { return some$((u32)(x)); }
+    if (x > (u32_limit_max >> shift)) { return none$(u32); }
+    return some$((u32)(x << shift));
 }
-$inline_always Opt$u32 u32_shrChkd(u32 x, u32 shift) {
-    if (shift >= 32) { return none$(Opt$u32); }
-    return some$(Opt$u32, x >> shift);
+$inline_always O$u32 u32_shrChkd(u32 x, u32 shift) {
+    if (shift >= 32) { return none$(u32); }
+    return some$((u32)(x >> shift));
 }
 
-$inline_always Opt$u64 u64_addChkd(u64 lhs, u64 rhs) {
+$inline_always O$u64 u64_addChkd(u64 lhs, u64 rhs) {
     u64 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$u64); }
-    return some$(Opt$u64, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(u64); }
+    return some$((u64)(result));
 }
-$inline_always Opt$u64 u64_subChkd(u64 lhs, u64 rhs) {
+$inline_always O$u64 u64_subChkd(u64 lhs, u64 rhs) {
     u64 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$u64); }
-    return some$(Opt$u64, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(u64); }
+    return some$((u64)(result));
 }
-$inline_always Opt$u64 u64_mulChkd(u64 lhs, u64 rhs) {
+$inline_always O$u64 u64_mulChkd(u64 lhs, u64 rhs) {
     u64 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$u64); }
-    return some$(Opt$u64, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(u64); }
+    return some$((u64)(result));
 }
-$inline_always Opt$u64 u64_divChkd(u64 lhs, u64 rhs) {
-    if (rhs == 0) { return none$(Opt$u64); }
-    return some$(Opt$u64, lhs / rhs);
+$inline_always O$u64 u64_divChkd(u64 lhs, u64 rhs) {
+    if (rhs == 0) { return none$(u64); }
+    return some$((u64)(lhs / rhs));
 }
-$inline_always Opt$u64 u64_modChkd(u64 lhs, u64 rhs) {
-    if (rhs == 0) { return none$(Opt$u64); }
-    return some$(Opt$u64, lhs % rhs);
+$inline_always O$u64 u64_modChkd(u64 lhs, u64 rhs) {
+    if (rhs == 0) { return none$(u64); }
+    return some$((u64)(lhs % rhs));
 }
-$inline_always Opt$u64 u64_powChkd(u64 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$u64, 1); }
+$inline_always O$u64 u64_powChkd(u64 base, u32 exp) {
+    if (exp == 0) { return some$((u64)(1)); }
     u64 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$u64); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(u64); }
     }
-    return some$(Opt$u64, result);
+    return some$((u64)(result));
 }
-$inline_always Opt$u64 u64_shlChkd(u64 x, u32 shift) {
-    if (shift >= 64) { return none$(Opt$u64); }
-    if (shift == 0) { return some$(Opt$u64, x); }
-    if (x > (u64_limit_max >> shift)) { return none$(Opt$u64); }
-    return some$(Opt$u64, x << shift);
+$inline_always O$u64 u64_shlChkd(u64 x, u32 shift) {
+    if (shift >= 64) { return none$(u64); }
+    if (shift == 0) { return some$((u64)(x)); }
+    if (x > (u64_limit_max >> shift)) { return none$(u64); }
+    return some$((u64)(x << shift));
 }
-$inline_always Opt$u64 u64_shrChkd(u64 x, u32 shift) {
-    if (shift >= 64) { return none$(Opt$u64); }
-    return some$(Opt$u64, x >> shift);
+$inline_always O$u64 u64_shrChkd(u64 x, u32 shift) {
+    if (shift >= 64) { return none$(u64); }
+    return some$((u64)(x >> shift));
 }
 
-$inline_always Opt$usize usize_addChkd(usize lhs, usize rhs) {
+$inline_always O$usize usize_addChkd(usize lhs, usize rhs) {
     usize result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$usize); }
-    return some$(Opt$usize, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(usize); }
+    return some$((usize)(result));
 }
-$inline_always Opt$usize usize_subChkd(usize lhs, usize rhs) {
+$inline_always O$usize usize_subChkd(usize lhs, usize rhs) {
     usize result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$usize); }
-    return some$(Opt$usize, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(usize); }
+    return some$((usize)(result));
 }
-$inline_always Opt$usize usize_mulChkd(usize lhs, usize rhs) {
+$inline_always O$usize usize_mulChkd(usize lhs, usize rhs) {
     usize result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$usize); }
-    return some$(Opt$usize, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(usize); }
+    return some$((usize)(result));
 }
-$inline_always Opt$usize usize_divChkd(usize lhs, usize rhs) {
-    if (rhs == 0) { return none$(Opt$usize); }
-    return some$(Opt$usize, lhs / rhs);
+$inline_always O$usize usize_divChkd(usize lhs, usize rhs) {
+    if (rhs == 0) { return none$(usize); }
+    return some$((usize)(lhs / rhs));
 }
-$inline_always Opt$usize usize_modChkd(usize lhs, usize rhs) {
-    if (rhs == 0) { return none$(Opt$usize); }
-    return some$(Opt$usize, lhs % rhs);
+$inline_always O$usize usize_modChkd(usize lhs, usize rhs) {
+    if (rhs == 0) { return none$(usize); }
+    return some$((usize)(lhs % rhs));
 }
-$inline_always Opt$usize usize_powChkd(usize base, u32 exp) {
-    if (exp == 0) { return some$(Opt$usize, 1); }
+$inline_always O$usize usize_powChkd(usize base, u32 exp) {
+    if (exp == 0) { return some$((usize)(1)); }
     usize result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$usize); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(usize); }
     }
-    return some$(Opt$usize, result);
+    return some$((usize)(result));
 }
-$inline_always Opt$usize usize_shlChkd(usize x, u32 shift) {
-    if (shift >= (sizeof(usize) * 8)) { return none$(Opt$usize); }
-    if (shift == 0) { return some$(Opt$usize, x); }
-    if (x > (usize_limit_max >> shift)) { return none$(Opt$usize); }
-    return some$(Opt$usize, x << shift);
+$inline_always O$usize usize_shlChkd(usize x, u32 shift) {
+    if (shift >= (sizeof(usize) * 8)) { return none$(usize); }
+    if (shift == 0) { return some$((usize)(x)); }
+    if (x > (usize_limit_max >> shift)) { return none$(usize); }
+    return some$((usize)(x << shift));
 }
-$inline_always Opt$usize usize_shrChkd(usize x, u32 shift) {
-    if (shift >= (sizeof(usize) * 8)) { return none$(Opt$usize); }
-    return some$(Opt$usize, x >> shift);
+$inline_always O$usize usize_shrChkd(usize x, u32 shift) {
+    if (shift >= (sizeof(usize) * 8)) { return none$(usize); }
+    return some$((usize)(x >> shift));
 }
 
 /// Signed integer overflow checking implementations
 
-$inline_always Opt$i8 i8_addChkd(i8 lhs, i8 rhs) {
+$inline_always O$i8 i8_addChkd(i8 lhs, i8 rhs) {
     i8 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$i8); }
-    return some$(Opt$i8, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(i8); }
+    return some$((i8)(result));
 }
-$inline_always Opt$i8 i8_subChkd(i8 lhs, i8 rhs) {
+$inline_always O$i8 i8_subChkd(i8 lhs, i8 rhs) {
     i8 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$i8); }
-    return some$(Opt$i8, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(i8); }
+    return some$((i8)(result));
 }
-$inline_always Opt$i8 i8_mulChkd(i8 lhs, i8 rhs) {
+$inline_always O$i8 i8_mulChkd(i8 lhs, i8 rhs) {
     i8 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$i8); }
-    return some$(Opt$i8, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(i8); }
+    return some$((i8)(result));
 }
-$inline_always Opt$i8 i8_divChkd(i8 lhs, i8 rhs) {
-    if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)(lhs / rhs)));
+$inline_always O$i8 i8_divChkd(i8 lhs, i8 rhs) {
+    if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(i8); }
+    return some$((i8)(as$((i8)(lhs / rhs))));
 }
-$inline_always Opt$i8 i8_modChkd(i8 lhs, i8 rhs) {
-    if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)(lhs % rhs)));
+$inline_always O$i8 i8_modChkd(i8 lhs, i8 rhs) {
+    if (rhs == 0 || (lhs == i8_limit_min && rhs == -1)) { return none$(i8); }
+    return some$((i8)(as$((i8)(lhs % rhs))));
 }
-$inline_always Opt$i8 i8_negChkd(i8 x) {
-    if (x == i8_limit_min) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)(-x)));
+$inline_always O$i8 i8_negChkd(i8 x) {
+    if (x == i8_limit_min) { return none$(i8); }
+    return some$((i8)(as$((i8)(-x))));
 }
-$inline_always Opt$i8 i8_absChkd(i8 x) {
-    if (x == i8_limit_min) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)((x < 0) ? -x : x)));
+$inline_always O$i8 i8_absChkd(i8 x) {
+    if (x == i8_limit_min) { return none$(i8); }
+    return some$((i8)(as$((i8)((x < 0) ? -x : x))));
 }
-$inline_always Opt$i8 i8_powChkd(i8 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$i8, 1); }
+$inline_always O$i8 i8_powChkd(i8 base, u32 exp) {
+    if (exp == 0) { return some$((i8)(1)); }
     i8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$i8); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(i8); }
     }
-    return some$(Opt$i8, result);
+    return some$((i8)(result));
 }
-$inline_always Opt$i8 i8_shlChkd(i8 x, u32 shift) {
-    if (shift >= 8) { return none$(Opt$i8); }
-    if (shift == 0) { return some$(Opt$i8, x); }
-    if (x < 0) { return none$(Opt$i8); }
-    if (x > (i8_limit_max >> shift)) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)(x << shift)));
+$inline_always O$i8 i8_shlChkd(i8 x, u32 shift) {
+    if (shift >= 8) { return none$(i8); }
+    if (shift == 0) { return some$((i8)(x)); }
+    if (x < 0) { return none$(i8); }
+    if (x > (i8_limit_max >> shift)) { return none$(i8); }
+    return some$((i8)(as$((i8)(x << shift))));
 }
-$inline_always Opt$i8 i8_shrChkd(i8 x, u32 shift) {
-    if (shift >= 8) { return none$(Opt$i8); }
-    return some$(Opt$i8, as$((i8)(x >> shift)));
+$inline_always O$i8 i8_shrChkd(i8 x, u32 shift) {
+    if (shift >= 8) { return none$(i8); }
+    return some$((i8)(as$((i8)(x >> shift))));
 }
 
-$inline_always Opt$i16 i16_addChkd(i16 lhs, i16 rhs) {
+$inline_always O$i16 i16_addChkd(i16 lhs, i16 rhs) {
     i16 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$i16); }
-    return some$(Opt$i16, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(i16); }
+    return some$((i16)(result));
 }
-$inline_always Opt$i16 i16_subChkd(i16 lhs, i16 rhs) {
+$inline_always O$i16 i16_subChkd(i16 lhs, i16 rhs) {
     i16 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$i16); }
-    return some$(Opt$i16, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(i16); }
+    return some$((i16)(result));
 }
-$inline_always Opt$i16 i16_mulChkd(i16 lhs, i16 rhs) {
+$inline_always O$i16 i16_mulChkd(i16 lhs, i16 rhs) {
     i16 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$i16); }
-    return some$(Opt$i16, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(i16); }
+    return some$((i16)(result));
 }
-$inline_always Opt$i16 i16_divChkd(i16 lhs, i16 rhs) {
-    if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)(lhs / rhs)));
+$inline_always O$i16 i16_divChkd(i16 lhs, i16 rhs) {
+    if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(i16); }
+    return some$((i16)(as$((i16)(lhs / rhs))));
 }
-$inline_always Opt$i16 i16_modChkd(i16 lhs, i16 rhs) {
-    if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)(lhs % rhs)));
+$inline_always O$i16 i16_modChkd(i16 lhs, i16 rhs) {
+    if (rhs == 0 || (lhs == i16_limit_min && rhs == -1)) { return none$(i16); }
+    return some$((i16)(as$((i16)(lhs % rhs))));
 }
-$inline_always Opt$i16 i16_negChkd(i16 x) {
-    if (x == i16_limit_min) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)(-x)));
+$inline_always O$i16 i16_negChkd(i16 x) {
+    if (x == i16_limit_min) { return none$(i16); }
+    return some$((i16)(as$((i16)(-x))));
 }
-$inline_always Opt$i16 i16_absChkd(i16 x) {
-    if (x == i16_limit_min) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)((x < 0) ? -x : x)));
+$inline_always O$i16 i16_absChkd(i16 x) {
+    if (x == i16_limit_min) { return none$(i16); }
+    return some$((i16)(as$((i16)((x < 0) ? -x : x))));
 }
-$inline_always Opt$i16 i16_powChkd(i16 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$i16, 1); }
+$inline_always O$i16 i16_powChkd(i16 base, u32 exp) {
+    if (exp == 0) { return some$((i16)(1)); }
     i16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$i16); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(i16); }
     }
-    return some$(Opt$i16, result);
+    return some$((i16)(result));
 }
-$inline_always Opt$i16 i16_shlChkd(i16 x, u32 shift) {
-    if (shift >= 16) { return none$(Opt$i16); }
-    if (shift == 0) { return some$(Opt$i16, x); }
-    if (x < 0) { return none$(Opt$i16); }
-    if (x > (i16_limit_max >> shift)) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)(x << shift)));
+$inline_always O$i16 i16_shlChkd(i16 x, u32 shift) {
+    if (shift >= 16) { return none$(i16); }
+    if (shift == 0) { return some$((i16)(x)); }
+    if (x < 0) { return none$(i16); }
+    if (x > (i16_limit_max >> shift)) { return none$(i16); }
+    return some$((i16)(as$((i16)(x << shift))));
 }
-$inline_always Opt$i16 i16_shrChkd(i16 x, u32 shift) {
-    if (shift >= 16) { return none$(Opt$i16); }
-    return some$(Opt$i16, as$((i16)(x >> shift)));
+$inline_always O$i16 i16_shrChkd(i16 x, u32 shift) {
+    if (shift >= 16) { return none$(i16); }
+    return some$((i16)(as$((i16)(x >> shift))));
 }
 
-$inline_always Opt$i32 i32_addChkd(i32 lhs, i32 rhs) {
+$inline_always O$i32 i32_addChkd(i32 lhs, i32 rhs) {
     i32 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$i32); }
-    return some$(Opt$i32, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(i32); }
+    return some$((i32)(result));
 }
-$inline_always Opt$i32 i32_subChkd(i32 lhs, i32 rhs) {
+$inline_always O$i32 i32_subChkd(i32 lhs, i32 rhs) {
     i32 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$i32); }
-    return some$(Opt$i32, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(i32); }
+    return some$((i32)(result));
 }
-$inline_always Opt$i32 i32_mulChkd(i32 lhs, i32 rhs) {
+$inline_always O$i32 i32_mulChkd(i32 lhs, i32 rhs) {
     i32 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$i32); }
-    return some$(Opt$i32, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(i32); }
+    return some$((i32)(result));
 }
-$inline_always Opt$i32 i32_divChkd(i32 lhs, i32 rhs) {
-    if (rhs == 0 || (lhs == i32_limit_min && rhs == -1)) { return none$(Opt$i32); }
-    return some$(Opt$i32, lhs / rhs);
+$inline_always O$i32 i32_divChkd(i32 lhs, i32 rhs) {
+    if (rhs == 0 || (lhs == i32_limit_min && rhs == -1)) { return none$(i32); }
+    return some$((i32)(lhs / rhs));
 }
-$inline_always Opt$i32 i32_modChkd(i32 lhs, i32 rhs) {
-    if (rhs == 0 || (lhs == i32_limit_min && rhs == -1)) { return none$(Opt$i32); }
-    return some$(Opt$i32, lhs % rhs);
+$inline_always O$i32 i32_modChkd(i32 lhs, i32 rhs) {
+    if (rhs == 0 || (lhs == i32_limit_min && rhs == -1)) { return none$(i32); }
+    return some$((i32)(lhs % rhs));
 }
-$inline_always Opt$i32 i32_negChkd(i32 x) {
-    if (x == i32_limit_min) { return none$(Opt$i32); }
-    return some$(Opt$i32, -x);
+$inline_always O$i32 i32_negChkd(i32 x) {
+    if (x == i32_limit_min) { return none$(i32); }
+    return some$((i32)(-x));
 }
-$inline_always Opt$i32 i32_absChkd(i32 x) {
-    if (x == i32_limit_min) { return none$(Opt$i32); }
-    return some$(Opt$i32, (x < 0) ? -x : x);
+$inline_always O$i32 i32_absChkd(i32 x) {
+    if (x == i32_limit_min) { return none$(i32); }
+    return some$((i32)((x < 0) ? -x : x));
 }
-$inline_always Opt$i32 i32_powChkd(i32 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$i32, 1); }
+$inline_always O$i32 i32_powChkd(i32 base, u32 exp) {
+    if (exp == 0) { return some$((i32)(1)); }
     i32 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$i32); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(i32); }
     }
-    return some$(Opt$i32, result);
+    return some$((i32)(result));
 }
-$inline_always Opt$i32 i32_shlChkd(i32 x, u32 shift) {
-    if (shift >= 32) { return none$(Opt$i32); }
-    if (shift == 0) { return some$(Opt$i32, x); }
-    if (x < 0) { return none$(Opt$i32); }
-    if (x > (i32_limit_max >> shift)) { return none$(Opt$i32); }
-    return some$(Opt$i32, x << shift);
+$inline_always O$i32 i32_shlChkd(i32 x, u32 shift) {
+    if (shift >= 32) { return none$(i32); }
+    if (shift == 0) { return some$((i32)(x)); }
+    if (x < 0) { return none$(i32); }
+    if (x > (i32_limit_max >> shift)) { return none$(i32); }
+    return some$((i32)(x << shift));
 }
-$inline_always Opt$i32 i32_shrChkd(i32 x, u32 shift) {
-    if (shift >= 32) { return none$(Opt$i32); }
-    return some$(Opt$i32, x >> shift);
+$inline_always O$i32 i32_shrChkd(i32 x, u32 shift) {
+    if (shift >= 32) { return none$(i32); }
+    return some$((i32)(x >> shift));
 }
 
-$inline_always Opt$i64 i64_addChkd(i64 lhs, i64 rhs) {
+$inline_always O$i64 i64_addChkd(i64 lhs, i64 rhs) {
     i64 result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$i64); }
-    return some$(Opt$i64, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(i64); }
+    return some$((i64)(result));
 }
-$inline_always Opt$i64 i64_subChkd(i64 lhs, i64 rhs) {
+$inline_always O$i64 i64_subChkd(i64 lhs, i64 rhs) {
     i64 result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$i64); }
-    return some$(Opt$i64, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(i64); }
+    return some$((i64)(result));
 }
-$inline_always Opt$i64 i64_mulChkd(i64 lhs, i64 rhs) {
+$inline_always O$i64 i64_mulChkd(i64 lhs, i64 rhs) {
     i64 result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$i64); }
-    return some$(Opt$i64, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(i64); }
+    return some$((i64)(result));
 }
-$inline_always Opt$i64 i64_divChkd(i64 lhs, i64 rhs) {
-    if (rhs == 0 || (lhs == i64_limit_min && rhs == -1)) { return none$(Opt$i64); }
-    return some$(Opt$i64, lhs / rhs);
+$inline_always O$i64 i64_divChkd(i64 lhs, i64 rhs) {
+    if (rhs == 0 || (lhs == i64_limit_min && rhs == -1)) { return none$(i64); }
+    return some$((i64)(lhs / rhs));
 }
-$inline_always Opt$i64 i64_modChkd(i64 lhs, i64 rhs) {
-    if (rhs == 0 || (lhs == i64_limit_min && rhs == -1)) { return none$(Opt$i64); }
-    return some$(Opt$i64, lhs % rhs);
+$inline_always O$i64 i64_modChkd(i64 lhs, i64 rhs) {
+    if (rhs == 0 || (lhs == i64_limit_min && rhs == -1)) { return none$(i64); }
+    return some$((i64)(lhs % rhs));
 }
-$inline_always Opt$i64 i64_negChkd(i64 x) {
-    if (x == i64_limit_min) { return none$(Opt$i64); }
-    return some$(Opt$i64, -x);
+$inline_always O$i64 i64_negChkd(i64 x) {
+    if (x == i64_limit_min) { return none$(i64); }
+    return some$((i64)(-x));
 }
-$inline_always Opt$i64 i64_absChkd(i64 x) {
-    if (x == i64_limit_min) { return none$(Opt$i64); }
-    return some$(Opt$i64, (x < 0) ? -x : x);
+$inline_always O$i64 i64_absChkd(i64 x) {
+    if (x == i64_limit_min) { return none$(i64); }
+    return some$((i64)((x < 0) ? -x : x));
 }
-$inline_always Opt$i64 i64_powChkd(i64 base, u32 exp) {
-    if (exp == 0) { return some$(Opt$i64, 1); }
+$inline_always O$i64 i64_powChkd(i64 base, u32 exp) {
+    if (exp == 0) { return some$((i64)(1)); }
     i64 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$i64); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(i64); }
     }
-    return some$(Opt$i64, result);
+    return some$((i64)(result));
 }
-$inline_always Opt$i64 i64_shlChkd(i64 x, u32 shift) {
-    if (shift >= 64) { return none$(Opt$i64); }
-    if (shift == 0) { return some$(Opt$i64, x); }
-    if (x < 0) { return none$(Opt$i64); }
-    if (x > (i64_limit_max >> shift)) { return none$(Opt$i64); }
-    return some$(Opt$i64, x << shift);
+$inline_always O$i64 i64_shlChkd(i64 x, u32 shift) {
+    if (shift >= 64) { return none$(i64); }
+    if (shift == 0) { return some$((i64)(x)); }
+    if (x < 0) { return none$(i64); }
+    if (x > (i64_limit_max >> shift)) { return none$(i64); }
+    return some$((i64)(x << shift));
 }
-$inline_always Opt$i64 i64_shrChkd(i64 x, u32 shift) {
-    if (shift >= 64) { return none$(Opt$i64); }
-    return some$(Opt$i64, x >> shift);
+$inline_always O$i64 i64_shrChkd(i64 x, u32 shift) {
+    if (shift >= 64) { return none$(i64); }
+    return some$((i64)(x >> shift));
 }
 
-$inline_always Opt$isize isize_addChkd(isize lhs, isize rhs) {
+$inline_always O$isize isize_addChkd(isize lhs, isize rhs) {
     isize result = 0;
-    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(Opt$isize); }
-    return some$(Opt$isize, result);
+    if (__builtin_add_overflow(lhs, rhs, &result)) { return none$(isize); }
+    return some$((isize)(result));
 }
-$inline_always Opt$isize isize_subChkd(isize lhs, isize rhs) {
+$inline_always O$isize isize_subChkd(isize lhs, isize rhs) {
     isize result = 0;
-    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(Opt$isize); }
-    return some$(Opt$isize, result);
+    if (__builtin_sub_overflow(lhs, rhs, &result)) { return none$(isize); }
+    return some$((isize)(result));
 }
-$inline_always Opt$isize isize_mulChkd(isize lhs, isize rhs) {
+$inline_always O$isize isize_mulChkd(isize lhs, isize rhs) {
     isize result = 0;
-    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(Opt$isize); }
-    return some$(Opt$isize, result);
+    if (__builtin_mul_overflow(lhs, rhs, &result)) { return none$(isize); }
+    return some$((isize)(result));
 }
-$inline_always Opt$isize isize_divChkd(isize lhs, isize rhs) {
-    if (rhs == 0 || (lhs == isize_limit_min && rhs == -1)) { return none$(Opt$isize); }
-    return some$(Opt$isize, lhs / rhs);
+$inline_always O$isize isize_divChkd(isize lhs, isize rhs) {
+    if (rhs == 0 || (lhs == isize_limit_min && rhs == -1)) { return none$(isize); }
+    return some$((isize)(lhs / rhs));
 }
-$inline_always Opt$isize isize_modChkd(isize lhs, isize rhs) {
-    if (rhs == 0 || (lhs == isize_limit_min && rhs == -1)) { return none$(Opt$isize); }
-    return some$(Opt$isize, lhs % rhs);
+$inline_always O$isize isize_modChkd(isize lhs, isize rhs) {
+    if (rhs == 0 || (lhs == isize_limit_min && rhs == -1)) { return none$(isize); }
+    return some$((isize)(lhs % rhs));
 }
-$inline_always Opt$isize isize_negChkd(isize x) {
-    if (x == isize_limit_min) { return none$(Opt$isize); }
-    return some$(Opt$isize, -x);
+$inline_always O$isize isize_negChkd(isize x) {
+    if (x == isize_limit_min) { return none$(isize); }
+    return some$((isize)(-x));
 }
-$inline_always Opt$isize isize_absChkd(isize x) {
-    if (x == isize_limit_min) { return none$(Opt$isize); }
-    return some$(Opt$isize, (x < 0) ? -x : x);
+$inline_always O$isize isize_absChkd(isize x) {
+    if (x == isize_limit_min) { return none$(isize); }
+    return some$((isize)((x < 0) ? -x : x));
 }
-$inline_always Opt$isize isize_powChkd(isize base, u32 exp) {
-    if (exp == 0) { return some$(Opt$isize, 1); }
+$inline_always O$isize isize_powChkd(isize base, u32 exp) {
+    if (exp == 0) { return some$((isize)(1)); }
     isize result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        if (__builtin_mul_overflow(result, base, &result)) { return none$(Opt$isize); }
+        if (__builtin_mul_overflow(result, base, &result)) { return none$(isize); }
     }
-    return some$(Opt$isize, result);
+    return some$((isize)(result));
 }
-$inline_always Opt$isize isize_shlChkd(isize x, u32 shift) {
-    if (shift >= (sizeof(isize) * 8)) { return none$(Opt$isize); }
-    if (shift == 0) { return some$(Opt$isize, x); }
-    if (x < 0) { return none$(Opt$isize); }
-    if (x > (isize_limit_max >> shift)) { return none$(Opt$isize); }
-    return some$(Opt$isize, x << shift);
+$inline_always O$isize isize_shlChkd(isize x, u32 shift) {
+    if (shift >= (sizeof(isize) * 8)) { return none$(isize); }
+    if (shift == 0) { return some$((isize)(x)); }
+    if (x < 0) { return none$(isize); }
+    if (x > (isize_limit_max >> shift)) { return none$(isize); }
+    return some$((isize)(x << shift));
 }
-$inline_always Opt$isize isize_shrChkd(isize x, u32 shift) {
-    if (shift >= (sizeof(isize) * 8)) { return none$(Opt$isize); }
-    return some$(Opt$isize, x >> shift);
+$inline_always O$isize isize_shrChkd(isize x, u32 shift) {
+    if (shift >= (sizeof(isize) * 8)) { return none$(isize); }
+    return some$((isize)(x >> shift));
 }
 
 /*========== Wrapping Arithmetic Implementations ============================*/

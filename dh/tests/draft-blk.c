@@ -53,7 +53,7 @@
 #define while_none(_init, _opt, _cont, _expr...) \
     While_((var __opt = (_opt); pp_expand _init), (isNone(__opt)), (), (pp_expand _cont; __opt = (_opt)), _expr)
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     {
@@ -71,7 +71,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
         printf("value: %d\n", value);
     }
 
-    extern fn_((getNext(void))(Opt$i32));
+    extern fn_((getNext(void))(O$i32));
     while_some((), (getNext()), (value), (), {
         printf("value: %d\n", value);
     });

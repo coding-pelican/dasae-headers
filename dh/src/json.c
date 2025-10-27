@@ -21,7 +21,7 @@ fn_((json_Value_initNumber(f64 value))(json_Value) $scope) {
     return_(variant_of(json_Value_number, value));
 } $unscoped_(fn);
 
-fn_((json_Value_initString(mem_Allocator allocator, Sli_const$u8 str))(Err$json_Value) $scope) {
+fn_((json_Value_initString(mem_Allocator allocator, S_const$u8 str))(E$json_Value) $scope) {
     json_Value_Str new_str = {};
     try_(json_Str_initData(&new_str, str, allocator));
     return_ok(variant_of(json_Value_string, new_str));
@@ -33,16 +33,16 @@ fn_((json_Value_initString(mem_Allocator allocator, Sli_const$u8 str))(Err$json_
     json_Str_fini(str, str->allocator);
 }
 
-fn_((json_Value_initArray(mem_Allocator allocator))(Err$json_Value) $scope) {
+fn_((json_Value_initArray(mem_Allocator allocator))(E$json_Value) $scope) {
     json_Value_Arr arr = {};
-    try_(json_Arr_reserve(&arr, 0, allocator));
+    try_(json_A_reserve(&arr, 0, allocator));
     return_ok(variant_of(json_Value_array, arr));
 } $unscoped_(fn);
 
 fn_((json_Value_finiArray(json_Value value))(void)) { /* NOLINT */
     debug_assert(json_Value_isArray(value));
     let arr = variant_as(&value, json_Value_array);
-    for_slice (arr->items, item) {
+    for_slice(arr->items, item) {
         json_Value_freeAll(*item);
     }
     if (arr->items.ptr) {
@@ -50,7 +50,7 @@ fn_((json_Value_finiArray(json_Value value))(void)) { /* NOLINT */
     }
 }
 
-fn_((json_Value_initObject(mem_Allocator allocator))(Err$json_Value) $scope) {
+fn_((json_Value_initObject(mem_Allocator allocator))(E$json_Value) $scope) {
     json_Value_Obj obj = {};
     try_(json_Obj_reserve(&obj, 0, allocator));
     return_ok(variant_of(json_Value_object, obj));
@@ -59,7 +59,7 @@ fn_((json_Value_initObject(mem_Allocator allocator))(Err$json_Value) $scope) {
 fn_((json_Value_finiObject(json_Value value))(void)) { /* NOLINT */
     debug_assert(json_Value_isObject(value));
     let obj = variant_as(&value, json_Value_object);
-    for_slice (obj->entries, entry) {
+    for_slice(obj->entries, entry) {
         json_Str_fini(&entry->key, entry->key.allocator);
         json_Value_freeAll(entry->value);
     }
@@ -78,35 +78,35 @@ fn_((json_Value_isNull(json_Value self))(bool)) { return self.tag == json_Value_
 // Value Conversion
 // =============================================================================
 
-fn_((json_Value_asBool(json_Value self))(Opt$bool) $scope) {
+fn_((json_Value_asBool(json_Value self))(O$bool) $scope) {
     if (json_Value_isBool(self)) {
         return_some(variant_extract(self, json_Value_bool));
     }
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Value_asNumber(json_Value self))(Opt$f64) $scope) {
+fn_((json_Value_asNumber(json_Value self))(O$f64) $scope) {
     if (json_Value_isNumber(self)) {
         return_some(variant_extract(self, json_Value_number));
     }
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Value_asString(json_Value self))(Opt$Ptr$json_Str) $scope) {
+fn_((json_Value_asString(json_Value self))(O$P$json_Str) $scope) {
     if (json_Value_isString(self)) {
         return_some(variant_as(&self, json_Value_string));
     }
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Value_asArray(json_Value self))(Opt$Ptr$json_Arr) $scope) {
+fn_((json_Value_asArray(json_Value self))(O$P$json_Arr) $scope) {
     if (json_Value_isArray(self)) {
         return_some(variant_as(&self, json_Value_array));
     }
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Value_asObject(json_Value self))(Opt$Ptr$json_Obj) $scope) {
+fn_((json_Value_asObject(json_Value self))(O$P$json_Obj) $scope) {
     if (json_Value_isObject(self)) {
         return_some(variant_as(&self, json_Value_object));
     }
@@ -117,20 +117,20 @@ fn_((json_Value_asObject(json_Value self))(Opt$Ptr$json_Obj) $scope) {
 // Value Utilities
 // =============================================================================
 
-fn_((json_Value_validate(json_Value self))(Err$void) $scope) {
+fn_((json_Value_validate(json_Value self))(E$void) $scope) {
     // TODO: Implement validation logic
     let_ignore = self;
-    return_err(Err_NotImplemented());
+    return_err(E_NotImplemented());
 } $unscoped_(fn);
 
-fn_((json_Value_getPath(json_Value self, Sli_const$u8 path))(Opt$Ptr$json_Value) $scope) {
+fn_((json_Value_getPath(json_Value self, S_const$u8 path))(O$P$json_Value) $scope) {
     // TODO: Implement path parsing logic
     let_ignore = self;
     let_ignore = path;
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Value_getTypeName(json_Value self))(Sli_const$u8)) {
+fn_((json_Value_getTypeName(json_Value self))(S_const$u8)) {
     match_(self, {
         pattern_(json_Value_null, return u8_l("null"));
         pattern_(json_Value_bool, return u8_l("bool"));
@@ -149,13 +149,13 @@ fn_((json_Value_eql(json_Value self, json_Value other))(bool)) {
         pattern_(json_Value_bool, (value), return *value == variant_extract(other, json_Value_bool));
         pattern_(json_Value_number, (value), return *value == variant_extract(other, json_Value_number));
         pattern_(json_Value_string, (value), return json_Str_eql(value, variant_as(&other, json_Value_string)));
-        pattern_(json_Value_array, (value), return json_Arr_eql(value, variant_as(&other, json_Value_array)));
+        pattern_(json_Value_array, (value), return json_A_eql(value, variant_as(&other, json_Value_array)));
         pattern_(json_Value_object, (value), return json_Obj_eql(value, variant_as(&other, json_Value_object)));
         fallback_(claim_unreachable);
     });
 }
 
-fn_((json_Value_clone(json_Value self, mem_Allocator allocator))(Err$json_Value) $scope) { /* NOLINT */
+fn_((json_Value_clone(json_Value self, mem_Allocator allocator))(E$json_Value) $scope) { /* NOLINT */
     match_(self, {
         pattern_(json_Value_null, return_ok(self));
         pattern_(json_Value_bool, return_ok(variant_of(json_Value_bool, variant_extract(self, json_Value_bool))));
@@ -167,17 +167,17 @@ fn_((json_Value_clone(json_Value self, mem_Allocator allocator))(Err$json_Value)
         });
         pattern_(json_Value_array, (value), {
             json_Value_Arr new_arr = {};
-            try_(json_Arr_reserve(&new_arr, value->items.len, allocator));
-            for_slice (value->items, (item)) {
+            try_(json_A_reserve(&new_arr, value->items.len, allocator));
+            for_slice(value->items, (item)) {
                 let new_item = try_(json_Value_clone(*item, allocator));
-                try_(json_Arr_push(&new_arr, new_item, allocator));
+                try_(json_A_push(&new_arr, new_item, allocator));
             }
             return_ok(variant_of(json_Value_array, new_arr));
         });
         pattern_(json_Value_object, (value), {
             json_Value_Obj new_obj = {};
             try_(json_Obj_reserve(&new_obj, value->entries.len, allocator));
-            for_slice (value->entries, (entry)) {
+            for_slice(value->entries, (entry)) {
                 let new_entry = ((json_Value_ObjEntry){
                     .key   = entry->key,
                     .value = try_(json_Value_clone(entry->value, allocator)),
@@ -215,15 +215,15 @@ fn_((json_Parser_init(mem_Allocator allocator))(json_Parser)) {
     };
 }
 
-fn_((json_Parser_parse(json_Parser parser))(Err$json_Value)) {
+fn_((json_Parser_parse(json_Parser parser))(E$json_Value)) {
     return json_Parser_parseWithOpts(parser, json_parse_default_options);
 }
 
-fn_((json_Parser_parseWithOpts(json_Parser parser, json_ParseOptions options))(Err$json_Value)) {
+fn_((json_Parser_parseWithOpts(json_Parser parser, json_ParseOptions options))(E$json_Value)) {
     let_ignore = (parser);
     let_ignore = (options);
     // TODO: Implement parser
-    return err$(Err$json_Value, Err_NotImplemented());
+    return err$(E$json_Value, E_NotImplemented());
 }
 
 // =============================================================================
@@ -239,43 +239,43 @@ fn_((json_Strfier_init(io_Writer writer))(json_Strfier)) {
     };
 }
 
-fn_((json_Strfier_strfy(json_Strfier strfier, json_Value value))(Err$usize)) {
+fn_((json_Strfier_strfy(json_Strfier strfier, json_Value value))(E$usize)) {
     return json_Strfier_strfyWithOpts(strfier, value, json_strfy_default_options);
 }
 
-fn_((json_Strfier_strfyWithOpts(json_Strfier strfier, json_Value value, json_StrfyOptions options))(Err$usize)) {
+fn_((json_Strfier_strfyWithOpts(json_Strfier strfier, json_Value value, json_StrfyOptions options))(E$usize)) {
     let_ignore = (strfier);
     let_ignore = (value);
     let_ignore = (options);
     // TODO: Implement stringifier
-    return err$(Err$usize, Err_NotImplemented());
+    return err$(E$usize, E_NotImplemented());
 }
 
 // =============================================================================
 // String
 // =============================================================================
 
-fn_((json_Str_init(json_Str* self, mem_Allocator allocator))(Err$void) $scope) {
+fn_((json_Str_init(json_Str* self, mem_Allocator allocator))(E$void) $scope) {
     self->allocator = allocator;
-    self->data      = (Sli$u8){ .ptr = null, .len = 0 };
+    self->data      = (S$u8){ .ptr = null, .len = 0 };
     self->cap       = 0;
     return_ok({});
 } $unscoped_(fn);
 
-fn_((json_Str_initCap(json_Str* self, usize capacity, mem_Allocator allocator))(Err$void) $scope) {
+fn_((json_Str_initCap(json_Str* self, usize capacity, mem_Allocator allocator))(E$void) $scope) {
     self->allocator = allocator;
     if (capacity == 0) {
-        self->data = (Sli$u8){ .ptr = null, .len = 0 };
+        self->data = (S$u8){ .ptr = null, .len = 0 };
         self->cap  = 0;
     } else {
-        self->data     = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), capacity)));
+        self->data     = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), capacity)));
         self->data.len = 0; // It's empty for now
         self->cap      = capacity;
     }
     return_ok({});
 } $unscoped_(fn)
 
-    fn_((json_Str_initData(json_Str* self, Sli_const$u8 str, mem_Allocator allocator))(Err$void) $scope) {
+    fn_((json_Str_initData(json_Str* self, S_const$u8 str, mem_Allocator allocator))(E$void) $scope) {
     try_(json_Str_initCap(self, str.len, allocator));
     mem_copy(self->data.ptr, str.ptr, str.len);
     self->data.len = str.len;
@@ -288,16 +288,16 @@ fn_((json_Str_initCap(json_Str* self, usize capacity, mem_Allocator allocator))(
     }
 }
 
-fn_((json_Str_append(json_Str* self, json_Str* other, mem_Allocator allocator))(Err$void)) {
+fn_((json_Str_append(json_Str* self, json_Str* other, mem_Allocator allocator))(E$void)) {
     return json_Str_appendStr(self, other->data.as_const, allocator);
 }
 
-fn_((json_Str_appendStr(json_Str* self, Sli_const$u8 str, mem_Allocator allocator))(Err$void) $scope) {
+fn_((json_Str_appendStr(json_Str* self, S_const$u8 str, mem_Allocator allocator))(E$void) $scope) {
     // TODO: implement growth logic
     let_ignore = (self);
     let_ignore = (str);
     let_ignore = (allocator);
-    return_err(Err_NotImplemented());
+    return_err(E_NotImplemented());
 } $unscoped_(fn)
 
     fn_((json_Str_eql(const json_Str* self, const json_Str* other))(bool)) {
@@ -307,7 +307,7 @@ fn_((json_Str_appendStr(json_Str* self, Sli_const$u8 str, mem_Allocator allocato
     // return Sli_eql(u8, self->data.as_const, other->data.as_const);
 }
 
-fn_((json_Str_eqlStr(const json_Str* self, Sli_const$u8 str))(bool)) {
+fn_((json_Str_eqlStr(const json_Str* self, S_const$u8 str))(bool)) {
     let_ignore = (self);
     let_ignore = (str);
     return false;
@@ -318,44 +318,44 @@ fn_((json_Str_eqlStr(const json_Str* self, Sli_const$u8 str))(bool)) {
 // Array
 // =============================================================================
 
-fn_((json_Arr_reserve(json_Arr* self, usize capacity, mem_Allocator allocator))(Err$void)) {
+fn_((json_A_reserve(json_Arr* self, usize capacity, mem_Allocator allocator))(E$void)) {
     let_ignore = (self);
     let_ignore = (capacity);
     let_ignore = (allocator);
-    return err$(Err$void, Err_NotImplemented());
+    return err$(E$void, E_NotImplemented());
 }
 
-fn_((json_Arr_push(json_Arr* self, json_Value value, mem_Allocator allocator))(Err$void)) {
+fn_((json_A_push(json_Arr* self, json_Value value, mem_Allocator allocator))(E$void)) {
     let_ignore = (self);
     let_ignore = (value);
     let_ignore = (allocator);
-    return err$(Err$void, Err_NotImplemented());
+    return err$(E$void, E_NotImplemented());
 }
 
-fn_((json_Arr_pop(json_Arr* self))(Opt$Ptr$json_Value) $scope) {
+fn_((json_A_pop(json_Arr* self))(O$P$json_Value) $scope) {
     let_ignore = (self);
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Arr_clear(json_Arr* self))(void)) {
-    for_slice (self->items, item) {
+fn_((json_A_clear(json_Arr* self))(void)) {
+    for_slice(self->items, item) {
         json_Value_freeAll(*item);
     }
     self->items.len = 0;
 }
 
-fn_((json_Arr_at(const json_Arr* self, usize index))(Opt$Ptr$json_Value) $scope) {
+fn_((json_A_at(const json_Arr* self, usize index))(O$P$json_Value) $scope) {
     if (index < self->items.len) {
         return_some(&self->items.ptr[index]);
     }
     return_none();
 } $unscoped_(fn);
 
-fn_((json_Arr_len(const json_Arr* self))(usize)) {
+fn_((json_A_len(const json_Arr* self))(usize)) {
     return self->items.len;
 }
 
-fn_((json_Arr_eql(const json_Arr* self, const json_Arr* other))(bool)) {
+fn_((json_A_eql(const json_Arr* self, const json_Arr* other))(bool)) {
     let_ignore = (self);
     let_ignore = (other);
     return false;
@@ -365,22 +365,22 @@ fn_((json_Arr_eql(const json_Arr* self, const json_Arr* other))(bool)) {
 // Object
 // =============================================================================
 
-fn_((json_Obj_reserve(json_Obj* self, usize capacity, mem_Allocator allocator))(Err$void)) {
+fn_((json_Obj_reserve(json_Obj* self, usize capacity, mem_Allocator allocator))(E$void)) {
     let_ignore = (self);
     let_ignore = (capacity);
     let_ignore = (allocator);
-    return err$(Err$void, Err_NotImplemented());
+    return err$(E$void, E_NotImplemented());
 }
 
-fn_((json_Obj_add(json_Obj* self, Sli_const$u8 key, json_Value value, mem_Allocator allocator))(Err$void)) {
+fn_((json_Obj_add(json_Obj* self, S_const$u8 key, json_Value value, mem_Allocator allocator))(E$void)) {
     let_ignore = (self);
     let_ignore = (key);
     let_ignore = (value);
     let_ignore = (allocator);
-    return err$(Err$void, Err_NotImplemented());
+    return err$(E$void, E_NotImplemented());
 }
 
-fn_((json_Obj_remove(json_Obj* self, Sli_const$u8 key))(bool)) {
+fn_((json_Obj_remove(json_Obj* self, S_const$u8 key))(bool)) {
     let_ignore = (self);
     let_ignore = (key);
     return false;
@@ -388,26 +388,26 @@ fn_((json_Obj_remove(json_Obj* self, Sli_const$u8 key))(bool)) {
 
 fn_((json_Obj_clear(json_Obj* self, mem_Allocator allocator))(void)) {
     let_ignore = (allocator);
-    for_slice (self->entries, entry) {
+    for_slice(self->entries, entry) {
         json_Str_fini(&entry->key, entry->key.allocator);
         json_Value_freeAll(entry->value);
     }
     self->entries.len = 0;
 }
 
-fn_((json_Obj_has(const json_Obj* self, Sli_const$u8 key))(bool)) {
+fn_((json_Obj_has(const json_Obj* self, S_const$u8 key))(bool)) {
     return isSome(json_Obj_get(self, key));
 }
 
-fn_((json_Obj_set(json_Obj* self, Sli_const$u8 key, json_Value value))(Err$void)) {
+fn_((json_Obj_set(json_Obj* self, S_const$u8 key, json_Value value))(E$void)) {
     let_ignore = (self);
     let_ignore = (key);
     let_ignore = (value);
-    return err$(Err$void, Err_NotImplemented());
+    return err$(E$void, E_NotImplemented());
 }
 
-fn_((json_Obj_get(const json_Obj* self, Sli_const$u8 key))(Opt$Ptr$json_Value) $scope) {
-    for_slice (self->entries, entry) {
+fn_((json_Obj_get(const json_Obj* self, S_const$u8 key))(O$P$json_Value) $scope) {
+    for_slice(self->entries, entry) {
         if (json_Str_eqlStr(&entry->key, key)) {
             return_some(&entry->value);
         }
@@ -429,11 +429,11 @@ fn_((json_Obj_eql(const json_Obj* self, const json_Obj* other))(bool)) {
 // Iterators
 // =============================================================================
 
-fn_((json_Arr_iter(const json_Arr* self))(json_ArrIter)) {
+fn_((json_A_iter(const json_Arr* self))(json_ArrIter)) {
     return (json_ArrIter){ .ctx = self, .index = 0 };
 }
 
-fn_((json_ArrIter_next(json_ArrIter* self))(Opt$Ptr$json_Value) $scope) {
+fn_((json_ArrIter_next(json_ArrIter* self))(O$P$json_Value) $scope) {
     if (self->index < self->ctx->items.len) {
         return_some(&self->ctx->items.ptr[self->index++]);
     }
@@ -444,7 +444,7 @@ fn_((json_Obj_iter(const json_Obj* self))(json_ObjIter)) {
     return (json_ObjIter){ .ctx = self, .index = 0 };
 }
 
-fn_((json_ObjIter_next(json_ObjIter* self))(Opt$Ptr$json_ObjEntry) $scope) {
+fn_((json_ObjIter_next(json_ObjIter* self))(O$P$json_ObjEntry) $scope) {
     if (self->index < self->ctx->entries.len) {
         return_some(&self->ctx->entries.ptr[self->index++]);
     }

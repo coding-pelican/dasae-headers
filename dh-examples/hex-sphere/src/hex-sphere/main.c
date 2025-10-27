@@ -87,32 +87,33 @@ m_V3f64 m_V3f64_transform(m_V3f64 v, m_M4x4 m) {
 typedef struct RGB {
     u8 r, g, b;
 } RGB;
-use_Sli$(RGB);
+use_S$(RGB);
 typedef struct Screen {
     m_V2i32 dimension;
-    Sli$RGB color_buffer;
-    Sli$RGB prev_color_buffer;  // Double buffering for change detection
-    Sli$f64 depth_buffer;
-    Sli$bool dirty_pixels;         // Track which pixels changed
+    S$RGB   color_buffer;
+    S$RGB   prev_color_buffer; // Double buffering for change detection
+    S$f64   depth_buffer;
+    S$bool  dirty_pixels; // Track which pixels changed
 } Screen;
-use_Err$(Screen);
-func((Screen_init(m_V2i32 dimension, mem_Allocator allocator))(Err$Screen)$guard) {
+use_E$(Screen);
+func((Screen_init(m_V2i32 dimension, mem_Allocator allocator))(E$Screen)$guard) {
     var screen = make$(Screen);
 
-    screen.dimension = dimension;
-    let pixel_count = as$(usize, dimension.x) * dimension.y;
-    screen.prev_color_buffer = meta_cast$(Sli$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
+    screen.dimension         = dimension;
+    let pixel_count          = as$(usize, dimension.x) * dimension.y;
+    screen.prev_color_buffer = meta_cast$(S$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.prev_color_buffer)));
-    screen.color_buffer = meta_cast$(Sli$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
+    screen.color_buffer = meta_cast$(S$RGB, try_(mem_Allocator_alloc(allocator, typeInfo$(RGB), pixel_count)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.color_buffer)));
-    screen.depth_buffer = meta_cast$(Sli$f64, try_(mem_Allocator_alloc(allocator, typeInfo$(f64), pixel_count)));
+    screen.depth_buffer = meta_cast$(S$f64, try_(mem_Allocator_alloc(allocator, typeInfo$(f64), pixel_count)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.depth_buffer)));
-    screen.dirty_pixels = meta_cast$(Sli$bool, try_(mem_Allocator_alloc(allocator, typeInfo$(bool), pixel_count)));
+    screen.dirty_pixels = meta_cast$(S$bool, try_(mem_Allocator_alloc(allocator, typeInfo$(bool), pixel_count)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(screen.dirty_pixels)));
 
     return_ok(screen);
-} $unguarded;
-func((Screen_fini(Screen* self, mem_Allocator allocator))(void)) {
+}
+$unguarded;
+func((Screen_fini(Screen * self, mem_Allocator allocator))(void)) {
     mem_Allocator_free(allocator, anySli(self->color_buffer));
     mem_Allocator_free(allocator, anySli(self->prev_color_buffer));
     mem_Allocator_free(allocator, anySli(self->depth_buffer));
@@ -124,11 +125,11 @@ func((Screen_getRGB(const Screen* self, i32 x, i32 y))(RGB)) {
     }
     return (RGB){ 0, 0, 0 };
 }
-func((Screen_setRGB(Screen* self, i32 x, i32 y, RGB color))(void)) {
+func((Screen_setRGB(Screen * self, i32 x, i32 y, RGB color))(void)) {
     if (0 <= x && x < self->dimension.x && 0 <= y && y < self->dimension.y) {
         let idx = y * self->dimension.x + x;
         Sli_setAt(self->color_buffer, idx, color);
-        Sli_setAt(self->dirty_pixels, idx, true);  // Mark pixel as dirty for change detection
+        Sli_setAt(self->dirty_pixels, idx, true); // Mark pixel as dirty for change detection
     }
 }
 
@@ -153,10 +154,10 @@ void Screen_drawLine(Screen* self, m_V3f64 v0, m_V3f64 v1, RGB color) {
     var x1 = as$(i32, p1.x);
     var y1 = as$(i32, p1.y);
 
-    let dx  = abs(x1 - x0);
-    let dy  = abs(y1 - y0);
-    let sx  = (x0 < x1) ? 1 : -1;
-    let sy  = (y0 < y1) ? 1 : -1;
+    let dx = abs(x1 - x0);
+    let dy = abs(y1 - y0);
+    let sx = (x0 < x1) ? 1 : -1;
+    let sy = (y0 < y1) ? 1 : -1;
 
     i32 err = dx - dy;
     while (true) {
@@ -221,67 +222,68 @@ void Screen_rasterizeTriangle(Screen* self, m_V3f64 v0, m_V3f64 v1, m_V3f64 v2, 
 
 
 // Forward declarations
-typedef struct Face Face;
-typedef struct Vertex Vertex;
-typedef struct Tile Tile;
+typedef struct Face      Face;
+typedef struct Vertex    Vertex;
+typedef struct Tile      Tile;
 typedef struct HexSphere HexSphere;
 
 use_ArrList$(i32);
-use_Sli$(m_V3f64);
+use_S$(m_V3f64);
 use_ArrList$(m_V3f64);
 
 // Face structure - represents a triangular face
 typedef struct Face {
-    i32 vertex_indices[3];
+    i32     vertex_indices[3];
     m_V3f64 centroid;
-    i32 id;
+    i32     id;
 } Face;
-use_Sli$(Face);
+use_S$(Face);
 use_ArrList$(Face);
 
 // Vertex structure - enhanced to track adjacent faces
 typedef struct Vertex {
-    m_V3f64 position;
-    ArrList$i32 face_ids;  // IDs of faces that contain this vertex
+    m_V3f64     position;
+    ArrList$i32 face_ids; // IDs of faces that contain this vertex
 } Vertex;
-use_Sli$(Vertex);
+use_S$(Vertex);
 use_ArrList$(Vertex);
-use_Err$(Vertex);
+use_E$(Vertex);
 
 // Tile structure - represents hexagonal/pentagonal tiles around vertices
 typedef struct Tile {
-    i32 center_vertex_id;
-    ArrList$m_V3f64 boundary;  // Boundary points forming the tile
-    i32 sides;                 // Number of sides (5 for pentagon, 6 for hexagon)
+    i32             center_vertex_id;
+    ArrList$m_V3f64 boundary; // Boundary points forming the tile
+    i32             sides;    // Number of sides (5 for pentagon, 6 for hexagon)
 } Tile;
-use_Sli$(Tile);
+use_S$(Tile);
 use_ArrList$(Tile);
 
 // HexSphere structure - main geodesic sphere with hexagonal tiling
 struct HexSphere {
     ArrList$Vertex vertices;
-    ArrList$Face faces;
-    ArrList$Tile tiles;
-    f64 hex_size;  // Tile size factor (0.5 to 1.0)
+    ArrList$Face   faces;
+    ArrList$Tile   tiles;
+    f64            hex_size; // Tile size factor (0.5 to 1.0)
 };
-use_Err$(HexSphere);
+use_E$(HexSphere);
 
 // Utility functions for vector operations
 func((Face_calculateCentroid(const Face* face, const ArrList$Vertex* vertices))(m_V3f64)) {
     let v0 = Sli_getAt(vertices->items, face->vertex_indices[0]).position;
     let v1 = Sli_getAt(vertices->items, face->vertex_indices[1]).position;
     let v2 = Sli_getAt(vertices->items, face->vertex_indices[2]).position;
-    return m_V3f64_scale(m_V3f64_add(m_V3f64_add(v0, v1), v2), 1.0/3.0);
+    return m_V3f64_scale(m_V3f64_add(m_V3f64_add(v0, v1), v2), 1.0 / 3.0);
 }
 
-func((Vertex_init(m_V3f64 position, mem_Allocator allocator))(Err$Vertex)$scope) {
-    var vertex = make$(Vertex);
-    vertex.position = position;
+func((Vertex_init(m_V3f64 position, mem_Allocator allocator))(E$Vertex)$scope) {
+    var vertex              = make$(Vertex);
+    vertex.position         = position;
     vertex.face_ids.base[0] = ArrList_init(typeInfo$(i32), allocator);
     return_ok(vertex);
-} $unscoped;
+}
+$unscoped;
 
-func((Vertex_addFace(Vertex* vertex, i32 face_id))(Err$void)$scope) {
+func((Vertex_addFace(Vertex * vertex, i32 face_id))(E$void)$scope) {
     catch_((ArrList_append(vertex->face_ids.base, meta_refPtr(&face_id)))(my_err, {
         Err_print(my_err);
         ErrTrace_print();
@@ -290,17 +292,18 @@ func((Vertex_addFace(Vertex* vertex, i32 face_id))(Err$void)$scope) {
 
     try_(ArrList_append(vertex->face_ids.base, meta_refPtr(&face_id)));
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
-func((Vertex_fini(Vertex* vertex))(void)) {
+func((Vertex_fini(Vertex * vertex))(void)) {
     ArrList_fini(vertex->face_ids.base);
 }
 
 #define icosphere_vertex_count   (12)
 #define icosphere_triangle_count (20)
 
-func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(Err$HexSphere)$guard) {
-    var hex_sphere = make$(HexSphere);
+func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(E$HexSphere)$guard) {
+    var hex_sphere      = make$(HexSphere);
     hex_sphere.hex_size = hex_size;
 
     // Initialize ArrLists
@@ -311,9 +314,9 @@ func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(Err$HexSphere)$guar
     hex_sphere.tiles.base[0] = ArrList_init(typeInfo$(Tile), allocator);
     errdefer_($ignore, ArrList_fini(hex_sphere.tiles.base));
 
-    let t = math_f64_golden_ratio;
-    let s = math_sqrt(1 + t * t);
-    let initial_positions = (Arr$$(icosphere_vertex_count, m_V3f64))Arr_init({
+    let t                 = math_f64_golden_ratio;
+    let s                 = math_sqrt(1 + t * t);
+    let initial_positions = (A$$(icosphere_vertex_count, m_V3f64))A_init({
         [0]  = m_V3f64_from(-1, t, 0),
         [1]  = m_V3f64_from(1, t, 0),
         [2]  = m_V3f64_from(-1, -t, 0),
@@ -330,37 +333,37 @@ func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(Err$HexSphere)$guar
 
     // Initialize vertices with normalized positions
     for (usize i = 0; i < icosphere_vertex_count; ++i) {
-        let normalized_pos = m_V3f64_scale(*Arr_at(initial_positions, i), 1.0 / s);
-        var vertex = try_(Vertex_init(normalized_pos, allocator));
+        let normalized_pos = m_V3f64_scale(*A_at(initial_positions, i), 1.0 / s);
+        var vertex         = try_(Vertex_init(normalized_pos, allocator));
         try_(ArrList_append(hex_sphere.vertices.base, meta_refPtr(&vertex)));
     }
 
-    let face_indices = (Arr$$(icosphere_triangle_count, Face))Arr_init({
-        [0]  = (Face){ {0, 11, 5}, .id = 0 },
-        [1]  = (Face){ {0, 5, 1}, .id = 1 },
-        [2]  = (Face){ {0, 1, 7}, .id = 2 },
-        [3]  = (Face){ {0, 7, 10}, .id = 3 },
-        [4]  = (Face){ {0, 10, 11}, .id = 4 },
-        [5]  = (Face){ {1, 5, 9}, .id = 5 },
-        [6]  = (Face){ {5, 11, 4}, .id = 6 },
-        [7]  = (Face){ {11, 10, 2}, .id = 7 },
-        [8]  = (Face){ {10, 7, 6}, .id = 8 },
-        [9]  = (Face){ {7, 1, 8}, .id = 9 },
-        [10] = (Face){ {3, 9, 4}, .id = 10 },
-        [11] = (Face){ {3, 4, 2}, .id = 11 },
-        [12] = (Face){ {3, 2, 6}, .id = 12 },
-        [13] = (Face){ {3, 6, 8}, .id = 13 },
-        [14] = (Face){ {3, 8, 9}, .id = 14 },
-        [15] = (Face){ {4, 9, 5}, .id = 15 },
-        [16] = (Face){ {2, 4, 11}, .id = 16 },
-        [17] = (Face){ {6, 2, 10}, .id = 17 },
-        [18] = (Face){ {8, 6, 7}, .id = 18 },
-        [19] = (Face){ {9, 8, 1}, .id = 19 },
+    let face_indices = (A$$(icosphere_triangle_count, Face))A_init({
+        [0]  = (Face){ { 0, 11, 5 }, .id = 0 },
+        [1]  = (Face){ { 0, 5, 1 }, .id = 1 },
+        [2]  = (Face){ { 0, 1, 7 }, .id = 2 },
+        [3]  = (Face){ { 0, 7, 10 }, .id = 3 },
+        [4]  = (Face){ { 0, 10, 11 }, .id = 4 },
+        [5]  = (Face){ { 1, 5, 9 }, .id = 5 },
+        [6]  = (Face){ { 5, 11, 4 }, .id = 6 },
+        [7]  = (Face){ { 11, 10, 2 }, .id = 7 },
+        [8]  = (Face){ { 10, 7, 6 }, .id = 8 },
+        [9]  = (Face){ { 7, 1, 8 }, .id = 9 },
+        [10] = (Face){ { 3, 9, 4 }, .id = 10 },
+        [11] = (Face){ { 3, 4, 2 }, .id = 11 },
+        [12] = (Face){ { 3, 2, 6 }, .id = 12 },
+        [13] = (Face){ { 3, 6, 8 }, .id = 13 },
+        [14] = (Face){ { 3, 8, 9 }, .id = 14 },
+        [15] = (Face){ { 4, 9, 5 }, .id = 15 },
+        [16] = (Face){ { 2, 4, 11 }, .id = 16 },
+        [17] = (Face){ { 6, 2, 10 }, .id = 17 },
+        [18] = (Face){ { 8, 6, 7 }, .id = 18 },
+        [19] = (Face){ { 9, 8, 1 }, .id = 19 },
     });
 
     // Initialize faces and register them with vertices
     for (usize i = 0; i < icosphere_triangle_count; ++i) {
-        var face = *Arr_at(face_indices, i);
+        var face      = *A_at(face_indices, i);
         face.centroid = Face_calculateCentroid(&face, &hex_sphere.vertices);
         try_(ArrList_append(hex_sphere.faces.base, meta_refPtr(&face)));
 
@@ -372,16 +375,17 @@ func((HexSphere_init(f64 hex_size, mem_Allocator allocator))(Err$HexSphere)$guar
     }
 
     return_ok(hex_sphere);
-} $unguarded;
-func((HexSphere_fini(HexSphere* self))(void)) {
+}
+$unguarded;
+func((HexSphere_fini(HexSphere * self))(void)) {
     // Free vertex face lists
-    for_slice (self->vertices.items, vertex) {
+    for_slice(self->vertices.items, vertex) {
         Vertex_fini(vertex);
     }
     ArrList_fini(self->vertices.base);
 
     // Free tile boundaries
-    for_slice (self->tiles.items, tile) {
+    for_slice(self->tiles.items, tile) {
         ArrList_fini(tile->boundary.base);
     }
     ArrList_fini(self->tiles.base);
@@ -389,7 +393,7 @@ func((HexSphere_fini(HexSphere* self))(void)) {
     ArrList_fini(self->faces.base);
 }
 // Utility function to sort face centroids around a vertex (simplified version)
-func((sortCentroidsAroundVertex(const Vertex* vertex, const HexSphere* hex_sphere, ArrList$m_V3f64* sorted_centroids))(Err$void)$scope) {
+func((sortCentroidsAroundVertex(const Vertex* vertex, const HexSphere* hex_sphere, ArrList$m_V3f64* sorted_centroids))(E$void)$scope) {
     let face_count = vertex->face_ids.items.len;
 
     // Clear and populate centroids
@@ -397,15 +401,16 @@ func((sortCentroidsAroundVertex(const Vertex* vertex, const HexSphere* hex_spher
 
     for (usize i = 0; i < face_count; ++i) {
         let face_id = Sli_getAt(vertex->face_ids.items, i);
-        var face = Sli_getAt(hex_sphere->faces.items, face_id);
+        var face    = Sli_getAt(hex_sphere->faces.items, face_id);
         try_(ArrList_append(sorted_centroids->base, meta_refPtr(&face.centroid)));
     }
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
 // Generate hexagonal/pentagonal tiles around each vertex
-func((HexSphere_generateTiles(HexSphere* self, mem_Allocator allocator))(Err$void)$guard) {
+func((HexSphere_generateTiles(HexSphere * self, mem_Allocator allocator))(E$void)$guard) {
     // Clear existing tiles
     ArrList_clearRetainingCap(self->tiles.base);
 
@@ -416,9 +421,9 @@ func((HexSphere_generateTiles(HexSphere* self, mem_Allocator allocator))(Err$voi
             continue; // Skip vertices with no faces
         }
 
-        var tile = make$(Tile);
+        var tile              = make$(Tile);
         tile.center_vertex_id = as$(i32, v_idx);
-        tile.sides = as$(i32, vertex.face_ids.items.len);
+        tile.sides            = as$(i32, vertex.face_ids.items.len);
 
         // Initialize boundary ArrList
         tile.boundary.base[0] = ArrList_init(typeInfo$(m_V3f64), allocator);
@@ -429,9 +434,9 @@ func((HexSphere_generateTiles(HexSphere* self, mem_Allocator allocator))(Err$voi
 
         // Create boundary points by moving from centroid toward vertex by hex_size factor
         for (usize i = 0; i < tile.boundary.items.len; ++i) {
-            let centroid = Sli_getAt(tile.boundary.items, i);
-            let to_vertex = m_V3f64_sub(vertex.position, centroid);
-            let boundary_point = m_V3f64_add(centroid, m_V3f64_scale(to_vertex, self->hex_size));
+            let centroid         = Sli_getAt(tile.boundary.items, i);
+            let to_vertex        = m_V3f64_sub(vertex.position, centroid);
+            let boundary_point   = m_V3f64_add(centroid, m_V3f64_scale(to_vertex, self->hex_size));
             let normalized_point = normalize(boundary_point); // Project back to sphere
             Sli_setAt(tile.boundary.items, i, normalized_point);
         }
@@ -441,7 +446,8 @@ func((HexSphere_generateTiles(HexSphere* self, mem_Allocator allocator))(Err$voi
     }
 
     return_ok({});
-} $unguarded;
+}
+$unguarded;
 
 
 // 간단한 Phong 조명 모델
@@ -476,19 +482,19 @@ void Screen_renderPolygon(Screen* self, const ArrList$m_V3f64* boundary, RGB col
     }
 
     // Transform all boundary points
-    var transformed = eval_(Sli$m_V3f64 $scope) {
-        static Arr$$(12, m_V3f64) temp_points = {}; // max sides
-        let count = (boundary->items.len > Arr_len(temp_points)) ? Arr_len(temp_points) : boundary->items.len;
+    var transformed = eval_(S$m_V3f64 $scope) {
+        static A$$(12, m_V3f64) temp_points = {}; // max sides
+        let                     count       = (boundary->items.len > A_len(temp_points)) ? A_len(temp_points) : boundary->items.len;
         for (usize i = 0; i < count; ++i) {
-            Arr_setAt(temp_points, i, m_V3f64_transform(Sli_getAt(boundary->items, i), mvp));
+            A_setAt(temp_points, i, m_V3f64_transform(Sli_getAt(boundary->items, i), mvp));
         }
-        eval_break_(Sli_slice(Arr_ref$(Sli$m_V3f64, temp_points), (0, count)));
+        eval_break_(Sli_slice(A_ref$(S$m_V3f64, temp_points), (0, count)));
     } $unscoped_eval;
 
     // Triangulate polygon with center point (fan triangulation)
     let center = eval_(m_V3f64 $scope) {
         var sum = m_V3f64_from(0, 0, 0);
-        for_slice (transformed, point) {
+        for_slice(transformed, point) {
             sum = m_V3f64_add(sum, *point);
         }
         eval_break_(m_V3f64_scale(sum, 1.0 / transformed.len));
@@ -513,11 +519,11 @@ void Screen_renderHexSphere(Screen* self, f64 rotation_x, f64 rotation_y, mem_Al
     for (usize i = 0; i < pixel_count; ++i) {
         Sli_setAt(self->color_buffer, i, (RGB){ 20, 20, 40 });
         Sli_setAt(self->prev_color_buffer, i, (RGB){ 0, 0, 0 }); // Initialize prev buffer
-        Sli_setAt(self->dirty_pixels, i, true); // Mark all pixels as dirty for first frame
+        Sli_setAt(self->dirty_pixels, i, true);                  // Mark all pixels as dirty for first frame
     }
 
     // Z-버퍼 초기화
-    for_slice (self->depth_buffer, depth) {
+    for_slice(self->depth_buffer, depth) {
         *depth = 1.0;
     }
 
@@ -544,15 +550,17 @@ void Screen_renderHexSphere(Screen* self, f64 rotation_x, f64 rotation_y, mem_Al
         // Pentagon vs Hexagon 색상 구분
         let base_color = eval_(RGB $scope) if (tile.sides == 5) {
             eval_break_({ 200, 150, 50 }); // Pentagon - 골드
-        } else if (tile.sides == 6) {
+        }
+        else if (tile.sides == 6) {
             eval_break_({ 50, 150, 200 }); // Hexagon - 블루
-        } else {
+        }
+        else {
             eval_break_({ 100, 100, 100 }); // Other - 그레이
         } $unscoped_eval;
 
         // 법선 계산 (타일 중심점 사용)
         let center_vertex = Sli_getAt(hex_sphere.vertices.items, tile.center_vertex_id);
-        let normal = normalize(center_vertex.position); // 구면에서는 중심점이 법선
+        let normal        = normalize(center_vertex.position); // 구면에서는 중심점이 법선
 
         // 조명 적용
         let lit_color = calcLighting(normal, light_dir, view_dir, base_color);
@@ -574,15 +582,15 @@ void Screen_renderHexSphere(Screen* self, f64 rotation_x, f64 rotation_y, mem_Al
 ///   Screen_display(&screen);
 /// @dependencies Windows API (Windows), ANSI terminal support
 /// @limitations Requires terminal with ANSI escape sequence support
-func((Screen_display(Screen* self))(void)) {
+func((Screen_display(Screen * self))(void)) {
 #if bti_plat_windows
     // Windows console setup for ANSI escape sequences (one-time only)
     static bool s_console_initialized = false;
     if (!s_console_initialized) {
-        if_(let handle =GetStdHandle(STD_OUTPUT_HANDLE), handle != INVALID_HANDLE_VALUE) {
+        if_(let handle = GetStdHandle(STD_OUTPUT_HANDLE), handle != INVALID_HANDLE_VALUE) {
             if_(DWORD mode = 0, GetConsoleMode(handle, &mode)) {
                 mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                let_ignore = SetConsoleMode(handle, mode);
+                let_ignore            = SetConsoleMode(handle, mode);
                 s_console_initialized = true;
             }
         }
@@ -590,14 +598,14 @@ func((Screen_display(Screen* self))(void)) {
 #endif
     // Output buffer setup (one-time only)
     use_ArrList$(u8);
-    static ArrList$u8 output_buffer = {};
-    static bool s_output_buffer_initialized = false;
+    static ArrList$u8 output_buffer               = {};
+    static bool       s_output_buffer_initialized = false;
     if (!s_output_buffer_initialized) {
-        static Arr$$(lit_num$(usize, (320*180*40)+(320*180*40/2)), u8) memory = {};
-        static heap_Fixed heap ={};
-        heap = heap_Fixed_init(Arr_ref$(Sli$u8, memory));
-        output_buffer = type$(ArrList$u8, ArrList_init(typeInfo$(u8), heap_Fixed_allocator(&heap)));
-        s_output_buffer_initialized = true;
+        static A$$(lit_num$(usize, (320 * 180 * 40) + (320 * 180 * 40 / 2)), u8) memory = {};
+        static heap_Fixed                                                        heap   = {};
+        heap                                                                            = heap_Fixed_init(A_ref$(S$u8, memory));
+        output_buffer                                                                   = type$(ArrList$u8, ArrList_init(typeInfo$(u8), heap_Fixed_allocator(&heap)));
+        s_output_buffer_initialized                                                     = true;
     }
 
     // Pre-allocate output buffer for maximum performance
@@ -609,7 +617,7 @@ func((Screen_display(Screen* self))(void)) {
         ))($ignore, claim_unreachable));
     }
 
-    var buffer_ptr = output_buffer.items.ptr;
+    var   buffer_ptr  = output_buffer.items.ptr;
     usize buffer_used = 0;
     // Clear screen and move cursor to top-left
     buffer_used += sprintf(as$(char*, buffer_ptr) + buffer_used, "\033[2J\033[H");
@@ -619,7 +627,8 @@ func((Screen_display(Screen* self))(void)) {
         let line_has_changes = eval_(bool $scope) for (usize x = 0; x < as$(usize, self->dimension.x); ++x) {
             let idx = as$(usize, y) * as$(usize, self->dimension.x) + x;
             if (Sli_getAt(self->dirty_pixels, idx)) { eval_break_(true); }
-        } eval_break_(false) $unscoped_eval;
+        }
+        eval_break_(false) $unscoped_eval;
         if (line_has_changes) {
             // Only render lines with changes
             for (i32 x = 0; x < self->dimension.x; ++x) {
@@ -654,22 +663,22 @@ func((Screen_display(Screen* self))(void)) {
 #include "dh/time/Instant.h"
 
 
-func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
+func((dh_main(S$S_const$u8 args))(E$void)$guard) {
     let_ignore = args;
 
     // 스크린 버퍼 할당
-    var page = make$(heap_Page);
-    let allocator = heap_Page_allocator(&page);
-    const usize width = 160;
-    const usize height = 100;
-    var screen = try_(Screen_init(m_V2i32_from(width, height), allocator));
+    var         page      = make$(heap_Page);
+    let         allocator = heap_Page_allocator(&page);
+    const usize width     = 160;
+    const usize height    = 100;
+    var         screen    = try_(Screen_init(m_V2i32_from(width, height), allocator));
     defer_(Screen_fini(&screen, allocator));
 
     // 애니메이션 루프 - HexSphere 렌더링
-    f64 rotation_x = 0;
-    f64 rotation_y = 0;
-    let start = time_Instant_now();
-    let duration = time_Duration_fromSecs_f64(10.0);
+    f64 rotation_x  = 0;
+    f64 rotation_y  = 0;
+    let start       = time_Instant_now();
+    let duration    = time_Duration_fromSecs$f64(10.0);
     u32 frame_count = 0;
 
     while (time_Duration_lt(time_Instant_elapsed(start), duration)) {
@@ -688,4 +697,5 @@ func((dh_main(Sli$Sli_const$u8 args))(Err$void)$guard) {
     }
 
     return_ok({});
-} $unguarded;
+}
+$unguarded;

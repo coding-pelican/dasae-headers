@@ -31,7 +31,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef pp_if_(bti_plat_windows)(
-    pp_than_(HANDLE),
+    pp_then_(HANDLE),
     pp_else_(i32)
 ) posix_fd_t;
 typedef i32 posix_mode_t;

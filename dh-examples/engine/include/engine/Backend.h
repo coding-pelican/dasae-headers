@@ -7,18 +7,18 @@ extern "C" {
 #include "engine/common.h"
 
 typedef struct engine_Backend_VT {
-    fn_(((*processEvents)(anyptr ctx))(void));
-    fn_(((*presentBuffer)(anyptr ctx))(void));
+    fn_(((*processEvents)(P$raw ctx))(void));
+    fn_(((*presentBuffer)(P$raw ctx))(void));
 } engine_Backend_VT;
 typedef struct engine_Backend_VT_Internal engine_Backend_VT_Internal;
 
 typedef struct engine_Backend {
-    anyptr                            ptr;
+    P$raw                            ptr;
     const engine_Backend_VT*          vt;
     const engine_Backend_VT_Internal* vt_internal;
 } engine_Backend;
-use_Opt$(engine_Backend);
-use_Err$(engine_Backend);
+use_O$(engine_Backend);
+use_E$(engine_Backend);
 
 extern fn_((engine_Backend_processEvents(engine_Backend self))(void));
 extern fn_((engine_Backend_presentBuffer(engine_Backend self))(void));

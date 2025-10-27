@@ -8,26 +8,26 @@ fn_((io_stream_nl(void))(void)) {
     catch_((io_Writer_nl(stream_out))($ignore, claim_unreachable));
 }
 
-fn_((io_stream_print(Sli_const$u8 fmt, ...))(void)) {
+fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
     va_list va_args = {};
     with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printVaArgs(fmt, va_args);
     }
 }
 
-fn_((io_stream_printVaArgs(Sli_const$u8 fmt, va_list va_args))(void)) {
+fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void)) {
     let stream_out = fs_File_writer(io_getStdOut());
     catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, claim_unreachable));
 }
 
-fn_((io_stream_println(Sli_const$u8 fmt, ...))(void)) {
+fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
     va_list va_args = {};
     with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printlnVaArgs(fmt, va_args);
     }
 }
 
-fn_((io_stream_printlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void)) {
+fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void)) {
     let stream_out = fs_File_writer(io_getStdOut());
     catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, claim_unreachable));
 }
@@ -37,26 +37,26 @@ fn_((io_stream_enl(void))(void)) {
     catch_((io_Writer_nl(stream_err))($ignore, claim_unreachable));
 }
 
-fn_((io_stream_eprint(Sli_const$u8 fmt, ...))(void)) {
+fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
     va_list va_args = {};
     with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintVaArgs(fmt, va_args);
     }
 }
 
-fn_((io_stream_eprintVaArgs(Sli_const$u8 fmt, va_list va_args))(void)) {
+fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void)) {
     let stream_err = fs_File_writer(io_getStdErr());
     catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, claim_unreachable));
 }
 
-fn_((io_stream_eprintln(Sli_const$u8 fmt, ...))(void)) {
+fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
     va_list va_args = {};
     with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintlnVaArgs(fmt, va_args);
     }
 }
 
-fn_((io_stream_eprintlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void)) {
+fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void)) {
     let stream_err = fs_File_writer(io_getStdErr());
     catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, claim_unreachable));
 }

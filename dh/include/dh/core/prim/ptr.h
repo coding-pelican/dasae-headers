@@ -33,65 +33,45 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-typedef const void* voidptr_const;
-typedef void*       voidptr;
-typedef ptrdiff_t   ptrdiff;
+typedef ptrdiff_t ptrdiff;
 
-#define anyptr_const \
+typedef TypeOf(const void*) P_const$raw;
+typedef TypeOf(void*) P$raw;
+
+#define $P_const$(_T...) TypeOf(const _T*)
+#define $P$(_T...)       TypeOf(_T*)
+
+#define ptrCast$(TDestRawptr, var_rawptr) \
     /** \
-     * @brief Pointer to any type (const void*) \
+     * @brief Convert P$raw to pointer of type TDestRawptr \
      */ \
-    comp_prim_type__anyptr_const
+    comp_op__ptrCast$(TDestRawptr, var_rawptr)
 
-#define anyptr \
-    /** \
-     * @brief Pointer to any type (void*) \
-     */ \
-    comp_prim_type__anyptr
-
-#define rawptr_const$(TSrc) \
-    /** \
-     * @brief Pointer to type (const TSrc*) \
-     */ \
-    comp_prim_type__rawptr_const$(TSrc)
-
-#define rawptr$(TSrc) \
-    /** \
-     * @brief Pointer to type (TSrc*) \
-     */ \
-    comp_prim_type__rawptr$(TSrc)
-
-#define rawptrCast$(TDestRawptr, var_rawptr) \
-    /** \
-     * @brief Convert anyptr to pointer of type TDestRawptr \
-     */ \
-    comp_op__rawptrCast$(TDestRawptr, var_rawptr)
-
-#define intFromRawptr rawptrToInt
-#define rawptrToInt(val_rawptr) \
+#define intFromPtr ptrToInt
+#define ptrToInt(val_rawptr) \
     /** \
      * @brief Convert rawptr to int(usize) \
      */ \
-    comp_op__rawptrToInt(val_rawptr)
+    comp_op__ptrToInt(val_rawptr)
 
 #define rawptrFromInt$ intToRawptr
-#define intToRawptr$(TDestRawptr, val_int) \
+#define intToPtr$(TDestRawptr, val_int) \
     /** \
      * @brief Convert int to rawptr \
      */ \
-    comp_op__intToRawptr$(TDestRawptr, val_int)
+    comp_op__intToPtr$(TDestRawptr, val_int)
 
-#define rawptrIsNull(var_rawptr) \
+#define ptrIsNull(var_rawptr) \
     /** \
      * @brief Check if pointer is null \
      */ \
-    comp_op__rawptrIsNull(var_rawptr)
+    comp_op__ptrIsNull(var_rawptr)
 
-#define rawptrIsNonnull(var_rawptr) \
+#define ptrIsNonnull(var_rawptr) \
     /** \
      * @brief Check if pointer is non-null \
      */ \
-    comp_op__rawptrIsNonnull(var_rawptr)
+    comp_op__ptrIsNonnull(var_rawptr)
 
 #define ensureNonnull(val_ptr...) comp_op__ensureNonnull(pp_uniqTok(ptr), val_ptr)
 
@@ -103,17 +83,12 @@ typedef ptrdiff_t   ptrdiff;
 
 /*========== Macros Implementation ==========================================*/
 
-#define comp_prim_type__anyptr_const        const void*
-#define comp_prim_type__anyptr              void*
-#define comp_prim_type__rawptr_const$(TSrc) const TSrc*
-#define comp_prim_type__rawptr$(TSrc)       TSrc*
+#define comp_op__ptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
+#define comp_op__ptrToInt(val_rawptr)              ((usize)(val_rawptr))    // NOLINT
+#define comp_op__intToPtr$(TDestRawptr, val_int)   ((TDestRawptr)(val_int)) // NOLINT
 
-#define comp_op__rawptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
-#define comp_op__rawptrToInt(val_rawptr)              ((usize)(val_rawptr))    // NOLINT
-#define comp_op__intToRawptr$(TDestRawptr, val_int)   ((TDestRawptr)(val_int)) // NOLINT
-
-#define comp_op__rawptrIsNull(var_rawptr)    ((var_rawptr) == null)
-#define comp_op__rawptrIsNonnull(var_rawptr) ((var_rawptr) != null)
+#define comp_op__ptrIsNull(var_rawptr)    ((var_rawptr) == null)
+#define comp_op__ptrIsNonnull(var_rawptr) ((var_rawptr) != null)
 
 #define comp_op__ensureNonnull(__ptr, val_ptr...) blk({ \
     TypeOf(*val_ptr)* __ptr = val_ptr; \
@@ -130,10 +105,10 @@ typedef ptrdiff_t   ptrdiff;
 
 #if bti_plat_64bit
 /* 64-bit */
-claim_assert_static_msg(sizeof(anyptr) == 8, "pointer must be 8 bytes on 64-bit");
+claim_assert_static_msg(sizeof(P$raw) == 8, "pointer must be 8 bytes on 64-bit");
 #elif bti_plat_32bit
 /* 32-bit */
-claim_assert_static_msg(sizeof(anyptr) == 4, "pointer must be 4 bytes on 32-bit");
+claim_assert_static_msg(sizeof(P$raw) == 4, "pointer must be 4 bytes on 32-bit");
 #endif
 
 #if defined(__cplusplus)

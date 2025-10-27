@@ -1,9 +1,9 @@
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 
 #include "dh/io/stream.h"
 
-fn_((dh_main(void))(Err$void) $scope) {
+fn_((dh_main(void))(E$void) $scope) {
     let loc = srcLoc();
     io_stream_print(u8_l("file_path: {:z}\n"), loc.file_path);
     io_stream_print(u8_l("file_name: {:z}\n"), loc.file_name);

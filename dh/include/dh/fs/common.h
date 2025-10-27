@@ -19,8 +19,8 @@
  *          - File system utilities
  */
 
-#ifndef FS_COMMON_INCLUDED
-#define FS_COMMON_INCLUDED (1)
+#ifndef fs_common__included
+#define fs_common__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -32,15 +32,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-config_ErrSet(fs_FileErr,
+errset_((fs_File_Err)(
     NotFound,
     AccessDenied,
     OpenFailed,
     ReadFailed,
     WriteFailed
-);
+));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* FS_COMMON_INCLUDED */
+#endif /* fs_common__included */

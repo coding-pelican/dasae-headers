@@ -20,6 +20,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "dh/types/Err.h"
+
+#if UNUSED_CODE
 /*========== Includes =======================================================*/
 
 #include "core.h"
@@ -49,60 +52,62 @@ struct Err {
     ErrCode      ctx;
     const ErrVT* vt;
 };
-decl_Sli$(u8);
+decl_S$(u8);
 static $inline fn_((Err_domainToCStr(Err self))(const char*));
-extern fn_((Err_domainToStr(Err self))(Sli_const$u8));
-static $inline fn_((Err_codeToCStr(Err self))(const char*));
-extern fn_((Err_codeToStr(Err self))(Sli_const$u8));
-extern fn_((Err_print(Err self))(void));
+extern fn_((Err_domainToStr(Err self))(S_const$u8));
+static $inline fn_((E_codeToCStr(Err self))(const char*));
+extern fn_((E_codeToStr(Err self))(S_const$u8));
+extern fn_((E_print(Err self))(void));
 
-static $inline fn_((Err_Unknown(void))(Err));
-static $inline fn_((Err_Unexpected(void))(Err));
-static $inline fn_((Err_Unspecified(void))(Err));
-static $inline fn_((Err_Unsupported(void))(Err));
-static $inline fn_((Err_NotImplemented(void))(Err));
-static $inline fn_((Err_InvalidArgument(void))(Err));
-static $inline fn_((Err_None(void))(Err));
+static $inline fn_((E_Unknown(void))(Err));
+static $inline fn_((E_Unexpected(void))(Err));
+static $inline fn_((E_Unspecified(void))(Err));
+static $inline fn_((E_Unsupported(void))(Err));
+static $inline fn_((E_NotImplemented(void))(Err));
+static $inline fn_((E_InvalidArgument(void))(Err));
+static $inline fn_((E_None(void))(Err));
 
-#define config_ErrSet(Name, members...) \
-    /* Implement error interface */ \
-    GEN__config_ErrSet(Name, members)
+#define errset_(/*(_Id)(_enums...)*/...) __errset__exec(pp_defer(__errset__emit)(__errset__parse0 __VA_ARGS__))
+#define __errset__exec(...)              __VA_ARGS__
+#define __errset__parse0(_Id...)         _Id, __errset__parse1
+#define __errset__parse1(_enums...)      _enums
+#define __errset__emit(...)              __errset__emitNext(__VA_ARGS__)
+#define __errset__emitNext(_Id, _enums...) \
+    GEN__config_ErrSet(_Id, _enums)
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-config_ErrSet(io_FileErr,
+errset_((io_FileErr)(
     NotFound,
     AccessDenied,
     OpenFailed,
     ReadFailed,
     WriteFailed
-);
+));
 
-config_ErrSet(io_ParseErr,
+errset_((io_ParseErr)(
     InvalidArgument,
     UnexpectedEOF,
     UnexpectedChar,
     UnexpectedToken,
     UnexpectedTokenType,
     UnexpectedTokenValue
-);
+));
 
-config_ErrSet(math_Err,
+errset_((math_Err)(
     DivisionByZero,
     Overflow,
     Underflow
-);
+));
 
-config_ErrSet(mem_AllocErr,
-    OutOfMemory
-);
+errset_((mem_AllocErr)(OutOfMemory));
 #endif /* EXAMPLE_USAGE */
 
 /*========== Implementations ================================================*/
 
 static $inline fn_((Err_domainToCStr(Err self))(const char*)) { return self.vt->domainToCStr(self.ctx); }
-static $inline fn_((Err_codeToCStr(Err self))(const char*)) { return self.vt->codeToCStr(self.ctx); }
+static $inline fn_((E_codeToCStr(Err self))(const char*)) { return self.vt->codeToCStr(self.ctx); }
 
 static $inline fn_((GeneralErr_domainToCStr(ErrCode ctx))(const char*)) {
     let_ignore = ctx;
@@ -140,13 +145,13 @@ static $inline fn_((GeneralErr_err(ErrCode self))(Err)) {
     };
 }
 
-static $inline fn_((Err_Unknown(void))(Err)) { return GeneralErr_err(ErrCode_Unknown); }
-static $inline fn_((Err_Unexpected(void))(Err)) { return GeneralErr_err(ErrCode_Unexpected); }
-static $inline fn_((Err_Unspecified(void))(Err)) { return GeneralErr_err(ErrCode_Unspecified); }
-static $inline fn_((Err_Unsupported(void))(Err)) { return GeneralErr_err(ErrCode_Unsupported); }
-static $inline fn_((Err_NotImplemented(void))(Err)) { return GeneralErr_err(ErrCode_NotImplemented); }
-static $inline fn_((Err_InvalidArgument(void))(Err)) { return GeneralErr_err(ErrCode_InvalidArgument); }
-static $inline fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
+static $inline fn_((E_Unknown(void))(Err)) { return GeneralErr_err(ErrCode_Unknown); }
+static $inline fn_((E_Unexpected(void))(Err)) { return GeneralErr_err(ErrCode_Unexpected); }
+static $inline fn_((E_Unspecified(void))(Err)) { return GeneralErr_err(ErrCode_Unspecified); }
+static $inline fn_((E_Unsupported(void))(Err)) { return GeneralErr_err(ErrCode_Unsupported); }
+static $inline fn_((E_NotImplemented(void))(Err)) { return GeneralErr_err(ErrCode_NotImplemented); }
+static $inline fn_((E_InvalidArgument(void))(Err)) { return GeneralErr_err(ErrCode_InvalidArgument); }
+static $inline fn_((E_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
 
 #define GEN__config_ErrSet(Name, ...) \
     typedef enum pp_cat(Name, Code) { \
@@ -195,15 +200,19 @@ static $inline fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None);
             __VA_ARGS__ \
         ) \
     ); \
-    typedef struct pp_join($, Name, Void) { \
-        union { \
-            Name err; \
-            Void ok; \
-        } data; \
-        bool is_err; \
+    typedef union pp_join($, Name, Void) { \
+        struct { \
+            var_(is_ok, bool); \
+            TypeOf(union { \
+                var_(err, Name); \
+                var_(ok, Void); \
+                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
+            } $like_ptr) payload; \
+        }; \
+        var_(as_raw, E$raw); \
+        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
     } pp_join($, Name, Void); \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
-
 
 // Helper macro to generate error type enum values
 #define GEN__config_ErrSet__ENUM__Code__members(Name, ...) \
@@ -235,6 +244,7 @@ static $inline fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None);
     static $inline $maybe_unused fn_((pp_join(_, Name, Value)(void))(Err)) { \
         return pp_join(_, Name, err)(pp_cat3(Name, Code_, Value)); \
     }
+#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

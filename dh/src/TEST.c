@@ -29,25 +29,22 @@
 
 fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     /* Singleton instance */
-    static TEST_Framework s_instance       = cleared();
-    static bool           s_is_initialized = false;
-    static heap_Page      s_allocator      = cleared();
+    static TEST_Framework s_instance = cleared();
+    static bool s_is_initialized = false;
+    static heap_Page s_allocator = cleared();
     if (!s_is_initialized) {
-        s_instance.cases = type$(
-            ArrList$TEST_Case,
-            ArrList_init(
-                typeInfo$(TEST_Case),
-                heap_Page_allocator(&s_allocator)
-            )
-        );
+        s_instance.cases = type$((ArrList$TEST_Case)(ArrList_init(
+            typeInfo$(TEST_Case),
+            heap_Page_allocator(&s_allocator)
+        )));
         s_is_initialized = true;
     }
     return &s_instance;
 }
 
-fn_((TEST_Framework_bindCase(TEST_CaseFn fn, Sli_const$u8 name))(void)) {
+fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
     let instance = TEST_Framework_instance();
-    let result   = ArrList_append(
+    let result = ArrList_append(
         instance->cases.base,
         meta_refPtr(&(TEST_Case){ .fn = fn, .name = name })
     );
@@ -55,9 +52,9 @@ fn_((TEST_Framework_bindCase(TEST_CaseFn fn, Sli_const$u8 name))(void)) {
 }
 
 fn_((TEST_Framework_run(void))(void)) {
-    static let print    = io_Writer_print;
-    let        out      = fs_File_writer(io_getStdOut());
-    let        instance = TEST_Framework_instance();
+    static let print = io_Writer_print;
+    let out = fs_File_writer(io_getStdOut());
+    let instance = TEST_Framework_instance();
 
     // Print header
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
@@ -107,7 +104,7 @@ fn_((TEST_Framework_run(void))(void)) {
 }
 
 /* Debug versions of test functions */
-fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 eval_str))(Err$void) $scope) {
+fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void) $scope) {
     let_ignore = loc;
     let_ignore = eval_str;
 
@@ -117,7 +114,7 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, Sli_const$u8 eval_str))(Err$void) $
     return_ok({});
 } $unscoped_(fn);
 
-fn_((TEST_expectMsg_test(bool expr, Sli_const$u8 msg, SrcLoc loc, Sli_const$u8 eval_str))(Err$void) $scope) {
+fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void) $scope) {
     let_ignore = msg;
     let_ignore = loc;
     let_ignore = eval_str;

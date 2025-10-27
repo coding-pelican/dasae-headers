@@ -1,10 +1,10 @@
 #include "utils.h"
 #include "dh/math.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 #include "dh/mem/cfg.h"
 #include <malloc.h>
 
-void mem_swapBytes(Sli$u8 lhs, Sli$u8 rhs) {
+void mem_swapBytes(S$u8 lhs, S$u8 rhs) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
     let tmp_ptr = as$(u8*, alloca(tmp_len));
@@ -22,8 +22,8 @@ $inline_always void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len
 }
 
 void utils_insertionSort(
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
     let ptr  = as$(u8*, base_slice.addr);
     let len  = base_slice.len;
@@ -42,9 +42,9 @@ void utils_insertionSort(
 }
 
 void utils_insertionSortWithArg(
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) {
     let ptr  = as$(u8*, base_slice.addr);
     let len  = base_slice.len;
@@ -62,11 +62,11 @@ void utils_insertionSortWithArg(
     }
 }
 
-// TODO: 와 큰일 날 뻔... 직접적인 meta_Sli 생성은 금지해야겠다. meta_Sli_slice 함수 작성이 시급하다.
-Err$void utils_mergeSortUsingTempRecur( // NOLINT
-    Sli$u8 temp_buffer, meta_Sli base_slice, cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+// TODO: 와 큰일 날 뻔... 직접적인 meta_S 생성은 금지해야겠다. meta_S_slice 함수 작성이 시급하다.
+E$void utils_mergeSortUsingTempRecur( // NOLINT
+    S$u8 temp_buffer, meta_S base_slice, cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(E$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
         utils_insertionSort(base_slice, compareFn);
         return_void();
@@ -80,12 +80,12 @@ Err$void utils_mergeSortUsingTempRecur( // NOLINT
     /* Sort each half recursively */
     try(utils_mergeSortUsingTempRecur(
         temp_buffer,
-        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
+        make$(meta_S, .type = base_type, .addr = base_bytes, .len = mid_idx),
         compareFn
     ));
     try(utils_mergeSortUsingTempRecur(
         temp_buffer,
-        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
+        make$(meta_S, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
         compareFn
     ));
 
@@ -137,10 +137,10 @@ Err$void utils_mergeSortUsingTempRecur( // NOLINT
     return_void();
 }
 
-Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
-    Sli$u8 temp_buffer, meta_Sli base_slice, cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), anyptr_const arg
+E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
+    S$u8 temp_buffer, meta_S base_slice, cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P_const$raw arg
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(E$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
         utils_insertionSortWithArg(base_slice, compareFn, arg);
         return_void();
@@ -154,13 +154,13 @@ Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     /* Sort each half recursively */
     try(utils_mergeSortWithArgUsingTempRecur(
         temp_buffer,
-        make$(meta_Sli, .type = base_type, .addr = base_bytes, .len = mid_idx),
+        make$(meta_S, .type = base_type, .addr = base_bytes, .len = mid_idx),
         compareFn,
         arg
     ));
     try(utils_mergeSortWithArgUsingTempRecur(
         temp_buffer,
-        make$(meta_Sli, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
+        make$(meta_S, .type = base_type, .addr = base_bytes + (mid_idx * base_size), .len = base_len - mid_idx),
         compareFn,
         arg
     ));
@@ -213,14 +213,14 @@ Err$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     return_void();
 }
 
-Err$void utils_stableSort(
+E$void utils_stableSort(
     mem_Allocator allocator,
-    meta_Sli      base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+    meta_S        base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
-        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
         try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
         return_void();
@@ -228,15 +228,15 @@ Err$void utils_stableSort(
     scope_returnReserved;
 }
 
-Err$void utils_stableSortWithArg(
+E$void utils_stableSortWithArg(
     mem_Allocator allocator,
-    meta_Sli      base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+    meta_S        base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
-        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
         try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
         return_void();
@@ -244,36 +244,36 @@ Err$void utils_stableSortWithArg(
     scope_returnReserved;
 }
 
-Err$void utils_stableSortUsingTemp(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs)
+E$void utils_stableSortUsingTemp(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(E$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_AllocE_OutOfMemory());
     }
     try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
     return_void();
 }
 
-Err$void utils_stableSortWithArgUsingTemp(
-    Sli$u8   temp_buffer,
-    meta_Sli base_slice,
-    cmp_Ord (*compareFn)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg
+E$void utils_stableSortWithArgUsingTemp(
+    S$u8   temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) {
-    reserveReturn(Err$void);
+    reserveReturn(E$void);
     let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
     if (temp_buffer.len < checked_size) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_AllocE_OutOfMemory());
     }
     try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
     return_void();
 }
 
-static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
+static $inline cmp_Ord compareBodyDistance(P_const$raw lhs, P_const$raw rhs) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
@@ -283,11 +283,11 @@ static $inline cmp_Ord compareBodyDistance(anyptr_const lhs, anyptr_const rhs) {
     return cmp_Ord_eq;
 }
 
-Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
-    reserveReturn(Err$ArrList$Body);
+E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
+    reserveReturn(E$ArrList$Body);
 
     // Initialize random seed
-    Random_initWithSeed(0);
+    Rand_initWithSeed(0);
 
     // Set up parameters
     const f32 inner_radius = 25.0f;
@@ -307,13 +307,13 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 
     // Generate outer bodies
     while (bodies.items.len < n) {
-        // Random angle
-        let a    = Random_f32() * math_f32_tau;
+        // Rand angle
+        let a    = Rand_f32() * math_f32_tau;
         let sc_a = m_V2f32_sincos(a);
 
-        // Random radius with inner cutoff
+        // Rand radius with inner cutoff
         let t = inner_radius / outer_radius;
-        let r = Random_f32() * (1.0f - t * t) + t * t;
+        let r = Rand_f32() * (1.0f - t * t) + t * t;
 
         // Calculate position and initial velocity direction
         let pos = m_V2f32_scale(sc_a, outer_radius * sqrtf(r));
@@ -354,19 +354,19 @@ Err$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 #if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
 use_Err(MulErr, Overflow);
-$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
-    reserveReturn(Err$usize);
+$inline_always E$usize mulSafe(usize lhs, usize rhs) {
+    reserveReturn(E$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrCode_Overflow));
+        return_err(MulE_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static Err$void mergeSortWithTmpRecur( // NOLINT
-    anyptr base, usize num, usize size, cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg), anyptr arg, Sli$u8 temp_buffer
+static E$void mergeSortWithTmpRecur( // NOLINT
+    P$raw base, usize num, usize size, cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P$raw arg, S$u8 temp_buffer
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }
 
         let mid        = num / 2;
@@ -414,18 +414,18 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
 }
 
 // Modernized stable sort (using merge sort)
-static Err$void stableSort(
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr        arg,
+static E$void stableSort(
+    P$raw base,
+    usize num,
+    usize size,
+    cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P$raw         arg,
     mem_Allocator allocator
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Allocate temporary buffer using the provided allocator
         let checked_size = try(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer))); // Ensure cleanup
 
         // Perform merge sort

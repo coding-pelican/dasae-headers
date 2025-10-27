@@ -3,7 +3,7 @@
 
 // Test state tracking
 static struct TestState {
-    Arr$$(8, i32) cleanup_orders;
+    A$$(8, i32) cleanup_orders;
     i32 cleanup_index;
     i32 counter;
 } s_test_state = cleared();
@@ -11,11 +11,11 @@ static struct TestState {
 // Helper to record cleanup order
 $static
 fn_((recordCleanup(i32 value))(void)) {
-    Arr_setAt(s_test_state.cleanup_orders, s_test_state.cleanup_index++, value);
+    A_setAt(s_test_state.cleanup_orders, s_test_state.cleanup_index++, value);
 }
 
 // Forward declarations of test scope functions
-static fn_((testBasicDeferScope(void))(Err$void)) $must_check;
+static fn_((testBasicDeferScope(void))(E$void)) $must_check;
 static fn_((testMultipleDeferScope(void))(void));
 static fn_((testDeferWithReturnScope(void))(void));
 static fn_((testBlockDeferScope(void))(void));
@@ -29,7 +29,7 @@ TEST_fn_("test basic defer" $scope) {
 } $unscoped_(TEST_fn);
 
 $static
-fn_((testBasicDeferScope(void))(Err$void $guard)) {
+fn_((testBasicDeferScope(void))(E$void $guard)) {
     s_test_state.counter = 1;
     defer_(s_test_state.counter = 2);
     try_(TEST_expect(s_test_state.counter == 1));
@@ -41,9 +41,9 @@ TEST_fn_("test multiple defers" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testMultipleDeferScope();
     // Verify LIFO order: 3, 2, 1
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 0) == 3));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 2));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 2) == 1));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 0) == 3));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 1) == 2));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 2) == 1));
     return_ok({});
 } $unscoped_(TEST_fn);
 
@@ -60,8 +60,8 @@ TEST_fn_("test defer with early return" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testDeferWithReturnScope();
     // Verify cleanup executed in correct order despite early return
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 0) == 2));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 1));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 0) == 2));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 1) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 2));
     return_ok({});
 } $unscoped_(TEST_fn);
@@ -82,10 +82,10 @@ TEST_fn_("test block defer" $scope) {
     s_test_state = cleared$(struct TestState); // Clear state
     testBlockDeferScope();
     // Verify block defer behavior
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 0) == 3));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 1) == 2));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 2) == 5));
-    try_(TEST_expect(Arr_getAt(s_test_state.cleanup_orders, 3) == 1));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 0) == 3));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 1) == 2));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 2) == 5));
+    try_(TEST_expect(A_getAt(s_test_state.cleanup_orders, 3) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 4));
     return_ok({});
 } $unscoped_(TEST_fn);

@@ -12,8 +12,8 @@
  * @prefix  io_stream
  */
 
-#ifndef IO_STREAM_INCLUDED
-#define IO_STREAM_INCLUDED (1)
+#ifndef io_stream__included
+#define io_stream__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -25,19 +25,24 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-extern fn_((io_stream_nl(void))(void));
-extern fn_((io_stream_print(Sli_const$u8 fmt, ...))(void));
-extern fn_((io_stream_printVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
-extern fn_((io_stream_println(Sli_const$u8 fmt, ...))(void));
-extern fn_((io_stream_printlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
+#ifdef UNUSED_CODE
+$extern fn_((io_stream_scan(S_const$u8 fmt, ...))(void));
+$extern fn_((io_stream_scanVaArgs(S_const$u8 fmt, va_list va_args))(void));
+#endif /* UNUSED_CODE */
 
-extern fn_((io_stream_enl(void))(void));
-extern fn_((io_stream_eprint(Sli_const$u8 fmt, ...))(void));
-extern fn_((io_stream_eprintVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
-extern fn_((io_stream_eprintln(Sli_const$u8 fmt, ...))(void));
-extern fn_((io_stream_eprintlnVaArgs(Sli_const$u8 fmt, va_list va_args))(void));
+$extern fn_((io_stream_nl(void))(void));
+$extern fn_((io_stream_print(S_const$u8 fmt, ...))(void));
+$extern fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void));
+$extern fn_((io_stream_println(S_const$u8 fmt, ...))(void));
+$extern fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void));
+
+$extern fn_((io_stream_enl(void))(void));
+$extern fn_((io_stream_eprint(S_const$u8 fmt, ...))(void));
+$extern fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void));
+$extern fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void));
+$extern fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* IO_STREAM_INCLUDED */
+#endif /* io_stream__included */

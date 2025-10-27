@@ -40,15 +40,15 @@ typedef variant_(
     }),
     (TreeNode_leaf, struct TreeNode_Leaf { i32 class_label; })
 ) TreeNode;
-use_Ptr$(TreeNode);
-use_Err$(Ptr$TreeNode);
+use_P$(TreeNode);
+use_E$(P$TreeNode);
 
 // Forward declarations
 
 $static $must_use
-fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(Err$Ptr$TreeNode));
+fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(E$P$TreeNode));
 $static $must_use
-fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(Err$Ptr$TreeNode));
+fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode));
 $static
 fn_((TreeNode_destroyRecur(mem_Allocator allocator, TreeNode* node))(void));
 $static
@@ -56,9 +56,9 @@ fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features)
 $static
 fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void));
 $static $must_use
-fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void));
+fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void));
 $static $must_use
-fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$TreeNode));
+fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(E$P$TreeNode));
 
 // Dataset structure
 typedef struct Dataset {
@@ -67,17 +67,17 @@ typedef struct Dataset {
     u32 n_samples;
     u32 n_features;
 } Dataset;
-use_Err$(Dataset);
+use_E$(Dataset);
 
 // Forward declarations
 $static $must_use
-fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header))(Err$Dataset));
+fn_((Dataset_loadFromCSV(mem_Allocator allocator, S_const$u8 filename, bool has_header))(E$Dataset));
 $static
 fn_((Dataset_destroy(Dataset* dataset))(void));
 
 
 // Main function
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     // Initialize logging to a file
@@ -142,7 +142,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     with_(var save_file = fopen("decision_tree.bin", "wb")) {
         if (!save_file) {
             log_error("Failed to open file for writing: decision_tree.bin");
-            return_err(fs_FileErr_OpenFailed());
+            return_err(fs_File_E_OpenFailed());
         }
 
         try_(TreeNode_saveToFileRecur(root, save_file));
@@ -155,7 +155,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         var load_file = fopen("decision_tree.bin", "rb");
         if (!load_file) {
             log_error("Failed to open file for reading: decision_tree.bin");
-            return_err(fs_FileErr_OpenFailed());
+            return_err(fs_File_E_OpenFailed());
         }
 
         let loaded = try_(TreeNode_loadFromFileRecur(allocator, load_file));
@@ -187,14 +187,14 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 } $unguarded_(fn);
 
 // Implementation of TreeNode functions
-fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(Err$Ptr$TreeNode) $scope) {
-    let node = meta_castPtr$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
+fn_((TreeNode_createLeaf(mem_Allocator allocator, i32 class_label))(E$P$TreeNode) $scope) {
+    let node = meta_castP$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
     variant_asg(node, variant_of(TreeNode_leaf, { .class_label = class_label }));
     return_ok(node);
 } $unscoped_(fn);
 
-fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(Err$Ptr$TreeNode) $scope) {
-    let node = meta_castPtr$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
+fn_((TreeNode_createDecision(mem_Allocator allocator, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode) $scope) {
+    let node = meta_castP$(TreeNode*, try_(mem_Allocator_create(allocator, typeInfo$(TreeNode))));
     variant_asg(node, variant_of(TreeNode_decision, { .feature_index = feature_index, .threshold = threshold, .left = left, .right = right }));
     return_ok(node);
 } $unscoped_(fn);
@@ -269,24 +269,24 @@ fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void)) /* NOLINT(misc
     });
 }
 
-fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void) $scope) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void) $scope) /* NOLINT(misc-no-recursion) */ {
     if (fwrite(&node->tag, sizeof(node->tag), 1, file) != 1) {
         log_error("Failed to write node tag");
-        return_err(fs_FileErr_WriteFailed());
+        return_err(fs_File_E_WriteFailed());
     }
 
     match_(*node, {
         pattern_(TreeNode_leaf, (leaf), {
             if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
                 log_error("Failed to write leaf data");
-                return_err(fs_FileErr_WriteFailed());
+                return_err(fs_File_E_WriteFailed());
             }
         }) break;
         pattern_(TreeNode_decision, (decision), {
             if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1
                 || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
                 log_error("Failed to write decision node data");
-                return_err(fs_FileErr_WriteFailed());
+                return_err(fs_File_E_WriteFailed());
             }
             // Recursively save children
             try_(TreeNode_saveToFileRecur(decision->left, file));
@@ -301,12 +301,12 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(Err$void) $scop
     return_ok({});
 } $unscoped_(fn);
 
-fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$TreeNode) $scope) /* NOLINT(misc-no-recursion) */ {
+fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(E$P$TreeNode) $scope) /* NOLINT(misc-no-recursion) */ {
     let tag = blk({
         int tag = 0;
         if (fread(&tag, sizeof(tag), 1, file) != 1) {
             log_error("Failed to read node tag");
-            return_err(fs_FileErr_ReadFailed());
+            return_err(fs_File_E_ReadFailed());
         }
         blk_return tag;
     });
@@ -315,7 +315,7 @@ fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$Tr
         i32 class_label = 0;
         if (fread(&class_label, sizeof(class_label), 1, file) != 1) {
             log_error("Failed to read leaf data");
-            return_err(fs_FileErr_ReadFailed());
+            return_err(fs_File_E_ReadFailed());
         }
 
         return_ok(try_(TreeNode_createLeaf(allocator, class_label)));
@@ -324,7 +324,7 @@ fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$Tr
         f32 threshold     = 0;
         if (fread(&feature_index, sizeof(feature_index), 1, file) != 1 || fread(&threshold, sizeof(threshold), 1, file) != 1) {
             log_error("Failed to read decision node data");
-            return_err(fs_FileErr_ReadFailed());
+            return_err(fs_File_E_ReadFailed());
         }
 
         // Recursively load children
@@ -334,14 +334,14 @@ fn_((TreeNode_loadFromFileRecur(mem_Allocator allocator, FILE* file))(Err$Ptr$Tr
         return_ok(try_(TreeNode_createDecision(allocator, feature_index, threshold, left, right)));
     } else {
         log_error("Invalid node tag found in file: %d", tag);
-        return_err(fs_FileErr_ReadFailed());
+        return_err(fs_File_E_ReadFailed());
     }
 } $unscoped_(fn);
 
 // Implementation of Dataset functions
-fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool has_header))(Err$Dataset) $guard) {
-    // Convert Sli_const$u8 to C string for compatibility with fopen
-    let filename_buf = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1)));
+fn_((Dataset_loadFromCSV(mem_Allocator allocator, S_const$u8 filename, bool has_header))(E$Dataset) $guard) {
+    // Convert S_const$u8 to C string for compatibility with fopen
+    let filename_buf = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), filename.len + 1)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(filename_buf)));
 
     mem_copy(filename_buf.ptr, filename.ptr, filename.len);
@@ -350,7 +350,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool ha
     FILE* file = fopen((const char*)filename_buf.ptr, "r");
     if (file == null) {
         log_error("Failed to open file: %.*s", (int)filename.len, filename.ptr);
-        return_err(fs_FileErr_OpenFailed());
+        return_err(fs_File_E_OpenFailed());
     }
     defer_(let_ignore = fclose(file));
 
@@ -399,7 +399,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator allocator, Sli_const$u8 filename, bool ha
         // Skip header line
         if (!fgets(line, sizeof(line), file)) {
             log_error("Failed to skip header line");
-            return_err(fs_FileErr_ReadFailed());
+            return_err(fs_FileE_ReadFailed());
         }
     }
 

@@ -11,6 +11,6 @@ typedef struct engine_NotepadBackend {
     usize                buffer_capacity;
 } engine_NotepadBackend;
 
-extern Err$Ptr$engine_RenderBackend NotepadBackend_create(void) $must_check;
+extern E$P$engine_RenderBackend NotepadBackend_create(void) $must_check;
 
 #endif /* ENGINE_PLUGIN_NOTEPAD_BACKEND */

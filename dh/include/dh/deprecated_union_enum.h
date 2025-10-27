@@ -200,8 +200,8 @@ config_UnionEnum(InputEvent,
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
 );
-use_Opt$(InputEvent);
-extern fn_(pullInputEvent(void), Opt$InputEvent);
+use_O$(InputEvent);
+extern fn_(pullInputEvent(void), O$InputEvent);
 
 static void example_handleEvent(void) {
     if_some(pullInputEvent(), event) {

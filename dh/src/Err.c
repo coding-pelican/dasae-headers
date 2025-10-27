@@ -4,11 +4,11 @@
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
 
-fn_((Err_domainToStr(Err self))(Sli_const$u8)) {
+fn_((Err_domainToStr(Err self))(S_const$u8)) {
     return Str_viewZ(as$((const u8*)(self.vt->domainToCStr(self.ctx))));
 }
 
-fn_((Err_codeToStr(Err self))(Sli_const$u8)) {
+fn_((Err_codeToStr(Err self))(S_const$u8)) {
     return Str_viewZ(as$((const u8*)(self.vt->codeToCStr(self.ctx))));
 }
 

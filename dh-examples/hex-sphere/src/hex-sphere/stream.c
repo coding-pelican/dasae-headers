@@ -7,7 +7,7 @@
 #include <unistd.h>
 #endif /* bti_plat_windows */
 
-func((stream_fastOut(Sli_const$u8 data))(void)) {
+func((stream_fastOut(S_const$u8 data))(void)) {
     let stream_out = io_getStdOut().handle;
 #if bti_plat_windows
 #if !stream_fastOut__comp_windows_allow_ansi
@@ -23,7 +23,7 @@ func((stream_fastOut(Sli_const$u8 data))(void)) {
     usize       written_len = 0;
     while (written_len < data.len) {
         let to_write = prim_min(chunk_len, data.len - written_len);
-        let_ignore      = write(stream_out, data.ptr + written_len, to_write);
+        let_ignore   = write(stream_out, data.ptr + written_len, to_write);
         written_len += to_write;
     }
 #endif

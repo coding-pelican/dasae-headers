@@ -21,32 +21,32 @@ fn_((init(void))(void)) {
     s_initialized = true;
 }
 
-Sli_const$u8 Str_view(const u8* ptr, usize len) {
+S_const$u8 Str_view(const u8* ptr, usize len) {
     debug_assert_nonnull(ptr);
-    return (Sli_const$u8){ .ptr = ptr, .len = len };
+    return (S_const$u8){ .ptr = ptr, .len = len };
 }
 
-Sli_const$u8 Str_viewZ(const u8* ptr) {
+S_const$u8 Str_viewZ(const u8* ptr) {
     debug_assert_nonnull(ptr);
     return Str_view(ptr, strlen(as$((const char*)(ptr))));
 }
 
-Sli$u8 Str_from(u8 ptr[], usize len) {
+S$u8 Str_from(u8 ptr[], usize len) {
     debug_assert_nonnull(ptr);
-    return (Sli$u8){ .ptr = ptr, .len = len };
+    return (S$u8){ .ptr = ptr, .len = len };
 }
 
-Sli$u8 Str_fromZ(u8 ptr[]) {
+S$u8 Str_fromZ(u8 ptr[]) {
     debug_assert_nonnull(ptr);
     return Str_from(ptr, strlen(as$((char*)(ptr))));
 }
 
-usize Str_len(Sli_const$u8 self) {
+usize u8_len(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     return self.len;
 }
 
-bool Str_eql(Sli_const$u8 lhs, Sli_const$u8 rhs) {
+bool Str_eql(S_const$u8 lhs, S_const$u8 rhs) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
@@ -54,53 +54,53 @@ bool Str_eql(Sli_const$u8 lhs, Sli_const$u8 rhs) {
     return mem_eqlBytes(lhs.ptr, rhs.ptr, lhs.len);
 }
 
-bool Str_eqlNoCase(Sli_const$u8 lhs, Sli_const$u8 rhs) {
+bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
     if (lhs.len != rhs.len) { return false; }
     let len = lhs.len;
     for (usize ch = 0; ch < len; ++ch) {
-        if (tolower(*Sli_at(lhs, ch)) != tolower(*Sli_at(rhs, ch))) {
+        if (tolower(*at$S(lhs, ch)) != tolower(*at$S(rhs, ch))) {
             return false;
         }
     }
     return true;
 }
 
-bool Sli_const$u8Castable(Sli_const$u8 self) {
+bool S_const$u8Castable(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
 #if bti_plat_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();
-    if (!VirtualQuery(self.ptr, &mbi, sizeOf(mbi))) { return false; }
+    if (!VirtualQuery(self.ptr, &mbi, sizeOf$(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;
 #else  /* posix */
     return !mprotect(
-        intToRawptr$(anyptr, rawptrToInt(self.ptr) & ~(sysconf(_SC_PAGESIZE) - 1)),
+        intToPtr$(P$raw, ptrToInt(self.ptr) & ~(sysconf(_SC_PAGESIZE) - 1)),
         1,
         PROT_READ | PROT_WRITE
     );
 #endif /* posix */
 }
 
-Opt$Sli$u8 Sli_const$u8Cast(Sli_const$u8 self) {
+O$S$u8 S_const$u8Cast(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
-    if (!Sli_const$u8Castable(self)) { return none$(Opt$Sli$u8); }
-    return some$(Opt$Sli$u8, Str_from(as$((u8*)(self.ptr)), self.len));
+    if (!S_const$u8Castable(self)) { return none$((S$u8)); }
+    return some$((S$u8)(Str_from(as$((u8*)(self.ptr)), self.len)));
 }
 
-fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$Sli$u8) $scope) {
+fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $scope) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
 
     let total_len = lhs.len + rhs.len;
-    let result    = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len)));
+    let result    = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
 } $unscoped_(fn);
 
-/* fn_((Str_format(mem_Allocator allocator, const char* format, ...))(Err$Sli$u8) $guard) {
+/* fn_((Str_format(mem_Allocator allocator, const char* format, ...))(E$S$u8) $guard) {
     va_list args1 = {};
     va_start(args1, format);
     defer_(va_end(args1));
@@ -115,7 +115,7 @@ fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$S
         blk_return as$(usize, res);
     });
 
-    var result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
+    var result = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), len + 1)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(result)));
     {
         let_ignore = vsnprintf((char*)result.ptr, len + 1, format, args2);
@@ -124,7 +124,7 @@ fn_((Str_cat(mem_Allocator allocator, Sli_const$u8 lhs, Sli_const$u8 rhs))(Err$S
     return_ok(result);
 } $unguarded_(fn); */
 
-Sli_const$u8 Str_slice(Sli_const$u8 self, usize start, usize end) {
+S_const$u8 Str_slice(S_const$u8 self, usize start, usize end) {
     debug_assert_nonnull(self.ptr);
     debug_assert(start < end);
     debug_assert(end <= self.len);
@@ -132,7 +132,7 @@ Sli_const$u8 Str_slice(Sli_const$u8 self, usize start, usize end) {
     return Str_view(self.ptr + start, end - start);
 }
 
-Sli_const$u8 Str_trim(Sli_const$u8 self) {
+S_const$u8 Str_trim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize start = 0;
     usize end   = self.len;
@@ -143,41 +143,41 @@ Sli_const$u8 Str_trim(Sli_const$u8 self) {
     return Str_slice(self, start, end);
 }
 
-Sli_const$u8 Str_ltrim(Sli_const$u8 self) {
+S_const$u8 u8_ltrim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize start = 0;
     while (start < self.len && isspace(self.ptr[start])) { start++; }
     return Str_slice(self, start, self.len);
 }
 
-Sli_const$u8 Str_rtrim(Sli_const$u8 self) {
+S_const$u8 Str_rtrim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize end = self.len;
     while (end > 0 && isspace(self.ptr[end - 1])) { end--; }
     return Str_slice(self, 0, end);
 }
 
-fn_((Str_upper(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
+fn_((Str_upper(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
-    let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
+    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
         *dst = as$((u8)(toupper(*src)));
     });
     return_ok(result);
 } $unscoped_(fn);
 
-fn_((Str_lower(mem_Allocator allocator, Sli_const$u8 str))(Err$Sli$u8) $scope) {
+fn_((u8_lower(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
 
-    let result = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len)));
+    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
         *dst = as$((u8)(tolower(*src)));
     });
     return_ok(result);
 } $unscoped_(fn);
 
-bool Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle) {
+bool Str_contains(S_const$u8 haystack, S_const$u8 needle) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -189,19 +189,19 @@ bool Str_contains(Sli_const$u8 haystack, Sli_const$u8 needle) {
     })) eval_(else)({ $break_(false); }) $unscoped_(eval);
 }
 
-fn_((Str_find(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {
+fn_((Str_find(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
-    return eval_(Opt$usize $scope)(for_(($r(start, $incl(haystack.len - needle.len)))(i) {
+    return eval_(O$usize $scope)(for_(($r(start, $incl(haystack.len - needle.len)))(i) {
         if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
             $break_(some(i));
         }
     })) eval_(else)({ $break_(none()); }) $unscoped_(eval);
 } $unscoped_(fn);
 
-fn_((Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usize) $scope) {
+fn_((Str_rfind(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(needle.ptr);
 
@@ -214,14 +214,14 @@ fn_((Str_rfind(Sli_const$u8 haystack, Sli_const$u8 needle, usize start))(Opt$usi
     return_none();
 } $unscoped_(fn);
 
-fn_((Str_startsWith(Sli_const$u8 self, Sli_const$u8 prefix))(Opt$usize) $scope) {
+fn_((Str_startsWith(S_const$u8 self, S_const$u8 prefix))(O$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < prefix.len) { return_none(); }
     if (!mem_eqlBytes(self.ptr, prefix.ptr, prefix.len)) { return_none(); }
     return_some(prefix.len);
 } $unscoped_(fn);
 
-fn_((Str_endsWith(Sli_const$u8 self, Sli_const$u8 suffix))(Opt$usize) $scope) {
+fn_((Str_endsWith(S_const$u8 self, S_const$u8 suffix))(O$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < suffix.len) { return_none(); }
     if (!mem_eqlBytes(self.ptr + self.len - suffix.len, suffix.ptr, suffix.len)) { return_none(); }
@@ -280,12 +280,12 @@ static u32 hashMurmur3(const u8* data, usize len) {
     return hash;
 }
 
-StrHash Str_hash(Sli_const$u8 self) {
+StrHash Str_hash(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     return hashMurmur3(self.ptr, self.len);
 }
 
-cmp_fnCmp(Sli_const$u8) {
+cmp_fnCmp(S_const$u8) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(other.ptr);
 
@@ -296,7 +296,7 @@ cmp_fnCmp(Sli_const$u8) {
     return prim_cmp(self.len, self.len);
 }
 
-cmp_fnCmp(Sli$u8) {
+cmp_fnCmp(S$u8) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(other.ptr);
 
@@ -307,7 +307,7 @@ cmp_fnCmp(Sli$u8) {
     return prim_cmp(self.len, self.len);
 }
 
-usize StrUtf8_len(Sli_const$u8 self) {
+usize StrUtf8_len(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize count = 0;
     for (usize i = 0; i < self.len; ++i) {
@@ -318,7 +318,7 @@ usize StrUtf8_len(Sli_const$u8 self) {
     return count;
 }
 
-u8 StrUtf8_seqLen(Sli_const$u8 self, usize pos) {
+u8 StrUtf8_seqLen(S_const$u8 self, usize pos) {
     debug_assert_nonnull(self.ptr);
     debug_assert(pos < self.len);
 
@@ -332,7 +332,7 @@ u8 StrUtf8_seqLen(Sli_const$u8 self, usize pos) {
     return 1; // Invalid UTF-8 sequence, treat as single byte
 }
 
-bool StrUtf8_isValid(Sli_const$u8 self) {
+bool StrUtf8_isValid(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
 
     for (usize i = 0; i < self.len;) {
@@ -351,7 +351,7 @@ bool StrUtf8_isValid(Sli_const$u8 self) {
     return true;
 }
 
-fn_((StrUtf8_codepointAt(Sli_const$u8 self, usize pos))(Opt$u32) $scope) {
+fn_((StrUtf8_codepointAt(S_const$u8 self, usize pos))(O$u32) $scope) {
     debug_assert_nonnull(self.ptr);
     debug_assert(pos < self.len);
 
@@ -387,12 +387,12 @@ fn_((StrUtf8_codepointAt(Sli_const$u8 self, usize pos))(Opt$u32) $scope) {
     return_none();
 } $unscoped_(fn);
 
-StrUtf8Iter StrUtf8_iter(Sli_const$u8 self) {
+StrUtf8Iter StrUtf8_iter(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     return (StrUtf8Iter){ .str = self, .pos = 0 };
 }
 
-bool StrUtf8Iter_next(StrUtf8Iter* iter, Opt$u32* out_codepoint) {
+bool StrUtf8Iter_next(StrUtf8Iter* iter, O$u32* out_codepoint) {
     debug_assert_nonnull(iter);
     debug_assert_nonnull(iter->str.ptr);
     debug_assert_nonnull(out_codepoint);
@@ -403,7 +403,7 @@ bool StrUtf8Iter_next(StrUtf8Iter* iter, Opt$u32* out_codepoint) {
     return true;
 }
 
-StrTokenizer Str_tokenizer(Sli_const$u8 self, Sli_const$u8 delims) {
+StrTokenizer Str_tokenizer(S_const$u8 self, S_const$u8 delims) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(delims.ptr);
 
@@ -414,7 +414,7 @@ StrTokenizer Str_tokenizer(Sli_const$u8 self, Sli_const$u8 delims) {
     };
 }
 
-fn_((StrTokenizer_next(StrTokenizer* self))(Opt$Sli_const$u8) $scope) {
+fn_((StrTokenizer_next(StrTokenizer* self))(O$S_const$u8) $scope) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->str.ptr);
     debug_assert_nonnull(self->delims.ptr);

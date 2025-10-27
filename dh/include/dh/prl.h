@@ -23,59 +23,38 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
+#include "dh/fn.h"
+#include "dh/Range.h"
 #include "dh/scope.h"
 #include "dh/blk.h"
-#include "dh/fn.h"
-#include "dh/callback.h"
 #include "dh/pipe.h"
+#include "dh/callback.h"
 
-#include "dh/Range.h"
-#include "dh/ptr.h"
-#include "dh/sli.h"
-#include "dh/Arr.h"
-
+#include "dh/types.h"
 #include "dh/variant.h"
-#include "dh/opt.h"
-#include "dh/Err.h"
-#include "dh/err_res.h"
 #include "dh/ErrTrace.h"
 
 /*========== Macros and Declarations ========================================*/
 
-// clang-format off
-#define useT$(_T) \
-    use_Ptr$(_T); use_Sli$(_T); \
-    use_Ptr$(Ptr_const$(_T)); use_Ptr$(Ptr$(_T)); \
-    use_Sli$(Ptr_const$(_T)); use_Sli$(Ptr$(_T)); \
-    use_Ptr$(Sli_const$(_T)); use_Ptr$(Sli$(_T)); \
-    use_Sli$(Sli_const$(_T)); use_Sli$(Sli$(_T)); \
-    use_Opt$(_T); \
-    use_Opt$(Sli_const$(_T)); use_Opt$(Sli$(_T)); \
-    use_Ptr$(Opt$(_T)); use_Sli$(Opt$(_T)); \
-    use_Ptr$(Opt$(Ptr_const$(_T))); use_Ptr$(Opt$(Ptr$(_T))); \
-    use_Sli$(Opt$(Ptr_const$(_T))); use_Sli$(Opt$(Ptr$(_T))); \
-    use_Ptr$(Opt$(Sli_const$(_T))); use_Ptr$(Opt$(Sli$(_T))); \
-    use_Sli$(Opt$(Sli_const$(_T))); use_Sli$(Opt$(Sli$(_T))); \
-    use_Err$(_T); \
-    use_Err$(Sli_const$(_T)); use_Err$(Sli$(_T)); \
-    use_Ptr$(Err$(_T)); use_Sli$(Err$(_T)); \
-    use_Ptr$(Err$(Ptr_const$(_T))); use_Ptr$(Err$(Ptr$(_T))); \
-    use_Sli$(Err$(Ptr_const$(_T))); use_Sli$(Err$(Ptr$(_T))); \
-    use_Ptr$(Err$(Sli_const$(_T))); use_Ptr$(Err$(Sli$(_T))); \
-    use_Sli$(Err$(Sli_const$(_T))); use_Sli$(Err$(Sli$(_T)))
-// clang-format on
+#define prl_T_use$(_T...) \
+    T_use$(_T, (P, S, O, E)); \
+    T_use$(P$(const _T), (P, S, O, E)); \
+    T_use$(P$(_T), (P, S, O, E)); \
+    T_use$(S$(const _T), (P, S, O, E)); \
+    T_use$(S$(_T), (P, S, O, E)); \
+    T_use$(O$(_T), (P, S, O, E)); \
+    T_use$(E$(_T), (P, S, O, E))
 
 /*========== Macros and Definitions =========================================*/
 
 // clang-format off
-useT$(u8); useT$(u16); useT$(u32); useT$(u64); useT$(usize);
-useT$(i8); useT$(i16); useT$(i32); useT$(i64); useT$(isize);
-useT$(f32); useT$(f64);
-useT$(bool);
-useT$(voidptr);
-useT$(voidptr_const);
+prl_T_use$(u8); prl_T_use$(u16); prl_T_use$(u32); prl_T_use$(u64); prl_T_use$(usize);
+prl_T_use$(i8); prl_T_use$(i16); prl_T_use$(i32); prl_T_use$(i64); prl_T_use$(isize);
+prl_T_use$(f32); prl_T_use$(f64);
+prl_T_use$(bool);
+prl_T_use$(meta_P$raw); prl_T_use$(meta_S$raw);
+prl_T_use$(meta_V$raw); prl_T_use$(meta_A$raw);
 // clang-format on
-#undef useT$
 
 #if defined(__cplusplus)
 } /* extern "C" */

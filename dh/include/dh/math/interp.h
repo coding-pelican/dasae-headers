@@ -65,7 +65,7 @@
 //     let _t = (val_t);                                      \
 //     if (_t < 0 || _t > 1) {                                \
 //         /* Interpolation factor out of range */            \
-//         return_err(math_Err_err(math_ErrCode_OutOfRange)); \
+//         return_err(math_E_err(math_ErrCode_OutOfRange)); \
 //     };                                                     \
 //     return_ok(_a + (_b - _a) * _t);                        \
 //})
@@ -85,7 +85,7 @@
 //     let _edge1 = (val_edge1);                                       \
 //     if (_edge0 >= _edge1) {                                         \
 //         /* Edge values are equal */                                 \
-//         return_err(math_Err_err(math_ErrCode_OutOfRange));          \
+//         return_err(math_E_err(math_ErrCode_OutOfRange));          \
 //     };                                                              \
 //     let _t = math_clamp((_x - _edge0) / (_edge1 - _edge0), 0, 1);   \
 //     blk_return _t * _t * (3 - 2 * _t);                             \

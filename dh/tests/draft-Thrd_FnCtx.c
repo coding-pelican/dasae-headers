@@ -32,7 +32,7 @@ fn_((demoThrd(Thrd_FnCtx* ctx))(Thrd_FnRet*)) {
     return self->ret.value = cnt, self->ret.base;
 }
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let direct_run = *as$((TypeOf(((FnCtx$demoThrd*)0)->ret.value)*)(

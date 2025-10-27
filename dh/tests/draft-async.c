@@ -4,20 +4,20 @@
 #include "dh/Str.h"
 #include "dh/time/common.h"
 
-static fn_((io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...))(Err$usize)) $must_check;
-static fn_((io_writeFmt(Sli$u8 stream, Sli_const$u8 format, ...))(Err$usize) $guard) {
+static fn_((io_writeFmt(S$u8 stream, S_const$u8 format, ...))(E$usize)) $must_check;
+static fn_((io_writeFmt(S$u8 stream, S_const$u8 format, ...))(E$usize) $guard) {
     va_list args = {};
     va_start(args, format);
     defer_(va_end(args));
     let written = vsnprintf(
         as$((char*)(stream.ptr)), stream.len,
         as$((const char*)(format.ptr)), args);
-    if (written < 0) { return_err(Err_Unexpected()); }
+    if (written < 0) { return_err(E_Unexpected()); }
     return_ok(written);
 } $unguarded_(fn);
 
-static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)) $must_check;
-static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8) $scope) {
+static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8)) $must_check;
+static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8) $scope) {
     usize written     = 0;
     let   total_nanos = (self.secs * time_nanos_per_sec) + self.nanos;
     if (total_nanos < time_nanos_per_micro) { // < 1 μs
@@ -74,12 +74,12 @@ static fn_((time_Duration_fmt(time_Duration self, Sli$u8 buf))(Err$Sli_const$u8)
     }
 
     if (buf.len <= written) {
-        return_err(Err_Unexpected());
+        return_err(E_Unexpected());
     }
     return_ok(Str_slice(buf.as_const, 0,  written));
 } $unscoped_(fn);
 
-static fn_((time_Instant_fmt(time_Instant self, Sli$u8 buf))(Err$Sli_const$u8) $scope) {
+static fn_((time_Instant_fmt(time_Instant self, S$u8 buf))(E$S_const$u8) $scope) {
     // Get Unix timestamp in seconds
     let unix_secs = time_Instant_toUnixEpoch(self);
 
@@ -116,7 +116,7 @@ static fn_((time_Instant_fmt(time_Instant self, Sli$u8 buf))(Err$Sli_const$u8) $
     }
 
     if (buf.len <= written) {
-        return_err(Err_Unexpected());
+        return_err(E_Unexpected());
     }
     return_ok(Str_slice(buf.as_const, 0, written));
 } $unscoped_(fn);
@@ -129,7 +129,7 @@ typedef struct PQue {
     ArrList    list;
     sort_CmpFn cmpFn;
 } PQue;
-use_Err$(PQue);
+use_E$(PQue);
 #define PQue$(T) pp_join($, PQue, T)
 #define PQue$$(T) \
     union { \
@@ -158,7 +158,7 @@ fn_((PQue_init(TypeInfo type, mem_Allocator allocator, sort_CmpFn cmpFn))(PQue))
 }
 
 $must_check
-fn_((PQue_initCap(TypeInfo type, mem_Allocator allocator, usize cap, sort_CmpFn cmpFn))(Err$PQue) $scope) {
+fn_((PQue_initCap(TypeInfo type, mem_Allocator allocator, usize cap, sort_CmpFn cmpFn))(E$PQue) $scope) {
     return_ok({
         .list  = try_(ArrList_initCap(type, allocator, cap)),
         .cmpFn = cmpFn,
@@ -170,13 +170,13 @@ fn_((PQue_fini(PQue* self))(void)) {
 }
 
 $must_check
-fn_((PQue_enq(PQue* self, meta_Ptr item))(Err$void) $scope) {
+fn_((PQue_enq(PQue* self, meta_P$raw item))(E$void) $scope) {
     try_(ArrList_append(&self->list, item));
     try_(sort_stableSort(self->list.allocator, self->list.items, self->cmpFn));
     return_ok({});
 } $unscoped_(fn);
 
-fn_((PQue_deqOrNull(PQue* self))(Opt$meta_Ptr) $scope) {
+fn_((PQue_deqOrNull(PQue* self))(O$meta_P$raw) $scope) {
     if (self->list.items.len == 0) { return_none(); }
     return_(ArrList_shiftOrNull(&self->list));
 } $unscoped_(fn);
@@ -196,9 +196,9 @@ typedef struct Task {
     var_(frame, Co_Ctx*);
     var_(expires, time_Instant);
 } Task;
-use_Ptr$(Task);
-use_Sli$(Task);
-use_Opt$(Task);
+use_P$(Task);
+use_S$(Task);
+use_O$(Task);
 use_ArrList$(Task);
 use_PQue$(Task);
 
@@ -206,19 +206,19 @@ use_PQue$(Task);
 static PQue$Task timer_queue = { 0 };
 
 // Suspend for time in milliseconds
-use_Opt$(Co_Ctx);
+use_O$(Co_Ctx);
 use_Co_Ctx$(Void);
-async_fn_(waitForTime, (var_(caller, Opt$Ptr$Co_Ctx); var_(name, Sli_const$u8); var_(ms, u64);), Void);
+async_fn_(waitForTime, (var_(caller, O$P$Co_Ctx); var_(name, S_const$u8); var_(ms, u64);), Void);
 async_fn_scope(waitForTime, {}) {
     let_ignore = locals;
     let stream = fs_File_writer(io_getStdOut());
     catch_((io_Writer_print(
         stream, u8_l("debug: [waitForTime({:zu})] starting <- [{:s}({:zx})]\n"),
-        intFromRawptr(ctx->base), args->name, intFromRawptr(orelse(args->caller, ctx->anyraw))
+        intFromPtr(ctx->base), args->name, intFromPtr(orelse(args->caller, ctx->anyraw))
     ))($ignore, return_void()));
     catch_((io_Writer_print(
         stream, u8_l("debug: [waitForTime({:zu})] starting <- [{:s}({:zx})]\n"),
-        intFromRawptr(ctx->base), args->name, intFromRawptr(orelse(args->caller, ctx->anyraw))
+        intFromPtr(ctx->base), args->name, intFromPtr(orelse(args->caller, ctx->anyraw))
     ))($ignore, claim_unreachable));
     suspend_({
         static let addDur = time_Instant_addDuration;
@@ -239,7 +239,7 @@ async_fn_scope(waitForTime, {}) {
 } $unscoped_(async_fn);
 
 // Coroutine: waitUntilAndPrint
-async_fn_(waitUntilAndPrint, (var_(caller, Opt$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, Sli_const$u8);), Void);
+async_fn_(waitUntilAndPrint, (var_(caller, O$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, S_const$u8);), Void);
 async_fn_scope(waitUntilAndPrint, {
     time_Instant start;
     Co_CtxFn$(waitForTime) wait_ctx;
@@ -255,7 +255,7 @@ async_fn_scope(waitUntilAndPrint, {
     debug_assert(locals->wait_ctx.state == Co_State_ready);
     printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)), args->time1);
     {
-        static let asSecs   = time_Duration_asSecs_f64;
+        static let asSecs   = time_Duration_asSecs$f64;
         static let durSince = time_Instant_durationSince;
         static let now      = time_Instant_now;
         printf(
@@ -274,7 +274,7 @@ async_fn_scope(waitUntilAndPrint, {
     debug_assert(locals->wait_ctx.state == Co_State_ready);
     printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$((i32)(args->name.len)), args->name.ptr, as$((u64)(ctx->base)), args->time2);
     {
-        static let asSecs   = time_Duration_asSecs_f64;
+        static let asSecs   = time_Duration_asSecs$f64;
         static let durSince = time_Instant_durationSince;
         static let now      = time_Instant_now;
         printf(
@@ -298,7 +298,7 @@ async_fn_scope(waitUntilAndPrint, {
 #include "dh/io/stream.h"
 
 TEST_fn_("Test time_Duration sort" $guard) {
-    use_Sli$(time_Duration);
+    use_S$(time_Duration);
     use_ArrList$(time_Duration);
     var times = typeCast$((ArrList$time_Duration)(ArrList_init(
         typeInfo$(time_Duration),
@@ -313,29 +313,29 @@ TEST_fn_("Test time_Duration sort" $guard) {
         try_(ArrList_append(times.base, meta_create$((time_Duration)({ .secs = 40 }))));
         try_(ArrList_append(times.base, meta_create$((time_Duration)({ .secs = 30 }))));
 
-        var mem = (Arr$$(128, u8)){};
-        var buf = Arr_slice$(Sli$u8, mem, $r(0, 128));
-        for_slice(times.items, time) {
+        var mem = (A$$(128, u8)){};
+        var buf = A_slice$(S$u8, mem, $r(0, 128));
+        for_(($s(times.items))(time) {
             let point = time_Instant_addDuration(start, *time);
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(point, buf)));
             let dur = time_Instant_durationSince(point, start);
             io_stream_print(u8_l("{:s}\n"), try_(time_Duration_fmt(dur, buf)));
-        }
+        });
         io_stream_print(u8_l("\n"));
 
         try_(sort_stableSort(
-            times.allocator, times.base->items, wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+            times.allocator, times.base->items, wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
                 let dur_lhs = as$((const time_Duration*)(lhs));
                 let dur_rhs = as$((const time_Duration*)(rhs));
                 return time_Duration_cmp(*dur_lhs, *dur_rhs);
             })
         ));
-        for_slice(times.items, time) {
+        for_(($s(times.items))(time) {
             let point = time_Instant_addDuration(start, *time);
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(point, buf)));
             let dur = time_Instant_durationSince(point, start);
             io_stream_print(u8_l("{:s}\n"), try_(time_Duration_fmt(dur, buf)));
-        }
+        });
         io_stream_print(u8_l("\n"));
     }
     return_ok({});
@@ -344,25 +344,25 @@ TEST_fn_("Test time_Duration sort" $guard) {
 
 
 // asyncMain wrapper
-async_fn_(asyncMain, (Sli$Sli_const$u8 args;), Void);
+async_fn_(asyncMain, (S$S_const$u8 args;), Void);
 async_fn_scope(asyncMain, {
-    var_(tasks, Arr$$(2, Co_CtxFn$(waitUntilAndPrint)));
+    var_(tasks, A$$(2, Co_CtxFn$(waitUntilAndPrint)));
     var_(iter_resume, usize);
     var_(iter_await, usize);
 }) {
     let_ignore = args;
 
     // clang-format off
-    Arr_asg(locals->tasks, Arr_init$(Arr$$(2, Co_CtxFn$(waitUntilAndPrint)), {
+    A_asg(locals->tasks, A_init$(A$$(2, Co_CtxFn$(waitUntilAndPrint)), {
         [0] = *async_ctx((waitUntilAndPrint)(none(), 1000, 1200, u8_l("task-pair a"))),
         [1] = *async_ctx((waitUntilAndPrint)(none(), 500, 1300, u8_l("task-pair b"))),
     })); // clang-format on
-    for (locals->iter_resume = 0; locals->iter_resume < Arr_len(locals->tasks); ++locals->iter_resume) {
-        resume_(Arr_at(locals->tasks, locals->iter_resume));
+    for (locals->iter_resume = 0; locals->iter_resume < A_len(locals->tasks); ++locals->iter_resume) {
+        resume_(A_at(locals->tasks, locals->iter_resume));
     }
 
-    for (locals->iter_await = 0; locals->iter_await < Arr_len(locals->tasks); ++locals->iter_await) {
-        await_(Arr_at(locals->tasks, locals->iter_await));
+    for (locals->iter_await = 0; locals->iter_await < A_len(locals->tasks); ++locals->iter_await) {
+        await_(A_at(locals->tasks, locals->iter_await));
     }
 
     io_stream_print(u8_l("debug: [asyncMain] all tasks completed\n"));
@@ -371,15 +371,15 @@ async_fn_scope(asyncMain, {
 
 
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
-    for_slice_indexed(args, arg, idx) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+    for_(($rf(0), $s(args))(idx, arg) {
         io_stream_print(u8_l("args[{:zu}]: {:s}\n"), idx, arg);
-    }
+    });
     io_stream_print(u8_l("\n"));
 
     *timer_queue.base = try_(PQue_initCap(
         typeInfo$(Task), heap_Page_allocator(&(heap_Page){}), 32,
-        wrapLam$(sort_CmpFn, lam_((anyptr_const lhs, anyptr_const rhs), cmp_Ord) {
+        wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
             let lhs_task = as$((const Task*)(lhs));
             let rhs_task = as$((const Task*)(rhs));
             return time_Instant_cmp(lhs_task->expires, rhs_task->expires);
@@ -389,14 +389,14 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 
     var main_task = async_((asyncMain)());
     {
-        var mem = (Arr$$(128, u8)){};
-        var buf = Arr_slice$(Sli$u8, mem, $r(0, 128));
-        for_slice(timer_queue.list.items, time) {
+        var mem = (A$$(128, u8)){};
+        var buf = A_slice$(S$u8, mem, $r(0, 128));
+        for_(($s(timer_queue.list.items))(time) {
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(time->expires, buf)));
-        }
+        });
     }
 
-    while_some(meta_castOpt$(Opt$Ptr$Task, PQue_deqOrNull(timer_queue.base)), delay) {
+    while_some(meta_castO$(O$P$Task, PQue_deqOrNull(timer_queue.base)), delay) {
         let now = time_Instant_now();
         if (time_Instant_lt(now, delay->expires)) {
             time_sleep(time_Instant_durationSince(delay->expires, now));

@@ -10,8 +10,8 @@
 #include "game/Screen.h"
 #include "plugin/notepad_backend.h"
 
-Err$void dh_main(int argc, const char* argv[]) {
-    reserveReturn(Err$void);
+E$void dh_main(int argc, const char* argv[]) {
+    reserveReturn(E$void);
     $unused(argc), $unused(argv);
 
     // Initialize platform with terminal backend
@@ -49,13 +49,13 @@ Err$void dh_main(int argc, const char* argv[]) {
 
     var curr_time   = time_Instant_now();
     var prev_time   = curr_time;
-    let target_time = time_Duration_fromSecs_f64(0.03333f); // Assume 30 FPS for simplicity
+    let target_time = time_Duration_fromSecs$f64(0.03333f); // Assume 30 FPS for simplicity
 
     // Game loop
     while (state->is_running) {
         curr_time        = time_Instant_now();
         let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-        let dt           = time_Duration_asSecs_f64(elapsed_time);
+        let dt           = time_Duration_asSecs$f64(elapsed_time);
 
         // Process events
         try(engine_Window_processEvents(window));

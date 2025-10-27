@@ -16,8 +16,8 @@
  *          interface for allocating and freeing memory.
  */
 
-#ifndef HEAP_CLASSIC_INCLUDED
-#define HEAP_CLASSIC_INCLUDED (1)
+#ifndef heap_Classic__included
+#define heap_Classic__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -51,7 +51,7 @@ extern fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator));
 #else
 #endif
 /// Get underlying malloc_size if available
-$inline_always fn_((heap_Classic_mallocSize(anyptr ptr))(usize)) {
+$inline_always fn_((heap_Classic_mallocSize(P$raw ptr))(usize)) {
 #if defined(__GLIBC__)
     return malloc_usable_size(ptr);
 #elif defined(__APPLE__)
@@ -65,4 +65,4 @@ $inline_always fn_((heap_Classic_mallocSize(anyptr ptr))(usize)) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_CLASSIC_INCLUDED */
+#endif /* heap_Classic__included */

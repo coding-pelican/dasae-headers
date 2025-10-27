@@ -1,5 +1,5 @@
 #if UNUSED_CODE
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 #include "dh/core.h"
 #include "dh/err_res.h"
@@ -8,12 +8,12 @@
 
 typedef struct Slice Slice;
 struct Slice {
-    anyptr ptr;
-    usize  len;
+    P$raw ptr;
+    usize len;
 };
 
 typedef struct ArrList ArrList;
-decl_Err$(ArrList);
+decl_E$(ArrList);
 
 struct ArrList {
     mem_Allocator allocator;
@@ -21,18 +21,18 @@ struct ArrList {
     usize         cap;
     usize         item_size;
 };
-static $must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
-static void                    ArrList_fini(ArrList* self);
-static $must_check Err$void    ArrList_append(ArrList* self, const anyptr item);
-static Slice                   ArrList_slice(const ArrList* self);
+static $must_check E$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator);
+static void                  ArrList_fini(ArrList* self);
+static $must_check E$void    ArrList_append(ArrList* self, const P$raw item);
+static Slice                 ArrList_slice(const ArrList* self);
 
-impl_Err$(ArrList);
-static $must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
-    reserveReturn(Err$ArrList);
+impl_E$(ArrList);
+static $must_check E$ArrList ArrList_init(TypeInfo type, mem_Allocator allocator) {
+    reserveReturn(E$ArrList);
 
-    anyptr const ptr = unwrap(allocator.vt->alloc(allocator.ptr, type.size * 8ull, type.align)); // Initial capacity of 8
+    P$raw const ptr = unwrap(allocator.vt->alloc(allocator.ptr, type.size * 8ull, type.align)); // Initial capacity of 8
     if (!ptr) {
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_AllocE_OutOfMemory());
     }
     return_ok((ArrList){
         .allocator = allocator,
@@ -46,33 +46,33 @@ static $must_check Err$ArrList ArrList_init(TypeInfo type, mem_Allocator allocat
 }
 
 static void ArrList_fini(ArrList* self) {
-    var memory = (Sli$u8){ .ptr = self->items.ptr, .len = self->cap };
+    var memory = (S$u8){ .ptr = self->items.ptr, .len = self->cap };
     mem_Allocator_free(self->allocator, anySli(memory));
     self->items.ptr = null;
     self->items.len = 0;
     self->cap       = 0;
 }
 
-static $must_check Err$void ArrList_append(ArrList* self, const anyptr item) {
-    reserveReturn(Err$void);
+static $must_check E$void ArrList_append(ArrList* self, const P$raw item) {
+    reserveReturn(E$void);
 
     if (self->items.len == 10) { // Note: Force error raising for exception checking
-        return_err(mem_AllocErr_OutOfMemory());
+        return_err(mem_AllocE_OutOfMemory());
     }
 
     if (self->items.len >= self->cap) {
         let new_capacity = self->cap * 2;
-        var memory       = (Sli$u8){ .ptr = self->items.ptr, .len = self->cap };
+        var memory       = (S$u8){ .ptr = self->items.ptr, .len = self->cap };
         let reallocated  = mem_Allocator_realloc(self->allocator, anySli(memory), new_capacity);
         if (!reallocated.has_value) {
-            return_err(mem_AllocErr_OutOfMemory());
+            return_err(mem_AllocE_OutOfMemory());
         }
         let new_slice = unwrap(reallocated);
 
         self->items.ptr = new_slice.addr;
         self->cap       = new_capacity;
     }
-    anyptr const dest = (u8*)self->items.ptr + (self->items.len * self->item_size);
+    P$raw const dest = (u8*)self->items.ptr + (self->items.len * self->item_size);
     memcpy(dest, item, self->item_size);
     self->items.len++;
 
@@ -83,8 +83,8 @@ static Slice ArrList_slice(const ArrList* self) {
     return self->items;
 }
 
-Err$void dh_main(void) {
-    scope_reserveReturn(Err$void);
+E$void dh_main(void) {
+    scope_reserveReturn(E$void);
     // Initialize the C heap allocator
     let allocator = heap_Classic_allocator(&(heap_Classic){});
 
@@ -110,7 +110,6 @@ Err$void dh_main(void) {
     }
 
     return_void();
-        scope_returnReserved
-    ;
+    scope_returnReserved;
 }
 #endif /* UNUSED_CODE */

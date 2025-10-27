@@ -12,8 +12,8 @@
  * @prefix  io_Writer
  */
 
-#ifndef IO_WRITER_INCLUDED
-#define IO_WRITER_INCLUDED (1)
+#ifndef io_Writer__included
+#define io_Writer__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -26,23 +26,23 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef struct io_Writer {
-    const anyptr ctx;
-    fn_(((*const write)(const anyptr ctx, Sli_const$u8 bytes))(Err$usize)) $must_check;
+    const P$raw ctx;
+    fn_(((*const write)(const P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
 } io_Writer;
 
-extern fn_((io_Writer_write(io_Writer self, Sli_const$u8 bytes))(Err$usize)) $must_check;
-extern fn_((io_Writer_writeBytes(io_Writer self, Sli_const$u8 bytes))(Err$void)) $must_check;
-extern fn_((io_Writer_writeBytesN(io_Writer self, Sli_const$u8 bytes, usize n))(Err$void)) $must_check;
-extern fn_((io_Writer_writeByte(io_Writer self, u8 byte))(Err$void)) $must_check;
-extern fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(Err$void)) $must_check;
+$extern fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) $must_check;
+$extern fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(E$void)) $must_check;
+$extern fn_((io_Writer_writeBytesN(io_Writer self, S_const$u8 bytes, usize n))(E$void)) $must_check;
+$extern fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) $must_check;
+$extern fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void)) $must_check;
 
-extern fn_((io_Writer_nl(io_Writer self))(Err$void)) $must_check;
-extern fn_((io_Writer_print(io_Writer self, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
-extern fn_((io_Writer_printVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
-extern fn_((io_Writer_println(io_Writer self, Sli_const$u8 fmt, ...))(Err$void)) $must_check;
-extern fn_((io_Writer_printlnVaArgs(io_Writer self, Sli_const$u8 fmt, va_list va_args))(Err$void)) $must_check;
+$extern fn_((io_Writer_nl(io_Writer self))(E$void)) $must_check;
+$extern fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(E$void)) $must_check;
+$extern fn_((io_Writer_printVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E$void)) $must_check;
+$extern fn_((io_Writer_println(io_Writer self, S_const$u8 fmt, ...))(E$void)) $must_check;
+$extern fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E$void)) $must_check;
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* IO_WRITER_INCLUDED */
+#endif /* io_Writer__included */

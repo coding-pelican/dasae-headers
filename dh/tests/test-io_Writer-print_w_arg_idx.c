@@ -26,12 +26,12 @@
 /*========== Test Helper - Buffer Writer ===================================*/
 
 typedef struct test_Buf {
-    Sli$u8 data;
-    usize  pos;
+    S$u8  data;
+    usize pos;
 } test_Buf;
 
-$static $must_check
-fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope) {
+$must_check
+$static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self      = as$((test_Buf*)(ctx));
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
@@ -41,36 +41,32 @@ fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope)
     }
     return_ok(to_write);
 } $unscoped_(fn);
-$static
-fn_((test_Buf_init(Sli$u8 data))(test_Buf)) {
+$static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
         .pos  = 0
     };
 }
-$static
-fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
+$static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     debug_assert_nonnull(self);
     return make$(io_Writer, .ctx = self, .write = test_Buf_VT_write);
 }
-$static
-fn_((test_Buf_clear(test_Buf* self))(void)) {
+$static fn_((test_Buf_clear(test_Buf* self))(void)) {
     debug_assert_nonnull(self);
     self->pos = 0;
 }
-$static
-fn_((test_Buf_view(test_Buf self))(Sli_const$u8)) {
+$static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
     // TODO: use Sli_sliceZ
-    if (self.pos == 0) { return Sli_from$(Sli_const$u8, self.data.ptr, 0); }
-    return Sli_slice(self.data, $r(0, self.pos)).as_const;
+    if (self.pos == 0) { return S_from$(S_const$u8, self.data.ptr, 0); }
+    return S_slice(self.data, $r(0, self.pos)).as_const;
 }
 
 /*========== Indexed Argument Access Tests ==================================*/
 
 TEST_fn_("io_Writer-print_w_arg_idx: Basic indexed arguments" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test basic indexed access - simple reordering
@@ -92,9 +88,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Basic indexed arguments" $scope) {
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     let test_str = u8_l("Hello");
@@ -118,9 +114,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $sc
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test arguments accessed in reverse order
@@ -142,9 +138,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test indexed access with format flags
@@ -167,9 +163,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test indexed access with 64-bit integers
@@ -194,9 +190,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     let         slice_str = u8_l("slice");
@@ -216,9 +212,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) {
-    use_Arr$(512, u8);
-    Arr$512$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(512, u8);
+    A$512$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test a realistic use case: logging with indexed arguments for reordering
@@ -245,9 +241,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) 
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // Test index 0 (first argument)
@@ -282,9 +278,9 @@ TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) 
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $scope) {
-    use_Arr$(256, u8);
-    Arr$256$u8 mem    = Arr_zero();
-    test_Buf   buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(256, u8);
+    A$256$u8 mem    = A_zero();
+    test_Buf   buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer  writer = test_Buf_writer(&buf);
 
     // // Test out of bounds index - should return an error
@@ -305,12 +301,12 @@ TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $sco
     }
 } $unscoped_(TEST_fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
-    use_Arr$(256, u8);
-    Arr$256$u8 mem       = Arr_zero();
-    let        mem_slice = Arr_ref$(Sli$u8, mem);
+    use_A$(256, u8);
+    A$256$u8 mem       = A_zero();
+    let        mem_slice = A_ref$(S$u8, mem);
     test_Buf   buf       = test_Buf_init(mem_slice);
     io_Writer  writer    = test_Buf_writer(&buf);
 

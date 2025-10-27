@@ -128,7 +128,7 @@ extern "C" {
     TypeOfUnqual((as$((_T*)(0)))->_field)
 
 #define block_inline__sameFieldType(_T, _field, _TExpected...) \
-    isSameType(FieldTypeOf(_T, _field), _TExpected)
+    isSameType$(FieldTypeOf(_T, _field), _TExpected)
 
 #define block_inline__sameFieldTypeUnqual(_T, _field, _TExpected...) \
     isSameTypeUnqual(FieldTypeOfUnqual(_T, _field), _TExpected)
@@ -143,7 +143,7 @@ extern "C" {
 })
 
 #define block_inline__fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-    isSameType(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field_))
+    isSameType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field_))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

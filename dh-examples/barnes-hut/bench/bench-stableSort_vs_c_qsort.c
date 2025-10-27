@@ -1,7 +1,7 @@
 #include "dh/core.h"
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Page.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -13,17 +13,17 @@
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(MulErr, Overflow);
-$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
-    reserveReturn(Err$usize);
+$inline_always E$usize mulSafe(usize lhs, usize rhs) {
+    reserveReturn(E$usize);
     if (0 < lhs && usize_limit / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrCode_Overflow));
+        return_err(MulE_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }
 // Swap two elements of given size
-$inline_always $must_check Err$void swapElements(u8* a, u8* b, usize size) {
-    scope_reserveReturn(Err$void) {
+$inline_always $must_check E$void swapElements(u8* a, u8* b, usize size) {
+    scope_reserveReturn(E$void) {
         u8* temp = alloca(size);
         memcpy(temp, a, size);
         memcpy(a, b, size);
@@ -33,14 +33,14 @@ $inline_always $must_check Err$void swapElements(u8* a, u8* b, usize size) {
     scope_returnReserved;
 }
 // Insertion sort for small arrays
-static $must_check Err$void insertionSort(
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const, anyptr_const, anyptr_const),
-    anyptr_const arg
+static $must_check E$void insertionSort(
+    P$raw base,
+    usize num,
+    usize size,
+    cmp_Ord (*comp)(P_const$raw, P_const$raw, P_const$raw),
+    P_const$raw arg
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         u8* base_ptr = (u8*)base;
         for (usize i = 1; i < num; ++i) {
             u8*   current = base_ptr + i * size;
@@ -60,15 +60,10 @@ static $must_check Err$void insertionSort(
     scope_returnReserved;
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static $must_check Err$void mergeSortWithTmpRecur( // NOLINT
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr_const arg,
-    Sli$u8       temp_buffer
+static $must_check E$void mergeSortWithTmpRecur( // NOLINT
+    P$raw base, usize num, usize size, cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P_const$raw arg, S$u8 temp_buffer
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         if (num <= INSERTION_THRESHOLD) {
             return insertionSort(base, num, size, comp, arg);
         }
@@ -126,17 +121,17 @@ static $must_check Err$void mergeSortWithTmpRecur( // NOLINT
     scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
-static $must_check Err$void stableSort(
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr        arg,
+static $must_check E$void stableSort(
+    P$raw base,
+    usize num,
+    usize size,
+    cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P$raw         arg,
     mem_Allocator allocator
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         let checked_size = try_(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(Sli$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer  = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer_(mem_Allocator_free(allocator, anySli(temp_buffer)));
 
         try_(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
@@ -148,7 +143,7 @@ static $must_check Err$void stableSort(
 /*========== Helper Functions ===============================================*/
 
 static mem_Allocator testAllocator(void) {
-    static Opt$mem_Allocator allocator = none();
+    static O$mem_Allocator allocator = none();
     if_none(allocator) {
         toSome(allocator, heap_Page_allocator(&(heap_Page){}));
     }
@@ -157,21 +152,21 @@ static mem_Allocator testAllocator(void) {
 
 /*========== Benchmarking Functions =========================================*/
 
-#define BENCHMARK(NAME, FUNC, ITER, WORK_ARR, SRC_ARR, ARR_LEN, ALLOCATOR)                       \
-    printf("%-20s | %5d elements | %4d iterations\n", NAME, (i32)(ARR_LEN), ITER);               \
-    do {                                                                                         \
-        clock_t       overhead_time = 0;                                                         \
-        const clock_t begin         = clock();                                                   \
-        for (i32 i = 0; i < (ITER); ++i) {                                                       \
-            const clock_t overhead_begin = clock();                                              \
-            memcpy(WORK_ARR, SRC_ARR, (ARR_LEN) * sizeof(i32));                                  \
-            overhead_time += (clock() - overhead_begin);                                         \
-            let_ignore = BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR);                            \
-        }                                                                                        \
-        const clock_t end      = clock();                                                        \
+#define BENCHMARK(NAME, FUNC, ITER, WORK_ARR, SRC_ARR, ARR_LEN, ALLOCATOR) \
+    printf("%-20s | %5d elements | %4d iterations\n", NAME, (i32)(ARR_LEN), ITER); \
+    do { \
+        clock_t       overhead_time = 0; \
+        const clock_t begin         = clock(); \
+        for (i32 i = 0; i < (ITER); ++i) { \
+            const clock_t overhead_begin = clock(); \
+            memcpy(WORK_ARR, SRC_ARR, (ARR_LEN) * sizeof(i32)); \
+            overhead_time += (clock() - overhead_begin); \
+            let_ignore = BENCHMARK_##FUNC(WORK_ARR, ARR_LEN, ALLOCATOR); \
+        } \
+        const clock_t end      = clock(); \
         const f64     total_ms = ((f64)(end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC; \
-        const f64     avg_ms   = total_ms / (ITER);                                              \
-        printf("  %-18s: %.3f ms (avg = %.3f ms)\n", NAME, total_ms, avg_ms);                    \
+        const f64     avg_ms   = total_ms / (ITER); \
+        printf("  %-18s: %.3f ms (avg = %.3f ms)\n", NAME, total_ms, avg_ms); \
     } while (0)
 
 #define BENCHMARK_qsort(WORK_ARR, ARR_LEN, ALLOCATOR) \
@@ -195,26 +190,26 @@ static $inline cmp_Ord stableSort_compareInts(const void* lhs, const void* rhs, 
     return prim_cmp(*as$(i32*, lhs), *as$(i32*, rhs));
 }
 
-static void generateRandomData(i32* ptr, usize len) {
+static void generateRandData(i32* ptr, usize len) {
     for (usize i = 0; i < len; ++i) {
-        ptr[i] = Random_i32() % 10000;
+        ptr[i] = Rand_i32() % 10000;
     }
 }
 
-must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
-    scope_reserveReturn(Err$void) {
+must_check E$void benchmark(usize sample_data_count, i32 iterations) {
+    scope_reserveReturn(E$void) {
         var allocator = testAllocator();
 
-        let data = meta_cast$(Sli$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
+        let data = meta_cast$(S$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
         defer_(mem_Allocator_free(allocator, anySli(data)));
-        generateRandomData(data.ptr, data.len);
+        generateRandData(data.ptr, data.len);
 
         // Make copies for fair comparison
-        let qsort_data = meta_cast$(Sli$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
+        let qsort_data = meta_cast$(S$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
         defer_(mem_Allocator_free(allocator, anySli(qsort_data)));
         memcpy(qsort_data.ptr, data.ptr, data.len * sizeof(i32));
 
-        let stable_sort_data = meta_cast$(Sli$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
+        let stable_sort_data = meta_cast$(S$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), sample_data_count)));
         defer_(mem_Allocator_free(allocator, anySli(stable_sort_data)));
         memcpy(stable_sort_data.ptr, data.ptr, data.len * sizeof(i32));
 
@@ -222,15 +217,13 @@ must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
         BENCHMARK("(std)qsort", qsort, iterations,
                   qsort_data.ptr, // destination (work array)
                   data.ptr,       // source
-                  data.len,
-                  allocator);
+                  data.len, allocator);
 
         // Benchmark stableSort
         BENCHMARK("(dh)stableSort", stableSort, iterations,
                   stable_sort_data.ptr, // destination (work array)
                   data.ptr,             // source
-                  data.len,
-                  allocator);
+                  data.len, allocator);
 
         return_void();
     }
@@ -242,7 +235,7 @@ must_check Err$void benchmark(usize sample_data_count, i32 iterations) {
 int main(void) {
     const i32 iterations = 100;
     const i32 seed       = 12345;
-    Random_initWithSeed(seed); // fixed seed => reproducible random data
+    Rand_initWithSeed(seed); // fixed seed => reproducible random data
 
     printf("=== C `(dh)stableSort` vs C `(std)qsort` Benchmark ===\n");
 
@@ -253,16 +246,20 @@ int main(void) {
     printf("\nbenchmarking...\n");
 
     printf("\n-- 1,000 elements --\n");
-    catch_from(benchmark(1000, iterations), err, { exit(err.ctx);
+    catch_from(benchmark(1000, iterations), err, {
+        exit(err.ctx);
     });
     printf("\n-- 10,000 elements --\n");
-    catch_from(benchmark(10000, iterations), err, { exit(err.ctx);
+    catch_from(benchmark(10000, iterations), err, {
+        exit(err.ctx);
     });
     printf("\n-- 100,000 elements --\n");
-    catch_from(benchmark(100000, iterations), err, { exit(err.ctx);
+    catch_from(benchmark(100000, iterations), err, {
+        exit(err.ctx);
     });
     printf("\n-- 1,000,000 elements --\n");
-    catch_from(benchmark(1000000, iterations), err, { exit(err.ctx);
+    catch_from(benchmark(1000000, iterations), err, {
+        exit(err.ctx);
     });
 
     printf("\ndone.\n");

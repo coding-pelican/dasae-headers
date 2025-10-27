@@ -7,14 +7,14 @@
 #include "dh/pipe.h"
 
 // Quad implementation
-fn_(Quad_newContaining(const Sli$Body bodies), Quad) {
+fn_(Quad_newContaining(const S$Body bodies), Quad) {
     debug_assert_nonnull(bodies.ptr);
     var min_x = f32_limit_max;
     var min_y = f32_limit_max;
     var max_x = f32_limit_min;
     var max_y = f32_limit_min;
 
-    for_slice (bodies, body) {
+    for_slice(bodies, body) {
         min_x = fminf(min_x, body->pos.x);
         min_y = fminf(min_y, body->pos.y);
         max_x = fmaxf(max_x, body->pos.x);
@@ -34,10 +34,10 @@ fn_(Quad_intoQuadrant(Quad self, usize quadrant), Quad) {
     self.center.y += (as$(f32, quadrant >> 1) - 0.5f) * self.size;
     return self;
 }
-fn_(Quad_subdivide(const Quad* self), Arr$4$Quad) {
+fn_(Quad_subdivide(const Quad* self), A$4$Quad) {
     debug_assert_nonnull(self);
-    Arr$4$Quad quads = cleared();
-    for_array_indexed (quads, quad, index) {
+    A$4$Quad quads = cleared();
+    for_array_indexed(quads, quad, index) {
         *quad = Quad_intoQuadrant(*self, index);
     }
     return quads;
@@ -59,7 +59,7 @@ fn_(QuadNode_isBranch(const QuadNode* self), bool) { return deref(self).children
 fn_(QuadNode_isEmpty(const QuadNode* self), bool) { return deref(self).mass == 0.0f; }
 
 // QuadTree implementation
-fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap, usize n), Err$QuadTree $guard) {
+fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap, usize n), E$QuadTree $guard) {
     var_type(nodes, ArrList$QuadNode, try_(ArrList_initCap(typeInfo$(QuadNode), allocator, n)));
     errdefer_(ArrList_fini(nodes.base));
     var_type(parents, ArrList$usize, try_(ArrList_initCap(typeInfo$(usize), allocator, n)));
@@ -72,7 +72,8 @@ fn_(QuadTree_create(mem_Allocator allocator, f32 theta, f32 eps, usize leaf_cap,
         .parents   = parents,
         .allocator = allocator,
     });
-} $unguarded;
+}
+$unguarded;
 fn_(QuadTree_destroy(QuadTree* self), void) {
     debug_assert_nonnull(self);
     ArrList_fini(self->nodes.base);
@@ -87,7 +88,7 @@ fn_(QuadTree_clear(QuadTree* self), void) {
 
 // Partition function
 use_Callback(Callback$partition, (const Body* self, m_V2f32 center), bool);
-static $inline_always fn_(partition(Sli$Body self, Callback$partition predFn, m_V2f32 center), usize) {
+static $inline_always fn_(partition(S$Body self, Callback$partition predFn, m_V2f32 center), usize) {
     if (self.len == 0) { return 0; }
     usize lhs = 0;
     usize rhs = self.len - 1;
@@ -111,7 +112,7 @@ $maybe_unused
 $static $inline_always fn_(predLtY(const Body* body, m_V2f32 center), bool) {
     return body->pos.y < center.y;
 }
-static fn_(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range range), Err$void $scope) {
+static fn_(QuadTree_subdivide(QuadTree* self, usize node, S$Body bodies, Range range), E$void $scope) {
     debug_assert_nonnull(self);
     let   center  = Sli_at(self->nodes.items, node)->quad.center;
     usize split[] = { range.begin, 0, 0, 0, range.end };
@@ -135,15 +136,15 @@ static fn_(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range
     Sli_at(self->nodes.items, node)->children = children;
 
     // Create the next indices for the new nodes
-    use_Arr$(4, usize);
-    Arr$4$usize nexts_arr = Arr_init({
+    use_A$(4, usize);
+    A$4$usize nexts_arr = A_init({
         children + 1,
         children + 2,
         children + 3,
         Sli_at(self->nodes.items, node)->next,
     });
 
-    let nexts = Sli_arr$(Sli$usize, nexts_arr);
+    let nexts = Sli_arr$(S$usize, nexts_arr);
     // Subdivide the current node's quad
     let quads = Quad_subdivide(&Sli_at(self->nodes.items, node)->quad);
     // Append the new nodes
@@ -151,7 +152,7 @@ static fn_(QuadTree_subdivide(QuadTree* self, usize node, Sli$Body bodies, Range
         let bodies = Range_from(split[index], split[index + 1]);
         try_(ArrList_append(
             self->nodes.base,
-            meta_refPtr(createFrom$(QuadNode, QuadNode_new(*Sli_at(nexts, index), *Arr_at(quads, index), bodies)))
+            meta_refPtr(createFrom$(QuadNode, QuadNode_new(*Sli_at(nexts, index), *A_at(quads, index), bodies)))
         ));
     }
     return_ok({});
@@ -183,7 +184,7 @@ fn_(QuadTree_propagate(QuadTree* self), void) {
         m_V2f32_scaleInvAsg(&node->pos, prim_max(node->mass, f32_limit_min));
     }
 }
-fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void $scope) {
+fn_(QuadTree_build(QuadTree* self, S$Body bodies), E$void $scope) {
     debug_assert_nonnull(self);
     QuadTree_clear(self);
 
@@ -213,7 +214,7 @@ fn_(QuadTree_build(QuadTree* self, Sli$Body bodies), Err$void $scope) {
     QuadTree_propagate(self);
     return_ok({});
 } $unscoped;
-fn_(QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, Sli$Body bodies), m_V2f32) {
+fn_(QuadTree_accelerate(const QuadTree* self, m_V2f32 pos, S$Body bodies), m_V2f32) {
     debug_assert_nonnull(self);
     var acc  = m_V2f32_zero;
     var node = QuadTree_root;

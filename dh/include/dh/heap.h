@@ -22,8 +22,8 @@
  *          through explicit allocation tracking and deallocation checks.
  */
 
-#ifndef HEAP_INCLUDED
-#define HEAP_INCLUDED (1)
+#ifndef heap__included
+#define heap__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -39,4 +39,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_INCLUDED */
+#endif /* heap__included */

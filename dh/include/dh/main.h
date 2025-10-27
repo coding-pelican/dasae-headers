@@ -13,9 +13,8 @@
  * @brief   hijacked main for error handling
  * @details Provides a hijacked main function for error handling.
  */
-
-#include "dh/debug/common.h"
 #ifndef main__included
+
 #define main__included 1
 #if defined(__cplusplus)
 extern "C" {
@@ -31,15 +30,15 @@ extern "C" {
 /*========== Macros =========================================================*/
 
 #if !defined(main_no_hijack)
-#define main_no_hijack (0)
+#define main_no_hijack 0
 #endif /* !defined(main_no_hijack) */
 
 #if !defined(main_no_args)
-#define main_no_args (0)
+#define main_no_args 0
 #endif /* !defined(main_no_args) */
 
 #if !defined(main_no_returns_err)
-#define main_no_returns_err (0)
+#define main_no_returns_err 0
 #endif /* !defined(main_no_returns_err) */
 
 /*========== Definitions ====================================================*/
@@ -48,15 +47,11 @@ extern "C" {
 /* No hijack, just call main as usual */
 #else /* !main_no_hijack */
 
-#if main_no_args && main_no_returns_err
-extern fn_((dh_main(void))(void));
-#elif main_no_args && !main_no_returns_err
-extern fn_((dh_main(void))(Err$void)) $must_check;
-#elif !main_no_args && main_no_returns_err
-extern fn_((dh_main(Sli$Sli_const$u8 args))(void));
-#else  /* !main_no_args && !main_no_returns_err */
-extern fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)) $must_check;
-#endif /* !main_no_args && !main_no_returns_err */
+pp_attr_(pp_if_(pp_not_(main_no_returns_err))(pp_then_($must_check)))
+$extern fn_((dh_main(pp_if_(pp_not_(main_no_args))(
+    pp_then_(S$S_const$u8 args),
+    pp_else_(void)
+)))(pp_if_(pp_not_(main_no_returns_err))(pp_else_(E$void), pp_then_(void))));
 
 /*========== Root main ======================================================*/
 
@@ -74,17 +69,10 @@ extern fn_((dh_main(Sli$Sli_const$u8 args))(Err$void)) $must_check;
 // #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */
 // }
 
-fn_((
-#if main_no_args && main_no_returns_err
-    main(void)
-#elif main_no_args && !main_no_returns_err
-    main(void)
-#elif !main_no_args && main_no_returns_err
-    main(int argc, const char* argv[])
-#else /* !main_no_args && !main_no_returns_err */
-    main(int argc, const char* argv[])
-#endif
-)(int)) {
+fn_((main(pp_if_(pp_not_(main_no_args))(
+    pp_then_(int argc, const char* argv[]),
+    pp_else_(void)
+)))(int)) {
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
@@ -94,21 +82,21 @@ fn_((
         return (debug_break(), 1);
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$((Sli_const$u8*)(bti_alloca(sizeOf$(Sli_const$u8) * argc)));
+    let args_buf = as$((S_const$u8*)(bti_alloca(sizeOf$(S_const$u8) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        Sli_from$(Sli$Sli_const$u8, args_buf, argc);
+        blk_return_(S_from$(S$S_const$u8, args_buf, argc));
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$((Sli_const$u8*)(bti_alloca(sizeOf$(Sli_const$u8) * argc)));
+    let args_buf = as$((S_const$u8*)(bti_alloca(sizeOf$(S_const$u8) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        blk_return Sli_from$(Sli$Sli_const$u8, args_buf, argc);
+        blk_return_(S_from$(S$S_const$u8, args_buf, argc));
     });
     catch_((dh_main(args))(err, {
         Err_print(err);

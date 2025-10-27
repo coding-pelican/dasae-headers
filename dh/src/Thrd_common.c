@@ -19,7 +19,7 @@ fn_((Thrd_sleep(time_Duration duration))(void)) {
     time_sleep(duration);
 }
 
-fn_((Thrd_yield(void))(Err$void) $scope) {
+fn_((Thrd_yield(void))(E$void) $scope) {
     if_(i32 res = sched_yield(), res != 0) {
         return_err(Err_Unspecified()); // TODO: Change to specified err
     }
@@ -30,7 +30,7 @@ fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
     return as$((Thrd_Id)(pthread_self()));
 }
 
-fn_((Thrd_getCpuCount(void))(Err$usize) $scope) {
+fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
 #if bti_plat_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
@@ -47,13 +47,13 @@ fn_((Thrd_getCpuCount(void))(Err$usize) $scope) {
     i32   cpu_count = 0;
     usize size      = sizeOf(cpu_count);
     if (sysctlbyname("hw.ncpu", &cpu_count, &size, null, 0) != 0) {
-        return_err(Err_Unspecified()); // TODO: Change to specified err
+        return_err(E_Unspecified()); // TODO: Change to specified err
     }
     return_ok(as$((usize)(cpu_count)));
 #else /* Linux and other Unix platforms */
     let cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
     if (cpu_count <= 0) {
-        return_err(Err_Unspecified()); // TODO: Change to specified err
+        return_err(E_Unspecified()); // TODO: Change to specified err
     }
     return_ok(as$((usize)(cpu_count)));
 #endif
@@ -63,7 +63,7 @@ fn_((Thrd_getHandle(Thrd self))(Thrd_Handle)) {
     return self.handle;
 }
 
-fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scope) {
+fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(buf_ptr);
 
@@ -72,7 +72,7 @@ fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scop
     let result = pthread_getname_np(
         self.handle,
         as$((char*)(buf_ptr->buf)),
-        Arr_len(*buf_ptr)
+        A_len(*buf_ptr)
     );
     if (result != 0) { return_ok(none()); }
 
@@ -88,7 +88,7 @@ fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8) $scop
 #endif
 } $unscoped_(fn);
 
-fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
+fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
     debug_assert(self.handle != 0);
     debug_assert_nonnull(name.ptr);
 
@@ -127,7 +127,7 @@ fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void) $scope) {
 #endif
 } $unscoped_(fn);
 
-fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(Err$Thrd) $scope) {
+fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
     let_ignore = config;
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
@@ -148,7 +148,7 @@ fn_((Thrd_detach(Thrd self))(void)) {
 
 fn_((Thrd_join(Thrd self))(Thrd_FnCtx*)) {
     debug_assert(self.handle != 0);
-    anyptr ctx_ptr = null;
+    P$raw ctx_ptr = null;
     let_ignore        = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
     return as$((Thrd_FnCtx*)(ctx_ptr));
 }

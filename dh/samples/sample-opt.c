@@ -6,7 +6,7 @@
 
 // Function that may return an optional i32
 $static
-fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
+fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
     for_(($rf(0), $s(items))(index, item) {
         if (*item == value) {
             return_some(index); // Return optional with a value
@@ -17,7 +17,7 @@ fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
 
 // Function that uses unwrap and orelse for default values
 $static $maybe_unused
-fn_((demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val))(i32)) {
+fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
     // unwrap() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
     let value_unsafe = unwrap(opt);
@@ -38,7 +38,7 @@ fn_((demonstrateUnwrapOrelse(Opt$i32 opt, i32 default_val))(i32)) {
 
 // Function showing if_some and else_none pattern
 $static
-fn_((processOptionalValue(Opt$i32 opt))(void)) {
+fn_((processOptionalValue(O$i32 opt))(void)) {
     if_some(opt, value) {
         // This block runs if opt has a value
         io_stream_println(u8_l("Found value: {:d}"), value);
@@ -55,7 +55,7 @@ fn_((processOptionalValue(Opt$i32 opt))(void)) {
 
 // Example of nested optional handling
 $static
-fn_((processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner))(i32) $scope) {
+fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) $scope) {
     if_some(maybe_outer, outer) {
         if_some(maybe_inner, inner) {
             return outer + inner;
@@ -72,19 +72,19 @@ fn_((processNestedOptionals(Opt$i32 maybe_outer, Opt$i32 maybe_inner))(i32) $sco
     claim_unreachable;
 } $unscoped_(fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     // Create some optional values
-    let opt_with_value = some$(Opt$i32, 42);
-    let opt_empty      = none$(Opt$i32);
+    let opt_with_value = some$(O$i32, 42);
+    let opt_empty      = none$(O$i32);
 
     // Array for demonstration
-    Arr$$(5, i32) numbers = Arr_init({ 1, 3, 5, 7, 9 });
+    A$$(5, i32) numbers = A_init({ 1, 3, 5, 7, 9 });
 
     // Demonstrate finding values
-    let found_index = findValueIndex(5, Sli_arr$(Sli_const$i32, numbers));
-    let not_found   = findValueIndex(6, Sli_arr$(Sli_const$i32, numbers));
+    let found_index = findValueIndex(5, Sli_arr$(S_const$i32, numbers));
+    let not_found   = findValueIndex(6, Sli_arr$(S_const$i32, numbers));
 
     io_stream_println(u8_l("---- Optional Value Demonstration ----"));
 
@@ -114,9 +114,9 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
     processOptionalValue(opt_empty);
 
     io_stream_println(u8_l("\n---- Nested Optionals Result ----"));
-    io_stream_println(u8_l("Both values: {:d}"), processNestedOptionals(opt_with_value, some$(Opt$i32, 10)));
+    io_stream_println(u8_l("Both values: {:d}"), processNestedOptionals(opt_with_value, some$(O$i32, 10)));
     io_stream_println(u8_l("First value only: {:d}"), processNestedOptionals(opt_with_value, opt_empty));
-    io_stream_println(u8_l("Second value only: {:d}"), processNestedOptionals(opt_empty, some$(Opt$i32, 10)));
+    io_stream_println(u8_l("Second value only: {:d}"), processNestedOptionals(opt_empty, some$(O$i32, 10)));
     io_stream_println(u8_l("No values: {:d}"), processNestedOptionals(opt_empty, opt_empty));
 
     // Example of unwrap (only use when you're sure it's not none)
@@ -129,7 +129,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
 } $unscoped_(fn);
 
 #if README_SAMPLE
-$static fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
+$static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
     for_(($rf(0), $s(items))(index, item) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
@@ -138,14 +138,14 @@ $static fn_((findValueIndex(i32 value, Sli_const$i32 items))(Opt$i32) $scope) {
 } $unscoped_(fn);
 
 $static fn_((example(void))(void) $scope) {
-    Arr$$(5, i32) nums = Arr_init({ 10, 20, 30, 40, 50 });
+    A$$(5, i32) nums = A_init({ 10, 20, 30, 40, 50 });
 
     // Create optional values
-    let opt_value = some$(Opt$i32, 42);
-    let opt_empty = none$(Opt$i32);
+    let opt_value = some$(O$i32, 42);
+    let opt_empty = none$(O$i32);
 
     // Find a value in array
-    let found = findValueIndex(30, Sli_arr$(Sli_const$i32, nums));
+    let found = findValueIndex(30, Sli_arr$(S_const$i32, nums));
 
     // Check if option has value
     if_some(found, index) {

@@ -50,14 +50,14 @@ fn_((engine_Backend_getWindowMaxRes(const engine_Backend self))(Vec2u)) {
     return self.vt_internal->getWindowMaxRes(self.ptr);
 }
 
-fn_((engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size))(Err$void)) {
+fn_((engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size))(E$void)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->setWindowMinRes(self.ptr, size);
 }
 
-fn_((engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size))(Err$void)) {
+fn_((engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size))(E$void)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);

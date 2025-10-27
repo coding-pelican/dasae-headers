@@ -47,7 +47,7 @@ void Ball_Initialize() {
     balls = BallArray_Create(32);
     // Debug_Watch(balls.array->size);
 
-    // Add 16 Random Balls
+    // Add 16 Rand Balls
     for (int i = 0; i < 16; i++) {
         Ball_Create((float)(rand() % Screen_Width()) - Screen_WidthHalf(), (float)(rand() % Screen_Height()) - Screen_HeightHalf(), (float)(rand() % 15 + 2));
         // Ball ball = BallArray_Top(balls);

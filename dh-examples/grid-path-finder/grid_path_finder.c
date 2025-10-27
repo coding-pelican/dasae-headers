@@ -8,7 +8,7 @@
 #include "dh/heap/Page.h"
 
 #include "dh/time.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
@@ -31,7 +31,7 @@
 #include "dh/ArrList.h"
 
 // First declare and implement ArrList for Vec2i
-use_Sli$(Vec2i);
+use_S$(Vec2i);
 use_ArrList$(Vec2i);
 
 // Stack implementation using ArrList
@@ -50,7 +50,7 @@ void Stack_Vec2i_destroy(Stack_Vec2i* self) {
 bool Stack_Vec2i_empty(const Stack_Vec2i* self) {
     return self->list.items.len == 0;
 }
-mem_AllocErr$void Stack_Vec2i_push(Stack_Vec2i* self, Vec2i item) {
+mem_AllocE$void Stack_Vec2i_push(Stack_Vec2i* self, Vec2i item) {
     return ArrList_append(self->list.base, meta_refPtr(&item));
 }
 Vec2i Stack_Vec2i_top(const Stack_Vec2i* self) {
@@ -76,7 +76,7 @@ void Queue_Vec2i_destroy(Queue_Vec2i* self) {
 bool Queue_Vec2i_empty(const Queue_Vec2i* self) {
     return self->list.items.len == 0;
 }
-mem_AllocErr$void Queue_Vec2i_push(Queue_Vec2i* self, Vec2i item) {
+mem_AllocE$void Queue_Vec2i_push(Queue_Vec2i* self, Vec2i item) {
     return ArrList_append(self->list.base, meta_refPtr(&item));
 }
 Vec2i Queue_Vec2i_front(const Queue_Vec2i* self) {
@@ -125,7 +125,7 @@ void InitMaze(void) {
     pthread_mutex_lock(&maze_mutex);
     for (i32 i = 0; i < maze_size; ++i) {
         for (i32 j = 0; j < maze_size; ++j) {
-            maze[i][j]    = (Random_i32() % 5 == 0) ? Cell_wall : Cell_open;
+            maze[i][j]    = (Rand_next$i32() % 5 == 0) ? Cell_wall : Cell_open;
             visited[i][j] = false;
         }
     }
@@ -321,9 +321,9 @@ void DrawMaze(engine_Canvas* canvas) {
     pthread_mutex_unlock(&maze_mutex);
 }
 
-Err$void dh_main(Sli$Sli_const$u8 args) {
+E$void dh_main(S$S_const$u8 args) {
     $unused(args);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -354,7 +354,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) {
         engine_Window_addCanvasView(window, canvas, 0, 0, main_window_res_width, main_window_res_height);
         log_info("canvas views added\n");
 
-        Random_init();
+        Rand_init();
         log_info("random initialized\n");
 
         // init for DFS, BFS, and Quantum Search
@@ -373,7 +373,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) {
         );
 
         // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
+        let time_frame_target = time_Duration_fromSecs$f64(main_target_spf);
         var time_frame_prev   = time_Instant_now();
         log_info("main loop started\n");
 
@@ -381,7 +381,7 @@ Err$void dh_main(Sli$Sli_const$u8 args) {
         while (is_running) {
             let time_frame_curr = time_Instant_now();
             let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+            let time_dt         = time_Duration_asSecs$f64(time_elapsed);
 
             // 1) Process input
             try(engine_Window_processEvents(window));

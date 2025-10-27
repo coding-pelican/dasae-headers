@@ -1,7 +1,5 @@
 #include "dh/main.h"
 
-#define expr_(...) ({ __VA_ARGS__; })
-
 /* Template Operators ========================================================*/
 
 #define P_ref
@@ -11,7 +9,7 @@
 #define P_makeRef_const(expr...) (&*(const TypeOf(expr)[1]){ [0] = expr })
 
 #define P_constCast
-#define P_mutCast
+#define mutCast$P
 #define PZ_constCast
 #define PZ_mutCast
 
@@ -59,7 +57,7 @@
 #define OP_unwrap
 #define OP_orelse
 #define OP_constCast
-#define OP_mutCast
+#define OmutCast$P
 
 #define OPZ_some
 #define OPZ_none
@@ -167,11 +165,11 @@
 #define comp_tpl_alias__OSZ$(T)       pp_join($, OSZ, T)
 
 #define comp_tpl_inst__T_use$_P$(T) \
-    typedef const rawptr$(T) P_const$(T); \
-    typedef rawptr$(T) P$(T)
+    typedef const $P$(T) P_const$(T); \
+    typedef $P$(T) P$(T)
 #define comp_tpl_inst__T_use$_PZ$(T) \
-    typedef const rawptr$(T) PZ_const$(T); \
-    typedef rawptr$(T) PZ$(T)
+    typedef const $P$(T) PZ_const$(T); \
+    typedef $P$(T) PZ$(T)
 #define comp_tpl_inst__T_use$_S$(T) \
     typedef struct S_const$(T) { \
         var_(ptr, P_const$(T)); \
@@ -198,19 +196,19 @@
     } SZ$(T)
 #define comp_tpl_inst__T_use$_E$(T) \
     typedef struct E$(T) { \
+        var_(is_ok, bool); \
         union { \
             var_(ok, T); \
             var_(err, Err); \
         } payload; \
-        var_(is_ok, bool); \
     } E$(T)
 #define comp_tpl_inst__T_use$_O$(T) \
     typedef struct O$(T) { \
+        var_(has_value, bool); \
         union { \
             var_(some, T); \
             var_(none, Void); \
         } payload; \
-        var_(has_value, bool); \
     } O$(T)
 #define comp_tpl_inst__T_use$_OP$(T) \
     typedef struct OP_const$(T) { \
@@ -263,7 +261,7 @@
 /* Example usage ============================================================*/
 T_use$(i32, (P, PZ, S, SZ, E, O, OP, OPZ, OS, OSZ));
 
-fn_((sample(void))(Err$i32) $scope) {
+fn_((sample(void))(E$i32) $scope) {
     i32 x      = 123;
     let_ignore = P_makeRef(x);
     let_ignore = P_makeRef_mut(x);

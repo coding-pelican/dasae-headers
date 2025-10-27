@@ -10,29 +10,29 @@
 #include <stdatomic.h> // Required for atomic operations
 
 // Forward declarations for allocator vtable functions
-static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8));
-static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
-static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
-static fn_((heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
+static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8));
+static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool));
+static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
+static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u32 buf_align))(void));
 
 fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
     debug_assert_nonnull(self);
     // VTable for Page allocator
     static const mem_Allocator_VT vt[1] = { {
-        .alloc  = heap_Page_alloc,
+        .alloc = heap_Page_alloc,
         .resize = heap_Page_resize,
-        .remap  = heap_Page_remap,
-        .free   = heap_Page_free,
+        .remap = heap_Page_remap,
+        .free = heap_Page_free,
     } };
     return (mem_Allocator){
-        .ptr = self,
-        .vt  = vt,
+        .ctx = self,
+        .vt = vt,
     };
 }
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scope) {
+static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
@@ -53,7 +53,7 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
     );
     if (addr != null) {
         // Verify returned address meets alignment requirements
-        debug_assert_fmt(mem_isAligned(rawptrToInt(addr), align), "VirtualAlloc returned misaligned address");
+        debug_assert_fmt(mem_isAligned(ptrToInt(addr), align), "VirtualAlloc returned misaligned address");
         return_some(addr);
     }
 
@@ -63,7 +63,7 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
     // the race to map the target range, in which case a retry is needed.
 
     let overalloc_len = len + align - mem_page_size;
-    let aligned_len   = mem_alignForward(len, mem_page_size);
+    let aligned_len = mem_alignForward(len, mem_page_size);
 
     static let retry_limit = 4;
     for (var retry_count = 0; retry_count < retry_limit; ++retry_count) {
@@ -77,11 +77,11 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
             return_none();
         }
 
-        let aligned_addr = mem_alignForward(rawptrToInt(reserved_addr), align);
+        let aligned_addr = mem_alignForward(ptrToInt(reserved_addr), align);
         VirtualFree(reserved_addr, 0, MEM_RELEASE);
 
         let addr = VirtualAlloc(
-            intToRawptr$(anyptr, aligned_addr),
+            intToPtr$(P$raw, aligned_addr),
             aligned_len,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
@@ -95,7 +95,7 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
     return_none();
 #else  /* posix */
     let aligned_len = mem_alignForward(len, mem_page_size);
-    let hint        = heap_Page_s_next_mmap_addr_hint;
+    let hint = heap_Page_s_next_mmap_addr_hint;
 
     let map = mmap(
         hint,
@@ -106,10 +106,10 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
         0
     );
     if (map == MAP_FAILED) { return_none(); }
-    debug_assert_fmt(mem_isAligned(rawptrToInt(map), mem_page_size));
-    debug_assert_fmt(mem_isAligned(rawptrToInt(map), ptr_align), "mmap returned misaligned address");
+    debug_assert_fmt(mem_isAligned(ptrToInt(map), mem_page_size));
+    debug_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
-    let new_hint = as$((anyptr)(as$((u8*)(map) + aligned_len)));
+    let new_hint = as$((P$raw)(as$((u8*)(map) + aligned_len)));
     // Here use atomic operations to update the hint
     __atomic_compare_exchange_n(
         &heap_Page_s_next_mmap_addr_hint,
@@ -123,16 +123,16 @@ static fn_((heap_Page_alloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8) $scop
 #endif /* posix */
 } $unscoped_(fn);
 
-static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) {
+static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
     $unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_len, mem_page_size);
-    let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
+    let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
 
     if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
         return true; // No resize needed
@@ -140,7 +140,7 @@ static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
 
 #if bti_plat_windows
     if (new_len <= buf.len) {
-        let base_addr    = rawptrToInt(buf.ptr);
+        let base_addr = ptrToInt(buf.ptr);
         let old_addr_end = base_addr + buf_aligned_len;
         let new_addr_end = base_addr + new_size_aligned;
 
@@ -148,7 +148,7 @@ static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
             // For shrinking that is not releasing, only
             // decommit the pages not needed anymore.
             VirtualFree(
-                intToRawptr$(LPVOID, new_addr_end),
+                intToPtr$(LPVOID, new_addr_end),
                 old_addr_end - new_addr_end,
                 MEM_DECOMMIT
             );
@@ -185,16 +185,16 @@ static fn_((heap_Page_resize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_le
 #endif /* posix */
 }
 
-static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8) $scope) {
+static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8) $scope) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
     $unused(ctx, buf_align);
 
     let new_size_aligned = mem_alignForward(new_len, mem_page_size);
-    let buf_aligned_len  = mem_alignForward(buf.len, mem_page_size);
+    let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
 
     if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
         return_some(buf.ptr); // No resize needed
@@ -227,11 +227,11 @@ static fn_((heap_Page_remap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len
 #endif /* posix */
 } $unscoped_(fn);
 
-static fn_((heap_Page_free(anyptr ctx, Sli$u8 buf, u32 buf_align))(void)) {
+static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
     debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
     debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
     // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(rawptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
 
     let_ignore = ctx;
     let_ignore = buf_align;

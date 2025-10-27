@@ -1,9 +1,9 @@
 #include "dh/core.h"
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Classic.h"
-#include "dh/Random.h"
+#include "dh/Rand.h"
 
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 #include "dh/TEST.h"
 #include <stdlib.h>
@@ -12,24 +12,19 @@
 
 // Helper function to perform a safe multiplication, avoiding potential overflow
 config_ErrSet(MulErr, Overflow);
-$inline_always Err$usize mulSafe(usize lhs, usize rhs) {
-    reserveReturn(Err$usize);
+$inline_always E$usize mulSafe(usize lhs, usize rhs) {
+    reserveReturn(E$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
-        return_err(MulErr_err(MulErrCode_Overflow));
+        return_err(MulE_err(MulErrCode_Overflow));
     }
     return_ok(lhs * rhs);
 }
 // Modernized merge sort with temporary buffer (stable sort)
-static Err$void mergeSortWithTmpRecur( // NOLINT
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr arg,
-    Sli$u8 temp_buffer
+static E$void mergeSortWithTmpRecur( // NOLINT
+    P$raw base, usize num, usize size, cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P$raw arg, S$u8 temp_buffer
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }
 
         let mid        = num / 2;
@@ -76,18 +71,18 @@ static Err$void mergeSortWithTmpRecur( // NOLINT
     scope_returnReserved;
 }
 // Modernized stable sort (using merge sort)
-static Err$void stableSort(
-    anyptr base,
-    usize  num,
-    usize  size,
-    cmp_Ord (*comp)(anyptr_const lhs, anyptr_const rhs, anyptr_const arg),
-    anyptr        arg,
+static E$void stableSort(
+    P$raw base,
+    usize num,
+    usize size,
+    cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P$raw         arg,
     mem_Allocator allocator
 ) {
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Allocate temporary buffer using the provided allocator
         let checked_size = try(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(Sli$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
+        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer))); // Ensure cleanup
 
         // Perform merge sort
@@ -100,14 +95,14 @@ static Err$void stableSort(
 /*========== Helper Functions ===============================================*/
 
 static mem_Allocator testAllocator(void) {
-    static Opt$mem_Allocator allocator = none();
+    static O$mem_Allocator allocator = none();
     if_none(allocator) {
         toSome(allocator, heap_Classic_allocator(&(heap_Classic){}));
     }
     return unwrap(allocator);
 }
 
-static cmp_Ord compareInt(anyptr_const a, anyptr_const b, anyptr_const arg) {
+static cmp_Ord compareInt(P_const$raw a, P_const$raw b, P_const$raw arg) {
     $unused(arg);
     int ia = *(const int*)a;
     int ib = *(const int*)b;
@@ -127,13 +122,13 @@ typedef struct {
     int value;
     int seq;
 } TestElem;
-use_Sli$(TestElem);
+use_S$(TestElem);
 $inline_always cmp_fnCmp(TestElem) {
     if (self.value < other.value) { return cmp_Ord_lt; }
     if (self.value > other.value) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 }
-static cmp_Ord compareTestElem(anyptr_const lhs, anyptr_const rhs, anyptr_const arg) {
+static cmp_Ord compareTestElem(P_const$raw lhs, P_const$raw rhs, P_const$raw arg) {
     $unused(arg);
     let self  = as$(const TestElem*, lhs);
     let other = as$(const TestElem*, rhs);
@@ -150,9 +145,9 @@ static bool isStable(const TestElem* arr, usize size) {
 
 /*========== Basic Sorting Tests ============================================*/
 
-use_Err$(TEST_Result);
-Err$TEST_Result TEST_stableSort_Basic(void) {
-    scope_reserveReturn(Err$TEST_Result) {
+use_E$(TEST_Result);
+E$TEST_Result TEST_stableSort_Basic(void) {
+    scope_reserveReturn(E$TEST_Result) {
         var result    = TEST_makeResult("stableSort basic functionality");
         var allocator = testAllocator();
 
@@ -160,7 +155,7 @@ Err$TEST_Result TEST_stableSort_Basic(void) {
         let size   = sizeof(data) / sizeof(data[0]);
 
         // Create copy for sorting
-        let arr = meta_cast$(Sli$(int), try(mem_Allocator_alloc(allocator, typeInfo(int), size)));
+        let arr = meta_cast$(S$(int), try(mem_Allocator_alloc(allocator, typeInfo(int), size)));
         defer(mem_Allocator_free(allocator, anySli(arr)));
         {
             claim_assert(arr.len == size);
@@ -179,8 +174,8 @@ Err$TEST_Result TEST_stableSort_Basic(void) {
 
 /*========== Stability Tests ================================================*/
 
-Err$TEST_Result TEST_stableSort_Stability(void) {
-    scope_reserveReturn(Err$TEST_Result) {
+E$TEST_Result TEST_stableSort_Stability(void) {
+    scope_reserveReturn(E$TEST_Result) {
         var result    = TEST_makeResult("stableSort stability");
         var allocator = testAllocator();
 
@@ -190,7 +185,7 @@ Err$TEST_Result TEST_stableSort_Stability(void) {
         };
         let size = sizeof(data) / sizeof(data[0]);
 
-        let arr = meta_cast$(Sli$TestElem, try(mem_Allocator_alloc(allocator, typeInfo(TestElem), size)));
+        let arr = meta_cast$(S$TestElem, try(mem_Allocator_alloc(allocator, typeInfo(TestElem), size)));
         defer(mem_Allocator_free(allocator, anySli(arr)));
         {
             claim_assert(arr.len == size);
@@ -210,8 +205,8 @@ Err$TEST_Result TEST_stableSort_Stability(void) {
 
 /*========== Edge Case Tests ================================================*/
 
-Err$TEST_Result TEST_stableSort_EdgeCases(void) {
-    scope_reserveReturn(Err$TEST_Result) {
+E$TEST_Result TEST_stableSort_EdgeCases(void) {
+    scope_reserveReturn(E$TEST_Result) {
         var result    = TEST_makeResult("stableSort edge cases");
         var allocator = testAllocator();
 
@@ -239,30 +234,30 @@ Err$TEST_Result TEST_stableSort_EdgeCases(void) {
 /*========== Larger Dataset Tests ===========================================*/
 
 // Generates an array of random integers
-static void generateRandomIntArray(int* arr, usize size) {
+static void generateRandIntArray(int* arr, usize size) {
     for (usize i = 0; i < size; ++i) {
-        arr[i] = Random_i32();
+        arr[i] = Rand_i32();
     }
 }
 
 // Generates an array of TestElem with random values and sequential seq numbers
-static void generateRandomTestElemArray(TestElem* arr, usize size) {
+static void generateRandTestElemArray(TestElem* arr, usize size) {
     for (usize i = 0; i < size; ++i) {
-        arr[i].value = Random_i32();
+        arr[i].value = Rand_i32();
         arr[i].seq   = (int)i;
     }
 }
 
-Err$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
-    scope_reserveReturn(Err$TEST_Result) {
+E$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
+    scope_reserveReturn(E$TEST_Result) {
         var result    = TEST_makeResult("stableSort large dataset (unstable)");
         var allocator = testAllocator();
 
         let size = 10000; // Adjust as needed
 
-        let arr = meta_cast$(Sli$(int), try(mem_Allocator_alloc(allocator, typeInfo(int), size)));
+        let arr = meta_cast$(S$(int), try(mem_Allocator_alloc(allocator, typeInfo(int), size)));
         defer(mem_Allocator_free(allocator, anySli(arr)));
-        generateRandomIntArray(arr.ptr, size);
+        generateRandIntArray(arr.ptr, size);
 
         let res = stableSort(arr.ptr, arr.len, sizeof(int), compareInt, null, allocator);
         TEST_condition(!res.is_err);
@@ -273,16 +268,16 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
     scope_returnReserved;
 }
 
-Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
-    scope_reserveReturn(Err$TEST_Result) {
+E$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
+    scope_reserveReturn(E$TEST_Result) {
         var result    = TEST_makeResult("stableSort large dataset (stable)");
         var allocator = testAllocator();
 
         let size = 10000; // Adjust as needed
 
-        let arr = meta_cast$(Sli$TestElem, try(mem_Allocator_alloc(allocator, typeInfo(TestElem), size)));
+        let arr = meta_cast$(S$TestElem, try(mem_Allocator_alloc(allocator, typeInfo(TestElem), size)));
         defer(mem_Allocator_free(allocator, anySli(arr)));
-        generateRandomTestElemArray(arr.ptr, size);
+        generateRandTestElemArray(arr.ptr, size);
 
         let res = stableSort(arr.ptr, arr.len, sizeof(TestElem), compareTestElem, null, allocator);
         TEST_condition(!res.is_err);
@@ -295,11 +290,11 @@ Err$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
 
 /*========== Test Runner ====================================================*/
 
-Err$void dh_main(void) {
-    reserveReturn(Err$void);
+E$void dh_main(void) {
+    reserveReturn(E$void);
 
     // Seed the random number generator (important for reproducibility)
-    Random_initWithSeed(12345); // Use a fixed seed for consistent test results
+    Rand_initWithSeed(12345); // Use a fixed seed for consistent test results
 
     TEST_init();
     printf("Starting stableSort Tests\n");

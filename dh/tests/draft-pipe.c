@@ -149,12 +149,12 @@ typedef struct Foo {
     var_(value, i32);
     var_(mem, mem_Allocator);
 } Foo;
-use_Err$(Foo);
-static fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)) $must_check;
+use_E$(Foo);
+static fn_((Foo_init(mem_Allocator allocator))(E$P$Foo)) $must_check;
 static fn_((Foo_fini(Foo* const self))(void));
 static fn_((Foo_setA(Foo* const self, i32 a))(Foo*));
 static fn_((Foo_setB(Foo* const self, i32 b))(Foo*));
-static fn_((Foo_blk(Foo* const self))(Foo*));
+static fn_((Foo_eval(Foo* const self))(Foo*));
 static fn_((Foo_merge(Foo* const self, const Foo* other))(Foo*));
 static fn_((Foo_baz(const Foo* const self))(i32));
 
@@ -201,7 +201,7 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
     let_ignore = pipe_foo;
 } */
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
@@ -211,7 +211,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         {
             Foo_setA(bar, 5);
             Foo_setB(bar, 15);
-            Foo_blk(bar);
+            Foo_eval(bar);
         }
         defer_(Foo_fini(bar));
 
@@ -219,7 +219,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
         defer_(Foo_fini(foo));
         Foo_setA(foo, 10);
         Foo_setB(foo, 20);
-        Foo_blk(foo);
+        Foo_eval(foo);
         Foo_merge(foo, bar);
         let result = Foo_baz(foo);
 
@@ -266,7 +266,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 #define fn_scope_$scope  fn_scope_ext
 #define $unscoped_$scope $unguarded
 
-func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
+func_(runPipeExampleUsage(S$S_const$u8 args), E$void $scope, {
     let_ignore       = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
@@ -293,7 +293,7 @@ func_(runPipeExampleUsage(Sli$Sli_const$u8 args), Err$void $scope, {
 #endif /* UNUSED_CODE */
 
 // Example functions that would typically be used in a chain
-fn_((Foo_init(mem_Allocator allocator))(Err$Ptr$Foo)$scope) {
+fn_((Foo_init(mem_Allocator allocator))(E$P$Foo)$scope) {
     let foo    = meta_cast$(Foo*, try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))))));
     foo->mem   = allocator;
     foo->a     = 0;
@@ -310,7 +310,7 @@ fn_((Foo_setA(Foo* const self, i32 a))(Foo*)) {
 fn_((Foo_setB(Foo* const self, i32 b))(Foo*)) {
     return deref(self).b = b, self;
 }
-fn_((Foo_blk(Foo* const self))(Foo*)) {
+fn_((Foo_eval(Foo* const self))(Foo*)) {
     debug_assert_nonnull(self);
     return self->value = self->a + self->b, self;
 }

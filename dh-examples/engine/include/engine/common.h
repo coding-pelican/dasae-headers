@@ -38,38 +38,38 @@ typedef m_V2u  Vec2u;  typedef m_V3u  Vec3u;  typedef m_V4u  Vec4u;
 typedef m_V2ul Vec2ul; typedef m_V3ul Vec3ul; typedef m_V4ul Vec4ul;
 typedef m_V2uz Vec2uz; typedef m_V3uz Vec3uz; typedef m_V4uz Vec4uz;
 
-use_Sli$(Vec2f);  use_Sli$(Vec3f);  use_Sli$(Vec4f);
-use_Sli$(Vec2d);  use_Sli$(Vec3d);  use_Sli$(Vec4d);
+use_S$(Vec2f);  use_S$(Vec3f);  use_S$(Vec4f);
+use_S$(Vec2d);  use_S$(Vec3d);  use_S$(Vec4d);
 
-use_Sli$(Vec2i);  use_Sli$(Vec3i);  use_Sli$(Vec4i);
-use_Sli$(Vec2l);  use_Sli$(Vec3l);  use_Sli$(Vec4l);
-use_Sli$(Vec2z);  use_Sli$(Vec3z);  use_Sli$(Vec4z);
+use_S$(Vec2i);  use_S$(Vec3i);  use_S$(Vec4i);
+use_S$(Vec2l);  use_S$(Vec3l);  use_S$(Vec4l);
+use_S$(Vec2z);  use_S$(Vec3z);  use_S$(Vec4z);
 
-use_Sli$(Vec2u);  use_Sli$(Vec3u);  use_Sli$(Vec4u);
-use_Sli$(Vec2ul); use_Sli$(Vec3ul); use_Sli$(Vec4ul);
-use_Sli$(Vec2uz); use_Sli$(Vec3uz); use_Sli$(Vec4uz);
+use_S$(Vec2u);  use_S$(Vec3u);  use_S$(Vec4u);
+use_S$(Vec2ul); use_S$(Vec3ul); use_S$(Vec4ul);
+use_S$(Vec2uz); use_S$(Vec3uz); use_S$(Vec4uz);
 
-use_Opt$(Vec2f);  use_Opt$(Vec3f);  use_Opt$(Vec4f);
-use_Opt$(Vec2d);  use_Opt$(Vec3d);  use_Opt$(Vec4d);
+use_O$(Vec2f);  use_O$(Vec3f);  use_O$(Vec4f);
+use_O$(Vec2d);  use_O$(Vec3d);  use_O$(Vec4d);
 
-use_Opt$(Vec2i);  use_Opt$(Vec3i);  use_Opt$(Vec4i);
-use_Opt$(Vec2l);  use_Opt$(Vec3l);  use_Opt$(Vec4l);
-use_Opt$(Vec2z);  use_Opt$(Vec3z);  use_Opt$(Vec4z);
+use_O$(Vec2i);  use_O$(Vec3i);  use_O$(Vec4i);
+use_O$(Vec2l);  use_O$(Vec3l);  use_O$(Vec4l);
+use_O$(Vec2z);  use_O$(Vec3z);  use_O$(Vec4z);
 
-use_Opt$(Vec2u);  use_Opt$(Vec3u);  use_Opt$(Vec4u);
-use_Opt$(Vec2ul); use_Opt$(Vec3ul); use_Opt$(Vec4ul);
-use_Opt$(Vec2uz); use_Opt$(Vec3uz); use_Opt$(Vec4uz);
+use_O$(Vec2u);  use_O$(Vec3u);  use_O$(Vec4u);
+use_O$(Vec2ul); use_O$(Vec3ul); use_O$(Vec4ul);
+use_O$(Vec2uz); use_O$(Vec3uz); use_O$(Vec4uz);
 
-use_Err$(Vec2f);  use_Err$(Vec3f);  use_Err$(Vec4f);
-use_Err$(Vec2d);  use_Err$(Vec3d);  use_Err$(Vec4d);
+use_E$(Vec2f);  use_E$(Vec3f);  use_E$(Vec4f);
+use_E$(Vec2d);  use_E$(Vec3d);  use_E$(Vec4d);
 
-use_Err$(Vec2i);  use_Err$(Vec3i);  use_Err$(Vec4i);
-use_Err$(Vec2l);  use_Err$(Vec3l);  use_Err$(Vec4l);
-use_Err$(Vec2z);  use_Err$(Vec3z);  use_Err$(Vec4z);
+use_E$(Vec2i);  use_E$(Vec3i);  use_E$(Vec4i);
+use_E$(Vec2l);  use_E$(Vec3l);  use_E$(Vec4l);
+use_E$(Vec2z);  use_E$(Vec3z);  use_E$(Vec4z);
 
-use_Err$(Vec2u);  use_Err$(Vec3u);  use_Err$(Vec4u);
-use_Err$(Vec2ul); use_Err$(Vec3ul); use_Err$(Vec4ul);
-use_Err$(Vec2uz); use_Err$(Vec3uz); use_Err$(Vec4uz);
+use_E$(Vec2u);  use_E$(Vec3u);  use_E$(Vec4u);
+use_E$(Vec2ul); use_E$(Vec3ul); use_E$(Vec4ul);
+use_E$(Vec2uz); use_E$(Vec3uz); use_E$(Vec4uz);
 // clang-format on
 
 #if defined(__cplusplus)

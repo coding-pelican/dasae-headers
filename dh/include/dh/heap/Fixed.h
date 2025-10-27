@@ -15,8 +15,8 @@
  *          Supports allocation, resize, and free operations with appropriate constraints.
  */
 
-#ifndef HEAP_FIXED_INCLUDED
-#define HEAP_FIXED_INCLUDED (1)
+#ifndef heap_Fixed__included
+#define heap_Fixed__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -29,11 +29,11 @@ extern "C" {
 
 /// Fixed buffer allocator instance
 typedef struct heap_Fixed {
-    Sli$u8 buffer;    ///< Underlying buffer to allocate from
-    usize  end_index; ///< Current allocation position
+    S$u8  buffer;    ///< Underlying buffer to allocate from
+    usize end_index; ///< Current allocation position
 } heap_Fixed;
-use_Opt$(heap_Fixed);
-use_Err$(heap_Fixed);
+T_use_O$(heap_Fixed);
+T_use_E$(heap_Fixed);
 
 /// Get allocator interface for instance
 extern fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator));
@@ -41,17 +41,17 @@ extern fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator));
 extern fn_((heap_Fixed_thrdSafeAllocator(heap_Fixed* self))(mem_Allocator));
 
 /// Initialize with buffer
-extern fn_((heap_Fixed_init(Sli$u8 buf))(heap_Fixed));
+extern fn_((heap_Fixed_init(S$u8 buf))(heap_Fixed));
 /// Reset allocator state (frees all allocations)
 extern fn_((heap_Fixed_reset(heap_Fixed* self))(void));
 /// Check if allocator owns a pointer
-extern fn_((heap_Fixed_ownsPtr(const heap_Fixed* self, Ptr_const$u8 ptr))(bool));
+extern fn_((heap_Fixed_ownsPtr(const heap_Fixed* self, P_const$u8 ptr))(bool));
 /// Check if allocator owns a slice
-extern fn_((heap_Fixed_ownsSli(const heap_Fixed* self, Sli_const$u8 sli))(bool));
+extern fn_((heap_Fixed_ownsSli(const heap_Fixed* self, S_const$u8 sli))(bool));
 /// Check if a slice is the last allocation
-extern fn_((heap_Fixed_isLastAllocation(const heap_Fixed* self, Sli_const$u8 buf))(bool));
+extern fn_((heap_Fixed_isLastAllocation(const heap_Fixed* self, S_const$u8 buf))(bool));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* HEAP_FIXED_INCLUDED */
+#endif /* heap_Fixed__included */

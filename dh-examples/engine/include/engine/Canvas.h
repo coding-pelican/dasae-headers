@@ -17,24 +17,24 @@ typedef struct engine_Canvas {
     Color             default_color;
     engine_CanvasType type;
 } engine_Canvas;
-use_Ptr$(engine_Canvas);
-use_Sli$(engine_Canvas);
-use_Opt$(engine_Canvas);
-use_Err$(engine_Canvas);
+use_P$(engine_Canvas);
+use_S$(engine_Canvas);
+use_O$(engine_Canvas);
+use_E$(engine_Canvas);
 
 typedef struct engine_Canvas_Config {
-    Opt$mem_Allocator allocator;
-    u32               width;
-    u32               height;
-    Opt$Color         default_color;
-    Opt$$(engine_CanvasType) type;
+    O$mem_Allocator allocator;
+    u32             width;
+    u32             height;
+    O$Color default_color;
+    O$$(engine_CanvasType) type;
 } engine_Canvas_Config;
 
 /// Canvas creation with specific type
-extern fn_((engine_Canvas_init(engine_Canvas_Config config))(Err$Ptr$engine_Canvas)) $must_check;
+extern fn_((engine_Canvas_init(engine_Canvas_Config config))(E$P$engine_Canvas)) $must_check;
 extern fn_((engine_Canvas_fini(engine_Canvas* self))(void));
-extern fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(Err$void)) $must_check;
-extern fn_((engine_Canvas_clear(engine_Canvas* self, Opt$Color color))(void));
+extern fn_((engine_Canvas_resize(engine_Canvas* self, u32 width, u32 height))(E$void)) $must_check;
+extern fn_((engine_Canvas_clear(engine_Canvas* self, O$Color color))(void));
 
 extern fn_((engine_Canvas_drawPixel(engine_Canvas* self, i32 x, i32 y, Color color))(void));
 extern fn_((engine_Canvas_drawLine(engine_Canvas* self, i32 x1, i32 y1, i32 x2, i32 y2, Color color))(void));

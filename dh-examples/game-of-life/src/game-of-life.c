@@ -40,8 +40,8 @@
 
 use_Grid$(i8);
 typedef struct GameOfLife {
-    Sli$i8 curr_states;
-    Sli$i8 next_states;
+    S$i8 curr_states;
+    S$i8 next_states;
     usize  width;
     usize  height;
     usize  tick_current;
@@ -50,10 +50,10 @@ typedef struct GameOfLife {
 static fn_(GameOfLife_update(GameOfLife* self, f64 dt), void);
 static fn_(GameOfLife_entireCells(const GameOfLife* self), Grid$i8);
 static fn_(GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state), void);
-$maybe_unused static fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, S$i8 cells), void);
 $maybe_unused static fn_(GameOfLife_setCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
 $maybe_unused static fn_(GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state), void);
-$maybe_unused static fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void);
+$maybe_unused static fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, S$i8 cells), void);
 $maybe_unused static fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
 
 typedef struct State {
@@ -65,7 +65,7 @@ typedef struct State {
     bool           is_paused;
     bool           is_running;
 } State;
-use_Err$(State);
+use_E$(State);
 $must_check;
 $static fn_(
     State_init(
@@ -76,7 +76,7 @@ $static fn_(
         usize          states_width,
         usize          states_height
     ),
-    Err$State
+    E$State
 );
 $static fn_(State_fini(State* self), void);
 $static fn_(State_update(State* self, f64 dt), void);
@@ -84,7 +84,7 @@ $static fn_(State_render(const State* self, engine_Canvas* canvas, f64 dt), void
 
 
 
-fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
+fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     let_ignore = args;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
@@ -125,7 +125,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
-        engine_Canvas_clear(game_canvas, none$(Opt$Color));
+        engine_Canvas_clear(game_canvas, none$(O$Color));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendView(
             window,
@@ -167,16 +167,16 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
         let shape_h = 3;
         let x       = (window_res_width - shape_w) / 2;
         let y       = (window_res_height - shape_h) / 2;
-        GameOfLife_setCellSlice(&state.cells, x, y + 0, Sli_from$(Sli$i8, ((i8[]){ 0, 0, 1, 1, 0 }), shape_w));
-        GameOfLife_setCellSlice(&state.cells, x, y + 1, Sli_from$(Sli$i8, ((i8[]){ 0, 1, 1, 0, 0 }), shape_w));
-        GameOfLife_setCellSlice(&state.cells, x, y + 2, Sli_from$(Sli$i8, ((i8[]){ 0, 0, 1, 0, 0 }), shape_w));
+        GameOfLife_setCellSlice(&state.cells, x, y + 0, Sli_from$(S$i8, ((i8[]){ 0, 0, 1, 1, 0 }), shape_w));
+        GameOfLife_setCellSlice(&state.cells, x, y + 1, Sli_from$(S$i8, ((i8[]){ 0, 1, 1, 0, 0 }), shape_w));
+        GameOfLife_setCellSlice(&state.cells, x, y + 2, Sli_from$(S$i8, ((i8[]){ 0, 0, 1, 0, 0 }), shape_w));
     }
     log_info("game state created\n");
 
     let_ignore = engine_utils_getch();
 
     // Initialize timing variables
-    let target_frame_time = time_Duration_fromSecs_f64(target_spf);
+    let target_frame_time = time_Duration_fromSecs$f64(target_spf);
     var prev_frame_time   = time_Instant_now();
     log_info("game loop started\n");
 
@@ -187,7 +187,7 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
 
         // 2) Compute how long since last frame (purely for your dt usage)
         let elapsed = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-        let dt      = time_Duration_asSecs_f64(elapsed);
+        let dt      = time_Duration_asSecs$f64(elapsed);
 
         // 3) Process input/events
         try_(engine_Window_update(window));
@@ -227,7 +227,8 @@ fn_(dh_main(Sli$Sli_const$u8 args), Err$void $guard) {
         prev_frame_time = curr_frame_time;
     }
     return_ok({});
-}$unguarded;
+}
+$unguarded;
 
 
 
@@ -239,16 +240,16 @@ fn_(State_init(
         usize          states_width,
         usize          states_height
     ),
-    Err$State $guard) {
+    E$State $guard) {
     const usize buffer_width  = states_width + 2;
     const usize buffer_height = states_height + 2;
     const usize buffer_size   = buffer_width * buffer_height;
 
-    let mem_curr_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
+    let mem_curr_states = meta_cast$(S$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_curr_states)));
     memset(mem_curr_states.ptr, 0, buffer_size);
 
-    let mem_next_states = meta_cast$(Sli$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
+    let mem_next_states = meta_cast$(S$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_next_states)));
     memset(mem_next_states.ptr, 0, buffer_size);
 
@@ -268,7 +269,8 @@ fn_(State_init(
             .is_paused = true,
             .is_running = true,
         });
-} $unguarded;
+}
+$unguarded;
 fn_(State_fini(State* self), void) {
     debug_assert_nonnull(self);
     mem_Allocator_free(self->allocator, anySli(self->cells.curr_states));
@@ -339,8 +341,8 @@ fn_(GameOfLife_update(GameOfLife* self, f64 dt), void) {
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
-    let next   = Grid_fromSli$(Grid$i8, self->next_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
+    let next   = Grid_fromS$(Grid$i8, self->next_states, width, height);
 
     // Clear the next states buffer for computation
     memset(self->next_states.ptr, 0, self->width * self->height * sizeof(i8));
@@ -385,7 +387,7 @@ fn_(GameOfLife_update(GameOfLife* self, f64 dt), void) {
 }
 fn_(GameOfLife_entireCells(const GameOfLife* self), Grid$i8) {
     debug_assert_nonnull(self);
-    return Grid_fromSli$(Grid$i8, self->curr_states, self->width, self->height);
+    return Grid_fromS$(Grid$i8, self->curr_states, self->width, self->height);
 }
 fn_(GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state), void) {
     debug_assert_nonnull(self);
@@ -394,18 +396,18 @@ fn_(GameOfLife_setCell(GameOfLife* self, usize x, usize y, i8 state), void) {
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
 
     *Grid_at(curr, x + 1, y + 1) = state;
 }
-fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void) {
+fn_(GameOfLife_setCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, S$i8 cells), void) {
     debug_assert_nonnull(self);
     // Add boundary checks
     if (self->width - 2 <= left_top_x || self->height - 2 <= left_top_y) { return; } /* Silently fail */
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
     let len    = prim_min(cells.len, as$(usize, width - left_top_x - 2)); // Fix: Adjust limit
 
     for (usize i = 0; i < len; ++i) {
@@ -419,7 +421,7 @@ fn_(GameOfLife_setCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y,
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
     let area_w = prim_min(cells.width, as$(usize, width - left_top_x - 1));
     let area_h = prim_min(cells.height, as$(usize, height - left_top_y - 1));
     for (usize y = 0; y < area_h; ++y) {
@@ -435,18 +437,18 @@ fn_(GameOfLife_toggleCell(GameOfLife* self, usize x, usize y, i8 state), void) {
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
 
     *Grid_at(curr, x + 1, y + 1) = as$(i8, Grid_getAt(curr, x + 1, y + 1) ^ state);
 }
-fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, Sli$i8 cells), void) {
+fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left_top_x, usize left_top_y, S$i8 cells), void) {
     debug_assert_nonnull(self);
     // Add boundary checks
     if (self->width - 2 <= left_top_x || self->height - 2 <= left_top_y) { return; } /* Silently fail */
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
     let len    = prim_min(cells.len, as$(usize, width - left_top_x - 1));
 
     for (usize i = 0; i < len; ++i) {
@@ -462,7 +464,7 @@ fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top
 
     let width  = as$(i32, self->width);
     let height = as$(i32, self->height);
-    let curr   = Grid_fromSli$(Grid$i8, self->curr_states, width, height);
+    let curr   = Grid_fromS$(Grid$i8, self->curr_states, width, height);
     let area_w = prim_min(cells.width, as$(usize, width - left_top_x - 1));
     let area_h = prim_min(cells.height, as$(usize, height - left_top_y - 1));
 

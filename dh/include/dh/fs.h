@@ -15,8 +15,8 @@
  *          file path manipulation, and file handling.
  */
 
-#ifndef FS_INCLUDED
-#define FS_INCLUDED (1)
+#ifndef fs__included
+#define fs__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -30,4 +30,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* FS_INCLUDED */
+#endif /* fs__included */

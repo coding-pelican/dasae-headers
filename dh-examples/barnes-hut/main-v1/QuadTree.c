@@ -6,7 +6,7 @@
 #include "dh/meta/common.h"
 
 // Quad implementation
-Quad Quad_newContaining(const Sli$Body bodies) {
+Quad Quad_newContaining(const S$Body bodies) {
     debug_assert_nonnull(bodies.ptr);
 
     var min_x = f32_limit_max;
@@ -14,7 +14,7 @@ Quad Quad_newContaining(const Sli$Body bodies) {
     var max_x = f32_limit_min;
     var max_y = f32_limit_min;
 
-    for_slice (bodies, body) {
+    for_slice(bodies, body) {
         min_x = fminf(min_x, body->pos.x);
         min_y = fminf(min_y, body->pos.y);
         max_x = fmaxf(max_x, body->pos.x);
@@ -42,11 +42,11 @@ Quad Quad_intoQuadrant(Quad self, usize quadrant) {
     return self;
 }
 
-Arr$4$Quad Quad_subdivide(const Quad* self) {
+A$4$Quad Quad_subdivide(const Quad* self) {
     debug_assert_nonnull(self);
 
-    Arr$4$Quad quads = cleared();
-    for_array_indexed (quads, quad, index) {
+    A$4$Quad quads = cleared();
+    for_array_indexed(quads, quad, index) {
         *quad = Quad_intoQuadrant(*self, index);
     }
     return quads;
@@ -79,8 +79,8 @@ bool QuadNode_isEmpty(const QuadNode* self) {
 }
 
 // QuadTree implementation
-Err$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) {
-    scope_reserveReturn(Err$QuadTree) {
+E$QuadTree QuadTree_create(mem_Allocator allocator, f32 theta, f32 epsilon, usize n) {
+    scope_reserveReturn(E$QuadTree) {
         var nodes = typed(ArrList$QuadNode, try(ArrList_initCap(typeInfo(QuadNode), allocator, n)));
         errdefer(ArrList_fini(&nodes.base));
         var parents = typed(ArrList$usize, try(ArrList_initCap(typeInfo(usize), allocator, n)));
@@ -104,8 +104,8 @@ void QuadTree_destroy(QuadTree* self) {
     ArrList_fini(&self->parents.base);
 }
 
-Err$void QuadTree_clear(QuadTree* self, Quad quad) {
-    reserveReturn(Err$void);
+E$void QuadTree_clear(QuadTree* self, Quad quad) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     // Clear and free the nodes and parents lists
@@ -120,8 +120,8 @@ Err$void QuadTree_clear(QuadTree* self, Quad quad) {
     return_void();
 }
 
-static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
-    reserveReturn(Err$usize);
+static E$usize QuadTree_subdivide(QuadTree* self, usize node) {
+    reserveReturn(E$usize);
     debug_assert_nonnull(self);
 
     // Append the parent node index
@@ -137,7 +137,7 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
     Sli_at(self->nodes.items, node)->children = children;
 
     // Create the next indices for the new nodes
-    const Sli$usize nexts = Sli_arr(
+    const S$usize nexts = Sli_arr(
         (usize[]){
             children + 1,
             children + 2,
@@ -150,7 +150,7 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
     let quads = Quad_subdivide(&Sli_at(self->nodes.items, node)->quad);
 
     // Append the new nodes
-    for_array_indexed (quads, quad, index) {
+    for_array_indexed(quads, quad, index) {
         try(ArrList_append(
             &self->nodes.base,
             meta_refPtr(createFrom$(QuadNode, QuadNode_new(*Sli_at(nexts, index), *quad)))
@@ -160,8 +160,8 @@ static Err$usize QuadTree_subdivide(QuadTree* self, usize node) {
     return_ok(children);
 }
 
-Err$void QuadTree_insert(QuadTree* self, m_V2f32 pos, f32 mass) {
-    reserveReturn(Err$void);
+E$void QuadTree_insert(QuadTree* self, m_V2f32 pos, f32 mass) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     var node = QuadTree_root;
@@ -231,7 +231,7 @@ void QuadTree_propagate(QuadTree* self) {
     debug_assert_nonnull(self);
 
     // Propagate masses and center of mass upward through the tree
-    for_slice_rev (self->parents.items, node) {
+    for_slice_rev(self->parents.items, node) {
         let idx = Sli_at(self->nodes.items, *node)->children;
 
         // Get children nodes

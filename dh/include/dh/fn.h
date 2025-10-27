@@ -16,7 +16,7 @@
  */
 
 #ifndef fn__included
-#define fn__included (1)
+#define fn__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -159,19 +159,19 @@ __step_deferred: switch (__scope_counter.current_line) { \
 })
 #define comp_syn__return_void_0() blk({ \
     claim_assert_static( \
-        isSameType(TypeOf(*__reserved_return), TypeOf(void)) \
-        || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
+        isSameType$(TypeOf(*__reserved_return), TypeOf(void)) \
+        || isSameType$(TypeOf(*__reserved_return), TypeOf(Void)) \
     ); \
     goto __step_return; \
 })
 #define comp_syn__return_void_1(_Expr...) blk({ \
     claim_assert_static( \
-        isSameType(TypeOf(*__reserved_return), TypeOf(void)) \
-        || isSameType(TypeOf(*__reserved_return), TypeOf(Void)) \
+        isSameType$(TypeOf(*__reserved_return), TypeOf(void)) \
+        || isSameType$(TypeOf(*__reserved_return), TypeOf(Void)) \
     ); \
     claim_assert_static( \
-        isSameType(TypeOf(({ _Expr; })), TypeOf(void)) \
-        || isSameType(TypeOf(({ _Expr; })), TypeOf(Void)) \
+        isSameType$(TypeOf(({ _Expr; })), TypeOf(void)) \
+        || isSameType$(TypeOf(({ _Expr; })), TypeOf(Void)) \
     ); \
     _Expr; \
     goto __step_return; \
@@ -289,19 +289,19 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define $break_void(_Expr...) pp_overload(comp_syn__$break_void, _Expr)(_Expr)
 #define comp_syn__$break_void_0() blk({ \
     claim_assert_static( \
-        isSameType(TypeOf(*__reserved_break), TypeOf(void)) \
-        || isSameType(TypeOf(*__reserved_break), TypeOf(Void)) \
+        isSameType$(TypeOf(*__reserved_break), TypeOf(void)) \
+        || isSameType$(TypeOf(*__reserved_break), TypeOf(Void)) \
     ); \
     goto __step_break; \
 })
 #define comp_syn__$break_void_1(_Expr...) blk({ \
     claim_assert_static( \
-        isSameType(TypeOf(*__reserved_break), TypeOf(void)) \
-        || isSameType(TypeOf(*__reserved_break), TypeOf(Void)) \
+        isSameType$(TypeOf(*__reserved_break), TypeOf(void)) \
+        || isSameType$(TypeOf(*__reserved_break), TypeOf(Void)) \
     ); \
     claim_assert_static( \
-        isSameType(TypeOf(({ _Expr; })), TypeOf(void)) \
-        || isSameType(TypeOf(({ _Expr; })), TypeOf(Void)) \
+        isSameType$(TypeOf(({ _Expr; })), TypeOf(void)) \
+        || isSameType$(TypeOf(({ _Expr; })), TypeOf(Void)) \
     ); \
     _Expr; \
     goto __step_break; \
@@ -366,24 +366,24 @@ __step_deferred: switch (__scope_counter.current_line) { \
 /* declarations =============================================================*/
 use_ErrSet$(math_Err, i32);
 $static $must_check
-fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32));
+fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32));
 
 /* main */
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
     catch_((math_divideSafe(10, 0))(err, {
-        let err_code = Str_viewZ(as$((const u8*)(Err_codeToCStr(err))));
-        debug_assert_true(Sli_const$u8_eq(err_code, u8_l("DivisionByZero")));
+        let err_code = Err_codeToStr(err);
+        debug_assert_true(mem_eqlBytes(err_code, u8_l("DivisionByZero")));
         return_err(err);
     }));
     return_ok({});
 } $unscoped_(fn);
 
 /* definitions */
-fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
+fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32) $scope) {
     if (rhs == 0) {
-        return_err(math_Err_DivisionByZero());
+        return_err(math_E_DivisionByZero());
     }
     return_ok(lhs / rhs);
 } $unscoped_(fn);

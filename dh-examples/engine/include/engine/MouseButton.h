@@ -22,10 +22,10 @@ enum {
     engine_MouseButton_count = 5
 };
 typedef i8 engine_MouseButton;
-use_Ptr$(engine_MouseButton);
-use_Sli$(engine_MouseButton);
-use_Opt$(engine_MouseButton);
-use_Err$(engine_MouseButton);
+use_P$(engine_MouseButton);
+use_S$(engine_MouseButton);
+use_O$(engine_MouseButton);
+use_E$(engine_MouseButton);
 
 #if defined(__cplusplus)
 } /* extern "C" */

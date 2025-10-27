@@ -91,8 +91,8 @@ $inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
 }
 
 /* Core visualizer functions */
-Err$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
-    reserveReturn(Err$Visualizer);
+E$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
+    reserveReturn(E$Visualizer);
     return_ok((Visualizer){
         .pos   = m_V2f32_zero, // camera center pos
         .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
@@ -142,8 +142,8 @@ typedef struct Control {
     engine_KeyCode key;
     Vec2f          vec;
 } Control;
-use_Sli$(Control);
-static Sli_const$Control Control_list(void) {
+use_S$(Control);
+static S_const$Control Control_list(void) {
     static const Control controls[] = {
         { .key = engine_KeyCode_w, .vec = m_V2f32_up },
         { .key = engine_KeyCode_a, .vec = m_V2f32_left },
@@ -151,7 +151,7 @@ static Sli_const$Control Control_list(void) {
         { .key = engine_KeyCode_d, .vec = m_V2f32_right },
     };
     static const usize controls_len = countOf(controls);
-    return (Sli_const$Control){
+    return (S_const$Control){
         .ptr = controls,
         .len = controls_len,
     };
@@ -235,8 +235,8 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     let diff  = m_V2f32_sub(mouse_world_before, mouse_world_after);
     self->pos = m_V2f32_add(self->pos, diff);
 }
-Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
-    reserveReturn(Err$void);
+E$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
     $unused(window);
 
@@ -266,7 +266,7 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
 
     // Handle moving
     let controls = Control_list();
-    for_slice (controls, control) {
+    for_slice(controls, control) {
         if (engine_Key_held(control->key)) {
             log_debug("pressed '%c' to move\n", control->key);
             self->pos = m_V2f32_add(self->pos, m_V2f32_scale(control->vec, 5.0f * Visualizer_scaleInv(self)));
@@ -337,8 +337,8 @@ Err$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
     return_void();
 }
 
-Err$void Visualizer_update(Visualizer* self) {
-    reserveReturn(Err$void);
+E$void Visualizer_update(Visualizer* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     // Handle spawned body confirmation
@@ -351,9 +351,9 @@ Err$void Visualizer_update(Visualizer* self) {
 }
 
 static void     Visualizer_renderBodies(Visualizer* self);
-static Err$void Visualizer_renderQuadTree(Visualizer* self);
-Err$void        Visualizer_render(Visualizer* self) {
-    reserveReturn(Err$void);
+static E$void Visualizer_renderQuadTree(Visualizer* self);
+E$void        Visualizer_render(Visualizer* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     // Clear canvas
@@ -391,7 +391,7 @@ $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -414,7 +414,7 @@ $inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -444,7 +444,7 @@ $inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -474,7 +474,7 @@ $inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
         self->pos.x + 0.5f * (as$(f32, self->canvas->width) * self->scale),
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         let left   = body->pos.x - body->radius;
         let right  = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
@@ -538,8 +538,8 @@ $inline_always void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, 
         color
     );
 }
-static Err$void Visualizer_renderQuadTree(Visualizer* self) {
-    reserveReturn(Err$void);
+static E$void Visualizer_renderQuadTree(Visualizer* self) {
+    reserveReturn(E$void);
     debug_assert_nonnull(self);
 
     let depth_range = &self->depth_range;

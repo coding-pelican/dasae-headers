@@ -14,8 +14,8 @@
  * @details Provides type-safe mem allocation and management
  */
 
-#ifndef MEM_ALLOCATOR_INCLUDED
-#define MEM_ALLOCATOR_INCLUDED (1)
+#ifndef mem_Allocator__included
+#define mem_Allocator__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -23,92 +23,91 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/meta/common.h"
 
 /*========== Allocator Interface ============================================*/
 
 /// Allocator vtable
 typedef struct mem_Allocator_VT {
-    fn_(((*alloc)(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8)) $must_check;
-    fn_(((*resize)(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool)) $must_check;
-    fn_(((*remap)(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8)) $must_check;
-    fn_(((*free)(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
+    fn_(((*alloc)(P$raw ctx, usize len, u32 align))(O$P$u8)) $must_check;
+    fn_(((*resize)(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool)) $must_check;
+    fn_(((*remap)(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8)) $must_check;
+    fn_(((*free)(P$raw ctx, S$u8 buf, u32 buf_align))(void));
 } mem_Allocator_VT;
 
 /// Allocator instance
 typedef struct mem_Allocator {
-    anyptr                  ptr; /**< Context pointer with type info */
+    P$raw                   ctx; /**< Context pointer with type info */
     const mem_Allocator_VT* vt;  /**< Virtual table */
 } mem_Allocator;
-use_Opt$(mem_Allocator);
-use_ErrSet$(mem_Err, meta_Ptr);
-use_ErrSet$(mem_Err, meta_Sli);
+T_use_O$(mem_Allocator);
+T_use_E$($set(mem_Err)(meta_P$raw));
+T_use_E$($set(mem_Err)(meta_S$raw));
 
 /*========== Common VTable Functions ========================================*/
 
 /// Default VTable functions for no-op fallbacks
-extern fn_((mem_Allocator_VT_noAlloc(anyptr ctx, usize len, u32 align))(Opt$Ptr$u8));
+extern fn_((mem_Allocator_VT_noAlloc(P$raw ctx, usize len, u32 align))(O$P$u8));
 /// Default VTable functions for no-op fallbacks
-extern fn_((mem_Allocator_VT_noResize(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
+extern fn_((mem_Allocator_VT_noResize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool));
 /// Default VTable functions for no-op fallbacks
-extern fn_((mem_Allocator_VT_noRemap(anyptr ctx, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
+extern fn_((mem_Allocator_VT_noRemap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
 /// Default VTable functions for no-op fallbacks
-extern fn_((mem_Allocator_VT_noFree(anyptr ctx, Sli$u8 buf, u32 buf_align))(void));
+extern fn_((mem_Allocator_VT_noFree(P$raw ctx, S$u8 buf, u32 buf_align))(void));
 
 #if !COMP_TIME || (COMP_TIME && !debug_comp_enabled)
 
 /*========== Core Allocator Functions =======================================*/
 
 /// Raw allocation
-extern fn_((mem_Allocator_rawAlloc(mem_Allocator self, usize len, u32 align))(Opt$Ptr$u8));
+extern fn_((mem_Allocator_rawAlloc(mem_Allocator self, usize len, u32 align))(O$P$u8));
 /// Try to resize in-place
-extern fn_((mem_Allocator_rawResize(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len))(bool));
+extern fn_((mem_Allocator_rawResize(mem_Allocator self, S$u8 buf, u32 buf_align, usize new_len))(bool));
 /// Try to resize, allowing relocation
-extern fn_((mem_Allocator_rawRemap(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len))(Opt$Ptr$u8));
+extern fn_((mem_Allocator_rawRemap(mem_Allocator self, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
 /// Free mem
-extern fn_((mem_Allocator_rawFree(mem_Allocator self, Sli$u8 buf, u32 buf_align))(void));
+extern fn_((mem_Allocator_rawFree(mem_Allocator self, S$u8 buf, u32 buf_align))(void));
 
 /*========== High-level Allocator Functions =================================*/
 
 /// Single-item allocation
-extern fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$meta_Ptr)) $must_check;
+extern fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$meta_P$raw)) $must_check;
 /// Free single-item
-extern fn_((mem_Allocator_destroy(mem_Allocator self, AnyType ptr))(void));
+extern fn_((mem_Allocator_destroy(mem_Allocator self, meta_P$raw ptr))(void));
 /// Slice allocation
-extern fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$meta_S$raw)) $must_check;
 /// Try to resize slice in-place
-extern fn_((mem_Allocator_resize(mem_Allocator self, AnyType old_mem, usize new_len))(bool));
+extern fn_((mem_Allocator_resize(mem_Allocator self, meta_S$raw old_mem, usize new_len))(bool));
 /// Try to resize slice, allowing relocation
-extern fn_((mem_Allocator_remap(mem_Allocator self, AnyType old_mem, usize new_len))(Opt$meta_Sli));
+extern fn_((mem_Allocator_remap(mem_Allocator self, meta_S$raw old_mem, usize new_len))(O$meta_S$raw));
 /// Reallocate slice with new size
-extern fn_((mem_Allocator_realloc(mem_Allocator self, AnyType old_mem, usize new_len))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_realloc(mem_Allocator self, meta_S$raw old_mem, usize new_len))(mem_Err$meta_S$raw)) $must_check;
 /// Free slice
-extern fn_((mem_Allocator_free(mem_Allocator self, AnyType mem))(void));
+extern fn_((mem_Allocator_free(mem_Allocator self, meta_S$raw mem))(void));
 
 /*========== Helper Functions ===============================================*/
 
 /// Duplicate slice
-extern fn_((mem_Allocator_dupe(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupe(mem_Allocator self, meta_S$raw src))(mem_Err$meta_S$raw)) $must_check;
 /// Duplicate slice with terminated zero sentinel value
-extern fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_Sli src))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupeZ(mem_Allocator self, meta_S$raw src))(mem_Err$meta_S$raw)) $must_check;
 
 #else /* COMP_TIME && (!COMP_TIME || debug_comp_enabled) */
 
-extern fn_((mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc src_loc))(Opt$Ptr$u8));
-extern fn_((mem_Allocator_rawResize_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc))(bool));
-extern fn_((mem_Allocator_rawRemap_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc))(Opt$Ptr$u8));
-extern fn_((mem_Allocator_rawFree_debug(mem_Allocator self, Sli$u8 buf, u32 buf_align, SrcLoc src_loc))(void));
+extern fn_((mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u32 align, SrcLoc src_loc))(O$P$u8));
+extern fn_((mem_Allocator_rawResize_debug(mem_Allocator self, S$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc))(bool));
+extern fn_((mem_Allocator_rawRemap_debug(mem_Allocator self, S$u8 buf, u32 buf_align, usize new_len, SrcLoc src_loc))(O$P$u8));
+extern fn_((mem_Allocator_rawFree_debug(mem_Allocator self, S$u8 buf, u32 buf_align, SrcLoc src_loc))(void));
 
-extern fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Err$meta_Ptr)) $must_check;
+extern fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Err$meta_P$raw)) $must_check;
 extern fn_((mem_Allocator_destroy_debug(mem_Allocator self, AnyType ptr, SrcLoc src_loc))(void));
-extern fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$meta_S$raw)) $must_check;
 extern fn_((mem_Allocator_resize_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(bool));
-extern fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(Opt$meta_Sli));
-extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_remap_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(O$meta_S$raw));
+extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, AnyType old_mem, usize new_len, SrcLoc src_loc))(mem_Err$meta_S$raw)) $must_check;
 extern fn_((mem_Allocator_free_debug(mem_Allocator self, AnyType mem, SrcLoc src_loc))(void));
 
-extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
-extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc src_loc))(mem_Err$meta_Sli)) $must_check;
+extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, meta_S src, SrcLoc src_loc))(mem_Err$meta_S$raw)) $must_check;
+extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_S src, SrcLoc src_loc))(mem_Err$meta_S$raw)) $must_check;
 
 /*========== Macros and Declarations ========================================*/
 
@@ -154,4 +153,4 @@ extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, meta_Sli src, SrcLoc s
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* MEM_ALLOCATOR_INCLUDED */
+#endif /* mem_Allocator__included */

@@ -17,14 +17,14 @@ config_ErrSet(math_Err,
 // Function that returns an error result
 use_ErrSet$(math_Err, i32);
 $static $must_check
-fn_((safeDivide(i32 numerator, i32 denominator))(math_Err$i32) $scope) {
+fn_((safeDivide(i32 numerator, i32 denominator))(math_E$i32) $scope) {
     if (denominator == 0) {
-        return_err(math_Err_DivisionByZero());
+        return_err(math_E_DivisionByZero());
     }
 
     // Check for potential overflow
     if (numerator == i32_limit_min && denominator == -1) {
-        return_err(math_Err_Overflow());
+        return_err(math_E_Overflow());
     }
 
     return_ok(numerator / denominator);
@@ -33,7 +33,7 @@ fn_((safeDivide(i32 numerator, i32 denominator))(math_Err$i32) $scope) {
 // Function demonstrating error propagation with try_
 use_ErrSet$(math_Err, f32);
 $static $must_check
-fn_((calculateRatio(i32 a, i32 b, i32 c, i32 d))(math_Err$f32) $scope) {
+fn_((calculateRatio(i32 a, i32 b, i32 c, i32 d))(math_E$f32) $scope) {
     // try_ will return early if an error occurs
     let first_result  = try_(safeDivide(a, b));
     let second_result = try_(safeDivide(c, d));
@@ -55,14 +55,14 @@ fn_((handleDivision(i32 a, i32 b))(i32)) {
 
 typedef variant_(
     (math_ErrRes),
-    (math_ErrRes_i32, math_Err$i32),
-    (math_ErrRes_f32, math_Err$f32)
+    (math_ErrRes_i32, math_E$i32),
+    (math_ErrRes_f32, math_E$f32)
 ) math_ErrRes;
 
 // Function demonstrating if_err/else_ok pattern
 $static
 fn_((processResult(math_ErrRes result))(void)) {
-    Opt$$(math_Err) maybe_err = none();
+    O$$(math_Err) maybe_err = none();
     match_(result, {
         pattern_(math_ErrRes_i32, (result), {
             if_err(*result, err) {
@@ -88,14 +88,14 @@ fn_((processResult(math_ErrRes result))(void)) {
 }
 
 // Function demonstrating errdefer_
-$static var_(memory, Arr$$(1024, u8)) = Arr_zero();
+$static var_(memory, A$$(1024, u8)) = A_zero();
 $static $must_check
-fn_((performOperation(i32 a, i32 b))(math_Err$i32) $guard) {
+fn_((performOperation(i32 a, i32 b))(math_E$i32) $guard) {
     // Allocate resources
-    var fixed     = heap_Fixed_init(Sli_arr$(Sli$u8, memory));
+    var fixed     = heap_Fixed_init(Sli_arr$(S$u8, memory));
     var allocator = heap_Fixed_allocator(&fixed);
     var buffer    = meta_cast$(
-        Sli$i32,
+        S$i32,
         catch_((mem_Allocator_alloc(allocator, typeInfo$(i32), 100))(err, {
             io_stream_eprintln(u8_l("Failed to allocate buffer: [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err));
             claim_unreachable;
@@ -115,7 +115,7 @@ fn_((performOperation(i32 a, i32 b))(math_Err$i32) $guard) {
     return_ok(result);
 } $unguarded_(fn);
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $scope) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     io_stream_println(u8_l("---- Error Handling Examples ----"));
 
@@ -153,19 +153,19 @@ config_ErrSet(math_Err,
     Underflow
 );
 
-use_ErrSet$(math_Err, i32); // or Generally `use_Err$(i32)`
+use_ErrSet$(math_Err, i32); // or Generally `use_E$(i32)`
 $static $must_check
-fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
+fn_((safeDivide(i32 lhs, i32 rhs))(math_E$i32) $scope) {
     if (rhs == 0) {
-        return_err(math_Err_DivisionByZero()); // Return with an error
+        return_err(math_E_DivisionByZero()); // Return with an error
     }
     return_ok(lhs / rhs); // Return with a value
 } $unscoped_(fn);
 
 $static $must_check
-fn_((example(void))(Err$void) $scope) {
+fn_((example(void))(E$void) $scope) {
     // Allocate resources
-    var buffer = meta_cast$(Sli$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100)));
+    var buffer = meta_cast$(S$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100)));
     // Cleanup always when function returns
     defer_(mem_Allocator_free(allocator, anySli(buffer)));
     // Cleanup only when an error occurs and propagates

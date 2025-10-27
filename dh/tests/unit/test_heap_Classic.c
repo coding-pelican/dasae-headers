@@ -30,8 +30,8 @@ TEST_Result TEST_heap_Classic_Basic(void) {
     TEST_condition(!zero_sli_res.is_err);
 
     if (!zero_sli_res.is_err) {
-        meta_Sli zero_sli = zero_sli_res.ok;
-        AnyType  memory   = { .ctx = &zero_sli, .type = zero_type };
+        meta_S  zero_sli = zero_sli_res.ok;
+        AnyType memory   = { .ctx = &zero_sli, .type = zero_type };
         mem_Allocator_free(allocator, memory);
     }
 
@@ -41,7 +41,7 @@ TEST_Result TEST_heap_Classic_Basic(void) {
     TEST_condition(!i32_res.is_err);
 
     if (!i32_res.is_err) {
-        meta_Ptr ptr = i32_res.ok;
+        meta_P ptr = i32_res.ok;
         TEST_condition(ptr.addr != null);
         TEST_condition(((usize)ptr.addr % ptr.type.align) == 0); // Check alignment
 
@@ -73,7 +73,7 @@ TEST_Result TEST_heap_Classic_Alignment(void) {
         TEST_condition(!res.is_err);
 
         if (!res.is_err) {
-            meta_Ptr ptr = res.ok;
+            meta_P ptr = res.ok;
             TEST_condition(ptr.addr != null);
             TEST_condition(((usize)ptr.addr % align) == 0);
 
@@ -99,7 +99,7 @@ TEST_Result TEST_heap_Classic_Slices(void) {
     TEST_condition(!slice_res.is_err);
 
     if (!slice_res.is_err) {
-        meta_Sli slice = slice_res.ok;
+        meta_S slice = slice_res.ok;
         TEST_condition(slice.addr != null);
         TEST_condition(slice.len == 4);
         TEST_condition(((usize)slice.addr % slice.type.align) == 0);
@@ -112,7 +112,7 @@ TEST_Result TEST_heap_Classic_Slices(void) {
         TEST_condition(realloc_res.has_value);
 
         if (realloc_res.has_value) {
-            meta_Sli new_slice = realloc_res.value;
+            meta_S new_slice = realloc_res.value;
             TEST_condition(new_slice.len == 8);
             AnyType new_memory = { .ctx = &new_slice, .type = i32_type };
             mem_Allocator_free(allocator, new_memory);
@@ -133,7 +133,7 @@ TEST_Result TEST_heap_Classic_Stress(void) {
     mem_Allocator allocator = heap_Classic_allocator(&heap_ctx);
 
     const usize num_allocs   = 1000;
-    meta_Sli    slices[1000] = { 0 };
+    meta_S      slices[1000] = { 0 };
     usize       successful   = 0;
 
     // Multiple allocations with varying sizes
@@ -194,7 +194,7 @@ TEST_Result TEST_heap_Classic_Errors(void) {
         $unused(err);
         TEST_condition(huge_res.is_err);
     });
-    var ptr = meta_castSli$(Sli$u8, huge_res.ok);
+    var ptr = meta_castS$(S$u8, huge_res.ok);
     mem_Allocator_free(allocator, anySli(ptr));
 
     return TEST_completeResult(&result);
@@ -229,8 +229,8 @@ int main(int argc, const char* argv[]) {
     return TEST_fini();
 }
 
-// Err$void dh_main(int argc, const char* argv[]) {
-//     reserveReturn(Err$void);
+// E$void dh_main(int argc, const char* argv[]) {
+//     reserveReturn(E$void);
 //     $unused(argc), $unused(argv);
 
 //     TEST_init();

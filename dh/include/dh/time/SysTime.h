@@ -41,7 +41,7 @@ static const u64 time_SysTime_intervals_to_unix_epoch = lit_num(11, 644, 473, 60
 struct time_SysTime {
     time_SysTimePlatform impl_;
 };
-impl_Opt$(time_SysTime);
+T_impl_O$(time_SysTime);
 
 /*========== Accessors ======================================================*/
 
@@ -57,13 +57,13 @@ extern time_SysTime time_SysTime_value(void);
 /*========== Operations =====================================================*/
 
 /// Get the current time as a system time object.
-extern time_SysTime      time_SysTime_now(void);
+extern time_SysTime    time_SysTime_now(void);
 /// Get the elapsed duration from a given time.
-extern time_Duration     time_SysTime_elapsed(time_SysTime self);
+extern time_Duration   time_SysTime_elapsed(time_SysTime self);
 /// Get the duration since another time point.
-extern time_Duration     time_SysTime_durationSince(time_SysTime later, time_SysTime earlier);
+extern time_Duration   time_SysTime_durationSince(time_SysTime later, time_SysTime earlier);
 /// Get the duration since another time point with overflow checking.
-extern Opt$time_Duration time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier);
+extern O$time_Duration time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier);
 
 /*========== Arithmetic Operations ==========================================*/
 
@@ -78,9 +78,9 @@ extern time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration);
 static op_fnWrapSubBy(subDuration, time_SysTime, time_Duration, time_SysTime);
 static op_fnWrapSubAsgBy(subAsgDuration, time_SysTime, time_Duration, time_SysTime);
 /// Add a duration to the time with overflow checking.
-extern Opt$time_SysTime time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs);
+extern O$time_SysTime time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs);
 /// Sub a duration from the time with underflow checking.
-extern Opt$time_SysTime time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs);
+extern O$time_SysTime time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs);
 
 /*========== Time Conversion to/from Unix Epoch =============================*/
 

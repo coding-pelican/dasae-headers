@@ -12,77 +12,77 @@
 
 // EQUALITY AND COMPARISON
 //   Returns true if slices are equal, false otherwise
-#define mem_eql$(_T, /* Sli_const$T */ _lhs, /* Sli_const$T */ _rhs... /* bool */)
+#define mem_eql$(_T, /* S_const$T */ _lhs, /* S_const$T */ _rhs... /* bool */)
 #define mem_eql_useT$(_T...)
 //   Returns index of first difference between slices, or null if equal
-#define mem_idxOfDiff$(_T, /* Sli_const$T */ _lhs, /* Sli_const$T */ _rhs... /* Opt$usize */)
+#define mem_idxOfDiff$(_T, /* S_const$T */ _lhs, /* S_const$T */ _rhs... /* O$usize */)
 #define mem_idxOfDiff_useT$(_T...)
 
 // TRIMMING OPERATIONS
 //   Trims characters from both sides of a slice
-#define mem_trim$(_T, /* Sli_const$T */ _bytes, /* Sli_const$T */ _to_strip... /* Sli_const$T */)
+#define mem_trim$(_T, /* S_const$T */ _bytes, /* S_const$T */ _to_strip... /* S_const$T */)
 #define mem_trim_useT$(_T...)
 //   Trims characters from the left side of a slice
-#define mem_trimLeft$(_T, /* Sli_const$T */ _bytes, /* Sli_const$T */ _to_strip... /* Sli_const$T */)
+#define mem_trimLeft$(_T, /* S_const$T */ _bytes, /* S_const$T */ _to_strip... /* S_const$T */)
 #define mem_trimLeft_useT$(_T...)
 //   Trims characters from the right side of a slice
-#define mem_trimRight$(_T, /* Sli_const$T */ _bytes, /* Sli_const$T */ _to_strip... /* Sli_const$T */)
+#define mem_trimRight$(_T, /* S_const$T */ _bytes, /* S_const$T */ _to_strip... /* S_const$T */)
 #define mem_trimRight_useT$(_T...)
 
 // SINGLE VALUE SEARCH
 //   Finds first occurrence of scalar value in slice
-#define mem_idxOfScalar$(_T, /* Sli_const$T */ _slice, /* _T */ _value... /* Opt$usize */)
+#define mem_idxOfScalar$(_T, /* S_const$T */ _slice, /* _T */ _value... /* O$usize */)
 #define mem_idxOfScalar_useT$(_T...)
 //   Finds last occurrence of scalar value in slice
-#define mem_lastIdxOfScalar$(_T, /* Sli_const$T */ _slice, /* _T */ _value... /* Opt$usize */)
+#define mem_lastIdxOfScalar$(_T, /* S_const$T */ _slice, /* _T */ _value... /* O$usize */)
 #define mem_lastIdxOfScalar_useT$(_T...)
 //   Finds first occurrence of scalar value starting from start_index
-#define mem_idxOfScalarPos$(_T, /* Sli_const$T */ _slice, /* usize */ _start_index, /* _T */ _value... /* Opt$usize */)
+#define mem_idxOfScalarPos$(_T, /* S_const$T */ _slice, /* usize */ _start_index, /* _T */ _value... /* O$usize */)
 #define mem_idxOfScalarPos_useT$(_T...)
 
 // MULTIPLE VALUE SEARCH
 //   Finds first occurrence of any value from values array
-#define mem_idxOfAny$(_T, /* Sli_const$T */ _slice, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_idxOfAny$(_T, /* S_const$T */ _slice, /* S_const$T */ _values... /* O$usize */)
 #define mem_idxOfAny_useT$(_T...)
 //   Finds last occurrence of any value from values array
-#define mem_lastIdxOfAny$(_T, /* Sli_const$T */ _slice, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_lastIdxOfAny$(_T, /* S_const$T */ _slice, /* S_const$T */ _values... /* O$usize */)
 #define mem_lastIdxOfAny_useT$(_T...)
 //   Finds first occurrence of any value from values starting from start_index
-#define mem_idxOfAnyPos$(_T, /* Sli_const$T */ _slice, /* usize */ _start_index, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_idxOfAnyPos$(_T, /* S_const$T */ _slice, /* usize */ _start_index, /* S_const$T */ _values... /* O$usize */)
 #define mem_idxOfAnyPos_useT$(_T...)
 //   Finds first occurrence of value NOT in values
-#define mem_idxOfNone$(_T, /* Sli_const$T */ _slice, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_idxOfNone$(_T, /* S_const$T */ _slice, /* S_const$T */ _values... /* O$usize */)
 #define mem_idxOfNone_useT$(_T...)
 //   Finds last occurrence of value NOT in values
-#define mem_lastIdxOfNone$(_T, /* Sli_const$T */ _slice, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_lastIdxOfNone$(_T, /* S_const$T */ _slice, /* S_const$T */ _values... /* O$usize */)
 #define mem_lastIdxOfNone_useT$(_T...)
 //   Finds first occurrence of value NOT in values starting from start_index
-#define mem_idxOfNonePos$(_T, /* Sli_const$T */ _slice, /* usize */ _start_index, /* Sli_const$T */ _values... /* Opt$usize */)
+#define mem_idxOfNonePos$(_T, /* S_const$T */ _slice, /* usize */ _start_index, /* S_const$T */ _values... /* O$usize */)
 #define mem_idxOfNonePos_useT$(_T...)
 
 // SUBSTRING SEARCH
 //   Finds needle in haystack (Boyer-Moore-Horspool for large inputs)
-#define mem_idxOf$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_idxOf$(_T, /* S_const$T */ _haystack, /* S_const$T */ _needle... /* O$usize */)
 #define mem_idxOf_useT$(_T...)
 //   Finds needle in haystack using linear search from the end
-#define mem_lastIdxOfLinear$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_lastIdxOfLinear$(_T, /* S_const$T */ _haystack, /* S_const$T */ _needle... /* O$usize */)
 #define mem_lastIdxOfLinear_useT$(_T...)
 //   Finds needle in haystack starting from start_index (linear search)
-#define mem_idxOfPosLinear$(_T, /* Sli_const$T */ _haystack, /* usize */ _start_index, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_idxOfPosLinear$(_T, /* S_const$T */ _haystack, /* usize */ _start_index, /* S_const$T */ _needle... /* O$usize */)
 #define mem_idxOfPosLinear_useT$(_T...)
 //   Finds needle in haystack from the end
-#define mem_lastIdxOf$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_lastIdxOf$(_T, /* S_const$T */ _haystack, /* S_const$T */ _needle... /* O$usize */)
 #define mem_lastIdxOf_useT$(_T...)
 //   Finds needle in haystack starting from start_index
-#define mem_idxOfPos$(_T, /* Sli_const$T */ _haystack, /* usize */ _start_index, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_idxOfPos$(_T, /* S_const$T */ _haystack, /* usize */ _start_index, /* S_const$T */ _needle... /* O$usize */)
 #define mem_idxOfPos_useT$(_T...)
 
 // PREFIX/SUFFIX OPERATIONS
 //   Returns true if haystack starts with needle
-#define mem_startsWith$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_startsWith$(_T, /* S_const$T */ _haystack, /* S_const$T */ _needle... /* O$usize */)
 #define mem_startsWith_useT$(_T...)
 //   Returns true if haystack ends with needle
-#define mem_endsWith$(_T, /* Sli_const$T */ _haystack, /* Sli_const$T */ _needle... /* Opt$usize */)
+#define mem_endsWith$(_T, /* S_const$T */ _haystack, /* S_const$T */ _needle... /* O$usize */)
 #define mem_endsWith_useT$(_T...)
 
 // SPLITTING OPERATIONS
@@ -122,24 +122,24 @@
 
 // REPLACEMENT OPERATIONS
 //   Replaces all occurrences of needle with replacement in input, writing to output
-#define mem_replace$(_T, /* Sli_const$T */ _input, /* Sli_const$T */ _needle, /* Sli_const$T */ _replacement, /* Sli$T */ _output... /* usize */)
+#define mem_replace$(_T, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement, /* S$T */ _output... /* usize */)
 #define mem_replace_useT$(_T...)
 //   Replaces all occurrences of match with replacement in-place
-#define mem_replaceScalar$(_T, /* Sli$T */ _slice, /* _T */ _match, /* _T */ _replacement... /* void */)
+#define mem_replaceScalar$(_T, /* S$T */ _slice, /* _T */ _match, /* _T */ _replacement... /* void */)
 #define mem_replaceScalar_useT$(_T...)
 //   Calculates the size needed for replacing all occurrences of needle with replacement
-#define mem_replacementSize$(_T, /* Sli_const$T */ _input, /* Sli_const$T */ _needle, /* Sli_const$T */ _replacement... /* usize */)
+#define mem_replacementSize$(_T, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement... /* usize */)
 #define mem_replacementSize_useT$(_T...)
 //   Replaces all occurrences of needle with replacement, allocating a new slice
-#define mem_replaceOwned$(_T, /* mem_Allocator */ _allocator, /* Sli_const$T */ _input, /* Sli_const$T */ _needle, /* Sli_const$T */ _replacement... /* mem_Alloc_Err$Sli$T */)
+#define mem_replaceOwned$(_T, /* mem_Allocator */ _allocator, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement... /* mem_Alloc_E$S$T */)
 #define mem_replaceOwned_useT$(_T...)
 
 // MEMORY OPERATIONS
 //   Copies data from source to dest (forward direction)
-#define mem_copyForwards$(_T, /* Sli$T */ _dst, /* Sli_const$T */ _src... /* void */)
+#define mem_copyForwards$(_T, /* S$T */ _dst, /* S_const$T */ _src... /* void */)
 #define mem_copyForwards_useT$(_T...)
 //   Copies data from source to dest (backward direction)
-#define mem_copyBackwards$(_T, /* Sli$T */ _dst, /* Sli_const$T */ _src... /* void */)
+#define mem_copyBackwards$(_T, /* S$T */ _dst, /* S_const$T */ _src... /* void */)
 #define mem_copyBackwards_useT$(_T...)
 
 // ==== ASCII.ZIG STRING OPERATIONS ====

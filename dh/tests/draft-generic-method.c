@@ -14,7 +14,7 @@
 
 #include "dh/io/stream.h"
 
-fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
+fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let page = heap_Page_allocator(create$(heap_Page));
@@ -33,7 +33,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
     try_(append(&arr_list, 7));
     try_(append(&arr_list, 8));
 
-    for_slice (arr_list.items, item) {
+    for_slice(arr_list.items, item) {
         io_stream_print(u8_l("{:d} "), *item);
     }
     io_stream_print(u8_l("\n"));
@@ -50,7 +50,7 @@ fn_((dh_main(Sli$Sli_const$u8 args))(Err$void) $guard) {
 #define tpl_fn$2T$2U$3V(_id_w_T_w_U_w_V_and_Params, _ReturnT...) fn_((tpl_id$2T$2U$3V _id_w_T_w_U_w_V_and_Params)(_ReturnT))
 
 #define swap$T(_T) \
-    static tpl_fn$T((swap, _T)(Ptr$$(_T) lhs, Ptr$$(_T) rhs), void) { \
+    static tpl_fn$T((swap, _T)(P$$(_T) lhs, P$$(_T) rhs), void) { \
         swap_raw(typeInfo$(_T), lhs, rhs); \
     }
 static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
@@ -61,15 +61,15 @@ static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
 }
 
 // #define ArrList_atRo$T(_T) \
-//     static tpl_fn$T((ArrList_atRo, _T)(Ptr_const$$(ArrList$(_T)) self, usize index), Ptr_const$$(_T)) { \
-//         return as$((Ptr_const$$(_T))(ArrList_atRo_raw(self->base, index))); \
+//     static tpl_fn$T((ArrList_atRo, _T)(P_const$$(ArrList$(_T)) self, usize index), P_const$$(_T)) { \
+//         return as$((P_const$$(_T))(ArrList_atRo_raw(self->base, index))); \
 //     }
 // static $inline fn_(ArrList_atRo_raw(const ArrList* self, usize index), const void*) {
 //     return self->items.addr + (index * self->items.type.size);
 // }
 // #define ArrList_atRw$T(_T) \
-//     static tpl_fn$T((ArrList_atRw, _T)(Ptr$$(ArrList$(_T)) self, usize index), Ptr$$(_T)) { \
-//         return as$((Ptr$$(_T))(ArrList_atRw_raw(self->base, index))); \
+//     static tpl_fn$T((ArrList_atRw, _T)(P$$(ArrList$(_T)) self, usize index), P$$(_T)) { \
+//         return as$((P$$(_T))(ArrList_atRw_raw(self->base, index))); \
 //     }
 // static $inline fn_(ArrList_atRw_raw(ArrList* self, usize index), void*) {
 //     return self->items.addr + (index * self->items.type.size);

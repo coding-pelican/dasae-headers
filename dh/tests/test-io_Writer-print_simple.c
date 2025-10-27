@@ -26,11 +26,11 @@
 /*========== Test Helper - Buffer Writer ===================================*/
 
 typedef struct test_Buf {
-    Sli$u8 data;
-    usize  pos;
+    S$u8  data;
+    usize pos;
 } test_Buf;
-$static $must_check
-fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope) {
+$must_check
+$static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self      = as$((test_Buf*)(ctx));
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
@@ -40,36 +40,33 @@ fn_((test_Buf_VT_write(const anyptr ctx, Sli_const$u8 bytes))(Err$usize) $scope)
     }
     return_ok(to_write);
 } $unscoped_(fn);
-$static
-fn_((test_Buf_init(Sli$u8 data))(test_Buf)) {
+$static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
         .pos  = 0
     };
 }
-$static
-fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
+$static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     debug_assert_nonnull(self);
     return make$(io_Writer, .ctx = self, .write = test_Buf_VT_write);
 }
-$static $maybe_unused
-fn_((test_Buf_clear(test_Buf* self))(void)) {
+$maybe_unused
+$static fn_((test_Buf_clear(test_Buf* self))(void)) {
     debug_assert_nonnull(self);
     self->pos = 0;
 }
-$static
-fn_((test_Buf_view(test_Buf self))(Sli_const$u8)) {
+$static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
     // TODO: use Sli_sliceZ
-    if (self.pos == 0) { return Sli_from$(Sli_const$u8, self.data.ptr, 0); }
-    return Sli_slice(self.data, $r(0, self.pos)).as_const;
+        if (self.pos == 0) { return S_from$(S_const$u8, self.data.ptr, 0); }
+    return S_slice(self.data, $r(0, self.pos)).as_const;
 }
 
 /*========== Simple Format Tests ============================================*/
 
 TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
-    use_Arr$(64, u8);
-    Arr$64$u8 mem    = Arr_zero();
-    test_Buf  buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(64, u8);
+    A$64$u8 mem    = A_zero();
+    test_Buf  buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic integer
@@ -81,9 +78,9 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Character test" $scope) {
-    use_Arr$(64, u8);
-    Arr$64$u8 mem    = Arr_zero();
-    test_Buf  buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(64, u8);
+    A$64$u8 mem    = A_zero();
+    test_Buf  buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic character
@@ -95,9 +92,9 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
-    use_Arr$(64, u8);
-    Arr$64$u8 mem    = Arr_zero();
-    test_Buf  buf    = test_Buf_init(Arr_ref$(Sli$u8, mem));
+    use_A$(64, u8);
+    A$64$u8 mem    = A_zero();
+    test_Buf  buf    = test_Buf_init(A_ref$(S$u8, mem));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic hex

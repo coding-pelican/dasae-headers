@@ -46,26 +46,24 @@ extern "C" {
 /*========== Memory Utilities ===============================================*/
 
 // Memory operations
-$inline_always void mem_set(anyptr dest, u8 value, usize size);
-$inline_always void mem_copy(anyptr dest, const anyptr src, usize size);
-$inline_always void mem_move(anyptr dest, anyptr src, usize size);
-$inline_always i32  mem_cmp(const anyptr lhs, const anyptr rhs, usize size);
+$inline_always void mem_set(P$raw dest, u8 value, usize size);
+$inline_always void mem_copy(P$raw dest, P_const$raw src, usize size);
+$inline_always void mem_move(P$raw dest, P$raw src, usize size);
+$inline_always i32 mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size);
 
-#define mem_asBytes(_ptr...)                   comp_inline__mem_asBytes(_ptr)
-#define mem_asBytes_const(_ptr...)             comp_inline__mem_asBytes_const(_ptr)
-#define mem_toBytes$(_Arr$N$u8, _val...)       comp_inline__mem_toBytes$(pp_uniqTok(val), _Arr$N$u8, _val)
-#define mem_toBytes(_val...)                   comp_inline__mem_toBytes(_val)
-#define mem_toBytes_const$(_Arr$N$u8, _val...) comp_inline__mem_toBytes_const$(pp_uniqTok(val), _Arr$N$u8, _val)
-#define mem_toBytes_const(_val...)             comp_inline__mem_toBytes_const(_val)
+#define mem_asBytes_const(_ptr...)     comp_inline__mem_asBytes_const(_ptr)
+#define mem_asBytes(_ptr...)           comp_inline__mem_asBytes(_ptr)
+#define mem_toBytes$(_A$N$u8, _val...) comp_inline__mem_toBytes$(pp_uniqTok(val), _A$N$u8, _val)
+#define mem_toBytes(_val...)           comp_inline__mem_toBytes(_val)
 
 /*========== Alignment Functions ============================================*/
 
 // Check if alignment is valid (power of 2)
-$inline_always bool  mem_isValidAlign(usize align);
+$inline_always bool mem_isValidAlign(usize align);
 // Check if address is aligned
-$inline_always bool  mem_isAligned(usize addr, usize align);
+$inline_always bool mem_isAligned(usize addr, usize align);
 // Check if address is aligned to power of 2
-$inline_always bool  mem_isAlignedLog2(usize addr, u8 log2_align);
+$inline_always bool mem_isAlignedLog2(usize addr, u8 log2_align);
 // Forward align an address
 $inline_always usize mem_alignForward(usize addr, usize align);
 // Forward align an address to power of 2
@@ -76,11 +74,11 @@ $inline_always usize mem_alignBackward(usize addr, usize align);
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-$inline_always void mem_copyBytes(u8* dest, const u8* src, usize len);
+$inline_always void mem_copyBytes(P$raw dest, P_const$raw src, usize len);
 // Set bytes to value with bounds checking
-$inline_always void mem_setBytes(u8* dest, u8 value, usize len);
+$inline_always void mem_setBytes(P$raw dest, u8 value, usize len);
 // Compare two byte buffers
-$inline_always bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len);
+$inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len);
 
 /*========== Endian Conversion ==============================================*/
 
@@ -190,45 +188,45 @@ $inline_always u64 byteSwap64(u64 x) {
 
 /*========== Memory Operations ==============================================*/
 
-$inline_always void mem_set(anyptr dest, u8 value, usize size) {
+$inline_always void mem_set(P$raw dest, u8 value, usize size) {
     debug_assert_nonnull(dest);
-    memset(dest, value, size);
+    bti_memset(dest, value, size);
 }
 
-$inline_always void mem_copy(anyptr dest, const anyptr src, usize size) {
-    debug_assert_nonnull(dest);
-    debug_assert_nonnull(src);
-    memcpy(dest, src, size);
-}
-
-$inline_always void mem_move(anyptr dest, anyptr src, usize size) {
+$inline_always void mem_copy(P$raw dest, P_const$raw src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
-    memmove(dest, src, size);
+    bti_memcpy(dest, src, size);
 }
 
-$inline_always cmp_Ord mem_cmp(const anyptr lhs, const anyptr rhs, usize size) {
+$inline_always void mem_move(P$raw dest, P$raw src, usize size) {
+    debug_assert_nonnull(dest);
+    debug_assert_nonnull(src);
+    bti_memmove(dest, src, size);
+}
+
+$inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
-    return memcmp(lhs, rhs, size);
+    return bti_memcmp(lhs, rhs, size);
 }
 
-#define comp_inline__mem_asBytes(_ptr...) \
-    Sli_from$(Sli$(u8), as$((u8*)(_ptr)), sizeOf(*_ptr))
 #define comp_inline__mem_asBytes_const(_ptr...) \
-    Sli_from$(Sli_const$(u8), as$((const u8*)(_ptr)), sizeOf(*_ptr))
-#define comp_inline__mem_toBytes$(__val, _Arr$N$u8, _val...) blk({ \
+    init$S$((const u8)(as$((const u8*)(_ptr)), sizeOf$(TypeOf(*_ptr))))
+#define comp_inline__mem_asBytes(_ptr...) \
+    init$S$((u8)(as$((u8*)(_ptr)), sizeOf$(TypeOf(*_ptr))))
+#define comp_inline__mem_toBytes$(__val, _A$N$u8, _val...) blk({ \
     var __val = _val; \
-    blk_return Sli_deref$(_Arr$N$u8, mem_asBytes(&__val)); \
+    blk_return deref$S$((_A$N$u8), mem_asBytesMut(&__val)); \
 })
-#define comp_inline__mem_toBytes_const$(__val, _Arr$N$u8, _val...) blk({ \
-    let __val = _val; \
-    blk_return Sli_deref$(_Arr$N$u8, mem_asBytes_const(&__val)); \
-})
+// #define comp_inline__mem_toBytes_const$(__val, _A$N$u8, _val...) blk({ \
+//     let        __val = _val; \
+//     blk_return S_deref$(_A$N$u8, mem_asBytesRef(&__val)); \
+// })
 #define comp_inline__mem_toBytes(_val...) \
-    mem_toBytes$(Arr$$(sizeOf(_val), u8), _val)
-#define comp_inline__mem_toBytes_const(_val...) \
-    mem_toBytes_const$(Arr$$(sizeOf(_val), u8), _val)
+    mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)
+// #define comp_inline__mem_toBytes_const(_val...) \
+//     mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)
 
 /*========== Alignment Functions ============================================*/
 
@@ -263,20 +261,20 @@ $inline_always usize mem_alignBackward(usize addr, usize align) {
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-$inline_always void mem_copyBytes(u8* dest, const u8* src, usize len) {
+$inline_always void mem_copyBytes(P$raw dest, P_const$raw src, usize len) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
     mem_copy(dest, src, len);
 }
 
 // Set bytes to value with bounds checking
-$inline_always void mem_setBytes(u8* dest, u8 value, usize len) {
+$inline_always void mem_setBytes(P$raw dest, u8 value, usize len) {
     debug_assert_nonnull(dest);
     mem_set(dest, value, len);
 }
 
 // Compare two byte buffers
-$inline_always bool mem_eqlBytes(const u8* lhs, const u8* rhs, usize len) {
+$inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
     return mem_cmp(lhs, rhs, len) == 0;

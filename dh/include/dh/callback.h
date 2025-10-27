@@ -105,24 +105,24 @@ T_Callback
 
 #if EXAMPLE_USAGE /* Demonstrates usage of the callback compatibility layer */
 // Example: Comparison function type
-use_Callback(sort_CmpFn_compat, (anyptr_const lhs, anyptr_const rhs), cmp_Ord);
+use_Callback(sort_CmpFn_compat, (P_const$raw lhs, P_const$raw rhs), cmp_Ord);
 
 // Example: Invoke a comparison function
-$inline_always fn_((sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, anyptr_const lhs, anyptr_const rhs))(cmp_Ord)) {
+$inline_always fn_((sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, P_const$raw lhs, P_const$raw rhs))(cmp_Ord)) {
     return invoke(cb, lhs, rhs);
 }
 // Example: Sort function that can accept both function pointers and blocks
-extern fn_((sort_insertionSort_compat(meta_Sli base_sli, sort_CmpFn_compat cmpFn))(void));
+extern fn_((sort_insertionSort_compat(meta_S base_sli, sort_CmpFn_compat cmpFn))(void));
 // Actual implementation that uses the compatibility layer
 fn_((sort_insertionSort_compat(
-    meta_Sli          base_sli,
+    meta_S          base_sli,
     sort_CmpFn_compat cmpFn
 ))(void)) {
     // Implementation that calls sort_CmpFn_compat_invoke(cmpFn, lhs, rhs) instead of cmpFn(lhs, rhs)
     // ...
 }
 
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 #include <stdio.h>
 
@@ -145,7 +145,7 @@ fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
     return lhs + rhs;
 }
 // Example main function showing how to use the compatibility layer
-fn_((dh_main(void))(Err$void) $guard) {
+fn_((dh_main(void))(E$void) $guard) {
     // Create a block/lambda
     let lambdaAdd = lam_((i32 lhs, i32 rhs)(i32)) { return lhs + rhs; };
 

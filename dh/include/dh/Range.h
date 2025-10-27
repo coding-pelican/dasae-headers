@@ -48,7 +48,7 @@ extern "C" {
 #define eq$R R_eq
 #define ne$R R_ne
 
-typedef enum R_Bound : u8 {
+typedef enum R_Bound_Tag : u8 {
     R_Bound_incl = 0,
     R_Bound_excl = 1,
 } R_Bound;
@@ -116,9 +116,9 @@ $extern fn_((R__at(R, usize))(usize));
 #endif
 
 $static $inline_always
-fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return bound == R_Bound_incl ? point : point + 1; }
+fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + bound; /* bound == R_Bound_Tag_incl ? point : point + 1 */ }
 $static $inline_always
-fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return bound == R_Bound_excl ? point : point + 1; }
+fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + (1 - bound); /* bound == R_Bound_Tag_excl ? point : point + 1 */ }
 
 $static $inline_always
 fn_((R_from(usize begin, usize end))(R)) {

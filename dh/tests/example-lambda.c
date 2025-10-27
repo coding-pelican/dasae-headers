@@ -1,4 +1,4 @@
-#define main_no_args (1)
+#define main_no_args 1
 #include "dh/main.h"
 #include "dh/callback.h"
 
@@ -30,7 +30,7 @@ static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
 #define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) blk({ \
     let __collection = var_collection; \
     var __temp       = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \
-    for_slice (__collection.items, __iter_elem) { \
+    for_slice(__collection.items, __iter_elem) { \
         var _PayloadCapture = *__iter_elem; \
         var __item          = blk({ _Body; }); \
         try_(ArrList_append(&__temp, meta_refPtr(&__item))); \
@@ -39,12 +39,12 @@ static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
 })
 
 // Example main function showing how to use the compatibility layer
-fn_((dh_main(void))(Err$void) $guard) {
+fn_((dh_main(void))(E$void) $guard) {
     var i32_list = type$(ArrList$$(i32), try_(ArrList_initCap(typeInfo$(i32), heap_Page_allocator(&(heap_Page){}), 8)));
     defer_(ArrList_fini(i32_list.base));
     i32_list.items.len = 8;
     printf("origin: ");
-    for_slice_indexed (i32_list.items, item, index) {
+    for_slice_indexed(i32_list.items, item, index) {
         deref(item) = as$((i32)(index)) + 1;
         printf("%d ", deref(item));
     }
@@ -52,7 +52,7 @@ fn_((dh_main(void))(Err$void) $guard) {
     var squared_list = cinq_select(i32_list, x, x * x);
     defer_(ArrList_fini(squared_list.base));
     printf("squared: ");
-    for_slice (squared_list.items, item) {
+    for_slice(squared_list.items, item) {
         printf("%d ", deref(item));
     }
     printf("\n");

@@ -15,10 +15,10 @@ typedef struct Visualizer_QuadCache {
     usize node_idx;
     usize depth;
 } Visualizer_QuadCache;
-use_Sli$(Visualizer_QuadCache);
+use_S$(Visualizer_QuadCache);
 use_ArrList$(Visualizer_QuadCache);
 
-use_Opt$(Body);
+use_O$(Body);
 typedef struct Visualizer {
     // View state
     m_V2f32 pos;   // Camera center in world coords
@@ -59,10 +59,10 @@ typedef struct Visualizer {
 
     // Body spawn state
     struct {
-        Opt$Body body;      // Current spawn body
-        Opt$f32  angle;     // Current spawn angle
-        Opt$f32  total;     // Total angle rotated
-        Opt$Body confirmed; // Confirmed spawn body
+        O$Body body;      // Current spawn body
+        O$f32  angle;     // Current spawn angle
+        O$f32  total;     // Total angle rotated
+        O$Body confirmed; // Confirmed spawn body
     } spawn;
 
     // Simulation state copies
@@ -73,16 +73,16 @@ typedef struct Visualizer {
     engine_Canvas* canvas;
     mem_Allocator  allocator;
 } Visualizer;
-use_Err$(Visualizer);
+use_E$(Visualizer);
 
 // Core functions
-extern fn_(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), Err$Visualizer) $must_check;
+extern fn_(Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas), E$Visualizer) $must_check;
 extern fn_(Visualizer_destroy(Visualizer* self), void);
 
 // Main loop functions
-extern fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), Err$void) $must_check;
-extern fn_(Visualizer_update(Visualizer* self), Err$void) $must_check;
-extern fn_(Visualizer_render(Visualizer* self), Err$void) $must_check;
+extern fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Input* input), E$void) $must_check;
+extern fn_(Visualizer_update(Visualizer* self), E$void) $must_check;
+extern fn_(Visualizer_render(Visualizer* self), E$void) $must_check;
 
 /* /// Unified coordinate system transformations
 /// Screen Coordinates          World Coordinates

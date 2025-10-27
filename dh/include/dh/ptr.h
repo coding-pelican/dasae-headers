@@ -22,6 +22,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "dh/types/Ptr.h"
+
+#if UNUSED_CODE
 /*========== Includes =======================================================*/
 
 #include "dh/core.h"
@@ -30,61 +33,63 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef anyptr_const Ptr_const;
-typedef anyptr       Ptr;
+typedef P_const$raw P_const;
+typedef P$raw       Ptr;
 
-#define use_Ptr$(T) comp_type_gen__use_Ptr$(T)
+#define use_P$(T) comp_type_gen__use_P$(T)
 
-#define Ptr_const$(T)  comp_type_alias__Ptr_const$(T)
-#define Ptr$(T)        comp_type_alias__Ptr$(T)
-#define Ptr_const$$(T) comp_type_raw__Ptr_const$$(T)
-#define Ptr$$(T)       comp_type_raw__Ptr$$(T)
+#define P_const$(T)  comp_type_alias__P_const$(T)
+#define P$(T)        comp_type_alias__P$(T)
+#define P_const$$(T) comp_type_raw__P_const$$(T)
+#define P$$(T)       comp_type_raw__P$$(T)
 
-extern fn_((Ptr_constCastable(anyptr_const ptr))(bool));
-#define Ptr_constCast$(T_Ptr, var_ptr... /* Opt$T_Ptr */)       comp_op__Ptr_constCast$(pp_uniqTok(ptr), pp_uniqTok(ret), T_Ptr, var_ptr)
-#define Ptr_constCast(var_ptr... /* Opt$Ptr$T */)               comp_op__Ptr_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
-#define Ptr_mutCast$(T_Ptr_const, var_ptr... /* T_Ptr_const */) comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr)
-#define Ptr_mutCast(var_ptr... /* Ptr_const$T */)               comp_op__Ptr_mutCast(var_ptr)
+extern fn_((constCastable$P(P_const$raw ptr))(bool));
+#define constCast$P(T_Ptr, var_ptr... /* O$T_Ptr */)      comp_op__constCast$P(pp_uniqTok(ptr), pp_uniqTok(ret), T_Ptr, var_ptr)
+#define P_constCast(var_ptr... /* O$P$T */)               comp_op__P_constCast(pp_uniqTok(ptr), pp_uniqTok(ret), var_ptr)
+#define mutCast$P$(T_P_const, var_ptr... /* T_P_const */) comp_op__mutCast$P$(T_P_const, var_ptr)
+#define mutCast$P(var_ptr... /* P_const$T */)             comp_op__mutCast$P(var_ptr)
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_type_gen__use_Ptr$(T) \
-    $maybe_unused typedef rawptr_const$(T) Ptr_const$(T); \
-    $maybe_unused typedef rawptr$(T) Ptr$(T)
+#define comp_type_gen__use_P$(T) \
+    $maybe_unused typedef $P_const$(T) P_const$(T); \
+    $maybe_unused typedef $P$(T) P$(T)
 
-#define comp_type_alias__Ptr_const$(T) \
-    pp_join($, Ptr_const, T)
-#define comp_type_alias__Ptr$(T) \
-    pp_join($, Ptr, T)
-#define comp_type_raw__Ptr_const$$(T) \
-    const T*
-#define comp_type_raw__Ptr$$(T) \
-    T*
+#define comp_type_alias__P_const$(T) \
+    pp_join($, P_const, T)
+#define comp_type_alias__P$(T) \
+    pp_join($, P, T)
+#define comp_type_raw__P_const$$(T) \
+    TypeOf(const T*)
+#define comp_type_raw__P$$(T) \
+    TypeOf(T*)
 
-#define comp_op__Ptr_constCast$(__ptr, __ret, T_Ptr, var_ptr...) blk({ \
+#define comp_op__constCast$P(__ptr, __ret, T_Ptr, var_ptr...) blk({ \
     const TypeOf(var_ptr) __ptr = var_ptr; \
-    Opt$(T_Ptr) __ret           = cleared(); \
-    if (Ptr_constCastable(__ptr)) { \
-        Opt_asg(&__ret, some(as$((T_Ptr)(__ptr)))); \
+    O$(T_Ptr) \
+    __ret = cleared(); \
+    if (constCastable$P(__ptr)) { \
+        O_asg(&__ret, some(as$((T_Ptr)(__ptr)))); \
     } else { \
-        Opt_asg(&__ret, none()); \
+        O_asg(&__ret, none()); \
     } \
     blk_return __ret; \
 })
-#define comp_op__Ptr_constCast(__ptr, __ret, var_ptr...) blk({ \
-    const TypeOf(var_ptr) __ptr        = var_ptr; \
-    Opt$$(TypeOfUnqual(*__ptr)*) __ret = cleared(); \
-    if (Ptr_constCastable(__ptr)) { \
-        Opt_asg(&__ret, some(as$((TypeOfUnqual(*__ptr)*)(__ptr)))); \
+#define comp_op__P_constCast(__ptr, __ret, var_ptr...) blk({ \
+    const TypeOf(var_ptr) __ptr = var_ptr; \
+    O$$(TypeOfUnqual(*__ptr)*) \
+    __ret = cleared(); \
+    if (constCastable$P(__ptr)) { \
+        O_asg(&__ret, some(as$((TypeOfUnqual(*__ptr)*)(__ptr)))); \
     } else { \
-        Opt_asg(&__ret, none()); \
+        O_asg(&__ret, none()); \
     } \
     blk_return __ret; \
 })
 
-
-#define comp_op__Ptr_mutCast$(T_Ptr_const, var_ptr...) as$((T_Ptr_const)(var_ptr))
-#define comp_op__Ptr_mutCast(var_ptr...)               Ptr_mutCast$(const TypeOf(*var_ptr)*, var_ptr)
+#define comp_op__mutCast$P$(T_P_const, var_ptr...) as$((T_P_const)(var_ptr))
+#define comp_op__mutCast$P(var_ptr...)             mutCast$P$(const TypeOf(*var_ptr)*, var_ptr)
+#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

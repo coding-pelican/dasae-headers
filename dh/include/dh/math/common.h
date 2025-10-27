@@ -18,20 +18,20 @@
 #define MATH_COMMON_INCLUDED (1)
 
 #include "dh/core.h"
-#include "dh/err_res.h"
+#include "dh/Err.h"
 
 // TODO: Provide specialized inline functions per type.
 // `math_f64_pi` vs `math_pi_f64`
 
 /* Common error types */
-config_ErrSet(math_Err,
+errset_((math_Err)(
     Overflow,
     Underflow,
     OutOfRange,
     InvalidInput,
     InvalidDomain,
     DivisionByZero
-);
+));
 
 /* Common constants */
 #define math_pi           VAL_math_pi
@@ -257,16 +257,16 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define OP_math_divSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
-    let    __lhs = (val_lhs); \
-    let    __rhs = (val_rhs); \
-    anyptr __ret = null; \
+    let   __lhs = (val_lhs); \
+    let   __rhs = (val_rhs); \
+    P$raw __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero)))); \
+        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))err(math_E_err(math_ErrCode_DivisionByZero)))); \
     } else { \
-        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok((__lhs) / (__rhs)))); \
+        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok((__lhs) / (__rhs)))); \
     } \
     blk_return( \
-        *as$(Err$(TypeOf(__lhs))*, __ret) \
+        *as$(E$(TypeOf(__lhs))*, __ret) \
     ); \
 })
 #define OP_math_mod(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
@@ -283,20 +283,20 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define OP_math_modSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
-    let    __lhs = (val_lhs); \
-    let    __rhs = (val_rhs); \
-    anyptr __ret = null; \
+    let   __lhs = (val_lhs); \
+    let   __rhs = (val_rhs); \
+    P$raw __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))err(math_Err_err(math_ErrCode_DivisionByZero)))); \
+        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))err(math_E_err(math_ErrCode_DivisionByZero)))); \
     } else { \
         if (isFlt(TypeOf(__ret))) { \
-            (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok(fmod(as$((f64)(__lhs)), as$((f64)(__rhs)))))); \
+            (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok(fmod(as$((f64)(__lhs)), as$((f64)(__rhs)))))); \
         } else { \
-            (__ret) = as$((anyptr)(&(Err$(TypeOf(__lhs)))ok(as$((i64)(__lhs)) % as$((i64)(__rhs))))); \
+            (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok(as$((i64)(__lhs)) % as$((i64)(__rhs))))); \
         } \
     } \
     blk_return( \
-        *as$(Err$(TypeOf(__lhs))*, __ret) \
+        *as$(E$(TypeOf(__lhs))*, __ret) \
     ); \
 })
 
@@ -325,45 +325,45 @@ config_ErrSet(math_Err,
     blk_return __lhs > __rhs ? __lhs : __rhs; \
 })
 #define FUNC_math_clamp(val_x, val_min, val_max) blk({ \
-    let _x   = (val_x); \
-    let _min = (val_min); \
-    let _max = (val_max); \
+    let        _x   = (val_x); \
+    let        _min = (val_min); \
+    let        _max = (val_max); \
     blk_return math_min(math_max(_min, _x), _max); \
 })
 #define FUNC_math_clampSafe(val_x, val_min, val_max) blk({ \
     let _x   = val_x; \
     let _min = val_min; \
     let _max = val_max; \
-    blk_return((Err$(TypeOf(_x)))ok(math_clamp(_x, _min, _max))); \
+    blk_return((E$(TypeOf(_x)))ok(math_clamp(_x, _min, _max))); \
 })
 #define FUNC_math_wrap(val_x, val_min, val_max) blk({ \
-    let _x   = (val_x); \
-    let _min = (val_min); \
-    let _max = (val_max); \
+    let        _x   = (val_x); \
+    let        _min = (val_min); \
+    let        _max = (val_max); \
     blk_return _min + math_mod(_x - _min, _max - _min); \
 })
 #define FUNC_math_wrapSafe(val_x, val_min, val_max) blk({ \
     let _x   = val_x; \
     let _min = val_min; \
     let _max = val_max; \
-    blk_return((Err$(TypeOf(_x)))ok(math_wrap(_x, _min, _max))); \
+    blk_return((E$(TypeOf(_x)))ok(math_wrap(_x, _min, _max))); \
 })
 
 /* Rounding functions */
 #define FUNC_math_floor(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(floor(as$((f64)(_x))))); \
 })
 #define FUNC_math_ceil(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(ceil(as$((f64)(_x))))); \
 })
 #define FUNC_math_round(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(round(as$((f64)(_x))))); \
 })
 #define FUNC_math_trunc(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(trunc(as$((f64)(_x))))); \
 })
 
@@ -377,15 +377,15 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_sqrtSafe(val_x) blk({ \
-    let    _x    = (val_x); \
-    anyptr __ret = null; \
+    let   _x    = (val_x); \
+    P$raw __ret = null; \
     if (_x < 0) { \
         /* Square root of negative number */ \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$((TypeOf(__ret))(sqrt(as$((f64)(_x)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$((TypeOf(__ret))(sqrt(as$((f64)(_x)))))); \
     } \
-    blk_return(*(Err$(TypeOf(_x))*)__ret); \
+    blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_pow(val_base, val_exp) blk({ \
     let _base = (val_base); \
@@ -397,16 +397,16 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_powSafe(val_base, val_exp) blk({ \
-    let    _base = (val_base); \
-    let    _exp  = (val_exp); \
-    anyptr __ret = null; \
+    let   _base = (val_base); \
+    let   _exp  = (val_exp); \
+    P$raw __ret = null; \
     if (_base == 0 && _exp <= 0) { \
         /* Invalid base/exponent combination */ \
-        __ret = (anyptr)&(Err$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_base)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_base)))ok(as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_base)))ok(as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp)))))); \
     } \
-    blk_return(*(Err$(TypeOf(_x))*)__ret); \
+    blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_rsqrt(val_x) blk({ \
     let _x    = (val_x); \
@@ -417,28 +417,28 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_rsqrtSafe(val_x) blk({ \
-    let    _x    = (val_x); \
-    anyptr __ret = null; \
+    let   _x    = (val_x); \
+    P$raw __ret = null; \
     if (_x <= 0) { \
         /* Invalid input for inverse square root */ \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x)))))); \
     } \
-    blk_return(*(Err$(TypeOf(_x))*)__ret); \
+    blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 
 /* Trigonometric functions */
 #define FUNC_math_sin(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(sin(as$((f64)(_x))))); \
 })
 #define FUNC_math_cos(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(cos(as$((f64)(_x))))); \
 })
 #define FUNC_math_tan(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return as$((TypeOf(_x))(tan(as$((f64)(_x))))); \
 })
 #define FUNC_math_asin(val_x) blk({ \
@@ -450,15 +450,15 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_asinSafe(val_x) blk({ \
-    let    _x    = (val_x); \
-    anyptr __ret = null; \
+    let   _x    = (val_x); \
+    P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse sine domain error */ \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(asin(_x)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(asin(_x)); \
     } \
-    blk_return(*(Err$(TypeOf(_x))*)__ret); \
+    blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_acos(val_x) blk({ \
     let _x    = (val_x); \
@@ -469,18 +469,18 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_acosSafe(val_x) blk({ \
-    let    _x    = (val_x); \
-    anyptr __ret = null; \
+    let   _x    = (val_x); \
+    P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse cosine domain error */ \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_x)))ok(acos(_x)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(acos(_x)); \
     } \
-    blk_return(*(Err$(TypeOf(_x))*)__ret); \
+    blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_atan(val_x) blk({ \
-    let _x = (val_x); \
+    let        _x = (val_x); \
     blk_return atan(_x); \
 })
 #define FUNC_math_atan2(val_y, val_x) blk({ \
@@ -493,16 +493,16 @@ config_ErrSet(math_Err,
     blk_return __ret; \
 })
 #define FUNC_math_atan2Safe(val_y, val_x) blk({ \
-    let    _y    = (val_y); \
-    let    _x    = (val_x); \
-    anyptr __ret = null; \
+    let   _y    = (val_y); \
+    let   _x    = (val_x); \
+    P$raw __ret = null; \
     if (_x == 0 && _y == 0) { \
         /* atan2(0, 0) is undefined */ \
-        __ret = (anyptr)&(Err$(TypeOf(_y)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_y)))err(math_E_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (anyptr)&(Err$(TypeOf(_y)))ok(atan2(_y, _x)); \
+        __ret = (P$raw)&(E$(TypeOf(_y)))ok(atan2(_y, _x)); \
     } \
-    blk_return(*(Err$(TypeOf(_y))*)__ret); \
+    blk_return(*(E$(TypeOf(_y))*)__ret); \
 })
 
 #endif /* MATH_COMMON_INCLUDED */

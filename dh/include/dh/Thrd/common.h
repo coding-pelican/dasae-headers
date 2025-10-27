@@ -76,35 +76,35 @@ struct Thrd_FnCtx {
 
 // Thread functions
 extern fn_((Thrd_sleep(time_Duration duration))(void));
-extern fn_((Thrd_yield(void))(Err$void)) $must_check;
+extern fn_((Thrd_yield(void))(E$void)) $must_check;
 extern fn_((Thrd_getCurrentId(void))(Thrd_Id));
-extern fn_((Thrd_getCpuCount(void))(Err$usize)) $must_check;
+extern fn_((Thrd_getCpuCount(void))(E$usize)) $must_check;
 
 // Thread type
 typedef struct Thrd {
     Thrd_Handle handle;
 } Thrd;
-use_Err$(Thrd);
+T_use_E$(Thrd);
 extern fn_((Thrd_getHandle(Thrd self))(Thrd_Handle));
 
 // Thread name buffer type
-typedef Arr$$(Thrd_max_name_len, u8) Thrd_NameBuf;
-use_Opt$(Thrd_NameBuf);
-use_Err$(Opt$Sli_const$u8);
-extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Err$Opt$Sli_const$u8)) $must_check;
-extern fn_((Thrd_setName(Thrd self, Sli_const$u8 name))(Err$void)) $must_check;
+typedef A$$(Thrd_max_name_len, u8) Thrd_NameBuf;
+T_use_O$(Thrd_NameBuf);
+T_use_E$(O$S_const$u8);
+extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8)) $must_check;
+extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
 
 // Thread spawn configuration
 typedef struct Thrd_SpawnConfig {
-    usize             stack_size;
-    Opt$mem_Allocator allocator;
+    usize           stack_size;
+    O$mem_Allocator allocator;
 } Thrd_SpawnConfig;
 #define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
 static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
     .stack_size = Thrd_SpawnConfig_default_stack_size,
     .allocator  = none()
 };
-extern fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(Err$Thrd)) $must_check;
+extern fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
 extern fn_((Thrd_detach(Thrd self))(void));
 extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 

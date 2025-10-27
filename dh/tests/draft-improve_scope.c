@@ -59,7 +59,7 @@ T_Return _Name_With_Params {                               \
 #define comp_syn__return_some(_Expr...) return_(some(_Expr))
 #define comp_syn__return_none()         return_(none())
 #define comp_syn__return_void()         blk({                                 \
-    claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \
+    claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
 
@@ -96,11 +96,11 @@ __step_deferred: switch (__scope_counter.current_line) {       \
 }
 // clang-format on
 
-fn_scope_ext(func(void), Err$void) {
+fn_scope_ext(func(void), E$void) {
     printf("func\n");
 } $unguarded;
 
-fn_scope_ext(dh_main(Sli$Sli_const$u8 args), Err$void) {
+fn_scope_ext(dh_main(S$S_const$u8 args), E$void) {
     let_ignore = args;
     printf("begin\n");
     {
@@ -117,8 +117,8 @@ fn_scope_ext(dh_main(Sli$Sli_const$u8 args), Err$void) {
     return_ok({});
 } $unguarded; */
 
-// Err$void dh_main(Sli$Sli_const$u8 args) {
-//     const __auto_type __reserved_return = ((Err$void*)((u8[_Generic(Err$void, void: 0, default: sizeof(Err$void))]){}));
+// E$void dh_main(S$S_const$u8 args) {
+//     const __auto_type __reserved_return = ((E$void*)((u8[_Generic(E$void, void: 0, default: sizeof(E$void))]){}));
 //     __auto_type       __scope_counter   = (struct __ScopeCounter){ .is_returning = (0), .current_line = 98 };
 //     if ((0)) {
 //     __step_return:
@@ -178,8 +178,8 @@ T_Return _Name_With_Params {                                   \
 } */
 // clang-format on
 
-/* Err$void dh_main(Sli$Sli_const$u8 args) {
-    Err$void* __reserved_return = ((void*)0);
+/* E$void dh_main(S$S_const$u8 args) {
+    E$void* __reserved_return = ((void*)0);
     struct {
         i32  curr;
         bool returns;
@@ -224,7 +224,7 @@ T_Return _Name_With_Params {                                    \
         bti_Generic_pattern$(void) 0,                           \
         bti_Generic_fallback_ sizeOf(void)                      \
     )];                                                         \
-    T_Return* const __reserved_return = (anyptr)__reserved_buf; \
+    T_Return* const __reserved_return = (P$raw)__reserved_buf; \
     if (false) { __step_return: goto __step_unscope; }          \
     else { claim_unreachable; }
 #define $unscoped                              \
@@ -246,13 +246,13 @@ T_Return _Name_With_Params {                                    \
     goto __step_return */
 
 /* #define ret_void blk({                                                        \
-    claim_assert_static(isSameType(TypeOf(*__reserved_return), TypeOf(void))); \
+    claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
 #define ret_(_Expr...) blk({                                       \
     bti_memcpy(                                                     \
-        (anyptr)__reserved_return,                                  \
-        (anyptr)&*((TypeOf(*__reserved_return)[1]){ [0] = _Expr }), \
+        (P$raw)__reserved_return,                                  \
+        (P$raw)&*((TypeOf(*__reserved_return)[1]){ [0] = _Expr }), \
         sizeof(*__reserved_return)                                  \
     );                                                              \
     goto __step_return;                                             \
@@ -260,7 +260,7 @@ T_Return _Name_With_Params {                                    \
 
 // void func(void) {
 //     u8          __reserved_buf[bti_Generic_match$(TypeOf(void), bti_Generic_pattern$(void) 0, bti_Generic_fallback_ sizeOf(void))];
-//     void* const __reserved_return = (anyptr)__reserved_buf;
+//     void* const __reserved_return = (P$raw)__reserved_buf;
 //     struct { u32 curr : 31; u32 returns : 1; } __scope_counter = { .curr    = 0, .returns = 0 };
 //     if (0) { __step_return: goto __step_defer; }
 //     __step_defer:
@@ -284,8 +284,8 @@ T_Return _Name_With_Params {                                    \
 //     }
 // };
 
-/* Err$void dh_main(Sli$Sli_const$u8 args) {
-    Err$void* __reserved_return = ((void*)0);
+/* E$void dh_main(S$S_const$u8 args) {
+    E$void* __reserved_return = ((void*)0);
     struct {
         u32 curr    : 31;
         u32 returns : 1;

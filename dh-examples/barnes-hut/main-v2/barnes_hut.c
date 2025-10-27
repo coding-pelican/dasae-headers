@@ -52,8 +52,8 @@ static void global_debug_logSimStateFrontBodiesN(usize n) {
     }
 }
 #endif
-static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
-    reserveReturn(Err$void);
+static E$void global_processInput(Visualizer* viz, engine_Window* window) {
+    reserveReturn(E$void);
     debug_assert_nonnull(viz);
     debug_assert_nonnull(window);
 
@@ -78,8 +78,8 @@ static Err$void global_processInput(Visualizer* viz, engine_Window* window) {
     return_void();
 }
 
-Err$void global_update(Visualizer* viz, Simulation* sim) {
-    scope_reserveReturn(Err$void) {
+E$void global_update(Visualizer* viz, Simulation* sim) {
+    scope_reserveReturn(E$void) {
         debug_assert_nonnull(viz);
         debug_assert_nonnull(sim);
 
@@ -90,7 +90,7 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
         }
 
         // Add spawned bodies to simulation
-        for_slice (global_state.spawn_bodies.items, body) {
+        for_slice(global_state.spawn_bodies.items, body) {
             try(ArrList_append(&sim->bodies.base, meta_refPtr(body)));
         }
         ArrList_clearRetainingCap(&global_state.spawn_bodies.base);
@@ -113,9 +113,9 @@ Err$void global_update(Visualizer* viz, Simulation* sim) {
     scope_returnReserved;
 }
 
-Err$void dh_main(int argc, const char* argv[]) {
+E$void dh_main(int argc, const char* argv[]) {
     $unused(argc), $unused(argv);
-    scope_reserveReturn(Err$void) {
+    scope_reserveReturn(E$void) {
         // Initialize logging to a file
         scope_if(let debug_file = fopen("debug.log", "w"), debug_file) {
             log_initWithFile(debug_file);
@@ -173,7 +173,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         let_ignore = getchar();
 
         // Initialize timing variables
-        let time_frame_target = time_Duration_fromSecs_f64(main_target_spf);
+        let time_frame_target = time_Duration_fromSecs$f64(main_target_spf);
         var time_frame_prev   = time_Instant_now();
         log_info("main loop started\n");
 
@@ -181,7 +181,7 @@ Err$void dh_main(int argc, const char* argv[]) {
         while (global_state.is_running) {
             let time_frame_curr = time_Instant_now();
             let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-            let time_dt         = time_Duration_asSecs_f64(time_elapsed);
+            let time_dt         = time_Duration_asSecs$f64(time_elapsed);
 
             // Process input
             try(engine_Window_processEvents(window));

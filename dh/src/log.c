@@ -7,15 +7,15 @@
 
 // Global state
 static log_Config log_s_config = {
-    .output_file     = null,           // Default to stderr
-    .min_level       = log_Level_info, // Default to Info level
-    .shows_timestamp = true,           // Show timestamps by default
-    .shows_level     = true,           // Show log level by default
-    .shows_location  = true,           // Show location by default
-    .shows_function  = true            // Show function name by default
+    .output_file = null,         // Default to stderr
+    .min_level = log_Level_info, // Default to Info level
+    .shows_timestamp = true,     // Show timestamps by default
+    .shows_level = true,         // Show log level by default
+    .shows_location = true,      // Show location by default
+    .shows_function = true       // Show function name by default
 };
 
-fn_((log_init(const char* filename))(fs_FileErr$void) $guard) {
+fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
     // Extract directory path
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -28,7 +28,7 @@ fn_((log_init(const char* filename))(fs_FileErr$void) $guard) {
     }
 
     let file = fopen(filename, "w");
-    if (!file) { return_err(fs_FileErr_OpenFailed()); }
+    if (!file) { return_err(fs_File_Err_OpenFailed()); }
     errdefer_($ignore, let_ignore = fclose(file));
 
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
@@ -47,7 +47,7 @@ fn_((log_initWithFile(FILE* file))(void)) {
 
 fn_((log_fini(void))(void)) {
     if (log_s_config.output_file && log_s_config.output_file != stderr) {
-        let_ignore               = fclose(log_s_config.output_file);
+        let_ignore = fclose(log_s_config.output_file);
         log_s_config.output_file = stderr;
     }
 }
@@ -87,11 +87,11 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
 
     // Get current time if needed
     if (log_s_config.shows_timestamp) {
-        time_t     t            = time(null);
-        struct tm* lt           = localtime(&t);
-        char       time_str[16] = cleared();
-        let_ignore              = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        let_ignore              = fprintf(output, "[%s]", time_str);
+        time_t t = time(null);
+        struct tm* lt = localtime(&t);
+        char time_str[16] = cleared();
+        let_ignore = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
+        let_ignore = fprintf(output, "[%s]", time_str);
     }
 
     // Add level if needed
