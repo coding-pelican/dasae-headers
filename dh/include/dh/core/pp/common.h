@@ -201,15 +201,6 @@ extern "C" {
 #define comp_syn__lit_num$(T, _Comma_Sep_Lits...) \
     as$((T)(lit_num(_Comma_Sep_Lits)))
 
-#undef pp_not
-#undef __pp_not_0
-#undef __pp_not_1
-#undef pp_if_
-#undef __pp_if_0
-#undef __pp_if_1
-#undef pp_then_
-#undef pp_else_
-
 #define pp_compl(_b) pp_cat(__pp_compl_, _b)
 #define __pp_compl_0 1
 #define __pp_compl_1 0
@@ -234,17 +225,17 @@ extern "C" {
 #define pp_isParen(_x)       pp_check(pp_isParenProbe _x)
 #define pp_isParenProbe(...) pp_probe(~)
 
-#define pp_not(_x) pp_check(pp_cat(__pp_not_, _x))
-#define __pp_not_0 pp_probe(~)
+#define pp_Tok_not(_x) pp_check(pp_cat(__pp_Tok_not_, _x))
+#define __pp_Tok_not_0 pp_probe(~)
 
-#define pp_bool(_x) pp_compl(pp_not(_x))
+#define pp_bool(_x) pp_compl(pp_Tok_not(_x))
 
 #define pp_iif(_c)          pp_cat(__pp_iif_, _c)
 #define __pp_iif_0(_t, ...) __VA_ARGS__
 #define __pp_iif_1(_t, ...) _t
-#define pp_if_(_c)          pp_iif(pp_bool(_c))
-#define pp_then_(...)       __VA_ARGS__
-#define pp_else_(...)       __VA_ARGS__
+#define pp_Tok_if_(_c)      pp_iif(pp_bool(_c))
+#define pp_Tok_then_(...)   __VA_ARGS__
+#define pp_Tok_else_(...)   __VA_ARGS__
 
 #define pp_Tok_prim_cmp(x, y) pp_isParen( \
     pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()) \
@@ -258,7 +249,7 @@ extern "C" {
 #define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
 
 #define pp_comma()       ,
-#define pp_comma_if_(_n) pp_if_(_n)(pp_comma, pp_ignore)()
+#define pp_comma_if_(_n) pp_Tok_if_(_n)(pp_comma, pp_ignore)()
 
 #define pp_Tok_cmp__const(x) x
 #define ignore_and_end(...)  ignore_end ignore_end

@@ -85,7 +85,7 @@ typedef struct meta_O$raw {
         union {
             Void none;
             meta_V$raw some;
-        } payload[1];
+        } payload;
         meta_V$raw inner;
     };
 } meta_O$raw;
@@ -96,7 +96,7 @@ typedef struct meta_E$raw {
         union {
             ErrCode err;
             meta_V$raw ok;
-        } payload[1];
+        } payload;
         meta_V$raw inner;
     };
 } meta_E$raw;
@@ -126,7 +126,7 @@ typedef struct meta_E$raw {
 #define __meta_init$S__parseType(_type...)                                                 _type, __meta_init$S__parsePtrLen
 #define __meta_init$S__parsePtrLen(_ptr, _len...)                                          _ptr, _len
 #define __meta_init$S__emit(_type, _ptr, _len...) \
-    pp_if_(Tok_isConst$(_type))( \
+    pp_Tok_if_(Tok_isConst$(_type))( \
         pp_then_(__meta_init$S__emitRef(Tok_removeConst$(_type), _ptr, _len)), \
         pp_else_(__meta_init$S__emitRefMut(_type, _ptr, _len)) \
     )
@@ -241,14 +241,14 @@ $static fn_((meta_set$S(meta_S$raw dst, meta_V$raw src))(meta_S$raw)) {
 #define any$O(_o...) ({ \
     let __p_o = &copy(_o); \
     __p_o->is_some \
-        ? (meta_O$raw)some(any$V(__p_o->payload->some)) \
+        ? (meta_O$raw)some(any$V(__p_o->payload.some)) \
         : (meta_O$raw)none(); \
 })
 #define any$E(_e...) ({ \
     let __p_e = &copy(_e); \
     __p_e->is_ok \
-        ? (meta_E$raw)ok(any$V(__p_e->payload->ok)) \
-        : (meta_E$raw)err(__p_e->payload->err); \
+        ? (meta_E$raw)ok(any$V(__p_e->payload.ok)) \
+        : (meta_E$raw)err(__p_e->payload.err); \
 })
 
 #define meta$P$(/*(_T)(_Expr...)*/... /*(P_const$(_T))*/) \
@@ -304,7 +304,7 @@ $static fn_((meta_set$S(meta_S$raw dst, meta_V$raw src))(meta_S$raw)) {
 #define __block_inline__meta_O$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
-        ? ((O$(_T))some(*as$((_T*)(__meta.payload->some.inner)))) \
+        ? ((O$(_T))some(*as$((_T*)(__meta.payload.some.inner)))) \
         : ((O$(_T))none()); \
 })
 #define meta$O$$(/*(_T)(_Expr...)*/... /*(O$$(_T))*/) \
@@ -314,7 +314,7 @@ $static fn_((meta_set$S(meta_S$raw dst, meta_V$raw src))(meta_S$raw)) {
 #define __block_inline__meta_O$$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
-        ? ((O$$(_T))some(*as$((_T*)(__meta.payload->some.inner)))) \
+        ? ((O$$(_T))some(*as$((_T*)(__meta.payload.some.inner)))) \
         : ((O$$(_T))none()); \
 })
 
@@ -325,8 +325,8 @@ $static fn_((meta_set$S(meta_S$raw dst, meta_V$raw src))(meta_S$raw)) {
 #define __block_inline__meta_E$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_ok \
-        ? ((E$(_T))ok(*as$((_T*)(&__meta.payload->ok.inner)))) \
-        : ((E$(_T))err(__meta.payload->err)); \
+        ? ((E$(_T))ok(*as$((_T*)(&__meta.payload.ok.inner)))) \
+        : ((E$(_T))err(__meta.payload.err)); \
 })
 #define meta$E$$(/*(_T)(_Expr...)*/... /*(E$$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_E$$)(__param_expand__meta_E$$ __VA_ARGS__))
@@ -335,8 +335,8 @@ $static fn_((meta_set$S(meta_S$raw dst, meta_V$raw src))(meta_S$raw)) {
 #define __block_inline__meta_E$$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_ok \
-        ? ((E$$(_T))ok(*as$((_T*)(&__meta.payload->ok.inner)))) \
-        : ((E$$(_T))err(__meta.payload->err)); \
+        ? ((E$$(_T))ok(*as$((_T*)(&__meta.payload.ok.inner)))) \
+        : ((E$$(_T))err(__meta.payload.err)); \
 })
 
 #if defined(__cplusplus)

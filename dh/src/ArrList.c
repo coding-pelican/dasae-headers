@@ -1,4 +1,6 @@
 #include "dh/ArrList.h"
+#include "dh/fn.h"
+#include "dh/types/Res.h"
 #include "dh/debug/assert.h"
 #include "dh/int.h"
 #include "dh/types/meta.h"
@@ -218,6 +220,8 @@ fn_((ArrList_pop(ArrList* self, meta_V$raw ret_mem))(O$meta_V$raw) $scope) {
     if (self->items.len == 0) { return_none(); }
     let value = meta_copy$P(meta_create(self->type), meta_at$S(self->items_meta, self->items.len - 1).as_const);
     return_some({ .inner = meta_copy$P(ret_mem.ref, value.as_const).raw });
+    // return_some({ .inner = meta_copy$P(ret_mem.ref, value.as_const).raw });
+    // return_some({ .inner = meta_copy$P(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
 fn_((ArrList_cappedItems(ArrList self))(meta_S$raw)) {

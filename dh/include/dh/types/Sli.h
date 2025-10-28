@@ -11,21 +11,21 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /* Slice Anonymous */
-#define S$$(_T...) pp_if_(Tok_isConst$(_T))( \
-    pp_then_(__S_const$$(Tok_removeConst$(_T))), \
-    pp_else_(__S$$(_T)) \
+#define S$$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__S_const$$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__S$$(_T)) \
 )
 #define __S_const$$(_T...) \
-    union { \
+    TypeOf(union { \
         struct { \
             var_(ptr, P$$(const _T)); \
             var_(len, usize); \
         }; \
         var_(as_raw, S$(const raw)); \
         var_(ref_raw, TypeOf(S$(const raw) $like_ptr)); \
-    }
+    })
 #define __S$$(_T...) \
-    union { \
+    TypeOf(union { \
         struct { \
             var_(ptr, P$$(_T)); \
             var_(len, usize); \
@@ -33,12 +33,12 @@ extern "C" {
         var_(as_raw, S$(raw)); \
         var_(ref_raw, TypeOf(S$(raw) $like_ptr)); \
         var_(as_const, __S_const$$(_T)); \
-    }
+    })
 
 /* Slice Alias */
-#define S$(_T...) pp_if_(Tok_isConst$(_T))( \
-    pp_then_(__S_const$(Tok_removeConst$(_T))), \
-    pp_else_(__S$(_T)) \
+#define S$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__S_const$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__S$(_T)) \
 )
 #define __S_const$(_T...) pp_join($, S_const, _T)
 #define __S$(_T...)       pp_join($, S, _T)

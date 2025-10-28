@@ -97,7 +97,23 @@ extern "C" {
 #define $maybe_unused comp_attr__$maybe_unused
 #define $must_use     comp_attr__$must_use
 
+#define as$(/*(_TDest)(_src...)*/... /*(_TDest)*/) \
+    /** \
+     * @brief Cast macro for converting a value to a different type \
+     * @details This macro is used to cast a value from one type to another \
+     * @param _TDest The destination type to cast to \
+     * @param _src The value to cast \
+     * @return The casted value \
+     */ \
+    __as$__emit(__VA_ARGS__)
+#if defined(__cplusplus)
+#define __as$__emit(...)      (__as$__expandT __VA_ARGS__)
+#define __as$__expandT(_T...) static_cast<_T>
+#else
+#define __as$__emit(...) (__VA_ARGS__)
+#endif
 
+#if UNUSED_CODE
 #define as$(/*(_TDest)(_src...)*/... /*(_TDest)*/) \
     /** \
      * @brief Cast macro for converting a value to a different type \
@@ -115,7 +131,18 @@ extern "C" {
 #else
 #define __as$__emit(_TDest, _src...) ((_TDest)(_src))
 #endif
+#endif /* UNUSED_CODE */
 
+#define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __lit$__emit(__VA_ARGS__)
+#if defined(__cplusplus)
+#define __lit$__emit(...)      (__lit$__expandT __VA_ARGS__)
+#define __lit$__expandT(_T...) _T
+#else
+#define __lit$__emit(...) (__VA_ARGS__)
+#endif
+
+#if UNUSED_CODE
 #define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
     __lit$__step(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
 #define __lit$__step(...)             __VA_ARGS__
@@ -127,6 +154,7 @@ extern "C" {
 #define __lit$__emitNext(_T, _initial...) ((_T)__lit$__expandInitial _initial)
 #endif
 #define __lit$__expandInitial(_initial...) _initial
+#endif /* UNUSED_CODE */
 
 #define make$(/*(_T){_initial...}*/... /*(_T)*/) \
     __make$__step(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))

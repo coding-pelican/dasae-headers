@@ -20,7 +20,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "dh/types/Opt.h"
+#include "dh/types.h"
 
 #if UNUSED_CODE
 /*========== Includes =======================================================*/

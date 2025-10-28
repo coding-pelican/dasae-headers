@@ -44,12 +44,10 @@ typedef fn_((((*TEST_CaseFn)(void)))(E$void));
 /* Test case structure */
 typedef struct TEST_Case {
     TEST_CaseFn fn;
-    S_const$u8  name;
+    S_const$u8 name;
 } TEST_Case;
 /* Use slice for test cases */
-T_use$(TEST_Case, (P, S));
-/* Use array list for test cases */
-use_ArrList$(TEST_Case);
+T_use$(TEST_Case, (P, S, ArrList));
 
 /*========== Public API =====================================================*/
 

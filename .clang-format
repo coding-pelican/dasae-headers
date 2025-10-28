@@ -180,8 +180,8 @@ TypeNames:
   - atomic_Value$
   - atomic_Value$$
 Macros:
-  - "TypeOf(T)=T"
-  - "TypeOfUnqual(T)=T"
+  # - "TypeOf(T)=T"
+  # - "TypeOfUnqual(T)=T"
   - "$P$(T)=$P$<T>"
   - "$A$(N,T)=$A$<N,T*>"
   - "P$$(T)=P$$<T>"

@@ -51,7 +51,7 @@ static bool TypeInfo_eq(TypeInfo, TypeInfo);
 #define comp_op__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
 #if COMP_TIME
 $inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
-    return bti_memcmp(&lhs, &rhs, sizeOf(TypeInfo)) == 0;
+    return bti_memcmp(&lhs, &rhs, sizeOf$(TypeInfo)) == 0;
 }
 #endif /* COMP_TIME */
 

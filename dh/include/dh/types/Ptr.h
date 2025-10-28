@@ -11,17 +11,17 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /* Pointer Anonymous */
-#define P$$(_T...) pp_if_(Tok_isConst$(_T))( \
-    pp_then_(__P_const$$(Tok_removeConst$(_T))), \
-    pp_else_(__P$$(_T)) \
+#define P$$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__P_const$$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__P$$(_T)) \
 )
 #define __P_const$$(_T...) $P_const$(_T)
 #define __P$$(_T...)       $P$(_T)
 
 /* Pointer Alias */
-#define P$(_T...) pp_if_(Tok_isConst$(_T))( \
-    pp_then_(__P_const$(Tok_removeConst$(_T))), \
-    pp_else_(__P$(_T)) \
+#define P$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__P_const$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__P$(_T)) \
 )
 #define __P_const$(_T...) pp_join($, P_const, _T)
 #define __P$(_T...)       pp_join($, P, _T)

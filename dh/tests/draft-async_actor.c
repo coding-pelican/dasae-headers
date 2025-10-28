@@ -29,7 +29,8 @@ typedef struct Message {
     } payload;
     struct Message* next;
 } Message;
-T_use$(Message, (O, E));
+T_use$(Message, (P, O, E));
+T_use$(P$Message, (E));
 
 // 메일박스 (침입적 연결 리스트)
 typedef struct Mailbox {
@@ -49,6 +50,8 @@ typedef struct Actor {
 } Actor;
 T_use$(Actor, (P, S, E));
 T_use$(P$Actor, (E));
+T_use$(S$Actor, (E));
+T_use_E$($set(mem_Err)(Actor));
 
 // Actor 시스템 (Arena allocator 사용)
 typedef struct ActorSystem {
@@ -79,6 +82,7 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message));
 /* Actor.c */
 #include "dh/Str.h"
 #include "dh/io/stream.h"
+#include "dh/types/meta.h"
 
 // Actor 시스템 초기화
 fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem) $scope) {
@@ -90,7 +94,7 @@ fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSy
     };
     sys.actors = blk({
         let gpa    = heap_Arena_allocator(&sys.arena_actor);
-        let actors = meta_cast$(S$Actor, try_(mem_Allocator_alloc(gpa, typeInfo$(Actor), max_actors)));
+        let actors = try_(meta$E$((S$Actor)(mem_Allocator_alloc(gpa, typeInfo$(Actor), max_actors))));
         for_(($s(actors))(actor) {
             actor->coroutine    = null;
             actor->mailbox      = (Mailbox){ 0 };
@@ -165,7 +169,7 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
 fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
     let gpa       = heap_Arena_allocator(&sys->arena_message);
     // 메시지 복사 (arena에서)
-    let new_msg   = meta_cast$(P$Message, try_(mem_Allocator_create(gpa, typeInfo$(Message))));
+    let new_msg   = try_(meta$E$((P$Message)(mem_Allocator_create(gpa, typeInfo$(Message)))));
     *new_msg      = msg;
     new_msg->next = null;
     // 메일박스에 추가
@@ -255,8 +259,9 @@ typedef struct {
     u32 id;
     u32 ping_count;
 } EchoState;
-use_P$(EchoState);
-use_S$(EchoState);
+T_use_P$(EchoState);
+T_use_S$(EchoState);
+T_use_E$(S$EchoState);
 async_fn_(echo_actor, (var_(sys, ActorSystem*); var_(self, P$Actor);), Void);
 async_fn_scope(echo_actor, {
     var_(msg, Message);
@@ -300,11 +305,12 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     let actor_gpa = heap_Arena_allocator(&sys.arena_actor);
     // 상태 할당 (arena에서)
-    let states    = meta_cast$(S$EchoState, try_(mem_Allocator_alloc(actor_gpa, typeInfo$(EchoState), total_actors)));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, anySli(states)));
+    let states    = try_(meta$E$((S$(EchoState))(mem_Allocator_alloc(actor_gpa, typeInfo$(EchoState), total_actors))));
+    errdefer_($ignore, mem_Allocator_free(actor_gpa, any$S(states)));
     // 코루틴 컨텍스트 할당 (arena에서)
-    let ctxs = meta_cast$(S$$(Co_CtxFn$(echo_actor)), try_(mem_Allocator_alloc(actor_gpa, typeInfo$(Co_CtxFn$(echo_actor)), total_actors)));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, anySli(ctxs)));
+    meta$E$$((S$$(Co_CtxFn$(echo_actor)))(mem_Allocator_alloc(actor_gpa, typeInfo$(Co_CtxFn$(echo_actor)), total_actors)))
+    let ctxs = try_(meta$E$$((S$$(Co_CtxFn$(echo_actor)))(mem_Allocator_alloc(actor_gpa, typeInfo$(Co_CtxFn$(echo_actor)), total_actors))));
+    errdefer_($ignore, mem_Allocator_free(actor_gpa, any$S(ctxs)));
     // Actor 생성
     for_(($rf(0), $s(states), $s(ctxs))(i, state, ctx) {
         state->id         = i;

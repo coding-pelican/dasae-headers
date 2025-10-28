@@ -12,18 +12,18 @@ extern "C" {
 
 /* Optional Anonymous */
 #define O$$(_T...) \
-    union { \
+    TypeOf(union { \
         struct { \
             var_(is_some, bool); \
-            TypeOf(union { \
+            union { \
                 var_(none, Void); \
                 var_(some, _T); \
-                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, O_Payload$raw); \
+            } payload; \
         }; \
         var_(as_raw, O$raw); \
-        var_(ref_raw, TypeOf(O$raw $like_ptr)); \
-    }
+        var_(ref_raw $like_ptr, O$raw); \
+    })
 /* Optional Alias */
 #define O$(_T...) pp_join($, O, _T)
 /* Optional Template */
@@ -39,7 +39,7 @@ extern "C" {
                 var_(none, Void); \
                 var_(some, _T); \
                 var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+            }) payload; \
         }; \
         var_(as_raw, O$raw); \
         var_(ref_raw, TypeOf(O$raw $like_ptr)); \
@@ -51,7 +51,7 @@ extern "C" {
                 var_(none, Void); \
                 var_(some, _T); \
                 var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+            }) payload; \
         }; \
         var_(as_raw, O$raw); \
         var_(ref_raw, TypeOf(O$raw $like_ptr)); \
@@ -59,14 +59,14 @@ extern "C" {
     union O$(_T) { \
         struct { \
             var_(is_some, bool); \
-            TypeOf(union { \
+            union { \
                 var_(none, Void); \
                 var_(some, _T); \
-                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, O_Payload$raw); \
+            } payload; \
         }; \
         var_(as_raw, O$raw); \
-        var_(ref_raw, TypeOf(O$raw $like_ptr)); \
+        var_(ref_raw $like_ptr, O$raw); \
     }
 #define T_use_O$(_T...) \
     T_decl_O$(_T); \
@@ -76,12 +76,14 @@ extern "C" {
 typedef union O$Void {
     struct {
         var_(is_some, bool);
-        TypeOf(
-            union {
-                var_(none, Void);
-                var_(some, Void);
-            } $like_ptr) payload;
+        union {
+            var_(none, Void);
+            var_(some, Void);
+            var_(raw $like_ptr, O_Payload$raw);
+        } payload;
     };
+    var_(as_raw, O$raw);
+    var_(ref_raw $like_ptr, O$raw);
 } O$Void, O$void;
 
 /* Optional Operations */
@@ -103,16 +105,21 @@ typedef union O$Void {
 })
 
 /* Determines optional value */
-#define some(_val...) { \
+#define some(_val...)              comp_inline__some(_val)
+#define comp_inline__some(_val...) { \
     .is_some = true, \
-    .payload[0] = { .some = _val }, \
+    .payload = { .some = _val }, \
 }
 #define some$(/*(_T)(_val: _T))*/... /*(O$(_T))*/) \
     pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
 #define some$$(/*(_T)(_val: _T))*/... /*(O$$(_T))*/) \
     pp_expand(pp_defer(__block_inline__some$$)(__param_expand__some$$ __VA_ARGS__))
 
-#define none()                                    { .is_some = false }
+#define none()              comp_inline__none()
+#define comp_inline__none() { \
+    .is_some = false, \
+    .payload = { .none = {} }, \
+}
 #define none$(/*(_T)(none())*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
 #define none$$(/*(_T)(none())*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__none$$)(__param_expand__none$$ __VA_ARGS__))
 
@@ -121,10 +128,10 @@ typedef union O$Void {
 #define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)(!(_o).is_some))
 
 /* Returns optional value */
-#define return_some(_val...) \
-    return_(some(_val))
-#define return_none() \
-    return_(none())
+#define return_some(_val...)           comp_syn__return_some(_val)
+#define comp_syn__return_some(_val...) return_(some(_val))
+#define return_none()                  comp_syn__return_none()
+#define comp_syn__return_none()        return_(none())
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
 #define orelse_(/*(_Expr: O$$(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
@@ -168,16 +175,16 @@ typedef union O$Void {
     ({ \
         var __result = _Expr; \
         if (isNone(__result)) { \
-            __result.payload->some = _Generic( \
+            __result.payload.some = _Generic( \
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
                 void: ({ \
                     $ignore_void _DefaultExpr_OR_Body; \
-                    lit$((TypeOf(__result.payload->some)){}); \
+                    lit$((TypeOf(__result.payload.some)){}); \
                 }), \
                 default: _DefaultExpr_OR_Body \
             ); \
         } \
-        __result.payload->some; \
+        __result.payload.some; \
     }) \
 )
 #define __unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
@@ -187,16 +194,16 @@ typedef union O$Void {
 #define __if_some__parseCapture(_capture...) _capture
 #define __if_some__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_some) \
-        with_(let _capture = _result.payload->some)
+        with_(let _capture = _result.payload.some)
 #define comp_syn__else_none \
     else
 #define comp_syn__if_none(val_opt...) \
     if_(let _result = (val_opt), !_result.is_some)
 #define comp_syn__else_some(_Payload_Capture...) \
-    else_(let _Payload_Capture = _result.payload->some)
+    else_(let _Payload_Capture = _result.payload.some)
 #define comp_syn__while_some(val_opt, _Payload_Capture...) \
     for (var _result = (val_opt); _result.is_some; _result = (val_opt)) \
-    with_(let _Payload_Capture = _result.payload->some)
+    with_(let _Payload_Capture = _result.payload.some)
 #define comp_syn__while_none(val_opt...) \
     while_(var _result = (val_opt), !_result.is_some)
 

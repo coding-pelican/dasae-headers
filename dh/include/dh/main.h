@@ -49,7 +49,7 @@ extern "C" {
 
 pp_attr_(pp_if_(pp_not_(main_no_returns_err))(pp_then_($must_check)))
 $extern fn_((dh_main(pp_if_(pp_not_(main_no_args))(
-    pp_then_(S$S_const$u8 args),
+    pp_then_(S$(S$(const u8)) args),
     pp_else_(void)
 )))(pp_if_(pp_not_(main_no_returns_err))(pp_else_(E$void), pp_then_(void))));
 
@@ -82,21 +82,21 @@ fn_((main(pp_if_(pp_not_(main_no_args))(
         return (debug_break(), 1);
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$((S_const$u8*)(bti_alloca(sizeOf$(S_const$u8) * argc)));
+    let args_buf = as$((S$(const u8)*)(bti_alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        blk_return_(S_from$(S$S_const$u8, args_buf, argc));
+        blk_return_(init$S$((S$(const u8))(args_buf, argc)));
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$((S_const$u8*)(bti_alloca(sizeOf$(S_const$u8) * argc)));
+    let args_buf = as$((S$(const u8)*)(bti_alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
         }
-        blk_return_(S_from$(S$S_const$u8, args_buf, argc));
+        blk_return_(init$S$((S$(const u8))(args_buf, argc)));
     });
     catch_((dh_main(args))(err, {
         Err_print(err);

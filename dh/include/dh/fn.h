@@ -150,9 +150,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 // clang-format on
 
 #define comp_syn__return_(_Expr...) blk({ \
+    TypeOf(*__reserved_return) __return = _Expr; \
     bti_memcpy( \
         as$((u8*)(__reserved_return)), \
-        as$((u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr })), \
+        as$((u8*)(&__return)), \
         sizeOf$(*__reserved_return) \
     ); \
     goto __step_return; \
@@ -202,7 +203,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__defer__op_snapshot(_Expr...) \
     { \
         const u32 __scope_counter_previous_line = __scope_counter.current_line; \
-        __scope_counter.current_line            = __LINE__; \
+        __scope_counter.current_line = __LINE__; \
         if (false) { \
         case __LINE__: \
             __scope_counter.current_line = __scope_counter_previous_line; \

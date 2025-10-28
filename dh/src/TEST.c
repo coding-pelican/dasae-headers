@@ -100,7 +100,7 @@ fn_((TEST_Framework_run(void))(void)) {
     }
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
 
-    ArrList_fini(instance->cases.base);
+    ArrList_fini(instance->cases.ref_raw);
 }
 
 /* Debug versions of test functions */

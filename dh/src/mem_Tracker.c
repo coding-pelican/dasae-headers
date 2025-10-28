@@ -135,7 +135,7 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         usize total_leaked = 0;
 
         // Create a dynamic array for leak sites
-        var sites = type$((ArrList$$(LeakSite))(ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(&(heap_Classic){}))));
+        var sites = type$((ArrList$$(LeakSite))(ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(&(heap_Classic){}), 0)));
         defer_(ArrList_fini(sites.base));
 
         // Process each leak

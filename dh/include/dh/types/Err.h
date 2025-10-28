@@ -155,14 +155,14 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     typedef union pp_join($, Name, Void) { \
         struct { \
             var_(is_ok, bool); \
-            TypeOf(union { \
+            union { \
                 var_(err, Name); \
                 var_(ok, Void); \
-                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, E_Payload$raw); \
+            } payload; \
         }; \
         var_(as_raw, E$raw); \
-        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
+        var_(ref_raw $like_ptr, E$raw); \
     } pp_join($, Name, Void); \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
 

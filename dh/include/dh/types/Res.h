@@ -12,18 +12,18 @@ extern "C" {
 
 /* Result Anonymous */
 #define E$$(_T...) \
-    union { \
+    TypeOf(union { \
         struct { \
             var_(is_ok, bool); \
-            TypeOf(union { \
+            union { \
                 var_(err, Err); \
                 var_(ok, _T); \
-                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, E_Payload$raw); \
+            } payload; \
         }; \
         var_(as_raw, E$raw); \
-        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
-    }
+        var_(ref_raw $like_ptr, E$raw); \
+    })
 /* Result Alias */
 #define $set                       $_set,
 #define E$(...)                    pp_overload(__E$, __VA_ARGS__)(__VA_ARGS__)
@@ -47,7 +47,7 @@ extern "C" {
                 var_(err, Err); \
                 var_(ok, P_const$(_T)); \
                 var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+            }) payload; \
         }; \
         var_(as_raw, E$raw); \
         var_(ref_raw, TypeOf(E$raw $like_ptr)); \
@@ -59,7 +59,7 @@ extern "C" {
                 var_(err, Err); \
                 var_(ok, P$(_T)); \
                 var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+            }) payload; \
         }; \
         var_(as_raw, E$raw); \
         var_(ref_raw, TypeOf(E$raw $like_ptr)); \
@@ -67,14 +67,14 @@ extern "C" {
     union E$(_T) { \
         struct { \
             var_(is_ok, bool); \
-            TypeOf(union { \
+            union { \
                 var_(err, Err); \
                 var_(ok, _T); \
-                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, E_Payload$raw); \
+            } payload; \
         }; \
         var_(as_raw, E$raw); \
-        var_(ref_raw, TypeOf(E$raw $like_ptr)); \
+        var_(ref_raw $like_ptr, E$raw); \
     }
 #define __T_impl_E$_2(_tag, _ESet_T...) \
     pp_join(_, __T_impl_E$, _tag)(__T_impl_E$__expandESet _ESet_T)
@@ -85,12 +85,14 @@ extern "C" {
     union E$($set(_E)(_T)) { \
         struct { \
             var_(is_ok, bool); \
-            TypeOf(union { \
+            union { \
                 var_(err, _E); \
                 var_(ok, _T); \
-                var_(raw, TypeOf(E_Payload$raw $like_ptr)); \
-            } $like_ptr) payload; \
+                var_(raw $like_ptr, E_Payload$raw); \
+            } payload; \
         }; \
+        var_(as_raw, E$raw); \
+        var_(ref_raw $like_ptr, E$raw); \
     }
 #define T_use_E$(_T...) \
     T_decl_E$(_T); \
@@ -100,15 +102,14 @@ extern "C" {
 typedef union E$Void {
     struct {
         var_(is_ok, bool);
-        TypeOf(
-            union {
-                var_(err, Err);
-                var_(ok, Void);
-                var_(raw, TypeOf(E_Payload$raw $like_ptr));
-            } $like_ptr) payload;
+        union {
+            var_(err, Err);
+            var_(ok, Void);
+            var_(raw $like_ptr, E_Payload$raw);
+        } payload;
     };
     var_(as_raw, E$raw);
-    var_(ref_raw, TypeOf(E$raw $like_ptr));
+    var_(ref_raw $like_ptr, E$raw);
 } E$Void, E$void;
 
 /* Error Operations */
@@ -120,7 +121,7 @@ typedef union E$Void {
 /* Determines error result */
 #define ok(_val...) { \
     .is_ok = true, \
-    .payload[0] = { .ok = _val }, \
+    .payload = { .ok = _val }, \
 }
 #define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
@@ -129,7 +130,7 @@ typedef union E$Void {
 
 #define err(_val...) { \
     .is_ok = false, \
-    .payload[0] = { .err = _val }, \
+    .payload = { .err = _val }, \
 }
 #define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
@@ -186,9 +187,9 @@ typedef union E$Void {
 #define __try_(__result, _Expr...) ({ \
     let __result = _Expr; \
     if (isErr(__result)) { \
-        return_err(__result.payload->err); \
+        return_err(__result.payload.err); \
     } \
-    __result.payload->ok; \
+    __result.payload.ok; \
 })
 #define __param_expand__catch_(...)                                                         __VA_ARGS__, pp_expand
 #define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...)            __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
@@ -199,39 +200,39 @@ typedef union E$Void {
     ({ \
         var __result = _Expr; \
         if (isErr(__result)) { \
-            let _Payload_Capture = __result.payload->err; \
-            __result.payload->ok = _Generic( \
+            let _Payload_Capture = __result.payload.err; \
+            __result.payload.ok = _Generic( \
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
                 void: ({ \
                     _DefaultExpr_OR_Body; \
-                    lit$((TypeOf(__result.payload->ok)){}); \
+                    lit$((TypeOf(__result.payload.ok)){}); \
                 }), \
                 default: _DefaultExpr_OR_Body \
             ); \
             ErrTrace_reset(); \
         } \
-        __result.payload->ok; \
+        __result.payload.ok; \
     }) \
 )
 #define __errdefer_(_Payload_Capture, _Expr...) defer_(if (!__reserved_return->is_ok) { \
-    let _Payload_Capture = __reserved_return->payload->err; \
+    let _Payload_Capture = __reserved_return->payload.err; \
     _Expr; \
 })
 
 #define comp_syn__if_err(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), !_result.is_ok) \
-        scope_with(let _Payload_Capture = _result.payload->err)
+        scope_with(let _Payload_Capture = _result.payload.err)
 #define comp_syn__else_ok(_Payload_Capture) \
-    scope_else(let _Payload_Capture = _result.payload->ok)
+    scope_else(let _Payload_Capture = _result.payload.ok)
 #define comp_syn__else_void \
     else
 #define comp_syn__if_ok(val_result, _Payload_Capture) \
     scope_if(let _result = (val_result), _result.is_ok) \
-        scope_with(let _Payload_Capture = _result.payload->ok)
+        scope_with(let _Payload_Capture = _result.payload.ok)
 #define comp_syn__if_void(val_result) \
     scope_if(let _result = (val_result), _result.is_ok)
 #define comp_syn__else_err(_Payload_Capture) \
-    scope_else(let _Payload_Capture = _result.payload->err)
+    scope_else(let _Payload_Capture = _result.payload.err)
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
