@@ -1,5 +1,4 @@
 #include "dh/time/Instant.h"
-
 #include "dh/time/SysTime.h"
 #include "dh/time/Duration.h"
 

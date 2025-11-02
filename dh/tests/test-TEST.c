@@ -1,7 +1,4 @@
-#include "dh/main.h"
 #include "dh/TEST.h"
-
-#include "dh/io/stream.h"
 
 /// Basic tests demonstrating the framework's features
 TEST_fn_("Basic Math Operations" $scope) {
@@ -57,11 +54,14 @@ TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
 
 /// Test type comparison
 TEST_fn_("Simply Type Comparison with Failing Test" $scope) {
-    const i32 integer  = 10;
+    const i32 integer = 10;
     const f32 floating = 10.0f;
     try_(TEST_expect(!isSameType$(TypeOf(integer), TypeOf(floating))));
     try_(TEST_expect(isSameType$(TypeOf(integer), TypeOf(floating)))); // This will always fail
 } $unscoped_(TEST_fn);
+
+#include "dh/main.h"
+#include "dh/io/stream.h"
 
 /// Sample main function
 fn_((dh_main(S$S_const$u8 args))(E$void $scope)) {

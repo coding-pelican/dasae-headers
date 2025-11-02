@@ -1,6 +1,6 @@
 #include "dh/fs/File.h"
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows.h"
 $static fn_((windows_CloseHandle(HANDLE handle))(void)) {
     CloseHandle(handle);
@@ -26,7 +26,7 @@ $static fn_((windows_WriteFile(HANDLE handle, S_const$u8 bytes))(E$usize) $scope
     }
     claim_unreachable;
 } $unscoped_(fn);
-#else /* bti_plat_posix */
+#else /* plat_posix */
 #include <unistd.h>
 $static fn_((posix_close(posix_fd_t handle))(void)) {
     close(handle);
@@ -50,9 +50,9 @@ $static fn_((posix_write(posix_fd_t handle, S_const$u8 bytes))(E$usize) $scope) 
 #endif
 
 fn_((fs_File_close(fs_File file))(void)) {
-    return pp_if_(bti_plat_windows)(
+    return pp_if_(plat_windows)(
         pp_then_(windows_CloseHandle),
-        pp_else_(/* bti_plat_posix */ posix_close)
+        pp_else_(/* plat_posix */ posix_close)
     )(file.handle);
 }
 
@@ -66,9 +66,9 @@ typedef union Reader {
 
 $static fn_((Reader_VT_read(const P$raw ctx, S$u8 buf))(E$usize)) {
     let self = as$((FieldTypeOf(Reader, ctx)*)(&ctx));
-    return pp_if_(bti_plat_windows)(
+    return pp_if_(plat_windows)(
         pp_then_(windows_ReadFile),
-        pp_else_(/* bti_plat_posix */ posix_read)
+        pp_else_(/* plat_posix */ posix_read)
     )(self->handle, buf);
 }
 
@@ -90,9 +90,9 @@ typedef union Writer {
 
 $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize)) {
     let self = as$((FieldTypeOf(Writer, ctx)*)(&ctx));
-    return pp_if_(bti_plat_windows)(
+    return pp_if_(plat_windows)(
         pp_then_(windows_WriteFile),
-        pp_else_(/* bti_plat_posix */ posix_write)
+        pp_else_(/* plat_posix */ posix_write)
     )(self->handle, bytes);
 }
 

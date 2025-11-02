@@ -1,34 +1,32 @@
 #include "dh/main.h"
-
-#include "dh/Arr.h"
 #include "dh/heap/Fixed.h"
 #include "dh/mem/Allocator.h"
 
 TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
-    var_(buffer, A$$(1024, u8)) = A_zero();
-    var_(fixed, heap_Fixed)     = heap_Fixed_init(A_ref$(S$u8, buffer));
+    var_(buffer, A$$(1024, u8)) = zero$A();
+    var_(fixed, heap_Fixed) = heap_Fixed_init(ref$A$((u8)(buffer)));
 
-    let allocator = heap_Fixed_allocator(&fixed);
-    var sli       = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), 10)));
-    defer_(mem_Allocator_free(allocator, anySli(sli)));
+    let gpa = heap_Fixed_allocator(&fixed);
+    var items = try_(u_castE((E$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), 10))));
+    defer_(mem_Allocator_free(gpa, u_any$S(items)));
 
-    try_(TEST_expect(sli.ptr != null));
-    try_(TEST_expect(sli.len == 10));
-    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, sli.as_const)));
+    try_(TEST_expect(items.ptr != null));
+    try_(TEST_expect(items.len == 10));
+    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, items.as_const)));
 
-    for_slice_indexed(sli, item, idx) { deref(item) = idx; }
-    let res = meta_cast$(S$u8, try_(mem_Allocator_realloc(allocator, anySli(sli), 20)));
-    try_(TEST_expect(res.ptr != null));
-    try_(TEST_expect(res.len == 20));
-    try_(TEST_expect(sli.ptr == res.ptr));
-    try_(TEST_expect(sli.len < res.len));
-    try_(TEST_expect(!heap_Fixed_isLastAllocation(&fixed, sli.as_const)));
-    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, res.as_const)));
+    for_(($rf(0), $s(items))(idx, item) { *item = idx; });
+    let extended = try_(u_castE((E$S$u8)(mem_Allocator_realloc(gpa, u_any$S(items), 20))));
+    try_(TEST_expect(extended.ptr != null));
+    try_(TEST_expect(extended.len == 20));
+    try_(TEST_expect(items.ptr == extended.ptr));
+    try_(TEST_expect(items.len < extended.len));
+    try_(TEST_expect(!heap_Fixed_isLastAllocation(&fixed, items.as_const)));
+    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, extended.as_const)));
 
-    sli = res;
-    try_(TEST_expect(sli.ptr != null));
-    try_(TEST_expect(sli.len == 20));
-    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, sli.as_const)));
+    items = extended;
+    try_(TEST_expect(items.ptr != null));
+    try_(TEST_expect(items.len == 20));
+    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, items.as_const)));
 
-    for (usize i = 0; i < 10; ++i) { try_(TEST_expect(Sli_getAt(sli, i) == i)); }
+    for_(($rf(0), $s(items))(idx, item) { try_(TEST_expect(*item == idx)); });
 } $unguarded_(TEST_fn);

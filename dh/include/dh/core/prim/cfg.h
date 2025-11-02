@@ -8,7 +8,7 @@
  * @updated 2024-11-21 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Configuration settings for primitive types
  * @details Defines compile-time options and configuration parameters
@@ -24,7 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/builtin.h"
-#include "dh/claim/assert_static.h"
+#include "../claim/assert_static.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,13 +1,11 @@
-#ifndef OS_WINDOWS_INCLUDED
-#define OS_WINDOWS_INCLUDED (1)
+#ifndef os_windows__included
+#define os_windows__included 1
 
 #include "dh/builtin.h"
 
-#if bti_plat_windows
-
+#if plat_windows
 #include "dh/os/windows/common.h"
 #include "dh/os/windows/mem.h"
+#endif /* plat_windows */
 
-#endif /* bti_plat_windows */
-
-#endif /* OS_WINDOWS_INCLUDED */
+#endif /* os_windows__included */

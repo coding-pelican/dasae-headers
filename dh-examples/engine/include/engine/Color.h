@@ -7,7 +7,7 @@
  * @updated 2024-12-30 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Header of some software
  * @details Some detailed explanation
@@ -22,21 +22,21 @@ extern "C" {
 #include "engine/common.h"
 
 enum ColorChannel {
-    ColorChannel_red               = 0,
-    ColorChannel_green             = 1,
-    ColorChannel_blue              = 2,
-    ColorChannel_rgb_count         = 3,
-    ColorChannel_alpha             = 3,
-    ColorChannel_rgba_count        = 4,
-    ColorChannel_min_value         = 0,
-    ColorChannel_max_value         = 0xFF,
+    ColorChannel_red = 0,
+    ColorChannel_green = 1,
+    ColorChannel_blue = 2,
+    ColorChannel_rgb_count = 3,
+    ColorChannel_alpha = 3,
+    ColorChannel_rgba_count = 4,
+    ColorChannel_min_value = 0,
+    ColorChannel_max_value = 0xFF,
     ColorChannel_alpha_transparent = ColorChannel_min_value,
-    ColorChannel_alpha_blank       = ColorChannel_alpha_transparent,
-    ColorChannel_alpha_opaque      = ColorChannel_max_value
+    ColorChannel_alpha_blank = ColorChannel_alpha_transparent,
+    ColorChannel_alpha_opaque = ColorChannel_max_value
 };
 
-typedef union Rgb   Rgb;
-typedef union Hsl   Hsl;
+typedef union Rgb Rgb;
+typedef union Hsl Hsl;
 // typedef union Hsv   Hsv;
 typedef union Color Color;
 
@@ -121,16 +121,16 @@ extern Color Hsl_intoColorTransparent(Hsl hsl);
 extern Color Hsl_intoColorOpaque(Hsl hsl);
 
 static const Color Color_transparent = literal_Color_from(0, 0, 0, ColorChannel_alpha_transparent);
-static const Color Color_blank       = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);
-static const Color Color_opaque      = literal_Color_from(0, 0, 0, ColorChannel_alpha_opaque);
-static const Color Color_black       = literal_Color_fromOpaque(0, 0, 0);
-static const Color Color_white       = literal_Color_fromOpaque(255, 255, 255);
-static const Color Color_red         = literal_Color_fromOpaque(255, 0, 0);
-static const Color Color_green       = literal_Color_fromOpaque(0, 255, 0);
-static const Color Color_blue        = literal_Color_fromOpaque(0, 0, 255);
-static const Color Color_yellow      = literal_Color_fromOpaque(255, 255, 0);
-static const Color Color_cyan        = literal_Color_fromOpaque(0, 255, 255);
-static const Color Color_magenta     = literal_Color_fromOpaque(255, 0, 255);
+static const Color Color_blank = literal_Color_from(0, 0, 0, ColorChannel_alpha_blank);
+static const Color Color_opaque = literal_Color_from(0, 0, 0, ColorChannel_alpha_opaque);
+static const Color Color_black = literal_Color_fromOpaque(0, 0, 0);
+static const Color Color_white = literal_Color_fromOpaque(255, 255, 255);
+static const Color Color_red = literal_Color_fromOpaque(255, 0, 0);
+static const Color Color_green = literal_Color_fromOpaque(0, 255, 0);
+static const Color Color_blue = literal_Color_fromOpaque(0, 0, 255);
+static const Color Color_yellow = literal_Color_fromOpaque(255, 255, 0);
+static const Color Color_cyan = literal_Color_fromOpaque(0, 255, 255);
+static const Color Color_magenta = literal_Color_fromOpaque(255, 0, 255);
 
 #if defined(__cplusplus)
 }

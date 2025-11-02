@@ -8,13 +8,13 @@
  * @updated 2025-02-16 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   hijacked main for error handling
  * @details Provides a hijacked main function for error handling.
  */
-#ifndef main__included
 
+#ifndef main__included
 #define main__included 1
 #if defined(__cplusplus)
 extern "C" {
@@ -22,10 +22,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/prl.h"
-#include "dh/Str.h"
-#include "dh/TEST.h"
+#include "prl.h"
+#include "TEST.h"
+#include "Str.h"
 
 /*========== Macros =========================================================*/
 
@@ -82,7 +81,7 @@ fn_((main(pp_if_(pp_not_(main_no_args))(
         return (debug_break(), 1);
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$((S$(const u8)*)(bti_alloca(sizeOf$(S$(const u8)) * argc)));
+    let args_buf = as$((S$(const u8)*)(alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
@@ -91,7 +90,7 @@ fn_((main(pp_if_(pp_not_(main_no_args))(
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$((S$(const u8)*)(bti_alloca(sizeOf$(S$(const u8)) * argc)));
+    let args_buf = as$((S$(const u8)*)(alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
             args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));

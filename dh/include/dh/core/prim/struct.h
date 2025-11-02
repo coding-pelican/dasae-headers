@@ -8,7 +8,7 @@
  * @updated 2024-10-27 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Struct type utilities
  * @details Provides struct type utilities and functions for:

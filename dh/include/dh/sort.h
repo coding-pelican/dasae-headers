@@ -25,9 +25,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/prl.h"
-#include "dh/mem/Allocator.h"
-#include "dh/meta.h"
+#include "prl.h"
+#include "mem/Allocator.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -42,12 +41,12 @@ use_Callback(sort_CmpWithArgFn, (P_const$raw lhs, P_const$raw rhs, P_const$raw a
 
 /// Insertion sort for small arrays
 $extern fn_((sort_insertionSort(
-    meta_S$raw base_sli,
+    u_S$raw base_sli,
     sort_CmpFn cmpFn
 ))(void));
 /// Insertion sort with arg
 $extern fn_((sort_insertionSortWithArg(
-    meta_S$raw        base_sli,
+    u_S$raw        base_sli,
     sort_CmpWithArgFn cmpFn,
     P_const$raw       arg
 ))(void));
@@ -55,47 +54,47 @@ $extern fn_((sort_insertionSortWithArg(
 $must_check
 $extern fn_((sort_mergeSortUsingTempRecur(
     S$u8       temp_buf,
-    meta_S$raw base_sli,
+    u_S$raw base_sli,
     sort_CmpFn cmpFn
-))(E$void));
+))(mem_Err$void));
 /// Modernized merge sort using temporary buffer with arg
 $must_check
 $extern fn_((sort_mergeSortWithArgUsingTempRecur(
     S$u8              temp_buf,
-    meta_S$raw        base_sli,
+    u_S$raw        base_sli,
     sort_CmpWithArgFn cmpFn,
     P_const$raw       arg
-))(E$void));
+))(mem_Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
 $must_check
 $extern fn_((sort_stableSort(
     mem_Allocator allocator,
-    meta_S$raw    base_sli,
+    u_S$raw    base_sli,
     sort_CmpFn    cmpFn
-))(E$void));
+))(mem_Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
 $must_check
 $extern fn_((sort_stableSortWithArg(
     mem_Allocator     allocator,
-    meta_S$raw        base_sli,
+    u_S$raw        base_sli,
     sort_CmpWithArgFn cmpFn,
     P_const$raw       arg
-))(E$void));
+))(mem_Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
 $must_check
 $extern fn_((sort_stableSortUsingTemp(
     S$u8       temp_buf,
-    meta_S$raw base_sli,
+    u_S$raw base_sli,
     sort_CmpFn cmpFn
-))(E$void));
+))(mem_Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
 $must_check
 $extern fn_((sort_stableSortWithArgUsingTemp(
     S$u8              temp_buf,
-    meta_S$raw        base_sli,
+    u_S$raw        base_sli,
     sort_CmpWithArgFn cmpFn,
     P_const$raw       arg
-))(E$void));
+))(mem_Err$void));
 
 #if defined(__cplusplus)
 } /* $extern "C" */

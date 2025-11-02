@@ -29,7 +29,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 // Thread ID type
-typedef Thrd_IdImpl     Thrd_Id;
+typedef Thrd_IdImpl Thrd_Id;
 // Thread handle type
 typedef Thrd_HandleImpl Thrd_Handle;
 
@@ -41,20 +41,20 @@ typedef Thrd_HandleImpl Thrd_Handle;
 typedef struct Thrd_FnCtx Thrd_FnCtx;
 // Thread function arguments type erasure
 typedef struct Thrd_FnArgs {
-    u8 data[0];
+    u8 data $flexible;
 } Thrd_FnArgs;
 // Thread function return type erasure
 typedef struct Thrd_FnRet {
-    u8 data[0];
+    u8 data $flexible;
 } Thrd_FnRet;
 // Thread function type
 typedef fn_(((*Thrd_WorkFn)(Thrd_FnCtx* thrd_ctx))(Thrd_FnCtx*));
 struct Thrd_FnCtx {
     Thrd_WorkFn fn;
     union {
-        Thrd_FnArgs args[0];
-        Thrd_FnRet  ret[0];
-        u8          data[0];
+        Thrd_FnArgs args $zero_sized;
+        Thrd_FnRet ret $zero_sized;
+        u8 data $zero_sized;
     };
 };
 #define Thrd_FnCtx_from(_fnName, _Args...)    comp_inline__Thrd_FnCtx_from(_fnName, _Args)
@@ -96,22 +96,22 @@ extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
 
 // Thread spawn configuration
 typedef struct Thrd_SpawnConfig {
-    usize           stack_size;
+    usize stack_size;
     O$mem_Allocator allocator;
 } Thrd_SpawnConfig;
 #define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
 static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
     .stack_size = Thrd_SpawnConfig_default_stack_size,
-    .allocator  = none()
+    .allocator = none()
 };
 extern fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
 extern fn_((Thrd_detach(Thrd self))(void));
 extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 
 // Mutex type
-typedef struct Thrd_Mtx    Thrd_Mtx;
+typedef struct Thrd_Mtx Thrd_Mtx;
 // Condition variable type
-typedef struct Thrd_Cond   Thrd_Cond;
+typedef struct Thrd_Cond Thrd_Cond;
 // Read-write lock type
 typedef struct Thrd_RwLock Thrd_RwLock;
 
@@ -124,21 +124,21 @@ typedef struct Thrd_RwLock Thrd_RwLock;
         struct { \
             Thrd_WorkFn fn; \
             union { \
-                Thrd_FnArgs  base[1]; \
+                Thrd_FnArgs base[1]; \
                 struct _Args typed; \
             } args; \
             union { \
                 Thrd_FnRet base[1]; \
-                _T_Return  typed; \
+                _T_Return typed; \
             } ret; \
         }; \
     }
 #define comp_type_alias__Thrd_FnCtx$(_fnName) pp_join($, Thrd_FnCtx, _fnName)
 #define comp_inline__Thrd_FnCtx_from(_fnName, _Args...) \
     ((Thrd_FnCtx$(_fnName)){ \
-        .fn   = _fnName, \
+        .fn = _fnName, \
         .args = { .typed = _Args }, \
-        .ret  = { .typed = {} }, \
+        .ret = { .typed = {} }, \
     })
 #define comp_inline__Thrd_FnCtx_returned(_fnName, _ctx...) \
     as$((Thrd_FnCtx$(_fnName)*)(_ctx))->ret.typed

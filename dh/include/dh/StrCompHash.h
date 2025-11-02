@@ -22,7 +22,7 @@
 #if CHEAT_SHEET
 /* Creating Hash Values */
 StrCompHash hash1 = StrCompHash_createRaw("hello"); // From raw C string
-S_const$u8  str   = Str_fromRaw("world");
+S_const$u8 str = Str_fromRaw("world");
 StrCompHash hash2 = StrCompHash_create(str); // From S_const$u8
 
 /* Calculating Hash Values */
@@ -31,7 +31,7 @@ u32 value2 = StrCompHash_calculate(data, 5);    // From byte array with length
 u32 value3 = StrCompHash_value(hash1);          // Extract from StrCompHash
 
 /* Hash Value Based on String Length */
-u32 hash_1char  = StrCompHash__char1('a');               // Single character hash
+u32 hash_1char = StrCompHash__char1('a');                // Single character hash
 u32 hash_2chars = StrCompHash__char2((const u8*)"ab");   // 2-character string hash
 u32 hash_3chars = StrCompHash__char3((const u8*)"abc");  // 3-character string hash
 u32 hash_4chars = StrCompHash__char4((const u8*)"abcd"); // 4-character string hash
@@ -67,18 +67,18 @@ fn_(StrCompHash_value(StrCompHash self), u32);
 /* Usage Examples ===========================================================*/
 
 // Creating and using hash values
-StrCompHash hash  = StrCompHash_createRaw("hello");
-u32         value = StrCompHash_value(hash); // Get the numeric hash value
+StrCompHash hash = StrCompHash_createRaw("hello");
+u32 value = StrCompHash_value(hash); // Get the numeric hash value
 
 // Directly calculating hash values
 u32 direct_hash = StrCompHash_calculateRaw("hello");
 
 // Using with byte arrays
-const u8* data      = (const u8*)"hello";
-u32       byte_hash = StrCompHash_calculate(data, 5);
+const u8* data = (const u8*)"hello";
+u32 byte_hash = StrCompHash_calculate(data, 5);
 
 // Using with S_const$u8 strings
-S_const$u8  str      = Str_fromRaw("hello");
+S_const$u8 str = Str_fromRaw("hello");
 StrCompHash str_hash = StrCompHash_create(str);
 #endif /* CHEAT_SHEET */
 
@@ -103,7 +103,7 @@ typedef struct StrCompHash {
     u32 value; ///< The 32-bit hash value
 } StrCompHash;
 
-#if !COMP_TIME
+#if !on_comptime
 /// @brief  Calculate hash value from a null-terminated string
 /// @param  raw_str Null-terminated string to hash
 /// @return 32-bit hash value
@@ -119,7 +119,7 @@ $inline_always fn_((StrCompHash_calculateRaw(const char* raw_str))(u32));
 ///   StrCompHash hash = StrCompHash_createRaw("hello");
 ///   // hash.value now contains the hash for "hello"
 $inline_always fn_((StrCompHash_createRaw(const char* raw_str))(StrCompHash));
-#endif /* !COMP_TIME */
+#endif /* !on_comptime */
 
 /// @brief  Calculate hash value from a byte array with specified length
 /// @param  ptr Pointer to byte array
@@ -212,10 +212,10 @@ static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32));
 
 /*========== Macros and Definitions =========================================*/
 
-#if COMP_TIME
+#if on_comptime
 #define StrCompHash_calculateRaw(_raw_str) comp_op__StrCompHash_calculateRaw(_raw_str)
 #define StrCompHash_createRaw(_raw_str)    comp_op__StrCompHash_createRaw(_raw_str)
-#endif /* COMP_TIME */
+#endif /* on_comptime */
 #define comp_op__StrCompHash_calculateRaw(_raw_str) \
     /** Calculate hash value from a compile-time string literal */ \
     ((u32)StrCompHash__recur(_raw_str, sizeof(_raw_str) - 1))

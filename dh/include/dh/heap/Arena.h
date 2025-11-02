@@ -24,22 +24,23 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/list.h"
+#include "dh/ListSgl.h"
 
 /*========== Arena Allocator ===============================================*/
 
+T_use_ListSgl_Node$(usize);
 T_use_ListSgl$(usize);
 typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
     ListSgl$usize buffer_list;
-    usize         end_index;
+    usize end_index;
 } heap_Arena_State;
 
 /// Inner state of ArenaAllocator
 extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator))(heap_Arena));
 
 struct heap_Arena {
-    mem_Allocator    child_allocator;
+    mem_Allocator child_allocator;
     heap_Arena_State state;
 };
 

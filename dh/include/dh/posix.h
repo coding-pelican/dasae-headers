@@ -22,15 +22,15 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "core.h"
 
-#if bti_plat_windows
-#include "dh/os/windows.h"
-#endif /* bti_plat_windows */
+#if plat_windows
+#include "os/windows.h"
+#endif /* plat_windows */
 
 /*========== Macros and Declarations ========================================*/
 
-typedef pp_if_(bti_plat_windows)(
+typedef pp_if_(plat_windows)(
     pp_then_(HANDLE),
     pp_else_(i32)
 ) posix_fd_t;

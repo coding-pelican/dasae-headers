@@ -26,8 +26,6 @@ extern "C" {
 
 #include "cfg.h"
 #include "dh/Str.h"
-#include "dh/err_res.h"
-#include "dh/core/src_loc.h"
 
 /* TODO: Add option 'trace alloc and free no disable release'  */
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
@@ -36,10 +34,11 @@ extern "C" {
 /*========== Memory Tracking Types =========================================*/
 
 typedef struct mem_Tracker {
-    struct mem_Allocation* allocations;     /* Linked list of allocations */
-    FILE*                  log_file;        /* Log file handle */
-    usize                  total_allocated; /* Total bytes allocated */
-    usize                  active_allocs;   /* Number of active allocations */
+    mem_Allocator gpa;                  /* Allocator */
+    struct mem_Allocation* allocations; /* Linked list of allocations */
+    FILE* log_file;                     /* Log file handle */
+    usize total_allocated;              /* Total bytes allocated */
+    usize active_allocs;                /* Number of active allocations */
 } mem_Tracker;
 
 /*========== Memory Tracker Interface ======================================*/

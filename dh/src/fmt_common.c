@@ -2,8 +2,6 @@
 #include "dh/mem/common.h"
 #include "dh/Str.h"
 #include "dh/ascii.h"
-#include "dh/int.h"
-#include "dh/flt.h"
 
 /*========== Internal Types =================================================*/
 

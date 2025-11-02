@@ -1,12 +1,11 @@
 #include "dh/Thrd/common.h"
 #include "dh/time/Duration.h"
-#include "dh/Err.h"
 
 // Include pthread and platform-specific headers
 #include <errno.h>
 #include <unistd.h>
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows.h"
 #endif
 
@@ -31,7 +30,7 @@ fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
 }
 
 fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
-#if bti_plat_windows
+#if plat_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
     let cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
@@ -100,7 +99,7 @@ fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
 // Use pthread_setname_np on all platforms where available
 #ifdef pthread_setname_np
     var name_mem = (Thrd_NameBuf){};
-    bti_memcpy(name_mem.buf, name.ptr, name_len);
+    memcpy(name_mem.buf, name.ptr, name_len);
     name_mem.buf[name_len] = '\0';
 
 #if defined(__APPLE__) && defined(__MACH__)

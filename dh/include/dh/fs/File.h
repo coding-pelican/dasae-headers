@@ -25,7 +25,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef posix_fd_t   fs_File_Handle;
+typedef posix_fd_t fs_File_Handle;
 typedef posix_mode_t fs_File_Mode;
 
 /// This is the default mode given to POSIX operating systems for creating
@@ -34,7 +34,7 @@ typedef posix_mode_t fs_File_Mode;
 /// the `touch` command, which would correspond to `0o644`. However, POSIX
 /// libc implementations use `0666` inside `fopen` and then rely on the
 /// process-scoped "umask" setting to adjust this number for file creation.
-static const fs_File_Mode fs_file_default_mode = pp_if_(bti_plat_posix)(
+static const fs_File_Mode fs_file_default_mode = pp_if_(plat_posix)(
     pp_then_(0666),
     pp_else_(0)
 );
@@ -53,15 +53,15 @@ typedef enum fs_File_Lock {
 
 typedef struct fs_File_OpenFlags {
     fs_File_OpenMode mode;
-    fs_File_Lock     lock;
-    bool             lock_nonblocking;
-    bool             allow_ctty;
+    fs_File_Lock lock;
+    bool lock_nonblocking;
+    bool allow_ctty;
 } fs_File_OpenFlags;
 static const fs_File_OpenFlags fs_File_OpenFlags_default = {
-    .mode             = fs_File_OpenMode_read_only,
-    .lock             = fs_File_Lock_none,
+    .mode = fs_File_OpenMode_read_only,
+    .lock = fs_File_Lock_none,
     .lock_nonblocking = false,
-    .allow_ctty       = false,
+    .allow_ctty = false,
 };
 $static $inline_always
 fn_((fs_File_OpenFlags_isRead(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_write_only; }

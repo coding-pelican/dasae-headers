@@ -8,21 +8,21 @@
  * @updated 2025-02-12 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Source location information utilities
  * @details Provides structures and functions for tracking source code locations.
  */
 
-#ifndef CORE_SRC_LOC_INCLUDED
-#define CORE_SRC_LOC_INCLUDED (1)
+#ifndef core_src_loc__included
+#define core_src_loc__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "prim.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -31,8 +31,8 @@ typedef struct SrcLoc {
     const char* file_path; /**< Full file path */
     const char* file_name; /**< Just the file name */
     const char* fn_name;   /**< Function name */
-    u32         line;      /**< Line number */
-    u32         column;    /**< Column number */
+    u32 line;              /**< Line number */
+    u32 column;            /**< Column number */
 } SrcLoc;
 #define srcLoc() \
     /* Creates a source location at compile time */ \
@@ -42,14 +42,14 @@ typedef struct SrcLoc {
 
 #define FUNC__srcLoc() \
     ((SrcLoc){ \
-        .file_path = bti_filePath(), \
-        .file_name = bti_fileName(), \
-        .fn_name   = bti_fnName(), \
-        .line      = bti_line(), \
-        .column    = bti_column(), \
+        .file_path = src_loc_filePath(), \
+        .file_name = src_loc_fileName(), \
+        .fn_name = src_loc_fnName(), \
+        .line = src_loc_line(), \
+        .column = src_loc_column(), \
     })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_SRC_LOC_INCLUDED */
+#endif /* core_src_loc__included */

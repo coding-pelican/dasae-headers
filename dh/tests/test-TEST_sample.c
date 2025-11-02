@@ -1,7 +1,4 @@
-#include "dh/main.h"
 #include "dh/TEST.h"
-
-#include "dh/io/stream.h"
 
 $static fn_((addInt(i32 a, i32 b))(i32)) {
     return a + b;
@@ -25,6 +22,9 @@ TEST_fn_("Always Fails" $scope) {
     let c = addInt(a, b);
     try_(TEST_expect(c != 3)); // This will always fail
 } $unscoped_(TEST_fn);
+
+#include "dh/main.h"
+#include "dh/io/stream.h"
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;

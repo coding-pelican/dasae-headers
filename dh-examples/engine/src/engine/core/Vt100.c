@@ -5,7 +5,7 @@
 #include "dh/mem/common.h"
 #include "dh/ArrList.h"
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows.h"
 
 /* structure */

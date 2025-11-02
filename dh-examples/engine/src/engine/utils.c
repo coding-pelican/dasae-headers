@@ -1,6 +1,6 @@
 #include "engine/utils.h"
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows.h"
 
 fn_((engine_utils_getch(void))(u8)) {
@@ -13,8 +13,8 @@ fn_((engine_utils_getch(void))(u8)) {
     let new_console_mode = original_console_mode & (~ENABLE_ECHO_INPUT) & (~ENABLE_LINE_INPUT);
     if (!SetConsoleMode(console_input_handle, new_console_mode)) { return 0; }
 
-    u8    character_buffer = 0;
-    DWORD characters_read  = 0;
+    u8 character_buffer = 0;
+    DWORD characters_read = 0;
     if (!ReadConsoleA(console_input_handle, &character_buffer, 1, &characters_read, null)
         || characters_read != 1) {
         character_buffer = 0;
@@ -32,7 +32,7 @@ fn_((engine_utils_kbhit(void))(bool)) {
     if (total_events <= 1) { return false; }
 
     INPUT_RECORD event_buffer[128] = {};
-    DWORD        events_read       = 0;
+    DWORD events_read = 0;
     if (!PeekConsoleInput(console_input_handle, event_buffer, 128, &events_read)) { return false; }
     for (DWORD event_index = 0; event_index < events_read; ++event_index) {
         if (event_buffer[event_index].EventType == KEY_EVENT
@@ -43,7 +43,7 @@ fn_((engine_utils_kbhit(void))(bool)) {
     return false;
 }
 
-#else /* bti_plat_unix */
+#else /* plat_unix */
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -92,4 +92,4 @@ fn_((engine_utils_kbhit(void))(bool)) {
     }
     return false;
 }
-#endif /* bti_plat_unix */
+#endif /* plat_unix */

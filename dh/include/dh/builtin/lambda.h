@@ -7,8 +7,8 @@
  * @date    2024-11-11 (date of creation)
  * @updated 2025-03-10 (date of last update)
  * @version v0.1-alpha.4
- * @ingroup dasae-headers(dh)/bti
- * @prefix  NONE
+ * @ingroup dasae-headers(dh)/builtin
+ * @prefix  (none)
  *
  * @brief   Header of some software
  * @details Some detailed explanation
@@ -46,7 +46,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#if BUILTIN_LANG_MODE_CPP || BUILTIN_COMP_CLANG
+#if lang_mode == lang_mode_cpp || BUILTIN_COMP_CLANG
 /* C++11 */
 #define comp_syn__lam_(_Parens_Params, T_Return...) impl_comp_syn__lam_(_Parens_Params, T_Return)
 /* Needs compile flag `-fblocks -lBlocksRuntime` */
@@ -56,7 +56,7 @@ extern "C" {
 /* TODO: Add other compilers */
 #endif /* others */
 
-#if BUILTIN_LANG_MODE_CPP
+#if lang_mode == lang_mode_cpp
 /* C++11 */
 #define impl_comp_syn__lam_(_Parens_Params, T_Return...) \
     [] _Parens_Params -> T_Return

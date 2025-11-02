@@ -8,7 +8,7 @@
  * @updated 2024-12-23 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Pointer utilities
  * @details Provides pointer utilities and functions for:
@@ -103,10 +103,10 @@ typedef TypeOf(void*) P$raw;
 
 /*========== Validation Checks ==============================================*/
 
-#if bti_plat_64bit
+#if plat_64bit
 /* 64-bit */
 claim_assert_static_msg(sizeof(P$raw) == 8, "pointer must be 8 bytes on 64-bit");
-#elif bti_plat_32bit
+#elif plat_32bit
 /* 32-bit */
 claim_assert_static_msg(sizeof(P$raw) == 4, "pointer must be 4 bytes on 32-bit");
 #endif

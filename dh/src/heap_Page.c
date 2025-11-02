@@ -1,7 +1,7 @@
 #include "dh/heap/Page.h"
 #include "dh/mem/common.h"
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
@@ -43,7 +43,7 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
 
-#if bti_plat_windows
+#if plat_windows
     // Windows allocation logic similar to zig's PageAllocator
     let addr = VirtualAlloc(
         null,
@@ -138,7 +138,7 @@ static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))
         return true; // No resize needed
     }
 
-#if bti_plat_windows
+#if plat_windows
     if (new_len <= buf.len) {
         let base_addr = ptrToInt(buf.ptr);
         let old_addr_end = base_addr + buf_aligned_len;
@@ -200,7 +200,7 @@ static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(
         return_some(buf.ptr); // No resize needed
     }
 
-#if bti_plat_windows
+#if plat_windows
     // Windows PageAllocator in zig doesn't support resize larger.
     return_none(); // Indicate remap failure, as resize up is not supported.
 
@@ -236,7 +236,7 @@ static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 
-#if bti_plat_windows
+#if plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);
 #else  /* posix */
     let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);

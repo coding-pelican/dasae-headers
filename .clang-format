@@ -195,7 +195,7 @@ Macros:
   - "E$$(T)=E$$<T>"
   - "E$(T)=E$<T>"
 
-  - "as$(Expr)=pp_ignore Expr"
+  - "as$(Expr)=Expr"
   - "lit$(Expr)=pp_ignore Expr"
   - "make$(Expr)=pp_ignore Expr"
   - "create$(Expr)=pp_ignore Expr"
@@ -217,16 +217,18 @@ Macros:
   - "while_(init, cond)=while (init; cond)"
   # Optional value
   - "if_some(expr)=if (expr)"
-  - "if_none(expr)=if (expr)"
+  - "if_some_void(expr)=if (expr)"
   - "else_none=else"
+  - "if_none(expr)=if (expr)"
   - "else_some(expr)=else if (expr)"
+  - "else_some_void=else"
   # # Error result
-  - "if_ok(expr, capture)=if (capture)"
-  - "if_err(expr, capture)=if (capture)"
-  - "if_void(expr)=if (expr)"
-  - "else_ok(capture)=else if (capture)"
-  - "else_err(capture)=else if (capture)"
-  - "else_void=else"
+  - "if_ok(expr)=if (expr)"
+  - "if_ok_void(expr)=if (expr)"
+  - "else_err(expr)=else if (expr)"
+  - "if_err(expr,_)=if (expr)"
+  - "else_ok(expr)=else if (expr)"
+  - "else_ok_void=else"
   # Union enum
   # - tagUnion(tag,expr)=/**/
   # - tagUnion$(T,tag,expr)=/**/
@@ -275,6 +277,13 @@ Macros:
   - $unguarded_expr=/**/
   - $unscoped_eval=/**/
   - $unguarded_eval=/**/
+  - edittime_only(inner)=inner
+  - comptime_only(inner)=inner
+  - runtime_only(inner)=inner
+  - dev_only(inner)=inner
+  - debug_only(inner)=inner
+  - release_only(inner)=inner
+  - TEST_only(inner)=inner
 
 ForEachMacros:
   - pp_foreach

@@ -24,14 +24,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/TEST/cfg.h"
-
-#include "dh/core.h"
-
-#include "dh/fn.h"
-#include "dh/types.h"
-
-#include "dh/ArrList.h"
+#include "TEST/cfg.h"
+#include "core.h"
+#include "ArrList.h"
 
 /*========== Definitions ====================================================*/
 
@@ -53,12 +48,13 @@ T_use$(TEST_Case, (P, S, ArrList));
 
 /// @brief Test framework structure
 typedef struct TEST_Framework {
-    ArrList$TEST_Case cases;
+    ArrList$TEST_Case cases $like_ptr;
     struct {
         u32 total;
         u32 passed;
         u32 failed;
     } stats;
+    mem_Allocator gpa;
 } TEST_Framework;
 
 /// @brief Access test framework singleton instance
@@ -70,7 +66,7 @@ extern fn_((TEST_Framework_run(void))(void));
 
 /*========== Test Macros ====================================================*/
 
-#define TEST_only(...) comp_syn__TEST_only(__VA_ARGS__)
+#define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
 
 #define TEST_fn_(_Name, _Extension...) \
     pp_overload(__TEST_fn _Extension)(_Name _Extension)
@@ -82,22 +78,18 @@ extern fn_((TEST_Framework_run(void))(void));
 #define TEST_fn_$_guard(_Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
 #define $unguarded_TEST_fn        comp_syn__$unguarded_TEST_fn
 
-#if !COMP_TIME
+#if !on_comptime
 $extern $must_check
 /// @brief Check expression and record result
 /// @brief Same as TEST_expect but with custom message
 fn_((TEST_expect(bool expr))(E$void));
 $extern $must_check
 fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
-#endif /* !COMP_TIME */
+#endif /* !on_comptime */
 
 /*========== Implementation Details ========================================*/
 
-#if TEST_comp_enabled
-#define comp_syn__TEST_only(...) __VA_ARGS__
-#else /* !TEST_comp_enabled */
-#define comp_syn__TEST_only(...)
-#endif /* TEST_comp_enabled */
+#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner), pp_else_())
 
 #define comp_syn__TEST_fn_$_scope(_ID_binder, _ID_caseFn, _Name...) \
     TEST__binder(_ID_binder, _ID_caseFn, _Name); \
@@ -144,7 +136,7 @@ fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
     } $unguarded
 // clang-format on
 
-#if COMP_TIME
+#if on_comptime
 $extern $must_check
 fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
 $extern $must_check
@@ -155,7 +147,7 @@ fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_
 
 #define TEST_expect_callTest(_expr, _loc, _eval_str)          TEST_expect_test(_expr, _loc, _eval_str)
 #define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)
-#endif /* COMP_TIME */
+#endif /* on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

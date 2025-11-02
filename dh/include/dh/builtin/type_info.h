@@ -8,7 +8,7 @@
  * @updated 2025-02-02 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/builtin
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Type information and checking utilities
  * @details Provides compile-time type analysis and validation capabilities
@@ -51,7 +51,7 @@ extern "C" {
      */ \
     __typeof_unqual(_Expr)
 
-#define isConstExpr(_Expr...) \
+#define isCompTimeFoldable(_Expr...) \
     /** \
      * @brief Check if expression is compile-time constant \
      * \
@@ -134,7 +134,7 @@ extern "C" {
 #define FUNC__TypeOfUnqual(_Expr...)
 
 
-#define FUNC__isConstExpr(_Expr...)
+#define FUNC__isCompTimeFoldable(_Expr...)
 
 
 #define FUNC__isSameType$(T_lhs, T_rhs...)
@@ -184,11 +184,11 @@ extern "C" {
 
 void example_usage(void) {
     /* Size and alignment checks */
-    usize int_size  = sizeOf(i32);
+    usize int_size = sizeOf(i32);
     usize int_align = alignOf(i32);
 
     /* Array operations */
-    i32   numbers[] = { 1, 2, 3, 4, 5 };
+    i32 numbers[] = { 1, 2, 3, 4, 5 };
     usize arr_count = countOf(numbers);
 
     /* Type checking */

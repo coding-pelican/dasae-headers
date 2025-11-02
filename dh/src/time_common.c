@@ -1,7 +1,7 @@
 #include "dh/time.h"
 
 fn_((time_sleep(time_Duration duration))(void)) {
-#if bti_plat_windows && (bti_plat_32bit || bti_plat_64bit)
+#if plat_windows && (plat_32bit || plat_64bit)
     HANDLE timer = CreateWaitableTimerExW(
         null,
         null,
@@ -15,7 +15,7 @@ fn_((time_sleep(time_Duration duration))(void)) {
 
     LARGE_INTEGER li = cleared();
     // Convert to negative 100-nanosecond intervals for relative time
-    li.QuadPart      = -((LONGLONG)((ULONGLONG)duration.secs * time_SysTime_intervals_per_sec + (duration.nanos / 100)));
+    li.QuadPart = -((LONGLONG)((ULONGLONG)duration.secs * time_SysTime_intervals_per_sec + (duration.nanos / 100)));
 
     if (SetWaitableTimer(timer, &li, 0, null, null, false)) {
         WaitForSingleObject(timer, INFINITE);
@@ -24,9 +24,9 @@ fn_((time_sleep(time_Duration duration))(void)) {
     }
 
     CloseHandle(timer);
-#else  /* bti_plat_unix && (bti_plat_linux || bti_plat_bsd || bti_plat_darwin) */
+#else  /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
     struct timespec req = {
-        .tv_sec  = duration.secs,
+        .tv_sec = duration.secs,
         .tv_nsec = duration.nanos
     };
     struct timespec rem = {};
@@ -36,7 +36,7 @@ fn_((time_sleep(time_Duration duration))(void)) {
         // If interrupted by signal, retry with remaining time
         req = rem;
     }
-#endif /* bti_plat_windows && (bti_plat_32bit || bti_plat_64bit) */
+#endif /* plat_windows && (plat_32bit || plat_64bit) */
 }
 
 fn_((time_sleepSecs(u64 secs))(void)) {

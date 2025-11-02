@@ -38,7 +38,7 @@ Diagnostics:
       - readability-math-missing-parentheses
       - readability-named-parameter
       - readability-uppercase-literal-suffix
-      - readability-use-concise-preprocessor-directives
+      # - readability-use-concise-preprocessor-directives
       - readability-function-cognitive-complexity
       - readability-function-size
       - misc-misplaced-const
@@ -47,6 +47,7 @@ Diagnostics:
       - cppcoreguidelines-avoid-non-const-global-variables
       - cppcoreguidelines-macro-to-enum
       - cppcoreguidelines-macro-usage
+      - hicpp-function-size
       - hicpp-signed-bitwise
       - hicpp-uppercase-literal-suffix
 Completion:

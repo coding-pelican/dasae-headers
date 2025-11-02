@@ -8,7 +8,7 @@
  * @updated 2024-11-02 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Null utilities
  * @details Provides null utilities and functions for:

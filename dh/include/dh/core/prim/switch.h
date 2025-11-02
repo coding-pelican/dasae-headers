@@ -8,7 +8,7 @@
  * @updated 2025-06-01 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Switch utilities
  * @details Provides switch utilities and functions for:

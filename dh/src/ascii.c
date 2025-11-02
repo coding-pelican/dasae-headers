@@ -57,22 +57,22 @@ fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     return slice$S(buf, $r(0, ascii_str.len));
 }
 
-fn_((ascii_allocUppers(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len))));
-    return_ok(ascii_makeUppers(result, ascii_str));
+    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    return_ok(ascii_makeUppers(u_castS((S$u8)(result)), ascii_str));
 } $unscoped_(fn);
 
-fn_((ascii_allocLowers(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len))));
-    return_ok(ascii_makeLowers(result, ascii_str));
+    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    return_ok(ascii_makeLowers(u_castS((S$u8)(result)), ascii_str));
 } $unscoped_(fn);
 
-fn_((ascii_allocToggledCases(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), ascii_str.len))));
-    return_ok(ascii_makeToggledCases(result, ascii_str));
+    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    return_ok(ascii_makeToggledCases(u_castS((S$u8)(result)), ascii_str));
 } $unscoped_(fn);
 
 fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize) $scope) {

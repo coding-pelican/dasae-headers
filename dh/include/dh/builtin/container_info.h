@@ -8,7 +8,7 @@
  * @updated 2025-01-15 (date of last update)
  * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/builtin
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Container and field relationship utilities
  * @details Provides type-safe container operations and field analysis utilities
@@ -138,7 +138,7 @@ extern "C" {
 
 #define block_inline__fieldPadding(__offset, __align, _T, _field...) ({ \
     const usize __offset = offsetTo(_T, _field); \
-    const usize __align  = alignOf(FieldTypeOf(_T, _field)); \
+    const usize __align = alignOf(FieldTypeOf(_T, _field)); \
     __offset - (__offset & ~(__align - 1)); \
 })
 
@@ -152,18 +152,18 @@ extern "C" {
 
 struct Data {
     i32 id;
-    u8  name[32];
+    u8 name[32];
     f64 value;
 };
 
 struct Container {
     struct Data data;
-    i32         extra;
+    i32 extra;
 };
 
 void example_usage(void) {
-    struct Container cont     = { 0 };
-    struct Data*     data_ptr = &cont.data;
+    struct Container cont = { 0 };
+    struct Data* data_ptr = &cont.data;
 
     /* Container operations */
     struct Container* cont_ptr = containerOf(data_ptr, struct Container, data);

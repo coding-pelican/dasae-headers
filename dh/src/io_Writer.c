@@ -1,9 +1,6 @@
 #include "dh/io/Writer.h"
-#include "dh/Arr.h"
-#include "dh/Str.h"
 #include "dh/mem/common.h"
 #include "dh/fmt/common.h"
-#include "dh/math/common.h"
 
 fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) {
     return self.write(self.ctx, bytes);
@@ -31,7 +28,7 @@ fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) {
 
 fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     A$$(256, u8) bytes = zero$A();
-    bti_memset(bytes.val, byte, len$A(bytes));
+    memset(bytes.val, byte, len$A(bytes));
     usize remaining = n;
     while (0 < remaining) {
         let to_write = prim_min(remaining, len$A(bytes));
@@ -66,15 +63,15 @@ fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E
 } $unscoped_(fn);
 
 fn_((io_Writer_nl(io_Writer self))(E$void) $scope) {
-    static let pp_if_(bti_plat_windows)(
+    static let pp_if_(plat_windows)(
         pp_then_(s_crlf = u8_l("\r\n")),
         pp_else_(s_lf = u8_c('\n'))
     );
-    static let s_line_feed = pp_if_(bti_plat_windows)(
+    static let s_line_feed = pp_if_(plat_windows)(
         pp_then_(s_crlf),
         pp_else_(s_lf)
     );
-    static let s_write = pp_if_(bti_plat_windows)(
+    static let s_write = pp_if_(plat_windows)(
         pp_then_(io_Writer_write),
         pp_else_(io_Writer_writeByte)
     );

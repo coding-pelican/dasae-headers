@@ -8,7 +8,7 @@
  * @updated 2024-12-23 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/core
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Type information for type-safe programming
  * @details Provides type information for type-safe programming:
@@ -19,27 +19,30 @@
  *          - Type utility functions
  */
 
-#ifndef CORE_TYPE_INFO_INCLUDED
-#define CORE_TYPE_INFO_INCLUDED (1)
+#ifndef core_type_info__included
+#define core_type_info__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "prim.h"
 
 /*========== Macros and Definitions =========================================*/
 
 /* Core type information (kept minimal - 8 bytes) */
-typedef struct TypeInfo {
-    u64 size  : 58;
-    u64 align : 6;
+typedef union TypeInfo {
+    struct {
+        u64 size  : 58;
+        u64 align : 6;
+    };
+    u64 packed;
 } TypeInfo;
 /// Get type information for meta
-#define typeInfo$(T /* TypeInfo */) comp_op__typeInfo$(T)
+#define typeInfo$(_T... /*(TypeInfo)*/)                                     __step__typeInfo$(_T)
 /// Compare equality of type information
-static bool TypeInfo_eq(TypeInfo, TypeInfo);
+#define TypeInfo_eq(_lhs /*: TypeInfo*/, _rhs /*: TypeInfo*/... /*(bool)*/) __step__TypeInfo_eq(_lhs, _rhs)
 
 /// For explicit materialization type representation of abstract generic types
 #define typeAsg(var_addr_dest, val_src... /* var_addr_dest */) comp_op__typeAsg(pp_uniqTok(addr_dest), var_addr_dest, val_src)
@@ -48,12 +51,9 @@ static bool TypeInfo_eq(TypeInfo, TypeInfo);
 
 /*========== Macros and Implementations =====================================*/
 
-#define comp_op__typeInfo$(T) ((TypeInfo){ .size = sizeOf$(T), .align = alignOf$(T) })
-#if COMP_TIME
-$inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
-    return bti_memcmp(&lhs, &rhs, sizeOf$(TypeInfo)) == 0;
-}
-#endif /* COMP_TIME */
+#define __step__typeInfo$(_T...)           lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
+#define __step__TypeInfo_eq(_lhs, _rhs...) ((_lhs).packed == (_rhs).packed)
+
 
 #if UNUSED_CODE
 #define comp_op__type$(__src, T_Dest, val_src...) blk({ \
@@ -72,14 +72,14 @@ $inline_always bool TypeInfo_eq(TypeInfo lhs, TypeInfo rhs) {
 
 #define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) blk({ \
     let __addr_dest = var_addr_dest; \
-    *(__addr_dest)  = type$(TypeOf(*(__addr_dest)), val_src); \
+    *(__addr_dest) = type$(TypeOf(*(__addr_dest)), val_src); \
     blk_return __addr_dest; \
 })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_TYPE_INFO_INCLUDED */
+#endif /* core_type_info__included */
 
 #if UNUSED_CODE
 let a = (64 - 1) - __builtin_clzll(1);

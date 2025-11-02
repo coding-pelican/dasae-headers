@@ -7,8 +7,8 @@
  * @date    2024-11-03 (date of creation)
  * @updated 2025-03-27 (date of last update)
  * @version v0.1-alpha.4
- * @ingroup dasae-headers(dh)/bti
- * @prefix  NONE
+ * @ingroup dasae-headers(dh)/builtin
+ * @prefix  (none)
  *
  * @brief   Compiler-specific configurations and optimizations
  * @details Provides compiler-specific inline directives and optimizations based on detected environment
@@ -29,11 +29,22 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#if !defined(COMP)
-#define COMP_TIME (0)
-#else
-#define COMP_TIME (1)
-#endif
+#define on_comptime__default     __comp_flag__on_comptime__default
+#define on_comptime              __comp_bool__on_comptime
+#define comptime_comp_enabled    __comp_bool__comptime_comp_enabled
+#define comptime_only(_inner...) __comp_syn__comptime_only(_inner)
+
+#define __comp_flag__on_comptime__default    0
+#define __comp_bool__on_comptime             on_comptime__default
+#define __comp_bool__comptime_comp_enabled   on_comptime
+#define __comp_syn__comptime_only(_inner...) pp_if_(on_comptime)(pp_then_(_inner), pp_else_())
+
+#if defined(COMP)
+#undef __comp_flag__on_comptime__default
+#define __comp_flag__on_comptime__default 1
+#endif /* defined(COMP) */
+
+#define $dispatch_on_comptime /* just comment that dispatches to detailed implementation at compile-time */
 
 #define $inline        comp_attr__$inline
 #define $inline_always comp_attr__$inline_always
@@ -174,28 +185,32 @@ extern "C" {
     (&make$((_T)__create$__expandInitial _initial))
 #define __create$__expandInitial(_initial...) _initial
 
-#define type$(/*(_T)(_raw...)*/... /*(_T)*/) \
+#define type$ type$V
+
+#define type$V(/*(_T)(_raw...)*/... /*(_T)*/) \
     /* TODO: Add type checking */ \
-    __type$__step(pp_defer(__type$__emit)(__type$__sep __VA_ARGS__))
-#define __type$__step(...)             __VA_ARGS__
-#define __type$__sep(_T...)            _T, __type$__sepRaw
-#define __type$__sepRaw(_raw...)       _raw
-#define __type$__emit(_T, _raw...)     __type$__emitNext(_T, _raw)
-#define __type$__emitNext(_T, _raw...) make$((_T){ .as_raw = _raw })
-#define type$O$(/*(_T)(_raw...)*/... /*(_T)*/) \
-    __type$O$__step(pp_defer(__type$O$__emit)(__type$O$__sep __VA_ARGS__))
-#define __type$O$__step(...)             __VA_ARGS__
-#define __type$O$__sep(_T...)            _T, __type$O$__sepRaw
-#define __type$O$__sepRaw(_raw...)       _raw
-#define __type$O$__emit(_T, _raw...)     __type$O$__emitNext(_T, _raw)
-#define __type$O$__emitNext(_T, _raw...) make$((O$(_T)){ .as_raw = _raw.as_raw })
-#define type$E$(/*(_T)(_raw...)*/... /*(_T)*/) \
-    __type$E$__step(pp_defer(__type$E$__emit)(__type$E$__sep __VA_ARGS__))
-#define __type$E$__step(...)             __VA_ARGS__
-#define __type$E$__sep(_T...)            _T, __type$E$__sepRaw
-#define __type$E$__sepRaw(_raw...)       _raw
-#define __type$E$__emit(_T, _raw...)     __type$E$__emitNext(_T, _raw)
-#define __type$E$__emitNext(_T, _raw...) make$((E$(_T)){ .as_raw = _raw.as_raw })
+    __type$V__step(pp_defer(__type$V__emit)(__type$V__sep __VA_ARGS__))
+#define __type$V__step(...)             __VA_ARGS__
+#define __type$V__sep(_T...)            _T, __type$V__sepRaw
+#define __type$V__sepRaw(_raw...)       _raw
+#define __type$V__emit(_T, _raw...)     __type$V__emitNext(_T, _raw)
+#define __type$V__emitNext(_T, _raw...) make$((_T){ .as_raw[0] = _raw })
+
+#define type$O(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$O__step(pp_defer(__type$O__emit)(__type$O__sep __VA_ARGS__))
+#define __type$O__step(...)               __VA_ARGS__
+#define __type$O__sep(_O_T...)            _O_T, __type$O__sepRaw
+#define __type$O__sepRaw(_raw...)         _raw
+#define __type$O__emit(_O_T, _raw...)     __type$O__emitNext(_O_T, _raw)
+#define __type$O__emitNext(_O_T, _raw...) make$((_O_T){ .as_raw[0] = _raw.as_raw[0] })
+
+#define type$E(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __type$E__step(pp_defer(__type$E__emit)(__type$E__sep __VA_ARGS__))
+#define __type$E__step(...)               __VA_ARGS__
+#define __type$E__sep(_E_T...)            _E_T, __type$E__sepRaw
+#define __type$E__sepRaw(_raw...)         _raw
+#define __type$E__emit(_E_T, _raw...)     __type$E__emitNext(_E_T, _raw)
+#define __type$E__emitNext(_E_T, _raw...) make$((_E_T){ .as_raw[0] = _raw.as_raw[0] })
 
 #define cleared() comp_syn__cleared()
 #define comp_syn__cleared() \
@@ -203,18 +218,18 @@ extern "C" {
 
 #define move(_p_val... /*(TypeOf(*_p_val))*/) comp_syn__move(_p_val)
 #define comp_syn__move(_p_val...)             ({ \
-    let_(__p_val, TypeOf(_p_val)) = _p_val; \
-    let_(__val, TypeOf(*__p_val)) = *__p_val; \
-    *__p_val = ((TypeOf(__val)){}); \
+    let_(__p_val, TypeOfUnqual(_p_val)) = _p_val; \
+    let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
+    *__p_val = ((TypeOfUnqual(__val)){}); \
     __val; \
 })
 #define copy(_val... /*(TypeOf(_val))*/) comp_syn__copy(_val)
 #define comp_syn__copy(_val...) \
-    (*&*((TypeOf(_val)[1]){ [0] = _val }))
+    (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 
-#define bti_Generic_match$(T, _Pattern...) comp_syn__bti_Generic_match$(T, _Pattern)
-#define bti_Generic_pattern$(T)            comp_syn__bti_Generic_pattern$(T)
-#define bti_Generic_fallback_              comp_syn__bti_Generic_fallback_
+#define Generic_match$(T, _Pattern...) comp_syn__Generic_match$(T, _Pattern)
+#define Generic_pattern$(T)            comp_syn__Generic_pattern$(T)
+#define Generic_fallback_              comp_syn__Generic_fallback_
 
 #define blk              comp_syn__blk
 #define blk_return       comp_syn__blk_return
@@ -224,11 +239,17 @@ extern "C" {
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
-#define $like_ptr comp_attr__$like_ptr
-#define $flexible comp_attr__$flexible
+#define $like_ptr   comp_attr__$like_ptr
+#define $flexible   comp_attr__$flexible
+#define $zero_sized comp_attr__$zero_sized
 
 #define pragma_guard_(_push, _ctx, _pop, _code...) \
     _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
+
+#define unreachable __comp_syn__unreachable
+
+#define $static static
+#define $extern extern
 
 /*========== Macros and Implementations =====================================*/
 
@@ -303,11 +324,11 @@ extern "C" {
 #define comp_attr__$maybe_unused __attribute__((unused))
 #define comp_attr__$must_use     __attribute__((warn_unused_result))
 
-#define comp_syn__bti_Generic_match$(T, _Pattern...) \
+#define comp_syn__Generic_match$(T, _Pattern...) \
     _Generic(T, _Pattern)
-#define comp_syn__bti_Generic_pattern$(T) \
+#define comp_syn__Generic_pattern$(T) \
 T:
-#define comp_syn__bti_Generic_fallback_ \
+#define comp_syn__Generic_fallback_ \
     default:
 
 #define comp_syn__blk              /* just comment for compound statement expression ({...}) */
@@ -318,8 +339,18 @@ T:
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 
-#define comp_attr__$like_ptr [1]
-#define comp_attr__$flexible [0]
+#define comp_attr__$like_ptr   [1]
+#define comp_attr__$flexible   [0]
+#define comp_attr__$zero_sized [0]
+
+#if defined(__GNUC__) || defined(__clang__)
+#define __comp_syn__unreachable __builtin_unreachable()
+#elif defined(_MSC_VER)
+#define __comp_syn__unreachable __assume(0)
+#else
+/* TODO: Add support for other compilers */
+#define __comp_syn__unreachable $unused(0)
+#endif
 
 #if defined(__cplusplus)
 } /* extern "C" */

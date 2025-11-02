@@ -5,7 +5,7 @@
 #include <locale.h>
 #include <stdarg.h>
 
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
@@ -70,7 +70,7 @@ bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs) {
 
 bool S_const$u8Castable(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
-#if bti_plat_windows
+#if plat_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();
     if (!VirtualQuery(self.ptr, &mbi, sizeOf$(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;
@@ -94,7 +94,7 @@ fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $
     debug_assert_nonnull(rhs.ptr);
 
     let total_len = lhs.len + rhs.len;
-    let result    = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
+    let result    = try_(u_castE((E$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
@@ -159,8 +159,9 @@ S_const$u8 Str_rtrim(S_const$u8 self) {
 
 fn_((Str_upper(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
+    T_use_E$($set(mem_Err)(S$u8));
 
-    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
+    let result = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
         *dst = as$((u8)(toupper(*src)));
     });
@@ -169,8 +170,9 @@ fn_((Str_upper(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
 
 fn_((u8_lower(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
+    T_use_E$($set(mem_Err)(S$u8));
 
-    let result = try_(meta$E$((S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
+    let result = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
         *dst = as$((u8)(tolower(*src)));
     });

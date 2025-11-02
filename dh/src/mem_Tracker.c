@@ -17,14 +17,13 @@
 #include "dh/mem/common.h"
 #include "dh/heap/Classic.h"
 #include "dh/ArrList.h"
-#include "dh/err_res.h"
 #include "dh/core/src_loc.h"
 #include "dh/fs/Dir.h"
 #include "dh/io.h"
 #include "dh/Str.h"
-#include "dh/Arr.h"
 #include "dh/time.h"
 
+#include <stdio.h>
 #include <stdlib.h> // For malloc, free, and atexit
 
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
@@ -98,6 +97,9 @@ fn_((mem_Tracker_initWithPath(S_const$u8 log_path))(E$void) $guard) {
     mem_Tracker_s_instance.total_allocated = 0;
     mem_Tracker_s_instance.active_allocs = 0;
 
+    static heap_Classic s_heap_ctx = cleared();
+    mem_Tracker_s_instance.gpa = heap_Classic_allocator(&s_heap_ctx);
+
     // clang-format off
     // Write header
     let_ignore = fprintf(mem_Tracker_s_instance.log_file, "Memory Tracker Initialized at %f\n",
@@ -107,6 +109,10 @@ fn_((mem_Tracker_initWithPath(S_const$u8 log_path))(E$void) $guard) {
     // clang-format on
     return_ok({});
 } $unguarded_(fn);
+
+T_use$(LeakSite, (P, S, O, ArrList));
+T_use_E$($set(mem_Err)(P$LeakSite));
+T_use$(LeakSite, (ArrList_init, ArrList_fini, ArrList_addBack));
 
 fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
     if (!mem_Tracker_s_instance.log_file) { return; }
@@ -135,8 +141,8 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
         usize total_leaked = 0;
 
         // Create a dynamic array for leak sites
-        var sites = type$((ArrList$$(LeakSite))(ArrList_init(typeInfo$(LeakSite), heap_Classic_allocator(&(heap_Classic){}), 0)));
-        defer_(ArrList_fini(sites.base));
+        var sites = catch_((ArrList_init$LeakSite(mem_Tracker_s_instance.gpa, 0))($ignore, claim_unreachable));
+        defer_(ArrList_fini$LeakSite(&sites, mem_Tracker_s_instance.gpa));
 
         // Process each leak
         while (curr) {
@@ -168,18 +174,10 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
                 }
             })) eval_(else)({
                 // Add new leak site
-                catch_((ArrList_add(sites.base))(
-                    $ignore, ({
-                        let_ignore = fprintf(mem_Tracker_s_instance.log_file, "ERROR: Failed to track leak site\n");
-                    })
-                ));
-
-                if_some((ArrList_popOrNull(sites.base))(site_ptr)) {
-                    let site = as$((LeakSite*)(site_ptr));
-                    site->src_loc = curr->src_loc;
-                    site->count = 1;
-                    site->total_bytes = curr->size;
-                }
+                let site = catch_((ArrList_addBack$LeakSite(&sites, mem_Tracker_s_instance.gpa))($ignore, claim_unreachable));
+                site->src_loc = curr->src_loc;
+                site->count = 1;
+                site->total_bytes = curr->size;
             }) $unscoped_(eval);
             curr = curr->next;
         }

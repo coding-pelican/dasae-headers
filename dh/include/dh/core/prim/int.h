@@ -8,7 +8,7 @@
  * @updated 2025-03-02 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Integer type utilities
  * @details Provides integer type utilities and functions for:

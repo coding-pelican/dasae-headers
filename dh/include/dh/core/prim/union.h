@@ -8,7 +8,7 @@
  * @updated 2024-11-24 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Union type utilities
  * @details Provides union type utilities and functions for:

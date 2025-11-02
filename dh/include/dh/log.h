@@ -22,12 +22,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "dh/core.h"
-#include "dh/opt.h"
-#include "dh/err_res.h"
-#include "dh/io.h"
-
-#include <stdio.h>
+#include "prl.h"
+#include "fs.h"
+#include <stdio.h> /* TODO: Use io or fs instead of this */
 
 // Log levels
 typedef enum log_Level {
@@ -40,20 +37,20 @@ typedef enum log_Level {
 
 // Log configuration
 typedef struct log_Config {
-    FILE*     output_file;     // Output file (null means stderr)
-    log_Level min_level;       // Minimum level to log
-    bool      shows_timestamp; // Whether to show timestamps
-    bool      shows_level;     // Whether to show log level
-    bool      shows_location;  // Whether to show file and line
-    bool      shows_function;  // Whether to show function name
+    FILE* output_file;    // Output file (null means stderr)
+    log_Level min_level;  // Minimum level to log
+    bool shows_timestamp; // Whether to show timestamps
+    bool shows_level;     // Whether to show log level
+    bool shows_location;  // Whether to show file and line
+    bool shows_function;  // Whether to show function name
 } log_Config;
 
 // Initialize logging with a file
 extern fs_File_Err$void log_init(const char* filename) $must_check;
 // Initialize logging with an existing file handle
-extern void             log_initWithFile(FILE* file);
+extern void log_initWithFile(FILE* file);
 // Close logging
-extern void             log_fini(void);
+extern void log_fini(void);
 
 // Configuration setters
 extern void log_setLevel(log_Level level);
@@ -64,7 +61,7 @@ extern void log_showFunction(bool shows);
 
 // Configuration getters
 extern log_Level log_getLevel(void);
-extern FILE*     log_getOutputFile(void);
+extern FILE* log_getOutputFile(void);
 
 // Internal logging function
 extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
@@ -75,7 +72,7 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 
 // Convenience macros for different log levels
 #if debug_comp_enabled || !log_comp_disabled_not_debug_comp_enabled
-#if COMP_TIME
+#if on_comptime
 
 #define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define log_info(...)  log_message(log_Level_info, __FILE__, __LINE__, __func__, __VA_ARGS__)

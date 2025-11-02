@@ -24,7 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#if bti_plat_windows
+#if plat_windows
 #include "dh/os/windows/common.h"
 #else /* posix */
 #include <sys/time.h>
@@ -33,12 +33,12 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#if bti_plat_windows
+#if plat_windows
 typedef LARGE_INTEGER time_SysTimeWindows;
 #else /* posix */
 typedef struct timespec time_SysTimeUnix;
 #endif
-typedef pp_if_(bti_plat_windows)(
+typedef pp_if_(plat_windows)(
     pp_then_(time_SysTimeWindows),
     pp_else_(time_SysTimeUnix)
 ) time_SysTimePlatform;

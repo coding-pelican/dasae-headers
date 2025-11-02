@@ -1,9 +1,9 @@
-#ifndef OS_WINDOWS_COMMON_INCLUDED
-#define OS_WINDOWS_COMMON_INCLUDED (1)
+#ifndef os_windows_common__included
+#define os_windows_common__included 1
 
 #include "dh/builtin.h"
 
-#if bti_plat_windows
+#if plat_windows
 #undef auto
 #undef var
 #undef let
@@ -16,9 +16,9 @@
 #endif /* !defined(NOMINMAX) */
 #include <windows.h>
 
-#define auto comp_syn__auto
-#define var  comp_syn__var
-#define let  comp_syn__let
-#endif /* bti_plat_windows */
+#define auto __comp_syn__auto
+#define var  __comp_syn__var
+#define let  __comp_syn__let
+#endif /* plat_windows */
 
-#endif /* OS_WINDOWS_COMMON_INCLUDED */
+#endif /* os_windows_common__included */

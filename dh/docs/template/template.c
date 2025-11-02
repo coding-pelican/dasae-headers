@@ -8,7 +8,7 @@
  * @updated 2025-04-01 (date of last update)
  * @version v1.0.3
  * @ingroup dasae-headers(dh)
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Source of some software
  * @details Some detailed explanation

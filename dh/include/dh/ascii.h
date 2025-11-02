@@ -17,11 +17,8 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "dh/core.h"
-#include "dh/fn.h"
-#include "dh/sli.h"
-#include "dh/Arr.h"
-#include "dh/mem/Allocator.h"
+#include "prl.h"
+#include "mem/Allocator.h"
 
 /// The C0 control codes of the ASCII encoding.
 enum ascii_CtrlCode {
@@ -154,11 +151,11 @@ extern fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
 extern fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8));
 
 /// Allocates an upper case copy of `ascii_str`.
-extern fn_((ascii_allocUppers(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+extern fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
 /// Allocates a lower case copy of `ascii_str`.
-extern fn_((ascii_allocLowers(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+extern fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
 /// Allocates a toggled case copy of `ascii_str`.
-extern fn_((ascii_allocToggledCases(mem_Allocator allocator, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+extern fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
 
 /// Returns the index of the first occurrence of `ascii_substr` in `ascii_str`, ignoring case.
 extern fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize));

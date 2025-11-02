@@ -8,7 +8,7 @@
  * @updated 2025-02-01 (date of last update)
  * @version v0.1-alpha.2
  * @ingroup dasae-headers(dh)/core/prim
- * @prefix  NONE
+ * @prefix  (none)
  *
  * @brief   Floating point type utilities
  * @details Provides floating point type utilities and functions for:

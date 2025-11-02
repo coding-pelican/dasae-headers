@@ -111,7 +111,7 @@ $inline_always u64 mem_nativeToBig64(u64 x);
  * @param x The input value
  * @return The number of trailing zeros
  */
-$inline_always u32 ctz(u64 x) {
+$inline_always u32 mem_ctz(u64 x) {
     if (x == 0) {
         return sizeof(u64) * 8;
     }
@@ -142,7 +142,7 @@ $inline_always u32 ctz(u64 x) {
  */
 $inline_always u8 mem_alignToLog2(usize align) {
     debug_assert(mem_isValidAlign(align));
-    return (u8)ctz(align);
+    return (u8)mem_ctz(align);
 }
 
 /**
@@ -190,25 +190,25 @@ $inline_always u64 byteSwap64(u64 x) {
 
 $inline_always void mem_set(P$raw dest, u8 value, usize size) {
     debug_assert_nonnull(dest);
-    bti_memset(dest, value, size);
+    memset(dest, value, size);
 }
 
 $inline_always void mem_copy(P$raw dest, P_const$raw src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
-    bti_memcpy(dest, src, size);
+    memcpy(dest, src, size);
 }
 
 $inline_always void mem_move(P$raw dest, P$raw src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
-    bti_memmove(dest, src, size);
+    memmove(dest, src, size);
 }
 
 $inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
-    return bti_memcmp(lhs, rhs, size);
+    return memcmp(lhs, rhs, size);
 }
 
 #define comp_inline__mem_asBytes_const(_ptr...) \
@@ -240,7 +240,7 @@ $inline_always bool mem_isAligned(usize addr, usize align) {
 }
 
 $inline_always bool mem_isAlignedLog2(usize addr, u8 log2_align) {
-    return ctz(addr) >= log2_align;
+    return mem_ctz(addr) >= log2_align;
 }
 
 $inline_always usize mem_alignForward(usize addr, usize align) {
@@ -283,7 +283,7 @@ $inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len) {
 /*========== Endian Conversion ==============================================*/
 
 $inline_always u16 mem_littleToNative16(u16 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap16(x);
@@ -291,7 +291,7 @@ $inline_always u16 mem_littleToNative16(u16 x) {
 }
 
 $inline_always u32 mem_littleToNative32(u32 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap32(x);
@@ -299,7 +299,7 @@ $inline_always u32 mem_littleToNative32(u32 x) {
 }
 
 $inline_always u64 mem_littleToNative64(u64 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap64(x);
@@ -307,7 +307,7 @@ $inline_always u64 mem_littleToNative64(u64 x) {
 }
 
 $inline_always u16 mem_bigToNative16(u16 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap16(x);
@@ -315,7 +315,7 @@ $inline_always u16 mem_bigToNative16(u16 x) {
 }
 
 $inline_always u32 mem_bigToNative32(u32 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap32(x);
@@ -323,7 +323,7 @@ $inline_always u32 mem_bigToNative32(u32 x) {
 }
 
 $inline_always u64 mem_bigToNative64(u64 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap64(x);
@@ -331,7 +331,7 @@ $inline_always u64 mem_bigToNative64(u64 x) {
 }
 
 $inline_always u16 mem_nativeToLittle16(u16 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap16(x);
@@ -339,7 +339,7 @@ $inline_always u16 mem_nativeToLittle16(u16 x) {
 }
 
 $inline_always u32 mem_nativeToLittle32(u32 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap32(x);
@@ -347,7 +347,7 @@ $inline_always u32 mem_nativeToLittle32(u32 x) {
 }
 
 $inline_always u64 mem_nativeToLittle64(u64 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_little_endian
+#if plat_byte_order == plat_byte_order_little_endian
     return x;
 #else
     return byteSwap64(x);
@@ -355,7 +355,7 @@ $inline_always u64 mem_nativeToLittle64(u64 x) {
 }
 
 $inline_always u16 mem_nativeToBig16(u16 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap16(x);
@@ -363,7 +363,7 @@ $inline_always u16 mem_nativeToBig16(u16 x) {
 }
 
 $inline_always u32 mem_nativeToBig32(u32 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap32(x);
@@ -371,7 +371,7 @@ $inline_always u32 mem_nativeToBig32(u32 x) {
 }
 
 $inline_always u64 mem_nativeToBig64(u64 x) {
-#if bti_plat_byte_order == bti_plat_byte_order_big_endian
+#if plat_byte_order == plat_byte_order_big_endian
     return x;
 #else
     return byteSwap64(x);

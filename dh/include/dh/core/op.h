@@ -8,7 +8,7 @@
  * @updated 2024-11-24 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core
- * @prefix  ops
+ * @prefix  (none)
  *
  * @brief   Operator utilities
  * @details Provides operator utilities and functions for:
@@ -90,7 +90,7 @@ extern "C" {
 #define op_fnDivAsgBy(TSelf, TOther) op_fnBinAsgBy(divAsgBy, TSelf, TOther)
 #define op_fnRemAsgBy(TSelf, TOther) op_fnBinAsgBy(remAsgBy, TSelf, TOther)
 
-#if !COMP_TIME
+#if !on_comptime
 #define op_fnWrapAddBy(fnName, TSelf, TOther, TRet) \
     TRet pp_join(_, TSelf, fnName)(TSelf self, TOther other) { return op_addBy(TSelf, TOther)(self, other); }
 #define op_fnWrapSubBy(fnName, TSelf, TOther, TRet) \
@@ -112,7 +112,7 @@ extern "C" {
     TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_divAsgBy(TSelf, TOther)(self, other); }
 #define op_fnWrapRemAsgBy(fnName, TSelf, TOther, TRet) \
     TRet pp_join(_, TSelf, fnName)($P$(TSelf) self, TOther other) { return op_remAsgBy(TSelf, TOther)(self, other); }
-#else /* COMP_TIME */
+#else /* on_comptime */
 #define op_fnWrapAddBy(fnName, TSelf, TOther, TRet) \
     let pp_join(_, TSelf, fnName) = op_addBy(TSelf, TOther)
 #define op_fnWrapSubBy(fnName, TSelf, TOther, TRet) \
@@ -134,7 +134,7 @@ extern "C" {
     let pp_join(_, TSelf, fnName) = op_divAsgBy(TSelf, TOther)
 #define op_fnWrapRemAsgBy(fnName, TSelf, TOther, TRet) \
     let pp_join(_, TSelf, fnName) = op_remAsgBy(TSelf, TOther)
-#endif /* COMP_TIME */
+#endif /* on_comptime */
 
 /*========== Externalized Static Functions Prototypes (Unit Test) ===========*/
 

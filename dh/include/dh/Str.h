@@ -67,24 +67,24 @@ T_use_O$(StrHash);
 extern S_const$u8 Str_view(const u8* ptr, usize len);
 extern S_const$u8 Str_viewZ(const u8* ptr);
 /// Create S$u8 from u8* with explicit length
-extern S$u8       Str_from(u8 ptr[], usize len);
-extern S$u8       Str_fromZ(u8 ptr[]);
+extern S$u8 Str_from(u8 ptr[], usize len);
+extern S$u8 Str_fromZ(u8 ptr[]);
 
 /*========== String Operations ==============================================*/
 
 /// Get string length in bytes
-extern usize  u8_len(S_const$u8 self);
+extern usize u8_len(S_const$u8 self);
 /// Compare two strings
-extern bool   Str_eql(S_const$u8 lhs, S_const$u8 rhs);
+extern bool Str_eql(S_const$u8 lhs, S_const$u8 rhs);
 /// Compare strings ignoring case
-extern bool   Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs);
+extern bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs);
 /// Check if string is modifiable
-extern bool   S_const$u8Castable(S_const$u8 self);
+extern bool S_const$u8Castable(S_const$u8 self);
 /// Convert S_const$u8 to S$u8 (if source is modifiable)
 extern O$S$u8 S_const$u8Cast(S_const$u8 self);
 
 /// Concatenate strings
-extern E$S$u8     Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs) $must_check;
+extern E$S$u8 Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs) $must_check;
 /// Get substring
 extern S_const$u8 Str_slice(S_const$u8 self, usize start, usize end);
 /// Remove whitespace from both ends
@@ -94,12 +94,12 @@ extern S_const$u8 u8_ltrim(S_const$u8 self);
 /// Remove whitespace from end
 extern S_const$u8 Str_rtrim(S_const$u8 self);
 /// Convert to uppercase
-extern E$S$u8     Str_upper(mem_Allocator allocator, S_const$u8 str) $must_check;
+extern E$S$u8 Str_upper(mem_Allocator allocator, S_const$u8 str) $must_check;
 /// Convert to lowercase
-extern E$S$u8     u8_lower(mem_Allocator allocator, S_const$u8 str) $must_check;
+extern E$S$u8 u8_lower(mem_Allocator allocator, S_const$u8 str) $must_check;
 
 /// Check if string contains substring
-extern bool    Str_contains(S_const$u8 haystack, S_const$u8 needle);
+extern bool Str_contains(S_const$u8 haystack, S_const$u8 needle);
 /// Find first occurrence of substring
 extern O$usize Str_find(S_const$u8 haystack, S_const$u8 needle, usize start);
 /// Find last occurrence of substring
@@ -153,22 +153,22 @@ cmp_fnGe_default(S$u8);
 /// Get number of UTF-8 code points in string
 extern usize StrUtf8_len(S_const$u8 self);
 /// Get byte length of UTF-8 sequence starting at given position
-extern u8    StrUtf8_seqLen(S_const$u8 self, usize pos);
+extern u8 StrUtf8_seqLen(S_const$u8 self, usize pos);
 /// Check if string is valid UTF-8
-extern bool  StrUtf8_isValid(S_const$u8 self);
+extern bool StrUtf8_isValid(S_const$u8 self);
 /// Get UTF-8 code point at position
 extern O$u32 StrUtf8_codepointAt(S_const$u8 self, usize pos);
 
 /// Iterator for UTF-8 code points
 typedef struct StrUtf8Iter {
     S_const$u8 str;
-    usize      pos;
+    usize pos;
 } StrUtf8Iter;
 
 /// Get iterator for UTF-8 code points
 extern StrUtf8Iter StrUtf8_iter(S_const$u8 self);
 /// Iterate over UTF-8 code points
-extern bool        StrUtf8Iter_next(StrUtf8Iter* iter, O$u32* out_codepoint);
+extern bool StrUtf8Iter_next(StrUtf8Iter* iter, O$u32* out_codepoint);
 
 /*========== String Tokenization ============================================*/
 
@@ -176,7 +176,7 @@ extern bool        StrUtf8Iter_next(StrUtf8Iter* iter, O$u32* out_codepoint);
 typedef struct StrTokenizer {
     S_const$u8 str;    // Source string
     S_const$u8 delims; // Delimiter characters
-    usize      pos;    // Current position
+    usize pos;         // Current position
 } StrTokenizer;
 T_use_O$(StrTokenizer);
 

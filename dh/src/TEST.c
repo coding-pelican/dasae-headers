@@ -14,11 +14,9 @@
 
 #include "dh/TEST.h"
 #include "dh/heap/Page.h"
-#include "dh/Str.h"
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
-#include "dh/ErrTrace.h"
 
 /* ANSI color codes */
 #define TEST_color_reset  "\033[0m"
@@ -27,34 +25,41 @@
 #define TEST_color_yellow "\033[33m"
 #define TEST_color_blue   "\033[34m"
 
+T_use$(TEST_Case, (O, E));
+T_use$(TEST_Case, (ArrList_init, ArrList_fini, ArrList_append));
 fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     /* Singleton instance */
     static TEST_Framework s_instance = cleared();
+    static heap_Page s_heap_ctx = cleared();
     static bool s_is_initialized = false;
-    static heap_Page s_allocator = cleared();
     if (!s_is_initialized) {
-        s_instance.cases = type$((ArrList$TEST_Case)(ArrList_init(
-            typeInfo$(TEST_Case),
-            heap_Page_allocator(&s_allocator)
-        )));
+        s_instance.gpa = heap_Page_allocator(&s_heap_ctx);
+        s_instance.cases[0] = catch_((ArrList_init$TEST_Case(s_instance.gpa, 8))($ignore, claim_unreachable));
         s_is_initialized = true;
     }
     return &s_instance;
 }
 
+$on_exit
+$static fn_((TEST_Framework_fini(void))(void)) {
+    let instance = TEST_Framework_instance();
+    let cases = instance->cases;
+    let gpa = instance->gpa;
+    ArrList_fini$TEST_Case(cases, gpa);
+}
+
 fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
     let instance = TEST_Framework_instance();
-    let result = ArrList_append(
-        instance->cases.base,
-        meta_refPtr(&(TEST_Case){ .fn = fn, .name = name })
-    );
-    if (isErr(result)) { return; } /* Occurs when heap is full (Out of memory) */
+    let cases = instance->cases;
+    let gpa = instance->gpa;
+    catch_((ArrList_append$TEST_Case(cases, gpa, (TEST_Case){ .fn = fn, .name = name }))($ignore, claim_unreachable));
 }
 
 fn_((TEST_Framework_run(void))(void)) {
     static let print = io_Writer_print;
     let out = fs_File_writer(io_getStdOut());
     let instance = TEST_Framework_instance();
+    let cases = instance->cases;
 
     // Print header
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
@@ -62,7 +67,7 @@ fn_((TEST_Framework_run(void))(void)) {
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
 
     // Run each test case
-    for_(($s(instance->cases.items))(test_case) {
+    for_(($s(cases->items))(test_case) {
         instance->stats.total++;
         catch_((print(
             out, u8_l("Running test: {:s}{:s}{:s}\n"),
@@ -81,7 +86,7 @@ fn_((TEST_Framework_run(void))(void)) {
             Err_print(err);
             ErrTrace_print();
             ErrTrace_reset();
-        } else_void {
+        } else_ok_void {
             instance->stats.passed++;
             catch_((print(
                 out, u8_l("    {:s}\n"),
@@ -99,8 +104,6 @@ fn_((TEST_Framework_run(void))(void)) {
         catch_((print(out, u8_l(TEST_color_red "Failed: {:u}" TEST_color_reset "\n"), instance->stats.failed))($ignore, claim_unreachable));
     }
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
-
-    ArrList_fini(instance->cases.ref_raw);
 }
 
 /* Debug versions of test functions */

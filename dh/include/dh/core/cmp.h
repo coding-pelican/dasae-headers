@@ -8,7 +8,7 @@
  * @updated 2024-11-29 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core
- * @prefix  cmp
+ * @prefix  (none)
  *
  * @brief   Comparator utilities
  * @details Provides comparator utilities and functions for:

@@ -50,7 +50,7 @@ fn_((meta_P_toSli(meta_P$raw self, TypeInfo type))(meta_S$raw)) {
     return (meta_S$raw){
         .type = type,
         .addr = sli_opaque.ptr,
-        .len  = sli_opaque.len
+        .len = sli_opaque.len
     };
 }
 
@@ -59,14 +59,14 @@ fn_((meta_P_copy(meta_P$raw dest, meta_P_const$raw src))(meta_P$raw)) {
     debug_assert_nonnull(src.addr);
     debug_assert(dest.type.size == src.type.size);
     debug_assert(dest.type.align == src.type.align);
-    bti_memcpy(dest.ptr, src.addr, dest.type.size);
+    memcpy(dest.ptr, src.addr, dest.type.size);
     return dest;
 } fn_((meta_P_move(meta_P$raw dest, meta_P$raw src))(meta_P$raw)) {
     debug_assert_nonnull(dest.ptr);
     debug_assert_nonnull(src.ptr);
     debug_assert(dest.type.size == src.type.size);
     debug_assert(dest.type.align == src.type.align);
-    bti_memmove(dest.ptr, src.ptr, dest.type.size);
+    memmove(dest.ptr, src.ptr, dest.type.size);
     return dest;
 }
 
@@ -81,7 +81,7 @@ fn_((meta_S_constCast(meta_S_const$raw self))(meta_S$raw)) {
     debug_assert_fmt(self.len == 1, "Sli must have exactly one element");
     return (meta_P$raw){
         .type = self.type,
-        .ptr  = self.addr
+        .ptr = self.addr
     };
 } fn_((meta_S_len(meta_S$raw self))(usize)) {
     debug_assert_nonnull(self.addr);
@@ -91,7 +91,7 @@ fn_((meta_S_constCast(meta_S_const$raw self))(meta_S$raw)) {
     debug_assert_fmt(index < self.len, "Index out of bounds (index: %zu, len: %zu)", index, self.len);
     return (meta_P$raw){
         .type = self.type,
-        .ptr  = as$((u8*)(self.addr)) + (index * self.type.size)
+        .ptr = as$((u8*)(self.addr)) + (index * self.type.size)
     };
 } fn_((meta_S_slice(meta_S$raw self, usize begin, usize end))(meta_S$raw)) {
     debug_assert_nonnull(self.addr);
@@ -100,7 +100,7 @@ fn_((meta_S_constCast(meta_S_const$raw self))(meta_S$raw)) {
     return (meta_S$raw){
         .type = self.type,
         .addr = as$((u8*)(self.addr)) + (begin * self.type.size),
-        .len  = end - begin
+        .len = end - begin
     };
 }
 
@@ -111,7 +111,7 @@ fn_((meta_S_set(meta_S$raw dest, meta_P_const$raw value))(meta_S$raw)) {
     debug_assert(dest.type.align == value.type.align);
     for (usize i = 0; i < dest.len; ++i) {
         // meta_P_copy(meta_S_at(dest, i), value);
-        bti_memcpy(
+        memcpy(
             as$((u8*)(dest.addr)) + (i * dest.type.size), value.addr, dest.type.size);
     }
     return dest;
@@ -127,7 +127,7 @@ fn_((meta_S_set(meta_S$raw dest, meta_P_const$raw value))(meta_S$raw)) {
     //         meta_S_at(meta_S_constCast(src), i).as_const
     //     );
     // }
-    bti_memcpy(dest.addr, src.addr, dest.type.size * dest.len);
+    memcpy(dest.addr, src.addr, dest.type.size * dest.len);
     return dest;
 } fn_((meta_S_move(meta_S$raw dest, meta_S$raw src))(meta_S$raw)) {
     debug_assert_nonnull(dest.addr);
@@ -141,7 +141,7 @@ fn_((meta_S_set(meta_S$raw dest, meta_P_const$raw value))(meta_S$raw)) {
     //         meta_S_at(src, i)
     //     );
     // }
-    bti_memmove(dest.addr, src.addr, dest.type.size * dest.len);
+    memmove(dest.addr, src.addr, dest.type.size * dest.len);
     return dest;
 }
 

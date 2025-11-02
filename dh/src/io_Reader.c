@@ -1,9 +1,6 @@
 #include "dh/io/Reader.h"
 #include "dh/io/common.h"
-#include "dh/Arr.h"
-#include "dh/Str.h"
 #include "dh/mem/common.h"
-#include "dh/math/common.h"
 
 fn_((io_Reader_read(io_Reader self, S$u8 buf))(E$usize)) {
     return self.read(self.ctx, buf);
