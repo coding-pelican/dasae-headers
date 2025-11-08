@@ -53,12 +53,11 @@ extern fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena));
 extern fn_((heap_Arena_fini(heap_Arena self))(void));
 
 /// Reset mode for arena reset operation
-typedef variant_(
-    (heap_Arena_ResetMode),
+typedef variant_((heap_Arena_ResetMode $fits u8)(
     (heap_Arena_ResetMode_free_all, Void),
     (heap_Arena_ResetMode_retain_capacity, Void),
     (heap_Arena_ResetMode_retain_with_limit, usize)
-) heap_Arena_ResetMode;
+)) heap_Arena_ResetMode;
 
 /// Query current memory capacity of arena
 extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize));

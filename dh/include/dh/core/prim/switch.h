@@ -17,44 +17,63 @@
  *          - Default return
  */
 
-#ifndef CORE_PRIM_SWITCH_INCLUDED
-#define CORE_PRIM_SWITCH_INCLUDED (1)
+#ifndef core_prim_switch__included
+#define core_prim_switch__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "dh/builtin/pp.h"
+
+/*========== Macros and Declarations ========================================*/
+
+#define switch_(/*(_Init)(_Cond...)*/...) \
+    __syn__switch_(__syn__switch___parseInit __VA_ARGS__)
+
+#define case_(/*(_Enum)({...})*/...) \
+    __syn__case_(__syn__case___parseEnum __VA_ARGS__)
+
+#define default_(/*({...})*/...) \
+    __syn__default_(__VA_ARGS__)
+
+#define $fallthrough __attr__$fallthrough
+
 /*========== Macros and Definitions =========================================*/
 
-#define $fallthrough \
-    /** \
-     * @brief fallthrough for `switch` internal \
-     */ \
-    comp_attr__$fallthrough
+#define __syn__switch_(...) \
+    __syn__switch___emit(__VA_ARGS__)
+#define __syn__switch___parseInit(_Init...) \
+    pp_uniqTok(run_once), (_Init), __syn__switch___parseCond
+#define __syn__switch___parseCond(_Cond...) \
+    (_Cond)
+#define __syn__switch___emit(__run_once, _Init, _Cond...) \
+    for (bool __run_once = false; !__run_once;) \
+        for (__syn__switch___expand _Init; !__run_once; __run_once = true) \
+            switch (__syn__switch___expand _Cond)
+#define __syn__switch___expand(...) __VA_ARGS__
 
-#define case_(_Enum, _Body...) \
-    /** \
-     * @brief case for `switch` internal \
-     */ \
-    comp_syn__case_(_Enum, _Body)
-#define default_(_Body...) \
-    /** \
-     * @brief default for `switch` internal \
-     */ \
-    comp_syn__default_(_Body)
-
-/*========== Macro Implementations ==========================================*/
-
-#define comp_attr__$fallthrough \
-    __attribute__((fallthrough))
-
-#define comp_syn__case_(_Enum, _Body...) \
+#define __syn__case_(...) \
+    __syn__case___emit(__VA_ARGS__)
+#define __syn__case___parseEnum(_Enum...) \
+    _Enum,
+#define __syn__case___emit(_Enum, _Body...) \
     case _Enum: \
-        _Body
-#define comp_syn__default_(_Body...) \
+        __syn__case___expand _Body
+#define __syn__case___expand(...) __VA_ARGS__
+
+#define __syn__default_(...) \
+    __syn__default___emit(__VA_ARGS__)
+#define __syn__default___emit(_Body...) \
     default: \
-        _Body
+        __syn__default___expand _Body
+#define __syn__default___expand(...) __VA_ARGS__
+
+#define __attr__$fallthrough \
+    __attribute__((fallthrough))
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_PRIM_SWITCH_INCLUDED */
+#endif /* core_prim_switch__included */

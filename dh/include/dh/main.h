@@ -24,7 +24,7 @@ extern "C" {
 
 #include "prl.h"
 #include "TEST.h"
-#include "Str.h"
+#include "mem/common.h"
 
 /*========== Macros =========================================================*/
 
@@ -46,11 +46,11 @@ extern "C" {
 /* No hijack, just call main as usual */
 #else /* !main_no_hijack */
 
-pp_attr_(pp_if_(pp_not_(main_no_returns_err))(pp_then_($must_check)))
-$extern fn_((dh_main(pp_if_(pp_not_(main_no_args))(
+pp_attr_(pp_if_(pp_not(main_no_returns_err))(pp_then_($must_check)))
+$extern fn_((dh_main(pp_if_(pp_not(main_no_args))(
     pp_then_(S$(S$(const u8)) args),
     pp_else_(void)
-)))(pp_if_(pp_not_(main_no_returns_err))(pp_else_(E$void), pp_then_(void))));
+)))(pp_if_(pp_not(main_no_returns_err))(pp_else_(E$void), pp_then_(void))));
 
 /*========== Root main ======================================================*/
 
@@ -68,7 +68,7 @@ $extern fn_((dh_main(pp_if_(pp_not_(main_no_args))(
 // #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */
 // }
 
-fn_((main(pp_if_(pp_not_(main_no_args))(
+fn_((main(pp_if_(pp_not(main_no_args))(
     pp_then_(int argc, const char* argv[]),
     pp_else_(void)
 )))(int)) {
@@ -84,7 +84,7 @@ fn_((main(pp_if_(pp_not_(main_no_args))(
     let args_buf = as$((S$(const u8)*)(alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
-            args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
+            args_buf[i] = mem_spanZ0_const$u8(as$((const u8*)(argv[i])));
         }
         blk_return_(init$S$((S$(const u8))(args_buf, argc)));
     });
@@ -93,7 +93,7 @@ fn_((main(pp_if_(pp_not_(main_no_args))(
     let args_buf = as$((S$(const u8)*)(alloca(sizeOf$(S$(const u8)) * argc)));
     let args     = ({
         for (i32 i = 0; i < argc; ++i) {
-            args_buf[i] = Str_viewZ(as$((const u8*)(argv[i])));
+            args_buf[i] = mem_spanZ0_const$u8(as$((const u8*)(argv[i])));
         }
         blk_return_(init$S$((S$(const u8))(args_buf, argc)));
     });

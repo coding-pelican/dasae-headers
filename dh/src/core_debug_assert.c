@@ -22,6 +22,7 @@
 
 /*========== Extern Function Implementations ================================*/
 
+#if debug_comp_enabled
 $static fn_((debug_assert__output(void))(FILE*)) { return stderr; }
 
 $static let_(debug_assert__fmt_default, char*) = "Assertion failed: %s, in function %s, at file %s, line %d\n";
@@ -61,3 +62,4 @@ fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* fil
         func, file, line
     );
 }
+#endif /* debug_comp_enabled */

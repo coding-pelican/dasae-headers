@@ -48,7 +48,7 @@ T_use$(TEST_Case, (P, S, ArrList));
 
 /// @brief Test framework structure
 typedef struct TEST_Framework {
-    ArrList$TEST_Case cases $like_ptr;
+    ArrList$TEST_Case cases $like_ref;
     struct {
         u32 total;
         u32 passed;

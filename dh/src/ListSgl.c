@@ -6,6 +6,7 @@
 
 fn_((ListSgl_Node_init(P$ListSgl_Node$raw self, TypeInfo type))(P$ListSgl_Node$raw)) {
     debug_only(self->type = type;)
+    let_ignore = type;
     return self;
 }
 
@@ -13,8 +14,8 @@ fn_((ListSgl_Node_data(P_const$ListSgl_Node$raw self, TypeInfo type))(u_P_const$
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_P_const$raw){
-        // .inner = as$((u8*)(node)) - alignUp(type),
-        .inner = self->data,
+        // .raw = as$((u8*)(node)) - alignUp(type),
+        .raw = self->data,
         .type = type
     };
 }
@@ -23,8 +24,8 @@ fn_((ListSgl_Node_dataMut(P$ListSgl_Node$raw self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_P$raw){
-        // .inner = as$((u8*)(node)) - alignUp(type),
-        .inner = self->data,
+        // .raw = as$((u8*)(node)) - alignUp(type),
+        .raw = self->data,
         .type = type
     };
 }
@@ -34,7 +35,7 @@ fn_((ListSgl_Node_insertNext(P$ListSgl_Node$raw self, P$ListSgl_Node$raw after))
     claim_assert_nonnull(after);
     debug_assert_eqBy(self->type, after->type, TypeInfo_eq);
     after->next = self->next;
-    asg$O((&self->next)(some(after)));
+    asgLit((&self->next)(some(after)));
 }
 
 fn_((ListSgl_Node_removeNext(P$ListSgl_Node$raw self))(O$P$ListSgl_Node$raw) $scope) {
@@ -84,6 +85,7 @@ fn_((ListSgl_Node_reverse(O$P$ListSgl_Node$raw* indirect))(void)) {
 }
 
 fn_((ListSgl_init(TypeInfo type))(ListSgl$raw)) {
+    let_ignore = type;
     return (ListSgl$raw){
         .first = none(),
         debug_only(.type = type)
@@ -96,7 +98,7 @@ fn_((ListSgl_prepend(ListSgl$raw* self, P$ListSgl_Node$raw before))(void)) {
     debug_assert_eqBy(self->type, before->type, TypeInfo_eq);
 
     before->next = self->first;
-    asg$O((&self->first)(some(before)));
+    asgLit((&self->first)(some(before)));
 }
 
 fn_((ListSgl_remove(ListSgl$raw* self, P$ListSgl_Node$raw node))(void)) {
@@ -108,7 +110,7 @@ fn_((ListSgl_remove(ListSgl$raw* self, P$ListSgl_Node$raw node))(void)) {
         if (first == node) {
             debug_assert_eqBy(first->type, node->type, TypeInfo_eq);
             self->first = node->next;
-            asg$O((&node->next)(none()));
+            asgLit((&node->next)(none()));
             return;
         }
         var current = first;
@@ -116,7 +118,7 @@ fn_((ListSgl_remove(ListSgl$raw* self, P$ListSgl_Node$raw node))(void)) {
             if (next == node) {
                 debug_assert_eqBy(current->type, next->type, TypeInfo_eq);
                 current->next = node->next;
-                asg$O((&node->next)(none()));
+                asgLit((&node->next)(none()));
                 return;
             }
             current = next;
@@ -132,7 +134,7 @@ fn_((ListSgl_shift(ListSgl$raw* self))(O$P$ListSgl_Node$raw) $scope) {
     var first = unwrap_(self->first);
     debug_assert_eqBy(self->type, first->type, TypeInfo_eq);
     self->first = first->next;
-    asg$O((&first->next)(none()));
+    asgLit((&first->next)(none()));
     return_some(first);
 } $unscoped_(fn);
 

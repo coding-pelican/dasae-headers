@@ -6,18 +6,18 @@ fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
     let tmp_ptr = as$((u8*)(alloca(tmp_len)));
-    memcpy(tmp_ptr, lhs.ptr, lhs.len);
-    memcpy(lhs.ptr, rhs.ptr, rhs.len);
-    memcpy(rhs.ptr, tmp_ptr, tmp_len);
+    prim_memcpy(tmp_ptr, lhs.ptr, lhs.len);
+    prim_memcpy(lhs.ptr, rhs.ptr, rhs.len);
+    prim_memcpy(rhs.ptr, tmp_ptr, tmp_len);
 }
 
 /// Swap two elements of given size
 $inline_always
 fn_((sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len))(void)) {
     let tmp = as$((u8*)(alloca(byte_len)));
-    memcpy(tmp, lhs, byte_len);
-    memcpy(lhs, rhs, byte_len);
-    memcpy(rhs, tmp, byte_len);
+    prim_memcpy(tmp, lhs, byte_len);
+    prim_memcpy(lhs, rhs, byte_len);
+    prim_memcpy(rhs, tmp, byte_len);
 }
 
 fn_((sort_insertionSort(
@@ -114,10 +114,10 @@ fn_((sort_mergeSortUsingTempRecur(
 
     while (left_ptr < left_end && right_ptr < right_end) {
         if (invoke(cmpFn, left_ptr, right_ptr) <= cmp_Ord_eq) {
-            memcpy(temp_ptr, left_ptr, base_type.size);
+            prim_memcpy(temp_ptr, left_ptr, base_type.size);
             left_ptr += base_type.size;
         } else {
-            memcpy(temp_ptr, right_ptr, base_type.size);
+            prim_memcpy(temp_ptr, right_ptr, base_type.size);
             right_ptr += base_type.size;
         }
         temp_ptr += base_type.size;
@@ -127,21 +127,21 @@ fn_((sort_mergeSortUsingTempRecur(
     if (left_ptr < left_end) {
         temp_ptr += blk({
             let bytes_left = left_end - left_ptr;
-            memcpy(temp_ptr, left_ptr, bytes_left);
+            prim_memcpy(temp_ptr, left_ptr, bytes_left);
             blk_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
         temp_ptr += blk({
             let bytes_right = right_end - right_ptr;
-            memcpy(temp_ptr, right_ptr, bytes_right);
+            prim_memcpy(temp_ptr, right_ptr, bytes_right);
             blk_return bytes_right;
         });
     }
 
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buf.ptr;
-    memcpy(base_bytes, temp_buf.ptr, total_bytes);
+    prim_memcpy(base_bytes, temp_buf.ptr, total_bytes);
     return_ok({});
 } $unscoped_(fn);
 
@@ -200,10 +200,10 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
 
     while (left_ptr < left_end && right_ptr < right_end) {
         if (invoke(cmpFn, left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
-            memcpy(temp_ptr, left_ptr, base_type.size);
+            prim_memcpy(temp_ptr, left_ptr, base_type.size);
             left_ptr += base_type.size;
         } else {
-            memcpy(temp_ptr, right_ptr, base_type.size);
+            prim_memcpy(temp_ptr, right_ptr, base_type.size);
             right_ptr += base_type.size;
         }
         temp_ptr += base_type.size;
@@ -213,21 +213,21 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
     if (left_ptr < left_end) {
         temp_ptr += blk({
             let bytes_left = left_end - left_ptr;
-            memcpy(temp_ptr, left_ptr, bytes_left);
+            prim_memcpy(temp_ptr, left_ptr, bytes_left);
             blk_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
         temp_ptr += blk({
             let bytes_right = right_end - right_ptr;
-            memcpy(temp_ptr, right_ptr, bytes_right);
+            prim_memcpy(temp_ptr, right_ptr, bytes_right);
             blk_return bytes_right;
         });
     }
 
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buf.ptr;
-    memcpy(base_bytes, temp_buf.ptr, total_bytes);
+    prim_memcpy(base_bytes, temp_buf.ptr, total_bytes);
     return_ok({});
 } $unscoped_(fn);
 
@@ -238,8 +238,8 @@ fn_((sort_stableSort(
 ))(mem_Err$void) $guard) {
     let checked_size = unwrap_(usize_mulChkd(base_sli.len, base_sli.type.size));
     T_use_E$($set(mem_Err)(S$u8));
-    let temp_buf = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size))));
-    defer_(mem_Allocator_free(allocator, u_any$S(temp_buf)));
+    let temp_buf = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size))));
+    defer_(mem_Allocator_free(allocator, u_anyS(temp_buf)));
     return_ok(try_(sort_mergeSortUsingTempRecur(temp_buf, base_sli, cmpFn)));
 } $unguarded_(fn);
 
@@ -251,8 +251,8 @@ fn_((sort_stableSortWithArg(
 ))(mem_Err$void) $guard) {
     let checked_size = unwrap_(usize_mulChkd(base_sli.len, base_sli.type.size));
     T_use_E$($set(mem_Err)(S$u8));
-    let temp_buf = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size))));
-    defer_(mem_Allocator_free(allocator, u_any$S(temp_buf)));
+    let temp_buf = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size))));
+    defer_(mem_Allocator_free(allocator, u_anyS(temp_buf)));
     return_ok(try_(sort_mergeSortWithArgUsingTempRecur(temp_buf, base_sli, cmpFn, arg)));
 } $unguarded_(fn);
 

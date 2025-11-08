@@ -8,28 +8,28 @@ void mem_swapBytes(S$u8 lhs, S$u8 rhs) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
     let tmp_ptr = as$(u8*, alloca(tmp_len));
-    memcpy(tmp_ptr, lhs.ptr, lhs.len);
-    memcpy(lhs.ptr, rhs.ptr, rhs.len);
-    memcpy(rhs.ptr, tmp_ptr, tmp_len);
+    prim_memcpy(tmp_ptr, lhs.ptr, lhs.len);
+    prim_memcpy(lhs.ptr, rhs.ptr, rhs.len);
+    prim_memcpy(rhs.ptr, tmp_ptr, tmp_len);
 }
 
 // Swap two elements of given size
 $inline_always void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
     let tmp = as$(u8*, alloca(byte_len));
-    memcpy(tmp, lhs, byte_len);
-    memcpy(lhs, rhs, byte_len);
-    memcpy(rhs, tmp, byte_len);
+    prim_memcpy(tmp, lhs, byte_len);
+    prim_memcpy(lhs, rhs, byte_len);
+    prim_memcpy(rhs, tmp, byte_len);
 }
 
 void utils_insertionSort(
     meta_S base_slice,
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
-    let ptr  = as$(u8*, base_slice.addr);
-    let len  = base_slice.len;
+    let ptr = as$(u8*, base_slice.addr);
+    let len = base_slice.len;
     let size = base_slice.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
-        var curr                  = ptr + (unsorted_index * size);
+        var curr = ptr + (unsorted_index * size);
         var sorted_backward_index = unsorted_index;
         while (0 < sorted_backward_index) {
             var prev = curr - size;
@@ -46,11 +46,11 @@ void utils_insertionSortWithArg(
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
     P_const$raw arg
 ) {
-    let ptr  = as$(u8*, base_slice.addr);
-    let len  = base_slice.len;
+    let ptr = as$(u8*, base_slice.addr);
+    let len = base_slice.len;
     let size = base_slice.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
-        var current               = ptr + (unsorted_index * size);
+        var current = ptr + (unsorted_index * size);
         var sorted_backward_index = unsorted_index;
         while (0 < sorted_backward_index) {
             var prev = current - size;
@@ -71,11 +71,11 @@ E$void utils_mergeSortUsingTempRecur( // NOLINT
         utils_insertionSort(base_slice, compareFn);
         return_void();
     }
-    let base_type  = base_slice.type;
+    let base_type = base_slice.type;
     let base_bytes = as$(u8*, base_slice.addr);
-    let base_len   = base_slice.len;
-    let base_size  = base_slice.type.size;
-    let mid_idx    = base_len / 2;
+    let base_len = base_slice.len;
+    let base_size = base_slice.type.size;
+    let mid_idx = base_len / 2;
 
     /* Sort each half recursively */
     try(utils_mergeSortUsingTempRecur(
@@ -90,7 +90,7 @@ E$void utils_mergeSortUsingTempRecur( // NOLINT
     ));
 
     /* Check if merging is necessary */ {
-        let left_last   = base_bytes + ((mid_idx - 1) * base_size);
+        let left_last = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
         if (compareFn(left_last, right_first) <= cmp_Ord_eq) {
             return_void(); /* Already ordered, no merge needed */
@@ -98,18 +98,18 @@ E$void utils_mergeSortUsingTempRecur( // NOLINT
     }
 
     /* Merge the sorted halves using the temporary buffer */
-    var left_ptr  = base_bytes;
-    var left_end  = left_ptr + mid_idx * base_size;
+    var left_ptr = base_bytes;
+    var left_end = left_ptr + mid_idx * base_size;
     var right_ptr = base_bytes + mid_idx * base_size;
     var right_end = base_bytes + base_len * base_size;
-    var temp_ptr  = temp_buffer.ptr;
+    var temp_ptr = temp_buffer.ptr;
 
     while (left_ptr < left_end && right_ptr < right_end) {
         if (compareFn(left_ptr, right_ptr) <= cmp_Ord_eq) {
-            memcpy(temp_ptr, left_ptr, base_size);
+            prim_memcpy(temp_ptr, left_ptr, base_size);
             left_ptr += base_size;
         } else {
-            memcpy(temp_ptr, right_ptr, base_size);
+            prim_memcpy(temp_ptr, right_ptr, base_size);
             right_ptr += base_size;
         }
         temp_ptr += base_size;
@@ -119,21 +119,21 @@ E$void utils_mergeSortUsingTempRecur( // NOLINT
     if (left_ptr < left_end) {
         temp_ptr += eval({
             let bytes_left = left_end - left_ptr;
-            memcpy(temp_ptr, left_ptr, bytes_left);
+            prim_memcpy(temp_ptr, left_ptr, bytes_left);
             eval_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
         temp_ptr += eval({
             let bytes_right = right_end - right_ptr;
-            memcpy(temp_ptr, right_ptr, bytes_right);
+            prim_memcpy(temp_ptr, right_ptr, bytes_right);
             eval_return bytes_right;
         });
     }
 
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buffer.ptr;
-    memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    prim_memcpy(base_bytes, temp_buffer.ptr, total_bytes);
     return_void();
 }
 
@@ -145,11 +145,11 @@ E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
         utils_insertionSortWithArg(base_slice, compareFn, arg);
         return_void();
     }
-    let base_type  = base_slice.type;
+    let base_type = base_slice.type;
     let base_bytes = as$(u8*, base_slice.addr);
-    let base_len   = base_slice.len;
-    let base_size  = base_slice.type.size;
-    let mid_idx    = base_len / 2;
+    let base_len = base_slice.len;
+    let base_size = base_slice.type.size;
+    let mid_idx = base_len / 2;
 
     /* Sort each half recursively */
     try(utils_mergeSortWithArgUsingTempRecur(
@@ -166,7 +166,7 @@ E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     ));
 
     /* Check if merging is necessary */ {
-        let left_last   = base_bytes + ((mid_idx - 1) * base_size);
+        let left_last = base_bytes + ((mid_idx - 1) * base_size);
         let right_first = base_bytes + (mid_idx * base_size);
         if (compareFn(left_last, right_first, arg) <= cmp_Ord_eq) {
             return_void(); /* Already ordered, no merge needed */
@@ -174,18 +174,18 @@ E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     }
 
     /* Merge the sorted halves using the temporary buffer */
-    var left_ptr  = base_bytes;
-    var left_end  = left_ptr + mid_idx * base_size;
+    var left_ptr = base_bytes;
+    var left_end = left_ptr + mid_idx * base_size;
     var right_ptr = base_bytes + mid_idx * base_size;
     var right_end = base_bytes + base_len * base_size;
-    var temp_ptr  = temp_buffer.ptr;
+    var temp_ptr = temp_buffer.ptr;
 
     while (left_ptr < left_end && right_ptr < right_end) {
         if (compareFn(left_ptr, right_ptr, arg) <= cmp_Ord_eq) {
-            memcpy(temp_ptr, left_ptr, base_size);
+            prim_memcpy(temp_ptr, left_ptr, base_size);
             left_ptr += base_size;
         } else {
-            memcpy(temp_ptr, right_ptr, base_size);
+            prim_memcpy(temp_ptr, right_ptr, base_size);
             right_ptr += base_size;
         }
         temp_ptr += base_size;
@@ -195,32 +195,32 @@ E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
     if (left_ptr < left_end) {
         temp_ptr += eval({
             let bytes_left = left_end - left_ptr;
-            memcpy(temp_ptr, left_ptr, bytes_left);
+            prim_memcpy(temp_ptr, left_ptr, bytes_left);
             eval_return bytes_left;
         });
     }
     if (right_ptr < right_end) {
         temp_ptr += eval({
             let bytes_right = right_end - right_ptr;
-            memcpy(temp_ptr, right_ptr, bytes_right);
+            prim_memcpy(temp_ptr, right_ptr, bytes_right);
             eval_return bytes_right;
         });
     }
 
     /* Copy merged elements back to the original array */
     let total_bytes = temp_ptr - temp_buffer.ptr;
-    memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+    prim_memcpy(base_bytes, temp_buffer.ptr, total_bytes);
     return_void();
 }
 
 E$void utils_stableSort(
     mem_Allocator allocator,
-    meta_S        base_slice,
+    meta_S base_slice,
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
     scope_reserveReturn(E$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
-        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
         try(utils_mergeSortUsingTempRecur(temp_buffer, base_slice, compareFn));
         return_void();
@@ -230,13 +230,13 @@ E$void utils_stableSort(
 
 E$void utils_stableSortWithArg(
     mem_Allocator allocator,
-    meta_S        base_slice,
+    meta_S base_slice,
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
     P_const$raw arg
 ) {
     scope_reserveReturn(E$void) {
         let checked_size = try(utils_usize_mulSafe(base_slice.len, base_slice.type.size));
-        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer)));
         try(utils_mergeSortWithArgUsingTempRecur(temp_buffer, base_slice, compareFn, arg));
         return_void();
@@ -245,7 +245,7 @@ E$void utils_stableSortWithArg(
 }
 
 E$void utils_stableSortUsingTemp(
-    S$u8   temp_buffer,
+    S$u8 temp_buffer,
     meta_S base_slice,
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
@@ -259,7 +259,7 @@ E$void utils_stableSortUsingTemp(
 }
 
 E$void utils_stableSortWithArgUsingTemp(
-    S$u8   temp_buffer,
+    S$u8 temp_buffer,
     meta_S base_slice,
     cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
     P_const$raw arg
@@ -308,7 +308,7 @@ E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
     // Generate outer bodies
     while (bodies.items.len < n) {
         // Rand angle
-        let a    = Rand_f32() * math_f32_tau;
+        let a = Rand_f32() * math_f32_tau;
         let sc_a = m_V2f32_sincos(a);
 
         // Rand radius with inner cutoff
@@ -320,7 +320,7 @@ E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
         let vel = m_V2f32_from(sc_a.y, -sc_a.x);
 
         // Set mass and radius
-        const f32 mass   = 1.0f;
+        const f32 mass = 1.0f;
         const f32 radius = cbrtf(mass);
 
         // Create and add the body
@@ -343,7 +343,7 @@ E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 
         // Calculate orbital velocity based on enclosed mass
         let dist = m_V2f32_len(Sli_at(bodies.items, index)->pos);
-        let v    = sqrtf(mass / dist);
+        let v = sqrtf(mass / dist);
 
         m_V2f32_scaleTo(&Sli_at(bodies.items, index)->vel, v);
     }
@@ -369,7 +369,7 @@ static E$void mergeSortWithTmpRecur( // NOLINT
     scope_reserveReturn(E$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }
 
-        let mid        = num / 2;
+        let mid = num / 2;
         let base_bytes = as$(u8*, base); // For pointer arithmetic
         let temp_bytes = as$(u8*, temp_buffer.ptr);
 
@@ -378,16 +378,16 @@ static E$void mergeSortWithTmpRecur( // NOLINT
         try(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
 
         // Merge the sorted halves using the temporary buffer
-        usize left_index  = 0;
+        usize left_index = 0;
         usize right_index = mid;
-        usize temp_index  = 0;
+        usize temp_index = 0;
 
         while (left_index < mid && right_index < num) {
             if (comp(base_bytes + left_index * size, base_bytes + right_index * size, arg) <= 0) {
-                memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, size);
+                prim_memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, size);
                 left_index++;
             } else {
-                memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, size);
+                prim_memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, size);
                 right_index++;
             }
             temp_index++;
@@ -396,17 +396,17 @@ static E$void mergeSortWithTmpRecur( // NOLINT
         // Copy remaining elements
         if (left_index < mid) {
             let remaining = mid - left_index;
-            memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, remaining * size);
+            prim_memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, remaining * size);
             temp_index += remaining;
         }
         if (right_index < num) {
             let remaining = num - right_index;
-            memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, remaining * size);
+            prim_memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, remaining * size);
             temp_index += remaining;
         }
 
         // Copy all merged elements back
-        memcpy(base_bytes, temp_bytes, temp_index * size);
+        prim_memcpy(base_bytes, temp_bytes, temp_index * size);
 
         return_void();
     }
@@ -419,13 +419,13 @@ static E$void stableSort(
     usize num,
     usize size,
     cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
-    P$raw         arg,
+    P$raw arg,
     mem_Allocator allocator
 ) {
     scope_reserveReturn(E$void) {
         // Allocate temporary buffer using the provided allocator
         let checked_size = try(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer))); // Ensure cleanup
 
         // Perform merge sort

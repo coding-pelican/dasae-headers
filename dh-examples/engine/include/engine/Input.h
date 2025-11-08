@@ -28,14 +28,14 @@ typedef union engine_InputKeyModes {
 } engine_InputKeyModes;
 
 typedef struct engine_InputEvent_KeyboardKey {
-    engine_KeyCode       key;   /**< The key that was pressed/released/held */
+    engine_KeyCode key;         /**< The key that was pressed/released/held */
     engine_InputKeyModes modes; /**< The modifiers that were enabled */
 } engine_InputEvent_KeyboardKey;
 
 typedef struct engine_InputEvent_MouseButton {
-    Vec2i                pos;
-    engine_MouseButton   button; /**< The mouse button that was pressed/released/held */
-    engine_InputKeyModes modes;  /**< The modifiers that were enabled */
+    Vec2i pos;
+    engine_MouseButton button;  /**< The mouse button that was pressed/released/held */
+    engine_InputKeyModes modes; /**< The modifiers that were enabled */
 } engine_InputEvent_MouseButton;
 
 typedef struct engine_InputEvent_MouseMotion {
@@ -75,8 +75,8 @@ struct engine_InputEventBuffer {
 /// Input system structure
 typedef struct engine_Input {
     var_(event_buffer, engine_InputEventBuffer);
-    var_(keyboard, engine_Keyboard) $like_ptr;
-    var_(mouse, engine_Mouse) $like_ptr;
+    var_(keyboard, engine_Keyboard) $like_ref;
+    var_(mouse, engine_Mouse) $like_ref;
     var_(backend, O$engine_Backend);
     var_(allocator, mem_Allocator);
 } engine_Input;

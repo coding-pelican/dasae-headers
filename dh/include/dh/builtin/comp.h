@@ -185,32 +185,80 @@ extern "C" {
     (&make$((_T)__create$__expandInitial _initial))
 #define __create$__expandInitial(_initial...) _initial
 
-#define type$ type$V
+#define type$ typeV$
 
-#define type$V(/*(_T)(_raw...)*/... /*(_T)*/) \
+#define typeV$(/*(_T)(_raw...)*/... /*(_T)*/) \
     /* TODO: Add type checking */ \
-    __type$V__step(pp_defer(__type$V__emit)(__type$V__sep __VA_ARGS__))
-#define __type$V__step(...)             __VA_ARGS__
-#define __type$V__sep(_T...)            _T, __type$V__sepRaw
-#define __type$V__sepRaw(_raw...)       _raw
-#define __type$V__emit(_T, _raw...)     __type$V__emitNext(_T, _raw)
-#define __type$V__emitNext(_T, _raw...) make$((_T){ .as_raw[0] = _raw })
+    __typeV$__step(pp_defer(__typeV$__emit)(__typeV$__sep __VA_ARGS__))
+#define __typeV$__step(...)             __VA_ARGS__
+#define __typeV$__sep(_T...)            _T, __typeV$__sepRaw
+#define __typeV$__sepRaw(_raw...)       _raw
+#define __typeV$__emit(_T, _raw...)     __typeV$__emitNext(_T, _raw)
+#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit$((_T){}), &copy(_raw), sizeOf$(_T)))
 
-#define type$O(/*(_T)(_raw...)*/... /*(_T)*/) \
-    __type$O__step(pp_defer(__type$O__emit)(__type$O__sep __VA_ARGS__))
-#define __type$O__step(...)               __VA_ARGS__
-#define __type$O__sep(_O_T...)            _O_T, __type$O__sepRaw
-#define __type$O__sepRaw(_raw...)         _raw
-#define __type$O__emit(_O_T, _raw...)     __type$O__emitNext(_O_T, _raw)
-#define __type$O__emitNext(_O_T, _raw...) make$((_O_T){ .as_raw[0] = _raw.as_raw[0] })
+#define typeO$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __typeO$__step(pp_defer(__typeO$__emit)(__typeO$__sep __VA_ARGS__))
+#define __typeO$__step(...)               __VA_ARGS__
+#define __typeO$__sep(_O_T...)            _O_T, __typeO$__sepRaw
+#define __typeO$__sepRaw(_raw...)         _raw
+#define __typeO$__emit(_O_T, _raw...)     __typeO$__emitNext(_O_T, _raw)
+#define __typeO$__emitNext(_O_T, _raw...) (*(_O_T*)prim_memcpy(&lit$((_O_T){}), (_raw).as_raw, sizeOf$(_O_T)))
 
-#define type$E(/*(_T)(_raw...)*/... /*(_T)*/) \
-    __type$E__step(pp_defer(__type$E__emit)(__type$E__sep __VA_ARGS__))
-#define __type$E__step(...)               __VA_ARGS__
-#define __type$E__sep(_E_T...)            _E_T, __type$E__sepRaw
-#define __type$E__sepRaw(_raw...)         _raw
-#define __type$E__emit(_E_T, _raw...)     __type$E__emitNext(_E_T, _raw)
-#define __type$E__emitNext(_E_T, _raw...) make$((_E_T){ .as_raw[0] = _raw.as_raw[0] })
+#define typeE$(/*(_T)(_raw...)*/... /*(_T)*/) \
+    __typeE$__step(pp_defer(__typeE$__emit)(__typeE$__sep __VA_ARGS__))
+#define __typeE$__step(...)               __VA_ARGS__
+#define __typeE$__sep(_E_T...)            _E_T, __typeE$__sepRaw
+#define __typeE$__sepRaw(_raw...)         _raw
+#define __typeE$__emit(_E_T, _raw...)     __typeE$__emitNext(_E_T, _raw)
+#define __typeE$__emitNext(_E_T, _raw...) (*(_E_T*)prim_memcpy(&lit$((_E_T){}), (_raw).as_raw, sizeOf$(_E_T)))
+
+#define asg(_p_lhs, _rhs, _fields...) pp_overload(__asg, _fields)(_p_lhs, _rhs, _fields)
+#define __asg_0(_p_lhs, _rhs, ...) \
+    __op__asg(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
+#define __op__asg(__p_lhs, __rhs, _p_lhs, _rhs, ...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    let_(__rhs, TypeOf(_rhs)) = _rhs; \
+    claim_assert_nonnull(__p_lhs); \
+    claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
+    claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
+    claim_assert_static(isSameType$(TypeOf(*__p_lhs), TypeOf(__rhs))); \
+    *_p_lhs = *as$((TypeOf(__p_lhs))(&__rhs)); \
+    __p_lhs; \
+})
+#define __asg_1(_p_lhs, _rhs, _fields...) \
+    __op__asg_compat(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs, __asg_1__expandFields _fields)
+#define __asg_1__expandFields(_fields...) \
+    _fields
+#define __op__asg_compat(__p_lhs, __rhs, _p_lhs, _rhs, _fields...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    let_(__rhs, TypeOf(_rhs)) = _rhs; \
+    claim_assert_nonnull(__p_lhs); \
+    claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
+    claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
+    pp_foreach (__op__asg_compat__assert, (TypeOf(*__p_lhs), TypeOf(__rhs)), _fields); \
+    *_p_lhs = *as$((TypeOf(__p_lhs))(&__rhs)); \
+    __p_lhs; \
+})
+#define __op__asg_compat__assert(...) \
+    __op__asg_compat____assert(__op__asg_compat____assert__parse __VA_ARGS__)
+#define __op__asg_compat____assert__parse(...) __VA_ARGS__,
+#define __op__asg_compat____assert(...)        __op__asg_compat____assert__emit(__VA_ARGS__)
+#define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) \
+    claim_assert_static(isSameType$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
+
+#define asgLit(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) \
+    __op__asgLit(__op__asgLit__parsePLhs __VA_ARGS__)
+#define __op__asgLit(...) \
+    __op__asgLit__emit(__VA_ARGS__)
+#define __op__asgLit__parsePLhs(_p_lhs...) \
+    pp_uniqTok(p_lhs), _p_lhs, __op__asgLit__expandRhs
+#define __op__asgLit__expandRhs(_rhs...)             _rhs
+#define __op__asgLit__emit(__p_lhs, _p_lhs, _rhs...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    claim_assert_nonnull(__p_lhs); \
+    *__p_lhs = make$((TypeOf(*__p_lhs))_rhs); \
+    __p_lhs; \
+})
 
 #define cleared() comp_syn__cleared()
 #define comp_syn__cleared() \
@@ -235,21 +283,23 @@ extern "C" {
 #define blk_return       comp_syn__blk_return
 #define blk_return_(...) comp_syn__blk_return_(__VA_ARGS__)
 
-#define local_label                 comp_syn__local_label
+#define $local_label                comp_syn__$local_label
 #define likely(_Expr... /*bool*/)   comp_syn__likely(_Expr)
 #define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
 
-#define $like_ptr   comp_attr__$like_ptr
-#define $flexible   comp_attr__$flexible
-#define $zero_sized comp_attr__$zero_sized
+#define $like_ref   __attr__$like_ref
+#define $like_deref __attr__$like_deref
+#define $flexible   __attr__$flexible
+#define $zero_sized __attr__$zero_sized
 
 #define pragma_guard_(_push, _ctx, _pop, _code...) \
     _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
 
 #define unreachable __comp_syn__unreachable
 
-#define $static static
-#define $extern extern
+#define $static     static
+#define $extern     extern
+#define $Thrd_local _Thread_local
 
 /*========== Macros and Implementations =====================================*/
 
@@ -335,13 +385,14 @@ T:
 #define comp_syn__blk_return       /* just comment for compound statement expression ({...}) */
 #define comp_syn__blk_return_(...) __VA_ARGS__
 
-#define comp_syn__local_label        __label__
+#define comp_syn__$local_label       __label__
 #define comp_syn__likely(_Expr...)   __builtin_expect(!!(_Expr), 1)
 #define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
 
-#define comp_attr__$like_ptr   [1]
-#define comp_attr__$flexible   [0]
-#define comp_attr__$zero_sized [0]
+#define __attr__$like_ref   [1]
+#define __attr__$like_deref [0]
+#define __attr__$flexible   [0]
+#define __attr__$zero_sized [0]
 
 #if defined(__GNUC__) || defined(__clang__)
 #define __comp_syn__unreachable __builtin_unreachable()
@@ -356,3 +407,7 @@ T:
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* BUILTIN_COMP_INCLUDED */
+
+
+// as$((T)(Expr))
+// as$(T)((Expr))

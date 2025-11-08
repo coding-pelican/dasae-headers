@@ -1,9 +1,6 @@
 #include "dh/Str.h"
+#include "dh/ascii.h"
 #include "dh/mem/common.h"
-
-#include <ctype.h>
-#include <locale.h>
-#include <stdarg.h>
 
 #if plat_windows
 #include "dh/os/windows/mem.h"
@@ -12,15 +9,6 @@
 #include <unistd.h>
 #endif /* posix */
 
-$static $on_load
-fn_((init(void))(void)) {
-    static bool s_initialized = false;
-    if (s_initialized) { return; }
-    /* Set locale for proper UTF-8 handling */
-    let_ignore    = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
-    s_initialized = true;
-}
-
 S_const$u8 Str_view(const u8* ptr, usize len) {
     debug_assert_nonnull(ptr);
     return (S_const$u8){ .ptr = ptr, .len = len };
@@ -28,7 +16,7 @@ S_const$u8 Str_view(const u8* ptr, usize len) {
 
 S_const$u8 Str_viewZ(const u8* ptr) {
     debug_assert_nonnull(ptr);
-    return Str_view(ptr, strlen(as$((const char*)(ptr))));
+    return Str_view(ptr, mem_lenZ0$u8(ptr));
 }
 
 S$u8 Str_from(u8 ptr[], usize len) {
@@ -38,7 +26,7 @@ S$u8 Str_from(u8 ptr[], usize len) {
 
 S$u8 Str_fromZ(u8 ptr[]) {
     debug_assert_nonnull(ptr);
-    return Str_from(ptr, strlen(as$((char*)(ptr))));
+    return Str_from(ptr, mem_lenZ0$u8(ptr));
 }
 
 usize u8_len(S_const$u8 self) {
@@ -61,7 +49,7 @@ bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs) {
     if (lhs.len != rhs.len) { return false; }
     let len = lhs.len;
     for (usize ch = 0; ch < len; ++ch) {
-        if (tolower(*at$S(lhs, ch)) != tolower(*at$S(rhs, ch))) {
+        if (ascii_toLower(*at$S(lhs, ch)) != ascii_toLower(*at$S(rhs, ch))) {
             return false;
         }
     }
@@ -94,7 +82,7 @@ fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $
     debug_assert_nonnull(rhs.ptr);
 
     let total_len = lhs.len + rhs.len;
-    let result    = try_(u_castE((E$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
+    let result = try_(u_castE$((E$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
     mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
     mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
     return_ok(result);
@@ -135,10 +123,10 @@ S_const$u8 Str_slice(S_const$u8 self, usize start, usize end) {
 S_const$u8 Str_trim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize start = 0;
-    usize end   = self.len;
+    usize end = self.len;
 
-    while (start < end && isspace(self.ptr[start])) { start++; }
-    while (end > start && isspace(self.ptr[end - 1])) { end--; }
+    while (start < end && ascii_isWhitespace(self.ptr[start])) { start++; }
+    while (end > start && ascii_isWhitespace(self.ptr[end - 1])) { end--; }
 
     return Str_slice(self, start, end);
 }
@@ -146,14 +134,14 @@ S_const$u8 Str_trim(S_const$u8 self) {
 S_const$u8 u8_ltrim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize start = 0;
-    while (start < self.len && isspace(self.ptr[start])) { start++; }
+    while (start < self.len && ascii_isWhitespace(self.ptr[start])) { start++; }
     return Str_slice(self, start, self.len);
 }
 
 S_const$u8 Str_rtrim(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize end = self.len;
-    while (end > 0 && isspace(self.ptr[end - 1])) { end--; }
+    while (end > 0 && ascii_isWhitespace(self.ptr[end - 1])) { end--; }
     return Str_slice(self, 0, end);
 }
 
@@ -161,9 +149,9 @@ fn_((Str_upper(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
     T_use_E$($set(mem_Err)(S$u8));
 
-    let result = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
+    let result = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
-        *dst = as$((u8)(toupper(*src)));
+        *dst = as$((u8)(ascii_toUpper(*src)));
     });
     return_ok(result);
 } $unscoped_(fn);
@@ -172,9 +160,9 @@ fn_((u8_lower(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
     debug_assert_nonnull(str.ptr);
     T_use_E$($set(mem_Err)(S$u8));
 
-    let result = try_(u_castE((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
+    let result = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
-        *dst = as$((u8)(tolower(*src)));
+        *dst = as$((u8)(ascii_toLower(*src)));
     });
     return_ok(result);
 } $unscoped_(fn);
@@ -235,13 +223,13 @@ static u32 hashMurmur3(const u8* data, usize len) {
     const u32 c2 = 0x1b873593;
     const u32 r1 = 15;
     const u32 r2 = 13;
-    const u32 m  = 5;
-    const u32 n  = 0xe6546b64;
+    const u32 m = 5;
+    const u32 n = 0xe6546b64;
 
     u32 hash = 0;
 
     let nblocks = as$((i32)(len / 4));
-    let blocks  = as$((const u32*)(data));
+    let blocks = as$((const u32*)(data));
 
     for (i32 i = 0; i < nblocks; ++i) {
         u32 k = blocks[i];
@@ -254,7 +242,7 @@ static u32 hashMurmur3(const u8* data, usize len) {
     }
 
     let tail = data + as$((ptrdiff_t)(nblocks * 4));
-    u32 k1   = 0;
+    u32 k1 = 0;
     switch (len & 3) {
     case 3:
         k1 ^= tail[2] << 16;
@@ -292,7 +280,7 @@ cmp_fnCmp(S_const$u8) {
     debug_assert_nonnull(other.ptr);
 
     let min_len = prim_min(self.len, other.len);
-    let cmp     = mem_cmp(self.ptr, other.ptr, min_len);
+    let cmp = mem_cmp(self.ptr, other.ptr, min_len);
     if (cmp != 0) { return cmp; }
 
     return prim_cmp(self.len, self.len);
@@ -303,7 +291,7 @@ cmp_fnCmp(S$u8) {
     debug_assert_nonnull(other.ptr);
 
     let min_len = prim_min(self.len, other.len);
-    let cmp     = mem_cmp(self.ptr, other.ptr, min_len);
+    let cmp = mem_cmp(self.ptr, other.ptr, min_len);
     if (cmp != 0) { return cmp; }
 
     return prim_cmp(self.len, self.len);
@@ -410,9 +398,9 @@ StrTokenizer Str_tokenizer(S_const$u8 self, S_const$u8 delims) {
     debug_assert_nonnull(delims.ptr);
 
     return (StrTokenizer){
-        .str    = self,
+        .str = self,
         .delims = delims,
-        .pos    = 0
+        .pos = 0
     };
 }
 

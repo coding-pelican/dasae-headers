@@ -18,52 +18,25 @@ extern "C" {
             union { \
                 var_(none, Void); \
                 var_(some, _T); \
-                var_(raw $like_ptr, O_Payload$raw); \
             } payload; \
         }; \
-        var_(as_raw $like_ptr, O$raw); \
+        var_(as_raw $like_ref, O$raw); \
     })
 /* Optional Alias */
 #define O$(_T...) pp_join($, O, _T)
 /* Optional Template */
 #define T_decl_O$(_T...) \
-    /* $maybe_unused typedef union O$(P_const$(_T)) O$(P_const$(_T)); \
-    $maybe_unused typedef union O$(P$(_T)) O$(P$(_T)); */ \
     $maybe_unused typedef union O$(_T) O$(_T)
 #define T_impl_O$(_T...) \
-    /* union O$(P_const$(_T)) { \
-        struct { \
-            var_(is_some, bool); \
-            TypeOf(union { \
-                var_(none, Void); \
-                var_(some, _T); \
-                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            }) payload; \
-        }; \
-        var_(as_raw, O$raw); \
-        var_(ref_raw, TypeOf(O$raw $like_ptr)); \
-    }; \
-    union O$(P$(_T)) { \
-        struct { \
-            var_(is_some, bool); \
-            TypeOf(union { \
-                var_(none, Void); \
-                var_(some, _T); \
-                var_(raw, TypeOf(O_Payload$raw $like_ptr)); \
-            }) payload; \
-        }; \
-        var_(as_raw, O$raw); \
-    }; */ \
     union O$(_T) { \
         struct { \
             var_(is_some, bool); \
             union { \
                 var_(none, Void); \
                 var_(some, _T); \
-                var_(raw $like_ptr, O_Payload$raw); \
             } payload; \
         }; \
-        var_(as_raw $like_ptr, O$raw); \
+        var_(as_raw $like_ref, O$raw); \
     }
 #define T_use_O$(_T...) \
     T_decl_O$(_T); \
@@ -76,10 +49,9 @@ typedef union O$Void {
         union {
             var_(none, Void);
             var_(some, Void);
-            var_(raw $like_ptr, O_Payload$raw);
         } payload;
     };
-    var_(as_raw $like_ptr, O$raw);
+    var_(as_raw $like_ref, O$raw);
 } O$Void, O$void;
 
 /* Optional Operations */
@@ -88,17 +60,23 @@ typedef union O$Void {
 // #define asg$O()
 // #define asg$O$()
 
-#define asg$O(/*(_p_o: O$(_T))(_v_o: _T|void)*/... /*(_p_o: O$(_T))*/) \
-    __asg$O__step(pp_defer(__asg$O__emit)(__asg$O__parseLhs __VA_ARGS__))
-#define __asg$O__step(...)                  __VA_ARGS__
-#define __asg$O__parseLhs(_p_o...)          pp_uniqTok(p_o), _p_o, __asg$O__parseRhs
-#define __asg$O__parseRhs(_v_o...)          _v_o
-#define __asg$O__emit(__p_o, _p_o, _v_o...) blk({ \
-    let_(__p_o, TypeOf(_p_o)) = _p_o; \
-    claim_assert_nonnull(__p_o); \
-    *__p_o = make$((TypeOf(*__p_o))_v_o); \
-    blk_return __p_o; \
-})
+// #define asg$O(/*(_p_o: O$(_T))(_v_o: _T|void)*/... /*(_p_o: O$(_T))*/) \
+//     __asg$O__step(pp_defer(__asg$O__emit)(__asg$O__parseLhs __VA_ARGS__))
+// #define __asg$O__step(...)                  __VA_ARGS__
+// #define __asg$O__parseLhs(_p_o...)          pp_uniqTok(p_o), _p_o, __asg$O__parseRhs
+// #define __asg$O__parseRhs(_v_o...)          _v_o
+// #define __asg$O__emit(__p_o, _p_o, _v_o...) blk({ \
+//     let_(__p_o, TypeOf(_p_o)) = _p_o; \
+//     claim_assert_nonnull(__p_o); \
+//     *__p_o = lit$((TypeOf(*__p_o))_v_o); \
+//     blk_return __p_o; \
+// })
+
+#define asgO(_p_o, _v_o...)  asgO1(_p_o, _v_o)
+#define asgO1(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some))
+#define asgO2(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some))
+#define asgO3(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some.payload.some))
+#define asgO4(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some.payload.some.payload.some))
 
 /* Determines optional value */
 #define some(_val...)              comp_inline__some(_val)
@@ -122,6 +100,11 @@ typedef union O$Void {
 /* Checks optional value */
 #define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)((_o).is_some))
 #define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)(!(_o).is_some))
+
+#define O_asP$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
+    __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
+#define O_asP(_p_o /*: P(O(T))*/... /*(O(P(T)))*/) \
+    __step__O_asP(_p_o)
 
 /* Returns optional value */
 #define return_some(_val...)       __return_some(_val)
@@ -161,6 +144,23 @@ typedef union O$Void {
 #define __param_expand__none$$(...)           __VA_ARGS__, pp_expand
 #define __block_inline__none$$(...)           __block_inline1__none$$$(__VA_ARGS__)
 #define __block_inline1__none$$$(_T, _val...) lit$((O$$(_T))none())
+
+#define __step__O_asP$(...) \
+    __step__O_asP$__emit(__VA_ARGS__)
+#define __step__O_asP$__parseOPT(_OPT...) \
+    _OPT, __step__O_asP$__parsePO
+#define __step__O_asP$__parsePO(_p_o...) \
+    pp_uniqTok(p_o), _p_o
+#define __step__O_asP$__emit(_OPT, __p_o, _p_o...) ({ \
+    typedef _OPT O$Ret$O_asP; \
+    let_(__p_o, TypeOf(_p_o)) = _p_o; \
+    claim_assert_nonnull(__p_o); \
+    __p_o->is_some \
+        ? lit$((O$Ret$O_asP)some(&__p_o->payload.some)) \
+        : lit$((O$Ret$O_asP)none()); \
+})
+#define __step__O_asP(_p_o...) \
+    O_asP$((O$$(FieldType$(TypeOf(*_p_o), payload.some)*))(_p_o))
 
 #define __return_some(_val...)         return_(some(_val))
 #define __return_some_void_0()         (return_(some({})))

@@ -27,7 +27,7 @@ static E$void mergeSortWithTmpRecur( // NOLINT
     scope_reserveReturn(E$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }
 
-        let mid        = num / 2;
+        let mid = num / 2;
         let base_bytes = as$(u8*, base); // For pointer arithmetic
         let temp_bytes = as$(u8*, temp_buffer.ptr);
 
@@ -36,16 +36,16 @@ static E$void mergeSortWithTmpRecur( // NOLINT
         try(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
 
         // Merge the sorted halves using the temporary buffer
-        usize left_index  = 0;
+        usize left_index = 0;
         usize right_index = mid;
-        usize temp_index  = 0;
+        usize temp_index = 0;
 
         while (left_index < mid && right_index < num) {
             if (comp(base_bytes + left_index * size, base_bytes + right_index * size, arg) <= 0) {
-                memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, size);
+                prim_memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, size);
                 left_index++;
             } else {
-                memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, size);
+                prim_memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, size);
                 right_index++;
             }
             temp_index++;
@@ -54,17 +54,17 @@ static E$void mergeSortWithTmpRecur( // NOLINT
         // Copy remaining elements
         if (left_index < mid) {
             let remaining = mid - left_index;
-            memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, remaining * size);
+            prim_memcpy(temp_bytes + temp_index * size, base_bytes + left_index * size, remaining * size);
             temp_index += remaining;
         }
         if (right_index < num) {
             let remaining = num - right_index;
-            memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, remaining * size);
+            prim_memcpy(temp_bytes + temp_index * size, base_bytes + right_index * size, remaining * size);
             temp_index += remaining;
         }
 
         // Copy all merged elements back
-        memcpy(base_bytes, temp_bytes, temp_index * size);
+        prim_memcpy(base_bytes, temp_bytes, temp_index * size);
 
         return_void();
     }
@@ -76,13 +76,13 @@ static E$void stableSort(
     usize num,
     usize size,
     cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
-    P$raw         arg,
+    P$raw arg,
     mem_Allocator allocator
 ) {
     scope_reserveReturn(E$void) {
         // Allocate temporary buffer using the provided allocator
         let checked_size = try(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
+        let temp_buffer = meta_cast$(S$u8, try(mem_Allocator_alloc(allocator, typeInfo(u8), checked_size)));
         defer(mem_Allocator_free(allocator, anySli(temp_buffer))); // Ensure cleanup
 
         // Perform merge sort
@@ -130,7 +130,7 @@ $inline_always cmp_fnCmp(TestElem) {
 }
 static cmp_Ord compareTestElem(P_const$raw lhs, P_const$raw rhs, P_const$raw arg) {
     $unused(arg);
-    let self  = as$(const TestElem*, lhs);
+    let self = as$(const TestElem*, lhs);
     let other = as$(const TestElem*, rhs);
     return TestElem_cmp(*self, *other);
 }
@@ -148,11 +148,11 @@ static bool isStable(const TestElem* arr, usize size) {
 use_E$(TEST_Result);
 E$TEST_Result TEST_stableSort_Basic(void) {
     scope_reserveReturn(E$TEST_Result) {
-        var result    = TEST_makeResult("stableSort basic functionality");
+        var result = TEST_makeResult("stableSort basic functionality");
         var allocator = testAllocator();
 
         int data[] = { 5, 2, 8, 1, 3 };
-        let size   = sizeof(data) / sizeof(data[0]);
+        let size = sizeof(data) / sizeof(data[0]);
 
         // Create copy for sorting
         let arr = meta_cast$(S$(int), try(mem_Allocator_alloc(allocator, typeInfo(int), size)));
@@ -160,7 +160,7 @@ E$TEST_Result TEST_stableSort_Basic(void) {
         {
             claim_assert(arr.len == size);
             claim_assert(arr.len * sizeOf$(int) == sizeOf(data));
-            memcpy(arr.ptr, data, sizeof(data));
+            prim_memcpy(arr.ptr, data, sizeof(data));
         }
 
         let res = stableSort(arr.ptr, arr.len, sizeof(int), compareInt, null, allocator);
@@ -176,7 +176,7 @@ E$TEST_Result TEST_stableSort_Basic(void) {
 
 E$TEST_Result TEST_stableSort_Stability(void) {
     scope_reserveReturn(E$TEST_Result) {
-        var result    = TEST_makeResult("stableSort stability");
+        var result = TEST_makeResult("stableSort stability");
         var allocator = testAllocator();
 
         // Create array with duplicate keys but different sequence numbers
@@ -190,7 +190,7 @@ E$TEST_Result TEST_stableSort_Stability(void) {
         {
             claim_assert(arr.len == size);
             claim_assert(arr.len * sizeOf$(TestElem) == sizeOf(data));
-            memcpy(arr.ptr, data, sizeof(data));
+            prim_memcpy(arr.ptr, data, sizeof(data));
         }
 
         let res = stableSort(arr.ptr, arr.len, sizeof(TestElem), compareTestElem, null, allocator);
@@ -207,7 +207,7 @@ E$TEST_Result TEST_stableSort_Stability(void) {
 
 E$TEST_Result TEST_stableSort_EdgeCases(void) {
     scope_reserveReturn(E$TEST_Result) {
-        var result    = TEST_makeResult("stableSort edge cases");
+        var result = TEST_makeResult("stableSort edge cases");
         var allocator = testAllocator();
 
         // Test empty array
@@ -216,13 +216,13 @@ E$TEST_Result TEST_stableSort_EdgeCases(void) {
 
         // Test single element
         int single = 42;
-        let res2   = stableSort(&single, 1, sizeof(int), compareInt, null, allocator);
+        let res2 = stableSort(&single, 1, sizeof(int), compareInt, null, allocator);
         TEST_condition(!res2.is_err);
         TEST_condition(single == 42);
 
         // Test already sorted array
         int sorted[] = { 1, 2, 3, 4, 5 };
-        let res3     = stableSort(sorted, 5, sizeof(int), compareInt, null, allocator);
+        let res3 = stableSort(sorted, 5, sizeof(int), compareInt, null, allocator);
         TEST_condition(!res3.is_err);
         TEST_condition(isSorted(sorted, 5));
 
@@ -244,13 +244,13 @@ static void generateRandIntArray(int* arr, usize size) {
 static void generateRandTestElemArray(TestElem* arr, usize size) {
     for (usize i = 0; i < size; ++i) {
         arr[i].value = Rand_i32();
-        arr[i].seq   = (int)i;
+        arr[i].seq = (int)i;
     }
 }
 
 E$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
     scope_reserveReturn(E$TEST_Result) {
-        var result    = TEST_makeResult("stableSort large dataset (unstable)");
+        var result = TEST_makeResult("stableSort large dataset (unstable)");
         var allocator = testAllocator();
 
         let size = 10000; // Adjust as needed
@@ -270,7 +270,7 @@ E$TEST_Result TEST_stableSort_LargeDataset_Unstable(void) {
 
 E$TEST_Result TEST_stableSort_LargeDataset_Stable(void) {
     scope_reserveReturn(E$TEST_Result) {
-        var result    = TEST_makeResult("stableSort large dataset (stable)");
+        var result = TEST_makeResult("stableSort large dataset (stable)");
         var allocator = testAllocator();
 
         let size = 10000; // Adjust as needed

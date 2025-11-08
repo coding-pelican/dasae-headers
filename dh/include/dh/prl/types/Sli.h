@@ -21,7 +21,7 @@ extern "C" {
         var_(len, usize); \
     }; \
     var_(as_raw, S_const$raw); \
-    var_(ref_raw $like_ptr, S_const$raw); \
+    var_(ref_raw $like_ref, S_const$raw); \
 })
 #define __S$$(_T...) TypeOf(union { \
     struct { \
@@ -29,7 +29,7 @@ extern "C" {
         var_(len, usize); \
     }; \
     var_(as_raw, S$raw); \
-    var_(ref_raw $like_ptr, S$raw); \
+    var_(ref_raw $like_ref, S$raw); \
     var_(as_const, __S_const$$(_T)); \
 })
 
@@ -52,7 +52,7 @@ extern "C" {
             var_(len, usize); \
         }; \
         var_(as_raw, S$(const raw)); \
-        var_(ref_raw $like_ptr, S$(const raw)); \
+        var_(ref_raw $like_ref, S$(const raw)); \
     }; \
     union S$(_T) { \
         struct { \
@@ -60,7 +60,7 @@ extern "C" {
             var_(len, usize); \
         }; \
         var_(as_raw, S$raw); \
-        var_(ref_raw $like_ptr, S$raw); \
+        var_(ref_raw $like_ref, S$raw); \
         var_(as_const, S$(const _T)); \
     }
 #define T_use_S$(_T...) \
@@ -68,34 +68,53 @@ extern "C" {
     T_impl_S$(_T)
 
 /* Slice Operations */
+#define zeroS                               zero$S
 #define zero$S()                            init$S(null, 0)
+#define zeroS$                              zero$S$
 #define zero$S$(/*(_T)*/... /*(S$(_T))*/)   init$S$(__VA_ARGS__(null, 0))
 #define zero$S$$(/*(_T)*/... /*(S$$(_T))*/) init$S$$(__VA_ARGS__(null, 0))
 
+#define initS                 init$S
 #define init$S(_ptr, _len...) { .ptr = _ptr, .len = _len }
+#define initS$                init$S$
 #define init$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$(_T))*/) \
     __lit_init$S__step(pp_defer(__lit_init$S__emit)(S$, __lit_init$S__parseT __VA_ARGS__))
 #define init$S$$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$$(_T))*/) \
     __lit_init$S__step(pp_defer(__lit_init$S__emit)(S$$, __lit_init$S__parseT __VA_ARGS__))
 
+#define asgS(_p_s, _v_s...)  asgS1(_p_s, _v_s)
+#define asgS1(_p_s, _v_s...) asg(_p_s, _v_s, (ptr->ptr))
+#define asgS2(_p_s, _v_s...) asg(_p_s, _v_s, (ptr->ptr->ptr))
+#define asgS3(_p_s, _v_s...) asg(_p_s, _v_s, (ptr->ptr->ptr->ptr))
+#define asgS4(_p_s, _v_s...) asg(_p_s, _v_s, (ptr->ptr->ptr->ptr->ptr))
+
+#define derefS$ deref$S$
 #define deref$S$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$(_N,_T))*/) \
     __step_inline__deref$S$(pp_defer(__emit_inline__deref$S$)(__param_parse__deref$S$ __VA_ARGS__))
 #define deref$S$$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$$(_N,_T))*/) \
     __step_inline__deref$S$$(pp_defer(__emit_inline__deref$S$$)(__param_parse__deref$S$$ __VA_ARGS__))
 
+#define mutCastS                                             mutCast$S
 #define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/)   (_s.as_const)
+#define constCastS                                           constCast$S
 #define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
 
+#define ptrS                                     ptr$S
 #define ptr$S(_s /*: S$$(_T)*/... /*(P$$(_T))*/) ((_s).ptr)
+#define lenS                                     len$S
 #define len$S(_s /*: S$$(_T)*/... /*(usize)*/)   ((_s).len)
 
+#define atS at$S
 #define at$S(_s /*: S$$(_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
     pp_expand(pp_defer(block_inline__at$S)(param_expand__at$S(_s, _idx)))
 
+#define sliceS                                                                     slice$S
 #define slice$S(/*_s: S$$(_T), $r(_begin, _end): R*/... /*(S$$(_T))*/)             __param_expand__slice$S(__VA_ARGS__)
 #define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$S$)(__param_expand__slice$S$ __VA_ARGS__))
+#define prefixS                                                                    prefix$S
 #define prefix$S(/*_s: S$$(_T), _end: usize*/... /*(S$$(_T))*/)                    __param_expand__prefix$S(__VA_ARGS__)
 #define prefix$S$(/*(_T)(_s: S$$(_T), _end: usize)*/... /*(S_const$(_T))*/)        pp_expand(pp_defer(__block_inline__prefix$S$)(__param_expand__prefix$S$ __VA_ARGS__))
+#define suffixS                                                                    suffix$S
 #define suffix$S(/*_s: S$$(_T), _begin: usize*/... /*(S$$(_T))*/)                  __param_expand__suffix$S(__VA_ARGS__)
 #define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S_const$(_T))*/)      pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
 
@@ -203,15 +222,15 @@ extern "C" {
 #define comp_syn__u16_c(_literal...) lit$((u16){ u##_literal })
 #define comp_syn__u32_c(_literal...) lit$((u32){ U##_literal })
 
-#define comp_syn__u8_a(_literal...) lit$((A$$(sizeOf$(_literal) - 1, u8)){ .buf = { _literal } })
+#define comp_syn__u8_a(_literal...) lit$((A$$(sizeOf$(_literal) - 1, u8)){ .val = { _literal } })
 #define comp_syn__u8_s(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
 #define comp_syn__u8_l(_literal...) lit$((S_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_az(_literal...) lit$((A$$(sizeOf$(_literal), u8)){ .buf = { _literal } })
+#define comp_syn__u8_az(_literal...) lit$((A$$(sizeOf$(_literal), u8)){ .val = { _literal } })
 #define comp_syn__u8_sz(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
 #define comp_syn__u8_lz(_literal...) lit$((S_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf$(TypeOf(_literal)) })
 
-#define comp_syn__u8z_a(_literal...) lit$((AZ$$(sizeOf$(_literal) - 1, u8)){ .buf = { _literal } })
+#define comp_syn__u8z_a(_literal...) lit$((AZ$$(sizeOf$(_literal) - 1, u8)){ .val = { _literal } })
 #define comp_syn__u8z_s(_literal...) lit$((SZ$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
 #define comp_syn__u8z_l(_literal...) lit$((SZ_const$u8){ .ptr = as$((const u8*)("" _literal)), .len = sizeOf$(TypeOf(_literal)) - 1 })
 

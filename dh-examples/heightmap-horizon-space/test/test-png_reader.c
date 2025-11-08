@@ -11,11 +11,11 @@ const uint8_t PNG_SIGNATURE[] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 struct PNG_IHDR {
     uint32_t width;
     uint32_t height;
-    uint8_t  bit_depth;
-    uint8_t  color_type;
-    uint8_t  compression;
-    uint8_t  filter;
-    uint8_t  interlace;
+    uint8_t bit_depth;
+    uint8_t color_type;
+    uint8_t compression;
+    uint8_t filter;
+    uint8_t interlace;
 };
 
 uint32_t readU32(const uint8_t* data) {
@@ -66,7 +66,7 @@ void unfilterScanline(uint8_t* line, uint8_t* prev_line, int len, int bpp, uint8
             int b = prev_line ? prev_line[i] : 0;
             int c = (i < bpp || !prev_line) ? 0 : prev_line[i - bpp];
 
-            int p  = a + b - c;
+            int p = a + b - c;
             int pa = abs(p - a);
             int pb = abs(p - b);
             int pc = abs(p - c);
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
 
     // Verify PNG signature
     uint8_t header[8];
-    if (fread(header, 1, 8, file) != 8 || memcmp(header, PNG_SIGNATURE, 8) != 0) {
+    if (fread(header, 1, 8, file) != 8 || prim_memcmp(header, PNG_SIGNATURE, 8) != 0) {
         fprintf(stderr, "Invalid PNG signature\n");
         fclose(file);
         return 1;
@@ -112,37 +112,37 @@ int main(int argc, char* argv[]) {
     }
 
     struct PNG_IHDR ihdr;
-    ihdr.width       = readU32(ihdr_chunk + 8);
-    ihdr.height      = readU32(ihdr_chunk + 12);
-    ihdr.bit_depth   = ihdr_chunk[16];
-    ihdr.color_type  = ihdr_chunk[17];
+    ihdr.width = readU32(ihdr_chunk + 8);
+    ihdr.height = readU32(ihdr_chunk + 12);
+    ihdr.bit_depth = ihdr_chunk[16];
+    ihdr.color_type = ihdr_chunk[17];
     ihdr.compression = ihdr_chunk[18];
-    ihdr.filter      = ihdr_chunk[19];
-    ihdr.interlace   = ihdr_chunk[20];
+    ihdr.filter = ihdr_chunk[19];
+    ihdr.interlace = ihdr_chunk[20];
 
     printf("Image dimensions: %ux%u\n", ihdr.width, ihdr.height);
     printf("Bit depth: %u\n", ihdr.bit_depth);
     printf("Color type: %u\n", ihdr.color_type);
 
     // Collect IDAT chunks
-    uint8_t* compressed_data     = NULL;
-    size_t   compressed_size     = 0;
-    size_t   compressed_capacity = 0;
-    uint8_t  chunk_header[8];
+    uint8_t* compressed_data = NULL;
+    size_t compressed_size = 0;
+    size_t compressed_capacity = 0;
+    uint8_t chunk_header[8];
 
     while (1) {
         if (fread(chunk_header, 1, 8, file) != 8) {
             break;
         }
 
-        uint32_t chunk_length  = readU32(chunk_header);
-        char     chunk_type[5] = { 0 };
-        memcpy(chunk_type, chunk_header + 4, 4);
+        uint32_t chunk_length = readU32(chunk_header);
+        char chunk_type[5] = { 0 };
+        prim_memcpy(chunk_type, chunk_header + 4, 4);
 
         if (strcmp(chunk_type, "IDAT") == 0) {
             if (compressed_size + chunk_length > compressed_capacity) {
                 compressed_capacity = (compressed_size + chunk_length) * 2;
-                uint8_t* new_data   = realloc(compressed_data, compressed_capacity);
+                uint8_t* new_data = realloc(compressed_data, compressed_capacity);
                 if (!new_data) {
                     fprintf(stderr, "Memory allocation failed\n");
                     free(compressed_data);
@@ -173,10 +173,10 @@ int main(int argc, char* argv[]) {
     printf("Compressed size: %zu bytes\n", compressed_size);
 
     // Calculate dimensions
-    int      bytes_per_pixel = (ihdr.color_type == 6) ? 4 : 3;
-    int      stride          = ihdr.width * bytes_per_pixel + 1;
-    int      output_size     = stride * ihdr.height;
-    uint8_t* image_data      = malloc(output_size);
+    int bytes_per_pixel = (ihdr.color_type == 6) ? 4 : 3;
+    int stride = ihdr.width * bytes_per_pixel + 1;
+    int output_size = stride * ihdr.height;
+    uint8_t* image_data = malloc(output_size);
     if (!image_data) {
         fprintf(stderr, "Failed to allocate image buffer\n");
         free(compressed_data);
@@ -185,10 +185,10 @@ int main(int argc, char* argv[]) {
     }
 
     // Setup zlib stream
-    z_stream zstream  = { 0 };
-    zstream.next_in   = compressed_data;
-    zstream.avail_in  = compressed_size;
-    zstream.next_out  = image_data;
+    z_stream zstream = { 0 };
+    zstream.next_in = compressed_data;
+    zstream.avail_in = compressed_size;
+    zstream.next_out = image_data;
     zstream.avail_out = output_size;
 
     if (inflateInit(&zstream) != Z_OK) {
@@ -216,16 +216,16 @@ int main(int argc, char* argv[]) {
     // Display the image
     uint8_t* prev_line = NULL;
     for (uint32_t y = 0; y < ihdr.height; y++) {
-        uint8_t* line        = image_data + y * stride;
-        uint8_t  filter_type = line[0];
+        uint8_t* line = image_data + y * stride;
+        uint8_t filter_type = line[0];
 
         unfilterScanline(line + 1, prev_line ? prev_line + 1 : NULL, stride - 1, bytes_per_pixel, filter_type);
 
         for (uint32_t x = 0; x < ihdr.width; x++) {
-            int     pixel_pos = 1 + x * bytes_per_pixel;
-            uint8_t r         = line[pixel_pos];
-            uint8_t g         = line[pixel_pos + 1];
-            uint8_t b         = line[pixel_pos + 2];
+            int pixel_pos = 1 + x * bytes_per_pixel;
+            uint8_t r = line[pixel_pos];
+            uint8_t g = line[pixel_pos + 1];
+            uint8_t b = line[pixel_pos + 2];
 
             int color = rgbToAnsiColorIndexed8(r, g, b);
             printf("\033[4%dm  ", color);

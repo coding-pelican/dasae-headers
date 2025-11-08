@@ -34,10 +34,15 @@ extern "C" {
 
 /* Override values */
 
-#if defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING)
+// #if defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING)
+// #undef __comp_flag__claim__fail_logging_default_enabled
+// #define __comp_flag__claim__fail_logging_default_enabled 0
+// #endif /* defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING) */
+
+#if defined(NDEBUG)
 #undef __comp_flag__claim__fail_logging_default_enabled
 #define __comp_flag__claim__fail_logging_default_enabled 0
-#endif /* defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING) */
+#endif /* defined(NDEBUG) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

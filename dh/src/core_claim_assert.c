@@ -17,6 +17,7 @@
 
 #include "dh/core/claim/assert.h"
 
+#if claim_fail_logging_comp_enabled
 #include <stdarg.h> /* For va_list, va_start(), va_end() */
 #include <stdio.h>  /* For fprintf(), stderr */
                     /* TODO: Remove printing based stdio and fprintf */
@@ -62,3 +63,4 @@ fn_((claim_assert_failLogFmt(const char* expr, const char* func, const char* fil
         func, file, line
     );
 }
+#endif /* claim_fail_logging_comp_enabled */

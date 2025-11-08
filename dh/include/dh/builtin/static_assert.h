@@ -20,12 +20,12 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #define static_assert(_Expr)           __step__static_assert(_Expr)
 #define static_assert_msg(_Expr, _msg) __step__static_assert_msg(_Expr, _msg)
 
-/*========== Macros Implementation ==========================================*/
+/*========== Macros and Definitions =========================================*/
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 /* C++11 or later - static_assert is available */
@@ -37,7 +37,7 @@ extern "C" {
 #define __step__static_assert_msg(_Expr, _msg) _Static_assert((_Expr), "Failed assertion: " _msg)
 #else
 /* Older versions - emulate static assert */
-#include "dh/core/pp.h"
+#include "pp.h"
 #ifdef __COUNTER__
 #define __step__static_assert(_Expr) \
     typedef int pp_join(__, __step__static_assert, __COUNTER__)[(_Expr) ? 1 : -1]

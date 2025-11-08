@@ -65,7 +65,7 @@ typedef union Reader {
 } Reader;
 
 $static fn_((Reader_VT_read(const P$raw ctx, S$u8 buf))(E$usize)) {
-    let self = as$((FieldTypeOf(Reader, ctx)*)(&ctx));
+    let self = as$((FieldType$(Reader, ctx)*)(&ctx));
     return pp_if_(plat_windows)(
         pp_then_(windows_ReadFile),
         pp_else_(/* plat_posix */ posix_read)
@@ -89,7 +89,7 @@ typedef union Writer {
 } Writer;
 
 $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize)) {
-    let self = as$((FieldTypeOf(Writer, ctx)*)(&ctx));
+    let self = as$((FieldType$(Writer, ctx)*)(&ctx));
     return pp_if_(plat_windows)(
         pp_then_(windows_WriteFile),
         pp_else_(/* plat_posix */ posix_write)

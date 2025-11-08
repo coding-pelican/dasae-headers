@@ -75,7 +75,7 @@ fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
     );
     if (result != 0) { return_ok(none()); }
 
-    let name_len = Str_viewZ(buf_ptr->buf);
+    let name_len = mem_lenZ0$u8(buf_ptr->buf);
     if (name_len == 0) { return_ok(none()); }
 
     return_ok(some(Sli_from(buf_ptr->buf, name_len)));
@@ -99,7 +99,7 @@ fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
 // Use pthread_setname_np on all platforms where available
 #ifdef pthread_setname_np
     var name_mem = (Thrd_NameBuf){};
-    memcpy(name_mem.buf, name.ptr, name_len);
+    prim_memcpy(name_mem.buf, name.ptr, name_len);
     name_mem.buf[name_len] = '\0';
 
 #if defined(__APPLE__) && defined(__MACH__)
@@ -131,13 +131,17 @@ fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
-    switch_(Thrd_Handle handle = {}, pthread_create(&handle, null, as$((fn_(((*)(void* thrd_ctx))(void*)))(fn_ctx->fn)), fn_ctx), {
-        case_(/* SUCCESS */ 0, return_ok({ .handle = handle }));
-        case_(/* AGAIN */ EAGAIN, return_err(Err_Unspecified())); // TODO: Change to specified err
-        case_(/* PERM */ EPERM, $fallthrough);
-        case_(/* INVAL */ EINVAL, claim_unreachable);
-        fallback_(return_err(Err_Unexpected()));
-    });
+    // Couldn't we pass the stack size to Thrd_SpawnConfig?
+    switch_((Thrd_Handle handle = {})(
+        pthread_create(&handle, null, as$((fn_(((*)(void* thrd_ctx))(void*)))(fn_ctx->fn)), fn_ctx))
+    ) {
+        case_((/*SUCCESS*/ 0)    (return_ok({ .handle = handle })));
+        case_((/*AGAIN*/ EAGAIN) (return_err(Err_Unspecified()))); // TODO: Change to specified err
+        case_((/*PERM*/ EPERM)   ($fallthrough));
+        case_((/*INVAL*/ EINVAL) (claim_unreachable));
+        default_((return_err(Err_Unexpected())));
+    }
+    claim_unreachable;
 } $unscoped_(fn);
 
 fn_((Thrd_detach(Thrd self))(void)) {

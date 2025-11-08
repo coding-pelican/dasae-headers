@@ -30,7 +30,7 @@ extern "C" {
 /* Default values */
 
 /* TODO: Add edittime decision */
-// #define __comp_flag__TEST__comp_enabled_default pp_not_(on_comptime)
+// #define __comp_flag__TEST__comp_enabled_default pp_not(on_comptime)
 #define __comp_flag__TEST__comp_enabled_default 0
 #define __comp_bool__TEST_comp_enabled          TEST__comp_enabled_default
 

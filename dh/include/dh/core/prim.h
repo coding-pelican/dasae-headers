@@ -61,7 +61,12 @@ extern "C" {
 #define prim_clamp(val_x, val_min, val_max)           comp_inline__prim_clamp(val_x, val_min, val_max)
 #define prim_wrap(val_x, val_min, val_max)            comp_inline__prim_wrap(val_x, val_min, val_max)
 
-#define prim_swap(val_lhs, val_rhs) comp_inline__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
+#define prim_swap(val_lhs, val_rhs)                          __op__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
+#define prim_memset(val_ptr, i32_value, usize_len...)        __op__prim_memset(val_ptr, i32_value, usize_len)
+#define prim_memcpy(val_dst_ptr, val_src_ptr, usize_len...)  __op__prim_memcpy(val_dst_ptr, val_src_ptr, usize_len)
+#define prim_memmove(val_dst_ptr, val_src_ptr, usize_len...) __op__prim_memmove(val_dst_ptr, val_src_ptr, usize_len)
+#define prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len...)  __op__prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len)
+#define prim_memchr(val_ptr, i32_value, usize_len...)        __op__prim_memchr(val_ptr, i32_value, usize_len)
 
 #define prim_divisible(val_lhs, val_rhs) comp_inline__prim_divisible(val_lhs, val_rhs)
 #define prim_sign(val_x)                 comp_inline__prim_sign(val_x)
@@ -151,14 +156,19 @@ typedef struct Void {
 #define comp_inline__prim_clamp(val_x, val_min, val_max) \
     prim_min(prim_max(val_x, val_min), val_max)
 
-#define comp_inline__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) blk({ \
+#define __op__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) blk({ \
     let __lhs = &(val_lhs); \
     let __rhs = &(val_rhs); \
     let __tmp = *(__lhs); \
-    *(__lhs)  = *(__rhs); \
-    *(__rhs)  = __tmp; \
+    *(__lhs) = *(__rhs); \
+    *(__rhs) = __tmp; \
     blk_return{}; \
 })
+#define __op__prim_memset(val_ptr, i32_value, usize_len...)        memset(val_ptr, i32_value, usize_len)
+#define __op__prim_memcpy(val_dst_ptr, val_src_ptr, usize_len...)  memcpy(val_dst_ptr, val_src_ptr, usize_len)
+#define __op__prim_memmove(val_dst_ptr, val_src_ptr, usize_len...) memmove(val_dst_ptr, val_src_ptr, usize_len)
+#define __op__prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len...)  memcmp(val_lhs_ptr, val_rhs_ptr, usize_len)
+#define __op__prim_memchr(val_ptr, i32_value, usize_len...)        memchr(val_ptr, i32_value, usize_len)
 
 #define comp_inline__prim_divisible(val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
@@ -187,9 +197,9 @@ typedef struct Void {
 #define block_inline__swap$(_T, _p_lhs, _p_rhs) ({ \
     p$(_T) __lhs = (__p_lhs); \
     p$(_T) __rhs = (__p_rhs); \
-    _T __tmp     = *__lhs; \
-    *__lhs       = *__rhs; \
-    *__rhs       = __tmp; \
+    _T __tmp = *__lhs; \
+    *__lhs = *__rhs; \
+    *__rhs = __tmp; \
     ({}); \
 })
 

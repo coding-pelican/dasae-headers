@@ -15,7 +15,7 @@ extern "C" {
     union { \
         var_(val, $A$(_N, _T)); \
         var_(as_raw, A$raw); \
-        var_(ref_raw $like_ptr, A$raw); \
+        var_(ref_raw $like_ref, A$raw); \
     }
 /* Array Alias */
 #define A$(_N, _T...) pp_join3($, A, _N, _T)
@@ -26,7 +26,7 @@ extern "C" {
     union A$(_N, _T) { \
         var_(val, $A$(_N, _T)); \
         var_(as_raw, A$raw); \
-        var_(ref_raw $like_ptr, A$raw); \
+        var_(ref_raw $like_ref, A$raw); \
     }
 #define T_use_A$(_N, _T...) \
     T_decl_A$(_N, _T); \
@@ -36,6 +36,12 @@ extern "C" {
 #define zero$A()                                  init$A({})
 #define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/)   init$A$(__VA_ARGS__{})
 #define zero$A$$(/*(_N,_T)*/... /*(A$$(_N,_T))*/) init$A$$(__VA_ARGS__{})
+
+#define asgA(_p_a, _v_a...)  asgA1(_p_a, _v_a)
+#define asgA1(_p_a, _v_a...) asg(_p_a, _v_a, (val))
+#define asgA2(_p_a, _v_a...) asg(_p_a, _v_a, (val.val))
+#define asgA3(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val))
+#define asgA4(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val.val))
 
 #define init$A(_initial...) { .val = _initial }
 #define init$A$(/*(_N, _T){_initial...}*/... /*(A$(_N,_T))*/) \
@@ -50,9 +56,11 @@ extern "C" {
 
 #define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
 #define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*val$A(_a))
+#define lenA                                           len$A
 #define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/)      countOf$(TypeOf((_a).val))
 #define len$A$(_T...)                                  len$A(*as$((_T*)(0)))
 
+#define atA                                                          at$A
 #define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) pp_expand(pp_defer(block_inline__at$A)(param_expand__at$A(_a, _idx)))
 
 #define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S_const$$(_T))*/)       __param_expand__slice$A(__VA_ARGS__)
@@ -63,6 +71,12 @@ extern "C" {
 #define suffix$A$(/*(_T)(_a: A$$(_N,_T), _begin: usize)*/... /*(S_const$(_T))*/)      pp_expand(pp_defer(__block_inline__suffix$A$)(__param_expand__suffix$A$ __VA_ARGS__))
 
 /*========== Macros and Definitions =========================================*/
+
+#define A_from$(/*(_T){_initial...}*/...) __A_from__step(pp_defer(__A_from__emit)(__A_from__parseT __VA_ARGS__))
+#define __A_from__step(...)               __VA_ARGS__
+#define __A_from__parseT(_T...)           _T,
+#define __A_from__emit(_T, _a...) \
+    lit$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
 
 #define __lit_init$A__step(...)         __VA_ARGS__
 #define __lit_init$A__parseT(_N, _T...) _N, _T,

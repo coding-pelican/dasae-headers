@@ -26,7 +26,7 @@ extern "C" {
 #include "dh/mem/Allocator.h"
 #include "dh/time/common.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 // Thread ID type
 typedef Thrd_IdImpl Thrd_Id;
@@ -36,7 +36,7 @@ typedef Thrd_HandleImpl Thrd_Handle;
 // Thread function context type instantiation
 #define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
 // Thread function context type alias
-#define Thrd_FnCtx$(_fnName)                       comp_type_alias__Thrd_FnCtx$(_fnName)
+#define Thrd_FnCtx$(_fnName...)                    __alias__Thrd_FnCtx$(_fnName)
 // Thread function context type erasure
 typedef struct Thrd_FnCtx Thrd_FnCtx;
 // Thread function arguments type erasure
@@ -57,8 +57,10 @@ struct Thrd_FnCtx {
         u8 data $zero_sized;
     };
 };
-#define Thrd_FnCtx_from(_fnName, _Args...)    comp_inline__Thrd_FnCtx_from(_fnName, _Args)
-#define Thrd_FnCtx_returned(_fnName, _ctx...) comp_inline__Thrd_FnCtx_returned(_fnName, _ctx)
+#define Thrd_FnCtx_from$(/*(_fnName)(_args...)*/... /*(Thrd_FnCtx$(_fnName))*/) \
+    __step__Thrd_FnCtx_from$(__step__Thrd_FnCtx_from$__parseFnName __VA_ARGS__)
+#define Thrd_FnCtx_ret$(/*(_fnName)(_ctx...)*/... /*(_ReturnType$(_fnName))*/) \
+    __step__Thrd_FnCtx_ret$(__step__Thrd_FnCtx_ret$__parseFnName __VA_ARGS__)
 
 // Thread function syntax
 #define Thrd_fn_(_fnName, _Tuple_Args_Ret_w_Tuple_Captures_w_Extension...) \
@@ -110,6 +112,7 @@ extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 
 // Mutex type
 typedef struct Thrd_Mtx Thrd_Mtx;
+typedef struct Thrd_MtxRecur Thrd_MtxRecur;
 // Condition variable type
 typedef struct Thrd_Cond Thrd_Cond;
 // Read-write lock type
@@ -120,28 +123,40 @@ typedef struct Thrd_RwLock Thrd_RwLock;
 #define comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return) \
     typedef union Thrd_FnCtx$(_fnName) Thrd_FnCtx$(_fnName); \
     union Thrd_FnCtx$(_fnName) { \
-        Thrd_FnCtx base[1]; \
+        Thrd_FnCtx as_raw $like_ref; \
         struct { \
             Thrd_WorkFn fn; \
             union { \
-                Thrd_FnArgs base[1]; \
-                struct _Args typed; \
+                Thrd_FnArgs as_raw $like_ref; \
+                struct _Args as_typed; \
             } args; \
             union { \
-                Thrd_FnRet base[1]; \
-                _T_Return typed; \
+                Thrd_FnRet as_raw $like_ref; \
+                _T_Return as_typed; \
             } ret; \
         }; \
     }
-#define comp_type_alias__Thrd_FnCtx$(_fnName) pp_join($, Thrd_FnCtx, _fnName)
-#define comp_inline__Thrd_FnCtx_from(_fnName, _Args...) \
-    ((Thrd_FnCtx$(_fnName)){ \
-        .fn = _fnName, \
-        .args = { .typed = _Args }, \
-        .ret = { .typed = {} }, \
-    })
-#define comp_inline__Thrd_FnCtx_returned(_fnName, _ctx...) \
-    as$((Thrd_FnCtx$(_fnName)*)(_ctx))->ret.typed
+
+#define __alias__Thrd_FnCtx$(_fnName...) pp_join($, Thrd_FnCtx, _fnName)
+
+#define __step__Thrd_FnCtx_from$(...) \
+    __step__Thrd_FnCtx_from$__emit(__VA_ARGS__)
+#define __step__Thrd_FnCtx_from$__parseFnName(_fnName...) \
+    _fnName,
+#define __step__Thrd_FnCtx_from$__emit(_fnName, _args...) lit$((Thrd_FnCtx$(_fnName)){ \
+    .fn = _fnName, \
+    .args = { .as_typed = { __step__Thrd_FnCtx_from$__expand _args } }, \
+    .ret = { .as_typed = {} }, \
+})
+#define __step__Thrd_FnCtx_from$__expand(_args...) \
+    _args
+
+#define __step__Thrd_FnCtx_ret$(...) \
+    __step__Thrd_FnCtx_ret$__emit(__VA_ARGS__)
+#define __step__Thrd_FnCtx_ret$__parseFnName(_fnName...) \
+    _fnName,
+#define __step__Thrd_FnCtx_ret$__emit(_fnName, _ctx...) \
+    (as$((Thrd_FnCtx$(_fnName)*)(_ctx))->ret.as_typed)
 
 // clang-format off
 #define comp_syn__Thrd_fn_decl(_fnName) \
@@ -151,16 +166,16 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx)
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx); \
 typedef union Thrd_FnCtx$(_fnName) Thrd_FnCtx$(_fnName); \
 union Thrd_FnCtx$(_fnName) { \
-    Thrd_FnCtx base[1]; \
+    Thrd_FnCtx as_raw $like_ref; \
     struct { \
         Thrd_WorkFn fn;\
         union { \
-            Thrd_FnArgs  base[1]; \
-            struct pp_Tuple_get1st _Tuple_Args_Ret typed; \
+            Thrd_FnArgs  as_raw $like_ref; \
+            struct pp_Tuple_get1st _Tuple_Args_Ret as_typed; \
         } args; \
         union { \
-            Thrd_FnRet base[1]; \
-            pp_Tuple_get2nd _Tuple_Args_Ret typed; \
+            Thrd_FnRet as_raw $like_ref; \
+            pp_Tuple_get2nd _Tuple_Args_Ret as_typed; \
         } ret; \
     }; \
 }
@@ -168,8 +183,8 @@ union Thrd_FnCtx$(_fnName) { \
 #define comp_syn__Thrd_fn_impl$scope(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ctx = as$((Thrd_FnCtx$(_fnName)*)(thrd_ctx)); \
-    let __passed_args = __passed_ctx->args.typed; \
-    let __passed_ret = &__passed_ctx->ret.typed; \
+    let __passed_args = __passed_ctx->args.as_typed; \
+    let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
     let __reserved_return = as$((TypeOf(*__passed_ret)*)( \
@@ -182,15 +197,15 @@ __step_return: goto __step_unscope; \
 #define comp_syn__$unscoped_Thrd_fn \
 while (false); \
     if (false) { \
-__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->base; \
+__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; \
     } \
 }
 
 #define comp_syn__Thrd_fn_impl$guard(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ctx = as$((Thrd_FnCtx$(_fnName)*)(thrd_ctx)); \
-    let __passed_args = __passed_ctx->args.typed; \
-    let __passed_ret = &__passed_ctx->ret.typed; \
+    let __passed_args = __passed_ctx->args.as_typed; \
+    let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
     let __reserved_return = as$((TypeOf(*__passed_ret)*)( \
@@ -212,7 +227,7 @@ __step_deferred: \
 break; \
     } \
     if (false) { \
-__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->base; \
+__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; \
     } \
 }
 

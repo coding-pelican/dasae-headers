@@ -6,17 +6,16 @@
 #else /* posix */
 #include <sys/mman.h>
 #include <unistd.h>
-#endif                 /* posix */
-#include <stdatomic.h> // Required for atomic operations
+#endif
 
 // Forward declarations for allocator vtable functions
-static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8));
-static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool));
-static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
-static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u32 buf_align))(void));
+static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
+static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
+static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
+static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
 
 fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
-    debug_assert_nonnull(self);
+    claim_assert_nonnull(self);
     // VTable for Page allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc = heap_Page_alloc,
@@ -32,13 +31,16 @@ fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
-    debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
+static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+    let_ignore = ctx;
+    let ptr_align = 1ull << align;
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
-    debug_assert_fmt(align <= mem_page_size, "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)", align, mem_page_size);
-
-    $unused(ctx, align);
+    debug_assert_fmt(
+        ptr_align <= mem_page_size,
+        "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)",
+        ptr_align, mem_page_size
+    );
 
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
@@ -53,7 +55,7 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     );
     if (addr != null) {
         // Verify returned address meets alignment requirements
-        debug_assert_fmt(mem_isAligned(ptrToInt(addr), align), "VirtualAlloc returned misaligned address");
+        debug_assert_fmt(mem_isAligned(ptrToInt(addr), ptr_align), "VirtualAlloc returned misaligned address");
         return_some(addr);
     }
 
@@ -62,7 +64,7 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     // immediately allocate the desired subset. Another thread may have won
     // the race to map the target range, in which case a retry is needed.
 
-    let overalloc_len = len + align - mem_page_size;
+    let overalloc_len = len + ptr_align - mem_page_size;
     let aligned_len = mem_alignForward(len, mem_page_size);
 
     static let retry_limit = 4;
@@ -77,7 +79,7 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
             return_none();
         }
 
-        let aligned_addr = mem_alignForward(ptrToInt(reserved_addr), align);
+        let aligned_addr = mem_alignForward(ptrToInt(reserved_addr), ptr_align);
         VirtualFree(reserved_addr, 0, MEM_RELEASE);
 
         let addr = VirtualAlloc(
@@ -109,27 +111,25 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     debug_assert_fmt(mem_isAligned(ptrToInt(map), mem_page_size));
     debug_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
-    let new_hint = as$((P$raw)(as$((u8*)(map) + aligned_len)));
+    let new_hint = as$((P$raw)(as$((u8*)(map + aligned_len))));
     // Here use atomic operations to update the hint
-    __atomic_compare_exchange_n(
+    atom_cmpXchgWeak(
         &heap_Page_s_next_mmap_addr_hint,
-        &hint,
+        hint,
         new_hint,
-        false,
-        __ATOMIC_SEQ_CST,
-        __ATOMIC_SEQ_CST
+        atom_MemOrd_seq_cst,
+        atom_MemOrd_seq_cst
     );
     return_some(map);
 #endif /* posix */
 } $unscoped_(fn);
 
-static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool)) {
-    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-    debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
-    // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
-
-    $unused(ctx, buf_align);
+static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+    let_ignore = ctx;
+    let ptr_align = 1ull << buf_align;
+    debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
+    let_ignore = ptr_align;
 
     let new_size_aligned = mem_alignForward(new_len, mem_page_size);
     let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
@@ -185,13 +185,12 @@ static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))
 #endif /* posix */
 }
 
-static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8) $scope) {
-    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-    debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
-    // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
-
-    $unused(ctx, buf_align);
+static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+    let_ignore = ctx;
+    let ptr_align = 1ull << buf_align;
+    debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
+    let_ignore = ptr_align;
 
     let new_size_aligned = mem_alignForward(new_len, mem_page_size);
     let buf_aligned_len = mem_alignForward(buf.len, mem_page_size);
@@ -227,14 +226,12 @@ static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(
 #endif /* posix */
 } $unscoped_(fn);
 
-static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
-    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-    debug_assert_fmt(buf_align <= mem_page_size, "Page allocator only guarantees page alignment");
-    // Verify the buffer address actually has the claimed alignment
-    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), buf_align), "Buffer address does not match the specified alignment");
-
+static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
     let_ignore = ctx;
-    let_ignore = buf_align;
+    let ptr_align = 1ull << buf_align;
+    debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
+    debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
+    let_ignore = ptr_align;
 
 #if plat_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);

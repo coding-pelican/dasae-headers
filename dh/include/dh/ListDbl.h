@@ -106,7 +106,7 @@ extern fn_((ListDbl_len(const ListDbl$raw* self))(usize));
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ptr, ListDbl$raw); \
+        var_(as_raw $like_ref, ListDbl$raw); \
     }
 #define comp_type_alias__ListDbl$(T) \
     pp_join($, ListDbl, T)

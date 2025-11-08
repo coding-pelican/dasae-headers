@@ -3,122 +3,124 @@
 #include "dh/Rand.h"
 #include "dh/time/Instant.h"
 
-/*========== Static Constant and Variable Definitions =======================*/
-
-static Rand Rand__s_rng = { .state = 0xDEADBEEFCAFEBABE, .stream = 0xCAFEF00DD15EA5E5 };
-
-/*========== Extern Constant and Variable Definitions =======================*/
-
-Rand* const Rand_rng = &Rand__s_rng;
-
 /*========== Static Function Prototypes =====================================*/
 
 // Using xorshiro256** algorithm
-static $inline_always u64 Rand__xorshiro256(u64 x, u32 k);
+$inline_always
+$static fn_((Rand__xorshiro256(u64 x, u32 k))(u64));
 // Generate next random number
-static u64                Rand__next(void);
-
-/*========== Static Function Implementations ================================*/
-
-static $inline_always u64 Rand__xorshiro256(u64 x, u32 k) {
-    return (x << k) | (x >> (64ull - k));
-}
-
-static u64 Rand__next(void) {
-    const u64 result = Rand__xorshiro256(Rand_rng->state * 5, 7) * 9;
-    const u64 t      = Rand_rng->stream << 17ull;
-
-    Rand_rng->stream ^= Rand_rng->state;
-    Rand_rng->state ^= Rand_rng->stream;
-    Rand_rng->stream ^= t;
-    Rand_rng->state = Rand__xorshiro256(Rand_rng->state, 45);
-
-    return result;
-}
+$inline_always
+$static fn_((Rand__next(Rand* self))(u64));
 
 /*========== Extern Function Implementations ================================*/
 
-void Rand_init(void) {
-    return Rand_initWithSeed(time_Instant_toUnixEpoch(time_Instant_now()));
+fn_((Rand_init(void))(Rand)) {
+    return Rand_initSeed(time_Instant_toUnixEpoch(time_Instant_now()));
 }
 
-void Rand_initWithSeed(u64 seed) {
-    Rand_rng->state  = seed;
-    Rand_rng->stream = 0xCAFEF00DD15EA5E5;
+fn_((Rand_initSeed(u64 seed))(Rand)) {
+    var rng = Rand_default;
+    rng.state = seed;
+    return rng;
 }
 
-void Rand_setSeed(u64 seed) {
-    Rand_rng->state = seed;
+fn_((Rand_withSeed(Rand self, u64 seed))(Rand)) {
+    self.state = seed;
+    return self;
 }
 
-u64 Rand_nextUInt(void) {
-    return Rand_next$u64();
+fn_((Rand_setSeed(Rand* self, u64 seed))(void)) {
+    *self = Rand_withSeed(*self, seed);
 }
 
-usize Rand_next$usize(void) {
-    return as$((usize)(Rand_nextUInt())); /* TODO: Precise conversion */
+fn_((Rand_nextUInt(Rand* self))(u64)) {
+    return Rand_next$u64(self);
 }
 
-u64 Rand_next$u64(void) {
-    return Rand__next();
+fn_((Rand_next$usize(Rand* self))(usize)) {
+    return as$((usize)(Rand_nextUInt(self))); /* TODO: Precise conversion */
 }
 
-u32 Rand_next$u32(void) {
-    return as$((u32)(Rand_nextUInt() & 0xFFFFFFFFu));
+fn_((Rand_next$u64(Rand* self))(u64)) {
+    return Rand__next(self);
 }
 
-u16 Rand_next$u16(void) {
-    return as$((u16)(Rand_nextUInt() & 0xFFFFu));
+fn_((Rand_next$u32(Rand* self))(u32)) {
+    return as$((u32)(Rand_nextUInt(self) & 0xFFFFFFFFu));
 }
 
-u8 Rand_next$u8(void) {
-    return as$((u8)(Rand_nextUInt() & 0xFFu));
+fn_((Rand_next$u16(Rand* self))(u16)) {
+    return as$((u16)(Rand_nextUInt(self) & 0xFFFFu));
 }
 
-isize Rand_nextInt(void) {
-    return Rand_next$i64();
+fn_((Rand_next$u8(Rand* self))(u8)) {
+    return as$((u8)(Rand_nextUInt(self) & 0xFFu));
 }
 
-isize Rand_next$isize(void) {
-    return as$((isize)(Rand_nextInt())); /* TODO: Precise conversion */
+fn_((Rand_nextIInt(Rand* self))(i64)) {
+    return Rand_next$i64(self);
 }
 
-i64 Rand_next$i64(void) {
-    return as$((i64)(Rand_next$u64()));
+fn_((Rand_next$isize(Rand* self))(isize)) {
+    return as$((isize)(Rand_nextIInt(self))); /* TODO: Precise conversion */
 }
 
-i32 Rand_next$i32(void) {
-    return as$((i32)(Rand_nextInt()));
+fn_((Rand_next$i64(Rand* self))(i64)) {
+    return as$((i64)(Rand_next$u64(self)));
 }
 
-i16 Rand_next$i16(void) {
-    return as$((i16)(Rand_nextInt()));
+fn_((Rand_next$i32(Rand* self))(i32)) {
+    return as$((i32)(Rand_nextIInt(self)));
 }
 
-i8 Rand_next$i8(void) {
-    return as$((i8)(Rand_nextInt()));
+fn_((Rand_next$i16(Rand* self))(i16)) {
+    return as$((i16)(Rand_nextIInt(self)));
 }
 
-f64 Rand_nextFlt(void) {
-    return Rand_next$f64();
+fn_((Rand_next$i8(Rand* self))(i8)) {
+    return as$((i8)(Rand_nextIInt(self)));
 }
 
-f64 Rand_next$f64(void) {
-    return as$((f64)(Rand_next$u64() >> 11ull)) / as$((f64)(1ull << 53ull));
+fn_((Rand_nextFlt(Rand* self))(f64)) {
+    return Rand_next$f64(self);
 }
 
-f32 Rand_next$f32(void) {
-    return as$((f32)(Rand_next$u32() >> 8u)) / as$((f32)(1u << 24u));
+fn_((Rand_next$f64(Rand* self))(f64)) {
+    return as$((f64)(Rand_next$u64(self) >> 11ull)) / as$((f64)(1ull << 53ull));
 }
 
-u64 Rand_rangeUInt(u64 min, u64 max) {
-    return min + (Rand_nextUInt() % (max - min + 1));
+fn_((Rand_next$f32(Rand* self))(f32)) {
+    return as$((f32)(Rand_next$u32(self) >> 8u)) / as$((f32)(1u << 24u));
 }
 
-i64 Rand_rangeInt(i64 min, i64 max) {
-    return min + (Rand_nextInt() % (max - min + 1));
+fn_((Rand_rangeUInt(Rand* self, u64 min, u64 max))(u64)) {
+    return min + (Rand_nextUInt(self) % (max - min + 1));
 }
 
-f64 Rand_rangeFlt(f64 min, f64 max) {
-    return min + (Rand_nextFlt() * (max - min));
+fn_((Rand_rangeInt(Rand* self, i64 min, i64 max))(i64)) {
+    return min + (Rand_nextIInt(self) % (max - min + 1));
+}
+
+fn_((Rand_rangeFlt(Rand* self, f64 min, f64 max))(f64)) {
+    return min + (Rand_nextFlt(self) * (max - min));
+}
+
+/*========== Static Function Implementations ================================*/
+
+$inline_always
+$static fn_((Rand__xorshiro256(u64 x, u32 k))(u64)) {
+    return (x << k) | (x >> (64ull - k));
+}
+
+$inline_always
+$static fn_((Rand__next(Rand* self))(u64)) {
+    const u64 next = Rand__xorshiro256(self->state * 5, 7) * 9;
+    const u64 t = self->stream << 17ull;
+
+    self->stream ^= self->state;
+    self->state ^= self->stream;
+    self->stream ^= t;
+    self->state = Rand__xorshiro256(self->state, 45);
+
+    return next;
 }

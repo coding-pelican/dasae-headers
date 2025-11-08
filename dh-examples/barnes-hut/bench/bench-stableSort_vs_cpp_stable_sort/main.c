@@ -25,9 +25,9 @@ $inline_always E$usize mulSafe(usize lhs, usize rhs) {
 $inline_always $must_check E$void swapElements(u8* a, u8* b, usize size) {
     scope_reserveReturn(E$void) {
         u8* temp = alloca(size);
-        memcpy(temp, a, size);
-        memcpy(a, b, size);
-        memcpy(b, temp, size);
+        prim_memcpy(temp, a, size);
+        prim_memcpy(a, b, size);
+        prim_memcpy(b, temp, size);
         return_void();
     }
     scope_returnReserved;
@@ -43,8 +43,8 @@ static $must_check E$void insertionSort(
     scope_reserveReturn(E$void) {
         u8* base_ptr = (u8*)base;
         for (usize i = 1; i < num; ++i) {
-            u8*   current = base_ptr + i * size;
-            usize j       = i;
+            u8* current = base_ptr + i * size;
+            usize j = i;
             while (j > 0) {
                 u8* prev = current - size;
                 if (comp(prev, current, arg) <= 0) {
@@ -68,33 +68,33 @@ static $must_check E$void mergeSortWithTmpRecur( // NOLINT
             return insertionSort(base, num, size, comp, arg);
         }
 
-        u8*   base_bytes = (u8*)base;
-        usize mid        = num / 2;
+        u8* base_bytes = (u8*)base;
+        usize mid = num / 2;
 
         // Sort each half recursively
         try_(mergeSortWithTmpRecur(base_bytes, mid, size, comp, arg, temp_buffer));
         try_(mergeSortWithTmpRecur(base_bytes + mid * size, num - mid, size, comp, arg, temp_buffer));
 
         // Check if merging is necessary
-        u8* const left_last   = base_bytes + (mid - 1) * size;
+        u8* const left_last = base_bytes + (mid - 1) * size;
         u8* const right_first = base_bytes + mid * size;
         if (comp(left_last, right_first, arg) <= 0) {
             return_void(); // Already ordered, no merge needed
         }
 
         // Merge the sorted halves using the temporary buffer
-        u8* left_ptr  = base_bytes;
-        u8* left_end  = left_ptr + mid * size;
+        u8* left_ptr = base_bytes;
+        u8* left_end = left_ptr + mid * size;
         u8* right_ptr = base_bytes + mid * size;
         u8* right_end = base_bytes + num * size;
-        u8* temp_ptr  = (u8*)temp_buffer.ptr;
+        u8* temp_ptr = (u8*)temp_buffer.ptr;
 
         while (left_ptr < left_end && right_ptr < right_end) {
             if (comp(left_ptr, right_ptr, arg) <= 0) {
-                memcpy(temp_ptr, left_ptr, size);
+                prim_memcpy(temp_ptr, left_ptr, size);
                 left_ptr += size;
             } else {
-                memcpy(temp_ptr, right_ptr, size);
+                prim_memcpy(temp_ptr, right_ptr, size);
                 right_ptr += size;
             }
             temp_ptr += size;
@@ -103,18 +103,18 @@ static $must_check E$void mergeSortWithTmpRecur( // NOLINT
         // Copy remaining elements
         if (left_ptr < left_end) {
             usize bytes_left = left_end - left_ptr;
-            memcpy(temp_ptr, left_ptr, bytes_left);
+            prim_memcpy(temp_ptr, left_ptr, bytes_left);
             temp_ptr += bytes_left;
         }
         if (right_ptr < right_end) {
             usize bytes_right = right_end - right_ptr;
-            memcpy(temp_ptr, right_ptr, bytes_right);
+            prim_memcpy(temp_ptr, right_ptr, bytes_right);
             temp_ptr += bytes_right;
         }
 
         // Copy merged elements back to the original array
         usize total_bytes = temp_ptr - (u8*)temp_buffer.ptr;
-        memcpy(base_bytes, temp_buffer.ptr, total_bytes);
+        prim_memcpy(base_bytes, temp_buffer.ptr, total_bytes);
 
         return_void();
     }
@@ -126,12 +126,12 @@ static $must_check E$void stableSort(
     usize num,
     usize size,
     cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
-    P$raw         arg,
+    P$raw arg,
     mem_Allocator allocator
 ) {
     scope_reserveReturn(E$void) {
         let checked_size = try_(mulSafe(num, size));
-        let temp_buffer  = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
+        let temp_buffer = meta_cast$(S$u8, try_(mem_Allocator_alloc(allocator, typeInfo$(u8), checked_size)));
         defer_(mem_Allocator_free(allocator, anySli(temp_buffer)));
 
         try_(mergeSortWithTmpRecur(base, num, size, comp, arg, temp_buffer));
@@ -179,7 +179,7 @@ static bool isStable(const TestElem* arr, usize size) {
 static void generateRandTestElemArray(TestElem* arr, usize size) {
     for (usize i = 0; i < size; ++i) {
         arr[i].value = Rand_i32() % 10000;
-        arr[i].seq   = (i32)i;
+        arr[i].seq = (i32)i;
     }
 }
 
@@ -194,20 +194,20 @@ BenchResult benchmark_stableSort(BenchParams params) {
             exit(err.ctx);
         })
     );
-    memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
+    prim_memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
 
     // Benchmark (dh)stableSort
     clock_t overhead_time = 0;
-    let     begin         = clock();
+    let begin = clock();
     for (usize i = 0; i < params.iterations; ++i) {
         let overhead_begin = clock();
-        memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
+        prim_memcpy(c_data.ptr, params.ptr, params.len * sizeof(TestElem));
         overhead_time += (clock() - overhead_begin);
         let_ignore = stableSort(c_data.ptr, c_data.len, sizeof(TestElem), compareTestElem, nullptr, allocator);
     }
-    let end      = clock();
+    let end = clock();
     let total_ms = (as$(f64, end - begin - overhead_time) * 1000.0) / CLOCKS_PER_SEC;
-    let avg_ms   = total_ms / as$(f64, params.iterations);
+    let avg_ms = total_ms / as$(f64, params.iterations);
 
     // Verify stability for implementations
     let sorted = isSorted(c_data.ptr, c_data.len);
@@ -218,10 +218,10 @@ BenchResult benchmark_stableSort(BenchParams params) {
     }
 
     return (BenchResult){
-        .name     = "(dh)stableSort",
+        .name = "(dh)stableSort",
         .total_ms = total_ms,
-        .avg_ms   = avg_ms,
-        .stable   = stable
+        .avg_ms = avg_ms,
+        .stable = stable
     };
 }
 
@@ -234,14 +234,14 @@ must_check E$void benchmark(usize sample_data_count, i32 iterations) {
         generateRandTestElemArray(data.ptr, data.len);
 
         let params = (BenchParams){
-            .ptr        = data.ptr,
-            .len        = data.len,
+            .ptr = data.ptr,
+            .len = data.len,
             .iterations = iterations,
         };
 
         // Benchmark std::stable_sort
         let std_stable_sort = benchmark_cpp_stable_sort(params);
-        let dh_stable_sort  = benchmark_stableSort(params);
+        let dh_stable_sort = benchmark_stableSort(params);
 
         // Print results
         printf("%-20s | %5d elements | %4d iterations\n", std_stable_sort.name, (i32)params.len, (i32)params.iterations);
@@ -260,7 +260,7 @@ must_check E$void benchmark(usize sample_data_count, i32 iterations) {
 
 int main(void) {
     const i32 iterations = 100;
-    const i32 seed       = 12345;
+    const i32 seed = 12345;
     Rand_initWithSeed(seed); // fixed seed => reproducible random data
 
     printf("=== C `(dh)stableSort` vs C `(std)qsort` Benchmark ===\n");

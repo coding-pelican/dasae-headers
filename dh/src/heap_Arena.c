@@ -1,9 +1,5 @@
 #include "dh/heap/Arena.h"
 #include "dh/mem/common.h"
-#include "dh/meta/common.h"
-#include "dh/opt.h"
-#include "dh/sli.h"
-#include "dh/debug.h"
 
 T_use$(usize, (
     ListSgl_Node_init,
@@ -11,10 +7,10 @@ T_use$(usize, (
 ));
 
 // Forward declarations for allocator vtable functions
-static fn_((heap_Arena_alloc(P$raw ctx, usize len, u32 align))(O$P$u8));
-static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool));
-static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8));
-static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u32 buf_align))(void));
+static fn_((heap_Arena_alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
+static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
+static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
+static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
 
 // Internal helper functions
 static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Node$usize));
@@ -27,7 +23,7 @@ extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_
 }
 
 extern fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator)) {
-    debug_assert_nonnull(self);
+    claim_assert_nonnull(self);
     // VTable for Arena allocator
     static const mem_Allocator_VT vt[1] = { {
         .alloc  = heap_Arena_alloc,
@@ -61,7 +57,7 @@ extern fn_((heap_Arena_fini(heap_Arena self))(void)) {
 }
 
 extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize)) {
-    debug_assert_nonnull(self);
+    claim_assert_nonnull(self);
     usize size = 0;
     var   it   = self->state.buffer_list.first;
     while_some(it, node) {
@@ -73,8 +69,7 @@ extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize)) {
 }
 
 extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
-    debug_assert_nonnull(self);
-
+    claim_assert_nonnull(self);
     // Calculate requested capacity based on mode
     let requested_capacity = expr_(usize $scope) match_(mode, {
         pattern_(heap_Arena_ResetMode_free_all, $break_(0));
@@ -84,8 +79,8 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
     if (requested_capacity == 0) {
         // Free all memory and reset state
         heap_Arena_fini(*self);
-        self->state = make$((heap_Arena_State){
-            .buffer_list = type$((ListSgl$usize)(ListSgl_init(typeInfo$(ListSgl_Node$usize)))),
+        self->state = lit$((heap_Arena_State){
+            .buffer_list = ListSgl_init$usize(),
             .end_index = 0
         });
         return true;
@@ -127,7 +122,7 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
         mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf$(ListSgl_Node$usize));
         let new_node = as$((ListSgl_Node$usize*)(new_ptr));
         *new_node    = *ListSgl_Node_init$usize(&lit$((ListSgl_Node$usize){ .data = total_size }));
-        asg$O((&self->state.buffer_list.first)(some(new_node)));
+        asgLit((&self->state.buffer_list.first)(some(new_node)));
     }
 
     return true;
@@ -135,12 +130,10 @@ extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)
 
 /*========== Allocator Interface Implementation =============================*/
 
-static fn_((heap_Arena_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
-    debug_assert_nonnull(ctx);
-    debug_assert_fmt(mem_isValidAlign(align), "Alignment must be a power of 2");
-
+static fn_((heap_Arena_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+    claim_assert_nonnull(ctx);
     let self      = as$((heap_Arena*)(ctx));
-    let ptr_align = align;
+    let ptr_align = 1ull << align;
 
     // 문제로 예상되는 지점 - Fixed
     var cur_node = expr_($P$(ListSgl_Node$usize) $scope) if_some((self->state.buffer_list.first)(first_node)) {
@@ -184,10 +177,8 @@ static fn_((heap_Arena_alloc(P$raw ctx, usize len, u32 align))(O$P$u8) $scope) {
     }
 } $unscoped_(fn);
 
-static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(bool)) {
-    debug_assert_nonnull(ctx);
-    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-
+static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+    claim_assert_nonnull(ctx);
     let self   = as$((heap_Arena*)(ctx));
     let_ignore = buf_align;
 
@@ -218,17 +209,16 @@ static fn_((heap_Arena_resize(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len)
     return false;
 }
 
-static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u32 buf_align, usize new_len))(O$P$u8) $scope) {
+static fn_((heap_Arena_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+    claim_assert_nonnull(ctx);
     if (heap_Arena_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
     return_none();
 } $unscoped_(fn);
 
-static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
-    debug_assert_nonnull(ctx);
-    debug_assert_fmt(mem_isValidAlign(buf_align), "Alignment must be a power of 2");
-
+static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+    claim_assert_nonnull(ctx);
     let self   = as$((heap_Arena*)(ctx));
     let_ignore = buf_align;
 
@@ -247,8 +237,7 @@ static fn_((heap_Arena_free(P$raw ctx, S$u8 buf, u32 buf_align))(void)) {
 /*========== Internal Helper Functions =====================================*/
 
 static fn_((heap_Arena_createNode(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Node$usize) $scope) {
-    debug_assert_nonnull(self);
-
+    claim_assert_nonnull(self);
     // Calculate new buffer size with exponential growth
     let actual_min_size = minimum_size + (sizeOf$(ListSgl_Node$usize) + 16);
     let big_enough_len  = prev_len + actual_min_size;

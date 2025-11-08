@@ -26,7 +26,7 @@ extern "C" {
 #include "unreachable.h"
 #include "assert_static.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #define claim_assert(_Expr) \
     __step__claim_assert((_Expr), #_Expr)
@@ -79,7 +79,7 @@ extern "C" {
 #define claim_assert_nonnull_fmt(_Expr, _fmt...) \
     __step__claim_assert_nonnull_fmt((_Expr), #_Expr, _fmt)
 
-/*========== Macros Implementation ==========================================*/
+/*========== Macros and Definitions =========================================*/
 
 #if on_comptime
 /* clang-format off */

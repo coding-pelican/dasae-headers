@@ -40,11 +40,12 @@ extern "C" {
 #endif /* !Thrd_use_pthread */
 
 #if Thrd_use_pthread
-typedef usize     Thrd_IdImpl;
+typedef usize Thrd_IdImpl;
+#define Thrd_invalid_id usize_limit_max
 typedef pthread_t Thrd_HandleImpl;
 #define Thrd_max_name_len (15)
-typedef pthread_mutex_t  Thrd_MtxImpl;
-typedef pthread_cond_t   Thrd_CondImpl;
+typedef pthread_mutex_t Thrd_MtxImpl;
+typedef pthread_cond_t Thrd_CondImpl;
 typedef pthread_rwlock_t Thrd_RwLockImpl;
 #endif /* Thrd_use_pthread */
 

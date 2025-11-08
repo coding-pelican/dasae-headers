@@ -12,11 +12,11 @@
 
 typedef struct MiniZlibInflator {
     const u8* input;
-    usize     input_len;
-    usize     bit_pos;
-    u8*       output;
-    usize     output_size;
-    usize     output_pos;
+    usize input_len;
+    usize bit_pos;
+    u8* output;
+    usize output_size;
+    usize output_pos;
 } MiniZlibInflator;
 
 /* Read bits from the input stream */
@@ -58,7 +58,7 @@ static $inline i32 MiniZlib_inflateUncompressedBlock(MiniZlibInflator* self) {
     if (self->output_pos + len > self->output_size) {
         return -1; // not enough output buffer
     }
-    memcpy(self->output + self->output_pos, self->input + (self->bit_pos >> 3), len);
+    prim_memcpy(self->output + self->output_pos, self->input + (self->bit_pos >> 3), len);
     self->output_pos += len;
     self->bit_pos += (len << 3);
     return 0;
@@ -79,13 +79,13 @@ static $inline i32 MiniZlib_inflateCompressedBlock(MiniZlibInflator* self, i32 t
 /* Minimal inflate: expects zlib header + raw DEFLATE blocks (no dictionary). */
 static $inline i32 MiniZlib_inflate(const u8* in, usize in_len, u8* out, usize out_size, usize* out_len) {
     MiniZlibInflator inf;
-    memset(&inf, 0, sizeof(inf));
-    inf.input       = in;
-    inf.input_len   = in_len;
-    inf.output      = out;
+    prim_memset(&inf, 0, sizeof(inf));
+    inf.input = in;
+    inf.input_len = in_len;
+    inf.output = out;
     inf.output_size = out_size;
-    inf.output_pos  = 0;
-    inf.bit_pos     = 0;
+    inf.output_pos = 0;
+    inf.bit_pos = 0;
 
     // Skip zlib header (2 bytes) and possibly check Adler at end (skipped here).
     // In real PNG data, there's often a ZLIB header; but partial IDAT might skip.
@@ -99,9 +99,9 @@ static $inline i32 MiniZlib_inflate(const u8* in, usize in_len, u8* out, usize o
 
     i32 final_block = 0;
     while (!final_block) {
-        final_block    = (i32)MiniZlib_readBits(&inf, 1);
+        final_block = (i32)MiniZlib_readBits(&inf, 1);
         i32 block_type = (i32)MiniZlib_readBits(&inf, 2);
-        i32 res        = 0;
+        i32 res = 0;
         if (block_type == 0) {
             res = MiniZlib_inflateUncompressedBlock(&inf);
         } else {

@@ -158,11 +158,11 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
             union { \
                 var_(err, Name); \
                 var_(ok, Void); \
-                var_(raw $like_ptr, E_Payload$raw); \
+                var_(raw $like_ref, E_Payload$raw); \
             } payload; \
         }; \
         var_(as_raw, E$raw); \
-        var_(ref_raw $like_ptr, E$raw); \
+        var_(ref_raw $like_ref, E$raw); \
     } pp_join($, Name, Void); \
     typedef pp_join($, Name, Void) pp_join($, Name, void)
 

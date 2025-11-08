@@ -86,7 +86,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
             }; \
             var_(data, _T); \
         }; \
-        var_(as_raw $like_ptr, ListSgl_Node$raw); \
+        var_(as_raw $like_ref, ListSgl_Node$raw); \
     }
 #define __comp_alias__ListSgl_Node$(_T) \
     pp_join($, ListSgl_Node, _T)
@@ -102,7 +102,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
             var_(first, O$(P$(ListSgl_Node$(_T)))); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ptr, ListSgl$raw); \
+        var_(as_raw $like_ref, ListSgl$raw); \
     }
 #define __comp_alias__ListSgl$(_T) \
     pp_join($, ListSgl, _T)
@@ -116,12 +116,12 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_Node_data$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_data, _T)(P$(const ListSgl_Node$(_T)) self))(const _T*)) { \
-        return u_castP((const _T*)(ListSgl_Node_data(self->as_raw, typeInfo$(_T)))); \
+        return u_castP$((const _T*)(ListSgl_Node_data(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ListSgl_Node_dataMut$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_dataMut, _T)(P$(ListSgl_Node$(_T)) self))(P$(_T*))) { \
-        return u_castP((P$(_T*)(ListSgl_Node_dataMut(self->as_raw, typeInfo$(_T))))); \
+        return u_castP$((P$(_T*)(ListSgl_Node_dataMut(self->as_raw, typeInfo$(_T))))); \
     }
 #define T_use_ListSgl_Node_insertNext$(_T...)\
     $inline_always \
@@ -131,7 +131,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_Node_removeNext$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_removeNext, _T)(P$(ListSgl_Node$(_T)) self))(O$(P$(ListSgl_Node$(_T))))) { \
-        return type$O((O$(P$(ListSgl_Node$(_T))))(ListSgl_Node_removeNext(self->as_raw))); \
+        return typeO$((O$(P$(ListSgl_Node$(_T))))(ListSgl_Node_removeNext(self->as_raw))); \
     }
 #define T_use_ListSgl_Node_findLast$(_T...)\
     $inline_always \
@@ -167,7 +167,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_shift$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_shift, _T)(ListSgl$(_T)* self))(O$(P$(ListSgl_Node$(_T))))) { \
-        return type$O((O$(P$(ListSgl_Node$(_T))))(ListSgl_shift(self->as_raw))); \
+        return typeO$((O$(P$(ListSgl_Node$(_T))))(ListSgl_shift(self->as_raw))); \
     }
 #define T_use_ListSgl_len$(_T...)\
     $inline_always \

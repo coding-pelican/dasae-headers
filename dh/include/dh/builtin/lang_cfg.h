@@ -25,27 +25,31 @@ extern "C" {
 
 /* Language Mode */
 
-#define lang_name         __comp_str__lang_name
-#define lang_name_unknown __comp_str__lang_name_unknown
-#define lang_name_c       __comp_str__lang_name_c
-#define lang_name_cpp     __comp_str__lang_name_cpp
-
 #define lang_mode         __comp_enum__lang_mode
 #define lang_mode_unknown __comp_enum__lang_mode_unknown
 #define lang_mode_c       __comp_enum__lang_mode_c
 #define lang_mode_cpp     __comp_enum__lang_mode_cpp
+
+/* Language Name */
+
+#define lang_name         __comp_str__lang_name
+#define lang_name_unknown __comp_str__lang_name_unknown
+#define lang_name_c       __comp_str__lang_name_c
+#define lang_name_cpp     __comp_str__lang_name_cpp
 
 /* Language Version */
 
 #define lang_version         __comp_int__lang_version
 #define lang_version_unknown __comp_int__lang_version_unknown
 
+#define lang_version_c   __comp_int__lang_version_c
 #define lang_version_c90 __comp_int__lang_version_c90
 #define lang_version_c99 __comp_int__lang_version_c99
 #define lang_version_c11 __comp_int__lang_version_c11
 #define lang_version_c17 __comp_int__lang_version_c17
 #define lang_version_c23 __comp_int__lang_version_c23
 
+#define lang_version_cpp   __comp_int__lang_version_cpp
 #define lang_version_cpp98 __comp_int__lang_version_cpp98
 #define lang_version_cpp11 __comp_int__lang_version_cpp11
 #define lang_version_cpp14 __comp_int__lang_version_cpp14
@@ -80,25 +84,39 @@ extern "C" {
 
 /* Default Values */
 
-#define __comp_str__lang_name         lang_name_unknown
-#define __comp_str__lang_name_unknown "unknown"
-#define __comp_str__lang_name_c       "c"
-#define __comp_str__lang_name_cpp     "cpp"
-
 #define __comp_enum__lang_mode         lang_mode_unknown
 #define __comp_enum__lang_mode_unknown 0
 #define __comp_enum__lang_mode_c       1
 #define __comp_enum__lang_mode_cpp     2
 
-#define __comp_int__lang_version         lang_version_unknown
+#define __comp_str__lang_name pp_if_(pp_eq(lang_mode, lang_mode_c))( \
+    pp_then_(lang_name_c), \
+    pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))( \
+        pp_then_(lang_name_cpp), \
+        pp_else_(lang_name_unknown) \
+    )) \
+)
+#define __comp_str__lang_name_unknown "unknown"
+#define __comp_str__lang_name_c       "c"
+#define __comp_str__lang_name_cpp     "cpp"
+
+#define __comp_int__lang_version pp_if_(pp_eq(lang_mode, lang_mode_c))( \
+    pp_then_(lang_version_c), \
+    pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))( \
+        pp_then_(lang_version_cpp), \
+        pp_else_(lang_version_unknown) \
+    )) \
+)
 #define __comp_int__lang_version_unknown 0
 
+#define __comp_int__lang_version_c   lang_version_unknown
 #define __comp_int__lang_version_c90 199001L
 #define __comp_int__lang_version_c99 199901L
 #define __comp_int__lang_version_c11 201112L
 #define __comp_int__lang_version_c17 201710L
 #define __comp_int__lang_version_c23 202311L
 
+#define __comp_int__lang_version_cpp   lang_version_unknown
 #define __comp_int__lang_version_cpp98 199711L
 #define __comp_int__lang_version_cpp11 201103L
 #define __comp_int__lang_version_cpp14 201402L
@@ -127,15 +145,11 @@ extern "C" {
 /* Language Mode */
 
 #if defined(__STDC__)
-#undef __comp_str__lang_name
-#define __comp_str__lang_name lang_name_c
 #undef __comp_enum__lang_mode
 #define __comp_enum__lang_mode lang_mode_c
 #endif /* defined(__STDC__) */
 
 #if defined(__cplusplus)
-#undef __comp_str__lang_name
-#define __comp_str__lang_name lang_name_cpp
 #undef __comp_enum__lang_mode
 #define __comp_enum__lang_mode lang_mode_cpp
 #endif /* defined(__cplusplus) */
@@ -143,56 +157,56 @@ extern "C" {
 /* Language Version */
 
 #if lang_mode == lang_mode_c && defined(__STDC_VERSION__)
-#undef lang_version
-#define lang_version __STDC_VERSION__
+#undef __comp_int__lang_version_c
+#define __comp_int__lang_version_c __STDC_VERSION__
 
-#if lang_version >= lang_version_c90
+#if lang_version_c >= lang_version_c90
 #undef __comp_bool__lang_version_in_c90
 #define __comp_bool__lang_version_in_c90 1
 #endif /* lang_version >= lang_version_c90 */
-#if lang_version >= lang_version_c99
+#if lang_version_c >= lang_version_c99
 #undef __comp_bool__lang_version_in_c99
 #define __comp_bool__lang_version_in_c99 1
 #endif /* lang_version >= lang_version_c99 */
-#if lang_version >= lang_version_c11
+#if lang_version_c >= lang_version_c11
 #undef __comp_bool__lang_version_in_c11
 #define __comp_bool__lang_version_in_c11 1
 #endif /* lang_version >= lang_version_c11 */
-#if lang_version >= lang_version_c17
+#if lang_version_c >= lang_version_c17
 #undef __comp_bool__lang_version_in_c17
 #define __comp_bool__lang_version_in_c17 1
 #endif /* lang_version >= lang_version_c17 */
-#if lang_version >= lang_version_c23
+#if lang_version_c >= lang_version_c23
 #undef __comp_bool__lang_version_in_c23
 #define __comp_bool__lang_version_in_c23 1
 #endif /* lang_version >= lang_version_c23 */
 #endif /* lang_mode == lang_mode_c && defined(__STDC_VERSION__) */
 
 #if lang_mode == lang_mode_cpp && defined(__cplusplus)
-#undef lang_version
-#define lang_version __cplusplus
+#undef __comp_int__lang_version_cpp
+#define __comp_int__lang_version_cpp __cplusplus
 
-#if lang_version >= lang_version_cpp98
+#if lang_version_cpp >= lang_version_cpp98
 #undef __comp_bool__lang_version_in_cpp98
 #define __comp_bool__lang_version_in_cpp98 1
 #endif /* lang_version >= lang_version_cpp98 */
-#if lang_version >= lang_version_cpp11
+#if lang_version_cpp >= lang_version_cpp11
 #undef __comp_bool__lang_version_in_cpp11
 #define __comp_bool__lang_version_in_cpp11 1
 #endif /* lang_version >= lang_version_cpp11 */
-#if lang_version >= lang_version_cpp14
+#if lang_version_cpp >= lang_version_cpp14
 #undef __comp_bool__lang_version_in_cpp14
 #define __comp_bool__lang_version_in_cpp14 1
 #endif /* lang_version >= lang_version_cpp14 */
-#if lang_version >= lang_version_cpp17
+#if lang_version_cpp >= lang_version_cpp17
 #undef __comp_bool__lang_version_in_cpp17
 #define __comp_bool__lang_version_in_cpp17 1
 #endif /* lang_version >= lang_version_cpp17 */
-#if lang_version >= lang_version_cpp20
+#if lang_version_cpp >= lang_version_cpp20
 #undef __comp_bool__lang_version_in_cpp20
 #define __comp_bool__lang_version_in_cpp20 1
 #endif /* lang_version >= lang_version_cpp20 */
-#if lang_version >= lang_version_cpp23
+#if lang_version_cpp >= lang_version_cpp23
 #undef __comp_bool__lang_version_in_cpp23
 #define __comp_bool__lang_version_in_cpp23 1
 #endif /* lang_version >= lang_version_cpp23 */

@@ -7,15 +7,15 @@ TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
     var_(fixed, heap_Fixed) = heap_Fixed_init(ref$A$((u8)(buffer)));
 
     let gpa = heap_Fixed_allocator(&fixed);
-    var items = try_(u_castE((E$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), 10))));
-    defer_(mem_Allocator_free(gpa, u_any$S(items)));
+    var items = try_(u_castE$((E$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), 10))));
+    defer_(mem_Allocator_free(gpa, u_anyS(items)));
 
     try_(TEST_expect(items.ptr != null));
     try_(TEST_expect(items.len == 10));
     try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, items.as_const)));
 
     for_(($rf(0), $s(items))(idx, item) { *item = idx; });
-    let extended = try_(u_castE((E$S$u8)(mem_Allocator_realloc(gpa, u_any$S(items), 20))));
+    let extended = try_(u_castE$((E$S$u8)(mem_Allocator_realloc(gpa, u_anyS(items), 20))));
     try_(TEST_expect(extended.ptr != null));
     try_(TEST_expect(extended.len == 20));
     try_(TEST_expect(items.ptr == extended.ptr));

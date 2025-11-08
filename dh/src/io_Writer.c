@@ -28,7 +28,7 @@ fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) {
 
 fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     A$$(256, u8) bytes = zero$A();
-    memset(bytes.val, byte, len$A(bytes));
+    prim_memset(bytes.val, byte, len$A(bytes));
     usize remaining = n;
     while (0 < remaining) {
         let to_write = prim_min(remaining, len$A(bytes));

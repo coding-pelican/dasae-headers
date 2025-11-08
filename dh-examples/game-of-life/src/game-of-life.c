@@ -42,10 +42,10 @@ use_Grid$(i8);
 typedef struct GameOfLife {
     S$i8 curr_states;
     S$i8 next_states;
-    usize  width;
-    usize  height;
-    usize  tick_current;
-    usize  tick_threshold;
+    usize width;
+    usize height;
+    usize tick_current;
+    usize tick_threshold;
 } GameOfLife;
 static fn_(GameOfLife_update(GameOfLife* self, f64 dt), void);
 static fn_(GameOfLife_entireCells(const GameOfLife* self), Grid$i8);
@@ -57,13 +57,13 @@ $maybe_unused static fn_(GameOfLife_toggleCellSlice(GameOfLife* self, usize left
 $maybe_unused static fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top_y, Grid$i8 cells), void);
 
 typedef struct State {
-    mem_Allocator  allocator;
+    mem_Allocator allocator;
     engine_Window* window;
     engine_Canvas* canvas;
-    engine_Input*  input;
-    GameOfLife     cells;
-    bool           is_paused;
-    bool           is_running;
+    engine_Input* input;
+    GameOfLife cells;
+    bool is_paused;
+    bool is_running;
 } State;
 use_E$(State);
 $must_check;
@@ -247,11 +247,11 @@ fn_(State_init(
 
     let mem_curr_states = meta_cast$(S$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_curr_states)));
-    memset(mem_curr_states.ptr, 0, buffer_size);
+    prim_memset(mem_curr_states.ptr, 0, buffer_size);
 
     let mem_next_states = meta_cast$(S$i8, try_(mem_Allocator_alloc(allocator, typeInfo$(i8), buffer_size)));
     errdefer_($ignore, mem_Allocator_free(allocator, anySli(mem_next_states)));
-    memset(mem_next_states.ptr, 0, buffer_size);
+    prim_memset(mem_next_states.ptr, 0, buffer_size);
 
     return_ok({
             .allocator  = allocator,
@@ -345,7 +345,7 @@ fn_(GameOfLife_update(GameOfLife* self, f64 dt), void) {
     let next   = Grid_fromS$(Grid$i8, self->next_states, width, height);
 
     // Clear the next states buffer for computation
-    memset(self->next_states.ptr, 0, self->width * self->height * sizeof(i8));
+    prim_memset(self->next_states.ptr, 0, self->width * self->height * sizeof(i8));
 
     // Update reflection at edges cells (work on current state)
     for (i32 x = 1; x < width - 1; ++x) {
@@ -383,7 +383,7 @@ fn_(GameOfLife_update(GameOfLife* self, f64 dt), void) {
     }
 
     // Copy next_states back to curr_states to complete the generation update
-    memcpy(self->curr_states.ptr, self->next_states.ptr, self->width * self->height * sizeof(i8));
+    prim_memcpy(self->curr_states.ptr, self->next_states.ptr, self->width * self->height * sizeof(i8));
 }
 fn_(GameOfLife_entireCells(const GameOfLife* self), Grid$i8) {
     debug_assert_nonnull(self);
@@ -487,8 +487,8 @@ fn_(GameOfLife_toggleCellGrid(GameOfLife* self, usize left_top_x, usize left_top
 //     assert(self->states_);
 //     assert(self->nextStates_);
 
-//     memset(self->states_, 0, size * sizeof(int));
-//     memset(self->nextStates_, 0, size * sizeof(int));
+//     prim_memset(self->states_, 0, size * sizeof(int));
+//     prim_memset(self->nextStates_, 0, size * sizeof(int));
 
 //     srand((unsigned int)time(NULL)); // NOLINT
 //     // for (int i = 0; i < size; ++i) {

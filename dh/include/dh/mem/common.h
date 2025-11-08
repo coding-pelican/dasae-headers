@@ -50,6 +50,8 @@ $inline_always void mem_set(P$raw dest, u8 value, usize size);
 $inline_always void mem_copy(P$raw dest, P_const$raw src, usize size);
 $inline_always void mem_move(P$raw dest, P$raw src, usize size);
 $inline_always i32 mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size);
+$inline_always usize mem_lenZ0$u8(const u8* p);
+$inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p);
 
 #define mem_asBytes_const(_ptr...)     comp_inline__mem_asBytes_const(_ptr)
 #define mem_asBytes(_ptr...)           comp_inline__mem_asBytes(_ptr)
@@ -190,25 +192,47 @@ $inline_always u64 byteSwap64(u64 x) {
 
 $inline_always void mem_set(P$raw dest, u8 value, usize size) {
     debug_assert_nonnull(dest);
-    memset(dest, value, size);
+    prim_memset(dest, value, size);
 }
 
 $inline_always void mem_copy(P$raw dest, P_const$raw src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
-    memcpy(dest, src, size);
+    prim_memcpy(dest, src, size);
 }
 
 $inline_always void mem_move(P$raw dest, P$raw src, usize size) {
     debug_assert_nonnull(dest);
     debug_assert_nonnull(src);
-    memmove(dest, src, size);
+    prim_memmove(dest, src, size);
 }
 
 $inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size) {
     debug_assert_nonnull(lhs);
     debug_assert_nonnull(rhs);
-    return memcmp(lhs, rhs, size);
+    return prim_memcmp(lhs, rhs, size);
+}
+
+$inline_always S_const$u8 mem_spanZ0_const$u8(const u8* p) {
+    claim_assert_nonnull(p);
+    return (S_const$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+}
+
+$inline_always S$u8 mem_spanZ0$u8(u8* p) {
+    claim_assert_nonnull(p);
+    return (S$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+}
+
+$inline_always usize mem_lenZ0$u8(const u8* p) {
+    claim_assert_nonnull(p);
+    return mem_idxZ$u8(u8_c('\0'), p);
+}
+
+$inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p) {
+    claim_assert_nonnull(p);
+    usize idx = 0;
+    while (p[idx] != sentinel) { idx++; }
+    return idx;
 }
 
 #define comp_inline__mem_asBytes_const(_ptr...) \

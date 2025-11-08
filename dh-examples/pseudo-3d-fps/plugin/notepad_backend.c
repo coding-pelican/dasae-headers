@@ -20,8 +20,8 @@ NOTE: 테스트해볼 솔루션을 찾았다!!!
     결국 Edit 등을 활용하는 방법으로는 실패하고 허무한 방법으로 해결했다...
 */
 
-static void       NotepadBackend_destroy(engine_Platform* platform);
-static void       NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
+static void NotepadBackend_destroy(engine_Platform* platform);
+static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color* data, u32 width, u32 height);
 /**
  * Using precomputed coefficients (R*0.299 + G*0.587 + B*0.114)
  * Multiplied by 256 for fixed-point arithmetic
@@ -50,19 +50,19 @@ E$P$engine_RenderBackend NotepadBackend_create(void) {
             return_err(NotepadBackendE_err(NotepadBackendErrCode_OutOfMemoryNotepadBacked));
         }
         errdefer(free(backend));
-        memset(backend, 0, sizeof(engine_NotepadBackend));
+        prim_memset(backend, 0, sizeof(engine_NotepadBackend));
 
         let capacity = 160ull * 100ull;
-        let buffer   = (wchar*)malloc(capacity * sizeof(wchar));
+        let buffer = (wchar*)malloc(capacity * sizeof(wchar));
         if (!buffer) {
             return_err(NotepadBackendE_err(NotepadBackendErrCode_OutOfMemoryNotepadBackendBuffer));
         }
         errdefer(free(buffer));
-        memset(buffer, 0, capacity * sizeof(wchar));
+        prim_memset(buffer, 0, capacity * sizeof(wchar));
 
-        backend->buffer          = buffer;
+        backend->buffer = buffer;
         backend->buffer_capacity = capacity;
-        backend->buffer_size     = 0;
+        backend->buffer_size = 0;
 
         // Create test message
         const wchar* test_msg = L"Hello, notepad!\n";
@@ -70,15 +70,15 @@ E$P$engine_RenderBackend NotepadBackend_create(void) {
         backend->buffer_size = wcslen(test_msg);
 
         // Launch notepad and store handle
-        backend->notepad_handle = catch (NotepadBackend_launchNotepad(), err, {
+        backend->notepad_handle = catch(NotepadBackend_launchNotepad(), err, {
             return_err(err);
         });
 
         // Set up backend interface
         backend->base = eval({
-            var vt           = engine_RenderBackend_createNoOp();
-            vt.type          = engine_RenderBackendType_custom;
-            vt.destroy       = NotepadBackend_destroy;
+            var vt = engine_RenderBackend_createNoOp();
+            vt.type = engine_RenderBackendType_custom;
+            vt.destroy = NotepadBackend_destroy;
             vt.presentBuffer = NotepadBackend_presentBuffer;
             eval_return vt;
         });
@@ -96,7 +96,7 @@ static void NotepadBackend_destroy(engine_Platform* platform) {
     if (backend->notepad_handle) {
         // Get the stored handles
         HANDLE hProcess = (HANDLE)GetPropW(backend->notepad_handle, L"ProcessHandle");
-        HANDLE hThread  = (HANDLE)GetPropW(backend->notepad_handle, L"ThreadHandle");
+        HANDLE hThread = (HANDLE)GetPropW(backend->notepad_handle, L"ThreadHandle");
 
         if (hProcess) {
             TerminateProcess(hProcess, 0);
@@ -146,7 +146,7 @@ static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color*
     debug_assert_nonnull(data);
 
     let backend = (engine_NotepadBackend*)platform->backend;
-    let pixels  = data;
+    let pixels = data;
 
     // Reset buffer
     backend->buffer_size = 0;
@@ -158,7 +158,7 @@ static void NotepadBackend_presentBuffer(engine_Platform* platform, const Color*
             const Color* lower = (y + 1 < height) ? &pixels[(y + 1) * width + x] : upper;
 
             u8 avg_intensity = (NotepadBackend_getGrayscale(upper) + NotepadBackend_getGrayscale(lower)) >> 1;
-            u8 shade_idx     = (avg_intensity * (shade_levels - 1)) >> 8;
+            u8 shade_idx = (avg_intensity * (shade_levels - 1)) >> 8;
 
             backend->buffer[backend->buffer_size++] = shade_chars[shade_idx];
         }
@@ -216,21 +216,18 @@ static E$HWND NotepadBackend_launchNotepad(void) {
     }
 
     // Create process
-    STARTUPINFOW        si = cleared();
+    STARTUPINFOW si = cleared();
     PROCESS_INFORMATION pi = cleared();
-    si.cb                  = sizeof(si);
-    si.dwFlags             = STARTF_USESHOWWINDOW;
-    si.wShowWindow         = SW_SHOW;
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_SHOW;
 
     wchar cmd[MAX_PATH * 2] = cleared();
     _snwprintf(cmd, MAX_PATH * 2, L"notepad.exe game_output.txt");
 
     if (!CreateProcessW(null, cmd, null, null, false,
                         CREATE_SUSPENDED, // Start suspended
-                        null,
-                        null,
-                        &si,
-                        &pi)) {
+                        null, null, &si, &pi)) {
         printf("CreateProcess failed (%lu)\n", GetLastError());
         return_err(NotepadBackendE_err(NotepadBackendErrCode_FailedCreateNotepadProcess));
     }
@@ -249,8 +246,8 @@ static E$HWND NotepadBackend_launchNotepad(void) {
     ResumeThread(pi.hThread);
 
     // Wait for window creation
-    HWND  notepad   = null;
-    HWND  edit      = null;
+    HWND notepad = null;
+    HWND edit = null;
     DWORD startTime = GetTickCount();
 
     printf("Waiting for notepad window...\n");

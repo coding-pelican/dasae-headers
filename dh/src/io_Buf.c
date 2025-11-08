@@ -19,7 +19,7 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
     // Move remaining data to start
     if (self->start < self->end) {
         let remaining = self->end - self->start;
-        memmove(self->buf.ptr, self->buf.ptr + self->start, remaining);
+        prim_memmove(self->buf.ptr, self->buf.ptr + self->start, remaining);
         self->start = 0;
         self->end = remaining;
     } else {
@@ -68,7 +68,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
                 if (written + copy_len > out_buf.len) {
                     return_err(io_Err_BufferTooSmall());
                 }
-                memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
+                prim_memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
                 self->start = i + 1; // Skip delimiter
                 return_ok(slice$S(out_buf, $r(0, written + copy_len)));
             }
@@ -78,7 +78,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
         if (written + copy_len > out_buf.len) {
             return_err(io_Err_BufferTooSmall());
         }
-        memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
+        prim_memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
         written += copy_len;
         self->start = self->end;
     }
@@ -137,7 +137,7 @@ $static fn_((Reader_VT_read(const P$raw ctx, S$u8 output))(E$usize) $scope) {
     if (self->start < self->end) {
         let available = self->end - self->start;
         let to_copy = prim_min(available, output.len);
-        memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
+        prim_memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
         self->start += to_copy;
         return_ok(to_copy);
     }
@@ -153,7 +153,7 @@ $static fn_((Reader_VT_read(const P$raw ctx, S$u8 output))(E$usize) $scope) {
     }
     let available = self->end - self->start;
     let to_copy = prim_min(available, output.len);
-    memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
+    prim_memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
     self->start += to_copy;
     return_ok(to_copy);
 } $unscoped_(fn);
@@ -190,7 +190,7 @@ $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope
     // If bytes fit in remaining buf space, just buf them
     let remaining = self->buf.len - self->used;
     if (bytes.len <= remaining) {
-        memcpy(self->buf.ptr + self->used, bytes.ptr, bytes.len);
+        prim_memcpy(self->buf.ptr + self->used, bytes.ptr, bytes.len);
         self->used += bytes.len;
         return_ok(bytes.len);
     }
@@ -201,7 +201,7 @@ $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope
         return io_Writer_write(self->inner, bytes);
     }
     // Otherwise, buf the bytes
-    memcpy(self->buf.ptr, bytes.ptr, bytes.len);
+    prim_memcpy(self->buf.ptr, bytes.ptr, bytes.len);
     self->used = bytes.len;
     return_ok(bytes.len);
 } $unscoped_(fn);

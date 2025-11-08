@@ -151,11 +151,22 @@ __step_deferred: switch (__scope_counter.current_line) { \
 }
 // clang-format on
 
+#if !on_comptime
+#undef prim_memset
+#define prim_memset(__dst, __val, __len...) __prim_memset__no_hinting(__dst, __val, __len)
+extern fn_((__prim_memset__no_hinting(void*, u32, usize))(void*));
+#undef prim_memcpy
+#define prim_memcpy(__dst, __src, __len...) __prim_memcpy__no_hinting(__dst, __src, __len)
+extern fn_((__prim_memcpy__no_hinting(void*, const void*, usize))(void*));
+#undef prim_memmove
+#define prim_memmove(__dst, __src, __len...) __prim_memmove__no_hinting(__dst, __src, __len)
+extern fn_((__prim_memmove__no_hinting(void*, const void*, usize))(void*));
+#endif /* !on_comptime */
+
 #define comp_syn__return_(_Expr...) blk({ \
-    ReturnType __return = _Expr; \
-    memcpy( \
+    prim_memcpy( \
         as$((u8*)(__reserved_return)), \
-        as$((u8*)(&__return)), \
+        as$((u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr })), \
         sizeOf$(*__reserved_return) \
     ); \
     goto __step_return; \
@@ -223,7 +234,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define expr_(T_Break_w_Ext...) comp_syn__expr_(T_Break_w_Ext)
 #define comp_syn__expr_(T_Break, _Ext...) pp_cat(comp_syn__expr_, _Ext)(T_Break)
 #define comp_syn__expr_$_scope(T_Break...) ({ \
-    local_label __step_break, __step_unscope; \
+    $local_label __step_break, __step_unscope; \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
@@ -244,7 +255,7 @@ __step_unscope: \
 
 // clang-format off
 #define comp_syn__expr_$_guard(T_Break...) ({ \
-    local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
+    $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
     let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
@@ -254,7 +265,7 @@ __step_unscope: \
         .is_returning = false, .current_line = __LINE__ \
     }; \
     bool __has_broken = false; { \
-        local_label __step_return; \
+        $local_label __step_return; \
         if (false) { __step_return: __step_break: \
             __scope_counter.is_returning = true; \
             goto __step_deferred; \
@@ -280,7 +291,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 
 // clang-format off
 #define $break_(_Expr...) ({ \
-    memcpy( \
+    prim_memcpy( \
         as$((u8*)(__reserved_break)), \
         as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
         sizeOf$(*__reserved_break) \
@@ -319,7 +330,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__eval_1(_else...) ; if (__has_broken) { goto __step_break; } _else
 #define inline__eval_2(_TBreak, _ext...) pp_cat(inline__eval_2, _ext)(_TBreak)
 #define inline__eval_2$_scope(_TBreak...) ({ \
-    local_label __step_break; \
+    $local_label __step_break; \
     let __reserved_break = as$((_TBreak*)((u8[_Generic(_TBreak, \
         void: 0, \
         default: sizeOf$(_TBreak) \
@@ -364,7 +375,6 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #if EXAMPLE_USAGE
 #include "dh/main.h"
 #include "dh/math.h"
-#include "dh/Str.h"
 
 /* declarations =============================================================*/
 use_ErrSet$(math_Err, i32);
@@ -386,7 +396,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 /* definitions */
 fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32) $scope) {
     if (rhs == 0) {
-        return_err(math_E_DivisionByZero());
+        return_err(math_Err_DivisionByZero());
     }
     return_ok(lhs / rhs);
 } $unscoped_(fn);

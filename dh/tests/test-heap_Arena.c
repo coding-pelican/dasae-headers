@@ -15,5 +15,8 @@ TEST_fn_("test heap_Arena reset while retaining a buffer" $guard) {
     try_(TEST_expect(isSome(unwrap_(arena.state.buffer_list.first)->next)));
 
     // This retains the first allocated buffer
-    try_(TEST_expect(heap_Arena_reset(&arena, variant_of$(heap_Arena_ResetMode, heap_Arena_ResetMode_retain_with_limit, 1))));
+    try_(TEST_expect(heap_Arena_reset(
+        &arena,
+        union_of$((heap_Arena_ResetMode)(heap_Arena_ResetMode_retain_with_limit)(1))
+    )));
 } $unguarded_(TEST_fn);

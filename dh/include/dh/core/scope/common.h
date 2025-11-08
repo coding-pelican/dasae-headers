@@ -27,7 +27,7 @@ extern "C"
 /*========== Includes =======================================================*/
 
 #include "../prim.h"
-#include "../Range.h"
+#include "../range.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -44,8 +44,11 @@ extern "C"
 #define $rt(_expr...) $r(0, _expr)
 #define $a(_a...)     ($A, (_a))
 #define $s(_s...)     ($S, (_s))
+#define $ua(_a...)    ($u_A, (_a))
+#define $us(_s...)    ($u_S, (_s))
 
 #define $fwd  $_fwd,
+#define $bwd  $_bwd,
 #define $rev  $_rev,
 #define $asc  $_asc,
 #define $desc $_desc,
@@ -61,6 +64,9 @@ extern "C"
 #define __sep1__for_(_captures...)                       (_captures),
 #define __emit__for_$_fwd(_iters, _captures, _block...)  __emitNext__for_(_iters, _captures, (_block))
 // #define __emitNext__for_(_iters, _captures, _block) \
+//     0(_iters), 1(_captures), 2(_block)
+#define __emit__for_$_bwd(_iters, _captures, _block...)  __emitNext__for_$_rev(_iters, _captures, (_block))
+// #define __emitNext__for_$_bwd(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
 #define __emit__for_$_rev(_iters, _captures, _block...)  __emitNext__for_$_rev(_iters, _captures, (_block))
 // #define __emitNext__for_$_rev(_iters, _captures, _block) \
@@ -78,18 +84,18 @@ extern "C"
 #define __for_3(_dir_type, _range, _iter)             pp_cat(__for_, _dir_type)(_range, _iter)
 #define __for_$_fwd(_range, _iter) \
     for (struct { bool once; R range; usize iter; } __state = { \
-             .once  = false, \
+             .once = false, \
              .range = (_range), \
-             .iter  = 0 }; \
+             .iter = 0 }; \
          !__state.once; __state.once = true) \
         for (__state.iter = __state.range.begin; \
              __state.iter < __state.range.end; \
              ++__state.iter) with_(let_(_iter, usize) = __state.iter)
 #define __for_$_rev(_range, _iter) \
     for (struct { bool once; R range; usize iter; } __state = { \
-             .once  = false, \
+             .once = false, \
              .range = (_range), \
-             .iter  = 0 }; \
+             .iter = 0 }; \
          !__state.once; __state.once = true) \
         for (__state.iter = __state.range.end; \
              __state.iter > __state.range.begin; \
@@ -102,7 +108,7 @@ extern "C"
 #define while_(_Init, _Cond, /*_Cont*/...) scope_while(_Init, _Cond, __VA_OPT__(, ) __VA_ARGS__)
 
 /* switch: declaration ======================================================*/
-#define switch_(_Init, _Cond, /*_Body*/...) scope_switch(_Init, _Cond, __VA_ARGS__)
+// #define switch_(_Init, _Cond, /*_Body*/...) scope_switch(_Init, _Cond, __VA_ARGS__)
 
 // case, default, ...
 

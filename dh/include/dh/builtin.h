@@ -24,17 +24,18 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "builtin/pp.h"
+#include "builtin/lang_cfg.h"
 #include "builtin/arch_cfg.h"
 #include "builtin/plat_cfg.h"
-#include "builtin/lang_cfg.h"
 #include "builtin/comp_cfg.h"
 #include "builtin/comp.h"
-#include "builtin/pp.h"
-#include "builtin/mem.h"
 #include "builtin/auto.h"
 #include "builtin/lambda.h"
 #include "builtin/type_info.h"
 #include "builtin/container_info.h"
+#include "builtin/mem.h"
+#include "builtin/atom.h"
 #include "builtin/src_loc.h"
 
 #if defined(__cplusplus)

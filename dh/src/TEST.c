@@ -18,6 +18,8 @@
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
 
+#include <stdio.h>
+
 /* ANSI color codes */
 #define TEST_color_reset  "\033[0m"
 #define TEST_color_red    "\033[31m"
@@ -52,7 +54,10 @@ fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
     let instance = TEST_Framework_instance();
     let cases = instance->cases;
     let gpa = instance->gpa;
+    printf("--- debug print: TEST_Framework_bindCase ---\n");
+    printf("self: %*s\n", (int)lenS(name), name.ptr);
     catch_((ArrList_append$TEST_Case(cases, gpa, (TEST_Case){ .fn = fn, .name = name }))($ignore, claim_unreachable));
+    printf("--- debug print: TEST_Framework_bindCase done ---\n");
 }
 
 fn_((TEST_Framework_run(void))(void)) {
@@ -60,6 +65,8 @@ fn_((TEST_Framework_run(void))(void)) {
     let out = fs_File_writer(io_getStdOut());
     let instance = TEST_Framework_instance();
     let cases = instance->cases;
+    printf("--- debug print: TEST_Framework_run ---\n");
+    printf("len(%llu), cap(%llu)\n", cases->items.len, cases->cap);
 
     // Print header
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
@@ -75,7 +82,7 @@ fn_((TEST_Framework_run(void))(void)) {
         ))($ignore, claim_unreachable));
 
         // Run the test
-        if_err(test_case->fn(), err) {
+        if_err((test_case->fn())(err)) {
             instance->stats.failed++;
             catch_((print(
                 out, u8_l("    {:s}: [{:s}] {:s}\n"),

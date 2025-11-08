@@ -27,19 +27,19 @@ TEST_fn_("ascii_toUppers: In-place uppercase conversion" $scope) {
     // Test normal case
     use_A$(20, u8);
     A$20$u8 test_mem = A_zero();
-    memcpy(test_mem.val, "hello world", 11);
+    prim_memcpy(test_mem.val, "hello world", 11);
     let test_str = Sli_from$(S$u8, test_mem.val, 11);
     let result = ascii_toUppers(test_str);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("HELLO WORLD"))));
 
     // Test already uppercase
-    memcpy(test_mem.val, "HELLO", 5);
+    prim_memcpy(test_mem.val, "HELLO", 5);
     let upper_str = Sli_from$(S$u8, test_mem.val, 5);
     let upper_result = ascii_toUppers(upper_str);
     try_(TEST_expect(Str_eql(Str_view(upper_result.ptr, upper_result.len), u8_l("HELLO"))));
 
     // Test mixed case with numbers
-    memcpy(test_mem.val, "Test123", 7);
+    prim_memcpy(test_mem.val, "Test123", 7);
     let mixed_str = Sli_from$(S$u8, test_mem.val, 7);
     let mixed_result = ascii_toUppers(mixed_str);
     try_(TEST_expect(Str_eql(Str_view(mixed_result.ptr, mixed_result.len), u8_l("TEST123"))));
@@ -49,19 +49,19 @@ TEST_fn_("ascii_toLowers: In-place lowercase conversion" $scope) {
     // Test normal case
     use_A$(20, u8);
     A$20$u8 test_mem = A_zero();
-    memcpy(test_mem.val, "HELLO WORLD", 11);
+    prim_memcpy(test_mem.val, "HELLO WORLD", 11);
     let test_str = Sli_from$(S$u8, test_mem.val, 11);
     let result = ascii_toLowers(test_str);
     try_(TEST_expect(Str_eql(Str_view(result.ptr, result.len), u8_l("hello world"))));
 
     // Test already lowercase
-    memcpy(test_mem.val, "hello", 5);
+    prim_memcpy(test_mem.val, "hello", 5);
     let lower_str = Sli_from$(S$u8, test_mem.val, 5);
     let lower_result = ascii_toLowers(lower_str);
     try_(TEST_expect(Str_eql(Str_view(lower_result.ptr, lower_result.len), u8_l("hello"))));
 
     // Test mixed case with symbols
-    memcpy(test_mem.val, "Test@123", 8);
+    prim_memcpy(test_mem.val, "Test@123", 8);
     let mixed_str = Sli_from$(S$u8, test_mem.val, 8);
     let mixed_result = ascii_toLowers(mixed_str);
     try_(TEST_expect(Str_eql(Str_view(mixed_result.ptr, mixed_result.len), u8_l("test@123"))));
@@ -318,13 +318,13 @@ TEST_fn_("ascii functions: Edge cases and special characters" $scope) {
     // Case conversion should not affect non-alphabetic characters
     use_A$(20, u8);
     A$20$u8 test_mem = A_zero();
-    memcpy(test_mem.val, special_chars.ptr, special_chars.len);
+    prim_memcpy(test_mem.val, special_chars.ptr, special_chars.len);
     let special_slice = Sli_from$(S$u8, test_mem.val, special_chars.len);
 
     let upper_result = ascii_toUppers(special_slice);
     try_(TEST_expect(Str_eql(Str_view(upper_result.ptr, upper_result.len), special_chars)));
 
-    memcpy(test_mem.val, special_chars.ptr, special_chars.len);
+    prim_memcpy(test_mem.val, special_chars.ptr, special_chars.len);
     let lower_result = ascii_toLowers(special_slice);
     try_(TEST_expect(Str_eql(Str_view(lower_result.ptr, lower_result.len), special_chars)));
 

@@ -92,8 +92,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
-#include "Str.h"
+#include "prl.h"
 
 /*========== Macros and Declarations ========================================*/
 

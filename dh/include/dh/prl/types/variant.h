@@ -33,8 +33,52 @@ extern "C" {
 #define comp_param__enum_of$(_value...)   _value, pp_expand
 #define block_inline__enum_of$(_value...) as$((_Alias)(_value))
 
-#define variant_(_alias, ...) \
-    comp_gen__variant_(_alias, __VA_ARGS__)
+#define $fits ,
+#define variant_(/*(_Alias $fits _UnderlyingType)((_Enum)(_Type),...)*/...) \
+    pp_overload(__variant_, __VA_ARGS__)(__VA_ARGS__)
+#define __variant__1(...) \
+    __gen__variant_(__gen__variant___parseAlias __VA_ARGS__)
+#define __gen__variant_(...)                                       __gen__variant___emit(__VA_ARGS__)
+#define __gen__variant___parseAlias(...)                           pp_overload(__gen__variant___parseAlias, __VA_ARGS__)(__VA_ARGS__)
+#define __gen__variant___parseAlias_0()                            , , __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parseAlias_1(_Alias...)                   _Alias, , __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...)  _Alias, : _UnderlyingType, __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parsePairEnumTypeList(_Pair_Enum_Type...) _Pair_Enum_Type
+#define __gen__variant___emit(_Alias, _EnumUnderlying, _Pair_Enum_Type...) \
+    struct _Alias { \
+        enum _EnumUnderlying { \
+            __gen__variant___emitEnumTags(_Pair_Enum_Type) \
+        } tag; \
+        union { \
+            __gen__variant___emitUnionPayloads(_Pair_Enum_Type) \
+        } payload; \
+    }
+#define __gen__variant___emitEnumTags(_Pair_Enum_Type...) \
+    pp_foreach (__gen__variant___emitEnumTag, ~, _Pair_Enum_Type)
+#define __gen__variant___emitEnumTag(_$ignored, _Pair_Enum_Type) \
+    pp_Tuple_get1st _Pair_Enum_Type,
+#define __gen__variant___emitUnionPayloads(_Pair_Enum_Type...) \
+    pp_foreach (__gen__variant___emitUnionPayload, ~, _Pair_Enum_Type)
+#define __gen__variant___emitUnionPayload(_$ignored, _Pair_Enum_Type) \
+    var_(pp_join($, tag, pp_Tuple_get1st _Pair_Enum_Type) $like_ref, pp_Tuple_get2nd _Pair_Enum_Type);
+#define __variant__2(...)                  __gen__variant_raw(__VA_ARGS__)
+#define __gen__variant_raw(_Alias, _$T...) struct _Alias
+
+#define union_of(/*(_Enum){ _payload... }*/...) \
+    __op__union_of(__op__union_of__parseEnum __VA_ARGS__)
+#define __op__union_of(...)                 __op__union_of__emit(__VA_ARGS__)
+#define __op__union_of__parseEnum(_Enum...) _Enum,
+#define __op__union_of__emit(_Enum, _payload...) \
+    { \
+        .tag = _Enum, \
+        .payload = { .pp_join($, tag, _Enum) $like_deref = _payload }, \
+    }
+#define union_of$(/*(_Alias)(_Enum){ _payload... }*/...) \
+    __op__union_of$(__op__union_of$__parseAlias __VA_ARGS__)
+#define __op__union_of$(...)                   __op__union_of$__emit(__VA_ARGS__)
+#define __op__union_of$__parseAlias(_Alias...) _Alias,
+#define __op__union_of$__emit(_Alias, _Enum_payload...) \
+    lit$((_Alias)union_of(_Enum_payload))
 
 #define variant_of(_tag, _payload...) \
     comp_op__variant_of(_tag, _payload)
@@ -62,26 +106,6 @@ extern "C" {
 #define fallback_(_Body...) comp_syn__fallback_(_Body)
 
 /*========== Macros and Definitions =========================================*/
-
-#define comp_gen__variant_(_alias, ...) \
-    struct pp_expand _alias { \
-        enum { \
-            comp_gen__variant__enumTags(_alias, __VA_ARGS__) \
-        } tag; \
-        union { \
-            comp_gen__variant__unionTypes(_alias, __VA_ARGS__) \
-        } payload; \
-    }
-
-#define comp_gen__variant__enumTags(T_variant, ...) \
-    pp_foreach (comp_gen__variant__enumTag, T_variant, __VA_ARGS__)
-#define comp_gen__variant__enumTag(T_variant, _Pair) \
-    pp_Tuple_get1st _Pair,
-
-#define comp_gen__variant__unionTypes(T_variant, ...) \
-    pp_foreach (comp_gen__variant__unionType, T_variant, __VA_ARGS__)
-#define comp_gen__variant__unionType(T_variant, _Pair) \
-    pp_Tuple_get1stRest _Pair pp_join($, tagged, pp_Tuple_get1st _Pair)[1];
 
 #define comp_op__variant_of(_tag, _payload...) \
     { \
@@ -122,7 +146,7 @@ extern "C" {
         _Body
 #define comp_syn__pattern_2(_Tag, _Capture, _Body...) \
     case _Tag: { \
-        let pp_Tuple_unwrap _Capture = __variant.payload.pp_join($, tagged, _Tag); \
+        let pp_Tuple_unwrap _Capture = __variant.payload.pp_join($, tag, _Tag); \
         _Body; \
     }
 

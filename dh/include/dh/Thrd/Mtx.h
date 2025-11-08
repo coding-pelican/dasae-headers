@@ -47,6 +47,17 @@ extern fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool));
 /// @param self Pointer to the mutex to unlock
 extern fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void));
 
+struct Thrd_MtxRecur {
+    Thrd_Mtx inner;
+    Thrd_Id thread_id;
+    usize lock_count;
+};
+extern fn_((Thrd_MtxRecur_init(void))(Thrd_MtxRecur));
+extern fn_((Thrd_MtxRecur_fini(Thrd_MtxRecur* self))(void));
+extern fn_((Thrd_MtxRecur_lock(Thrd_MtxRecur* self))(void));
+extern fn_((Thrd_MtxRecur_tryLock(Thrd_MtxRecur* self))(bool));
+extern fn_((Thrd_MtxRecur_unlock(Thrd_MtxRecur* self))(void));
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

@@ -39,7 +39,7 @@ extern "C" {
 #define claim_unreachable_val$(_T...) \
     __step__claim_unreachable_val$(_T)
 
-/*========== Macros and Implementations ====================================*/
+/*========== Macros and Definitions =========================================*/
 
 #define __step__claim_unreachable \
     (debug_assert_trap_msg("Reached unreachable code"), unreachable)

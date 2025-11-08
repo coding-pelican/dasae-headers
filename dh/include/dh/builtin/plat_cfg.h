@@ -24,6 +24,43 @@ extern "C" {
 
 /*========== Platform Detection =============================================*/
 
+#define os_type         __comp_enum__os_type
+#define os_type_unknown __comp_enum__os_type_unknown
+#define os_type_windows __comp_enum__os_type_windows
+#define os_type_linux   __comp_enum__os_type_linux
+#define os_type_darwin  __comp_enum__os_type_darwin
+
+#define os_name         __comp_str__os_name
+#define os_name_unknown __comp_str__os_name_unknown
+#define os_name_windows __comp_str__os_name_windows
+#define os_name_linux   __comp_str__os_name_linux
+#define os_name_darwin  __comp_str__os_name_darwin
+
+#define os_based_unix __comp_bool__os_based_unix
+
+#define __comp_enum__os_type         os_type_unknown
+#define __comp_enum__os_type_unknown 0
+#define __comp_enum__os_type_windows 1
+#define __comp_enum__os_type_linux   2
+#define __comp_enum__os_type_darwin  3
+
+#define __comp_str__os_name pp_if_(pp_eq(os_type, os_type_windows))( \
+    pp_then_(os_name_windows), \
+    pp_else_(pp_if_(pp_eq(os_type, os_type_linux))( \
+        pp_then_(os_name_linux), \
+        pp_else_(pp_if_(pp_eq(os_type, os_type_darwin))( \
+            pp_then_(os_name_darwin), \
+            pp_else_(os_name_unknown) \
+        )) \
+    )) \
+)
+#define __comp_str__os_name_unknown "unknown"
+#define __comp_str__os_name_windows "windows"
+#define __comp_str__os_name_linux   "linux"
+#define __comp_str__os_name_darwin  "darwin"
+
+#define __comp_bool__os_based_unix pp_ne(os_type, os_type_windows)
+
 #define plat_windows VAL__plat_windows
 #define plat_posix   VAL__plat_posix
 #define plat_unix    VAL__plat_unix
@@ -45,7 +82,6 @@ extern "C" {
 
 #define plat_export ATTR__plat_export
 #define plat_import ATTR__plat_import
-
 
 /*========== Implementations Platform Detection =============================*/
 
@@ -84,12 +120,16 @@ extern "C" {
 /* If not WASM or WASI, check traditional OSes. */
 
 #if defined(_WIN32) || defined(_WIN64)
+#undef __comp_enum__os_type
+#define __comp_enum__os_type os_type_windows
 #undef VAL__plat_windows
 #define VAL__plat_windows 1
 #undef VAL__plat_name
 #define VAL__plat_name "Windows"
 
 #elif defined(__APPLE__)
+#undef __comp_enum__os_type
+#define __comp_enum__os_type os_type_darwin
 #undef VAL__plat_unix
 #undef VAL__plat_darwin
 #define VAL__plat_unix   1
@@ -98,6 +138,8 @@ extern "C" {
 #define VAL__plat_name "Darwin"
 
 #elif defined(__linux__)
+#undef __comp_enum__os_type
+#define __comp_enum__os_type os_type_linux
 #undef VAL__plat_unix
 #undef VAL__plat_linux
 #define VAL__plat_unix  1

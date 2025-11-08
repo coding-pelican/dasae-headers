@@ -188,8 +188,10 @@ Macros:
   - "P$(T)=P$<T>"
   - "S$$(T)=S$$<T>"
   - "S$(T)=S$<T>"
-  - "A$$(N,T)=A$$<N,T*>"
-  - "A$(N,T)=A$<N,T*>"
+  # - "A$$(N,T)=A$$<N,T*>"
+  # - "A$(N,T)=A$<N,T*>"
+  - "A$$(N,T)=TypeOf(T[N])"
+  - "A$(N,T)=TypeOf(T[N])"
   - "O$$(T)=O$$<T>"
   - "O$(T)=O$<T>"
   - "E$$(T)=E$$<T>"
@@ -202,6 +204,7 @@ Macros:
   - "type$(Expr)=pp_ignore Expr"
 
   - "errset_(Expr)=pp_ignore Expr"
+  - "variant_(Expr)=pp_ignore Expr"
 
   - "pp_attr_(Attrs)=Attrs;"
   - "$static="
@@ -284,6 +287,8 @@ Macros:
   - debug_only(inner)=inner
   - release_only(inner)=inner
   - TEST_only(inner)=inner
+  # - "case_(expr)=expr"
+  # - "default_(expr)=expr"
 
 ForEachMacros:
   - pp_foreach
@@ -329,11 +334,11 @@ StatementAttributeLikeMacros:
   # - catch_from
 WhitespaceSensitiveMacros:
   # - return_
-  - return_void
-  - return_some
-  - return_none
-  - return_ok
-  - return_err
+  # - return_void
+  # - return_some
+  # - return_none
+  # - return_ok
+  # - return_err
   - pipe
   - config_ErrSet
   - config_UnionEnum

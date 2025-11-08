@@ -452,6 +452,7 @@ extern "C" {
 #if defined(__SSE__)
 #undef __comp_bool__arch_has_sse
 #define __comp_bool__arch_has_sse 1
+#include <xmmintrin.h>
 #endif
 #if defined(__SSE2__)
 #undef __comp_bool__arch_has_sse2

@@ -51,7 +51,7 @@ extern "C" {
      */ \
     block_inline__structPtrFrom(_p_field, _T, _field)
 
-#define FieldTypeOf(_T, _field...) \
+#define FieldType$(_T, _field...) \
     /** \
      * @brief Get the type of a field within a container type \
      * \
@@ -59,9 +59,9 @@ extern "C" {
      * @param _field The field name \
      * @return The type of the specified field \
      */ \
-    block_inline__FieldTypeOf(_T, _field)
+    block_inline__FieldType$(_T, _field)
 
-#define FieldTypeOfUnqual(_T, _field...) \
+#define FieldType$Unqual(_T, _field...) \
     /** \
      * @brief Get the type of a field within a container type \
      * \
@@ -69,7 +69,7 @@ extern "C" {
      * @param _field The field name \
      * @return The type of the specified field \
      */ \
-    block_inline__FieldTypeOfUnqual(_T, _field)
+    block_inline__FieldType$Unqual(_T, _field)
 
 #define sameFieldType(_T, _field, _TExpected...) \
     /** \
@@ -119,31 +119,31 @@ extern "C" {
     __builtin_offsetof(_T, _field)
 
 #define block_inline__structPtrFrom(_p_field, _T, _field...) \
-    as$((_T*)(as$((u8*)((FieldTypeOf(_T, _field)*, _p_field))) - offsetTo(_T, _field)))
+    as$((_T*)(as$((u8*)((FieldType$(_T, _field)*, _p_field))) - offsetTo(_T, _field)))
 
-#define block_inline__FieldTypeOf(_T, _field...) \
+#define block_inline__FieldType$(_T, _field...) \
     TypeOf((as$((_T*)(0)))->_field)
 
-#define block_inline__FieldTypeOfUnqual(_T, _field...) \
+#define block_inline__FieldType$Unqual(_T, _field...) \
     TypeOfUnqual((as$((_T*)(0)))->_field)
 
 #define block_inline__sameFieldType(_T, _field, _TExpected...) \
-    isSameType$(FieldTypeOf(_T, _field), _TExpected)
+    isSameType$(FieldType$(_T, _field), _TExpected)
 
 #define block_inline__sameFieldTypeUnqual(_T, _field, _TExpected...) \
-    isSameTypeUnqual(FieldTypeOfUnqual(_T, _field), _TExpected)
+    isSameTypeUnqual(FieldType$Unqual(_T, _field), _TExpected)
 
 #define block_inline__fieldPtrFrom(_p_struct, _field...) \
     (&((_p_struct)->_field))
 
 #define block_inline__fieldPadding(__offset, __align, _T, _field...) ({ \
     const usize __offset = offsetTo(_T, _field); \
-    const usize __align = alignOf(FieldTypeOf(_T, _field)); \
+    const usize __align = alignOf(FieldType$(_T, _field)); \
     __offset - (__offset & ~(__align - 1)); \
 })
 
 #define block_inline__fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-    isSameType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldTypeOf(T_Generic, _Field), (var_anon)._Field)), FieldTypeOf(T_Generic, _Field_))
+    isSameType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

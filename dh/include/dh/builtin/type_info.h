@@ -22,8 +22,6 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include <stdalign.h>
-
 /*========== Macros and Definitions =========================================*/
 
 /* Type Size and Alignment */
@@ -176,6 +174,15 @@ extern "C" {
     bool: true, \
     default: false \
 )
+
+#if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L)
+#ifndef __cplusplus
+#define alignas _Alignas
+#define alignof _Alignof
+#endif /* !__cplusplus */
+#define __alignas_is_defined 1
+#define __alignof_is_defined 1
+#endif /* __STDC_VERSION__ */
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

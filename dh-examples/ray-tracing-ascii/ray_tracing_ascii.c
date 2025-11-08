@@ -18,29 +18,29 @@
 #define PP_ignoreReturn(_func) (void)_func
 #define PtrT(_Type)            _Type*
 #define RefT(_Type)            _Type* const
-#define PP_swap(_Type, _a, _b)   \
-    do {                         \
+#define PP_swap(_Type, _a, _b) \
+    do { \
         PtrT(_Type) __a = &(_a); \
         PtrT(_Type) __b = &(_b); \
-        _Type __t       = *__a;  \
-        *__a            = *__b;  \
-        *__b            = __t;   \
+        _Type __t = *__a; \
+        *__a = *__b; \
+        *__b = __t; \
     } while (false)
 
 
-typedef struct Vec3      Vec3;
+typedef struct Vec3 Vec3;
 typedef struct Direction Direction;
 
 struct Vec3 {
     float x, y, z;
 };
-void      Vec3_normalize(Vec3* self);
-float     Vec3_length(Vec3* self);
-void      Vec3_add(Vec3* self, Vec3 v);
-void      Vec3_scale(Vec3* self, float s);
-Vec3      Vec3_scaled(Vec3* self, float s);
-float     Vec3_dot(Vec3* self, Vec3 other);
-float     Vec3_dist(Vec3* self, Vec3 other);
+void Vec3_normalize(Vec3* self);
+float Vec3_length(Vec3* self);
+void Vec3_add(Vec3* self, Vec3 v);
+void Vec3_scale(Vec3* self, float s);
+Vec3 Vec3_scaled(Vec3* self, float s);
+float Vec3_dot(Vec3* self, Vec3 other);
+float Vec3_dist(Vec3* self, Vec3 other);
 Direction Vec3_to_direction(Vec3* self);
 
 struct Direction {
@@ -51,17 +51,17 @@ Vec3 Direction_to_unit(Direction* self);
 
 
 // helper functions
-char  ray_char(Vec3* ray, int refl);
-bool  ray_done(Vec3* ray);
+char ray_char(Vec3* ray, int refl);
+bool ray_done(Vec3* ray);
 char* setc(int row, int col);
-bool  key_is_pressed();
+bool key_is_pressed();
 
 
 typedef struct Ball Ball;
 typedef struct Game Game;
 
 struct Ball {
-    Vec3  center;
+    Vec3 center;
     float radius;
 };
 Vec3 Ball_reflect(Ball* self, Vec3 incoming, Vec3 move);
@@ -73,12 +73,12 @@ Vec3 Ball_reflect(Ball* self, Vec3 incoming, Vec3 move);
 #define RAYSTEPS (5000)
 
 struct Game {
-    Ball      balls[32];
-    int       balls_size;
-    Vec3      pos;
+    Ball balls[32];
+    int balls_size;
+    Vec3 pos;
     Direction dir;
-    float     width, height;
-    int       xres, yres;
+    float width, height;
+    int xres, yres;
 };
 // Game(Vec3 start_pos, Direction start_dir, float width, float height, int xres, int yres) {
 //     this->width  = width;
@@ -100,8 +100,8 @@ bool Game_check_reflections(Game* self, Vec3* ray, Vec3* move);
 
 // Set locale to UTF-8
 void Terminal_ensureLocaleUTF8() {
-    static const char* const locales[]  = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
-    static const int         localesNum = sizeof(locales) / sizeof(locales[0]);
+    static const char* const locales[] = { "en_US.UTF-8", "C.UTF-8", ".UTF-8", "" };
+    static const int localesNum = sizeof(locales) / sizeof(locales[0]);
 
     const char* settedLocale = NULL;
 
@@ -134,8 +134,8 @@ void Terminal_ensureLocaleUTF8() {
 // Enable ANSI escape sequence processing
 void Terminal_enableANSI() {
 #ifdef _WIN32
-    HANDLE hOut   = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD  dwMode = 0;
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
@@ -157,10 +157,10 @@ void Terminal_printDiagnosticInformation() {
 void Terminal_clear() {
 #ifdef _WIN32
     // system("cls"); // NOLINT
-    HANDLE                     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD                      topLeft  = (COORD){ 0, 0 };
-    CONSOLE_SCREEN_BUFFER_INFO screen   = (CONSOLE_SCREEN_BUFFER_INFO){ 0 };
-    DWORD                      written  = 0;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD topLeft = (COORD){ 0, 0 };
+    CONSOLE_SCREEN_BUFFER_INFO screen = (CONSOLE_SCREEN_BUFFER_INFO){ 0 };
+    DWORD written = 0;
 
     GetConsoleScreenBufferInfo(hConsole, &screen);
     FillConsoleOutputCharacterA(hConsole, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
@@ -189,38 +189,38 @@ void Terminal_shutdown() {
     Terminal_clear();
 }
 
-static CHAR_INFO  Display_clearBuffer[640 * 400] = { 0 };
-static CHAR_INFO  Display_frontBuffer[640 * 400] = { 0 };
-static CHAR_INFO  Display_backBuffer[640 * 400]  = { 0 };
-static CHAR_INFO* Display_bufferCurrent          = Display_frontBuffer;
-static CHAR_INFO* Display_bufferNext             = Display_backBuffer;
-static int        Display_bufferSize             = 640 * 400;
+static CHAR_INFO Display_clearBuffer[640 * 400] = { 0 };
+static CHAR_INFO Display_frontBuffer[640 * 400] = { 0 };
+static CHAR_INFO Display_backBuffer[640 * 400] = { 0 };
+static CHAR_INFO* Display_bufferCurrent = Display_frontBuffer;
+static CHAR_INFO* Display_bufferNext = Display_backBuffer;
+static int Display_bufferSize = 640 * 400;
 
-static HANDLE     Display_windowOutputHandle = NULL;
-static SHORT      Display_windowWidth        = 80;
-static SHORT      Display_windowHeight       = 25;
-static COORD      Display_windowSize         = (COORD){ 0, 0 };
-static COORD      Display_windowCoord        = (COORD){ 0, 0 };
-static SMALL_RECT Display_windowRect         = (SMALL_RECT){ 0, 0, 1, 1 };
+static HANDLE Display_windowOutputHandle = NULL;
+static SHORT Display_windowWidth = 80;
+static SHORT Display_windowHeight = 25;
+static COORD Display_windowSize = (COORD){ 0, 0 };
+static COORD Display_windowCoord = (COORD){ 0, 0 };
+static SMALL_RECT Display_windowRect = (SMALL_RECT){ 0, 0, 1, 1 };
 
 void Display_init(int width, int height) {
 #ifdef _WIN32
     Display_windowOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    Display_windowRect         = (SMALL_RECT){ 0, 0, 1, 1 };
+    Display_windowRect = (SMALL_RECT){ 0, 0, 1, 1 };
 
     SetConsoleWindowInfo(Display_windowOutputHandle, TRUE, &Display_windowRect);
 
     // void SetConsoleScreenBuffer()
-    Display_windowWidth  = (SHORT)width;
+    Display_windowWidth = (SHORT)width;
     Display_windowHeight = (SHORT)height;
-    Display_windowSize   = (COORD){ (SHORT)Display_windowWidth, (SHORT)Display_windowHeight };
+    Display_windowSize = (COORD){ (SHORT)Display_windowWidth, (SHORT)Display_windowHeight };
     SetConsoleActiveScreenBuffer(Display_windowOutputHandle);
     SetConsoleScreenBufferSize(Display_windowOutputHandle, Display_windowSize);
     Display_bufferSize = Display_windowWidth * Display_windowHeight;
 
     // void SetConsoleFontSize()
     CONSOLE_FONT_INFOEX fontInfo = (CONSOLE_FONT_INFOEX){ 0 };
-    fontInfo.cbSize              = sizeof(CONSOLE_FONT_INFOEX);
+    fontInfo.cbSize = sizeof(CONSOLE_FONT_INFOEX);
     GetCurrentConsoleFontEx(Display_windowOutputHandle, FALSE, &fontInfo);
     fontInfo.dwFontSize.X = 8;
     fontInfo.dwFontSize.Y = 16;
@@ -238,13 +238,13 @@ void Display_init(int width, int height) {
 
     for (int i = 0; i < Display_bufferSize; ++i) {
         Display_clearBuffer[i].Char.UnicodeChar = ' ';
-        Display_clearBuffer[i].Attributes       = 0x00;
+        Display_clearBuffer[i].Attributes = 0x00;
     }
 #endif
 }
 
 void Display_clear() {
-    memcpy(Display_bufferCurrent, Display_clearBuffer, Display_bufferSize * sizeof(CHAR_INFO));
+    prim_memcpy(Display_bufferCurrent, Display_clearBuffer, Display_bufferSize * sizeof(CHAR_INFO));
 }
 
 void Display_swapBuffers() {
@@ -259,17 +259,17 @@ void Display_render() {
 }
 
 int main(int argc, char* argv[]) {
-    Vec3      start_pos = (Vec3){ 0, 0, 1 };
+    Vec3 start_pos = (Vec3){ 0, 0, 1 };
     Direction start_dir = (Direction){ -0.2f, 0 };
 
-    int width  = 0;
+    int width = 0;
     int height = 0;
     if (argc == 1) {
         // no window sizes given, defaults to 60x30
-        width  = 60;
+        width = 60;
         height = 30;
     } else {
-        width  = atoi(argv[1]);
+        width = atoi(argv[1]);
         height = atoi(argv[2]);
     }
 
@@ -379,8 +379,8 @@ bool ray_done(Vec3* ray) {
 // for setting position of cursor in terminal window
 char* setc(int row, int col) {
     static char buffer[32] = { 0 };
-    int         len        = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", row, col);
-    buffer[len]            = '\0';
+    int len = snprintf(buffer, sizeof(buffer), "\033[%d;%dH", row, col);
+    buffer[len] = '\0';
     return buffer;
 }
 
@@ -426,19 +426,19 @@ void Game_make_pic(Game* self) {
 
     for (int row = 0; row < self->yres; ++row) {
         for (int col = 0; col < self->xres; ++col) {
-            float up_offset   = -((float)row / ((float)self->yres - 1.0f) - 0.5f);
+            float up_offset = -((float)row / ((float)self->yres - 1.0f) - 0.5f);
             float left_offset = (float)col / ((float)self->xres - 1.0f) - 0.5f;
-            Vec3  move        = v1;
+            Vec3 move = v1;
 
             Vec3_add(&move, Vec3_scaled(&v2, up_offset));
             Vec3_add(&move, Vec3_scaled(&v3, left_offset));
             Vec3_normalize(&move);
             Vec3_scale(&move, RAYSTEP);
 
-            Vec3  ray                 = self->pos;
+            Vec3 ray = self->pos;
             // trace ray
-            float dists_to_balls[32]  = { 0 };
-            int   dists_to_balls_size = 0;
+            float dists_to_balls[32] = { 0 };
+            int dists_to_balls_size = 0;
             for (int i = 0; i < self->balls_size; ++i) {
                 dists_to_balls[i] = 0;
             }
@@ -450,7 +450,7 @@ void Game_make_pic(Game* self) {
 
                 int ball_index = 0;
                 for (Ball* b = self->balls; b < self->balls + self->balls_size; ++b) {
-                    float d                    = Vec3_dist(&ray, b->center) - b->radius;
+                    float d = Vec3_dist(&ray, b->center) - b->radius;
                     dists_to_balls[ball_index] = d;
                     if (d < 0) {
                         move = Ball_reflect(b, ray, move);
@@ -477,7 +477,7 @@ void Game_make_pic(Game* self) {
                 }
             }
             Display_bufferNext[row * self->xres + col].Char.UnicodeChar = (WCHAR)ray_char(&ray, times_reflected);
-            Display_bufferNext[row * self->xres + col].Attributes       = (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+            Display_bufferNext[row * self->xres + col].Attributes = (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
         }
     }
 
@@ -485,7 +485,7 @@ void Game_make_pic(Game* self) {
 }
 
 void Game_start(Game* self) {
-    int keys[]    = { VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT };
+    int keys[] = { VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT };
     int keys_size = sizeof(keys) / sizeof(keys[0]);
 
     while (true) {
@@ -519,10 +519,10 @@ void Game_move_view(Game* self, int key) {
 }
 
 void Game_move_position(Game* self, int key) {
-    Vec3  dir_vect = Direction_to_unit(&self->dir);
-    float xmov     = dir_vect.x;
-    float ymov     = dir_vect.y;
-    float scale    = 1 / sqrtf(xmov * xmov + ymov * ymov);
+    Vec3 dir_vect = Direction_to_unit(&self->dir);
+    float xmov = dir_vect.x;
+    float ymov = dir_vect.y;
+    float scale = 1 / sqrtf(xmov * xmov + ymov * ymov);
     xmov *= scale;
     ymov *= scale;
     xmov *= MOVE_POSITION;

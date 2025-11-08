@@ -34,7 +34,7 @@ extern "C" {
 
 // clang-format off
 #define comp_syn__blk_(_Label_and_RetType, _Body...) blk({ \
-    local_label pp_Tuple_get1st _Label_and_RetType; \
+    $local_label pp_Tuple_get1st _Label_and_RetType; \
     var pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType) = _Generic( \
         TypeOf(pp_Tuple_get2nd _Label_and_RetType), \
         void: (Void){}, \

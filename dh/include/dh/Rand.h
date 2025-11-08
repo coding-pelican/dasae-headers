@@ -30,48 +30,47 @@ typedef struct Rand {
     u64 state;
     u64 stream;
 } Rand;
-
+$static let_(Rand_default, Rand) = {
+    .state = 0xDEADBEEFCAFEBABE,
+    .stream = 0xCAFEF00DD15EA5E5,
+};
 /*
- * $static var_(Rand__s_rng, Rand);
  * $static fn_((Rand__xorshiro256(u64 x, u32 k))(u64));
- * $static fn_((Rand__next(void))(u64));
+ * $static fn_((Rand__next(Rand* self, void))(u64));
  */
-
-/*========== Extern Constant and Variable Declarations ======================*/
-
-extern Rand* const Rand_rng;
 
 /*========== Extern Function Prototypes =====================================*/
 
 // Core random functions
-extern void Rand_init(void);
-extern void Rand_initWithSeed(u64 seed);
-extern void Rand_setSeed(u64 seed);
+$extern fn_((Rand_init(void))(Rand));
+$extern fn_((Rand_initSeed(u64 seed))(Rand));
+$extern fn_((Rand_withSeed(Rand self, u64 seed))(Rand));
+$extern fn_((Rand_setSeed(Rand* self, u64 seed))(void));
 
 // Integer ranges
-extern u64   Rand_nextUInt(void);
-extern usize Rand_next$usize(void);
-extern u64   Rand_next$u64(void);
-extern u32   Rand_next$u32(void);
-extern u16   Rand_next$u16(void);
-extern u8    Rand_next$u8(void);
+$extern fn_((Rand_nextUInt(Rand* self))(u64));
+$extern fn_((Rand_next$usize(Rand* self))(usize));
+$extern fn_((Rand_next$u64(Rand* self))(u64));
+$extern fn_((Rand_next$u32(Rand* self))(u32));
+$extern fn_((Rand_next$u16(Rand* self))(u16));
+$extern fn_((Rand_next$u8(Rand* self))(u8));
 
-extern i64   Rand_nextInt(void);
-extern isize Rand_next$isize(void);
-extern i64   Rand_next$i64(void);
-extern i32   Rand_next$i32(void);
-extern i16   Rand_next$i16(void);
-extern i8    Rand_next$i8(void);
+$extern fn_((Rand_nextIInt(Rand* self))(i64));
+$extern fn_((Rand_next$isize(Rand* self))(isize));
+$extern fn_((Rand_next$i64(Rand* self))(i64));
+$extern fn_((Rand_next$i32(Rand* self))(i32));
+$extern fn_((Rand_next$i16(Rand* self))(i16));
+$extern fn_((Rand_next$i8(Rand* self))(i8));
 
 // Float ranges [0,1)
-extern f64 Rand_nextFlt(void);
-extern f64 Rand_next$f64(void);
-extern f32 Rand_next$f32(void);
+$extern fn_((Rand_nextFlt(Rand* self))(f64));
+$extern fn_((Rand_next$f64(Rand* self))(f64));
+$extern fn_((Rand_next$f32(Rand* self))(f32));
 
 // Bounded ranges
-extern u64 Rand_rangeUInt(u64 min, u64 max);
-extern i64 Rand_rangeInt(i64 min, i64 max);
-extern f64 Rand_rangeFlt(f64 min, f64 max);
+$extern fn_((Rand_rangeUInt(Rand* self, u64 min, u64 max))(u64));
+$extern fn_((Rand_rangeInt(Rand* self, i64 min, i64 max))(i64));
+$extern fn_((Rand_rangeFlt(Rand* self, f64 min, f64 max))(f64));
 
 #if defined(__cplusplus)
 } /* extern "C" */
