@@ -36,10 +36,13 @@ extern "C" {
 #define T_use_P$(_T...) \
     T_impl_P$(_T)
 
+#define P_InnerT$(_T...)       TypeOf(*(as$(_T*)(null)))
+#define P_InnerTUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null)))
+
 /* Pointer Operations */
 #define deref$P(_p /*: P$$(_T)*/... /*(_T)*/) deref(_p)
 
-#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$((const TypeOfUnqual(*_p)*)(_p))
+#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$(const TypeOfUnqual (*_p) (*)(_p))
 #define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
 
 #define slice$P(/*_p: P$$(_T), $r(_begin:0, _end:1): R*/... /*(S_const$$(_T))*/)       __param_expand__slice$P(__VA_ARGS__)

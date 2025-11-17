@@ -24,9 +24,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     if (args.len < 2) {
         printf(
             "[%*s] Usage: %*s <program_to_run> <width> <height>\n",
-            as$((i32)(Launcher_window_title.len)),
+            as$(i32)(Launcher_window_title.len),
             Launcher_window_title.ptr,
-            as$((i32)(at$S(args, 0)->len)),
+            as$(i32)(at$S(args, 0)->len),
             at$S(args, 0)->ptr
         );
         return_ok({});
@@ -35,9 +35,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let window_title = unwrap_(Terminal_window_title);
     printf(
         "[%*s] Terminal: %*s\n",
-        as$((i32)(Launcher_window_title.len)),
+        as$(i32)(Launcher_window_title.len),
         Launcher_window_title.ptr,
-        as$((i32)(window_title.len)),
+        as$(i32)(window_title.len),
         window_title.ptr
     );
 
@@ -49,7 +49,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     debug_assert(0 < Terminal_window_height);
     printf(
         "[%*s] Terminal size: %d,%d\n",
-        as$((i32)(Launcher_window_title.len)),
+        as$(i32)(Launcher_window_title.len),
         Launcher_window_title.ptr,
         Terminal_window_width,
         Terminal_window_height
@@ -58,8 +58,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     // Prepare the command string
     var command = zero$A$$((1024, u8));
     let_ignore = snprintf(
-        as$((char*)(command.val)), len$A(command), "wt --size %d,%d -d . cmd /k .\\%*s %d %d", Terminal_window_width, Terminal_window_height,
-        as$((i32)(window_title.len)), window_title.ptr, Terminal_window_width, Terminal_window_height);
+        as$(char*)(command.val), len$A(command), "wt --size %d,%d -d . cmd /k .\\%*s %d %d", Terminal_window_width, Terminal_window_height,
+        as$(i32)(window_title.len), window_title.ptr, Terminal_window_width, Terminal_window_height);
 
     // Create process
     STARTUPINFO startup_info = {};
@@ -71,7 +71,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     // Create process
     if (!CreateProcessA(
             null,
-            as$((LPSTR)(command.val)),
+            as$(LPSTR)(command.val),
             null,
             null,
             false,
@@ -83,9 +83,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
         )) {
         printf(
             "[%*s] CreateProcess failed (%d).\n",
-            as$((i32)(Launcher_window_title.len)),
+            as$(i32)(Launcher_window_title.len),
             Launcher_window_title.ptr,
-            as$((i32)(GetLastError()))
+            as$(i32)(GetLastError())
         );
         return_err(Err_Unexpected());
     }
@@ -99,7 +99,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     printf(
         "[%*s] Windows Terminal executed successfully.\n",
-        as$((i32)(Launcher_window_title.len)),
+        as$(i32)(Launcher_window_title.len),
         Launcher_window_title.ptr
     );
     return_ok({});
@@ -122,10 +122,10 @@ fn_((fmt_parse_u32(S_const$u8 str))(E$u32) $scope) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse_((u32_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
-            parsed   += digit;
+            parsed = orelse_((u32_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
+            parsed += digit;
         });
-        blk_return_ (parsed);
+        blk_return_(parsed);
     }));
 } $unscoped_(fn);
 fn_((fmt_parse_usize(S_const$u8 str))(E$usize) $scope) {
@@ -133,27 +133,27 @@ fn_((fmt_parse_usize(S_const$u8 str))(E$usize) $scope) {
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(blk({
         usize parsed = 0;
-        for_ (($s(str))(ch) {
+        for_(($s(str))(ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse_((usize_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
-            parsed   += digit;
+            parsed = orelse_((usize_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
+            parsed += digit;
         });
-        blk_return_ (parsed);
+        blk_return_(parsed);
     }));
 } $unscoped_(fn);
 fn_((fmt_parse_i32(S_const$u8 str))(E$i32) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(blk({
-        bool  negative  = false;
+        bool negative = false;
         usize start_idx = 0;
 
         if (*at$S(str, 0) == '-') {
-            negative  = true;
+            negative = true;
             start_idx = 1;
             if (str.len == 1) {
                 return_err(fmt_ParseIntErr_InvalidFormat());
@@ -171,7 +171,7 @@ fn_((fmt_parse_i32(S_const$u8 str))(E$i32) $scope) {
         }
 
         i32 parsed = 0;
-        for_ (($s(str))(ch) {
+        for_(($s(str))(ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
                 return_err(fmt_ParseIntErr_InvalidChar());
@@ -188,18 +188,18 @@ fn_((fmt_parse_i32(S_const$u8 str))(E$i32) $scope) {
         if (negative) {
             parsed = -parsed;
         }
-        blk_return_ (parsed);
+        blk_return_(parsed);
     }));
 } $unscoped_(fn);
 fn_((fmt_parse_isize(S_const$u8 str))(E$isize) $scope) {
     debug_assert_nonnull(str.ptr);
     if (str.len == 0) { return_err(fmt_ParseIntErr_EmptyStr()); }
     return_ok(blk({
-        bool  negative  = false;
+        bool negative = false;
         usize start_idx = 0;
 
         if (*at$S(str, 0) == '-') {
-            negative  = true;
+            negative = true;
             start_idx = 1;
             if (str.len == 1) {
                 return_err(fmt_ParseIntErr_InvalidFormat());
@@ -212,19 +212,19 @@ fn_((fmt_parse_isize(S_const$u8 str))(E$isize) $scope) {
         }
 
         isize parsed = 0;
-        for_ (($s(str))(ch) {
+        for_(($s(str))(ch) {
             let c = *ch;
             if (c < '0' || '9' < c) {
                 return_err(fmt_ParseIntErr_InvalidChar());
             }
             let digit = c - '0';
-            parsed    = orelse_((isize_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
-            parsed   += digit;
+            parsed = orelse_((isize_mulChkd(parsed, 10))(return_err(fmt_ParseIntErr_Overflow())));
+            parsed += digit;
         });
         if (negative) {
             parsed = -parsed;
         }
-        blk_return_ (parsed);
+        blk_return_(parsed);
     }));
 } $unscoped_(fn);
 

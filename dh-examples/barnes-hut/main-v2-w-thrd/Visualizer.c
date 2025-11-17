@@ -15,8 +15,8 @@
 #define Visualizer_alpha_scale       (0.8f) // Alpha multiplier for blending
 
 /* Function to calculate the inverse scale factor for rendering nodes.  */
-$inline_always f32   Visualizer_scale(Visualizer* self) { return self->scale; }
-$inline_always f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
+$inline_always f32 Visualizer_scale(Visualizer* self) { return self->scale; }
+$inline_always f32 Visualizer_scaleInv(Visualizer* self) { return 1.0f / self->scale; }
 ///////////////////////////////////////////////////////////////////////////////
 /// Unified coordinate system transformations:
 ///
@@ -46,7 +46,7 @@ $inline_always f32   Visualizer_scaleInv(Visualizer* self) { return 1.0f / self-
 ///    wy = camy - ( (sy - cy) * scale )
 ///
 ///////////////////////////////////////////////////////////////////////////////
-$inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
+$inline_always m_V2i32 Visualizer_screenCenter(Visualizer* self) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
     let cx = (as$(i32, self->canvas->width) - 1) / 2;
     let cy = (as$(i32, self->canvas->height) - 1) / 2;
@@ -61,10 +61,10 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// @param self      Pointer to the Visualizer (contains camera pos & scale).
 /// @param world_pos The (wx, wy) coordinates in world space.
 /// @return          The corresponding (sx, sy) on the screen in pixels.
-$inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
-    let center      = Visualizer_screenCenter(self);
+$inline_always m_V2i32 Visualizer_worldToScreen(Visualizer* self, m_V2f32 world_pos) {
+    let center = Visualizer_screenCenter(self);
     let w_minus_cam = m_V2f32_sub(world_pos, self->pos);
-    let divided     = m_V2f32_scale(w_minus_cam, 1.0f / self->scale);
+    let divided = m_V2f32_scale(w_minus_cam, 1.0f / self->scale);
 
     let sx = as$(i32, roundf(as$(f32, center.x) + divided.x));
     let sy = as$(i32, roundf(as$(f32, center.y) - divided.y));
@@ -79,16 +79,16 @@ $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos)
 /// @param self       Pointer to the Visualizer (contains camera pos & scale).
 /// @param screen_pos The (sx, sy) pixel coordinates on the screen.
 /// @return           The corresponding (wx, wy) in world space.
-$inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
-    let center     = Visualizer_screenCenter(self);
-    let dx         = as$(f32, screen_pos.x - center.x);
-    let dy         = as$(f32, center.y - screen_pos.y);
+$inline_always m_V2f32 Visualizer_screenToWorld(Visualizer* self, m_V2i32 screen_pos) {
+    let center = Visualizer_screenCenter(self);
+    let dx = as$(f32, screen_pos.x - center.x);
+    let dy = as$(f32, center.y - screen_pos.y);
     let multiplied = m_V2f32_scale(m_V2f32_from(dx, dy), self->scale);
 
     return m_V2f32_add(self->pos, multiplied);
 }
 /// Returns the current mouse position converted to world coords.
-$inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
+$inline_always m_V2f32 Visualizer_mousePosToWorld(Visualizer* self) {
     return Visualizer_screenToWorld(self, engine_Mouse_getPosition());
 }
 
@@ -96,19 +96,19 @@ $inline_always Vec2f Visualizer_mousePosToWorld(Visualizer* self) {
 E$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
     reserveReturn(E$Visualizer);
     return_ok((Visualizer){
-        .pos   = m_V2f32_zero, // camera center pos
-        .scale = 2.0f,            // camera zoom (2.0f == x0.5, 0.5f == x2)
+        .pos = m_V2f32_zero, // camera center pos
+        .scale = 2.0f,       // camera zoom (2.0f == x0.5, 0.5f == x2)
         // .scale = 3600,
 
         .pan_screen_begin = m_V2i32_zero,
-        .pan_cam_begin    = m_V2f32_zero,
+        .pan_cam_begin = m_V2f32_zero,
 
         .zoom_anchor_world = m_V2f32_zero,
 
-        .shows_bodies         = true,
+        .shows_bodies = true,
         .shows_bodies_vel_vec = false,
         .shows_bodies_acc_vec = false,
-        .shows_quad_tree      = false,
+        .shows_quad_tree = false,
 
         .depth_range = {
             .min = 0,
@@ -117,17 +117,17 @@ E$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) {
         .cache_stack = type$(ArrList$Visualizer_QuadCache, try(ArrList_initCap(typeInfo$(Visualizer_QuadCache), allocator, 12500))),
 
         .spawn = {
-            .body      = none(),
-            .angle     = none(),
-            .total     = none(),
+            .body = none(),
+            .angle = none(),
+            .total = none(),
             .confirmed = none(),
         },
 
         .bodies = type$(ArrList$Body, ArrList_init(typeInfo$(Body), allocator)),
-        .nodes  = type$(ArrList$QuadNode, ArrList_init(typeInfo$(QuadNode), allocator)),
+        .nodes = type$(ArrList$QuadNode, ArrList_init(typeInfo$(QuadNode), allocator)),
 
         .allocator = allocator,
-        .canvas    = canvas,
+        .canvas = canvas,
     });
 }
 
@@ -142,7 +142,7 @@ void Visualizer_destroy(Visualizer* self) {
 
 typedef struct Control {
     engine_KeyCode key;
-    Vec2f          vec;
+    m_V2f32 vec;
 } Control;
 use_S$(Control);
 static S_const$Control Control_list(void) {
@@ -179,8 +179,8 @@ $inline_always void VisualizerInput_onPanBegin(Visualizer* self) {
     if (self->is_panning) { return; }
     // Store screen coordinates & camera pos
     self->pan_screen_begin = engine_Mouse_getPosition();
-    self->pan_cam_begin    = self->pos;
-    self->is_panning       = true;
+    self->pan_cam_begin = self->pos;
+    self->is_panning = true;
 }
 // Call this each frame while the middle mouse is held:
 $inline_always void VisualizerInput_handlePan(Visualizer* self) {
@@ -211,7 +211,7 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     if (scroll_delta == 0) { return; }
 
     // 1) Find the world coords under the mouse BEFORE changing scale
-    let mouse_screen       = engine_Mouse_getPosition();
+    let mouse_screen = engine_Mouse_getPosition();
     let mouse_world_before = Visualizer_screenToWorld(self, mouse_screen);
 
     // 2) Choose a zoom factor
@@ -219,7 +219,7 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     //    or scrolling up => zoom out => "scale goes up" - your choice
     //    (Below code: scroll_delta > 0 => bigger scale => zoom out)
     let zoom_sensitivity = 0.1f;
-    let zoom_factor      = ({
+    let zoom_factor = ({
         var factor = 1.0f + as$(f32, -scroll_delta) * zoom_sensitivity;
         if (factor < 0.1f) { factor = 0.1f; }
         eval_return factor;
@@ -234,7 +234,7 @@ $inline_always void VisualizerInput_handleZoom(Visualizer* self, i32 scroll_delt
     // 4) Shift the camera so the "mouse_world_before" is still under the mouse
     //    That is: new camera pos = old camera pos + (before - after)
     //    Because (mouse_world_before - camera_pos) should remain the same
-    let diff  = m_V2f32_sub(mouse_world_before, mouse_world_after);
+    let diff = m_V2f32_sub(mouse_world_before, mouse_world_after);
     self->pos = m_V2f32_add(self->pos, diff);
 }
 E$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
@@ -307,16 +307,16 @@ E$void Visualizer_processInput(Visualizer* self, engine_Window* window) {
         log_debug("right mouse button held");
         if_some_mut(self->spawn.body, body) {
             let world_mouse = Visualizer_mousePosToWorld(self);
-            let d           = m_V2f32_sub(world_mouse, body->pos);
+            let d = m_V2f32_sub(world_mouse, body->pos);
             if_some_mut(self->spawn.angle, angle) {
-                let angle2    = atan2f(d.y, d.x);
-                let a         = angle2 - *angle;
+                let angle2 = atan2f(d.y, d.x);
+                let a = angle2 - *angle;
                 let a_wrapped = fmodf(a + math_f32_pi, math_f32_tau) - math_f32_pi;
 
                 self->spawn.total.value -= a_wrapped;
                 *angle = angle2;
 
-                body->mass   = exp2f(self->spawn.total.value / math_f32_tau);
+                body->mass = exp2f(self->spawn.total.value / math_f32_tau);
                 body->radius = cbrtf(body->mass);
             }
             else {
@@ -352,9 +352,9 @@ E$void Visualizer_update(Visualizer* self) {
     return_void();
 }
 
-static void   Visualizer_renderBodies(Visualizer* self);
+static void Visualizer_renderBodies(Visualizer* self);
 static E$void Visualizer_renderQuadTree(Visualizer* self);
-E$void        Visualizer_render(Visualizer* self) {
+E$void Visualizer_render(Visualizer* self) {
     reserveReturn(E$void);
     debug_assert_nonnull(self);
 
@@ -375,7 +375,7 @@ E$void        Visualizer_render(Visualizer* self) {
     return_void();
 }
 
-$inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color) {
+$inline_always void Visualizer_drawCircle(Visualizer* self, m_V2i32 screen_pos, f32 screen_radius, Color color) {
     if (1.0f < screen_radius) {
         return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
     }
@@ -384,7 +384,7 @@ $inline_always void Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f3
     }
     // Calculate alpha based on coverage area
     let coverage = screen_radius * 2.0f;
-    color.a      = as$(u8, 255.0f * coverage * Visualizer_alpha_scale);
+    color.a = as$(u8, 255.0f * coverage * Visualizer_alpha_scale);
     return engine_Canvas_drawPixel(self->canvas, screen_pos.s[0], screen_pos.s[1], color);
 }
 $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
@@ -397,15 +397,15 @@ $inline_always void Visualizer_drawBodiesOnly(Visualizer* self) {
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
     for_slice(self->bodies.items, body) {
-        let left   = body->pos.x - body->radius;
-        let right  = body->pos.x + body->radius;
+        let left = body->pos.x - body->radius;
+        let right = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
-        let top    = body->pos.y + body->radius;
+        let top = body->pos.y + body->radius;
 
         // If outside camera view, skip
         if (right < view_min.x || view_max.x < left || top < view_min.y || view_max.y < bottom) { continue; }
 
-        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_pos = Visualizer_worldToScreen(self, body->pos);
         let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
     }
@@ -420,21 +420,21 @@ $inline_always void Visualizer_drawBodiesWithVelVec(Visualizer* self) {
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
     for_slice(self->bodies.items, body) {
-        let left   = body->pos.x - body->radius;
-        let right  = body->pos.x + body->radius;
+        let left = body->pos.x - body->radius;
+        let right = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
-        let top    = body->pos.y + body->radius;
+        let top = body->pos.y + body->radius;
 
         // If outside camera view, skip
         if (right < view_min.x || view_max.x < left || top < view_min.y || view_max.y < bottom) { continue; }
 
-        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_pos = Visualizer_worldToScreen(self, body->pos);
         let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw velocity vector
         if (0.0f < m_V2f32_lenSq(body->vel)) {
-            let vel_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
+            let vel_end_world = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
             let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
@@ -450,21 +450,21 @@ $inline_always void Visualizer_drawBodiesWithAccVec(Visualizer* self) {
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
     for_slice(self->bodies.items, body) {
-        let left   = body->pos.x - body->radius;
-        let right  = body->pos.x + body->radius;
+        let left = body->pos.x - body->radius;
+        let right = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
-        let top    = body->pos.y + body->radius;
+        let top = body->pos.y + body->radius;
 
         // If outside camera view, skip
         if (right < view_min.x || view_max.x < left || top < view_min.y || view_max.y < bottom) { continue; }
 
-        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_pos = Visualizer_worldToScreen(self, body->pos);
         let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Draw acceleration vector
         if (0.0f < m_V2f32_lenSq(body->acc)) {
-            let acc_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
+            let acc_end_world = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
             let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
@@ -480,28 +480,28 @@ $inline_always void Visualizer_drawBodiesWithVelAccVec(Visualizer* self) {
         self->pos.y + 0.5f * (as$(f32, self->canvas->height) * self->scale)
     );
     for_slice(self->bodies.items, body) {
-        let left   = body->pos.x - body->radius;
-        let right  = body->pos.x + body->radius;
+        let left = body->pos.x - body->radius;
+        let right = body->pos.x + body->radius;
         let bottom = body->pos.y - body->radius;
-        let top    = body->pos.y + body->radius;
+        let top = body->pos.y + body->radius;
 
         // If outside camera view, skip
         if (right < view_min.x || view_max.x < left || top < view_min.y || view_max.y < bottom) { continue; }
 
-        let screen_pos    = Visualizer_worldToScreen(self, body->pos);
+        let screen_pos = Visualizer_worldToScreen(self, body->pos);
         let screen_radius = body->radius * Visualizer_scaleInv(self);
         Visualizer_drawCircle(self, screen_pos, screen_radius, Visualizer_color_body);
 
         // Velocity vector
         if (0.0f < m_V2f32_lenSq(body->vel)) {
-            let vel_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
+            let vel_end_world = m_V2f32_add(body->pos, m_V2f32_scale(body->vel, Visualizer_scaleInv(self)));
             let vel_end_screen = Visualizer_worldToScreen(self, vel_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], vel_end_screen.s[0], vel_end_screen.s[1], Visualizer_color_vel_vec);
         }
 
         // Acceleration vector
         if (0.0f < m_V2f32_lenSq(body->acc)) {
-            let acc_end_world  = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
+            let acc_end_world = m_V2f32_add(body->pos, m_V2f32_scale(body->acc, Visualizer_scaleInv(self)));
             let acc_end_screen = Visualizer_worldToScreen(self, acc_end_world);
             engine_Canvas_drawLine(self->canvas, screen_pos.s[0], screen_pos.s[1], acc_end_screen.s[0], acc_end_screen.s[1], Visualizer_color_acc_vec);
         }
@@ -529,7 +529,7 @@ static void Visualizer_renderBodies(Visualizer* self) {
     }
 }
 
-$inline_always void Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color) {
+$inline_always void Visualizer_drawNode(Visualizer* self, m_V2f32 min, m_V2f32 max, Color color) {
     // Convert world min/max to screen coordinates
     let screen_min = Visualizer_worldToScreen(self, min);
     let screen_max = Visualizer_worldToScreen(self, max);
@@ -608,20 +608,20 @@ static E$void Visualizer_renderQuadTree(Visualizer* self) {
 
         let quad = node->quad;
         let half = m_V2f32_scale(m_V2f32_scale(m_V2f32_one, 0.5f), quad.size);
-        let min  = m_V2f32_sub(quad.center, half);
-        let max  = m_V2f32_add(quad.center, half);
+        let min = m_V2f32_sub(quad.center, half);
+        let max = m_V2f32_add(quad.center, half);
 
         let t = as$(f32, item.depth - min_depth + as$(usize, !QuadNode_isEmpty(node)))
               / as$(f32, max_depth - min_depth + 1);
 
         let start_h = -100.0f;
-        let end_h   = 80.0f;
-        let h       = start_h + (end_h - start_h) * t;
-        let s       = 100.0f;
-        let l       = t * 100.0f;
+        let end_h = 80.0f;
+        let h = start_h + (end_h - start_h) * t;
+        let s = 100.0f;
+        let l = t * 100.0f;
 
         // TODO: Apply `HSLuv` color space
-        let hsl   = Hsl_from(h, s, l);
+        let hsl = Hsl_from(h, s, l);
         let color = Hsl_intoColor(hsl, 192);
         Visualizer_drawNode(self, min, max, color);
     }

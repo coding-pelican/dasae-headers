@@ -51,12 +51,12 @@ bool time_Duration_isZero(time_Duration self) {
 
 time_Duration time_Duration_fromSecs$f64(f64 secs) {
     return time_Duration_from(
-        as$((u64)(secs)),
-        as$((u32)((secs - as$((f64)(as$((u64)(secs))))) * as$((f64)(time_nanos_per_sec)))));
+        as$(u64)(secs),
+        as$(u32)((secs - as$(f64)(as$(u64)(secs))) * as$(f64)(time_nanos_per_sec)));
 }
 
 f64 time_Duration_asSecs$f64(time_Duration self) {
-    return as$((f64)(self.secs)) + as$((f64)(self.nanos)) / as$((f64)(time_nanos_per_sec));
+    return as$(f64)(self.secs) + as$(f64)(self.nanos) / as$(f64)(time_nanos_per_sec);
 }
 
 /*========== Arithmetic =====================================================*/
@@ -101,8 +101,8 @@ fn_((time_Duration_addChkd(time_Duration lhs, time_Duration rhs))(O$time_Duratio
         || (0 < lhs.secs && (u64_limit - lhs.secs) < rhs.secs)) {
         return_none();
     }
-    let secs  = total_nanos / time_nanos_per_sec;
-    let nanos = as$((u32)(total_nanos % time_nanos_per_sec));
+    let secs = total_nanos / time_nanos_per_sec;
+    let nanos = as$(u32)(total_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
 } $unscoped_(fn);
 
@@ -114,8 +114,8 @@ fn_((time_Duration_subChkd(time_Duration lhs, time_Duration rhs))(O$time_Duratio
         return_none();
     }
     let diff_nanos = lhs_total_nanos - rhs_total_nanos;
-    let secs       = diff_nanos / time_nanos_per_sec;
-    let nanos      = as$((u32)(diff_nanos % time_nanos_per_sec));
+    let secs = diff_nanos / time_nanos_per_sec;
+    let nanos = as$(u32)(diff_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
 } $unscoped_(fn);
 
@@ -134,7 +134,7 @@ fn_((time_Duration_divChkd$u64(time_Duration lhs, u64 rhs))(O$time_Duration) $sc
         return_none();
     }
     let total_nanos = lhs.secs * rhs + lhs.nanos;
-    let secs        = total_nanos / time_nanos_per_sec;
-    let nanos       = as$((u32)(total_nanos % time_nanos_per_sec));
+    let secs = total_nanos / time_nanos_per_sec;
+    let nanos = as$(u32)(total_nanos % time_nanos_per_sec);
     return_some(literal_time_Duration_from(secs, nanos));
 } $unscoped_(fn);

@@ -203,6 +203,9 @@ Macros:
   - "create$(Expr)=pp_ignore Expr"
   - "type$(Expr)=pp_ignore Expr"
 
+  - "T_decl$(Expr)=pp_ignore Expr"
+  - "T_impl$(Expr)=pp_ignore Expr"
+  - "T_use$(Expr)=pp_ignore Expr"
   - "errset_(Expr)=pp_ignore Expr"
   - "variant_(Expr)=pp_ignore Expr"
 

@@ -229,7 +229,7 @@ int main(void) {
                     .into_inner,
     };
     MVal shallow_copy = origin_copy;
-    *as$((i32*)(origin_copy.inner->untyped)) += origin_i32;
+    *as$(i32*)(origin_copy.inner->untyped) += origin_i32;
     let origin_copy1 = ({
         ((MVal){
             .type = typeInfo$(TypeOf(origin_i32)),
@@ -242,11 +242,11 @@ int main(void) {
                         .into_inner });
     });
     printf("origin_i32: %d\n", origin_i32);
-    printf("origin_copy: %d\n", *as$((i32*)(origin_copy.inner->untyped)));
-    printf("origin_copy1: %d\n", *as$((i32*)(origin_copy1.inner->untyped)));
-    printf("shallow_copy(): %d\n", *as$((i32*)(shallow_copy.inner->untyped)));
+    printf("origin_copy: %d\n", *as$(i32*)(origin_copy.inner->untyped));
+    printf("origin_copy1: %d\n", *as$(i32*)(origin_copy1.inner->untyped));
+    printf("shallow_copy(): %d\n", *as$(i32*)(shallow_copy.inner->untyped));
 
     let item = spawnItem(lit$((O$MVal){ .payload = { .some = { .inner = (void*)&lit$((Label){}) } } }));
-    printf("item: %s\n", (*as$((Label*)(item.payload.some.inner->untyped))).name);
+    printf("item: %s\n", (*as$(Label *) ((item.payload.some.inner->untyped))).name);
     return 0;
 }

@@ -25,18 +25,18 @@ struct engine_Window {
         var_(count, u32);
     } view;
     engine_Canvas* composite_buffer; // Final composition buffer
-    mem_Allocator  allocator;
+    mem_Allocator allocator;
 };
-use_P$(engine_Window);
-use_S$(engine_Window);
-use_O$(engine_Window);
-use_E$(engine_Window);
+T_use_P$(engine_Window);
+T_use_S$(engine_Window);
+T_use_O$(engine_Window);
+T_use_E$(P$engine_Window);
 
 typedef struct engine_Window_Config {
     O$mem_Allocator allocator;
-    Vec2u             rect_size;
-    O$Color         default_color;
-    O$S_const$u8    title;
+    m_V2u32 rect_size;
+    O$Color default_color;
+    O$S_const$u8 title;
 } engine_Window_Config;
 
 /* Window management =========================================================*/
@@ -54,16 +54,16 @@ extern fn_((engine_Window_removeView(engine_Window* self, u32 view_id))(void));
 /* Window metrics queries ===================================================*/
 
 /// Returns position: top-left corner on display (ex: (10,10) pixels))
-extern fn_((engine_Window_getPos(const engine_Window* self))(Vec2i));
+extern fn_((engine_Window_getPos(const engine_Window* self))(m_V2i32));
 /// Returns dimensions: physical display size (ex: 800x500 pixels))
-extern fn_((engine_Window_getDim(const engine_Window* self))(Vec2u));
+extern fn_((engine_Window_getDim(const engine_Window* self))(m_V2u32));
 /// Returns resolution: logical grid size (ex: 80x50 units))
-extern fn_((engine_Window_getRes(const engine_Window* self))(Vec2u));
+extern fn_((engine_Window_getRes(const engine_Window* self))(m_V2u32));
 
-extern fn_((engine_Window_getMinRes(const engine_Window* self))(Vec2u));
-extern fn_((engine_Window_getMaxRes(const engine_Window* self))(Vec2u));
-extern fn_((engine_Window_setMinRes(engine_Window* self, Vec2u size))(E$void)) $must_check;
-extern fn_((engine_Window_setMaxRes(engine_Window* self, Vec2u size))(E$void)) $must_check;
+extern fn_((engine_Window_getMinRes(const engine_Window* self))(m_V2u32));
+extern fn_((engine_Window_getMaxRes(const engine_Window* self))(m_V2u32));
+extern fn_((engine_Window_setMinRes(engine_Window* self, m_V2u32 size))(E$void)) $must_check;
+extern fn_((engine_Window_setMaxRes(engine_Window* self, m_V2u32 size))(E$void)) $must_check;
 
 extern fn_((engine_Window_isFocused(const engine_Window* self))(bool));
 extern fn_((engine_Window_isMinimized(const engine_Window* self))(bool));

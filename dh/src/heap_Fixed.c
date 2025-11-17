@@ -79,7 +79,7 @@ fn_((heap_Fixed_isLastAllocation(const heap_Fixed* self, S_const$u8 buf))(bool))
 
 $static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_Fixed*)(ctx));
+    let self = as$(heap_Fixed*)(ctx);
     let ptr_align = 1ull << align;
 
     // Calculate aligned offset
@@ -99,7 +99,7 @@ $static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
 
 $static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_Fixed*)(ctx));
+    let self = as$(heap_Fixed*)(ctx);
     let_ignore = buf_align;
 
     // Verify buffer ownership
@@ -139,7 +139,7 @@ $static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
 
 $static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_Fixed*)(ctx));
+    let self = as$(heap_Fixed*)(ctx);
     let_ignore = buf_align;
 
     // Verify buffer ownership
@@ -159,7 +159,7 @@ $static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
 
 $static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_Fixed*)(ctx));
+    let self = as$(heap_Fixed*)(ctx);
     let ptr_align = 1ull << align;
 
     // Use atomic operations for thread safety

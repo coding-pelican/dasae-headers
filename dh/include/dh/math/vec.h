@@ -825,7 +825,7 @@ $inline_always m_V2f32 m_V2f32_fill(f32 scalar) {
     return m_V2f32_from(scalar, scalar);
 }
 $inline_always m_V2f32 m_V2f32_sincos(f32 radians) {
-    return m_V2f32_from(math_cos(radians), math_sin(radians));
+    return m_V2f32_from(flt_cos(radians), flt_sin(radians));
 }
 
 /* Comparison */
@@ -840,7 +840,7 @@ $inline_always cmp_fnCmp(m_V2f32) {
 $inline_always cmp_fnCmpApx(m_V2f32) {
     for (usize i = 0; i < 2; ++i) {
         // Calculate absolute difference
-        let diff = fabsf(self.s[i] - other.s[i]);
+        let diff = flt_abs(self.s[i] - other.s[i]);
         // Check if difference is greater than threshold
         if (diff < threshold.s[i]) { continue; }
         // If difference is significant, compare normally
@@ -868,7 +868,7 @@ $inline_always m_V2f32 m_V2f32_div(m_V2f32 lhs, m_V2f32 rhs) {
     return m_V2f32_from(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $inline_always m_V2f32 m_V2f32_mod(m_V2f32 lhs, m_V2f32 rhs) {
-    return m_V2f32_from(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
+    return m_V2f32_from(flt_rem(lhs.x, rhs.x), flt_rem(lhs.y, rhs.y));
 }
 $inline_always m_V2f32 m_V2f32_scale(m_V2f32 v, f32 scalar) {
     return m_V2f32_from(v.x * scalar, v.y * scalar);
@@ -933,10 +933,10 @@ $inline_always m_V2f32* m_V2f32_modScalarAsg(m_V2f32* lhs, f32 rhs) {
 
 /* Range Operations */
 $inline_always m_V2f32 m_V2f32_min(m_V2f32 lhs, m_V2f32 rhs) {
-    return m_V2f32_from(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
+    return m_V2f32_from(flt_min(lhs.x, rhs.x), flt_min(lhs.y, rhs.y));
 }
 $inline_always m_V2f32 m_V2f32_max(m_V2f32 lhs, m_V2f32 rhs) {
-    return m_V2f32_from(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
+    return m_V2f32_from(flt_max(lhs.x, rhs.x), flt_max(lhs.y, rhs.y));
 }
 $inline_always m_V2f32 m_V2f32_clamp(m_V2f32 v, m_V2f32 min, m_V2f32 max) {
     return m_V2f32_min(m_V2f32_max(v, min), max);
@@ -956,13 +956,13 @@ $inline_always f32 m_V2f32_lenSq(m_V2f32 v) {
     return m_V2f32_dot(v, v);
 }
 $inline_always f32 m_V2f32_len(m_V2f32 v) {
-    return math_sqrt(m_V2f32_lenSq(v));
+    return flt_sqrt(m_V2f32_lenSq(v));
 }
 $inline_always f32 m_V2f32_distSq(m_V2f32 lhs, m_V2f32 rhs) {
     return m_V2f32_lenSq(m_V2f32_sub(lhs, rhs));
 }
 $inline_always f32 m_V2f32_dist(m_V2f32 lhs, m_V2f32 rhs) {
-    return math_sqrt(m_V2f32_distSq(lhs, rhs));
+    return flt_sqrt(m_V2f32_distSq(lhs, rhs));
 }
 $inline_always f32 m_V2f32_dot(m_V2f32 lhs, m_V2f32 rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -1018,7 +1018,7 @@ $inline_always cmp_fnCmp(m_V3f32) {
 $inline_always cmp_fnCmpApx(m_V3f32) {
     for (usize i = 0; i < 3; ++i) {
         // Calculate absolute difference
-        let diff = fabsf(self.s[i] - other.s[i]);
+        let diff = flt_abs(self.s[i] - other.s[i]);
         // Check if difference is greater than threshold
         if (diff < threshold.s[i]) { continue; }
         // If difference is significant, compare normally
@@ -1089,7 +1089,7 @@ $inline_always f32 m_V3f32_lenSq(m_V3f32 v) {
     return m_V3f32_dot(v, v);
 }
 $inline_always f32 m_V3f32_len(m_V3f32 v) {
-    return math_sqrt(m_V3f32_lenSq(v));
+    return flt_sqrt(m_V3f32_lenSq(v));
 }
 $inline_always f32 m_V3f32_distSq(m_V3f32 lhs, m_V3f32 rhs) {
     return m_V3f32_lenSq(m_V3f32_sub(lhs, rhs));
@@ -1168,7 +1168,7 @@ $inline_always cmp_fnCmp(m_V4f32) {
 $inline_always cmp_fnCmpApx(m_V4f32) {
     for (usize i = 0; i < 4; ++i) {
         // Calculate absolute difference
-        let diff = fabsf(self.s[i] - other.s[i]);
+        let diff = flt_abs(self.s[i] - other.s[i]);
         // Check if difference is greater than threshold
         if (diff < threshold.s[i]) { continue; }
         // If difference is significant, compare normally
@@ -1247,7 +1247,7 @@ $inline_always f32 m_V4f32_lenSq(m_V4f32 v) {
     return m_V4f32_dot(v, v);
 }
 $inline_always f32 m_V4f32_len(m_V4f32 v) {
-    return math_sqrt(m_V4f32_lenSq(v));
+    return flt_sqrt(m_V4f32_lenSq(v));
 }
 $inline_always f32 m_V4f32_distSq(m_V4f32 lhs, m_V4f32 rhs) {
     return m_V4f32_lenSq(m_V4f32_sub(lhs, rhs));
@@ -1287,7 +1287,7 @@ $inline_always m_V2f64 m_V2f64_fill(f64 scalar) {
     return m_V2f64_from(scalar, scalar);
 }
 $inline_always m_V2f64 m_V2f64_sincos(f64 radians) {
-    return m_V2f64_from(math_cos(radians), math_sin(radians));
+    return m_V2f64_from(flt_cos(radians), flt_sin(radians));
 }
 
 /* Comparison */
@@ -1408,13 +1408,13 @@ $inline_always f64 m_V2f64_lenSq(m_V2f64 v) {
     return m_V2f64_dot(v, v);
 }
 $inline_always f64 m_V2f64_len(m_V2f64 v) {
-    return math_sqrt(m_V2f64_lenSq(v));
+    return flt_sqrt(m_V2f64_lenSq(v));
 }
 $inline_always f64 m_V2f64_distSq(m_V2f64 lhs, m_V2f64 rhs) {
     return m_V2f64_lenSq(m_V2f64_sub(lhs, rhs));
 }
 $inline_always f64 m_V2f64_dist(m_V2f64 lhs, m_V2f64 rhs) {
-    return math_sqrt(m_V2f64_distSq(lhs, rhs));
+    return flt_sqrt(m_V2f64_distSq(lhs, rhs));
 }
 $inline_always f64 m_V2f64_dot(m_V2f64 lhs, m_V2f64 rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -1538,7 +1538,7 @@ $inline_always f64 m_V3f64_lenSq(m_V3f64 v) {
     return m_V3f64_dot(v, v);
 }
 $inline_always f64 m_V3f64_len(m_V3f64 v) {
-    return math_sqrt(m_V3f64_lenSq(v));
+    return flt_sqrt(m_V3f64_lenSq(v));
 }
 $inline_always f64 m_V3f64_distSq(m_V3f64 lhs, m_V3f64 rhs) {
     return m_V3f64_lenSq(m_V3f64_sub(lhs, rhs));
@@ -1686,7 +1686,7 @@ $inline_always f64 m_V4f64_lenSq(m_V4f64 v) {
     return m_V4f64_dot(v, v);
 }
 $inline_always f64 m_V4f64_len(m_V4f64 v) {
-    return math_sqrt(m_V4f64_lenSq(v));
+    return flt_sqrt(m_V4f64_lenSq(v));
 }
 $inline_always f64 m_V4f64_distSq(m_V4f64 lhs, m_V4f64 rhs) {
     return m_V4f64_lenSq(m_V4f64_sub(lhs, rhs));

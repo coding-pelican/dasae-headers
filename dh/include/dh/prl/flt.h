@@ -23,14 +23,6 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define flt_nan$(_T) as$((_T)(__builtin_nan("")))
-#define flt_inf$(_T) as$((_T)(__builtin_inf("")))
-
-#define flt_isNan(_x)    __builtin_isnan(_x)
-#define flt_isInf(_x)    __builtin_isinf(_x)
-#define flt_isNormal(_x) __builtin_isnormal(_x)
-#define flt_isFinite(_x) (!flt_isNan(_x) && !flt_isInf(_x))
-
 $inline_always bool f32_isNan(f32 x) {
     return flt_isNan(x);
 #if UNUSED_CODE

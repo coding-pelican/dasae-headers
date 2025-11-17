@@ -204,7 +204,7 @@ typedef struct Renderer {
     engine_Window*     window;
     engine_Canvas*     canvas;
     engine_Input*      input;
-    engine_core_Vt100* core;
+    engine_core_VT100* core;
     Camera             camera;
     mem_Allocator      allocator;
 } Renderer;
@@ -366,15 +366,17 @@ fn_((Game_init(mem_Allocator allocator))(GameState*));
 fn_((Game_fini(GameState* self, mem_Allocator allocator))(void));
 fn_((Game_genWorld(GameState* self))(void));
 
-use_O$(EntityTileType);
 fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_type))(bool));
+T_use_O$(EntityTileType);
 fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType));
 fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void));
 
-use_O$(EntityId);
-use_O$(Entity);
+T_use_O$(EntityId);
 fn_((Game_appendEntity(GameState* self, Entity entity))(O$EntityId));
+T_use$((Entity)(P, O));
+T_use_O$(P_const$Entity);
 fn_((Game_idxEntityById(const GameState* self, EntityId id))(O$P_const$Entity));
+T_use_O$(P$Entity);
 fn_((Game_idxMutEntityById(GameState* self, EntityId id))(O$P$Entity));
 fn_((Game_removeDeadEntities(GameState* self))(void));
 
@@ -557,8 +559,8 @@ fn_((EntityTile_props(EntityTileType tile_type))(TileProps)) {
 // ============================================================================
 
 fn_((hash2D(usize x, usize y))(u32)) {
-    let h1 = (as$((u32)(x)) * lit_num$(u32, 374, 761, 393)) + (as$((u32)(y)) * lit_num$(u32, 668, 265, 263));
-    let h2 = (h1 ^ (h1 >> 13)) * lit_num$(u32, 1, 274, 126, 177);
+    let h1 = (as$(u32)(x) * lit_n$(u32)(374, 761, 393)) + (as$(u32)(y) * lit_n$(u32)(668, 265, 263));
+    let h2 = (h1 ^ (h1 >> 13)) * lit_n$(u32)(1, 274, 126, 177);
     return h2 ^ (h2 >> 16);
 }
 
@@ -567,12 +569,11 @@ fn_((hash2D(usize x, usize y))(u32)) {
 // ============================================================================
 
 fn_((Game_init(mem_Allocator allocator))(GameState*)) {
-    let self = meta_cast$(
-        GameState*,
+    let self = u_castP$((GameState*)(
         catch_((mem_Allocator_create(allocator, typeInfo$(GameState)))(
             $ignore, claim_unreachable
         ))
-    );
+    ));
 
     // Initialize memory to zero
     self->player.data.entity_id            = 0;
@@ -598,7 +599,7 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
     });
 
     // Initialize input state
-    self->player.input = (InputState){ .states = 0, .hotbar_selection = (O$u8){ .has_value = false } };
+    self->player.input = (InputState){ .states = 0, .hotbar_selection = none$((O$u8)) };
 
     // Generate world
     Game_genWorld(self);
@@ -607,7 +608,7 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
     let entity = (Entity){
         .id          = 0,
         .entity_type = EntityType_player,
-        .position    = { .x = as$((f32)(Game_world_width)) / 2.0f, .y = 50.0f },
+        .position    = { .x = as$(f32)(Game_world_width) / 2.0f, .y = 50.0f },
         .velocity    = m_V2f32_zero,
         .size        = { .x = Game_player_size_x, .y = Game_player_size_y },
         .health      = Game_player_health_default,
@@ -617,10 +618,7 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
         .on_platform = false,
         .item_stack  = { .item_type = ItemType_none, .count = 0 },
     };
-    self->player.data.entity_id = unwrap(Game_appendEntity(
-        self,
-        entity
-    ));
+    self->player.data.entity_id = unwrap_(Game_appendEntity(self, entity));
 
     // Give player starting items
     self->player.data.inventory[0] = (ItemStack){ .item_type = ItemType_wooden_pickaxe, .count = 1 };
@@ -641,18 +639,18 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
 
 fn_((Game_fini(GameState* self, mem_Allocator allocator))(void)) {
     Render_fini(&self->renderer, allocator);
-    mem_Allocator_destroy(allocator, anyPtr(self));
+    mem_Allocator_destroy(allocator, u_anyP(self));
 }
 
 fn_((Game_genWorld(GameState* self))(void)) {
     const usize surface_height = Game_world_height / 2;
     // Generate terrain
     for_(($r(0, Game_world_width))(x) {
-        let height_variation = sinf(as$((f32)(x)) * 0.05f) * 10.0f;
-        let height           = as$((i32)(surface_height)) + as$((i32)(height_variation));
+        let height_variation = flt_sin(as$(f32)(x) * 0.05f) * 10.0f;
+        let height           = as$(i32)(surface_height) + as$(i32)(height_variation);
 
         for_(($r(0, Game_world_height))(y) {
-            if_(let iy = as$((i32)(y)), (iy > height + 30)) {
+            if_(let iy = as$(i32)(y), (iy > height + 30)) {
                 self->world.layer.fg_tiles[y][x] = FgTile_bedrock;
             } else if (iy > height + 15) {
                 const u32 rand = hash2D(x, y) % 100;
@@ -689,16 +687,16 @@ fn_((Game_genWorld(GameState* self))(void)) {
         // Add trees
         if ((x % 7 == 3) && (2 < x && x < (Game_world_width - 2))) {
             let tree_height = 5 + (hash2D(x, 0) % 3);
-            let base_y      = as$((usize)(height - 1));
+            let base_y      = as$(usize)(height - 1);
             if (base_y > (tree_height + 3)) {
                 // Trunk as entity tiles (나무 기둥을 엔티티 타일로)
                 for_(($r(1, tree_height + 1))(ty) {
                     let trunk_y                                = base_y - ty;
                     self->world.layer.entity_tiles[trunk_y][x] = ((EntityTile){
                         .type      = EntityTileType_tree_trunk,
-                        .origin    = { .x = as$((i32)(x)), .y = as$((i32)(trunk_y)) },
+                        .origin    = { .x = as$(i32)(x), .y = as$(i32)(trunk_y) },
                         .is_origin = true,
-                        .metadata  = as$((u32)(ty)), // 트리 높이 정보 저장
+                        .metadata  = as$(u32)(ty), // 트리 높이 정보 저장
                     });
                 });
                 // Leaves
@@ -709,12 +707,12 @@ fn_((Game_genWorld(GameState* self))(void)) {
 
                     for_(($r(0, 5))(dx_idx) {
                         for_(($r(0, 4))(dy_idx) {
-                            let lx = as$((i32)(x)) + leaf_offsets_x[dx_idx];
-                            let ly = as$((i32)(leaf_start)) + leaf_offsets_y[dy_idx];
+                            let lx = as$(i32)(x) + leaf_offsets_x[dx_idx];
+                            let ly = as$(i32)(leaf_start) + leaf_offsets_y[dy_idx];
 
                             if ((0 <= lx) && (lx < Game_world_width) && (0 <= ly) && (ly < Game_world_height)) {
-                                let ulx = as$((usize)(lx));
-                                let uly = as$((usize)(ly));
+                                let ulx = as$(usize)(lx);
+                                let uly = as$(usize)(ly);
 
                                 if (self->world.layer.fg_tiles[uly][ulx] == FgTile_air) {
                                     self->world.layer.fg_tiles[uly][ulx] = FgTile_leaves;
@@ -742,8 +740,8 @@ fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_typ
             if ((tx < 0 || Game_world_width <= tx) || (ty < 0 || Game_world_height <= ty)) { return false; }
 
             // Check if blocked by terrain or other entity tiles
-            let utx = as$((usize)(tx));
-            let uty = as$((usize)(ty));
+            let utx = as$(usize)(tx);
+            let uty = as$(usize)(ty);
             if (self->world.layer.fg_tiles[uty][utx] != FgTile_air) { return false; }
             if (self->world.layer.entity_tiles[uty][utx].type != EntityTileType_none) { return false; }
         });
@@ -753,8 +751,8 @@ fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_typ
         for_(($r(0, props.size.x))(dx) {
             let tx  = x + dx;
             let ty  = y + dy;
-            let utx = as$((usize)(tx));
-            let uty = as$((usize)(ty));
+            let utx = as$(usize)(tx);
+            let uty = as$(usize)(ty);
 
             self->world.layer.entity_tiles[uty][utx] = ((EntityTile){
                 .type      = tile_type,
@@ -770,8 +768,8 @@ fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_typ
 fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType) $scope) {
     if (x < 0 || Game_world_width <= x || y < 0 || Game_world_height <= y) { return_none(); }
 
-    let ux = as$((usize)(x));
-    let uy = as$((usize)(y));
+    let ux = as$(usize)(x);
+    let uy = as$(usize)(y);
 
     let tile = self->world.layer.entity_tiles[uy][ux];
     if (tile.type == EntityTileType_none) { return_none(); }
@@ -793,7 +791,7 @@ fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType) $sc
 
     // 나무 기둥 파괴 시 위쪽 부분 자동 파괴
     if (removed_type == EntityTileType_tree_trunk) {
-        Game_destroyTreeAbove(self, as$((usize)(x)), as$((usize)(y)));
+        Game_destroyTreeAbove(self, as$(usize)(x), as$(usize)(y));
     }
 
     return_some(removed_type);
@@ -809,7 +807,7 @@ fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
         if (entity_tile->type == EntityTileType_tree_trunk) {
             let item_type = Item_entityTileToItem(entity_tile->type);
             if (item_type != ItemType_none) {
-                Game_createItemDrop(self, (m_V2f32){ .x = as$((f32)(x)) + 0.5f, .y = as$((f32)(check_y)) + 0.5f }, item_type, 1);
+                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32)(x) + 0.5f, .y = as$(f32)(check_y) + 0.5f }, item_type, 1);
             }
             *entity_tile = ((EntityTile){ 0 });
         }
@@ -818,7 +816,7 @@ fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
         if (fg_tile == FgTile_leaves) {
             let item_type = Item_blockToItem(fg_tile);
             if (item_type != ItemType_none) {
-                Game_createItemDrop(self, (m_V2f32){ .x = as$((f32)(x)) + 0.5f, .y = as$((f32)(check_y)) + 0.5f }, item_type, 1);
+                Game_createItemDrop(self, (m_V2f32){ .x = as$(f32)(x) + 0.5f, .y = as$(f32)(check_y) + 0.5f }, item_type, 1);
             }
             self->world.layer.fg_tiles[check_y][x] = FgTile_air;
         }
@@ -1012,9 +1010,9 @@ fn_((Item_entityTileToItem(EntityTileType tile))(ItemType)) {
 // ============================================================================
 
 fn_((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void)) {
-    let pos_x_hash = as$((u32)(pos.x));
-    let pos_y_hash = as$((u32)(pos.y));
-    let rand_x     = as$((f32)(((hash2D(pos_x_hash, pos_y_hash) % 100) - 50) * 0.01f));
+    let pos_x_hash = as$(u32)(pos.x);
+    let pos_y_hash = as$(u32)(pos.y);
+    let rand_x     = as$(f32)(((hash2D(pos_x_hash, pos_y_hash) % 100) - 50) * 0.01f);
 
     let entity = ((Entity){
         .id          = 0,
@@ -1060,7 +1058,7 @@ fn_((Game_pickUpItems(GameState* self, Entity* player))(void)) {
 
         let dx       = item->position.x - player->position.x;
         let dy       = item->position.y - player->position.y;
-        let distance = sqrtf((dx * dx) + (dy * dy));
+        let distance = flt_sqrt((dx * dx) + (dy * dy));
         if (distance < 1.5f) {
             if (Game_addToInventory(self, item->item_stack)) {
                 item->alive = false;
@@ -1080,10 +1078,10 @@ typedef struct CollisionResult {
 } CollisionResult;
 
 fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_platforms))(CollisionResult) $scope) {
-    let min_x = as$((i32)(floorf(pos.x - (size.x / 2.0f))));
-    let max_x = as$((i32)(ceilf(pos.x + (size.x / 2.0f))));
-    let min_y = as$((i32)(floorf(pos.y - (size.y / 2.0f))));
-    let max_y = as$((i32)(ceilf(pos.y + (size.y / 2.0f))));
+    let min_x = as$(i32)(flt_floor(pos.x - (size.x / 2.0f)));
+    let max_x = as$(i32)(flt_ceil(pos.x + (size.x / 2.0f)));
+    let min_y = as$(i32)(flt_floor(pos.y - (size.y / 2.0f)));
+    let max_y = as$(i32)(flt_ceil(pos.y + (size.y / 2.0f)));
 
     for_(($r(min_y, max_y + 1))(y) {
         for_(($r(min_x, max_x + 1))(x) {
@@ -1096,8 +1094,8 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
             }
 
             // Check block tiles
-            let ux      = as$((usize)(x));
-            let uy      = as$((usize)(y));
+            let ux      = as$(usize)(x);
+            let uy      = as$(usize)(y);
             let fg_tile = self->world.layer.fg_tiles[uy][ux];
             if (FgTile_isSolid(fg_tile)) {
                 return_({
@@ -1122,7 +1120,7 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
                 if (props.platform && check_platforms) {
                     // Check if entity bottom is near platform top
                     let entity_bottom = pos.y + (size.y / 2.0f);
-                    let platform_top  = as$((f32)(y));
+                    let platform_top  = as$(f32)(y);
 
                     if (platform_top <= entity_bottom
                         && entity_bottom <= (platform_top + 0.5f)) {
@@ -1221,11 +1219,10 @@ fn_((Game_updatePhysics(GameState* self, f32 delta_time))(void)) {
 // INPUT PROCESSING
 // ============================================================================
 
-typedef variant_(
-    (Shape),
+typedef variant_((Shape)(
     (Shape_circle, struct { f32 radius; }),
     (Shape_rect, struct { f32 width; f32 height; })
-) Shape;
+)) Shape;
 
 fn_((Game_processInput(GameState* self))(void)) {
     let player = orelse_((Game_idxMutEntityById(self, self->player.data.entity_id))(return));
@@ -1270,7 +1267,7 @@ fn_((Game_processInput(GameState* self))(void)) {
     if (self->player.input.interact) { Game_handleInteraction(self); }
 
     // Hotbar selection
-    if_some(self->player.input.hotbar_selection, slot) {
+    if_some((self->player.input.hotbar_selection)(slot)) {
         if (slot < Game_hotbar_size) {
             self->player.data.selected_hotbar_slot = slot;
         }
@@ -1279,8 +1276,8 @@ fn_((Game_processInput(GameState* self))(void)) {
 
 fn_((Game_handleMining(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)floorf(cursor_pos.x);
-    let block_y    = (i32)floorf(cursor_pos.y);
+    let block_x    = (i32)flt_floor(cursor_pos.x);
+    let block_y    = (i32)flt_floor(cursor_pos.y);
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
 
@@ -1288,7 +1285,7 @@ fn_((Game_handleMining(GameState* self))(void)) {
     let player   = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
     let dx       = cursor_pos.x - player->position.x;
     let dy       = cursor_pos.y - player->position.y;
-    let distance = sqrtf((dx * dx) + (dy * dy));
+    let distance = flt_sqrt((dx * dx) + (dy * dy));
     if (distance > 5.0f) { return; }
 
     let ux = (usize)block_x;
@@ -1300,7 +1297,7 @@ fn_((Game_handleMining(GameState* self))(void)) {
     if (is_hammer) {
         // Hammer removes entity tiles and background
         if (self->world.layer.entity_tiles[uy][ux].type != EntityTileType_none) {
-            if_some(Game_removeEntityTile(self, block_x, block_y), removed_tile_type) {
+            if_some((Game_removeEntityTile(self, block_x, block_y))(removed_tile_type)) {
                 if_(let item_type = Item_entityTileToItem(removed_tile_type), item_type != ItemType_none) {
                     Game_createItemDrop(self, cursor_pos, item_type, 1);
                 }
@@ -1326,8 +1323,8 @@ fn_((Game_handleMining(GameState* self))(void)) {
 
 fn_((Game_handleBlockPlacement(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)floorf(cursor_pos.x);
-    let block_y    = (i32)floorf(cursor_pos.y);
+    let block_x    = (i32)flt_floor(cursor_pos.x);
+    let block_y    = (i32)flt_floor(cursor_pos.y);
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
 
@@ -1335,7 +1332,7 @@ fn_((Game_handleBlockPlacement(GameState* self))(void)) {
     let player   = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
     let dx       = cursor_pos.x - player->position.x;
     let dy       = cursor_pos.y - player->position.y;
-    let distance = sqrtf((dx * dx) + (dy * dy));
+    let distance = flt_sqrt((dx * dx) + (dy * dy));
     if (distance > 5.0f) { return; }
 
     // Get selected item
@@ -1368,8 +1365,8 @@ fn_((Game_handleBlockPlacement(GameState* self))(void)) {
 
 fn_((Game_handleInteraction(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)floorf(cursor_pos.x);
-    let block_y    = (i32)floorf(cursor_pos.y);
+    let block_x    = (i32)flt_floor(cursor_pos.x);
+    let block_y    = (i32)flt_floor(cursor_pos.y);
 
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
@@ -1425,9 +1422,9 @@ fn_((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
         case EntityType_skeleton: {
             let player = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
             let dx     = player->position.x - entity->position.x;
-            if (1.0f < fabsf(dx)) {
+            if (1.0f < flt_abs(dx)) {
                 entity->velocity.x = (0.0f < dx) ? 3.0f : -3.0f;
-                if (entity->grounded && fabsf(entity->velocity.x) < 0.1f) {
+                if (entity->grounded && flt_abs(entity->velocity.x) < 0.1f) {
                     entity->velocity.y = -8.0f;
                 }
             }
@@ -1463,7 +1460,7 @@ fn_((Game_setInput(GameState* self, InputState input))(void)) {
 }
 
 fn_((Game_getPlayerPosition(GameState* self))(m_V2f32)) {
-    return expr_(m_V2f32 $scope) if_some(Game_idxEntityById(self, self->player.data.entity_id), player) {
+    return expr_(m_V2f32 $scope) if_some((Game_idxEntityById(self, self->player.data.entity_id))(player)) {
         $break_(player->position);
     } else {
         $break_(m_V2f32_zero);
@@ -1527,12 +1524,11 @@ fn_((Game_getEntity(GameState* self, usize index))(O$Entity)) {
 // ============================================================================
 
 fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
-    let self = meta_cast$(
-        Renderer*,
+    let self = u_castP$((Renderer*)(
         catch_((mem_Allocator_create(allocator, typeInfo$(Renderer)))(
             $ignore, claim_unreachable
         ))
-    );
+    ));
 
     // Create window
     let window_config = (engine_Window_Config){
@@ -1577,7 +1573,7 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
     ));
 
     // Bind engine core (Vt100 terminal backend)
-    self->core = catch_((engine_core_Vt100_init((engine_core_Vt100_Config){
+    self->core = catch_((engine_core_VT100_init((engine_core_VT100_Config){
         .allocator = some(allocator),
         .window    = self->window,
         .input     = self->input,
@@ -1597,28 +1593,28 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
 }
 
 fn_((Render_fini(Renderer* self, mem_Allocator allocator))(void)) {
-    if (self->core) { engine_core_Vt100_fini(self->core); }
+    if (self->core) { engine_core_VT100_fini(self->core); }
     if (self->input) { engine_Input_fini(self->input); }
     if (self->canvas) { engine_Canvas_fini(self->canvas); }
     if (self->window) { engine_Window_fini(self->window); }
-    mem_Allocator_destroy(allocator, anyPtr(self));
+    mem_Allocator_destroy(allocator, u_anyP(self));
 }
 
 fn_((Render_worldToScreen(const Camera* camera, m_V2f32 world_pos))(m_V2i32)) {
-    let screen_x = as$((i32)(world_pos.x - camera->position.x) * camera->zoom + (Render_screen_width / 2.0f));
-    let screen_y = as$((i32)(world_pos.y - camera->position.y) * camera->zoom + (Render_screen_height / 2.0f));
-    return (m_V2i32){ .x = screen_x, .y = screen_y };
+    let screen_x = as$(i32)(world_pos.x - camera->position.x) * camera->zoom + (Render_screen_width / 2.0f);
+    let screen_y = as$(i32)(world_pos.y - camera->position.y) * camera->zoom + (Render_screen_height / 2.0f);
+    return (m_V2i32){ .x = as$(i32)(screen_x), .y = as$(i32)(screen_y) };
 }
 
 fn_((Render_screenToWorld(const Camera* camera, m_V2i32 screen_pos))(m_V2f32)) {
-    let world_x = (as$((f32)(screen_pos.x)) - (Render_screen_width / 2.0f)) / camera->zoom + camera->position.x;
-    let world_y = (as$((f32)(screen_pos.y)) - (Render_screen_height / 2.0f)) / camera->zoom + camera->position.y;
+    let world_x = (as$(f32)(screen_pos.x) - (Render_screen_width / 2.0f)) / camera->zoom + camera->position.x;
+    let world_y = (as$(f32)(screen_pos.y) - (Render_screen_height / 2.0f)) / camera->zoom + camera->position.y;
     return (m_V2f32){ .x = world_x, .y = world_y };
 }
 
 fn_((Render_updateCamera(Renderer* self, const GameState* game))(void)) {
     // Follow player
-    if_some(Game_idxEntityById(game, game->player.data.entity_id), player) {
+    if_some((Game_idxEntityById(game, game->player.data.entity_id))(player)) {
         self->camera.position = player->position;
     }
 }
@@ -1629,16 +1625,16 @@ fn_((Render_world(GameState* self))(void)) {
 
     // Clear canvas with sky color
     let sky_color = literal_Color_fromOpaque(135, 206, 235); // Sky blue
-    engine_Canvas_clear(canvas, some$(O$Color, sky_color));
+    engine_Canvas_clear(canvas, some$((O$Color)sky_color));
 
     // Calculate visible world bounds
     let world_min = Render_screenToWorld(camera, (m_V2i32){ .x = 0, .y = 0 });
     let world_max = Render_screenToWorld(camera, (m_V2i32){ .x = Render_screen_width, .y = Render_screen_height });
 
-    var min_x = as$((i32)(floorf(world_min.x)));
-    var max_x = as$((i32)(ceilf(world_max.x)));
-    var min_y = as$((i32)(floorf(world_min.y)));
-    var max_y = as$((i32)(ceilf(world_max.y)));
+    var min_x = as$(i32)(flt_floor(world_min.x));
+    var max_x = as$(i32)(flt_ceil(world_max.x));
+    var min_y = as$(i32)(flt_floor(world_min.y));
+    var max_y = as$(i32)(flt_ceil(world_max.y));
 
     // Clamp to world bounds
     min_x = (min_x < 0) ? 0 : min_x;
@@ -1651,7 +1647,7 @@ fn_((Render_world(GameState* self))(void)) {
         for_(($r(min_x, $incl(max_x)))(x) {
             let bg_tile = self->world.layer.bg_tiles[y][x];
             if (bg_tile != BgTile_none) {
-                let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$((f32)(x)), .y = as$((f32)(y)) });
+                let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32)(x), .y = as$(f32)(y) });
                 if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
                     let color = Render_getBgTileColor(bg_tile);
                     engine_Canvas_drawPixel(canvas, screen_pos.x, screen_pos.y, color);
@@ -1665,7 +1661,7 @@ fn_((Render_world(GameState* self))(void)) {
         for_(($r(min_x, $incl(max_x)))(x) {
             let fg_tile = self->world.layer.fg_tiles[y][x];
             if (fg_tile != FgTile_air) {
-                let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$((f32)(x)), .y = as$((f32)(y)) });
+                let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32)(x), .y = as$(f32)(y) });
                 if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
                     let color = Render_getFgTileColor(fg_tile);
                     engine_Canvas_drawPixel(canvas, screen_pos.x, screen_pos.y, color);
@@ -1687,7 +1683,7 @@ fn_((Render_world(GameState* self))(void)) {
                     for_(($r(0, props.size.x))(dx) {
                         let tile_x     = x + dx;
                         let tile_y     = y + dy;
-                        let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$((f32)(tile_x)), .y = as$((f32)(tile_y)) });
+                        let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32)(tile_x), .y = as$(f32)(tile_y) });
                         if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
                             engine_Canvas_drawPixel(canvas, screen_pos.x, screen_pos.y, color);
                         }
@@ -1727,7 +1723,7 @@ fn_((Render_player(GameState* self))(void)) {
 
     for_(($r(min_y, $incl(max_y)))(y) {
         for_(($r(min_x, $incl(max_x)))(x) {
-            engine_Canvas_drawPixel(canvas, as$((i32)(x)), as$((i32)(y)), color);
+            engine_Canvas_drawPixel(canvas, as$(i32)(x), as$(i32)(y), color);
         });
     });
 }
@@ -1746,14 +1742,14 @@ fn_((Render_entities(GameState* self))(void)) {
         let color = Render_getEntityColor(entity->entity_type);
 
         // 엔티티 크기에 따라 렌더링
-        let size_pixels_x = as$((i32)(entity->size.x* Render_tile_size));
-        let size_pixels_y = as$((i32)(entity->size.y* Render_tile_size));
+        let size_pixels_x = as$(i32)(entity->size.x* Render_tile_size);
+        let size_pixels_y = as$(i32)(entity->size.y* Render_tile_size);
 
         for_(($r(0, size_pixels_y))(dy) {
             for_(($r(0, size_pixels_x))(dx) {
                 let world_pos = ((m_V2f32){
-                    .x = entity->position.x - (entity->size.x / 2.0f) + (as$((f32)(dx)) / Render_tile_size),
-                    .y = entity->position.y - (entity->size.y / 2.0f) + (as$((f32)(dy)) / Render_tile_size)
+                    .x = entity->position.x - (entity->size.x / 2.0f) + (as$(f32)(dx) / Render_tile_size),
+                    .y = entity->position.y - (entity->size.y / 2.0f) + (as$(f32)(dy) / Render_tile_size)
                 });
                 let screen_pos = Render_worldToScreen(camera, world_pos);
                 if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
@@ -1767,13 +1763,10 @@ fn_((Render_entities(GameState* self))(void)) {
 fn_((Render_ui(GameState* self))(void)) {
     // 1. 핫바 UI (화면 하단)
     Render_hotbar(self);
-
     // 2. 선택된 아이템 정보 (화면 상단)
     Render_selectedItemInfo(self);
-
     // 3. 마우스 커서 위치 표시
     Render_cursor(self);
-
     // 4. 플레이어 상태 정보 (화면 좌상단)
     Render_playerStatus(self);
 }
@@ -1786,23 +1779,19 @@ fn_((Render_hotbar(GameState* self))(void)) {
 
     // 핫바 배경
     engine_Canvas_drawRect(canvas, 0, hotbar_y, Render_screen_width - 1, Render_screen_height - 1, literal_Color_fromOpaque(50, 50, 50));
-
     // 핫바 슬롯들
     for_(($r(0, Game_hotbar_size))(i) {
-        let slot_x = as$((i32)(i* slot_size));
+        let slot_x = as$(i32)(i* slot_size);
         let slot_y = hotbar_y + 1;
-
         // 슬롯 배경
         let slot_bg_color = literal_Color_fromOpaque(30, 30, 30);
         engine_Canvas_drawRect(canvas, slot_x, slot_y, slot_x + slot_size - 1, slot_y + slot_size - 1, slot_bg_color);
-
         // 아이템이 있으면 표시
         let item = self->player.data.inventory[i];
         if (item.item_type != ItemType_none && item.count > 0) {
             let item_color = literal_Color_fromOpaque(150, 150, 150);
             engine_Canvas_drawRect(canvas, slot_x + 1, slot_y + 1, slot_x + slot_size - 2, slot_y + slot_size - 2, item_color);
         }
-
         // 선택된 슬롯 강조
         if (i == self->player.data.selected_hotbar_slot) {
             let selection_color = literal_Color_fromOpaque(255, 255, 0);
@@ -1823,14 +1812,12 @@ fn_((Render_selectedItemInfo(GameState* self))(void)) {
         let info_width  = 20;
         let info_height = 4;
         engine_Canvas_drawRect(canvas, info_x, info_y, info_x + info_width, info_y + info_height, literal_Color_fromOpaque(0, 0, 0));
-
         // 아이템 타입 표시 (간단한 텍스트 대신 색상으로)
         let item_color = literal_Color_fromOpaque(200, 200, 200);
         engine_Canvas_drawRect(canvas, info_x + 1, info_y + 1, info_x + 3, info_y + 3, item_color);
-
         // 아이템 개수 표시 (간단한 점으로)
         for (usize i = 0; i < item.count && i < 10; ++i) {
-            let count_x = info_x + 5 + as$((i32)(i));
+            let count_x = info_x + 5 + as$(i32)(i);
             let count_y = info_y + 2;
             engine_Canvas_drawPixel(canvas, count_x, count_y, literal_Color_fromOpaque(255, 255, 0));
         }
@@ -1863,13 +1850,13 @@ fn_((Render_cursor(GameState* self))(void)) {
 fn_((Render_playerStatus(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
 
-    if_some(Game_idxEntityById(self, self->player.data.entity_id), player) {
+    if_some((Game_idxEntityById(self, self->player.data.entity_id))(player)) {
         let status_x = 1;
         let status_y = 6;
 
         // 체력 바
-        let health_percent = as$((f32)(player->health)) / as$((f32)(player->max_health));
-        let health_width   = as$((i32)(health_percent * 20.0f));
+        let health_percent = as$(f32)(player->health) / as$(f32)(player->max_health);
+        let health_width   = as$(i32)(health_percent * 20.0f);
         engine_Canvas_drawRect(canvas, status_x, status_y, status_x + 20, status_y + 2, literal_Color_fromOpaque(100, 0, 0));
         engine_Canvas_drawRect(canvas, status_x, status_y, status_x + health_width, status_y + 2, Color_red);
     }
@@ -1960,7 +1947,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             .hotbar_selection = none(),
         };
 
-        Game_update(game, as$((f32)(dt)));
+        Game_update(game, as$(f32)(dt));
         Game_render(game);
 
         // Display FPS
@@ -1973,7 +1960,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
         // 4) Sleep for remaining time to maintain target FPS
-        if_some(time_Duration_subChkd(target_frame_time, frame_used), leftover) {
+        if_some((time_Duration_subChkd(target_frame_time, frame_used))(leftover)) {
             time_sleep(leftover);
         }
 

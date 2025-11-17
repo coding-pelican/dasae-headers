@@ -14,8 +14,8 @@
  * @details Defines condition variable for thread management.
  */
 
-#ifndef THRD_COND_INCLUDED
-#define THRD_COND_INCLUDED (1)
+#ifndef Thrd_Cond__included
+#define Thrd_Cond__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */

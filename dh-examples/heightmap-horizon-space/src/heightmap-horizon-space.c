@@ -49,10 +49,10 @@
 
 
 typedef struct TerrainData {
-    Grid$u8    heightmap; // grayscale
-    Grid$Color colormap;  // RGB format (based RGBA)
-    u32        width;
-    u32        height;
+    Grid$u8 heightmap;   // grayscale
+    Grid$Color colormap; // RGB format (based RGBA)
+    u32 width;
+    u32 height;
 } TerrainData;
 config_ErrSet(TerrainDataErr,
     FailedToLoadHeightMap,
@@ -66,23 +66,23 @@ static fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const
 
 typedef struct State {
     TerrainData terrain;
-    Vec2d       camera_pos;
-    f64         camera_angle; // <== We'll use this as 'phi'
-    f64         height;       // camera height above ground
-    f64         horizon;
-    f64         scale_height;
-    f64         distance;
-    bool        is_running;
+    m_V2f64 camera_pos;
+    f64 camera_angle; // <== We'll use this as 'phi'
+    f64 height;       // camera height above ground
+    f64 horizon;
+    f64 scale_height;
+    f64 distance;
+    bool is_running;
     // Input state
     struct {
-        f64   forward_backward;
-        f64   left_right;
-        f64   up_down;
-        bool  look_up;
-        bool  look_down;
-        f64   dist_up_down;
-        Vec2i mouse_position;
-        bool  mouse_active;
+        f64 forward_backward;
+        f64 left_right;
+        f64 up_down;
+        bool look_up;
+        bool look_down;
+        f64 dist_up_down;
+        m_V2i32 mouse_position;
+        bool mouse_active;
     } input;
 } State;
 static fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), void);
@@ -117,48 +117,48 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
             .y = window_res_height,
         },
         .default_color = some(Color_blue),
-        .title         = some(u8_l("Heightmap Horizon Space")),
+        .title = some(u8_l("Heightmap Horizon Space")),
     }));
     defer_(engine_Window_fini(window));
     log_info("engine initialized\n");
 
     // Create canvases
     let game_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
-        .allocator     = some(allocator),
-        .width         = window_res_width,
-        .height        = window_res_height,
+        .allocator = some(allocator),
+        .width = window_res_width,
+        .height = window_res_height,
         .default_color = none(),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
-        engine_Canvas_clear(game_canvas, none$(O$Color));
+        engine_Canvas_clear(game_canvas, none$((O$Color)));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendView(
             window,
             &(engine_CanvasView_Config){
-                .canvas      = game_canvas,
-                .pos         = { .x = 0, .y = 0 },
-                .size        = { .x = window_res_width, .y = window_res_height },
-                .scale       = { .x = 1.0f, .y = 1.0f },
+                .canvas = game_canvas,
+                .pos = { .x = 0, .y = 0 },
+                .size = { .x = window_res_width, .y = window_res_height },
+                .scale = { .x = 1.0f, .y = 1.0f },
                 .resizable_x = true,
                 .resizable_y = true,
-                .visible     = true,
+                .visible = true,
             }
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
 
     var state = (State){
-        .terrain      = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
-        .camera_pos   = { .x = 512, .y = 512 },   // Starting in middle is good if map is 1024x1024
-        .camera_angle = 0.0f,                     // Starting angle (looking north)
-        .height       = 150.f / 2.0f,             // Height of camera above ground
-        .horizon      = window_res_height / 2.0f, // Center of screen
-        .scale_height = window_res_height,        // Full screen height for scaling
-        .distance     = 300.0f,
-        .is_running   = true
+        .terrain = try_(loadSample(allocator, "assets/D1.png", "assets/C1W.png")),
+        .camera_pos = { .x = 512, .y = 512 }, // Starting in middle is good if map is 1024x1024
+        .camera_angle = 0.0f,                 // Starting angle (looking north)
+        .height = 150.f / 2.0f,               // Height of camera above ground
+        .horizon = window_res_height / 2.0f,  // Center of screen
+        .scale_height = window_res_height,    // Full screen height for scaling
+        .distance = 300.0f,
+        .is_running = true
     };
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.heightmap.items)));
     defer_(mem_Allocator_free(allocator, anySli(state.terrain.colormap.items)));
@@ -169,22 +169,22 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(create$(engine_core_Vt100_Config, .allocator = some(allocator), .window = window, .input = input, )));
-    defer_(engine_core_Vt100_fini(core));
+    let core = try_(engine_core_VT100_init(create$(engine_core_VT100_Config, .allocator = some(allocator), .window = window, .input = input, )));
+    defer_(engine_core_VT100_fini(core));
     log_info("engine ready");
 
     engine_utils_getch();
 
     let target_frame_time = time_Duration_fromSecs$f64(1.0 / target_fps);
-    var prev_frame_time   = time_Instant_now();
+    var prev_frame_time = time_Instant_now();
     log_info("game loop started\n");
 
     // Game loop
     while (state.is_running) {
         let curr_frame_time = time_Instant_now();
-        let elapsed_time    = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-        let dt              = time_Duration_asSecs$f64(elapsed_time);
-        prev_frame_time     = curr_frame_time;
+        let elapsed_time = time_Instant_durationSince(curr_frame_time, prev_frame_time);
+        let dt = time_Duration_asSecs$f64(elapsed_time);
+        prev_frame_time = curr_frame_time;
 
         // Process events
         try_(engine_Window_update(window));
@@ -195,7 +195,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
         State_updateCamera(&state, dt);
 
         // Render all views
-        engine_Canvas_clear(game_canvas, none$(O$Color));
+        engine_Canvas_clear(game_canvas, none$((O$Color)));
         State_render(&state, game_canvas, dt);
 
         // Present to screen
@@ -221,16 +221,15 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
         debug_only(
             // log frame every 1s
             static f64 total_game_time_for_timestamp = 0.0;
-            static f64 logging_after_duration        = 0.0;
+            static f64 logging_after_duration = 0.0;
             total_game_time_for_timestamp += dt;
             logging_after_duration += dt;
             if (1.0 < logging_after_duration) {
                 logging_after_duration = 0.0;
                 log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, dt, 1.0 / dt);
-            }
-        );
+            });
 
-        let now        = time_Instant_now();
+        let now = time_Instant_now();
         let frame_used = time_Instant_durationSince(now, curr_frame_time);
         if_some(time_Duration_chkdSub(target_frame_time, frame_used), leftover) {
             time_sleep(leftover);
@@ -247,10 +246,10 @@ fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* 
     debug_assert_nonnull(colormap_file);
 
     // 1) Load heightmap (expecting 1 channel, but we can request 1 explicitly)
-    i32 width                     = 0;
-    i32 height                    = 0;
+    i32 width = 0;
+    i32 height = 0;
     i32 heightmap_actual_channels = 0;
-    u8* heightmap_data            = stbi_load(heightmap_file, &width, &height, &heightmap_actual_channels, 1); // request 1 channel
+    u8* heightmap_data = stbi_load(heightmap_file, &width, &height, &heightmap_actual_channels, 1); // request 1 channel
     if (!heightmap_data) {
         log_error("Failed to load heightmap: %s\n", heightmap_file);
         return_err(TerrainDataE_FailedToLoadHeightMap());
@@ -271,7 +270,7 @@ fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* 
 
     // 2) Load colormap (could be 3 or 4 channels, but we’ll let stb_image decide)
     i32 colormap_channels = 0;
-    u8* colormap_data     = stbi_load(colormap_file, &width, &height, &colormap_channels, 0); // 0 means "load as-is"
+    u8* colormap_data = stbi_load(colormap_file, &width, &height, &colormap_channels, 0); // 0 means "load as-is"
     if (!colormap_data) {
         log_error("Failed to load colormap: %s\n", colormap_file);
         return_err(TerrainDataE_err(TerrainDataErrCode_FailedToLoadColorMap));
@@ -306,9 +305,9 @@ fn_(loadSample(mem_Allocator allocator, const char* heightmap_file, const char* 
     }
     return_ok({
         .heightmap = heightmap_mat,
-        .colormap  = colormap_mat,
-        .width     = width,
-        .height    = height,
+        .colormap = colormap_mat,
+        .width = width,
+        .height = height,
     });
 }
 $unguarded;
@@ -316,9 +315,9 @@ $unguarded;
 fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), void) {
     // Reset input state
     self->input.forward_backward = 0;
-    self->input.left_right       = 0;
-    self->input.up_down          = 0;
-    self->input.dist_up_down     = 0;
+    self->input.left_right = 0;
+    self->input.up_down = 0;
+    self->input.dist_up_down = 0;
 
     // WASD/Arrow key movement
     if (engine_Keyboard_held(keyboard, engine_KeyCode_w)
@@ -348,7 +347,7 @@ fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), voi
     }
 
     // Q/E for look up/down
-    self->input.look_up   = engine_Keyboard_held(keyboard, engine_KeyCode_q);
+    self->input.look_up = engine_Keyboard_held(keyboard, engine_KeyCode_q);
     self->input.look_down = engine_Keyboard_held(keyboard, engine_KeyCode_e);
 
     // R/F for distance up/down
@@ -366,22 +365,22 @@ fn_(State_handleInputKeyboard(State* self, const engine_Keyboard* keyboard), voi
 }
 fn_(State_handleInputMouse(State* self, const engine_Mouse* mouse), void) {
     if (engine_Mouse_isState(mouse, engine_MouseButton_left, engine_KeyButtonStates_pressed)) {
-        self->input.mouse_active     = true;
-        self->input.mouse_position   = engine_Mouse_getPos(mouse);
+        self->input.mouse_active = true;
+        self->input.mouse_position = engine_Mouse_getPos(mouse);
         self->input.forward_backward = 3.0;
     }
     if (engine_Mouse_isState(mouse, engine_MouseButton_left, engine_KeyButtonStates_released)) {
-        self->input.mouse_active     = false;
+        self->input.mouse_active = false;
         self->input.forward_backward = 0;
-        self->input.left_right       = 0;
-        self->input.up_down          = 0;
+        self->input.left_right = 0;
+        self->input.up_down = 0;
     }
     /* 이걸 어케 바꾼담담 */
     if (self->input.mouse_active) {
-        const Vec2i delta      = engine_Mouse_getPosDelta(mouse);
+        const m_V2i32 delta = engine_Mouse_getPosDelta(mouse);
         self->input.left_right = as$(f64, delta.x) / window_res_width * 2.0;
-        self->horizon          = 10.0 + as$(f64, delta.y) / window_res_height * 50.0;
-        self->input.up_down    = as$(f64, delta.y) / window_res_height * 10.0;
+        self->horizon = 10.0 + as$(f64, delta.y) / window_res_height * 50.0;
+        self->input.up_down = as$(f64, delta.y) / window_res_height * 10.0;
     }
 }
 fn_(State_updateCamera(State* self, f64 dt), void) {
@@ -426,23 +425,23 @@ fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
     let_ignore = dt;
 
     // Extract parameters from state
-    const f64   phi          = state->camera_angle;
-    const f64   sin_phi      = math_sin(phi);
-    const f64   cos_phi      = math_cos(phi);
-    const Vec2d p            = state->camera_pos;
-    const f64   height       = state->height;
-    const f64   horizon      = state->horizon;
-    const f64   scale_height = state->scale_height;
-    const f64   distance     = state->distance;
+    const f64 phi = state->camera_angle;
+    const f64 sin_phi = math_sin(phi);
+    const f64 cos_phi = math_cos(phi);
+    const m_V2f64 p = state->camera_pos;
+    const f64 height = state->height;
+    const f64 horizon = state->horizon;
+    const f64 scale_height = state->scale_height;
+    const f64 distance = state->distance;
 
-    let screen_width  = as$(i32, canvas->buffer.width);
+    let screen_width = as$(i32, canvas->buffer.width);
     let screen_height = as$(i32, canvas->buffer.height);
 
     // Get terrain data
-    let terrain    = mutCast$P(&state->terrain);
-    let heightmap  = mutCast$P(terrain->heightmap.items.ptr);
-    let colormap   = mutCast$P(terrain->colormap.items.ptr);
-    let map_width  = as$(i32, terrain->width);
+    let terrain = mutCast$P(&state->terrain);
+    let heightmap = mutCast$P(terrain->heightmap.items.ptr);
+    let colormap = mutCast$P(terrain->colormap.items.ptr);
+    let map_width = as$(i32, terrain->width);
     let map_height = as$(i32, terrain->height);
 
     // Draw from back to front (high z to low z)
@@ -472,16 +471,16 @@ fn_(State_render(const State* state, engine_Canvas* canvas, f64 dt), void) {
             map_y = math_clamp(map_y, 0, map_height - 1);
 
             // Get height and color from maps
-            let map_index     = map_y * map_width + map_x;
+            let map_index = map_y * map_width + map_x;
             let ground_height = as$(f64, heightmap[map_index]);
-            let color         = colormap[map_index];
+            let color = colormap[map_index];
 
             // Calculate height on screen
             let height_on_screen = (height - ground_height) / z * scale_height + horizon;
 
             // Clamp height to screen bounds
             var screen_y = as$(i32, height_on_screen);
-            screen_y     = math_clamp(screen_y, 0, screen_height - 1);
+            screen_y = math_clamp(screen_y, 0, screen_height - 1);
 
             // Draw vertical line
             engine_Canvas_drawVLine(canvas, i, screen_y, screen_height, color);

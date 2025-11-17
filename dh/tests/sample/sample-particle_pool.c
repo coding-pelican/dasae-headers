@@ -1,4 +1,3 @@
-#include "dh/Thrd/common.h"
 #include "dh/prl.h"
 #include "dh/Thrd.h"
 #include "dh/atom.h"
@@ -95,7 +94,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
             /* clang-format on */
             if (atom_V_load(&pool->count, atom_MemOrd_acquire) > 0) {
                 let tail = atom_V_load(&pool->tail, atom_MemOrd_acquire);
-                asgLit((&maybe_task)(some(atS(pool->tasks, tail % mp_max_task_count))));
+                asg_lit((&maybe_task)(some(S_at((pool->tasks)[tail % mp_max_task_count]))));
                 atom_V_store(&pool->tail, tail + 1, atom_MemOrd_release);
                 atom_V_fetchSub(&pool->count, 1, atom_MemOrd_release);
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_acq_rel);
@@ -116,17 +115,17 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
 
 $must_check
 $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
-    let_(pool, mp_ThrdPool*) = u_castP$((P$$(mp_ThrdPool))(try_(mem_Allocator_create(gpa, typeInfo$(mp_ThrdPool)))));
-    let_(workers, TypeOf(pool->workers)) = u_castS$((TypeOf(pool->workers))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(union Thrd_FnCtx$(mp_ThrdPool_worker)), mp_max_task_count))));
-    let_(threads, TypeOf(pool->threads)) = u_castS$((TypeOf(pool->threads))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(Thrd), thrd_count))));
-    let_(tasks, TypeOf(pool->tasks)) = u_castS$((TypeOf(pool->tasks))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(mp_ThrdPool_Task), mp_max_task_count))));
-    asgLit((pool)({
-        .workers = workers,
-        .threads = threads,
-        .tasks = tasks,
+    let_(pool, mp_ThrdPool*) = u_castP$((mp_ThrdPool*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
+    asg_lit((pool)($init((LitType){
+        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
+            gpa, typeInfo$(InnerType), mp_max_task_count
+        )))))),
+        $field((threads)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
+            gpa, typeInfo$(InnerType), thrd_count
+        )))))),
+        $field((tasks)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
+            gpa, typeInfo$(InnerType), mp_max_task_count
+        )))))),
         .head = atom_V_init(0ull),
         .tail = atom_V_init(0ull),
         .count = atom_V_init(0ull),
@@ -135,7 +134,7 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         .cond_all_done = Thrd_Cond_init(),
         .active_tasks = atom_V_init(0ull),
         .running = atom_V_init(true),
-    }));
+    })));
     for_(($s(pool->workers), $s(pool->threads))(worker, thread) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool));
         *thread = catch_((Thrd_spawn(
@@ -144,28 +143,6 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
     });
     return_ok(pool);
 } $unscoped_(fn);
-
-$static fn_((mp_ThrdPool_submit(mp_ThrdPool* self, R range, mp_ThrdPool_TaskFn fn, u_V$raw params))(void)) {
-    Thrd_Mtx_lock(&self->mutex);
-    let head = atom_V_load(&self->head, atom_MemOrd_acquire);
-    let task = atS(self->tasks, head % mp_max_task_count);
-    task->range = range;
-    task->workerFn = fn;
-    task->params = params;
-    atom_V_store(&self->head, head + 1, atom_MemOrd_release);
-    atom_V_fetchAdd(&self->count, 1, atom_MemOrd_release);
-    Thrd_Cond_signal(&self->cond_has_task);
-    Thrd_Mtx_unlock(&self->mutex);
-}
-
-$static fn_((mp_ThrdPool_waitAll(mp_ThrdPool* self))(void)) {
-    Thrd_Mtx_lock(&self->mutex);
-    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 ||
-           atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
-        Thrd_Cond_wait(&self->cond_all_done, &self->mutex);
-    }
-    Thrd_Mtx_unlock(&self->mutex);
-}
 
 $static fn_((mp_ThrdPool_shutdown(mp_ThrdPool* self))(void)) {
     atom_V_store(&self->running, false, atom_MemOrd_release);
@@ -184,6 +161,30 @@ $static fn_((mp_ThrdPool_fini(mp_ThrdPool* self, mem_Allocator gpa))(void)) {
     mem_Allocator_free(gpa, u_anyS(self->threads));
     mem_Allocator_free(gpa, u_anyS(self->tasks));
     mem_Allocator_destroy(gpa, u_anyP(self));
+}
+
+$static fn_((mp_ThrdPool_submit(mp_ThrdPool* self, R range, mp_ThrdPool_TaskFn fn, u_V$raw params))(void)) {
+    Thrd_Mtx_lock(&self->mutex);
+    let head = atom_V_load(&self->head, atom_MemOrd_acquire);
+    let task = S_at((self->tasks)[head % mp_max_task_count]);
+    asg_lit((task)($init((LitType){
+        $field((range)),
+        $field((workerFn)$asg(fn)),
+        $field((params)),
+    })));
+    atom_V_store(&self->head, head + 1, atom_MemOrd_release);
+    atom_V_fetchAdd(&self->count, 1, atom_MemOrd_release);
+    Thrd_Cond_signal(&self->cond_has_task);
+    Thrd_Mtx_unlock(&self->mutex);
+}
+
+$static fn_((mp_ThrdPool_waitAll(mp_ThrdPool* self))(void)) {
+    Thrd_Mtx_lock(&self->mutex);
+    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 ||
+           atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
+        Thrd_Cond_wait(&self->cond_all_done, &self->mutex);
+    }
+    Thrd_Mtx_unlock(&self->mutex);
 }
 
 $static fn_((mp_parallel_for_pooled(mp_ThrdPool* pool, R range, mp_ThrdPool_TaskFn fn, u_V$raw params))(void)) {
@@ -228,8 +229,8 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
         v = (Rand_next$f64(self->rng) * 2.0 - 1.0);
         s = u * u + v * v;
     } while (s >= 1.0 || s == 0.0);
-    s = sqrt(-2.0 * log(s) / s);
-    asgLit((&self->spare)(some(v * s)));
+    s = flt_sqrt(-2.0 * flt_ln(s) / s);
+    asg_lit((&self->spare)(some(v * s)));
     return mean + std_dev * u * s;
 }
 
@@ -297,9 +298,9 @@ $static fn_((State_buildSpatialGrid(State* self))(void)) {
     State_clearGrid(self->pool, self->grid);
     for_(($r(0, State_particles),$s(self->particles))(i, particle) {
         let cell_idx = State_hashPosition(particle->pos);
-        let pos = atom_fetchAdd(&at$S(self->grid, cell_idx)->count, 1, atom_MemOrd_release);
+        let pos = atom_fetchAdd(&S_at((self->grid)[cell_idx])->count, 1, atom_MemOrd_release);
         if (pos < State_max_particles_per_cell) {
-            *atA(atS(self->grid, cell_idx)->indices, pos) = i;
+            *A_at((S_at((self->grid)[cell_idx])->indices)[pos]) = i;
         }
     });
 }
@@ -346,7 +347,7 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
         let frame_end = time_Instant_now();
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
-        if (frame % as$((usize)State_target_fps) == 0) {
+        if (frame % as$(usize)(State_target_fps) == 0) {
             io_stream_println(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
@@ -355,8 +356,8 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
         }
     });
 
-    let avg_fps = as$((f64)(frame_amount)) / total_time;
-    let avg_spf = total_time / as$((f64)(frame_amount));
+    let avg_fps = as$(f64)(frame_amount) / total_time;
+    let avg_spf = total_time / as$(f64)(frame_amount);
     io_stream_println(u8_l("\n=== Simulation Complete ===\n"));
     io_stream_println(u8_l("Total frames: {:uz}"), frame_amount);
     io_stream_println(u8_l("Total time: {:.2fl} seconds"), total_time);
@@ -385,28 +386,31 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("╚═══════════════════════════════════════╝\n"));
 
     io_stream_println(u8_l("Particles: 2^{:uz} = {:uz}"), State_particles_log2, State_particles);
-    io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
+    io_stream_println(u8_l("Target FPS: {:.1fl}"), State_target_fps);
     let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
-    let cpu_count = prim_clamp(expr_(usize $scope) if (1 < args.len) {
-        $break_(catch_((fmt_parse$usize(*at$S(args, 1), 10))($ignore, usize_limit_max)));
+    let cpu_count = int_clamp(expr_(usize $scope) if (1 < args.len) {
+        $break_(catch_((fmt_parse$usize(*S_at((args)[1]), 10))(
+            err, (io_stream_println(u8_l("Invalid CPU count: {:e}"), err), usize_limit_max))
+        ));
     } else {
         $break_(usize_limit_max);
     } $unscoped_(expr), 1, max_cpu_count);
-    var gpa = heap_Page_allocator(&(heap_Page){});
+    var page = lit$((heap_Page){});
+    var gpa = heap_Page_allocator(&page);
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
     defer_(mp_ThrdPool_fini(pool, gpa));
     io_stream_println(u8_l("Using Thread Pool with {:uz} workers\n"), pool->threads.len);
 
-    io_stream_println(u8_l("\nAllocating memory..."));
-    let particles = try_(u_castE$((E$$(S$Particle))(mem_Allocator_alloc(gpa, typeInfo$(Particle), State_particles))));
+    io_stream_println(u8_l("Allocating memory..."));
+    let particles = u_castS$((S$Particle)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), State_particles))));
     defer_(mem_Allocator_free(gpa, u_anyS(particles)));
-    let grid = try_(u_castE$((E$$(S$Cell))(mem_Allocator_alloc(gpa, typeInfo$(Cell), State_grid_width * State_grid_height))));
+    let grid = u_castS$((S$Cell)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), State_grid_width * State_grid_height))));
     defer_(mem_Allocator_free(gpa, u_anyS(grid)));
-    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$((f64)(State_particles * typeInfo$(Particle).size)) / (1024.0 * 1024.0));
+    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$(f64)(State_particles * typeInfo$(Particle).size) / (1024.0 * 1024.0));
 
     var state = State_init(pool, particles, grid);
     let frame_amount = expr_(usize $scope) if (2 < args.len) {
-        $break_(catch_((fmt_parse$usize(*at$S(args, 2), 10))($ignore, 1000)));
+        $break_(catch_((fmt_parse$usize(*S_at((args)[2]), 10))($ignore, 1000)));
     } else {
         $break_(1000);
     } $unscoped_(expr);
@@ -414,7 +418,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     State_simulate(&state, pool, frame_amount);
 
     io_stream_println(u8_l("\nSample particles:"));
-    for_(($r(0, 3), $s(particles))(i, particle){
+    for_(($r(0, 3), $s(particles))(i, particle) {
         io_stream_println(
             u8_l("- Particle {:uz}: pos({:.2fl}, {:.2fl}) vel({:.2fl}, {:.2fl})"),
             i, particle->pos.x, particle->pos.y, particle->vel.x, particle->vel.y
@@ -509,10 +513,10 @@ fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
 }
 
 fn_((State_hashPosition(m_V2f64 pos))(usize)) {
-    let gx_0 = as$((isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size));
-    let gy_0 = as$((isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size));
-    let gx_1 = as$((usize)prim_clamp(gx_0, 0, as$((isize)State_grid_width) - 1));
-    let gy_1 = as$((usize)prim_clamp(gy_0, 0, as$((isize)State_grid_height) - 1));
+    let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
+    let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width) - 1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height) - 1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -564,33 +568,33 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
 
         for_(($r(0, 3))(dy_offset) {  // 0, 1, 2
             for_(($r(0, 3))(dx_offset) {  // 0, 1, 2
-                let dx = as$((isize)(dx_offset)) - 1;  // Convert to -1, 0, 1
-                let dy = as$((isize)(dy_offset)) - 1;
+                let dx = as$(isize)(dx_offset) - 1;  // Convert to -1, 0, 1
+                let dy = as$(isize)(dy_offset) - 1;
 
-                let nx = as$((isize)(gx)) + dx;
-                let ny = as$((isize)(gy)) + dy;
+                let nx = as$(isize)(gx) + dx;
+                let ny = as$(isize)(gy) + dy;
 
-                if ((nx < 0 || State_grid_width <= as$((usize)(nx))) ||
-                    (ny < 0 || State_grid_height <= as$((usize)(ny)))) {
+                if ((nx < 0 || State_grid_width <= as$(usize)(nx)) ||
+                    (ny < 0 || State_grid_height <= as$(usize)(ny))) {
                     continue;
                 }
 
-                let neighbor_idx = as$((usize)(ny)) * State_grid_width + as$((usize)(nx));
-                let neighbor = at$S(grid, neighbor_idx);
+                let neighbor_idx = as$(usize)(ny) * State_grid_width + as$(usize)(nx);
+                let neighbor = S_at((grid)[neighbor_idx]);
                 let count = atom_load(&neighbor->count, atom_MemOrd_acquire);
 
                 for (usize k = 0; k < count && k < State_max_particles_per_cell; ++k) {
-                    let j = *atA(neighbor->indices, k);
+                    let j = *A_at((neighbor->indices)[k]);
                     if (j <= i) { continue; }
 
                     let self = &self_i;
-                    let other = *at$S(particles, j);
+                    let other = *S_at((particles)[j]);
                     let dp_col = m_V2f64_sub(other.pos, self->pos);
                     let d_sq = m_V2f64_lenSq(dp_col);
                     let min_d = collision_radius * 2.0f;
                     let min_d_sq = min_d * min_d;
                     if (d_sq < min_d_sq && 0.001f < d_sq) {
-                        let d = sqrt(d_sq);
+                        let d = flt_sqrt(d_sq);
                         let overlap = min_d - d;
                         let n_norm = m_V2f64_scaleInv(dp_col, d);
                         let separation = overlap * 0.5f;

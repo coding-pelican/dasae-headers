@@ -1,6 +1,5 @@
 #define main_no_args 1
 #include "dh/main.h"
-
 #include "dh/io/stream.h"
 
 fn_((dh_main(void))(E$void) $scope) {

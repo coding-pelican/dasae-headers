@@ -95,7 +95,7 @@ fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
 }
 
 fn_((Thrd_getCpuCount(void))(usize)) {
-    return as$((usize)(os_windows_GetSystemInfo().dwNumberOfProcessors));
+    return as$(usize)(os_windows_GetSystemInfo().dwNumberOfProcessors);
 }
 
 /* fn_((Thrd_spawn(Thrd_SpawnConfig config, comptime f : anytype, args : anytype))(Thrd)) {
@@ -545,5 +545,5 @@ fn_((Thrd_join(Thrd self))(void)) {
 #define __step__Thrd_FnCtx_ret$__parseFnName(_fnName...) \
     _fnName,
 #define __step__Thrd_FnCtx_ret$__emit(_fnName, _ctx...) \
-    (as$((Thrd_FnCtx$(_fnName)*)(_ctx))->ret.as_typed)
+    (as$(Thrd_FnCtx$(_fnName) (*)(_ctx))->ret.as_typed)
 #endif /* UNUSED_CODE */

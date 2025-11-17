@@ -174,10 +174,10 @@ typedef struct TypeInfo {
 #define __param_expand__clamp$(...)                     __VA_ARGS__, pp_expand
 #define __block_inline__clamp$(_T, _val, _min, _max...) min$((_T)(max$((_T)(_min, _val)), (_max)))
 
-#define mem_set(_dest, _val, _len)  __builtin_prim_memset(_dest, as$((u8)(_val)), _len)
-#define mem_copy(_dest, _src, _len) __builtin_prim_memcpy(_dest, _src, _len)
-#define mem_move(_dest, _src, _len) __builtin_prim_memmove(_dest, _src, _len)
-#define mem_allocStack(_len)        as$((u8*)(__builtin_alloca(_len)))
+#define mem_set(_dest, _val, _len)  __builtin_memset(_dest, as$(u8)(_val), _len)
+#define mem_copy(_dest, _src, _len) __builtin_memcpy(_dest, _src, _len)
+#define mem_move(_dest, _src, _len) __builtin_memmove(_dest, _src, _len)
+#define mem_allocStack(_len)        as$(u8*)(__builtin_alloca(_len))
 
 #define defer_(_stmt...) \
     for (bool _once = false; !_once; ({ _once = true; _stmt; }))
@@ -283,7 +283,7 @@ $static fn_((mem_eql0$raw(usize size, const u8* lhs, usize lhs_len, const u8* rh
     if (lhs_len == 0) { return true; }
     debug_assert(lhs != null);
     debug_assert(rhs != null);
-    return __builtin_prim_memcmp(lhs, rhs, (lhs_len * size)) == 0;
+    return __builtin_memcmp(lhs, rhs, (lhs_len * size)) == 0;
 }
 $extern fn_((mem_eql0$i64(S_const$i64 lhs, S_const$i64 rhs))(bool)) {
     return mem_eql0$raw(sizeof(i64), lhs.as_raw.ptr, lhs.len, rhs.as_raw.ptr, rhs.len);
@@ -295,7 +295,7 @@ $static fn_((mem_eql1$raw(TypeInfo type, S_const$raw lhs, S_const$raw rhs))(bool
     if (lhs.len == 0) { return true; }
     debug_assert(lhs.ptr != null);
     debug_assert(rhs.ptr != null);
-    return __builtin_prim_memcmp(lhs.ptr, rhs.ptr, (lhs.len * type.size)) == 0;
+    return __builtin_memcmp(lhs.ptr, rhs.ptr, (lhs.len * type.size)) == 0;
 }
 $extern fn_((mem_eql1$i64(S_const$i64 lhs, S_const$i64 rhs))(bool)) {
     return mem_eql1$raw(typeInfo$(TypeOf(i64)), lhs.as_raw, rhs.as_raw);
@@ -324,7 +324,7 @@ $static fn_((mem_eql2$raw(TypeInfo type, meta_S_const$raw lhs, meta_S_const$raw 
     if (lhs.len == 0) { return true; }
     debug_assert(lhs.ptr != null);
     debug_assert(rhs.ptr != null);
-    return __builtin_prim_memcmp(lhs.ptr, rhs.ptr, (lhs.len * type.size)) == 0;
+    return __builtin_memcmp(lhs.ptr, rhs.ptr, (lhs.len * type.size)) == 0;
 }
 $extern fn_((mem_eql2$i64(S_const$i64 lhs, S_const$i64 rhs))(bool)) {
     return mem_eql2$raw(typeInfo$(TypeOf(i64)), metaRef$S(lhs), metaRef$S(rhs));

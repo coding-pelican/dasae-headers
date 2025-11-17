@@ -1,11 +1,6 @@
 #include "dh/main.h"
-#include "dh/io/stream.h"
-
-#include "dh/Arr.h"
-#include "dh/sli.h"
-
 #include "dh/heap/Fixed.h"
-#include "dh/mem/Allocator.h"
+#include "dh/io/stream.h"
 
 // Define custom error set
 errset_((math_Err)(
@@ -17,17 +12,15 @@ errset_((math_Err)(
 // Function that returns an error result
 T_use_E$($set(math_Err)(i32));
 $must_check
-$static fn_((safeDivide(i32 numerator, i32 denominator))(math_Err$i32) $scope) {
-    if (denominator == 0) {
+$static fn_((safeDivide(i32 num, i32 denom))(math_Err$i32) $scope) {
+    if (denom == 0) {
         return_err(math_Err_DivisionByZero());
     }
-
     // Check for potential overflow
-    if (numerator == i32_limit_min && denominator == -1) {
+    if (num == i32_limit_min && denom == -1) {
         return_err(math_Err_Overflow());
     }
-
-    return_ok(numerator / denominator);
+    return_ok(num / denom);
 } $unscoped_(fn);
 
 // Function demonstrating error propagation with try_
@@ -37,18 +30,14 @@ $static fn_((calculateRatio(i32 a, i32 b, i32 c, i32 d))(math_Err$f32) $scope) {
     // try_ will return early if an error occurs
     let first_result  = try_(safeDivide(a, b));
     let second_result = try_(safeDivide(c, d));
-
     // Calculate the ratio
-    return_ok(as$((f32)(first_result)) / as$((f32)(second_result)));
+    return_ok(as$(f32)(first_result) / as$(f32)(second_result));
 } $unscoped_(fn);
 
 // Function demonstrating catch_from for error handling
 $static fn_((handleDivision(i32 a, i32 b))(i32)) {
     return catch_((safeDivide(a, b))(
-        err, ({
-            io_stream_eprintln(u8_l("Division error: [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err));
-            blk_return 0;
-        })
+        err, (io_stream_eprintln(u8_l("Division error: {:e}"), err), 0)
     ));
 }
 
@@ -59,28 +48,25 @@ typedef variant_((math_ErrRes $fits u8)(
 
 // Function demonstrating if_err/else_ok pattern
 $static fn_((processResult(math_ErrRes result))(void)) {
-    O$$(math_Err) maybe_err = none();
-    match_(result, {
+    let maybe_err = expr_(O$$(math_Err) $scope) match_(result, {
         pattern_(math_ErrRes_i32, (result), {
-            if_err(*result, err) {
-                toSome(&maybe_err, err);
-            }
-            else_ok(value) {
+            if_err((*result)(err)) {
+                $break_(some(err));
+            } else_ok(value) {
                 io_stream_println(u8_l("Operation succeeded with value: {:d}"), value);
             };
         }) break;
         pattern_(math_ErrRes_f32, (result), {
-            if_err(*result, err) {
-                toSome(&maybe_err, err);
-            }
-            else_ok(value) {
+            if_err((*result)(err)) {
+                $break_(some(err));
+            } else_ok(value) {
                 io_stream_println(u8_l("Operation succeeded with value: {:f}"), value);
             };
         }) break;
         fallback_(claim_unreachable);
-    });
-    if_some(maybe_err, err) {
-        io_stream_println(u8_l("Error occurred: [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err));
+    }) $unscoped_(expr);
+    if_some((maybe_err)(err)) {
+        io_stream_println(u8_l("Error occurred: [{:s}] {:z}"), Err_domainToStr(err), Err_codeToStrZ(err));
     }
 }
 
@@ -89,26 +75,23 @@ $static var_(memory, A$$(1024, u8)) = A_zero();
 $must_check
 $static fn_((performOperation(i32 a, i32 b))(math_Err$i32) $guard) {
     // Allocate resources
-    var fixed     = heap_Fixed_init(Sli_arr$(S$u8, memory));
-    var allocator = heap_Fixed_allocator(&fixed);
-    var buffer    = meta_cast$(
-        S$i32,
-        catch_((mem_Allocator_alloc(allocator, typeInfo$(i32), 100))(err, {
-            io_stream_eprintln(u8_l("Failed to allocate buffer: [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err));
-            claim_unreachable;
-        }))
-    );
+    var fixed = heap_Fixed_init(A_ref$((S$u8)(memory)));
+    var gpa = heap_Fixed_allocator(&fixed);
+    var buffer= u_castS$((S$i32)(catch_((mem_Allocator_alloc(gpa, typeInfo$(InnerType), 100))(err, {
+        io_stream_eprintln(u8_l("Failed to allocate buffer: {:e}"), err);
+        claim_unreachable;
+    }))));
     // Cleanup on error
-    errdefer_($ignore, mem_Allocator_free(allocator, anySli(buffer)));
+    errdefer_($ignore, mem_Allocator_free(gpa, u_anyS(buffer)));
 
     // If this fails, errdefer_ will free buffer
     let result = try_(safeDivide(a, b));
 
     // More operations with buffer...
-    Sli_setAt(buffer, 0, result);
+    *atS(buffer, 0) = result;
 
     // Clean up and return
-    mem_Allocator_free(allocator, anySli(buffer));
+    mem_Allocator_free(gpa, u_anyS(buffer));
     return_ok(result);
 } $unguarded_(fn);
 
@@ -118,16 +101,16 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     // Basic error handling
     io_stream_println(u8_l("\nBasic division examples:"));
-    processResult(variant_of$(math_ErrRes, math_ErrRes_i32, safeDivide(10, 2)));
-    processResult(variant_of$(math_ErrRes, math_ErrRes_i32, safeDivide(10, 0)));
+    processResult(union_of$((math_ErrRes)(math_ErrRes_i32)(safeDivide(10, 2))));
+    processResult(union_of$((math_ErrRes)(math_ErrRes_i32)(safeDivide(10, 0))));
 
     // Error propagation
     io_stream_println(u8_l("\nCalculating ratios:"));
     with_(var ratio_result = calculateRatio(10, 2, 6, 3)) {
-        processResult(variant_of$(math_ErrRes, math_ErrRes_f32, ratio_result));
+        processResult(union_of$((math_ErrRes)(math_ErrRes_f32)(ratio_result)));
     }
     with_(var ratio_result = calculateRatio(10, 0, 6, 3)) {
-        processResult(variant_of$(math_ErrRes, math_ErrRes_f32, ratio_result));
+        processResult(union_of$((math_ErrRes)(math_ErrRes_f32)(ratio_result)));
     }
 
     // Error handling with catch_from
@@ -137,8 +120,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     // Complex operation with cleanup
     io_stream_println(u8_l("\nComplex operation with cleanup:"));
-    processResult(variant_of$(math_ErrRes, math_ErrRes_i32, performOperation(10, 2)));
-    processResult(variant_of$(math_ErrRes, math_ErrRes_i32, performOperation(10, 0)));
+    processResult(union_of$((math_ErrRes)(math_ErrRes_i32)(performOperation(10, 2))));
+    processResult(union_of$((math_ErrRes)(math_ErrRes_i32)(performOperation(10, 0))));
 
     return_ok({});
 } $unscoped_(fn);
@@ -160,13 +143,13 @@ $static fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
 } $unscoped_(fn);
 
 $must_check
-$static fn_((example(void))(E$void) $scope) {
+$static fn_((example(mem_Allocator gpa))(E$void) $scope) {
     // Allocate resources
-    var buffer = meta_cast$(S$i32, try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100)));
+    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), 100))));
     // Cleanup always when function returns
-    defer_(mem_Allocator_free(allocator, anySli(buffer)));
+    defer_(mem_Allocator_free(gpa, u_anyS(buffer)));
     // Cleanup only when an error occurs and propagates
-    errdefer_(err, io_stream_eprintln(u8_l("Occurred error! [{:s}] {:s}"), Err_domainToStr(err), Err_codeToStr(err)));
+    errdefer_(err, io_stream_eprintln(u8_l("Occurred error!: {:e}"), err));
 
     // Error propagation (early return)
     let result_invalid = try_(safeDivide(10, 0));

@@ -42,9 +42,9 @@ typedef i32 posix_mode_t;
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_const__posix_STDIN_FILENO  as$((posix_fd_t)(0))
-#define comp_const__posix_STDOUT_FILENO as$((posix_fd_t)(1))
-#define comp_const__posix_STDERR_FILENO as$((posix_fd_t)(2))
+#define comp_const__posix_STDIN_FILENO  as$(posix_fd_t)(0)
+#define comp_const__posix_STDOUT_FILENO as$(posix_fd_t)(1)
+#define comp_const__posix_STDERR_FILENO as$(posix_fd_t)(2)
 
 #if defined(__cplusplus)
 } /* extern "C" */

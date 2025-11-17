@@ -1,4 +1,5 @@
 #include "dh/prl/ErrTrace.h"
+#if ErrTrace_comp_enabled
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 
@@ -15,7 +16,7 @@ fn_((ErrTrace_reset_debug(void))(void)) {
 fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
     let trace = ErrTrace__instance();
     if (trace->len < ErrTrace_max_frames) {
-        asgLit((at$A(trace->frames, trace->len++))({
+        asg_lit((at$A(trace->frames, trace->len++))({
             .src_loc = src_loc,
             .ret_addr = ret_addr,
         }));
@@ -37,3 +38,4 @@ fn_((ErrTrace_print_debug(void))(void)) {
         ))($ignore, claim_unreachable));
     });
 }
+#endif /* ErrTrace_comp_enabled */

@@ -18,8 +18,8 @@
  *          - Thread-specific data handling
  */
 
-#ifndef THRD_INCLUDED
-#define THRD_INCLUDED (1)
+#ifndef Thrd__included
+#define Thrd__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -38,4 +38,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* THRD_INCLUDED */
+#endif /* Thrd__included */

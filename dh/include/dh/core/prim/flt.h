@@ -27,59 +27,85 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-
 #include <float.h>
-#include <math.h>
 
 /*========== Macros and Definitions =========================================*/
 
 /* floating point */
 // typedef _Float16 f16;
-// #define f16_limit_min (FLT16_MIN)
-// #define f16_limit_max (FLT16_MAX)
-// #define f16_eps       (FLT16_EPSILON)
-// #define f16_nan       (NAN)
-// #define f16_inf       (INFINITY)
+// #define f16_limit_min      (FLT16_MIN)
+// #define f16_limit_max      (FLT16_MAX)
+// #define f16_limit_max_ngtv (-FLT16_MAX)
+// #define f16_limit_min_ngtv (-FLT16_MIN)
+// #define f16_limit_min_pstv (+FLT16_MIN)
+// #define f16_limit_max_pstv (+FLT16_MAX)
+// #define f16_bits           (16)
+// #define f16_bytes          (2)
+// #define f16_eps            (FLT16_EPSILON)
+// #define f16_nan            (as$(f16)(__builtin_nan("")))
+// #define f16_inf            (as$(f16)(__builtin_inf()))
+// #define f16_inf_ngtv       (-f16_inf)
+// #define f16_inf_pstv       (+f16_inf)
 
-typedef float_t f32;
+typedef float f32;
 #define f32_limit_min      (FLT_MIN)
 #define f32_limit_max      (FLT_MAX)
 #define f32_limit_max_ngtv (-FLT_MAX)
 #define f32_limit_min_ngtv (-FLT_MIN)
 #define f32_limit_min_pstv (+FLT_MIN)
 #define f32_limit_max_pstv (+FLT_MAX)
+#define f32_bits           (32)
+#define f32_bytes          (4)
 #define f32_eps            (FLT_EPSILON)
-#define f32_nan            (NAN)
-#define f32_inf            (INFINITY)
-#define f32_inf_ngtv       (-INFINITY)
-#define f32_inf_pstv       (+INFINITY)
+#define f32_nan            (as$(f32)(__builtin_nan("")))
+#define f32_inf            (as$(f32)(__builtin_inf()))
+#define f32_inf_ngtv       (-f32_inf)
+#define f32_inf_pstv       (+f32_inf)
 
-typedef double_t f64;
+typedef double f64;
 #define f64_limit_min      (FLT_MIN)
 #define f64_limit_max      (DBL_MAX)
 #define f64_limit_max_ngtv (-DBL_MAX)
 #define f64_limit_min_ngtv (-DBL_MIN)
 #define f64_limit_min_pstv (+DBL_MIN)
 #define f64_limit_max_pstv (+DBL_MAX)
+#define f64_bits           (64)
+#define f64_bytes          (8)
 #define f64_eps            (DBL_EPSILON)
-#define f64_nan            (NAN)
-#define f64_inf            (INFINITY)
-#define f64_inf_ngtv       (-INFINITY)
-#define f64_inf_pstv       (+INFINITY)
+#define f64_nan            (as$(f64)(__builtin_nan("")))
+#define f64_inf            (as$(f64)(__builtin_inf()))
+#define f64_inf_ngtv       (-f64_inf)
+#define f64_inf_pstv       (+f64_inf)
 
 // typedef long double f80;
-// #define f80_limit_min (LDBL_MIN)
-// #define f80_limit_max (LDBL_MAX)
-// #define f80_eps       (LDBL_EPSILON)
-// #define f80_nan       (NAN)
-// #define f80_inf       (INFINITY)
+// #define f80_limit_min      (LDBL_MIN)
+// #define f80_limit_max      (LDBL_MAX)
+// #define f80_limit_max_ngtv (-LDBL_MAX)
+// #define f80_limit_min_ngtv (-LDBL_MIN)
+// #define f80_limit_min_pstv (+LDBL_MIN)
+// #define f80_limit_max_pstv (+LDBL_MAX)
+// #define f80_bits           (80)
+// #define f80_bytes          (10)
+// #define f80_eps            (LDBL_EPSILON)
+// #define f80_nan            (as$(f80)(__builtin_nan("")))
+// #define f80_inf            (as$(f80)(__builtin_inf()))
+// #define f80_inf_ngtv       (-f80_inf)
+// #define f80_inf_pstv       (+f80_inf)
 
 // typedef __float128 f128;
-// #define f128_limit_min (FLT128_MIN)
-// #define f128_limit_max (FLT128_MAX)
-// #define f128_eps       (FLT128_EPSILON)
-// #define f128_nan       (NAN)
-// #define f128_inf       (INFINITY)
+// #define f128_limit_min      (FLT128_MIN)
+// #define f128_limit_max      (FLT128_MAX)
+// #define f128_limit_max_ngtv (-FLT128_MAX)
+// #define f128_limit_min_ngtv (-FLT128_MIN)
+// #define f128_limit_min_pstv (+FLT128_MIN)
+// #define f128_limit_max_pstv (+FLT128_MAX)
+// #define f128_bits           (128)
+// #define f128_bytes          (16)
+// #define f128_eps            (FLT128_EPSILON)
+// #define f128_nan            (as$(f128)(__builtin_nan("")))
+// #define f128_inf            (as$(f128)(__builtin_inf()))
+// #define f128_inf_ngtv       (-f128_inf)
+// #define f128_inf_pstv       (+f128_inf)
 
 #if defined(__cplusplus)
 } /* extern "C" */

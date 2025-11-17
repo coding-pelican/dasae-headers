@@ -156,7 +156,7 @@ typedef struct Thrd_RwLock Thrd_RwLock;
 #define __step__Thrd_FnCtx_ret$__parseFnName(_fnName...) \
     _fnName,
 #define __step__Thrd_FnCtx_ret$__emit(_fnName, _ctx...) \
-    (as$((Thrd_FnCtx$(_fnName)*)(_ctx))->ret.as_typed)
+    ((as$(Thrd_FnCtx$(_fnName)*)(_ctx))->ret.as_typed)
 
 // clang-format off
 #define comp_syn__Thrd_fn_decl(_fnName) \
@@ -182,14 +182,14 @@ union Thrd_FnCtx$(_fnName) { \
 
 #define comp_syn__Thrd_fn_impl$scope(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
-    let __passed_ctx = as$((Thrd_FnCtx$(_fnName)*)(thrd_ctx)); \
+    let __passed_ctx = as$(Thrd_FnCtx$(_fnName)*)(thrd_ctx); \
     let __passed_args = __passed_ctx->args.as_typed; \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = as$((TypeOf(*__passed_ret)*)( \
+    let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
         (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
-    )); \
+    ); \
     if (false) { \
 __step_return: goto __step_unscope; \
     } \
@@ -203,14 +203,14 @@ __step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw;
 
 #define comp_syn__Thrd_fn_impl$guard(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
-    let __passed_ctx = as$((Thrd_FnCtx$(_fnName)*)(thrd_ctx)); \
+    let __passed_ctx = as$(Thrd_FnCtx$(_fnName)*)(thrd_ctx); \
     let __passed_args = __passed_ctx->args.as_typed; \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = as$((TypeOf(*__passed_ret)*)( \
+    let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
         (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
-    )); \
+    ); \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \

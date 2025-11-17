@@ -319,8 +319,8 @@ typedef struct R {
 // #define inline__$unscoped_expr() __reserved_break; })
 #define $break_(_Expr...) ({ \
     prim_memcpy( \
-        as$((u8*)(__reserved_break)), \
-        as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
+        as$(u8*)(__reserved_break), \
+        as$(u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
         sizeOf$(*__reserved_break) \
     ); \
     __has_broken = true; \
@@ -337,7 +337,7 @@ typedef struct R {
 #define inline__eval_2(T_Break, _Ext...) pp_cat(inline__eval_2, _Ext)(T_Break)
 #define inline__eval_2$_scope(T_Break...) ({ \
     $local_label __step_break; \
-    let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
+    let __reserved_break = as$(T_Break*)(((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
     )]){})); \

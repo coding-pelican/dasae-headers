@@ -97,7 +97,7 @@ enum ascii_CtrlCode {
 };
 
 /// Returns whether the character is a 7-bit ASCII character.
-static $inline fn_((ascii_isAscii(u8 c))(bool)) { return c < 0x80; }
+static $inline fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; }
 /// Returns whether the character is an uppercase letter: A-Z.
 static $inline fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; }
 /// Returns whether the character is a lowercase letter: a-z.
@@ -122,17 +122,17 @@ static let ascii_whitespaces = init$A$$((6, u8){ ' ', '\t', '\n', '\r', ascii_Ct
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 static $inline fn_((ascii_toUpper(u8 c))(u8)) {
-    let mask = as$((u8)(ascii_isLower(c))) << 5;
+    let mask = as$(u8)(ascii_isLower(c)) << 5;
     return c ^ mask;
 }
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
 static $inline fn_((ascii_toLower(u8 c))(u8)) {
-    let mask = as$((u8)(ascii_isUpper(c))) << 5;
+    let mask = as$(u8)(ascii_isUpper(c)) << 5;
     return c | mask;
 }
 /// Toggles the case of the character && returns it as-is if not a letter.
 static $inline fn_((ascii_toggleCase(u8 c))(u8)) {
-    let mask = as$((u8)(ascii_isAlpha(c))) << 5;
+    let mask = as$(u8)(ascii_isAlpha(c)) << 5;
     return c ^ mask;
 }
 

@@ -5,7 +5,7 @@ fn_((engine_Mouse_getState(const engine_Mouse* self, engine_MouseButton button))
     debug_assert_nonnull(self);
     debug_assert_true(engine_MouseButton_none < button);
     debug_assert_true(button < engine_MouseButton_count);
-    return A_getAt(self->buttons.curr_states, as$((usize)(button)));
+    return *A_at((self->buttons.curr_states)[as$(usize)(button)]);
 }
 
 fn_((engine_Mouse_isState(const engine_Mouse* self, engine_MouseButton button, engine_KeyButtonStates state))(bool)) {
@@ -30,17 +30,17 @@ fn_((engine_Mouse_released(const engine_Mouse* self, engine_MouseButton button))
     return engine_Mouse_isState(self, button, engine_KeyButtonStates_released);
 }
 
-fn_((engine_Mouse_getPos(const engine_Mouse* self))(Vec2i)) {
+fn_((engine_Mouse_getPos(const engine_Mouse* self))(m_V2i32)) {
     debug_assert_nonnull(self);
     return self->cursor.curr_pos;
 }
 
-fn_((engine_Mouse_getPosDelta(const engine_Mouse* self))(Vec2i)) {
+fn_((engine_Mouse_getPosDelta(const engine_Mouse* self))(m_V2i32)) {
     debug_assert_nonnull(self);
     return m_V2i32_sub(self->cursor.curr_pos, self->cursor.prev_pos);
 }
 
-fn_((engine_Mouse_getWheelScrollDelta(const engine_Mouse* self))(Vec2f)) {
+fn_((engine_Mouse_getWheelScrollDelta(const engine_Mouse* self))(m_V2f32)) {
     debug_assert_nonnull(self);
     return m_V2f32_sub(self->wheel.curr_scroll_amount, self->wheel.prev_scroll_amount);
 }

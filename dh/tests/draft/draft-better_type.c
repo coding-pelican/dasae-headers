@@ -56,11 +56,11 @@
     comp_inline__asg$a(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
 #define comp_inline__asg$a(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*_p_lhs; \
-    var_(__rhs, TypeOf(_rhs))       = _rhs; \
+    var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     claim_assert_static(isSameType$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
-    *__p_lhs = *as$((TypeOf(__p_lhs)*)(&__rhs)); \
+    *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })
 
@@ -68,7 +68,7 @@
     comp_inline__at$a(pp_uniqTok(a), pp_uniqTok(index), _a, _index)
 #define comp_inline__at$a(__a, __index, _a, _index...) ({ \
     let_(__a, TypeOf(&_a)) = &_a; \
-    let_(__index, usize)   = _index; \
+    let_(__index, usize) = _index; \
     claim_assert_static_msg(__builtin_constant_p(__index) ? (__index < len$a(*__a)) : true, "index out of bounds"); \
     debug_assert_fmt(__index < len$a(*__a), "Index out of bounds: %zu >= %zu", __index, len$a(*__a)); \
     &val$a(*__a)[__index]; \
@@ -88,11 +88,11 @@
     comp_inline__asg$s(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
 #define comp_inline__asg$s(__p_lhs, __rhs, _p_lhs, _rhs...) &*({ \
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*_p_lhs; \
-    var_(__rhs, TypeOf(_rhs))       = _rhs; \
+    var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     claim_assert_static(isSameType$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
-    *__p_lhs = *as$((TypeOf(__p_lhs)*)(&__rhs)); \
+    *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })
 
@@ -104,9 +104,9 @@
     let __result = &*({ \
         typedef a$$$(_N, _T) a$(_N, _T); \
         let_(__n, usize) = _N; \
-        let __s          = _s; \
+        let __s = _s; \
         debug_assert_fmt(__s.len == __n, "length mismatch: %zu != %zu", __s.len, __n); \
-        as$((a$(_N, _T)*)(__s.ptr)); \
+        as$(a$(_N, _T) (*)(__s.ptr)); \
     }); \
     _Generic(__result, a$(_N, _T)*: __result, default: as$(a$(_N, _T)*, __result)); \
     __result; \
@@ -116,7 +116,7 @@
 //     let_(__n, usize) = _N; \
 //     let __s          = _s; \
 //     debug_assert_fmt(__s.len == __n, "length mismatch: %zu != %zu", __s.len, __n); \
-//     as$((a$(_N, _T)*)(__s.ptr)); \
+//     as$(a$(_N, _T)(*)(__s.ptr)); \
 // }))
 
 // #define index(_arr, _idx) ({ \

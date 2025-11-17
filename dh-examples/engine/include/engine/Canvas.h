@@ -1,12 +1,12 @@
-#ifndef ENGINE_CANVAS_INCLUDED
-#define ENGINE_CANVAS_INCLUDED (1)
+#ifndef engine_Canvas__included
+#define engine_Canvas__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 #include "engine/Color.h"
 
-typedef enum engine_CanvasType {
+typedef enum engine_CanvasType : u8 {
     engine_CanvasType_rgba,
     engine_CanvasType_rgba_unicode
 } engine_CanvasType;
@@ -17,15 +17,12 @@ typedef struct engine_Canvas {
     Color             default_color;
     engine_CanvasType type;
 } engine_Canvas;
-use_P$(engine_Canvas);
-use_S$(engine_Canvas);
-use_O$(engine_Canvas);
-use_E$(engine_Canvas);
+prl_T_use$(engine_Canvas);
 
 typedef struct engine_Canvas_Config {
-    O$mem_Allocator allocator;
-    u32             width;
-    u32             height;
+    O$mem_Allocator    allocator;
+    u32                width;
+    u32                height;
     O$Color default_color;
     O$$(engine_CanvasType) type;
 } engine_Canvas_Config;
@@ -65,11 +62,11 @@ extern fn_((engine_Canvas_blitScaled(engine_Canvas* dst, const engine_Canvas* sr
 typedef struct engine_CanvasView {
     engine_Canvas* canvas; // Associated canvas
     struct {
-        Vec2i top_left;
+        m_V2i32 top_left;
     } pos_on_window; // Position in window coordinates
     struct {
-        Vec2u size;  // Size in window coordinates
-        Vec2f scale; // Scale in window coordinates
+        m_V2u32 size;  // Size in window coordinates
+        m_V2f32 scale; // Scale in window coordinates
         /* TODO: Add options: stretch, crop, resizable, scalable, ... */
         struct {
             bool x;
@@ -81,9 +78,9 @@ typedef struct engine_CanvasView {
 
 typedef struct engine_CanvasView_Config {
     engine_Canvas* canvas;
-    Vec2i          pos;
-    Vec2u          size;
-    Vec2f          scale;
+    m_V2i32          pos;
+    m_V2u32          size;
+    m_V2f32          scale;
     bool           resizable_x;
     bool           resizable_y;
     bool           visible;
@@ -92,4 +89,4 @@ typedef struct engine_CanvasView_Config {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* ENGINE_CANVAS_INCLUDED */
+#endif /* engine_Canvas__included */

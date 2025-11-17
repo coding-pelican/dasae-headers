@@ -53,7 +53,7 @@ $static $inline_always fn_(Visualizer_scaleInv(Visualizer* self), f32) { return 
 ///    wy = camy - ( (sy - cy) * scale )
 ///
 ///////////////////////////////////////////////////////////////////////////////
-$static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), Vec2i) {
+$static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), m_V2i32) {
     // Return the middle pixel (handles even/odd dimensions by integer truncation)
     let cx = (as$(i32, self->canvas->buffer.width) - 1) / 2;
     let cy = (as$(i32, self->canvas->buffer.height) - 1) / 2;
@@ -68,7 +68,7 @@ $static $inline_always fn_(Visualizer_screenCenter(Visualizer* self), Vec2i) {
 /// @param self      Pointer to the Visualizer (contains camera pos & scale).
 /// @param world_pos The (wx, wy) coordinates in world space.
 /// @return          The corresponding (sx, sy) on the screen in pixels.
-static $inline_always fn_(Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos), Vec2i) {
+static $inline_always fn_(Visualizer_worldToScreen(Visualizer* self, m_V2f32 world_pos), m_V2i32) {
     let center      = Visualizer_screenCenter(self);
     let w_minus_cam = m_V2f32_sub(world_pos, self->pos);
     let divided     = m_V2f32_scale(w_minus_cam, 1.0f / self->scale);
@@ -86,7 +86,7 @@ static $inline_always fn_(Visualizer_worldToScreen(Visualizer* self, Vec2f world
 /// @param self       Pointer to the Visualizer (contains camera pos & scale).
 /// @param screen_pos The (sx, sy) pixel coordinates on the screen.
 /// @return           The corresponding (wx, wy) in world space.
-static $inline_always fn_(Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos), Vec2f) {
+static $inline_always fn_(Visualizer_screenToWorld(Visualizer* self, m_V2i32 screen_pos), m_V2f32) {
     let center     = Visualizer_screenCenter(self);
     let dx         = as$(f32, screen_pos.x - center.x);
     let dy         = as$(f32, center.y - screen_pos.y);
@@ -95,7 +95,7 @@ static $inline_always fn_(Visualizer_screenToWorld(Visualizer* self, Vec2i scree
     return m_V2f32_add(self->pos, multiplied);
 }
 /// Returns the current mouse position converted to world coords.
-static $inline_always fn_(Visualizer_mousePosToWorld(Visualizer* self, engine_Mouse* mouse), Vec2f) {
+static $inline_always fn_(Visualizer_mousePosToWorld(Visualizer* self, engine_Mouse* mouse), m_V2f32) {
     return Visualizer_screenToWorld(self, engine_Mouse_getPos(mouse));
 }
 
@@ -149,7 +149,7 @@ fn_(Visualizer_destroy(Visualizer* self), void) {
 
 typedef struct Control {
     engine_KeyCode key;
-    Vec2f          vec;
+    m_V2f32          vec;
 } Control;
 use_S$(Control);
 static fn_(Control_list(void), S_const$Control) {
@@ -301,7 +301,7 @@ fn_(Visualizer_processInput(Visualizer* self, engine_Window* window, engine_Inpu
 
     // Handle zooming
     // FIXME: Correct handling of zooming start/stop and speed control properly based on mouse wheel input
-    if_(const Vec2f wheel_scroll_delta
+    if_(const m_V2f32 wheel_scroll_delta
         = engine_Mouse_getWheelScrollDelta(mouse),
         wheel_scroll_delta.y != 0) {
         log_debug("mouse wheel scroll: zoom begin\n");
@@ -390,7 +390,7 @@ fn_(Visualizer_render(Visualizer* self), E$void $scope) {
 }
 $unscoped;
 
-static $inline_always fn_(Visualizer_drawCircle(Visualizer* self, Vec2i screen_pos, f32 screen_radius, Color color), void) {
+static $inline_always fn_(Visualizer_drawCircle(Visualizer* self, m_V2i32 screen_pos, f32 screen_radius, Color color), void) {
     if (1.0f < screen_radius) {
         return engine_Canvas_fillCircle(self->canvas, screen_pos.s[0], screen_pos.s[1], as$(i32, screen_radius), color);
     }
@@ -544,7 +544,7 @@ fn_(Visualizer_renderBodies(Visualizer* self), void) {
     }
 }
 
-static $inline_always fn_(Visualizer_drawNode(Visualizer* self, Vec2f min, Vec2f max, Color color), void) {
+static $inline_always fn_(Visualizer_drawNode(Visualizer* self, m_V2f32 min, m_V2f32 max, Color color), void) {
     // Convert world min/max to screen coordinates
     let screen_min = Visualizer_worldToScreen(self, min);
     let screen_max = Visualizer_worldToScreen(self, max);

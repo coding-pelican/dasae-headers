@@ -5,14 +5,14 @@ P_const$raw Sli_rawAt(TypeInfo type, P_const$raw ptr, usize len, usize index) {
     $unused(len);
     debug_assert_nonnull(ptr);
     debug_assert_fmt(index < len, "Index out of bounds (index: %zu, len: %zu)", index, len);
-    return as$((u8*)(ptr)) + (index * type.size);
+    return as$(u8*)(ptr) + (index * type.size);
 }
 
 P$raw Sli_rawAt_mut(TypeInfo type, P$raw ptr, usize len, usize index) {
     $unused(len);
     debug_assert_nonnull(ptr);
     debug_assert_fmt(index < len, "Index out of bounds (index: %zu, len: %zu)", index, len);
-    return as$((u8*)(ptr)) + (index * type.size);
+    return as$(u8*)(ptr) + (index * type.size);
 }
 
 P_const$raw Sli_rawSlice(TypeInfo type, P_const$raw ptr, usize len, usize begin, usize end) {
@@ -20,7 +20,7 @@ P_const$raw Sli_rawSlice(TypeInfo type, P_const$raw ptr, usize len, usize begin,
     debug_assert_nonnull(ptr);
     debug_assert_fmt(begin <= end, "Invalid range (begin: %zu, end: %zu)", begin, end);
     debug_assert_fmt(end <= len, "Slice out of bounds (end: %zu, len: %zu)", end, len);
-    return as$((u8*)(ptr)) + (begin * type.size);
+    return as$(u8*)(ptr) + (begin * type.size);
 }
 
 P$raw Sli_rawSlice_mut(TypeInfo type, P$raw ptr, usize len, usize begin, usize end) {
@@ -28,7 +28,7 @@ P$raw Sli_rawSlice_mut(TypeInfo type, P$raw ptr, usize len, usize begin, usize e
     debug_assert_nonnull(ptr);
     debug_assert_fmt(begin <= end, "Invalid range (begin: %zu, end: %zu)", begin, end);
     debug_assert_fmt(end <= len, "Slice out of bounds (end: %zu, len: %zu)", end, len);
-    return as$((u8*)(ptr)) + (begin * type.size);
+    return as$(u8*)(ptr) + (begin * type.size);
 }
 
 fn_((meta_P_constCast(meta_P_const$raw self))(meta_P$raw)) {
@@ -46,7 +46,7 @@ fn_((meta_P_toSli(meta_P$raw self, TypeInfo type))(meta_S$raw)) {
     debug_assert(self.type.size == sizeOf$(S$raw));
     debug_assert(self.type.align == alignOf$(S$raw));
 
-    let sli_opaque = *as$((S$raw*)(&self.ptr));
+    let sli_opaque = *as$(S$raw*)(&self.ptr);
     return (meta_S$raw){
         .type = type,
         .addr = sli_opaque.ptr,
@@ -91,7 +91,7 @@ fn_((meta_S_constCast(meta_S_const$raw self))(meta_S$raw)) {
     debug_assert_fmt(index < self.len, "Index out of bounds (index: %zu, len: %zu)", index, self.len);
     return (meta_P$raw){
         .type = self.type,
-        .ptr = as$((u8*)(self.addr)) + (index * self.type.size)
+        .ptr = as$(u8*)(self.addr) + (index * self.type.size)
     };
 } fn_((meta_S_slice(meta_S$raw self, usize begin, usize end))(meta_S$raw)) {
     debug_assert_nonnull(self.addr);
@@ -99,7 +99,7 @@ fn_((meta_S_constCast(meta_S_const$raw self))(meta_S$raw)) {
     debug_assert_fmt(end <= self.len, "Slice out of bounds (end: %zu, len: %zu)", end, self.len);
     return (meta_S$raw){
         .type = self.type,
-        .addr = as$((u8*)(self.addr)) + (begin * self.type.size),
+        .addr = as$(u8*)(self.addr) + (begin * self.type.size),
         .len = end - begin
     };
 }
@@ -112,7 +112,7 @@ fn_((meta_S_set(meta_S$raw dest, meta_P_const$raw value))(meta_S$raw)) {
     for (usize i = 0; i < dest.len; ++i) {
         // meta_P_copy(meta_S_at(dest, i), value);
         prim_memcpy(
-            as$((u8*)(dest.addr)) + (i * dest.type.size), value.addr, dest.type.size);
+            as$(u8*)(dest.addr) + (i * dest.type.size), value.addr, dest.type.size);
     }
     return dest;
 } fn_((meta_S_copy(meta_S$raw dest, meta_S_const$raw src))(meta_S$raw)) {

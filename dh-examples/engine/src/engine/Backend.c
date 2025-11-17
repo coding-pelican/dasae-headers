@@ -15,49 +15,49 @@ fn_((engine_Backend_presentBuffer(engine_Backend self))(void)) {
     self.vt->presentBuffer(self.ptr);
 }
 
-fn_((engine_Backend_getWindowPos(const engine_Backend self))(Vec2i)) {
+fn_((engine_Backend_getWindowPos(const engine_Backend self))(m_V2i32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getWindowPos(self.ptr);
 }
 
-fn_((engine_Backend_getWindowDim(const engine_Backend self))(Vec2u)) {
+fn_((engine_Backend_getWindowDim(const engine_Backend self))(m_V2u32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getWindowDim(self.ptr);
 }
 
-fn_((engine_Backend_getWindowRes(const engine_Backend self))(Vec2u)) {
+fn_((engine_Backend_getWindowRes(const engine_Backend self))(m_V2u32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getWindowRes(self.ptr);
 }
 
-fn_((engine_Backend_getWindowMinRes(const engine_Backend self))(Vec2u)) {
+fn_((engine_Backend_getWindowMinRes(const engine_Backend self))(m_V2u32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getWindowMinRes(self.ptr);
 }
 
-fn_((engine_Backend_getWindowMaxRes(const engine_Backend self))(Vec2u)) {
+fn_((engine_Backend_getWindowMaxRes(const engine_Backend self))(m_V2u32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getWindowMaxRes(self.ptr);
 }
 
-fn_((engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size))(E$void)) {
+fn_((engine_Backend_setWindowMinRes(engine_Backend self, m_V2u32 size))(E$void)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->setWindowMinRes(self.ptr, size);
 }
 
-fn_((engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size))(E$void)) {
+fn_((engine_Backend_setWindowMaxRes(engine_Backend self, m_V2u32 size))(E$void)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
@@ -155,21 +155,21 @@ fn_((engine_Backend_releasedMouse(const engine_Backend self, engine_MouseButton 
     return self.vt_internal->releasedMouse(self.ptr, button);
 }
 
-fn_((engine_Backend_getMousePos(const engine_Backend self))(Vec2i)) {
+fn_((engine_Backend_getMousePos(const engine_Backend self))(m_V2i32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getMousePos(self.ptr);
 }
 
-fn_((engine_Backend_getMousePosDelta(const engine_Backend self))(Vec2i)) {
+fn_((engine_Backend_getMousePosDelta(const engine_Backend self))(m_V2i32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);
     return self.vt_internal->getMousePosDelta(self.ptr);
 }
 
-fn_((engine_Backend_getMouseWheelScrollDelta(const engine_Backend self))(Vec2f)) {
+fn_((engine_Backend_getMouseWheelScrollDelta(const engine_Backend self))(m_V2f32)) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(self.vt);
     debug_assert_nonnull(self.vt_internal);

@@ -11,14 +11,14 @@ extern "C" {
 
 struct engine_Backend_VT_Internal {
     /* Window Layer */
-    fn_(((*getWindowPos)(const P$raw ctx))(Vec2i));
-    fn_(((*getWindowDim)(const P$raw ctx))(Vec2u));
-    fn_(((*getWindowRes)(const P$raw ctx))(Vec2u));
+    fn_(((*getWindowPos)(const P$raw ctx))(m_V2i32));
+    fn_(((*getWindowDim)(const P$raw ctx))(m_V2u32));
+    fn_(((*getWindowRes)(const P$raw ctx))(m_V2u32));
 
-    fn_(((*getWindowMinRes)(const P$raw ctx))(Vec2u));
-    fn_(((*getWindowMaxRes)(const P$raw ctx))(Vec2u));
-    fn_(((*setWindowMinRes)(P$raw ctx, Vec2u size))(E$void)) $must_check;
-    fn_(((*setWindowMaxRes)(P$raw ctx, Vec2u size))(E$void)) $must_check;
+    fn_(((*getWindowMinRes)(const P$raw ctx))(m_V2u32));
+    fn_(((*getWindowMaxRes)(const P$raw ctx))(m_V2u32));
+    fn_(((*setWindowMinRes)(P$raw ctx, m_V2u32 size))(E$void)) $must_check;
+    fn_(((*setWindowMaxRes)(P$raw ctx, m_V2u32 size))(E$void)) $must_check;
 
     fn_(((*isWindowFocused)(const P$raw ctx))(bool));
     fn_(((*isWindowMinimized)(const P$raw ctx))(bool));
@@ -39,20 +39,20 @@ struct engine_Backend_VT_Internal {
     fn_(((*heldMouse)(const P$raw ctx, engine_MouseButton button))(bool));
     fn_(((*releasedMouse)(const P$raw ctx, engine_MouseButton button))(bool));
 
-    fn_(((*getMousePos)(const P$raw ctx))(Vec2i));
-    fn_(((*getMousePosDelta)(const P$raw ctx))(Vec2i));
-    fn_(((*getMouseWheelScrollDelta)(const P$raw ctx))(Vec2f));
+    fn_(((*getMousePos)(const P$raw ctx))(m_V2i32));
+    fn_(((*getMousePosDelta)(const P$raw ctx))(m_V2i32));
+    fn_(((*getMouseWheelScrollDelta)(const P$raw ctx))(m_V2f32));
 };
 
 /* Window Layer */
-extern fn_((engine_Backend_getWindowPos(const engine_Backend self))(Vec2i));
-extern fn_((engine_Backend_getWindowDim(const engine_Backend self))(Vec2u));
-extern fn_((engine_Backend_getWindowRes(const engine_Backend self))(Vec2u));
+extern fn_((engine_Backend_getWindowPos(const engine_Backend self))(m_V2i32));
+extern fn_((engine_Backend_getWindowDim(const engine_Backend self))(m_V2u32));
+extern fn_((engine_Backend_getWindowRes(const engine_Backend self))(m_V2u32));
 
-extern fn_((engine_Backend_getWindowMinRes(const engine_Backend self))(Vec2u));
-extern fn_((engine_Backend_getWindowMaxRes(const engine_Backend self))(Vec2u));
-extern fn_((engine_Backend_setWindowMinRes(engine_Backend self, Vec2u size))(E$void) $must_check);
-extern fn_((engine_Backend_setWindowMaxRes(engine_Backend self, Vec2u size))(E$void) $must_check);
+extern fn_((engine_Backend_getWindowMinRes(const engine_Backend self))(m_V2u32));
+extern fn_((engine_Backend_getWindowMaxRes(const engine_Backend self))(m_V2u32));
+extern fn_((engine_Backend_setWindowMinRes(engine_Backend self, m_V2u32 size))(E$void) $must_check);
+extern fn_((engine_Backend_setWindowMaxRes(engine_Backend self, m_V2u32 size))(E$void) $must_check);
 
 extern fn_((engine_Backend_isWindowFocused(const engine_Backend self))(bool));
 extern fn_((engine_Backend_isWindowMinimized(const engine_Backend self))(bool));
@@ -73,9 +73,9 @@ extern fn_((engine_Backend_pressedMouse(const engine_Backend self, engine_MouseB
 extern fn_((engine_Backend_heldMouse(const engine_Backend self, engine_MouseButton button))(bool));
 extern fn_((engine_Backend_releasedMouse(const engine_Backend self, engine_MouseButton button))(bool));
 
-extern fn_((engine_Backend_getMousePos(const engine_Backend self))(Vec2i));
-extern fn_((engine_Backend_getMousePoseDelta(const engine_Backend self))(Vec2i));
-extern fn_((engine_Backend_getMouseWheelScrollDelta(const engine_Backend self))(Vec2f));
+extern fn_((engine_Backend_getMousePos(const engine_Backend self))(m_V2i32));
+extern fn_((engine_Backend_getMousePoseDelta(const engine_Backend self))(m_V2i32));
+extern fn_((engine_Backend_getMouseWheelScrollDelta(const engine_Backend self))(m_V2f32));
 
 #if defined(__cplusplus)
 } /* extern "C" */

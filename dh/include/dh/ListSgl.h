@@ -111,7 +111,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_Node_init$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_init, _T)(P$(ListSgl_Node$(_T)) self))(P$(ListSgl_Node$(_T)))) { \
-        return as$((P$(ListSgl_Node$(_T)))(ListSgl_Node_init(self->as_raw, typeInfo$(_T)))); \
+        return as$(P$(ListSgl_Node$(_T)))(ListSgl_Node_init(self->as_raw, typeInfo$(_T))); \
     }
 #define T_use_ListSgl_Node_data$(_T...)\
     $inline_always \
@@ -136,7 +136,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_Node_findLast$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_findLast, _T)(P$(ListSgl_Node$(_T)) self))(P$(ListSgl_Node$(_T)))) { \
-        return as$((P$(ListSgl_Node$(_T)))(ListSgl_Node_findLast(self->as_raw))); \
+        return as$(P$(ListSgl_Node$(_T)))(ListSgl_Node_findLast(self->as_raw)); \
     }
 #define T_use_ListSgl_Node_countChildren$(_T...)\
     $inline_always \
@@ -146,7 +146,7 @@ extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
 #define T_use_ListSgl_Node_reverse$(_T...)\
     $inline_always \
     $static fn_((tpl_id(ListSgl_Node_reverse, _T)(O$(P$(ListSgl_Node$(_T)))* self))(void)) { \
-        return ListSgl_Node_reverse(as$((O$P$ListSgl_Node$raw*)(&self))); \
+        return ListSgl_Node_reverse(as$(O$P$ListSgl_Node$raw*)(&self)); \
     }
 
 #define T_use_ListSgl_init$(_T...)\

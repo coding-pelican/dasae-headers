@@ -56,13 +56,13 @@ use_ArrList$(i32);
 /* Game Types ===============================================================*/
 
 typedef enum tetris_Tetrominos {
-    tetris_Tetrominos_i     = 0,
-    tetris_Tetrominos_j     = 1,
-    tetris_Tetrominos_o     = 2,
-    tetris_Tetrominos_l     = 3,
-    tetris_Tetrominos_s     = 4,
-    tetris_Tetrominos_t     = 5,
-    tetris_Tetrominos_z     = 6,
+    tetris_Tetrominos_i = 0,
+    tetris_Tetrominos_j = 1,
+    tetris_Tetrominos_o = 2,
+    tetris_Tetrominos_l = 3,
+    tetris_Tetrominos_s = 4,
+    tetris_Tetrominos_t = 5,
+    tetris_Tetrominos_z = 6,
     tetris_Tetrominos_count = 7
 } tetris_Tetrominos;
 
@@ -98,7 +98,7 @@ static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 r
 
 #if plat_windows
 use_S$(wchar);
-static HANDLE  tetris_Console_output_handle = null;
+static HANDLE tetris_Console_output_handle = null;
 static S$wchar tetris_Console_screen_buffer = cleared();
 #else  /* others */
 struct termios tetris_Console_original = cleared();
@@ -128,17 +128,17 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     defer_(ArrList_fini(lines.base));
 
     /* Game state variables */
-    bool is_gameover      = false;
-    i32  current_piece    = as$((i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1)));
-    i32  current_rotation = 0;
-    i32  current_x        = (tetris_field_width / 2) - 2;
-    i32  current_y        = 0;
-    i32  speed            = 20;
-    i32  speed_count      = 0;
-    i32  score            = 0;
-    i32  piece_count      = 0;
-    bool force_downs      = false;
-    bool rotate_holds     = true;
+    bool is_gameover = false;
+    i32 current_piece = as$(i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1));
+    i32 current_rotation = 0;
+    i32 current_x = (tetris_field_width / 2) - 2;
+    i32 current_y = 0;
+    i32 speed = 20;
+    i32 speed_count = 0;
+    i32 score = 0;
+    i32 piece_count = 0;
+    bool force_downs = false;
+    bool rotate_holds = true;
 
     /* Main game loop */
     while (!is_gameover) {
@@ -148,9 +148,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         force_downs = (speed_count == speed);
 
         /* Handle Input */
-        let key_left   = tetris_isKeyPressed(1);
-        let key_right  = tetris_isKeyPressed(2);
-        let key_down   = tetris_isKeyPressed(3);
+        let key_left = tetris_isKeyPressed(1);
+        let key_right = tetris_isKeyPressed(2);
+        let key_down = tetris_isKeyPressed(3);
         let key_rotate = tetris_isKeyPressed(4);
 
         /* Game Logic - Movement */
@@ -203,10 +203,10 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
                 }
 
                 /* Pick new piece */
-                current_x        = (tetris_field_width / 2) - 2;
-                current_y        = 0;
+                current_x = (tetris_field_width / 2) - 2;
+                current_y = 0;
                 current_rotation = 0;
-                current_piece    = as$((i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1)));
+                current_piece = as$(i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1));
 
                 /* Check if game over - can't place new piece */
                 is_gameover = !tetris_PlayField_doesPieceFit(&field, current_piece, current_rotation, current_x, current_y);
@@ -220,7 +220,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 /* Game over message */
 #if plat_windows
     DWORD dwBytesWritten = 0;
-    COORD coord          = { 0, tetris_screen_height };
+    COORD coord = { 0, tetris_screen_height };
     WriteConsoleOutputCharacterW(tetris_Console_output_handle, L"Game Over!", 10, coord, &dwBytesWritten);
     time_sleep(time_Duration_fromMillis(2000));
 #else
@@ -239,8 +239,8 @@ static fn_((tetris_Console_bootup(void))(E$void) pp_if_(plat_windows)(pp_then_($
     var screen_size = tetris_screen_width * tetris_screen_height;
 
     /* Use safe allocation with proper type information */
-    var allocator                = heap_Page_allocator(create$(heap_Page));
-    var screen_buffer            = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar), screen_size));
+    var allocator = heap_Page_allocator(create$(heap_Page));
+    var screen_buffer = try_(mem_Allocator_alloc(allocator, typeInfo$(wchar), screen_size));
     tetris_Console_screen_buffer = meta_castS$(S$wchar, screen_buffer);
     errdefer_($ignore, mem_Allocator_free(allocator, meta_sliToAny(screen_buffer)));
 
@@ -356,8 +356,8 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     /* Draw field */
     for_(($r(0, field->grid.height))(y) {
         for_(($r(0, field->grid.width))(x) {
-            let   cell = Grid_getAt(field->grid, x, y);
-            wchar c    = L' ';
+            let cell = Grid_getAt(field->grid, x, y);
+            wchar c = L' ';
 
             if (cell == 0) {
                 c = L' '; /* Empty */
@@ -376,7 +376,7 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     /* Draw current piece */
     for_(($r(0, 4))(py) {
         for_(($r(0, 4))(px) {
-            let pi  = tetris_rotate(px, py, rotation);
+            let pi = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             if (A_getAt(tetris_tetrominos, current_piece) & bit) {
@@ -387,8 +387,8 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
 
     /* Draw score */
     wchar score_text_buf[32] = { 0 };
-    let   score_text_len     = swprintf(score_text_buf, 32, L"SCORE: %8d", score);
-    let   score_text         = (S$$(wchar))Sli_from(score_text_buf, score_text_len);
+    let score_text_len = swprintf(score_text_buf, 32, L"SCORE: %8d", score);
+    let score_text = (S$$(wchar))Sli_from(score_text_buf, score_text_len);
     for_(($rf(0), $s(score_text))(i, typo) {
         Sli_setAt(tetris_Console_screen_buffer, 2 * tetris_screen_width + field->grid.width + 6 + i, *typo);
     });
@@ -408,18 +408,18 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     printf("+\n");
 
     /* Draw field */
-    for (i32 y = 0; y < as$((i32)(field->grid.height)); ++y) {
+    for (i32 y = 0; y < as$(i32)(field->grid.height); ++y) {
         printf("|");
-        for (i32 x = 0; x < as$((i32)(field->grid.width)); ++x) {
+        for (i32 x = 0; x < as$(i32)(field->grid.width); ++x) {
             u8 c = ' ';
 
             /* Check if current position has the active piece */
             bool is_current_piece = false;
             if (pos_x <= x && x < pos_x + 4
                 && pos_y <= y && y < pos_y + 4) {
-                let px  = x - pos_x;
-                let py  = y - pos_y;
-                let pi  = tetris_rotate(px, py, rotation);
+                let px = x - pos_x;
+                let py = y - pos_y;
+                let pi = tetris_rotate(px, py, rotation);
                 let bit = 1 << pi;
 
                 if (A_getAt(tetris_tetrominos, current_piece) & bit) {
@@ -475,7 +475,7 @@ static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tet
     for_(($r(0, 4))(py) {
         for_(($r(0, 4))(px) {
             /* Get index into piece */
-            let pi  = tetris_rotate(px, py, rotation);
+            let pi = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             /* Check if we're in bounds */
@@ -514,7 +514,7 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
             });
 
             /* Add to lines list */
-            var line_y = as$((i32)(y));
+            var line_y = as$(i32)(y);
             try_(ArrList_append(lines->base, meta_refPtr(&line_y)));
         }
     });
@@ -538,13 +538,13 @@ static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* li
         });
     }
 
-    return_ok(as$((i32)(lines->items.len)));
+    return_ok(as$(i32)(lines->items.len));
 } $unscoped_(fn);
 
 static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void)) {
     for_(($r(0, 4))(py) {
         for_(($r(0, 4))(px) {
-            let pi  = tetris_rotate(px, py, rotation);
+            let pi = tetris_rotate(px, py, rotation);
             let bit = 1 << pi;
 
             if (A_getAt(tetris_tetrominos, piece) & bit) {

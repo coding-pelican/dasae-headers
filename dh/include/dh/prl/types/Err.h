@@ -15,9 +15,13 @@ extern "C" {
 T_decl_S$(u8);
 $inline
 $static fn_((Err_domainToCStr(Err self))(const char*));
+$inline
+$static fn_((Err_domainToStrZ(Err self))(const u8*));
 $extern fn_((Err_domainToStr(Err self))(S_const$u8));
 $inline
 $static fn_((Err_codeToCStr(Err self))(const char*));
+$inline
+$static fn_((Err_codeToStrZ(Err self))(const u8*));
 $extern fn_((Err_codeToStr(Err self))(S_const$u8));
 $extern fn_((Err_print(Err self))(void));
 
@@ -47,33 +51,37 @@ $static fn_((Err_None(void))(Err));
 /*========== Macros and Definitions =========================================*/
 
 $inline
-$static fn_((Err_domainToCStr(Err self))(const char*)) { return self.vt->domainToCStr(self.ctx); }
+$static fn_((Err_domainToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->domainToStrZ(self.ctx)); }
 $inline
-$static fn_((Err_codeToCStr(Err self))(const char*)) { return self.vt->codeToCStr(self.ctx); }
+$static fn_((Err_domainToStrZ(Err self))(const u8*)) { return self.vt->domainToStrZ(self.ctx); }
+$inline
+$static fn_((Err_codeToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->codeToStrZ(self.ctx)); }
+$inline
+$static fn_((Err_codeToStrZ(Err self))(const u8*)) { return self.vt->codeToStrZ(self.ctx); }
 
 $inline
-$static fn_((GeneralErr_domainToCStr(ErrCode ctx))(const char*)) {
+$static fn_((GeneralErr_domainToStrZ(ErrCode ctx))(const u8*)) {
     let_ignore = ctx;
-    return "GeneralErr";
+    return u8_l0("GeneralErr");
 }
 $inline
-$static fn_((GeneralErr_codeToCStr(ErrCode ctx))(const char*)) {
-    let code = as$((ErrCode)(ctx));
+$static fn_((GeneralErr_codeToStrZ(ErrCode ctx))(const u8*)) {
+    let code = as$(ErrCode)(ctx);
     switch (code) {
     case ErrCode_Unknown:
-        return "Unknown";
+        return u8_l0("Unknown");
     case ErrCode_Unexpected:
-        return "Unexpected";
+        return u8_l0("Unexpected");
     case ErrCode_Unspecified:
-        return "Unspecified";
+        return u8_l0("Unspecified");
     case ErrCode_Unsupported:
-        return "Unsupported";
+        return u8_l0("Unsupported");
     case ErrCode_NotImplemented:
-        return "NotImplemented";
+        return u8_l0("NotImplemented");
     case ErrCode_InvalidArgument:
-        return "InvalidArgument";
+        return u8_l0("InvalidArgument");
     case ErrCode_None:
-        return "None";
+        return u8_l0("None");
     default:
         claim_unreachable_fmt("Unknown error code (code: %d)", code);
     }
@@ -81,8 +89,8 @@ $static fn_((GeneralErr_codeToCStr(ErrCode ctx))(const char*)) {
 $inline
 $static fn_((GeneralErr_err(ErrCode self))(Err)) {
     static const Err_VT vt[1] = { {
-        .domainToCStr = GeneralErr_domainToCStr,
-        .codeToCStr   = GeneralErr_codeToCStr,
+        .domainToStrZ = GeneralErr_domainToStrZ,
+        .codeToStrZ   = GeneralErr_codeToStrZ,
     } };
     return (Err){
         .ctx = self,
@@ -117,17 +125,17 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
         ) \
     } pp_cat(Name, Code); \
     typedef Err    Name; \
-    static $inline fn_((pp_join(_, Name, domainToCStr)(ErrCode ctx))(const char*)) { \
-        $unused(ctx); \
-        return #Name; \
+    static $inline fn_((pp_join(_, Name, domainToStrZ)(ErrCode ctx))(const u8*)) { \
+        let_ignore = ctx; \
+        return u8_l0(#Name); \
     } \
-    static $inline fn_((pp_join(_, Name, codeToCStr)(ErrCode ctx))(const char*)) { \
-        let code = as$((pp_cat(Name, Code))(ctx)); \
+    static $inline fn_((pp_join(_, Name, codeToStrZ)(ErrCode ctx))(const u8*)) { \
+        let code = as$(pp_cat(Name, Code))(ctx); \
         switch (code) { \
-            GEN__config_ErrSet__FN__codeToCStr__cases( \
+            GEN__config_ErrSet__FN__codeToStrZ__cases( \
                 Name, \
                 pp_foreach ( \
-                    GEN__config_ErrSet__FN__codeToCStr__case, \
+                    GEN__config_ErrSet__FN__codeToStrZ__case, \
                     Name, \
                     __VA_ARGS__ \
                 ) \
@@ -136,8 +144,8 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     } \
     static $inline fn_((pp_join(_, Name, err)(pp_cat(Name, Code) self))(Err)) { \
         static const Err_VT vt[1] = { { \
-            .domainToCStr = pp_join(_, Name, domainToCStr), \
-            .codeToCStr   = pp_join(_, Name, codeToCStr), \
+            .domainToStrZ = pp_join(_, Name, domainToStrZ), \
+            .codeToStrZ   = pp_join(_, Name, codeToStrZ), \
         } }; \
         return (Name){ \
             .ctx = self, \
@@ -171,9 +179,9 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     pp_cat(Name, Code_None) = 0, __VA_ARGS__
 
 // Helper macro to generate case statements for message function
-#define GEN__config_ErrSet__FN__codeToCStr__cases(Name, ...) \
+#define GEN__config_ErrSet__FN__codeToStrZ__cases(Name, ...) \
     case pp_cat(Name, Code_None): \
-        return "None"; \
+        return u8_l0("None"); \
         __VA_ARGS__ \
     default: \
         claim_unreachable_fmt("Unknown error code (code: %d)", code);
@@ -188,9 +196,9 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
 #define GEN__config_ErrSet__ENUM__Code__member(Name, Value) \
     pp_cat3(Name, Code_, Value),
 
-#define GEN__config_ErrSet__FN__codeToCStr__case(Name, Value) \
+#define GEN__config_ErrSet__FN__codeToStrZ__case(Name, Value) \
     case pp_cat3(Name, Code_, Value): \
-        return #Value;
+        return u8_l0(#Value);
 
 #define GEN__config_ErrSet__FN__ctorTemplate(Name, Value) \
     static $inline $maybe_unused fn_((pp_join(_, Name, Value)(void))(Err)) { \

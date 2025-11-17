@@ -16,13 +16,13 @@
 /*========== Includes =======================================================*/
 
 #include "dh/core/debug/assert.h"
+#if debug_comp_enabled
 #include <stdarg.h> /* For va_list, va_start(), va_end() */
 #include <stdio.h>  /* For fprintf(), stderr */
                     /* TODO: Remove printing based stdio and fprintf */
 
 /*========== Extern Function Implementations ================================*/
 
-#if debug_comp_enabled
 $static fn_((debug_assert__output(void))(FILE*)) { return stderr; }
 
 $static let_(debug_assert__fmt_default, char*) = "Assertion failed: %s, in function %s, at file %s, line %d\n";

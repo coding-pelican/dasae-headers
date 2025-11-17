@@ -1,11 +1,9 @@
 #include "dh/main.h"
 #include "dh/io/stream.h"
-#include "dh/Arr.h"
-#include "dh/sli.h"
 
-static bool checkFlag(void) { return false; }
-use_A$(10, i32);
+$static fn_((checkFlag(void))(bool)) { return false; }
 TEST_fn_("test breaking guard" $guard) {
+    T_use_A$(10, i32);
     // use_A$(10, i32) arr = A_zero();
     // var deferred_list = Sli_from$(S$i32, arr.buf, 0);
     // S$i32 deferred_list = { .ptr = ({ A$$(10, i32) a = {}; a; }).buf, .len = 0 };
@@ -52,13 +50,13 @@ TEST_fn_("test breaking guard" $guard) {
         io_stream_println(u8_l("something: {:d}"), something);
     } blk_deferral;
 
-    let expected_list = A_from$(i32, { 3, 5, 4, 1 });
-    io_stream_println(u8_l("{:z}: {:d}"), nameOf(deferred_list.len), deferred_list.len);
+    let expected_list = A_from$((i32){ 3, 5, 4, 1 });
+    io_stream_println(u8_l("{:z}: {:d}"), nameOf(S_len(deferred_list)), deferred_list.len);
     io_stream_println(u8_l("{:z}: {:d}"), nameOf(A_len(expected_list)), A_len(expected_list));
     try_(TEST_expect(deferred_list.len == A_len(expected_list)));
-    for (usize i = 0; i < deferred_list.len; ++i) {
-        io_stream_println(u8_l("deferred_list[{:d}]: {:d}"), i, *Sli_at(deferred_list, i));
-        io_stream_println(u8_l("expected_list[{:d}]: {:d}"), i, *A_at(expected_list, i));
-        try_(TEST_expect(*Sli_at(deferred_list, i) == *A_at(expected_list, i)));
-    }
+    for_(($rf(0), $s(deferred_list), $a(expected_list))(i, deferred, expected) {
+        io_stream_println(u8_l("deferred_list[{:d}]: {:d}"), i, *deferred);
+        io_stream_println(u8_l("expected_list[{:d}]: {:d}"), i, *expected);
+        try_(TEST_expect(*deferred == *expected));
+    });
 } $unguarded_(TEST_fn);

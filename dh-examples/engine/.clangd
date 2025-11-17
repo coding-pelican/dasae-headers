@@ -13,6 +13,7 @@ CompileFlags:
     - -Ic:/dasae/dev/dasae-headers/dh-examples/engine/src
     - -Ic:/dasae/dev/dasae-headers/dh-examples/engine/include
     - -Ic:/dasae/dev/dasae-headers/dh-examples/engine/lib/deps
+    - -Dengine_core_VT100Ex_comp_enabled=1
 InlayHints:
   Enabled: true
   TypeNameLimit: 24

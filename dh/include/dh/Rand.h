@@ -69,7 +69,7 @@ $extern fn_((Rand_next$f32(Rand* self))(f32));
 
 // Bounded ranges
 $extern fn_((Rand_rangeUInt(Rand* self, u64 min, u64 max))(u64));
-$extern fn_((Rand_rangeInt(Rand* self, i64 min, i64 max))(i64));
+$extern fn_((Rand_rangeIInt(Rand* self, i64 min, i64 max))(i64));
 $extern fn_((Rand_rangeFlt(Rand* self, f64 min, f64 max))(f64));
 
 #if defined(__cplusplus)

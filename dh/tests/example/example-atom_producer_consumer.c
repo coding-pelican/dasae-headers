@@ -32,7 +32,7 @@ $static Thrd_fn_(producer, ({ SharedBuf* buf; }, Void), ($ignore, args)$scope) {
         let write_idx = atom_V_load(&buf->write_idx, atom_MemOrd_acquire);
         let read_idx = atom_V_load(&buf->read_idx, atom_MemOrd_acquire);
         // Check if buffer is not full
-        if ((write_idx - read_idx) < as$((i32)(len$A(buf->data)))) {
+        if ((write_idx - read_idx) < as$(i32)(len$A(buf->data))) {
             // Store value in buffer
             *at$A(buf->data, write_idx % 1024) = value;
             // Increment write index atomically

@@ -79,6 +79,9 @@ extern "C" {
     T_decl_E$(_T); \
     T_impl_E$(_T)
 
+#define E_InnerE$(_T...) TypeOf((as$(_T*)(null))->payload.err)
+#define E_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.ok)
+
 /* Error void result (special case) */
 typedef union E$Void {
     struct {
@@ -123,8 +126,8 @@ typedef union E$Void {
     pp_expand(pp_defer(__block_inline__err$$)(__param_expand__err$$ __VA_ARGS__))
 
 /* Checks error result */
-#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$((bool)((_e).is_ok))
-#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$((bool)(!(_e).is_ok))
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$(bool)((_e).is_ok)
+#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
 #define E_asP$(/*(_E: E(P(T)))(_p_e: P(E(T)))*/... /*(_E)*/) \
     __step__E_asP$(__step__E_asP$__parseE __VA_ARGS__)
@@ -133,7 +136,7 @@ typedef union E$Void {
 
 /* Returns error result */
 #define return_ok(_val...) \
-    return_(ok(_val))
+    (return_(ok(_val)))
 #define return_ok_void(_Expr...) pp_overload(__return_ok_void, _Expr)(_Expr)
 #define return_err(_val...) \
     ($debug_point ErrTrace_captureFrame(), return_(err(_val)))
@@ -158,19 +161,19 @@ typedef union E$Void {
 
 /*========== Macros and Definitions =========================================*/
 
-#define __param_expand__ok$(...)          __VA_ARGS__, pp_expand
+#define __param_expand__ok$(...)          __VA_ARGS__,
 #define __block_inline__ok$(...)          __block_inline1__ok$(__VA_ARGS__)
 #define __block_inline1__ok$(_T, _val...) lit$((E$(_T))ok(_val))
 
-#define __param_expand__ok$$(...)           __VA_ARGS__, pp_expand
+#define __param_expand__ok$$(...)           __VA_ARGS__,
 #define __block_inline__ok$$(...)           __block_inline1__ok$$$(__VA_ARGS__)
 #define __block_inline1__ok$$$(_T, _val...) lit$((E$$(_T))ok(_val))
 
-#define __param_expand__err$(...)          __VA_ARGS__, pp_expand
+#define __param_expand__err$(...)          __VA_ARGS__,
 #define __block_inline__err$(...)          __block_inline1__err$(__VA_ARGS__)
 #define __block_inline1__err$(_T, _val...) lit$((E$(_T))err(_val))
 
-#define __param_expand__err$$(...)           __VA_ARGS__, pp_expand
+#define __param_expand__err$$(...)           __VA_ARGS__,
 #define __block_inline__err$$(...)           __block_inline1__err$$$(__VA_ARGS__)
 #define __block_inline1__err$$$(_T, _val...) lit$((E$$(_T))err(_val))
 
@@ -210,6 +213,8 @@ typedef union E$Void {
     ({ \
         var __result = _Expr; \
         if (isErr(__result)) { \
+            claim_assert(__result.payload.err.ctx != 0); \
+            claim_assert_nonnull(__result.payload.err.vt); \
             let _Payload_Capture = __result.payload.err; \
             __result.payload.ok = _Generic( \
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
@@ -225,6 +230,8 @@ typedef union E$Void {
     }) \
 )
 #define __errdefer_(_Payload_Capture, _Expr...) defer_(if (!__reserved_return->is_ok) { \
+    claim_assert(__reserved_return->payload.err.ctx != 0); \
+    claim_assert_nonnull(__reserved_return->payload.err.vt); \
     let _Payload_Capture = __reserved_return->payload.err; \
     _Expr; \
 })

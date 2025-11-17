@@ -24,7 +24,7 @@ fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
         dir_path[dir_len] = '\0';
 
         // Create directory
-        try_(fs_Dir_create(Str_view(as$((const u8*)(dir_path)), dir_len)));
+        try_(fs_Dir_create(Str_view(as$(const u8*)(dir_path), dir_len)));
     }
 
     let file = fopen(filename, "w");

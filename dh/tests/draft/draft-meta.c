@@ -8,7 +8,7 @@
     let __val = (val); \
     debug_assert(__val.info.size == sizeOf$(T)); \
     debug_assert(__val.info.align == alignOf$(T)); \
-    *as$((T*)(__val.ref)); \
+    *as$(T*)(__val.ref); \
 })
 #define m_O$Val_into$(O$T, opt) ({ \
     let __opt = (opt); \

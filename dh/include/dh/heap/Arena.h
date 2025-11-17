@@ -28,29 +28,27 @@ extern "C" {
 
 /*========== Arena Allocator ===============================================*/
 
-T_use_ListSgl_Node$(usize);
-T_use_ListSgl$(usize);
+T_use$((usize)(ListSgl_Node, ListSgl));
 typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
     ListSgl$usize buffer_list;
     usize end_index;
 } heap_Arena_State;
-
+/// Default state of ArenaAllocator
+$extern fn_((heap_Arena_State_default(void))(heap_Arena_State));
 /// Inner state of ArenaAllocator
-extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator))(heap_Arena));
+$extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator))(heap_Arena));
 
 struct heap_Arena {
     mem_Allocator child_allocator;
     heap_Arena_State state;
 };
-
 /// Get allocator interface for instance
-extern fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator));
-
+$extern fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator));
 /// Initialize with child allocator
-extern fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena));
+$extern fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena));
 /// Finalize and free all memory
-extern fn_((heap_Arena_fini(heap_Arena self))(void));
+$extern fn_((heap_Arena_fini(heap_Arena self))(void));
 
 /// Reset mode for arena reset operation
 typedef variant_((heap_Arena_ResetMode $fits u8)(
@@ -58,11 +56,10 @@ typedef variant_((heap_Arena_ResetMode $fits u8)(
     (heap_Arena_ResetMode_retain_capacity, Void),
     (heap_Arena_ResetMode_retain_with_limit, usize)
 )) heap_Arena_ResetMode;
-
 /// Query current memory capacity of arena
-extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize));
+$extern fn_((heap_Arena_queryCap(const heap_Arena* self))(usize));
 /// Reset arena with specified mode
-extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool));
+$extern fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool));
 
 #if defined(__cplusplus)
 } /* extern "C" */

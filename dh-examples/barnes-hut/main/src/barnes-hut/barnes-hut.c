@@ -31,17 +31,17 @@
 // Global state without thread synchronization
 static struct {
     O$mem_Allocator allocator;
-    ArrList$Body    spawn_bodies;
-    Thrd_Mtx        sim_mutex;
-    Simulation*     sim;
-    bool            paused;
-    bool            is_running;
+    ArrList$Body spawn_bodies;
+    Thrd_Mtx sim_mutex;
+    Simulation* sim;
+    bool paused;
+    bool is_running;
 } global_state = {
-    .allocator    = none(),
+    .allocator = none(),
     .spawn_bodies = cleared(),
-    .sim_mutex    = cleared(),
-    .paused       = false,
-    .is_running   = false
+    .sim_mutex = cleared(),
+    .paused = false,
+    .is_running = false
 };
 #if debug_comp_enabled
 static fn_(global_debug_logSimStateFrontBodiesN(usize n), void);
@@ -79,16 +79,16 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
             .y = main_window_res_height,
         },
         .default_color = some(Color_black),
-        .title         = some(u8_l("Barnes-hut N-Body Simulation")) }));
+        .title = some(u8_l("Barnes-hut N-Body Simulation")) }));
     defer_(engine_Window_fini(window));
     log_info("engine initialized\n");
 
     let canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
-        .allocator     = some(allocator),
-        .width         = main_window_res_width,
-        .height        = main_window_res_height,
+        .allocator = some(allocator),
+        .width = main_window_res_width,
+        .height = main_window_res_height,
         .default_color = none(),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(canvas));
     {
@@ -98,13 +98,13 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
         engine_Window_appendView(
             window,
             &(engine_CanvasView_Config){
-                .canvas      = canvas,
-                .pos         = { .x = 0, .y = 0 },
-                .size        = { .x = main_window_res_width, .y = main_window_res_height },
-                .scale       = { .x = 1.0f, .y = 1.0f },
+                .canvas = canvas,
+                .pos = { .x = 0, .y = 0 },
+                .size = { .x = main_window_res_width, .y = main_window_res_height },
+                .scale = { .x = 1.0f, .y = 1.0f },
                 .resizable_x = true,
                 .resizable_y = true,
-                .visible     = true,
+                .visible = true,
             }
         );
         log_info("canvas views added: %s", nameOf(canvas));
@@ -115,12 +115,12 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+    let core = try_(engine_core_VT100_init(&(engine_core_VT100_Config){
         .allocator = some(allocator),
-        .window    = window,
-        .input     = input,
+        .window = window,
+        .input = input,
     }));
-    defer_(engine_core_Vt100_fini(core));
+    defer_(engine_core_VT100_fini(core));
     log_info("engine ready");
 
     // Initialize state
@@ -144,25 +144,25 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     var sim_mutex = Thrd_Mtx_init();
     defer_(Thrd_Mtx_fini(&sim_mutex));
     global_state.sim_mutex = sim_mutex;
-    var sim_thread         = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
+    var sim_thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
     defer_(catch_from(
         Thrd_FnCtx_returned(Simulation_thread, Thrd_join(sim_thread)), err,
         eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
     ));
-    global_state.paused     = false;
+    global_state.paused = false;
     global_state.is_running = true;
     log_info("threads created\n");
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs$f64(main_target_spf);
-    var time_frame_prev   = time_Instant_now();
+    var time_frame_prev = time_Instant_now();
     log_info("main loop started\n");
 
     // Main loop
     while (global_state.is_running) {
         let time_frame_curr = time_Instant_now();
-        let time_elapsed    = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-        let time_dt         = time_Duration_asSecs$f64(time_elapsed);
+        let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
+        let time_dt = time_Duration_asSecs$f64(time_elapsed);
 
         // 1) Update engine
         try_(engine_Window_update(window));
@@ -177,19 +177,19 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
 
         // 4) FPS timing
         global_renderStatInfo(&viz, &sim, time_dt);
-        debug_only( // log frame every 1s
+        debug_only(
+            // log frame every 1s
             static f64 total_game_time_for_timestamp = 0.0;
-            static f64 logging_after_duration        = 0.0;
+            static f64 logging_after_duration = 0.0;
             total_game_time_for_timestamp += time_dt;
             logging_after_duration += time_dt;
             if (1.0 < logging_after_duration) {
                 logging_after_duration = 0.0;
                 log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
-            }
-        );
+            });
 
         // 5) sleep
-        let time_now        = time_Instant_now();
+        let time_now = time_Instant_now();
         let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
         if_some(time_Duration_chkdSub(time_frame_target, time_frame_used), time_leftover) {
             time_sleep(time_leftover);
@@ -301,8 +301,8 @@ fn_(global_renderStatInfo(Visualizer* viz, Simulation* sim, f64 dt), void) {
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
     let collision_count = sim->collision_count;
 #endif /* debug_comp_enabled || Simulation_comp_enabled_record_collision_count */
-    let rects_len            = sim->rects.items.len;
-    let quadtree_nodes_len   = sim->quadtree.nodes.items.len;
+    let rects_len = sim->rects.items.len;
+    let quadtree_nodes_len = sim->quadtree.nodes.items.len;
     let quadtree_parents_len = sim->quadtree.parents.items.len;
     Thrd_Mtx_unlock(&global_state.sim_mutex);
     {
@@ -338,7 +338,7 @@ Thrd_fn_(Simulation_thread, ($ignore, $ignore)$guard) {
         // Check if we should stop
         Thrd_Mtx_lock(&global_state.sim_mutex);
         let running = global_state.is_running;
-        let paused  = global_state.paused;
+        let paused = global_state.paused;
         Thrd_Mtx_unlock(&global_state.sim_mutex);
         if (!running) { break; } // exit thread
 

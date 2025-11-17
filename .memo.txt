@@ -1,0 +1,13 @@
+# Search inclusion
+dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh-examples/*
+
+# Search exclusion
+**/lib/*, **/libs/*, **/assets/,
+**/.tmp*/, **/.temp*/, **/.bak*/, **/.backup*/, **/.archive*/, **/.draft*/, **/.mock*/, **/tests/note/
+
+# extra
+## `as$` 변경사항 적용
+- src: as$((T)(Expr))
+- dest: as$(T)(Expr)
+- search: as\$\(\((.*?)\)\((.*?)\)\)
+- replace: as$$($1)($2)

@@ -27,8 +27,8 @@ E$void dh_main(int argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Draw Box",
-                .width        = 80,
-                .height       = 50,
+                .width = 80,
+                .height = 50,
             }
         ));
         defer(engine_Window_destroy(window));
@@ -49,17 +49,17 @@ E$void dh_main(int argc, const char* argv[]) {
         engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
         log_info("canvas views added\n");
 
-        var  zero_time   = time_Instant_now();
-        var  curr_time   = zero_time;
-        var  prev_time   = curr_time;
-        let  target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
-        bool is_running  = true;
+        var zero_time = time_Instant_now();
+        var curr_time = zero_time;
+        var prev_time = curr_time;
+        let target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
+        bool is_running = true;
         log_info("game loop started\n");
 
         while (is_running) {
-            curr_time        = time_Instant_now();
+            curr_time = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let t            = time_Duration_asSecs$f64(time_Instant_durationSince(curr_time, zero_time));
+            let t = time_Duration_asSecs$f64(time_Instant_durationSince(curr_time, zero_time));
 
             // Process events
             try(engine_Window_processEvents(window));
@@ -68,24 +68,24 @@ E$void dh_main(int argc, const char* argv[]) {
             }
 
             // Update logic
-            Vec2f rotation = { .x = (f32)cos(t), .y = (f32)sin(t) };
-            Vec2f box_min  = { .x = -48.0f, .y = -24.0f };
-            Vec2f box_max  = { .x = 48.0f, .y = 24.0f };
-            Vec2f offset   = m_V2f32_scale(rotation, 20.0f);
-            box_min        = m_V2f32_sub(box_min, offset);
-            box_max        = m_V2f32_add(box_max, offset);
+            m_V2f32 rotation = { .x = (f32)cos(t), .y = (f32)sin(t) };
+            m_V2f32 box_min = { .x = -48.0f, .y = -24.0f };
+            m_V2f32 box_max = { .x = 48.0f, .y = 24.0f };
+            m_V2f32 offset = m_V2f32_scale(rotation, 20.0f);
+            box_min = m_V2f32_sub(box_min, offset);
+            box_max = m_V2f32_add(box_max, offset);
 
             // Render to canvas
             engine_Canvas_clear(game_canvas, Color_black);
             /* Transform World to Screen Coord */ {
-                const f32   canvas_scale  = 0.5f; // cuz logic based on 2x scale (160x100)
-                const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
-                box_min                   = m_V2f32_scale(box_min, canvas_scale);
-                box_min.y                 = -box_min.y;
-                box_min                   = m_V2f32_add(box_min, canvas_center);
-                box_max                   = m_V2f32_scale(box_max, canvas_scale);
-                box_max.y                 = -box_max.y;
-                box_max                   = m_V2f32_add(box_max, canvas_center);
+                const f32 canvas_scale = 0.5f; // cuz logic based on 2x scale (160x100)
+                const m_V2f32 canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
+                box_min = m_V2f32_scale(box_min, canvas_scale);
+                box_min.y = -box_min.y;
+                box_min = m_V2f32_add(box_min, canvas_center);
+                box_max = m_V2f32_scale(box_max, canvas_scale);
+                box_max.y = -box_max.y;
+                box_max = m_V2f32_add(box_max, canvas_center);
             }
 
             engine_Canvas_drawRect(game_canvas, (i32)box_min.x, (i32)box_min.y, (i32)box_max.x, (i32)box_max.y, Color_white);

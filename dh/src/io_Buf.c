@@ -132,7 +132,7 @@ fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void) $scope) {
 } $unscoped_(fn);
 
 $static fn_((Reader_VT_read(const P$raw ctx, S$u8 output))(E$usize) $scope) {
-    let self = as$((io_Buf_Reader*)(ctx));
+    let self = as$(io_Buf_Reader*)(ctx);
     // HOT PATH: data in buf
     if (self->start < self->end) {
         let available = self->end - self->start;
@@ -160,7 +160,7 @@ $static fn_((Reader_VT_read(const P$raw ctx, S$u8 output))(E$usize) $scope) {
 
 fn_((io_Buf_Reader_reader(io_Buf_Reader* self))(io_Reader)) {
     return (io_Reader){
-        .ctx = as$((P$raw)(self)),
+        .ctx = as$(P$raw)(self),
         .read = Reader_VT_read,
     };
 }
@@ -186,7 +186,7 @@ fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void) $scope) {
 } $unscoped_(fn);
 
 $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
-    let self = as$((io_Buf_Writer*)(ctx));
+    let self = as$(io_Buf_Writer*)(ctx);
     // If bytes fit in remaining buf space, just buf them
     let remaining = self->buf.len - self->used;
     if (bytes.len <= remaining) {
@@ -208,7 +208,7 @@ $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope
 
 fn_((io_Buf_Writer_writer(io_Buf_Writer* self))(io_Writer)) {
     return (io_Writer){
-        .ctx = as$((P$raw)(self)),
+        .ctx = as$(P$raw)(self),
         .write = Writer_VT_write,
     };
 }

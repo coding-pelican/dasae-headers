@@ -91,7 +91,7 @@ TEST_fn_("test block defer" $scope) {
 } $unscoped_(TEST_fn);
 
 $static
-fn_((testBlockDeferScope(void))(void $guard)) {
+fn_((testBlockDeferScope(void))(void ) $guard) {
     defer_(recordCleanup(1));
 
     blk_defer {

@@ -42,7 +42,7 @@ typedef struct TEST_Case {
     S_const$u8 name;
 } TEST_Case;
 /* Use slice for test cases */
-T_use$(TEST_Case, (P, S, ArrList));
+T_use$((TEST_Case)(P, S, ArrList));
 
 /*========== Public API =====================================================*/
 

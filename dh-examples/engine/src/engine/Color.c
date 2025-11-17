@@ -65,16 +65,15 @@ Rgb Rgb_fromHsl(Hsl hsl) {
     } else {
         f64 q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
         f64 p = 2.0 * l - q;
-        r     = Hsl_hueToRgbSpace(p, q, h + 1.0 / 3.0);
-        g     = Hsl_hueToRgbSpace(p, q, h);
-        b     = Hsl_hueToRgbSpace(p, q, h - 1.0 / 3.0);
+        r = Hsl_hueToRgbSpace(p, q, h + 1.0 / 3.0);
+        g = Hsl_hueToRgbSpace(p, q, h);
+        b = Hsl_hueToRgbSpace(p, q, h - 1.0 / 3.0);
     }
 
     return Rgb_from(
-        as$((u8)(f64_clamp(r * ColorChannel_max_value, 0, ColorChannel_max_value))),
-        as$((u8)(f64_clamp(g * ColorChannel_max_value, 0, ColorChannel_max_value))),
-        as$((u8)(f64_clamp(b * ColorChannel_max_value, 0, ColorChannel_max_value)))
-    );
+        as$(u8)(f64_clamp(r * ColorChannel_max_value, 0, ColorChannel_max_value)),
+        as$(u8)(f64_clamp(g * ColorChannel_max_value, 0, ColorChannel_max_value)),
+        as$(u8)(f64_clamp(b * ColorChannel_max_value, 0, ColorChannel_max_value)));
 }
 
 Rgb Hsl_intoRgb(Hsl hsl) {
@@ -98,12 +97,12 @@ Rgb Color_asRgb(Color color) {
 }
 
 Hsl Hsl_fromRgb(Rgb rgb) {
-    f64 r = rgb.r / as$((f64)(ColorChannel_max_value));
-    f64 g = rgb.g / as$((f64)(ColorChannel_max_value));
-    f64 b = rgb.b / as$((f64)(ColorChannel_max_value));
+    f64 r = rgb.r / as$(f64)(ColorChannel_max_value);
+    f64 g = rgb.g / as$(f64)(ColorChannel_max_value);
+    f64 b = rgb.b / as$(f64)(ColorChannel_max_value);
 
-    f64 max  = prim_max(prim_max(r, g), b);
-    f64 min  = prim_min(prim_min(r, g), b);
+    f64 max = prim_max(prim_max(r, g), b);
+    f64 min = prim_min(prim_min(r, g), b);
     f64 diff = max - min;
 
     f64 h = f64_nan;

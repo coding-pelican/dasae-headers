@@ -6,23 +6,23 @@ extern "C" {
 
 #include "Canvas.h"
 
-use_Grid$(u8);
+T_use_Grid$(u8);
 typedef struct engine_UnicodeCanvas_Config {
     mem_Allocator allocator;
-    u32           width;
-    u32           height;
-    O$Color     default_color;
-    O$S$u8    default_typo;
+    u32 width;
+    u32 height;
+    O$Color default_color;
+    O$S$u8 default_typo;
 } engine_UnicodeCanvas_Config;
 
 typedef struct engine_UnicodeCanvas {
     engine_Canvas color_buffer;
-    Grid$u8       unicode_buffer;
+    Grid$u8 unicode_buffer;
 } engine_UnicodeCanvas;
-use_P$(engine_UnicodeCanvas);
-use_S$(engine_UnicodeCanvas);
-use_O$(engine_UnicodeCanvas);
-use_E$(engine_UnicodeCanvas);
+T_use_P$(engine_UnicodeCanvas);
+T_use_S$(engine_UnicodeCanvas);
+T_use_O$(engine_UnicodeCanvas);
+T_use_E$(P$engine_UnicodeCanvas);
 
 extern fn_((engine_UnicodeCanvas_init(engine_UnicodeCanvas_Config config))(E$P$engine_UnicodeCanvas)) $must_check;
 extern fn_((engine_UnicodeCanvas_fini(engine_UnicodeCanvas* self))(void));

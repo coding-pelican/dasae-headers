@@ -125,7 +125,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     defer_(engine_Canvas_fini(game_canvas));
     {
         log_info("canvas created: %s", nameOf(game_canvas));
-        engine_Canvas_clear(game_canvas, none$(O$Color));
+        engine_Canvas_clear(game_canvas, none$((O$Color)));
         log_info("canvas cleared: %s", nameOf(game_canvas));
         engine_Window_appendView(
             window,
@@ -147,12 +147,12 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+    let core = try_(engine_core_VT100_init(&(engine_core_VT100_Config){
         .allocator = some(allocator),
         .window    = window,
         .input     = input,
     }));
-    defer_(engine_core_Vt100_fini(core));
+    defer_(engine_core_VT100_fini(core));
     log_info("engine ready");
 
     // Create game state

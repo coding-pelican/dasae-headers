@@ -56,9 +56,9 @@ extern "C" {
 #define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
 
 #define reservedReturn() (__reserved_return[0])
-#define ReturnType       TypeOf(reservedReturn())
+// #define ReturnType       TypeOf(reservedReturn())
 #define reservedBreak()  (__reserved_break[0])
-#define BreakType        TypeOf(reservedBreak())
+// #define BreakType        TypeOf(reservedBreak())
 
 /*
 #define return_ok(_Expr...)   comp_syn__return_ok(_Expr)
@@ -89,11 +89,12 @@ extern "C" {
 // clang-format off
 #define comp_syn__fn_$_scope(_ident_w_Params, _TReturn...) \
 _TReturn _ident_w_Params { \
-    let __reserved_return = as$((_TReturn*)( \
+    let __reserved_return = as$(_TReturn*)( \
         (u8[Generic_match$(_TReturn, \
             Generic_pattern$(void) 0, \
             Generic_fallback_ sizeOf$(_TReturn))]){} \
-    )); \
+        ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     if (false) { __step_return: goto __step_unscope; } \
     do
 #define comp_syn__$unscoped_fn \
@@ -119,11 +120,12 @@ struct fn__ScopeCounter {
 // clang-format off
 #define comp_syn__fn_$_guard(_ident_w_Params, _TReturn...) \
 _TReturn _ident_w_Params { \
-    let __reserved_return = as$((_TReturn*)( \
+    volatile let __reserved_return = as$(_TReturn*)( \
         (u8[Generic_match$(_TReturn, \
             Generic_pattern$(void) 0, \
             Generic_fallback_ sizeOf$(_TReturn))]){} \
-    )); \
+        ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -152,21 +154,30 @@ __step_deferred: switch (__scope_counter.current_line) { \
 // clang-format on
 
 #if !on_comptime
-#undef prim_memset
-#define prim_memset(__dst, __val, __len...) __prim_memset__no_hinting(__dst, __val, __len)
-extern fn_((__prim_memset__no_hinting(void*, u32, usize))(void*));
-#undef prim_memcpy
-#define prim_memcpy(__dst, __src, __len...) __prim_memcpy__no_hinting(__dst, __src, __len)
-extern fn_((__prim_memcpy__no_hinting(void*, const void*, usize))(void*));
-#undef prim_memmove
-#define prim_memmove(__dst, __src, __len...) __prim_memmove__no_hinting(__dst, __src, __len)
-extern fn_((__prim_memmove__no_hinting(void*, const void*, usize))(void*));
+#define fn__memset(_dst, _val, _len...) __fn_memset__no_hinting(_dst, _val, _len)
+extern fn_((__fn_memset__no_hinting(void*, u32, usize))(void*));
+#define fn__memcpy(_dst, _src, _len...) __fn_memcpy__no_hinting(_dst, _src, _len)
+extern fn_((__fn_memcpy__no_hinting(void*, const void*, usize))(void*));
+#define fn__memmove(_dst, _src, _len...) __fn_memmove__no_hinting(_dst, _src, _len)
+extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
+#else
+#define fn__memset(_dst, _val, _len...)  prim_memset(_dst, _val, _len)
+#define fn__memcpy(_dst, _src, _len...)  prim_memcpy(_dst, _src, _len)
+#define fn__memmove(_dst, _src, _len...) prim_memmove(_dst, _src, _len)
 #endif /* !on_comptime */
 
+/* #define comp_syn__return_(_Expr...) blk({ \
+    fn__memcpy( \
+        as$(u8*)(__reserved_return), \
+        as$(u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
+        sizeOf$(*__reserved_return) \
+    ); \
+    goto __step_return; \
+}) */
 #define comp_syn__return_(_Expr...) blk({ \
-    prim_memcpy( \
-        as$((u8*)(__reserved_return)), \
-        as$((u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr })), \
+    fn__memcpy( \
+        as$(u8*)(__reserved_return), \
+        as$(u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
         sizeOf$(*__reserved_return) \
     ); \
     goto __step_return; \
@@ -235,10 +246,11 @@ extern fn_((__prim_memmove__no_hinting(void*, const void*, usize))(void*));
 #define comp_syn__expr_(T_Break, _Ext...) pp_cat(comp_syn__expr_, _Ext)(T_Break)
 #define comp_syn__expr_$_scope(T_Break...) ({ \
     $local_label __step_break, __step_unscope; \
-    let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
+    let __reserved_break = as$(T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
-    )]){})); \
+    )]){}); \
+    $maybe_unused typedef TypeOf(*__reserved_break) BreakType; \
     $maybe_unused bool __has_broken = false; /* for integration with `eval_` */ \
     if (false) { __step_break: goto __step_unscope; } \
     /* do */
@@ -257,10 +269,11 @@ __step_unscope: \
 #define comp_syn__expr_$_guard(T_Break...) ({ \
     $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
-    let __reserved_break = as$((T_Break*)((u8[_Generic(T_Break, \
+    volatile let __reserved_break = as$(T_Break*)((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
-    )]){})); \
+    )]){}); \
+    $maybe_unused typedef TypeOf(*__reserved_break) BreakType; \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -291,9 +304,9 @@ __step_deferred: switch (__scope_counter.current_line) { \
 
 // clang-format off
 #define $break_(_Expr...) ({ \
-    prim_memcpy( \
-        as$((u8*)(__reserved_break)), \
-        as$((u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr })), \
+    fn__memcpy( \
+        as$(u8*)(__reserved_break), \
+        as$(u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
         sizeOf$(*__reserved_break) \
     ); \
     __has_broken = true; \
@@ -331,10 +344,11 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__eval_2(_TBreak, _ext...) pp_cat(inline__eval_2, _ext)(_TBreak)
 #define inline__eval_2$_scope(_TBreak...) ({ \
     $local_label __step_break; \
-    let __reserved_break = as$((_TBreak*)((u8[_Generic(_TBreak, \
+    let __reserved_break = as$(_TBreak*)((u8[_Generic(_TBreak, \
         void: 0, \
         default: sizeOf$(_TBreak) \
-    )]){})); \
+    )]){}); \
+    $maybe_unused typedef TypeOf(*__reserved_break) BreakType; \
     $maybe_unused bool __has_broken = false;\
     /* do */
 #define $unscoped_eval comp_syn__eval_$unscoped

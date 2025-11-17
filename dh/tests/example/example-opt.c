@@ -1,12 +1,8 @@
 #include "dh/main.h"
 #include "dh/io/stream.h"
 
-#include "dh/Arr.h"
-#include "dh/sli.h"
-
 // Function that may return an optional i32
-$static
-fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
+$static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
     for_(($rf(0), $s(items))(index, item) {
         if (*item == value) {
             return_some(index); // Return optional with a value
@@ -16,11 +12,11 @@ fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
 } $unscoped_(fn);
 
 // Function that uses unwrap and orelse for default values
-$static $maybe_unused
-fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
-    // unwrap() will cause an assertion failure if opt is none
+$maybe_unused
+$static fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
+    // unwrap_() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
-    let value_unsafe = unwrap(opt);
+    let value_unsafe = unwrap_(opt);
 
     // orelse returns the default value if opt is none
     let value_safe = orelse_((opt)(default_val));
@@ -37,9 +33,8 @@ fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
 }
 
 // Function showing if_some and else_none pattern
-$static
-fn_((processOptionalValue(O$i32 opt))(void)) {
-    if_some(opt, value) {
+$static fn_((processOptionalValue(O$i32 opt))(void)) {
+    if_some((opt)(value)) {
         // This block runs if opt has a value
         io_stream_println(u8_l("Found value: {:d}"), value);
 
@@ -54,16 +49,15 @@ fn_((processOptionalValue(O$i32 opt))(void)) {
 }
 
 // Example of nested optional handling
-$static
-fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) $scope) {
-    if_some(maybe_outer, outer) {
-        if_some(maybe_inner, inner) {
+$static fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) $scope) {
+    if_some((maybe_outer)(outer)) {
+        if_some((maybe_inner)(inner)) {
             return outer + inner;
         } else_none {
             return outer;
         }
     } else_none {
-        if_some(maybe_inner, inner) {
+        if_some((maybe_inner)(inner)) {
             return inner;
         } else_none {
             return 0;
@@ -76,28 +70,28 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     // Create some optional values
-    let opt_with_value = some$(O$i32, 42);
-    let opt_empty      = none$(O$i32);
+    let opt_with_value = (O$i32)some(42);
+    let opt_empty      = (O$i32)none();
 
     // Array for demonstration
     A$$(5, i32) numbers = A_init({ 1, 3, 5, 7, 9 });
 
     // Demonstrate finding values
-    let found_index = findValueIndex(5, Sli_arr$(S_const$i32, numbers));
-    let not_found   = findValueIndex(6, Sli_arr$(S_const$i32, numbers));
+    let found_index = findValueIndex(5, A_ref$((S_const$i32)(numbers)));
+    let not_found   = findValueIndex(6, A_ref$((S_const$i32)(numbers)));
 
     io_stream_println(u8_l("---- Optional Value Demonstration ----"));
 
     // Demonstrate if_some pattern
     io_stream_print(u8_l("Looking for value 5: "));
-    if_some(found_index, index) {
+    if_some((found_index)(index)) {
         io_stream_println(u8_l("Found at index {:d}"), index);
     } else_none {
         io_stream_println(u8_l("Not found"));
     }
 
     io_stream_print(u8_l("Looking for value 6: "));
-    if_some(not_found, index) {
+    if_some((not_found)(index)) {
         io_stream_println(u8_l("Found at index {:d}"), index);
     } else_none {
         io_stream_println(u8_l("Not found"));
@@ -105,8 +99,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     // Demonstrate orelse
     io_stream_println(u8_l("\n---- Default Values Demonstration ----"));
-    io_stream_println(u8_l("Value with default: {:d}"), orelse(not_found, -1));
-    io_stream_println(u8_l("Value from some(): {:d}"), orelse(opt_with_value, -1));
+    io_stream_println(u8_l("Value with default: {:d}"), orelse_((not_found)(-1)));
+    io_stream_println(u8_l("Value from some(): {:d}"), orelse_((opt_with_value)(-1)));
 
     // Demonstrate the two helper functions
     io_stream_println(u8_l("\n---- Processing Optionals ----"));
@@ -114,16 +108,16 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     processOptionalValue(opt_empty);
 
     io_stream_println(u8_l("\n---- Nested Optionals Result ----"));
-    io_stream_println(u8_l("Both values: {:d}"), processNestedOptionals(opt_with_value, some$(O$i32, 10)));
+    io_stream_println(u8_l("Both values: {:d}"), processNestedOptionals(opt_with_value, (O$i32)some(10)));
     io_stream_println(u8_l("First value only: {:d}"), processNestedOptionals(opt_with_value, opt_empty));
-    io_stream_println(u8_l("Second value only: {:d}"), processNestedOptionals(opt_empty, some$(O$i32, 10)));
+    io_stream_println(u8_l("Second value only: {:d}"), processNestedOptionals(opt_empty, (O$i32)some(10)));
     io_stream_println(u8_l("No values: {:d}"), processNestedOptionals(opt_empty, opt_empty));
 
-    // Example of unwrap (only use when you're sure it's not none)
+    // Example of unwrap_ (only use when you're sure it's not none)
     io_stream_println(u8_l("\n---- Unwrap Example ----"));
-    io_stream_println(u8_l("Unwrapped value: {:d}"), unwrap(opt_with_value));
+    io_stream_println(u8_l("Unwrapped value: {:d}"), unwrap_(opt_with_value));
     // Uncommenting this would cause an assertion failure:
-    // io_stream_println(u8_l("This would fail: {:d}"), unwrap(opt_empty));
+    // io_stream_println(u8_l("This would fail: {:d}"), unwrap_(opt_empty));
 
     return_ok({});
 } $unscoped_(fn);
@@ -141,23 +135,23 @@ $static fn_((example(void))(void) $scope) {
     A$$(5, i32) nums = A_init({ 10, 20, 30, 40, 50 });
 
     // Create optional values
-    let opt_value = some$(O$i32, 42);
-    let opt_empty = none$(O$i32);
+    let opt_value = (O$i32)some(42);
+    let opt_empty = (O$i32)none();
 
     // Find a value in array
-    let found = findValueIndex(30, Sli_arr$(S_const$i32, nums));
+    let found = findValueIndex(30, A_ref$((S_const$i32)(nums)));
 
     // Check if option has value
-    if_some(found, index) {
+    if_some((found)(index)) {
         io_stream_println(u8_l("Found at: {:d}"), index);
     } else_none {
         io_stream_println(u8_l("Not found"));
     }
 
     // Default values
-    let value = orelse(found, -1); // Use -1 if not found
+    let value = orelse_((found)(-1)); // Use -1 if not found
 
     // Unsafe extraction (assertion if option might be none)
-    let unsafe_value = unwrap(opt_value);
+    let unsafe_value = unwrap_(opt_value);
 } $unscoped_(fn);
 #endif /* README_SAMPLE */

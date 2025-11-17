@@ -33,21 +33,20 @@ typedef struct engine_InputEvent_KeyboardKey {
 } engine_InputEvent_KeyboardKey;
 
 typedef struct engine_InputEvent_MouseButton {
-    Vec2i pos;
+    m_V2i32 pos;
     engine_MouseButton button;  /**< The mouse button that was pressed/released/held */
     engine_InputKeyModes modes; /**< The modifiers that were enabled */
 } engine_InputEvent_MouseButton;
 
 typedef struct engine_InputEvent_MouseMotion {
-    Vec2i pos; /**< The new position of the mouse cursor */
+    m_V2i32 pos; /**< The new position of the mouse cursor */
 } engine_InputEvent_MouseMotion;
 
 typedef struct engine_InputEvent_MouseScroll {
-    Vec2f delta; /**< The amount the mouse wheel was scrolled */
+    m_V2f32 delta; /**< The amount the mouse wheel was scrolled */
 } engine_InputEvent_MouseScroll;
 
-typedef variant_(
-    (engine_InputEvent),
+typedef variant_((engine_InputEvent)(
     (engine_InputEvent_key_press, engine_InputEvent_KeyboardKey),
     (engine_InputEvent_key_hold, engine_InputEvent_KeyboardKey),
     (engine_InputEvent_key_release, engine_InputEvent_KeyboardKey),
@@ -56,11 +55,11 @@ typedef variant_(
     (engine_InputEvent_mouse_release, engine_InputEvent_MouseButton),
     (engine_InputEvent_mouse_motion, engine_InputEvent_MouseMotion),
     (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
-) engine_InputEvent;
-use_P$(engine_InputEvent);
-use_S$(engine_InputEvent);
-use_O$(engine_InputEvent);
-use_E$(engine_InputEvent);
+)) engine_InputEvent;
+T_use_P$(engine_InputEvent);
+T_use_S$(engine_InputEvent);
+T_use_O$(engine_InputEvent);
+T_use_E$(P$engine_InputEvent);
 
 /// Buffer for input events between updates
 typedef struct engine_InputEventBuffer engine_InputEventBuffer;
@@ -80,10 +79,10 @@ typedef struct engine_Input {
     var_(backend, O$engine_Backend);
     var_(allocator, mem_Allocator);
 } engine_Input;
-use_P$(engine_Input);
-use_S$(engine_Input);
-use_O$(engine_Input);
-use_E$(engine_Input);
+T_use_P$(engine_Input);
+T_use_S$(engine_Input);
+T_use_O$(engine_Input);
+T_use_E$(P$engine_Input);
 
 /* Input management ==========================================================*/
 

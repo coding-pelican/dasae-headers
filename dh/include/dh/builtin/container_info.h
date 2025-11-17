@@ -51,6 +51,38 @@ extern "C" {
      */ \
     block_inline__structPtrFrom(_p_field, _T, _field)
 
+#define RefType$(_T...) \
+    /** \
+     * @brief Get reference type of a container type at compile time \
+     * \
+     * @param _T The container type \
+     * @return Reference type of the container \
+     */ \
+    __block_inline__RefType$(_T)
+#define __block_inline__RefType$(_T...) \
+    TypeOf(_T*)
+
+#define DerefType$(_T...) \
+    /** \
+     * @brief Get dereference type of a container type at compile time \
+     * \
+     * @param _T The container type \
+     * @return Dereference type of the container \
+     */ \
+    __block_inline__DerefType$(_T)
+#define __block_inline__DerefType$(_T...) \
+    TypeOf(*as$(_T)(null))
+#define DerefTypeUnqual$(_T...) \
+    /** \
+     * @brief Get dereference type of a container type at compile time \
+     * \
+     * @param _T The container type \
+     * @return Dereference type of the container \
+     */ \
+    __block_inline__DerefTypeUnqual$(_T)
+#define __block_inline__DerefTypeUnqual$(_T...) \
+    TypeOfUnqual(*as$(_T)(null))
+
 #define FieldType$(_T, _field...) \
     /** \
      * @brief Get the type of a field within a container type \
@@ -119,13 +151,13 @@ extern "C" {
     __builtin_offsetof(_T, _field)
 
 #define block_inline__structPtrFrom(_p_field, _T, _field...) \
-    as$((_T*)(as$((u8*)((FieldType$(_T, _field)*, _p_field))) - offsetTo(_T, _field)))
+    as$(_T*)(as$(u8*)(((FieldType$(_T, _field)*, _p_field)) - offsetTo(_T, _field)))
 
 #define block_inline__FieldType$(_T, _field...) \
-    TypeOf((as$((_T*)(0)))->_field)
+    TypeOf((as$(_T*)(null))->_field)
 
 #define block_inline__FieldType$Unqual(_T, _field...) \
-    TypeOfUnqual((as$((_T*)(0)))->_field)
+    TypeOfUnqual((as$(_T*)(null))->_field)
 
 #define block_inline__sameFieldType(_T, _field, _TExpected...) \
     isSameType$(FieldType$(_T, _field), _TExpected)

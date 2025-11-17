@@ -378,7 +378,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
     };
 
     // Allocate memory for features and labels
-    *dataset.features.as_raw = try_(ArrList_init(typeInfo$(f32), gpa, as$((usize)(line_count)) * actual_feature_count));
+    *dataset.features.as_raw = try_(ArrList_init(typeInfo$(f32), gpa, as$(usize)(line_count) * actual_feature_count));
     errdefer_($ignore, ArrList_fini(dataset.features.as_raw, typeInfo$(f32), gpa));
 
     *dataset.labels.as_raw = try_(ArrList_init(typeInfo$(i32), gpa, line_count));
@@ -401,14 +401,14 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
         u32   col_idx = 0;
 
         while (token && col_idx < feature_count) {
-            var value = as$((f32)(atof(token)));
+            var value = as$(f32)(atof(token));
 
             if (col_idx < actual_feature_count) {
                 // Feature value
                 try_(ArrList_append(dataset.features.as_raw, gpa, u_anyV(value)));
             } else {
                 // Label (assumed to be the last column)
-                var label = as$((i32)(value));
+                var label = as$(i32)(value);
                 try_(ArrList_append(dataset.labels.as_raw, gpa, u_anyV(label)));
             }
 

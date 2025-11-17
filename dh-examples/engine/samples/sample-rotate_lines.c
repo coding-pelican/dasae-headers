@@ -27,8 +27,8 @@ E$void dh_main(int argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Rotate Lines",
-                .width        = 80,
-                .height       = 50,
+                .width = 80,
+                .height = 50,
             }
         ));
         defer(engine_Window_destroy(window));
@@ -49,19 +49,19 @@ E$void dh_main(int argc, const char* argv[]) {
         engine_Window_addCanvasView(window, game_canvas, 0, 0, 80, 50);
         log_info("canvas views added\n");
 
-        var curr_time       = time_Instant_now();
-        var prev_time       = curr_time;
-        let target_time     = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
+        var curr_time = time_Instant_now();
+        var prev_time = curr_time;
+        let target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
         var simulation_time = time_Duration_zero;
 
         bool is_running = true;
         log_info("game loop started\n");
 
         while (is_running) {
-            curr_time        = time_Instant_now();
+            curr_time = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            simulation_time  = time_Duration_add(simulation_time, elapsed_time);
-            let t            = time_Duration_asSecs$f64(simulation_time);
+            simulation_time = time_Duration_add(simulation_time, elapsed_time);
+            let t = time_Duration_asSecs$f64(simulation_time);
 
             // Process events
             try(engine_Window_processEvents(window));
@@ -70,29 +70,29 @@ E$void dh_main(int argc, const char* argv[]) {
             }
 
             // Update with render to canvas
-            let   r = m_V2f32_sincos((f32)t * 0.05f);
-            Vec2f o = cleared();
-            Vec2f p = { .x = 50.0f, .y = 0.0f };
+            let r = m_V2f32_sincos((f32)t * 0.05f);
+            m_V2f32 o = cleared();
+            m_V2f32 p = { .x = 50.0f, .y = 0.0f };
 
             engine_Canvas_clear(game_canvas, Color_black);
             for (i32 i = 0; i < 32; ++i) {
-                Vec2f draw_origin = o;
-                Vec2f draw_point  = p;
+                m_V2f32 draw_origin = o;
+                m_V2f32 draw_point = p;
                 /* Transform World to Screen Coord */ {
-                    const f32   canvas_scale  = 0.25f; // cuz logic based on 4x scale (320x200)
-                    const Vec2f canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
+                    const f32 canvas_scale = 0.25f; // cuz logic based on 4x scale (320x200)
+                    const m_V2f32 canvas_center = { .x = (f32)game_canvas->width / 2.0f, .y = (f32)game_canvas->height / 2.0f };
 
-                    draw_origin   = m_V2f32_scale(draw_origin, canvas_scale);
+                    draw_origin = m_V2f32_scale(draw_origin, canvas_scale);
                     draw_origin.y = -draw_origin.y;
-                    draw_origin   = m_V2f32_add(draw_origin, canvas_center);
+                    draw_origin = m_V2f32_add(draw_origin, canvas_center);
 
-                    draw_point   = m_V2f32_scale(draw_point, canvas_scale);
+                    draw_point = m_V2f32_scale(draw_point, canvas_scale);
                     draw_point.y = -draw_point.y;
-                    draw_point   = m_V2f32_add(draw_point, canvas_center);
+                    draw_point = m_V2f32_add(draw_point, canvas_center);
                 }
                 engine_Canvas_drawLine(game_canvas, (i32)draw_origin.x, (i32)draw_origin.y, (i32)draw_point.x, (i32)draw_point.y, Color_white);
 
-                p = (Vec2f){
+                p = (m_V2f32){
                     .x = (r.x * p.x - r.y * p.y),
                     .y = (r.y * p.x + r.x * p.y)
                 };

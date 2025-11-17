@@ -42,6 +42,8 @@ extern "C" {
     T_decl_O$(_T); \
     T_impl_O$(_T)
 
+#define O_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.some)
+
 /* Optional void value (special case) */
 typedef union O$Void {
     struct {
@@ -84,22 +86,20 @@ typedef union O$Void {
     .is_some = true, \
     .payload = { .some = _val }, \
 }
-#define some$(/*(_T)(_val: _T))*/... /*(O$(_T))*/) \
+#define some$(/*(_T)(_val: _T))*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
-#define some$$(/*(_T)(_val: _T))*/... /*(O$$(_T))*/) \
-    pp_expand(pp_defer(__block_inline__some$$)(__param_expand__some$$ __VA_ARGS__))
 
 #define none()              comp_inline__none()
 #define comp_inline__none() { \
     .is_some = false, \
     .payload = { .none = {} }, \
 }
-#define none$(/*(_T)(none())*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
-#define none$$(/*(_T)(none())*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__none$$)(__param_expand__none$$ __VA_ARGS__))
+#define none$(/*(_T)*/... /*(_T)*/) \
+    pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
 
 /* Checks optional value */
-#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)((_o).is_some))
-#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)(!(_o).is_some))
+#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)((_o).is_some)
+#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)(!(_o).is_some)
 
 #define O_asP$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
     __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
@@ -129,21 +129,13 @@ typedef union O$Void {
 
 /*========== Macros and Definitions =========================================*/
 
-#define __param_expand__some$(...)          __VA_ARGS__, pp_expand
+#define __param_expand__some$(...)          __VA_ARGS__,
 #define __block_inline__some$(...)          __block_inline1__some$(__VA_ARGS__)
-#define __block_inline1__some$(_T, _val...) lit$((O$(_T))some(_val))
+#define __block_inline1__some$(_T, _val...) lit$((_T)some(_val))
 
-#define __param_expand__some$$(...)           __VA_ARGS__, pp_expand
-#define __block_inline__some$$(...)           __block_inline1__some$$$(__VA_ARGS__)
-#define __block_inline1__some$$$(_T, _val...) lit$((O$$(_T))some(_val))
-
-#define __param_expand__none$(...)          __VA_ARGS__, pp_expand
-#define __block_inline__none$(...)          __block_inline1__none$(__VA_ARGS__)
-#define __block_inline1__none$(_T, _val...) lit$((O$(_T))none())
-
-#define __param_expand__none$$(...)           __VA_ARGS__, pp_expand
-#define __block_inline__none$$(...)           __block_inline1__none$$$(__VA_ARGS__)
-#define __block_inline1__none$$$(_T, _val...) lit$((O$$(_T))none())
+#define __param_expand__none$(...)    __VA_ARGS__
+#define __block_inline__none$(...)    __block_inline1__none$(__VA_ARGS__)
+#define __block_inline1__none$(_T...) lit$((_T)none())
 
 #define __step__O_asP$(...) \
     __step__O_asP$__emit(__VA_ARGS__)

@@ -6,8 +6,17 @@
 typedef struct Point {
     i32 x, y;
 } Point;
-T_use$(Point, (P, S, O, ArrList));
-T_use$(Point, (ArrList_init, ArrList_fini, ArrList_append, ArrList_appendS, ArrList_insert, ArrList_pop, ArrList_removeOrd));
+T_use$((Point)(P, S, O));
+T_use$((Point)(
+    ArrList,
+    ArrList_init,
+    ArrList_fini,
+    ArrList_append,
+    ArrList_appendS,
+    ArrList_insert,
+    ArrList_pop,
+    ArrList_removeOrd
+));
 
 $static fn_((printPoints(ArrList$Point points))(void)) {
     io_stream_print(u8_l("Points ({:uz} items):\n"), points.items.len);

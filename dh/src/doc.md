@@ -89,8 +89,8 @@ The formatting implementation has been completed with the following components:
 
 ## Assignment and Literals
 
-### asgLit
-- Syntax: `asgLit(&pointer, initializer_or_value)`
+### asg_lit
+- Syntax: `asg_lit(&pointer, initializer_or_value)`
 - Assigns literal value or initializer to dereferenced pointer
 - Verifies pointer is non-null
 

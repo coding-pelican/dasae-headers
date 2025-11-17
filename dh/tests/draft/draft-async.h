@@ -3,8 +3,6 @@
 #define CO_INCLUDED (1)
 
 #include "dh/core.h"
-#include "dh/fn.h"
-
 
 // Coroutine state
 typedef struct Co_Ctx Co_Ctx;
@@ -20,9 +18,9 @@ typedef struct Co_Ret {
 } Co_Ret;
 typedef struct Co_Ctx {
     Co_FnWork* fn;
-    Co_Count   count;
-    Co_State   state;
-    Co_Ret*    ret;
+    Co_Count count;
+    Co_State state;
+    Co_Ret* ret;
 } Co_Ctx;
 #define Co_Ctx$(fnName) pp_join($, Co_Ctx, fnName)
 #define use_Co_Ctx$(fnName, Args, RetType, Locals) \
@@ -30,10 +28,10 @@ typedef struct Co_Ctx {
         Co_Ctx base[1]; \
         struct { \
             Co_FnWork* fn; \
-            Co_Count   count; \
-            Co_State   state; \
+            Co_Count count; \
+            Co_State state; \
             union { \
-                Co_Ret  base[1]; \
+                Co_Ret base[1]; \
                 RetType value; \
             } ret; \
             struct { \
@@ -50,8 +48,8 @@ typedef struct Co_Ctx {
     fn_((_fnName(Co_Ctx * ctx))(Co_Ctx*))
 #define async_fn_scope(_fnName) \
     async_fn(_fnName) { \
-        let self   = as$((Co_Ctx$(_fnName)*)(ensureNonnull(ctx))); \
-        let args   = &self->args; \
+        let self = as$(Co_Ctx$(_fnName)*)(ensureNonnull(ctx)); \
+        let args = &self->args; \
         let locals = &self->locals; \
         switch (self->count) { \
         default: \
@@ -65,7 +63,7 @@ typedef struct Co_Ctx {
 #define async_return_frame(_frame, _expr...) \
     do { \
         debug_assert_nonnull(self); \
-        self->count     = __LINE__; \
+        self->count = __LINE__; \
         self->ret.value = *(TypeOf(self->ret.value)[1]){ [0] = _expr }; \
     case __LINE__: \
         debug_assert_nonnull(self); \
@@ -75,7 +73,7 @@ typedef struct Co_Ctx {
 #define async_return_(_expr...) \
     do { \
         debug_assert_nonnull(self); \
-        self->count     = __LINE__; \
+        self->count = __LINE__; \
         self->ret.value = *(TypeOf(self->ret.value)[1]){ [0] = _expr }; \
     case __LINE__: \
         debug_assert_nonnull(self); \
@@ -92,11 +90,11 @@ typedef struct Co_Ctx {
 
 #define __exec_async_() __async_
 #define __async_(_fnAsync, _args...) \
-    as$((Co_Ctx$(_fnAsync)*)(_fnAsync((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base)))
+    (as$(Co_Ctx$(_fnAsync)*)(_fnAsync(lit$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))))
 
 #define __exec_async_ctx() __async_ctx
 #define __async_ctx(_fnAsync, _args...) \
-    ((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })
+    (lit$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
 
 #define __exec_async_with() __async_with
 #define __async_with(_ctx, _fnAsync, _args...) \
@@ -117,7 +115,7 @@ typedef struct Co_Ctx {
 #define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
-    callFn((__ctx->fn)(as$((Co_Ctx*)(__ctx)))); \
+    callFn((__ctx->fn)(as$(Co_Ctx*)(__ctx))); \
 })
 
 #define await_(_ctx...) comp_syn__await_(_ctx)

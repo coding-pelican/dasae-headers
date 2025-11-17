@@ -12,7 +12,7 @@ $static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
 
 $inline_always
 $static fn_((calcInitCap(TypeInfo type))(usize)) {
-    return as$((usize)(prim_max(1, arch_cache_line / type.size)));
+    return as$(usize)(prim_max(1, arch_cache_line / type.size));
 }
 
 $static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
@@ -566,7 +566,7 @@ fn_((ArrList_pop(ArrList* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     if (self->items.len == 0) { return_none(); }
     let value = u_copy$P(u_allocV(type).ref, u_at$S(ArrList_items(*self, type), self->items.len - 1));
     self->items.len -= 1;
-    return_some({ .inner = u_copy$P(ret_mem.ref, value.as_const).inner });
+    return_some({ .inner = u_copy$P(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
 fn_((ArrList_removeOrd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {

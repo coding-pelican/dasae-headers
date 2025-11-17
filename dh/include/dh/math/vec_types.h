@@ -142,14 +142,14 @@ typedef m_V4f64 m_V4d;
 
 #define m_V_as$(TDestVec, src_vec...)      FUNC_m_V_as$(TDestVec, src_vec)
 #define FUNC_m_V_as$(TDestVec, src_vec...) blk({ \
-    TDestVec _dest = cleared(); \
-    let _src = (src_vec); \
-    const usize _len = countOf(_dest.s); \
-    claim_assert_static(_len == countOf(_src.s)); \
+    TDestVec __dst = cleared(); \
+    let __src = (src_vec); \
+    const usize _len = countOf$(TypeOf(__dst.s)); \
+    claim_assert_static(_len == countOf$(TypeOf(__src.s))); \
     for (usize _i = 0; _i < _len; ++_i) { \
-        _dest.s[_i] = as$((TypeOf(_dest.s[_i]))(_src.s[_i])); \
+        __dst.s[_i] = as$(TypeOf(__dst.s[_i]))(__src.s[_i]); \
     } \
-    blk_return _dest; \
+    blk_return __dst; \
 })
 
 /* #define m_V2_Match(T) TypeOf(_Generic( \

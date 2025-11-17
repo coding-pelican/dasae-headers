@@ -85,8 +85,8 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
         v = (Rand_next$f64(self->rng) * 2.0 - 1.0);
         s = u * u + v * v;
     } while (s >= 1.0 || s == 0.0);
-    s = sqrt(-2.0 * log(s) / s);
-    asgLit((&self->spare)(some(v * s)));
+    s = flt_sqrt(-2.0 * flt_ln(s) / s);
+    asg_lit((&self->spare)(some(v * s)));
     return mean + std_dev * u * s;
 }
 
@@ -157,9 +157,9 @@ $static fn_((State_buildSpatialGrid(State* self))(void)) {
     for_(($r(0, State_particles),$s(self->particles))(i, particle) {
         let cell_idx = State_hashPosition(particle->pos);
 
-        let pos = atom_fetchAdd(&at$S(self->grid, cell_idx)->count, 1, atom_MemOrd_release);
+        let pos = atom_fetchAdd(&S_at((self->grid)[cell_idx])->count, 1, atom_MemOrd_release);
         if (pos < State_max_particles_per_cell) {
-            *atA(atS(self->grid, cell_idx)->indices, pos) = i;
+            *A_at((S_at((self->grid)[cell_idx])->indices)[pos]) = i;
         }
     });
 }
@@ -206,7 +206,7 @@ $static fn_((State_simulate(State* self, usize frame_amount))(void)) {
         let frame_end = time_Instant_now();
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
-        if (frame % as$((usize)State_target_fps) == 0) {
+        if (frame % as$(usize)(State_target_fps) == 0) {
             io_stream_println(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
@@ -215,8 +215,8 @@ $static fn_((State_simulate(State* self, usize frame_amount))(void)) {
         }
     });
 
-    let avg_fps = as$((f64)(frame_amount)) / total_time;
-    let avg_spf = total_time / as$((f64)(frame_amount));
+    let avg_fps = as$(f64)(frame_amount) / total_time;
+    let avg_spf = total_time / as$(f64)(frame_amount);
     io_stream_println(u8_l("\n=== Simulation Complete ===\n"));
     io_stream_println(u8_l("Total frames: {:uz}"), frame_amount);
     io_stream_println(u8_l("Total time: {:.2fl} seconds"), total_time);
@@ -248,7 +248,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
     let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
     let cpu_count = prim_clamp(expr_(usize $scope) if (1 < args.len) {
-        $break_(catch_((fmt_parse$usize(*at$S(args, 1), 10))($ignore, usize_limit_max)));
+        $break_(catch_((fmt_parse$usize(*S_at((args)[1]), 10))($ignore, usize_limit_max)));
     } else {
         $break_(usize_limit_max);
     } $unscoped_(expr), 1, max_cpu_count);
@@ -262,11 +262,11 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     defer_(mem_Allocator_free(gpa, u_anyS(particles)));
     let grid = try_(u_castE$((E$$(S$Cell))(mem_Allocator_alloc(gpa, typeInfo$(Cell), State_grid_width * State_grid_height))));
     defer_(mem_Allocator_free(gpa, u_anyS(grid)));
-    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$((f64)(State_particles * typeInfo$(Particle).size)) / (1024.0 * 1024.0));
+    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$(f64)(State_particles * typeInfo$(Particle).size) / (1024.0 * 1024.0));
 
     var state = State_init(particles, grid);
     let frame_amount = expr_(usize $scope) if (2 < args.len) {
-        $break_(catch_((fmt_parse$usize(*at$S(args, 2), 10))($ignore, 1000)));
+        $break_(catch_((fmt_parse$usize(*S_at((args)[2]), 10))($ignore, 1000)));
     } else {
         $break_(1000);
     } $unscoped_(expr);
@@ -317,7 +317,7 @@ fn_((State_initParticles_worker(usize i, u_V$raw params))(void)) {
     }
     let args = u_castV$((State_InitParticlesArgs)(params));
     let particles = args.particles;
-    let particle_i = at$S(particles, i);
+    let particle_i = S_at((particles)[i]);
     var particle = *particle_i;
     let c = args.center;
     let r_a_b = args.radius_a_b;
@@ -355,7 +355,7 @@ typedef struct State_ClearGridArgs {
 fn_((State_clearGrid_worker(usize i, u_V$raw params))(void)) {
     let args = u_castV$((State_ClearGridArgs)(params));
     let grid = args.grid;
-    let cell = at$S(grid, i);
+    let cell = S_at((grid)[i]);
     atom_store(&cell->count, 0ull, atom_MemOrd_release);
 }
 
@@ -366,10 +366,10 @@ fn_((State_clearGrid(S$Cell grid))(void)) {
 }
 
 fn_((State_hashPosition(m_V2f64 pos))(usize)) {
-    let gx_0 = as$((isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size));
-    let gy_0 = as$((isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size));
-    let gx_1 = as$((usize)prim_clamp(gx_0, 0, as$((isize)State_grid_width) - 1));
-    let gy_1 = as$((usize)prim_clamp(gy_0, 0, as$((isize)State_grid_height) - 1));
+    let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
+    let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width) - 1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height) - 1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -380,7 +380,7 @@ typedef struct State_ApplyGravityArgs {
 fn_((State_applyGravity_worker(usize i, u_V$raw params))(void)) {
     let args = u_castV$((State_ApplyGravityArgs)(params));
     let particles = args.particles;
-    let particle_i = at$S(particles, i);
+    let particle_i = S_at((particles)[i]);
     var particle = *particle_i;
 
     let dp = m_V2f64_neg(particle.pos);
@@ -411,7 +411,7 @@ typedef struct State_HandleCollisionsArgs {
 fn_((State_handleCollisions_worker(usize i, u_V$raw params))(void)) {
     let args = u_castV$((State_HandleCollisionsArgs)(params));
     let particles = args.particles;
-    let particle_i = at$S(particles, i);
+    let particle_i = S_at((particles)[i]);
     var particle = *particle_i;
     let grid = args.grid;
     let collision_radius = 0.5;
@@ -422,33 +422,33 @@ fn_((State_handleCollisions_worker(usize i, u_V$raw params))(void)) {
 
     for_(($r(0, 3))(dy_offset){  // 0, 1, 2
         for_(($r(0, 3))(dx_offset){  // 0, 1, 2
-            let dx = as$((isize)(dx_offset)) - 1;  // Convert to -1, 0, 1
-            let dy = as$((isize)(dy_offset)) - 1;
+            let dx = as$(isize)(dx_offset) - 1;  // Convert to -1, 0, 1
+            let dy = as$(isize)(dy_offset) - 1;
 
-            let nx = as$((isize)(gx)) + dx;
-            let ny = as$((isize)(gy)) + dy;
+            let nx = as$(isize)(gx) + dx;
+            let ny = as$(isize)(gy) + dy;
 
-            if ((nx < 0 || State_grid_width <= as$((usize)(nx))) ||
-                (ny < 0 || State_grid_height <= as$((usize)(ny)))) {
+            if ((nx < 0 || State_grid_width <= as$(usize)(nx)) ||
+                (ny < 0 || State_grid_height <= as$(usize)(ny))) {
                 continue;
             }
 
-            let neighbor_idx = as$((usize)(ny)) * State_grid_width + as$((usize)(nx));
-            let neighbor = at$S(grid, neighbor_idx);
+            let neighbor_idx = as$(usize)(ny) * State_grid_width + as$(usize)(nx);
+            let neighbor = S_at((grid)[neighbor_idx]);
             let count = atom_load(&neighbor->count, atom_MemOrd_acquire);
 
             for (usize k = 0; k < count && k < State_max_particles_per_cell; ++k) {
-                let j = *atA(neighbor->indices, k);
+                let j = *A_at((neighbor->indices)[k]);
                 if (j <= i) { continue; }
 
                 let self = &particle;
-                let other = *at$S(particles, j);
+                let other = *S_at((particles)[j]);
                 let dp_col = m_V2f64_sub(other.pos, self->pos);
                 let d_sq = m_V2f64_lenSq(dp_col);
                 let min_d = collision_radius * 2.0f;
                 let min_d_sq = min_d * min_d;
                 if (d_sq < min_d_sq && 0.001f < d_sq) {
-                    let d = sqrt(d_sq);
+                    let d = flt_sqrt(d_sq);
                     let overlap = min_d - d;
                     let n_norm = m_V2f64_scaleInv(dp_col, d);
                     let separation = overlap * 0.5f;
@@ -475,7 +475,7 @@ typedef struct State_UpdatePositionsArgs {
 fn_((State_updatePositions_worker(usize i, u_V$raw params))(void)) {
     let args = u_castV$((State_UpdatePositionsArgs)(params));
     let particles = args.particles;
-    let particle_i = at$S(particles, i);
+    let particle_i = S_at((particles)[i]);
     var particle = *particle_i;
 
     m_V2f64_addAsg(&particle.pos, m_V2f64_scale(particle.vel, State_delta_time));

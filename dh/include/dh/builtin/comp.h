@@ -108,7 +108,7 @@ extern "C" {
 #define $maybe_unused comp_attr__$maybe_unused
 #define $must_use     comp_attr__$must_use
 
-#define as$(/*(_TDest)(_src...)*/... /*(_TDest)*/) \
+#define as$(_TDest... /*)(_src...) -> (_TDest)(*/) \
     /** \
      * @brief Cast macro for converting a value to a different type \
      * @details This macro is used to cast a value from one type to another \
@@ -116,33 +116,14 @@ extern "C" {
      * @param _src The value to cast \
      * @return The casted value \
      */ \
-    __as$__emit(__VA_ARGS__)
+    __syn__as$(_TDest)
+#define __syn__as$(_TDest...)         __syn__as$__emit(_TDest) __syn__as$__paramSrc
+#define __syn__as$__paramSrc(_src...) (_src)
 #if defined(__cplusplus)
-#define __as$__emit(...)      (__as$__expandT __VA_ARGS__)
-#define __as$__expandT(_T...) static_cast<_T>
+#define __syn__as$__emit(_TDest...) static_cast<_TDest>
 #else
-#define __as$__emit(...) (__VA_ARGS__)
+#define __syn__as$__emit(_TDest...) (_TDest)
 #endif
-
-#if UNUSED_CODE
-#define as$(/*(_TDest)(_src...)*/... /*(_TDest)*/) \
-    /** \
-     * @brief Cast macro for converting a value to a different type \
-     * @details This macro is used to cast a value from one type to another \
-     * @param _TDest The destination type to cast to \
-     * @param _src The value to cast \
-     * @return The casted value \
-     */ \
-    __as$__step(pp_defer(__as$__emit)(__as$__sep __VA_ARGS__))
-#define __as$__step(...)  __VA_ARGS__
-#define __as$__sep(...)   __VA_ARGS__, __as$__next$
-#define __as$__next$(...) __VA_ARGS__
-#if defined(__cplusplus)
-#define __as$__emit(_TDest, _src...) (static_cast<_TDest>(_src))
-#else
-#define __as$__emit(_TDest, _src...) ((_TDest)(_src))
-#endif
-#endif /* UNUSED_CODE */
 
 #define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
     __lit$__emit(__VA_ARGS__)
@@ -166,6 +147,41 @@ extern "C" {
 #endif
 #define __lit$__expandInitial(_initial...) _initial
 #endif /* UNUSED_CODE */
+
+#define lit_n$(_T) (_T) __op__lit_n$__parseLits
+#define __op__lit_n$__parseLits(...) \
+    { lit_num(__VA_ARGS__) }
+
+// lit_num(11,644,473,600u) => 11644473600u
+#define lit_num(_Comma_Sep_Lits...) \
+    __op__lit_num(_Comma_Sep_Lits)
+#define lit_num$(/*(_T)(_Comma_Sep_Lits...)*/... /*(_T)*/) \
+    __op__lit_num$(__op__lit_num$__parseT __VA_ARGS__)
+
+#define __op__lit_num(_Comma_Sep_Lits...) \
+    pp_join(__, __op__lit_num, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
+/* Handle different numbers of arguments */
+#define __op__lit_num__1(_Num1) \
+    _Num1
+#define __op__lit_num__2(_Num1, _Num2) \
+    pp_cat(_Num1, _Num2)
+#define __op__lit_num__3(_Num1, _Num2, _Num3) \
+    pp_cat3(_Num1, _Num2, _Num3)
+#define __op__lit_num__4(_Num1, _Num2, _Num3, _Num4) \
+    pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
+#define __op__lit_num__5(_Num1, _Num2, _Num3, _Num4, _Num5) \
+    pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
+#define __op__lit_num__6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) \
+    pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
+#define __op__lit_num__7(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7) \
+    pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6), _Num7)
+#define __op__lit_num__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
+    pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
+
+#define __op__lit_num$(...)           __op__lit_num$__emit(__VA_ARGS__)
+#define __op__lit_num$__parseT(_T...) _T,
+#define __op__lit_num$__emit(_T, _Comma_Sep_Lits...) \
+    lit$((_T){ lit_num _Comma_Sep_Lits })
 
 #define make$(/*(_T){_initial...}*/... /*(_T)*/) \
     __make$__step(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
@@ -222,7 +238,7 @@ extern "C" {
     claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     claim_assert_static(isSameType$(TypeOf(*__p_lhs), TypeOf(__rhs))); \
-    *_p_lhs = *as$((TypeOf(__p_lhs))(&__rhs)); \
+    *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
     __p_lhs; \
 })
 #define __asg_1(_p_lhs, _rhs, _fields...) \
@@ -236,7 +252,7 @@ extern "C" {
     claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
     pp_foreach (__op__asg_compat__assert, (TypeOf(*__p_lhs), TypeOf(__rhs)), _fields); \
-    *_p_lhs = *as$((TypeOf(__p_lhs))(&__rhs)); \
+    *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
     __p_lhs; \
 })
 #define __op__asg_compat__assert(...) \
@@ -246,19 +262,65 @@ extern "C" {
 #define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) \
     claim_assert_static(isSameType$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
 
-#define asgLit(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) \
-    __op__asgLit(__op__asgLit__parsePLhs __VA_ARGS__)
-#define __op__asgLit(...) \
-    __op__asgLit__emit(__VA_ARGS__)
-#define __op__asgLit__parsePLhs(_p_lhs...) \
-    pp_uniqTok(p_lhs), _p_lhs, __op__asgLit__expandRhs
-#define __op__asgLit__expandRhs(_rhs...)             _rhs
-#define __op__asgLit__emit(__p_lhs, _p_lhs, _rhs...) ({ \
+#define asg_lit(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) \
+    __op__asg_lit(__op__asg_lit__parsePLhs __VA_ARGS__)
+#define __op__asg_lit(...) \
+    __op__asg_lit__emit(__VA_ARGS__)
+#define __op__asg_lit__parsePLhs(_p_lhs...) \
+    pp_uniqTok(p_lhs), _p_lhs, __op__asg_lit__expandRhs
+#define __op__asg_lit__expandRhs(_rhs...)             _rhs
+#define __op__asg_lit__emit(__p_lhs, _p_lhs, _rhs...) ({ \
     let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    typedef TypeOf(*__p_lhs) LitType; \
     claim_assert_nonnull(__p_lhs); \
-    *__p_lhs = make$((TypeOf(*__p_lhs))_rhs); \
+    *__p_lhs = make$((LitType)_rhs); \
     __p_lhs; \
 })
+
+#define $init(/*(_T){_initial...}*/... /*(_T)*/) \
+    __op__$init(__op__$init__parseT __VA_ARGS__)
+#define __op__$init(...)                   __op__$init__emit(__VA_ARGS__)
+#define __op__$init__parseT(_T...)         _T,
+#define __op__$init__emit(_T, _initial...) ({ \
+    $maybe_unused typedef _T InitType; \
+    (InitType) _initial; \
+})
+
+#define $asg(_val...)       , $_asg, (_val)
+#define $field(...)         __op__$field(__VA_ARGS__)
+#define __op__$field(...)   pp_overload(__op__$field, __VA_ARGS__)(__VA_ARGS__)
+#define __op__$field_1(...) __op__$field_1__emit(__VA_ARGS__)
+#define __op__$field_1__emit(_field_val...) \
+    .__op__$field__expand _field_val = ({ \
+        $maybe_unused typedef InitType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field_val) FieldType; \
+        _field_val; \
+    })
+#define __op__$field_3(...) __op__$field_3__emit(__VA_ARGS__)
+#define __op__$field_3__emit(_field, _op, _val...) \
+    .__op__$field__expand _field = ({ \
+        $maybe_unused typedef InitType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field) FieldType; \
+        _val; \
+    })
+#define __op__$field__expand(...) __VA_ARGS__
+#define $in_field(...)            __op__$in_field__emit(__VA_ARGS__)
+#define __op__$in_field(...)      pp_overload(__op__$in_field, __VA_ARGS__)(__VA_ARGS__)
+#define __op__$in_field_1(...)    __op__$in_field_1__emit(__VA_ARGS__)
+#define __op__$in_field_1__emit(_field_val...) \
+    .__op__$in_field__expand _field_val = ({ \
+        $maybe_unused typedef FieldType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field_val) FieldType; \
+        _field_val; \
+    })
+#define __op__$in_field_3(...) __op__$in_field_3__emit(__VA_ARGS__)
+#define __op__$in_field_3__emit(_field, _op, _val...) \
+    .__op__$in_field__expand _field = ({ \
+        $maybe_unused typedef FieldType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field) FieldType; \
+        _val; \
+    })
+#define __op__$in_field__expand(...) __VA_ARGS__
 
 #define cleared() comp_syn__cleared()
 #define comp_syn__cleared() \
@@ -409,5 +471,5 @@ T:
 #endif /* BUILTIN_COMP_INCLUDED */
 
 
-// as$((T)(Expr))
-// as$(T)((Expr))
+// as$(T)(Expr)
+// as$(T)(Expr)

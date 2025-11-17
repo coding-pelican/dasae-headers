@@ -7,9 +7,9 @@ fn_((engine_Window_init(engine_Window_Config config))(E$P$engine_Window) $guard)
     debug_assert(0 < config.rect_size.y);
 
     /* Create window */
-    let allocator = unwrap(config.allocator);
-    let window    = meta_cast$(engine_Window*, try_(mem_Allocator_create(allocator, typeInfo$(engine_Window))));
-    errdefer_($ignore, mem_Allocator_destroy(allocator, anyPtr(window)));
+    let allocator = unwrap_(config.allocator);
+    let window    = u_castP$((engine_Window*)(try_(mem_Allocator_create(allocator, typeInfo$(engine_Window)))));
+    errdefer_($ignore, mem_Allocator_destroy(allocator, u_anyP(window)));
     window->allocator = allocator;
     /* Create composite buffer */
     let rect_size        = config.rect_size;
@@ -33,7 +33,7 @@ fn_((engine_Window_init(engine_Window_Config config))(E$P$engine_Window) $guard)
     /* Init canvas views */
     window->view.count = 0;
     /* Reserve backend for init */
-    O_asg(&window->backend, none());
+    asg_lit((&window->backend)(none()));
 
     /* Created successfully */
     return_ok(window);
@@ -44,17 +44,17 @@ fn_((engine_Window_fini(engine_Window* self))(void)) {
     debug_assert_nonnull(self->composite_buffer);
 
     engine_Canvas_fini(self->composite_buffer);
-    mem_Allocator_destroy(self->allocator, anyPtr(self));
+    mem_Allocator_destroy(self->allocator, u_anyP(self));
 }
 
 fn_((engine_Window_update(engine_Window* self))(E$void) $scope) {
     debug_assert_nonnull(self);
-    engine_Backend_processEvents(unwrap(self->backend));
+    engine_Backend_processEvents(unwrap_(self->backend));
 
     /* resize */
     let res = engine_Window_getRes(self);
     for (u32 id = 0; id < self->view.count; ++id) {
-        let view = A_at(self->view.list, id);
+        let view = A_at((self->view.list)[id]);
         if (!view->visible) { continue; }
         let size = blk({
             var full = view->rect.size;
@@ -81,24 +81,24 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
     if (engine_Window_isMinimized(self)) { return; }
 
     // Clear composite buffer
-    engine_Canvas_clear(self->composite_buffer, none$(O$Color));
+    engine_Canvas_clear(self->composite_buffer, none$((O$Color)));
 
     // Compose all visible canvas views
     for (u32 id = 0; id < self->view.count; ++id) {
-        let view = A_at(self->view.list, id);
+        let view = A_at((self->view.list)[id]);
         if (!view->visible) { continue; }
         if (!view->canvas) { continue; }
 
         engine_Canvas_blit(
             self->composite_buffer,
             view->canvas,
-            as$((i32)(view->pos_on_window.top_left.x)),
-            as$((i32)(view->pos_on_window.top_left.y))
+            as$(i32)(view->pos_on_window.top_left.x),
+            as$(i32)(view->pos_on_window.top_left.y)
         );
     }
 
     // Present to platform
-    engine_Backend_presentBuffer(unwrap(self->backend));
+    engine_Backend_presentBuffer(unwrap_(self->backend));
 }
 
 fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config))(O$u32) $scope) {
@@ -106,7 +106,7 @@ fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config conf
 
     if (engine_Window_view_count_limit <= self->view.count) { return_none(); }
     return_some(blk({
-        let view                     = A_at(self->view.list, self->view.count);
+        let view                     = A_at((self->view.list)[self->view.count]);
         view->canvas                 = config.canvas;
         view->pos_on_window.top_left = config.pos;
         view->rect.size              = config.size;
@@ -132,52 +132,52 @@ fn_((engine_Window_removeView(engine_Window* self, u32 view_id))(void)) {
     self->views.count--; */
 }
 
-fn_((engine_Window_getPos(const engine_Window* self))(Vec2i)) {
+fn_((engine_Window_getPos(const engine_Window* self))(m_V2i32)) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowPos(unwrap(self->backend));
+    return engine_Backend_getWindowPos(unwrap_(self->backend));
 }
 
-fn_((engine_Window_getDim(const engine_Window* self))(Vec2u)) {
+fn_((engine_Window_getDim(const engine_Window* self))(m_V2u32)) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowDim(unwrap(self->backend));
+    return engine_Backend_getWindowDim(unwrap_(self->backend));
 }
 
-fn_((engine_Window_getRes(const engine_Window* self))(Vec2u)) {
+fn_((engine_Window_getRes(const engine_Window* self))(m_V2u32)) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowRes(unwrap(self->backend));
+    return engine_Backend_getWindowRes(unwrap_(self->backend));
 }
 
-fn_((engine_Window_getMinRes(const engine_Window* self))(Vec2u)) {
+fn_((engine_Window_getMinRes(const engine_Window* self))(m_V2u32)) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowMinRes(unwrap(self->backend));
+    return engine_Backend_getWindowMinRes(unwrap_(self->backend));
 }
 
-fn_((engine_Window_getMaxRes(const engine_Window* self))(Vec2u)) {
+fn_((engine_Window_getMaxRes(const engine_Window* self))(m_V2u32)) {
     debug_assert_nonnull(self);
-    return engine_Backend_getWindowMaxRes(unwrap(self->backend));
+    return engine_Backend_getWindowMaxRes(unwrap_(self->backend));
 }
 
-fn_((engine_Window_setMinRes(engine_Window* self, Vec2u size))(E$void)) {
+fn_((engine_Window_setMinRes(engine_Window* self, m_V2u32 size))(E$void)) {
     debug_assert_nonnull(self);
-    return engine_Backend_setWindowMinRes(unwrap(self->backend), size);
+    return engine_Backend_setWindowMinRes(unwrap_(self->backend), size);
 }
 
-fn_((engine_Window_setMaxRes(engine_Window* self, Vec2u size))(E$void)) {
+fn_((engine_Window_setMaxRes(engine_Window* self, m_V2u32 size))(E$void)) {
     debug_assert_nonnull(self);
-    return engine_Backend_setWindowMaxRes(unwrap(self->backend), size);
+    return engine_Backend_setWindowMaxRes(unwrap_(self->backend), size);
 }
 
 fn_((engine_Window_isFocused(const engine_Window* self))(bool)) {
     debug_assert_nonnull(self);
-    return engine_Backend_isWindowFocused(unwrap(self->backend));
+    return engine_Backend_isWindowFocused(unwrap_(self->backend));
 }
 
 fn_((engine_Window_isMinimized(const engine_Window* self))(bool)) {
     debug_assert_nonnull(self);
-    return engine_Backend_isWindowMinimized(unwrap(self->backend));
+    return engine_Backend_isWindowMinimized(unwrap_(self->backend));
 }
 
 fn_((engine_Window_isMaximized(const engine_Window* self))(bool)) {
     debug_assert_nonnull(self);
-    return engine_Backend_isWindowMaximized(unwrap(self->backend));
+    return engine_Backend_isWindowMaximized(unwrap_(self->backend));
 }

@@ -19,10 +19,10 @@
 #define mem_asBytes$(_T, /* T* */ _val... /* S$u8 */)                   tpl_id(mem_asBytes, _T)(_val) z
 #define mem_asBytes_useT$(_T...) \
     static fn_((tpl_id(mem_asBytes_const, _T)(const _T* val))(S_const$u8)) { \
-        return Sli_from$(S_const$u8, as$((const u8*)(val)), sizeOf(*val)); \
+        return Sli_from$(S_const$u8, as$(const u8*)(val), sizeOf(*val)); \
     } \
     static fn_((tpl_id(mem_asBytes, _T)(_T * val))(S$u8)) { \
-        return Sli_from$(S$u8, as$((u8*)(val)), sizeOf(*val)); \
+        return Sli_from$(S$u8, as$(u8*)(val), sizeOf(*val)); \
     }
 
 #define mem_toBytes$(_T, /* T */ _val... /* A$$(sizeOf(_T), _T) */) tpl_id(mem_toBytes, _T)(_val)
@@ -39,8 +39,8 @@
     static fn_((tpl_id(mem_eql, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_bytes_eql( \
             typeInfo$(_T), \
-            Sli_from$(S_const$u8, as$((const u8*)(lhs.ptr)), lhs.len), \
-            Sli_from$(S_const$u8, as$((const u8*)(rhs.ptr)), rhs.len) \
+            Sli_from$(S_const$u8, as$(const u8*)(lhs.ptr), lhs.len), \
+            Sli_from$(S_const$u8, as$(const u8*)(rhs.ptr), rhs.len) \
         ); \
     }
 
@@ -51,8 +51,8 @@
     static fn_((tpl_id(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) prefix))(O$usize)) { \
         return mem_bytes_startsWith( \
             typeInfo$(_T), \
-            Sli_from$(S_const$u8, as$((const u8*)(haystack.ptr)), haystack.len), \
-            Sli_from$(S_const$u8, as$((const u8*)(prefix.ptr)), prefix.len) \
+            Sli_from$(S_const$u8, as$(const u8*)(haystack.ptr), haystack.len), \
+            Sli_from$(S_const$u8, as$(const u8*)(prefix.ptr), prefix.len) \
         ); \
     } \
 //   Returns true if haystack ends with suffix
@@ -61,8 +61,8 @@
     static fn_((tpl_id(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) suffix))(O$usize)) { \
         return mem_bytes_endsWith( \
             typeInfo$(_T), \
-            Sli_from$(S_const$u8, as$((const u8*)(haystack.ptr)), haystack.len), \
-            Sli_from$(S_const$u8, as$((const u8*)(suffix.ptr)), suffix.len) \
+            Sli_from$(S_const$u8, as$(const u8*)(haystack.ptr), haystack.len), \
+            Sli_from$(S_const$u8, as$(const u8*)(suffix.ptr), suffix.len) \
         ); \
     }
 
@@ -76,7 +76,7 @@ static $inline_always fn_((mem_bytes_startsWith(TypeInfo type, S_const$u8 haysta
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(prefix.ptr);
     let haystack_bytes = haystack.len * type.size;
-    let prefix_bytes   = prefix.len * type.size;
+    let prefix_bytes = prefix.len * type.size;
     if (haystack_bytes < prefix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr, prefix.ptr, prefix_bytes)) { return_none(); }
     return_some(prefix.len);
@@ -85,7 +85,7 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(suffix.ptr);
     let haystack_bytes = haystack.len * type.size;
-    let suffix_bytes   = suffix.len * type.size;
+    let suffix_bytes = suffix.len * type.size;
     if (haystack_bytes < suffix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr + haystack_bytes - suffix_bytes, suffix.ptr, suffix_bytes)) { return_none(); }
     return_some(haystack.len - suffix.len);
@@ -129,8 +129,8 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack
 mem_startsWith_useT$(i32);
 TEST_fn_("mem_startsWith: i32" $scope) {
     let haystack = A_ref$(S$i32, A_from$(i32, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }));
-    let prefix   = A_ref$(S$i32, A_from$(i32, { 1, 2, 3, 4 }));
-    let result   = mem_startsWith_i32(haystack.as_const, prefix.as_const);
+    let prefix = A_ref$(S$i32, A_from$(i32, { 1, 2, 3, 4 }));
+    let result = mem_startsWith_i32(haystack.as_const, prefix.as_const);
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap(result) == 4));
 } $unscoped_(TEST_fn);
@@ -138,8 +138,8 @@ TEST_fn_("mem_startsWith: i32" $scope) {
 mem_endsWith_useT$(i32);
 TEST_fn_("mem_endsWith: i32" $scope) {
     let haystack = A_ref$(S$i32, A_from$(i32, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }));
-    let suffix   = A_ref$(S$i32, A_from$(i32, { 6, 7, 8, 9, 10 }));
-    let result   = mem_endsWith_i32(haystack.as_const, suffix.as_const);
+    let suffix = A_ref$(S$i32, A_from$(i32, { 6, 7, 8, 9, 10 }));
+    let result = mem_endsWith_i32(haystack.as_const, suffix.as_const);
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap(result) == 5));
 } $unscoped_(TEST_fn);

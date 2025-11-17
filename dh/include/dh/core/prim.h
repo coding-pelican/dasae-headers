@@ -1,22 +1,27 @@
 /**
- * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    prim.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-01-09 (date of last update)
+ * @version v0.1-alpha.3
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  prim
  *
  * @brief   Primitive types and operations
- * @details Provides primitive types and operations for:
+ * @details Provides comprehensive primitive operations using zero-cost abstractions:
+ *          - Integer arithmetic (with overflow detection in debug mode)
+ *          - Floating-point arithmetic (IEEE 754 compliant)
  *          - Bitwise operations
- *          - Boolean operations
- *          - Integer operations
- *          - Floating-point operations
- *          - Pointer operations
+ *          - Comparison operations
+ *          - Bit manipulation (count, rotate, reverse)
+ *          - Transcendental functions (sin, cos, exp, log, etc.)
+ *          - IEEE 754 classification and decomposition
+ *
+ *          All operations use Clang built-ins for zero runtime cost.
+ *          Debug assertions check for undefined behavior (overflow, division by zero).
  */
 
 #ifndef core_prim__included
@@ -40,144 +45,1435 @@ extern "C" {
 #include "prim/union.h"
 #include "prim/switch.h"
 
-/*========== Macros and Definitions =========================================*/
-
-#define prim_cmp(val_lhs, val_rhs) comp_inline__prim_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_eq(val_lhs, val_rhs)  comp_inline__prim_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_ne(val_lhs, val_rhs)  comp_inline__prim_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_lt(val_lhs, val_rhs)  comp_inline__prim_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_gt(val_lhs, val_rhs)  comp_inline__prim_gt(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_le(val_lhs, val_rhs)  comp_inline__prim_le(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_ge(val_lhs, val_rhs)  comp_inline__prim_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-
-#define prim_min(val_lhs, val_rhs)                    comp_inline__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_min2(val_lhs, val_rhs)                   comp_inline__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_min3(val_1st, val_2nd, val_3rd)          comp_inline__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
-#define prim_min4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
-#define prim_max(val_lhs, val_rhs)                    comp_inline__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max2(val_lhs, val_rhs)                   comp_inline__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max3(val_1st, val_2nd, val_3rd)          comp_inline__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
-#define prim_max4(val_1st, val_2nd, val_3rd, val_4th) comp_inline__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
-#define prim_clamp(val_x, val_min, val_max)           comp_inline__prim_clamp(val_x, val_min, val_max)
-#define prim_wrap(val_x, val_min, val_max)            comp_inline__prim_wrap(val_x, val_min, val_max)
-
-#define prim_swap(val_lhs, val_rhs)                          __op__prim_swap(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(tmp), val_lhs, val_rhs)
-#define prim_memset(val_ptr, i32_value, usize_len...)        __op__prim_memset(val_ptr, i32_value, usize_len)
-#define prim_memcpy(val_dst_ptr, val_src_ptr, usize_len...)  __op__prim_memcpy(val_dst_ptr, val_src_ptr, usize_len)
-#define prim_memmove(val_dst_ptr, val_src_ptr, usize_len...) __op__prim_memmove(val_dst_ptr, val_src_ptr, usize_len)
-#define prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len...)  __op__prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len)
-#define prim_memchr(val_ptr, i32_value, usize_len...)        __op__prim_memchr(val_ptr, i32_value, usize_len)
-
-#define prim_divisible(val_lhs, val_rhs) comp_inline__prim_divisible(val_lhs, val_rhs)
-#define prim_sign(val_x)                 comp_inline__prim_sign(val_x)
+/*========== Memory Operations ==============================================*/
 
 typedef struct Void {
     u8 _bytes_zero[0];
 } Void;
 
-/*========== Macros Implementation ==========================================*/
+#define prim_memset(_ptr, _val, _len...)      __op__prim_memset(_ptr, _val, _len)
+#define prim_memcpy(_p_dst, _p_src, _len...)  __op__prim_memcpy(_p_dst, _p_src, _len)
+#define prim_memmove(_p_dst, _p_src, _len...) __op__prim_memmove(_p_dst, _p_src, _len)
+#define prim_memcmp(_p_lhs, _p_rhs, _len...)  __op__prim_memcmp(_p_lhs, _p_rhs, _len)
+#define prim_memchr(_ptr, _val, _len...)      __op__prim_memchr(_ptr, _val, _len)
+#define prim_alloca(_bytes...)                __op__prim_alloca(_bytes)
+#define prim_swap(_p_lhs, _p_rhs...) \
+    __op__prim_swap(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), pp_uniqTok(tmp), _p_lhs, _p_rhs)
 
-#define comp_inline__prim_cmp(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return( \
-        ((__lhs) < (__rhs))   ? -1 /* cmp_Ord_lt */ \
-        : ((__lhs) > (__rhs)) ? 1  /* cmp_Ord_gt */ \
-                              : 0  /* cmp_Ord_eq */ \
-    ); \
-})
-#define comp_inline__prim_eq(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs == (__rhs); \
-})
-#define comp_inline__prim_ne(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs != (__rhs); \
-})
-#define comp_inline__prim_lt(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs < (__rhs); \
-})
-#define comp_inline__prim_gt(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs > (__rhs); \
-})
-#define comp_inline__prim_le(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs <= (__rhs); \
-})
-#define comp_inline__prim_ge(__lhs, __rhs, val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __lhs >= (__rhs); \
+/*========== Arithmetic Operations ==========================================*/
+
+#define prim_add(_lhs, _rhs...)   __op__prim_add(_lhs, _rhs)
+#define prim_sub(_lhs, _rhs...)   __op__prim_sub(_lhs, _rhs)
+#define prim_mul(_lhs, _rhs...)   __op__prim_mul(_lhs, _rhs)
+#define flt_mulAdd(_x, _y, _z...) __op__flt_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
+#define prim_div(_lhs, _rhs...)   __op__prim_div(_lhs, _rhs)
+#define prim_mod(_lhs, _rhs...)   __op__prim_mod(_lhs, _rhs)
+#define flt_rem(_num, _denom...)  __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+
+#define prim_neg(_x...)        __op__prim_neg(_x)
+#define prim_abs_static(_x...) __op__prim_abs_static(_x)
+#define prim_abs(_x...)        __op__prim_abs(pp_uniqTok(x), _x)
+#define iint_abs(_x...)        __op__iint_abs(_x)
+#define flt_abs(_x...)         __op__flt_abs(_x)
+#define prim_sgn_static(_x...) __op__prim_sgn_static(_x)
+#define prim_sgn(_x...)        __op__prim_sgn(pp_uniqTok(x), _x)
+
+#define prim_not(_x...)     __op__prim_not(_x)
+#define prim_shl(_x, _y...) __op__prim_shl(_x, _y)
+#define prim_shr(_x, _y...) __op__prim_shr(_x, _y)
+#define prim_and(_x, _y...) __op__prim_and(_x, _y)
+#define prim_xor(_x, _y...) __op__prim_xor(_x, _y)
+#define prim_or(_x, _y...)  __op__prim_or(_x, _y)
+
+#define prim_cmp(_lhs, _rhs... /*(cmp_Ord)*/) __op__prim_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define prim_eq(_lhs, _rhs...)                __op__prim_eq(_lhs, _rhs)
+#define prim_ne(_lhs, _rhs...)                __op__prim_ne(_lhs, _rhs)
+#define prim_lt(_lhs, _rhs...)                __op__prim_lt(_lhs, _rhs)
+#define prim_gt(_lhs, _rhs...)                __op__prim_gt(_lhs, _rhs)
+#define prim_le(_lhs, _rhs...)                __op__prim_le(_lhs, _rhs)
+#define prim_ge(_lhs, _rhs...)                __op__prim_ge(_lhs, _rhs)
+
+#define prim_min(val_lhs, val_rhs...)                    __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min2(val_lhs, val_rhs...)                   __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min3(val_1st, val_2nd, val_3rd...)          __op__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_min4(val_1st, val_2nd, val_3rd, val_4th...) __op__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_max(val_lhs, val_rhs...)                    __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max2(val_lhs, val_rhs...)                   __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max3(val_1st, val_2nd, val_3rd...)          __op__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_max4(val_1st, val_2nd, val_3rd, val_4th...) __op__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_clamp(_x, _min, _max...)                    __op__prim_clamp(_x, _min, _max)
+#define prim_wrap(_x, _min, _max...)                     __op__prim_wrap(_x, _min, _max)
+
+/*========== Type Predicates ================================================*/
+
+#define isBool$(_T...) __op__isBool$(_T)
+#define isUInt$(_T...) __op__isUInt$(_T)
+#define isIInt$(_T...) __op__isIInt$(_T)
+#define isInt$(_T...)  __op__isInt$(_T)
+#define isFlt$(_T...)  __op__isFlt$(_T)
+
+/*========== Type Limits ====================================================*/
+
+#define uint_limit$(_T...)        __op__uint_limit$(_T)
+#define int_limitMin$(_T...)      __op__int_limitMin$(_T)
+#define int_limitMax$(_T...)      __op__int_limitMax$(_T)
+#define iint_limitMaxNgtv$(_T...) __op__iint_limitMaxNgtv$(_T)
+#define iint_limitMinNgtv$(_T...) __op__iint_limitMinNgtv$(_T)
+#define iint_limitMinPstv$(_T...) __op__iint_limitMinPstv$(_T)
+#define iint_limitMaxPstv$(_T...) __op__iint_limitMaxPstv$(_T)
+
+#define int_bits$(_T...)  __op__int_bits$(_T)
+#define int_bytes$(_T...) __op__int_bytes$(_T)
+
+#define flt_limitMin$(_T...)     __op__flt_limitMin$(_T)
+#define flt_limitMax$(_T...)     __op__flt_limitMax$(_T)
+#define flt_limitMaxNgtv$(_T...) __op__flt_limitMaxNgtv$(_T)
+#define flt_limitMinNgtv$(_T...) __op__flt_limitMinNgtv$(_T)
+#define flt_limitMinPstv$(_T...) __op__flt_limitMinPstv$(_T)
+#define flt_limitMaxPstv$(_T...) __op__flt_limitMaxPstv$(_T)
+
+#define flt_bits$(_T...)  __op__flt_bits$(_T)
+#define flt_bytes$(_T...) __op__flt_bytes$(_T)
+
+#define flt_eps$(_T...)     __op__flt_eps$(_T)
+#define flt_nan$(_T...)     __op__flt_nan$(_T)
+#define flt_inf$(_T...)     __op__flt_inf$(_T)
+#define flt_infNgtv$(_T...) __op__flt_infNgtv$(_T)
+#define flt_infPstv$(_T...) __op__flt_infPstv$(_T)
+
+/*========== Integer Arithmetic Operations ==================================*/
+
+#define int_add(_lhs, _rhs...)    __op__int_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_sub(_lhs, _rhs...)    __op__int_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_mul(_lhs, _rhs...)    __op__int_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_mulAdd(_x, _y, _z...) __op__int_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
+#define int_div(_num, _denom...)  __op__int_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define int_mod(_num, _denom...)  __op__int_mod(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+
+#define iint_neg(_x...) __op__iint_neg(pp_uniqTok(x), _x)
+
+/*========== Integer Comparison Operations ==================================*/
+
+#define int_eq(_lhs, _rhs...) __op__int_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_ne(_lhs, _rhs...) __op__int_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_lt(_lhs, _rhs...) __op__int_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_gt(_lhs, _rhs...) __op__int_gt(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_le(_lhs, _rhs...) __op__int_le(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_ge(_lhs, _rhs...) __op__int_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+
+/*========== Integer Min/Max/Clamp Operations ===============================*/
+
+#define int_min(_lhs, _rhs...)     __op__int_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_max(_lhs, _rhs...)     __op__int_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_clamp(_x, _lo, _hi...) __op__int_clamp(_x, _lo, _hi)
+
+/*========== Bitwise Operations =============================================*/
+
+#define int_not(_x...)         __op__int_not(pp_uniqTok(x), _x)
+#define int_and(_lhs, _rhs...) __op__int_and(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_or(_lhs, _rhs...)  __op__int_or(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_xor(_lhs, _rhs...) __op__int_xor(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_shl(_x, _n...)     __op__int_shl(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_shr(_x, _n...)     __op__int_shr(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+
+/*========== Bit Manipulation Operations ====================================*/
+
+#define int_countOnes(_x...)          __op__int_countOnes(pp_uniqTok(x), _x)
+#define int_countZeros(_x...)         __op__int_countZeros(pp_uniqTok(x), _x)
+#define int_countLeadingZeros(_x...)  __op__int_countLeadingZeros(pp_uniqTok(x), _x)
+#define int_countTrailingZeros(_x...) __op__int_countTrailingZeros(pp_uniqTok(x), _x)
+#define int_rotateL(_x, _n...)        __op__int_rotateL(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_rotateR(_x, _n...)        __op__int_rotateR(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_swapBytes(_x...)          __op__int_swapBytes(pp_uniqTok(x), _x)
+#define int_reverseBits(_x...)        __op__int_reverseBits(pp_uniqTok(x), _x)
+
+/*========== Integer Exponential and Logarithm Operations ===================*/
+
+#define int_exp2(_x...) __op__int_exp2(_x)
+#define int_log2(_x...) __op__int_log2(_x)
+
+/*========== Integer Query Operations =======================================*/
+
+#define int_isOdd(_x...)     __op__int_isOdd(_x)
+#define int_isEven(_x...)    __op__int_isEven(_x)
+#define int_isPow2(_x...)    __op__int_isPow2(pp_uniqTok(x), _x)
+#define int_hasSglBit(_x...) __op__int_hasSglBit(_x)
+
+/*========== Floating-Point Arithmetic Operations ===========================*/
+
+#define flt_add(_lhs, _rhs...)    __op__flt_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_sub(_lhs, _rhs...)    __op__flt_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_mul(_lhs, _rhs...)    __op__flt_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_mulAdd(_x, _y, _z...) __op__flt_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
+#define flt_div(_num, _denom...)  __op__flt_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define flt_rem(_num, _denom...)  __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+
+#define flt_neg(_x...) __op__flt_neg(_x)
+
+/*========== Floating-Point Comparison Operations ===========================*/
+
+#define flt_eq(_lhs, _rhs...) __op__flt_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_ne(_lhs, _rhs...) __op__flt_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_lt(_lhs, _rhs...) __op__flt_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_gt(_lhs, _rhs...) __op__flt_gt(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_le(_lhs, _rhs...) __op__flt_le(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_ge(_lhs, _rhs...) __op__flt_ge(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+
+/*========== Floating-Point Min/Max/Clamp Operations ========================*/
+
+#define flt_min(_lhs, _rhs...)     __op__flt_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_max(_lhs, _rhs...)     __op__flt_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_clamp(_x, _lo, _hi...) __op__flt_clamp(_x, _lo, _hi)
+
+/*========== Floating-Point Classification ==================================*/
+
+#define flt_isNan(_x...)    __op__flt_isNan(_x)
+#define flt_isInf(_x...)    __op__flt_isInf(_x)
+#define flt_isFinite(_x...) __op__flt_isFinite(_x)
+#define flt_isNormal(_x...) __op__flt_isNormal(_x)
+
+/*========== Floating-Point Rounding Operations =============================*/
+
+#define flt_ceil(_x...)  __op__flt_ceil(pp_uniqTok(x), _x)
+#define flt_floor(_x...) __op__flt_floor(pp_uniqTok(x), _x)
+#define flt_round(_x...) __op__flt_round(pp_uniqTok(x), _x)
+#define flt_trunc(_x...) __op__flt_trunc(pp_uniqTok(x), _x)
+
+/*========== Floating-Point Power and Root Operations =======================*/
+
+#define flt_sqrt(_x...)      __op__flt_sqrt(pp_uniqTok(x), _x)
+#define flt_cbrt(_x...)      __op__flt_cbrt(pp_uniqTok(x), _x)
+#define flt_sq(_x...)        __op__flt_sq(pp_uniqTok(x), _x)
+#define flt_cb(_x...)        __op__flt_cb(pp_uniqTok(x), _x)
+#define flt_hypot(_x, _y...) __op__flt_hypot(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+
+/*========== Floating-Point Exponential and Logarithm =======================*/
+
+#define flt_exp(_x...)      __op__flt_exp(pp_uniqTok(x), _x)
+#define flt_exp2(_x...)     __op__flt_exp2(pp_uniqTok(x), _x)
+#define flt_powI(_x, _y...) __op__flt_powI(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+#define flt_powF(_x, _y...) __op__flt_powF(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+#define flt_ln(_x...)       __op__flt_ln(pp_uniqTok(x), _x)
+#define flt_log2(_x...)     __op__flt_log2(pp_uniqTok(x), _x)
+#define flt_log10(_x...)    __op__flt_log10(pp_uniqTok(x), _x)
+
+/*========== Floating-Point Trigonometric Functions =========================*/
+
+#define flt_sin(_x...)       __op__flt_sin(pp_uniqTok(x), _x)
+#define flt_cos(_x...)       __op__flt_cos(pp_uniqTok(x), _x)
+#define flt_tan(_x...)       __op__flt_tan(pp_uniqTok(x), _x)
+#define flt_asin(_x...)      __op__flt_asin(pp_uniqTok(x), _x)
+#define flt_acos(_x...)      __op__flt_acos(pp_uniqTok(x), _x)
+#define flt_atan(_x...)      __op__flt_atan(pp_uniqTok(x), _x)
+#define flt_atan2(_y, _x...) __op__flt_atan2(pp_uniqTok(y), pp_uniqTok(x), _y, _x)
+
+/*========== Floating-Point Hyperbolic Functions ============================*/
+
+#define flt_sinh(_x...)  __op__flt_sinh(pp_uniqTok(x), _x)
+#define flt_cosh(_x...)  __op__flt_cosh(pp_uniqTok(x), _x)
+#define flt_tanh(_x...)  __op__flt_tanh(pp_uniqTok(x), _x)
+#define flt_asinh(_x...) __op__flt_asinh(pp_uniqTok(x), _x)
+#define flt_acosh(_x...) __op__flt_acosh(pp_uniqTok(x), _x)
+#define flt_atanh(_x...) __op__flt_atanh(pp_uniqTok(x), _x)
+
+/*========== Floating-Point IEEE 754 Operations =============================*/
+
+#define flt_copySgn(_x, _y...)   __op__flt_copySgn(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+#define flt_nextAfter(_x, _y...) __op__flt_nextAfter(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+#define flt_scalb(_x, _n...)     __op__flt_scalb(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define flt_ilogb(_x...)         __op__flt_ilogb(pp_uniqTok(x), _x)
+
+/*===========================================================================*/
+/*                          IMPLEMENTATION SECTION                           */
+/*===========================================================================*/
+
+/*========== Memory Operations Implementation ===============================*/
+
+#if UNUSED_CODE
+$inline_always
+$static P$raw prim__memset(P$raw ptr, u8 val, usize len) {
+    if (len == 0) { return ptr; }
+    return memset(ptr, val, len);
+}
+$inline_always
+$static P$raw prim__memcpy(P$raw dst, P_const$raw src, usize len) {
+    if (len == 0 || dst == src) { return dst; }
+    return memcpy(dst, src, len);
+}
+$inline_always
+$static P$raw prim__memmove(P$raw dst, P_const$raw src, usize len) {
+    if (len == 0 || dst == src) { return dst; }
+    return memmove(dst, src, len);
+}
+$inline_always
+$static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
+    if (len == 0 || lhs == rhs) { return 0; }
+    return memcmp(lhs, rhs, len);
+}
+$inline_always
+$static P_const$raw prim__memchr(P_const$raw ptr, u8 val, usize len) {
+    if (len == 0) { return null; }
+    return memchr(ptr, val, len);
+}
+#endif /* UNUSED_CODE */
+
+#define __op__prim_memset(_ptr, _val, _len...)      memset(_ptr, _val, _len)
+#define __op__prim_memcpy(_p_dst, _p_src, _len...)  memcpy(_p_dst, _p_src, _len)
+#define __op__prim_memmove(_p_dst, _p_src, _len...) memmove(_p_dst, _p_src, _len)
+#define __op__prim_memcmp(_p_lhs, _p_rhs, _len...)  memcmp(_p_lhs, _p_rhs, _len)
+#define __op__prim_memchr(_ptr, _val, _len...)      memchr(_ptr, _val, _len)
+#define __op__prim_alloca(_bytes...)                alloca(_bytes)
+
+#define __op__prim_swap(__p_lhs, __p_rhs, __tmp, _p_lhs, _p_rhs...) blk({ \
+    let __p_lhs = _p_lhs; \
+    let __p_rhs = _p_rhs; \
+    let __tmp = *__p_lhs; \
+    *__p_lhs = *__p_rhs; \
+    *__p_rhs = __tmp; \
+    {}; \
 })
 
-#define comp_inline__prim_min2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __rhs < __lhs ? __rhs : __lhs; \
-})
-#define comp_inline__prim_min3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
-    let __1st = (val_1st); \
-    let __2nd = (val_2nd); \
-    let __3rd = (val_3rd); \
-    blk_return prim_min(prim_min(__1st, __2nd), __3rd); \
-})
-#define comp_inline__prim_min4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
-    let __1st = (val_1st); \
-    let __2nd = (val_2nd); \
-    let __3rd = (val_3rd); \
-    let __4th = (val_4th); \
-    blk_return prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
-})
-#define comp_inline__prim_max2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return __rhs > __lhs ? __rhs : __lhs; \
-})
-#define comp_inline__prim_max3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
-    let __1st = (val_1st); \
-    let __2nd = (val_2nd); \
-    let __3rd = (val_3rd); \
-    blk_return prim_max(prim_max(__1st, __2nd), __3rd); \
-})
-#define comp_inline__prim_max4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
-    let __1st = (val_1st); \
-    let __2nd = (val_2nd); \
-    let __3rd = (val_3rd); \
-    let __4th = (val_4th); \
-    blk_return prim_max(prim_max(prim_max(__1st, __2nd), __3rd), __4th); \
-})
-#define comp_inline__prim_clamp(val_x, val_min, val_max) \
-    prim_min(prim_max(val_x, val_min), val_max)
+#define __op__prim_add(_lhs, _rhs...)    ((_lhs) + (_rhs))
+#define __op__prim_sub(_lhs, _rhs...)    ((_lhs) - (_rhs))
+#define __op__prim_mul(_lhs, _rhs...)    ((_lhs) * (_rhs))
+#define __op__prim_div(_lhs, _rhs...)    ((_lhs) / (_rhs))
+#define __op__prim_mod(_lhs, _rhs...)    ((_lhs) % (_rhs))
 
-#define __op__prim_swap(__lhs, __rhs, __tmp, val_lhs, val_rhs) blk({ \
-    let __lhs = &(val_lhs); \
-    let __rhs = &(val_rhs); \
-    let __tmp = *(__lhs); \
-    *(__lhs) = *(__rhs); \
-    *(__rhs) = __tmp; \
-    blk_return{}; \
+#define __op__prim_neg(_x...)      (-(_x))
+#define __op__prim_abs_static(_x...) (0 < _x ? -_x : _x)
+#define __op__prim_abs(__x, _x...) blk({ \
+    let __x = val_x; \
+    __x < 0 ? -__x : __x; \
 })
-#define __op__prim_memset(val_ptr, i32_value, usize_len...)        memset(val_ptr, i32_value, usize_len)
-#define __op__prim_memcpy(val_dst_ptr, val_src_ptr, usize_len...)  memcpy(val_dst_ptr, val_src_ptr, usize_len)
-#define __op__prim_memmove(val_dst_ptr, val_src_ptr, usize_len...) memmove(val_dst_ptr, val_src_ptr, usize_len)
-#define __op__prim_memcmp(val_lhs_ptr, val_rhs_ptr, usize_len...)  memcmp(val_lhs_ptr, val_rhs_ptr, usize_len)
-#define __op__prim_memchr(val_ptr, i32_value, usize_len...)        memchr(val_ptr, i32_value, usize_len)
+#define __op__prim_sgn_static(_x...) (_x < 0 ? -1 : (0 < _x ? 1 : 0))
+#define __op__prim_sgn(__x, _x...) blk({ \
+    let __x = val_x; \
+    __x < 0 ? -1 : (0 < __x ? 1 : 0); \
+})
 
-#define comp_inline__prim_divisible(val_lhs, val_rhs) blk({ \
-    let __lhs = (val_lhs); \
-    let __rhs = (val_rhs); \
-    blk_return((__rhs == 0) ? 0 : (__lhs % __rhs == 0)); \
+#define __op__prim_not(_x...)     (~(_x))
+#define __op__prim_shl(_x, _y...) ((_x) << (_y))
+#define __op__prim_shr(_x, _y...) ((_x) >> (_y))
+#define __op__prim_and(_x, _y...) ((_x) & (_y))
+#define __op__prim_xor(_x, _y...) ((_x) ^ (_y))
+#define __op__prim_or(_x, _y...)  ((_x) | (_y))
+
+#define __op__prim_cmp(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    let __lhs = _lhs; \
+    let __rhs = _rhs; \
+    (__lhs < __rhs) ? cmp_Ord_lt \
+    : (__lhs > __rhs) ? cmp_Ord_gt \
+    : cmp_Ord_eq; \
 })
-#define comp_inline__prim_sign(val_x) blk({ \
-    let __scalar = (val_x); \
-    blk_return as$((TypeOf(__scalar))(__scalar < 0 ? -1 : (__scalar > 0 ? 1 : 0))); \
+#define __op__prim_eq(_lhs, _rhs...) ((_lhs) == (_rhs))
+#define __op__prim_ne(_lhs, _rhs...) ((_lhs) != (_rhs))
+#define __op__prim_lt(_lhs, _rhs...) ((_lhs) < (_rhs))
+#define __op__prim_gt(_lhs, _rhs...) ((_lhs) > (_rhs))
+#define __op__prim_le(_lhs, _rhs...) ((_lhs) <= (_rhs))
+#define __op__prim_ge(_lhs, _rhs...) ((_lhs) >= (_rhs))
+
+#define __op__prim_min2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
+    let __lhs = val_lhs; \
+    let __rhs = val_rhs; \
+    __rhs < __lhs ? __rhs : __lhs; \
+})
+#define __op__prim_min3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
+    let __1st = val_1st; \
+    let __2nd = val_2nd; \
+    let __3rd = val_3rd; \
+    prim_min(prim_min(__1st, __2nd), __3rd); \
+})
+#define __op__prim_min4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
+    let __1st = val_1st; \
+    let __2nd = val_2nd; \
+    let __3rd = val_3rd; \
+    let __4th = val_4th; \
+    prim_min(prim_min(prim_min(__1st, __2nd), __3rd), __4th); \
+})
+#define __op__prim_max2(__lhs, __rhs, val_lhs, val_rhs...) blk({ \
+    let __lhs = val_lhs; \
+    let __rhs = val_rhs; \
+    __rhs > __lhs ? __rhs : __lhs; \
+})
+#define __op__prim_max3(__1st, __2nd, __3rd, val_1st, val_2nd, val_3rd...) blk({ \
+    let __1st = val_1st; \
+    let __2nd = val_2nd; \
+    let __3rd = val_3rd; \
+    prim_max(prim_max(__1st, __2nd), __3rd); \
+})
+#define __op__prim_max4(__1st, __2nd, __3rd, __4th, val_1st, val_2nd, val_3rd, val_4th...) blk({ \
+    let __1st = val_1st; \
+    let __2nd = val_2nd; \
+    let __3rd = val_3rd; \
+    let __4th = val_4th; \
+    prim_max(prim_max(prim_max(__1st, __2nd), __3rd), __4th); \
+})
+#define __op__prim_clamp(_x, _min, _max...) \
+    prim_min(prim_max(_x, _min), _max)
+
+
+#define __op__isBool$(_T...) _Generic(_T, bool: true, default: false)
+#define __op__isUInt$(_T...) _Generic(_T, u8: true, u16: true, u32: true, u64: true, default: false)
+#define __op__isIInt$(_T...) _Generic(_T, i8: true, i16: true, i32: true, i64: true, default: false)
+#define __op__isInt$(_T...)  (isUInt$(_T) || isIInt$(_T))
+#define __op__isFlt$(_T...)  _Generic(_T, f32: true, f64: true, default: false)
+
+#define __op__uint_limit$(_T...) _Generic( \
+    _T, \
+    u8: u8_limit, \
+    u16: u16_limit, \
+    u32: u32_limit, \
+    u64: u64_limit \
+)
+#define __op__int_limitMin$(_T...) _Generic( \
+    _T, \
+    u8: u8_limit_min, \
+    u16: u16_limit_min, \
+    u32: u32_limit_min, \
+    u64: u64_limit_min, \
+    i8: i8_limit_min, \
+    i16: i16_limit_min, \
+    i32: i32_limit_min, \
+    i64: i64_limit_min \
+)
+#define __op__int_limitMax$(_T...) _Generic( \
+    _T, \
+    u8: u8_limit_max, \
+    u16: u16_limit_max, \
+    u32: u32_limit_max, \
+    u64: u64_limit_max, \
+    i8: i8_limit_max, \
+    i16: i16_limit_max, \
+    i32: i32_limit_max, \
+    i64: i64_limit_max \
+)
+#define __op__iint_limitMaxNgtv$(_T...) _Generic( \
+    _T, \
+    i8: i8_limit_max_ngtv, \
+    i16: i16_limit_max_ngtv, \
+    i32: i32_limit_max_ngtv, \
+    i64: i64_limit_max_ngtv \
+)
+#define __op__iint_limitMinNgtv$(_T...) _Generic( \
+    _T, \
+    i8: i8_limit_min_ngtv, \
+    i16: i16_limit_min_ngtv, \
+    i32: i32_limit_min_ngtv, \
+    i64: i64_limit_min_ngtv \
+)
+#define __op__iint_limitMinPstv$(_T...) _Generic( \
+    _T, \
+    i8: i8_limit_min_pstv, \
+    i16: i16_limit_min_pstv, \
+    i32: i32_limit_min_pstv, \
+    i64: i64_limit_min_pstv \
+)
+#define __op__iint_limitMaxPstv$(_T...) _Generic( \
+    _T, \
+    i8: i8_limit_max_pstv, \
+    i16: i16_limit_max_pstv, \
+    i32: i32_limit_max_pstv, \
+    i64: i64_limit_max_pstv \
+)
+
+#define __op__int_bits$(_T...) _Generic( \
+    _T, \
+    u8: u8_bits, \
+    u16: u16_bits, \
+    u32: u32_bits, \
+    u64: u64_bits \
+)
+#define __op__int_bytes$(_T...) _Generic( \
+    _T, \
+    u8: u8_bytes, \
+    u16: u16_bytes, \
+    u32: u32_bytes, \
+    u64: u64_bytes \
+)
+
+#define __op__flt_limitMin$(_T...)     _Generic(_T, f32: f32_limit_min, f64: f64_limit_min)
+#define __op__flt_limitMax$(_T...)     _Generic(_T, f32: f32_limit_max, f64: f64_limit_max)
+#define __op__flt_limitMaxNgtv$(_T...) _Generic(_T, f32: f32_limit_max_ngtv, f64: f64_limit_max_ngtv)
+#define __op__flt_limitMinNgtv$(_T...) _Generic(_T, f32: f32_limit_min_ngtv, f64: f64_limit_min_ngtv)
+#define __op__flt_limitMinPstv$(_T...) _Generic(_T, f32: f32_limit_min_pstv, f64: f64_limit_min_pstv)
+#define __op__flt_limitMaxPstv$(_T...) _Generic(_T, f32: f32_limit_max_pstv, f64: f64_limit_max_pstv)
+
+#define __op__flt_bits$(_T...)  _Generic(_T, f32: f32_bits, f64: f64_bits)
+#define __op__flt_bytes$(_T...) _Generic(_T, f32: f32_bytes, f64: f64_bytes)
+
+#define __op__flt_eps$(_T...)     _Generic(_T, f32: f32_eps, f64: f64_eps)
+#define __op__flt_nan$(_T...)     _Generic(_T, f32: f32_nan, f64: f64_nan)
+#define __op__flt_inf$(_T...)     _Generic(_T, f32: f32_inf, f64: f64_inf)
+#define __op__flt_infNgtv$(_T...) _Generic(_T, f32: f32_inf_ngtv, f64: f64_inf_ngtv)
+#define __op__flt_infPstv$(_T...) _Generic(_T, f32: f32_inf_pstv, f64: f64_inf_pstv)
+
+/*========== Integer Arithmetic Implementation ==============================*/
+
+#define __op__int_add(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    debug_assert(!__builtin_add_overflow(__lhs, __rhs, &(IntType){})); \
+    as$(IntType)(__lhs + __rhs); \
+})
+
+#define __op__int_sub(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    debug_assert(!__builtin_sub_overflow(__lhs, __rhs, &(IntType){})); \
+    as$(IntType)(__lhs - __rhs); \
+})
+
+#define __op__int_mul(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    debug_assert(!__builtin_mul_overflow(__lhs, __rhs, &(IntType){})); \
+    as$(IntType)(__lhs * __rhs); \
+})
+
+#define __op__int_mulAdd(__x, __y, __z, _x, _y, _z...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    let_(__y, IntType) = _y; \
+    let_(__z, IntType) = _z; \
+    debug_assert(!__builtin_mul_overflow(__x, __y, &(IntType){})); \
+    debug_assert(!__builtin_add_overflow(__x * __y, __z, &(IntType){})); \
+    as$(IntType)(__x * __y + __z); \
+})
+
+#define __op__int_div(__num, __denom, _num, _denom...) blk({ \
+    typedef TypeOfUnqual(_num) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__num, IntType) = _num; \
+    let_(__denom, IntType) = _denom; \
+    debug_assert(__denom != 0); \
+    as$(IntType)(__num / __denom); \
+})
+
+#define __op__int_mod(__num, __denom, _num, _denom...) blk({ \
+    typedef TypeOfUnqual(_num) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__num, IntType) = _num; \
+    let_(__denom, IntType) = _denom; \
+    debug_assert(__denom != 0); \
+    as$(IntType)(__num % __denom); \
+})
+
+#define __op__iint_neg(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IIntType; \
+    claim_assert_static(isIInt$(IIntType)); \
+    let_(__x, IIntType) = _x; \
+    debug_assert(__x != int_limitMin$(IIntType)); \
+    as$(IIntType)(-__x); \
+})
+
+#define __op__iint_abs(_x...) _Generic(\
+        TypeOfUnqual(_x), \
+        i8: as$(i8)(__builtin_abs(as$(i8)(_x))), \
+        i16: as$(i16)(__builtin_abs(as$(i16)(_x))), \
+        i32: __builtin_abs(as$(i32)(_x)), \
+        i64: __builtin_llabs(as$(i64)(_x)), \
+    )
+
+/*========== Integer Comparison Implementation ==============================*/
+
+#define __op__int_eq(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs == __rhs); \
+})
+
+#define __op__int_ne(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs != __rhs); \
+})
+
+#define __op__int_lt(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs < __rhs); \
+})
+
+#define __op__int_gt(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs > __rhs); \
+})
+
+#define __op__int_le(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs <= __rhs); \
+})
+
+#define __op__int_ge(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    (__lhs >= __rhs); \
+})
+
+/*========== Integer Min/Max/Clamp Implementation ===========================*/
+
+#define __op__int_min(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    as$(IntType)(__lhs > __rhs ? __rhs : __lhs); \
+})
+
+#define __op__int_max(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    as$(IntType)(__lhs < __rhs ? __rhs : __lhs); \
+})
+
+#define __op__int_clamp(_x, _lo, _hi...) \
+    int_min(int_max(_lo, _x), _hi)
+
+/*========== Bitwise Operations Implementation ==============================*/
+
+#define __op__int_not(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    as$(IntType)(~__x); \
+})
+
+#define __op__int_and(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    as$(IntType)(__lhs & __rhs); \
+})
+
+#define __op__int_or(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    as$(IntType)(__lhs | __rhs); \
+})
+
+#define __op__int_xor(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__lhs, IntType) = _lhs; \
+    let_(__rhs, IntType) = _rhs; \
+    as$(IntType)(__lhs ^ __rhs); \
+})
+
+#define __op__int_shl(__x, __n, _x, _n...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    let_(__n, u32) = _n; \
+    debug_assert(__n < int_bits$(IntType)); \
+    as$(IntType)(__x << __n); \
+})
+
+#define __op__int_shr(__x, __n, _x, _n...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    let_(__n, u32) = _n; \
+    debug_assert(__n < int_bits$(IntType)); \
+    as$(IntType)(__x >> __n); \
+})
+
+/*========== Bit Manipulation Implementation ================================*/
+
+#if UNUSED_CODE
+#define __op__int_countOnes(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    _Generic(sizeof(IntType), 1: __builtin_popcount((u8)__x), 2: __builtin_popcount((u16)__x), 4: __builtin_popcount((u32)__x), 8: __builtin_popcountll((u64)__x)); \
+})
+
+#define __op__int_countZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    (i32)(sizeof(IntType) * 8 - _Generic(sizeof(IntType), 1: __builtin_popcount((u8)__x), 2: __builtin_popcount((u16)__x), 4: __builtin_popcount((u32)__x), 8: __builtin_popcountll((u64)__x))); \
+})
+
+#define __op__int_countLeadingZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    debug_assert(__x != 0); \
+    _Generic(sizeof(IntType), 1: __builtin_clz((u32)(u8)__x) - 24, 2: __builtin_clz((u32)(u16)__x) - 16, 4: __builtin_clz((u32)__x), 8: __builtin_clzll((u64)__x)); \
+})
+
+#define __op__int_countTrailingZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    debug_assert(__x != 0); \
+    _Generic(sizeof(IntType), 1: __builtin_ctz((u32)(u8)__x), 2: __builtin_ctz((u32)(u16)__x), 4: __builtin_ctz((u32)__x), 8: __builtin_ctzll((u64)__x)); \
+})
+
+#define __op__int_rotateL(__x, __n, _x, _n...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    let_(__n, u32) = _n; \
+    const u32 __mask = sizeof(IntType) * 8 - 1; \
+    __n &= __mask; \
+    as$(IntType)((__x << __n) | (__x >> ((-__n) & __mask))); \
+})
+
+#define __op__int_rotateR(__x, __n, _x, _n...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    let_(__n, u32) = _n; \
+    const u32 __mask = sizeof(IntType) * 8 - 1; \
+    __n &= __mask; \
+    as$(IntType)((__x >> __n) | (__x << ((-__n) & __mask))); \
+})
+
+#define __op__int_swapBytes(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    as$(IntType)(_Generic(sizeof(IntType), 1: __x, 2: __builtin_bswap16((u16)__x), 4: __builtin_bswap32((u32)__x), 8: __builtin_bswap64((u64)__x))); \
+})
+
+#define __op__int_reverseBits(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    as$(IntType)(_Generic(sizeof(IntType), 1: __builtin_bitreverse8((u8)__x), 2: __builtin_bitreverse16((u16)__x), 4: __builtin_bitreverse32((u32)__x), 8: __builtin_bitreverse64((u64)__x))); \
+})
+#endif /* UNUSED_CODE */
+
+/*========== Integer Exponential and Logarithm Implementation ===================*/
+
+#define __op__int_exp2(_x...) (1ull << _x)
+#define __op__int_log2(_x...) (as$(u32)((64u - 1u) - __builtin_clzll(_x)))
+
+/*========== Integer Query Implementation ===================================*/
+
+#define __op__int_isOdd(_x...)       ((_x & 1) != 0)
+#define __op__int_isEven(_x...)      ((_x & 1) == 0)
+#define __op__int_isPow2(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__x, IntType) = _x; \
+    (__x > 0 && (__x & (__x - 1)) == 0); \
+})
+#define __op__int_hasSglBit(_x...) int_hasSglBit(_x)
+
+/*========== Floating-Point Arithmetic Implementation =======================*/
+
+#define __op__flt_add(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    as$(FltType)(__lhs + __rhs); \
+})
+
+#define __op__flt_sub(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    as$(FltType)(__lhs - __rhs); \
+})
+
+#define __op__flt_mul(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    as$(FltType)(__lhs * __rhs); \
+})
+
+#define __op__flt_mulAdd(__x, __y, __z, _x, _y, _z...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, FltType) = _y; \
+    let_(__z, FltType) = _z; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_fmaf( \
+            as$(f32)(__x),\
+            as$(f32)(__y),\
+            as$(f32)(__z)\
+        ), \
+        f64: __builtin_fma(\
+            as$(f64)(__x),\
+            as$(f64)(__y),\
+            as$(f64)(__z)\
+        ) \
+    )); \
+})
+
+#define __op__flt_div(__num, __denom, _num, _denom...) blk({ \
+    typedef TypeOfUnqual(_num) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__num, FltType) = _num; \
+    let_(__denom, FltType) = _denom; \
+    debug_assert(__denom != 0); \
+    as$(FltType)(__num / __denom); \
+})
+
+#define __op__flt_rem(__num, __denom, _num, _denom...) blk({ \
+    typedef TypeOfUnqual(_num) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__num, FltType) = _num; \
+    let_(__denom, FltType) = _denom; \
+    debug_assert(__denom != 0); \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_remainderf(\
+            as$(f32)(__num),\
+            as$(f32)(__denom)\
+        ), \
+        f64: __builtin_remainder(\
+            as$(f64)(__num),\
+            as$(f64)(__denom)\
+        ) \
+    )); \
+})
+
+#define __op__flt_neg(_x...) (-_x)
+#define __op__flt_abs(_x...) _Generic( \
+    TypeOfUnqual(_x), \
+    f32: __builtin_fabsf(as$(f32)(_x)), \
+    f64: __builtin_fabs(as$(f64)(_x)) \
+)
+
+/*========== Floating-Point Comparison Implementation =======================*/
+
+#define __op__flt_eq(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs == __rhs); \
+})
+
+#define __op__flt_ne(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs != __rhs); \
+})
+
+#define __op__flt_lt(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs < __rhs); \
+})
+
+#define __op__flt_gt(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs > __rhs); \
+})
+
+#define __op__flt_le(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs <= __rhs); \
+})
+
+#define __op__flt_ge(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    (__lhs >= __rhs); \
+})
+
+/*========== Floating-Point Min/Max/Clamp Implementation ====================*/
+
+#define __op__flt_min(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_fminf(\
+            as$(f32)(__lhs),\
+            as$(f32)(__rhs)\
+        ), \
+        f64: __builtin_fmin(\
+            as$(f64)(__lhs),\
+            as$(f64)(__rhs)\
+        ) \
+    )); \
+})
+
+#define __op__flt_max(__lhs, __rhs, _lhs, _rhs...) blk({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_fmaxf(\
+            as$(f32)(__lhs),\
+            as$(f32)(__rhs)\
+        ), \
+        f64: __builtin_fmax(\
+            as$(f64)(__lhs),\
+            as$(f64)(__rhs)\
+        ) \
+    )); \
+})
+
+#define __op__flt_clamp(_x, _lo, _hi...) flt_min(flt_max(_lo, _x), _hi)
+
+/*========== Floating-Point Classification Implementation ===================*/
+
+#define __op__flt_isNan(_x...)    __builtin_isnan(_x)
+#define __op__flt_isInf(_x...)    __builtin_isinf(_x)
+#define __op__flt_isFinite(_x...) __builtin_isfinite(_x)
+#define __op__flt_isNormal(_x...) __builtin_isnormal(_x)
+
+/*========== Floating-Point Rounding Implementation =========================*/
+
+#define __op__flt_ceil(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_ceilf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_ceil(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_floor(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_floorf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_floor(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_round(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_roundf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_round(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_trunc(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_truncf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_trunc(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+/*========== Floating-Point Power and Root Implementation ===================*/
+
+#define __op__flt_sqrt(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_sqrtf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_sqrt(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_cbrt(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_cbrtf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_cbrt(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_sq(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(__x * __x); \
+})
+
+#define __op__flt_cb(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(__x * __x * __x); \
+})
+
+#define __op__flt_hypot(__x, __y, _x, _y...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, FltType) = _y; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_hypotf(\
+            as$(f32)(__x),\
+            as$(f32)(__y)\
+        ), \
+        f64: __builtin_hypot(\
+            as$(f64)(__x),\
+            as$(f64)(__y)\
+        ) \
+    )); \
+})
+
+/*========== Floating-Point Exponential and Logarithm Implementation ========*/
+
+#define __op__flt_exp(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_expf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_exp(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_exp2(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_exp2f(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_exp2(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_ln(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_logf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_log(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_log2(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_log2f(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_log2(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_log10(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_log10f(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_log10(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_powI(__x, __y, _x, _y...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, i32) = _y; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_powif(\
+            as$(f32)(__x),\
+            __y\
+        ), \
+        f64: __builtin_powi(\
+            as$(f64)(__x),\
+            __y\
+        ) \
+    )); \
+})
+
+#define __op__flt_powF(__x, __y, _x, _y...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, FltType) = _y; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_powf(\
+            as$(f32)(__x),\
+            as$(f32)(__y)\
+        ), \
+        f64: __builtin_pow(\
+            as$(f64)(__x),\
+            as$(f64)(__y)\
+        ) \
+    )); \
+})
+
+/*========== Floating-Point Trigonometric Implementation ====================*/
+
+#define __op__flt_sin(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_sinf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_sin(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_cos(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_cosf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_cos(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_tan(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_tanf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_tan(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_asin(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_asinf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_asin(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_acos(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_acosf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_acos(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_atan(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_atanf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_atan(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_atan2(__y, __x, _y, _x...) blk({ \
+    typedef TypeOfUnqual(_y) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__y, FltType) = _y; \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_atan2f(\
+            as$(f32)(__y),\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_atan2(\
+            as$(f64)(__y),\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+/*========== Floating-Point Hyperbolic Implementation =======================*/
+
+#define __op__flt_sinh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_sinhf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_sinh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_cosh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_coshf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_cosh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_tanh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_tanhf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_tanh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_asinh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_asinhf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_asinh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_acosh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_acoshf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_acosh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+#define __op__flt_atanh(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_atanhf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_atanh(\
+            as$(f64)(__x)\
+        ) \
+    )); \
+})
+
+/*========== Floating-Point IEEE 754 Implementation =========================*/
+
+#define __op__flt_copySgn(__x, __y, _x, _y...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, FltType) = _y; \
+    as$(FltType)(_Generic(FltType, \
+        f32: __builtin_copysignf(\
+            as$(f32)(__x),\
+            as$(f32)(__y)\
+        ), \
+        f64: __builtin_copysign(\
+            as$(f64)(__x),\
+            as$(f64)(__y)\
+        ) \
+    )); \
+})
+
+#define __op__flt_nextAfter(__x, __y, _x, _y...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__y, FltType) = _y; \
+    as$(FltType)(_Generic(FltType, \
+        f32: __builtin_nextafterf(\
+            as$(f32)(__x),\
+            as$(f32)(__y)\
+        ), \
+        f64: __builtin_nextafter(\
+            as$(f64)(__x),\
+            as$(f64)(__y)\
+        ) \
+    )); \
+})
+
+#define __op__flt_scalb(__x, __n, _x, _n...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    let_(__n, i32) = _n; \
+    as$(FltType)(_Generic(FltType, \
+        f32: __builtin_ldexpf(\
+            as$(f32)(__x),\
+            __n\
+        ), \
+        f64: __builtin_ldexp(\
+            as$(f64)(__x),\
+            __n\
+        ) \
+    )); \
+})
+
+#define __op__flt_ilogb(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    as$(FltType)(_Generic( \
+        FltType, \
+        f32: __builtin_ilogbf(\
+            as$(f32)(__x)\
+        ), \
+        f64: __builtin_ilogb(\
+            as$(f64)(__x)\
+        ) \
+    )); \
 })
 
 #if NEXT_UPDATE

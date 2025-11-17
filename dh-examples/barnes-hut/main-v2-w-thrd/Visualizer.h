@@ -23,19 +23,19 @@ use_ArrList$(Visualizer_QuadCache);
 use_ArrList$(u8);
 typedef struct Visualizer {
     // View state
-    m_V2f32 pos;   // Camera center in world coords
-    f32     scale; // Current zoom factor
+    m_V2f32 pos; // Camera center in world coords
+    f32 scale;   // Current zoom factor
 
     // For panning:
-    Vec2i pan_screen_begin; // Mouse's screen-pixel coords when middle-click started
-    Vec2f pan_cam_begin;    // 'pos' captured at that same moment
-    bool  is_panning;       // is the mouse currently being dragged with middle-click?
+    m_V2i32 pan_screen_begin; // Mouse's screen-pixel coords when middle-click started
+    m_V2f32 pan_cam_begin;    // 'pos' captured at that same moment
+    bool is_panning;          // is the mouse currently being dragged with middle-click?
 
     // For zoom anchoring:
     // (Optional if only want to store the 'mouse world' anchor for the duration
     //  of a single scroll step, it can be stored in a local variable,
     // but fields are handy if want more complex behaviour)
-    Vec2f zoom_anchor_world;
+    m_V2f32 zoom_anchor_world;
 
     // Display flags
     // bool shows_fps;
@@ -62,24 +62,24 @@ typedef struct Visualizer {
     // Body spawn state
     struct {
         O$Body body;      // Current spawn body
-        O$f32  angle;     // Current spawn angle
-        O$f32  total;     // Total angle rotated
+        O$f32 angle;      // Current spawn angle
+        O$f32 total;      // Total angle rotated
         O$Body confirmed; // Confirmed spawn body
     } spawn;
 
     // Simulation state copies
-    ArrList$Body     bodies;
+    ArrList$Body bodies;
     ArrList$QuadNode nodes;
 
     // Platform resources
     engine_Canvas* canvas;
-    mem_Allocator  allocator;
+    mem_Allocator allocator;
 } Visualizer;
 use_E$(Visualizer);
 
 // Core functions
 extern E$Visualizer Visualizer_create(mem_Allocator allocator, engine_Canvas* canvas) $must_check;
-extern void         Visualizer_destroy(Visualizer* self);
+extern void Visualizer_destroy(Visualizer* self);
 
 // Main loop functions
 extern E$void Visualizer_processInput(Visualizer* self, engine_Window* window) $must_check;
@@ -94,7 +94,7 @@ extern E$void Visualizer_render(Visualizer* self) $must_check;
 ///    |    (CENTER)   |                +--→ x+
 ///    |               |
 /// (0,h-1) -------- (w-1,h-1)  (-w/2*scale, -h/2*scale)
-$inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
+$inline_always m_V2i32 Visualizer_screenCenter(Visualizer* self) {
     // Calculate screen center offsets (handles even/odd dimensions)
     let center_x = as$(i32, (self->canvas->width - (~self->canvas->width & 1)) >> 1);
     let center_y = as$(i32, (self->canvas->height - (~self->canvas->height & 1)) >> 1);
@@ -103,7 +103,7 @@ $inline_always Vec2i Visualizer_screenCenter(Visualizer* self) {
 /// Unified coordinate system transformations
 /// screen_px == (world_px - screen_center_px) * scale
 /// screen_py == (screen_center_py - world_py) * scale
-$inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos) {
+$inline_always m_V2i32 Visualizer_worldToScreen(Visualizer* self, m_V2f32 world_pos) {
     let p_sub_center        = m_V2f32_sub(world_pos, self->pos);
     let p_sub_center_scaled = m_V2f32_scale(p_sub_center, Visualizer_scale(self));
     return m_V2i32_from(
@@ -114,7 +114,7 @@ $inline_always Vec2i Visualizer_worldToScreen(Visualizer* self, Vec2f world_pos)
 /// Unified coordinate system transformations
 /// world_px == screen_center_px + (screen_px * 1/scale)
 /// world_py == screen_center_py - (screen_py * 1/scale)
-$inline_always Vec2f Visualizer_screenToWorld(Visualizer* self, Vec2i screen_pos) {
+$inline_always m_V2f32 Visualizer_screenToWorld(Visualizer* self, m_V2i32 screen_pos) {
     let p = m_V2f32_from(
         as$(f32, screen_pos.x),
         as$(f32, -screen_pos.y)

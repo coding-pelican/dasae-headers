@@ -5,7 +5,7 @@ $inline_always
 fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
     debug_assert_true(lhs.len == rhs.len);
     let tmp_len = lhs.len;
-    let tmp_ptr = as$((u8*)(alloca(tmp_len)));
+    let tmp_ptr = as$(u8*)(alloca(tmp_len));
     prim_memcpy(tmp_ptr, lhs.ptr, lhs.len);
     prim_memcpy(lhs.ptr, rhs.ptr, rhs.len);
     prim_memcpy(rhs.ptr, tmp_ptr, tmp_len);
@@ -14,7 +14,7 @@ fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
 /// Swap two elements of given size
 $inline_always
 fn_((sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len))(void)) {
-    let tmp = as$((u8*)(alloca(byte_len)));
+    let tmp = as$(u8*)(alloca(byte_len));
     prim_memcpy(tmp, lhs, byte_len);
     prim_memcpy(lhs, rhs, byte_len);
     prim_memcpy(rhs, tmp, byte_len);
@@ -24,7 +24,7 @@ fn_((sort_insertionSort(
     u_S$raw base_sli,
     sort_CmpFn cmpFn
 ))(void)) {
-    let ptr = as$((u8*)(base_sli.ptr));
+    let ptr = as$(u8*)(base_sli.ptr);
     let len = base_sli.len;
     usize size = base_sli.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
@@ -45,7 +45,7 @@ fn_((sort_insertionSortWithArg(
     sort_CmpWithArgFn cmpFn,
     P_const$raw arg
 ))(void)) {
-    let ptr = as$((u8*)(base_sli.ptr));
+    let ptr = as$(u8*)(base_sli.ptr);
     let len = base_sli.len;
     usize size = base_sli.type.size;
     for (usize unsorted_index = 1; unsorted_index < len; ++unsorted_index) {
@@ -73,7 +73,7 @@ fn_((sort_mergeSortUsingTempRecur(
         return_ok({});
     }
     let base_type = base_sli.type;
-    let base_bytes = as$((u8*)(base_sli.ptr));
+    let base_bytes = as$(u8*)(base_sli.ptr);
     let base_len = base_sli.len;
     let mid_idx = base_len / 2;
 
@@ -157,7 +157,7 @@ fn_((sort_mergeSortWithArgUsingTempRecur(
         return_ok({});
     }
     let base_type = base_sli.type;
-    let base_bytes = as$((u8*)(base_sli.ptr));
+    let base_bytes = as$(u8*)(base_sli.ptr);
     let base_len = base_sli.len;
     let mid_idx = base_len / 2;
 

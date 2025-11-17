@@ -29,6 +29,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "dh/prl.h"
 
 /*========== Memory Constants ===============================================*/
 
@@ -45,18 +46,135 @@ extern "C" {
 
 /*========== Memory Utilities ===============================================*/
 
-// Memory operations
-$inline_always void mem_set(P$raw dest, u8 value, usize size);
-$inline_always void mem_copy(P$raw dest, P_const$raw src, usize size);
-$inline_always void mem_move(P$raw dest, P$raw src, usize size);
-$inline_always i32 mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size);
-$inline_always usize mem_lenZ0$u8(const u8* p);
-$inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p);
+$inline_always
+$static fn_((mem_lenZ0$u8(const u8* p))(usize));
+$inline_always
+$static fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize));
 
-#define mem_asBytes_const(_ptr...)     comp_inline__mem_asBytes_const(_ptr)
-#define mem_asBytes(_ptr...)           comp_inline__mem_asBytes(_ptr)
-#define mem_toBytes$(_A$N$u8, _val...) comp_inline__mem_toBytes$(pp_uniqTok(val), _A$N$u8, _val)
-#define mem_toBytes(_val...)           comp_inline__mem_toBytes(_val)
+#define mem_asBytes(_ptr.../*S|S_const(u8)*/)       __step__mem_asBytes(_ptr)
+#define mem_bytesAs$(/*(_P_T)_bytes*/.../*(_P_T)*/) __step__mem_bytesAs$(__VA_ARGS__)
+
+#define mem_toBytes$(_A$N$u8, _val...)          __step__mem_toBytes$(pp_uniqTok(val), _A$N$u8, _val)
+#define mem_toBytes(_val...)                    __step__mem_toBytes(_val)
+#define mem_bytesTo$(/*(_T)_bytes*/.../*(_T)*/) __step__mem_bytesTo$(__VA_ARGS__)
+
+#define mem_sliceAsBytes(_sli.../*(S(u8))*/) __step__mem_sliceAsBytes(__VA_ARGS__)
+#define mem_bytesAsSlice$/*(_S_T)_bytes*/.../*(_S_T)*/ __step__mem_bytesAsS$(__VA_ARGS__)
+
+$extern fn_((mem_copyFwds(u_S$raw dst, u_S_const$raw src))(u_S$raw));
+#define T_use_mem_copyFwds$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_copyFwds, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_copyFwds(u_anyS(dst), u_anyS_const(src)))); \
+    }
+$extern fn_((mem_copyBwds(u_S$raw dst, u_S_const$raw src))(u_S$raw));
+#define T_use_mem_copyBwds$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_copyBwds, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_copyBwds(u_anyS(dst), u_anyS_const(src)))); \
+    }
+
+$extern fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_nqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+
+$extern fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_eq$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_eq, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_eq(u_anyS_const(lhs), u_anyS_const(rhs)); \
+    }
+$extern fn_((mem_ne(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_ne$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_ne, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_ne(u_anyS_const(lhs), u_anyS_const(rhs)); \
+    }
+
+$extern fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
+#define T_use_mem_startsWith$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_startsWith, _T)(S$(const _T) haystack, S$(const _T) needle))(bool)) { \
+        return mem_startsWith(u_anyS_const(haystack), u_anyS_const(needle)); \
+    }
+$extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
+#define T_use_mem_endsWith$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_endsWith, _T)(S$(const _T) haystack, S$(const _T) needle))(bool)) { \
+        return mem_endsWith(u_anyS_const(haystack), u_anyS_const(needle)); \
+    }
+
+typedef enum mem_DelimType: u8 {
+    mem_delimType_value = 0,
+    mem_delimType_pattern = 1,
+    mem_delimType_choice = 2,
+} mem_DelimType;
+
+#define mem_TokenIter$(_T...) pp_join($, mem_TokenIter, _T)
+typedef struct mem_TokenIter {
+    S_const$raw buf;
+    usize idx;
+    mem_DelimType delim_tag;
+    union {
+        V$raw value;
+        S_const$raw pattern;
+        S_const$raw choice;
+    } delim;
+    debug_only(TypeInfo type;)
+} mem_TokenIter;
+T_use_P$(mem_TokenIter);
+
+#define T_use_mem_TokenIter$(_T...)\
+    typedef union mem_TokenIter$(_T) { \
+        struct { \
+            S$(const _T) buf; \
+            usize idx; \
+            mem_DelimType delim_tag; \
+            union { \
+                _T value; \
+                S$(const _T) pattern; \
+                S$(const _T) choice; \
+            } delim; \
+            debug_only(TypeInfo type;) \
+        }; \
+        mem_TokenIter as_raw $like_ref; \
+    } mem_TokenIter$(_T)
+$extern fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, P$mem_TokenIter ret_mem))(P$mem_TokenIter));
+$extern fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, P$mem_TokenIter ret_mem))(P$mem_TokenIter));
+$extern fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, P$mem_TokenIter ret_mem))(P$mem_TokenIter));
+$extern fn_((mem_TokenIter_reset(mem_TokenIter* self))(void));
+$extern fn_((mem_TokenIter_next(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
+$extern fn_((mem_TokenIter_peek(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
+$extern fn_((mem_TokenIter_rest(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
+
+#define T_use_mem_tokenizeValue$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_tokenizeValue, _T)(S$(const _T) buf, _T value))(mem_TokenIter$(_T))) { \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeValue(u_anyS_const(buf), u_anyV(value), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+    }
+#define T_use_mem_tokenizePattern$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_tokenizePattern, _T)(S$(const _T) buf, S$(const _T) pattern))(mem_TokenIter$(_T))) { \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizePattern(u_anyS_const(buf), u_anyS_const(pattern), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+    }
+#define T_use_mem_tokenizeChoice$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_tokenizeChoice, _T)(S$(const _T) buf, S$(const _T) choice))(mem_TokenIter$(_T))) { \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeChoice(u_anyS_const(buf), u_anyS_const(choice), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+    }
+
+#define T_use_mem_TokenIter_reset$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_reset, _T)(mem_TokenIter$(_T)* self))(void)) { \
+        return mem_TokenIter_reset(self->as_raw); \
+    }
+#define T_use_mem_TokenIter_next$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_next, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+        return_(u_castO$((ReturnType)(mem_TokenIter_next(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped_(fn)
+#define T_use_mem_TokenIter_peek$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_peek, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+        return_(u_castO$((ReturnType)(mem_TokenIter_peek(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped_(fn)
+#define T_use_mem_TokenIter_rest$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_rest, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+        return_(u_castO$((ReturnType)(mem_TokenIter_rest(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped_(fn)
+
+// Memory operations
+$inline_always P$raw mem_set(P$raw dest, u8 value, usize size);
+$inline_always P$raw mem_copy(P$raw dest, P_const$raw src, usize size);
+$inline_always P$raw mem_move(P$raw dest, P_const$raw src, usize size);
+$inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size);
 
 /*========== Alignment Functions ============================================*/
 
@@ -76,9 +194,9 @@ $inline_always usize mem_alignBackward(usize addr, usize align);
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-$inline_always void mem_copyBytes(P$raw dest, P_const$raw src, usize len);
+$inline_always P$raw mem_copyBytes(P$raw dest, P_const$raw src, usize len);
 // Set bytes to value with bounds checking
-$inline_always void mem_setBytes(P$raw dest, u8 value, usize len);
+$inline_always P$raw mem_setBytes(P$raw dest, u8 value, usize len);
 // Compare two byte buffers
 $inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len);
 
@@ -190,27 +308,27 @@ $inline_always u64 byteSwap64(u64 x) {
 
 /*========== Memory Operations ==============================================*/
 
-$inline_always void mem_set(P$raw dest, u8 value, usize size) {
-    debug_assert_nonnull(dest);
-    prim_memset(dest, value, size);
+$inline_always P$raw mem_set(P$raw dest, u8 value, usize size) {
+    claim_assert_nonnull(dest);
+    return prim_memset(dest, value, size);
 }
 
-$inline_always void mem_copy(P$raw dest, P_const$raw src, usize size) {
-    debug_assert_nonnull(dest);
-    debug_assert_nonnull(src);
-    prim_memcpy(dest, src, size);
+$inline_always P$raw mem_copy(P$raw dest, P_const$raw src, usize size) {
+    claim_assert_nonnull(dest);
+    claim_assert_nonnull(src);
+    return prim_memcpy(dest, src, size);
 }
 
-$inline_always void mem_move(P$raw dest, P$raw src, usize size) {
-    debug_assert_nonnull(dest);
-    debug_assert_nonnull(src);
-    prim_memmove(dest, src, size);
+$inline_always P$raw mem_move(P$raw dest, P_const$raw src, usize size) {
+    claim_assert_nonnull(dest);
+    claim_assert_nonnull(src);
+    return prim_memmove(dest, src, size);
 }
 
 $inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size) {
-    debug_assert_nonnull(lhs);
-    debug_assert_nonnull(rhs);
-    return prim_memcmp(lhs, rhs, size);
+    claim_assert_nonnull(lhs);
+    claim_assert_nonnull(rhs);
+    return as$(cmp_Ord)(prim_memcmp(lhs, rhs, size));
 }
 
 $inline_always S_const$u8 mem_spanZ0_const$u8(const u8* p) {
@@ -235,22 +353,34 @@ $inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p) {
     return idx;
 }
 
-#define comp_inline__mem_asBytes_const(_ptr...) \
-    init$S$((const u8)(as$((const u8*)(_ptr)), sizeOf$(TypeOf(*_ptr))))
-#define comp_inline__mem_asBytes(_ptr...) \
-    init$S$((u8)(as$((u8*)(_ptr)), sizeOf$(TypeOf(*_ptr))))
-#define comp_inline__mem_toBytes$(__val, _A$N$u8, _val...) blk({ \
+#define __step__mem_asBytes(_ptr...) _Generic(\
+    TypeOf(_ptr),\
+    const TypeOfUnqual(*_ptr)*: \
+        init$S$((const u8)(as$(const u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))), \
+    TypeOfUnqual(*_ptr)*: \
+        init$S$((u8)(as$(u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))) \
+)
+#define __step__mem_bytesAs$(_P_T, _bytes...) _Generic(\
+    TypeOf(_bytes.ptr), \
+    const u8*: _Generic(\
+        _P_T, \
+        const TypeOfUnqual(*as$(_P_T)(null))*: as$(_P_T)(_bytes.ptr), \
+        TypeOfUnqual(*as$(_P_T)(null))*: claim_unreachable \
+    ), \
+    u8*: as$(_P_T)(_bytes.ptr) \
+)
+
+#define __step__mem_toBytes$(__val, _A$N$u8, _val...) blk({ \
     var __val = _val; \
-    blk_return deref$S$((_A$N$u8), mem_asBytesMut(&__val)); \
+    blk_return deref$S$((_A$N$u8), mem_asBytes(&__val)); \
 })
-// #define comp_inline__mem_toBytes_const$(__val, _A$N$u8, _val...) blk({ \
-//     let        __val = _val; \
-//     blk_return S_deref$(_A$N$u8, mem_asBytesRef(&__val)); \
-// })
-#define comp_inline__mem_toBytes(_val...) \
+#define __step__mem_toBytes(_val...) \
     mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)
-// #define comp_inline__mem_toBytes_const(_val...) \
-//     mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)
+#define __step__mem_bytesTo$(_T, _bytes...) _Generic(\
+    _bytes.ptr, \
+    const u8*: *as$(const _T*)(_bytes.ptr), \
+    u8*: *as$(_T*)(_bytes.ptr) \
+)
 
 /*========== Alignment Functions ============================================*/
 
@@ -285,22 +415,22 @@ $inline_always usize mem_alignBackward(usize addr, usize align) {
 /*========== Buffer Manipulation ============================================*/
 
 // Copy bytes between buffers with bounds checking
-$inline_always void mem_copyBytes(P$raw dest, P_const$raw src, usize len) {
-    debug_assert_nonnull(dest);
-    debug_assert_nonnull(src);
-    mem_copy(dest, src, len);
+$inline_always P$raw mem_copyBytes(P$raw dest, P_const$raw src, usize len) {
+    claim_assert_nonnull(dest);
+    claim_assert_nonnull(src);
+    return mem_copy(dest, src, len);
 }
 
 // Set bytes to value with bounds checking
-$inline_always void mem_setBytes(P$raw dest, u8 value, usize len) {
-    debug_assert_nonnull(dest);
-    mem_set(dest, value, len);
+$inline_always P$raw mem_setBytes(P$raw dest, u8 value, usize len) {
+    claim_assert_nonnull(dest);
+    return mem_set(dest, value, len);
 }
 
 // Compare two byte buffers
 $inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len) {
-    debug_assert_nonnull(lhs);
-    debug_assert_nonnull(rhs);
+    claim_assert_nonnull(lhs);
+    claim_assert_nonnull(rhs);
     return mem_cmp(lhs, rhs, len) == 0;
 }
 

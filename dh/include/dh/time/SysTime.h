@@ -105,9 +105,9 @@ cmp_fnGe_default(time_SysTime);
 static const time_SysTime time_SysTime_unix_epoch = {
     .impl_ = {
 #if plat_windows && (plat_32bit || plat_64bit)
-        .QuadPart = as$((LONGLONG)(time_SysTime_intervals_to_unix_epoch)),
+        .QuadPart = as$( LONGLONG)(time_SysTime_intervals_to_unix_epoch),
 #else /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
-        .tv_sec = as$((time_t)(time_SysTime_intervals_to_unix_epoch)),
+        .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch),
         .tv_nsec = 0,
 #endif
     }

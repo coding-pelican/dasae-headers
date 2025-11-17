@@ -111,7 +111,7 @@ static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     debug_assert_fmt(mem_isAligned(ptrToInt(map), mem_page_size));
     debug_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
-    let new_hint = as$((P$raw)(as$((u8*)(map + aligned_len))));
+    let new_hint = as$(P$raw)(as$(u8*)((map + aligned_len)));
     // Here use atomic operations to update the hint
     atom_cmpXchgWeak(
         &heap_Page_s_next_mmap_addr_hint,
@@ -163,7 +163,7 @@ static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(
 #else /* posix */
 
     if (new_size_aligned < buf_aligned_len) {
-        let ptr = as$((u8*)(buf.ptr)) + new_size_aligned;
+        let ptr = as$(u8*)(buf.ptr) + new_size_aligned;
         munmap(ptr, buf_aligned_len - new_size_aligned);
         return true;
     }

@@ -29,10 +29,10 @@ static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
 #define cinq_select(var_collection, _PayloadCapture, _Body...)           comp_syn__cinq_select(var_collection, _PayloadCapture, _Body)
 #define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) blk({ \
     let __collection = var_collection; \
-    var __temp       = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \
+    var __temp = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \
     for_slice(__collection.items, __iter_elem) { \
         var _PayloadCapture = *__iter_elem; \
-        var __item          = blk({ _Body; }); \
+        var __item = blk({ _Body; }); \
         try_(ArrList_append(&__temp, meta_refPtr(&__item))); \
     }; \
     blk_return type$(TypeOf(__collection), __temp); \
@@ -45,7 +45,7 @@ fn_((dh_main(void))(E$void) $guard) {
     i32_list.items.len = 8;
     printf("origin: ");
     for_slice_indexed(i32_list.items, item, index) {
-        deref(item) = as$((i32)(index)) + 1;
+        deref(item) = as$(i32)(index) + 1;
         printf("%d ", deref(item));
     }
     printf("\n");

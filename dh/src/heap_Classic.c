@@ -149,7 +149,7 @@ static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 
-    var raw_ptr = as$((P$raw)(buf.ptr));
+    var raw_ptr = as$(P$raw)(buf.ptr);
     if (raw_ptr == null) { return; }
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     _aligned_free(raw_ptr);

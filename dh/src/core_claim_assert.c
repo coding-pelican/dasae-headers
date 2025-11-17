@@ -16,7 +16,6 @@
 /*========== Includes =======================================================*/
 
 #include "dh/core/claim/assert.h"
-
 #if claim_fail_logging_comp_enabled
 #include <stdarg.h> /* For va_list, va_start(), va_end() */
 #include <stdio.h>  /* For fprintf(), stderr */

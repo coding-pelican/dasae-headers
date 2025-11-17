@@ -52,7 +52,6 @@ extern "C" {
 #include "dh/TEST.h"
 
 #include "dh/atom.h"
-#include "dh/simd.h"
 #include "dh/Thrd.h"
 #include "dh/async.h"
 #include "dh/mp.h"

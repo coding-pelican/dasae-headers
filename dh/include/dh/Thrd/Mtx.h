@@ -14,8 +14,8 @@
  * @details Defines mutex for thread management.
  */
 
-#ifndef THRD_MTX_INCLUDED
-#define THRD_MTX_INCLUDED (1)
+#ifndef Thrd_Mtx__included
+#define Thrd_Mtx__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -61,4 +61,4 @@ extern fn_((Thrd_MtxRecur_unlock(Thrd_MtxRecur* self))(void));
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* THRD_MTX_INCLUDED */
+#endif /* Thrd_Mtx__included */

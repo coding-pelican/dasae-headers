@@ -123,17 +123,17 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
             .y = window_res_height,
         },
         .default_color = some(Color_black),
-        .title         = some(u8_l("Fireworks")) }));
+        .title = some(u8_l("Fireworks")) }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
     let game_canvas = try_(engine_Canvas_init(&(engine_Canvas_Config){
-        .allocator     = some(allocator),
-        .width         = window_res_width,
-        .height        = window_res_height,
+        .allocator = some(allocator),
+        .width = window_res_width,
+        .height = window_res_height,
         .default_color = none(),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(game_canvas));
     {
@@ -143,13 +143,13 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
         engine_Window_appendView(
             window,
             &(engine_CanvasView_Config){
-                .canvas      = game_canvas,
-                .pos         = { .x = 0, .y = 0 },
-                .size        = { .x = window_res_width, .y = window_res_height },
-                .scale       = { .x = 1.0f, .y = 1.0f },
+                .canvas = game_canvas,
+                .pos = { .x = 0, .y = 0 },
+                .size = { .x = window_res_width, .y = window_res_height },
+                .scale = { .x = 1.0f, .y = 1.0f },
                 .resizable_x = true,
                 .resizable_y = true,
-                .visible     = true,
+                .visible = true,
             }
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
@@ -160,12 +160,12 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_Vt100_init(&(engine_core_Vt100_Config){
+    let core = try_(engine_core_VT100_init(&(engine_core_VT100_Config){
         .allocator = some(allocator),
-        .window    = window,
-        .input     = input,
+        .window = window,
+        .input = input,
     }));
-    defer_(engine_core_Vt100_fini(core));
+    defer_(engine_core_VT100_fini(core));
     log_info("engine ready");
 
     // Create game state
@@ -177,7 +177,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs$f64(target_spf);
-    var time_frame_prev   = time_Instant_now();
+    var time_frame_prev = time_Instant_now();
     log_info("game loop started\n");
 
     // Game loop
@@ -187,7 +187,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
 
         // 2) Compute how long since last frame (purely for your dt usage)
         let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-        let time_dt      = time_Duration_asSecs$f64(time_elapsed);
+        let time_dt = time_Duration_asSecs$f64(time_elapsed);
 
         // 3) Process input/events
         try_(engine_Window_update(window));
@@ -205,20 +205,21 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
             printf("\033[H\033[40;37m"); // Move cursor to top left
             printf("\rFPS: %6.2f", time_fps);
-            debug_only({ // log frame every 1s
-                static f64 total_game_time_for_timestamp = 0.0;
-                static f64 logging_after_duration        = 0.0;
-                total_game_time_for_timestamp += time_dt;
-                logging_after_duration += time_dt;
-                if (1.0 < logging_after_duration) {
-                    logging_after_duration = 0.0;
-                    log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
-                }
-            });
+            debug_only(
+                { // log frame every 1s
+                    static f64 total_game_time_for_timestamp = 0.0;
+                    static f64 logging_after_duration = 0.0;
+                    total_game_time_for_timestamp += time_dt;
+                    logging_after_duration += time_dt;
+                    if (1.0 < logging_after_duration) {
+                        logging_after_duration = 0.0;
+                        log_debug("[t=%6.2f] dt: %6.2f, fps %6.2f\n", total_game_time_for_timestamp, time_dt, 1.0 / time_dt);
+                    }
+                });
         }
 
         // 7) Measure how long the update+render actually took
-        let time_now        = time_Instant_now();
+        let time_now = time_Instant_now();
         let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
         // 8) Subtract from our target
@@ -235,13 +236,13 @@ $unguarded;
 
 fn_(Particle_new(f64 x, f64 y, f64 width, f64 height, Color color), Particle) {
     return (Particle){
-        .position     = { x, y },
-        .speed        = { 0.0, 0.0 },
+        .position = { x, y },
+        .speed = { 0.0, 0.0 },
         .acceleration = { 0.0, 0.0 },
-        .fading       = 0.0,
-        .lifetime     = 1.0,
-        .color        = color,
-        .dimensions   = { as$(i64, width), as$(i64, height) }
+        .fading = 0.0,
+        .lifetime = 1.0,
+        .color = color,
+        .dimensions = { as$(i64, width), as$(i64, height) }
     };
 }
 fn_(Particle_init(Particle* p, f64 x, f64 y, f64 width, f64 height, Color color), Particle*) {
@@ -377,11 +378,11 @@ fn_(Firework_update(Firework* f, f64 dt), E$void $scope) {
             for (i64 i = 0; i < Firework_effects_per_rocket; ++i) {
                 if (Firework_effects_max <= f->effects.items.len) { break; }
                 with_(let particle = meta_cast$(Particle*, try_(ArrList_addBackOne(f->effects.base)))) {
-                    let x      = A_getAt(rocket->position, 0);
-                    let y      = A_getAt(rocket->position, 1);
-                    let width  = 1.0;
+                    let x = A_getAt(rocket->position, 0);
+                    let y = A_getAt(rocket->position, 1);
+                    let width = 1.0;
                     let height = 1.0;
-                    let color  = Hsl_intoColorOpaque(Hsl_from(
+                    let color = Hsl_intoColorOpaque(Hsl_from(
                         f->effect_base_color.h,
                         f->effect_base_color.s + (Rand_f64() - 0.5) * 20.0,
                         f->effect_base_color.l + (Rand_f64() - 0.5) * 40.0
@@ -422,11 +423,11 @@ fn_(Firework_render(const Firework* f, engine_Canvas* c, f64 dt), void) {
 fn_(State_init(mem_Allocator allocator, u32 width, u32 height, const engine_Input* input), E$State $scope) {
     var fireworks = type$(ArrList$Firework, try_(ArrList_initCap(typeInfo$(Firework), allocator, Fireworks_max)));
     return_ok({
-        .allocator  = allocator,
-        .width      = width,
-        .height     = height,
-        .input      = input,
-        .fireworks  = fireworks,
+        .allocator = allocator,
+        .width = width,
+        .height = height,
+        .input = input,
+        .fireworks = fireworks,
         .is_running = true,
     });
 }
@@ -509,7 +510,7 @@ fn_(State_render(const State* s, engine_Canvas* c, f64 dt), void) {
     debug_assert_nonnull(s);
     debug_assert_nonnull(c);
 
-    engine_Canvas_clear(c, some$(O$Color, Color_black));
+    engine_Canvas_clear(c, some$((O$Color)Color_black));
     for_slice(s->fireworks.items, firework) {
         Firework_render(firework, c, dt);
     }

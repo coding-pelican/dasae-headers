@@ -8,7 +8,7 @@ fn_((mem_Allocator_VT_noAlloc(P$raw ctx, usize len, u8 align))(O$P$u8)) {
     let_ignore = ctx;
     let_ignore = len;
     let_ignore = align;
-    return none$((P$u8));
+    return none$((O$P$u8));
 }
 
 fn_((mem_Allocator_VT_noResize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
@@ -24,7 +24,7 @@ fn_((mem_Allocator_VT_noRemap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
     let_ignore = buf;
     let_ignore = buf_align;
     let_ignore = new_len;
-    return none$((P$u8));
+    return none$((O$P$u8));
 }
 
 fn_((mem_Allocator_VT_noFree(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
@@ -53,7 +53,7 @@ fn_((
 #else  /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerAlloc(addr, len, src_loc);
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
-        return some$((P$u8)(addr));
+        return some$((O$P$u8)(addr));
     }
     let result = self.vt->alloc(self.ctx, len, align);
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
@@ -110,11 +110,11 @@ fn_((
 #else  /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerRemap(buf.ptr, addr, new_len, src_loc);
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
-        return some$((P$u8)(addr));
+        return some$((O$P$u8)(addr));
     }
     // Special case for empty buffer
     if (buf.len == 0) {
-        return none$((P$u8));
+        return none$((O$P$u8));
     }
     let result = self.vt->remap(self.ctx, buf, buf_align, new_len);
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
@@ -172,7 +172,7 @@ fn_((mem_Allocator_destroy(mem_Allocator self, u_P$raw ptr))(void)) {
     if (ptr.type.size == 0) { return; }
     // Convert to slice for freeing
     S$u8 mem = {
-        .ptr = as$( (u8*)(ptr.inner)),
+        .ptr = as$( u8*)(ptr.inner),
         .len = ptr.type.size,
     };
     mem_Allocator_rawFree(self, mem, ptr.type.align);
@@ -252,7 +252,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     }
     // Create byte slice from the old memory
     S$u8 old_bytes = {
-        .ptr = as$( (u8*)(old_mem.ptr)),
+        .ptr = as$( u8*)(old_mem.ptr),
         .len = old_mem.type.size * old_mem.len,
     };
     // Check for overflow in multiplication
@@ -294,7 +294,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     }
     // Create byte slice from the old memory
     S$u8 old_bytes = {
-        .ptr = as$( (u8*)(old_mem.ptr)),
+        .ptr = as$( u8*)(old_mem.ptr),
         .len = old_mem.type.size * old_mem.len,
     };
     // Check for overflow in multiplication
@@ -332,7 +332,7 @@ fn_((mem_Allocator_free(mem_Allocator self, u_S$raw mem))(void)) {
     if (mem.type.size == 0 || mem.len == 0) { return; }
     // Create byte slice from memory and free it
     S$u8 bytes = {
-        .ptr = as$( (u8*)(mem.ptr)),
+        .ptr = as$( u8*)(mem.ptr),
         .len = mem.type.size * mem.len,
     };
     mem_Allocator_rawFree(self, bytes, mem.type.align);
@@ -344,8 +344,8 @@ fn_((mem_Allocator_dupe(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $scop
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$((u8*)(src.ptr)), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$((u8*)(new_mem.ptr)), src.type.size * src.len));
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
 
     return_ok(new_mem);
@@ -355,18 +355,18 @@ fn_((mem_Allocator_dupeZ(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $sco
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$((u8*)(src.ptr)), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$((u8*)(new_mem.ptr)), src.type.size * src.len));
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
     mem_set(dst_bytes.ptr, 0x00, dst_bytes.len);
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel
-    //     as$((u8*)(new_mem.addr))[src.len] = 0;
+    //     as$(u8*)(new_mem.addr)[src.len] = 0;
     // } else {
     //     // For larger elements, we'd need to know the exact type to properly set the sentinel
     //     // This simple implementation assumes sentinel is just the first byte of the element
-    //     mem_set(as$((u8*)(new_mem.addr)) + (src.len * src.type.size), 0, 1);
+    //     mem_set(as$(u8*)(new_mem.addr) + (src.len * src.type.size), 0, 1);
     // }
     return_ok({
         .ptr = new_mem.ptr,
@@ -405,7 +405,7 @@ fn_((mem_Allocator_destroy_debug(mem_Allocator self, u_P$raw ptr, SrcLoc src_loc
     }
     // Convert to slice for freeing
     S$u8 mem = {
-        .ptr = as$((u8*)(ptr.inner)),
+        .ptr = as$(u8*)(ptr.inner),
         .len = ptr.type.size,
     };
     mem_Allocator_rawFree_debug(self, mem, ptr.type.align, src_loc);
@@ -486,7 +486,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     }
     // Create byte slice from the old memory
     S$u8 old_bytes = {
-        .ptr = as$((u8*)(old_mem.ptr)),
+        .ptr = as$(u8*)(old_mem.ptr),
         .len = old_mem.type.size * old_mem.len,
     };
     // Check for overflow in multiplication
@@ -528,7 +528,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     }
     // Create byte slice from the old memory
     S$u8 old_bytes = {
-        .ptr = as$((u8*)(old_mem.ptr)),
+        .ptr = as$(u8*)(old_mem.ptr),
         .len = old_mem.type.size * old_mem.len,
     };
     // Check for overflow in multiplication
@@ -566,7 +566,7 @@ fn_((mem_Allocator_free_debug(mem_Allocator self, u_S$raw mem, SrcLoc src_loc))(
     if (mem.type.size == 0 || mem.len == 0) { return; }
     // Create byte slice from memory and free it
     S$u8 bytes = {
-        .ptr = as$((u8*)(mem.ptr)),
+        .ptr = as$(u8*)(mem.ptr),
         .len = mem.type.size * mem.len,
     };
     mem_Allocator_rawFree_debug(self, bytes, mem.type.align, src_loc);
@@ -576,8 +576,8 @@ fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$((u8*)(src.ptr)), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$((u8*)(new_mem.ptr)), src.type.size * src.len));
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
     return_ok(new_mem);
 } $unscoped_(fn);
@@ -586,18 +586,18 @@ fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len + 1, src_loc));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$((u8*)(src.ptr)), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$((u8*)(new_mem.ptr)), src.type.size * src.len));
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
     mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
     mem_set(dst_bytes.ptr, 0x00, dst_bytes.len);
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel
-    //     as$((u8*)(new_mem.addr))[src.len] = 0;
+    //     as$(u8*)(new_mem.addr)[src.len] = 0;
     // } else {
     //     // For larger elements, we'd need to know the exact type to properly set the sentinel
     //     // This simple implementation assumes sentinel is just the first byte of the element
-    //       mem_set(as$((u8*)(new_mem.addr)) + (src.len * src.type.size), 0, 1);
+    //       mem_set(as$(u8*)(new_mem.addr) + (src.len * src.type.size), 0, 1);
     // }
     return_ok({
         .type = new_mem.type,

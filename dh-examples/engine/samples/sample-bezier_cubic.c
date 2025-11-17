@@ -7,14 +7,14 @@
 
 #include "engine.h"
 
-static Vec2f bezierCubic(Vec2f a, Vec2f b, Vec2f c, Vec2f d, f32 t) {
+static m_V2f32 bezierCubic(m_V2f32 a, m_V2f32 b, m_V2f32 c, m_V2f32 d, f32 t) {
     // Cubic Bezier curve formula: B(t) = (1-t)^3 * A + 3t(1-t)^2 * B + 3t^2(1-t) * C + t^3 * D
-    let t2  = t * t;
-    let t3  = t2 * t;
-    let mt  = 1.0f - t;
+    let t2 = t * t;
+    let t3 = t2 * t;
+    let mt = 1.0f - t;
     let mt2 = mt * mt;
     let mt3 = mt2 * mt;
-    return (Vec2f){
+    return (m_V2f32){
         .x = mt3 * a.x + 3.0f * t * mt2 * b.x + 3.0f * t2 * mt * c.x + t3 * d.x,
         .y = mt3 * a.y + 3.0f * t * mt2 * b.y + 3.0f * t2 * mt * c.y + t3 * d.y
     };
@@ -40,8 +40,8 @@ E$void dh_main(int argc, const char* argv[]) {
             &(engine_PlatformParams){
                 .backend_type = engine_RenderBackendType_vt100,
                 .window_title = "Bezier Cubic Curve",
-                .width        = 80,
-                .height       = 50,
+                .width = 80,
+                .height = 50,
             }
         ));
         defer(engine_Window_destroy(window));
@@ -60,22 +60,22 @@ E$void dh_main(int argc, const char* argv[]) {
         log_info("canvas views added\n");
 
         // Control points for the bezier curve
-        Vec2f a = { .x = -50.0f, .y = 0.0f };
-        Vec2f b = { .x = -50.0f, .y = 50.0f };
-        Vec2f c = { .x = 50.0f, .y = 25.0f };
-        Vec2f d = { .x = 100.0f, .y = -50.0f };
+        m_V2f32 a = { .x = -50.0f, .y = 0.0f };
+        m_V2f32 b = { .x = -50.0f, .y = 50.0f };
+        m_V2f32 c = { .x = 50.0f, .y = 25.0f };
+        m_V2f32 d = { .x = 100.0f, .y = -50.0f };
 
-        var  zero_time   = time_Instant_now();
-        var  curr_time   = zero_time;
-        var  prev_time   = curr_time;
-        let  target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
-        bool is_running  = true;
+        var zero_time = time_Instant_now();
+        var curr_time = zero_time;
+        var prev_time = curr_time;
+        let target_time = time_Duration_fromSecs$f64(0.016f); // Assume 62.5 FPS for simplicity
+        bool is_running = true;
         log_info("game loop started\n");
 
         while (is_running) {
-            curr_time        = time_Instant_now();
+            curr_time = time_Instant_now();
             let elapsed_time = time_Instant_durationSince(curr_time, prev_time);
-            let t            = time_Duration_asSecs$f64(time_Instant_durationSince(curr_time, zero_time));
+            let t = time_Duration_asSecs$f64(time_Instant_durationSince(curr_time, zero_time));
 
             // Process events
             try(engine_Window_processEvents(window));
@@ -87,8 +87,8 @@ E$void dh_main(int argc, const char* argv[]) {
             engine_Canvas_clear(game_canvas, Color_black);
 
             // Transform coordinates to screen space
-            const f32   canvas_scale  = 0.5f; // cuz logic based on 2x scale (160x100)
-            const Vec2f canvas_center = {
+            const f32 canvas_scale = 0.5f; // cuz logic based on 2x scale (160x100)
+            const m_V2f32 canvas_center = {
                 .x = as$(f32, game_canvas->width) / 2.0f,
                 .y = as$(f32, game_canvas->height) / 2.0f
             };
@@ -96,38 +96,38 @@ E$void dh_main(int argc, const char* argv[]) {
             // Draw bezier curve segments
             f32 t0 = 0.0f;
             for (i32 i = 0; i <= 30; ++i) {
-                f32   t1 = as$(f32, i) / 30.0f;
-                Vec2f p0 = bezierCubic(a, b, c, d, t0);
-                Vec2f p1 = bezierCubic(a, b, c, d, t1);
+                f32 t1 = as$(f32, i) / 30.0f;
+                m_V2f32 p0 = bezierCubic(a, b, c, d, t0);
+                m_V2f32 p1 = bezierCubic(a, b, c, d, t1);
 
                 // Transform points to screen space
-                p0   = m_V2f32_scale(p0, canvas_scale);
+                p0 = m_V2f32_scale(p0, canvas_scale);
                 p0.y = -p0.y;
-                p0   = m_V2f32_add(p0, canvas_center);
+                p0 = m_V2f32_add(p0, canvas_center);
 
-                p1   = m_V2f32_scale(p1, canvas_scale);
+                p1 = m_V2f32_scale(p1, canvas_scale);
                 p1.y = -p1.y;
-                p1   = m_V2f32_add(p1, canvas_center);
+                p1 = m_V2f32_add(p1, canvas_center);
 
                 engine_Canvas_drawLine(game_canvas, as$(i32, p0.x), as$(i32, p0.y), as$(i32, p1.x), as$(i32, p1.y), Color_white);
                 t0 = t1;
             }
 
             // Draw animated box along the curve
-            f32   pt            = (math_cos(as$(f32, t)) + 1.0f) * 0.5f;
-            Vec2f box_center    = bezierCubic(a, b, c, d, pt);
-            Vec2f box_half_size = { .x = 2.5f, .y = 2.5f };
-            Vec2f box_min       = m_V2f32_sub(box_center, box_half_size);
-            Vec2f box_max       = m_V2f32_add(box_center, box_half_size);
+            f32 pt = (math_cos(as$(f32, t)) + 1.0f) * 0.5f;
+            m_V2f32 box_center = bezierCubic(a, b, c, d, pt);
+            m_V2f32 box_half_size = { .x = 2.5f, .y = 2.5f };
+            m_V2f32 box_min = m_V2f32_sub(box_center, box_half_size);
+            m_V2f32 box_max = m_V2f32_add(box_center, box_half_size);
 
             // Transform box to screen space
-            box_min   = m_V2f32_scale(box_min, canvas_scale);
+            box_min = m_V2f32_scale(box_min, canvas_scale);
             box_min.y = -box_min.y;
-            box_min   = m_V2f32_add(box_min, canvas_center);
+            box_min = m_V2f32_add(box_min, canvas_center);
 
-            box_max   = m_V2f32_scale(box_max, canvas_scale);
+            box_max = m_V2f32_scale(box_max, canvas_scale);
             box_max.y = -box_max.y;
-            box_max   = m_V2f32_add(box_max, canvas_center);
+            box_max = m_V2f32_add(box_max, canvas_center);
 
             engine_Canvas_drawRect(game_canvas, as$(i32, box_min.x), as$(i32, box_min.y), as$(i32, box_max.x), as$(i32, box_max.y), Color_white);
 

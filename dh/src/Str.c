@@ -73,8 +73,8 @@ bool S_const$u8Castable(S_const$u8 self) {
 
 O$S$u8 S_const$u8Cast(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
-    if (!S_const$u8Castable(self)) { return none$((S$u8)); }
-    return some$((S$u8)(Str_from(as$((u8*)(self.ptr)), self.len)));
+    if (!S_const$u8Castable(self)) { return none$((O$S$u8)); }
+    return some$((O$S$u8)(Str_from(as$(u8*)(self.ptr), self.len)));
 }
 
 fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $scope) {
@@ -151,7 +151,7 @@ fn_((Str_upper(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
 
     let result = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
-        *dst = as$((u8)(ascii_toUpper(*src)));
+        *dst = as$(u8)(ascii_toUpper(*src));
     });
     return_ok(result);
 } $unscoped_(fn);
@@ -162,7 +162,7 @@ fn_((u8_lower(mem_Allocator allocator, S_const$u8 str))(E$S$u8) $scope) {
 
     let result = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), str.len))));
     for_(($s(result), $s(str))(dst, src) {
-        *dst = as$((u8)(ascii_toLower(*src)));
+        *dst = as$(u8)(ascii_toLower(*src));
     });
     return_ok(result);
 } $unscoped_(fn);
@@ -196,7 +196,7 @@ fn_((Str_rfind(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $s
     debug_assert_nonnull(needle.ptr);
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
-    for (usize i = prim_min(start, haystack.len - needle.len); i != as$((usize)(-1)); i--) {
+    for (usize i = prim_min(start, haystack.len - needle.len); i != as$(usize)(-1); i--) {
         if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
             return_some(i);
         }
@@ -228,8 +228,8 @@ static u32 hashMurmur3(const u8* data, usize len) {
 
     u32 hash = 0;
 
-    let nblocks = as$((i32)(len / 4));
-    let blocks = as$((const u32*)(data));
+    let nblocks = as$(i32)(len / 4);
+    let blocks = as$(const u32*)(data);
 
     for (i32 i = 0; i < nblocks; ++i) {
         u32 k = blocks[i];
@@ -241,7 +241,7 @@ static u32 hashMurmur3(const u8* data, usize len) {
         hash = ((hash << r2) | (hash >> (32 - r2))) * m + n;
     }
 
-    let tail = data + as$((ptrdiff_t)(nblocks * 4));
+    let tail = data + as$(ptrdiff_t)(nblocks * 4);
     u32 k1 = 0;
     switch (len & 3) {
     case 3:

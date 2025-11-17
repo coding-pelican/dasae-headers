@@ -7,7 +7,7 @@ extern "C" {
 #include "engine/common.h"
 
 /// Key code identifiers
-enum {
+typedef enum engine_KeyCode : i16 {
     engine_KeyCode_none = -1,
 
     /* Special keys */
@@ -94,12 +94,11 @@ enum {
     engine_KeyCode_kp_div     = 0x6F,
 
     engine_KeyCode_count = (i16)256
-};
-typedef i16 engine_KeyCode;
-use_P$(engine_KeyCode);
-use_S$(engine_KeyCode);
-use_O$(engine_KeyCode);
-use_E$(engine_KeyCode);
+} engine_KeyCode;
+T_use_P$(engine_KeyCode);
+T_use_S$(engine_KeyCode);
+T_use_O$(engine_KeyCode);
+T_use_E$(engine_KeyCode);
 
 #if defined(__cplusplus)
 } /* extern "C" */

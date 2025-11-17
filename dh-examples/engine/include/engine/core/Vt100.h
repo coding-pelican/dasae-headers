@@ -1,5 +1,5 @@
-#ifndef ENGINE_CORE_VT100_INCLUDED
-#define ENGINE_CORE_VT100_INCLUDED (1)
+#ifndef engine_core_VT100__included
+#define engine_core_VT100__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -9,21 +9,22 @@ extern "C" {
 #include "engine/Input.h"
 #include "engine/Backend.h"
 
-typedef struct engine_core_Vt100_Config {
-    O$mem_Allocator allocator;
-    engine_Window*    window; /* TODO: Supports multi-windows */
-    engine_Input*     input;
-} engine_core_Vt100_Config;
+typedef struct engine_core_VT100_Config {
+    var_(allocator, O$mem_Allocator);
+    var_(window, engine_Window*); /* TODO: Supports multi-windows */
+    var_(input, engine_Input*);
+} engine_core_VT100_Config;
 
-typedef struct engine_core_Vt100 engine_core_Vt100;
-use_P$(engine_core_Vt100);
-use_E$(P$engine_core_Vt100);
+typedef struct engine_core_VT100 engine_core_VT100;
+T_use_P$(engine_core_VT100);
+T_use_E$(P$engine_core_VT100);
 
-extern fn_((engine_core_Vt100_init(engine_core_Vt100_Config config))(E$P$engine_core_Vt100)) $must_check;
-extern fn_((engine_core_Vt100_fini(engine_core_Vt100* self))(void));
-extern fn_((engine_core_Vt100_backend(engine_core_Vt100* self))(engine_Backend));
+$must_check
+$extern fn_((engine_core_VT100_init(engine_core_VT100_Config config))(E$P$engine_core_VT100));
+$extern fn_((engine_core_VT100_fini(engine_core_VT100* self))(void));
+$extern fn_((engine_core_VT100_backend(engine_core_VT100* self))(engine_Backend));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* ENGINE_CORE_VT100_INCLUDED */
+#endif /* engine_core_VT100__included */

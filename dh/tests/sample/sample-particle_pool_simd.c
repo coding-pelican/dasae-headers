@@ -1,4 +1,3 @@
-#include "dh/Thrd/common.h"
 #include "dh/prl.h"
 #include "dh/Thrd.h"
 #include "dh/atom.h"
@@ -314,7 +313,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
             /* clang-format on */
             if (atom_V_load(&pool->count, atom_MemOrd_acquire) > 0) {
                 let tail = atom_V_load(&pool->tail, atom_MemOrd_acquire);
-                asgLit((&maybe_task)(some(atS(pool->tasks, tail % mp_max_task_count))));
+                asg_lit((&maybe_task)(some(atS(pool->tasks, tail % mp_max_task_count))));
                 atom_V_store(&pool->tail, tail + 1, atom_MemOrd_release);
                 atom_V_fetchSub(&pool->count, 1, atom_MemOrd_release);
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_acq_rel);
@@ -342,7 +341,7 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         gpa, typeInfo$(Thrd), thrd_count))));
     let_(tasks, TypeOf(pool->tasks)) = u_castS$((TypeOf(pool->tasks))(try_(mem_Allocator_alloc(
         gpa, typeInfo$(mp_ThrdPool_Task), mp_max_task_count))));
-    asgLit((pool)({
+    asg_lit((pool)({
         .workers = workers,
         .threads = threads,
         .tasks = tasks,
@@ -448,7 +447,7 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
         s = u * u + v * v;
     } while (s >= 1.0 || s == 0.0);
     s = sqrt(-2.0 * log(s) / s);
-    asgLit((&self->spare)(some(v * s)));
+    asg_lit((&self->spare)(some(v * s)));
     return mean + std_dev * u * s;
 }
 
@@ -583,7 +582,7 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
         let frame_end = time_Instant_now();
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
-        if (frame % as$((usize)State_target_fps) == 0) {
+        if (frame % as$(usize)(State_target_fps) == 0) {
             io_stream_println(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
@@ -592,8 +591,8 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
         }
     });
 
-    let avg_fps = as$((f64)(frame_amount)) / total_time;
-    let avg_spf = total_time / as$((f64)(frame_amount));
+    let avg_fps = as$(f64)(frame_amount) / total_time;
+    let avg_spf = total_time / as$(f64)(frame_amount);
     io_stream_println(u8_l("\n=== Simulation Complete ===\n"));
     io_stream_println(u8_l("Total frames: {:uz}"), frame_amount);
     io_stream_println(u8_l("Total time: {:.2fl} seconds"), total_time);
@@ -645,7 +644,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     Particles particles = { .pos_x = pos_x, .pos_y = pos_y, .vel_x = vel_x, .vel_y = vel_y, .mass = mass };
     let grid = try_(u_castE$((E$$(S$Cell))(mem_Allocator_alloc(gpa, typeInfo$(Cell), State_grid_width * State_grid_height))));
     defer_(mem_Allocator_free(gpa, u_anyS(grid)));
-    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$((f64)(sizeOf$(f32) * State_particles * 5)) / (1024.0 * 1024.0));
+    io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$(f64)(sizeOf$(f32) * State_particles * 5) / (1024.0 * 1024.0));
 
     var state = State_init(pool, particles, grid);
     let frame_amount = expr_(usize $scope) if (2 < args.len) {
@@ -725,8 +724,8 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         f32 r_values[SIMD_WIDTH] = {};
         f32 theta_values[SIMD_WIDTH] = {};
         for (usize k = 0; k < SIMD_WIDTH; ++k) {
-            var r = as$((f32)RandGaussian_next$f64(State_rngGaussian(), 0.0, radius_b / 2.5));
-            theta_values[k] = as$((f32)Rand_next$f64(State_rng())) * math_f64_tau;
+            var r = as$(f32)(RandGaussian_next$f64(State_rngGaussian(), 0.0, radius_b / 2.5));
+            theta_values[k] = as$(f32)(Rand_next$f64(State_rng())) * math_f64_tau;
             if (r > radius_b) { r = radius_b; }
             if (r < 0) { r = -r; }
             r_values[k] = r;
@@ -775,8 +774,8 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
     }
 // Handle remaining particles (scalar)
     for (; i < range.end; ++i) {
-        var r = as$((f32)RandGaussian_next$f64(State_rngGaussian(), 0.0, radius_b / 2.5));
-        let theta = as$((f32)Rand_next$f64(State_rng())) * math_f32_tau;
+        var r = as$(f32)(RandGaussian_next$f64(State_rngGaussian(), 0.0, radius_b / 2.5));
+        let theta = as$(f32)(Rand_next$f64(State_rng())) * math_f32_tau;
         if (r > radius_b) { r = radius_b; }
         if (r < 0) { r = -r; }
         var px = center_x + r * cosf(theta);
@@ -828,10 +827,10 @@ fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
 }
 
 fn_((State_hashPosition(m_V2f32 pos))(usize)) {
-    let gx_0 = as$((isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size));
-    let gy_0 = as$((isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size));
-    let gx_1 = as$((usize)prim_clamp(gx_0, 0, as$((isize)State_grid_width) - 1));
-    let gy_1 = as$((usize)prim_clamp(gy_0, 0, as$((isize)State_grid_height) - 1));
+    let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
+    let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width) - 1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height) - 1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -845,9 +844,9 @@ typedef struct State_ApplyGravityArgs {
 fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
     let args = u_castV$((State_ApplyGravityArgs)(params));
 
-    let dt = as$((f32)State_delta_time);
-    let gravity = as$((f32)State_gravity);
-    let damping = as$((f32)State_damping);
+    let dt = as$(f32)(State_delta_time);
+    let gravity = as$(f32)(State_gravity);
+    let damping = as$(f32)(State_damping);
     let epsilon = 0.1f;
 
     let dt_vec = simd_set1(dt);
@@ -981,9 +980,9 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
         // Check neighboring cells
         for (isize dy = -1; dy <= 1; ++dy) {
             for (isize dx = -1; dx <= 1; ++dx) {
-                let nx = as$((isize)(gx)) + dx;
-                let ny = as$((isize)(gy)) + dy;
-                if (nx < 0 || as$((usize)(nx)) >= State_grid_width || ny < 0 || as$((usize)(ny)) >= State_grid_height) {
+                let nx = as$(isize)(gx) + dx;
+                let ny = as$(isize)(gy) + dy;
+                if (nx < 0 || as$(usize)(nx) >= State_grid_width || ny < 0 || as$(usize)(ny) >= State_grid_height) {
                     continue;
                 }
                 let neighbor_idx = ny * State_grid_width + nx;
@@ -1110,15 +1109,15 @@ fn_((State_updatePositions_worker(R range, u_V$raw params))(void)) {
         f32 py = *atS(args.pos_y, i);
         f32 vx = *atS(args.vel_x, i);
         f32 vy = *atS(args.vel_y, i);
-        px += vx * as$((f32)State_delta_time);
-        py += vy * as$((f32)State_delta_time);
+        px += vx * as$(f32)(State_delta_time);
+        py += vy * as$(f32)(State_delta_time);
         f32 dist = sqrtf(px * px + py * py);
         if (dist > State_boundary_radius) {
-            f32 inv_dist = as$((f32)State_boundary_radius) / dist;
+            f32 inv_dist = as$(f32)(State_boundary_radius) / dist;
             f32 nx = px * inv_dist;
             f32 ny = py * inv_dist;
-            px = nx * as$((f32)State_boundary_radius);
-            py = ny * as$((f32)State_boundary_radius);
+            px = nx * as$(f32)(State_boundary_radius);
+            py = ny * as$(f32)(State_boundary_radius);
             f32 dot = vx * nx + vy * ny;
             vx -= 2.0f * dot * nx;
             vy -= 2.0f * dot * ny;

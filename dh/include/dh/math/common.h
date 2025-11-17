@@ -190,12 +190,12 @@ errset_((math_Err)(
     default: 0 \
 )
 
-#define VAL_math_f32_pi           as$((f32)(math_pi))
-#define VAL_math_f32_tau          as$((f32)(math_tau))
-#define VAL_math_f32_e            as$((f32)(math_e))
-#define VAL_math_f32_golden_ratio as$((f32)(math_golden_ratio))
-#define VAL_math_f32_sqrt_2       as$((f32)(math_sqrt_2))
-#define VAL_math_f32_sqrt_3       as$((f32)(math_sqrt_3))
+#define VAL_math_f32_pi           as$(f32)(math_pi)
+#define VAL_math_f32_tau          as$(f32)(math_tau)
+#define VAL_math_f32_e            as$(f32)(math_e)
+#define VAL_math_f32_golden_ratio as$(f32)(math_golden_ratio)
+#define VAL_math_f32_sqrt_2       as$(f32)(math_sqrt_2)
+#define VAL_math_f32_sqrt_3       as$(f32)(math_sqrt_3)
 #define VAL_math_f32_eps          f32_eps
 #define VAL_math_f32_nan          f32_nan
 #define VAL_math_f32_inf          f32_inf
@@ -260,9 +260,9 @@ errset_((math_Err)(
     let __rhs = (val_rhs); \
     P$raw __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))err(math_E_err(math_ErrCode_DivisionByZero)))); \
+        (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) err(math_Err_err(math_ErrCode_DivisionByZero)))); \
     } else { \
-        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok((__lhs) / (__rhs)))); \
+        (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok((__lhs) / (__rhs)))); \
     } \
     blk_return( \
         *as$(E$(TypeOf(__lhs))*, __ret) \
@@ -274,9 +274,9 @@ errset_((math_Err)(
     var __ret = make$((TypeOf(__lhs)){}); \
     if ((__rhs) != 0) { \
         if (isFlt(TypeOf(__ret))) { \
-            (__ret) = as$((TypeOf(__ret))(fmod(as$((f64)(__lhs)), as$((f64)(__rhs))))); \
+            (__ret) = as$(TypeOf(__ret))(flt_rem(as$(f64)(__lhs), as$(f64)(__rhs))); \
         } else { \
-            (__ret) = as$((TypeOf(__ret))(as$((i64)(__lhs)) % as$((i64)(__rhs)))); \
+            (__ret) = as$(TypeOf(__ret))(as$(i64)(__lhs) % as$(i64)(__rhs)); \
         } \
     } \
     blk_return __ret; \
@@ -286,12 +286,12 @@ errset_((math_Err)(
     let __rhs = (val_rhs); \
     P$raw __ret = null; \
     if ((__rhs) == 0) { \
-        (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))err(math_E_err(math_ErrCode_DivisionByZero)))); \
+        (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) err(math_Err_err(math_ErrCode_DivisionByZero)))); \
     } else { \
         if (isFlt(TypeOf(__ret))) { \
-            (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok(fmod(as$((f64)(__lhs)), as$((f64)(__rhs)))))); \
+            (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok(flt_rem(as$(f64)(__lhs), as$(f64)(__rhs))))); \
         } else { \
-            (__ret) = as$((P$raw)(&(E$(TypeOf(__lhs)))ok(as$((i64)(__lhs)) % as$((i64)(__rhs))))); \
+            (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok(as$(i64)(__lhs) % as$(i64)(__rhs)))); \
         } \
     } \
     blk_return( \
@@ -303,7 +303,7 @@ errset_((math_Err)(
 #define FUNC_math_abs(_x, val_x) blk({ \
     var _x = (val_x); \
     if (isFlt(TypeOf(_x))) { \
-        (_x) = as$((TypeOf(_x))(fabs(as$((f64)(_x))))); \
+        (_x) = as$(TypeOf(_x))(flt_abs(as$(f64)(_x))); \
     } else { \
         (_x) = (_x) < 0 ? -(_x) : (_x); \
     } \
@@ -351,19 +351,19 @@ errset_((math_Err)(
 /* Rounding functions */
 #define FUNC_math_floor(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(floor(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_floor(as$(f64)(_x))); \
 })
 #define FUNC_math_ceil(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(ceil(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_ceil(as$(f64)(_x))); \
 })
 #define FUNC_math_round(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(round(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_round(as$(f64)(_x))); \
 })
 #define FUNC_math_trunc(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(trunc(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_trunc(as$(f64)(_x))); \
 })
 
 /* Exponential/logarithmic functions */
@@ -371,7 +371,7 @@ errset_((math_Err)(
     let _x = (val_x); \
     var __ret = make$((TypeOf(_x)){}); \
     if (0 <= _x) { \
-        __ret = as$((TypeOf(__ret))(sqrt(as$((f64)(_x))))); \
+        __ret = as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x))); \
     } \
     blk_return __ret; \
 })
@@ -380,9 +380,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < 0) { \
         /* Square root of negative number */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$((TypeOf(__ret))(sqrt(as$((f64)(_x)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -391,7 +391,7 @@ errset_((math_Err)(
     let _exp = (val_exp); \
     var __ret = make$((TypeOf(_base)){}); \
     if (_base != 0 || 0 < _exp) { \
-        __ret = as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp))))); \
+        __ret = as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp))); \
     } \
     blk_return __ret; \
 })
@@ -401,9 +401,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_base == 0 && _exp <= 0) { \
         /* Invalid base/exponent combination */ \
-        __ret = (P$raw)&(E$(TypeOf(_base)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_base)))ok(as$((TypeOf(__ret))(pow(as$((f64)(_base)), as$((f64)(_exp)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_base)))ok(as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -411,7 +411,7 @@ errset_((math_Err)(
     let _x = (val_x); \
     var __ret = make$((TypeOf(_x)){}); \
     if (0 < _x) { \
-        __ret = as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x))))); \
+        __ret = as$(TypeOf(__ret))(1.0 / flt_sqrt(as$(f64)(_x))); \
     } \
     blk_return __ret; \
 })
@@ -420,9 +420,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x <= 0) { \
         /* Invalid input for inverse square root */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$((TypeOf(__ret))(1.0 / sqrt(as$((f64)(_x)))))); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(1.0 / flt_sqrt(as$(f64)(_x)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -430,21 +430,21 @@ errset_((math_Err)(
 /* Trigonometric functions */
 #define FUNC_math_sin(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(sin(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_sin(as$(f64)(_x))); \
 })
 #define FUNC_math_cos(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(cos(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_cos(as$(f64)(_x))); \
 })
 #define FUNC_math_tan(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$((TypeOf(_x))(tan(as$((f64)(_x))))); \
+    blk_return as$(TypeOf(_x))(flt_tan(as$(f64)(_x))); \
 })
 #define FUNC_math_asin(val_x) blk({ \
     let _x = (val_x); \
     var __ret = make$((TypeOf(_x)){}); \
     if (-1 <= _x && _x <= 1) { \
-        __ret = asin(_x); \
+        __ret = flt_asin(_x); \
     } \
     blk_return __ret; \
 })
@@ -453,9 +453,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse sine domain error */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(asin(_x)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(flt_asin(_x)); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -463,7 +463,7 @@ errset_((math_Err)(
     let _x = (val_x); \
     var __ret = make$((TypeOf(_x)){}); \
     if (-1 <= _x && _x <= 1) { \
-        __ret = acos(_x); \
+        __ret = flt_acos(_x); \
     } \
     blk_return __ret; \
 })
@@ -472,22 +472,22 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse cosine domain error */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(acos(_x)); \
+        __ret = (P$raw)&(E$(TypeOf(_x)))ok(flt_acos(_x)); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_atan(val_x) blk({ \
     let _x = (val_x); \
-    blk_return atan(_x); \
+    blk_return flt_atan(_x); \
 })
 #define FUNC_math_atan2(val_y, val_x) blk({ \
     let _y = (val_y); \
     let _x = (val_x); \
     var __ret = make$((TypeOf(_y)){}); \
     if (_y != 0 || _x != 0) { \
-        __ret = atan2(_y, _x); \
+        __ret = flt_atan2(_y, _x); \
     } \
     blk_return __ret; \
 })
@@ -496,10 +496,10 @@ errset_((math_Err)(
     let _x = (val_x); \
     P$raw __ret = null; \
     if (_x == 0 && _y == 0) { \
-        /* atan2(0, 0) is undefined */ \
-        __ret = (P$raw)&(E$(TypeOf(_y)))err(math_E_err(math_ErrCode_InvalidDomain)); \
+        /* flt_atan2(0, 0) is undefined */ \
+        __ret = (P$raw)&(E$(TypeOf(_y)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_y)))ok(atan2(_y, _x)); \
+        __ret = (P$raw)&(E$(TypeOf(_y)))ok(flt_atan2(_y, _x)); \
     } \
     blk_return(*(E$(TypeOf(_y))*)__ret); \
 })

@@ -61,7 +61,7 @@ TEST_fn_("Thrd: Multiple Threads" $scope) {
     A$$(10, O$$(Thrd_FnCtx$(sleepSecsForIdAndSq))) workers = zero$A();
     A$$(10, Thrd) threads = zero$A();
     for_(($rf(0), $s(ref$A(workers)), $s(ref$A(threads)))(i, worker, thread) {
-        asgLit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(i)))));
+        asg_lit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(i)))));
         *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, unwrap_(O_asP(worker))->as_raw));
     });
     for_(($s(ref$A(threads)))(thread) {
@@ -69,7 +69,7 @@ TEST_fn_("Thrd: Multiple Threads" $scope) {
     });
     for_(($rf(0), $s(ref$A(workers)))(i, worker) {
         let result = Thrd_FnCtx_ret$((sleepSecsForIdAndSq)(unwrap_(O_asP(worker))));
-        try_(TEST_expect(result == as$((i32)(i * i))));
+        try_(TEST_expect(result == as$(i32)(i * i)));
     });
     io_stream_println(u8_l("Thrd: Multiple Threads passed"));
 } $unscoped_(TEST_fn);

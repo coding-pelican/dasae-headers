@@ -25,13 +25,13 @@ fn_((someNeededSameStackMemFn(m_OutVal* out_val))(m_OutVal*)) {
 }
 
 TEST_fn_("out_mem: test" $scope) {
-    // as$((typeUnit$(i32)*)(someNeededSameStackMemFn(typeUnit$(i32).base)))->value;
+    // as$(typeUnit$(i32)(*)(someNeededSameStackMemFn(typeUnit$(i32).base)))->value;
     //
     // i32 a = castOut$((i32)(type, someNeededSameStackMemFn(type)));
 
     let a = ({
         var type = typeUnit$(i32).base;
-        as$((TypeOf(typeUnit$(i32))*)(someNeededSameStackMemFn(type)))->value;
+        as$(TypeOf(typeUnit$(i32)()*)(someNeededSameStackMemFn(type)))->value;
     });
-    try_(TEST_expect(a == as$((i32)(0xAAAAAAAA))));
+    try_(TEST_expect(a == as$(i32)(0xAAAAAAAA)));
 } $unscoped_(TEST_fn);

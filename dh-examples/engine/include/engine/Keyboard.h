@@ -15,8 +15,8 @@ typedef struct engine_Keyboard {
         var_(prev_states, A$$(engine_KeyCode_count, engine_KeyButtonStates)); /**< Bitfield of previous key states */
     } keys;
 } engine_Keyboard;
-use_O$(engine_Keyboard);
-use_E$(engine_Keyboard);
+T_use_O$(engine_Keyboard);
+T_use_E$(engine_Keyboard);
 
 /// Get all states for a key
 extern fn_((engine_Keyboard_getState(const engine_Keyboard* self, engine_KeyCode key))(engine_KeyButtonStates));

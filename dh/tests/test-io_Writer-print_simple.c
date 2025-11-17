@@ -31,7 +31,7 @@ typedef struct test_Buf {
 } test_Buf;
 $must_check
 $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
-    let self      = as$((test_Buf*)(ctx));
+    let self      = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
     if (0 < to_write) {
@@ -72,7 +72,7 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
+    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("42"))));
 } $unscoped_(TEST_fn);
 
@@ -86,7 +86,7 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
+    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("A"))));
 } $unscoped_(TEST_fn);
 
@@ -100,6 +100,6 @@ TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$((i32)(result.len)), result.ptr, result.len);
+    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(Str_eql(result, u8_l("ff"))));
 } $unscoped_(TEST_fn);

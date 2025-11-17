@@ -28,13 +28,13 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define prl_T_use$(_T...) \
-    T_use$(_T, (P, S, O, E)); \
-    T_use$(P$(const _T), (P, S, O, E)); \
-    T_use$(P$(_T), (P, S, O, E)); \
-    T_use$(S$(const _T), (P, S, O, E)); \
-    T_use$(S$(_T), (P, S, O, E)); \
-    T_use$(O$(_T), (P, S, O, E)); \
-    T_use$(E$(_T), (P, S, O, E))
+    T_use$((_T)(P, S, O, E)); \
+    T_use$((P$(const _T))(P, S, O, E)); \
+    T_use$((P$(_T))(P, S, O, E)); \
+    T_use$((S$(const _T))(P, S, O, E)); \
+    T_use$((S$(_T))(P, S, O, E)); \
+    T_use$((O$(_T))(P, S, O, E)); \
+    T_use$((E$(_T))(P, S, O, E))
 
 /*========== Macros and Definitions =========================================*/
 
@@ -43,6 +43,7 @@ prl_T_use$(u8); prl_T_use$(u16); prl_T_use$(u32); prl_T_use$(u64); prl_T_use$(us
 prl_T_use$(i8); prl_T_use$(i16); prl_T_use$(i32); prl_T_use$(i64); prl_T_use$(isize);
 prl_T_use$(f32); prl_T_use$(f64);
 prl_T_use$(bool);
+prl_T_use$(u_P_const$raw); prl_T_use$(u_S_const$raw);
 prl_T_use$(u_P$raw); prl_T_use$(u_S$raw);
 prl_T_use$(u_V$raw); prl_T_use$(u_A$raw);
 // clang-format on

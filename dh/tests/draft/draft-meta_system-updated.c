@@ -309,7 +309,7 @@ struct E$raw {
 #define __emit_inline__deref$S$(_N, _T, __s, _s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
     debug_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
-    as$((A$(_N, _T)*)(ensureNonnull(ptr$S(__s)))); \
+    as$(A$(_N, _T) (*)(ensureNonnull(ptr$S(__s)))); \
 }))
 #define deref$S$$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$$(_N,_T))*/) \
     __step_inline__deref$S$$(pp_defer(__emit_inline__deref$S$$)(__param_parse__deref$S$$ __VA_ARGS__))
@@ -319,10 +319,10 @@ struct E$raw {
 #define __emit_inline__deref$S$$(_N, _T, __s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
     debug_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
-    as$((A$$(_N, _T)*)(ensureNonnull(ptr$S(__s)))); \
+    as$(A$$(_N, _T) (*)(ensureNonnull(ptr$S(__s)))); \
 }))
 
-#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$((const TypeOfUnqual(*_p)*)(_p))
+#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$(const TypeOfUnqual (*_p) (*)(_p))
 #define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
 #define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/)   (_s.as_const)
 #define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
@@ -677,8 +677,8 @@ struct E$raw {
 #define __block_inline__none$$(...)               __block_inline1__none$$$(__VA_ARGS__)
 #define __block_inline1__none$$$(_T, _val...)     ((O$$(_T))none())
 
-#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)((_o).is_some))
-#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$((bool)(!(_o).is_some))
+#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)((_o).is_some)
+#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)(!(_o).is_some)
 
 #define return_some(_val...) \
     return_(some(_val))
@@ -743,8 +743,8 @@ struct E$raw {
 #define __block_inline__err$$(...)                  __block_inline1__err$$$(__VA_ARGS__)
 #define __block_inline1__err$$$(_T, _val...)        ((E$$(_T))err(_val))
 
-#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$((bool)((_e).is_ok))
-#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$((bool)(!(_e).is_ok))
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$(bool)((_e).is_ok)
+#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
 #define return_ok(_val...) \
     return_(ok(_val))
@@ -932,70 +932,70 @@ typedef struct meta_E$raw {
 #define __step_inline__meta_pRef$(...)          __VA_ARGS__
 #define __param_parse__meta_pRef$(...)          __VA_ARGS__, __param_next__meta_pRef$
 #define __param_next__meta_pRef$(...)           __VA_ARGS__
-#define __emit_inline__meta_pRef$(_T, _meta...) (*as$((P_const$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_pRef$(_T, _meta...) (*as$(P_const$(_T) (*)(&__meta.raw)))
 #define meta_pRef$$(/*(_T)(_Expr...)*/... /*(P_const$$(_T))*/) \
     __step_inline__meta_pRef$$(pp_defer(__emit_inline__meta_pRef$$)(__param_parse__meta_pRef$$ __VA_ARGS__))
 #define __step_inline__meta_pRef$$(...)          __VA_ARGS__
 #define __param_parse__meta_pRef$$(...)          __VA_ARGS__, __param_next__meta_pRef$$
 #define __param_next__meta_pRef$$(...)           __VA_ARGS__
-#define __emit_inline__meta_pRef$$(_T, _meta...) (*as$((P_const$$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_pRef$$(_T, _meta...) (*as$(P_const$$(_T) (*)(&__meta.raw)))
 
 #define meta_pMut$(/*(_T)(_Expr...)*/... /*(P$(_T))*/) \
     __step_inline__meta_pMut$(pp_defer(__emit_inline__meta_pMut$)(__param_parse__meta_pMut$ __VA_ARGS__))
 #define __param_parse__meta_pMut$(...)          __VA_ARGS__, __param_next__meta_pMut$
 #define __param_next__meta_pMut$(...)           __VA_ARGS__
-#define __emit_inline__meta_pMut$(_T, _meta...) (*as$((P$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_pMut$(_T, _meta...) (*as$(P$(_T) (*)(&__meta.raw)))
 #define meta_pMut$$(/*(_T)(_Expr...)*/... /*(P$$(_T))*/) \
     __step_inline__meta_pMut$$(pp_defer(__emit_inline__meta_pMut$$)(__param_parse__meta_pMut$$ __VA_ARGS__))
 #define __param_parse__meta_pMut$$(...)          __VA_ARGS__, __param_next__meta_pMut$$
 #define __param_next__meta_pMut$$(...)           __VA_ARGS__
-#define __emit_inline__meta_pMut$$(_T, _meta...) (*as$((P$$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_pMut$$(_T, _meta...) (*as$(P$$(_T) (*)(&__meta.raw)))
 
 #define meta_v$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __step_inline__meta_v$(pp_defer(__emit_inline__meta_v$)(__param_parse__meta_v$ __VA_ARGS__))
 #define __step_inline__meta_v$(...)          __VA_ARGS__
 #define __param_parse__meta_v$(...)          __VA_ARGS__, __param_next__meta_v$
 #define __param_next__meta_v$(...)           __VA_ARGS__
-#define __emit_inline__meta_v$(_T, _meta...) (*as$((_T*)(_meta.inner)))
+#define __emit_inline__meta_v$(_T, _meta...) (*as$(_T*)(_meta.inner))
 
 #define meta_sRef$(/*(_T)(_Expr...)*/... /*(S_const$(_T))*/) \
     __step_inline__meta_sRef$(pp_defer(__emit_inline__meta_sRef$)(__param_parse__meta_sRef$ __VA_ARGS__))
 #define __step_inline__meta_sRef$(...)          __VA_ARGS__
 #define __param_parse__meta_sRef$(...)          __VA_ARGS__, __param_next__meta_sRef$
 #define __param_next__meta_sRef$(...)           __VA_ARGS__
-#define __emit_inline__meta_sRef$(_T, _meta...) (*as$((S_const$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_sRef$(_T, _meta...) (*as$(S_const$(_T) (*)(&__meta.raw)))
 #define meta_sRef$$(/*(_T)(_Expr...)*/... /*(S_const$$(_T))*/) \
     __step_inline__meta_sRef$$(pp_defer(__emit_inline__meta_sRef$$)(__param_parse__meta_sRef$$ __VA_ARGS__))
 #define __step_inline__meta_sRef$$(...)          __VA_ARGS__
 #define __param_parse__meta_sRef$$(...)          __VA_ARGS__, __param_next__meta_sRef$$
 #define __param_next__meta_sRef$$(...)           __VA_ARGS__
-#define __emit_inline__meta_sRef$$(_T, _meta...) (*as$((S_const$$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_sRef$$(_T, _meta...) (*as$(S_const$$(_T) (*)(&__meta.raw)))
 
 #define meta_sMut$(/*(_T)(_Expr...)*/... /*(S$(_T))*/) \
     __step_inline__meta_sMut$(pp_defer(__emit_inline__meta_sMut$)(__param_parse__meta_sMut$ __VA_ARGS__))
 #define __step_inline__meta_sMut$(...)          __VA_ARGS__
 #define __param_parse__meta_sMut$(...)          __VA_ARGS__, __param_next__meta_sMut$
 #define __param_next__meta_sMut$(...)           __VA_ARGS__
-#define __emit_inline__meta_sMut$(_T, _meta...) (*as$((S$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_sMut$(_T, _meta...) (*as$(S$(_T) (*)(&__meta.raw)))
 #define meta_sMut$$(/*(_T)(_Expr...)*/... /*(S$$(_T))*/) \
     __step_inline__meta_sMut$$(pp_defer(__emit_inline__meta_sMut$$)(__param_parse__meta_sMut$$ __VA_ARGS__))
 #define __step_inline__meta_sMut$$(...)          __VA_ARGS__
 #define __param_parse__meta_sMut$$(...)          __VA_ARGS__, __param_next__meta_sMut$$
 #define __param_next__meta_sMut$$(...)           __VA_ARGS__
-#define __emit_inline__meta_sMut$$(_T, _meta...) (*as$((S$$(_T)*)(&__meta.raw)))
+#define __emit_inline__meta_sMut$$(_T, _meta...) (*as$(S$$(_T) (*)(&__meta.raw)))
 
 #define meta_a$(/*(_N,_T)(_Expr...)*/... /*(A$(_N,_T))*/) \
     __step_inline__meta_a$(pp_defer(__emit_inline__meta_a$)(__param_parse__meta_a$ __VA_ARGS__))
 #define __step_inline__meta_a$(...)              __VA_ARGS__
 #define __param_parse__meta_a$(...)              __VA_ARGS__, __param_next__meta_a$
 #define __param_next__meta_a$(...)               __VA_ARGS__
-#define __emit_inline__meta_a$(_N, _T, _meta...) (*as$((A$(_N, _T)*)(__meta.inner)))
+#define __emit_inline__meta_a$(_N, _T, _meta...) (*as$(A$(_N, _T) (*)(__meta.inner)))
 #define meta_a$$(/*(_N,_T)(_Expr...)*/... /*(A$$(_N,_T))*/) \
     __step_inline__meta_a$$(pp_defer(__emit_inline__meta_a$$)(__param_parse__meta_a$$ __VA_ARGS__))
 #define __step_inline__meta_a$$(...)              __VA_ARGS__
 #define __param_parse__meta_a$$(...)              __VA_ARGS__, __param_next__meta_a$$
 #define __param_next__meta_a$$(...)               __VA_ARGS__
-#define __emit_inline__meta_a$$(_N, _T, _meta...) (*as$((A$$(_N, _T)*)(__meta.inner)))
+#define __emit_inline__meta_a$$(_N, _T, _meta...) (*as$(A$$(_N, _T) (*)(__meta.inner)))
 
 #define meta_o$(/*(_T)(_Expr...)*/... /*(O$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_o$)(__param_expand__meta_o$ __VA_ARGS__))
@@ -1004,7 +1004,7 @@ typedef struct meta_E$raw {
 #define __block_inline__meta_o$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
-        ? ((O$(_T))some(*as$((_T*)(__meta.payload->some.inner)))) \
+        ? ((O$(_T))some(*as$(_T*)(__meta.payload->some.inner))) \
         : ((O$(_T))none()); \
 })
 #define meta_o$$(/*(_T)(_Expr...)*/... /*(O$$(_T))*/) \
@@ -1014,7 +1014,7 @@ typedef struct meta_E$raw {
 #define __block_inline__meta_o$$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
-        ? ((O$$(_T))some(*as$((_T*)(__meta.payload->some.inner)))) \
+        ? ((O$$(_T))some(*as$(_T*)(__meta.payload->some.inner))) \
         : ((O$$(_T))none()); \
 })
 

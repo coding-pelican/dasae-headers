@@ -46,7 +46,7 @@ typedef struct ArrList {
     var_(cap, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrList;
-T_use$(ArrList, (O, E));
+T_use$((ArrList)(O, E));
 T_use_E$($set(mem_Err)(ArrList));
 
 /*========== Function Prototypes ============================================*/
@@ -179,7 +179,7 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap)); \
     claim_assert_static(fieldPadding(TypeOf(*__anon), gpa) == fieldPadding(T_ArrList, gpa)); \
-    blk_return rawderef(as$(($P$(T_ArrList))(__anon))); \
+    blk_return rawderef(as$($P$(T_ArrList))(__anon)); \
 }) */
 
 /* clang-format off */
@@ -201,48 +201,48 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     }
 #define T_use_ArrList_clone$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_clone, _T)(ArrList$(_T) self, mem_Allocator gpa))(E$($set(mem_Err)(ArrList$(_T)))) $scope) { \
-        return_(typeE$((ReturnType)(ArrList_clone(self->as_raw, typeInfo$(_T), gpa)))); \
+        return_(typeE$((ReturnType)(ArrList_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped_(fn)
 
 #define T_use_ArrList_len$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_len, _T)(ArrList$(_T) self))(usize)) { \
-        return ArrList_len(self.as_raw); \
+        return ArrList_len(*self.as_raw); \
     }
 #define T_use_ArrList_cap$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_cap, _T)(ArrList$(_T) self))(usize)) { \
-        return ArrList_cap(self.as_raw); \
+        return ArrList_cap(*self.as_raw); \
     }
 #define T_use_ArrList_at$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_at, _T)(ArrList$(_T) self, TypeInfo type, usize idx))(const _T*)) { \
-        return u_castP$((const _T*)(ArrList_at(self.as_raw, type, idx))); \
+    $inline_always $static fn_((tpl_id(ArrList_at, _T)(ArrList$(_T) self, usize idx))(const _T*)) { \
+        return u_castP$((const _T*)(ArrList_at(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrList_atMut$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_atMut, _T)(ArrList$(_T) self, TypeInfo type, usize idx))(_T*)) { \
-        return u_castP$((_T*)(ArrList_atMut(self.as_raw, type, idx))); \
+    $inline_always $static fn_((tpl_id(ArrList_atMut, _T)(ArrList$(_T) self, usize idx))(_T*)) { \
+        return u_castP$((_T*)(ArrList_atMut(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrList_items$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_items, _T)(ArrList$(_T) self, TypeInfo type))(S$(const _T))) { \
-        return u_castS$((S$(const _T))(ArrList_items(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_items, _T)(ArrList$(_T) self))(S$(const _T))) { \
+        return u_castS$((S$(const _T))(ArrList_items(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrList_itemsMut$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_itemsMut, _T)(ArrList$(_T) self, TypeInfo type))(S$(_T))) { \
-        return u_castS$((S$(_T))(ArrList_itemsMut(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_itemsMut, _T)(ArrList$(_T) self))(S$(_T))) { \
+        return u_castS$((S$(_T))(ArrList_itemsMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrList_itemsCapped$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_itemsCapped, _T)(ArrList$(_T) self, TypeInfo type))(S$(const _T))) { \
-        return u_castS$((S$(const _T))(ArrList_itemsCapped(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_itemsCapped, _T)(ArrList$(_T) self))(S$(const _T))) { \
+        return u_castS$((S$(const _T))(ArrList_itemsCapped(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrList_itemsCappedMut$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_itemsCappedMut, _T)(ArrList$(_T) self, TypeInfo type))(S$(_T))) { \
-        return u_castS$((S$(_T))(ArrList_itemsCappedMut(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_itemsCappedMut, _T)(ArrList$(_T) self))(S$(_T))) { \
+        return u_castS$((S$(_T))(ArrList_itemsCappedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrList_itemsUnused$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_itemsUnused, _T)(ArrList$(_T) self, TypeInfo type))(S$(const _T))) { \
-        return u_castS$((S$(const _T))(ArrList_itemsUnused(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_itemsUnused, _T)(ArrList$(_T) self))(S$(const _T))) { \
+        return u_castS$((S$(const _T))(ArrList_itemsUnused(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrList_itemsUnusedMut$(_T...) \
-    $inline_always $static fn_((tpl_id(ArrList_itemsUnusedMut, _T)(ArrList$(_T) self, TypeInfo type))(S$(_T))) { \
-        return u_castS$((S$(_T))(ArrList_itemsUnusedMut(self.as_raw, type))); \
+    $inline_always $static fn_((tpl_id(ArrList_itemsUnusedMut, _T)(ArrList$(_T) self))(S$(_T))) { \
+        return u_castS$((S$(_T))(ArrList_itemsUnusedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 
 #define T_use_ArrList_ensureCap$(_T...) \

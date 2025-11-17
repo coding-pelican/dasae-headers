@@ -23,7 +23,7 @@ fn_((heap_ThrdSafe_allocator(heap_ThrdSafe* self))(mem_Allocator)) {
 
 fn_((heap_ThrdSafe_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $guard) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_ThrdSafe*)(ctx));
+    let self = as$(heap_ThrdSafe *) ((ctx));
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawAlloc(self->child_allocator, len, align));
@@ -31,7 +31,7 @@ fn_((heap_ThrdSafe_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $guard) {
 
 fn_((heap_ThrdSafe_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool) $guard) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_ThrdSafe*)(ctx));
+    let self = as$(heap_ThrdSafe *) ((ctx));
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawResize(self->child_allocator, buf, buf_align, new_len));
@@ -39,7 +39,7 @@ fn_((heap_ThrdSafe_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(boo
 
 fn_((heap_ThrdSafe_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $guard) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_ThrdSafe*)(ctx));
+    let self = as$(heap_ThrdSafe *) ((ctx));
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_(mem_Allocator_rawRemap(self->child_allocator, buf, buf_align, new_len));
@@ -47,7 +47,7 @@ fn_((heap_ThrdSafe_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$
 
 fn_((heap_ThrdSafe_free(P$raw ctx, S$u8 buf, u8 buf_align))(void) $guard) {
     claim_assert_nonnull(ctx);
-    let self = as$((heap_ThrdSafe*)(ctx));
+    let self = as$(heap_ThrdSafe *) ((ctx));
     Thrd_Mtx_lock(&self->mutex);
     defer_(Thrd_Mtx_unlock(&self->mutex));
     return_void(mem_Allocator_rawFree(self->child_allocator, buf, buf_align));

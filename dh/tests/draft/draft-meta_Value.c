@@ -113,7 +113,7 @@ union Node$i32 {
         } value; \
     } __self = { .meta = _self }; \
     debug_assert(TypeInfo_eq(typeInfo$(T), __self.meta.ref.type)); \
-    __self.value.data = deref(as$(($P$(T))(__self.meta.ref.addr))); \
+    __self.value.data = deref(as$($P$(T)()(__self.meta.ref.addr))); \
     blk_return __self.value.data; \
 })
 

@@ -83,17 +83,17 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
         i32 key   = 23;
         let value = expr_(i32 $scope) {
             for_($r(0, 10), (i), {
-                if (i == as$((usize)(key))) {
+                if (i == as$(usize)(key)) {
                     $break_(5);
                 }
             });
             for_($r(10, 20), (i), {
-                if (i == as$((usize)(key))) {
+                if (i == as$(usize)(key)) {
                     $break_(15);
                 }
             });
             for_($r(20, 30), (i), {
-                if (i == as$((usize)(key))) {
+                if (i == as$(usize)(key)) {
                     $break_(25);
                 }
             });

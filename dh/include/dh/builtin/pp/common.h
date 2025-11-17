@@ -124,10 +124,6 @@ extern "C" {
      */ \
     pp_exec_foreach_(pp_exec_foreach_NARG(__VA_ARGS__), _Macro, _Name, __VA_ARGS__)
 
-// lit_num(11,644,473,600u) => 11644473600u
-#define lit_num(_Comma_Sep_Lits...)      comp_syn__lit_num(_Comma_Sep_Lits)
-#define lit_num$(_T, _Comma_Sep_Lits...) comp_syn__lit_num$(_T, _Comma_Sep_Lits)
-
 /*========== Macros Implementation ==========================================*/
 
 #define pp_exec_nothing(...)
@@ -207,28 +203,6 @@ extern "C" {
 #define pp_exec_foreach__30(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__29(_Macro, _Name, __VA_ARGS__)
 #define pp_exec_foreach__31(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__30(_Macro, _Name, __VA_ARGS__)
 #define pp_exec_foreach__32(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__31(_Macro, _Name, __VA_ARGS__)
-
-#define comp_syn__lit_num(_Comma_Sep_Lits...) \
-    pp_join(__, comp_syn__lit_num, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
-/* Handle different numbers of arguments */
-#define comp_syn__lit_num__1(_Num1) \
-    _Num1
-#define comp_syn__lit_num__2(_Num1, _Num2) \
-    pp_cat(_Num1, _Num2)
-#define comp_syn__lit_num__3(_Num1, _Num2, _Num3) \
-    pp_cat3(_Num1, _Num2, _Num3)
-#define comp_syn__lit_num__4(_Num1, _Num2, _Num3, _Num4) \
-    pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
-#define comp_syn__lit_num__5(_Num1, _Num2, _Num3, _Num4, _Num5) \
-    pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
-#define comp_syn__lit_num__6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) \
-    pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
-#define comp_syn__lit_num__7(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7) \
-    pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6), _Num7)
-#define comp_syn__lit_num__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
-    pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
-#define comp_syn__lit_num$(T, _Comma_Sep_Lits...) \
-    as$((T)(lit_num(_Comma_Sep_Lits)))
 
 #define pp_compl(_b) pp_cat(__pp_compl_, _b)
 #define __pp_compl_0 1

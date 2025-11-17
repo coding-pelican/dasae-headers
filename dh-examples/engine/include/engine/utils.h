@@ -1,15 +1,15 @@
-#ifndef ENGINE_UTILS_INCLUDED
-#define ENGINE_UTILS_INCLUDED (1)
+#ifndef engine_utils__included
+#define engine_utils__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 #include "engine/common.h"
 
-extern fn_((engine_utils_getch(void))(u8));
-extern fn_((engine_utils_kbhit(void))(bool));
+$extern fn_((engine_utils_getch(void))(u8));
+$extern fn_((engine_utils_kbhit(void))(bool));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* ENGINE_UTILS_INCLUDED */
+#endif /* engine_utils__included */

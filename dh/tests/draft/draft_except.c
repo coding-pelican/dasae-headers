@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #include "dh/except.h"
 
 #include <string.h>
@@ -55,3 +56,4 @@ int main(void) {
 
     return 0;
 }
+#endif /* UNUSED_CODE */

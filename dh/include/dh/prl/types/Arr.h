@@ -32,6 +32,10 @@ extern "C" {
     T_decl_A$(_N, _T); \
     T_impl_A$(_N, _T)
 
+#define A_innerN$(_T...)       A_len$(_T)
+#define A_InnerT$(_T...)       TypeOf((as$(_T*)(null))->val[0])
+#define A_InnerTUnqual$(_T...) TypeOfUnqual((as$(_T*)(null))->val[0])
+
 /* Array Operations */
 #define zero$A()                                  init$A({})
 #define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/)   init$A$(__VA_ARGS__{})
@@ -54,13 +58,55 @@ extern "C" {
 #define ref$A$(/*((_T))(a: A$$(_N,_T))*/... /*((_T))*/) \
     __ref$A__step(pp_defer(__ref$A__emit)(__ref$A__parseT __VA_ARGS__))
 
-#define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
-#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*val$A(_a))
-#define lenA                                           len$A
-#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/)      countOf$(TypeOf((_a).val))
-#define len$A$(_T...)                                  len$A(*as$((_T*)(0)))
+#define A_zero zero$A
+#define A_init init$A
+#define A_val  val$A
+#define A_ptr  ptr$A
+#define A_len$ len$A$
+#define A_len  len$A
 
-#define atA                                                          at$A
+#define A_at(/*(_self: A(_N,_T))[_idx]*/... /*(P(_T))*/) \
+    __op__A_at(__op__A_at__parse __VA_ARGS__)
+#define __op__A_at__parse(_a...)                  pp_uniqTok(a), pp_uniqTok(idx), _a,
+#define __op__A_at(...)                           __op__A_at__emit(__VA_ARGS__)
+#define __op__A_at__emit(__a, __idx, _a, _idx...) ({ \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
+    claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, A_len(*__a)); \
+    A_ptr(*__a) + __idx; \
+})
+
+#define A_ref$(/*(_ST: S(_T))(_a: A(_N,_T))*/... /*(_ST)*/) \
+    __op__A_ref$(__op__A_ref$__parseST __VA_ARGS__)
+#define __op__A_ref$(...)             __op__A_ref$__emit(__VA_ARGS__)
+#define __op__A_ref$__parseST(_ST...) _ST,
+#define __op__A_ref$__emit(_ST, _a...) \
+    lit$((_ST){ .ptr = A_ptr(_a), .len = A_len(_a) })
+// #define A_ref(_a /*: A$$(_N,_T)*/... /*(_ST)*/) \
+//     A_ref$((S$$(A_InnerT$(TypeOf(_a))))(_a)) /* TODO: Detect const */
+
+/* clang-format off */
+#define A_ref(_a /*: A$$(_N,_T)*/... /*(_ST)*/) _Generic(\
+    TypeOf(_a), \
+    const TypeOfUnqual(_a): \
+        A_ref$((S$$(const A_InnerT$(TypeOf(_a))))(_a)), \
+    TypeOfUnqual(_a): \
+        A_ref$((S$$(A_InnerT$(TypeOf(_a))))(_a)) \
+)
+/* clang-format on */
+
+#define zeroA zero$A
+#define initA init$A
+#define valA  val$A
+#define ptrA  ptr$A
+#define lenA$ len$A$
+#define lenA  len$A
+#define atA   at$A
+
+#define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/)               ((_a).val)
+#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)                  (&*val$A(_a))
+#define len$A$(_T...)                                                len$A(*as$(_T*)(0))
+#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/)                    countOf$(TypeOf((_a).val))
 #define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) pp_expand(pp_defer(block_inline__at$A)(param_expand__at$A(_a, _idx)))
 
 #define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S_const$$(_T))*/)       __param_expand__slice$A(__VA_ARGS__)
@@ -77,6 +123,29 @@ extern "C" {
 #define __A_from__parseT(_T...)           _T,
 #define __A_from__emit(_T, _a...) \
     lit$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
+
+#define A_cat$(/*(_T)(_lhs, _rhs)*/... /*(_T)*/) \
+    __op__A_cat$(__op__A_cat$__parseT __VA_ARGS__)
+#define __op__A_cat$(...) \
+    __op__A_cat$__emit(__VA_ARGS__)
+#define __op__A_cat$__parseT(_T...) \
+    _T, __op__A_cat$__parseParams
+#define __op__A_cat$__parseParams(_lhs, _rhs...) \
+    pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs
+#define __op__A_cat$__emit(_T, __lhs, __rhs, _lhs, _rhs...) ({ \
+    var __lhs = &(_lhs); \
+    var __rhs = &(_rhs); \
+    typedef union { \
+        struct { \
+            var_(lhs, TypeOf(*__lhs)); \
+            var_(rhs, TypeOf(*__rhs)); \
+        }; \
+        var_(catted, _T); \
+    } Catting; \
+    lit$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
+})
+#define A_cat(_lhs, _rhs...) \
+    A_cat$((A$$(A_innerN$(TypeOf(_lhs)) + A_innerN$(TypeOf(_rhs)), A_InnerT$(TypeOf(_lhs))))(_lhs, _rhs))
 
 #define __lit_init$A__step(...)         __VA_ARGS__
 #define __lit_init$A__parseT(_N, _T...) _N, _T,

@@ -26,9 +26,9 @@ extern "C" {
 
 /* Type Size and Alignment */
 #define alignAs(_align /*: u32*/...) _Alignas(1ull << (_align))
-#define alignOf$(_T... /*(u32)*/)    as$((u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
-#define sizeOf$(_T... /*(usize)*/)   as$((usize)(sizeof(_T)))
-#define countOf$(_T... /*(usize)*/)  (sizeOf$(_T) / sizeOf$(TypeOf((*as$((_T*)(0)))[0])))
+#define alignOf$(_T... /*(u32)*/)    (as$(u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
+#define sizeOf$(_T... /*(usize)*/)   (as$(usize)(sizeof(_T)))
+#define countOf$(_T... /*(usize)*/)  (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(0))[0])))
 
 /* Type Information */
 #define TypeOf(_Expr...) \

@@ -6,7 +6,7 @@
 
 $inline_always
 $static fn_((makeDir(S_const$u8 path))(i32)) {
-    return mkdir(as$((const char*)(path.ptr)) pp_if_(plat_windows)(
+    return mkdir(as$(const char*)(path.ptr) pp_if_(plat_windows)(
         pp_then_(pp_ignore)
     )(, 0755));
 }

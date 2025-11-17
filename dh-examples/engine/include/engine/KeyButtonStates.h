@@ -7,17 +7,16 @@ extern "C" {
 #include "engine/common.h"
 
 /// Key states
-enum {
+typedef enum engine_KeyButtonStates : u8 {
     engine_KeyButtonStates_none     = 0,
     engine_KeyButtonStates_pressed  = 1 << 0, /**< Key/Button was just pressed this frame */
     engine_KeyButtonStates_held     = 1 << 1, /**< Key/Button is being held down */
     engine_KeyButtonStates_released = 1 << 2  /**< Key/Button was just released this frame */
-};
-typedef u8 engine_KeyButtonStates;
-use_P$(engine_KeyButtonStates);
-use_S$(engine_KeyButtonStates);
-use_O$(engine_KeyButtonStates);
-use_E$(engine_KeyButtonStates);
+} engine_KeyButtonStates;
+T_use_P$(engine_KeyButtonStates);
+T_use_S$(engine_KeyButtonStates);
+T_use_O$(engine_KeyButtonStates);
+T_use_E$(engine_KeyButtonStates);
 
 #if defined(__cplusplus)
 } /* extern "C" */

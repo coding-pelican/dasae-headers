@@ -17,7 +17,7 @@ fn_((ListDbl_Node_data(ListDbl_Node* node))(u_P$raw)) {
     debug_assert_nonnull(node);
     return (u_P$raw){
         .type = node->type,
-        .inner = as$((u8*)(node)) - alignUp(node->type),
+        .inner = as$(u8*)(node) - alignUp(node->type),
     };
 }
 

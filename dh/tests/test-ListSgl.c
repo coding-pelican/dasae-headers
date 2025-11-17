@@ -1,7 +1,7 @@
 #include "dh/main.h"
 #include "dh/ListSgl.h"
 
-T_use$(u32, (
+T_use$((u32)(
     ListSgl_Node,
     ListSgl_Node_init,
     ListSgl_Node_insertNext,
