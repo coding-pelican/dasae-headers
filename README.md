@@ -204,24 +204,24 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
 ```c
 fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_($s(items, item)) {
+    for_(($s(items))(item) {
         if (*item != value) { return_some(index); } // Return with a value
-    }
+    });
     return_none(); // Return with no value
 } $unscoped_(fn);
 
 fn_((example(void))(void)) {
     // Create an array with 5 elements
-    var nums = init$A$$((5, i32)({ 10, 20, 30, 40, 50 }));
+    var nums = A_from((i32){ 10, 20, 30, 40, 50 });
 
     // Create optional values
-    let opt_value = some$((i32)(42));
-    let opt_empty = none$(i32);
+    let opt_value = some$((O$i32)(42));
+    let opt_empty = none$((O$i32));
 
     // Find a value in array
-    let found = findValueIndex(30, ref$A$((i32)(nums)).as_const);
+    let found = findValueIndex(30, A_ref$((S$i32)(nums)).as_const);
     // Check if option has value
-    if_some(found, index) {
+    if_some((found)(index)) {
         io_stream_println(u8_("Found at: {:d}"), index);
     } else_none {
         io_stream_println(u8_("Not found"));
@@ -237,13 +237,13 @@ fn_((example(void))(void)) {
 ### Error Results Example
 
 ```c
-config_ErrSet((math_Err)(
-    math_Err_DivisionByZero,
-    math_Err_Overflow,
-    math_Err_Underflow
+errset_((math_Err)(
+    DivisionByZero,
+    Overflow,
+    Underflow
 ));
 
-use_ErrSet$(math_Err, i32); // or Generally `tpl$E$(i32)`
+T_use_E$($set(math_Err)(i32)); // or Generally `T_use_E$(i32)`
 fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
@@ -253,9 +253,9 @@ fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
 
 fn_((example(void))(E$void) $guard) {
     // Allocate resources
-    var buffer = meta_s$((i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
+    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
     // Always executed when function returns
-    defer_(mem_Allocator_free(allocator, meta_any(buffer)));
+    defer_(mem_Allocator_free(allocator, u_anyS(buffer)));
     // Only executed when an error occurs and propagates
     errdefer_(err, io_stream_eprintln(u8_("Occurred error!: {:s}"), Err_codeToStr(err)));
 
@@ -265,9 +265,9 @@ fn_((example(void))(E$void) $guard) {
     let result_default = catch_((safeDivide(10, 0))($ignore, 1));
     // Error handling with error payload capture
     let result_handling = catch_((safeDivide(10, 0))(err, {
-        Err_print(err);   // Print the error
+        io_stream_eprintln(u8_l("Occurred error!: {:e}"), err);
         ErrTrace_print(); // Print the error trace
-        return_err(err);  // Return with an error
+        return_err(err);
     }));
 
     // Return a normally
@@ -282,26 +282,28 @@ typedef variant_((InputEvent)(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
 )) InputEvent;
-tpl$O$(InputEvent);
+T_use_O$(InputEvent);
 fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
-    if_some(pullInputEvent(), event) {
+    if_some((pullInputEvent())(event)) {
         match_(event) {
-            pattern_(InputEvent_press_key, on_pressed, {
+            pattern_((InputEvent_press_key)(on_pressed)) {
                 debug_assert_true_fmt(
                     -1 < on_pressed->key && on_pressed->key <= 255,
                     "key is out of range"
                 );
-            }) break;
-            pattern_(InputEvent_release_button, on_released, {
+                break;
+            } $end(pattern);
+            pattern_((InputEvent_release_button)(on_released)) {
                 debug_assert_true_fmt(
                     -1 < on_released->button && on_released->button <= 5,
                     "button is out of range"
                 );
-            }) break;
+                break;
+            } $end(pattern);
             fallback_(claim_unreachable);
-        }
+        } $end(match);
     }
 }
 ```

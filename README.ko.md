@@ -181,24 +181,24 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
 ```c
 fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_($s(items, item)) {
+    for_(($s(items))(item) {
         if (*item != value) { return_some(index); } // 값이 있음을 반환
-    }
+    });
     return_none(); // 값이 없음을 반환
 } $unscoped_(fn);
 
 fn_((example(void))(void)) {
     // 5개의 요소를 가진 배열 생성
-    var nums = init$A$$((5, i32)({ 10, 20, 30, 40, 50 }));
+    var nums = A_from((i32){ 10, 20, 30, 40, 50 });
 
     // Optional 값 생성
-    let opt_value = some$((i32)(42));
-    let opt_empty = none$(i32);
+    let opt_value = some$((O$i32)(42));
+    let opt_empty = none$((O$i32));
 
     // 배열에서 값 찾기
-    let found = findValueIndex(30, ref$A$((i32)(nums)).as_const);
+    let found = findValueIndex(30, A_ref$((S$i32)(nums)).as_const);
     // Optional 값 확인
-    if_some(found, index) {
+    if_some((found)(index)) {
         io_stream_println(u8_("Found at: {:d}"), index);
     } else_none {
         io_stream_println(u8_("Not found"));
@@ -214,25 +214,25 @@ fn_((example(void))(void)) {
 ### Error Results 예제
 
 ```c
-config_ErrSet((math_Err)(
-    math_Err_DivisionByZero,
-    math_Err_Overflow,
-    math_Err_Underflow
+errset_((math_Err)(
+    DivisionByZero,
+    Overflow,
+    Underflow
 ));
 
-use_ErrSet$(math_Err, i32); // 또는 일반적으로 `tpl$E$(i32)`
-fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
-    if (rhs == 0) {
-        return_err(math_Err_DivisionByZero()); // 오류를 반환
+T_use_E$($set(math_Err)(i32)); // 또는 일반적으로 `T_use_E$(i32)`
+fn_((safeDivide(i32 num, i32 denom))(math_Err$i32) $scope) {
+    if (denom == 0) {
+        return_err(math_Err_DivisionByZero());
     }
-    return_ok(lhs / rhs); // 값을 반환
+    return_ok(num / denom);
 } $unscoped_(fn);
 
 fn_((example(void))(E$void) $guard) {
     // 리소스 할당
-    var buffer = meta_s$((i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
+    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
     // 함수가 반환될 때 항상 실행됨
-    defer_(mem_Allocator_free(allocator, meta_any(buffer)));
+    defer_(mem_Allocator_free(allocator, u_anyS(buffer)));
     // 오류가 발생하고 전파될 때만 실행됨
     errdefer_(err, io_stream_eprintln(u8_("Occurred error!: {:s}"), Err_codeToStr(err)));
 
@@ -242,9 +242,9 @@ fn_((example(void))(E$void) $guard) {
     let result_default = catch_((safeDivide(10, 0))($ignore, 1));
     // 오류 페이로드 캡처를 통한 오류 처리
     let result_handling = catch_((safeDivide(10, 0))(err, {
-        Err_print(err);   // 오류 출력
+        io_stream_eprintln(u8_l("Occurred error!: {:e}"), err);
         ErrTrace_print(); // 오류 추적 출력
-        return_err(err);  // 오류를 반환
+        return_err(err);
     }));
 
     // 정상 반환
@@ -259,26 +259,28 @@ typedef variant_((InputEvent)(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
 )) InputEvent;
-tpl$O$(InputEvent);
+T_use_O$(InputEvent);
 fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
-    if_some(pullInputEvent(), event) {
+    if_some((pullInputEvent())(event)) {
         match_(event) {
-            pattern_(InputEvent_press_key, on_pressed, {
+            pattern_((InputEvent_press_key)(on_pressed)) {
                 debug_assert_true_fmt(
                     -1 < on_pressed->key && on_pressed->key <= 255,
                     "key is out of range"
                 );
-            }) break;
-            pattern_(InputEvent_release_button, on_released, {
+                break;
+            } $end(pattern);
+            pattern_((InputEvent_release_button)(on_released)) {
                 debug_assert_true_fmt(
                     -1 < on_released->button && on_released->button <= 5,
                     "button is out of range"
                 );
-            }) break;
+                break;
+            } $end(pattern);
             fallback_(claim_unreachable);
-        }
+        } $end(match);
     }
 }
 ```
