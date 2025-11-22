@@ -271,3 +271,4 @@ CMakeUserPresets.json
 **/.archive*/
 **/.draft*/
 **/.mock*/
+**/.cache*/
