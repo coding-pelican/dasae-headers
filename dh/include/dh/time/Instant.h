@@ -39,9 +39,9 @@ T_impl_O$(time_Instant);
 
 /*========== Operations =====================================================*/
 
-extern time_Instant    time_Instant_now(void);
-extern time_Duration   time_Instant_elapsed(time_Instant self);
-extern time_Duration   time_Instant_durationSince(time_Instant later, time_Instant earlier);
+extern time_Instant time_Instant_now(void);
+extern time_Duration time_Instant_elapsed(time_Instant self);
+extern time_Duration time_Instant_durationSince(time_Instant later, time_Instant earlier);
 extern O$time_Duration time_Instant_durationSinceChkd(time_Instant later, time_Instant earlier);
 
 /*========== Arithmetic Operations ==========================================*/
@@ -60,7 +60,7 @@ extern O$time_Instant time_Instant_subChkdDuration(time_Instant lhs, time_Durati
 /*========== Time Conversion to/from Unix Epoch =============================*/
 
 extern time_Instant time_Instant_fromUnixEpoch(u64 secs);
-extern u64          time_Instant_toUnixEpoch(time_Instant self);
+extern u64 time_Instant_toUnixEpoch(time_Instant self);
 
 /*========== Comparison =====================================================*/
 
@@ -74,7 +74,7 @@ cmp_fnGe_default(time_Instant);
 
 /*========== Constants ======================================================*/
 
-static const time_Instant time_Instant_unix_epoch = { .point = time_SysTime_unix_epoch };
+static const time_Instant time_Instant_unix_epoch = {.point = time_SysTime_unix_epoch};
 
 #if defined(__cplusplus)
 } /* extern "C" */

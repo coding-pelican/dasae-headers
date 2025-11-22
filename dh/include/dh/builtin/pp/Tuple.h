@@ -27,8 +27,8 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define pp_Tuple_len                     pp_countArg
-#define pp_Tuple_wrap(/* _Elems */...)   (__VA_ARGS__)
+#define pp_Tuple_len pp_countArg
+#define pp_Tuple_wrap(/* _Elems */...) (__VA_ARGS__)
 #define pp_Tuple_unwrap(/* _Elems */...) __VA_ARGS__
 #define pp_Tuple_wrapOpen()  (
 #define pp_Tuple_wrapClose() )
@@ -36,30 +36,30 @@ extern "C" {
 #define pp_Tuple_unwrapOpen(/* _Elems */...) __VA_ARGS__)
 #define pp_Tuple_unwrapCloseOptComma(/* _Elems */...) (__VA_ARGS__ __VA_OPT__(,)
 #define pp_Tuple_unwrapOpenOptComma(/* _Elems */...) __VA_OPT__(,) __VA_ARGS__)
-#define pp_Tuple_unwrapPreComma(/* _Elems */...)       , __VA_ARGS__
-#define pp_Tuple_unwrapSufComma(/* _Elems */...)       __VA_ARGS__,
+#define pp_Tuple_unwrapPreComma(/* _Elems */...) , __VA_ARGS__
+#define pp_Tuple_unwrapSufComma(/* _Elems */...) __VA_ARGS__,
 #define pp_Tuple_unwrapSufCommaExpand(/* _Elems */...) __VA_ARGS__, pp_expand
-#define pp_Tuple_cat(/* _Elems */...)                  pp_Tuple_wrapOpen() __VA_ARGS__ pp_Tuple_unwrapOpenOptComma
+#define pp_Tuple_cat(/* _Elems */...) pp_Tuple_wrapOpen() __VA_ARGS__ pp_Tuple_unwrapOpenOptComma
 
-#define pp_Tuple_get1st(_a, ...)                             _a
-#define pp_Tuple_get2nd(_a, _b, ...)                         _b
-#define pp_Tuple_get3rd(_a, _b, _c, ...)                     _c
-#define pp_Tuple_get4th(_a, _b, _c, _d, ...)                 _d
-#define pp_Tuple_get5th(_a, _b, _c, _d, _e, ...)             _e
-#define pp_Tuple_get6th(_a, _b, _c, _d, _e, _f, ...)         _f
-#define pp_Tuple_get7th(_a, _b, _c, _d, _e, _f, _g, ...)     _g
+#define pp_Tuple_get1st(_a, ...) _a
+#define pp_Tuple_get2nd(_a, _b, ...) _b
+#define pp_Tuple_get3rd(_a, _b, _c, ...) _c
+#define pp_Tuple_get4th(_a, _b, _c, _d, ...) _d
+#define pp_Tuple_get5th(_a, _b, _c, _d, _e, ...) _e
+#define pp_Tuple_get6th(_a, _b, _c, _d, _e, _f, ...) _f
+#define pp_Tuple_get7th(_a, _b, _c, _d, _e, _f, _g, ...) _g
 #define pp_Tuple_get8th(_a, _b, _c, _d, _e, _f, _g, _h, ...) _h
 
-#define pp_Tuple_get1stRest(_a, _b...)                         _b
-#define pp_Tuple_get2ndRest(_a, _b, _c...)                     _c
-#define pp_Tuple_get3rdRest(_a, _b, _c, _d...)                 _d
-#define pp_Tuple_get4thRest(_a, _b, _c, _d, _e...)             _e
-#define pp_Tuple_get5thRest(_a, _b, _c, _d, _e, _f...)         _f
-#define pp_Tuple_get6thRest(_a, _b, _c, _d, _e, _f, _g...)     _g
+#define pp_Tuple_get1stRest(_a, _b...) _b
+#define pp_Tuple_get2ndRest(_a, _b, _c...) _c
+#define pp_Tuple_get3rdRest(_a, _b, _c, _d...) _d
+#define pp_Tuple_get4thRest(_a, _b, _c, _d, _e...) _e
+#define pp_Tuple_get5thRest(_a, _b, _c, _d, _e, _f...) _f
+#define pp_Tuple_get6thRest(_a, _b, _c, _d, _e, _f, _g...) _g
 #define pp_Tuple_get7thRest(_a, _b, _c, _d, _e, _f, _g, _h...) _h
 
 #define pp_Tuple_pushFront(_Elem, _Tuple) pp_Tuple_wrap(_Elem, pp_Tuple_unwrap _Tuple)
-#define pp_Tuple_pushBack(_Elem, _Tuple)  pp_Tuple_wrap(pp_Tuple_unwrap _Tuple, _Elem)
+#define pp_Tuple_pushBack(_Elem, _Tuple) pp_Tuple_wrap(pp_Tuple_unwrap _Tuple, _Elem)
 
 #if defined(__cplusplus)
 }

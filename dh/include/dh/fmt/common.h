@@ -123,7 +123,7 @@ errset_((fmt_Err)(
 typedef enum fmt_Align : u8 {
     fmt_Align_left = 0,
     fmt_Align_center = 1,
-    fmt_Align_right = 2,
+    fmt_Align_right = 2
 } fmt_Align;
 T_use_O$(fmt_Align);
 $static let fmt_Align_default = fmt_Align_left;

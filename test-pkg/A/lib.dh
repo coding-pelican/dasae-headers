@@ -1,0 +1,11 @@
+[foo]
+path=../extra/foo
+profile=default
+linking=static
+no-libdh=false
+
+[edition/bar]
+path=../extra/edition/bar
+profile=default
+linking=static
+no-libdh=false

@@ -29,49 +29,38 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define switch_(/*(_Init)(_Cond...)*/...) \
-    __syn__switch_(__syn__switch___parseInit __VA_ARGS__)
+#define switch_(/*(_Init)(_Cond...)*/...) __syn__switch_(__syn__switch___parseInit __VA_ARGS__)
 
-#define case_(/*(_Enum)({...})*/...) \
-    __syn__case_(__syn__case___parseEnum __VA_ARGS__)
+#define case_(/*(_Enum)({...})*/...) __syn__case_(__syn__case___parseEnum __VA_ARGS__)
 
-#define default_(/*({...})*/...) \
-    __syn__default_(__VA_ARGS__)
+#define default_(/*({...})*/...) __syn__default_(__VA_ARGS__)
 
 #define $fallthrough __attr__$fallthrough
 
 /*========== Macros and Definitions =========================================*/
 
-#define __syn__switch_(...) \
-    __syn__switch___emit(__VA_ARGS__)
-#define __syn__switch___parseInit(_Init...) \
-    pp_uniqTok(run_once), (_Init), __syn__switch___parseCond
-#define __syn__switch___parseCond(_Cond...) \
-    (_Cond)
+#define __syn__switch_(...) __syn__switch___emit(__VA_ARGS__)
+#define __syn__switch___parseInit(_Init...) pp_uniqTok(run_once), (_Init), __syn__switch___parseCond
+#define __syn__switch___parseCond(_Cond...) (_Cond)
 #define __syn__switch___emit(__run_once, _Init, _Cond...) \
     for (bool __run_once = false; !__run_once;) \
-        for (__syn__switch___expand _Init; !__run_once; __run_once = true) \
-            switch (__syn__switch___expand _Cond)
+        for (__syn__switch___expand _Init; !__run_once; __run_once = true) switch (__syn__switch___expand _Cond)
 #define __syn__switch___expand(...) __VA_ARGS__
 
-#define __syn__case_(...) \
-    __syn__case___emit(__VA_ARGS__)
-#define __syn__case___parseEnum(_Enum...) \
-    _Enum,
+#define __syn__case_(...) __syn__case___emit(__VA_ARGS__)
+#define __syn__case___parseEnum(_Enum...) _Enum,
 #define __syn__case___emit(_Enum, _Body...) \
     case _Enum: \
         __syn__case___expand _Body
 #define __syn__case___expand(...) __VA_ARGS__
 
-#define __syn__default_(...) \
-    __syn__default___emit(__VA_ARGS__)
+#define __syn__default_(...) __syn__default___emit(__VA_ARGS__)
 #define __syn__default___emit(_Body...) \
     default: \
         __syn__default___expand _Body
 #define __syn__default___expand(...) __VA_ARGS__
 
-#define __attr__$fallthrough \
-    __attribute__((fallthrough))
+#define __attr__$fallthrough __attribute__((fallthrough))
 
 #if defined(__cplusplus)
 } /* extern "C" */

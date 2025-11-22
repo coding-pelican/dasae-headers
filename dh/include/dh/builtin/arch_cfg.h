@@ -23,41 +23,41 @@ extern "C" {
 
 /*========== Baseline Architecture Detection ================================*/
 
-#define arch_name        __comp_str__arch_name
+#define arch_name __comp_str__arch_name
 #define arch_family_name __comp_str__arch_family_name
 
-#define arch_is_x64     __comp_bool__arch_is_x64
-#define arch_is_x86     __comp_bool__arch_is_x86
-#define arch_is_arm64   __comp_bool__arch_is_arm64
-#define arch_is_arm32   __comp_bool__arch_is_arm32
-#define arch_is_mips32  __comp_bool__arch_is_mips32
-#define arch_is_mips64  __comp_bool__arch_is_mips64
-#define arch_is_s390x   __comp_bool__arch_is_s390x
-#define arch_is_m68k    __comp_bool__arch_is_m68k
-#define arch_is_msp430  __comp_bool__arch_is_msp430
+#define arch_is_x64 __comp_bool__arch_is_x64
+#define arch_is_x86 __comp_bool__arch_is_x86
+#define arch_is_arm64 __comp_bool__arch_is_arm64
+#define arch_is_arm32 __comp_bool__arch_is_arm32
+#define arch_is_mips32 __comp_bool__arch_is_mips32
+#define arch_is_mips64 __comp_bool__arch_is_mips64
+#define arch_is_s390x __comp_bool__arch_is_s390x
+#define arch_is_m68k __comp_bool__arch_is_m68k
+#define arch_is_msp430 __comp_bool__arch_is_msp430
 #define arch_is_riscv32 __comp_bool__arch_is_riscv32
 #define arch_is_riscv64 __comp_bool__arch_is_riscv64
 #define arch_is_powerpc __comp_bool__arch_is_powerpc
 
-#define arch_family_is_x86     __comp_bool__arch_family_is_x86
-#define arch_family_is_arm     __comp_bool__arch_family_is_arm
-#define arch_family_is_mips    __comp_bool__arch_family_is_mips
+#define arch_family_is_x86 __comp_bool__arch_family_is_x86
+#define arch_family_is_arm __comp_bool__arch_family_is_arm
+#define arch_family_is_mips __comp_bool__arch_family_is_mips
 #define arch_family_is_systemz __comp_bool__arch_family_is_systemz
-#define arch_family_is_m68k    __comp_bool__arch_family_is_m68k
-#define arch_family_is_msp430  __comp_bool__arch_family_is_msp430
-#define arch_family_is_riscv   __comp_bool__arch_family_is_riscv
+#define arch_family_is_m68k __comp_bool__arch_family_is_m68k
+#define arch_family_is_msp430 __comp_bool__arch_family_is_msp430
+#define arch_family_is_riscv __comp_bool__arch_family_is_riscv
 #define arch_family_is_powerpc __comp_bool__arch_family_is_powerpc
 
 /*========== Additional Feature Detection ===================================*/
 
-#define arch_has_armv6k      __comp_bool__arch_has_armv6k
-#define arch_has_armv6m      __comp_bool__arch_has_armv6m
+#define arch_has_armv6k __comp_bool__arch_has_armv6k
+#define arch_has_armv6m __comp_bool__arch_has_armv6m
 #define arch_has_zihintpause __comp_bool__arch_has_zihintpause
 
 /* x86 extensions */
-#define arch_has_avx512f       __comp_bool__arch_has_avx512f
-#define arch_has_mmx           __comp_bool__arch_has_mmx
-#define arch_has_3dnow         __comp_bool__arch_has_3dnow
+#define arch_has_avx512f __comp_bool__arch_has_avx512f
+#define arch_has_mmx __comp_bool__arch_has_mmx
+#define arch_has_3dnow __comp_bool__arch_has_3dnow
 #define arch_has_prefer_256bit __comp_bool__arch_has_prefer_256bit
 #define arch_has_prefer_128bit __comp_bool__arch_has_prefer_128bit
 
@@ -75,16 +75,16 @@ extern "C" {
  * Adjust or expand for other ISAs as needed.
  *===========================================================================*/
 
-#define arch_has_sse    __comp_bool__arch_has_sse
-#define arch_has_sse2   __comp_bool__arch_has_sse2
-#define arch_has_sse3   __comp_bool__arch_has_sse3
-#define arch_has_ssse3  __comp_bool__arch_has_ssse3
+#define arch_has_sse __comp_bool__arch_has_sse
+#define arch_has_sse2 __comp_bool__arch_has_sse2
+#define arch_has_sse3 __comp_bool__arch_has_sse3
+#define arch_has_ssse3 __comp_bool__arch_has_ssse3
 #define arch_has_sse4_1 __comp_bool__arch_has_sse4_1
 #define arch_has_sse4_2 __comp_bool__arch_has_sse4_2
-#define arch_has_avx    __comp_bool__arch_has_avx
-#define arch_has_avx2   __comp_bool__arch_has_avx2
+#define arch_has_avx __comp_bool__arch_has_avx
+#define arch_has_avx2 __comp_bool__arch_has_avx2
 
-#define arch_has_neon  __comp_bool__arch_has_neon
+#define arch_has_neon __comp_bool__arch_has_neon
 #define arch_has_asimd __comp_bool__arch_has_asimd
 
 /*========== Cache Line Size (Typical) ========================================
@@ -108,39 +108,39 @@ extern "C" {
 /*========== Implementations CPU Architecture Detection =====================*/
 /*========== CPU Architecture / Feature Macros (Initial Defaults) ===========*/
 
-#define __comp_str__arch_name        "Unknown"
+#define __comp_str__arch_name "Unknown"
 #define __comp_str__arch_family_name "Unknown"
 
-#define __comp_bool__arch_is_x64     0
-#define __comp_bool__arch_is_x86     0
-#define __comp_bool__arch_is_arm64   0
-#define __comp_bool__arch_is_arm32   0
-#define __comp_bool__arch_is_mips32  0
-#define __comp_bool__arch_is_mips64  0
-#define __comp_bool__arch_is_s390x   0
-#define __comp_bool__arch_is_m68k    0
-#define __comp_bool__arch_is_msp430  0
+#define __comp_bool__arch_is_x64 0
+#define __comp_bool__arch_is_x86 0
+#define __comp_bool__arch_is_arm64 0
+#define __comp_bool__arch_is_arm32 0
+#define __comp_bool__arch_is_mips32 0
+#define __comp_bool__arch_is_mips64 0
+#define __comp_bool__arch_is_s390x 0
+#define __comp_bool__arch_is_m68k 0
+#define __comp_bool__arch_is_msp430 0
 #define __comp_bool__arch_is_riscv32 0
 #define __comp_bool__arch_is_riscv64 0
 #define __comp_bool__arch_is_powerpc 0
 
-#define __comp_bool__arch_family_is_x86     0
-#define __comp_bool__arch_family_is_arm     0
-#define __comp_bool__arch_family_is_mips    0
+#define __comp_bool__arch_family_is_x86 0
+#define __comp_bool__arch_family_is_arm 0
+#define __comp_bool__arch_family_is_mips 0
 #define __comp_bool__arch_family_is_systemz 0
-#define __comp_bool__arch_family_is_m68k    0
-#define __comp_bool__arch_family_is_msp430  0
-#define __comp_bool__arch_family_is_riscv   0
+#define __comp_bool__arch_family_is_m68k 0
+#define __comp_bool__arch_family_is_msp430 0
+#define __comp_bool__arch_family_is_riscv 0
 #define __comp_bool__arch_family_is_powerpc 0
 
-#define __comp_bool__arch_has_armv6k      0
-#define __comp_bool__arch_has_armv6m      0
+#define __comp_bool__arch_has_armv6k 0
+#define __comp_bool__arch_has_armv6m 0
 #define __comp_bool__arch_has_zihintpause 0
 
 /* x86/AMD64 features */
-#define __comp_bool__arch_has_avx512f       0
-#define __comp_bool__arch_has_mmx           0
-#define __comp_bool__arch_has_3dnow         0
+#define __comp_bool__arch_has_avx512f 0
+#define __comp_bool__arch_has_mmx 0
+#define __comp_bool__arch_has_3dnow 0
 #define __comp_bool__arch_has_prefer_256bit 0
 #define __comp_bool__arch_has_prefer_128bit 0
 

@@ -48,7 +48,7 @@ struct engine_core_VT100 {
         bool is_minimized;
         bool is_maximized;
     } client;
-    mem_Allocator allocator;
+    mem_Allocator gpa;
 };
 
 static fn_((processEvents(P$raw ctx))(void)); /* TODO: validate - processing events and updating properties */
@@ -133,14 +133,20 @@ fn_((engine_core_VT100_backend(engine_core_VT100* self))(engine_Backend)) {
 
 /*========== Forward declarations ===========================================*/
 
-static $inline_always fn_((calcAbstractBufferSize(u32 width, u32 height))(usize));
-$deprecated static $inline_always fn_((clientWindowPixelRect(engine_core_VT100* self))(m_V2u32));
-$deprecated static $inline_always fn_((clientOutputConsoleRect(engine_core_VT100* self))(m_V2u32));
+static $inline_always
+fn_((calcAbstractBufferSize(u32 width, u32 height))(usize));
+$deprecated static $inline_always
+fn_((clientWindowPixelRect(engine_core_VT100* self))(m_V2u32));
+$deprecated static $inline_always
+fn_((clientOutputConsoleRect(engine_core_VT100* self))(m_V2u32));
 
-static $inline_always fn_((abstractWindowRect(engine_core_VT100* self))(m_V2u32));
-static $inline_always fn_((abstractBufferCapSize(engine_core_VT100* self))(usize));
+static $inline_always
+fn_((abstractWindowRect(engine_core_VT100* self))(m_V2u32));
+static $inline_always
+fn_((abstractBufferCapSize(engine_core_VT100* self))(usize));
 
-$deprecated static $inline_always fn_((needsResizeAbstractWindow(engine_core_VT100* self))(bool));
+$deprecated static $inline_always
+fn_((needsResizeAbstractWindow(engine_core_VT100* self))(bool));
 $deprecated static fn_((resizeAbstractWindow(engine_core_VT100* self))(E$void)) $must_check;
 
 static fn_((syncWindowMetrics(engine_core_VT100* self))(E$void)) $must_check;
@@ -162,7 +168,8 @@ static fn_((processConsoleMouseEvents(engine_core_VT100* self))(void)); /* TODO:
 
 /*========== Implementations ================================================*/
 
-static $inline_always fn_((calcAbstractBufferSize(u32 width, u32 height))(usize)) {
+static $inline_always
+fn_((calcAbstractBufferSize(u32 width, u32 height))(usize)) {
     return (as$(usize)(width) + 1)
          * (as$(usize)(height) + 1)
          * (sizeof("\033[38;2;255;255;255;48;2;255;255;255m▀") - 1);
@@ -170,7 +177,9 @@ static $inline_always fn_((calcAbstractBufferSize(u32 width, u32 height))(usize)
 
 /// Returns the size (width, height) in pixels of the client area
 /// for the console window.
-$maybe_unused static $inline_always fn_((clientWindowPixelRect(engine_core_VT100* self))(m_V2u32)) {
+$maybe_unused
+static $inline_always
+fn_((clientWindowPixelRect(engine_core_VT100* self))(m_V2u32)) {
     // if_(RECT rect = cleared(), GetClientRect(self->client.handle.window, &rect)) {
     //     // Update client metrics in sync
     //     self->client.metrics.current_size = (m_V2u32){
@@ -186,7 +195,9 @@ $maybe_unused static $inline_always fn_((clientWindowPixelRect(engine_core_VT100
 
 /// Returns the size (width, height) of the console screen buffer
 /// in character cells (columns and rows).
-$maybe_unused static $inline_always fn_((clientOutputConsoleRect(engine_core_VT100* self))(m_V2u32)) {
+$maybe_unused
+static $inline_always
+fn_((clientOutputConsoleRect(engine_core_VT100* self))(m_V2u32)) {
     // if_(CONSOLE_SCREEN_BUFFER_INFO info = cleared(), GetConsoleScreenBufferInfo(self->client.handle.output, &info)) {
     //     // Keep buffer size in sync with console
     //     self->client.metrics.current_size = (m_V2u32){
@@ -202,7 +213,8 @@ $maybe_unused static $inline_always fn_((clientOutputConsoleRect(engine_core_VT1
 
 /// Returns the current abstract window size from engine_WindowMetrics,
 /// typically used for high-level engine logic.
-static $inline_always fn_((abstractWindowRect(engine_core_VT100* self))(m_V2u32)) {
+static $inline_always
+fn_((abstractWindowRect(engine_core_VT100* self))(m_V2u32)) {
     return (m_V2u32){
         .x = Grid_width(self->abstract.window->composite_buffer->buffer),
         .y = Grid_height(self->abstract.window->composite_buffer->buffer)
@@ -212,7 +224,8 @@ static $inline_always fn_((abstractWindowRect(engine_core_VT100* self))(m_V2u32)
 /// Returns the bytes-length of the internal "abstract" buffer,
 /// which you might use for storing render data before presenting.
 /// If you’re using ArrList$u8 as a text buffer only, adapt as needed.
-static $inline_always fn_((abstractBufferCapSize(engine_core_VT100* self))(usize)) {
+static $inline_always
+fn_((abstractBufferCapSize(engine_core_VT100* self))(usize)) {
     // If you store rows and columns separately in abstract.buffer, adapt accordingly.
     // For example, if you always keep a buffer big enough for (width * height * cellSize),
     // you could do something like the logic below or just re-return the window rect.
@@ -222,7 +235,9 @@ static $inline_always fn_((abstractBufferCapSize(engine_core_VT100* self))(usize
 
 /// Checks if the abstract buffer needs to be resized based on the
 /// latest window metrics or any other condition your engine considers.
-$maybe_unused static $inline_always fn_((needsResizeAbstractWindow(engine_core_VT100* self))(bool)) {
+$maybe_unused
+static $inline_always
+fn_((needsResizeAbstractWindow(engine_core_VT100* self))(bool)) {
     let current_size = abstractBufferCapSize(self);
     // Compare with the expected size from your function
     let needed_size = blk({
@@ -246,7 +261,7 @@ fn_((resizeAbstractWindow(engine_core_VT100* self))(E$void) $scope) {
     // 2. Re-size your ArrList if needed
     let needed = calcAbstractBufferSize(rect.x, rect.y);
     try_(
-        ArrList_resize$u8(&self->abstract.buffer, self->allocator, needed)
+        ArrList_resize$u8(&self->abstract.buffer, self->gpa, needed)
     );
 
     return_ok({});
@@ -333,7 +348,7 @@ fn_((syncWindowMetrics(engine_core_VT100* self))(E$void) $scope) {
         self->client.metrics.res.curr.y
     );
     try_(
-        ArrList_resize$u8(&self->abstract.buffer, self->allocator, needed)
+        ArrList_resize$u8(&self->abstract.buffer, self->gpa, needed)
     );
     try_(
         engine_Canvas_resize(
@@ -530,14 +545,14 @@ fn_((resetConsoleCursorPos(engine_core_VT100* self))(E$void) $scope) {
     let handle = self->client.handle.output;
     let command = u8_l("\033[H");
     if_(DWORD written = 0,
-        !WriteConsoleA(
-            handle,
-            command.ptr,
-            command.len,
-            &written,
-            null
-        )
-            || written != command.len) {
+       !WriteConsoleA(
+           handle,
+           command.ptr,
+           command.len,
+           &written,
+           null
+       )
+       || written != command.len) {
         log_error("Failed to reset console cursor position: %d", GetLastError());
         return_err(ConfigConsoleCursorErr_FailedResetPos());
     };
@@ -560,19 +575,19 @@ fn_((processConsoleKeyboardKey(engine_core_VT100* self, engine_KeyCode key, bool
             *curr_state |= engine_KeyButtonStates_pressed;
 
             // Create pressed event
-            engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_key_press){ .key = key }));
+            engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_key_press){ .key = key }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
 
         // Create held event
-        engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_key_hold){ .key = key }));
+        engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_key_hold){ .key = key }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
 
         // Create released event
-        engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_key_release){ .key = key }));
+        engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_key_release){ .key = key }));
     }
 }
 
@@ -644,17 +659,17 @@ fn_((processConsoleMouseButton(engine_core_VT100* self, engine_MouseButton butto
             // Key was just pressed
             *curr_state |= engine_KeyButtonStates_pressed;
             // Create pressed event
-            engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_press){ .button = button }));
+            engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_press){ .button = button }));
         }
         // Key is being held
         *curr_state |= engine_KeyButtonStates_held;
         // Create held event
-        engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_hold){ .button = button }));
+        engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_hold){ .button = button }));
     } else if (prev_state & (engine_KeyButtonStates_pressed | engine_KeyButtonStates_held)) {
         // Key was just released
         *curr_state |= engine_KeyButtonStates_released;
         // Create released event
-        engine_InputEventBuffer_push(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_release){ .button = button }));
+        engine_Input_enqueEvent(input, union_of$((engine_InputEvent)(engine_InputEvent_mouse_release){ .button = button }));
     }
 }
 /// Read and process mouse-related events from the console input.
@@ -703,7 +718,7 @@ fn_((processConsoleMouseEvents(engine_core_VT100* self))(void)) {
                 self->input->mouse->wheel.prev_scroll_amount = self->input->mouse->wheel.curr_scroll_amount;
                 self->input->mouse->wheel.curr_scroll_amount.y += as$(f32)(wheel_delta) / as$(f32)(WHEEL_DELTA);
                 // Create wheel event if needed
-                engine_InputEventBuffer_push(
+                engine_Input_enqueEvent(
                     self->input,
                     union_of$((engine_InputEvent)(engine_InputEvent_mouse_scroll){
                         .delta = m_V2f32_from(0, wheel_delta / as$(f32)(WHEEL_DELTA)),
@@ -716,7 +731,7 @@ fn_((processConsoleMouseEvents(engine_core_VT100* self))(void)) {
                 SHORT wheel_delta = HIWORD(mouseEvent.dwButtonState);
                 self->input->mouse->wheel.prev_scroll_amount = self->input->mouse->wheel.curr_scroll_amount;
                 self->input->mouse->wheel.curr_scroll_amount.x += as$(f32)(wheel_delta) / as$(f32)(WHEEL_DELTA);
-                engine_InputEventBuffer_push(
+                engine_Input_enqueEvent(
                     self->input,
                     union_of$((engine_InputEvent)(engine_InputEvent_mouse_scroll){
                         .delta = m_V2f32_from(wheel_delta / as$(f32)(WHEEL_DELTA), 0),
@@ -790,23 +805,23 @@ fn_((engine_core_VT100_init(engine_core_VT100_Config config))(E$P$engine_core_VT
     debug_assert_nonnull(config.window);
     debug_assert_nonnull(config.input);
 
-    let allocator = unwrap_(config.allocator);
-    let self = u_castP$((engine_core_VT100*)(try_(mem_Allocator_create(allocator, typeInfo$(InnerType)))));
-    errdefer_($ignore, mem_Allocator_destroy(allocator, u_anyP(self)));
+    let gpa = unwrap_(config.gpa);
+    let self = u_castP$((engine_core_VT100*)(try_(mem_Allocator_create(gpa, typeInfo$(InnerType)))));
+    errdefer_($ignore, mem_Allocator_destroy(gpa, u_anyP(self)));
 
-    self->allocator = allocator;
+    self->gpa = gpa;
     self->abstract.window = blk({
         let window = config.window;
         asg_lit((&window->backend)(some(engine_core_VT100_backend(self))));
         blk_return window;
     });
     self->abstract.buffer = blk({
-        let allocator = self->allocator;
+        let gpa = self->gpa;
         let window = self->abstract.window;
         let size = calcAbstractBufferSize(Grid_width(window->composite_buffer->buffer), Grid_height(window->composite_buffer->buffer));
-        try_(ArrList_init$u8(allocator, size));
+        try_(ArrList_init$u8(gpa, size));
     });
-    errdefer_($ignore, ArrList_fini$u8(&self->abstract.buffer, allocator));
+    errdefer_($ignore, ArrList_fini$u8(&self->abstract.buffer, gpa));
     self->input = blk({
         let input = config.input;
         asg_lit((&input->backend)(some(engine_core_VT100_backend(self))));
@@ -886,8 +901,8 @@ fn_((engine_core_VT100_fini(engine_core_VT100* self))(void)) {
         claim_unreachable;
     }));
 
-    ArrList_fini$u8(&self->abstract.buffer, self->allocator);
-    mem_Allocator_destroy(self->allocator, u_anyP(self));
+    ArrList_fini$u8(&self->abstract.buffer, self->gpa);
+    mem_Allocator_destroy(self->gpa, u_anyP(self));
 }
 
 /*========== Interface Implementation =======================================*/
@@ -898,11 +913,11 @@ fn_((engine_core_VT100_fini(engine_core_VT100* self))(void)) {
 /// - Update your engine’s internal state
 fn_((processEvents(P$raw ctx))(void)) {
     debug_assert_nonnull(ctx);
-    let self = as$(engine_core_VT100 *) (ctx);
+    let self = as$(engine_core_VT100*)(ctx);
 
     // Update window state
     if_(WINDOWPLACEMENT placement = { .length = sizeof(WINDOWPLACEMENT) },
-        !GetWindowPlacement(self->client.handle.window, &placement)) {
+       !GetWindowPlacement(self->client.handle.window, &placement)) {
         log_error("Failed to get window placement: %d", GetLastError());
         claim_unreachable;
     } else {
@@ -946,7 +961,8 @@ $static let digit_pairs = u8_a(
     "90919293949596979899"
 );
 $inline_always
-$static fn_((formatU8(S$u8 buf, u8 val))(usize)) {
+$static
+fn_((formatU8(S$u8 buf, u8 val))(usize)) {
     if (val >= 100) {
         u8 hi = val / 100;
         u8 lo = val % 100;
@@ -964,17 +980,17 @@ $static fn_((formatU8(S$u8 buf, u8 val))(usize)) {
     return 1;
 };
 
-T_use_mem_copyFwds$(u8);
 /// Direct ANSI sequence builder
 /// "\033[38;2;R;G;B;48;2;R;G;Bm"
 $inline_always
-$static fn_((writeColorSequence(S$u8 buf, Color upper, Color lower))(usize)) {
+$static
+fn_((writeColorSequence(S$u8 buf, Color upper, Color lower))(usize)) {
     var bwd = buf;
     $static let cmd_sep = u8_c(';');
     $static let cmd_seq_begin = u8_l("\033[");
-    bwd = suffixS(mem_copyFwds$u8(bwd, cmd_seq_begin), cmd_seq_begin.len);
+    bwd = suffixS(mem_copyBytes(bwd, cmd_seq_begin), cmd_seq_begin.len);
     $static let cmd_upper = u8_l("38;2;");
-    bwd = suffixS(mem_copyFwds$u8(bwd, cmd_upper), cmd_upper.len);
+    bwd = suffixS(mem_copyBytes(bwd, cmd_upper), cmd_upper.len);
     bwd = suffixS(bwd, formatU8(bwd, upper.r));
     bwd = suffixS(bwd, (*S_at((bwd)[0]) = cmd_sep, 1));
     bwd = suffixS(bwd, formatU8(bwd, upper.g));
@@ -982,7 +998,7 @@ $static fn_((writeColorSequence(S$u8 buf, Color upper, Color lower))(usize)) {
     bwd = suffixS(bwd, formatU8(bwd, upper.b));
     bwd = suffixS(bwd, (*S_at((bwd)[0]) = cmd_sep, 1));
     $static let cmd_lower = u8_l("48;2;");
-    bwd = suffixS(mem_copyFwds$u8(bwd, cmd_lower), cmd_lower.len);
+    bwd = suffixS(mem_copyBytes(bwd, cmd_lower), cmd_lower.len);
     bwd = suffixS(bwd, formatU8(bwd, lower.r));
     bwd = suffixS(bwd, (*S_at((bwd)[0]) = cmd_sep, 1));
     bwd = suffixS(bwd, formatU8(bwd, lower.g));
@@ -998,12 +1014,12 @@ $static fn_((writeColorSequence(S$u8 buf, Color upper, Color lower))(usize)) {
 /// If you’re storing color/ANSI sequences, handle them accordingly.
 fn_((presentBuffer(P$raw ctx))(void)) {
     debug_assert_nonnull(ctx);
-    let self = as$( engine_core_VT100 *) (ctx);
+    let self = as$( engine_core_VT100*)(ctx);
     if (self->client.is_minimized) { return; }
 
     // Clear buffer for draw a new content. This is a simple way to reset the console.
     ArrList_clearRetainingCap$u8(&self->abstract.buffer);
-    mem_setBytes(self->abstract.buffer.items.ptr, 0, self->abstract.buffer.cap);
+    prim_memsetS(self->abstract.buffer.items, 0);
 
     let rect = abstractWindowRect(self);
     let width = rect.x;
@@ -1031,9 +1047,9 @@ fn_((presentBuffer(P$raw ctx))(void)) {
             /* clang-format on */
 
             unwritten_buf = suffixS(unwritten_buf, writeColorSequence(unwritten_buf, upper, lower));
-            $static let half_block = u8_l("▀") ;
+            $static let half_block = u8_l("▀");
             for (usize i = 0; i < run_length; ++i) {
-                unwritten_buf = suffixS(mem_copyFwds$u8(unwritten_buf, half_block), half_block.len);
+                unwritten_buf = suffixS(mem_copyBytes(unwritten_buf, half_block), half_block.len);
             }
             x += run_length - 1; // -1 because loop will increment
         }
@@ -1066,31 +1082,31 @@ fn_((presentBuffer(P$raw ctx))(void)) {
 
 fn_((getWindowPos(const P$raw ctx))(m_V2i32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.pos_on_display.top_left;
 }
 
 fn_((getWindowDim(const P$raw ctx))(m_V2u32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.metrics.dim;
 }
 
 fn_((getWindowRes(const P$raw ctx))(m_V2u32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.metrics.res.curr;
 }
 
 fn_((getWindowMinRes(const P$raw ctx))(m_V2u32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.metrics.res.min;
 }
 
 fn_((getWindowMaxRes(const P$raw ctx))(m_V2u32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.metrics.res.max;
 }
 
@@ -1108,97 +1124,97 @@ fn_((setWindowMaxRes(P$raw ctx, m_V2u32 size))(E$void) $scope) {
 
 fn_((isWindowFocused(const P$raw ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.is_focused;
 }
 
 fn_((isWindowMinimized(const P$raw ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.is_minimized;
 }
 
 fn_((isWindowMaximized(const P$raw ctx))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return self->client.is_maximized;
 }
 
 fn_((getKeyboardState(const P$raw ctx, engine_KeyCode key))(u8)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Keyboard_getState(self->input->keyboard, key);
 }
 
 fn_((isKeyboardState(const P$raw ctx, engine_KeyCode key, engine_KeyButtonStates state))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Keyboard_isState(self->input->keyboard, key, state);
 }
 
 fn_((pressedKeyboard(const P$raw ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Keyboard_pressed(self->input->keyboard, key);
 }
 
 fn_((heldKeyboard(const P$raw ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Keyboard_held(self->input->keyboard, key);
 }
 
 fn_((releasedKeyboard(const P$raw ctx, engine_KeyCode key))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Keyboard_released(self->input->keyboard, key);
 }
 
 fn_((getMouseState(const P$raw ctx, engine_MouseButton button))(u8)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_getState(self->input->mouse, button);
 }
 
 fn_((isMouseState(const P$raw ctx, engine_MouseButton button, engine_KeyButtonStates state))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_isState(self->input->mouse, button, state);
 }
 
 fn_((pressedMouse(const P$raw ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_pressed(self->input->mouse, button);
 }
 
 fn_((heldMouse(const P$raw ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_held(self->input->mouse, button);
 }
 
 fn_((releasedMouse(const P$raw ctx, engine_MouseButton button))(bool)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_released(self->input->mouse, button);
 }
 
 fn_((getMousePos(const P$raw ctx))(m_V2i32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_getPos(self->input->mouse);
 }
 
 fn_((getMousePosDelta(const P$raw ctx))(m_V2i32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_getPosDelta(self->input->mouse);
 }
 
 fn_((getMouseWheelScrollDelta(const P$raw ctx))(m_V2f32)) {
     debug_assert_nonnull(ctx);
-    let self = as$( const engine_core_VT100 *) (ctx);
+    let self = as$( const engine_core_VT100*)(ctx);
     return engine_Mouse_getWheelScrollDelta(self->input->mouse);
 }
 

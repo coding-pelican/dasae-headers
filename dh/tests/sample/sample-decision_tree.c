@@ -96,9 +96,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     // Create a simple decision tree (manually for demo purposes)
     // In a real implementation, this would be learned from data
     log_info("Creating demo decision tree");
-    let leaf_setosa     = try_(TreeNode_createLeaf(gpa, 0));
+    let leaf_setosa = try_(TreeNode_createLeaf(gpa, 0));
     let leaf_versicolor = try_(TreeNode_createLeaf(gpa, 1));
-    let leaf_virginica  = try_(TreeNode_createLeaf(gpa, 2));
+    let leaf_virginica = try_(TreeNode_createLeaf(gpa, 2));
 
     let versicolor_virginica = try_(TreeNode_createDecision(
         gpa,
@@ -173,47 +173,54 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 // Implementation of TreeNode functions
 fn_((TreeNode_createLeaf(mem_Allocator gpa, i32 class_label))(E$P$TreeNode) $scope) {
     let node = try_(u_castE$((E$P$TreeNode)(mem_Allocator_create(gpa, typeInfo$(TreeNode)))));
-    variant_asg(node, union_of((TreeNode_leaf){
-        .class_label = class_label,
-    }));
+    variant_asg(
+        node,
+        union_of((TreeNode_leaf){
+            .class_label = class_label,
+        })
+    );
     return_ok(node);
 } $unscoped_(fn);
 
 fn_((TreeNode_createDecision(mem_Allocator gpa, u32 feature_index, f32 threshold, TreeNode* left, TreeNode* right))(E$P$TreeNode) $scope) {
     let node = try_(u_castE$((E$P$TreeNode)(mem_Allocator_create(gpa, typeInfo$(TreeNode)))));
-    variant_asg(node, union_of((TreeNode_decision){
-        .feature_index = feature_index,
-        .threshold = threshold,
-        .left = left,
-        .right = right,
-    }));
+    variant_asg(
+        node,
+        union_of((TreeNode_decision){
+            .feature_index = feature_index,
+            .threshold = threshold,
+            .left = left,
+            .right = right,
+        })
+    );
     return_ok(node);
 } $unscoped_(fn);
 
 fn_((TreeNode_destroyRecur(mem_Allocator gpa, TreeNode* node))(void)) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
-    match_(deref(node), {
-        pattern_(TreeNode_leaf, break);
-        pattern_(TreeNode_decision, (decision), {
+    match_(deref(node)) {
+        pattern_((TreeNode_leaf)($ignore)) break $end(pattern);
+        pattern_((TreeNode_decision)(decision)) {
             TreeNode_destroyRecur(gpa, decision->left);
             TreeNode_destroyRecur(gpa, decision->right);
-        }) break;
-        fallback_() {
+            break;
+        } $end(pattern);
+        default_() {
             log_error("Invalid node type encountered during prediction");
             claim_unreachable;
-        }
-    });
+        } $end(default);
+    } $end(match);
     mem_Allocator_destroy(gpa, u_anyP(node));
 }
 
 fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features))(i32)) {
     var current = node;
     while (true) {
-        match_(deref(current), {
-            pattern_(TreeNode_leaf, (leaf), {
+        match_(deref(current)) {
+            pattern_((TreeNode_leaf)(leaf)) {
                 return leaf->class_label;
-            }) break;
-            pattern_(TreeNode_decision, (decision), {
+            } $end(pattern);
+            pattern_((TreeNode_decision)(decision)) {
                 if (decision->feature_index >= n_features) {
                     log_error("Feature index out of bounds: %u >= %u", decision->feature_index, n_features);
                     claim_unreachable;
@@ -224,12 +231,13 @@ fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features)
                 } else {
                     current = decision->right;
                 }
-            }) break;
-            fallback_() {
+                continue;
+            } $end(pattern);
+            default_() {
                 log_error("Invalid node type encountered during prediction");
                 claim_unreachable;
-            }
-        });
+            } $end(default);
+        } $end(match);
     }
 }
 
@@ -242,22 +250,24 @@ fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void)) /* NOLINT(misc
         strcat(indent, "  ");
     }
 
-    match_(*node, {
-        pattern_(TreeNode_leaf, (leaf), {
+    match_(*node) {
+        pattern_((TreeNode_leaf)(leaf)) {
             log_info("%sClass: %d", indent, leaf->class_label);
-        }) break;
-        pattern_(TreeNode_decision, (decision), {
+            break;
+        } $end(pattern);
+        pattern_((TreeNode_decision)(decision)) {
             log_info("%sFeature %u <= %.2f", indent, decision->feature_index, decision->threshold);
             TreeNode_printRecur(decision->left, depth + 1);
 
             log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
             TreeNode_printRecur(decision->right, depth + 1);
-        }) break;
-        fallback_() {
+            break;
+        } $end(pattern);
+        default_() {
             log_error("%sInvalid node type", indent);
             claim_unreachable;
-        }
-    });
+        } $end(default);
+    } $end(match);
 }
 
 fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void) $scope) /* NOLINT(misc-no-recursion) */ {
@@ -266,14 +276,15 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void) $scope)
         return_err(fs_File_Err_WriteFailed());
     }
 
-    match_(*node, {
-        pattern_(TreeNode_leaf, (leaf), {
+    match_(*node) {
+        pattern_((TreeNode_leaf)(leaf)) {
             if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
                 log_error("Failed to write leaf data");
                 return_err(fs_File_Err_WriteFailed());
             }
-        }) break;
-        pattern_(TreeNode_decision, (decision), {
+            break;
+        } $end(pattern);
+        pattern_((TreeNode_decision)(decision)) {
             if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1
                 || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
                 log_error("Failed to write decision node data");
@@ -282,12 +293,13 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void) $scope)
             // Recursively save children
             try_(TreeNode_saveToFileRecur(decision->left, file));
             try_(TreeNode_saveToFileRecur(decision->right, file));
-        }) break;
-        fallback_() {
+            break;
+        } $end(pattern);
+        default_() {
             log_error("Invalid node type encountered during saving");
             claim_unreachable;
-        }
-    });
+        } $end(default);
+    } $end(match);
 
     return_ok({});
 } $unscoped_(fn);
@@ -312,14 +324,14 @@ fn_((TreeNode_loadFromFileRecur(mem_Allocator gpa, FILE* file))(E$P$TreeNode) $s
         return_ok(try_(TreeNode_createLeaf(gpa, class_label)));
     } else if (tag == TreeNode_decision) {
         u32 feature_index = 0;
-        f32 threshold     = 0;
+        f32 threshold = 0;
         if (fread(&feature_index, sizeof(feature_index), 1, file) != 1 || fread(&threshold, sizeof(threshold), 1, file) != 1) {
             log_error("Failed to read decision node data");
             return_err(fs_File_Err_ReadFailed());
         }
 
         // Recursively load children
-        let left  = try_(TreeNode_loadFromFileRecur(gpa, file));
+        let left = try_(TreeNode_loadFromFileRecur(gpa, file));
         let right = try_(TreeNode_loadFromFileRecur(gpa, file));
 
         return_ok(try_(TreeNode_createDecision(gpa, feature_index, threshold, left, right)));
@@ -335,7 +347,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
     let filename_buf = try_(u_castE$((E$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), filename.len + 1))));
     errdefer_($ignore, mem_Allocator_free(gpa, u_anyS(filename_buf)));
 
-    mem_copy(filename_buf.ptr, filename.ptr, filename.len);
+    mem_copyBytes(prefixS(filename_buf, filename.len), filename);
     filename_buf.ptr[filename.len] = '\0';
 
     FILE* file = fopen((const char*)filename_buf.ptr, "r");
@@ -346,7 +358,7 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
     defer_(let_ignore = fclose(file));
 
     // First pass: count lines and features
-    u32 line_count    = 0;
+    u32 line_count = 0;
     u32 feature_count = 0;
 
     char line[1024];
@@ -373,12 +385,12 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
     // Initialize dataset
     Dataset dataset = {
         .gpa = gpa,
-        .n_samples  = line_count,
+        .n_samples = line_count,
         .n_features = actual_feature_count
     };
 
     // Allocate memory for features and labels
-    *dataset.features.as_raw = try_(ArrList_init(typeInfo$(f32), gpa, as$(usize)(line_count) * actual_feature_count));
+    *dataset.features.as_raw = try_(ArrList_init(typeInfo$(f32), gpa, as$(usize)(line_count)*actual_feature_count));
     errdefer_($ignore, ArrList_fini(dataset.features.as_raw, typeInfo$(f32), gpa));
 
     *dataset.labels.as_raw = try_(ArrList_init(typeInfo$(i32), gpa, line_count));
@@ -397,8 +409,8 @@ fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool has_header
 
     u32 sample_idx = 0;
     while (fgets(line, sizeof(line), file) && sample_idx < line_count) {
-        char* token   = strtok(line, ",");
-        u32   col_idx = 0;
+        char* token = strtok(line, ",");
+        u32 col_idx = 0;
 
         while (token && col_idx < feature_count) {
             var value = as$(f32)(atof(token));

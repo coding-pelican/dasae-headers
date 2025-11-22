@@ -4,23 +4,23 @@
 /*========== Constructors ===================================================*/
 
 time_Duration time_Duration_from(u64 secs, u32 nanos) {
-    return literal_time_Duration_from(secs, nanos);
+    return lit_time_Duration_from(secs, nanos);
 }
 
 time_Duration time_Duration_fromSecs(u64 secs) {
-    return literal_time_Duration_fromSecs(secs);
+    return lit_time_Duration_fromSecs(secs);
 }
 
 time_Duration time_Duration_fromMillis(u64 millis) {
-    return literal_time_Duration_fromMillis(millis);
+    return lit_time_Duration_fromMillis(millis);
 }
 
 time_Duration time_Duration_fromMicros(u64 micros) {
-    return literal_time_Duration_fromMicros(micros);
+    return lit_time_Duration_fromMicros(micros);
 }
 
 time_Duration time_Duration_fromNanos(u64 nanos) {
-    return literal_time_Duration_fromNanos(nanos);
+    return lit_time_Duration_fromNanos(nanos);
 }
 
 /*========== Accessors ======================================================*/
@@ -103,7 +103,7 @@ fn_((time_Duration_addChkd(time_Duration lhs, time_Duration rhs))(O$time_Duratio
     }
     let secs = total_nanos / time_nanos_per_sec;
     let nanos = as$(u32)(total_nanos % time_nanos_per_sec);
-    return_some(literal_time_Duration_from(secs, nanos));
+    return_some(lit_time_Duration_from(secs, nanos));
 } $unscoped_(fn);
 
 fn_((time_Duration_subChkd(time_Duration lhs, time_Duration rhs))(O$time_Duration) $scope) {
@@ -116,7 +116,7 @@ fn_((time_Duration_subChkd(time_Duration lhs, time_Duration rhs))(O$time_Duratio
     let diff_nanos = lhs_total_nanos - rhs_total_nanos;
     let secs = diff_nanos / time_nanos_per_sec;
     let nanos = as$(u32)(diff_nanos % time_nanos_per_sec);
-    return_some(literal_time_Duration_from(secs, nanos));
+    return_some(lit_time_Duration_from(secs, nanos));
 } $unscoped_(fn);
 
 fn_((time_Duration_mulChkd$u64(time_Duration lhs, u64 rhs))(O$time_Duration) $scope) {
@@ -125,7 +125,7 @@ fn_((time_Duration_mulChkd$u64(time_Duration lhs, u64 rhs))(O$time_Duration) $sc
         return_none();
     }
     let total_nanos = lhs.secs * rhs + lhs.nanos;
-    return_some(literal_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
+    return_some(lit_time_Duration_from(total_nanos / time_nanos_per_sec, total_nanos % time_nanos_per_sec));
 } $unscoped_(fn);
 
 fn_((time_Duration_divChkd$u64(time_Duration lhs, u64 rhs))(O$time_Duration) $scope) {
@@ -136,5 +136,5 @@ fn_((time_Duration_divChkd$u64(time_Duration lhs, u64 rhs))(O$time_Duration) $sc
     let total_nanos = lhs.secs * rhs + lhs.nanos;
     let secs = total_nanos / time_nanos_per_sec;
     let nanos = as$(u32)(total_nanos % time_nanos_per_sec);
-    return_some(literal_time_Duration_from(secs, nanos));
+    return_some(lit_time_Duration_from(secs, nanos));
 } $unscoped_(fn);

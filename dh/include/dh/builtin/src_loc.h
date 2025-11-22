@@ -24,17 +24,17 @@ extern "C" {
 
 #define src_loc_filePath() __comp_inline__src_loc_filePath()
 #define src_loc_fileName() __comp_inline__src_loc_fileName()
-#define src_loc_fnName()   __comp_inline__src_loc_fnName()
-#define src_loc_line()     __comp_inline__src_loc_line()
-#define src_loc_column()   __comp_inline__src_loc_column()
+#define src_loc_fnName() __comp_inline__src_loc_fnName()
+#define src_loc_line() __comp_inline__src_loc_line()
+#define src_loc_column() __comp_inline__src_loc_column()
 
 /*========== Macros and Implementations =====================================*/
 
 #define __comp_inline__src_loc_filePath() __builtin_FILE()
 #define __comp_inline__src_loc_fileName() __builtin_FILE_NAME()
-#define __comp_inline__src_loc_fnName()   __builtin_FUNCTION()
-#define __comp_inline__src_loc_line()     __builtin_LINE()
-#define __comp_inline__src_loc_column()   __builtin_COLUMN()
+#define __comp_inline__src_loc_fnName() __builtin_FUNCTION()
+#define __comp_inline__src_loc_line() __builtin_LINE()
+#define __comp_inline__src_loc_column() __builtin_COLUMN()
 
 #if defined(__cplusplus)
 } /* extern "C" */

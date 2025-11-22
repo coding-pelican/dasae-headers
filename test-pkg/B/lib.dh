@@ -1,0 +1,17 @@
+[B-stub]
+path=../B-stub
+profile=default
+linking=static
+no-libdh=false
+
+[A]
+path=../A
+profile=default
+linking=static
+no-libdh=false
+
+[other/AA]
+path=../A/other/AA
+profile=default
+linking=static
+no-libdh=false

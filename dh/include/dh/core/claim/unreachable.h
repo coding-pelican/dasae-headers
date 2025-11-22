@@ -27,39 +27,22 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define claim_unreachable \
-    __step__claim_unreachable
-
-#define claim_unreachable_msg(_msg) \
-    __step__claim_unreachable_msg(_msg)
-
-#define claim_unreachable_fmt(_fmt...) \
-    __step__claim_unreachable_fmt(_fmt)
-
-#define claim_unreachable_val$(_T...) \
-    __step__claim_unreachable_val$(_T)
+#define claim_unreachable __step__claim_unreachable
+#define claim_unreachable_msg(_msg) __step__claim_unreachable_msg(_msg)
+#define claim_unreachable_fmt(_fmt...) __step__claim_unreachable_fmt(_fmt)
+#define claim_unreachable_val$(_T...) __step__claim_unreachable_val$(_T)
 
 /*========== Macros and Definitions =========================================*/
 
-#define __step__claim_unreachable \
-    (debug_assert_trap_msg("Reached unreachable code"), unreachable)
-
-#define __step__claim_unreachable_msg(_msg...) \
-    (debug_assert_trap_msg(_msg), unreachable)
-
-#define __step__claim_unreachable_fmt(_fmt...) \
-    (debug_assert_trap_fmt(_fmt), unreachable)
-
-#define __step__claim_unreachable_val$(_T...) \
-    (claim_unreachable, lit$((_T){}))
+#define __step__claim_unreachable (debug_assert_trap_msg("Reached unreachable code"), unreachable)
+#define __step__claim_unreachable_msg(_msg...) (debug_assert_trap_msg(_msg), unreachable)
+#define __step__claim_unreachable_fmt(_fmt...) (debug_assert_trap_fmt(_fmt), unreachable)
+#define __step__claim_unreachable_val$(_T...) (claim_unreachable, lit$((_T){}))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-typedef enum Status {
-    Status_OK,
-    Status_ERROR
-} Status;
+typedef enum Status { Status_OK, Status_ERROR } Status;
 
 int exampleFunction(Status status) {
     switch (status) {
@@ -73,9 +56,7 @@ int exampleFunction(Status status) {
 }
 
 int unsafeDivide(int a, int b) {
-    if (b == 0) {
-        claim_unreachable_msg("Division by zero should never happen");
-    }
+    if (b == 0) { claim_unreachable_msg("Division by zero should never happen"); }
     return a / b;
 }
 

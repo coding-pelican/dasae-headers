@@ -31,19 +31,19 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define scope_reserveReturn(T)      SYN__scope_reserveReturn(T)
-#define scope_returnReserved        SYN__scope_returnReserved
+#define scope_reserveReturn(T) SYN__scope_reserveReturn(T)
+#define scope_returnReserved SYN__scope_returnReserved
 #define scope_return(val_return...) SYN__scope_return(val_return)
-#define return_(val_return...)      SYN__return_(val_return)
+#define return_(val_return...) SYN__return_(val_return)
 
 #define reserveReturn(T) SYN__reserveReturn(T)
-#define returnReserved   SYN__returnReserved
+#define returnReserved SYN__returnReserved
 
-#define getReservedReturn()              FUNC__getReservedReturn()
+#define getReservedReturn() FUNC__getReservedReturn()
 #define setReservedReturn(val_return...) FUNC__setReservedReturn(val_return)
 
 #define ext_scope(T_ReservedReturn...) comp_syn__ext_scope(T_ReservedReturn)
-#define ext_unscoped                   comp_syn__ext_unscoped
+#define ext_unscoped comp_syn__ext_unscoped
 
 /*========== Implementations ================================================*/
 
@@ -108,7 +108,7 @@ extern "C" {
     struct { \
         i32 curr; \
         bool returns; \
-    } __scope_defer = { .curr = 0, .returns = false }; \
+    } __scope_defer = {.curr = 0, .returns = false}; \
     if (0) { \
 __returned_scope: \
         goto __ext_unscoped; \
@@ -127,7 +127,12 @@ __ext_unscoped: \
         __scope_defer.returns = true; \
         goto __deferred; \
     } \
-    return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
+    return ( \
+        blk({ \
+            if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+        }), \
+        __reserved_return[0] \
+    )
 
 #define SYN__scope_return(val_return...) \
     { \
@@ -135,8 +140,7 @@ __ext_unscoped: \
         goto __returned_scope; \
     }
 
-#define SYN__return_(val_return...) \
-    scope_return(*(TypeOf(getReservedReturn()[0])[1]){ [0] = val_return })
+#define SYN__return_(val_return...) scope_return(*(TypeOf(getReservedReturn()[0])[1]){[0] = val_return})
 
 #else
 #endif /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
@@ -150,15 +154,20 @@ __returned_scope: \
     $unused(0)
 
 #define SYN__returnReserved \
-    return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0])
+    return ( \
+        blk({ \
+            if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+        }), \
+        __reserved_return[0] \
+    )
 
-#define FUNC__getReservedReturn() \
-    (__reserved_return)
+#define FUNC__getReservedReturn() (__reserved_return)
 
-#define FUNC__setReservedReturn(val_return...) blk({ \
-    getReservedReturn() = &val_return; \
-    blk_return getReservedReturn()[0]; \
-})
+#define FUNC__setReservedReturn(val_return...) \
+    blk({ \
+        getReservedReturn() = &val_return; \
+        blk_return getReservedReturn()[0]; \
+    })
 /* #define FUNC__setReservedReturn(val_return...) blk({ \
     getReservedReturn()[0] = val_return;              \
     blk_return getReservedReturn()[0];               \

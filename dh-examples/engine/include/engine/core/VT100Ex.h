@@ -4,17 +4,19 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#define engine_core_VT100Ex_comp_sharded 1
+
 #include "engine/common.h"
 #include "engine/Window.h"
 #include "engine/Input.h"
 #include "engine/Backend.h"
 
 typedef struct engine_core_VT100Ex_Config {
-    var_(allocator, O$mem_Allocator);
+    var_(gpa, O$mem_Allocator);
     var_(window, engine_Window*);
     var_(input, engine_Input*);
-    var_(stub_path, O$S_const$u8);  /* Path to stub executable */
-    var_(stub_title, O$S_const$u8); /* Optional window title */
+    var_(stub_path, O$S_const$u8);    /* Path to stub executable */
+    var_(stub_profile, O$S_const$u8); /* Optional stub profile name */
 } engine_core_VT100Ex_Config;
 
 typedef struct engine_core_VT100Ex engine_core_VT100Ex;

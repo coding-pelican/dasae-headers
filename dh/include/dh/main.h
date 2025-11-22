@@ -46,7 +46,7 @@ extern "C" {
 /* No hijack, just call main as usual */
 #else /* !main_no_hijack */
 
-pp_attr_(pp_if_(pp_not(main_no_returns_err))(pp_then_($must_check)))
+$attr(pp_if_(pp_not(main_no_returns_err))(pp_then_($must_check)))
 $extern fn_((dh_main(pp_if_(pp_not(main_no_args))(
     pp_then_(S$S_const$u8 args),
     pp_else_(void)

@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define claim_assert_static(_Expr)           __step__static_assert(_Expr)
+#define claim_assert_static(_Expr) __step__static_assert(_Expr)
 #define claim_assert_static_msg(_Expr, _msg) __step__static_assert_msg(_Expr, _msg)
 
 #if defined(__cplusplus)

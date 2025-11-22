@@ -24,22 +24,22 @@
 
 /* Vec2f functions */
 /* Constants */
-#define m_V2f32_zero      ((m_V2f32){ .x = 0.0f, .y = 0.0f })
-#define m_V2f32_unit_x    ((m_V2f32){ .x = 1.0f, .y = 0.0f })
-#define m_V2f32_unit_y    ((m_V2f32){ .x = 0.0f, .y = 1.0f })
-#define m_V2f32_one       ((m_V2f32){ .x = 1.0f, .y = 1.0f })
-#define m_V2f32_left      ((m_V2f32){ .x = -1.0f, .y = 0.0f })
-#define m_V2f32_up        ((m_V2f32){ .x = 0.0f, .y = 1.0f })
-#define m_V2f32_right     ((m_V2f32){ .x = 1.0f, .y = 0.0f })
-#define m_V2f32_down      ((m_V2f32){ .x = 0.0f, .y = -1.0f })
-#define m_V2f32_eps       ((m_V2f32){ .x = f32_eps, .y = f32_eps })
-#define m_V2f32_nan       ((m_V2f32){ .x = f32_nan, .y = f32_nan })
-#define m_V2f32_inf       ((m_V2f32){ .x = f32_inf, .y = f32_inf })
-#define m_V2f32_limit_min ((m_V2f32){ .x = f32_limit_min, .y = f32_limit_min })
-#define m_V2f32_limit_max ((m_V2f32){ .x = f32_limit_max, .y = f32_limit_max })
+#define m_V2f32_zero ((m_V2f32){.x = 0.0f, .y = 0.0f})
+#define m_V2f32_unit_x ((m_V2f32){.x = 1.0f, .y = 0.0f})
+#define m_V2f32_unit_y ((m_V2f32){.x = 0.0f, .y = 1.0f})
+#define m_V2f32_one ((m_V2f32){.x = 1.0f, .y = 1.0f})
+#define m_V2f32_left ((m_V2f32){.x = -1.0f, .y = 0.0f})
+#define m_V2f32_up ((m_V2f32){.x = 0.0f, .y = 1.0f})
+#define m_V2f32_right ((m_V2f32){.x = 1.0f, .y = 0.0f})
+#define m_V2f32_down ((m_V2f32){.x = 0.0f, .y = -1.0f})
+#define m_V2f32_eps ((m_V2f32){.x = f32_eps, .y = f32_eps})
+#define m_V2f32_nan ((m_V2f32){.x = f32_nan, .y = f32_nan})
+#define m_V2f32_inf ((m_V2f32){.x = f32_inf, .y = f32_inf})
+#define m_V2f32_limit_min ((m_V2f32){.x = f32_limit_min, .y = f32_limit_min})
+#define m_V2f32_limit_max ((m_V2f32){.x = f32_limit_max, .y = f32_limit_max})
 
 /* Construction */
-#define literal_m_V2f32_from(f32_x, f32_y) ((m_V2f32){ .x = (f32_x), .y = (f32_y) })
+#define lit_m_V2f32_from(f32_x, f32_y) ((m_V2f32){.x = (f32_x), .y = (f32_y)})
 $inline_always m_V2f32 m_V2f32_from(f32 x, f32 y);
 $inline_always m_V2f32 m_V2f32_from3(m_V3f32 v);
 $inline_always m_V2f32 m_V2f32_from4(m_V4f32 v);
@@ -102,12 +102,12 @@ $inline_always m_V2f32 m_V2f32_wrap(m_V2f32 v, m_V2f32 min, m_V2f32 max);
 $inline_always m_V2f32 m_V2f32_wrap01(m_V2f32 v);
 
 /* Geometric Operations */
-$inline_always f32     m_V2f32_lenSq(m_V2f32 v);
-$inline_always f32     m_V2f32_len(m_V2f32 v);
-$inline_always f32     m_V2f32_distSq(m_V2f32 lhs, m_V2f32 rhs);
-$inline_always f32     m_V2f32_dist(m_V2f32 lhs, m_V2f32 rhs);
-$inline_always f32     m_V2f32_dot(m_V2f32 lhs, m_V2f32 rhs);
-$inline_always f32     m_V2f32_cross(m_V2f32 lhs, m_V2f32 rhs);
+$inline_always f32 m_V2f32_lenSq(m_V2f32 v);
+$inline_always f32 m_V2f32_len(m_V2f32 v);
+$inline_always f32 m_V2f32_distSq(m_V2f32 lhs, m_V2f32 rhs);
+$inline_always f32 m_V2f32_dist(m_V2f32 lhs, m_V2f32 rhs);
+$inline_always f32 m_V2f32_dot(m_V2f32 lhs, m_V2f32 rhs);
+$inline_always f32 m_V2f32_cross(m_V2f32 lhs, m_V2f32 rhs);
 $inline_always m_V2f32 m_V2f32_norm(m_V2f32 v);
 $inline_always m_V2f32 m_V2f32_project(m_V2f32 v, m_V2f32 onto);
 $inline_always m_V2f32 m_V2f32_reject(m_V2f32 v, m_V2f32 from);
@@ -117,28 +117,28 @@ $inline_always m_V2f32 m_V2f32_perp(m_V2f32 v);
 
 /* Vec3f functions */
 /* Constants */
-#define m_V3f32_zero      ((m_V3f32){ .x = 0.0f, .y = 0.0f, .z = 0.0f })
-#define m_V3f32_unit_x    ((m_V3f32){ .x = 1.0f, .y = 0.0f, .z = 0.0f })
-#define m_V3f32_unit_y    ((m_V3f32){ .x = 0.0f, .y = 1.0f, .z = 0.0f })
-#define m_V3f32_unit_z    ((m_V3f32){ .x = 0.0f, .y = 0.0f, .z = 1.0f })
-#define m_V3f32_unit_xy   ((m_V3f32){ .x = 1.0f, .y = 1.0f, .z = 0.0f })
-#define m_V3f32_unit_yz   ((m_V3f32){ .x = 0.0f, .y = 1.0f, .z = 1.0f })
-#define m_V3f32_unit_zx   ((m_V3f32){ .x = 1.0f, .y = 0.0f, .z = 1.0f })
-#define m_V3f32_one       ((m_V3f32){ .x = 1.0f, .y = 1.0f, .z = 1.0f })
-#define m_V3f32_left      ((m_V3f32){ .x = -1.0f, .y = 0.0f, .z = 0.0f })
-#define m_V3f32_up        ((m_V3f32){ .x = 0.0f, .y = 1.0f, .z = 0.0f })
-#define m_V3f32_right     ((m_V3f32){ .x = 1.0f, .y = 0.0f, .z = 0.0f })
-#define m_V3f32_down      ((m_V3f32){ .x = 0.0f, .y = -1.0f, .z = 0.0f })
-#define m_V3f32_forward   ((m_V3f32){ .x = 0.0f, .y = 0.0f, .z = 1.0f })
-#define m_V3f32_backward  ((m_V3f32){ .x = 0.0f, .y = 0.0f, .z = -1.0f })
-#define m_V3f32_eps       ((m_V3f32){ .x = f32_eps, .y = f32_eps, .z = f32_eps })
-#define m_V3f32_nan       ((m_V3f32){ .x = f32_nan, .y = f32_nan, .z = f32_nan })
-#define m_V3f32_inf       ((m_V3f32){ .x = f32_inf, .y = f32_inf, .z = f32_inf })
-#define m_V3f32_limit_min ((m_V3f32){ .x = f32_limit_min, .y = f32_limit_min, .z = f32_limit_min })
-#define m_V3f32_limit_max ((m_V3f32){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max })
+#define m_V3f32_zero ((m_V3f32){.x = 0.0f, .y = 0.0f, .z = 0.0f})
+#define m_V3f32_unit_x ((m_V3f32){.x = 1.0f, .y = 0.0f, .z = 0.0f})
+#define m_V3f32_unit_y ((m_V3f32){.x = 0.0f, .y = 1.0f, .z = 0.0f})
+#define m_V3f32_unit_z ((m_V3f32){.x = 0.0f, .y = 0.0f, .z = 1.0f})
+#define m_V3f32_unit_xy ((m_V3f32){.x = 1.0f, .y = 1.0f, .z = 0.0f})
+#define m_V3f32_unit_yz ((m_V3f32){.x = 0.0f, .y = 1.0f, .z = 1.0f})
+#define m_V3f32_unit_zx ((m_V3f32){.x = 1.0f, .y = 0.0f, .z = 1.0f})
+#define m_V3f32_one ((m_V3f32){.x = 1.0f, .y = 1.0f, .z = 1.0f})
+#define m_V3f32_left ((m_V3f32){.x = -1.0f, .y = 0.0f, .z = 0.0f})
+#define m_V3f32_up ((m_V3f32){.x = 0.0f, .y = 1.0f, .z = 0.0f})
+#define m_V3f32_right ((m_V3f32){.x = 1.0f, .y = 0.0f, .z = 0.0f})
+#define m_V3f32_down ((m_V3f32){.x = 0.0f, .y = -1.0f, .z = 0.0f})
+#define m_V3f32_forward ((m_V3f32){.x = 0.0f, .y = 0.0f, .z = 1.0f})
+#define m_V3f32_backward ((m_V3f32){.x = 0.0f, .y = 0.0f, .z = -1.0f})
+#define m_V3f32_eps ((m_V3f32){.x = f32_eps, .y = f32_eps, .z = f32_eps})
+#define m_V3f32_nan ((m_V3f32){.x = f32_nan, .y = f32_nan, .z = f32_nan})
+#define m_V3f32_inf ((m_V3f32){.x = f32_inf, .y = f32_inf, .z = f32_inf})
+#define m_V3f32_limit_min ((m_V3f32){.x = f32_limit_min, .y = f32_limit_min, .z = f32_limit_min})
+#define m_V3f32_limit_max ((m_V3f32){.x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max})
 
 /* Construction */
-#define literal_m_V3f32_from(f32_x, f32_y, f32_z) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z) })
+#define lit_m_V3f32_from(f32_x, f32_y, f32_z) ((m_V3f32){.x = (f32_x), .y = (f32_y), .z = (f32_z)})
 $inline_always m_V3f32 m_V3f32_from(f32 x, f32 y, f32 z);
 $inline_always m_V3f32 m_V3f32_from2(m_V2f32 v);
 $inline_always m_V3f32 m_V3f32_from4(m_V4f32 v);
@@ -179,11 +179,11 @@ $inline_always m_V3f32 m_V3f32_wrap(m_V3f32 v, m_V3f32 min, m_V3f32 max);
 $inline_always m_V3f32 m_V3f32_wrap01(m_V3f32 v);
 
 /* Geometric Operations */
-$inline_always f32     m_V3f32_lenSq(m_V3f32 v);
-$inline_always f32     m_V3f32_len(m_V3f32 v);
-$inline_always f32     m_V3f32_distSq(m_V3f32 lhs, m_V3f32 rhs);
-$inline_always f32     m_V3f32_dist(m_V3f32 lhs, m_V3f32 rhs);
-$inline_always f32     m_V3f32_dot(m_V3f32 lhs, m_V3f32 rhs);
+$inline_always f32 m_V3f32_lenSq(m_V3f32 v);
+$inline_always f32 m_V3f32_len(m_V3f32 v);
+$inline_always f32 m_V3f32_distSq(m_V3f32 lhs, m_V3f32 rhs);
+$inline_always f32 m_V3f32_dist(m_V3f32 lhs, m_V3f32 rhs);
+$inline_always f32 m_V3f32_dot(m_V3f32 lhs, m_V3f32 rhs);
 $inline_always m_V3f32 m_V3f32_cross(m_V3f32 lhs, m_V3f32 rhs);
 $inline_always m_V3f32 m_V3f32_norm(m_V3f32 v);
 $inline_always m_V3f32 m_V3f32_project(m_V3f32 v, m_V3f32 onto);
@@ -194,26 +194,26 @@ $inline_always m_V3f32 m_V3f32_perp(m_V3f32 v);
 
 /* Vec4f functions */
 /* Constants */
-#define m_V4f32_zero      ((m_V4f32){ .x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_unit_x    ((m_V4f32){ .x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_unit_y    ((m_V4f32){ .x = 0.0f, .y = 1.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_unit_z    ((m_V4f32){ .x = 0.0f, .y = 0.0f, .z = 1.0f, .w = 0.0f })
-#define m_V4f32_unit_w    ((m_V4f32){ .x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f })
-#define m_V4f32_one       ((m_V4f32){ .x = 1.0f, .y = 1.0f, .z = 1.0f, .w = 1.0f })
-#define m_V4f32_left      ((m_V4f32){ .x = -1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_up        ((m_V4f32){ .x = 0.0f, .y = 1.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_right     ((m_V4f32){ .x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_down      ((m_V4f32){ .x = 0.0f, .y = -1.0f, .z = 0.0f, .w = 0.0f })
-#define m_V4f32_forward   ((m_V4f32){ .x = 0.0f, .y = 0.0f, .z = 1.0f, .w = 0.0f })
-#define m_V4f32_backward  ((m_V4f32){ .x = 0.0f, .y = 0.0f, .z = -1.0f, .w = 0.0f })
-#define m_V4f32_eps       ((m_V4f32){ .x = f32_eps, .y = f32_eps, .z = f32_eps, .w = f32_eps })
-#define m_V4f32_nan       ((m_V4f32){ .x = f32_nan, .y = f32_nan, .z = f32_nan, .w = f32_nan })
-#define m_V4f32_inf       ((m_V4f32){ .x = f32_inf, .y = f32_inf, .z = f32_inf, .w = f32_inf })
-#define m_V4f32_limit_min ((m_V4f32){ .x = f32_limit_min, .y = f32_limit_min, .z = f32_limit_min, .w = f32_limit_min })
-#define m_V4f32_limit_max ((m_V4f32){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max, .w = f32_limit_max })
+#define m_V4f32_zero ((m_V4f32){.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_unit_x ((m_V4f32){.x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_unit_y ((m_V4f32){.x = 0.0f, .y = 1.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_unit_z ((m_V4f32){.x = 0.0f, .y = 0.0f, .z = 1.0f, .w = 0.0f})
+#define m_V4f32_unit_w ((m_V4f32){.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f})
+#define m_V4f32_one ((m_V4f32){.x = 1.0f, .y = 1.0f, .z = 1.0f, .w = 1.0f})
+#define m_V4f32_left ((m_V4f32){.x = -1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_up ((m_V4f32){.x = 0.0f, .y = 1.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_right ((m_V4f32){.x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_down ((m_V4f32){.x = 0.0f, .y = -1.0f, .z = 0.0f, .w = 0.0f})
+#define m_V4f32_forward ((m_V4f32){.x = 0.0f, .y = 0.0f, .z = 1.0f, .w = 0.0f})
+#define m_V4f32_backward ((m_V4f32){.x = 0.0f, .y = 0.0f, .z = -1.0f, .w = 0.0f})
+#define m_V4f32_eps ((m_V4f32){.x = f32_eps, .y = f32_eps, .z = f32_eps, .w = f32_eps})
+#define m_V4f32_nan ((m_V4f32){.x = f32_nan, .y = f32_nan, .z = f32_nan, .w = f32_nan})
+#define m_V4f32_inf ((m_V4f32){.x = f32_inf, .y = f32_inf, .z = f32_inf, .w = f32_inf})
+#define m_V4f32_limit_min ((m_V4f32){.x = f32_limit_min, .y = f32_limit_min, .z = f32_limit_min, .w = f32_limit_min})
+#define m_V4f32_limit_max ((m_V4f32){.x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max, .w = f32_limit_max})
 
 /* Construction */
-#define literal_m_V4f32_from(f32_x, f32_y, f32_z, f32_w) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z), .w = (f32_w) })
+#define lit_m_V4f32_from(f32_x, f32_y, f32_z, f32_w) ((m_V3f32){.x = (f32_x), .y = (f32_y), .z = (f32_z), .w = (f32_w)})
 $inline_always m_V4f32 m_V4f32_from(f32 x, f32 y, f32 z, f32 w);
 $inline_always m_V4f32 m_V4f32_from2(m_V2f32 v);
 $inline_always m_V4f32 m_V4f32_from3(m_V3f32 v);
@@ -254,11 +254,11 @@ $inline_always m_V4f32 m_V4f32_wrap(m_V4f32 v, m_V4f32 min, m_V4f32 max);
 $inline_always m_V4f32 m_V4f32_wrap01(m_V4f32 v);
 
 /* Geometric Operations */
-$inline_always f32     m_V4f32_lenSq(m_V4f32 v);
-$inline_always f32     m_V4f32_len(m_V4f32 v);
-$inline_always f32     m_V4f32_distSq(m_V4f32 lhs, m_V4f32 rhs);
-$inline_always f32     m_V4f32_dist(m_V4f32 lhs, m_V4f32 rhs);
-$inline_always f32     m_V4f32_dot(m_V4f32 lhs, m_V4f32 rhs);
+$inline_always f32 m_V4f32_lenSq(m_V4f32 v);
+$inline_always f32 m_V4f32_len(m_V4f32 v);
+$inline_always f32 m_V4f32_distSq(m_V4f32 lhs, m_V4f32 rhs);
+$inline_always f32 m_V4f32_dist(m_V4f32 lhs, m_V4f32 rhs);
+$inline_always f32 m_V4f32_dot(m_V4f32 lhs, m_V4f32 rhs);
 $inline_always m_V4f32 m_V4f32_norm(m_V4f32 v);
 $inline_always m_V4f32 m_V4f32_project(m_V4f32 v, m_V4f32 onto);
 $inline_always m_V4f32 m_V4f32_reject(m_V4f32 v, m_V4f32 from);
@@ -268,22 +268,22 @@ $inline_always m_V4f32 m_V4f32_reflect(m_V4f32 v, m_V4f32 normal);
 
 /* Vec2d functions */
 /* Constants */
-#define m_V2f64_zero      ((m_V2f64){ .x = 0.0, .y = 0.0 })
-#define m_V2f64_unit_x    ((m_V2f64){ .x = 1.0, .y = 0.0 })
-#define m_V2f64_unit_y    ((m_V2f64){ .x = 0.0, .y = 1.0 })
-#define m_V2f64_one       ((m_V2f64){ .x = 1.0, .y = 1.0 })
-#define m_V2f64_left      ((m_V2f64){ .x = -1.0, .y = 0.0 })
-#define m_V2f64_up        ((m_V2f64){ .x = 0.0, .y = 1.0 })
-#define m_V2f64_right     ((m_V2f64){ .x = 1.0, .y = 0.0 })
-#define m_V2f64_down      ((m_V2f64){ .x = 0.0, .y = -1.0 })
-#define m_V2f64_eps       ((m_V2f64){ .x = f64_eps, .y = f64_eps })
-#define m_V2f64_nan       ((m_V2f64){ .x = f64_nan, .y = f64_nan })
-#define m_V2f64_inf       ((m_V2f64){ .x = f64_inf, .y = f64_inf })
-#define m_V2f64_limit_min ((m_V2f64){ .x = f64_limit_min, .y = f64_limit_min })
-#define m_V2f64_limit_max ((m_V2f64){ .x = f64_limit_max, .y = f64_limit_max })
+#define m_V2f64_zero ((m_V2f64){.x = 0.0, .y = 0.0})
+#define m_V2f64_unit_x ((m_V2f64){.x = 1.0, .y = 0.0})
+#define m_V2f64_unit_y ((m_V2f64){.x = 0.0, .y = 1.0})
+#define m_V2f64_one ((m_V2f64){.x = 1.0, .y = 1.0})
+#define m_V2f64_left ((m_V2f64){.x = -1.0, .y = 0.0})
+#define m_V2f64_up ((m_V2f64){.x = 0.0, .y = 1.0})
+#define m_V2f64_right ((m_V2f64){.x = 1.0, .y = 0.0})
+#define m_V2f64_down ((m_V2f64){.x = 0.0, .y = -1.0})
+#define m_V2f64_eps ((m_V2f64){.x = f64_eps, .y = f64_eps})
+#define m_V2f64_nan ((m_V2f64){.x = f64_nan, .y = f64_nan})
+#define m_V2f64_inf ((m_V2f64){.x = f64_inf, .y = f64_inf})
+#define m_V2f64_limit_min ((m_V2f64){.x = f64_limit_min, .y = f64_limit_min})
+#define m_V2f64_limit_max ((m_V2f64){.x = f64_limit_max, .y = f64_limit_max})
 
 /* Construction */
-#define literal_m_V2f64_from(f64_x, f64_y) ((m_V2f64){ .x = (f64_x), .y = (f64_y) })
+#define lit_m_V2f64_from(f64_x, f64_y) ((m_V2f64){.x = (f64_x), .y = (f64_y)})
 $inline_always m_V2f64 m_V2f64_from(f64 x, f64 y);
 $inline_always m_V2f64 m_V2f64_from3(m_V3f64 v);
 $inline_always m_V2f64 m_V2f64_from4(m_V4f64 v);
@@ -338,12 +338,12 @@ $inline_always m_V2f64 m_V2f64_wrap(m_V2f64 v, m_V2f64 min, m_V2f64 max);
 $inline_always m_V2f64 m_V2f64_wrap01(m_V2f64 v);
 
 /* Geometric Operations */
-$inline_always f64     m_V2f64_lenSq(m_V2f64 v);
-$inline_always f64     m_V2f64_len(m_V2f64 v);
-$inline_always f64     m_V2f64_distSq(m_V2f64 lhs, m_V2f64 rhs);
-$inline_always f64     m_V2f64_dist(m_V2f64 lhs, m_V2f64 rhs);
-$inline_always f64     m_V2f64_dot(m_V2f64 lhs, m_V2f64 rhs);
-$inline_always f64     m_V2f64_cross(m_V2f64 lhs, m_V2f64 rhs);
+$inline_always f64 m_V2f64_lenSq(m_V2f64 v);
+$inline_always f64 m_V2f64_len(m_V2f64 v);
+$inline_always f64 m_V2f64_distSq(m_V2f64 lhs, m_V2f64 rhs);
+$inline_always f64 m_V2f64_dist(m_V2f64 lhs, m_V2f64 rhs);
+$inline_always f64 m_V2f64_dot(m_V2f64 lhs, m_V2f64 rhs);
+$inline_always f64 m_V2f64_cross(m_V2f64 lhs, m_V2f64 rhs);
 $inline_always m_V2f64 m_V2f64_norm(m_V2f64 v);
 $inline_always m_V2f64 m_V2f64_project(m_V2f64 v, m_V2f64 onto);
 $inline_always m_V2f64 m_V2f64_reject(m_V2f64 v, m_V2f64 from);
@@ -353,26 +353,26 @@ $inline_always m_V2f64 m_V2f64_perp(m_V2f64 v);
 
 /* Vec3d functions */
 /* Constants */
-#define m_V3f64_zero     ((m_V3f64){ .x = 0.0, .y = 0.0, .z = 0.0 })
-#define m_V3f64_unit_x   ((m_V3f64){ .x = 1.0, .y = 0.0, .z = 0.0 })
-#define m_V3f64_unit_y   ((m_V3f64){ .x = 0.0, .y = 1.0, .z = 0.0 })
-#define m_V3f64_unit_z   ((m_V3f64){ .x = 0.0, .y = 0.0, .z = 1.0 })
-#define m_V3f64_unit_xy  ((m_V3f64){ .x = 1.0, .y = 1.0, .z = 0.0 })
-#define m_V3f64_unit_yz  ((m_V3f64){ .x = 0.0, .y = 1.0, .z = 1.0 })
-#define m_V3f64_unit_zx  ((m_V3f64){ .x = 1.0, .y = 0.0, .z = 1.0 })
-#define m_V3f64_one      ((m_V3f64){ .x = 1.0, .y = 1.0, .z = 1.0 })
-#define m_V3f64_left     ((m_V3f64){ .x = -1.0, .y = 0.0, .z = 0.0 })
-#define m_V3f64_up       ((m_V3f64){ .x = 0.0, .y = 1.0, .z = 0.0 })
-#define m_V3f64_right    ((m_V3f64){ .x = 1.0, .y = 0.0, .z = 0.0 })
-#define m_V3f64_down     ((m_V3f64){ .x = 0.0, .y = -1.0, .z = 0.0 })
-#define m_V3f64_forward  ((m_V3f64){ .x = 0.0, .y = 0.0, .z = 1.0 })
-#define m_V3f64_backward ((m_V3f64){ .x = 0.0, .y = 0.0, .z = -1.0 })
-#define m_V3f64_eps      ((m_V3f64){ .x = f64_eps, .y = f64_eps, .z = f64_eps })
-#define m_V3f64_nan      ((m_V3f64){ .x = f64_nan, .y = f64_nan, .z = f64_nan })
-#define m_V3f64_inf      ((m_V3f64){ .x = f64_inf, .y = f64_inf, .z = f64_inf })
+#define m_V3f64_zero ((m_V3f64){.x = 0.0, .y = 0.0, .z = 0.0})
+#define m_V3f64_unit_x ((m_V3f64){.x = 1.0, .y = 0.0, .z = 0.0})
+#define m_V3f64_unit_y ((m_V3f64){.x = 0.0, .y = 1.0, .z = 0.0})
+#define m_V3f64_unit_z ((m_V3f64){.x = 0.0, .y = 0.0, .z = 1.0})
+#define m_V3f64_unit_xy ((m_V3f64){.x = 1.0, .y = 1.0, .z = 0.0})
+#define m_V3f64_unit_yz ((m_V3f64){.x = 0.0, .y = 1.0, .z = 1.0})
+#define m_V3f64_unit_zx ((m_V3f64){.x = 1.0, .y = 0.0, .z = 1.0})
+#define m_V3f64_one ((m_V3f64){.x = 1.0, .y = 1.0, .z = 1.0})
+#define m_V3f64_left ((m_V3f64){.x = -1.0, .y = 0.0, .z = 0.0})
+#define m_V3f64_up ((m_V3f64){.x = 0.0, .y = 1.0, .z = 0.0})
+#define m_V3f64_right ((m_V3f64){.x = 1.0, .y = 0.0, .z = 0.0})
+#define m_V3f64_down ((m_V3f64){.x = 0.0, .y = -1.0, .z = 0.0})
+#define m_V3f64_forward ((m_V3f64){.x = 0.0, .y = 0.0, .z = 1.0})
+#define m_V3f64_backward ((m_V3f64){.x = 0.0, .y = 0.0, .z = -1.0})
+#define m_V3f64_eps ((m_V3f64){.x = f64_eps, .y = f64_eps, .z = f64_eps})
+#define m_V3f64_nan ((m_V3f64){.x = f64_nan, .y = f64_nan, .z = f64_nan})
+#define m_V3f64_inf ((m_V3f64){.x = f64_inf, .y = f64_inf, .z = f64_inf})
 
 /* Construction */
-#define literal_m_V3f64_from(f64_x, f64_y, f64_z) ((m_V3f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z) })
+#define lit_m_V3f64_from(f64_x, f64_y, f64_z) ((m_V3f64){.x = (f64_x), .y = (f64_y), .z = (f64_z)})
 $inline_always m_V3f64 m_V3f64_from(f64 x, f64 y, f64 z);
 $inline_always m_V3f64 m_V3f64_from2(m_V2f64 v);
 $inline_always m_V3f64 m_V3f64_from4(m_V4f64 v);
@@ -405,11 +405,11 @@ $inline_always m_V3f64 m_V3f64_wrap(m_V3f64 v, m_V3f64 min, m_V3f64 max);
 $inline_always m_V3f64 m_V3f64_wrap01(m_V3f64 v);
 
 /* Geometric Operations */
-$inline_always f64     m_V3f64_lenSq(m_V3f64 v);
-$inline_always f64     m_V3f64_len(m_V3f64 v);
-$inline_always f64     m_V3f64_distSq(m_V3f64 lhs, m_V3f64 rhs);
-$inline_always f64     m_V3f64_dist(m_V3f64 lhs, m_V3f64 rhs);
-$inline_always f64     m_V3f64_dot(m_V3f64 lhs, m_V3f64 rhs);
+$inline_always f64 m_V3f64_lenSq(m_V3f64 v);
+$inline_always f64 m_V3f64_len(m_V3f64 v);
+$inline_always f64 m_V3f64_distSq(m_V3f64 lhs, m_V3f64 rhs);
+$inline_always f64 m_V3f64_dist(m_V3f64 lhs, m_V3f64 rhs);
+$inline_always f64 m_V3f64_dot(m_V3f64 lhs, m_V3f64 rhs);
 $inline_always m_V3f64 m_V3f64_cross(m_V3f64 lhs, m_V3f64 rhs);
 $inline_always m_V3f64 m_V3f64_norm(m_V3f64 v);
 $inline_always m_V3f64 m_V3f64_project(m_V3f64 v, m_V3f64 onto);
@@ -420,26 +420,26 @@ $inline_always m_V3f64 m_V3f64_perp(m_V3f64 v);
 
 /* Vec4d functions */
 /* Constants */
-#define m_V4f64_zero      ((m_V4f64){ .x = 0.0, .y = 0.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_unit_x    ((m_V4f64){ .x = 1.0, .y = 0.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_unit_y    ((m_V4f64){ .x = 0.0, .y = 1.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_unit_z    ((m_V4f64){ .x = 0.0, .y = 0.0, .z = 1.0, .w = 0.0 })
-#define m_V4f64_unit_w    ((m_V4f64){ .x = 0.0, .y = 0.0, .z = 0.0, .w = 1.0 })
-#define m_V4f64_one       ((m_V4f64){ .x = 1.0, .y = 1.0, .z = 1.0, .w = 1.0 })
-#define m_V4f64_left      ((m_V4f64){ .x = -1.0, .y = 0.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_up        ((m_V4f64){ .x = 0.0, .y = 1.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_right     ((m_V4f64){ .x = 1.0, .y = 0.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_down      ((m_V4f64){ .x = 0.0, .y = -1.0, .z = 0.0, .w = 0.0 })
-#define m_V4f64_forward   ((m_V4f64){ .x = 0.0, .y = 0.0, .z = 1.0, .w = 0.0 })
-#define m_V4f64_backward  ((m_V4f64){ .x = 0.0, .y = 0.0, .z = -1.0, .w = 0.0 })
-#define m_V4f64_eps       ((m_V4f64){ .x = f64_eps, .y = f64_eps, .z = f64_eps, .w = f64_eps })
-#define m_V4f64_nan       ((m_V4f64){ .x = f64_nan, .y = f64_nan, .z = f64_nan, .w = f64_nan })
-#define m_V4f64_inf       ((m_V4f64){ .x = f64_inf, .y = f64_inf, .z = f64_inf, .w = f64_inf })
-#define m_V4f64_limit_min ((m_V4f64){ .x = f64_limit_min, .y = f64_limit_min, .z = f64_limit_min, .w = f64_limit_min })
-#define m_V4f64_limit_max ((m_V4f64){ .x = f64_limit_max, .y = f64_limit_max, .z = f64_limit_max, .w = f64_limit_max })
+#define m_V4f64_zero ((m_V4f64){.x = 0.0, .y = 0.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_unit_x ((m_V4f64){.x = 1.0, .y = 0.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_unit_y ((m_V4f64){.x = 0.0, .y = 1.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_unit_z ((m_V4f64){.x = 0.0, .y = 0.0, .z = 1.0, .w = 0.0})
+#define m_V4f64_unit_w ((m_V4f64){.x = 0.0, .y = 0.0, .z = 0.0, .w = 1.0})
+#define m_V4f64_one ((m_V4f64){.x = 1.0, .y = 1.0, .z = 1.0, .w = 1.0})
+#define m_V4f64_left ((m_V4f64){.x = -1.0, .y = 0.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_up ((m_V4f64){.x = 0.0, .y = 1.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_right ((m_V4f64){.x = 1.0, .y = 0.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_down ((m_V4f64){.x = 0.0, .y = -1.0, .z = 0.0, .w = 0.0})
+#define m_V4f64_forward ((m_V4f64){.x = 0.0, .y = 0.0, .z = 1.0, .w = 0.0})
+#define m_V4f64_backward ((m_V4f64){.x = 0.0, .y = 0.0, .z = -1.0, .w = 0.0})
+#define m_V4f64_eps ((m_V4f64){.x = f64_eps, .y = f64_eps, .z = f64_eps, .w = f64_eps})
+#define m_V4f64_nan ((m_V4f64){.x = f64_nan, .y = f64_nan, .z = f64_nan, .w = f64_nan})
+#define m_V4f64_inf ((m_V4f64){.x = f64_inf, .y = f64_inf, .z = f64_inf, .w = f64_inf})
+#define m_V4f64_limit_min ((m_V4f64){.x = f64_limit_min, .y = f64_limit_min, .z = f64_limit_min, .w = f64_limit_min})
+#define m_V4f64_limit_max ((m_V4f64){.x = f64_limit_max, .y = f64_limit_max, .z = f64_limit_max, .w = f64_limit_max})
 
 /* Construction */
-#define literal_m_V4f64_from(f64_x, f64_y, f64_z, f64_w) ((m_V4f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z), .w = (f64_w) })
+#define lit_m_V4f64_from(f64_x, f64_y, f64_z, f64_w) ((m_V4f64){.x = (f64_x), .y = (f64_y), .z = (f64_z), .w = (f64_w)})
 $inline_always m_V4f64 m_V4f64_from(f64 x, f64 y, f64 z, f64 w);
 $inline_always m_V4f64 m_V4f64_from2(m_V2f64 v);
 $inline_always m_V4f64 m_V4f64_from3(m_V3f64 v);
@@ -472,11 +472,11 @@ $inline_always m_V4f64 m_V4f64_wrap(m_V4f64 v, m_V4f64 min, m_V4f64 max);
 $inline_always m_V4f64 m_V4f64_wrap01(m_V4f64 v);
 
 /* Geometric Operations */
-$inline_always f64     m_V4f64_lenSq(m_V4f64 v);
-$inline_always f64     m_V4f64_len(m_V4f64 v);
-$inline_always f64     m_V4f64_distSq(m_V4f64 lhs, m_V4f64 rhs);
-$inline_always f64     m_V4f64_dist(m_V4f64 lhs, m_V4f64 rhs);
-$inline_always f64     m_V4f64_dot(m_V4f64 lhs, m_V4f64 rhs);
+$inline_always f64 m_V4f64_lenSq(m_V4f64 v);
+$inline_always f64 m_V4f64_len(m_V4f64 v);
+$inline_always f64 m_V4f64_distSq(m_V4f64 lhs, m_V4f64 rhs);
+$inline_always f64 m_V4f64_dist(m_V4f64 lhs, m_V4f64 rhs);
+$inline_always f64 m_V4f64_dot(m_V4f64 lhs, m_V4f64 rhs);
 $inline_always m_V4f64 m_V4f64_norm(m_V4f64 v);
 $inline_always m_V4f64 m_V4f64_project(m_V4f64 v, m_V4f64 onto);
 $inline_always m_V4f64 m_V4f64_reject(m_V4f64 v, m_V4f64 from);
@@ -486,19 +486,19 @@ $inline_always m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal);
 
 /* Vec2i functions */
 /* Constants */
-#define m_V2i32_zero      ((m_V2i32){ .x = 0, .y = 0 })
-#define m_V2i32_unit_x    ((m_V2i32){ .x = 1, .y = 0 })
-#define m_V2i32_unit_y    ((m_V2i32){ .x = 0, .y = 1 })
-#define m_V2i32_one       ((m_V2i32){ .x = 1, .y = 1 })
-#define m_V2i32_left      ((m_V2i32){ .x = -1, .y = 0 })
-#define m_V2i32_up        ((m_V2i32){ .x = 0, .y = 1 })
-#define m_V2i32_right     ((m_V2i32){ .x = 1, .y = 0 })
-#define m_V2i32_down      ((m_V2i32){ .x = 0, .y = -1 })
-#define m_V2i32_limit_min ((m_V2i32){ .x = i32_limit_min, .y = i32_limit_min })
-#define m_V2i32_limit_max ((m_V2i32){ .x = i32_limit_max, .y = i32_limit_max })
+#define m_V2i32_zero ((m_V2i32){.x = 0, .y = 0})
+#define m_V2i32_unit_x ((m_V2i32){.x = 1, .y = 0})
+#define m_V2i32_unit_y ((m_V2i32){.x = 0, .y = 1})
+#define m_V2i32_one ((m_V2i32){.x = 1, .y = 1})
+#define m_V2i32_left ((m_V2i32){.x = -1, .y = 0})
+#define m_V2i32_up ((m_V2i32){.x = 0, .y = 1})
+#define m_V2i32_right ((m_V2i32){.x = 1, .y = 0})
+#define m_V2i32_down ((m_V2i32){.x = 0, .y = -1})
+#define m_V2i32_limit_min ((m_V2i32){.x = i32_limit_min, .y = i32_limit_min})
+#define m_V2i32_limit_max ((m_V2i32){.x = i32_limit_max, .y = i32_limit_max})
 
 /* Construction */
-#define literal_m_V2i32_from(i32_x, i32_y) ((m_V2i32){ .x = (i32_x), .y = (i32_y) })
+#define lit_m_V2i32_from(i32_x, i32_y) ((m_V2i32){.x = (i32_x), .y = (i32_y)})
 $inline_always m_V2i32 m_V2i32_from(i32 x, i32 y);
 $inline_always m_V2i32 m_V2i32_from3(m_V3i32 v);
 $inline_always m_V2i32 m_V2i32_from4(m_V4i32 v);
@@ -529,33 +529,33 @@ $inline_always m_V2i32 m_V2i32_clamp(m_V2i32 v, m_V2i32 min, m_V2i32 max);
 $inline_always m_V2i32 m_V2i32_wrap(m_V2i32 v, m_V2i32 min, m_V2i32 max);
 
 /* Geometric Operations */
-$inline_always i32     m_V2i32_lenSq(m_V2i32 v);
-$inline_always i32     m_V2i32_distSq(m_V2i32 lhs, m_V2i32 rhs);
-$inline_always i32     m_V2i32_dot(m_V2i32 lhs, m_V2i32 rhs);
-$inline_always i32     m_V2i32_cross(m_V2i32 lhs, m_V2i32 rhs);
+$inline_always i32 m_V2i32_lenSq(m_V2i32 v);
+$inline_always i32 m_V2i32_distSq(m_V2i32 lhs, m_V2i32 rhs);
+$inline_always i32 m_V2i32_dot(m_V2i32 lhs, m_V2i32 rhs);
+$inline_always i32 m_V2i32_cross(m_V2i32 lhs, m_V2i32 rhs);
 $inline_always m_V2i32 m_V2i32_perp(m_V2i32 v);
 
 /* Vec3i functions */
 /* Constants */
-#define m_V3i32_zero      ((m_V3i32){ .x = 0, .y = 0, .z = 0 })
-#define m_V3i32_unit_x    ((m_V3i32){ .x = 1, .y = 0, .z = 0 })
-#define m_V3i32_unit_y    ((m_V3i32){ .x = 0, .y = 1, .z = 0 })
-#define m_V3i32_unit_z    ((m_V3i32){ .x = 0, .y = 0, .z = 1 })
-#define m_V3i32_unit_xy   ((m_V3i32){ .x = 1, .y = 1, .z = 0 })
-#define m_V3i32_unit_yz   ((m_V3i32){ .x = 0, .y = 1, .z = 1 })
-#define m_V3i32_unit_zx   ((m_V3i32){ .x = 1, .y = 0, .z = 1 })
-#define m_V3i32_one       ((m_V3i32){ .x = 1, .y = 1, .z = 1 })
-#define m_V3i32_left      ((m_V3i32){ .x = -1, .y = 0, .z = 0 })
-#define m_V3i32_up        ((m_V3i32){ .x = 0, .y = 1, .z = 0 })
-#define m_V3i32_right     ((m_V3i32){ .x = 1, .y = 0, .z = 0 })
-#define m_V3i32_down      ((m_V3i32){ .x = 0, .y = -1, .z = 0 })
-#define m_V3i32_forward   ((m_V3i32){ .x = 0, .y = 0, .z = 1 })
-#define m_V3i32_backward  ((m_V3i32){ .x = 0, .y = 0, .z = -1 })
-#define m_V3i32_limit_min ((m_V3i32){ .x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min })
-#define m_V3i32_limit_max ((m_V3i32){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max })
+#define m_V3i32_zero ((m_V3i32){.x = 0, .y = 0, .z = 0})
+#define m_V3i32_unit_x ((m_V3i32){.x = 1, .y = 0, .z = 0})
+#define m_V3i32_unit_y ((m_V3i32){.x = 0, .y = 1, .z = 0})
+#define m_V3i32_unit_z ((m_V3i32){.x = 0, .y = 0, .z = 1})
+#define m_V3i32_unit_xy ((m_V3i32){.x = 1, .y = 1, .z = 0})
+#define m_V3i32_unit_yz ((m_V3i32){.x = 0, .y = 1, .z = 1})
+#define m_V3i32_unit_zx ((m_V3i32){.x = 1, .y = 0, .z = 1})
+#define m_V3i32_one ((m_V3i32){.x = 1, .y = 1, .z = 1})
+#define m_V3i32_left ((m_V3i32){.x = -1, .y = 0, .z = 0})
+#define m_V3i32_up ((m_V3i32){.x = 0, .y = 1, .z = 0})
+#define m_V3i32_right ((m_V3i32){.x = 1, .y = 0, .z = 0})
+#define m_V3i32_down ((m_V3i32){.x = 0, .y = -1, .z = 0})
+#define m_V3i32_forward ((m_V3i32){.x = 0, .y = 0, .z = 1})
+#define m_V3i32_backward ((m_V3i32){.x = 0, .y = 0, .z = -1})
+#define m_V3i32_limit_min ((m_V3i32){.x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min})
+#define m_V3i32_limit_max ((m_V3i32){.x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max})
 
 /* Construction */
-#define literal_m_V3i32_from(i32_x, i32_y, i32_z) ((m_V3i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z) })
+#define lit_m_V3i32_from(i32_x, i32_y, i32_z) ((m_V3i32){.x = (i32_x), .y = (i32_y), .z = (i32_z)})
 $inline_always m_V3i32 m_V3i32_from(i32 x, i32 y, i32 z);
 $inline_always m_V3i32 m_V3i32_from2(m_V2i32 v);
 $inline_always m_V3i32 m_V3i32_from4(m_V4i32 v);
@@ -586,31 +586,31 @@ $inline_always m_V3i32 m_V3i32_clamp(m_V3i32 v, m_V3i32 min, m_V3i32 max);
 $inline_always m_V3i32 m_V3i32_wrap(m_V3i32 v, m_V3i32 min, m_V3i32 max);
 
 /* Geometric Operations */
-$inline_always i32     m_V3i32_lenSq(m_V3i32 v);
-$inline_always i32     m_V3i32_distSq(m_V3i32 lhs, m_V3i32 rhs);
-$inline_always i32     m_V3i32_dot(m_V3i32 lhs, m_V3i32 rhs);
+$inline_always i32 m_V3i32_lenSq(m_V3i32 v);
+$inline_always i32 m_V3i32_distSq(m_V3i32 lhs, m_V3i32 rhs);
+$inline_always i32 m_V3i32_dot(m_V3i32 lhs, m_V3i32 rhs);
 $inline_always m_V3i32 m_V3i32_cross(m_V3i32 lhs, m_V3i32 rhs);
 $inline_always m_V3i32 m_V3i32_perp(m_V3i32 v);
 
 /* Vec4i functions */
 /* Constants */
-#define m_V4i32_zero      ((m_V4i32){ .x = 0, .y = 0, .z = 0, .w = 0 })
-#define m_V4i32_unit_x    ((m_V4i32){ .x = 1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i32_unit_y    ((m_V4i32){ .x = 0, .y = 1, .z = 0, .w = 0 })
-#define m_V4i32_unit_z    ((m_V4i32){ .x = 0, .y = 0, .z = 1, .w = 0 })
-#define m_V4i32_unit_w    ((m_V4i32){ .x = 0, .y = 0, .z = 0, .w = 1 })
-#define m_V4i32_one       ((m_V4i32){ .x = 1, .y = 1, .z = 1, .w = 1 })
-#define m_V4i32_left      ((m_V4i32){ .x = -1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i32_up        ((m_V4i32){ .x = 0, .y = 1, .z = 0, .w = 0 })
-#define m_V4i32_right     ((m_V4i32){ .x = 1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i32_down      ((m_V4i32){ .x = 0, .y = -1, .z = 0, .w = 0 })
-#define m_V4i32_forward   ((m_V4i32){ .x = 0, .y = 0, .z = 1, .w = 0 })
-#define m_V4i32_backward  ((m_V4i32){ .x = 0, .y = 0, .z = -1, .w = 0 })
-#define m_V4i32_limit_min ((m_V4i32){ .x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min, .w = i32_limit_min })
-#define m_V4i32_limit_max ((m_V4i32){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max, .w = i32_limit_max })
+#define m_V4i32_zero ((m_V4i32){.x = 0, .y = 0, .z = 0, .w = 0})
+#define m_V4i32_unit_x ((m_V4i32){.x = 1, .y = 0, .z = 0, .w = 0})
+#define m_V4i32_unit_y ((m_V4i32){.x = 0, .y = 1, .z = 0, .w = 0})
+#define m_V4i32_unit_z ((m_V4i32){.x = 0, .y = 0, .z = 1, .w = 0})
+#define m_V4i32_unit_w ((m_V4i32){.x = 0, .y = 0, .z = 0, .w = 1})
+#define m_V4i32_one ((m_V4i32){.x = 1, .y = 1, .z = 1, .w = 1})
+#define m_V4i32_left ((m_V4i32){.x = -1, .y = 0, .z = 0, .w = 0})
+#define m_V4i32_up ((m_V4i32){.x = 0, .y = 1, .z = 0, .w = 0})
+#define m_V4i32_right ((m_V4i32){.x = 1, .y = 0, .z = 0, .w = 0})
+#define m_V4i32_down ((m_V4i32){.x = 0, .y = -1, .z = 0, .w = 0})
+#define m_V4i32_forward ((m_V4i32){.x = 0, .y = 0, .z = 1, .w = 0})
+#define m_V4i32_backward ((m_V4i32){.x = 0, .y = 0, .z = -1, .w = 0})
+#define m_V4i32_limit_min ((m_V4i32){.x = i32_limit_min, .y = i32_limit_min, .z = i32_limit_min, .w = i32_limit_min})
+#define m_V4i32_limit_max ((m_V4i32){.x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max, .w = i32_limit_max})
 
 /* Construction */
-#define literal_m_V4i32_from(i32_x, i32_y, i32_z, i32_w) ((m_V4i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z), .w = (i32_w) })
+#define lit_m_V4i32_from(i32_x, i32_y, i32_z, i32_w) ((m_V4i32){.x = (i32_x), .y = (i32_y), .z = (i32_z), .w = (i32_w)})
 $inline_always m_V4i32 m_V4i32_from(i32 x, i32 y, i32 z, i32 w);
 $inline_always m_V4i32 m_V4i32_from2(m_V2i32 v);
 $inline_always m_V4i32 m_V4i32_from3(m_V3i32 v);
@@ -649,19 +649,19 @@ $inline_always i32 m_V4i32_dot(m_V4i32 lhs, m_V4i32 rhs);
 
 /* Vec2l functions */
 /* Constants */
-#define m_V2i64_zero      ((m_V2i64){ .x = 0, .y = 0 })
-#define m_V2i64_unit_x    ((m_V2i64){ .x = 1, .y = 0 })
-#define m_V2i64_unit_y    ((m_V2i64){ .x = 0, .y = 1 })
-#define m_V2i64_one       ((m_V2i64){ .x = 1, .y = 1 })
-#define m_V2i64_left      ((m_V2i64){ .x = -1, .y = 0 })
-#define m_V2i64_up        ((m_V2i64){ .x = 0, .y = 1 })
-#define m_V2i64_right     ((m_V2i64){ .x = 1, .y = 0 })
-#define m_V2i64_down      ((m_V2i64){ .x = 0, .y = -1 })
-#define m_V2i64_limit_min ((m_V2i64){ .x = i64_limit_min, .y = i64_limit_min })
-#define m_V2i64_limit_max ((m_V2i64){ .x = i64_limit_max, .y = i64_limit_max })
+#define m_V2i64_zero ((m_V2i64){.x = 0, .y = 0})
+#define m_V2i64_unit_x ((m_V2i64){.x = 1, .y = 0})
+#define m_V2i64_unit_y ((m_V2i64){.x = 0, .y = 1})
+#define m_V2i64_one ((m_V2i64){.x = 1, .y = 1})
+#define m_V2i64_left ((m_V2i64){.x = -1, .y = 0})
+#define m_V2i64_up ((m_V2i64){.x = 0, .y = 1})
+#define m_V2i64_right ((m_V2i64){.x = 1, .y = 0})
+#define m_V2i64_down ((m_V2i64){.x = 0, .y = -1})
+#define m_V2i64_limit_min ((m_V2i64){.x = i64_limit_min, .y = i64_limit_min})
+#define m_V2i64_limit_max ((m_V2i64){.x = i64_limit_max, .y = i64_limit_max})
 
 /* Construction */
-#define literal_m_V2i64_from(i64_x, i64_y) ((m_V2i64){ .x = (i64_x), .y = (i64_y) })
+#define lit_m_V2i64_from(i64_x, i64_y) ((m_V2i64){.x = (i64_x), .y = (i64_y)})
 $inline_always m_V2i64 m_V2i64_from(i64 x, i64 y);
 $inline_always m_V2i64 m_V2i64_from3(m_V3i64 v);
 $inline_always m_V2i64 m_V2i64_from4(m_V4i64 v);
@@ -692,33 +692,33 @@ $inline_always m_V2i64 m_V2i64_clamp(m_V2i64 v, m_V2i64 min, m_V2i64 max);
 $inline_always m_V2i64 m_V2i64_wrap(m_V2i64 v, m_V2i64 min, m_V2i64 max);
 
 /* Geometric Operations */
-$inline_always i64     m_V2i64_lenSq(m_V2i64 v);
-$inline_always i64     m_V2i64_distSq(m_V2i64 lhs, m_V2i64 rhs);
-$inline_always i64     m_V2i64_dot(m_V2i64 lhs, m_V2i64 rhs);
-$inline_always i64     m_V2i64_cross(m_V2i64 lhs, m_V2i64 rhs);
+$inline_always i64 m_V2i64_lenSq(m_V2i64 v);
+$inline_always i64 m_V2i64_distSq(m_V2i64 lhs, m_V2i64 rhs);
+$inline_always i64 m_V2i64_dot(m_V2i64 lhs, m_V2i64 rhs);
+$inline_always i64 m_V2i64_cross(m_V2i64 lhs, m_V2i64 rhs);
 $inline_always m_V2i64 m_V2i64_perp(m_V2i64 v);
 
 /* Vec3l functions */
 /* Constants */
-#define m_V3i64_zero      ((m_V3i64){ .x = 0, .y = 0, .z = 0 })
-#define m_V3i64_unit_x    ((m_V3i64){ .x = 1, .y = 0, .z = 0 })
-#define m_V3i64_unit_y    ((m_V3i64){ .x = 0, .y = 1, .z = 0 })
-#define m_V3i64_unit_z    ((m_V3i64){ .x = 0, .y = 0, .z = 1 })
-#define m_V3i64_unit_xy   ((m_V3i64){ .x = 1, .y = 1, .z = 0 })
-#define m_V3i64_unit_yz   ((m_V3i64){ .x = 0, .y = 1, .z = 1 })
-#define m_V3i64_unit_zx   ((m_V3i64){ .x = 1, .y = 0, .z = 1 })
-#define m_V3i64_one       ((m_V3i64){ .x = 1, .y = 1, .z = 1 })
-#define m_V3i64_left      ((m_V3i64){ .x = -1, .y = 0, .z = 0 })
-#define m_V3i64_up        ((m_V3i64){ .x = 0, .y = 1, .z = 0 })
-#define m_V3i64_right     ((m_V3i64){ .x = 1, .y = 0, .z = 0 })
-#define m_V3i64_down      ((m_V3i64){ .x = 0, .y = -1, .z = 0 })
-#define m_V3i64_forward   ((m_V3i64){ .x = 0, .y = 0, .z = 1 })
-#define m_V3i64_backward  ((m_V3i64){ .x = 0, .y = 0, .z = -1 })
-#define m_V3i64_limit_min ((m_V3i64){ .x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min })
-#define m_V3i64_limit_max ((m_V3i64){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max })
+#define m_V3i64_zero ((m_V3i64){.x = 0, .y = 0, .z = 0})
+#define m_V3i64_unit_x ((m_V3i64){.x = 1, .y = 0, .z = 0})
+#define m_V3i64_unit_y ((m_V3i64){.x = 0, .y = 1, .z = 0})
+#define m_V3i64_unit_z ((m_V3i64){.x = 0, .y = 0, .z = 1})
+#define m_V3i64_unit_xy ((m_V3i64){.x = 1, .y = 1, .z = 0})
+#define m_V3i64_unit_yz ((m_V3i64){.x = 0, .y = 1, .z = 1})
+#define m_V3i64_unit_zx ((m_V3i64){.x = 1, .y = 0, .z = 1})
+#define m_V3i64_one ((m_V3i64){.x = 1, .y = 1, .z = 1})
+#define m_V3i64_left ((m_V3i64){.x = -1, .y = 0, .z = 0})
+#define m_V3i64_up ((m_V3i64){.x = 0, .y = 1, .z = 0})
+#define m_V3i64_right ((m_V3i64){.x = 1, .y = 0, .z = 0})
+#define m_V3i64_down ((m_V3i64){.x = 0, .y = -1, .z = 0})
+#define m_V3i64_forward ((m_V3i64){.x = 0, .y = 0, .z = 1})
+#define m_V3i64_backward ((m_V3i64){.x = 0, .y = 0, .z = -1})
+#define m_V3i64_limit_min ((m_V3i64){.x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min})
+#define m_V3i64_limit_max ((m_V3i64){.x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max})
 
 /* Construction */
-#define literal_m_V3i64_from(i64_x, i64_y, i64_z) ((m_V3i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z) })
+#define lit_m_V3i64_from(i64_x, i64_y, i64_z) ((m_V3i64){.x = (i64_x), .y = (i64_y), .z = (i64_z)})
 $inline_always m_V3i64 m_V3i64_from(i64 x, i64 y, i64 z);
 $inline_always m_V3i64 m_V3i64_from2(m_V2i64 v);
 $inline_always m_V3i64 m_V3i64_from4(m_V4i64 v);
@@ -749,31 +749,31 @@ $inline_always m_V3i64 m_V3i64_clamp(m_V3i64 v, m_V3i64 min, m_V3i64 max);
 $inline_always m_V3i64 m_V3i64_wrap(m_V3i64 v, m_V3i64 min, m_V3i64 max);
 
 /* Geometric Operations */
-$inline_always i64     m_V3i64_lenSq(m_V3i64 v);
-$inline_always i64     m_V3i64_distSq(m_V3i64 lhs, m_V3i64 rhs);
-$inline_always i64     m_V3i64_dot(m_V3i64 lhs, m_V3i64 rhs);
+$inline_always i64 m_V3i64_lenSq(m_V3i64 v);
+$inline_always i64 m_V3i64_distSq(m_V3i64 lhs, m_V3i64 rhs);
+$inline_always i64 m_V3i64_dot(m_V3i64 lhs, m_V3i64 rhs);
 $inline_always m_V3i64 m_V3i64_cross(m_V3i64 lhs, m_V3i64 rhs);
 $inline_always m_V3i64 m_V3i64_perp(m_V3i64 v);
 
 /* Vec4l functions */
 /* Constants */
-#define m_V4i64_zero      ((m_V4i64){ .x = 0, .y = 0, .z = 0, .w = 0 })
-#define m_V4i64_unit_x    ((m_V4i64){ .x = 1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i64_unit_y    ((m_V4i64){ .x = 0, .y = 1, .z = 0, .w = 0 })
-#define m_V4i64_unit_z    ((m_V4i64){ .x = 0, .y = 0, .z = 1, .w = 0 })
-#define m_V4i64_unit_w    ((m_V4i64){ .x = 0, .y = 0, .z = 0, .w = 1 })
-#define m_V4i64_one       ((m_V4i64){ .x = 1, .y = 1, .z = 1, .w = 1 })
-#define m_V4i64_left      ((m_V4i64){ .x = -1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i64_up        ((m_V4i64){ .x = 0, .y = 1, .z = 0, .w = 0 })
-#define m_V4i64_right     ((m_V4i64){ .x = 1, .y = 0, .z = 0, .w = 0 })
-#define m_V4i64_down      ((m_V4i64){ .x = 0, .y = -1, .z = 0, .w = 0 })
-#define m_V4i64_forward   ((m_V4i64){ .x = 0, .y = 0, .z = 1, .w = 0 })
-#define m_V4i64_backward  ((m_V4i64){ .x = 0, .y = 0, .z = -1, .w = 0 })
-#define m_V4i64_limit_min ((m_V4i64){ .x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min, .w = i64_limit_min })
-#define m_V4i64_limit_max ((m_V4i64){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max, .w = i64_limit_max })
+#define m_V4i64_zero ((m_V4i64){.x = 0, .y = 0, .z = 0, .w = 0})
+#define m_V4i64_unit_x ((m_V4i64){.x = 1, .y = 0, .z = 0, .w = 0})
+#define m_V4i64_unit_y ((m_V4i64){.x = 0, .y = 1, .z = 0, .w = 0})
+#define m_V4i64_unit_z ((m_V4i64){.x = 0, .y = 0, .z = 1, .w = 0})
+#define m_V4i64_unit_w ((m_V4i64){.x = 0, .y = 0, .z = 0, .w = 1})
+#define m_V4i64_one ((m_V4i64){.x = 1, .y = 1, .z = 1, .w = 1})
+#define m_V4i64_left ((m_V4i64){.x = -1, .y = 0, .z = 0, .w = 0})
+#define m_V4i64_up ((m_V4i64){.x = 0, .y = 1, .z = 0, .w = 0})
+#define m_V4i64_right ((m_V4i64){.x = 1, .y = 0, .z = 0, .w = 0})
+#define m_V4i64_down ((m_V4i64){.x = 0, .y = -1, .z = 0, .w = 0})
+#define m_V4i64_forward ((m_V4i64){.x = 0, .y = 0, .z = 1, .w = 0})
+#define m_V4i64_backward ((m_V4i64){.x = 0, .y = 0, .z = -1, .w = 0})
+#define m_V4i64_limit_min ((m_V4i64){.x = i64_limit_min, .y = i64_limit_min, .z = i64_limit_min, .w = i64_limit_min})
+#define m_V4i64_limit_max ((m_V4i64){.x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max, .w = i64_limit_max})
 
 /* Construction */
-#define literal_m_V4i64_from(i64_x, i64_y, i64_z, i64_w) ((m_V4i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z), .w = (i64_w) })
+#define lit_m_V4i64_from(i64_x, i64_y, i64_z, i64_w) ((m_V4i64){.x = (i64_x), .y = (i64_y), .z = (i64_z), .w = (i64_w)})
 $inline_always m_V4i64 m_V4i64_from(i64 x, i64 y, i64 z, i64 w);
 $inline_always m_V4i64 m_V4i64_from2(m_V2i64 v);
 $inline_always m_V4i64 m_V4i64_from3(m_V3i64 v);
@@ -813,7 +813,7 @@ $inline_always i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs);
 /* Vec2f functions */
 /* Construction */
 $inline_always m_V2f32 m_V2f32_from(f32 x, f32 y) {
-    return (m_V2f32){ .x = x, .y = y };
+    return (m_V2f32){.x = x, .y = y};
 }
 $inline_always m_V2f32 m_V2f32_from3(m_V3f32 v) {
     return m_V2f32_from(v.x, v.y);
@@ -994,7 +994,7 @@ $inline_always m_V2f32 m_V2f32_perp(m_V2f32 v) {
 /* Vec3f functions */
 /* Construction */
 $inline_always m_V3f32 m_V3f32_from(f32 x, f32 y, f32 z) {
-    return (m_V3f32){ .x = x, .y = y, .z = z };
+    return (m_V3f32){.x = x, .y = y, .z = z};
 }
 $inline_always m_V3f32 m_V3f32_from2(m_V2f32 v) {
     return m_V3f32_from(v.x, v.y, 0.0f);
@@ -1122,8 +1122,8 @@ $inline_always m_V3f32 m_V3f32_reflect(m_V3f32 v, m_V3f32 normal) {
 }
 $inline_always m_V3f32 m_V3f32_rotate(const m_V3f32 v, const m_V3f32 axis, const f32 angle) {
     const m_V3f32 normalized_axis = m_V3f32_norm(axis);
-    const m_V2f32 r               = m_V2f32_sincos(angle);
-    const f32     one_sub_cos     = 1.0f - r.x;
+    const m_V2f32 r = m_V2f32_sincos(angle);
+    const f32 one_sub_cos = 1.0f - r.x;
     return m_V3f32_add(
         m_V3f32_add(
             m_V3f32_scale(v, r.x),
@@ -1144,7 +1144,7 @@ $inline_always m_V3f32 m_V3f32_perp(const m_V3f32 v) {
 /* Vec4f functions */
 /* Construction */
 $inline_always m_V4f32 m_V4f32_from(f32 x, f32 y, f32 z, f32 w) {
-    return (m_V4f32){ .x = x, .y = y, .z = z, .w = w };
+    return (m_V4f32){.x = x, .y = y, .z = z, .w = w};
 }
 $inline_always m_V4f32 m_V4f32_fill(f32 scalar) {
     return m_V4f32_from(scalar, scalar, scalar, scalar);
@@ -1275,7 +1275,7 @@ $inline_always m_V4f32 m_V4f32_reflect(m_V4f32 v, m_V4f32 normal) {
 /* Vec2d functions */
 /* Construction */
 $inline_always m_V2f64 m_V2f64_from(f64 x, f64 y) {
-    return (m_V2f64){ .x = x, .y = y };
+    return (m_V2f64){.x = x, .y = y};
 }
 $inline_always m_V2f64 m_V2f64_from3(m_V3f64 v) {
     return m_V2f64_from(v.x, v.y);
@@ -1449,7 +1449,7 @@ $inline_always m_V2f64 m_V2f64_perp(m_V2f64 v) {
 /* Vec3d functions */
 /* Construction */
 $inline_always m_V3f64 m_V3f64_from(f64 x, f64 y, f64 z) {
-    return (m_V3f64){ .x = x, .y = y, .z = z };
+    return (m_V3f64){.x = x, .y = y, .z = z};
 }
 $inline_always m_V3f64 m_V3f64_from2(m_V2f64 v) {
     return m_V3f64_from(v.x, v.y, 0.0);
@@ -1571,8 +1571,8 @@ $inline_always m_V3f64 m_V3f64_reflect(m_V3f64 v, m_V3f64 normal) {
 }
 $inline_always m_V3f64 m_V3f64_rotate(m_V3f64 v, m_V3f64 axis, f64 angle) {
     const m_V3f64 normalized_axis = m_V3f64_norm(axis);
-    const m_V2f64 r               = m_V2f64_sincos(angle);
-    const f64     one_sub_cos     = 1.0 - r.x;
+    const m_V2f64 r = m_V2f64_sincos(angle);
+    const f64 one_sub_cos = 1.0 - r.x;
     return m_V3f64_add(
         m_V3f64_add(
             m_V3f64_scale(v, r.x),
@@ -1593,7 +1593,7 @@ $inline_always m_V3f64 m_V3f64_perp(m_V3f64 v) {
 /* Vec4d functions */
 /* Construction */
 $inline_always m_V4f64 m_V4f64_from(f64 x, f64 y, f64 z, f64 w) {
-    return (m_V4f64){ .x = x, .y = y, .z = z, .w = w };
+    return (m_V4f64){.x = x, .y = y, .z = z, .w = w};
 }
 $inline_always m_V4f64 m_V4f64_fill(f64 scalar) {
     return m_V4f64_from(scalar, scalar, scalar, scalar);
@@ -1714,7 +1714,7 @@ $inline_always m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal) {
 /* Vec2i functions */
 /* Construction */
 $inline_always m_V2i32 m_V2i32_from(i32 x, i32 y) {
-    return (m_V2i32){ .x = x, .y = y };
+    return (m_V2i32){.x = x, .y = y};
 }
 $inline_always m_V2i32 m_V2i32_from3(m_V3i32 v) {
     return m_V2i32_from(v.x, v.y);
@@ -1799,7 +1799,7 @@ $inline_always m_V2i32 m_V2i32_perp(m_V2i32 v) {
 /* Vec3i functions */
 /* Construction */
 $inline_always m_V3i32 m_V3i32_from(i32 x, i32 y, i32 z) {
-    return (m_V3i32){ .x = x, .y = y, .z = z };
+    return (m_V3i32){.x = x, .y = y, .z = z};
 }
 $inline_always m_V3i32 m_V3i32_from2(m_V2i32 v) {
     return m_V3i32_from(v.x, v.y, 0);
@@ -1903,7 +1903,7 @@ $inline_always m_V3i32 m_V3i32_perp(m_V3i32 v) {
 /* Vec4i functions */
 /* Construction */
 $inline_always m_V4i32 m_V4i32_from(i32 x, i32 y, i32 z, i32 w) {
-    return (m_V4i32){ .x = x, .y = y, .z = z, .w = w };
+    return (m_V4i32){.x = x, .y = y, .z = z, .w = w};
 }
 $inline_always m_V4i32 m_V4i32_from2(m_V2i32 v) {
     return m_V4i32_from(v.x, v.y, 0, 0);
@@ -1999,7 +1999,7 @@ $inline_always i32 m_V4i32_dot(m_V4i32 lhs, m_V4i32 rhs) {
 /* Vec2l functions */
 /* Construction */
 $inline_always m_V2i64 m_V2i64_from(i64 x, i64 y) {
-    return (m_V2i64){ .x = x, .y = y };
+    return (m_V2i64){.x = x, .y = y};
 }
 $inline_always m_V2i64 m_V2i64_from3(m_V3i64 v) {
     return m_V2i64_from(v.x, v.y);
@@ -2093,7 +2093,7 @@ $inline_always m_V2i64 m_V2i64_perp(m_V2i64 v) {
 /* Vec3l functions */
 /* Construction */
 $inline_always m_V3i64 m_V3i64_from(i64 x, i64 y, i64 z) {
-    return (m_V3i64){ .x = x, .y = y, .z = z };
+    return (m_V3i64){.x = x, .y = y, .z = z};
 }
 $inline_always m_V3i64 m_V3i64_from2(m_V2i64 v) {
     return m_V3i64_from(v.x, v.y, 0);
@@ -2197,7 +2197,7 @@ $inline_always m_V3i64 m_V3i64_perp(m_V3i64 v) {
 /* Vec4l functions */
 /* Construction */
 $inline_always m_V4i64 m_V4i64_from(i64 x, i64 y, i64 z, i64 w) {
-    return (m_V4i64){ .x = x, .y = y, .z = z, .w = w };
+    return (m_V4i64){.x = x, .y = y, .z = z, .w = w};
 }
 $inline_always m_V4i64 m_V4i64_from2(m_V2i64 v) {
     return m_V4i64_from(v.x, v.y, 0, 0);

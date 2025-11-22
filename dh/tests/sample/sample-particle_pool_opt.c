@@ -17,7 +17,7 @@ typedef struct mp_LoopData {
     var_(params, u_V$raw);
 } mp_LoopData;
 
-$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args) $scope) {
+$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope) {
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
@@ -113,7 +113,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
     return_({});
 } $unscoped_(Thrd_fn);
 
-$must_check
+$attr($must_check)
 $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     let_(pool, mp_ThrdPool*) = u_castP$((mp_ThrdPool*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
     asg_lit((pool)($init((LitType){
@@ -178,22 +178,21 @@ $static fn_((mp_ThrdPool_submit(mp_ThrdPool* self, R range, mp_ThrdPool_TaskFn f
 }
 
 $static fn_((mp_ThrdPool_submitBatch(mp_ThrdPool* self, mp_ThrdPool_Task* tasks, usize task_count))(void)) {
-    Thrd_Mtx_lock(&self->mutex);  // Lock ONCE for all tasks
+    Thrd_Mtx_lock(&self->mutex); // Lock ONCE for all tasks
     for_(($r(0, task_count))(i) {
         let task = tasks + i;
-        let head = atom_V_load(&self->head, atom_MemOrd_monotonic);  // relaxed inside lock
+        let head = atom_V_load(&self->head, atom_MemOrd_monotonic); // relaxed inside lock
         *S_at((self->tasks)[head % mp_max_task_count]) = *task;
         atom_V_store(&self->head, head + 1, atom_MemOrd_monotonic);
     });
     atom_V_fetchAdd(&self->count, task_count, atom_MemOrd_release);
-    Thrd_Cond_broadcast(&self->cond_has_task);  // Wake all threads at once
+    Thrd_Cond_broadcast(&self->cond_has_task); // Wake all threads at once
     Thrd_Mtx_unlock(&self->mutex);
 }
 
 $static fn_((mp_ThrdPool_waitAll(mp_ThrdPool* self))(void)) {
     Thrd_Mtx_lock(&self->mutex);
-    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 ||
-           atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
+    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 || atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
         Thrd_Cond_wait(&self->cond_all_done, &self->mutex);
     }
     Thrd_Mtx_unlock(&self->mutex);
@@ -211,7 +210,7 @@ $static fn_((mp_parallel_for_pooled(mp_ThrdPool* pool, R range, mp_ThrdPool_Task
             asg_lit((A_at((task_buf)[task_count++]))({
                 .range = $r(begin, end),
                 .workerFn = fn,
-                .params = params
+                .params = params,
             }));
         }
     });
@@ -261,22 +260,22 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 #include "dh/math/vec.h"
 
 #define State_particles_log2 (20ull)
-#define State_particles      (1ull << State_particles_log2) // 2^20 = 1,048,576
-#define State_cell_size              (20.0)   // Was 10.0
-#define State_grid_width             (100ull)  // Was 200
-#define State_grid_height            (100ull)  // Was 200
-#define State_max_particles_per_cell (16ull)   // Was 32
+#define State_particles (1ull << State_particles_log2) // 2^20 = 1,048,576
+#define State_cell_size (20.0)                         // Was 10.0
+#define State_grid_width (100ull)                      // Was 200
+#define State_grid_height (100ull)                     // Was 200
+#define State_max_particles_per_cell (16ull)           // Was 32
 
-#define State_boundary_radius    (500.0)
-#define State_gravity            (9.81)
-#define State_damping            (0.98)
-#define State_target_fps         (30.0)
-#define State_delta_time         (1.0 / 30.0)
+#define State_boundary_radius (500.0)
+#define State_gravity (9.81)
+#define State_damping (0.98)
+#define State_target_fps (30.0)
+#define State_delta_time (1.0 / 30.0)
 
 typedef struct Particle {
     m_V2f64 pos;
     m_V2f64 vel;
-    f64     mass;
+    f64 mass;
 } Particle;
 T_use_S$(Particle);
 
@@ -316,7 +315,7 @@ $static fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void));
 $static fn_((State_hashPosition(m_V2f64 pos))(usize));
 $static fn_((State_buildSpatialGrid(State* self))(void)) {
     State_clearGrid(self->pool, self->grid);
-    for_(($r(0, State_particles),$s(self->particles))(i, particle) {
+    for_(($r(0, State_particles), $s(self->particles))(i, particle) {
         let cell_idx = State_hashPosition(particle->pos);
         let pos = atom_fetchAdd(&S_at((self->grid)[cell_idx])->count, 1, atom_MemOrd_release);
         if (pos < State_max_particles_per_cell) {
@@ -408,11 +407,14 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("Particles: 2^{:uz} = {:uz}"), State_particles_log2, State_particles);
     io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
     let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
-    let cpu_count = prim_clamp(expr_(usize $scope) if (1 < args.len) {
-        $break_(catch_((fmt_parse$usize(*S_at((args)[1]), 10))($ignore, usize_limit_max)));
-    } else {
-        $break_(usize_limit_max);
-    } $unscoped_(expr), 1, max_cpu_count);
+    let cpu_count = prim_clamp(
+        expr_(usize $scope)(if (1 < args.len) {
+            $break_(catch_((fmt_parse$usize(*S_at((args)[1]), 10))($ignore, usize_limit_max)));
+        }) expr_(else)({
+            $break_(usize_limit_max);
+        }) $unscoped_(expr),
+        1, max_cpu_count
+    );
     var gpa = heap_Page_allocator(&(heap_Page){});
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
     defer_(mp_ThrdPool_fini(pool, gpa));
@@ -426,16 +428,16 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("Memory allocated: {:.2fl} MB"), as$(f64)(State_particles * typeInfo$(Particle).size) / (1024.0 * 1024.0));
 
     var state = State_init(pool, particles, grid);
-    let frame_amount = expr_(usize $scope) if (2 < args.len) {
+    let frame_amount = expr_(usize $scope)(if (2 < args.len) {
         $break_(catch_((fmt_parse$usize(*S_at((args)[2]), 10))($ignore, 1000)));
-    } else {
+    }) expr_(else)({
         $break_(1000);
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
     io_stream_println(u8_l("Simulating {:uz} frames..."), frame_amount);
     State_simulate(&state, pool, frame_amount);
 
     io_stream_println(u8_l("\nSample particles:"));
-    for_(($r(0, 3), $s(particles))(i, particle){
+    for_(($r(0, 3), $s(particles))(i, particle) {
         io_stream_println(
             u8_l("- Particle {:uz}: pos({:.2fl}, {:.2fl}) vel({:.2fl}, {:.2fl})"),
             i, particle->pos.x, particle->pos.y, particle->vel.x, particle->vel.y
@@ -504,11 +506,14 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_initParticles(mp_ThrdPool* pool, S$Particle particles, m_V2f64 center, m_V2f64 radius_a_b))(void)) {
-    mp_parallel_for_pooled(pool, $r(0, State_particles), State_initParticles_worker, u_anyV(lit$((State_InitParticlesArgs){
-        .particles = particles,
-        .center = center,
-        .radius_a_b = radius_a_b,
-    })));
+    mp_parallel_for_pooled(
+        pool, $r(0, State_particles), State_initParticles_worker,
+        u_anyV(lit$((State_InitParticlesArgs){
+            .particles = particles,
+            .center = center,
+            .radius_a_b = radius_a_b,
+        }))
+    );
 }
 
 typedef struct State_ClearGridArgs {
@@ -524,16 +529,19 @@ fn_((State_clearGrid_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
-    mp_parallel_for_pooled(pool, $r(0, State_grid_width * State_grid_height), State_clearGrid_worker, u_anyV(lit$((State_ClearGridArgs){
-        .grid = grid,
-    })));
+    mp_parallel_for_pooled(
+        pool, $r(0, State_grid_width * State_grid_height), State_clearGrid_worker,
+        u_anyV(lit$((State_ClearGridArgs){
+            .grid = grid,
+        }))
+    );
 }
 
 fn_((State_hashPosition(m_V2f64 pos))(usize)) {
     let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
     let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
-    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width) - 1));
-    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height) - 1));
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width)-1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height)-1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -548,9 +556,9 @@ fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
     for_(($s(targets))(particle) {
         var self_i = *particle;
         let dp = m_V2f64_neg(self_i.pos);
-        let d_sq = m_V2f64_lenSq(dp);   // ← No sqrt
-        if (d_sq > 0.01f) {  // 0.1*0.1
-            let inv_d = 1.0 / flt_sqrt(d_sq);  // Single sqrt + division
+        let d_sq = m_V2f64_lenSq(dp);         // ← No sqrt
+        if (d_sq > 0.01f) {                   // 0.1*0.1
+            let inv_d = 1.0 / flt_sqrt(d_sq); // Single sqrt + division
             let force = State_gravity / d_sq;
             m_V2f64_addAsg(&self_i.vel, m_V2f64_scale(dp, inv_d * force * State_delta_time));
         }
@@ -560,9 +568,12 @@ fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_applyGravity(State* self))(void)) {
-    mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_applyGravity_worker, u_anyV(lit$((State_ApplyGravityArgs){
-        .particles = self->particles,
-    })));
+    mp_parallel_for_pooled(
+        self->pool, $r(0, State_particles), State_applyGravity_worker,
+        u_anyV(lit$((State_ApplyGravityArgs){
+            .particles = self->particles,
+        }))
+    );
 }
 
 typedef struct State_HandleCollisionsArgs {
@@ -583,20 +594,19 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
         let gx = cell_idx % State_grid_width;
         let gy = cell_idx / State_grid_width;
 
-        for_(($r(0, 3))(dy_offset) {  // 0, 1, 2
-            for_(($r(0, 3))(dx_offset) {  // 0, 1, 2
-                let dx = as$(isize)(dx_offset) - 1;  // Convert to -1, 0, 1
-                let dy = as$(isize)(dy_offset) - 1;
+        for_(($r(0, 3))(dy_offset) {          // 0, 1, 2
+            for_(($r(0, 3))(dx_offset) {      // 0, 1, 2
+                let dx = as$(isize)(dx_offset)-1; // Convert to -1, 0, 1
+                let dy = as$(isize)(dy_offset)-1;
 
                 let nx = as$(isize)(gx) + dx;
                 let ny = as$(isize)(gy) + dy;
 
-                if ((nx < 0 || State_grid_width <= as$(usize)(nx)) ||
-                    (ny < 0 || State_grid_height <= as$(usize)(ny))) {
+                if ((nx < 0 || State_grid_width <= as$(usize)(nx)) || (ny < 0 || State_grid_height <= as$(usize)(ny))) {
                     continue;
                 }
 
-                let neighbor_idx = as$(usize)(ny) * State_grid_width + as$(usize)(nx);
+                let neighbor_idx = as$(usize)(ny)*State_grid_width + as$(usize)(nx);
                 let neighbor = S_at((grid)[neighbor_idx]);
                 let count = atom_load(&neighbor->count, atom_MemOrd_acquire);
 
@@ -611,10 +621,10 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
                     let min_d = collision_radius * 2.0f;
                     let min_d_sq = min_d * min_d;
                     if (d_sq < min_d_sq && 0.001f < d_sq) {
-                        let inv_d = 1.0 / flt_sqrt(d_sq);  // Or use fast_inv_sqrt if available
+                        let inv_d = 1.0 / flt_sqrt(d_sq); // Or use fast_inv_sqrt if available
                         let d = d_sq * inv_d;
                         let overlap = min_d - d;
-                        let n_norm = m_V2f64_scale(dp_col, inv_d);  // Normalize using inv_d
+                        let n_norm = m_V2f64_scale(dp_col, inv_d); // Normalize using inv_d
                         let separation = overlap * 0.5f;
                         m_V2f64_subAsg(&self->pos, m_V2f64_scale(n_norm, separation));
                     }
@@ -626,10 +636,13 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_handleCollisions(State* self))(void)) {
-    mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_handleCollisions_worker, u_anyV(lit$((State_HandleCollisionsArgs){
-        .particles = self->particles,
-        .grid = self->grid,
-    })));
+    mp_parallel_for_pooled(
+        self->pool, $r(0, State_particles), State_handleCollisions_worker,
+        u_anyV(lit$((State_HandleCollisionsArgs){
+            .particles = self->particles,
+            .grid = self->grid,
+        }))
+    );
 }
 
 typedef struct State_UpdatePositionsArgs {
@@ -656,7 +669,10 @@ fn_((State_updatePositions_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_updatePositions(State* self))(void)) {
-    mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_updatePositions_worker, u_anyV(lit$((State_UpdatePositionsArgs){
-        .particles = self->particles,
-    })));
+    mp_parallel_for_pooled(
+        self->pool, $r(0, State_particles), State_updatePositions_worker,
+        u_anyV(lit$((State_UpdatePositionsArgs){
+            .particles = self->particles,
+        }))
+    );
 }

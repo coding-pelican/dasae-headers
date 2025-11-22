@@ -1,9 +1,8 @@
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
-#include "dh/Err.h"
-#include "dh/Str.h"
 #include "dh/time/common.h"
 
+#if UNUSED_CODE
 static fn_((io_writeFmt(S$u8 stream, S_const$u8 format, ...))(E$usize)) $must_check;
 static fn_((io_writeFmt(S$u8 stream, S_const$u8 format, ...))(E$usize) $guard) {
     va_list args = {};
@@ -120,121 +119,62 @@ static fn_((time_Instant_fmt(time_Instant self, S$u8 buf))(E$S_const$u8) $scope)
     }
     return_ok(Str_slice(buf.as_const, 0, written));
 } $unscoped_(fn);
+#endif /* UNUSED_CODE */
 
-#include "dh/ArrList.h"
+#include "dh/ArrPQue.h"
 #include "dh/sort.h"
-
-// Generic PQue for fixed-size arrays using ArrList and sort utilities
-typedef struct PQue {
-    ArrList list;
-    sort_CmpFn cmpFn;
-} PQue;
-use_E$(PQue);
-#define PQue$(T) pp_join($, PQue, T)
-#define PQue$$(T) \
-    union { \
-        PQue base[1]; \
-        struct { \
-            ArrList$$(T) list; \
-            sort_CmpFn cmpFn; \
-        }; \
-    }
-
-#define use_PQue$(T) \
-    $maybe_unused typedef union PQue$(T) PQue$(T); \
-    union PQue$(T) { \
-        PQue base[1]; \
-        struct { \
-            ArrList$(T) list; \
-            sort_CmpFn cmpFn; \
-        }; \
-    }
-
-fn_((PQue_init(TypeInfo type, mem_Allocator allocator, sort_CmpFn cmpFn))(PQue)) {
-    return (PQue){
-        .list = ArrList_init(type, allocator),
-        .cmpFn = cmpFn
-    };
-}
-
-$must_check
-fn_((PQue_initCap(TypeInfo type, mem_Allocator allocator, usize cap, sort_CmpFn cmpFn))(E$PQue) $scope) {
-    return_ok({
-        .list = try_(ArrList_initCap(type, allocator, cap)),
-        .cmpFn = cmpFn,
-    });
-} $unscoped_(fn);
-
-fn_((PQue_fini(PQue* self))(void)) {
-    ArrList_fini(&self->list);
-}
-
-$must_check
-fn_((PQue_enq(PQue* self, meta_P$raw item))(E$void) $scope) {
-    try_(ArrList_append(&self->list, item));
-    try_(sort_stableSort(self->list.allocator, self->list.items, self->cmpFn));
-    return_ok({});
-} $unscoped_(fn);
-
-fn_((PQue_deqOrNull(PQue* self))(O$meta_P$raw) $scope) {
-    if (self->list.items.len == 0) { return_none(); }
-    return_(ArrList_shiftOrNull(&self->list));
-} $unscoped_(fn);
-
-
 
 #include "draft-async_ex.h"
 #include "dh/time.h"
-#include "dh/io/common.h"
-#include "dh/io/Writer.h"
-#include "dh/fs/File.h"
-
-#include "dh/err_res.h"
+#include "dh/io/stream.h"
 
 // Delay type for scheduling tasks
 typedef struct Task {
     var_(frame, Co_Ctx*);
     var_(expires, time_Instant);
 } Task;
-use_P$(Task);
-use_S$(Task);
-use_O$(Task);
-use_ArrList$(Task);
-use_PQue$(Task);
-
-// Globals (in Zig these are file-scope vars)
-static PQue$Task timer_queue = { 0 };
+T_use$((Task)(P, S, O));
+T_use$((Task)(
+    ArrPQue,
+    ArrPQue_init,
+    ArrPQue_fini,
+    ArrPQue_enqueFixed,
+    ArrPQue_deque,
+));
+static ArrPQue$Task timer_queue = { 0 };
 
 // Suspend for time in milliseconds
-use_O$(Co_Ctx);
+T_use_P$(Co_Ctx);
+T_use_O$(P$Co_Ctx);
 use_Co_Ctx$(Void);
 async_fn_(waitForTime, (var_(caller, O$P$Co_Ctx); var_(name, S_const$u8); var_(ms, u64);), Void);
 async_fn_scope(waitForTime, {}) {
     let_ignore = locals;
-    let stream = fs_File_writer(io_getStdOut());
-    catch_((io_Writer_print(
-        stream, u8_l("debug: [waitForTime({:zu})] starting <- [{:s}({:zx})]\n"),
-        intFromPtr(ctx->base), args->name, intFromPtr(orelse(args->caller, ctx->anyraw))
-    ))($ignore, return_void()));
-    catch_((io_Writer_print(
-        stream, u8_l("debug: [waitForTime({:zu})] starting <- [{:s}({:zx})]\n"),
-        intFromPtr(ctx->base), args->name, intFromPtr(orelse(args->caller, ctx->anyraw))
-    ))($ignore, claim_unreachable));
+    io_stream_println(
+        u8_l("debug: [waitForTime({:xz})] starting <- [{:s}({:xz})]"),
+        intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+    );
     suspend_({
         static let addDur = time_Instant_addDuration;
         static let now = time_Instant_now;
         static let fromMs = time_Duration_fromMillis;
 
-        catch_((PQue_enq(
-            timer_queue.base,
-            meta_create$((Task)({
+        catch_((ArrPQue_enqueFixed$Task(
+            &timer_queue,
+            lit$((Task){
                 .frame = orelse_((args->caller)(ctx->anyraw)),
                 .expires = addDur(now(), fromMs(args->ms)),
-            }))
+            })
         ))($ignore, claim_unreachable));
-        printf("debug: [waitForTime(%zx)] suspending -> [%*s(%zx)]\n", as$(u64)(ctx->base), as$(i32)(args->name.len), args->name.ptr, as$(u64)(orelse(args->caller, ctx->anyraw)));
+        io_stream_println(
+            u8_l("debug: [waitForTime({:xz})] suspending -> [{:s}({:xz})]"),
+            intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+        );
     });
-    printf("debug: [waitForTime(%zx)] returning -> [%*s(%zx)]\n", as$(u64)(ctx->base), as$(i32)(args->name.len), args->name.ptr, as$(u64)(orelse(args->caller, ctx->anyraw)));
+    io_stream_println(
+        u8_l("debug: [waitForTime({:xz})] returning -> [{:s}({:xz})]"),
+        intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+    );
     areturn_({});
 } $unscoped_(async_fn);
 
@@ -245,61 +185,65 @@ async_fn_scope(waitUntilAndPrint, {
     Co_CtxFn$(waitForTime) wait_ctx;
 }) {
     locals->start = time_Instant_now();
-    printf("debug: [%*s(%zx)] starting <- [asyncMain]\n", as$(i32)(args->name.len), args->name.ptr, as$(u64)(ctx->base));
+    io_stream_println(
+        u8_l("debug: [{:s}({:xz})] starting <- [asyncMain]"),
+        args->name, intFromPtr(ctx->base)
+    );
 
-    // locals->wait_ctx = *async_ctx((waitForTime)(orelse(args->caller, ctx->anyraw), args->name, args->time1));
+    // locals->wait_ctx = *async_ctx((waitForTime)(orelse_(args->caller, ctx->anyraw), args->name, args->time1));
     // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
-    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32)(args->name.len), args->name.ptr, as$(u64)(ctx->base)));
+    //     suspend_(io_stream_println(u8_l("debug: [{:s}({:xz})] suspending -> [asyncMain]\n"), args->name, intFromPtr(ctx->base)));
     // }
-    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
+    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse_((args->caller)(ctx->anyraw))), args->name, args->time1));
     debug_assert(locals->wait_ctx.state == Co_State_ready);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32)(args->name.len), args->name.ptr, as$(u64)(ctx->base), args->time1);
+    io_stream_println(
+        u8_l("debug: [{:s}({:xz})] suspending until {:uz} ms"),
+        args->name, intFromPtr(ctx->base), args->time1
+    );
     {
         static let asSecs = time_Duration_asSecs$f64;
         static let durSince = time_Instant_durationSince;
         static let now = time_Instant_now;
-        printf(
-            "[%*s] it is now %zu ms since start!\n",
-            as$(i32)(args->name.len),
-            args->name.ptr,
-            as$(u64)(asSecs(durSince(now(), locals->start) * 1000.0))
+        io_stream_println(
+            u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
+            args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
-    // locals->wait_ctx = *async_ctx((waitForTime)(orelse(args->caller, ctx->anyraw), args->name, args->time2));
+    // locals->wait_ctx = *async_ctx((waitForTime)(orelse_(args->caller, ctx->anyraw), args->name, args->time2));
     // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
-    //     suspend_(printf("debug: [%*s(%zx)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base)));
+    //     suspend_(printf("debug: [%*s(%xz)] suspending -> [asyncMain]\n", as$(i32, args->name.len), args->name.ptr, as$(u64, ctx->base)));
     // }
-    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse(args->caller, ctx->anyraw)), args->name, args->time1));
+    callAsync(&locals->wait_ctx, (waitForTime)(some(orelse_((args->caller)(ctx->anyraw))), args->name, args->time1));
     debug_assert(locals->wait_ctx.state == Co_State_ready);
-    printf("debug: [%*s(%zx)] suspending until %zu ms\n", as$(i32)(args->name.len), args->name.ptr, as$(u64)(ctx->base), args->time2);
+    io_stream_println(
+        u8_l("debug: [{:s}({:xz})] suspending until {:uz} ms"),
+        args->name, intFromPtr(ctx->base), args->time2
+    );
     {
         static let asSecs = time_Duration_asSecs$f64;
         static let durSince = time_Instant_durationSince;
         static let now = time_Instant_now;
-        printf(
-            "[%*s] it is now %zu ms since start!\n",
-            as$(i32)(args->name.len),
-            args->name.ptr,
-            as$(u64)(asSecs(durSince(now(), locals->start) * 1000.0))
+        io_stream_println(
+            u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
+            args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
-    printf("debug: [%*s(%zx)] returning -> [asyncMain]\n", as$(i32)(args->name.len), args->name.ptr, as$(u64)(ctx->base));
+    io_stream_println(
+        u8_l("debug: [{:s}({:xz})] returning -> [asyncMain]"),
+        args->name, intFromPtr(ctx->base)
+    );
     areturn_({});
 } $unscoped_(async_fn);
 
-
-
 #include "dh/main.h"
-#include "dh/Arr.h"
 #include "dh/heap/Page.h"
-#include "dh/callback.h"
-#include "dh/io/stream.h"
 
+#if UNUSED_CODE
 TEST_fn_("Test time_Duration sort" $guard) {
-    use_S$(time_Duration);
-    use_ArrList$(time_Duration);
+    T_use_S$(time_Duration);
+    T_use_ArrList$(time_Duration);
     var times = typeCast$((ArrList$time_Duration)(ArrList_init(
         typeInfo$(time_Duration),
         heap_Page_allocator(&(heap_Page){})
@@ -325,8 +269,8 @@ TEST_fn_("Test time_Duration sort" $guard) {
 
         try_(sort_stableSort(
             times.allocator, times.base->items, wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
-                let dur_lhs = as$(const time_Duration *) ((lhs));
-                let dur_rhs = as$(const time_Duration *) ((rhs));
+                let dur_lhs = as$(const time_Duration*)((lhs));
+                let dur_rhs = as$(const time_Duration*)((rhs));
                 return time_Duration_cmp(*dur_lhs, *dur_rhs);
             })
         ));
@@ -340,8 +284,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
     }
     return_ok({});
 } $unguarded_(TEST_fn);
-
-
+#endif /* UNUSED_CODE */
 
 // asyncMain wrapper
 async_fn_(asyncMain, (S$S_const$u8 args;), Void);
@@ -351,58 +294,59 @@ async_fn_scope(asyncMain, {
     var_(iter_await, usize);
 }) {
     let_ignore = args;
-
-    // clang-format off
-    A_asg(locals->tasks, A_init$(A$$(2, Co_CtxFn$(waitUntilAndPrint)), {
+    asg_lit((&locals->tasks)(A_init({
         [0] = *async_ctx((waitUntilAndPrint)(none(), 1000, 1200, u8_l("task-pair a"))),
         [1] = *async_ctx((waitUntilAndPrint)(none(), 500, 1300, u8_l("task-pair b"))),
-    })); // clang-format on
+    })));
     for (locals->iter_resume = 0; locals->iter_resume < A_len(locals->tasks); ++locals->iter_resume) {
-        resume_(A_at(locals->tasks, locals->iter_resume));
+        resume_(A_at((locals->tasks)[locals->iter_resume]));
     }
-
     for (locals->iter_await = 0; locals->iter_await < A_len(locals->tasks); ++locals->iter_await) {
-        await_(A_at(locals->tasks, locals->iter_await));
+        await_(A_at((locals->tasks)[locals->iter_await]));
     }
-
-    io_stream_print(u8_l("debug: [asyncMain] all tasks completed\n"));
+    io_stream_println(u8_l("debug: [asyncMain] all tasks completed"));
     areturn_({});
 } $unscoped_(async_fn);
 
 
+fn_((Task_ordAsc(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) {
+    let_ignore = ctx;
+    let l = u_castV$((Task)(lhs));
+    let r = u_castV$((Task)(rhs));
+    return time_Instant_cmp(l.expires, r.expires);
+}
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     for_(($rf(0), $s(args))(idx, arg) {
-        io_stream_print(u8_l("args[{:zu}]: {:s}\n"), idx, arg);
+        io_stream_print(u8_l("args[{:uz}]: {:s}\n"), idx, arg);
     });
     io_stream_print(u8_l("\n"));
 
-    *timer_queue.base = try_(PQue_initCap(
-        typeInfo$(Task), heap_Page_allocator(&(heap_Page){}), 32,
-        wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
-            let lhs_task = as$(const Task *) ((lhs));
-            let rhs_task = as$(const Task *) ((rhs));
-            return time_Instant_cmp(lhs_task->expires, rhs_task->expires);
-        })
+    timer_queue = try_(ArrPQue_init$Task(
+        heap_Page_allocator(&(heap_Page){}), 32,
+        Task_ordAsc,
+        u_anyP(&(const Void){})
     ));
-    defer_(PQue_fini(timer_queue.base));
+    defer_(ArrPQue_fini$Task(&timer_queue, heap_Page_allocator(&(heap_Page){})));
 
     var main_task = async_((asyncMain)());
     {
+#if UNUSED_CODE
         var mem = (A$$(128, u8)){};
-        var buf = A_slice$(S$u8, mem, $r(0, 128));
-        for_(($s(timer_queue.list.items))(time) {
+        var buf = A_ref$((S$u8)mem);
+        for_(($s(timer_queue.items))(time) {
             io_stream_print(u8_l("{:s}\n"), try_(time_Instant_fmt(time->expires, buf)));
         });
+#endif /* UNUSED_CODE */
     }
 
-    while_some(meta_castO$(O$P$Task, PQue_deqOrNull(timer_queue.base)), delay) {
+    while_some(ArrPQue_deque$Task(&timer_queue), delay) {
         let now = time_Instant_now();
-        if (time_Instant_lt(now, delay->expires)) {
-            time_sleep(time_Instant_durationSince(delay->expires, now));
+        if (time_Instant_lt(now, delay.expires)) {
+            time_sleep(time_Instant_durationSince(delay.expires, now));
         }
-        io_stream_print(u8_l("debug: [event loop] resuming task ({:zx})\n"), as$(u64)(delay->frame));
-        resume_(delay->frame);
+        io_stream_print(u8_l("debug: [event loop] resuming task ({:xz})\n"), as$(u64)(delay.frame));
+        resume_(delay.frame);
     }
 
     nosuspend_(await_(resume_(main_task)));

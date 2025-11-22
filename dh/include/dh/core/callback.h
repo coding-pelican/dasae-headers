@@ -27,15 +27,15 @@ extern "C" {
 /*========== Callback Wrapper ===============================================*/
 
 // Define the callback wrapper structure - contains both function pointer and block
-#define Callback(_Params, T_Return...)                 comp_type_unnamed__Callback(_Params, T_Return)
+#define Callback(_Params, T_Return...) comp_type_unnamed__Callback(_Params, T_Return)
 #define use_Callback(T_Callback, _Params, T_Return...) comp_gen__use_Callback(T_Callback, _Params, T_Return)
 
 /// Create a wrapper from a function pointer or block obj
 #define wrapLam(val_callbackLamObj...) comp_op__wrapLam(val_callbackLamObj)
-#define wrapFn(val_callbackFnPtr...)   comp_op__wrapFn(val_callbackFnPtr)
+#define wrapFn(val_callbackFnPtr...) comp_op__wrapFn(val_callbackFnPtr)
 
 #define wrapLam$(T_Callback, val_callbackLamObj...) comp_op__wrapLam$(T_Callback, val_callbackLamObj)
-#define wrapFn$(T_Callback, val_callbackFnPtr...)   comp_op__wrapFn$(T_Callback, val_callbackFnPtr)
+#define wrapFn$(T_Callback, val_callbackFnPtr...) comp_op__wrapFn$(T_Callback, val_callbackFnPtr)
 
 /// Invoke the callback wrapper with given arguments
 #define invoke(val_wrapper, _Args...) comp_op__invoke(pp_uniqTok(wrapper), val_wrapper, _Args)
@@ -68,8 +68,7 @@ extern "C" {
         } callback; \
         bool is_lam; \
     }
-#define comp_gen__use_Callback(T_Callback, _Params, T_Return...) \
-    typedef struct T_Callback {
+#define comp_gen__use_Callback(T_Callback, _Params, T_Return...) typedef struct T_Callback {
 union {
     fn_(((^lamObj)_Params)(T_Return));
     fn_(((*fnPtr)_Params)(T_Return));
@@ -79,26 +78,17 @@ bool is_lam;
 T_Callback
 #endif /* others */
 
-#define comp_op__wrapLam(val_callbackLamObj...) { \
-    .callback = { .lamObj = val_callbackLamObj }, \
-    .is_lam = true \
-}
-#define comp_op__wrapFn(val_callbackFnPtr...) { \
-    .callback = { .fnPtr = val_callbackFnPtr }, \
-    .is_lam = false \
-}
+#define comp_op__wrapLam(val_callbackLamObj...) {.callback = {.lamObj = val_callbackLamObj}, .is_lam = true}
+#define comp_op__wrapFn(val_callbackFnPtr...) {.callback = {.fnPtr = val_callbackFnPtr}, .is_lam = false}
 
 #define comp_op__wrapLam$(T_Callback, val_callbackLamObj...) ((T_Callback)wrapLam(val_callbackLamObj))
-#define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...)   ((T_Callback)wrapFn(val_callbackFnPtr))
+#define comp_op__wrapFn$(T_Callback, val_callbackFnPtr...) ((T_Callback)wrapFn(val_callbackFnPtr))
 
-#define comp_op__invoke(__wrapper, val_wrapper, _Args...) blk({ \
-    let __wrapper = val_wrapper; \
-    blk_return( \
-        (__wrapper).is_lam \
-            ? (__wrapper).callback.lamObj(_Args) \
-            : (__wrapper).callback.fnPtr(_Args) \
-    ); \
-})
+#define comp_op__invoke(__wrapper, val_wrapper, _Args...) \
+    blk({ \
+        let __wrapper = val_wrapper; \
+        blk_return((__wrapper).is_lam ? (__wrapper).callback.lamObj(_Args) : (__wrapper).callback.fnPtr(_Args)); \
+    })
 
 /*========== Example Usage ==================================================*/
 
@@ -107,16 +97,11 @@ T_Callback
 use_Callback(sort_CmpFn_compat, (P_const$raw lhs, P_const$raw rhs), cmp_Ord);
 
 // Example: Invoke a comparison function
-$inline_always fn_((sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, P_const$raw lhs, P_const$raw rhs))(cmp_Ord)) {
-    return invoke(cb, lhs, rhs);
-}
+$inline_always fn_((sort_CmpFn_compat_invoke(sort_CmpFn_compat cb, P_const$raw lhs, P_const$raw rhs))(cmp_Ord)) { return invoke(cb, lhs, rhs); }
 // Example: Sort function that can accept both function pointers and blocks
 extern fn_((sort_insertionSort_compat(meta_S base_sli, sort_CmpFn_compat cmpFn))(void));
 // Actual implementation that uses the compatibility layer
-fn_((sort_insertionSort_compat(
-    meta_S base_sli,
-    sort_CmpFn_compat cmpFn
-))(void)) {
+fn_((sort_insertionSort_compat(meta_S base_sli, sort_CmpFn_compat cmpFn))(void)) {
     // Implementation that calls sort_CmpFn_compat_invoke(cmpFn, lhs, rhs) instead of cmpFn(lhs, rhs)
     // ...
 }

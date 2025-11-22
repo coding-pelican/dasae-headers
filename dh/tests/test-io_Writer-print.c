@@ -34,7 +34,7 @@ $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $sco
     let remaining = self->data.len - self->pos;
     let to_write  = prim_min(bytes.len, remaining);
     if (0 < to_write) {
-        prim_memcpy(self->data.ptr + self->pos, bytes.ptr, to_write);
+        prim_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
         self->pos += to_write;
     }
     return_ok(to_write);

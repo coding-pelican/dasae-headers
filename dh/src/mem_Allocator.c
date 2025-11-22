@@ -136,7 +136,7 @@ fn_((
     // Special case for zero-sized allocations
     if (buf.len == 0) { return; }
     // Set memory to undefined before freeing
-    mem_set(buf.ptr, 0x00, buf.len);
+    mem_setBytes0(buf);
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else  /* on_comptime && (!on_comptime || debug_comp_enabled) */
     mem_Tracker_registerFree(buf.ptr, src_loc);
@@ -160,7 +160,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $
         return_err(mem_Err_OutOfMemory())
     ));
     // Initialize memory to undefined pattern
-    mem_set(mem, 0x00, type.size);
+    mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
         .raw = mem,
         .type = type,
@@ -194,7 +194,7 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Er
     let mem = orelse_((mem_Allocator_rawAlloc(self, byte_count, type.align))(
         return_err(mem_Err_OutOfMemory())
     ));
-    mem_set(mem, 0x00, byte_count);
+    mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
         .len = count,
@@ -316,9 +316,9 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
-    mem_copy(new_mem, old_bytes.ptr, copy_len);
+    mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
     // Zero out old memory before freeing
-    mem_set(old_bytes.ptr, 0x00, old_bytes.len);
+    mem_setBytes0(old_bytes);
     mem_Allocator_rawFree(self, old_bytes, old_mem.type.align);
     return_ok({
         .ptr = new_mem,
@@ -344,9 +344,9 @@ fn_((mem_Allocator_dupe(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $scop
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
-    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
+    mem_copyBytes(dst_bytes, src_bytes.as_const);
 
     return_ok(new_mem);
 } $unscoped_(fn);
@@ -355,10 +355,10 @@ fn_((mem_Allocator_dupeZ(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $sco
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len + 1));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
-    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
-    mem_set(dst_bytes.ptr, 0x00, dst_bytes.len);
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
+    mem_copyBytes(dst_bytes, src_bytes.as_const);
+    mem_setBytes0(dst_bytes);
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel
@@ -391,7 +391,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
         return_err(mem_Err_OutOfMemory());
     ));
     // Initialize memory to undefined pattern
-    mem_set(mem, 0x00, type.size);
+    mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
         .raw = mem,
         .type = type,
@@ -428,7 +428,7 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
         return_err(mem_Err_OutOfMemory());
     ));
     // Initialize memory to undefined pattern
-    mem_set(mem, 0x00, byte_count);
+    mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
         .len = count,
@@ -550,9 +550,9 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
-    mem_copy(new_mem, old_bytes.ptr, copy_len);
+    mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
     // Zero out old memory before freeing
-    mem_set(old_bytes.ptr, 0x00, old_bytes.len);
+    mem_setBytes0(old_bytes);
     mem_Allocator_rawFree_debug(self, old_bytes, old_mem.type.align, src_loc);
     return_ok({
         .ptr = new_mem,
@@ -576,9 +576,9 @@ fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
-    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
+    mem_copyBytes(dst_bytes, src_bytes.as_const);
     return_ok(new_mem);
 } $unscoped_(fn);
 
@@ -586,10 +586,10 @@ fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))
     // Allocate new memory with same element type but one extra element for sentinel
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len + 1, src_loc));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size* src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size* src.len));
-    mem_copy(dst_bytes.ptr, src_bytes.ptr, dst_bytes.len);
-    mem_set(dst_bytes.ptr, 0x00, dst_bytes.len);
+    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
+    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
+    mem_copyBytes(dst_bytes, src_bytes.as_const);
+    mem_setBytes0(dst_bytes);
     // // Set sentinel value at end
     // if (src.type.size == 1) {
     //     // For byte-sized elements, directly set the sentinel

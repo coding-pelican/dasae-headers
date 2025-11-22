@@ -33,84 +33,84 @@ errset_((math_Err)(
 ));
 
 /* Common constants */
-#define math_pi           VAL_math_pi
-#define math_tau          VAL_math_tau
-#define math_e            VAL_math_e
+#define math_pi VAL_math_pi
+#define math_tau VAL_math_tau
+#define math_e VAL_math_e
 #define math_golden_ratio VAL_math_golden_ratio
-#define math_sqrt_2       VAL_math_sqrt_2
-#define math_sqrt_3       VAL_math_sqrt_3
-#define math_eps          VAL_math_eps
-#define math_nan          VAL_math_nan
-#define math_inf          VAL_math_inf
+#define math_sqrt_2 VAL_math_sqrt_2
+#define math_sqrt_3 VAL_math_sqrt_3
+#define math_eps VAL_math_eps
+#define math_nan VAL_math_nan
+#define math_inf VAL_math_inf
 
 #define math_limit_min$(TScalar) VAL_math_limit_min$(TScalar)
 #define math_limit_max$(TScalar) VAL_math_limit_max$(TScalar)
 
-#define math_f32_pi           VAL_math_f32_pi
-#define math_f32_tau          VAL_math_f32_tau
-#define math_f32_e            VAL_math_f32_e
+#define math_f32_pi VAL_math_f32_pi
+#define math_f32_tau VAL_math_f32_tau
+#define math_f32_e VAL_math_f32_e
 #define math_f32_golden_ratio VAL_math_f32_golden_ratio
-#define math_f32_sqrt_2       VAL_math_f32_sqrt_2
-#define math_f32_sqrt_3       VAL_math_f32_sqrt_3
-#define math_f32_eps          VAL_math_f32_eps
-#define math_f32_nan          VAL_math_f32_nan
-#define math_f32_inf          VAL_math_f32_inf
+#define math_f32_sqrt_2 VAL_math_f32_sqrt_2
+#define math_f32_sqrt_3 VAL_math_f32_sqrt_3
+#define math_f32_eps VAL_math_f32_eps
+#define math_f32_nan VAL_math_f32_nan
+#define math_f32_inf VAL_math_f32_inf
 
-#define math_f64_pi           VAL_math_f64_pi
-#define math_f64_tau          VAL_math_f64_tau
-#define math_f64_e            VAL_math_f64_e
+#define math_f64_pi VAL_math_f64_pi
+#define math_f64_tau VAL_math_f64_tau
+#define math_f64_e VAL_math_f64_e
 #define math_f64_golden_ratio VAL_math_f64_golden_ratio
-#define math_f64_sqrt_2       VAL_math_f64_sqrt_2
-#define math_f64_sqrt_3       VAL_math_f64_sqrt_3
-#define math_f64_eps          VAL_math_f64_eps
-#define math_f64_nan          VAL_math_f64_nan
-#define math_f64_inf          VAL_math_f64_inf
+#define math_f64_sqrt_2 VAL_math_f64_sqrt_2
+#define math_f64_sqrt_3 VAL_math_f64_sqrt_3
+#define math_f64_eps VAL_math_f64_eps
+#define math_f64_nan VAL_math_f64_nan
+#define math_f64_inf VAL_math_f64_inf
 
 /* Comparison operations */
 #define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_eq(val_lhs, val_rhs)  OP_math_eq(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ne(val_lhs, val_rhs)  OP_math_ne(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_lt(val_lhs, val_rhs)  OP_math_lt(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_gt(val_lhs, val_rhs)  OP_math_gt(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_le(val_lhs, val_rhs)  OP_math_le(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ge(val_lhs, val_rhs)  OP_math_ge(val_lhs, val_rhs)                                                     /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_eq(val_lhs, val_rhs) OP_math_eq(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
-#define math_neg(val_x)                OP_math_neg(val_x)
-#define math_add(val_lhs, val_rhs)     OP_math_add(val_lhs, val_rhs)
-#define math_sub(val_lhs, val_rhs)     OP_math_sub(val_lhs, val_rhs)
-#define math_mul(val_lhs, val_rhs)     OP_math_mul(val_lhs, val_rhs)
-#define math_div(val_lhs, val_rhs)     OP_math_div(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
+#define math_neg(val_x) OP_math_neg(val_x)
+#define math_add(val_lhs, val_rhs) OP_math_add(val_lhs, val_rhs)
+#define math_sub(val_lhs, val_rhs) OP_math_sub(val_lhs, val_rhs)
+#define math_mul(val_lhs, val_rhs) OP_math_mul(val_lhs, val_rhs)
+#define math_div(val_lhs, val_rhs) OP_math_div(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
 #define math_divSafe(val_lhs, val_rhs) OP_math_divSafe(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
-#define math_mod(val_lhs, val_rhs)     OP_math_mod(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
+#define math_mod(val_lhs, val_rhs) OP_math_mod(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
 #define math_modSafe(val_lhs, val_rhs) OP_math_modSafe(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs)
 
 /* Basic functions */
-#define math_abs(val_x)                         FUNC_math_abs(pp_uniqTok(abs_x), val_x)
-#define math_sign(val_x)                        FUNC_math_sign(pp_uniqTok(sign_x), val_x)
-#define math_min(val_lhs, val_rhs)              FUNC_math_min(val_lhs, val_rhs)
-#define math_max(val_lhs, val_rhs)              FUNC_math_max(val_lhs, val_rhs)
-#define math_clamp(val_x, val_min, val_max)     FUNC_math_clamp(val_x, val_min, val_max)
+#define math_abs(val_x) FUNC_math_abs(pp_uniqTok(abs_x), val_x)
+#define math_sign(val_x) FUNC_math_sign(pp_uniqTok(sign_x), val_x)
+#define math_min(val_lhs, val_rhs) FUNC_math_min(val_lhs, val_rhs)
+#define math_max(val_lhs, val_rhs) FUNC_math_max(val_lhs, val_rhs)
+#define math_clamp(val_x, val_min, val_max) FUNC_math_clamp(val_x, val_min, val_max)
 // #define math_clamp01(val_x)                     FUNC_math_clamp01(val_x)
 #define math_clampSafe(val_x, val_min, val_max) FUNC_math_clampSafe(val_x, val_min, val_max) /* TODO: make safety */
-#define math_wrap(val_x, val_min, val_max)      FUNC_math_wrap(val_x, val_min, val_max)
+#define math_wrap(val_x, val_min, val_max) FUNC_math_wrap(val_x, val_min, val_max)
 // #define math_wrap01(val_x)                      FUNC_math_wrap01(val_x)
-#define math_wrapSafe(val_x, val_min, val_max)  FUNC_math_wrapSafe(val_x, val_min, val_max) /* TODO: make safety */
+#define math_wrapSafe(val_x, val_min, val_max) FUNC_math_wrapSafe(val_x, val_min, val_max) /* TODO: make safety */
 
 /* Rounding functions */
 #define math_floor(val_x) FUNC_math_floor(val_x)
-#define math_ceil(val_x)  FUNC_math_ceil(val_x)
+#define math_ceil(val_x) FUNC_math_ceil(val_x)
 #define math_round(val_x) FUNC_math_round(val_x)
 // TODO: add more rounding functions
 #define math_trunc(val_x) FUNC_math_trunc(val_x)
 
 /* Exponential/logarithmic functions */
-#define math_sqrt(val_x)                FUNC_math_sqrt(val_x)
-#define math_sqrtSafe(val_x)            FUNC_math_sqrtSafe(val_x)
-#define math_pow(val_base, val_exp)     FUNC_math_pow(val_base, val_exp)
+#define math_sqrt(val_x) FUNC_math_sqrt(val_x)
+#define math_sqrtSafe(val_x) FUNC_math_sqrtSafe(val_x)
+#define math_pow(val_base, val_exp) FUNC_math_pow(val_base, val_exp)
 #define math_powSafe(val_base, val_exp) FUNC_math_powSafe(val_base, val_exp)
-#define math_rsqrt(val_x)               FUNC_math_rsqrt(val_x)
-#define math_rsqrtSafe(val_x)           FUNC_math_rsqrtSafe(val_x)
+#define math_rsqrt(val_x) FUNC_math_rsqrt(val_x)
+#define math_rsqrtSafe(val_x) FUNC_math_rsqrtSafe(val_x)
 // #define math_exp(val_x)                 FUNC_math_exp(val_x)
 // #define math_exp2(val_x)                FUNC_math_exp2(val_x)
 // #define math_exp10(val_x)               FUNC_math_exp10(val_x)
@@ -126,15 +126,15 @@ errset_((math_Err)(
 // #define math_hypot(val_x, val_y)        FUNC_math_hypot(val_x, val_y)
 
 /* Trigonometric functions */
-#define math_sin(val_x)              FUNC_math_sin(val_x)
-#define math_cos(val_x)              FUNC_math_cos(val_x)
-#define math_tan(val_x)              FUNC_math_tan(val_x)
-#define math_asin(val_x)             FUNC_math_asin(val_x)
-#define math_asinSafe(val_x)         FUNC_math_asinSafe(val_x)
-#define math_acos(val_x)             FUNC_math_acos(val_x)
-#define math_acosSafe(val_x)         FUNC_math_acosSafe(val_x)
-#define math_atan(val_x)             FUNC_math_atan(val_x)
-#define math_atan2(val_y, val_x)     FUNC_math_atan2(val_y, val_x)
+#define math_sin(val_x) FUNC_math_sin(val_x)
+#define math_cos(val_x) FUNC_math_cos(val_x)
+#define math_tan(val_x) FUNC_math_tan(val_x)
+#define math_asin(val_x) FUNC_math_asin(val_x)
+#define math_asinSafe(val_x) FUNC_math_asinSafe(val_x)
+#define math_acos(val_x) FUNC_math_acos(val_x)
+#define math_acosSafe(val_x) FUNC_math_acosSafe(val_x)
+#define math_atan(val_x) FUNC_math_atan(val_x)
+#define math_atan2(val_y, val_x) FUNC_math_atan2(val_y, val_x)
 #define math_atan2Safe(val_y, val_x) FUNC_math_atan2Safe(val_y, val_x)
 
 /* Hyperbolic functions */
@@ -151,15 +151,15 @@ errset_((math_Err)(
 /*========== Implementation =================================================*/
 
 /* Common constants */
-#define VAL_math_pi           math_f64_pi
-#define VAL_math_tau          math_f64_tau
-#define VAL_math_e            math_f64_e
+#define VAL_math_pi math_f64_pi
+#define VAL_math_tau math_f64_tau
+#define VAL_math_e math_f64_e
 #define VAL_math_golden_ratio math_f64_golden_ratio
-#define VAL_math_sqrt_2       math_f64_sqrt_2
-#define VAL_math_sqrt_3       math_f64_sqrt_3
-#define VAL_math_eps          math_f64_eps
-#define VAL_math_nan          math_f64_nan
-#define VAL_math_inf          math_f64_inf
+#define VAL_math_sqrt_2 math_f64_sqrt_2
+#define VAL_math_sqrt_3 math_f64_sqrt_3
+#define VAL_math_eps math_f64_eps
+#define VAL_math_nan math_f64_nan
+#define VAL_math_inf math_f64_inf
 
 #define VAL_math_limit_min$(TScalar) _Generic( \
     (TScalar)0, \
@@ -190,25 +190,25 @@ errset_((math_Err)(
     default: 0 \
 )
 
-#define VAL_math_f32_pi           as$(f32)(math_pi)
-#define VAL_math_f32_tau          as$(f32)(math_tau)
-#define VAL_math_f32_e            as$(f32)(math_e)
+#define VAL_math_f32_pi as$(f32)(math_pi)
+#define VAL_math_f32_tau as$(f32)(math_tau)
+#define VAL_math_f32_e as$(f32)(math_e)
 #define VAL_math_f32_golden_ratio as$(f32)(math_golden_ratio)
-#define VAL_math_f32_sqrt_2       as$(f32)(math_sqrt_2)
-#define VAL_math_f32_sqrt_3       as$(f32)(math_sqrt_3)
-#define VAL_math_f32_eps          f32_eps
-#define VAL_math_f32_nan          f32_nan
-#define VAL_math_f32_inf          f32_inf
+#define VAL_math_f32_sqrt_2 as$(f32)(math_sqrt_2)
+#define VAL_math_f32_sqrt_3 as$(f32)(math_sqrt_3)
+#define VAL_math_f32_eps f32_eps
+#define VAL_math_f32_nan f32_nan
+#define VAL_math_f32_inf f32_inf
 
-#define VAL_math_f64_pi           (3.14159265358979323846)
-#define VAL_math_f64_tau          (2.0 * math_f64_pi)
-#define VAL_math_f64_e            (2.71828182845904523536)
+#define VAL_math_f64_pi (3.14159265358979323846)
+#define VAL_math_f64_tau (2.0 * math_f64_pi)
+#define VAL_math_f64_e (2.71828182845904523536)
 #define VAL_math_f64_golden_ratio (1.61803398874989484820)
-#define VAL_math_f64_sqrt_2       (1.41421356237309504880)
-#define VAL_math_f64_sqrt_3       (1.73205080756887729352)
-#define VAL_math_f64_nan          f64_nan
-#define VAL_math_f64_eps          f64_eps
-#define VAL_math_f64_inf          f64_inf
+#define VAL_math_f64_sqrt_2 (1.41421356237309504880)
+#define VAL_math_f64_sqrt_3 (1.73205080756887729352)
+#define VAL_math_f64_nan f64_nan
+#define VAL_math_f64_eps f64_eps
+#define VAL_math_f64_inf f64_inf
 
 /* Comparison operations */
 #define OP_math_cmp(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
@@ -242,10 +242,10 @@ errset_((math_Err)(
 #define OP_math_ge(val_lhs, val_rhs) (!math_lt(val_lhs, val_rhs))
 
 /* Arithmetic operations */
-#define OP_math_neg(val_x)                                 (-(_val_x))
-#define OP_math_add(val_lhs, val_rhs)                      ((val_lhs) + (val_rhs))
-#define OP_math_sub(val_lhs, val_rhs)                      ((val_lhs) - (val_rhs))
-#define OP_math_mul(val_lhs, val_rhs)                      ((val_lhs) * (val_rhs))
+#define OP_math_neg(val_x) (-(_val_x))
+#define OP_math_add(val_lhs, val_rhs) ((val_lhs) + (val_rhs))
+#define OP_math_sub(val_lhs, val_rhs) ((val_lhs) - (val_rhs))
+#define OP_math_mul(val_lhs, val_rhs) ((val_lhs) * (val_rhs))
 #define OP_math_div(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
@@ -380,9 +380,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < 0) { \
         /* Square root of negative number */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x)))); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -401,9 +401,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_base == 0 && _exp <= 0) { \
         /* Invalid base/exponent combination */ \
-        __ret = (P$raw)&(E$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_base)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_base)))ok(as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp)))); \
+        __ret = (P$raw) & (E$(TypeOf(_base)))ok(as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -420,9 +420,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x <= 0) { \
         /* Invalid input for inverse square root */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(1.0 / flt_sqrt(as$(f64)(_x)))); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(1.0 / flt_sqrt(as$(f64)(_x)))); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -453,9 +453,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse sine domain error */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(flt_asin(_x)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))ok(flt_asin(_x)); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -472,9 +472,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x < -1 || 1 < _x) { \
         /* Inverse cosine domain error */ \
-        __ret = (P$raw)&(E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_x)))ok(flt_acos(_x)); \
+        __ret = (P$raw) & (E$(TypeOf(_x)))ok(flt_acos(_x)); \
     } \
     blk_return(*(E$(TypeOf(_x))*)__ret); \
 })
@@ -497,9 +497,9 @@ errset_((math_Err)(
     P$raw __ret = null; \
     if (_x == 0 && _y == 0) { \
         /* flt_atan2(0, 0) is undefined */ \
-        __ret = (P$raw)&(E$(TypeOf(_y)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
+        __ret = (P$raw) & (E$(TypeOf(_y)))err(math_Err_err(math_ErrCode_InvalidDomain)); \
     } else { \
-        __ret = (P$raw)&(E$(TypeOf(_y)))ok(flt_atan2(_y, _x)); \
+        __ret = (P$raw) & (E$(TypeOf(_y)))ok(flt_atan2(_y, _x)); \
     } \
     blk_return(*(E$(TypeOf(_y))*)__ret); \
 })

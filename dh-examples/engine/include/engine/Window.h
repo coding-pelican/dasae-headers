@@ -10,22 +10,23 @@ extern "C" {
 
 #include "engine/Backend.h"
 
+#include "dh/ArrList.h"
+
 typedef struct engine_Window engine_Window;
-#define engine_Window_size_min_width_default         (16)
-#define engine_Window_size_min_height_default        (16)
-#define engine_Window_size_max_width_default         (4096)
-#define engine_Window_size_max_height_default        (2048)
-#define engine_Window_view_count_limit               (8)
+#define engine_Window_size_min_width_default (16)
+#define engine_Window_size_min_height_default (16)
+#define engine_Window_size_max_width_default (4096)
+#define engine_Window_size_max_height_default (2048)
+#define engine_Window_view_count_limit (8)
 #define engine_Window_composite_buffer_color_default ((Color){ .r = 0x18, .g = 0x18, .b = 0x18, .a = 0xFF })
 
+T_use_ArrList$(engine_CanvasView);
 struct engine_Window {
     O$engine_Backend backend;
-    struct {
-        var_(list, A$$(engine_Window_view_count_limit, engine_CanvasView));
-        var_(count, u32);
-    } view;
+    O$S$engine_CanvasView views_buf;
+    ArrList$engine_CanvasView views;
     engine_Canvas* composite_buffer; // Final composition buffer
-    mem_Allocator allocator;
+    mem_Allocator gpa;
 };
 T_use_P$(engine_Window);
 T_use_S$(engine_Window);
@@ -33,7 +34,8 @@ T_use_O$(engine_Window);
 T_use_E$(P$engine_Window);
 
 typedef struct engine_Window_Config {
-    O$mem_Allocator allocator;
+    O$mem_Allocator gpa;
+    O$S$engine_CanvasView views_buf;
     m_V2u32 rect_size;
     O$Color default_color;
     O$S_const$u8 title;

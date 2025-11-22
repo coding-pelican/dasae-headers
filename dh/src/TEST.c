@@ -19,11 +19,11 @@
 #include "dh/io/Writer.h"
 
 /* ANSI color codes */
-#define TEST_color_reset  "\033[0m"
-#define TEST_color_red    "\033[31m"
-#define TEST_color_green  "\033[32m"
+#define TEST_color_reset "\033[0m"
+#define TEST_color_red "\033[31m"
+#define TEST_color_green "\033[32m"
 #define TEST_color_yellow "\033[33m"
-#define TEST_color_blue   "\033[34m"
+#define TEST_color_blue "\033[34m"
 
 T_use$((TEST_Case)(O, E));
 T_use$((TEST_Case)(ArrList_init, ArrList_fini, ArrList_append));
@@ -41,7 +41,8 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
 }
 
 $on_exit
-$static fn_((TEST_Framework_fini(void))(void)) {
+$static
+fn_((TEST_Framework_fini(void))(void)) {
     let instance = TEST_Framework_instance();
     let cases = instance->cases;
     let gpa = instance->gpa;
@@ -91,7 +92,8 @@ fn_((TEST_Framework_run(void))(void)) {
             Err_print(err);
             ErrTrace_print();
             ErrTrace_reset();
-        } else_ok_void {
+        }
+        else_ok_void {
             instance->stats.passed++;
             catch_((print(
                 out, u8_l("    {:s}\n"),

@@ -14,20 +14,20 @@
 
 #include "engine.h"
 
-#define window_res_width__320x200  /* template value */ (320)
+#define window_res_width__320x200 /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
-#define window_res_width__160x100  /* template value */ (160)
+#define window_res_width__160x100 /* template value */ (160)
 #define window_res_height__160x100 /* template value */ (100)
-#define window_res_width__80x50    /* template value */ (80)
-#define window_res_height__80x50   /* template value */ (50)
-#define window_res_width__40x25    /* template value */ (40)
-#define window_res_height__40x25   /* template value */ (25)
+#define window_res_width__80x50 /* template value */ (80)
+#define window_res_height__80x50 /* template value */ (50)
+#define window_res_width__40x25 /* template value */ (40)
+#define window_res_height__40x25 /* template value */ (25)
 
 #if debug_comp_enabled
-#define window_res_width  (window_res_width__80x50)
+#define window_res_width (window_res_width__80x50)
 #define window_res_height (window_res_height__80x50)
 #else /* !debug_comp_enabled */
-#define window_res_width  (window_res_width__80x50)
+#define window_res_width (window_res_width__80x50)
 #define window_res_height (window_res_height__80x50)
 #endif /* debug_comp_enabled */
 #define window_res_size (as$(usize)(window_res_width) * window_res_height)
@@ -44,14 +44,14 @@
 #define update_target_fps (480.0f)
 #define update_target_spf (1.0f / update_target_fps)
 
-#define state_player_speed       (1000.0f)
-#define state_gravity            (100.0f)
-#define state_collision_damping  (0.8f)
+#define state_player_speed (1000.0f)
+#define state_gravity (100.0f)
+#define state_collision_damping (0.8f)
 #define state_objects_cap_inital (512)
 
 #define state_vec2f_threshold lit$((m_V2f32){ .x = 1e-4f, .y = 1e-4f })
 
-#define state_enable_fps_limits 0
+#define state_enable_fps_limits 1
 
 /*
  * World Scale = ratio of physical screen size to world space size

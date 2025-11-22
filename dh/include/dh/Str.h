@@ -140,13 +140,13 @@ cmp_fnGe_default(S$u8);
 #define StrUtf8_2byte_mask /* 11100000 */ (0xE0)
 #define StrUtf8_3byte_mask /* 11110000 */ (0xF0)
 #define StrUtf8_4byte_mask /* 11111000 */ (0xF8)
-#define StrUtf8_cont_mask  /* 11000000 */ (0xC0)
+#define StrUtf8_cont_mask /* 11000000 */ (0xC0)
 
 #define StrUtf8_1byte_pattern /* 0xxxxxxx */ (0x00)
 #define StrUtf8_2byte_pattern /* 110xxxxx */ (0xC0)
 #define StrUtf8_3byte_pattern /* 1110xxxx */ (0xE0)
 #define StrUtf8_4byte_pattern /* 11110xxx */ (0xF0)
-#define StrUtf8_cont_pattern  /* 10xxxxxx */ (0x80)
+#define StrUtf8_cont_pattern /* 10xxxxxx */ (0x80)
 
 /*========== UTF-8 Operations ===============================================*/
 

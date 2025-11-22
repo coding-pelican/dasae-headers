@@ -17,8 +17,8 @@
 #include <windows.h>
 
 #define auto __comp_syn__auto
-#define var  __comp_syn__var
-#define let  __comp_syn__let
+#define var __comp_syn__var
+#define let __comp_syn__let
 #endif /* plat_windows */
 
 #endif /* os_windows_common__included */

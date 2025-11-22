@@ -33,7 +33,7 @@ fn_((ArrList_empty(TypeInfo type))(ArrList)) {
 
 fn_((ArrList_fromBuf(u_S$raw buf))(ArrList)) {
     return (ArrList){
-        .items = u_slice$S(buf, $r(0, 0)).raw,
+        .items = u_sliceS(buf, $r(0, 0)).raw,
         .cap = buf.len,
         debug_only(.type = buf.type)
     };
@@ -69,13 +69,33 @@ fn_((ArrList_cap(ArrList self))(usize)) {
 
 fn_((ArrList_at(ArrList self, TypeInfo type, usize idx))(u_P_const$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_at$S(ArrList_items(self, type), idx);
+    return u_atS(ArrList_items(self, type), idx);
 }
 
 fn_((ArrList_atMut(ArrList self, TypeInfo type, usize idx))(u_P$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_at$S(ArrList_itemsMut(self, type), idx);
+    return u_atS(ArrList_itemsMut(self, type), idx);
 }
+
+fn_((ArrList_front(ArrList self, TypeInfo type))(O$u_P_const$raw) $scope) {
+    if (self.items.len == 0) { return_none(); }
+    return_some(u_atS(ArrList_items(self, type), 0));
+} $unscoped_(fn);
+
+fn_((ArrList_frontMut(ArrList self, TypeInfo type))(O$u_P$raw) $scope) {
+    if (self.items.len == 0) { return_none(); }
+    return_some(u_atS(ArrList_itemsMut(self, type), 0));
+} $unscoped_(fn);
+
+fn_((ArrList_back(ArrList self, TypeInfo type))(O$u_P_const$raw) $scope) {
+    if (self.items.len == 0) { return_none(); }
+    return_some(u_atS(ArrList_items(self, type), self.items.len - 1));
+} $unscoped_(fn);
+
+fn_((ArrList_backMut(ArrList self, TypeInfo type))(O$u_P$raw) $scope) {
+    if (self.items.len == 0) { return_none(); }
+    return_some(u_atS(ArrList_itemsMut(self, type), self.items.len - 1));
+} $unscoped_(fn);
 
 fn_((ArrList_items(ArrList self, TypeInfo type))(u_S_const$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
@@ -99,12 +119,12 @@ fn_((ArrList_itemsCappedMut(ArrList self, TypeInfo type))(u_S$raw)) {
 
 fn_((ArrList_itemsUnused(ArrList self, TypeInfo type))(u_S_const$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_slice$S(ArrList_itemsCapped(self, type), $r(self.items.len, self.cap - self.items.len));
+    return u_sliceS(ArrList_itemsCapped(self, type), $r(self.items.len, self.cap - self.items.len));
 }
 
 fn_((ArrList_itemsUnusedMut(ArrList self, TypeInfo type))(u_S$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_slice$S(ArrList_itemsCappedMut(self, type), $r(self.items.len, self.cap - self.items.len));
+    return u_sliceS(ArrList_itemsCappedMut(self, type), $r(self.items.len, self.cap - self.items.len));
 }
 
 fn_((ArrList_ensureCap(ArrList* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
@@ -126,13 +146,13 @@ fn_((ArrList_ensureCapPrecise(ArrList* self, TypeInfo type, mem_Allocator gpa, u
     let old_items = ArrList_itemsCappedMut(*self, type);
     if_some((mem_Allocator_remap(gpa, old_items, new_cap))(new_items)) {
         self->items.ptr = new_items.ptr;
-        self->cap   = new_items.len;
+        self->cap = new_items.len;
     } else_none {
         let new_items = try_(mem_Allocator_alloc(gpa, type, new_cap));
-        u_copy$S(u_prefix$S(new_items, self->items.len), ArrList_items(*self, type));
+        u_memcpyS(u_prefixS(new_items, self->items.len), ArrList_items(*self, type));
         mem_Allocator_free(gpa, old_items);
         self->items.ptr = new_items.ptr;
-        self->cap   = new_items.len;
+        self->cap = new_items.len;
     }
     return_ok({});
 } $unscoped_(fn);
@@ -140,7 +160,7 @@ fn_((ArrList_ensureCapPrecise(ArrList* self, TypeInfo type, mem_Allocator gpa, u
 fn_((ArrList_ensureUnusedCap(ArrList* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return ArrList_ensureCap(self, type, gpa,  try_(addOrOom(self->items.len, additional)));
+    return ArrList_ensureCap(self, type, gpa, try_(addOrOom(self->items.len, additional)));
 } $unscoped_(fn);
 
 fn_((ArrList_expandToCap(ArrList* self))(void)) {
@@ -172,7 +192,7 @@ fn_((ArrList_shrinkAndFree(ArrList* self, TypeInfo type, mem_Allocator gpa, usiz
     }
     let old_items = ArrList_itemsCappedMut(*self, type);
     if_some((mem_Allocator_remap(gpa, old_items, new_len))(new_items)) {
-        self->cap   = new_items.len;
+        self->cap = new_items.len;
         self->items.ptr = new_items.ptr;
         return;
     }
@@ -180,7 +200,7 @@ fn_((ArrList_shrinkAndFree(ArrList* self, TypeInfo type, mem_Allocator gpa, usiz
         self->items.len = new_len;
         return;
     }));
-    u_copy$S(new_items, u_slice$S(ArrList_items(*self, type), $r(0, new_len)));
+    u_memcpyS(new_items, u_sliceS(ArrList_items(*self, type), $r(0, new_len)));
     mem_Allocator_free(gpa, old_items);
     self->items = new_items.raw;
     self->cap = new_items.len;
@@ -208,7 +228,7 @@ fn_((ArrList_addBack(ArrList* self, TypeInfo type, mem_Allocator gpa))(mem_Err$u
 fn_((ArrList_addBackFixed(ArrList* self, TypeInfo type))(mem_Err$u_P$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    if(usize_sub(self->cap, self->items.len) < 1) { return_err(mem_Err_OutOfMemory()); }
+    if (usize_sub(self->cap, self->items.len) < 1) { return_err(mem_Err_OutOfMemory()); }
     return_ok(ArrList_addBackWithin(self, type));
 } $unscoped_(fn);
 
@@ -217,7 +237,7 @@ fn_((ArrList_addBackWithin(ArrList* self, TypeInfo type))(u_P$raw)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     claim_assert(self->items.len < self->cap);
     self->items.len++;
-    return u_at$S(ArrList_itemsMut(*self, type), self->items.len - 1);
+    return u_atS(ArrList_itemsMut(*self, type), self->items.len - 1);
 }
 
 fn_((ArrList_addBackN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw) $scope) {
@@ -225,7 +245,7 @@ fn_((ArrList_addBackN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n))
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let prev_len = self->items.len;
     try_(ArrList_resize(self, type, gpa, try_(addOrOom(prev_len, n))));
-    return_ok(u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), prev_len), n));
+    return_ok(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), prev_len), n));
 } $unscoped_(fn);
 
 fn_((ArrList_addBackFixedN(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw) $scope) {
@@ -241,14 +261,14 @@ fn_((ArrList_addBackWithinN(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
     claim_assert(self->items.len + n <= self->cap);
     let prev_len = self->items.len;
     self->items.len += n;
-    return u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), prev_len), n);
+    return u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), prev_len), n);
 }
 
 fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, usize n))(mem_Err$u_S$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let new_len = try_(addOrOom(self->items.len, n));
-    if (new_len <= self->cap  ) {
+    if (new_len <= self->cap) {
         return_ok(ArrList_addAtWithinN(self, type, idx, n));
     }
     let new_cap = growCap(type, self->cap, new_len);
@@ -259,19 +279,19 @@ fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, 
         return_ok(ArrList_addAtWithinN(self, type, idx, n));
     }
     let new_items = try_(mem_Allocator_alloc(gpa, type, new_cap));
-    let to_move = u_suffix$S(ArrList_items(*self, type), idx);
-    u_copy$S(u_prefix$S(new_items, idx), u_prefix$S(ArrList_items(*self, type), idx));
-    u_copy$S(u_suffix$S(new_items, idx + n), to_move);
+    let to_move = u_suffixS(ArrList_items(*self, type), idx);
+    u_memcpyS(u_prefixS(new_items, idx), u_prefixS(ArrList_items(*self, type), idx));
+    u_memcpyS(u_suffixS(new_items, idx + n), to_move);
     mem_Allocator_free(gpa, old_items);
-    self->items = u_prefix$S(new_items, new_len).raw;
+    self->items = u_prefixS(new_items, new_len).raw;
     self->cap = new_items.len;
-    return_ok(u_prefix$S(u_suffix$S(new_items, idx), n));
+    return_ok(u_prefixS(u_suffixS(new_items, idx), n));
 } $unscoped_(fn);
 
 fn_((ArrList_addAtFixedN(ArrList* self, TypeInfo type, usize idx, usize n))(mem_Err$u_S$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    if(usize_sub(self->cap, self->items.len) < n) { return_err(mem_Err_OutOfMemory()); }
+    if (usize_sub(self->cap, self->items.len) < n) { return_err(mem_Err_OutOfMemory()); }
     return_ok(ArrList_addAtWithinN(self, type, idx, n));
 } $unscoped_(fn);
 
@@ -280,29 +300,29 @@ fn_((ArrList_addAtWithinN(ArrList* self, TypeInfo type, usize idx, usize n))(u_S
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let new_len = self->items.len + n;
     claim_assert(self->cap >= new_len);
-    let to_move = u_suffix$S(ArrList_items(*self, type), idx);
+    let to_move = u_suffixS(ArrList_items(*self, type), idx);
     self->items.len = new_len;
-    u_move$S(u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), idx + n), to_move.len), to_move);
-    let result = u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), idx), n);
-    return u_set$S(result, u_allocV(type));
+    u_memmoveS(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), idx + n), to_move.len), to_move);
+    let result = u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), idx), n);
+    return u_memsetS(result, u_allocV(type));
 }
 
 fn_((ArrList_addFront(ArrList* self, TypeInfo type, mem_Allocator gpa))(mem_Err$u_P$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return_ok(u_at$S(try_(ArrList_addAtN(self, type, gpa, 0, 1)), 0));
+    return_ok(u_atS(try_(ArrList_addAtN(self, type, gpa, 0, 1)), 0));
 } $unscoped_(fn);
 
 fn_((ArrList_addFrontFixed(ArrList* self, TypeInfo type))(mem_Err$u_P$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return_ok(u_at$S(try_(ArrList_addAtFixedN(self, type, 0, 1)), 0));
+    return_ok(u_atS(try_(ArrList_addAtFixedN(self, type, 0, 1)), 0));
 } $unscoped_(fn);
 
 fn_((ArrList_addFrontWithin(ArrList* self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return u_at$S(ArrList_addAtWithinN(self, type, 0, 1), 0);
+    return u_atS(ArrList_addAtWithinN(self, type, 0, 1), 0);
 }
 
 fn_((ArrList_addFrontN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw)) {
@@ -328,7 +348,7 @@ fn_((ArrList_append(ArrList* self, mem_Allocator gpa, u_V$raw item))(mem_Err$voi
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let slot = try_(ArrList_addBack(self, type, gpa));
-    u_copy$P(slot, item.ref.as_const);
+    u_memcpy(slot, item.ref.as_const);
     return_ok({});
 } $unscoped_(fn);
 
@@ -343,7 +363,7 @@ fn_((ArrList_appendWithin(ArrList* self, u_V$raw item))(void)) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    u_copy$P(ArrList_addBackWithin(self, type), item.ref.as_const);
+    u_memcpy(ArrList_addBackWithin(self, type), item.ref.as_const);
 }
 
 fn_((ArrList_appendS(ArrList* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void) $scope) {
@@ -367,9 +387,9 @@ fn_((ArrList_appendWithinS(ArrList* self, u_S_const$raw items))(void)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let old_len = self->items.len;
     let new_len = old_len + items.len;
-    claim_assert(new_len <= self->cap );
+    claim_assert(new_len <= self->cap);
     self->items.len = new_len;
-    u_copy$S(u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), old_len), items.len), items);
+    u_memcpyS(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), old_len), items.len), items);
 }
 
 fn_((ArrList_appendN(ArrList* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void) $scope) {
@@ -378,7 +398,7 @@ fn_((ArrList_appendN(ArrList* self, mem_Allocator gpa, u_V$raw item, usize n))(m
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let old_len = self->items.len;
     try_(ArrList_resize(self, type, gpa, try_(addOrOom(old_len, n))));
-    u_set$S(u_suffix$S(ArrList_itemsMut(*self, type), old_len), item);
+    u_memsetS(u_suffixS(ArrList_itemsMut(*self, type), old_len), item);
     return_ok({});
 } $unscoped_(fn);
 
@@ -387,7 +407,7 @@ fn_((ArrList_appendFixedN(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $
     debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eq);
     let new_len = self->items.len + n;
     if (new_len > self->cap) { return_err(mem_Err_OutOfMemory()); }
-    u_set$S(u_suffix$S(ArrList_itemsMut(*self, item.inner_type), self->items.len), item);
+    u_memsetS(u_suffixS(ArrList_itemsMut(*self, item.inner_type), self->items.len), item);
     self->items.len = new_len;
     return_ok({});
 } $unscoped_(fn);
@@ -398,7 +418,7 @@ fn_((ArrList_appendWithinN(ArrList* self, u_V$raw item, usize n))(void)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let new_len = self->items.len + n;
     claim_assert(new_len <= self->cap);
-    u_set$S(u_suffix$S(ArrList_itemsMut(*self, type), self->items.len), item);
+    u_memsetS(u_suffixS(ArrList_itemsMut(*self, type), self->items.len), item);
     self->items.len = new_len;
 }
 
@@ -407,7 +427,7 @@ fn_((ArrList_insert(ArrList* self, mem_Allocator gpa, usize idx, u_V$raw item))(
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let dst = try_(ArrList_addAtN(self, type, gpa, idx, 1));
-    u_copy$P(u_at$S(dst, 0), item.ref.as_const);
+    u_memcpy(u_atS(dst, 0), item.ref.as_const);
     return_ok({});
 } $unscoped_(fn);
 
@@ -424,9 +444,9 @@ fn_((ArrList_insertWithin(ArrList* self, usize idx, u_V$raw item))(void)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     claim_assert(self->cap > self->items.len);
     self->items.len += 1;
-    let to_move = u_slice$S(ArrList_items(*self, type), $r(idx, self->items.len - 1));
-    u_move$S(u_suffix$S(ArrList_itemsMut(*self, type), idx + 1), to_move);
-    u_copy$P(u_at$S(ArrList_itemsMut(*self, type), idx), item.ref.as_const);
+    let to_move = u_sliceS(ArrList_items(*self, type), $r(idx, self->items.len - 1));
+    u_memmoveS(u_suffixS(ArrList_itemsMut(*self, type), idx + 1), to_move);
+    u_memcpy(u_atS(ArrList_itemsMut(*self, type), idx), item.ref.as_const);
 }
 
 fn_((ArrList_insertS(ArrList* self, mem_Allocator gpa, usize idx, u_S_const$raw items))(mem_Err$void) $scope) {
@@ -434,7 +454,7 @@ fn_((ArrList_insertS(ArrList* self, mem_Allocator gpa, usize idx, u_S_const$raw 
     let type = items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let dst = try_(ArrList_addAtN(self, type, gpa, idx, items.len));
-    u_copy$S(dst, items);
+    u_memcpyS(dst, items);
     return_ok({});
 } $unscoped_(fn);
 
@@ -452,9 +472,9 @@ fn_((ArrList_insertWithinS(ArrList* self, usize idx, u_S_const$raw items))(void)
     claim_assert(self->cap >= self->items.len + items.len);
     let old_len = self->items.len;
     self->items.len += items.len;
-    let to_move = u_slice$S(ArrList_items(*self, type), $r(idx, old_len));
-    u_move$S(u_suffix$S(ArrList_itemsMut(*self, type), idx + items.len), to_move);
-    u_copy$S(u_slice$S(ArrList_itemsMut(*self, type), $r(idx, idx + items.len)), items);
+    let to_move = u_sliceS(ArrList_items(*self, type), $r(idx, old_len));
+    u_memmoveS(u_suffixS(ArrList_itemsMut(*self, type), idx + items.len), to_move);
+    u_memcpyS(u_sliceS(ArrList_itemsMut(*self, type), $r(idx, idx + items.len)), items);
 }
 
 fn_((ArrList_prepend(ArrList* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void) $scope) {
@@ -507,7 +527,7 @@ fn_((ArrList_prependWithinN(ArrList* self, u_V$raw item, usize n))(void)) {
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let slots = ArrList_addAtWithinN(self, type, 0, n);
-    u_set$S(slots, item);
+    u_memsetS(slots, item);
 }
 
 fn_((ArrList_replace(ArrList* self, mem_Allocator gpa, R range, u_S_const$raw new_items))(mem_Err$void) $scope) {
@@ -515,11 +535,11 @@ fn_((ArrList_replace(ArrList* self, mem_Allocator gpa, R range, u_S_const$raw ne
     let type = new_items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
-    let replacing = u_slice$S(ArrList_itemsMut(*self, type), range);
+    let replacing = u_sliceS(ArrList_itemsMut(*self, type), range);
     if (replacing.len < new_items.len) {
-        let to_overwrite = u_prefix$S(new_items, replacing.len);
-        let to_insert = u_suffix$S(new_items, replacing.len);
-        u_copy$S(replacing, to_overwrite);
+        let to_overwrite = u_prefixS(new_items, replacing.len);
+        let to_insert = u_suffixS(new_items, replacing.len);
+        u_memcpyS(replacing, to_overwrite);
         try_(ArrList_insertS(self, gpa, range.end, to_insert));
     } else {
         ArrList_replaceWithin(self, range, new_items);
@@ -540,21 +560,21 @@ fn_((ArrList_replaceWithin(ArrList* self, R range, u_S_const$raw new_items))(voi
     let type = new_items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
-    let replacing = u_slice$S(ArrList_itemsMut(*self, type), range);
+    let replacing = u_sliceS(ArrList_itemsMut(*self, type), range);
     if (replacing.len < new_items.len) {
-        let to_overwrite = u_prefix$S(new_items, replacing.len);
-        let to_insert = u_suffix$S(new_items, replacing.len);
-        u_copy$S(replacing, to_overwrite);
+        let to_overwrite = u_prefixS(new_items, replacing.len);
+        let to_insert = u_suffixS(new_items, replacing.len);
+        u_memcpyS(replacing, to_overwrite);
         ArrList_insertWithinS(self, range.end, to_insert);
     } else if (replacing.len > new_items.len) {
         let discard_len = len$R(range) - new_items.len;
-        u_copy$S(u_prefix$S(replacing, new_items.len), new_items);
-        let src = u_suffix$S(ArrList_items(*self, type), range.end);
-        u_move$S(u_prefix$S(u_suffix$S(ArrList_itemsMut(*self, type), range.end - discard_len), src.len), src);
-        u_set$S(u_suffix$S(ArrList_itemsMut(*self, type), self->items.len - discard_len), u_allocV(type));
+        u_memcpyS(u_prefixS(replacing, new_items.len), new_items);
+        let src = u_suffixS(ArrList_items(*self, type), range.end);
+        u_memmoveS(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), range.end - discard_len), src.len), src);
+        u_memsetS(u_suffixS(ArrList_itemsMut(*self, type), self->items.len - discard_len), u_allocV(type));
         self->items.len -= discard_len;
     } else {
-        u_copy$S(replacing, new_items);
+        u_memcpyS(replacing, new_items);
     }
 }
 
@@ -564,9 +584,9 @@ fn_((ArrList_pop(ArrList* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
     if (self->items.len == 0) { return_none(); }
-    let value = u_copy$P(u_allocV(type).ref, u_at$S(ArrList_items(*self, type), self->items.len - 1));
+    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrList_items(*self, type), self->items.len - 1));
     self->items.len -= 1;
-    return_some({ .inner = u_copy$P(ret_mem.ref, value.as_const).raw });
+    return_some({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
 fn_((ArrList_removeOrd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
@@ -574,9 +594,9 @@ fn_((ArrList_removeOrd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $sco
     let type = ret_mem.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
-    let value = u_copy$P(u_allocV(type).ref, u_at$S(ArrList_items(*self, type), idx));
+    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrList_items(*self, type), idx));
     ArrList_replaceWithin(self, $r(idx, idx + 1), u_allocA(0, type).ref.as_const);
-    return_({ .inner = u_copy$P(ret_mem.ref, value.as_const).raw });
+    return_({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
 fn_((ArrList_removeSwap(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
@@ -585,9 +605,9 @@ fn_((ArrList_removeSwap(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $sc
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
     if (self->items.len - 1 == idx) { return_(unwrap_(ArrList_pop(self, ret_mem))); }
-    let value =  u_copy$P(u_allocV(type).ref, u_at$S(ArrList_items(*self, type), idx));
-    u_copy$P(u_at$S(ArrList_itemsMut(*self, type), idx), unwrap_(ArrList_pop(self, u_allocV(type))).ref.as_const);
-    return_({ .inner = u_copy$P(ret_mem.ref, value.as_const).raw });
+    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrList_items(*self, type), idx));
+    u_memcpy(u_atS(ArrList_itemsMut(*self, type), idx), unwrap_(ArrList_pop(self, u_allocV(type))).ref.as_const);
+    return_({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
 fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
@@ -596,7 +616,7 @@ fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
 
     if (self->items.len == 0) { return_none(); }
-    let value = u_copy$P(u_allocV(type).ref, u_at$S(ArrList_items(*self, type), 0));
+    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrList_items(*self, type), 0));
     ArrList_replaceWithin(self, $r(0, 0 + 1), u_allocA(0, type).ref.as_const);
-    return_some({ .inner = u_copy$P(ret_mem.ref, value.as_const).raw });
+    return_some({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);

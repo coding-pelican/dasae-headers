@@ -16,7 +16,7 @@
         var_(rhs, usize) = len - 1; \
         while (lhs <= rhs) { \
             let_(mid, usize) = lhs + (rhs - lhs) / 2; \
-            switch (prim_cmp(Sli_getAt(sli, mid), val)) { \
+            switch (prim_ord(Sli_getAt(sli, mid), val)) { \
                 case_(cmp_Ord_eq, return_some(mid)); \
                 case_(cmp_Ord_lt, { rhs = mid - 1; } break); \
                 case_(cmp_Ord_gt, { lhs = mid + 1; } break); \
@@ -113,16 +113,16 @@ fn_((biSearch_raw(
                     blk_break_(cmp, prim_memcmp(Sli_at(sli, mid), val, type->size));
                 });
                 pattern_(TypeOrPrimNum_prim_num, (type), switch (*type) {
-                    case_(PrimNum_u8, blk_break_(cmp, prim_cmp(*as$(u8*)(Sli_at(sli, mid)), *as$(u8*)(val))));
-                    case_(PrimNum_u16, blk_break_(cmp, prim_cmp(*as$(u16*)(Sli_at(sli, mid)), *as$(u16*)(val))));
-                    case_(PrimNum_u32, blk_break_(cmp, prim_cmp(*as$(u32*)(Sli_at(sli, mid)), *as$(u32*)(val))));
-                    case_(PrimNum_u64, blk_break_(cmp, prim_cmp(*as$(u64*)(Sli_at(sli, mid)), *as$(u64*)(val))));
-                    case_(PrimNum_i8, blk_break_(cmp, prim_cmp(*as$(i8*)(Sli_at(sli, mid)), *as$(i8*)(val))));
-                    case_(PrimNum_i16, blk_break_(cmp, prim_cmp(*as$(i16*)(Sli_at(sli, mid)), *as$(i16*)(val))));
-                    case_(PrimNum_i32, blk_break_(cmp, prim_cmp(*as$(i32*)(Sli_at(sli, mid)), *as$(i32*)(val))));
-                    case_(PrimNum_i64, blk_break_(cmp, prim_cmp(*as$(i64*)(Sli_at(sli, mid)), *as$(i64*)(val))));
-                    case_(PrimNum_f32, blk_break_(cmp, prim_cmp(*as$(f32*)(Sli_at(sli, mid)), *as$(f32*)(val))));
-                    case_(PrimNum_f64, blk_break_(cmp, prim_cmp(*as$(f64*)(Sli_at(sli, mid)), *as$(f64*)(val))));
+                    case_(PrimNum_u8, blk_break_(cmp, prim_ord(*as$(u8*)(Sli_at(sli, mid)), *as$(u8*)(val))));
+                    case_(PrimNum_u16, blk_break_(cmp, prim_ord(*as$(u16*)(Sli_at(sli, mid)), *as$(u16*)(val))));
+                    case_(PrimNum_u32, blk_break_(cmp, prim_ord(*as$(u32*)(Sli_at(sli, mid)), *as$(u32*)(val))));
+                    case_(PrimNum_u64, blk_break_(cmp, prim_ord(*as$(u64*)(Sli_at(sli, mid)), *as$(u64*)(val))));
+                    case_(PrimNum_i8, blk_break_(cmp, prim_ord(*as$(i8*)(Sli_at(sli, mid)), *as$(i8*)(val))));
+                    case_(PrimNum_i16, blk_break_(cmp, prim_ord(*as$(i16*)(Sli_at(sli, mid)), *as$(i16*)(val))));
+                    case_(PrimNum_i32, blk_break_(cmp, prim_ord(*as$(i32*)(Sli_at(sli, mid)), *as$(i32*)(val))));
+                    case_(PrimNum_i64, blk_break_(cmp, prim_ord(*as$(i64*)(Sli_at(sli, mid)), *as$(i64*)(val))));
+                    case_(PrimNum_f32, blk_break_(cmp, prim_ord(*as$(f32*)(Sli_at(sli, mid)), *as$(f32*)(val))));
+                    case_(PrimNum_f64, blk_break_(cmp, prim_ord(*as$(f64*)(Sli_at(sli, mid)), *as$(f64*)(val))));
                     case_(PrimNum_none, $fallthrough);
                     default_(claim_unreachable);
                 });

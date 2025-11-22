@@ -36,21 +36,21 @@ extern "C" {
 
 #define defer(_Statement...) SYN__defer(_Statement)
 
-#define blk_defer    SYN__blk_defer
+#define blk_defer SYN__blk_defer
 #define blk_deferral SYN__blk_deferral
-#define break_defer  SYN__break_defer
+#define break_defer SYN__break_defer
 
-#define scope_defer                 SYN___scope_defer
-#define scope_deferral              SYN___scope_deferral
+#define scope_defer SYN___scope_defer
+#define scope_deferral SYN___scope_deferral
 #define defer_return(val_return...) SYN__defer_return(val_return)
 
 #else
 
 #define defer_(_Statement...) SYN__defer(_Statement)
 
-#define blk_defer    SYN__blk_defer
+#define blk_defer SYN__blk_defer
 #define blk_deferral SYN__blk_deferral
-#define break_defer  SYN__break_defer
+#define break_defer SYN__break_defer
 
 #endif /* !SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
 
@@ -59,18 +59,11 @@ extern "C" {
 // NOLINTBEGIN(bugprone-terminating-continue)
 #define defer__snapshot(_Statement...) OP__defer__snapshot(_Statement)
 
-#define SYN__defer(_Statement...) \
-    defer__snapshot(_Statement; goto __deferred)
+#define SYN__defer(_Statement...) defer__snapshot(_Statement; goto __deferred)
 
 #define SYN__blk_defer \
     do { \
-    defer__snapshot( \
-        if (__scope_defer.returns) { \
-            goto __deferred; \
-        } else { \
-            continue; \
-        } \
-    )
+    defer__snapshot(if (__scope_defer.returns) { goto __deferred; } else { continue; })
 
 #define SYN__blk_deferral \
     goto __deferred; \
@@ -78,18 +71,13 @@ extern "C" {
     while (false)
 
 #define SYN__break_defer \
-    { \
-        goto __deferred; \
-    }
+    { goto __deferred; }
 
 #define SYN___scope_defer \
     struct { \
         i32 curr; \
         bool returns; \
-    } __scope_defer = { \
-        .curr = 0, \
-        .returns = false \
-    }; \
+    } __scope_defer = {.curr = 0, .returns = false}; \
 __deferred: \
     switch (__scope_defer.curr) { \
     default: \

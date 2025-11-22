@@ -12,17 +12,17 @@ typedef enum engine_CanvasType : u8 {
 } engine_CanvasType;
 
 typedef struct engine_Canvas {
-    Grid$Color        buffer;
-    mem_Allocator     allocator;
-    Color             default_color;
+    Grid$Color buffer;
+    Color default_color;
     engine_CanvasType type;
+    mem_Allocator gpa;
 } engine_Canvas;
 prl_T_use$(engine_Canvas);
 
 typedef struct engine_Canvas_Config {
-    O$mem_Allocator    allocator;
-    u32                width;
-    u32                height;
+    O$mem_Allocator gpa;
+    u32 width;
+    u32 height;
     O$Color default_color;
     O$$(engine_CanvasType) type;
 } engine_Canvas_Config;
@@ -75,15 +75,16 @@ typedef struct engine_CanvasView {
     } rect;
     bool visible; // Visibility flag
 } engine_CanvasView;
+prl_T_use$(engine_CanvasView);
 
 typedef struct engine_CanvasView_Config {
     engine_Canvas* canvas;
-    m_V2i32          pos;
-    m_V2u32          size;
-    m_V2f32          scale;
-    bool           resizable_x;
-    bool           resizable_y;
-    bool           visible;
+    m_V2i32 pos;
+    m_V2u32 size;
+    m_V2f32 scale;
+    bool resizable_x;
+    bool resizable_y;
+    bool visible;
 } engine_CanvasView_Config;
 
 #if defined(__cplusplus)

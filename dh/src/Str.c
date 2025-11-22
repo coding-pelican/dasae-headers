@@ -37,9 +37,7 @@ usize u8_len(S_const$u8 self) {
 bool Str_eql(S_const$u8 lhs, S_const$u8 rhs) {
     debug_assert_nonnull(lhs.ptr);
     debug_assert_nonnull(rhs.ptr);
-
-    if (lhs.len != rhs.len) { return false; }
-    return mem_eqlBytes(lhs.ptr, rhs.ptr, lhs.len);
+    return mem_eqlBytes(lhs, rhs);
 }
 
 bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs) {
@@ -83,8 +81,8 @@ fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $
 
     let total_len = lhs.len + rhs.len;
     let result = try_(u_castE$((E$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), total_len))));
-    mem_copyBytes(result.ptr, lhs.ptr, lhs.len);
-    mem_copyBytes(result.ptr + lhs.len, rhs.ptr, rhs.len);
+    mem_copyBytes(result, lhs);
+    mem_copyBytes(result, rhs);
     return_ok(result);
 } $unscoped_(fn);
 
@@ -173,7 +171,7 @@ bool Str_contains(S_const$u8 haystack, S_const$u8 needle) {
 
     if (haystack.len < needle.len) { return false; }
     return eval_(bool $scope)(for_(($r(0, $incl(haystack.len - needle.len)))(i) {
-        if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
+        if (mem_eqlBytes(suffixS(haystack, i), needle)) {
             $break_(true);
         }
     })) eval_(else)({ $break_(false); }) $unscoped_(eval);
@@ -185,7 +183,7 @@ fn_((Str_find(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $sc
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
     return eval_(O$usize $scope)(for_(($r(start, $incl(haystack.len - needle.len)))(i) {
-        if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
+        if (mem_eqlBytes(suffixS(haystack, i), needle)) {
             $break_(some(i));
         }
     })) eval_(else)({ $break_(none()); }) $unscoped_(eval);
@@ -197,7 +195,7 @@ fn_((Str_rfind(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $s
 
     if (haystack.len <= start || haystack.len < needle.len) { return_none(); }
     for (usize i = prim_min(start, haystack.len - needle.len); i != as$(usize)(-1); i--) {
-        if (mem_eqlBytes(haystack.ptr + i, needle.ptr, needle.len)) {
+        if (mem_eqlBytes(suffixS(haystack, i), needle)) {
             return_some(i);
         }
     }
@@ -207,14 +205,14 @@ fn_((Str_rfind(S_const$u8 haystack, S_const$u8 needle, usize start))(O$usize) $s
 fn_((Str_startsWith(S_const$u8 self, S_const$u8 prefix))(O$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < prefix.len) { return_none(); }
-    if (!mem_eqlBytes(self.ptr, prefix.ptr, prefix.len)) { return_none(); }
+    if (!mem_eqlBytes(self, prefix)) { return_none(); }
     return_some(prefix.len);
 } $unscoped_(fn);
 
 fn_((Str_endsWith(S_const$u8 self, S_const$u8 suffix))(O$usize) $scope) {
     debug_assert_nonnull(self.ptr);
     if (self.len < suffix.len) { return_none(); }
-    if (!mem_eqlBytes(self.ptr + self.len - suffix.len, suffix.ptr, suffix.len)) { return_none(); }
+    if (!mem_eqlBytes(suffixS(self, self.len - suffix.len), suffix)) { return_none(); }
     return_some(self.len - suffix.len);
 } $unscoped_(fn);
 
@@ -278,23 +276,17 @@ StrHash Str_hash(S_const$u8 self) {
 cmp_fnCmp(S_const$u8) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(other.ptr);
-
-    let min_len = prim_min(self.len, other.len);
-    let cmp = mem_cmp(self.ptr, other.ptr, min_len);
+    let cmp = mem_ordBytes(self, other);
     if (cmp != 0) { return cmp; }
-
-    return prim_cmp(self.len, self.len);
+    return prim_ord(self.len, self.len);
 }
 
 cmp_fnCmp(S$u8) {
     debug_assert_nonnull(self.ptr);
     debug_assert_nonnull(other.ptr);
-
-    let min_len = prim_min(self.len, other.len);
-    let cmp = mem_cmp(self.ptr, other.ptr, min_len);
+    let cmp = mem_ordBytes(self.as_const, other.as_const);
     if (cmp != 0) { return cmp; }
-
-    return prim_cmp(self.len, self.len);
+    return prim_ord(self.len, self.len);
 }
 
 usize StrUtf8_len(S_const$u8 self) {

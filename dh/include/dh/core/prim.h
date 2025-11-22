@@ -51,104 +51,126 @@ typedef struct Void {
     u8 _bytes_zero[0];
 } Void;
 
-#define prim_memset(_ptr, _val, _len...)      __op__prim_memset(_ptr, _val, _len)
-#define prim_memcpy(_p_dst, _p_src, _len...)  __op__prim_memcpy(_p_dst, _p_src, _len)
+#define prim_memset(_ptr, _val, _len...) __op__prim_memset(_ptr, _val, _len)
+#define prim_memsetS(_s_dst, _val...) __op__prim_memsetS(_s_dst, _val)
+#define prim_memcpy(_p_dst, _p_src, _len...) __op__prim_memcpy(_p_dst, _p_src, _len)
+#define prim_memcpyS(_s_dst, _s_src...) __op__prim_memcpyS(_s_dst, _s_src)
 #define prim_memmove(_p_dst, _p_src, _len...) __op__prim_memmove(_p_dst, _p_src, _len)
-#define prim_memcmp(_p_lhs, _p_rhs, _len...)  __op__prim_memcmp(_p_lhs, _p_rhs, _len)
-#define prim_memchr(_ptr, _val, _len...)      __op__prim_memchr(_ptr, _val, _len)
-#define prim_alloca(_bytes...)                __op__prim_alloca(_bytes)
-#define prim_swap(_p_lhs, _p_rhs...) \
-    __op__prim_swap(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), pp_uniqTok(tmp), _p_lhs, _p_rhs)
+#define prim_memmoveS(_s_dst, _s_src...) __op__prim_memmoveS(_s_dst, _s_src)
+#define prim_memeql(_p_lhs, _p_rhs...) __op__prim_memeql(_p_lhs, _p_rhs)
+#define prim_memeqlS(_s_lhs, _s_rhs...) __op__prim_memeqlS(_s_lhs, _s_rhs)
+#define prim_memord(_p_lhs, _p_rhs...) __op__prim_memord(_p_lhs, _p_rhs)
+#define prim_memordS(_s_lhs, _s_rhs...) __op__prim_memordS(_s_lhs, _s_rhs)
+#define prim_memcmp(_p_lhs, _p_rhs, _len...) __op__prim_memcmp(_p_lhs, _p_rhs, _len)
+#define prim_alloca(_bytes...) __op__prim_alloca(_bytes)
+#define prim_swap(_p_lhs, _p_rhs...) __op__prim_swap(pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), pp_uniqTok(tmp), _p_lhs, _p_rhs)
+
+#define u8_n(_literal...) lit$((u8){_literal})
+#define u16_n(_literal...) lit$((u16){_literal})
+#define u32_n(_literal...) lit$((u32){_literal})
+#define u64_n(_literal...) lit$((u64){_literal})
+#define usize_n(_literal...) lit$((u128){_literal})
+
+#define i8_n(_literal...) lit$((i8){_literal})
+#define i16_n(_literal...) lit$((i16){_literal})
+#define i32_n(_literal...) lit$((i32){_literal})
+#define i64_n(_literal...) lit$((i64){_literal})
+#define isize_n(_literal...) lit$((i128){_literal})
+
+#define f32_n(_literal...) lit$((f32){_literal})
+#define f64_n(_literal...) lit$((f64){_literal})
 
 /*========== Arithmetic Operations ==========================================*/
 
-#define prim_add(_lhs, _rhs...)   __op__prim_add(_lhs, _rhs)
-#define prim_sub(_lhs, _rhs...)   __op__prim_sub(_lhs, _rhs)
-#define prim_mul(_lhs, _rhs...)   __op__prim_mul(_lhs, _rhs)
+#define prim_add(_lhs, _rhs...) __op__prim_add(_lhs, _rhs)
+#define prim_sub(_lhs, _rhs...) __op__prim_sub(_lhs, _rhs)
+#define prim_mul(_lhs, _rhs...) __op__prim_mul(_lhs, _rhs)
 #define flt_mulAdd(_x, _y, _z...) __op__flt_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
-#define prim_div(_lhs, _rhs...)   __op__prim_div(_lhs, _rhs)
-#define prim_mod(_lhs, _rhs...)   __op__prim_mod(_lhs, _rhs)
-#define flt_rem(_num, _denom...)  __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define prim_div(_lhs, _rhs...) __op__prim_div(_lhs, _rhs)
+#define prim_mod(_lhs, _rhs...) __op__prim_mod(_lhs, _rhs)
+#define flt_rem(_num, _denom...) __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
 
-#define prim_neg(_x...)        __op__prim_neg(_x)
+#define prim_neg(_x...) __op__prim_neg(_x)
 #define prim_abs_static(_x...) __op__prim_abs_static(_x)
-#define prim_abs(_x...)        __op__prim_abs(pp_uniqTok(x), _x)
-#define iint_abs(_x...)        __op__iint_abs(_x)
-#define flt_abs(_x...)         __op__flt_abs(_x)
+#define prim_abs(_x...) __op__prim_abs(pp_uniqTok(x), _x)
+#define iint_abs(_x...) __op__iint_abs(_x)
+#define flt_abs(_x...) __op__flt_abs(_x)
 #define prim_sgn_static(_x...) __op__prim_sgn_static(_x)
-#define prim_sgn(_x...)        __op__prim_sgn(pp_uniqTok(x), _x)
+#define prim_sgn(_x...) __op__prim_sgn(pp_uniqTok(x), _x)
 
-#define prim_not(_x...)     __op__prim_not(_x)
+#define prim_not(_x...) __op__prim_not(_x)
 #define prim_shl(_x, _y...) __op__prim_shl(_x, _y)
 #define prim_shr(_x, _y...) __op__prim_shr(_x, _y)
 #define prim_and(_x, _y...) __op__prim_and(_x, _y)
 #define prim_xor(_x, _y...) __op__prim_xor(_x, _y)
-#define prim_or(_x, _y...)  __op__prim_or(_x, _y)
+#define prim_or(_x, _y...) __op__prim_or(_x, _y)
 
-#define prim_cmp(_lhs, _rhs... /*(cmp_Ord)*/) __op__prim_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define prim_eq(_lhs, _rhs...)                __op__prim_eq(_lhs, _rhs)
-#define prim_ne(_lhs, _rhs...)                __op__prim_ne(_lhs, _rhs)
-#define prim_lt(_lhs, _rhs...)                __op__prim_lt(_lhs, _rhs)
-#define prim_gt(_lhs, _rhs...)                __op__prim_gt(_lhs, _rhs)
-#define prim_le(_lhs, _rhs...)                __op__prim_le(_lhs, _rhs)
-#define prim_ge(_lhs, _rhs...)                __op__prim_ge(_lhs, _rhs)
+#define prim_ord(_lhs, _rhs... /*(cmp_Ord)*/) __op__prim_ord(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define prim_eq(_lhs, _rhs...) __op__prim_eq(_lhs, _rhs)
+#define prim_ne(_lhs, _rhs...) __op__prim_ne(_lhs, _rhs)
+#define prim_lt(_lhs, _rhs...) __op__prim_lt(_lhs, _rhs)
+#define prim_gt(_lhs, _rhs...) __op__prim_gt(_lhs, _rhs)
+#define prim_le(_lhs, _rhs...) __op__prim_le(_lhs, _rhs)
+#define prim_ge(_lhs, _rhs...) __op__prim_ge(_lhs, _rhs)
 
-#define prim_min(val_lhs, val_rhs...)                    __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_min2(val_lhs, val_rhs...)                   __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_min3(val_1st, val_2nd, val_3rd...)          __op__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
-#define prim_min4(val_1st, val_2nd, val_3rd, val_4th...) __op__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
-#define prim_max(val_lhs, val_rhs...)                    __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max2(val_lhs, val_rhs...)                   __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
-#define prim_max3(val_1st, val_2nd, val_3rd...)          __op__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
-#define prim_max4(val_1st, val_2nd, val_3rd, val_4th...) __op__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
-#define prim_clamp(_x, _min, _max...)                    __op__prim_clamp(_x, _min, _max)
-#define prim_wrap(_x, _min, _max...)                     __op__prim_wrap(_x, _min, _max)
+#define prim_min(val_lhs, val_rhs...) __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min2(val_lhs, val_rhs...) __op__prim_min2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_min3(val_1st, val_2nd, val_3rd...) __op__prim_min3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_min4(val_1st, val_2nd, val_3rd, val_4th...) \
+    __op__prim_min4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_max(val_lhs, val_rhs...) __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max2(val_lhs, val_rhs...) __op__prim_max2(pp_uniqTok(lhs), pp_uniqTok(rhs), val_lhs, val_rhs)
+#define prim_max3(val_1st, val_2nd, val_3rd...) __op__prim_max3(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), val_1st, val_2nd, val_3rd)
+#define prim_max4(val_1st, val_2nd, val_3rd, val_4th...) \
+    __op__prim_max4(pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), val_1st, val_2nd, val_3rd, val_4th)
+#define prim_clamp(_x, _min, _max...) __op__prim_clamp(_x, _min, _max)
+#define prim_wrap(_x, _min, _max...) __op__prim_wrap(_x, _min, _max)
 
 /*========== Type Predicates ================================================*/
 
 #define isBool$(_T...) __op__isBool$(_T)
 #define isUInt$(_T...) __op__isUInt$(_T)
 #define isIInt$(_T...) __op__isIInt$(_T)
-#define isInt$(_T...)  __op__isInt$(_T)
-#define isFlt$(_T...)  __op__isFlt$(_T)
+#define isInt$(_T...) __op__isInt$(_T)
+#define isFlt$(_T...) __op__isFlt$(_T)
 
 /*========== Type Limits ====================================================*/
 
-#define uint_limit$(_T...)        __op__uint_limit$(_T)
-#define int_limitMin$(_T...)      __op__int_limitMin$(_T)
-#define int_limitMax$(_T...)      __op__int_limitMax$(_T)
+#define uint_limit$(_T...) __op__uint_limit$(_T)
+#define int_limitMin$(_T...) __op__int_limitMin$(_T)
+#define int_limitMax$(_T...) __op__int_limitMax$(_T)
 #define iint_limitMaxNgtv$(_T...) __op__iint_limitMaxNgtv$(_T)
 #define iint_limitMinNgtv$(_T...) __op__iint_limitMinNgtv$(_T)
 #define iint_limitMinPstv$(_T...) __op__iint_limitMinPstv$(_T)
 #define iint_limitMaxPstv$(_T...) __op__iint_limitMaxPstv$(_T)
 
-#define int_bits$(_T...)  __op__int_bits$(_T)
+#define int_bits$(_T...) __op__int_bits$(_T)
 #define int_bytes$(_T...) __op__int_bytes$(_T)
 
-#define flt_limitMin$(_T...)     __op__flt_limitMin$(_T)
-#define flt_limitMax$(_T...)     __op__flt_limitMax$(_T)
+#define flt_limitMin$(_T...) __op__flt_limitMin$(_T)
+#define flt_limitMax$(_T...) __op__flt_limitMax$(_T)
 #define flt_limitMaxNgtv$(_T...) __op__flt_limitMaxNgtv$(_T)
 #define flt_limitMinNgtv$(_T...) __op__flt_limitMinNgtv$(_T)
 #define flt_limitMinPstv$(_T...) __op__flt_limitMinPstv$(_T)
 #define flt_limitMaxPstv$(_T...) __op__flt_limitMaxPstv$(_T)
 
-#define flt_bits$(_T...)  __op__flt_bits$(_T)
+#define flt_bits$(_T...) __op__flt_bits$(_T)
 #define flt_bytes$(_T...) __op__flt_bytes$(_T)
 
-#define flt_eps$(_T...)     __op__flt_eps$(_T)
-#define flt_nan$(_T...)     __op__flt_nan$(_T)
-#define flt_inf$(_T...)     __op__flt_inf$(_T)
+#define flt_eps$(_T...) __op__flt_eps$(_T)
+#define flt_nan$(_T...) __op__flt_nan$(_T)
+#define flt_inf$(_T...) __op__flt_inf$(_T)
 #define flt_infNgtv$(_T...) __op__flt_infNgtv$(_T)
 #define flt_infPstv$(_T...) __op__flt_infPstv$(_T)
 
 /*========== Integer Arithmetic Operations ==================================*/
 
-#define int_add(_lhs, _rhs...)    __op__int_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define int_sub(_lhs, _rhs...)    __op__int_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define int_mul(_lhs, _rhs...)    __op__int_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_add(_lhs, _rhs...) __op__int_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_sub(_lhs, _rhs...) __op__int_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_mul(_lhs, _rhs...) __op__int_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define int_mulAdd(_x, _y, _z...) __op__int_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
-#define int_div(_num, _denom...)  __op__int_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
-#define int_mod(_num, _denom...)  __op__int_mod(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define int_div(_num, _denom...) __op__int_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define int_mod(_num, _denom...) __op__int_mod(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
 
 #define iint_neg(_x...) __op__iint_neg(pp_uniqTok(x), _x)
 
@@ -163,29 +185,29 @@ typedef struct Void {
 
 /*========== Integer Min/Max/Clamp Operations ===============================*/
 
-#define int_min(_lhs, _rhs...)     __op__int_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define int_max(_lhs, _rhs...)     __op__int_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_min(_lhs, _rhs...) __op__int_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_max(_lhs, _rhs...) __op__int_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define int_clamp(_x, _lo, _hi...) __op__int_clamp(_x, _lo, _hi)
 
 /*========== Bitwise Operations =============================================*/
 
-#define int_not(_x...)         __op__int_not(pp_uniqTok(x), _x)
+#define int_not(_x...) __op__int_not(pp_uniqTok(x), _x)
 #define int_and(_lhs, _rhs...) __op__int_and(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define int_or(_lhs, _rhs...)  __op__int_or(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define int_or(_lhs, _rhs...) __op__int_or(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define int_xor(_lhs, _rhs...) __op__int_xor(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define int_shl(_x, _n...)     __op__int_shl(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define int_shr(_x, _n...)     __op__int_shr(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_shl(_x, _n...) __op__int_shl(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_shr(_x, _n...) __op__int_shr(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 
 /*========== Bit Manipulation Operations ====================================*/
 
-#define int_countOnes(_x...)          __op__int_countOnes(pp_uniqTok(x), _x)
-#define int_countZeros(_x...)         __op__int_countZeros(pp_uniqTok(x), _x)
-#define int_countLeadingZeros(_x...)  __op__int_countLeadingZeros(pp_uniqTok(x), _x)
+#define int_countOnes(_x...) __op__int_countOnes(pp_uniqTok(x), _x)
+#define int_countZeros(_x...) __op__int_countZeros(pp_uniqTok(x), _x)
+#define int_countLeadingZeros(_x...) __op__int_countLeadingZeros(pp_uniqTok(x), _x)
 #define int_countTrailingZeros(_x...) __op__int_countTrailingZeros(pp_uniqTok(x), _x)
-#define int_rotateL(_x, _n...)        __op__int_rotateL(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define int_rotateR(_x, _n...)        __op__int_rotateR(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define int_swapBytes(_x...)          __op__int_swapBytes(pp_uniqTok(x), _x)
-#define int_reverseBits(_x...)        __op__int_reverseBits(pp_uniqTok(x), _x)
+#define int_rotateL(_x, _n...) __op__int_rotateL(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_rotateR(_x, _n...) __op__int_rotateR(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define int_swapBytes(_x...) __op__int_swapBytes(pp_uniqTok(x), _x)
+#define int_reverseBits(_x...) __op__int_reverseBits(pp_uniqTok(x), _x)
 
 /*========== Integer Exponential and Logarithm Operations ===================*/
 
@@ -194,19 +216,19 @@ typedef struct Void {
 
 /*========== Integer Query Operations =======================================*/
 
-#define int_isOdd(_x...)     __op__int_isOdd(_x)
-#define int_isEven(_x...)    __op__int_isEven(_x)
-#define int_isPow2(_x...)    __op__int_isPow2(pp_uniqTok(x), _x)
+#define int_isOdd(_x...) __op__int_isOdd(_x)
+#define int_isEven(_x...) __op__int_isEven(_x)
+#define int_isPow2(_x...) __op__int_isPow2(pp_uniqTok(x), _x)
 #define int_hasSglBit(_x...) __op__int_hasSglBit(_x)
 
 /*========== Floating-Point Arithmetic Operations ===========================*/
 
-#define flt_add(_lhs, _rhs...)    __op__flt_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define flt_sub(_lhs, _rhs...)    __op__flt_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define flt_mul(_lhs, _rhs...)    __op__flt_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_add(_lhs, _rhs...) __op__flt_add(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_sub(_lhs, _rhs...) __op__flt_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_mul(_lhs, _rhs...) __op__flt_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_mulAdd(_x, _y, _z...) __op__flt_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
-#define flt_div(_num, _denom...)  __op__flt_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
-#define flt_rem(_num, _denom...)  __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define flt_div(_num, _denom...) __op__flt_div(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
+#define flt_rem(_num, _denom...) __op__flt_rem(pp_uniqTok(num), pp_uniqTok(denom), _num, _denom)
 
 #define flt_neg(_x...) __op__flt_neg(_x)
 
@@ -221,67 +243,67 @@ typedef struct Void {
 
 /*========== Floating-Point Min/Max/Clamp Operations ========================*/
 
-#define flt_min(_lhs, _rhs...)     __op__flt_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
-#define flt_max(_lhs, _rhs...)     __op__flt_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_min(_lhs, _rhs...) __op__flt_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_max(_lhs, _rhs...) __op__flt_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_clamp(_x, _lo, _hi...) __op__flt_clamp(_x, _lo, _hi)
 
 /*========== Floating-Point Classification ==================================*/
 
-#define flt_isNan(_x...)    __op__flt_isNan(_x)
-#define flt_isInf(_x...)    __op__flt_isInf(_x)
+#define flt_isNan(_x...) __op__flt_isNan(_x)
+#define flt_isInf(_x...) __op__flt_isInf(_x)
 #define flt_isFinite(_x...) __op__flt_isFinite(_x)
 #define flt_isNormal(_x...) __op__flt_isNormal(_x)
 
 /*========== Floating-Point Rounding Operations =============================*/
 
-#define flt_ceil(_x...)  __op__flt_ceil(pp_uniqTok(x), _x)
+#define flt_ceil(_x...) __op__flt_ceil(pp_uniqTok(x), _x)
 #define flt_floor(_x...) __op__flt_floor(pp_uniqTok(x), _x)
 #define flt_round(_x...) __op__flt_round(pp_uniqTok(x), _x)
 #define flt_trunc(_x...) __op__flt_trunc(pp_uniqTok(x), _x)
 
 /*========== Floating-Point Power and Root Operations =======================*/
 
-#define flt_sqrt(_x...)      __op__flt_sqrt(pp_uniqTok(x), _x)
-#define flt_cbrt(_x...)      __op__flt_cbrt(pp_uniqTok(x), _x)
-#define flt_sq(_x...)        __op__flt_sq(pp_uniqTok(x), _x)
-#define flt_cb(_x...)        __op__flt_cb(pp_uniqTok(x), _x)
+#define flt_sqrt(_x...) __op__flt_sqrt(pp_uniqTok(x), _x)
+#define flt_cbrt(_x...) __op__flt_cbrt(pp_uniqTok(x), _x)
+#define flt_sq(_x...) __op__flt_sq(pp_uniqTok(x), _x)
+#define flt_cb(_x...) __op__flt_cb(pp_uniqTok(x), _x)
 #define flt_hypot(_x, _y...) __op__flt_hypot(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 
 /*========== Floating-Point Exponential and Logarithm =======================*/
 
-#define flt_exp(_x...)      __op__flt_exp(pp_uniqTok(x), _x)
-#define flt_exp2(_x...)     __op__flt_exp2(pp_uniqTok(x), _x)
+#define flt_exp(_x...) __op__flt_exp(pp_uniqTok(x), _x)
+#define flt_exp2(_x...) __op__flt_exp2(pp_uniqTok(x), _x)
 #define flt_powI(_x, _y...) __op__flt_powI(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 #define flt_powF(_x, _y...) __op__flt_powF(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
-#define flt_ln(_x...)       __op__flt_ln(pp_uniqTok(x), _x)
-#define flt_log2(_x...)     __op__flt_log2(pp_uniqTok(x), _x)
-#define flt_log10(_x...)    __op__flt_log10(pp_uniqTok(x), _x)
+#define flt_ln(_x...) __op__flt_ln(pp_uniqTok(x), _x)
+#define flt_log2(_x...) __op__flt_log2(pp_uniqTok(x), _x)
+#define flt_log10(_x...) __op__flt_log10(pp_uniqTok(x), _x)
 
 /*========== Floating-Point Trigonometric Functions =========================*/
 
-#define flt_sin(_x...)       __op__flt_sin(pp_uniqTok(x), _x)
-#define flt_cos(_x...)       __op__flt_cos(pp_uniqTok(x), _x)
-#define flt_tan(_x...)       __op__flt_tan(pp_uniqTok(x), _x)
-#define flt_asin(_x...)      __op__flt_asin(pp_uniqTok(x), _x)
-#define flt_acos(_x...)      __op__flt_acos(pp_uniqTok(x), _x)
-#define flt_atan(_x...)      __op__flt_atan(pp_uniqTok(x), _x)
+#define flt_sin(_x...) __op__flt_sin(pp_uniqTok(x), _x)
+#define flt_cos(_x...) __op__flt_cos(pp_uniqTok(x), _x)
+#define flt_tan(_x...) __op__flt_tan(pp_uniqTok(x), _x)
+#define flt_asin(_x...) __op__flt_asin(pp_uniqTok(x), _x)
+#define flt_acos(_x...) __op__flt_acos(pp_uniqTok(x), _x)
+#define flt_atan(_x...) __op__flt_atan(pp_uniqTok(x), _x)
 #define flt_atan2(_y, _x...) __op__flt_atan2(pp_uniqTok(y), pp_uniqTok(x), _y, _x)
 
 /*========== Floating-Point Hyperbolic Functions ============================*/
 
-#define flt_sinh(_x...)  __op__flt_sinh(pp_uniqTok(x), _x)
-#define flt_cosh(_x...)  __op__flt_cosh(pp_uniqTok(x), _x)
-#define flt_tanh(_x...)  __op__flt_tanh(pp_uniqTok(x), _x)
+#define flt_sinh(_x...) __op__flt_sinh(pp_uniqTok(x), _x)
+#define flt_cosh(_x...) __op__flt_cosh(pp_uniqTok(x), _x)
+#define flt_tanh(_x...) __op__flt_tanh(pp_uniqTok(x), _x)
 #define flt_asinh(_x...) __op__flt_asinh(pp_uniqTok(x), _x)
 #define flt_acosh(_x...) __op__flt_acosh(pp_uniqTok(x), _x)
 #define flt_atanh(_x...) __op__flt_atanh(pp_uniqTok(x), _x)
 
 /*========== Floating-Point IEEE 754 Operations =============================*/
 
-#define flt_copySgn(_x, _y...)   __op__flt_copySgn(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
+#define flt_copySgn(_x, _y...) __op__flt_copySgn(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 #define flt_nextAfter(_x, _y...) __op__flt_nextAfter(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
-#define flt_scalb(_x, _n...)     __op__flt_scalb(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define flt_ilogb(_x...)         __op__flt_ilogb(pp_uniqTok(x), _x)
+#define flt_scalb(_x, _n...) __op__flt_scalb(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
+#define flt_ilogb(_x...) __op__flt_ilogb(pp_uniqTok(x), _x)
 
 /*===========================================================================*/
 /*                          IMPLEMENTATION SECTION                           */
@@ -310,18 +332,19 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     if (len == 0 || lhs == rhs) { return 0; }
     return memcmp(lhs, rhs, len);
 }
-$inline_always
-$static P_const$raw prim__memchr(P_const$raw ptr, u8 val, usize len) {
-    if (len == 0) { return null; }
-    return memchr(ptr, val, len);
-}
 #endif /* UNUSED_CODE */
 
 #define __op__prim_memset(_ptr, _val, _len...)      memset(_ptr, _val, _len)
+#define __op__prim_memsetS(_s_dst, _val...)         u_castS$((TypeOf(_s_dst))(u_memsetS(u_anyS(_s_dst), u_anyV(make$((TypeOf(*(_s_dst).ptr))_val)))))
 #define __op__prim_memcpy(_p_dst, _p_src, _len...)  memcpy(_p_dst, _p_src, _len)
+#define __op__prim_memcpyS(_s_dst, _s_src...)       u_castS$((TypeOf(_s_dst))(u_memcpyS(u_anyS(_s_dst), u_anyS(make$((TypeOf(_s_dst.as_const))_s_src)))))
 #define __op__prim_memmove(_p_dst, _p_src, _len...) memmove(_p_dst, _p_src, _len)
+#define __op__prim_memmoveS(_s_dst, _s_src...)      u_castS$((TypeOf(_s_dst))(u_memmoveS(u_anyS(_s_dst), u_anyS(make$((TypeOf(_s_dst.as_const))_s_src)))))
+#define __op__prim_memeql(_p_lhs, _p_rhs...)        u_castP$((TypeOf(_p_lhs))(u_memeql(u_anyP(_p_lhs), u_anyP(make$((TypeOf(_p_lhs))_p_rhs)))))
+#define __op__prim_memeqlS(_s_lhs, _s_rhs...)       u_castS$((TypeOf(_s_lhs))(u_memeqlS(u_anyS(_s_lhs), u_anyS(make$((TypeOf(_s_lhs.as_const))_s_rhs)))))
+#define __op__prim_memord(_p_lhs, _p_rhs...)        u_castP$((TypeOf(_p_lhs))(u_memord(u_anyP(_p_lhs), u_anyP(make$((TypeOf(_p_lhs))_p_rhs)))))
+#define __op__prim_memordS(_s_lhs, _s_rhs...)       u_castS$((TypeOf(_s_lhs))(u_memordS(u_anyS(_s_lhs), u_anyS(make$((TypeOf(_s_lhs.as_const))_s_rhs)))))
 #define __op__prim_memcmp(_p_lhs, _p_rhs, _len...)  memcmp(_p_lhs, _p_rhs, _len)
-#define __op__prim_memchr(_ptr, _val, _len...)      memchr(_ptr, _val, _len)
 #define __op__prim_alloca(_bytes...)                alloca(_bytes)
 
 #define __op__prim_swap(__p_lhs, __p_rhs, __tmp, _p_lhs, _p_rhs...) blk({ \
@@ -358,7 +381,7 @@ $static P_const$raw prim__memchr(P_const$raw ptr, u8 val, usize len) {
 #define __op__prim_xor(_x, _y...) ((_x) ^ (_y))
 #define __op__prim_or(_x, _y...)  ((_x) | (_y))
 
-#define __op__prim_cmp(__lhs, __rhs, _lhs, _rhs...) blk({ \
+#define __op__prim_ord(__lhs, __rhs, _lhs, _rhs...) blk({ \
     let __lhs = _lhs; \
     let __rhs = _rhs; \
     (__lhs < __rhs) ? cmp_Ord_lt \

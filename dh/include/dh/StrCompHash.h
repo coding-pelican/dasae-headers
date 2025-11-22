@@ -213,16 +213,16 @@ static $inline fn_((StrCompHash__recur(const u8* ptr, usize len))(u32));
 
 #if on_comptime
 #define StrCompHash_calculateRaw(_raw_str) comp_op__StrCompHash_calculateRaw(_raw_str)
-#define StrCompHash_createRaw(_raw_str)    comp_op__StrCompHash_createRaw(_raw_str)
+#define StrCompHash_createRaw(_raw_str) comp_op__StrCompHash_createRaw(_raw_str)
 #endif /* on_comptime */
 #define comp_op__StrCompHash_calculateRaw(_raw_str) \
     /** Calculate hash value from a compile-time string literal */ \
     ((u32)StrCompHash__recur(_raw_str, sizeof(_raw_str) - 1))
 #define comp_op__StrCompHash_createRaw(_raw_str) \
     /** Create a StrCompHash from a compile-time string literal */ \
-    ((StrCompHash){ .value = StrCompHash_calculateRaw(_raw_str) })
+    ((StrCompHash){.value = StrCompHash_calculateRaw(_raw_str)})
 
-#define comp_op__StrCompHash__char1(_raw_ch)  (as$(u32)(_raw_ch))
+#define comp_op__StrCompHash__char1(_raw_ch) (as$(u32)(_raw_ch))
 #define comp_op__StrCompHash__char2(_raw_str) (as$(u32)((_raw_str)[1] + 65599 * (_raw_str)[0]))
 #define comp_op__StrCompHash__char3(_raw_str) (as$(u32)((_raw_str)[2] + 65599 * StrCompHash__char2(_raw_str)))
 #define comp_op__StrCompHash__char4(_raw_str) (as$(u32)((_raw_str)[3] + 65599 * StrCompHash__char3(_raw_str)))
@@ -245,7 +245,7 @@ $inline_always fn_((StrCompHash_calculate(const u8* ptr, usize len))(u32)) {
     return StrCompHash__recur(ptr, len);
 }
 $inline_always fn_((StrCompHash_create(S_const$u8 str))(StrCompHash)) {
-    return (StrCompHash){ .value = StrCompHash_calculate(str.ptr, str.len) };
+    return (StrCompHash){.value = StrCompHash_calculate(str.ptr, str.len)};
 }
 $inline_always fn_((StrCompHash_value(StrCompHash self))(u32)) {
     return self.value;

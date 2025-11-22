@@ -47,14 +47,18 @@ typedef TypeOf(void*) P$raw;
      */ \
     comp_op__ptrCast$(TDestRawptr, var_rawptr)
 
-#define intFromPtr ptrToInt
+#define intFromPtr(val_rawptr) \
+    /** \
+     * @brief Convert rawptr to int(usize) \
+     */ \
+    comp_op__ptrToInt(val_rawptr)
 #define ptrToInt(val_rawptr) \
     /** \
      * @brief Convert rawptr to int(usize) \
      */ \
     comp_op__ptrToInt(val_rawptr)
-
-#define rawptrFromInt$ intToRawptr
+#define ptrFromInt$    intToPtr$
+#define rawptrFromInt$ intToPtr$
 #define intToPtr$(TDestRawptr, val_int) \
     /** \
      * @brief Convert int to rawptr \

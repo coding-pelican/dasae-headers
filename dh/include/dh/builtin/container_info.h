@@ -59,8 +59,7 @@ extern "C" {
      * @return Reference type of the container \
      */ \
     __block_inline__RefType$(_T)
-#define __block_inline__RefType$(_T...) \
-    TypeOf(_T*)
+#define __block_inline__RefType$(_T...) TypeOf(_T*)
 
 #define DerefType$(_T...) \
     /** \
@@ -70,8 +69,7 @@ extern "C" {
      * @return Dereference type of the container \
      */ \
     __block_inline__DerefType$(_T)
-#define __block_inline__DerefType$(_T...) \
-    TypeOf(*as$(_T)(null))
+#define __block_inline__DerefType$(_T...) TypeOf(*as$(_T)(null))
 #define DerefTypeUnqual$(_T...) \
     /** \
      * @brief Get dereference type of a container type at compile time \
@@ -80,8 +78,7 @@ extern "C" {
      * @return Dereference type of the container \
      */ \
     __block_inline__DerefTypeUnqual$(_T)
-#define __block_inline__DerefTypeUnqual$(_T...) \
-    TypeOfUnqual(*as$(_T)(null))
+#define __block_inline__DerefTypeUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
 
 #define FieldType$(_T, _field...) \
     /** \
@@ -147,32 +144,26 @@ extern "C" {
 
 /*========== Implementation Macros =========================================*/
 
-#define block_inline__offsetTo(_T, _field...) \
-    __builtin_offsetof(_T, _field)
+#define block_inline__offsetTo(_T, _field...) __builtin_offsetof(_T, _field)
 
-#define block_inline__structPtrFrom(_p_field, _T, _field...) \
-    as$(_T*)(as$(u8*)(((FieldType$(_T, _field)*, _p_field)) - offsetTo(_T, _field)))
+#define block_inline__structPtrFrom(_p_field, _T, _field...) as$(_T*)(as$(u8*)(((FieldType$(_T, _field)*, _p_field)) - offsetTo(_T, _field)))
 
-#define block_inline__FieldType$(_T, _field...) \
-    TypeOf((as$(_T*)(null))->_field)
+#define block_inline__FieldType$(_T, _field...) TypeOf((as$(_T*)(null))->_field)
 
-#define block_inline__FieldType$Unqual(_T, _field...) \
-    TypeOfUnqual((as$(_T*)(null))->_field)
+#define block_inline__FieldType$Unqual(_T, _field...) TypeOfUnqual((as$(_T*)(null))->_field)
 
-#define block_inline__sameFieldType(_T, _field, _TExpected...) \
-    isSameType$(FieldType$(_T, _field), _TExpected)
+#define block_inline__sameFieldType(_T, _field, _TExpected...) isSameType$(FieldType$(_T, _field), _TExpected)
 
-#define block_inline__sameFieldTypeUnqual(_T, _field, _TExpected...) \
-    isSameTypeUnqual(FieldType$Unqual(_T, _field), _TExpected)
+#define block_inline__sameFieldTypeUnqual(_T, _field, _TExpected...) isSameTypeUnqual(FieldType$Unqual(_T, _field), _TExpected)
 
-#define block_inline__fieldPtrFrom(_p_struct, _field...) \
-    (&((_p_struct)->_field))
+#define block_inline__fieldPtrFrom(_p_struct, _field...) (&((_p_struct)->_field))
 
-#define block_inline__fieldPadding(__offset, __align, _T, _field...) ({ \
-    const usize __offset = offsetTo(_T, _field); \
-    const usize __align = alignOf(FieldType$(_T, _field)); \
-    __offset - (__offset & ~(__align - 1)); \
-})
+#define block_inline__fieldPadding(__offset, __align, _T, _field...) \
+    ({ \
+        const usize __offset = offsetTo(_T, _field); \
+        const usize __align = alignOf(FieldType$(_T, _field)); \
+        __offset - (__offset & ~(__align - 1)); \
+    })
 
 #define block_inline__fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
     isSameType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
@@ -194,7 +185,7 @@ struct Container {
 };
 
 void example_usage(void) {
-    struct Container cont = { 0 };
+    struct Container cont = {0};
     struct Data* data_ptr = &cont.data;
 
     /* Container operations */

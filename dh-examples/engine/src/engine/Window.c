@@ -2,39 +2,50 @@
 #include "engine/Canvas.h"
 #include "Backend_Internal.h"
 
+T_use$((engine_CanvasView)(
+    ArrList_fromBuf,
+    ArrList_init,
+    ArrList_fini,
+    ArrList_addBackWithin,
+));
+
 fn_((engine_Window_init(engine_Window_Config config))(E$P$engine_Window) $guard) {
     debug_assert(0 < config.rect_size.x);
     debug_assert(0 < config.rect_size.y);
 
     /* Create window */
-    let allocator = unwrap_(config.allocator);
-    let window    = u_castP$((engine_Window*)(try_(mem_Allocator_create(allocator, typeInfo$(engine_Window)))));
-    errdefer_($ignore, mem_Allocator_destroy(allocator, u_anyP(window)));
-    window->allocator = allocator;
+    let gpa = unwrap_(config.gpa);
+    let window = u_castP$((engine_Window*)(try_(mem_Allocator_create(gpa, typeInfo$(engine_Window)))));
+    errdefer_($ignore, mem_Allocator_destroy(gpa, u_anyP(window)));
+    window->gpa = gpa;
     /* Create composite buffer */
-    let rect_size        = config.rect_size;
+    let rect_size = config.rect_size;
     let composite_buffer = try_(engine_Canvas_init((engine_Canvas_Config){
-        .allocator     = some(allocator),
-        .width         = rect_size.x,
-        .height        = rect_size.y,
-        .type          = some(engine_CanvasType_rgba),
-        .default_color = some(expr_(Color $scope)if_none(config.default_color) {
+        .gpa = some(gpa),
+        .width = rect_size.x,
+        .height = rect_size.y,
+        .type = some(engine_CanvasType_rgba),
+        .default_color = some(expr_(Color $scope)(if_none(config.default_color) {
             $break_(engine_Window_composite_buffer_color_default);
-        } else_some(color) {
-            $break_(expr_(Color $scope) if (color.a != ColorChannel_alpha_opaque) {
+        }) expr_(else_some(color))({
+            $break_(expr_(Color $scope)(if (color.a != ColorChannel_alpha_opaque) {
                 $break_(engine_Window_composite_buffer_color_default);
-            } else {
+            }) expr_(else)({
                 $break_(color);
-            } $unscoped_(expr));
-        } $unscoped_(expr)),
+            }) $unscoped_(expr));
+        }) $unscoped_(expr)),
     }));
     errdefer_($ignore, engine_Canvas_fini(composite_buffer));
     window->composite_buffer = composite_buffer;
     /* Init canvas views */
-    window->view.count = 0;
+    window->views_buf = config.views_buf;
+    if_some((window->views_buf)(views_buf)) {
+        window->views = ArrList_fromBuf$engine_CanvasView(views_buf);
+    } else_none {
+        window->views = try_(ArrList_init$engine_CanvasView(gpa, engine_Window_view_count_limit));
+    };
     /* Reserve backend for init */
     asg_lit((&window->backend)(none()));
-
     /* Created successfully */
     return_ok(window);
 } $unguarded_(fn);
@@ -43,8 +54,11 @@ fn_((engine_Window_fini(engine_Window* self))(void)) {
     debug_assert_nonnull(self);
     debug_assert_nonnull(self->composite_buffer);
 
+    if_none((self->views_buf)) {
+        ArrList_fini$engine_CanvasView(&self->views, self->gpa);
+    }
     engine_Canvas_fini(self->composite_buffer);
-    mem_Allocator_destroy(self->allocator, u_anyP(self));
+    mem_Allocator_destroy(self->gpa, u_anyP(self));
 }
 
 fn_((engine_Window_update(engine_Window* self))(E$void) $scope) {
@@ -53,8 +67,7 @@ fn_((engine_Window_update(engine_Window* self))(E$void) $scope) {
 
     /* resize */
     let res = engine_Window_getRes(self);
-    for (u32 id = 0; id < self->view.count; ++id) {
-        let view = A_at((self->view.list)[id]);
+    for_(($s(self->views.items))(view) {
         if (!view->visible) { continue; }
         let size = blk({
             var full = view->rect.size;
@@ -68,7 +81,7 @@ fn_((engine_Window_update(engine_Window* self))(E$void) $scope) {
             size.y
         ));
         view->rect.size = size;
-    }
+    });
     return_ok({});
 } $unscoped_(fn);
 
@@ -79,24 +92,18 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
 
     // Skip presentation if window is minimized
     if (engine_Window_isMinimized(self)) { return; }
-
     // Clear composite buffer
     engine_Canvas_clear(self->composite_buffer, none$((O$Color)));
-
     // Compose all visible canvas views
-    for (u32 id = 0; id < self->view.count; ++id) {
-        let view = A_at((self->view.list)[id]);
+    for_(($s(self->views.items))(view) {
         if (!view->visible) { continue; }
         if (!view->canvas) { continue; }
-
         engine_Canvas_blit(
-            self->composite_buffer,
-            view->canvas,
+            self->composite_buffer, view->canvas,
             as$(i32)(view->pos_on_window.top_left.x),
             as$(i32)(view->pos_on_window.top_left.y)
         );
-    }
-
+    });
     // Present to platform
     engine_Backend_presentBuffer(unwrap_(self->backend));
 }
@@ -104,17 +111,18 @@ fn_((engine_Window_present(engine_Window* self))(void)) {
 fn_((engine_Window_appendView(engine_Window* self, engine_CanvasView_Config config))(O$u32) $scope) {
     debug_assert_nonnull(self);
 
-    if (engine_Window_view_count_limit <= self->view.count) { return_none(); }
+    if (engine_Window_view_count_limit <= self->views.items.len) { return_none(); }
     return_some(blk({
-        let view                     = A_at((self->view.list)[self->view.count]);
-        view->canvas                 = config.canvas;
+        let id = self->views.items.len;
+        let view = ArrList_addBackWithin$engine_CanvasView(&self->views);
+        view->canvas = config.canvas;
         view->pos_on_window.top_left = config.pos;
-        view->rect.size              = config.size;
-        view->rect.scale             = config.scale;
-        view->rect.resizable.x       = config.resizable_x;
-        view->rect.resizable.y       = config.resizable_y;
-        view->visible                = config.visible;
-        blk_return self->view.count++;
+        view->rect.size = config.size;
+        view->rect.scale = config.scale;
+        view->rect.resizable.x = config.resizable_x;
+        view->rect.resizable.y = config.resizable_y;
+        view->visible = config.visible;
+        blk_return id;
     }));
 } $unscoped_(fn);
 

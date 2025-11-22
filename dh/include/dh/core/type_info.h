@@ -40,41 +40,36 @@ typedef union TypeInfo {
     u64 packed;
 } TypeInfo;
 /// Get type information for meta
-#define typeInfo$(_T... /*(TypeInfo)*/)                                     __step__typeInfo$(_T)
+#define typeInfo$(_T... /*(TypeInfo)*/) __step__typeInfo$(_T)
 /// Compare equality of type information
 #define TypeInfo_eq(_lhs /*: TypeInfo*/, _rhs /*: TypeInfo*/... /*(bool)*/) __step__TypeInfo_eq(_lhs, _rhs)
 
 /// For explicit materialization type representation of abstract generic types
 #define typeAsg(var_addr_dest, val_src... /* var_addr_dest */) comp_op__typeAsg(pp_uniqTok(addr_dest), var_addr_dest, val_src)
-#define typeCast$(TDest_w_ValSrc...) \
-    pp_expand(pp_defer(type$)(pp_Tuple_unwrapSufCommaExpand TDest_w_ValSrc))
+#define typeCast$(TDest_w_ValSrc...) pp_expand(pp_defer(type$)(pp_Tuple_unwrapSufCommaExpand TDest_w_ValSrc))
 
 /*========== Macros and Implementations =====================================*/
 
-#define __step__typeInfo$(_T...)           lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
+#define __step__typeInfo$(_T...) lit$((TypeInfo){.size = sizeOf$(_T), .align = alignOf$(_T)})
 #define __step__TypeInfo_eq(_lhs, _rhs...) ((_lhs).packed == (_rhs).packed)
 
 
 #if UNUSED_CODE
-#define comp_op__type$(__src, T_Dest, val_src...) blk({ \
-    var __src = val_src; \
-    claim_assert_static_msg( \
-        !isSameType$(TypeOf(__src), meta_P$raw), \
-        "`meta_P$raw` is not compatible with `type$`. Use `meta_castP$`." \
-    ); \
-    claim_assert_static_msg( \
-        !isSameType$(TypeOf(__src), meta_S$raw), \
-        "`meta_S$raw` is not compatible with `type$`. Use `meta_castS$`." \
-    ); \
-    blk_return(*((T_Dest*)&(__src))); \
-})
+#define comp_op__type$(__src, T_Dest, val_src...) \
+    blk({ \
+        var __src = val_src; \
+        claim_assert_static_msg(!isSameType$(TypeOf(__src), meta_P$raw), "`meta_P$raw` is not compatible with `type$`. Use `meta_castP$`."); \
+        claim_assert_static_msg(!isSameType$(TypeOf(__src), meta_S$raw), "`meta_S$raw` is not compatible with `type$`. Use `meta_castS$`."); \
+        blk_return(*((T_Dest*)&(__src))); \
+    })
 #endif /* UNUSED_CODE */
 
-#define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) blk({ \
-    let __addr_dest = var_addr_dest; \
-    *(__addr_dest) = type$(TypeOf(*(__addr_dest)), val_src); \
-    blk_return __addr_dest; \
-})
+#define comp_op__typeAsg(__addr_dest, var_addr_dest, val_src...) \
+    blk({ \
+        let __addr_dest = var_addr_dest; \
+        *(__addr_dest) = type$(TypeOf(*(__addr_dest)), val_src); \
+        blk_return __addr_dest; \
+    })
 
 #if defined(__cplusplus)
 } /* extern "C" */

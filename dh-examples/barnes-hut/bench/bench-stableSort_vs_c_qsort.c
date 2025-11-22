@@ -187,7 +187,7 @@ static i32 qsort_compareInts(const void* lhs, const void* rhs) {
 
 static $inline cmp_Ord stableSort_compareInts(const void* lhs, const void* rhs, const void* arg) {
     $unused(arg);
-    return prim_cmp(*as$(i32*, lhs), *as$(i32*, rhs));
+    return prim_ord(*as$(i32*, lhs), *as$(i32*, rhs));
 }
 
 static void generateRandData(i32* ptr, usize len) {

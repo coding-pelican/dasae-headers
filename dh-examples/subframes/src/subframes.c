@@ -11,7 +11,6 @@ $static fn_((getGameMemory(void))(heap_Fixed)) {
 };
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
     var rng = Rand_init();
     // Initialize logging to a file
     try_(log_init(".log/debug.log"));
@@ -27,34 +26,34 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     // Initialize heap allocator and page pool
     var memory_engine = getEngineMemory();
-    var arena_engine  = heap_Arena_init(heap_Fixed_allocator(&memory_engine));
+    var arena_engine = heap_Arena_init(heap_Fixed_allocator(&memory_engine));
     defer_(heap_Arena_fini(arena_engine));
     var gpa_engine = heap_Arena_allocator(&arena_engine);
     log_info("allocator reserved for engine");
 
     var memory_game = getGameMemory();
-    var arena_game  = heap_Arena_init(heap_Fixed_allocator(&memory_game));
+    var arena_game = heap_Arena_init(heap_Fixed_allocator(&memory_game));
     defer_(heap_Arena_fini(arena_game));
     var gpa_game = heap_Arena_allocator(&arena_game);
     log_info("allocator reserved for game");
 
     // Create window
     let window = try_(engine_Window_init((engine_Window_Config){
-        .allocator     = some(gpa_engine),
-        .rect_size     = { .x = window_res_width, .y = window_res_height },
+        .allocator = some(gpa_engine),
+        .rect_size = { .x = window_res_width, .y = window_res_height },
         .default_color = some({ .packed = 0x181818FF }),
-        .title         = some(u8_l("Subframes")),
+        .title = some(u8_l("Subframes")),
     }));
     defer_(engine_Window_fini(window));
     log_info("window created");
 
     // Create canvases
     let game_canvas = try_(engine_Canvas_init((engine_Canvas_Config){
-        .allocator     = some(gpa_engine),
-        .width         = window_res_width,
-        .height        = window_res_height,
+        .allocator = some(gpa_engine),
+        .width = window_res_width,
+        .height = window_res_height,
         .default_color = none(),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(game_canvas));
     {
@@ -64,23 +63,23 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         engine_Window_appendView(
             window,
             (engine_CanvasView_Config){
-                .canvas      = game_canvas,
-                .pos         = { .x = 0, .y = 0 },
-                .size        = { .x = window_res_width, .y = window_res_height },
-                .scale       = { .x = 1.0f, .y = 1.0f },
+                .canvas = game_canvas,
+                .pos = { .x = 0, .y = 0 },
+                .size = { .x = window_res_width, .y = window_res_height },
+                .scale = { .x = 1.0f, .y = 1.0f },
                 .resizable_x = true,
                 .resizable_y = true,
-                .visible     = true,
+                .visible = true,
             }
         );
         log_info("canvas views added: %s", nameOf(game_canvas));
     }
     let overlay_canvas = try_(engine_Canvas_init((engine_Canvas_Config){
-        .allocator     = some(gpa_engine),
-        .width         = window_res_width,
-        .height        = window_res_height,
+        .allocator = some(gpa_engine),
+        .width = window_res_width,
+        .height = window_res_height,
         .default_color = none$((O$Color)),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     }));
     defer_(engine_Canvas_fini(overlay_canvas));
     {
@@ -88,14 +87,15 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         engine_Canvas_clear(overlay_canvas, none$((O$Color)));
         log_info("canvas cleared: %s", nameOf(overlay_canvas));
         engine_Window_appendView(
-            window, (engine_CanvasView_Config){
-                .canvas      = overlay_canvas,
-                .pos         = { .x = 0, .y = 0 },
-                .size        = { .x = window_res_width, .y = window_res_height },
-                .scale       = { .x = 1.0f, .y = 1.0f },
+            window,
+            (engine_CanvasView_Config){
+                .canvas = overlay_canvas,
+                .pos = { .x = 0, .y = 0 },
+                .size = { .x = window_res_width, .y = window_res_height },
+                .scale = { .x = 1.0f, .y = 1.0f },
                 .resizable_x = true,
                 .resizable_y = true,
-                .visible     = true,
+                .visible = true,
             }
         );
         log_info("canvas views added: %s", nameOf(overlay_canvas));
@@ -106,12 +106,18 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     defer_(engine_Input_fini(input));
 
     // Bind engine core
-    let core = try_(engine_core_VT100_init((engine_core_VT100_Config){
+    let core = try_(engine_core_VT100Ex_init($init((engine_core_VT100Ex_Config){
         .allocator = some(gpa_engine),
-        .window    = window,
-        .input     = input,
-    }));
-    defer_(engine_core_VT100_fini(core));
+        .window = window,
+        .input = input,
+        $field((stub_path)$asg(expr_(FieldType $scope)(
+            1 < args.len
+                ? $break_(some(*S_at((args)[1])))
+                : $break_(some(u8_l("tools/VT100Ex.exe")))
+        ) $unscoped_(expr))),
+        .stub_profile = none(),
+    })));
+    defer_(engine_core_VT100Ex_fini(core));
     log_info("engine ready");
 
     // Create game state
@@ -128,7 +134,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     // Initialize timing variables
     let time_frame_target = time_Duration_fromSecs$f64(render_target_spf);
-    var time_frame_prev   = time_Instant_now();
+    var time_frame_prev = time_Instant_now();
     log_info("game loop started");
 
     // Initialize window variables
@@ -141,7 +147,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
         // 2) Compute how long since last frame (purely for your dt usage)
         let time_elapsed = time_Instant_durationSince(time_frame_curr, time_frame_prev);
-        let time_dt      = as$(f32)(time_Duration_asSecs$f64(time_elapsed));
+        let time_dt = as$(f32)(time_Duration_asSecs$f64(time_elapsed));
 
         // 3) Check for window movement
         let winpos = m_V_as$(m_V2f32, engine_Window_getPos(window));
@@ -187,8 +193,10 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             [1] = engine_Keyboard_held(input->keyboard, engine_KeyCode_space),
         });
         if (*A_at((left_space)[0]) || *A_at((left_space)[1])) {
-            debug_only(if (*A_at((left_space)[0])) { log_debug("left mouse pressed"); });
-            debug_only(if (*A_at((left_space)[1])) { log_debug("space pressed"); });
+            debug_only(
+                if (*A_at((left_space)[0])) { log_debug("left mouse pressed"); });
+            debug_only(
+                if (*A_at((left_space)[1])) { log_debug("space pressed"); });
 
             with_(let pos = try_(ArrList_addBack$m_V2f32(&positions, gpa_game))) {
                 *pos = m_V_as$(m_V2f32, engine_Mouse_getPos(input->mouse));
@@ -197,7 +205,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             with_(let vel = try_(ArrList_addBack$m_V2f32(&velocities, gpa_game))) {
                 *vel = blk({
                     let angle = (math_f32_pi / 180.0f) * as$(f32)(Rand_rangeIInt(&rng, 0, 360));
-                    let r     = m_V2f32_sincos(angle);
+                    let r = m_V2f32_sincos(angle);
                     blk_return m_V2f32_scale(r, 50.0f);
                 });
             }
@@ -209,7 +217,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
         let num_steps = as$(i32)(time_dt / update_target_spf + 0.999f);
         for_(($r(0, num_steps))(step) {
-            let t = as$(f32)(step) * update_target_spf;
+            let t = as$(f32)(step)*update_target_spf;
             if (t >= time_dt) { break; }
             for_(($rf(0), $s(positions.items), $s(velocities.items), $s(colors.items))(i, pos, vel, color) {
                 let w = as$(f32)(engine_Window_getRes(window).x);
@@ -252,12 +260,12 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
                     if (distance < radius * 2) {
                         // Normalize the distance vector
-                        let normal  = m_V2f32_scale(dist_vec, 1.0f / distance);
+                        let normal = m_V2f32_scale(dist_vec, 1.0f / distance);
                         let tangent = m_V2f32_perp(normal);
 
                         // Project velocities
-                        let dp_tan_1  = m_V2f32_dot(*vel, tangent);
-                        let dp_tan_2  = m_V2f32_dot(*other_vel, tangent);
+                        let dp_tan_1 = m_V2f32_dot(*vel, tangent);
+                        let dp_tan_2 = m_V2f32_dot(*other_vel, tangent);
                         let dp_norm_1 = m_V2f32_dot(*vel, normal);
                         let dp_norm_2 = m_V2f32_dot(*other_vel, normal);
 
@@ -266,7 +274,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
                         let momentum_2 = dp_norm_1;
 
                         // Update velocities
-                        *vel       = pipe(m_V2f32_scale(tangent, dp_tan_1),
+                        *vel = pipe(m_V2f32_scale(tangent, dp_tan_1),
                             (m_V2f32_add,(m_V2f32_scale(normal, momentum_1 * state_collision_damping)))
                         );
                         *other_vel = pipe(m_V2f32_scale(tangent, dp_tan_2),
@@ -274,7 +282,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
                         );
 
                         // Separate the circles
-                        let overlap    = radius * 2 - distance;
+                        let overlap = radius * 2 - distance;
                         let separation = m_V2f32_scale(normal, overlap * 0.5f);
                         m_V2f32_subAsg(pos, separation);
                         m_V2f32_addAsg(other_pos, separation);
@@ -287,7 +295,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
                     as$(i32)(radius * 0.8f),as$(i32)(radius),
                     ({
                         var c = *color;
-                        c.a   = as$(u8)(as$(f32)((c.a) * f));
+                        c.a = as$(u8)(as$(f32)((c.a) * f));
                         blk_return c;
                     })
                 );
@@ -306,7 +314,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         // 6) (Optional) Display instantaneous FPS
         {
             const f64 time_fps = (0.0 < time_dt) ? (1.0 / time_dt) : 9999.0;
-            let       win_res  = engine_Window_getRes(window);
+            let win_res = engine_Window_getRes(window);
             io_stream_print(u8_l("\033[H\033[40;37m")); // Move cursor to top left
             io_stream_print(
                 u8_l("\rFPS: {:.2f} RES: {:u}x{:u} DPOS: {:.2f},{:.2f}"),
@@ -314,7 +322,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             );
             debug_only({ // log frame every 1s
                 static f64 total_game_time_for_timestamp = 0.0;
-                static f64 logging_after_duration        = 0.0;
+                static f64 logging_after_duration = 0.0;
                 total_game_time_for_timestamp += time_dt;
                 logging_after_duration += time_dt;
                 if (1.0 < logging_after_duration) {
@@ -325,7 +333,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         }
 
         // 7) Measure how long the update+render actually took
-        let time_now        = time_Instant_now();
+        let time_now = time_Instant_now();
         let time_frame_used = time_Instant_durationSince(time_now, time_frame_curr);
 
         // 8) Subtract from our target

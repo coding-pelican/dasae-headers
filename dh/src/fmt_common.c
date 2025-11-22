@@ -17,13 +17,13 @@ fn_((fmt_TypePrefix_parse(u8 ch))(O$fmt_TypePrefix) $scope) {
 
 fn_((fmt_Type_parse(S_const$u8 str))(O$fmt_Type) $scope) {
     return_(eval_(ReturnType $scope)(for_(($rf(0), $a(fmt_Type_values))(i, value) {
-        if (mem_eqBytes(str, *value)) { $break_(some(as$(fmt_Type)(i))); }
+        if (mem_eqlBytes(str, *value)) { $break_(some(as$(fmt_Type)(i))); }
     })) eval_(else)($break_(none())) $unscoped_(eval));
 } $unscoped_(fn);
 
 fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size) $scope) {
     return_(eval_(ReturnType $scope)(for_(($rf(0), $a(fmt_Size_values))(i, value) {
-        if (mem_eqBytes(str, *value)) { $break_(some(as$(fmt_Size)(i))); }
+        if (mem_eqlBytes(str, *value)) { $break_(some(as$(fmt_Size)(i))); }
     })) eval_(else)($break_(none())) $unscoped_(eval));
 } $unscoped_(fn);
 
@@ -148,15 +148,15 @@ fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void) $guard) {
 // Store each format spec occurrence with its position and argument binding
 typedef struct FormatOccurrence {
     fmt_Spec spec;
-    u8 arg_index;           // Which argument this uses
-    usize literal_start;    // Offset of literal text before this spec
-    usize literal_len;      // Length of literal text before this spec
+    u8 arg_index;        // Which argument this uses
+    usize literal_start; // Offset of literal text before this spec
+    usize literal_len;   // Length of literal text before this spec
 } FormatOccurrence;
 
 typedef struct ParsedFormatSpec {
     A$$(fmt_max_args, FormatOccurrence) occurrences;
     usize occurrence_count;
-    u8 max_arg_index;       // Highest argument index seen
+    u8 max_arg_index; // Highest argument index seen
     usize trailing_literal_start;
     usize trailing_literal_len;
 } ParsedFormatSpec;
@@ -201,21 +201,19 @@ fn_((parseFormatSpecOnce(S_const$u8 fmt))(E$ParsedFormatSpec) $scope) {
                 return_err(fmt_Err_IndexOutOfBounds());
             }
             // printf("--- next_positional: %d\n", next_positional);
-            let arg_index = expr_(u8 $scope) if_some((parsed.spec.index)(idx)) {
+            let arg_index = expr_(u8 $scope)(if_some((parsed.spec.index)(idx)) {
                 next_positional = prim_max(next_positional, idx + 1);
                 $break_(idx);
-            } else_none {
+            }) expr_(else_none)({
                 $break_(next_positional++);
-            } $unscoped_(expr);
+            }) $unscoped_(expr);
             if (arg_index >= fmt_max_args) {
                 return_err(fmt_Err_IndexOutOfBounds());
             }
-            asg_lit((atA(result.occurrences, result.occurrence_count))({
-                .spec = parsed.spec,
-                .arg_index = arg_index,
-                .literal_start = current_literal_start,
-                .literal_len = offset - current_literal_start
-            }));
+            asg_lit((atA(result.occurrences, result.occurrence_count))({ .spec = parsed.spec,
+                                                                         .arg_index = arg_index,
+                                                                         .literal_start = current_literal_start,
+                                                                         .literal_len = offset - current_literal_start }));
             // printf("Stored in occurrence[%zu]: type=%d, size=%d\n", result.occurrence_count, atA(result.occurrences, result.occurrence_count)->spec.type, atA(result.occurrences, result.occurrence_count)->spec.size);
             result.occurrence_count++;
             result.max_arg_index = prim_max(result.max_arg_index, arg_index);
@@ -263,21 +261,25 @@ fn_((writeLiteralChunk(io_Writer writer, S_const$u8 fmt, usize start, usize len)
 } $unscoped_(fn);
 
 $static fn_((isIntegerTag(fmt_ArgValue_Tag tag))(bool)) {
-    return (tag >= fmt_ArgValue_u8 && tag <= fmt_ArgValue_usize) ||
-           (tag >= fmt_ArgValue_i8 && tag <= fmt_ArgValue_isize);
+    return (tag >= fmt_ArgValue_u8 && tag <= fmt_ArgValue_usize) || (tag >= fmt_ArgValue_i8 && tag <= fmt_ArgValue_isize);
 }
 
 $static fn_((getTagSize(fmt_ArgValue_Tag tag))(u8)) {
     switch (tag) {
-        case fmt_ArgValue_u8:
-        case fmt_ArgValue_i8:   return 8;
-        case fmt_ArgValue_u16:
-        case fmt_ArgValue_i16:  return 16;
-        case fmt_ArgValue_u32:
-        case fmt_ArgValue_i32:  return 32;
-        case fmt_ArgValue_u64:
-        case fmt_ArgValue_i64:  return 64;
-        default: return 0;
+    case fmt_ArgValue_u8:
+    case fmt_ArgValue_i8:
+        return 8;
+    case fmt_ArgValue_u16:
+    case fmt_ArgValue_i16:
+        return 16;
+    case fmt_ArgValue_u32:
+    case fmt_ArgValue_i32:
+        return 32;
+    case fmt_ArgValue_u64:
+    case fmt_ArgValue_i64:
+        return 64;
+    default:
+        return 0;
     }
 }
 
@@ -338,8 +340,8 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
         } else if_some((*atA(arg_general_types, arg_idx))(general_tag)) {
             asg_lit((atA(arg_collection_info, arg_idx))(some({
                 .index = arg_idx,
-                .wrapper = occurrence->spec.type_prefix,  // Use first occurrence's wrapper
-                .tag = general_tag  // Use general type
+                .wrapper = occurrence->spec.type_prefix, // Use first occurrence's wrapper
+                .tag = general_tag                       // Use general type
             })));
         }
     }
@@ -382,8 +384,8 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
 
 fn_((fmt_parseBool(S_const$u8 str))(E$bool) $scope) {
     str = skipWhitespace(str);
-    if (mem_eqBytes(str, mem_asBytes(&u8_c('1')).as_const) || mem_eqBytes(str, u8_l("true"))) { return_ok(true); }
-    if (mem_eqBytes(str, mem_asBytes(&u8_c('0')).as_const) || mem_eqBytes(str, u8_l("false"))) { return_ok(false); }
+    if (mem_eqlBytes(str, mem_asBytes(&u8_c('1')).as_const) || mem_eqlBytes(str, u8_l("true"))) { return_ok(true); }
+    if (mem_eqlBytes(str, mem_asBytes(&u8_c('0')).as_const) || mem_eqlBytes(str, u8_l("false"))) { return_ok(false); }
     return_err(fmt_Err_InvalidBoolFormat());
 } $unscoped_(fn);
 
@@ -633,10 +635,7 @@ fn_((consumeU8(S_const$u8 str))(E$ConsumedU8) $scope) {
     }
     let digits = prefixS(str, digit_count);
     let value = try_(parseU8(digits));
-    return_ok({
-        .value = value,
-        .remain = suffix$S(str, digit_count)
-    });
+    return_ok({ .value = value, .remain = suffix$S(str, digit_count) });
 } $unscoped_(fn);
 
 fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
@@ -648,7 +647,7 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
     }
 
     // Parse optional index (must be followed by ':')
-    let index = expr_(O$u8 $scope) {
+    let index = expr_(O$u8 $scope)({
         let ch = *atS(fmt_str, 0);
         if (ascii_isDigit(ch)) {
             usize colon_pos = 0;
@@ -666,13 +665,13 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
                     if (index >= fmt_max_args) {
                         return_err(fmt_Err_IndexOutOfBounds());
                     }
-                    fmt_str = suffix$S(fmt_str, colon_pos + 1);  // Skip index and ':'
+                    fmt_str = suffix$S(fmt_str, colon_pos + 1); // Skip index and ':'
                     $break_(some(index));
                 }
             }
         }
         $break_(none());
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
 
     // Skip optional ':' at format start
     if (0 < fmt_str.len && *atS(fmt_str, 0) == u8_c(':')) {
@@ -680,7 +679,7 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
     }
 
     // Parse fill and alignment (more efficient than function call)
-    let fill_w_align = expr_(struct { O$u8 fill; O$fmt_Align align; } $scope) {
+    let fill_w_align = expr_(struct { O$u8 fill; O$fmt_Align align; } $scope)({
         if (fmt_str.len >= 2) {
             let maybe_fill = *atS(fmt_str, 0);
             let maybe_align = *atS(fmt_str, 1);
@@ -704,65 +703,52 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
             }
         }
         $break_({ .fill = none(), .align = none() });
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
     let fill = fill_w_align.fill;
     let align = fill_w_align.align;
 
     // Parse sign flag (+, -, or space)
-    let sign = expr_(fmt_Sign $scope) {
-        if (0 < fmt_str.len) {
-            let ch = *atS(fmt_str, 0);
-            if (ch == u8_c('+')) {
-                fmt_str = suffix$S(fmt_str, 1);
-                $break_(fmt_Sign_always);
-            } else if (ch == u8_c(' ')) {
-                fmt_str = suffix$S(fmt_str, 1);
-                $break_(fmt_Sign_space);
-            }
+    let sign = expr_(fmt_Sign $scope)(if (0 < fmt_str.len) {
+        let ch = *atS(fmt_str, 0);
+        if (ch == u8_c('+')) {
+            fmt_str = suffix$S(fmt_str, 1);
+            $break_(fmt_Sign_always);
+        } else if (ch == u8_c(' ')) {
+            fmt_str = suffix$S(fmt_str, 1);
+            $break_(fmt_Sign_space);
         }
-        $break_(fmt_Sign_auto);
-    } $unscoped_(expr);
+    }) expr_(else)($break_(fmt_Sign_auto)) $unscoped_(expr);
 
     // Parse alternate form flag (#)
-    let alt_form = expr_(bool $scope) {
-        if (0 < fmt_str.len && *atS(fmt_str, 0) == u8_c('#')) {
-            fmt_str = suffix$S(fmt_str, 1);
-            $break_(true);
-        }
-        $break_(false);
-    } $unscoped_(expr);
+    let alt_form = expr_(bool $scope)(if (0 < fmt_str.len && *atS(fmt_str, 0) == u8_c('#')) {
+        fmt_str = suffix$S(fmt_str, 1);
+        $break_(true);
+    }) expr_(else)($break_(false)) $unscoped_(expr);
 
     // Parse width
-    let width = expr_(O$u8 $scope) {
-        if (0 < fmt_str.len && ascii_isDigit(*atS(fmt_str, 0))) {
-            let consumed = try_(consumeU8(fmt_str));
-            fmt_str = consumed.remain;
-            $break_(some(consumed.value));
-        }
-        $break_(none());
-    } $unscoped_(expr);
+    let width = expr_(O$u8 $scope)(if (0 < fmt_str.len && ascii_isDigit(*atS(fmt_str, 0))) {
+        let consumed = try_(consumeU8(fmt_str));
+        fmt_str = consumed.remain;
+        $break_(some(consumed.value));
+    }) expr_(else)($break_(none())) $unscoped_(expr);
 
     // Parse precision
-    let precision = expr_(O$u8 $scope) {
-        if (0 < fmt_str.len && *atS(fmt_str, 0) == u8_c('.')) {
-            let consumed = try_(consumeU8(suffix$S(fmt_str, 1)));
-            fmt_str = consumed.remain;
-            $break_(some(consumed.value));
-        }
-        $break_(none());
-    } $unscoped_(expr);
+    let precision = expr_(O$u8 $scope)(if (0 < fmt_str.len && *atS(fmt_str, 0) == u8_c('.')) {
+        let consumed = try_(consumeU8(suffix$S(fmt_str, 1)));
+        fmt_str = consumed.remain;
+        $break_(some(consumed.value));
+    }) expr_(else)($break_(none())) $unscoped_(expr);
 
     // Parse type prefix (? or !)
-    let type_prefix = expr_(O$fmt_TypePrefix $scope) {
-        if (0 < fmt_str.len) if_some((fmt_TypePrefix_parse(*atS(fmt_str, 0)))(prefix)) { /* NOLINT */
+    let type_prefix = expr_(O$fmt_TypePrefix $scope)(if (0 < fmt_str.len) {
+        if_some((fmt_TypePrefix_parse(*atS(fmt_str, 0)))(prefix)) { /* NOLINT */
             fmt_str = suffix$S(fmt_str, 1);
             $break_(some(prefix));
-        }
-        $break_(none());
-    } $unscoped_(expr);
+        };
+    }) expr_(else)($break_(none())) $unscoped_(expr);
 
     /* clang-format off */
-    let type_w_size = expr_(struct { fmt_Type type; fmt_Size size; } $scope) {
+    let type_w_size = expr_(struct { fmt_Type type; fmt_Size size; } $scope)({
         // Parse type character (required if we reach here)
         let type_ch = blk({
             if (fmt_str.len == 0) {
@@ -773,7 +759,7 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
             blk_return_(ch);
         });
         // Parse size modifier - use pre-built API for multi-char patterns
-        let size = expr_(fmt_Size $scope) {
+        let size = expr_(fmt_Size $scope)({
             if (2 <= fmt_str.len) if_some((fmt_Size_parse(prefix$S(fmt_str, 2)))(size)) { /* NOLINT */
                 fmt_str = suffix$S(fmt_str, 2);
                 $break_(size);
@@ -783,7 +769,7 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
                 $break_(size);
             }
             $break_(fmt_Size_default);
-        } $unscoped_(expr);
+        }) $unscoped_(expr);
         // Map type character to enum (switch is faster than fmt_Type_parse)
         switch (type_ch) {
             case u8_c('x'): $break_({ .type = fmt_Type_hex_lower, .size = size });
@@ -806,14 +792,12 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
             case u8_c('s'): $break_({ .type = fmt_Type_string_s, .size = size });
             default: return_err(fmt_Err_InvalidFormatSpecifier());
         }
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
     /* clang-format on */
     let type = type_w_size.type;
     let size = type_w_size.size;
 
     // printf("parseFormat: type=%d, size=%d\n", type_w_size.type, type_w_size.size);
-
-
     // Expect closing '}'
     if (0 < fmt_str.len && *atS(fmt_str, 0) != u8_c('}')) {
         return_err(fmt_Err_MissingClosingBrace());
@@ -829,9 +813,9 @@ fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat) $scope) {
             .precision = precision,
             .type_prefix = type_prefix,
             .type = type,
-            .size = size
+            .size = size,
         },
-        .remain = suffix$S(fmt_str, 1)  // Skip '}'
+        .remain = suffix$S(fmt_str, 1), // Skip '}'
     });
 } $unscoped_(fn);
 
@@ -902,9 +886,9 @@ fn_((collectArg(va_list* ap, O$fmt_TypePrefix wrapper, fmt_ArgValue_Tag tag))(fm
             return_(union_of((fmt_ArgType_optional)(collectArgOptional(ap, tag))));
         case fmt_TypePrefix_error_result:
             return_(union_of((fmt_ArgType_error_result)(collectArgErrorResult(ap, tag))));
-    default:
-        claim_unreachable;
-    }
+        default:
+            claim_unreachable;
+        }
     }
     claim_unreachable;
 } $unscoped_(fn);
@@ -912,43 +896,43 @@ fn_((collectArg(va_list* ap, O$fmt_TypePrefix wrapper, fmt_ArgValue_Tag tag))(fm
 fn_((collectArgValue(va_list* ap, fmt_ArgValue_Tag tag))(fmt_ArgValue) $scope) {
     // printf("--- debug print: collectArgValue ---\n");
     switch (tag) {
-        case fmt_ArgValue_void:
-            return_(union_of((fmt_ArgValue_void)(va_arg(*ap, Void))));
-        case fmt_ArgValue_bool:
-            return_(union_of((fmt_ArgValue_bool)(as$(bool)(va_arg(*ap, u32)))));
-        case fmt_ArgValue_u8:
-            return_(union_of((fmt_ArgValue_u8)(as$(u8)(va_arg(*ap, u32)))));
-        case fmt_ArgValue_u16:
-            return_(union_of((fmt_ArgValue_u16)(as$(u16)(va_arg(*ap, u32)))));
-        case fmt_ArgValue_u32:
-            return_(union_of((fmt_ArgValue_u32)(va_arg(*ap, u32))));
-        case fmt_ArgValue_u64:
-            return_(union_of((fmt_ArgValue_u64)(va_arg(*ap, u64))));
-        case fmt_ArgValue_usize:
-            return_(union_of((fmt_ArgValue_usize)(va_arg(*ap, usize))));
-        case fmt_ArgValue_i8:
-            return_(union_of((fmt_ArgValue_i8)(as$(i8)(va_arg(*ap, i32)))));
-        case fmt_ArgValue_i16:
-            return_(union_of((fmt_ArgValue_i16)(as$(i16)(va_arg(*ap, i32)))));
-        case fmt_ArgValue_i32:
-            return_(union_of((fmt_ArgValue_i32)(va_arg(*ap, i32))));
-        case fmt_ArgValue_i64:
-            return_(union_of((fmt_ArgValue_i64)(va_arg(*ap, i64))));
-        case fmt_ArgValue_isize:
-            return_(union_of((fmt_ArgValue_isize)(va_arg(*ap, isize))));
-        case fmt_ArgValue_f32:
-            return_(union_of((fmt_ArgValue_f32)(as$(f32)(va_arg(*ap, f64)))));
-        case fmt_ArgValue_f64:
-            return_(union_of((fmt_ArgValue_f64)(va_arg(*ap, f64))));
-        case fmt_ArgValue_ptr:
-            return_(union_of((fmt_ArgValue_ptr)(va_arg(*ap, const void*))));
-        case fmt_ArgValue_error:
-            return_(union_of((fmt_ArgValue_error)(va_arg(*ap, Err))));
-        case fmt_ArgValue_sli_z_u8:
-            return_(union_of((fmt_ArgValue_sli_z_u8)(va_arg(*ap, const u8*))));
-        case fmt_ArgValue_sli_u8:
-            return_(union_of((fmt_ArgValue_sli_u8)(va_arg(*ap, S_const$u8))));
-        default:
+    case fmt_ArgValue_void:
+        return_(union_of((fmt_ArgValue_void)(va_arg(*ap, Void))));
+    case fmt_ArgValue_bool:
+        return_(union_of((fmt_ArgValue_bool)(as$(bool)(va_arg(*ap, u32)))));
+    case fmt_ArgValue_u8:
+        return_(union_of((fmt_ArgValue_u8)(as$(u8)(va_arg(*ap, u32)))));
+    case fmt_ArgValue_u16:
+        return_(union_of((fmt_ArgValue_u16)(as$(u16)(va_arg(*ap, u32)))));
+    case fmt_ArgValue_u32:
+        return_(union_of((fmt_ArgValue_u32)(va_arg(*ap, u32))));
+    case fmt_ArgValue_u64:
+        return_(union_of((fmt_ArgValue_u64)(va_arg(*ap, u64))));
+    case fmt_ArgValue_usize:
+        return_(union_of((fmt_ArgValue_usize)(va_arg(*ap, usize))));
+    case fmt_ArgValue_i8:
+        return_(union_of((fmt_ArgValue_i8)(as$(i8)(va_arg(*ap, i32)))));
+    case fmt_ArgValue_i16:
+        return_(union_of((fmt_ArgValue_i16)(as$(i16)(va_arg(*ap, i32)))));
+    case fmt_ArgValue_i32:
+        return_(union_of((fmt_ArgValue_i32)(va_arg(*ap, i32))));
+    case fmt_ArgValue_i64:
+        return_(union_of((fmt_ArgValue_i64)(va_arg(*ap, i64))));
+    case fmt_ArgValue_isize:
+        return_(union_of((fmt_ArgValue_isize)(va_arg(*ap, isize))));
+    case fmt_ArgValue_f32:
+        return_(union_of((fmt_ArgValue_f32)(as$(f32)(va_arg(*ap, f64)))));
+    case fmt_ArgValue_f64:
+        return_(union_of((fmt_ArgValue_f64)(va_arg(*ap, f64))));
+    case fmt_ArgValue_ptr:
+        return_(union_of((fmt_ArgValue_ptr)(va_arg(*ap, const void*))));
+    case fmt_ArgValue_error:
+        return_(union_of((fmt_ArgValue_error)(va_arg(*ap, Err))));
+    case fmt_ArgValue_sli_z_u8:
+        return_(union_of((fmt_ArgValue_sli_z_u8)(va_arg(*ap, const u8*))));
+    case fmt_ArgValue_sli_u8:
+        return_(union_of((fmt_ArgValue_sli_u8)(va_arg(*ap, S_const$u8))));
+    default:
         claim_unreachable;
     }
 } $unscoped_(fn);
@@ -958,93 +942,129 @@ fn_((collectArgOptional(va_list* ap, fmt_ArgValue_Tag tag))(O$fmt_ArgValue) $sco
     switch (tag) {
     case fmt_ArgValue_void: {
         let arg = va_arg(*ap, O$$(Void));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_void)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_void)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_bool: {
         let arg = va_arg(*ap, O$$(bool));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_bool)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_bool)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_u8: {
         let arg = va_arg(*ap, O$$(u8));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_u8)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_u8)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_u16: {
         let arg = va_arg(*ap, O$$(u16));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_u16)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_u16)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_u32: {
         let arg = va_arg(*ap, O$$(u32));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_u32)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_u32)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_u64: {
         let arg = va_arg(*ap, O$$(u64));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_u64)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_u64)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_usize: {
         let arg = va_arg(*ap, O$$(usize));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_usize)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_usize)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_i8: {
         let arg = va_arg(*ap, O$$(i8));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_i8)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_i8)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_i16: {
         let arg = va_arg(*ap, O$$(i16));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_i16)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_i16)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_i32: {
         let arg = va_arg(*ap, O$$(i32));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_i32)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_i32)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_i64: {
         let arg = va_arg(*ap, O$$(i64));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_i64)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_i64)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_isize: {
         let arg = va_arg(*ap, O$$(isize));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_isize)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_isize)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_f32: {
         let arg = va_arg(*ap, O$$(f32));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_f32)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_f32)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_f64: {
         let arg = va_arg(*ap, O$$(f64));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_f64)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_f64)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_ptr: {
         let arg = va_arg(*ap, O$$(const void*));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_ptr)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_ptr)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_error: {
         let arg = va_arg(*ap, O$$(Err));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_error)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_error)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_sli_z_u8: {
         let arg = va_arg(*ap, O$$(const u8*));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_sli_z_u8)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_sli_z_u8)(value)));
+        } else_none
+            return_none();
     }
     case fmt_ArgValue_sli_u8: {
         let arg = va_arg(*ap, O$$(S_const$u8));
-        if_some((arg)(value)) { return_some(union_of((fmt_ArgValue_sli_u8)(value))); }
-        else_none return_none();
+        if_some((arg)(value)) {
+            return_some(union_of((fmt_ArgValue_sli_u8)(value)));
+        } else_none
+            return_none();
     }
     default:
         claim_unreachable;
@@ -1056,93 +1076,129 @@ fn_((collectArgErrorResult(va_list* ap, fmt_ArgValue_Tag tag))(E$fmt_ArgValue) $
     switch (tag) {
     case fmt_ArgValue_void: {
         let arg = va_arg(*ap, E$$(Void));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_void)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_void)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_bool: {
         let arg = va_arg(*ap, E$$(bool));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_bool)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_bool)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_u8: {
         let arg = va_arg(*ap, E$$(u8));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_u8)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_u8)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_u16: {
         let arg = va_arg(*ap, E$$(u16));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_u16)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_u16)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_u32: {
         let arg = va_arg(*ap, E$$(u32));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_u32)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_u32)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_u64: {
         let arg = va_arg(*ap, E$$(u64));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_u64)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_u64)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_usize: {
         let arg = va_arg(*ap, E$$(usize));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_usize)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_usize)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_i8: {
         let arg = va_arg(*ap, E$$(i8));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_i8)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_i8)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_i16: {
         let arg = va_arg(*ap, E$$(i16));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_i16)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_i16)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_i32: {
         let arg = va_arg(*ap, E$$(i32));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_i32)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_i32)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_i64: {
         let arg = va_arg(*ap, E$$(i64));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_i64)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_i64)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_isize: {
         let arg = va_arg(*ap, E$$(isize));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_isize)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_isize)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_f32: {
         let arg = va_arg(*ap, E$$(f32));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_f32)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_f32)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_f64: {
         let arg = va_arg(*ap, E$$(f64));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_f64)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_f64)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_ptr: {
         let arg = va_arg(*ap, E$$(const void*));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_ptr)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_ptr)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_error: {
         let arg = va_arg(*ap, E$$(Err));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_error)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_error)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_sli_z_u8: {
         let arg = va_arg(*ap, E$$(const u8*));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_sli_z_u8)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_sli_z_u8)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     case fmt_ArgValue_sli_u8: {
         let arg = va_arg(*ap, E$$(S_const$u8));
-        if_ok((arg)(value)) { return_ok(union_of((fmt_ArgValue_sli_u8)(value))); }
-        else_err(e) return_(err(e));
+        if_ok((arg)(value)) {
+            return_ok(union_of((fmt_ArgValue_sli_u8)(value)));
+        } else_err(e)
+            return_(err(e));
     }
     default:
         claim_unreachable;
@@ -1152,32 +1208,32 @@ fn_((collectArgErrorResult(va_list* ap, fmt_ArgValue_Tag tag))(E$fmt_ArgValue) $
 
 fn_((formatArg(io_Writer writer, fmt_ArgType arg, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: formatArg ---\n");
-    match_(arg, {
-        pattern_(fmt_ArgType_value, (value), {
+    match_(arg) {
+        pattern_((fmt_ArgType_value)(value)) {
             return formatArgValue(writer, *value, spec);
-        })
-        pattern_(fmt_ArgType_optional, (optional), {
+        } $end(pattern);
+        pattern_((fmt_ArgType_optional)(optional)) {
             return formatArgOptional(writer, *optional, spec);
-        })
-        pattern_(fmt_ArgType_error_result, (error_result), {
+        } $end(pattern);
+        pattern_((fmt_ArgType_error_result)(error_result)) {
             return formatArgErrorResult(writer, *error_result, spec);
-        })
-        fallback_({
-        return_err(fmt_Err_InvalidFormatSpecifier());
-        })
-    });
+        } $end(pattern);
+        default_() {
+            return_err(fmt_Err_InvalidFormatSpecifier());
+        } $end(default);
+    } $end(match);
 } $unscoped_(fn);
 
 fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: formatArgValue ---\n");
-    match_(value, {
-        pattern_(fmt_ArgValue_void, (value), {
+    match_(value) {
+        pattern_((fmt_ArgValue_void)(value)) {
             return_ok(*value);
-        })
-        pattern_(fmt_ArgValue_bool, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_bool)(value)) {
             return formatBool(writer, value, spec);
-        })
-        pattern_(fmt_ArgValue_u8, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_u8)(value)) {
             // printf("formatArgValue u8: value=%d, spec.type=%d\n", *value, spec.type);
             if (spec.type == fmt_Type_signed) {
                 return formatIInt(writer, as$(i8)(*value), spec);
@@ -1186,14 +1242,14 @@ fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void
                 return formatASCIICode(writer, *value, spec);
             }
             return formatUInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_u16, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_u16)(value)) {
             if (spec.type == fmt_Type_signed) {
                 return formatIInt(writer, as$(i16)(*value), spec);
             }
             return formatUInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_u32, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_u32)(value)) {
             if (spec.type == fmt_Type_signed) {
                 return formatIInt(writer, as$(i32)(*value), spec);
             }
@@ -1201,83 +1257,93 @@ fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void
                 return formatUTF8Codepoint(writer, *value, spec);
             }
             return formatUInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_u64, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_u64)(value)) {
             if (spec.type == fmt_Type_signed) {
                 return formatIInt(writer, as$(i64)(*value), spec);
             }
             return formatUInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_usize, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_usize)(value)) {
             if (spec.type == fmt_Type_signed) {
                 return formatIInt(writer, as$(isize)(*value), spec);
             }
             return formatUInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_i8, (value), {
-            if (spec.type == fmt_Type_unsigned || spec.type == fmt_Type_hex_lower ||
-                spec.type == fmt_Type_hex_upper || spec.type == fmt_Type_octal ||
-                spec.type == fmt_Type_binary) {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_i8)(value)) {
+            if (spec.type == fmt_Type_unsigned
+                || spec.type == fmt_Type_hex_lower
+                || spec.type == fmt_Type_hex_upper
+                || spec.type == fmt_Type_octal
+                || spec.type == fmt_Type_binary) {
                 return formatUInt(writer, as$(u8)(*value), spec);
             }
             return formatIInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_i16, (value), {
-            if (spec.type == fmt_Type_unsigned || spec.type == fmt_Type_hex_lower ||
-                spec.type == fmt_Type_hex_upper || spec.type == fmt_Type_octal ||
-                spec.type == fmt_Type_binary) {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_i16)(value)) {
+            if (spec.type == fmt_Type_unsigned
+                || spec.type == fmt_Type_hex_lower
+                || spec.type == fmt_Type_hex_upper
+                || spec.type == fmt_Type_octal
+                || spec.type == fmt_Type_binary) {
                 return formatUInt(writer, as$(u16)(*value), spec);
             }
             return formatIInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_i32, (value), {
-            if (spec.type == fmt_Type_unsigned || spec.type == fmt_Type_hex_lower ||
-                spec.type == fmt_Type_hex_upper || spec.type == fmt_Type_octal ||
-                spec.type == fmt_Type_binary) {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_i32)(value)) {
+            if (spec.type == fmt_Type_unsigned
+                || spec.type == fmt_Type_hex_lower
+                || spec.type == fmt_Type_hex_upper
+                || spec.type == fmt_Type_octal
+                || spec.type == fmt_Type_binary) {
                 return formatUInt(writer, as$(u32)(*value), spec);
             }
             return formatIInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_i64, (value), {
-            if (spec.type == fmt_Type_unsigned || spec.type == fmt_Type_hex_lower ||
-                spec.type == fmt_Type_hex_upper || spec.type == fmt_Type_octal ||
-                spec.type == fmt_Type_binary) {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_i64)(value)) {
+            if (spec.type == fmt_Type_unsigned
+                || spec.type == fmt_Type_hex_lower
+                || spec.type == fmt_Type_hex_upper
+                || spec.type == fmt_Type_octal
+                || spec.type == fmt_Type_binary) {
                 return formatUInt(writer, as$(u64)(*value), spec);
             }
             return formatIInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_isize, (value), {
-            if (spec.type == fmt_Type_unsigned || spec.type == fmt_Type_hex_lower ||
-                spec.type == fmt_Type_hex_upper || spec.type == fmt_Type_octal ||
-                spec.type == fmt_Type_binary) {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_isize)(value)) {
+            if (spec.type == fmt_Type_unsigned
+                || spec.type == fmt_Type_hex_lower
+                || spec.type == fmt_Type_hex_upper
+                || spec.type == fmt_Type_octal
+                || spec.type == fmt_Type_binary) {
                 return formatUInt(writer, as$(usize)(*value), spec);
             }
             return formatIInt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_f32, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_f32)(value)) {
             return formatFlt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_f64, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_f64)(value)) {
             return formatFlt(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_ptr, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_ptr)(value)) {
             return formatPtr(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_error, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_error)(value)) {
             return formatErr(writer, *value, spec);
-        })
-        pattern_(fmt_ArgValue_sli_z_u8, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_sli_z_u8)(value)) {
             let ptr = *value;
             let len = mem_lenZ0$u8(ptr);
             return formatStr(writer, lit$((S_const$u8){ .ptr = ptr, .len = len }), spec);
-        })
-        pattern_(fmt_ArgValue_sli_u8, (value), {
+        } $end(pattern);
+        pattern_((fmt_ArgValue_sli_u8)(value)) {
             return formatStr(writer, *value, spec);
-        })
-        fallback_({
-        return_err(fmt_Err_InvalidFormatSpecifier());
-        })
-    });
+        } $end(pattern);
+        default_() {
+            return_err(fmt_Err_InvalidFormatSpecifier());
+        } $end(default);
+    } $end(match);
 } $unscoped_(fn);
 
 fn_((formatArgOptional(io_Writer writer, O$fmt_ArgValue optional, fmt_Spec spec))(E$void) $scope) {
@@ -1316,7 +1382,7 @@ fn_((formatArgErrorResult(io_Writer writer, E$fmt_ArgValue error_result, fmt_Spe
 } $unscoped_(fn);
 
 
-fn_((formatBool(io_Writer writer, bool val,fmt_Spec spec))(E$void) $scope) {
+fn_((formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: formatBool ---\n");
     return writePadded(writer, val ? u8_l("true") : u8_l("false"), spec);
 } $unscoped_(fn);
@@ -1327,7 +1393,7 @@ fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void) $scope) {
     A$$(128, u8) buf = zero$A();
     usize pos = lenA(buf) - 1;
     // Determine base
-    let base_w_digits = expr_(struct { u32 base; S_const$u8 digits; } $scope) {
+    let base_w_digits = expr_(struct { u32 base; S_const$u8 digits; } $scope)({
         // printf("  switch on spec.type=%d\n", spec.type);
         switch (spec.type) {
         case fmt_Type_hex_lower:
@@ -1343,7 +1409,7 @@ fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void) $scope) {
         default:
             claim_unreachable;
         }
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
     let base = base_w_digits.base;
     let digits = base_w_digits.digits;
     // printf("  base=%u\n", base);
@@ -1373,9 +1439,11 @@ fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void) $scope) {
     bool is_zero = (val == 0);
     if (is_zero) {
         *atA(buf, pos--) = u8_c('0');
-    } else while (val > 0) { /* NOLINT */
-        *atA(buf, pos--) = *atS(digits, val % base);
-        val /= base;
+    } else {
+        while (val > 0) { /* NOLINT */
+            *atA(buf, pos--) = *atS(digits, val % base);
+            val /= base;
+        }
     }
 
     // Add alternate form prefix if requested
@@ -1486,8 +1554,8 @@ fn_((formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void) $scope) {
     }
     if (flt_isInf(val)) {
         return val < 0
-            ? writePadded(writer, use_upper ? u8_l("-INF") : u8_l("-inf"), spec)
-            : writePadded(writer, use_upper ? u8_l("INF") : u8_l("inf"), spec);
+                 ? writePadded(writer, use_upper ? u8_l("-INF") : u8_l("-inf"), spec)
+                 : writePadded(writer, use_upper ? u8_l("INF") : u8_l("inf"), spec);
     }
 
     A$$(128, u8) buf = zero$A();
@@ -1555,8 +1623,8 @@ fn_((formatPtr(io_Writer writer, const void* ptr, fmt_Spec spec))(E$void) $scope
     usize pos = 0;
     // Select digit set based on case
     S_const$u8 digits = (spec.type == fmt_Type_pointer_upper)
-        ? u8_l("0123456789ABCDEF")
-        : u8_l("0123456789abcdef");
+                          ? u8_l("0123456789ABCDEF")
+                          : u8_l("0123456789abcdef");
     // Convert pointer to usize and format as hex
     usize ptr_val = (usize)ptr;
     bool is_zero = (ptr_val == 0);
@@ -1681,7 +1749,7 @@ fn_((writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void) $
         case fmt_Align_left:
             try_(io_Writer_writeBytes(writer, content));
             try_(io_Writer_writeByteN(writer, fill, padding));
-                break;
+            break;
         case fmt_Align_right:
             try_(io_Writer_writeByteN(writer, fill, padding));
             try_(io_Writer_writeBytes(writer, content));

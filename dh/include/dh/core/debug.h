@@ -25,6 +25,7 @@ extern "C" {
 #include "debug/cfg.h"
 #include "debug/common.h"
 #include "debug/assert.h"
+#include "debug/assert_static.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

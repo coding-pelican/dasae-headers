@@ -34,70 +34,200 @@ extern "C" {
 /*========== Memory Constants ===============================================*/
 
 // Fixed page size (may be different per platform)
-#if defined(__wasm32__) || defined(__wasm64__)
-#define mem_page_size (64ull * 1024ull)
-#elif defined(__aarch64__)
-#define mem_page_size (16ull * 1024ull)
-#elif defined(__sparc64__)
-#define mem_page_size (8ull * 1024ull)
-#else
-#define mem_page_size (4ull * 1024ull)
-#endif
+#define mem_page_size __comp_int__mem_page_size
+
+/*========== Integer Bit Operations =======================================*/
+
+/// @brief Count trailing zeros in an integer
+///
+/// Returns the number of trailing least-significant zero bits in the binary
+/// representation of the given integer. If the input is 0, returns the bit
+/// width of the type.
+///
+/// @param x The input value
+/// @return The number of trailing zeros
+$inline_always
+$static fn_((mem_countTrailingZeros(u64 x))(u32));
+
+/*========== Byte Swap Functions ============================================*/
+
+$inline_always
+$static fn_((mem_byteSwap16(u16 x))(u16));
+$inline_always
+$static fn_((mem_byteSwap32(u32 x))(u32));
+$inline_always
+$static fn_((mem_byteSwap64(u64 x))(u64));
+
+/*========== Endian Conversion ==============================================*/
+
+$inline_always
+$static fn_((mem_littleToNative16(u16 x))(u16));
+$inline_always
+$static fn_((mem_littleToNative32(u32 x))(u32));
+$inline_always
+$static fn_((mem_littleToNative64(u64 x))(u64));
+
+$inline_always
+$static fn_((mem_bigToNative16(u16 x))(u16));
+$inline_always
+$static fn_((mem_bigToNative32(u32 x))(u32));
+$inline_always
+$static fn_((mem_bigToNative64(u64 x))(u64));
+
+$inline_always
+$static fn_((mem_nativeToLittle16(u16 x))(u16));
+$inline_always
+$static fn_((mem_nativeToLittle32(u32 x))(u32));
+$inline_always
+$static fn_((mem_nativeToLittle64(u64 x))(u64));
+
+$inline_always
+$static fn_((mem_nativeToBig16(u16 x))(u16));
+$inline_always
+$static fn_((mem_nativeToBig32(u32 x))(u32));
+$inline_always
+$static fn_((mem_nativeToBig64(u64 x))(u64));
+
+/*========== Alignment Functions ============================================*/
+
+// Check if alignment is valid (power of 2)
+$inline_always
+$static fn_((mem_isValidAlign(usize align))(bool));
+// Check if address is aligned
+$inline_always
+$static fn_((mem_isAligned(usize addr, usize align))(bool));
+// Check if address is aligned to power of 2
+$inline_always
+$static fn_((mem_isAlignedLog2(usize addr, u8 log2_align))(bool));
+// Forward align an address
+$inline_always
+$static fn_((mem_alignFwd(usize addr, usize align))(usize));
+// Forward align an address to power of 2
+$inline_always
+$static fn_((mem_alignFwdLog2(usize addr, u8 log2_align))(usize));
+// Backward align an address
+$inline_always
+$static fn_((mem_alignBwd(usize addr, usize align))(usize));
+// Convert actual alignment value to log2
+$inline_always
+$static fn_((mem_alignToLog2(usize align))(u8));
+// Convert log2 value to actual alignment
+$inline_always
+$static fn_((mem_log2ToAlign(u8 log2_align))(usize));
 
 /*========== Memory Utilities ===============================================*/
 
 $inline_always
-$static fn_((mem_lenZ0$u8(const u8* p))(usize));
-$inline_always
 $static fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize));
+$inline_always
+$static fn_((mem_lenZ0$u8(const u8* p))(usize));
 
-#define mem_asBytes(_ptr.../*S|S_const(u8)*/)       __step__mem_asBytes(_ptr)
-#define mem_bytesAs$(/*(_P_T)_bytes*/.../*(_P_T)*/) __step__mem_bytesAs$(__VA_ARGS__)
+$inline_always
+$static fn_((mem_spanZ0_const$u8(const u8* p))(S_const$u8));
+$inline_always
+$static fn_((mem_spanZ0$u8(u8* p))(S$u8));
 
-#define mem_toBytes$(_A$N$u8, _val...)          __step__mem_toBytes$(pp_uniqTok(val), _A$N$u8, _val)
-#define mem_toBytes(_val...)                    __step__mem_toBytes(_val)
-#define mem_bytesTo$(/*(_T)_bytes*/.../*(_T)*/) __step__mem_bytesTo$(__VA_ARGS__)
+#define mem_asBytes(_ptr... /*S|S_const(u8)*/) __step__mem_asBytes(_ptr)
+#define mem_bytesAs$(/*(_P_T)_bytes*/... /*(_P_T)*/) __step__mem_bytesAs$(__VA_ARGS__)
 
-#define mem_sliceAsBytes(_sli.../*(S(u8))*/) __step__mem_sliceAsBytes(__VA_ARGS__)
-#define mem_bytesAsSlice$/*(_S_T)_bytes*/.../*(_S_T)*/ __step__mem_bytesAsS$(__VA_ARGS__)
+#define mem_toBytes$(_A$N$u8, _val...) __step__mem_toBytes$(pp_uniqTok(val), _A$N$u8, _val)
+#define mem_toBytes(_val...) __step__mem_toBytes(_val)
+#define mem_bytesTo$(/*(_T)_bytes*/... /*(_T)*/) __step__mem_bytesTo$(__VA_ARGS__)
 
-$extern fn_((mem_copyFwds(u_S$raw dst, u_S_const$raw src))(u_S$raw));
-#define T_use_mem_copyFwds$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_copyFwds, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_copyFwds(u_anyS(dst), u_anyS_const(src)))); \
+#define mem_sliceAsBytes(_sli... /*(S(u8))*/) __step__mem_sliceAsBytes(pp_uniqTok(sli), _sli)
+#define mem_bytesAsSlice$(/*(_S_T)_bytes*/... /*(_S_T)*/) __step__mem_bytesAsSlice$(pp_uniqTok(bytes), __VA_ARGS__)
+
+$extern fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8));
+$extern fn_((mem_copy(u_S$raw dst, u_S_const$raw src))(u_S$raw));
+#define T_use_mem_copy$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_copy, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_copy(u_anyS(dst), u_anyS(src)))); \
     }
-$extern fn_((mem_copyBwds(u_S$raw dst, u_S_const$raw src))(u_S$raw));
-#define T_use_mem_copyBwds$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_copyBwds, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_copyBwds(u_anyS(dst), u_anyS_const(src)))); \
+$extern fn_((mem_moveBytes(S$u8 dst, S_const$u8 src))(S$u8));
+$extern fn_((mem_move(u_S$raw dst, u_S_const$raw src))(u_S$raw));
+#define T_use_mem_move$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_move, _T)(S$(_T) dst, S$(const _T) src))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_move(u_anyS(dst), u_anyS(src)))); \
     }
-
+$extern fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8));
+$extern fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw));
+#define T_use_mem_set$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_set(u_anyS(dst), u_anyV(val)))); \
+    }
+$extern fn_((mem_setBytes0(S$u8 dst))(S$u8));
+$extern fn_((mem_set0(u_S$raw dst))(u_S$raw));
+#define T_use_mem_set0$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_set0, _T)(S$(_T) dst))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_set0(u_anyS(dst)))); \
+    }
+$extern fn_((mem_eqlBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_eql(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_eql$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_eql, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_eql(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_neqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_neq(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_neq$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_neq, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_neq(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord));
+$extern fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord));
+#define T_use_mem_ord$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_ord, _T)(S$(const _T) lhs, S$(const _T) rhs))(cmp_Ord)) { \
+        return mem_ord(u_anyS(lhs), u_anyS(rhs)); \
+    }
 $extern fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
-$extern fn_((mem_nqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
-
 $extern fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_eq$(_T...) \
     $inline_always $static fn_((tpl_id(mem_eq, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
-        return mem_eq(u_anyS_const(lhs), u_anyS_const(rhs)); \
+        return mem_eq(u_anyS(lhs), u_anyS(rhs)); \
     }
+$extern fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
 $extern fn_((mem_ne(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_ne$(_T...) \
     $inline_always $static fn_((tpl_id(mem_ne, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
-        return mem_ne(u_anyS_const(lhs), u_anyS_const(rhs)); \
+        return mem_ne(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_ltBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_lt(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_lt$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_lt, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_lt(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_gtBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_gt(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_gt$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_gt, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_gt(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_leBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_le(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_le$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_le, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_le(u_anyS(lhs), u_anyS(rhs)); \
+    }
+$extern fn_((mem_geBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
+#define T_use_mem_ge$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_ge, _T)(S$(const _T) lhs, S$(const _T) rhs))(bool)) { \
+        return mem_ge(u_anyS(lhs), u_anyS(rhs)); \
     }
 
 $extern fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_startsWith$(_T...) \
     $inline_always $static fn_((tpl_id(mem_startsWith, _T)(S$(const _T) haystack, S$(const _T) needle))(bool)) { \
-        return mem_startsWith(u_anyS_const(haystack), u_anyS_const(needle)); \
+        return mem_startsWith(u_anyS(haystack), u_anyS(needle)); \
     }
 $extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_endsWith$(_T...) \
     $inline_always $static fn_((tpl_id(mem_endsWith, _T)(S$(const _T) haystack, S$(const _T) needle))(bool)) { \
-        return mem_endsWith(u_anyS_const(haystack), u_anyS_const(needle)); \
+        return mem_endsWith(u_anyS(haystack), u_anyS(needle)); \
     }
 
-typedef enum mem_DelimType: u8 {
+typedef enum mem_DelimType : u8 {
     mem_delimType_value = 0,
     mem_delimType_pattern = 1,
     mem_delimType_choice = 2,
@@ -105,30 +235,30 @@ typedef enum mem_DelimType: u8 {
 
 #define mem_TokenIter$(_T...) pp_join($, mem_TokenIter, _T)
 typedef struct mem_TokenIter {
-    S_const$raw buf;
-    usize idx;
-    mem_DelimType delim_tag;
+    var_(buf, S_const$raw);
+    var_(idx, usize);
+    var_(delim_type, mem_DelimType);
     union {
-        V$raw value;
-        S_const$raw pattern;
-        S_const$raw choice;
+        var_(value, V$raw);
+        var_(pattern, S_const$raw);
+        var_(choice, S_const$raw);
     } delim;
-    debug_only(TypeInfo type;)
+    debug_only(var_(type, TypeInfo);)
 } mem_TokenIter;
 T_use_P$(mem_TokenIter);
 
-#define T_use_mem_TokenIter$(_T...)\
+#define T_use_mem_TokenIter$(_T...) \
     typedef union mem_TokenIter$(_T) { \
         struct { \
-            S$(const _T) buf; \
-            usize idx; \
-            mem_DelimType delim_tag; \
+            var_(buf, S_const$(_T)); \
+            var_(idx, usize); \
+            var_(delim_type, mem_DelimType); \
             union { \
-                _T value; \
-                S$(const _T) pattern; \
-                S$(const _T) choice; \
+                var_(value, _T); \
+                var_(pattern, S_const$(_T)); \
+                var_(choice, S_const$(_T)); \
             } delim; \
-            debug_only(TypeInfo type;) \
+            debug_only(var_(type, TypeInfo);) \
         }; \
         mem_TokenIter as_raw $like_ref; \
     } mem_TokenIter$(_T)
@@ -142,100 +272,52 @@ $extern fn_((mem_TokenIter_rest(mem_TokenIter* self, TypeInfo type))(O$u_S_const
 
 #define T_use_mem_tokenizeValue$(_T...) \
     $inline_always $static fn_((tpl_id(mem_tokenizeValue, _T)(S$(const _T) buf, _T value))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeValue(u_anyS_const(buf), u_anyV(value), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeValue(u_anyS(buf), u_anyV(value), lit$((mem_TokenIter$(_T)){}).as_raw)); \
     }
 #define T_use_mem_tokenizePattern$(_T...) \
     $inline_always $static fn_((tpl_id(mem_tokenizePattern, _T)(S$(const _T) buf, S$(const _T) pattern))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizePattern(u_anyS_const(buf), u_anyS_const(pattern), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizePattern(u_anyS(buf), u_anyS(pattern), lit$((mem_TokenIter$(_T)){}).as_raw)); \
     }
 #define T_use_mem_tokenizeChoice$(_T...) \
     $inline_always $static fn_((tpl_id(mem_tokenizeChoice, _T)(S$(const _T) buf, S$(const _T) choice))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeChoice(u_anyS_const(buf), u_anyS_const(choice), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeChoice(u_anyS(buf), u_anyS(choice), lit$((mem_TokenIter$(_T)){}).as_raw)); \
     }
 
 #define T_use_mem_TokenIter_reset$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_TokenIter_reset, _T)(mem_TokenIter$(_T)* self))(void)) { \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_reset, _T)(mem_TokenIter$(_T) * self))(void)) { \
         return mem_TokenIter_reset(self->as_raw); \
     }
 #define T_use_mem_TokenIter_next$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_TokenIter_next, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_next, _T)(mem_TokenIter$(_T) * self))(O$(S$(const _T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_TokenIter_next(self->as_raw, typeInfo$(_T))))); \
-    } $unscoped_(fn)
+    } \
+    $unscoped_(fn)
 #define T_use_mem_TokenIter_peek$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_TokenIter_peek, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_peek, _T)(mem_TokenIter$(_T) * self))(O$(S$(const _T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_TokenIter_peek(self->as_raw, typeInfo$(_T))))); \
-    } $unscoped_(fn)
+    } \
+    $unscoped_(fn)
 #define T_use_mem_TokenIter_rest$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_TokenIter_rest, _T)(mem_TokenIter$(_T)* self))(O$(S$(const _T))) $scope) { \
+    $inline_always $static fn_((tpl_id(mem_TokenIter_rest, _T)(mem_TokenIter$(_T) * self))(O$(S$(const _T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_TokenIter_rest(self->as_raw, typeInfo$(_T))))); \
-    } $unscoped_(fn)
-
-// Memory operations
-$inline_always P$raw mem_set(P$raw dest, u8 value, usize size);
-$inline_always P$raw mem_copy(P$raw dest, P_const$raw src, usize size);
-$inline_always P$raw mem_move(P$raw dest, P_const$raw src, usize size);
-$inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size);
-
-/*========== Alignment Functions ============================================*/
-
-// Check if alignment is valid (power of 2)
-$inline_always bool mem_isValidAlign(usize align);
-// Check if address is aligned
-$inline_always bool mem_isAligned(usize addr, usize align);
-// Check if address is aligned to power of 2
-$inline_always bool mem_isAlignedLog2(usize addr, u8 log2_align);
-// Forward align an address
-$inline_always usize mem_alignForward(usize addr, usize align);
-// Forward align an address to power of 2
-$inline_always usize mem_alignForwardLog2(usize addr, u8 log2_align);
-// Backward align an address
-$inline_always usize mem_alignBackward(usize addr, usize align);
-
-/*========== Buffer Manipulation ============================================*/
-
-// Copy bytes between buffers with bounds checking
-$inline_always P$raw mem_copyBytes(P$raw dest, P_const$raw src, usize len);
-// Set bytes to value with bounds checking
-$inline_always P$raw mem_setBytes(P$raw dest, u8 value, usize len);
-// Compare two byte buffers
-$inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len);
-
-/*========== Endian Conversion ==============================================*/
-
-$inline_always u16 mem_littleToNative16(u16 x);
-$inline_always u32 mem_littleToNative32(u32 x);
-$inline_always u64 mem_littleToNative64(u64 x);
-
-$inline_always u16 mem_bigToNative16(u16 x);
-$inline_always u32 mem_bigToNative32(u32 x);
-$inline_always u64 mem_bigToNative64(u64 x);
-
-$inline_always u16 mem_nativeToLittle16(u16 x);
-$inline_always u32 mem_nativeToLittle32(u32 x);
-$inline_always u64 mem_nativeToLittle64(u64 x);
-
-$inline_always u16 mem_nativeToBig16(u16 x);
-$inline_always u32 mem_nativeToBig32(u32 x);
-$inline_always u64 mem_nativeToBig64(u64 x);
+    } \
+    $unscoped_(fn)
 
 /*========== Implementation =================================================*/
 
-/**
- * @brief Count trailing zeros in an integer
- *
- * This is an implementation of Zig's @ctz builtin function.
- * Returns the number of trailing least-significant zero bits in the binary
- * representation of the given integer. If the input is 0, returns the bit
- * width of the type.
- *
- * @param x The input value
- * @return The number of trailing zeros
- */
-$inline_always u32 mem_ctz(u64 x) {
-    if (x == 0) {
-        return sizeof(u64) * 8;
-    }
+#if defined(__wasm32__) || defined(__wasm64__)
+#define __comp_int__mem_page_size (64ull * 1024ull)
+#elif defined(__aarch64__)
+#define __comp_int__mem_page_size (16ull * 1024ull)
+#elif defined(__sparc64__)
+#define __comp_int__mem_page_size (8ull * 1024ull)
+#else
+#define __comp_int__mem_page_size (4ull * 1024ull)
+#endif
 
+$inline_always
+$static fn_((mem_countTrailingZeros(u64 x))(u32)) {
+    if (x == 0) { return sizeof(u64) * 8; }
 #if defined(__GNUC__) || defined(__clang__)
     // GCC and Clang provide builtin
     return __builtin_ctzll(x);
@@ -244,125 +326,240 @@ $inline_always u32 mem_ctz(u64 x) {
     static const u8 lookup[32] = {
         0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
     };
-
     // First isolate the lowest set bit
     u64 isolate = x & (-x);
-
     // DeBruijn constant for 32-bit integers
     // Can be extended for 64-bit if needed
     u64 debruijn = 0x077CB531U;
-
     // Multiply by the DeBruijn constant and look up the result
     return lookup[((isolate * debruijn) >> 27) & 31];
 #endif
 }
 
-/**
- * @brief Convert actual alignment value to log2
- */
-$inline_always u8 mem_alignToLog2(usize align) {
-    debug_assert(mem_isValidAlign(align));
-    return (u8)mem_ctz(align);
-}
-
-/**
- * @brief Convert log2 value to actual alignment
- */
-$inline_always usize mem_log2ToAlign(u8 log2_align) {
-    return (usize)1 << log2_align;
-}
-
-/**
- * @brief Swap the byte order of an integer
- *
- * This is an implementation of Zig's @byteSwap builtin function.
- * Swaps the byte order of the given integer value. This can be used
- * to convert between little-endian and big-endian representations.
- *
- * @param x The value to byte-swap
- * @return The byte-swapped value
- */
-$inline_always u16 byteSwap16(u16 x) {
+$inline_always
+$static
+fn_((mem_byteSwap16(u16 x))(u16)) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap16(x);
 #else
     return (x << 8) | (x >> 8);
 #endif
 }
-
-$inline_always u32 byteSwap32(u32 x) {
+$inline_always
+$static
+fn_((mem_byteSwap32(u32 x))(u32)) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap32(x);
 #else
-    return ((x & 0xFF000000) >> 24) | ((x & 0x00FF0000) >> 8) | ((x & 0x0000FF00) << 8) | ((x & 0x000000FF) << 24);
+    return ((x & 0xFF000000) >> 24)
+         | ((x & 0x00FF0000) >> 8)
+         | ((x & 0x0000FF00) << 8)
+         | ((x & 0x000000FF) << 24);
 #endif
 }
-
-$inline_always u64 byteSwap64(u64 x) {
+$inline_always
+$static
+fn_((mem_byteSwap64(u64 x))(u64)) {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap64(x);
 #else
-    return ((x & 0xFF00000000000000ULL) >> 56) | ((x & 0x00FF000000000000ULL) >> 40) | ((x & 0x0000FF0000000000ULL) >> 24) | ((x & 0x000000FF00000000ULL) >> 8) | ((x & 0x00000000FF000000ULL) << 8) | ((x & 0x0000000000FF0000ULL) << 24) | ((x & 0x000000000000FF00ULL) << 40) | ((x & 0x00000000000000FFULL) << 56);
+    return ((x & 0xFF00000000000000ULL) >> 56)
+         | ((x & 0x00FF000000000000ULL) >> 40)
+         | ((x & 0x0000FF0000000000ULL) >> 24)
+         | ((x & 0x000000FF00000000ULL) >> 8)
+         | ((x & 0x00000000FF000000ULL) << 8)
+         | ((x & 0x0000000000FF0000ULL) << 24)
+         | ((x & 0x000000000000FF00ULL) << 40)
+         | ((x & 0x00000000000000FFULL) << 56);
 #endif
 }
 
-/*========== Memory Operations ==============================================*/
-
-$inline_always P$raw mem_set(P$raw dest, u8 value, usize size) {
-    claim_assert_nonnull(dest);
-    return prim_memset(dest, value, size);
+$inline_always
+$static
+fn_((mem_littleToNative16(u16 x))(u16)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap16(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_littleToNative32(u32 x))(u32)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap32(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_littleToNative64(u64 x))(u64)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap64(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_bigToNative16(u16 x))(u16)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap16(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_bigToNative32(u32 x))(u32)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap32(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_bigToNative64(u64 x))(u64)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap64(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToLittle16(u16 x))(u16)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap16(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToLittle32(u32 x))(u32)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap32(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToLittle64(u64 x))(u64)) {
+#if plat_byte_order == plat_byte_order_little_endian
+    return x;
+#else
+    return mem_byteSwap64(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToBig16(u16 x))(u16)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap16(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToBig32(u32 x))(u32)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap32(x);
+#endif
+}
+$inline_always
+$static
+fn_((mem_nativeToBig64(u64 x))(u64)) {
+#if plat_byte_order == plat_byte_order_big_endian
+    return x;
+#else
+    return mem_byteSwap64(x);
+#endif
 }
 
-$inline_always P$raw mem_copy(P$raw dest, P_const$raw src, usize size) {
-    claim_assert_nonnull(dest);
-    claim_assert_nonnull(src);
-    return prim_memcpy(dest, src, size);
+$inline_always
+$static
+fn_((mem_isValidAlign(usize align))(bool)) {
+    return 0 < align && (align & (align - 1)) == 0;
+}
+$inline_always
+$static
+fn_((mem_isAligned(usize addr, usize align))(bool)) {
+    return debug_assert(mem_isValidAlign(align)), (addr & (align - 1)) == 0;
+}
+$inline_always
+$static
+fn_((mem_isAlignedLog2(usize addr, u8 log2_align))(bool)) {
+    return mem_countTrailingZeros(addr) >= log2_align;
+}
+$inline_always
+$static
+fn_((mem_alignFwd(usize addr, usize align))(usize)) {
+    return debug_assert(mem_isValidAlign(align)), (addr + (align - 1)) & ~(align - 1);
+}
+$inline_always
+$static
+fn_((mem_alignFwdLog2(usize addr, u8 log2_align))(usize)) {
+    return mem_alignFwd(addr, lit_n$(usize)(1) << log2_align);
+}
+$inline_always
+$static
+fn_((mem_alignBwd(usize addr, usize align))(usize)) {
+    return debug_assert(mem_isValidAlign(align)), addr & ~(align - 1);
+}
+$inline_always
+$static
+fn_((mem_alignToLog2(usize align))(u8)) {
+    return debug_assert(mem_isValidAlign(align)), as$(u8)(mem_countTrailingZeros(align));
+}
+$inline_always
+$static
+fn_((mem_log2ToAlign(u8 log2_align))(usize)) {
+    return as$(usize)(1 << log2_align);
 }
 
-$inline_always P$raw mem_move(P$raw dest, P_const$raw src, usize size) {
-    claim_assert_nonnull(dest);
-    claim_assert_nonnull(src);
-    return prim_memmove(dest, src, size);
-}
-
-$inline_always cmp_Ord mem_cmp(P_const$raw lhs, P_const$raw rhs, usize size) {
-    claim_assert_nonnull(lhs);
-    claim_assert_nonnull(rhs);
-    return as$(cmp_Ord)(prim_memcmp(lhs, rhs, size));
-}
-
-$inline_always S_const$u8 mem_spanZ0_const$u8(const u8* p) {
-    claim_assert_nonnull(p);
-    return (S_const$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
-}
-
-$inline_always S$u8 mem_spanZ0$u8(u8* p) {
-    claim_assert_nonnull(p);
-    return (S$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
-}
-
-$inline_always usize mem_lenZ0$u8(const u8* p) {
-    claim_assert_nonnull(p);
-    return mem_idxZ$u8(u8_c('\0'), p);
-}
-
-$inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p) {
+$inline_always
+$static
+fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize)) {
     claim_assert_nonnull(p);
     usize idx = 0;
     while (p[idx] != sentinel) { idx++; }
     return idx;
 }
+$inline_always
+$static
+fn_((mem_lenZ0$u8(const u8* p))(usize)) {
+    claim_assert_nonnull(p);
+    return mem_idxZ$u8(u8_c('\0'), p);
+}
 
-#define __step__mem_asBytes(_ptr...) _Generic(\
-    TypeOf(_ptr),\
-    const TypeOfUnqual(*_ptr)*: \
-        init$S$((const u8)(as$(const u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))), \
-    TypeOfUnqual(*_ptr)*: \
-        init$S$((u8)(as$(u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))) \
+$inline_always
+$static
+fn_((mem_spanZ0_const$u8(const u8* p))(S_const$u8)) {
+    claim_assert_nonnull(p);
+    return (S_const$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+}
+$inline_always
+$static
+fn_((mem_spanZ0$u8(u8* p))(S$u8)) {
+    claim_assert_nonnull(p);
+    return (S$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+}
+
+#define __step__mem_asBytes(_ptr...) _Generic( \
+    TypeOf(&*_ptr), \
+    const TypeOfUnqual(*_ptr)*: init$S$((const u8)(as$(const u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))), \
+    TypeOfUnqual(*_ptr)*: init$S$((u8)(as$(u8*)(_ptr), sizeOf$(TypeOf(*_ptr)))) \
 )
-#define __step__mem_bytesAs$(_P_T, _bytes...) _Generic(\
-    TypeOf(_bytes.ptr), \
-    const u8*: _Generic(\
+#define __step__mem_bytesAs$(_P_T, _bytes...) _Generic( \
+    TypeOf(&*_bytes.ptr), \
+    const u8*: _Generic( \
         _P_T, \
         const TypeOfUnqual(*as$(_P_T)(null))*: as$(_P_T)(_bytes.ptr), \
         TypeOfUnqual(*as$(_P_T)(null))*: claim_unreachable \
@@ -376,161 +573,33 @@ $inline_always usize mem_idxZ$u8(u8 sentinel, const u8* p) {
 })
 #define __step__mem_toBytes(_val...) \
     mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)
-#define __step__mem_bytesTo$(_T, _bytes...) _Generic(\
-    _bytes.ptr, \
+#define __step__mem_bytesTo$(_T, _bytes...) _Generic( \
+    &*_bytes.ptr, \
     const u8*: *as$(const _T*)(_bytes.ptr), \
     u8*: *as$(_T*)(_bytes.ptr) \
 )
 
-/*========== Alignment Functions ============================================*/
-
-$inline_always bool mem_isValidAlign(usize align) {
-    return align > 0 && (align & (align - 1)) == 0;
-}
-
-$inline_always bool mem_isAligned(usize addr, usize align) {
-    debug_assert(mem_isValidAlign(align));
-    return (addr & (align - 1)) == 0;
-}
-
-$inline_always bool mem_isAlignedLog2(usize addr, u8 log2_align) {
-    return mem_ctz(addr) >= log2_align;
-}
-
-$inline_always usize mem_alignForward(usize addr, usize align) {
-    debug_assert(mem_isValidAlign(align));
-    return (addr + (align - 1)) & ~(align - 1);
-}
-
-$inline_always usize mem_alignForwardLog2(usize addr, u8 log2_align) {
-    const usize alignment = (usize)1 << log2_align;
-    return mem_alignForward(addr, alignment);
-}
-
-$inline_always usize mem_alignBackward(usize addr, usize align) {
-    debug_assert(mem_isValidAlign(align));
-    return addr & ~(align - 1);
-}
-
-/*========== Buffer Manipulation ============================================*/
-
-// Copy bytes between buffers with bounds checking
-$inline_always P$raw mem_copyBytes(P$raw dest, P_const$raw src, usize len) {
-    claim_assert_nonnull(dest);
-    claim_assert_nonnull(src);
-    return mem_copy(dest, src, len);
-}
-
-// Set bytes to value with bounds checking
-$inline_always P$raw mem_setBytes(P$raw dest, u8 value, usize len) {
-    claim_assert_nonnull(dest);
-    return mem_set(dest, value, len);
-}
-
-// Compare two byte buffers
-$inline_always bool mem_eqlBytes(P_const$raw lhs, P_const$raw rhs, usize len) {
-    claim_assert_nonnull(lhs);
-    claim_assert_nonnull(rhs);
-    return mem_cmp(lhs, rhs, len) == 0;
-}
-
-/*========== Endian Conversion ==============================================*/
-
-$inline_always u16 mem_littleToNative16(u16 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap16(x);
-#endif
-}
-
-$inline_always u32 mem_littleToNative32(u32 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap32(x);
-#endif
-}
-
-$inline_always u64 mem_littleToNative64(u64 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap64(x);
-#endif
-}
-
-$inline_always u16 mem_bigToNative16(u16 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap16(x);
-#endif
-}
-
-$inline_always u32 mem_bigToNative32(u32 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap32(x);
-#endif
-}
-
-$inline_always u64 mem_bigToNative64(u64 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap64(x);
-#endif
-}
-
-$inline_always u16 mem_nativeToLittle16(u16 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap16(x);
-#endif
-}
-
-$inline_always u32 mem_nativeToLittle32(u32 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap32(x);
-#endif
-}
-
-$inline_always u64 mem_nativeToLittle64(u64 x) {
-#if plat_byte_order == plat_byte_order_little_endian
-    return x;
-#else
-    return byteSwap64(x);
-#endif
-}
-
-$inline_always u16 mem_nativeToBig16(u16 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap16(x);
-#endif
-}
-
-$inline_always u32 mem_nativeToBig32(u32 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap32(x);
-#endif
-}
-
-$inline_always u64 mem_nativeToBig64(u64 x) {
-#if plat_byte_order == plat_byte_order_big_endian
-    return x;
-#else
-    return byteSwap64(x);
-#endif
-}
+#define __step__mem_sliceAsBytes(__sli, _sli...) blk({ \
+    let __sli = &copy(_sli); \
+    typedef TypeOfUnqual(*__sli) Sli; \
+    _Generic( \
+        S_InnerT$(Sli), \
+        const S_InnerTUnqual$(Sli): (S_const$u8){ .ptr = as$(const u8*)(__sli->ptr), .len = __sli->len * sizeOf$(S_InnerT$(Sli)) }, \
+        S_InnerTUnqual$(Sli): (S$u8){ .ptr = as$(u8*)(__sli->ptr), .len = __sli->len * sizeOf$(S_InnerT$(Sli)) } \
+    ); \
+})
+#define __step__mem_bytesAsSlice$(__bytes, _S_T, _bytes...) blk({ \
+    let __bytes = &copy(_bytes); \
+    _Generic( \
+        TypeOf(&*_bytes.ptr), \
+        const u8*: _Generic( \
+            S_InnerT$(_S_T), \
+            const S_InnerTUnqual$(_S_T): (_S_T){ .ptr = as$(S_InnerT$(_S_T)*)(__bytes->ptr), .len = __bytes->len / sizeOf$(S_InnerT$(_S_T)) }, \
+            S_InnerTUnqual$(_S_T): claim_unreachable \
+        ), \
+        u8*: (_S_T){ .ptr = as$(S_InnerT$(_S_T)*)(__bytes->ptr), .len = __bytes->len / sizeOf$(S_InnerT$(_S_T)) } \
+    ); \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

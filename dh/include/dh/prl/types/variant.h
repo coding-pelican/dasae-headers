@@ -30,7 +30,7 @@ extern "C" {
 
 #define enum_of$(/*(_Alias)(_value)*/...) \
     pp_expand(pp_defer(block_inline__enum_of$)(comp_param__enum_of$ _value))
-#define comp_param__enum_of$(_value...)   _value, pp_expand
+#define comp_param__enum_of$(_value...) _value, pp_expand
 #define block_inline__enum_of$(_value...) as$(_Alias)(_value)
 
 #define $fits ,
@@ -38,11 +38,11 @@ extern "C" {
     pp_overload(__variant_, __VA_ARGS__)(__VA_ARGS__)
 #define __variant__1(...) \
     __gen__variant_(__gen__variant___parseAlias __VA_ARGS__)
-#define __gen__variant_(...)                                       __gen__variant___emit(__VA_ARGS__)
-#define __gen__variant___parseAlias(...)                           pp_overload(__gen__variant___parseAlias, __VA_ARGS__)(__VA_ARGS__)
-#define __gen__variant___parseAlias_0()                            , , __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parseAlias_1(_Alias...)                   _Alias, , __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...)  _Alias, : _UnderlyingType, __gen__variant___parsePairEnumTypeList
+#define __gen__variant_(...) __gen__variant___emit(__VA_ARGS__)
+#define __gen__variant___parseAlias(...) pp_overload(__gen__variant___parseAlias, __VA_ARGS__)(__VA_ARGS__)
+#define __gen__variant___parseAlias_0() , , __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parseAlias_1(_Alias...) _Alias, , __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...) _Alias, : _UnderlyingType, __gen__variant___parsePairEnumTypeList
 #define __gen__variant___parsePairEnumTypeList(_Pair_Enum_Type...) _Pair_Enum_Type
 #define __gen__variant___emit(_Alias, _EnumUnderlying, _Pair_Enum_Type...) \
     struct _Alias { \
@@ -54,19 +54,21 @@ extern "C" {
         } payload; \
     }
 #define __gen__variant___emitEnumTags(_Pair_Enum_Type...) \
-    pp_foreach (__gen__variant___emitEnumTag, ~, _Pair_Enum_Type)
-#define __gen__variant___emitEnumTag(_$ignored, _Pair_Enum_Type) \
-    pp_Tuple_get1st _Pair_Enum_Type,
+    pp_foreach(__gen__variant___emitEnumTag, ~, _Pair_Enum_Type)
+#define __gen__variant___emitEnumTag(_$ignored, /*_Pair_Enum_Type*/...) __VA_OPT__( \
+    pp_Tuple_get1st __VA_ARGS__, \
+)
 #define __gen__variant___emitUnionPayloads(_Pair_Enum_Type...) \
-    pp_foreach (__gen__variant___emitUnionPayload, ~, _Pair_Enum_Type)
-#define __gen__variant___emitUnionPayload(_$ignored, _Pair_Enum_Type) \
-    var_(pp_join($, tag, pp_Tuple_get1st _Pair_Enum_Type) $like_ref, pp_Tuple_get2nd _Pair_Enum_Type);
-#define __variant__2(...)                  __gen__variant_raw(__VA_ARGS__)
+    pp_foreach(__gen__variant___emitUnionPayload, ~, _Pair_Enum_Type)
+#define __gen__variant___emitUnionPayload(_$ignored, /*_Pair_Enum_Type*/...) __VA_OPT__( \
+    var_(pp_join($, tag, pp_Tuple_get1st __VA_ARGS__) $like_ref, pp_Tuple_get2nd __VA_ARGS__); \
+)
+#define __variant__2(...) __gen__variant_raw(__VA_ARGS__)
 #define __gen__variant_raw(_Alias, _$T...) struct _Alias
 
 #define union_of(/*(_Enum){ _payload... }*/...) \
     __op__union_of(__op__union_of__parseEnum __VA_ARGS__)
-#define __op__union_of(...)                 __op__union_of__emit(__VA_ARGS__)
+#define __op__union_of(...) __op__union_of__emit(__VA_ARGS__)
 #define __op__union_of__parseEnum(_Enum...) _Enum,
 #define __op__union_of__emit(_Enum, _payload...) \
     { \
@@ -75,7 +77,7 @@ extern "C" {
     }
 #define union_of$(/*(_Alias)(_Enum){ _payload... }*/...) \
     __op__union_of$(__op__union_of$__parseAlias __VA_ARGS__)
-#define __op__union_of$(...)                   __op__union_of$__emit(__VA_ARGS__)
+#define __op__union_of$(...) __op__union_of$__emit(__VA_ARGS__)
 #define __op__union_of$__parseAlias(_Alias...) _Alias,
 #define __op__union_of$__emit(_Alias, _Enum_payload...) \
     lit$((_Alias)union_of(_Enum_payload))
@@ -153,6 +155,38 @@ extern "C" {
 #define comp_syn__fallback_(_Body...) \
     default: \
         _Body
+
+/* clang-format off */
+#undef match_
+#undef pattern_
+#undef case_
+#undef default_
+
+#define $end(_keyword) ; pp_cat($end_, _keyword)()
+
+#define match_(_vari...) { \
+    let __vari = _vari; \
+    switch (__vari.tag)
+#define $end_match() \
+}
+
+#define case_(_tag...) \
+case __step__case_ _tag:
+#define __step__case_(...) __VA_ARGS__
+
+#define pattern_(/*(_tag)(_capture)*/...) __step__pattern_(__step__pattern___parseTag __VA_ARGS__)
+#define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)
+#define __step__pattern___parseTag(_tag...) _tag, __step__pattern___parseCapture
+#define __step__pattern___parseCapture(_capture...) _capture
+#define __step__pattern___emit(_tag, _capture...) \
+case _tag: { \
+    let _capture = pp_join($, __vari.payload.tag, _tag);
+#define $end_pattern() \
+}
+
+#define default_() default: {
+#define $end_default() }
+/* clang-format on */
 
 #if defined(__cplusplus)
 } /* extern "C" */

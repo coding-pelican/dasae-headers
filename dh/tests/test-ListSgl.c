@@ -25,9 +25,9 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
     var four = ListSgl_Node_init$u32(&lit$((ListSgl_Node$u32){ .data = 4 }));
     var five = ListSgl_Node_init$u32(&lit$((ListSgl_Node$u32){ .data = 5 }));
 
-    ListSgl_prepend$u32(&list, two);            // {2}
+    ListSgl_prepend$u32(&list, two);          // {2}
     ListSgl_Node_insertNext$u32(two, five);   // {2, 5}
-    ListSgl_prepend$u32(&list, one);            // {1, 2, 5}
+    ListSgl_prepend$u32(&list, one);          // {1, 2, 5}
     ListSgl_Node_insertNext$u32(two, three);  // {1, 2, 3, 5}
     ListSgl_Node_insertNext$u32(three, four); // {1, 2, 3, 4, 5}
 
@@ -37,15 +37,15 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
     {
         var it = list.first;
         u32 index = 1;
-        while_some(it, node) blk_defer {
+        while_some(it, node) blk_defer_({
             defer_(index += 1, it = node->next);
             try_(TEST_expect(node->data == index));
-        } blk_deferral;
+        }) blk_deferral;
     }
 
-    let_ignore = ListSgl_shift$u32(&list);          // {2, 3, 4, 5}
-    ListSgl_remove$u32(&list, five); // {2, 3, 4}
-    let_ignore = ListSgl_Node_removeNext$u32(two);    // {2, 4}
+    let_ignore = ListSgl_shift$u32(&list);         // {2, 3, 4, 5}
+    ListSgl_remove$u32(&list, five);               // {2, 3, 4}
+    let_ignore = ListSgl_Node_removeNext$u32(two); // {2, 4}
 
     try_(TEST_expect(pipe(list.first,(unwrap_,()->data)) == 2));
     // try_(TEST_expect(unwrap_(list.first)->data == 2));

@@ -23,10 +23,7 @@ extern "C" {
 #include "engine/Input.h"
 
 #include "engine/core/VT100.h"
-#define engine_core_VT100Ex_comp_enabled 1
-#if engine_core_VT100Ex_comp_enabled
 #include "engine/core/VT100Ex.h"
-#endif /* engine_core_VT100Ex_comp_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

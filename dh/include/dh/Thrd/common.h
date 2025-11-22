@@ -36,7 +36,7 @@ typedef Thrd_HandleImpl Thrd_Handle;
 // Thread function context type instantiation
 #define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
 // Thread function context type alias
-#define Thrd_FnCtx$(_fnName...)                    __alias__Thrd_FnCtx$(_fnName)
+#define Thrd_FnCtx$(_fnName...) __alias__Thrd_FnCtx$(_fnName)
 // Thread function context type erasure
 typedef struct Thrd_FnCtx Thrd_FnCtx;
 // Thread function arguments type erasure
@@ -73,7 +73,7 @@ struct Thrd_FnCtx {
     pp_cat(comp_syn__Thrd_fn_impl, _Extension)(_fnName, _Tuple_Captures)
 #define __Thrd_fn_3(_fnName, _Tuple_Args_Ret, _Tuple_Captures, _Extension) \
     pp_cat(comp_syn__Thrd_fn_impl_w_type, _Extension)(_fnName, _Tuple_Args_Ret, _Tuple_Captures)
-#define $unscoped_Thrd_fn  comp_syn__$unscoped_Thrd_fn
+#define $unscoped_Thrd_fn comp_syn__$unscoped_Thrd_fn
 #define $unguarded_Thrd_fn comp_syn__$unguarded_Thrd_fn
 
 // Thread functions
@@ -145,8 +145,8 @@ typedef struct Thrd_RwLock Thrd_RwLock;
     _fnName,
 #define __step__Thrd_FnCtx_from$__emit(_fnName, _args...) lit$((Thrd_FnCtx$(_fnName)){ \
     .fn = _fnName, \
-    .args = { .as_typed = { __step__Thrd_FnCtx_from$__expand _args } }, \
-    .ret = { .as_typed = {} }, \
+    .args = {.as_typed = {__step__Thrd_FnCtx_from$__expand _args}}, \
+    .ret = {.as_typed = {}}, \
 })
 #define __step__Thrd_FnCtx_from$__expand(_args...) \
     _args

@@ -41,7 +41,7 @@ extern "C" {
 /// Vector type construction: Vec$(type, length)
 /// Example: Vec$(4, f32) => __attribute__((vector_size(16))) f32
 #define $Vec$(_N, _T...) TypeOf(_T __attribute__((vector_size(_N * sizeOf$(_T)))))
-#define Vec$(_N, _T...)  pp_join3($, Vec, _N, _T)
+#define Vec$(_N, _T...) pp_join3($, Vec, _N, _T)
 #define Vec$$(_N, _T...) $Vec$(_N, _T)
 
 /// Type declaration helpers
@@ -62,16 +62,16 @@ extern "C" {
 #define Vec_init(/*{_initial...}*/...) \
     __VA_ARGS__
 #define Vec_init$(/*(_T){_initial...}*/...) __op__Vec_init$(__op__Vec_init$__parse __VA_ARGS__)
-#define __op__Vec_init$(...)                __op__Vec_init$__emit(__VA_ARGS__)
-#define __op__Vec_init$__parse(_T...)       _T,
+#define __op__Vec_init$(...) __op__Vec_init$__emit(__VA_ARGS__)
+#define __op__Vec_init$__parse(_T...) _T,
 #define __op__Vec_init$__emit(_T, _initial...) \
     lit$((_T)_initial)
 
 /// Initialize vector with all lanes set to same value (splat)
 #define Vec_splat$(/*(_T)(_val)*/... /*(_T)*/) __op__Vec_splat$(__op__Vec_splat$__parse __VA_ARGS__)
-#define __op__Vec_splat$(...)                  __op__Vec_splat$__emit(__VA_ARGS__)
-#define __op__Vec_splat$__parse(_T...)         _T,
-#define __op__Vec_splat$__emit(_T, _val...)    ({ \
+#define __op__Vec_splat$(...) __op__Vec_splat$__emit(__VA_ARGS__)
+#define __op__Vec_splat$__parse(_T...) _T,
+#define __op__Vec_splat$__emit(_T, _val...) ({ \
     var_(__ret, _T) = {}; \
     let __scalar = _val; \
     for (usize __i = 0; __i < Vec_len$(_T); ++__i) { \
@@ -82,14 +82,14 @@ extern "C" {
 
 /// Initialize vector length inferred from initial values
 #define Vec_from$(/*(_T){_initial...}*/...) __op__Vec_from$(__op__Vec_from$__parse __VA_ARGS__)
-#define __op__Vec_from$(...)                __op__Vec_from$__emit(__VA_ARGS__)
-#define __op__Vec_from$__parse(_T...)       _T,
+#define __op__Vec_from$(...) __op__Vec_from$__emit(__VA_ARGS__)
+#define __op__Vec_from$__parse(_T...) _T,
 #define __op__Vec_from$__emit(_T, _initial...) \
     lit$((Vec$$(sizeOf$(TypeOf((_T[])_initial)) / sizeOf$(_T), _T)) _initial)
 
 /// Initialize vector from array
-#define Vec_fromA$(/*(_T)(_a)*/...)    __op__Vec_fromA$(__op__Vec_fromA$__parse __VA_ARGS__)
-#define __op__Vec_fromA$(...)          __op__Vec_fromA$__emit(__VA_ARGS__)
+#define Vec_fromA$(/*(_T)(_a)*/...) __op__Vec_fromA$(__op__Vec_fromA$__parse __VA_ARGS__)
+#define __op__Vec_fromA$(...) __op__Vec_fromA$__emit(__VA_ARGS__)
 #define __op__Vec_fromA$__parse(_T...) _T,
 #define __op__Vec_fromA$__emit(_T, _a...) \
     (*as$(_T*)(&_a))
@@ -98,8 +98,8 @@ extern "C" {
     Vec_fromA$((Vec$$(A_len$(TypeOf(_a)), A_InnerT$(TypeOf(_a))))(_a))
 
 /// Store vector to array
-#define Vec_toA$(/*(_T)(_vec)*/...)  __op__Vec_toA$(__op__Vec_toA$__parse __VA_ARGS__)
-#define __op__Vec_toA$(...)          __op__Vec_toA$__emit(__VA_ARGS__)
+#define Vec_toA$(/*(_T)(_vec)*/...) __op__Vec_toA$(__op__Vec_toA$__parse __VA_ARGS__)
+#define __op__Vec_toA$(...) __op__Vec_toA$__emit(__VA_ARGS__)
 #define __op__Vec_toA$__parse(_T...) _T,
 #define __op__Vec_toA$__emit(_T, _vec...) \
     (*as$(_T*)(&_vec))
@@ -126,22 +126,22 @@ extern "C" {
         }; \
         var_(catted, _T); \
     } Catting; \
-    lit$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
+    lit$((Catting){.lhs = *__lhs, .rhs = *__rhs}).catted; \
 })
 #define Vec_cat(_lhs, _rhs...) \
     Vec_cat$((Vec$$(Vec_len(_lhs) + Vec_len(_rhs), TypeOf(_lhs[0])))(_lhs, _rhs))
 
 /// Get lane length of vector
-#define Vec_len$(_T... /*(usize)*/)                      __op__Vec_len$(_T)
-#define __op__Vec_len$(_T...)                            countOf$(_T)
+#define Vec_len$(_T... /*(usize)*/) __op__Vec_len$(_T)
+#define __op__Vec_len$(_T...) countOf$(_T)
 #define Vec_len(_self /*: Vec$(_N, _T)*/... /*(usize)*/) __op__Vec_len(_self)
-#define __op__Vec_len(_self...)                          Vec_len$(TypeOf(_self))
+#define __op__Vec_len(_self...) Vec_len$(TypeOf(_self))
 
 /// Get lane value pointer of vector
 #define Vec_at(/*(_self: Vec$(_N, _T))[_idx]*/... /*(P(_T))*/) \
     __op__Vec_at(__op__Vec_at__parse __VA_ARGS__)
-#define __op__Vec_at__parse(_self...)                     pp_uniqTok(self), pp_uniqTok(idx), _self,
-#define __op__Vec_at(...)                                 __op__Vec_at__emit(__VA_ARGS__)
+#define __op__Vec_at__parse(_self...) pp_uniqTok(self), pp_uniqTok(idx), _self,
+#define __op__Vec_at(...) __op__Vec_at__emit(__VA_ARGS__)
 #define __op__Vec_at__emit(__self, __idx, _self, _idx...) ({ \
     let_(__self, TypeOf(_self)*) = &_self; \
     typedef TypeOf((*__self)[0]) ScalarType; \
@@ -166,28 +166,28 @@ extern "C" {
 
 /*---------- Bitwise Operations ---------------------------------------------*/
 
-#define Vec_not(_a)     __op__Vec_not(_a)
+#define Vec_not(_a) __op__Vec_not(_a)
 #define Vec_shl(_a, _b) __op__Vec_shl(_a, _b)
 #define Vec_shr(_a, _b) __op__Vec_shr(_a, _b)
 #define Vec_and(_a, _b) __op__Vec_and(_a, _b)
 #define Vec_xor(_a, _b) __op__Vec_xor(_a, _b)
-#define Vec_or(_a, _b)  __op__Vec_or(_a, _b)
+#define Vec_or(_a, _b) __op__Vec_or(_a, _b)
 
 /*---------- Comparison Operations ------------------------------------------*/
 
 /// Returns vector of bool/int (0 or -1 for each lane)
 #define Vec_cmp(_a, _b) __op__Vec_cmp(_a, _b)
-#define Vec_eq(_a, _b)  __op__Vec_eq(_a, _b)
-#define Vec_ne(_a, _b)  __op__Vec_ne(_a, _b)
-#define Vec_lt(_a, _b)  __op__Vec_lt(_a, _b)
-#define Vec_le(_a, _b)  __op__Vec_le(_a, _b)
-#define Vec_gt(_a, _b)  __op__Vec_gt(_a, _b)
-#define Vec_ge(_a, _b)  __op__Vec_ge(_a, _b)
+#define Vec_eq(_a, _b) __op__Vec_eq(_a, _b)
+#define Vec_ne(_a, _b) __op__Vec_ne(_a, _b)
+#define Vec_lt(_a, _b) __op__Vec_lt(_a, _b)
+#define Vec_le(_a, _b) __op__Vec_le(_a, _b)
+#define Vec_gt(_a, _b) __op__Vec_gt(_a, _b)
+#define Vec_ge(_a, _b) __op__Vec_ge(_a, _b)
 
 /*---------- Min/Max Operations ---------------------------------------------*/
 
-#define Vec_min(_a, _b)             __op__Vec_min(_a, _b)
-#define Vec_max(_a, _b)             __op__Vec_max(_a, _b)
+#define Vec_min(_a, _b) __op__Vec_min(_a, _b)
+#define Vec_max(_a, _b) __op__Vec_max(_a, _b)
 #define Vec_clamp(_val, _min, _max) __op__Vec_clamp(_val, _min, _max)
 #define Vec_wrapU(_val, _min, _max) __op__Vec_wrapU(_val, _min, _max)
 #define Vec_wrapI(_val, _min, _max) __op__Vec_wrapI(_val, _min, _max)
@@ -201,14 +201,14 @@ extern "C" {
 #define Vec_reduceMin(_vec) __op__Vec_reduceMin(_vec)
 #define Vec_reduceMax(_vec) __op__Vec_reduceMax(_vec)
 #define Vec_reduceAnd(_vec) __op__Vec_reduceAnd(_vec)
-#define Vec_reduceOr(_vec)  __op__Vec_reduceOr(_vec)
+#define Vec_reduceOr(_vec) __op__Vec_reduceOr(_vec)
 #define Vec_reduceXor(_vec) __op__Vec_reduceXor(_vec)
 
 /*---------- Shuffle and Select Operations ----------------------------------*/
 
 /// Shuffle/swizzle vector lanes
 #define Vec_shuffle$(_VT, _a, _b, ...) __op__Vec_shuffle$(_VT, _a, _b, __VA_ARGS__)
-#define Vec_shuffle(_a, _b, ...)       Vec_shuffle$(TypeOfUnqual(_a), _a, _b, __VA_ARGS__)
+#define Vec_shuffle(_a, _b, ...) Vec_shuffle$(TypeOfUnqual(_a), _a, _b, __VA_ARGS__)
 
 /// Select lanes based on mask (mask ? b : a)
 #define Vec_select(_mask, _a, _b) __op__Vec_select(_mask, _a, _b)
@@ -216,9 +216,9 @@ extern "C" {
 /*---------- Mathematical Functions -----------------------------------------*/
 
 /// Floating-point operations (requires math library or intrinsics)
-#define Vec_sqrt(_a)  __op__Vec_sqrt(_a)
+#define Vec_sqrt(_a) __op__Vec_sqrt(_a)
 #define Vec_floor(_a) __op__Vec_floor(_a)
-#define Vec_ceil(_a)  __op__Vec_ceil(_a)
+#define Vec_ceil(_a) __op__Vec_ceil(_a)
 #define Vec_round(_a) __op__Vec_round(_a)
 #define Vec_trunc(_a) __op__Vec_trunc(_a)
 
@@ -270,7 +270,7 @@ extern "C" {
 
 #define __op__Vec_from$(_len, _T, ...) ({ \
     typedef Vec$(_len, _T) Vec; \
-    let __arr = (_T[]){ __VA_ARGS__ }; \
+    let __arr = (_T[]){__VA_ARGS__}; \
     Vec_fromArray$(Vec, __arr); \
 })
 
@@ -352,12 +352,12 @@ extern "C" {
 
 /*---------- Bitwise Operations ---------------------------------------------*/
 
-#define __op__Vec_not(_a)     (~(_a))
+#define __op__Vec_not(_a) (~(_a))
 #define __op__Vec_shl(_a, _b) ((_a) << (_b))
 #define __op__Vec_shr(_a, _b) ((_a) >> (_b))
 #define __op__Vec_and(_a, _b) ((_a) & (_b))
 #define __op__Vec_xor(_a, _b) ((_a) ^ (_b))
-#define __op__Vec_or(_a, _b)  ((_a) | (_b))
+#define __op__Vec_or(_a, _b) ((_a) | (_b))
 
 /*---------- Comparison Operations ------------------------------------------*/
 
@@ -866,7 +866,7 @@ extern "C" {
 
 /// Dot product (optimized for SSE4.1+)
 #define Vec_dot$(_VT, _a, _b) __op__Vec_dot$(_VT, _a, _b)
-#define Vec_dot(_a, _b)       Vec_dot$(TypeOfUnqual(_a), _a, _b)
+#define Vec_dot(_a, _b) Vec_dot$(TypeOfUnqual(_a), _a, _b)
 
 /// Cross product (3D vectors)
 #define Vec_cross3(_a, _b) __op__Vec_cross3(_a, _b)
@@ -1262,7 +1262,7 @@ extern "C" {
 /// Gather: Load non-contiguous elements using indices
 /// result[__i] = base[indices[__i]]
 #define Vec_gather$(_VT, _p_base, _indices) __op__Vec_gather$(_VT, _p_base, _indices)
-#define Vec_gather(_p_base, _indices)       Vec_gather$(TypeOfUnqual(*_p_base), _p_base, _indices)
+#define Vec_gather(_p_base, _indices) Vec_gather$(TypeOfUnqual(*_p_base), _p_base, _indices)
 
 /// Scatter: Store to non-contiguous locations using indices
 /// base[indices[__i]] = values[__i]
@@ -1637,7 +1637,7 @@ extern "C" {
             min_idx = __i; \
         } \
     } \
-    (struct { ScalarType val; usize idx; }){ min_val, min_idx }; \
+    (struct { ScalarType val; usize idx; }){min_val, min_idx}; \
 })
 
 #define __op__Vec_reduceMaxIdx(_vec) ({ \
@@ -1652,7 +1652,7 @@ extern "C" {
             max_idx = __i; \
         } \
     } \
-    (struct { ScalarType val; usize idx; }){ max_val, max_idx }; \
+    (struct { ScalarType val; usize idx; }){max_val, max_idx}; \
 })
 
 #define __op__Vec_sad(_a, _b) ({ \

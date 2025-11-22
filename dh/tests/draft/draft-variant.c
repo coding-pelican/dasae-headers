@@ -1,4 +1,5 @@
 #include "dh/core.h"
+#include "dh/core/prim/switch.h"
 #include "dh/main.h"
 
 #if UNUSED_CODE
@@ -28,18 +29,18 @@
     }
 
 #define comp_gen__variant__enumTags(T_variant, ...) \
-    pp_foreach (comp_gen__variant__enumTag, T_variant, __VA_ARGS__)
+    pp_foreach(comp_gen__variant__enumTag, T_variant, __VA_ARGS__)
 #define comp_gen__variant__enumTag(T_variant, _Pair) \
     pp_Tuple_get1st _Pair,
 
 #define comp_gen__variant__unionTypes(T_variant, ...) \
-    pp_foreach (comp_gen__variant__unionType, T_variant, __VA_ARGS__)
+    pp_foreach(comp_gen__variant__unionType, T_variant, __VA_ARGS__)
 #define comp_gen__variant__unionType(T_variant, _Pair) \
     pp_Tuple_get2nd _Pair pp_join($, tagged, pp_Tuple_get1st _Pair)[1];
 
 #define comp_op__variant_of(_tag, _payload...) \
     { \
-        .tag     = _tag, \
+        .tag = _tag, \
         .payload = { .pp_join($, tagged, _tag) = { [0] = _payload } }, \
     }
 #define comp_op__variant_of$(T_variant, _tag, _payload...) \
@@ -102,7 +103,6 @@ typedef variant_(
     }
 #endif /* UNUSED_CODE */
 
-#include "dh/blk.h"
 #include "dh/io/stream.h"
 
 // fn_(Shape_calcArea(Shape self), f32 $scope) {
@@ -142,21 +142,19 @@ typedef variant_(
 //     });
 // }
 
-typedef variant_(
-    (Obj_Scalar),
+typedef variant_((Obj_Scalar)(
     (Obj_Scalar_u32, u32),
     (Obj_Scalar_i32, i32),
     (Obj_Scalar_f32, f32)
-) Obj_Scalar;
-typedef variant_(
-    (Obj),
-    (Obj_none, Void),
+)) Obj_Scalar;
+typedef variant_((Obj)(
     (Obj_bool, bool),
     (Obj_scalar, Obj_Scalar)
-) Obj;
+)) Obj;
 
 TEST_fn_("variant: basic" $scope) {
-    let obj = variant_of$(Obj, Obj_scalar, variant_of(Obj_Scalar_i32, -123));
+    let obj = union_of$((Obj)(Obj_scalar)union_of$((Obj_Scalar)(Obj_Scalar_i32)-123));
+#if UNUSED_CODE
     match_(obj, {
         pattern_(Obj_none, {
             io_stream_println(u8_l("none\n"));
@@ -178,7 +176,167 @@ TEST_fn_("variant: basic" $scope) {
             });
         }) break;
     });
+#endif /* UNUSED_CODE */
+    let _vari = obj;
+    {
+        let_(__vari, TypeOf(_vari)) = _vari;
+        switch (__vari.tag) {
+        case Obj_bool: {
+            let my_b = __vari.payload.tag$Obj_bool;
+            io_stream_println(u8_l("bool: {:d}\n"), *my_b);
+        }
+        case Obj_scalar: {
+            let my_s = __vari.payload.tag$Obj_scalar;
+            {
+                let_(__vari, TypeOf(*my_s)) = *my_s;
+                switch (__vari.tag) {
+                case Obj_Scalar_u32: {
+                    let my_u = __vari.payload.tag$Obj_Scalar_u32;
+                    io_stream_println(u8_l("u32: {:u}\n"), *my_u);
+                }
+                case Obj_Scalar_i32: {
+                    let my_i = __vari.payload.tag$Obj_Scalar_i32;
+                    io_stream_println(u8_l("i32: {:d}\n"), *my_i);
+                }
+                case Obj_Scalar_f32: {
+                    let my_f = __vari.payload.tag$Obj_Scalar_f32;
+                    io_stream_println(u8_l("f32: {:f}\n"), *my_f);
+                }
+                };
+            }
+        }
+        };
+    }
+
+#undef match_
+#undef pattern_
+#undef case_
+#undef default_
+#if UNUSED_CODE
+    match_(obj) {
+        pattern_((Obj_bool)(my_b)) {
+            io_stream_println(u8_l("bool: {:d}\n"), *my_b);
+        }
+        $(pattern);
+        pattern_((Obj_scalar)(my_s))
+            match_(*my_s) {
+            pattern_((Obj_Scalar_u32)(my_u)) {
+                io_stream_println(u8_l("u32: {:u}\n"), *my_u);
+            }
+            $(pattern);
+            pattern_((Obj_Scalar_i32)(my_i)) {
+                io_stream_println(u8_l("i32: {:d}\n"), *my_i);
+            }
+            $(pattern);
+            pattern_((Obj_Scalar_f32)(my_f)) {
+                io_stream_println(u8_l("f32: {:f}\n"), *my_f);
+            }
+            $(pattern);
+            fallback {
+                claim_unreachable;
+            }
+            $(fallback);
+        }
+        $(pattern)
+        $(match);
+        fallback {
+            claim_unreachable;
+        }
+        $(fallback);
+    }
+    $(match);
+#endif /* UNUSED_CODE */
+
+    /* clang-format off */
+#define $end(_keyword) ; pp_cat($end_, _keyword)()
+
+#define match_(_vari) { \
+    let __vari = _vari; \
+    switch (__vari.tag) { \
+        if (false)
+#define $end_match() \
+}
+
+#define case_(_tag) \
+case _tag:
+#define $end_case() \
+
+#define pattern_(/*(_tag)(_capture)*/...) __step__pattern_(__step__pattern___parseTag __VA_ARGS__)
+#define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)
+#define __step__pattern___parseTag(_tag...) _tag, __step__pattern___parseCapture
+#define __step__pattern___parseCapture(_capture...) _capture
+#define __step__pattern___emit(_tag, _capture...) \
+} case _tag: { \
+    let _capture = pp_join($, __vari.payload.tag, _tag);
+#define $end_pattern() \
+break
+
+#define default_() } default: {
+#define $end_default() }
+    /* clang-format on */
+
+    match_(obj) {
+        pattern_((Obj_bool)(my_b)) {
+            io_stream_println(u8_l("bool: {:d}\n"), *my_b);
+        } $end(pattern);
+        pattern_((Obj_scalar)(my_s)) match_(*my_s) {
+            pattern_((Obj_Scalar_i32)(my_i)) {
+                io_stream_println(u8_l("i32: {:d}\n"), *my_i);
+            } $end(pattern);
+            pattern_((Obj_Scalar_f32)(my_f)) {
+                io_stream_println(u8_l("f32: {:f}\n"), *my_f);
+            } $end(pattern);
+            default_() claim_unreachable $end(default);
+        } $end(match) $end(pattern);
+        default_() claim_unreachable $end(default);
+    } $end(match);
+
+#if UNUSED_CODE
+    ({
+        __auto_type const __variant = obj;
+        switch (__variant.tag) {
+        case Obj_bool: {
+            __auto_type const b = __variant.payload.tag$Obj_bool;
+            { io_stream_println(((S_const$u8){ .ptr = (const u8*)(""
+                                                                  "bool: {:d}\n"),
+                                               .len = ((usize)(sizeof(__typeof__("bool: {:d}\n")))) - 1 }),
+                                *b); };
+        } break;
+        case Obj_scalar: {
+            __auto_type const s = __variant.payload.tag$Obj_scalar;
+            {
+                ({
+                    __auto_type const __variant = *s;
+                    switch (__variant.tag) {
+                    case Obj_Scalar_u32: {
+                        __auto_type const u = __variant.payload.tag$Obj_Scalar_u32;
+                        { io_stream_println(((S_const$u8){ .ptr = (const u8*)(""
+                                                                              "u32: {:u}\n"),
+                                                           .len = ((usize)(sizeof(__typeof__("u32: {:u}\n")))) - 1 }),
+                                            *u); };
+                    } break;
+                    case Obj_Scalar_i32: {
+                        __auto_type const i = __variant.payload.tag$Obj_Scalar_i32;
+                        { io_stream_println(((S_const$u8){ .ptr = (const u8*)(""
+                                                                              "i32: {:d}\n"),
+                                                           .len = ((usize)(sizeof(__typeof__("i32: {:d}\n")))) - 1 }),
+                                            *i); };
+                    } break;
+                    case Obj_Scalar_f32: {
+                        __auto_type const f = __variant.payload.tag$Obj_Scalar_f32;
+                        { io_stream_println(((S_const$u8){ .ptr = (const u8*)(""
+                                                                              "f32: {:f}\n"),
+                                                           .len = ((usize)(sizeof(__typeof__("f32: {:f}\n")))) - 1 }),
+                                            *f); };
+                    } break;
+                    }
+                });
+            };
+        } break;
+        }
+    });
+#endif /* UNUSED_CODE */
     try_(TEST_expect(obj.tag == Obj_scalar));
-    let scalar = variant_as(&obj, Obj_scalar);
-    try_(TEST_expect(variant_extract(*scalar, Obj_Scalar_i32) == -123));
+    // let scalar = variant_as(&obj, Obj_scalar);
+    // try_(TEST_expect(variant_extract(*scalar, Obj_Scalar_i32) == -123));
 } $unscoped_(TEST_fn);

@@ -26,9 +26,9 @@ extern "C" {
 
 /* Type Size and Alignment */
 #define alignAs(_align /*: u32*/...) _Alignas(1ull << (_align))
-#define alignOf$(_T... /*(u32)*/)    (as$(u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
-#define sizeOf$(_T... /*(usize)*/)   (as$(usize)(sizeof(_T)))
-#define countOf$(_T... /*(usize)*/)  (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(0))[0])))
+#define alignOf$(_T... /*(u32)*/) (as$(u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
+#define sizeOf$(_T... /*(usize)*/) (as$(usize)(sizeof(_T)))
+#define countOf$(_T... /*(usize)*/) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(0))[0])))
 
 /* Type Information */
 #define TypeOf(_Expr...) \
@@ -141,39 +141,15 @@ extern "C" {
 #define FUNC__isSameTypeUnqual(T_lhs, T_rhs...)
 
 
-#define FUNC__isUnsigned(T) _Generic( \
-    (T){ 0 }, \
-    u8: true, \
-    u16: true, \
-    u32: true, \
-    u64: true, \
-    default: false \
-)
+#define FUNC__isUnsigned(T) _Generic((T){0}, u8: true, u16: true, u32: true, u64: true, default: false)
 
-#define FUNC__isSigned(T) _Generic( \
-    (T){ 0 }, \
-    i8: true, \
-    i16: true, \
-    i32: true, \
-    i64: true, \
-    default: false \
-)
+#define FUNC__isSigned(T) _Generic((T){0}, i8: true, i16: true, i32: true, i64: true, default: false)
 
-#define FUNC__isInt(T) \
-    (isUnsigned(T) || isSigned(T))
+#define FUNC__isInt(T) (isUnsigned(T) || isSigned(T))
 
-#define FUNC__isFlt(T) _Generic( \
-    (T){ 0 }, \
-    f32: true, \
-    f64: true, \
-    default: false \
-)
+#define FUNC__isFlt(T) _Generic((T){0}, f32: true, f64: true, default: false)
 
-#define FUNC__isBool(T) _Generic( \
-    (T){ 0 }, \
-    bool: true, \
-    default: false \
-)
+#define FUNC__isBool(T) _Generic((T){0}, bool: true, default: false)
 
 #if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L)
 #ifndef __cplusplus
@@ -195,7 +171,7 @@ void example_usage(void) {
     usize int_align = alignOf(i32);
 
     /* Array operations */
-    i32 numbers[] = { 1, 2, 3, 4, 5 };
+    i32 numbers[] = {1, 2, 3, 4, 5};
     usize arr_count = countOf(numbers);
 
     /* Type checking */

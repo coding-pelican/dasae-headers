@@ -117,18 +117,18 @@ typedef union u_S$T {
 fn_((old_cmp_lessFn(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) {
     let l = u_castV$((i32)(lhs));
     let r = u_castV$((i32)(rhs));
-    return prim_cmp(&l, &r);
+    return prim_ord(&l, &r);
 }
 typedef TypeOf(old_cmp_lessFn) old_cmp_LessFn;
 
 fn_((max(u_S_const$raw items, old_cmp_LessFn cmpFn, u_V$raw ret))(u_V$raw)) {
-    var best = u_at$S(items, 0);
+    var best = u_atS(items, 0);
     for_(($us(items))(item) {
         if (cmpFn(u_castV$((u_V$raw)(item)), u_castV$((u_V$raw)(best))) == cmp_Ord_gt) {
             best = item;
         }
     });
-    return u_copy$P(ret.ref, best), ret;
+    return u_memcpy(ret.ref, best), ret;
 }
 
 fn_((max$i32(S_const$i32 items, old_cmp_LessFn cmpFn))(i32) $scope) {
@@ -151,7 +151,7 @@ fn_((max$i32(S_const$i32 items, old_cmp_LessFn cmpFn))(i32) $scope) {
 fn_((cmp_lessFn(u_T lhs, u_T rhs))(cmp_Ord)) {
     let l = u_castV$((i32)(lhs));
     let r = u_castV$((i32)(rhs));
-    return prim_cmp(&l, &r);
+    return prim_ord(&l, &r);
 }
 typedef TypeOf(cmp_lessFn) cmp_LessFn;
 

@@ -29,35 +29,32 @@ extern "C" {
 
 #define $scope , $_scope
 #define $guard , $_guard
-#define $T     , $_T
+#define $T , $_T
 
-#define fn_(/*(_ident(_Params...))(_TReturn) <$ext> | (_Params...)(_TReturn) $T*/...) \
-    pp_expand(pp_defer(__block_inline__fn_)(__param_expand__fn_ __VA_ARGS__))
+#define fn_(/*(_ident(_Params...))(_TReturn) <$ext> | (_Params...)(_TReturn) $T*/...) pp_expand(pp_defer(__block_inline__fn_)(__param_expand__fn_ __VA_ARGS__))
 #define __param_expand__fn_(...) (__VA_ARGS__), pp_expand
-#define __block_inline__fn_(...) \
-    pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
+#define __block_inline__fn_(...) pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
 #define __block_inline__fn_2(_ident_w_Params, _TReturn...) comp_syn__fn_(__param_extract__fn_ _ident_w_Params, _TReturn)
-#define __block_inline__fn_3(_ident_w_Params_OR_Params, _TReturn, _$ext...) \
-    pp_join(_, __block_inline__fn_3, _$ext)(_ident_w_Params_OR_Params, _TReturn)
+#define __block_inline__fn_3(_ident_w_Params_OR_Params, _TReturn, _$ext...) pp_join(_, __block_inline__fn_3, _$ext)(_ident_w_Params_OR_Params, _TReturn)
 #define __block_inline__fn_3_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(__param_extract__fn_ _ident_w_Params, _TReturn)
 #define __block_inline__fn_3_$_guard(_ident_w_Params, _TReturn...) comp_syn__fn_$_guard(__param_extract__fn_ _ident_w_Params, _TReturn)
-#define __block_inline__fn_3_$_T(_Params, _TReturn...)             comp_syn__fn_$_T(_Params, _TReturn)
-#define __param_extract__fn_(...)                                  __VA_ARGS__
+#define __block_inline__fn_3_$_T(_Params, _TReturn...) comp_syn__fn_$_T(_Params, _TReturn)
+#define __param_extract__fn_(...) __VA_ARGS__
 
 #define fn_$_scope(_ident_w_Params, _TReturn...) comp_syn__fn_$_scope(_ident_w_Params, _TReturn)
-#define $unscoped_fn                             comp_syn__$unscoped_fn
-#define $unscoped                                /* deprecated */ $unscoped_fn
+#define $unscoped_fn comp_syn__$unscoped_fn
+#define $unscoped /* deprecated */ $unscoped_fn
 
 #define fn_$_guard(_ident_w_Params, _TReturn...) comp_syn__fn_$_guard(_ident_w_Params, _TReturn)
-#define $unguarded_fn                            comp_syn__$unguarded_fn
-#define $unguarded                               /* deprecated */ $unguarded_fn
+#define $unguarded_fn comp_syn__$unguarded_fn
+#define $unguarded /* deprecated */ $unguarded_fn
 
-#define return_(_Expr...)     comp_syn__return_(_Expr)
+#define return_(_Expr...) comp_syn__return_(_Expr)
 #define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
 
 #define reservedReturn() (__reserved_return[0])
 // #define ReturnType       TypeOf(reservedReturn())
-#define reservedBreak()  (__reserved_break[0])
+#define reservedBreak() (__reserved_break[0])
 // #define BreakType        TypeOf(reservedBreak())
 
 /*
@@ -69,7 +66,8 @@ extern "C" {
 
 #define defer_(_Expr...) comp_syn__defer(_Expr)
 
-#define blk_defer    comp_syn__blk_defer
+#define blk_defer comp_syn__blk_defer
+#define blk_defer_ comp_syn__blk_defer
 #define blk_deferral comp_syn__blk_deferral
 
 #define break_defer comp_syn__break_defer
@@ -80,11 +78,9 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_syn__fn_$_T(_Params, _TReturn...) \
-    TypeOf(_TReturn _Params)
+#define comp_syn__fn_$_T(_Params, _TReturn...) TypeOf(_TReturn _Params)
 
-#define comp_syn__fn_(_ident_w_Params, _TReturn...) \
-    _TReturn _ident_w_Params
+#define comp_syn__fn_(_ident_w_Params, _TReturn...) _TReturn _ident_w_Params
 
 // clang-format off
 #define comp_syn__fn_$_scope(_ident_w_Params, _TReturn...) \
@@ -95,6 +91,7 @@ _TReturn _ident_w_Params { \
             Generic_fallback_ sizeOf$(_TReturn))]){} \
         ); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnT; \
     if (false) { __step_return: goto __step_unscope; } \
     do
 #define comp_syn__$unscoped_fn \
@@ -126,6 +123,7 @@ _TReturn _ident_w_Params { \
             Generic_fallback_ sizeOf$(_TReturn))]){} \
         ); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnT; \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -161,8 +159,8 @@ extern fn_((__fn_memcpy__no_hinting(void*, const void*, usize))(void*));
 #define fn__memmove(_dst, _src, _len...) __fn_memmove__no_hinting(_dst, _src, _len)
 extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #else
-#define fn__memset(_dst, _val, _len...)  prim_memset(_dst, _val, _len)
-#define fn__memcpy(_dst, _src, _len...)  prim_memcpy(_dst, _src, _len)
+#define fn__memset(_dst, _val, _len...) prim_memset(_dst, _val, _len)
+#define fn__memcpy(_dst, _src, _len...) prim_memcpy(_dst, _src, _len)
 #define fn__memmove(_dst, _src, _len...) prim_memmove(_dst, _src, _len)
 #endif /* !on_comptime */
 
@@ -174,36 +172,25 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
     ); \
     goto __step_return; \
 }) */
-#define comp_syn__return_(_Expr...) blk({ \
-    fn__memcpy( \
-        as$(u8*)(__reserved_return), \
-        as$(u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
-        sizeOf$(*__reserved_return) \
-    ); \
-    goto __step_return; \
-})
-#define comp_syn__return_void_0() blk({ \
-    claim_assert_static( \
-        isSameType$(TypeOf(*__reserved_return), TypeOf(void)) \
-        || isSameType$(TypeOf(*__reserved_return), TypeOf(Void)) \
-    ); \
-    goto __step_return; \
-})
-#define comp_syn__return_void_1(_Expr...) blk({ \
-    claim_assert_static( \
-        isSameType$(TypeOf(*__reserved_return), TypeOf(void)) \
-        || isSameType$(TypeOf(*__reserved_return), TypeOf(Void)) \
-    ); \
-    claim_assert_static( \
-        isSameType$(TypeOf(({ _Expr; })), TypeOf(void)) \
-        || isSameType$(TypeOf(({ _Expr; })), TypeOf(Void)) \
-    ); \
-    _Expr; \
-    goto __step_return; \
-})
+#define comp_syn__return_(_Expr...) \
+    blk({ \
+        fn__memcpy(as$(u8*)(__reserved_return), as$(u8*)((TypeOf(*__reserved_return)[1]){ [0] = _Expr }), sizeOf$(*__reserved_return)); \
+        goto __step_return; \
+    })
+#define comp_syn__return_void_0() \
+    blk({ \
+        claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void)) || isSameType$(TypeOf(*__reserved_return), TypeOf(Void))); \
+        goto __step_return; \
+    })
+#define comp_syn__return_void_1(_Expr...) \
+    blk({ \
+        claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void)) || isSameType$(TypeOf(*__reserved_return), TypeOf(Void))); \
+        claim_assert_static(isSameType$(TypeOf(({ _Expr; })), TypeOf(void)) || isSameType$(TypeOf(({ _Expr; })), TypeOf(Void))); \
+        _Expr; \
+        goto __step_return; \
+    })
 
-#define comp_syn__defer(_Expr...) \
-    comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
+#define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
 // clang-format off
 #define comp_syn__blk_defer { do { \
@@ -214,15 +201,14 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
             continue; \
         } \
     ) \
-    do
+    do pp_exec_expand
 #define comp_syn__blk_deferral \
     while(false); \
     goto __step_deferred; \
 } while (false); }
 // clang-format on
 
-#define comp_syn__break_defer \
-    goto __step_deferred
+#define comp_syn__break_defer goto __step_deferred
 
 #define comp_syn__defer__op_snapshot(_Expr...) \
     { \
@@ -235,15 +221,17 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
         } \
     }
 
-#define callFn(/*(_ident)(_Args...)*/) \
-    pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
-#define __exec_callFn()            __callFn
+#define callFn(/*(_ident)(_Args...)*/) pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
+#define __exec_callFn() __callFn
 #define __callFn(_ident, _Args...) (ensureNonnull(_ident)(_Args))
 
 // clang-format off
 /* if-else as expression block */
-#define expr_(T_Break_w_Ext...) comp_syn__expr_(T_Break_w_Ext)
-#define comp_syn__expr_(T_Break, _Ext...) pp_cat(comp_syn__expr_, _Ext)(T_Break)
+#define expr_(/*<_TBreak $ext>|<else>*/...) __expr_(__VA_ARGS__) __expr_block
+#define __expr_block(...) __VA_ARGS__
+#define __expr_(...) pp_overload(__expr_, __VA_ARGS__)(__VA_ARGS__)
+#define __expr__1(_else...) _else
+#define __expr__2(_TBreak, _ext...) pp_cat(comp_syn__expr_, _ext)(_TBreak)
 #define comp_syn__expr_$_scope(T_Break...) ({ \
     $local_label __step_break, __step_unscope; \
     let __reserved_break = as$(T_Break*)((u8[_Generic(T_Break, \
@@ -263,9 +251,6 @@ __step_unscope: \
         default: reservedBreak() \
     ); \
 })
-// clang-format on
-
-// clang-format off
 #define comp_syn__expr_$_guard(T_Break...) ({ \
     $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
@@ -274,6 +259,7 @@ __step_unscope: \
         default: sizeOf$(T_Break) \
     )]){}); \
     $maybe_unused typedef TypeOf(*__reserved_break) BreakType; \
+    $maybe_unused typedef TypeOf(*__reserved_break) BreakT; \
     var __scope_counter = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -349,6 +335,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
         default: sizeOf$(_TBreak) \
     )]){}); \
     $maybe_unused typedef TypeOf(*__reserved_break) BreakType; \
+    $maybe_unused typedef TypeOf(*__reserved_break) BreakT; \
     $maybe_unused bool __has_broken = false;\
     /* do */
 #define $unscoped_eval comp_syn__eval_$unscoped
@@ -362,27 +349,30 @@ __step_deferred: switch (__scope_counter.current_line) { \
 })
 // clang-format on
 
-#define $un_(_keyword)        pp_cat(inline__$un_, _keyword)()
-#define inline__$un_scoped()  $unscoped_
+#define $un_(_keyword) pp_cat(inline__$un_, _keyword)()
+#define inline__$un_scoped() $unscoped_
 #define inline__$un_guarded() $unguarded_
 
-#define $unscoped_(_keyword)         pp_cat(inline__$unscoped_, _keyword)()
-#define inline__$unscoped_fn()       $unscoped
-#define inline__$unscoped_TEST_fn()  $unscoped_TEST_fn
-#define inline__$unscoped_Thrd_fn()  $unscoped_Thrd_fn
+#define $unscoped_(_keyword) pp_cat(inline__$unscoped_, _keyword)()
+#define inline__$unscoped_fn() $unscoped
+#define inline__$unscoped_TEST_fn() $unscoped_TEST_fn
+#define inline__$unscoped_Thrd_fn() $unscoped_Thrd_fn
 #define inline__$unscoped_async_fn() $unscoped_async_fn
-#define inline__$unscoped_la()       $unscoped_la
-#define inline__$unscoped_expr()     $unscoped_expr
-#define inline__$unscoped_eval()     $unscoped_eval
+#define inline__$unscoped_la() $unscoped_la
+#define inline__$unscoped_expr() $unscoped_expr
+#define inline__$unscoped_eval() $unscoped_eval
 
-#define $unguarded_(_keyword)         pp_cat(inline__$unguarded_, _keyword)()
-#define inline__$unguarded_fn()       $unguarded
-#define inline__$unguarded_TEST_fn()  $unguarded_TEST_fn
-#define inline__$unguarded_Thrd_fn()  $unguarded_Thrd_fn
+#define $unguarded_(_keyword) pp_cat(inline__$unguarded_, _keyword)()
+#define inline__$unguarded_fn() $unguarded
+#define inline__$unguarded_TEST_fn() $unguarded_TEST_fn
+#define inline__$unguarded_Thrd_fn() $unguarded_Thrd_fn
 #define inline__$unguarded_async_fn() $unguarded_async_fn
-#define inline__$unguarded_la()       $unguarded_la
-#define inline__$unguarded_expr()     $unguarded_expr
-#define inline__$unguarded_eval()     $unguarded_eval
+#define inline__$unguarded_la() $unguarded_la
+#define inline__$unguarded_expr() $unguarded_expr
+#define inline__$unguarded_eval() $unguarded_eval
+
+#define __cf_expand_fn_(_Expr...) auto __cf_expand_fn_expandAndIgnoreRest _Expr
+#define __cf_expand_fn_expandAndIgnoreRest(_Expr...) _Expr pp_ignore;
 
 /*========== Example usage ==================================================*/
 

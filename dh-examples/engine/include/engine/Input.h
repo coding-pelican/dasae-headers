@@ -1,5 +1,5 @@
-#ifndef ENGINE_INPUT_INCLUDED
-#define ENGINE_INPUT_INCLUDED (1)
+#ifndef engine_Input__included
+#define engine_Input__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -14,6 +14,8 @@ extern "C" {
 #include "engine/Mouse.h"
 
 #include "engine/Backend.h"
+
+#include "dh/ArrQue.h"
 
 typedef union engine_InputKeyModes {
     struct {
@@ -56,28 +58,17 @@ typedef variant_((engine_InputEvent)(
     (engine_InputEvent_mouse_motion, engine_InputEvent_MouseMotion),
     (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
 )) engine_InputEvent;
-T_use_P$(engine_InputEvent);
-T_use_S$(engine_InputEvent);
-T_use_O$(engine_InputEvent);
-T_use_E$(P$engine_InputEvent);
+prl_T_use$(engine_InputEvent);
 
-/// Buffer for input events between updates
-typedef struct engine_InputEventBuffer engine_InputEventBuffer;
-#define engine_InputEventBuffer_size /* Circular buffer for input event stack */ (32)
-struct engine_InputEventBuffer {
-    var_(events, A$$(engine_InputEventBuffer_size, engine_InputEvent));
-    var_(head, i32);
-    var_(tail, i32);
-    var_(count, i32);
-};
-
+T_use_ArrQue$(engine_InputEvent);
+#define engine_Input_event_queue_len /* Circular buffer for input event stack */ (32)
 /// Input system structure
 typedef struct engine_Input {
-    var_(event_buffer, engine_InputEventBuffer);
+    var_(event_queue, ArrQue$engine_InputEvent) $like_ref; // Circular buffer for input events between updates
     var_(keyboard, engine_Keyboard) $like_ref;
     var_(mouse, engine_Mouse) $like_ref;
     var_(backend, O$engine_Backend);
-    var_(allocator, mem_Allocator);
+    var_(gpa, mem_Allocator);
 } engine_Input;
 T_use_P$(engine_Input);
 T_use_S$(engine_Input);
@@ -86,19 +77,18 @@ T_use_E$(P$engine_Input);
 
 /* Input management ==========================================================*/
 
-extern fn_((engine_Input_init(mem_Allocator allocator))(E$P$engine_Input)) $must_check;
+extern fn_((engine_Input_init(mem_Allocator gpa))(E$P$engine_Input)) $must_check;
 extern fn_((engine_Input_fini(engine_Input* self))(void));
 extern fn_((engine_Input_update(engine_Input* self))(E$void)) $must_check;
 
 /* Event buffer management ===================================================*/
 
-extern fn_((engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event))(void));
-extern fn_((engine_InputEventBuffer_pop(engine_Input* self))(O$engine_InputEvent));
-extern fn_((engine_InputEventBuffer_peek(engine_Input* self))(O$engine_InputEvent));
-extern fn_((engine_InputEventBuffer_clear(engine_Input* self))(void));
-
+extern fn_((engine_Input_clearEvent(engine_Input* self))(void));
+extern fn_((engine_Input_enqueEvent(engine_Input* self, engine_InputEvent event))(void));
+extern fn_((engine_Input_peekEvent(engine_Input* self))(O$engine_InputEvent));
+extern fn_((engine_Input_dequeEvent(engine_Input* self))(O$engine_InputEvent));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* ENGINE_INPUT_INCLUDED */
+#endif /* engine_Input__included */

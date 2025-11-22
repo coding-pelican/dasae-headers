@@ -9,9 +9,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define $set           $_set,
+#define $set $_set,
 /* Result Anonymous */
-#define E$$(...)       pp_overload(__E$$, __VA_ARGS__)(__VA_ARGS__)
+#define E$$(...) pp_overload(__E$$, __VA_ARGS__)(__VA_ARGS__)
 #define __E$$_1(_T...) TypeOf(union { \
     struct { \
         var_(is_ok, bool); \
@@ -22,11 +22,11 @@ extern "C" {
     }; \
     var_(as_raw $like_ref, E$raw); \
 })
-#define __E$$_2(_tag, _ESet_T...)   pp_join(_, __E$$, _tag)(__E$$__expandESet _ESet_T)
+#define __E$$_2(_tag, _ESet_T...) pp_join(_, __E$$, _tag)(__E$$__expandESet _ESet_T)
 #define __E$$__expandESet(_ESet...) _ESet, __E$$__expandT
-#define __E$$__expandT(_T...)       _T
-#define __E$$_$_set(...)            __E$$__withESet(__VA_ARGS__)
-#define __E$$__withESet(_E, _T...)  TypeOf(union { \
+#define __E$$__expandT(_T...) _T
+#define __E$$_$_set(...) __E$$__withESet(__VA_ARGS__)
+#define __E$$__withESet(_E, _T...) TypeOf(union { \
     struct { \
         var_(is_ok, bool); \
         union { \
@@ -37,13 +37,13 @@ extern "C" {
     var_(as_raw $like_ref, E$raw); \
 })
 /* Result Alias */
-#define E$(...)                    pp_overload(__E$, __VA_ARGS__)(__VA_ARGS__)
-#define __E$_1(_T...)              pp_join($, E, _T)
-#define __E$_2(_tag, _ESet_T...)   pp_join(_, __E$, _tag)(__E$__expandESet _ESet_T)
+#define E$(...) pp_overload(__E$, __VA_ARGS__)(__VA_ARGS__)
+#define __E$_1(_T...) pp_join($, E, _T)
+#define __E$_2(_tag, _ESet_T...) pp_join(_, __E$, _tag)(__E$__expandESet _ESet_T)
 #define __E$__expandESet(_ESet...) _ESet, __E$__expandT
-#define __E$__expandT(_T...)       _T
-#define __E$_$_set(...)            __E$__withESet(__VA_ARGS__)
-#define __E$__withESet(_E, _T...)  pp_join($, _E, _T)
+#define __E$__expandT(_T...) _T
+#define __E$_$_set(...) __E$__withESet(__VA_ARGS__)
+#define __E$__withESet(_E, _T...) pp_join($, _E, _T)
 /* Result Template */
 #define T_decl_E$(_T...) \
     $maybe_unused typedef union E$(_T) E$(_T)
@@ -62,8 +62,8 @@ extern "C" {
 #define __T_impl_E$_2(_tag, _ESet_T...) \
     pp_join(_, __T_impl_E$, _tag)(__T_impl_E$__expandESet _ESet_T)
 #define __T_impl_E$__expandESet(_ESet...) _ESet, __T_impl_E$__expandT
-#define __T_impl_E$__expandT(_T...)       _T
-#define __T_impl_E$_$_set(...)            __T_impl_E$__withESet(__VA_ARGS__)
+#define __T_impl_E$__expandT(_T...) _T
+#define __T_impl_E$_$_set(...) __T_impl_E$__withESet(__VA_ARGS__)
 #define __T_impl_E$__withESet(_E, _T...) \
     union E$($set(_E)(_T)) { \
         struct { \
@@ -100,7 +100,7 @@ typedef union E$Void {
 // #define asg$E()
 // #define asg$E$()
 
-#define asgE(_p_e, _v_e...)  asgE1(_p_e, _v_e)
+#define asgE(_p_e, _v_e...) asgE1(_p_e, _v_e)
 #define asgE1(_p_e, _v_e...) asg(_p_e, _v_e, (payload.ok))
 #define asgE2(_p_e, _v_e...) asg(_p_e, _v_e, (payload.ok.payload.ok))
 #define asgE3(_p_e, _v_e...) asg(_p_e, _v_e, (payload.ok.payload.ok.payload.ok))
@@ -109,7 +109,7 @@ typedef union E$Void {
 /* Determines error result */
 #define ok(_val...) { \
     .is_ok = true, \
-    .payload = { .ok = _val }, \
+    .payload = {.ok = _val}, \
 }
 #define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
@@ -118,7 +118,7 @@ typedef union E$Void {
 
 #define err(_val...) { \
     .is_ok = false, \
-    .payload = { .err = _val }, \
+    .payload = {.err = _val}, \
 }
 #define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
@@ -126,7 +126,7 @@ typedef union E$Void {
     pp_expand(pp_defer(__block_inline__err$$)(__param_expand__err$$ __VA_ARGS__))
 
 /* Checks error result */
-#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$(bool)((_e).is_ok)
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)((_e).is_ok)
 #define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
 #define E_asP$(/*(_E: E(P(T)))(_p_e: P(E(T)))*/... /*(_E)*/) \
@@ -152,29 +152,29 @@ typedef union E$Void {
     __errdefer_(__VA_ARGS__)
 
 /* Error result payload captures */
-#define if_ok(/*(_Expr)(_capture)*/...)  __if_ok__step(pp_defer(__if_ok__emit)(__if_ok__parseExpr __VA_ARGS__))
-#define if_ok_void(val_result)           comp_syn__if_ok_void(val_result)
-#define else_err(_Payload_Capture)       comp_syn__else_err(_Payload_Capture)
+#define if_ok(/*(_Expr)(_capture)*/...) __if_ok__step(pp_defer(__if_ok__emit)(__if_ok__parseExpr __VA_ARGS__))
+#define if_ok_void(val_result) comp_syn__if_ok_void(val_result)
+#define else_err(_Payload_Capture) comp_syn__else_err(_Payload_Capture)
 #define if_err(/*(_Expr)(_capture)*/...) __if_err__step(pp_defer(__if_err__emit)(__if_err__parseExpr __VA_ARGS__))
-#define else_ok(_Payload_Capture)        comp_syn__else_ok(_Payload_Capture)
-#define else_ok_void                     comp_syn__else_ok_void
+#define else_ok(_Payload_Capture) comp_syn__else_ok(_Payload_Capture)
+#define else_ok_void comp_syn__else_ok_void
 
 /*========== Macros and Definitions =========================================*/
 
-#define __param_expand__ok$(...)          __VA_ARGS__,
-#define __block_inline__ok$(...)          __block_inline1__ok$(__VA_ARGS__)
+#define __param_expand__ok$(...) __VA_ARGS__,
+#define __block_inline__ok$(...) __block_inline1__ok$(__VA_ARGS__)
 #define __block_inline1__ok$(_T, _val...) lit$((E$(_T))ok(_val))
 
-#define __param_expand__ok$$(...)           __VA_ARGS__,
-#define __block_inline__ok$$(...)           __block_inline1__ok$$$(__VA_ARGS__)
+#define __param_expand__ok$$(...) __VA_ARGS__,
+#define __block_inline__ok$$(...) __block_inline1__ok$$$(__VA_ARGS__)
 #define __block_inline1__ok$$$(_T, _val...) lit$((E$$(_T))ok(_val))
 
-#define __param_expand__err$(...)          __VA_ARGS__,
-#define __block_inline__err$(...)          __block_inline1__err$(__VA_ARGS__)
+#define __param_expand__err$(...) __VA_ARGS__,
+#define __block_inline__err$(...) __block_inline1__err$(__VA_ARGS__)
 #define __block_inline1__err$(_T, _val...) lit$((E$(_T))err(_val))
 
-#define __param_expand__err$$(...)           __VA_ARGS__,
-#define __block_inline__err$$(...)           __block_inline1__err$$$(__VA_ARGS__)
+#define __param_expand__err$$(...) __VA_ARGS__,
+#define __block_inline__err$$(...) __block_inline1__err$$$(__VA_ARGS__)
 #define __block_inline1__err$$$(_T, _val...) lit$((E$$(_T))err(_val))
 
 #define __step__E_asP$(...) \
@@ -194,7 +194,7 @@ typedef union E$Void {
 #define __step__E_asP(_p_e...) \
     E_asP$((E$$(FieldType$(TypeOf(*_p_e), payload.some)*))(_p_e))
 
-#define __return_ok_void_0()         (return_(ok({})))
+#define __return_ok_void_0() (return_(ok({})))
 #define __return_ok_void_1(_Expr...) (_Expr, return_(ok({})))
 
 #define __try_(__result, _Expr...) ({ \
@@ -204,8 +204,8 @@ typedef union E$Void {
     } \
     __result.payload.ok; \
 })
-#define __param_expand__catch_(...)                                                         __VA_ARGS__, pp_expand
-#define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...)            __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
+#define __param_expand__catch_(...) __VA_ARGS__, pp_expand
+#define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...) __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
 #define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
@@ -236,8 +236,8 @@ typedef union E$Void {
     _Expr; \
 })
 
-#define __if_ok__step(...)                 __VA_ARGS__
-#define __if_ok__parseExpr(_Expr...)       (_Expr), __if_ok__parseCapture
+#define __if_ok__step(...) __VA_ARGS__
+#define __if_ok__parseExpr(_Expr...) (_Expr), __if_ok__parseCapture
 #define __if_ok__parseCapture(_capture...) _capture
 #define __if_ok__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_ok) \
@@ -246,8 +246,8 @@ typedef union E$Void {
     scope_if(let _result = (val_result), _result.is_ok)
 #define comp_syn__else_err(_Payload_Capture) \
     scope_else(let _Payload_Capture = _result.payload.err)
-#define __if_err__step(...)                 __VA_ARGS__
-#define __if_err__parseExpr(_Expr...)       (_Expr), __if_err__parseCapture
+#define __if_err__step(...) __VA_ARGS__
+#define __if_err__parseExpr(_Expr...) (_Expr), __if_err__parseCapture
 #define __if_err__parseCapture(_capture...) _capture
 #define __if_err__emit(_Expr, _capture...) \
     if_(let _result = _Expr, !_result.is_ok) \

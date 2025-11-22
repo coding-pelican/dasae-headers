@@ -30,7 +30,7 @@ $inline_always bool f32_isNan(f32 x) {
     union {
         f32 f;
         u32 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u32 exponent = (conv.u >> 23) & 0xFF;
     u32 mantissa = conv.u & 0x7FFFFF;
@@ -47,7 +47,7 @@ $inline_always bool f32_isInf(f32 x) {
     union {
         f32 f;
         u32 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u32 exponent = (conv.u >> 23) & 0xFF;
     u32 mantissa = conv.u & 0x7FFFFF;
@@ -64,7 +64,7 @@ $inline_always bool f64_isNan(f64 x) {
     union {
         f64 f;
         u64 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u64 exponent = (conv.u >> 52) & 0x7FF;
     u64 mantissa = conv.u & 0xFFFFFFFFFFFFFULL;
@@ -81,7 +81,7 @@ $inline_always i32 f64_isInf(f64 x) {
     union {
         f64 f;
         u64 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u64 exponent = (conv.u >> 52) & 0x7FF;
     u64 mantissa = conv.u & 0xFFFFFFFFFFFFFULL;
@@ -105,7 +105,7 @@ $inline_always bool f32_isNormal(f32 x) {
     union {
         f32 f;
         u32 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u32 exponent = (conv.u >> 23) & 0xFF;
     return (exponent != 0) && (exponent != 0xFF);
@@ -118,7 +118,7 @@ $inline_always bool f64_isNormal(f64 x) {
     union {
         f64 f;
         u64 u;
-    } conv = { .f = x };
+    } conv = {.f = x};
 
     u64 exponent = (conv.u >> 52) & 0x7FF;
     return (exponent != 0) && (exponent != 0x7FF);

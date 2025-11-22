@@ -25,31 +25,31 @@ extern "C" {
 
 /* Language Mode */
 
-#define lang_mode         __comp_enum__lang_mode
+#define lang_mode __comp_enum__lang_mode
 #define lang_mode_unknown __comp_enum__lang_mode_unknown
-#define lang_mode_c       __comp_enum__lang_mode_c
-#define lang_mode_cpp     __comp_enum__lang_mode_cpp
+#define lang_mode_c __comp_enum__lang_mode_c
+#define lang_mode_cpp __comp_enum__lang_mode_cpp
 
 /* Language Name */
 
-#define lang_name         __comp_str__lang_name
+#define lang_name __comp_str__lang_name
 #define lang_name_unknown __comp_str__lang_name_unknown
-#define lang_name_c       __comp_str__lang_name_c
-#define lang_name_cpp     __comp_str__lang_name_cpp
+#define lang_name_c __comp_str__lang_name_c
+#define lang_name_cpp __comp_str__lang_name_cpp
 
 /* Language Version */
 
-#define lang_version         __comp_int__lang_version
+#define lang_version __comp_int__lang_version
 #define lang_version_unknown __comp_int__lang_version_unknown
 
-#define lang_version_c   __comp_int__lang_version_c
+#define lang_version_c __comp_int__lang_version_c
 #define lang_version_c90 __comp_int__lang_version_c90
 #define lang_version_c99 __comp_int__lang_version_c99
 #define lang_version_c11 __comp_int__lang_version_c11
 #define lang_version_c17 __comp_int__lang_version_c17
 #define lang_version_c23 __comp_int__lang_version_c23
 
-#define lang_version_cpp   __comp_int__lang_version_cpp
+#define lang_version_cpp __comp_int__lang_version_cpp
 #define lang_version_cpp98 __comp_int__lang_version_cpp98
 #define lang_version_cpp11 __comp_int__lang_version_cpp11
 #define lang_version_cpp14 __comp_int__lang_version_cpp14
@@ -76,47 +76,41 @@ extern "C" {
 
 /* Language Feature Extensions */
 
-#define lang_has_extensions     __comp_bool__lang_has_extensions
+#define lang_has_extensions __comp_bool__lang_has_extensions
 #define lang_has_extensions_gnu __comp_bool__lang_has_extensions_gnu
-#define lang_has_extensions_ms  __comp_bool__lang_has_extensions_ms
+#define lang_has_extensions_ms __comp_bool__lang_has_extensions_ms
 
 /*========== Macros and Implementations =====================================*/
 
 /* Default Values */
 
-#define __comp_enum__lang_mode         lang_mode_unknown
+#define __comp_enum__lang_mode lang_mode_unknown
 #define __comp_enum__lang_mode_unknown 0
-#define __comp_enum__lang_mode_c       1
-#define __comp_enum__lang_mode_cpp     2
+#define __comp_enum__lang_mode_c 1
+#define __comp_enum__lang_mode_cpp 2
 
-#define __comp_str__lang_name pp_if_(pp_eq(lang_mode, lang_mode_c))( \
-    pp_then_(lang_name_c), \
-    pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))( \
-        pp_then_(lang_name_cpp), \
-        pp_else_(lang_name_unknown) \
-    )) \
-)
+#define __comp_str__lang_name \
+    pp_if_(pp_eq(lang_mode, lang_mode_c))( \
+        pp_then_(lang_name_c), pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))(pp_then_(lang_name_cpp), pp_else_(lang_name_unknown))) \
+    )
 #define __comp_str__lang_name_unknown "unknown"
-#define __comp_str__lang_name_c       "c"
-#define __comp_str__lang_name_cpp     "cpp"
+#define __comp_str__lang_name_c "c"
+#define __comp_str__lang_name_cpp "cpp"
 
-#define __comp_int__lang_version pp_if_(pp_eq(lang_mode, lang_mode_c))( \
-    pp_then_(lang_version_c), \
-    pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))( \
-        pp_then_(lang_version_cpp), \
-        pp_else_(lang_version_unknown) \
-    )) \
-)
+#define __comp_int__lang_version \
+    pp_if_(pp_eq(lang_mode, lang_mode_c))( \
+        pp_then_(lang_version_c), pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))(pp_then_(lang_version_cpp), pp_else_(lang_version_unknown))) \
+    )
 #define __comp_int__lang_version_unknown 0
 
-#define __comp_int__lang_version_c   lang_version_unknown
+#define __comp_int__lang_version_c lang_version_unknown
 #define __comp_int__lang_version_c90 199001L
 #define __comp_int__lang_version_c99 199901L
 #define __comp_int__lang_version_c11 201112L
 #define __comp_int__lang_version_c17 201710L
 #define __comp_int__lang_version_c23 202311L
 
-#define __comp_int__lang_version_cpp   lang_version_unknown
+#define __comp_int__lang_version_cpp lang_version_unknown
 #define __comp_int__lang_version_cpp98 199711L
 #define __comp_int__lang_version_cpp11 201103L
 #define __comp_int__lang_version_cpp14 201402L
@@ -137,10 +131,10 @@ extern "C" {
 #define __comp_bool__lang_version_in_cpp20 0
 #define __comp_bool__lang_version_in_cpp23 0
 
-#define __comp_bool__lang_is_enabled_strict  0
-#define __comp_bool__lang_has_extensions     0
+#define __comp_bool__lang_is_enabled_strict 0
+#define __comp_bool__lang_has_extensions 0
 #define __comp_bool__lang_has_extensions_gnu 0
-#define __comp_bool__lang_has_extensions_ms  0
+#define __comp_bool__lang_has_extensions_ms 0
 
 /* Language Mode */
 

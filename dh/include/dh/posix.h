@@ -36,13 +36,13 @@ typedef pp_if_(plat_windows)(
 ) posix_fd_t;
 typedef i32 posix_mode_t;
 
-#define posix_STDIN_FILENO  comp_const__posix_STDIN_FILENO
+#define posix_STDIN_FILENO comp_const__posix_STDIN_FILENO
 #define posix_STDOUT_FILENO comp_const__posix_STDOUT_FILENO
 #define posix_STDERR_FILENO comp_const__posix_STDERR_FILENO
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_const__posix_STDIN_FILENO  as$(posix_fd_t)(0)
+#define comp_const__posix_STDIN_FILENO as$(posix_fd_t)(0)
 #define comp_const__posix_STDOUT_FILENO as$(posix_fd_t)(1)
 #define comp_const__posix_STDERR_FILENO as$(posix_fd_t)(2)
 

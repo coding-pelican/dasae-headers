@@ -1,0 +1,98 @@
+# ========== Global ==========
+---
+Index:
+  Background: Skip
+  StandardLibrary: false
+Diagnostics:
+  Suppress:
+    - ".*include/c/.*"
+    - ".*include/c\\+\\+/.*"
+  UnusedIncludes: None
+  MissingIncludes: None
+Completion:
+  AllScopes: true
+  ArgumentLists: FullPlaceholders
+  # HeaderInsertion: IWYU
+  # CodePatterns: All
+InlayHints:
+  BlockEnd: false
+  Designators: true
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  DefaultArguments: false
+  TypeNameLimit: 24
+Hover:
+  ShowAKA: true
+  # MacroContentsLimit: 2048
+# Documentation:
+#   CommentFormat: Doxygen
+# ========== Excludes ==========
+---
+If:
+  PathExclude:
+    - .*archive*/.*
+    - .*backup*/.*
+    - .*draft*/.*
+    - .*temp*/.*
+# ========== C Sources ==========
+---
+If:
+  PathMatch:
+    - .*\.c
+    - .*\.h
+CompileFlags:
+  Compiler: clang
+  Add:
+    - -xc
+    - -std=c17
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Ic:/dasae/dev/dasae-headers/dh
+    - -Ic:/dasae/dev/dasae-headers/dh/include
+    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -funsigned-char
+    - -fblocks
+# ========== C++ Sources ==========
+---
+If:
+  PathMatch:
+    - .*\.cc
+    - .*\.cxx
+    - .*\.cpp
+    - .*\.hh
+    - .*\.hxx
+    - .*\.hpp
+CompileFlags:
+  Compiler: clang
+  Add:
+    - -xc++
+    - -std=c++20
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Ic:/dasae/dev/dasae-headers/dh
+    - -Ic:/dasae/dev/dasae-headers/dh/include
+    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -funsigned-char
+    - -fblocks
+# ========== Headers ==========
+---
+If:
+  PathMatch:
+    - .*\.h
+    - .*\.hh
+    - .*\.hxx
+    - .*\.hpp
+CompileFlags:
+  Add:
+    - -Wno-unused-function
+    - -Wno-unused-variable
+    - -Wno-unused-const-variable

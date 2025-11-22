@@ -56,7 +56,7 @@ extern bool time_Duration_isZero(time_Duration self);
 
 /* Conversion */
 extern time_Duration time_Duration_fromSecs$f64(f64 secs);
-extern f64           time_Duration_asSecs$f64(time_Duration self);
+extern f64 time_Duration_asSecs$f64(time_Duration self);
 
 /* Arithmetic */
 extern time_Duration op_fnAdd(time_Duration);
@@ -89,38 +89,38 @@ cmp_fnLe_default(time_Duration);
 cmp_fnGe_default(time_Duration);
 
 /* Literal */
-#define literal_time_Duration_from(_secs, _nanos) \
+#define lit_time_Duration_from(_secs, _nanos) \
     lit$((time_Duration){ \
-        .secs  = (_secs), \
+        .secs = (_secs), \
         .nanos = (_nanos), \
     })
-#define literal_time_Duration_fromSecs(_secs) \
+#define lit_time_Duration_fromSecs(_secs) \
     lit$((time_Duration){ \
-        .secs  = (_secs) == 0 ? 0 : (_secs), \
+        .secs = (_secs) == 0 ? 0 : (_secs), \
         .nanos = 0, \
     })
-#define literal_time_Duration_fromMillis(_millis) \
+#define lit_time_Duration_fromMillis(_millis) \
     lit$((time_Duration){ \
-        .secs  = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec, \
+        .secs = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec, \
         .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli, \
     })
-#define literal_time_Duration_fromMicros(_micros) \
+#define lit_time_Duration_fromMicros(_micros) \
     lit$((time_Duration){ \
-        .secs  = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec, \
+        .secs = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec, \
         .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro, \
     })
-#define literal_time_Duration_fromNanos(_nanos) \
+#define lit_time_Duration_fromNanos(_nanos) \
     lit$((time_Duration){ \
-        .secs  = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
+        .secs = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
         .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec, \
     })
 
 /* Constants */
-static const time_Duration time_Duration_zero   = literal_time_Duration_fromNanos(0);
-static const time_Duration time_Duration_secs   = literal_time_Duration_fromSecs(1);
-static const time_Duration time_Duration_millis = literal_time_Duration_fromMillis(1);
-static const time_Duration time_Duration_micros = literal_time_Duration_fromMicros(1);
-static const time_Duration time_Duration_nanos  = literal_time_Duration_fromNanos(1);
+static const time_Duration time_Duration_zero = lit_time_Duration_fromNanos(0);
+static const time_Duration time_Duration_secs = lit_time_Duration_fromSecs(1);
+static const time_Duration time_Duration_millis = lit_time_Duration_fromMillis(1);
+static const time_Duration time_Duration_micros = lit_time_Duration_fromMicros(1);
+static const time_Duration time_Duration_nanos = lit_time_Duration_fromNanos(1);
 
 #if defined(__cplusplus)
 } /* extern "C" */

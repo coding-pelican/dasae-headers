@@ -66,19 +66,19 @@ struct ErrTrace {
 #if on_comptime
 #if !ErrTrace_comp_enabled
 
-#define ErrTrace_reset()        $unused(0)
+#define ErrTrace_reset() $unused(0)
 #define ErrTrace_captureFrame() $unused(0)
-#define ErrTrace_print()        $unused(0)
+#define ErrTrace_print() $unused(0)
 
 #else /* ErrTrace_comp_enabled */
 
-#define ErrTrace_reset()        ErrTrace_reset_callDebug()
+#define ErrTrace_reset() ErrTrace_reset_callDebug()
 #define ErrTrace_captureFrame() ErrTrace_captureFrame_callDebug()
-#define ErrTrace_print()        ErrTrace_print_callDebug()
+#define ErrTrace_print() ErrTrace_print_callDebug()
 
-#define ErrTrace_reset_callDebug()        ErrTrace_reset_debug()
+#define ErrTrace_reset_callDebug() ErrTrace_reset_debug()
 #define ErrTrace_captureFrame_callDebug() ErrTrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
-#define ErrTrace_print_callDebug()        ErrTrace_print_debug()
+#define ErrTrace_print_callDebug() ErrTrace_print_debug()
 
 extern void ErrTrace_reset_debug(void);
 extern void ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr);

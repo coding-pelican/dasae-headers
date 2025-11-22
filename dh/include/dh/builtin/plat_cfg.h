@@ -24,61 +24,58 @@ extern "C" {
 
 /*========== Platform Detection =============================================*/
 
-#define os_type         __comp_enum__os_type
+#define os_type __comp_enum__os_type
 #define os_type_unknown __comp_enum__os_type_unknown
 #define os_type_windows __comp_enum__os_type_windows
-#define os_type_linux   __comp_enum__os_type_linux
-#define os_type_darwin  __comp_enum__os_type_darwin
+#define os_type_linux __comp_enum__os_type_linux
+#define os_type_darwin __comp_enum__os_type_darwin
 
-#define os_name         __comp_str__os_name
+#define os_name __comp_str__os_name
 #define os_name_unknown __comp_str__os_name_unknown
 #define os_name_windows __comp_str__os_name_windows
-#define os_name_linux   __comp_str__os_name_linux
-#define os_name_darwin  __comp_str__os_name_darwin
+#define os_name_linux __comp_str__os_name_linux
+#define os_name_darwin __comp_str__os_name_darwin
 
 #define os_based_unix __comp_bool__os_based_unix
 
-#define __comp_enum__os_type         os_type_unknown
+#define __comp_enum__os_type os_type_unknown
 #define __comp_enum__os_type_unknown 0
 #define __comp_enum__os_type_windows 1
-#define __comp_enum__os_type_linux   2
-#define __comp_enum__os_type_darwin  3
+#define __comp_enum__os_type_linux 2
+#define __comp_enum__os_type_darwin 3
 
-#define __comp_str__os_name pp_if_(pp_eq(os_type, os_type_windows))( \
-    pp_then_(os_name_windows), \
-    pp_else_(pp_if_(pp_eq(os_type, os_type_linux))( \
-        pp_then_(os_name_linux), \
-        pp_else_(pp_if_(pp_eq(os_type, os_type_darwin))( \
-            pp_then_(os_name_darwin), \
-            pp_else_(os_name_unknown) \
+#define __comp_str__os_name \
+    pp_if_(pp_eq(os_type, os_type_windows))( \
+        pp_then_(os_name_windows), \
+        pp_else_(pp_if_(pp_eq(os_type, os_type_linux))( \
+            pp_then_(os_name_linux), pp_else_(pp_if_(pp_eq(os_type, os_type_darwin))(pp_then_(os_name_darwin), pp_else_(os_name_unknown))) \
         )) \
-    )) \
-)
+    )
 #define __comp_str__os_name_unknown "unknown"
 #define __comp_str__os_name_windows "windows"
-#define __comp_str__os_name_linux   "linux"
-#define __comp_str__os_name_darwin  "darwin"
+#define __comp_str__os_name_linux "linux"
+#define __comp_str__os_name_darwin "darwin"
 
 #define __comp_bool__os_based_unix pp_ne(os_type, os_type_windows)
 
 #define plat_windows VAL__plat_windows
-#define plat_posix   VAL__plat_posix
-#define plat_unix    VAL__plat_unix
-#define plat_linux   VAL__plat_linux
-#define plat_darwin  VAL__plat_darwin
-#define plat_wasm    VAL__plat_wasm
-#define plat_wasi    VAL__plat_wasi
+#define plat_posix VAL__plat_posix
+#define plat_unix VAL__plat_unix
+#define plat_linux VAL__plat_linux
+#define plat_darwin VAL__plat_darwin
+#define plat_wasm VAL__plat_wasm
+#define plat_wasi VAL__plat_wasi
 
 #define plat_name VAL__plat_name
 
 #define plat_64bit VAL__plat_64bit
 #define plat_32bit VAL__plat_32bit
-#define plat_bits  VAL__plat_bits
+#define plat_bits VAL__plat_bits
 
-#define plat_byte_order               VAL__plat_byte_order
-#define plat_endian                   VAL__plat_endian
+#define plat_byte_order VAL__plat_byte_order
+#define plat_endian VAL__plat_endian
 #define plat_byte_order_little_endian VAL__plat_byte_order_little_endian
-#define plat_byte_order_big_endian    VAL__plat_byte_order_big_endian
+#define plat_byte_order_big_endian VAL__plat_byte_order_big_endian
 
 #define plat_export ATTR__plat_export
 #define plat_import ATTR__plat_import
@@ -94,13 +91,13 @@ extern "C" {
 #undef VAL__plat_wasi
 
 #define VAL__plat_windows 0
-#define VAL__plat_unix    0
-#define VAL__plat_darwin  0
-#define VAL__plat_linux   0
-#define VAL__plat_bsd     0
-#define VAL__plat_wasm    0 /* Emscripten or other WASM environment */
-#define VAL__plat_wasi    0 /* WASI environment */
-#define VAL__plat_name    "Unknown"
+#define VAL__plat_unix 0
+#define VAL__plat_darwin 0
+#define VAL__plat_linux 0
+#define VAL__plat_bsd 0
+#define VAL__plat_wasm 0 /* Emscripten or other WASM environment */
+#define VAL__plat_wasi 0 /* WASI environment */
+#define VAL__plat_name "Unknown"
 
 #if defined(__EMSCRIPTEN__)
 /* Emscripten: usually compiles to WebAssembly, often in a browser or Node. */
@@ -132,7 +129,7 @@ extern "C" {
 #define __comp_enum__os_type os_type_darwin
 #undef VAL__plat_unix
 #undef VAL__plat_darwin
-#define VAL__plat_unix   1
+#define VAL__plat_unix 1
 #define VAL__plat_darwin 1
 #undef VAL__plat_name
 #define VAL__plat_name "Darwin"
@@ -142,7 +139,7 @@ extern "C" {
 #define __comp_enum__os_type os_type_linux
 #undef VAL__plat_unix
 #undef VAL__plat_linux
-#define VAL__plat_unix  1
+#define VAL__plat_unix 1
 #define VAL__plat_linux 1
 #undef VAL__plat_name
 #define VAL__plat_name "Linux"
@@ -151,7 +148,7 @@ extern "C" {
 #undef VAL__plat_unix
 #undef VAL__plat_bsd
 #define VAL__plat_unix 1
-#define VAL__plat_bsd  1
+#define VAL__plat_bsd 1
 #undef VAL__plat_name
 #define VAL__plat_name "BSD"
 
@@ -167,10 +164,10 @@ extern "C" {
 
 #define VAL__plat_64bit 0
 #define VAL__plat_32bit 0
-#define VAL__plat_bits  0
+#define VAL__plat_bits 0
 
-#if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) \
-    || defined(__ppc64__) || defined(__powerpc64__) || defined(__EMSCRIPTEN__) && (defined(__wasm64__))
+#if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) || defined(__ppc64__) || defined(__powerpc64__) \
+    || defined(__EMSCRIPTEN__) && (defined(__wasm64__))
 /*
  * For WASM64, you might check something like:
  *   #if (defined(__wasm64__) || (__EMSCRIPTEN_major__ >= ??? && ...))
@@ -181,8 +178,7 @@ extern "C" {
 #undef VAL__plat_bits
 #define VAL__plat_bits 64
 
-#elif defined(_WIN32) || defined(__i386__) || defined(__arm__) || defined(__ppc__) \
-    || defined(__EMSCRIPTEN__) /* Typically wasm32 if no __wasm64__ */
+#elif defined(_WIN32) || defined(__i386__) || defined(__arm__) || defined(__ppc__) || defined(__EMSCRIPTEN__) /* Typically wasm32 if no __wasm64__ */
 #undef VAL__plat_32bit
 #define VAL__plat_32bit 1
 #undef VAL__plat_bits
@@ -203,10 +199,10 @@ extern "C" {
 #undef VAL__plat_byte_order_little_endian
 #undef VAL__plat_byte_order_big_endian
 
-#define VAL__plat_byte_order               __BYTE_ORDER__
-#define VAL__plat_endian                   0
+#define VAL__plat_byte_order __BYTE_ORDER__
+#define VAL__plat_endian 0
 #define VAL__plat_byte_order_little_endian __ORDER_LITTLE_ENDIAN__
-#define VAL__plat_byte_order_big_endian    __ORDER_BIG_ENDIAN__
+#define VAL__plat_byte_order_big_endian __ORDER_BIG_ENDIAN__
 
 #if (plat_wasm || plat_wasi)
 /* WebAssembly is always little-endian per the spec. */

@@ -140,7 +140,7 @@ typedef m_V3f64 m_V3d;
 typedef m_V4f32 m_V4f;
 typedef m_V4f64 m_V4d;
 
-#define m_V_as$(TDestVec, src_vec...)      FUNC_m_V_as$(TDestVec, src_vec)
+#define m_V_as$(TDestVec, src_vec...) FUNC_m_V_as$(TDestVec, src_vec)
 #define FUNC_m_V_as$(TDestVec, src_vec...) blk({ \
     TDestVec __dst = cleared(); \
     let __src = (src_vec); \

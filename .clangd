@@ -32,6 +32,7 @@ Diagnostics:
       - cert-dcl51-cpp
       - llvm-include-order
       - readability-avoid-const-params-in-decls
+      - readability-avoid-nested-conditional-operator
       - readability-braces-around-statements
       - readability-identifier-length
       - readability-magic-numbers

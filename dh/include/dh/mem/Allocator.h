@@ -112,40 +112,40 @@ extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc sr
 /*========== Macros and Declarations ========================================*/
 
 /* Debug versions of raw operations */
-#define mem_Allocator_rawAlloc(_self, _len, _align...)                mem_Allocator_rawAlloc_callDebug((_self), (_len), (_align), srcLoc())
+#define mem_Allocator_rawAlloc(_self, _len, _align...) mem_Allocator_rawAlloc_callDebug((_self), (_len), (_align), srcLoc())
 #define mem_Allocator_rawResize(_self, _buf, _buf_align, _new_len...) mem_Allocator_rawResize_callDebug((_self), (_buf), (_buf_align), (_new_len), srcLoc())
-#define mem_Allocator_rawRemap(_self, _buf, _buf_align, _new_len...)  mem_Allocator_rawRemap_callDebug((_self), (_buf), (_buf_align), (_new_len), srcLoc())
-#define mem_Allocator_rawFree(_self, _buf, _buf_align...)             mem_Allocator_rawFree_callDebug((_self), (_buf), (_buf_align), srcLoc())
+#define mem_Allocator_rawRemap(_self, _buf, _buf_align, _new_len...) mem_Allocator_rawRemap_callDebug((_self), (_buf), (_buf_align), (_new_len), srcLoc())
+#define mem_Allocator_rawFree(_self, _buf, _buf_align...) mem_Allocator_rawFree_callDebug((_self), (_buf), (_buf_align), srcLoc())
 
 /* Debug versions of high-level operations */
-#define mem_Allocator_create(_self, _type...)                         mem_Allocator_create_callDebug((_self), (_type), srcLoc())
-#define mem_Allocator_destroy(_self, _ptr...)                         mem_Allocator_destroy_callDebug((_self), (_ptr), srcLoc())
-#define mem_Allocator_alloc(_self, _type, _count...)                  mem_Allocator_alloc_callDebug((_self), (_type), (_count), srcLoc())
-#define mem_Allocator_resize(_self, _old_mem, _new_len...)            mem_Allocator_resize_callDebug((_self), (_old_mem), (_new_len), srcLoc())
-#define mem_Allocator_remap(_self, _old_mem, _new_len...)             mem_Allocator_remap_callDebug((_self), (_old_mem), (_new_len), srcLoc())
-#define mem_Allocator_realloc(_self, _old_mem, _new_len...)           mem_Allocator_realloc_callDebug((_self), (_old_mem), (_new_len), srcLoc())
-#define mem_Allocator_free(_self, _mem...)                            mem_Allocator_free_callDebug((_self), (_mem), srcLoc())
+#define mem_Allocator_create(_self, _type...) mem_Allocator_create_callDebug((_self), (_type), srcLoc())
+#define mem_Allocator_destroy(_self, _ptr...) mem_Allocator_destroy_callDebug((_self), (_ptr), srcLoc())
+#define mem_Allocator_alloc(_self, _type, _count...) mem_Allocator_alloc_callDebug((_self), (_type), (_count), srcLoc())
+#define mem_Allocator_resize(_self, _old_mem, _new_len...) mem_Allocator_resize_callDebug((_self), (_old_mem), (_new_len), srcLoc())
+#define mem_Allocator_remap(_self, _old_mem, _new_len...) mem_Allocator_remap_callDebug((_self), (_old_mem), (_new_len), srcLoc())
+#define mem_Allocator_realloc(_self, _old_mem, _new_len...) mem_Allocator_realloc_callDebug((_self), (_old_mem), (_new_len), srcLoc())
+#define mem_Allocator_free(_self, _mem...) mem_Allocator_free_callDebug((_self), (_mem), srcLoc())
 
 /* Debug versions of helper operations */
-#define mem_Allocator_dupe(_self, _src...)                            mem_Allocator_dupe_callDebug((_self), (_src), srcLoc())
-#define mem_Allocator_dupeZ(_self, _src...)                           mem_Allocator_dupeZ_callDebug((_self), (_src), srcLoc())
+#define mem_Allocator_dupe(_self, _src...) mem_Allocator_dupe_callDebug((_self), (_src), srcLoc())
+#define mem_Allocator_dupeZ(_self, _src...) mem_Allocator_dupeZ_callDebug((_self), (_src), srcLoc())
 
 /*========== Macros and Definitions =========================================*/
 
-#define mem_Allocator_rawAlloc_callDebug(_self, _len, _align, _src_loc)                mem_Allocator_rawAlloc_debug(_self, _len, _align, _src_loc)
+#define mem_Allocator_rawAlloc_callDebug(_self, _len, _align, _src_loc) mem_Allocator_rawAlloc_debug(_self, _len, _align, _src_loc)
 #define mem_Allocator_rawResize_callDebug(_self, _buf, _buf_align, _new_len, _src_loc) mem_Allocator_rawResize_debug(_self, _buf, _buf_align, _new_len, _src_loc)
-#define mem_Allocator_rawRemap_callDebug(_self, _buf, _buf_align, _new_len, _src_loc)  mem_Allocator_rawRemap_debug(_self, _buf, _buf_align, _new_len, _src_loc)
-#define mem_Allocator_rawFree_callDebug(_self, _buf, _buf_align, _src_loc)             mem_Allocator_rawFree_debug(_self, _buf, _buf_align, _src_loc)
+#define mem_Allocator_rawRemap_callDebug(_self, _buf, _buf_align, _new_len, _src_loc) mem_Allocator_rawRemap_debug(_self, _buf, _buf_align, _new_len, _src_loc)
+#define mem_Allocator_rawFree_callDebug(_self, _buf, _buf_align, _src_loc) mem_Allocator_rawFree_debug(_self, _buf, _buf_align, _src_loc)
 
-#define mem_Allocator_create_callDebug(_self, _type, _src_loc)               mem_Allocator_create_debug(_self, _type, _src_loc)
-#define mem_Allocator_destroy_callDebug(_self, _ptr, _src_loc)               mem_Allocator_destroy_debug(_self, _ptr, _src_loc)
-#define mem_Allocator_alloc_callDebug(_self, _type, _count, _src_loc)        mem_Allocator_alloc_debug(_self, _type, _count, _src_loc)
-#define mem_Allocator_resize_callDebug(_self, _old_mem, _new_len, _src_loc)  mem_Allocator_resize_debug(_self, _old_mem, _new_len, _src_loc)
-#define mem_Allocator_remap_callDebug(_self, _old_mem, _new_len, _src_loc)   mem_Allocator_remap_debug(_self, _old_mem, _new_len, _src_loc)
+#define mem_Allocator_create_callDebug(_self, _type, _src_loc) mem_Allocator_create_debug(_self, _type, _src_loc)
+#define mem_Allocator_destroy_callDebug(_self, _ptr, _src_loc) mem_Allocator_destroy_debug(_self, _ptr, _src_loc)
+#define mem_Allocator_alloc_callDebug(_self, _type, _count, _src_loc) mem_Allocator_alloc_debug(_self, _type, _count, _src_loc)
+#define mem_Allocator_resize_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_resize_debug(_self, _old_mem, _new_len, _src_loc)
+#define mem_Allocator_remap_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_remap_debug(_self, _old_mem, _new_len, _src_loc)
 #define mem_Allocator_realloc_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_realloc_debug(_self, _old_mem, _new_len, _src_loc)
-#define mem_Allocator_free_callDebug(_self, _mem, _src_loc)                  mem_Allocator_free_debug(_self, _mem, _src_loc)
+#define mem_Allocator_free_callDebug(_self, _mem, _src_loc) mem_Allocator_free_debug(_self, _mem, _src_loc)
 
-#define mem_Allocator_dupe_callDebug(_self, _src, _src_loc)  mem_Allocator_dupe_debug(_self, _src, _src_loc)
+#define mem_Allocator_dupe_callDebug(_self, _src, _src_loc) mem_Allocator_dupe_debug(_self, _src, _src_loc)
 #define mem_Allocator_dupeZ_callDebug(_self, _src, _src_loc) mem_Allocator_dupeZ_debug(_self, _src, _src_loc)
 
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */

@@ -1143,13 +1143,13 @@ fn_((example(void))(void)) {
 #define pp_then_(...)       __VA_ARGS__
 #define pp_else_(...)       __VA_ARGS__
 
-#define pp_Tok_prim_cmp(x, y) pp_isParen( \
+#define pp_Tok_prim_ord(x, y) pp_isParen( \
     pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()) \
 )
 #define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
 #define pp_Tok_ne(x, y) \
     pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))( \
-        pp_Tok_prim_cmp, \
+        pp_Tok_prim_ord, \
         1 pp_ignore \
     )(x, y)
 #define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))

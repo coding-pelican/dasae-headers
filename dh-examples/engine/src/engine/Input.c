@@ -1,26 +1,32 @@
 #include "engine/Input.h"
 #include "dh/mem/common.h"
 
-fn_((engine_Input_init(mem_Allocator allocator))(E$P$engine_Input) $guard) {
-    let input = u_castP$((engine_Input*)(try_(mem_Allocator_create(allocator, typeInfo$(engine_Input)))));
-    errdefer_($ignore, mem_Allocator_destroy(allocator, u_anyP(input)));
-    input->allocator = allocator;
+T_use$((engine_InputEvent)(
+    ArrQue_init,
+    ArrQue_fini,
+    ArrQue_clearRetainingCap,
+    ArrQue_enqueWithin,
+    ArrQue_front,
+    ArrQue_deque,
+));
 
-    with_(let event_buffer = &input->event_buffer) {
-        mem_setBytes(as$(u8*)(event_buffer->events.val), 0, sizeOf$(event_buffer->events.val));
-        event_buffer->count = 0;
-        event_buffer->head = 0;
-        event_buffer->tail = 0;
-    }
+fn_((engine_Input_init(mem_Allocator gpa))(E$P$engine_Input) $guard) {
+    let input = u_castP$((engine_Input*)(try_(mem_Allocator_create(gpa, typeInfo$(InnerType)))));
+    errdefer_($ignore, mem_Allocator_destroy(gpa, u_anyP(input)));
+    input->gpa = gpa;
+
+    var event_queue = try_(ArrQue_init$engine_InputEvent(gpa, engine_Input_event_queue_len));
+    errdefer_($ignore, ArrQue_fini$engine_InputEvent(&event_queue, gpa));
+    input->event_queue $like_deref = event_queue;
 
     with_(let keyboard = input->keyboard) {
-        mem_setBytes(keyboard->keys.curr_states.val, 0, sizeOf$(keyboard->keys.curr_states.val));
-        mem_setBytes(keyboard->keys.prev_states.val, 0, sizeOf$(keyboard->keys.prev_states.val));
+        mem_set0(u_anyS(A_ref(keyboard->keys.curr_states)));
+        mem_set0(u_anyS(A_ref(keyboard->keys.prev_states)));
     }
 
     with_(let mouse = input->mouse) {
-        mem_setBytes(mouse->buttons.curr_states.val, 0, sizeOf$(mouse->buttons.curr_states.val));
-        mem_setBytes(mouse->buttons.prev_states.val, 0, sizeOf$(mouse->buttons.prev_states.val));
+        mem_set0(u_anyS(A_ref(mouse->buttons.curr_states)));
+        mem_set0(u_anyS(A_ref(mouse->buttons.prev_states)));
 
         mouse->cursor.curr_pos = m_V2i32_zero;
         mouse->cursor.prev_pos = m_V2i32_zero;
@@ -34,7 +40,9 @@ fn_((engine_Input_init(mem_Allocator allocator))(E$P$engine_Input) $guard) {
 } $unguarded_(fn);
 
 fn_((engine_Input_fini(engine_Input* self))(void)) {
-    mem_Allocator_destroy(self->allocator, u_anyP(self));
+    asg_lit((&self->backend)(none()));
+    ArrQue_fini$engine_InputEvent(self->event_queue, self->gpa);
+    mem_Allocator_destroy(self->gpa, u_anyP(self));
 }
 
 fn_((engine_Input_update(engine_Input* self))(E$void) $scope) {
@@ -43,24 +51,23 @@ fn_((engine_Input_update(engine_Input* self))(E$void) $scope) {
     /* TODO: Implement this function */
 } $unscoped_(fn);
 
-fn_((engine_InputEventBuffer_push(engine_Input* self, engine_InputEvent event))(void)) {
-    $unused(self), $unused(event);
-    /* TODO: Implement this function */
-}
+fn_((engine_Input_clearEvent(engine_Input* self))(void)) {
+    ArrQue_clearRetainingCap$engine_InputEvent(self->event_queue);
+};
 
-fn_((engine_InputEventBuffer_pop(engine_Input* self))(O$engine_InputEvent) $scope) {
-    $unused(self);
-    return_none();
-    /* TODO: Implement this function */
+fn_((engine_Input_enqueEvent(engine_Input* self, engine_InputEvent event))(void)) {
+    let q = self->event_queue;
+    if (ArrQue_cap(*q->as_raw) <= q->len) {
+        let_ignore = ArrQue_deque$engine_InputEvent(q);
+    }
+    ArrQue_enqueWithin$engine_InputEvent(q, event);
+};
+
+fn_((engine_Input_peekEvent(engine_Input* self))(O$engine_InputEvent) $scope) {
+    return O_deref$((ReturnType)(ArrQue_front$engine_InputEvent(*self->event_queue)));
 } $unscoped_(fn);
 
-fn_((engine_InputEventBuffer_peek(engine_Input* self))(O$engine_InputEvent) $scope) {
-    $unused(self);
-    return_none();
-    /* TODO: Implement this function */
-} $unscoped_(fn);
 
-fn_((engine_InputEventBuffer_clear(engine_Input* self))(void)) {
-    $unused(self);
-    /* TODO: Implement this function */
-}
+fn_((engine_Input_dequeEvent(engine_Input* self))(O$engine_InputEvent)) {
+    return ArrQue_deque$engine_InputEvent(self->event_queue);
+};

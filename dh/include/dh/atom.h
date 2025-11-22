@@ -43,18 +43,18 @@ extern "C" {
         volatile _T raw; \
     }
 
-#define atom_V_init(_val...)                 __op__atom_V_init(_val)
-#define atom_V_init$(_VT, _val...)           __op__atom_V_init$(_VT, _val)
-#define atom_V_load(_p_self, _ord...)        __op__atom_V_load(_p_self, _ord)
+#define atom_V_init(_val...) __op__atom_V_init(_val)
+#define atom_V_init$(_VT, _val...) __op__atom_V_init$(_VT, _val)
+#define atom_V_load(_p_self, _ord...) __op__atom_V_load(_p_self, _ord)
 #define atom_V_store(_p_self, _val, _ord...) __op__atom_V_store(_p_self, _val, _ord)
 
 #define atom_V_fetchXchg(_p_self, _val, _ord...) __op__atom_V_fetchXchg(_p_self, _val, _ord)
-#define atom_V_fetchAdd(_p_self, _val, _ord...)  __op__atom_V_fetchAdd(_p_self, _val, _ord)
-#define atom_V_fetchSub(_p_self, _val, _ord...)  __op__atom_V_fetchSub(_p_self, _val, _ord)
+#define atom_V_fetchAdd(_p_self, _val, _ord...) __op__atom_V_fetchAdd(_p_self, _val, _ord)
+#define atom_V_fetchSub(_p_self, _val, _ord...) __op__atom_V_fetchSub(_p_self, _val, _ord)
 #define atom_V_fetchNand(_p_self, _val, _ord...) __op__atom_V_fetchNand(_p_self, _val, _ord)
-#define atom_V_fetchAnd(_p_self, _val, _ord...)  __op__atom_V_fetchAnd(_p_self, _val, _ord)
-#define atom_V_fetchOr(_p_self, _val, _ord...)   __op__atom_V_fetchOr(_p_self, _val, _ord)
-#define atom_V_fetchXor(_p_self, _val, _ord...)  __op__atom_V_fetchXor(_p_self, _val, _ord)
+#define atom_V_fetchAnd(_p_self, _val, _ord...) __op__atom_V_fetchAnd(_p_self, _val, _ord)
+#define atom_V_fetchOr(_p_self, _val, _ord...) __op__atom_V_fetchOr(_p_self, _val, _ord)
+#define atom_V_fetchXor(_p_self, _val, _ord...) __op__atom_V_fetchXor(_p_self, _val, _ord)
 
 /// spinLoopHint: Platform-specific CPU hints for spin-loops
 ///

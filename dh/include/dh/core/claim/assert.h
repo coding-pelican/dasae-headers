@@ -28,56 +28,32 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define claim_assert(_Expr) \
-    __step__claim_assert((_Expr), #_Expr)
-#define claim_assert_trap() \
-    __step__claim_assert_trap()
-#define claim_assert_true(_Expr) \
-    __step__claim_assert_true((_Expr), #_Expr)
-#define claim_assert_false(_Expr) \
-    __step__claim_assert_false((_Expr), #_Expr)
-#define claim_assert_eq(_Expr1, _Expr2) \
-    __step__claim_assert_eq((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define claim_assert_ne(_Expr1, _Expr2) \
-    __step__claim_assert_ne((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define claim_assert_null(_Expr) \
-    __step__claim_assert_null((_Expr), #_Expr)
-#define claim_assert_nonnull(_Expr) \
-    __step__claim_assert_nonnull((_Expr), #_Expr)
+#define claim_assert(_Expr) __step__claim_assert((_Expr), #_Expr)
+#define claim_assert_trap() __step__claim_assert_trap()
+#define claim_assert_true(_Expr) __step__claim_assert_true((_Expr), #_Expr)
+#define claim_assert_false(_Expr) __step__claim_assert_false((_Expr), #_Expr)
+#define claim_assert_eq(_Expr1, _Expr2) __step__claim_assert_eq((_Expr1), (_Expr2), #_Expr1, #_Expr2)
+#define claim_assert_ne(_Expr1, _Expr2) __step__claim_assert_ne((_Expr1), (_Expr2), #_Expr1, #_Expr2)
+#define claim_assert_null(_Expr) __step__claim_assert_null((_Expr), #_Expr)
+#define claim_assert_nonnull(_Expr) __step__claim_assert_nonnull((_Expr), #_Expr)
 
-#define claim_assert_msg(_Expr, _msg) \
-    __step__claim_assert_msg((_Expr), #_Expr, _msg)
-#define claim_assert_trap_msg(_msg) \
-    __step__claim_assert_trap_msg(_msg)
-#define claim_assert_true_msg(_Expr, _msg) \
-    __step__claim_assert_true_msg((_Expr), #_Expr, _msg)
-#define claim_assert_false_msg(_Expr, _msg) \
-    __step__claim_assert_false_msg((_Expr), #_Expr, _msg)
-#define claim_assert_eq_msg(_Expr1, _Expr2, _msg) \
-    __step__claim_assert_eq_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define claim_assert_ne_msg(_Expr1, _Expr2, _msg) \
-    __step__claim_assert_ne_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define claim_assert_null_msg(_Expr, _msg) \
-    __step__claim_assert_null_msg((_Expr), #_Expr, _msg)
-#define claim_assert_nonnull_msg(_Expr, _msg) \
-    __step__claim_assert_nonnull_msg((_Expr), #_Expr, _msg)
+#define claim_assert_msg(_Expr, _msg) __step__claim_assert_msg((_Expr), #_Expr, _msg)
+#define claim_assert_trap_msg(_msg) __step__claim_assert_trap_msg(_msg)
+#define claim_assert_true_msg(_Expr, _msg) __step__claim_assert_true_msg((_Expr), #_Expr, _msg)
+#define claim_assert_false_msg(_Expr, _msg) __step__claim_assert_false_msg((_Expr), #_Expr, _msg)
+#define claim_assert_eq_msg(_Expr1, _Expr2, _msg) __step__claim_assert_eq_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
+#define claim_assert_ne_msg(_Expr1, _Expr2, _msg) __step__claim_assert_ne_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
+#define claim_assert_null_msg(_Expr, _msg) __step__claim_assert_null_msg((_Expr), #_Expr, _msg)
+#define claim_assert_nonnull_msg(_Expr, _msg) __step__claim_assert_nonnull_msg((_Expr), #_Expr, _msg)
 
-#define claim_assert_fmt(_Expr, _fmt...) \
-    __step__claim_assert_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_trap_fmt(_fmt...) \
-    __step__claim_assert_trap_fmt(_fmt)
-#define claim_assert_true_fmt(_Expr, _fmt...) \
-    __step__claim_assert_true_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_false_fmt(_Expr, _fmt...) \
-    __step__claim_assert_false_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_eq_fmt(_Expr1, _Expr2, _fmt...) \
-    __step__claim_assert_eq_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define claim_assert_ne_fmt(_Expr1, _Expr2, _fmt...) \
-    __step__claim_assert_ne_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define claim_assert_null_fmt(_Expr, _fmt...) \
-    __step__claim_assert_null_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_nonnull_fmt(_Expr, _fmt...) \
-    __step__claim_assert_nonnull_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_fmt(_Expr, _fmt...) __step__claim_assert_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_trap_fmt(_fmt...) __step__claim_assert_trap_fmt(_fmt)
+#define claim_assert_true_fmt(_Expr, _fmt...) __step__claim_assert_true_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_false_fmt(_Expr, _fmt...) __step__claim_assert_false_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_eq_fmt(_Expr1, _Expr2, _fmt...) __step__claim_assert_eq_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
+#define claim_assert_ne_fmt(_Expr1, _Expr2, _fmt...) __step__claim_assert_ne_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
+#define claim_assert_null_fmt(_Expr, _fmt...) __step__claim_assert_null_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_nonnull_fmt(_Expr, _fmt...) __step__claim_assert_nonnull_fmt((_Expr), #_Expr, _fmt)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -145,26 +121,32 @@ extern "C" {
 /* clang-format on */
 #endif /* on_comptime */
 
-#define __step__claim_assert_true(_Expr, _ExprStr...)                    __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _ExprStr " is not true")
-#define __step__claim_assert_false(_Expr, _ExprStr...)                   __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _ExprStr " is not false")
-#define __step__claim_assert_eq(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
-#define __step__claim_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
-#define __step__claim_assert_null(_Expr, _ExprStr...)                    __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__claim_assert_nonnull(_Expr, _ExprStr...)                 __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _ExprStr " is null")
+#define __step__claim_assert_true(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _ExprStr " is not true")
+#define __step__claim_assert_false(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _ExprStr " is not false")
+#define __step__claim_assert_eq(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
+    __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
+#define __step__claim_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
+    __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
+#define __step__claim_assert_null(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _ExprStr " is nonnull")
+#define __step__claim_assert_nonnull(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _ExprStr " is null")
 
-#define __step__claim_assert_true_msg(_Expr, _ExprStr, _msg...)                    __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _msg)
-#define __step__claim_assert_false_msg(_Expr, _ExprStr, _msg...)                   __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _msg)
-#define __step__claim_assert_eq_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _msg)
-#define __step__claim_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _msg)
-#define __step__claim_assert_null_msg(_Expr, _ExprStr, _msg...)                    __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _msg)
-#define __step__claim_assert_nonnull_msg(_Expr, _ExprStr, _msg...)                 __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _msg)
+#define __step__claim_assert_true_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _msg)
+#define __step__claim_assert_false_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _msg)
+#define __step__claim_assert_eq_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
+    __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _msg)
+#define __step__claim_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
+    __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _msg)
+#define __step__claim_assert_null_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _msg)
+#define __step__claim_assert_nonnull_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _msg)
 
-#define __step__claim_assert_true_fmt(_Expr, _ExprStr, _fmt...)                    __step__claim_assert_fmt(((_Expr) == true), _ExprStr " != true", _fmt)
-#define __step__claim_assert_false_fmt(_Expr, _ExprStr, _fmt...)                   __step__claim_assert_fmt(((_Expr) == false), _ExprStr " != false", _fmt)
-#define __step__claim_assert_eq_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) __step__claim_assert_fmt(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _fmt)
-#define __step__claim_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) __step__claim_assert_fmt(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _fmt)
-#define __step__claim_assert_null_fmt(_Expr, _ExprStr, _fmt...)                    __step__claim_assert_fmt(((_Expr) == null), _ExprStr " != null", _fmt)
-#define __step__claim_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...)                 __step__claim_assert_fmt(((_Expr) != null), _ExprStr " == null", _fmt)
+#define __step__claim_assert_true_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == true), _ExprStr " != true", _fmt)
+#define __step__claim_assert_false_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == false), _ExprStr " != false", _fmt)
+#define __step__claim_assert_eq_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
+    __step__claim_assert_fmt(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _fmt)
+#define __step__claim_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
+    __step__claim_assert_fmt(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _fmt)
+#define __step__claim_assert_null_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == null), _ExprStr " != null", _fmt)
+#define __step__claim_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) != null), _ExprStr " == null", _fmt)
 
 /*========== Extern Function Prototypes =====================================*/
 
@@ -206,8 +188,8 @@ $extern fn_((claim_assert_failLogMsg(const char*, const char*, const char*, i32,
 $extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, i32, const char*, ...))(void));
 #endif /* on_comptime */
 #else  /* !claim_fail_logging_comp_enabled */
-#define claim_assert_failLog(_expr, _func, _file, _line)               $unused(0)
-#define claim_assert_failLogMsg(_expr, _func, _file, _line, _msg)      $unused(0)
+#define claim_assert_failLog(_expr, _func, _file, _line) $unused(0)
+#define claim_assert_failLogMsg(_expr, _func, _file, _line, _msg) $unused(0)
 #define claim_assert_failLogFmt(_expr, _func, _file, _line, _fmt, ...) $unused(0)
 #endif /* claim_fail_logging_comp_enabled */
 

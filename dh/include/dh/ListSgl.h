@@ -27,10 +27,10 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_use_ListSgl_Node$(_T)  __comp_gen__T_use_ListSgl_Node$(_T)
+#define T_use_ListSgl_Node$(_T) __comp_gen__T_use_ListSgl_Node$(_T)
 #define T_decl_ListSgl_Node$(_T) __comp_gen__T_decl_ListSgl_Node$(_T)
 #define T_impl_ListSgl_Node$(_T) __comp_gen__T_impl_ListSgl_Node$(_T)
-#define ListSgl_Node$(_T)        __comp_alias__ListSgl_Node$(_T)
+#define ListSgl_Node$(_T) __comp_alias__ListSgl_Node$(_T)
 
 typedef struct ListSgl_Node$raw ListSgl_Node$raw;
 T_use_P$(ListSgl_Node$raw);
@@ -52,10 +52,10 @@ extern fn_((ListSgl_Node_findLast(P$ListSgl_Node$raw self))(P$ListSgl_Node$raw))
 extern fn_((ListSgl_Node_countChildren(P_const$ListSgl_Node$raw self))(usize));
 extern fn_((ListSgl_Node_reverse(O$P$ListSgl_Node$raw* indirect))(void));
 
-#define T_use_ListSgl$(_T)  __comp_gen__T_use_ListSgl$(_T)
+#define T_use_ListSgl$(_T) __comp_gen__T_use_ListSgl$(_T)
 #define T_decl_ListSgl$(_T) __comp_gen__T_decl_ListSgl$(_T)
 #define T_impl_ListSgl$(_T) __comp_gen__T_impl_ListSgl$(_T)
-#define ListSgl$(_T)        __comp_alias__ListSgl$(_T)
+#define ListSgl$(_T) __comp_alias__ListSgl$(_T)
 
 typedef struct ListSgl$raw {
     var_(first, O$P$ListSgl_Node$raw);

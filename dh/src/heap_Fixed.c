@@ -11,13 +11,15 @@ $static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
 $static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8));
 
 // Utility functions
-$inline $static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool));
-$inline $static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool));
+$inline_always
+$static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool));
+$inline_always
+$static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool));
 
 fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator)) {
     claim_assert_nonnull(self);
     // VTable for Fixed buffer allocator
-    static const mem_Allocator_VT vt[1] = { {
+    $static const mem_Allocator_VT vt $like_ref = { {
         .alloc = heap_Fixed_alloc,
         .resize = heap_Fixed_resize,
         .remap = heap_Fixed_remap,
@@ -31,7 +33,7 @@ fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator)) {
 
 fn_((heap_Fixed_thrdSafeAllocator(heap_Fixed* self))(mem_Allocator)) {
     /* Thread-safe VTable for FixedBuf allocator */
-    static const mem_Allocator_VT vt[1] = { {
+    $static const mem_Allocator_VT vt $like_ref = { {
         .alloc = heap_Fixed_thrdSafeAlloc,
         .resize = mem_Allocator_VT_noResize,
         .remap = mem_Allocator_VT_noRemap,
@@ -84,7 +86,7 @@ $static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
 
     // Calculate aligned offset
     let ptr_addr = ptrToInt(self->buffer.ptr) + self->end_index;
-    let aligned_addr = mem_alignForward(ptr_addr, ptr_align);
+    let aligned_addr = mem_alignFwd(ptr_addr, ptr_align);
     let adjust_off = aligned_addr - ptr_addr;
     let adjusted_index = self->end_index + adjust_off;
     let new_end_index = adjusted_index + len;
@@ -167,7 +169,7 @@ $static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8) $
     while (true) {
         // Calculate aligned offset
         let ptr_addr = ptrToInt(self->buffer.ptr) + end_index;
-        let aligned_addr = mem_alignForward(ptr_addr, ptr_align);
+        let aligned_addr = mem_alignFwd(ptr_addr, ptr_align);
         let adjust_off = aligned_addr - ptr_addr;
         let adjusted_index = end_index + adjust_off;
         let new_end_index = adjusted_index + len;
@@ -181,19 +183,19 @@ $static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8) $
 
 /*========== Utility Functions ==============================================*/
 
-$inline $static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool)) {
+$inline_always
+$static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool)) {
     let container_start = ptrToInt(container.ptr);
     let container_end = container_start + container.len;
     let ptr_addr = ptrToInt(ptr);
-
     return container_start <= ptr_addr && ptr_addr < container_end;
 }
 
-$inline $static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool)) {
+$inline_always
+$static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool)) {
     let container_start = ptrToInt(container.ptr);
     let container_end = container_start + container.len;
     let slice_start = ptrToInt(sli.ptr);
     let slice_end = slice_start + sli.len;
-
     return container_start <= slice_start && slice_end <= container_end;
 }

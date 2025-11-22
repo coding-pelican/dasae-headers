@@ -74,14 +74,14 @@ typedef union O$Void {
 //     blk_return __p_o; \
 // })
 
-#define asgO(_p_o, _v_o...)  asgO1(_p_o, _v_o)
+#define asgO(_p_o, _v_o...) asgO1(_p_o, _v_o)
 #define asgO1(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some))
 #define asgO2(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some))
 #define asgO3(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some.payload.some))
 #define asgO4(_p_o, _v_o...) asg(_p_o, _v_o, (payload.some.payload.some.payload.some.payload.some))
 
 /* Determines optional value */
-#define some(_val...)              comp_inline__some(_val)
+#define some(_val...) comp_inline__some(_val)
 #define comp_inline__some(_val...) { \
     .is_some = true, \
     .payload = { .some = _val }, \
@@ -89,7 +89,7 @@ typedef union O$Void {
 #define some$(/*(_T)(_val: _T))*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
 
-#define none()              comp_inline__none()
+#define none() comp_inline__none()
 #define comp_inline__none() { \
     .is_some = false, \
     .payload = { .none = {} }, \
@@ -105,11 +105,19 @@ typedef union O$Void {
     __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
 #define O_asP(_p_o /*: P(O(T))*/... /*(O(P(T)))*/) \
     __step__O_asP(_p_o)
+#define O_ref$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
+    __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
+#define O_ref(_p_o /*: P(O(T))*/... /*(O(P(T)))*/) \
+    __step__O_asP(_p_o)
+#define O_deref$(/*(_OT: O(T))(_o: O(P(T)))*/... /*(_OT)*/) \
+    __step__O_deref$(__step__O_deref$__parseOT __VA_ARGS__)
+#define O_deref(_o /*: O(P(T))*/... /*(O(T))*/) \
+    __step__O_deref(_o)
 
 /* Returns optional value */
-#define return_some(_val...)       __return_some(_val)
+#define return_some(_val...) __return_some(_val)
 #define return_some_void(_Expr...) pp_overload(__return_some_void, _Expr)(_Expr)
-#define return_none(_Expr...)      pp_overload(__return_none, _Expr)(_Expr)
+#define return_none(_Expr...) pp_overload(__return_none, _Expr)(_Expr)
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
 #define orelse_(/*(_Expr: O$$(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
@@ -118,23 +126,23 @@ typedef union O$Void {
     __unwrap(__VA_ARGS__)
 
 /* Optional value payload capture (similar to Zig's if/while captures) */
-#define if_some(/*(_Expr)(_capture)*/...)        __if_some__step(pp_defer(__if_some__emit)(__if_some__parseExpr __VA_ARGS__))
-#define if_some_void(/*(_Expr)*/...)             __if_some_void__step(pp_defer(__if_some_void__emit)(__if_some_void__parseExpr __VA_ARGS__))
-#define else_none                                comp_syn__else_none
-#define if_none(val_opt...)                      comp_syn__if_none(val_opt)
-#define else_some(_Payload_Capture...)           comp_syn__else_some(_Payload_Capture)
-#define else_some_void                           comp_syn__else_some_void
+#define if_some(/*(_Expr)(_capture)*/...) __if_some__step(pp_defer(__if_some__emit)(__if_some__parseExpr __VA_ARGS__))
+#define if_some_void(/*(_Expr)*/...) __if_some_void__step(pp_defer(__if_some_void__emit)(__if_some_void__parseExpr __VA_ARGS__))
+#define else_none comp_syn__else_none
+#define if_none(val_opt...) comp_syn__if_none(val_opt)
+#define else_some(_Payload_Capture...) comp_syn__else_some(_Payload_Capture)
+#define else_some_void comp_syn__else_some_void
 #define while_some(val_opt, _Payload_Capture...) comp_syn__while_some(val_opt, _Payload_Capture)
-#define while_none(val_opt...)                   comp_syn__while_none(val_opt)
+#define while_none(val_opt...) comp_syn__while_none(val_opt)
 
 /*========== Macros and Definitions =========================================*/
 
-#define __param_expand__some$(...)          __VA_ARGS__,
-#define __block_inline__some$(...)          __block_inline1__some$(__VA_ARGS__)
+#define __param_expand__some$(...) __VA_ARGS__,
+#define __block_inline__some$(...) __block_inline1__some$(__VA_ARGS__)
 #define __block_inline1__some$(_T, _val...) lit$((_T)some(_val))
 
-#define __param_expand__none$(...)    __VA_ARGS__
-#define __block_inline__none$(...)    __block_inline1__none$(__VA_ARGS__)
+#define __param_expand__none$(...) __VA_ARGS__
+#define __block_inline__none$(...) __block_inline1__none$(__VA_ARGS__)
 #define __block_inline1__none$(_T...) lit$((_T)none())
 
 #define __step__O_asP$(...) \
@@ -154,14 +162,29 @@ typedef union O$Void {
 #define __step__O_asP(_p_o...) \
     O_asP$((O$$(FieldType$(TypeOf(*_p_o), payload.some)*))(_p_o))
 
-#define __return_some(_val...)         return_(some(_val))
-#define __return_some_void_0()         (return_(some({})))
-#define __return_some_void_1(_Expr...) (_Expr, return_(some({})))
-#define __return_none_0()              (return_(none()))
-#define __return_none_1(_Expr...)      (_Expr, return_(none()))
+#define __step__O_deref$(...) __step__O_deref$__emit(__VA_ARGS__)
+#define __step__O_deref$__parseOT(_OT...) \
+    _OT, __step__O_deref$__parseO()
+#define __step__O_deref$__parseO() \
+    pp_uniqTok(o),
+#define __step__O_deref$__emit(_OT, __o, _o...) ({ \
+    typedef _OT O$Ret$O_deref; \
+    let_(__o, TypeOf(_o)) = _o; \
+    __o.is_some \
+        ? lit$((O$Ret$O_deref)some(*unwrap_(__o))) \
+        : lit$((O$Ret$O_deref)none()); \
+})
+#define __step__O_deref(_o...) \
+    O_deref$((O$$(P_DerefTUnqual$(O_InnerT$(TypeOf(_o)))))(_o))
 
-#define __param_expand__orelse_(...)                                       __VA_ARGS__, pp_expand
-#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...)            __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
+#define __return_some(_val...) return_(some(_val))
+#define __return_some_void_0() (return_(some({})))
+#define __return_some_void_1(_Expr...) (_Expr, return_(some({})))
+#define __return_none_0() (return_(none()))
+#define __return_none_1(_Expr...) (_Expr, return_(none()))
+
+#define __param_expand__orelse_(...) __VA_ARGS__, pp_expand
+#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...) __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
 #define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
@@ -183,14 +206,14 @@ typedef union O$Void {
 )
 #define __unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
 
-#define __if_some__step(...)                 __VA_ARGS__
-#define __if_some__parseExpr(_Expr...)       (_Expr), __if_some__parseCapture
+#define __if_some__step(...) __VA_ARGS__
+#define __if_some__parseExpr(_Expr...) (_Expr), __if_some__parseCapture
 #define __if_some__parseCapture(_capture...) _capture
 #define __if_some__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_some) \
         with_(let _capture = _result.payload.some)
-#define __if_some_void__step(...)                 __VA_ARGS__
-#define __if_some_void__parseExpr(_Expr...)       (_Expr), __if_some_void__parseCapture
+#define __if_some_void__step(...) __VA_ARGS__
+#define __if_some_void__parseExpr(_Expr...) (_Expr), __if_some_void__parseCapture
 #define __if_some_void__parseCapture(_capture...) _capture
 #define __if_some_void__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_some)

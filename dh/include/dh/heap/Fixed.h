@@ -29,7 +29,7 @@ extern "C" {
 
 /// Fixed buffer allocator instance
 typedef struct heap_Fixed {
-    S$u8  buffer;    ///< Underlying buffer to allocate from
+    S$u8 buffer;     ///< Underlying buffer to allocate from
     usize end_index; ///< Current allocation position
 } heap_Fixed;
 T_use_O$(heap_Fixed);

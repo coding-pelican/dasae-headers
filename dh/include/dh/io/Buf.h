@@ -28,9 +28,9 @@ extern "C" {
 
 typedef struct io_Buf_Reader {
     io_Reader inner;
-    S$u8      buf;
-    usize     start;
-    usize     end;
+    S$u8 buf;
+    usize start;
+    usize end;
 } io_Buf_Reader;
 /// Initialize buffered reader with external buffer
 $extern fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader));

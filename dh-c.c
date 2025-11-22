@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -52,7 +53,7 @@ typedef enum {
     OPT_DEBUG,       // -Og: Smallest for debugging
     OPT_BASIC,       // -O1: Basic optimizations
     OPT_BALANCED,    // -O2: Good balance
-    OPT_AGGRESSIVE,  // -O3: Maximum performance
+    OPT_AGGRESSIVE,  // -O3: Maximum optimize
     OPT_SIZE,        // -Os: Optimize for size
     OPT_SIZE_EXTREME // -Oz: Size at all costs
 } OptimizationLevel;
@@ -68,7 +69,7 @@ typedef struct {
     char library_name[256];
     char linking_type[16]; // "static" or "dynamic"
     char library_path[1024];
-    char profile[32]; // Build profile: "dev", "release", "performance", etc.
+    char profile[32]; // Build profile: "dev", "release", "optimize", etc.
     bool no_libdh;    // Flag to disable dh support for this library
 } LibraryConfig;
 
@@ -102,6 +103,15 @@ typedef struct {
     bool               verbose;               // Flag for verbose logging
     bool               use_output_suffix;     // Flag to enable output suffix (dev, release, etc.)
     LibraryConfigArray lib_configs;           // Libraries from lib.dh
+    bool is_sample;                           // Flag to indicate building a sample file
+    char sample_library[256];                 // Library name if sample is in a library
+    char sample_library_path[1024];           // Full path to library directory if sample is in a library
+    char explicit_library[256];               // Explicitly specified library to link
+    char original_cwd[1024];                  // Original working directory before project root detection
+    bool build_as_library;                    // Flag to build project as a library
+    char library_type[16];                    // "static" or "dynamic" for library builds
+    bool clean_cache_only;                    // Flag to clean only .cache directories
+    bool clean_recur;                         // Flag to recursively clean dependencies
 } BuildConfig;
 
 // Build configuration presets
@@ -120,7 +130,9 @@ void        collect_source_files(BuildConfig* config, char*** sources, int* sour
 void        collect_include_paths(BuildConfig* config, char*** includes, int* include_count);
 void        parse_libraries(BuildConfig* config, char* libs_file);
 void        build_project(BuildConfig* config);
+void build_project_as_library(BuildConfig* config);
 void        run_executable(BuildConfig* config);
+void clean_project(BuildConfig* config, bool clean_build, bool clean_lib);
 void        print_usage();
 void        free_string_array(char** array, int count);
 bool        find_dh_path(BuildConfig* config);
@@ -156,6 +168,15 @@ bool  create_library_command(BuildConfig* config);
 char* optimization_level_to_lib_flag(const char* opt_level);
 void  extract_library_dir_and_name(const char* lib_name, char* dir_part, char* name_part);
 bool  create_directory_recursive(const char* path);
+bool copy_directory_recursive(const char* src, const char* dest, bool verbose);
+bool move_directory_to_cache(const char* src_dir, const char* cache_base, const char* cache_subdir, bool verbose);
+bool find_project_root(const char* start_path, char* project_root, size_t root_size);
+bool detect_sample_library(const char* file_path, char* library_name, size_t name_size);
+bool compile_library_for_sample(BuildConfig* config, const char* library_name);
+bool compile_library_directory_as_library(BuildConfig* config, const char* library_path, const char* library_name);
+void add_library_linking_for_sample(BuildConfig* config, const char* library_name);
+void add_library_includes_for_sample(BuildConfig* config, const char* library_name, char*** includes, int* include_count);
+bool detect_sample_library_path(const char* file_path, char* library_path, size_t path_size, char* library_name, size_t name_size);
 
 // Add forward declarations for functions
 void init_build_presets(void);
@@ -166,43 +187,14 @@ void cleanup_templates(void);
 void create_templates_directory(const char* dh_path, bool verbose);
 
 // Predefined build configurations
-BuildConfigPreset build_presets[] = {
-    { .name               = "dev",
-      .debug_level        = DEBUG_EXTENDED,
-      .optimization_level = OPT_DEBUG,
-      .assertions_enabled = true,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "test",
-      .debug_level        = DEBUG_STANDARD,
-      .optimization_level = OPT_BASIC,
-      .assertions_enabled = true,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "profile",
-      .debug_level        = DEBUG_STANDARD,
-      .optimization_level = OPT_BALANCED,
-      .assertions_enabled = true,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "release",
-      .debug_level        = DEBUG_MINIMAL,
-      .optimization_level = OPT_BALANCED,
-      .assertions_enabled = false,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "performance",
-      .debug_level        = DEBUG_NONE,
-      .optimization_level = OPT_AGGRESSIVE,
-      .assertions_enabled = false,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "embedded",
-      .debug_level        = DEBUG_NONE,
-      .optimization_level = OPT_SIZE,
-      .assertions_enabled = false,
-      .extra_flags        = { NULL, 0 } },
-    { .name               = "micro",
-      .debug_level        = DEBUG_NONE,
-      .optimization_level = OPT_SIZE_EXTREME,
-      .assertions_enabled = false,
-      .extra_flags        = { NULL, 0 } }
-};
+BuildConfigPreset build_presets[]
+    = { { .name = "dev", .debug_level = DEBUG_EXTENDED, .optimization_level = OPT_DEBUG, .assertions_enabled = true, .extra_flags = { NULL, 0 } },
+        { .name = "test", .debug_level = DEBUG_STANDARD, .optimization_level = OPT_BASIC, .assertions_enabled = true, .extra_flags = { NULL, 0 } },
+        { .name = "profile", .debug_level = DEBUG_STANDARD, .optimization_level = OPT_BALANCED, .assertions_enabled = true, .extra_flags = { NULL, 0 } },
+        { .name = "release", .debug_level = DEBUG_MINIMAL, .optimization_level = OPT_BALANCED, .assertions_enabled = false, .extra_flags = { NULL, 0 } },
+        { .name = "optimize", .debug_level = DEBUG_NONE, .optimization_level = OPT_AGGRESSIVE, .assertions_enabled = false, .extra_flags = { NULL, 0 } },
+        { .name = "embedded", .debug_level = DEBUG_NONE, .optimization_level = OPT_SIZE, .assertions_enabled = false, .extra_flags = { NULL, 0 } },
+        { .name = "micro", .debug_level = DEBUG_NONE, .optimization_level = OPT_SIZE_EXTREME, .assertions_enabled = false, .extra_flags = { NULL, 0 } } };
 
 const int NUM_BUILD_PRESETS = sizeof(build_presets) / sizeof(BuildConfigPreset);
 
@@ -295,23 +287,62 @@ bool detect_clang() {
     return false;
 }
 
+// Find project root by walking up directory tree
+bool find_project_root(const char* start_path, char* project_root, size_t root_size) {
+    char temp_path[1024] = {};
+    if (!get_absolute_path(start_path, temp_path, sizeof(temp_path))) {
+        strncpy(temp_path, start_path, sizeof(temp_path) - 1);
+        temp_path[sizeof(temp_path) - 1] = '\0';
+    }
+
+    while (strlen(temp_path) > 3) { // Minimum path length (e.g., C:\ on Windows)
+        char include_path[1024] = {};
+        char src_path[1024] = {};
+        (void)snprintf(include_path, sizeof(include_path), "%s%sinclude", temp_path, PATH_SEPARATOR);
+        (void)snprintf(src_path, sizeof(src_path), "%s%ssrc", temp_path, PATH_SEPARATOR);
+
+        if (dir_exists(include_path) && dir_exists(src_path)) {
+            strncpy(project_root, temp_path, root_size - 1);
+            project_root[root_size - 1] = '\0';
+            return true;
+        }
+
+        // Move to parent directory
+        char* last_separator = strrchr(temp_path, PATH_SEPARATOR[0]);
+        if (!last_separator) { break; }
+        *last_separator = '\0';
+    }
+
+    return false;
+}
+
 // Detect project structure and fill config
 void detect_project_structure(BuildConfig* config) {
+    // Save original working directory
+    if (getcwd(config->original_cwd, sizeof(config->original_cwd)) == NULL) {
+        (void)fprintf(stderr, "Error: Could not get current working directory\n");
+        exit(1);
+    }
+
     char cwd[1024] = {};
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         (void)fprintf(stderr, "Error: Could not get current working directory\n");
         exit(1);
     }
 
-    // Find the project root by looking for include/ and src/ directories
-    char* last_slash = strrchr(cwd, PATH_SEPARATOR[0]);
+    // Find the project root by walking up the directory tree
+    if (!find_project_root(cwd, config->project_root, sizeof(config->project_root))) {
+        (void)fprintf(stderr, "Error: Could not find project root (looking for include/ and src/ directories)\n");
+        exit(1);
+    }
+
+    // Extract project name from root path
+    char* last_slash = strrchr(config->project_root, PATH_SEPARATOR[0]);
     if (last_slash) {
         strncpy(config->project_name, last_slash + 1, sizeof(config->project_name) - 1);
     } else {
-        strncpy(config->project_name, cwd, sizeof(config->project_name) - 1);
+        strncpy(config->project_name, config->project_root, sizeof(config->project_name) - 1);
     }
-
-    strcpy(config->project_root, cwd);
 
     printf("Detected project: %s at %s\n", config->project_name, config->project_root);
 
@@ -484,9 +515,84 @@ bool is_c_source_file(const char* filename) {
     return ext && strcmp(ext, ".c") == 0;
 }
 
+// Detect if a file is in a library directory and extract library path and name
+// General approach: file is in SOME_FOLDER/foo.c, parent of SOME_FOLDER is the library directory
+bool detect_sample_library_path(const char* file_path, char* library_path, size_t path_size, char* library_name, size_t name_size) {
+    char abs_path[1024] = {};
+    if (!get_absolute_path(file_path, abs_path, sizeof(abs_path))) {
+        strncpy(abs_path, file_path, sizeof(abs_path) - 1);
+        abs_path[sizeof(abs_path) - 1] = '\0';
+    }
+
+    // Remove filename to get the directory containing the file
+    char file_dir[1024] = {};
+    strncpy(file_dir, abs_path, sizeof(file_dir) - 1);
+    file_dir[sizeof(file_dir) - 1] = '\0';
+
+    char* last_sep = strrchr(file_dir, PATH_SEPARATOR[0]);
+    if (!last_sep) {
+        return false; // No path separator found
+    }
+    *last_sep = '\0'; // Remove filename, now file_dir is the folder containing the file
+
+    // The parent of file_dir should be the library directory
+    // Check if parent directory has src/ and include/ directories (library structure)
+    char* parent_sep = strrchr(file_dir, PATH_SEPARATOR[0]);
+    if (!parent_sep) {
+        return false; // No parent directory
+    }
+
+    // Extract library directory path
+    size_t lib_path_len = parent_sep - file_dir;
+    if (lib_path_len > 0 && lib_path_len < path_size) {
+        strncpy(library_path, file_dir, lib_path_len);
+        library_path[lib_path_len] = '\0';
+
+        // Extract library name (last component of library_path)
+        char* lib_name_start = strrchr(library_path, PATH_SEPARATOR[0]);
+        if (lib_name_start) {
+            lib_name_start++; // Skip separator
+        } else {
+            lib_name_start = library_path;
+        }
+
+        size_t lib_name_len = strlen(lib_name_start);
+        if (lib_name_len > 0 && lib_name_len < name_size) {
+            strncpy(library_name, lib_name_start, lib_name_len);
+            library_name[lib_name_len] = '\0';
+
+            // Verify this is actually a library directory by checking for src/ or include/
+            char lib_src_check[1024] = {};
+            char lib_include_check[1024] = {};
+            (void)snprintf(lib_src_check, sizeof(lib_src_check), "%s%ssrc", library_path, PATH_SEPARATOR);
+            (void)snprintf(lib_include_check, sizeof(lib_include_check), "%s%sinclude", library_path, PATH_SEPARATOR);
+
+            // It's a library if it has src/ or include/ directory
+            if (dir_exists(lib_src_check) || dir_exists(lib_include_check)) { return true; }
+        }
+    }
+
+    return false;
+}
+
+// Legacy function for backward compatibility
+bool detect_sample_library(const char* file_path, char* library_name, size_t name_size) {
+    char library_path[1024] = {};
+    return detect_sample_library_path(file_path, library_path, sizeof(library_path), library_name, name_size);
+}
+
 // Detect if we're building a single file or a project
 void detect_build_type(BuildConfig* config, int argc, const char* argv[]) {
     config->is_single_file = false;
+    config->is_sample = false;
+
+    // Check for --sample flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--sample") == 0) {
+            config->is_sample = true;
+            break;
+        }
+    }
 
     // Check if a filename was provided as an argument
     for (int i = 1; i < argc; i++) {
@@ -497,6 +603,16 @@ void detect_build_type(BuildConfig* config, int argc, const char* argv[]) {
             if (!get_absolute_path(argv[i], config->single_file, sizeof(config->single_file))) {
                 // Fallback if get_absolute_path fails
                 strcpy(config->single_file, argv[i]);
+            }
+
+            // If --sample flag is set, try to detect library context
+            if (config->is_sample) {
+                if (detect_sample_library_path(
+                        config->single_file, config->sample_library_path, sizeof(config->sample_library_path), config->sample_library,
+                        sizeof(config->sample_library)
+                    )) {
+                    if (config->verbose) { printf("Detected sample file in library: %s at %s\n", config->sample_library, config->sample_library_path); }
+                }
             }
 
             // Extract the base name for the output
@@ -517,15 +633,23 @@ void detect_build_type(BuildConfig* config, int argc, const char* argv[]) {
 
             strcpy(config->project_name, basename);
 
-            // Set the project root to the file's directory
-            strcpy(config->project_root, config->single_file);
-            char* last_separator = strrchr(config->project_root, PATH_SEPARATOR[0]);
+            // Try to find project root from the file's location
+            char file_dir[1024] = {};
+            strcpy(file_dir, config->single_file);
+            char* last_separator = strrchr(file_dir, PATH_SEPARATOR[0]);
             if (last_separator) {
                 *(last_separator + 1) = '\0';
             }
 
-            // Set output directory to the same as source
-            strcpy(config->output_dir, config->project_root);
+            // Find project root by walking up from file location
+            if (find_project_root(file_dir, config->project_root, sizeof(config->project_root))) {
+                // Set output directory relative to project root
+                (void)snprintf(config->output_dir, sizeof(config->output_dir), "%s%sbuild", config->project_root, PATH_SEPARATOR);
+            } else {
+                // Fallback: use file's directory
+                strcpy(config->project_root, file_dir);
+                strcpy(config->output_dir, config->project_root);
+            }
             return;
         }
     }
@@ -633,6 +757,12 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
     // Add library includes from lib.dh
     add_lib_dh_includes(config, includes, include_count);
 
+    // For sample files, add specific library include paths
+    if (config->is_single_file && config->is_sample) {
+        if (strlen(config->sample_library) > 0) { add_library_includes_for_sample(config, config->sample_library, includes, include_count); }
+        if (strlen(config->explicit_library) > 0) { add_library_includes_for_sample(config, config->explicit_library, includes, include_count); }
+    }
+
     if (config->is_single_file) {
         // Add the directory of the single file
         char* dir_path       = strdup(config->single_file);
@@ -672,6 +802,18 @@ void collect_include_paths(BuildConfig* config, char*** includes, int* include_c
         if (dir_exists(src_path)) {
             *includes                   = realloc(*includes, (*include_count + 1) * sizeof(char*));
             (*includes)[*include_count] = strdup(src_path);
+            (*include_count)++;
+        }
+
+        // Add lib/deps path if it exists
+        char project_lib_path[1024] = {};
+        (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+        char deps_path[1024] = {};
+        (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+        if (dir_exists(deps_path)) {
+            *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
+            (*includes)[*include_count] = strdup(deps_path);
             (*include_count)++;
         }
 
@@ -831,6 +973,13 @@ void init_build_config(BuildConfig* config) {
     config->compiler_args[0]      = '\0';     // Initialize compiler args
     config->lib_configs.libraries = NULL;     // Initialize library configs
     config->lib_configs.count     = 0;        // Initialize library count
+    config->is_sample = false;                // Initialize sample flag
+    config->sample_library[0] = '\0';         // Initialize sample library
+    config->sample_library_path[0] = '\0';    // Initialize sample library path
+    config->explicit_library[0] = '\0';       // Initialize explicit library
+    config->original_cwd[0] = '\0';           // Initialize original cwd
+    config->build_as_library = false;         // Initialize library build flag
+    strcpy(config->library_type, "static");   // Default to static library
 }
 
 // Free the extra flags array
@@ -852,50 +1001,49 @@ extern char* CLANG_FORMAT_TEMPLATE;
 extern char* TASKS_JSON_TEMPLATE;
 
 // Add fallback templates in case files can't be loaded
-const char* DEFAULT_CLANGD_TEMPLATE
-    = "CompileFlags:\n"
-      "  Compiler: clang\n"
-      "  Add: \n"
-      "    - -xc\n"
-      "    - -std=c17\n"
-      "    - -Wall\n"
-      "    - -Wextra\n"
-      "    - -Werror\n"
-      "    - -funsigned-char\n"
-      "    - -fblocks\n"
-      "Diagnostics:\n"
-      "  UnusedIncludes: Strict\n"
-      "  ClangTidy:\n"
-      "    Add: \n"
-      "      - modernize*\n"
-      "      - performance*\n"
-      "      - readability*\n"
-      "      - bugprone*\n"
-      "      - portability*\n"
-      "    Remove: \n"
-      "      - modernize-use-trailing-return-type\n"
-      "      - readability-named-parameter\n"
-      "InlayHints:\n"
-      "  Enabled: true\n"
-      "  TypeNameLimit: 24\n"
-      "  DeducedTypes: true\n"
-      "  ParameterNames: true\n"
-      "  Designators: true\n"
-      "  BlockEnd: false\n"
-      "Hover:\n"
-      "  ShowAKA: true\n"
-      "---\n"
-      "If:\n"
-      "  PathMatch:\n"
-      "    - .*\\.h\n"
-      "    - .*\\.hh\n"
-      "    - .*\\.hpp\n"
-      "    - .*\\.hxx\n"
-      "CompileFlags:\n"
-      "  Add: \n"
-      "    - -Wno-unused-function\n"
-      "    - -Wno-unused-variable\n"
-      "    - -Wno-unused-const-variable\n";
+const char* DEFAULT_CLANGD_TEMPLATE = "CompileFlags:\n"
+                                      "  Compiler: clang\n"
+                                      "  Add: \n"
+                                      "    - -xc\n"
+                                      "    - -std=c17\n"
+                                      "    - -Wall\n"
+                                      "    - -Wextra\n"
+                                      "    - -Werror\n"
+                                      "    - -funsigned-char\n"
+                                      "    - -fblocks\n"
+                                      "Diagnostics:\n"
+                                      "  UnusedIncludes: Strict\n"
+                                      "  ClangTidy:\n"
+                                      "    Add: \n"
+                                      "      - modernize*\n"
+                                      "      - optimize*\n"
+                                      "      - readability*\n"
+                                      "      - bugprone*\n"
+                                      "      - portability*\n"
+                                      "    Remove: \n"
+                                      "      - modernize-use-trailing-return-type\n"
+                                      "      - readability-named-parameter\n"
+                                      "InlayHints:\n"
+                                      "  Enabled: true\n"
+                                      "  TypeNameLimit: 24\n"
+                                      "  DeducedTypes: true\n"
+                                      "  ParameterNames: true\n"
+                                      "  Designators: true\n"
+                                      "  BlockEnd: false\n"
+                                      "Hover:\n"
+                                      "  ShowAKA: true\n"
+                                      "---\n"
+                                      "If:\n"
+                                      "  PathMatch:\n"
+                                      "    - .*\\.h\n"
+                                      "    - .*\\.hh\n"
+                                      "    - .*\\.hpp\n"
+                                      "    - .*\\.hxx\n"
+                                      "CompileFlags:\n"
+                                      "  Add: \n"
+                                      "    - -Wno-unused-function\n"
+                                      "    - -Wno-unused-variable\n"
+                                      "    - -Wno-unused-const-variable\n";
 
 const char* DEFAULT_CLANG_FORMAT_TEMPLATE
     = "## clang-format configurator v2 https://clang-format-configurator.site/\n"
@@ -1128,211 +1276,210 @@ const char* DEFAULT_CLANG_FORMAT_TEMPLATE
       "  - meta_ptrToAny\n"
       "  - meta_sliToAny\n";
 
-const char* DEFAULT_TASKS_JSON_TEMPLATE
-    = "{\n"
-      "  \"version\": \"2.0.0\",\n"
-      "  \"inputs\": [\n"
-      "    { /* compiler */\n"
-      "      \"id\": \"compiler\",\n"
-      "      \"type\": \"pickString\",\n"
-      "      \"description\": \"Select compiler\",\n"
-      "      \"options\": [\n"
-      "        \"clang\"\n"
-      "      ],\n"
-      "      \"default\": \"clang\"\n"
-      "    },\n"
-      "    { /* cStandard */\n"
-      "      \"id\": \"cStandard\",\n"
-      "      \"type\": \"pickString\",\n"
-      "      \"description\": \"Select C standard\",\n"
-      "      \"options\": [\n"
-      "        \"c17\",\n"
-      "        \"c11\",\n"
-      "        \"c99\"\n"
-      "      ],\n"
-      "      \"default\": \"c17\"\n"
-      "    },\n"
-      "    { /* buildConfig */\n"
-      "      \"id\": \"buildConfig\",\n"
-      "      \"type\": \"pickString\",\n"
-      "      \"description\": \"Select build configuration\",\n"
-      "      \"options\": [\n"
-      "        \"dev\",\n"
-      "        \"test\",\n"
-      "        \"profile\",\n"
-      "        \"release\",\n"
-      "        \"performance\",\n"
-      "        \"embedded\",\n"
-      "        \"micro\"\n"
-      "      ],\n"
-      "      \"default\": \"dev\"\n"
-      "    },\n"
-      "    { /* noLibDh */\n"
-      "      \"id\": \"noLibDh\",\n"
-      "      \"type\": \"pickString\",\n"
-      "      \"description\": \"Skip DH library usage?\",\n"
-      "      \"options\": [\n"
-      "        \"\",\n"
-      "        \"--no-libdh\"\n"
-      "      ],\n"
-      "      \"default\": \"\"\n"
-      "    },\n"
-      "    { /* runArgs */\n"
-      "      \"id\": \"runArgs\",\n"
-      "      \"type\": \"promptString\",\n"
-      "      \"description\": \"Arguments to pass to the program\",\n"
-      "      \"default\": \"\"\n"
-      "    }\n"
-      "  ],\n"
-      "  \"tasks\": [\n"
-      "    { /* create workspace */\n"
-      "      \"label\": \"dh>create workspace\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"workspace\",\n"
-      "        \"${input:prompt:Enter workspace name:}\"\n"
-      "      ],\n"
-      "      \"problemMatcher\": []\n"
-      "    },\n"
-      "    { /* create project */\n"
-      "      \"label\": \"dh>create project\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"project\",\n"
-      "        \"${input:prompt:Enter project name:}\"\n"
-      "      ],\n"
-      "      \"problemMatcher\": []\n"
-      "    },\n"
-      "    { /* build current file */\n"
-      "      \"label\": \"dh>build current file\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"build\",\n"
-      "        \"${input:buildConfig}\",\n"
-      "        \"${file}\",\n"
-      "        \"--compiler=${input:compiler}\",\n"
-      "        \"--std=${input:cStandard}\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${fileDirname}\"\n"
-      "      },\n"
-      "      \"group\": \"build\",\n"
-      "      \"problemMatcher\": [\"$gcc\"]\n"
-      "    },\n"
-      "    { /* build project */\n"
-      "      \"label\": \"dh>build project\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"build\",\n"
-      "        \"${input:buildConfig}\",\n"
-      "        \"--compiler=${input:compiler}\",\n"
-      "        \"--std=${input:cStandard}\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${workspaceFolder}\"\n"
-      "      },\n"
-      "      \"group\": \"build\",\n"
-      "      \"problemMatcher\": [\"$gcc\"]\n"
-      "    },\n"
-      "    { /* test current file */\n"
-      "      \"label\": \"dh>test current file\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"test\",\n"
-      "        \"${file}\",\n"
-      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${fileDirname}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    },\n"
-      "    { /* test project */\n"
-      "      \"label\": \"dh>test project\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"test\",\n"
-      "        \"${input:buildConfig}\",\n"
-      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${workspaceFolder}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    },\n"
-      "    { /* run current file */\n"
-      "      \"label\": \"dh>run current file\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"run\",\n"
-      "        \"${input:buildConfig}\",\n"
-      "        \"${file}\",\n"
-      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${fileDirname}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    },\n"
-      "    { /* run project */\n"
-      "      \"label\": \"dh>run project\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"dh-c\",\n"
-      "      \"args\": [\n"
-      "        \"run\",\n"
-      "        \"${input:buildConfig}\",\n"
-      "        \"--args=\\\"${input:runArgs}\\\"\",\n"
-      "        \"${input:noLibDh}\"\n"
-      "      ],\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${workspaceFolder}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    },\n"
-      "    { /* execute current file - just runs existing executable */\n"
-      "      \"label\": \"dh>execute current file\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"${fileDirname}/build/${fileBasenameNoExtension}-${input:buildConfig}.exe\",\n"
-      "      \"args\": [\n"
-      "        \"${input:runArgs}\"\n"
-      "      ],\n"
-      "      \"windows\": {\n"
-      "        \"command\": \"${fileDirname}\\\\build\\\\${fileBasenameNoExtension}-${input:buildConfig}.exe\"\n"
-      "      },\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${fileDirname}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    },\n"
-      "    { /* execute project - just runs existing executable */\n"
-      "      \"label\": \"dh>execute project\",\n"
-      "      \"type\": \"shell\",\n"
-      "      \"command\": \"${workspaceFolder}/build/${workspaceFolderBasename}-${input:buildConfig}.exe\",\n"
-      "      \"args\": [\n"
-      "        \"${input:runArgs}\"\n"
-      "      ],\n"
-      "      \"windows\": {\n"
-      "        \"command\": \"${workspaceFolder}\\\\build\\\\${workspaceFolderBasename}-${input:buildConfig}.exe\"\n"
-      "      },\n"
-      "      \"options\": {\n"
-      "        \"cwd\": \"${workspaceFolder}\"\n"
-      "      },\n"
-      "      \"group\": \"test\"\n"
-      "    }\n"
-      "  ]\n"
-      "}\n";
+const char* DEFAULT_TASKS_JSON_TEMPLATE = "{\n"
+                                          "  \"version\": \"2.0.0\",\n"
+                                          "  \"inputs\": [\n"
+                                          "    { /* compiler */\n"
+                                          "      \"id\": \"compiler\",\n"
+                                          "      \"type\": \"pickString\",\n"
+                                          "      \"description\": \"Select compiler\",\n"
+                                          "      \"options\": [\n"
+                                          "        \"clang\"\n"
+                                          "      ],\n"
+                                          "      \"default\": \"clang\"\n"
+                                          "    },\n"
+                                          "    { /* cStandard */\n"
+                                          "      \"id\": \"cStandard\",\n"
+                                          "      \"type\": \"pickString\",\n"
+                                          "      \"description\": \"Select C standard\",\n"
+                                          "      \"options\": [\n"
+                                          "        \"c17\",\n"
+                                          "        \"c11\",\n"
+                                          "        \"c99\"\n"
+                                          "      ],\n"
+                                          "      \"default\": \"c17\"\n"
+                                          "    },\n"
+                                          "    { /* buildConfig */\n"
+                                          "      \"id\": \"buildConfig\",\n"
+                                          "      \"type\": \"pickString\",\n"
+                                          "      \"description\": \"Select build configuration\",\n"
+                                          "      \"options\": [\n"
+                                          "        \"dev\",\n"
+                                          "        \"test\",\n"
+                                          "        \"profile\",\n"
+                                          "        \"release\",\n"
+                                          "        \"optimize\",\n"
+                                          "        \"embedded\",\n"
+                                          "        \"micro\"\n"
+                                          "      ],\n"
+                                          "      \"default\": \"dev\"\n"
+                                          "    },\n"
+                                          "    { /* noLibDh */\n"
+                                          "      \"id\": \"noLibDh\",\n"
+                                          "      \"type\": \"pickString\",\n"
+                                          "      \"description\": \"Skip DH library usage?\",\n"
+                                          "      \"options\": [\n"
+                                          "        \"\",\n"
+                                          "        \"--no-libdh\"\n"
+                                          "      ],\n"
+                                          "      \"default\": \"\"\n"
+                                          "    },\n"
+                                          "    { /* runArgs */\n"
+                                          "      \"id\": \"runArgs\",\n"
+                                          "      \"type\": \"promptString\",\n"
+                                          "      \"description\": \"Arguments to pass to the program\",\n"
+                                          "      \"default\": \"\"\n"
+                                          "    }\n"
+                                          "  ],\n"
+                                          "  \"tasks\": [\n"
+                                          "    { /* create workspace */\n"
+                                          "      \"label\": \"dh>create workspace\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"workspace\",\n"
+                                          "        \"${input:prompt:Enter workspace name:}\"\n"
+                                          "      ],\n"
+                                          "      \"problemMatcher\": []\n"
+                                          "    },\n"
+                                          "    { /* create project */\n"
+                                          "      \"label\": \"dh>create project\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"project\",\n"
+                                          "        \"${input:prompt:Enter project name:}\"\n"
+                                          "      ],\n"
+                                          "      \"problemMatcher\": []\n"
+                                          "    },\n"
+                                          "    { /* build current file */\n"
+                                          "      \"label\": \"dh>build current file\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"build\",\n"
+                                          "        \"${input:buildConfig}\",\n"
+                                          "        \"${file}\",\n"
+                                          "        \"--compiler=${input:compiler}\",\n"
+                                          "        \"--std=${input:cStandard}\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${fileDirname}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"build\",\n"
+                                          "      \"problemMatcher\": [\"$gcc\"]\n"
+                                          "    },\n"
+                                          "    { /* build project */\n"
+                                          "      \"label\": \"dh>build project\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"build\",\n"
+                                          "        \"${input:buildConfig}\",\n"
+                                          "        \"--compiler=${input:compiler}\",\n"
+                                          "        \"--std=${input:cStandard}\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${workspaceFolder}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"build\",\n"
+                                          "      \"problemMatcher\": [\"$gcc\"]\n"
+                                          "    },\n"
+                                          "    { /* test current file */\n"
+                                          "      \"label\": \"dh>test current file\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"test\",\n"
+                                          "        \"${file}\",\n"
+                                          "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${fileDirname}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    },\n"
+                                          "    { /* test project */\n"
+                                          "      \"label\": \"dh>test project\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"test\",\n"
+                                          "        \"${input:buildConfig}\",\n"
+                                          "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${workspaceFolder}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    },\n"
+                                          "    { /* run current file */\n"
+                                          "      \"label\": \"dh>run current file\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"run\",\n"
+                                          "        \"${input:buildConfig}\",\n"
+                                          "        \"${file}\",\n"
+                                          "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${fileDirname}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    },\n"
+                                          "    { /* run project */\n"
+                                          "      \"label\": \"dh>run project\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"dh-c\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"run\",\n"
+                                          "        \"${input:buildConfig}\",\n"
+                                          "        \"--args=\\\"${input:runArgs}\\\"\",\n"
+                                          "        \"${input:noLibDh}\"\n"
+                                          "      ],\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${workspaceFolder}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    },\n"
+                                          "    { /* execute current file - just runs existing executable */\n"
+                                          "      \"label\": \"dh>execute current file\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"${fileDirname}/build/${fileBasenameNoExtension}-${input:buildConfig}.exe\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"${input:runArgs}\"\n"
+                                          "      ],\n"
+                                          "      \"windows\": {\n"
+                                          "        \"command\": \"${fileDirname}\\\\build\\\\${fileBasenameNoExtension}-${input:buildConfig}.exe\"\n"
+                                          "      },\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${fileDirname}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    },\n"
+                                          "    { /* execute project - just runs existing executable */\n"
+                                          "      \"label\": \"dh>execute project\",\n"
+                                          "      \"type\": \"shell\",\n"
+                                          "      \"command\": \"${workspaceFolder}/build/${workspaceFolderBasename}-${input:buildConfig}.exe\",\n"
+                                          "      \"args\": [\n"
+                                          "        \"${input:runArgs}\"\n"
+                                          "      ],\n"
+                                          "      \"windows\": {\n"
+                                          "        \"command\": \"${workspaceFolder}\\\\build\\\\${workspaceFolderBasename}-${input:buildConfig}.exe\"\n"
+                                          "      },\n"
+                                          "      \"options\": {\n"
+                                          "        \"cwd\": \"${workspaceFolder}\"\n"
+                                          "      },\n"
+                                          "      \"group\": \"test\"\n"
+                                          "    }\n"
+                                          "  ]\n"
+                                          "}\n";
 
 // Initialize global pointers to NULL
 char* CLANGD_TEMPLATE       = NULL;
@@ -1583,11 +1730,177 @@ void build_project(BuildConfig* config) {
     char** sources      = NULL;
     int    source_count = 0;
 
+    // For sample files, compile the associated library first
+    if (config->is_single_file && config->is_sample) {
+        // If sample library was detected, handle it
+        if (strlen(config->sample_library) > 0 && strlen(config->sample_library_path) > 0) {
+            // First, check if the library directory has its own lib.dh file
+            char library_lib_dh_path[1024] = {};
+            (void)snprintf(library_lib_dh_path, sizeof(library_lib_dh_path), "%s%slib.dh", config->sample_library_path, PATH_SEPARATOR);
+
+            if (file_exists(library_lib_dh_path)) {
+                // Save current lib_configs
+                LibraryConfigArray saved_lib_configs = config->lib_configs;
+                config->lib_configs.libraries = NULL;
+                config->lib_configs.count = 0;
+
+                // Parse the library's lib.dh
+                if (parse_lib_dh_file(config, library_lib_dh_path)) {
+                    // Compile dependencies from the library's lib.dh
+                    if (config->lib_configs.count > 0) {
+                        if (!compile_libraries(config)) {
+                            (void)fprintf(stderr, "Failed to compile dependencies for library: %s\n", config->sample_library);
+                            exit(1);
+                        }
+                    }
+                }
+
+                // Restore original lib_configs
+                free_library_configs(&config->lib_configs);
+                config->lib_configs = saved_lib_configs;
+            }
+
+            // Compile the library directory's src/ as a library
+            if (!compile_library_directory_as_library(config, config->sample_library_path, config->sample_library)) {
+                (void)fprintf(stderr, "Failed to compile library directory for sample: %s\n", config->sample_library);
+                exit(1);
+            }
+        }
+        // If explicit library was specified, compile it (from project's lib.dh)
+        if (strlen(config->explicit_library) > 0) {
+            if (!compile_library_for_sample(config, config->explicit_library)) {
+                (void)fprintf(stderr, "Failed to compile library: %s\n", config->explicit_library);
+                exit(1);
+            }
+        }
+    }
+
     // Compile libraries from lib.dh first if any exist
     if (config->lib_configs.count > 0) {
+        // Print dependency tree for project
+        printf("Compiling dependencies '%s':\n", config->project_name);
+        for (int i = 0; i < config->lib_configs.count; ++i) { printf("- %s\n", config->lib_configs.libraries[i].library_name); }
+
         if (!compile_libraries(config)) {
             (void)fprintf(stderr, "Failed to compile libraries\n");
             exit(1);
+        }
+
+        // After compiling libraries, bring them to project's lib/deps/
+        char project_lib_path[1024] = {};
+        (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+        char deps_path[1024] = {};
+        (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+        // Move existing lib/deps directory to cache if it exists
+        (void)move_directory_to_cache(deps_path, project_lib_path, "deps", config->verbose);
+
+        if (!dir_exists(deps_path)) {
+            if (!create_directory_recursive(deps_path)) {
+                (void)fprintf(stderr, "Could not create deps directory: %s\n", deps_path);
+                exit(1);
+            }
+        }
+
+        printf("Bring dependencies '%s':\n", config->project_name);
+
+        // Copy each library from its own lib/ and lib/deps/ to project's lib/deps/
+        for (int i = 0; i < config->lib_configs.count; ++i) {
+            const LibraryConfig* lib = &config->lib_configs.libraries[i];
+            char lib_dir_part[256] = {};
+            char lib_name_part[256] = {};
+            extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
+
+            // Source: library's own build/profile/ directory
+            char lib_build_path[1024] = {};
+            (void)snprintf(lib_build_path, sizeof(lib_build_path), "%s%sbuild", lib->library_path, PATH_SEPARATOR);
+
+            // Determine effective profile for this library
+            const char* effective_profile = lib->profile;
+            if (strcmp(lib->profile, "default") == 0) { effective_profile = config->build_config_name; }
+
+            char lib_profile_path[1024] = {};
+            (void)snprintf(lib_profile_path, sizeof(lib_profile_path), "%s%s%s", lib_build_path, PATH_SEPARATOR, effective_profile);
+
+            // Destination: project's lib/deps/dir_part/ (not including lib_name_part as a directory)
+            // Library binary goes to lib/deps/dir_part/lib_name_part.lib
+            char dest_dep_dir[1024] = {};
+            if (strlen(lib_dir_part) > 0) {
+                (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
+            } else {
+                (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s", deps_path);
+            }
+
+            // Copy library binary from build/profile/ to lib/deps/dir_part/lib_name_part.lib
+            char src_lib_file[1024] = {};
+            char dest_lib_file[1024] = {};
+#ifdef _WIN32
+            (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%s%s.lib", lib_profile_path, PATH_SEPARATOR, lib_name_part);
+            (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%s%s.lib", dest_dep_dir, PATH_SEPARATOR, lib_name_part);
+#else
+            (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%slib%s.a", lib_profile_path, PATH_SEPARATOR, lib_name_part);
+            (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%slib%s.a", dest_dep_dir, PATH_SEPARATOR, lib_name_part);
+#endif
+
+            if (file_exists(src_lib_file)) {
+                if (!dir_exists(dest_dep_dir)) {
+                    if (!create_directory_recursive(dest_dep_dir)) {
+                        (void)fprintf(stderr, "Failed to create destination directory: %s\n", dest_dep_dir);
+                        exit(1);
+                    }
+                }
+
+                FILE* src_fp = fopen(src_lib_file, "rb");
+                if (src_fp) {
+                    FILE* dest_fp = fopen(dest_lib_file, "wb");
+                    if (dest_fp) {
+                        char buffer[4096] = {};
+                        size_t bytes = 0;
+                        while ((bytes = fread(buffer, 1, sizeof(buffer), src_fp)) > 0) {
+                            if (fwrite(buffer, 1, bytes, dest_fp) != bytes) {
+                                (void)fprintf(stderr, "Failed to write to %s\n", dest_lib_file);
+                                (void)fclose(dest_fp);
+                                (void)fclose(src_fp);
+                                exit(1);
+                            }
+                        }
+                        (void)fclose(dest_fp);
+                    }
+                    (void)fclose(src_fp);
+                }
+            }
+
+            // Copy library's lib/deps/ (transitive dependencies) to project's lib/deps/
+            char lib_lib_path_for_deps[1024] = {};
+            (void)snprintf(lib_lib_path_for_deps, sizeof(lib_lib_path_for_deps), "%s%slib", lib->library_path, PATH_SEPARATOR);
+            char lib_deps_path[1024] = {};
+            (void)snprintf(lib_deps_path, sizeof(lib_deps_path), "%s%sdeps", lib_lib_path_for_deps, PATH_SEPARATOR);
+
+            // Print what's being copied
+            char dest_path_str[1024] = {};
+            if (strlen(lib_dir_part) > 0) {
+                (void)snprintf(
+                    dest_path_str, sizeof(dest_path_str), "%s%slib%sdeps%s%s%s%s", config->project_name, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR,
+                    lib_dir_part, PATH_SEPARATOR, lib_name_part
+                );
+            } else {
+                (void)snprintf(
+                    dest_path_str, sizeof(dest_path_str), "%s%slib%sdeps%s%s", config->project_name, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR,
+                    lib_name_part
+                );
+            }
+            printf("- '%s' <- '%s'\n", dest_path_str, lib->library_name);
+
+            if (dir_exists(lib_deps_path)) {
+                // Copy entire deps directory recursively (transitive dependencies)
+                (void)copy_directory_recursive(lib_deps_path, dest_dep_dir, false);
+            }
+
+            // Copy library includes to project's lib/deps/
+            if (!copy_library_includes(lib->library_path, project_lib_path, lib->library_name, false)) {
+                (void)fprintf(stderr, "Failed to copy includes for library: %s\n", lib->library_name);
+                exit(1);
+            }
         }
     }
 
@@ -1731,17 +2044,23 @@ void build_project(BuildConfig* config) {
         strcat(command, sources[i]);
     }
 
+    // Output goes to build/profile/ directory
+    char profile_output_dir[1024] = {};
+    (void)snprintf(profile_output_dir, sizeof(profile_output_dir), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->build_config_name);
+
+    if (!dir_exists(profile_output_dir)) {
+        if (!create_directory_recursive(profile_output_dir)) {
+            (void)fprintf(stderr, "Could not create profile output directory: %s\n", profile_output_dir);
+            exit(1);
+        }
+    }
+
     // Add output file
     char output_file[1024] = {};
-    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
+    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", profile_output_dir, PATH_SEPARATOR, config->project_name);
 
-    // Add build config name or test suffix to output file if enabled
-    if (config->is_test) {
-        strcat(output_file, "-TEST");
-    } else if (config->use_output_suffix) {
-        strcat(output_file, "-");
-        strcat(output_file, config->build_config_name);
-    }
+    // Add test suffix to output file if enabled (profile is already in the path)
+    if (config->is_test) { strcat(output_file, "-TEST"); }
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
@@ -1755,6 +2074,35 @@ void build_project(BuildConfig* config) {
         strcat(command, " \"");
         strcat(command, blocks_lib_path);
         strcat(command, "\"");
+    }
+
+    // For sample files, add library linking
+    if (config->is_single_file && config->is_sample) {
+        // Link the library directory itself (compiled from src/)
+        if (strlen(config->sample_library) > 0) {
+            char project_lib_path[1024] = {};
+            (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+            char deps_path[1024] = {};
+            (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+            // Add library search path
+            if (config->linked_libraries[0] != '\0') { strcat(config->linked_libraries, " "); }
+            strcat(config->linked_libraries, "-L");
+            strcat(config->linked_libraries, deps_path);
+
+            // Add the library file itself
+            char lib_file[1024] = {};
+#ifdef _WIN32
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, config->sample_library);
+#else
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, config->sample_library);
+#endif
+            strcat(config->linked_libraries, " \"");
+            strcat(config->linked_libraries, lib_file);
+            strcat(config->linked_libraries, "\"");
+        }
+        // Link explicit library (from project's lib.dh)
+        if (strlen(config->explicit_library) > 0) { add_library_linking_for_sample(config, config->explicit_library); }
     }
 
     // Add library linking flags from lib.dh first (this also includes linked_libraries from link.dhc)
@@ -1793,18 +2141,224 @@ void build_project(BuildConfig* config) {
     free_string_array(sources, source_count);
 }
 
+// Build the project as a library
+void build_project_as_library(BuildConfig* config) {
+    char** includes = NULL;
+    int include_count = 0;
+
+    char** sources = NULL;
+    int source_count = 0;
+
+    // Compile libraries from lib.dh first if any exist
+    if (config->lib_configs.count > 0) {
+        if (!compile_libraries(config)) {
+            (void)fprintf(stderr, "Failed to compile libraries\n");
+            exit(1);
+        }
+    }
+
+    // Collect include paths and source files (only from src/, not libs/)
+    collect_include_paths(config, &includes, &include_count);
+
+    // Only collect source files from src/ directory, not from libs/
+    char src_path[1024] = {};
+    (void)snprintf(src_path, sizeof(src_path), "%s%ssrc", config->project_root, PATH_SEPARATOR);
+
+    if (dir_exists(src_path)) { find_source_files(src_path, &sources, &source_count); }
+
+    if (source_count == 0) {
+        (void)fprintf(stderr, "Error: No source files found in src/ directory\n");
+        exit(1);
+    }
+
+    // Create build/profile directory
+    char build_output_dir[1024] = {};
+    (void)snprintf(build_output_dir, sizeof(build_output_dir), "%s%sbuild", config->project_root, PATH_SEPARATOR);
+
+    char profile_output_dir[1024] = {};
+    (void)snprintf(profile_output_dir, sizeof(profile_output_dir), "%s%s%s", build_output_dir, PATH_SEPARATOR, config->build_config_name);
+
+    // Move existing build/profile directory to cache if it exists
+    (void)move_directory_to_cache(profile_output_dir, build_output_dir, config->build_config_name, config->verbose);
+
+    if (!dir_exists(profile_output_dir)) {
+        if (!create_directory_recursive(profile_output_dir)) {
+            (void)fprintf(stderr, "Error: Could not create build directory\n");
+            exit(1);
+        }
+    }
+
+    // Prepare base compilation command
+    char base_command[8192] = {};
+    strcat(base_command, config->compiler);
+    strcat(base_command, " -std=");
+    strcat(base_command, config->c_standard);
+
+    // Add include paths
+    for (int i = 0; i < include_count; ++i) {
+        strcat(base_command, " -I");
+        strcat(base_command, includes[i]);
+    }
+
+    // Add compile flags
+    strcat(base_command, " -DCOMP");
+    if (config->is_test) { strcat(base_command, " -DCOMP_TEST"); }
+
+    // Only add -funsigned-char -fblocks if not using --no-libdh
+    if (!config->no_libdh) { strcat(base_command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC"); }
+
+    // Add debug level flag
+    const char* debug_flag = debug_level_to_flag(config->debug_level);
+    if (strlen(debug_flag) > 0) {
+        strcat(base_command, " ");
+        strcat(base_command, debug_flag);
+    }
+
+    // Add optimization level flag
+    const char* opt_flag = optimization_level_to_flag(config->optimization_level);
+    if (strlen(opt_flag) > 0) {
+        strcat(base_command, " ");
+        strcat(base_command, opt_flag);
+    }
+
+    // Add NDEBUG if assertions are disabled
+    if (!config->assertions_enabled) { strcat(base_command, " -DNDEBUG"); }
+
+    // Add extra flags
+    for (int i = 0; i < config->extra_flags.count; ++i) {
+        strcat(base_command, " ");
+        strcat(base_command, config->extra_flags.flags[i]);
+    }
+
+    // Add compiler arguments
+    if (config->compiler_args[0] != '\0') {
+        strcat(base_command, " ");
+        strcat(base_command, config->compiler_args);
+    }
+
+    // Create object files directory
+    char obj_dir[1024] = {};
+    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj", profile_output_dir, PATH_SEPARATOR);
+
+    if (!dir_exists(obj_dir)) {
+        if (!create_directory(obj_dir)) {
+            (void)fprintf(stderr, "Error: Could not create object directory\n");
+            exit(1);
+        }
+    }
+
+    // Compile each source file to object file
+    char obj_files[16384] = {}; // Buffer for object file paths
+    for (int i = 0; i < source_count; ++i) {
+        char obj_file[1024] = {};
+        char* filename = strrchr(sources[i], PATH_SEPARATOR[0]);
+        if (!filename) {
+            filename = sources[i];
+        } else {
+            filename++; // Skip separator
+        }
+
+        char basename[256] = {};
+        strncpy(basename, filename, sizeof(basename) - 1);
+        basename[sizeof(basename) - 1] = '\0';
+        char* dot = strrchr(basename, '.');
+        if (dot) { *dot = '\0'; }
+
+        (void)snprintf(obj_file, sizeof(obj_file), "%s%s%s.o", obj_dir, PATH_SEPARATOR, basename);
+
+        char compile_cmd[4096] = {};
+        (void)snprintf(compile_cmd, sizeof(compile_cmd), "%s -c %s -o %s", base_command, sources[i], obj_file);
+
+        if (config->show_commands) { printf("Command: %s\n", compile_cmd); }
+
+        // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+        if (system(compile_cmd) != 0) {
+            (void)fprintf(stderr, "Failed to compile %s\n", sources[i]);
+            free_string_array(includes, include_count);
+            free_string_array(sources, source_count);
+            exit(1);
+        }
+
+        // Add object file to list
+        if (strlen(obj_files) > 0) { strcat(obj_files, " "); }
+        strcat(obj_files, obj_file);
+    }
+
+    // Create library file
+    char lib_file[1024] = {};
+    if (strcmp(config->library_type, "static") == 0) {
+#ifdef _WIN32
+        (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", profile_output_dir, PATH_SEPARATOR, config->project_name);
+#else
+        (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", profile_output_dir, PATH_SEPARATOR, config->project_name);
+#endif
+    } else {
+#ifdef _WIN32
+        (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.dll", profile_output_dir, PATH_SEPARATOR, config->project_name);
+#else
+        (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.so", profile_output_dir, PATH_SEPARATOR, config->project_name);
+#endif
+    }
+
+    if (strcmp(config->library_type, "static") == 0) {
+        // Create static library using ar
+        char ar_cmd[8192] = {};
+        (void)snprintf(ar_cmd, sizeof(ar_cmd), "ar rcs %s %s", lib_file, obj_files);
+
+        if (config->show_commands) { printf("Command: %s\n", ar_cmd); }
+
+        printf("Building static library %s with config '%s'...\n", config->project_name, config->build_config_name);
+
+        // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+        if (system(ar_cmd) != 0) {
+            (void)fprintf(stderr, "Failed to create static library\n");
+            free_string_array(includes, include_count);
+            free_string_array(sources, source_count);
+            exit(1);
+        }
+    } else {
+        // Create dynamic library
+        char link_cmd[8192] = {};
+        (void)snprintf(link_cmd, sizeof(link_cmd), "%s -shared -o %s %s", base_command, lib_file, obj_files);
+
+        // Add library linking flags from lib.dh
+        add_lib_dh_libraries(config);
+        if (config->linked_libraries[0] != '\0') {
+            strcat(link_cmd, " ");
+            strcat(link_cmd, config->linked_libraries);
+        }
+
+        if (config->show_commands) { printf("Command: %s\n", link_cmd); }
+
+        printf("Building dynamic library %s with config '%s'...\n", config->project_name, config->build_config_name);
+
+        // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+        if (system(link_cmd) != 0) {
+            (void)fprintf(stderr, "Failed to create dynamic library\n");
+            free_string_array(includes, include_count);
+            free_string_array(sources, source_count);
+            exit(1);
+        }
+    }
+
+    printf("Library built successfully: %s\n", lib_file);
+
+    // Clean up
+    free_string_array(includes, include_count);
+    free_string_array(sources, source_count);
+}
+
 // Run the compiled executable
 void run_executable(BuildConfig* config) {
-    char output_file[1024] = {};
-    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->project_name);
+    // Executable is in build/profile/ directory
+    char profile_output_dir[1024] = {};
+    (void)snprintf(profile_output_dir, sizeof(profile_output_dir), "%s%s%s", config->output_dir, PATH_SEPARATOR, config->build_config_name);
 
-    // Add appropriate suffix based on build type
-    if (config->is_test) {
-        strcat(output_file, "-TEST");
-    } else if (config->use_output_suffix) {
-        strcat(output_file, "-");
-        strcat(output_file, config->build_config_name);
-    }
+    char output_file[1024] = {};
+    (void)snprintf(output_file, sizeof(output_file), "%s%s%s", profile_output_dir, PATH_SEPARATOR, config->project_name);
+
+    // Add test suffix if enabled (profile is already in the path)
+    if (config->is_test) { strcat(output_file, "-TEST"); }
 
 #ifdef _WIN32
     strcat(output_file, ".exe");
@@ -1903,8 +2457,7 @@ void create_project_clangd(const char* project_path, const char* dh_path) {
     char project_clangd[4096] = {};
 
     result = snprintf(
-        project_clangd,
-        sizeof(project_clangd),
+        project_clangd, sizeof(project_clangd),
         "CompileFlags:\n"
         "  Compiler: clang\n"
         "  CompilationDatabase: %s\n"
@@ -1925,7 +2478,7 @@ void create_project_clangd(const char* project_path, const char* dh_path) {
         "  ClangTidy:\n"
         "    Add: \n"
         "      - modernize*\n"
-        "      - performance*\n"
+        "      - optimize*\n"
         "      - readability*\n"
         "      - bugprone*\n"
         "      - portability*\n"
@@ -1953,11 +2506,7 @@ void create_project_clangd(const char* project_path, const char* dh_path) {
         "    - -Wno-unused-function\n"
         "    - -Wno-unused-variable\n"
         "    - -Wno-unused-const-variable\n",
-        project_path,
-        abs_include_path,
-        abs_src_path,
-        dh_include_path,
-        blocks_include_path
+        project_path, abs_include_path, abs_src_path, dh_include_path, blocks_include_path
     );
 
     if (result < 0 || (size_t)result >= sizeof(project_clangd)) {
@@ -2088,8 +2637,7 @@ void create_workspace(const char* name, const char* dh_path) {
     char custom_clangd_content[4096] = {};
 
     (void)snprintf(
-        custom_clangd_content,
-        sizeof(custom_clangd_content),
+        custom_clangd_content, sizeof(custom_clangd_content),
         "CompileFlags:\n"
         "  Compiler: clang\n"
         "  Add: \n"
@@ -2107,7 +2655,7 @@ void create_workspace(const char* name, const char* dh_path) {
         "  ClangTidy:\n"
         "    Add: \n"
         "      - modernize*\n"
-        "      - performance*\n"
+        "      - optimize*\n"
         "      - readability*\n"
         "      - bugprone*\n"
         "      - portability*\n"
@@ -2135,8 +2683,7 @@ void create_workspace(const char* name, const char* dh_path) {
         "    - -Wno-unused-function\n"
         "    - -Wno-unused-variable\n"
         "    - -Wno-unused-const-variable\n",
-        dh_include_path,
-        blocks_include_path
+        dh_include_path, blocks_include_path
     );
 
     write_file(clangd_path, custom_clangd_content);
@@ -2172,24 +2719,31 @@ void create_workspace(const char* name, const char* dh_path) {
 
 // Update print_usage function to include --show-commands
 void print_usage() {
-    printf("Usage: dh-c [command] [options]\n\n");
+    printf("Usage: dh-c [command] [options]\n");
+    printf("\n");
     printf("Commands:\n");
     printf("  --help, -h           - Display this help message\n");
     printf("  --version, -v        - Display version information\n");
     printf("  build                - Build the project or file\n");
+    printf("  build-lib            - Build the project as a library (static or dynamic)\n");
+    printf("  lib                  - Compile libraries specified in lib.dh file\n");
     printf("  test                 - Build and run tests\n");
     printf("  run                  - Build and run the project or file\n");
-    printf("  lib                  - Compile libraries specified in lib.dh file\n");
+    printf("  clean                - Clean build and lib/deps directories\n");
+    printf("  clean-build          - Clean build directories only\n");
+    printf("  clean-lib            - Clean lib/deps directories only\n");
     printf("  workspace <.|name>   - Create workspace with config files (.clangd, .clang-format, .vscode)\n");
-    printf("  project <.|name>     - Create a new project with DH-C structure\n\n");
+    printf("  project <.|name>     - Create a new project with DH-C structure\n");
+    printf("\n");
     printf("Build configurations:\n");
     printf("  dev         - Extended debug info, no optimization, assertions enabled\n");
     printf("  test        - Standard debug info, basic optimization, assertions enabled\n");
     printf("  profile     - Standard debug info, balanced optimization, assertions enabled\n");
     printf("  release     - Minimal debug info, balanced optimization, assertions disabled\n");
-    printf("  performance - No debug info, aggressive optimization, assertions disabled\n");
+    printf("  optimize    - No debug info, aggressive optimization, assertions disabled\n");
     printf("  embedded    - No debug info, size optimization, assertions disabled\n");
-    printf("  micro       - No debug info, extreme size optimization, assertions disabled\n\n");
+    printf("  micro       - No debug info, extreme size optimization, assertions disabled\n");
+    printf("\n");
     printf("Options:\n");
     printf("  --compiler=<clang|gcc>  - Specify compiler (default: clang)\n");
     printf("  --std=<c99|c11|c17>     - Specify C standard (default: c17)\n");
@@ -2197,16 +2751,33 @@ void print_usage() {
     printf("  --dh=<path>             - Path to DH library (auto-detected by default)\n");
     printf("  --no-libdh              - Skip DH library\n");
     printf("  --show-commands         - Show commands being executed\n");
-    printf("  --use-output-suffix     - Enable output suffix for build configurations\n\n");
+    printf("  --sample                - Build a sample file (auto-detects library context)\n");
+    printf("  --lib=<name>            - Explicitly link a specific library with single file builds\n");
+    printf("  --static                - Build as static library (for build-lib, default)\n");
+    printf("  --dynamic               - Build as dynamic library (for build-lib)\n");
+    printf("  --cache                 - Clean only .cache directories (for clean, clean-build, clean-lib)\n");
+    printf("  --recur                 - Recursively clean dependencies (for clean, clean-build, clean-lib)\n");
+    printf("\n");
     printf("Environment Variables:\n");
-    printf("  DH_HOME               - Path to DH library installation\n\n");
+    printf("  DH_HOME               - Path to DH library installation\n");
+    printf("\n");
     printf("Examples:\n");
     printf("  dh-c --help                      - Display help information\n");
     printf("  dh-c --version                   - Show version information\n");
     printf("  dh-c build dev                   - Build project in dev mode\n");
+    printf("  dh-c build-lib release           - Build project as static library in release mode\n");
+    printf("  dh-c build-lib dev --dynamic     - Build project as dynamic library in dev mode\n");
     printf("  dh-c test sample.c               - Build and run tests for single file\n");
     printf("  dh-c run release sample.c        - Build and run single file in release mode\n");
+    printf("  dh-c build --sample sample.c     - Build sample file (auto-detects library)\n");
+    printf("  dh-c build sample.c --lib=engine - Build single file with explicit library\n");
     printf("  dh-c lib --verbose               - Compile libraries from lib.dh with verbose output\n");
+    printf("  dh-c clean                       - Clean build and lib/deps directories\n");
+    printf("  dh-c clean-build                 - Clean build directories only\n");
+    printf("  dh-c clean-lib                   - Clean lib/deps directories only\n");
+    printf("  dh-c clean --cache               - Clean only .cache directories\n");
+    printf("  dh-c clean --recur               - Recursively clean dependencies\n");
+    printf("  dh-c clean dev --cache --recur   - Clean with profile and flags\n");
     printf("  dh-c workspace .                 - Create new workspace from current directory\n");
     printf("  dh-c project myproject           - Create new project named 'myproject'\n");
     printf("  dh-c build embedded --no-libdh   - Build non-DH-C project with size optimization\n");
@@ -2264,13 +2835,6 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    // Check for --use-output-suffix option
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--use-output-suffix") == 0) {
-            config.use_output_suffix = true;
-            break;
-        }
-    }
 
     // Try to find DH path early for workspace and project commands
     if (!find_dh_path(&config)) {
@@ -2339,12 +2903,17 @@ int main(int argc, const char* argv[]) {
     // Process the command first
     if (strcmp(argv[1], "build") == 0) { // NOLINT(bugprone-branch-clone)
         // Just build
+    } else if (strcmp(argv[1], "build-lib") == 0) {
+        // Build as library
+        config.build_as_library = true;
     } else if (strcmp(argv[1], "test") == 0) {
         // Apply test preset and run tests
         apply_build_preset(&config, "test");
         config.is_test = true;
     } else if (strcmp(argv[1], "run") == 0) {
         // Build and run the program
+    } else if (strcmp(argv[1], "clean") == 0 || strcmp(argv[1], "clean-build") == 0 || strcmp(argv[1], "clean-lib") == 0) {
+        // Handle clean commands - will be processed after flag parsing
     } else if (!is_c_source_file(argv[1]) || !file_exists(argv[1])) {
         (void)fprintf(stderr, "Unknown command: %s\n", argv[1]);
         print_usage();
@@ -2398,12 +2967,52 @@ int main(int argc, const char* argv[]) {
         } else if (strcmp(argv[i], "--no-libdh") == 0) {
             // Skip DH library
             config.no_libdh = true;
+        } else if (strncmp(argv[i], "--lib=", 6) == 0) {
+            // Explicitly specify library to link
+            strcpy(config.explicit_library, argv[i] + 6);
+        } else if (strcmp(argv[i], "--static") == 0) {
+            // Build as static library
+            strcpy(config.library_type, "static");
+        } else if (strcmp(argv[i], "--dynamic") == 0) {
+            // Build as dynamic library
+            strcpy(config.library_type, "dynamic");
+        } else if (strcmp(argv[i], "--cache") == 0) {
+            // Clean only .cache directories
+            config.clean_cache_only = true;
+        } else if (strcmp(argv[i], "--recur") == 0) {
+            // Recursively clean dependencies
+            config.clean_recur = true;
         }
+    }
+
+    // Handle clean commands (before detecting project structure to avoid duplicate detection)
+    if (strcmp(argv[1], "clean") == 0 || strcmp(argv[1], "clean-build") == 0 || strcmp(argv[1], "clean-lib") == 0) {
+        // Detect project structure for clean commands (only if not already detected)
+        if (!config.is_single_file && strlen(config.project_root) == 0) { detect_project_structure(&config); }
+
+        bool clean_build = (strcmp(argv[1], "clean") == 0 || strcmp(argv[1], "clean-build") == 0);
+        bool clean_lib = (strcmp(argv[1], "clean") == 0 || strcmp(argv[1], "clean-lib") == 0);
+
+        if (clean_build || clean_lib) {
+            clean_project(&config, clean_build, clean_lib);
+            printf("Clean completed successfully!\n");
+        }
+
+        // Clean up
+        free_library_configs(&config.lib_configs);
+        cleanup_build_presets();
+        cleanup_templates();
+        return 0;
     }
 
     // If not single file, detect project structure
     if (!config.is_single_file) {
         detect_project_structure(&config);
+    } else if (config.is_single_file && strlen(config.project_root) > 0) {
+        // For single files, ensure lib.dh is parsed if project root was found
+        char lib_dh_path[1024] = {};
+        (void)snprintf(lib_dh_path, sizeof(lib_dh_path), "%s%slib.dh", config.project_root, PATH_SEPARATOR);
+        if (file_exists(lib_dh_path) && config.lib_configs.count == 0) { parse_lib_dh_file(&config, lib_dh_path); }
     }
 
     // Try to find DH if not specified
@@ -2411,8 +3020,12 @@ int main(int argc, const char* argv[]) {
         find_dh_path(&config);
     }
 
-    // Build the project
-    build_project(&config);
+    // Build the project or library
+    if (config.build_as_library) {
+        build_project_as_library(&config);
+    } else {
+        build_project(&config);
+    }
 
     // Run tests or executable if requested
     if (strcmp(argv[1], "test") == 0 || strcmp(argv[1], "run") == 0) {
@@ -2565,14 +3178,14 @@ void init_build_presets() {
     release->extra_flags.flags[2] = strdup("-Werror");
     release->extra_flags.flags[3] = strdup("-flto");
 
-    // performance preset extra flags (warnings ARE errors) + LTO
-    BuildConfigPreset* performance    = &build_presets[4];
-    performance->extra_flags.count    = 4;
-    performance->extra_flags.flags    = malloc(performance->extra_flags.count * sizeof(char*));
-    performance->extra_flags.flags[0] = strdup("-Wall");
-    performance->extra_flags.flags[1] = strdup("-Wextra");
-    performance->extra_flags.flags[2] = strdup("-Werror");
-    performance->extra_flags.flags[3] = strdup("-flto");
+    // optimize preset extra flags (warnings ARE errors) + LTO
+    BuildConfigPreset* optimize = &build_presets[4];
+    optimize->extra_flags.count = 4;
+    optimize->extra_flags.flags = malloc(optimize->extra_flags.count * sizeof(char*));
+    optimize->extra_flags.flags[0] = strdup("-Wall");
+    optimize->extra_flags.flags[1] = strdup("-Wextra");
+    optimize->extra_flags.flags[2] = strdup("-Werror");
+    optimize->extra_flags.flags[3] = strdup("-flto");
 
     // embedded preset extra flags (warnings ARE errors) + LTO
     BuildConfigPreset* embedded    = &build_presets[5];
@@ -2836,7 +3449,35 @@ bool parse_lib_dh_file(BuildConfig* config, const char* lib_dh_path) {
                 if (strcmp(key, "linking") == 0) {
                     strncpy(current_lib.linking_type, value, sizeof(current_lib.linking_type) - 1);
                 } else if (strcmp(key, "path") == 0) {
-                    strncpy(current_lib.library_path, value, sizeof(current_lib.library_path) - 1);
+                    // Resolve path relative to lib.dh file's directory
+                    char lib_dh_dir[1024] = {};
+                    strncpy(lib_dh_dir, lib_dh_path, sizeof(lib_dh_dir) - 1);
+                    lib_dh_dir[sizeof(lib_dh_dir) - 1] = '\0';
+
+                    // Get directory containing lib.dh file
+                    char* last_sep = strrchr(lib_dh_dir, PATH_SEPARATOR[0]);
+                    if (last_sep) {
+                        *last_sep = '\0';
+                    } else {
+                        // If no separator, lib.dh is in current directory
+                        strcpy(lib_dh_dir, ".");
+                    }
+
+                    // Construct full path: lib_dh_dir + PATH_SEPARATOR + value
+                    char resolved_path[1024] = {};
+                    if (strlen(lib_dh_dir) > 0) {
+                        (void)snprintf(resolved_path, sizeof(resolved_path), "%s%s%s", lib_dh_dir, PATH_SEPARATOR, value);
+                    } else {
+                        strncpy(resolved_path, value, sizeof(resolved_path) - 1);
+                    }
+                    resolved_path[sizeof(resolved_path) - 1] = '\0';
+
+                    // Convert to absolute path
+                    if (!get_absolute_path(resolved_path, current_lib.library_path, sizeof(current_lib.library_path))) {
+                        // Fallback: use resolved path as-is if get_absolute_path fails
+                        strncpy(current_lib.library_path, resolved_path, sizeof(current_lib.library_path) - 1);
+                        current_lib.library_path[sizeof(current_lib.library_path) - 1] = '\0';
+                    }
                 } else if (strcmp(key, "profile") == 0) {
                     strncpy(current_lib.profile, value, sizeof(current_lib.profile) - 1);
                 } else if (strcmp(key, "no-libdh") == 0) {
@@ -2941,6 +3582,323 @@ bool copy_directory_recursive(const char* src, const char* dest, bool verbose) {
     return true;
 }
 
+// Get current timestamp as a string (format: YYYYMMDDHHMMSS)
+static void get_timestamp_string(char* buffer, size_t buffer_size) {
+    time_t now = time(NULL);
+    struct tm* timeinfo = localtime(&now);
+    (void)snprintf(
+        buffer, buffer_size, "%04d%02d%02d%02d%02d%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min,
+        timeinfo->tm_sec
+    );
+}
+
+// Move an existing directory to cache location
+// Returns true if moved successfully or if directory didn't exist, false on error
+bool move_directory_to_cache(const char* src_dir, const char* cache_base, const char* cache_subdir, bool verbose) {
+    if (!dir_exists(src_dir)) {
+        return true; // Directory doesn't exist, nothing to move
+    }
+
+    // Create cache base directory if it doesn't exist
+    if (!dir_exists(cache_base)) {
+        if (!create_directory_recursive(cache_base)) {
+            (void)fprintf(stderr, "Warning: Could not create cache directory: %s\n", cache_base);
+            return false;
+        }
+    }
+
+    // Get timestamp
+    char timestamp[32] = {};
+    get_timestamp_string(timestamp, sizeof(timestamp));
+
+    // Create cache subdirectory path: cache_base/.cache/timestamp/cache_subdir
+    char cache_dir[1024] = {};
+    (void)snprintf(cache_dir, sizeof(cache_dir), "%s%s.cache%s%s%s%s", cache_base, PATH_SEPARATOR, PATH_SEPARATOR, timestamp, PATH_SEPARATOR, cache_subdir);
+
+    // Create parent directories for cache location
+    char cache_parent[1024] = {};
+    (void)snprintf(cache_parent, sizeof(cache_parent), "%s%s.cache%s%s", cache_base, PATH_SEPARATOR, PATH_SEPARATOR, timestamp);
+    if (!dir_exists(cache_parent)) {
+        if (!create_directory_recursive(cache_parent)) {
+            (void)fprintf(stderr, "Warning: Could not create cache timestamp directory: %s\n", cache_parent);
+            return false;
+        }
+    }
+
+    // Copy directory to cache location
+    if (!copy_directory_recursive(src_dir, cache_dir, false)) {
+        (void)fprintf(stderr, "Warning: Could not copy directory to cache: %s -> %s\n", src_dir, cache_dir);
+        return false;
+    }
+
+    if (verbose) { printf("Moved existing directory to cache: %s -> %s\n", src_dir, cache_dir); }
+
+    // Remove original directory
+    // On Windows, we need to use a different approach
+#ifdef _WIN32
+    // Use system command to remove directory recursively
+    char rm_cmd[2048] = {};
+    (void)snprintf(rm_cmd, sizeof(rm_cmd), "rmdir /s /q \"%s\"", src_dir);
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(rm_cmd) != 0) {
+        (void)fprintf(stderr, "Warning: Could not remove original directory: %s\n", src_dir);
+        return false;
+    }
+#else
+    // Use system command to remove directory recursively
+    char rm_cmd[2048] = {};
+    (void)snprintf(rm_cmd, sizeof(rm_cmd), "rm -rf \"%s\"", src_dir);
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(rm_cmd) != 0) {
+        (void)fprintf(stderr, "Warning: Could not remove original directory: %s\n", src_dir);
+        return false;
+    }
+#endif
+
+    return true;
+}
+
+// Recursively remove a directory
+static bool remove_directory_recursive(const char* dir_path) {
+    if (!dir_exists(dir_path)) {
+        return true; // Directory doesn't exist, nothing to remove
+    }
+
+#ifdef _WIN32
+    char rm_cmd[2048] = {};
+    (void)snprintf(rm_cmd, sizeof(rm_cmd), "rmdir /s /q \"%s\"", dir_path);
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    return system(rm_cmd) == 0;
+#else
+    char rm_cmd[2048] = {};
+    (void)snprintf(rm_cmd, sizeof(rm_cmd), "rm -rf \"%s\"", dir_path);
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    return system(rm_cmd) == 0;
+#endif
+}
+
+// Clean .cache directories in a given base directory
+static void clean_cache_directories(const char* base_dir, bool verbose) {
+    char cache_dir[1024] = {};
+    (void)snprintf(cache_dir, sizeof(cache_dir), "%s%s.cache", base_dir, PATH_SEPARATOR);
+
+    if (dir_exists(cache_dir)) {
+        if (verbose) { printf("Cleaning cache directory: %s\n", cache_dir); }
+        if (remove_directory_recursive(cache_dir)) {
+            if (verbose) { printf("Removed cache directory: %s\n", cache_dir); }
+        } else {
+            (void)fprintf(stderr, "Warning: Failed to remove cache directory: %s\n", cache_dir);
+        }
+    }
+}
+
+// Clean a single library's build and deps directories
+static void clean_single_library(BuildConfig* config, const LibraryConfig* lib_config, bool clean_build, bool clean_lib) {
+    if (config->verbose) { printf("Cleaning library: %s\n", lib_config->library_name); }
+
+    if (clean_build) {
+        char library_build_path[1024] = {};
+        (void)snprintf(library_build_path, sizeof(library_build_path), "%s%sbuild", lib_config->library_path, PATH_SEPARATOR);
+
+        // Determine effective profile
+        const char* lib_effective_profile = lib_config->profile;
+        if (strcmp(lib_config->profile, "default") == 0) { lib_effective_profile = config->build_config_name; }
+
+        char library_profile_path[1024] = {};
+        (void)snprintf(library_profile_path, sizeof(library_profile_path), "%s%s%s", library_build_path, PATH_SEPARATOR, lib_effective_profile);
+
+        if (!config->clean_cache_only) {
+            // Move to cache first
+            (void)move_directory_to_cache(library_profile_path, library_build_path, lib_effective_profile, config->verbose);
+        }
+
+        // Clean cache
+        clean_cache_directories(library_build_path, config->verbose);
+
+        // Remove empty build directory if it exists and is empty
+        if (dir_exists(library_build_path)) {
+            DIR* dir = opendir(library_build_path);
+            if (dir) {
+                bool is_empty = true;
+                struct dirent* entry = NULL;
+                while ((entry = readdir(dir)) != NULL) {
+                    if (entry->d_name[0] != '.') {
+                        is_empty = false;
+                        break;
+                    }
+                }
+                closedir(dir);
+
+                if (is_empty) {
+                    if (remove_directory_recursive(library_build_path)) {
+                        if (config->verbose) { printf("Removed empty build directory: %s\n", library_build_path); }
+                    }
+                }
+            }
+        }
+    }
+
+    if (clean_lib) {
+        char library_lib_path[1024] = {};
+        (void)snprintf(library_lib_path, sizeof(library_lib_path), "%s%slib", lib_config->library_path, PATH_SEPARATOR);
+        char library_deps_path[1024] = {};
+        (void)snprintf(library_deps_path, sizeof(library_deps_path), "%s%sdeps", library_lib_path, PATH_SEPARATOR);
+
+        if (!config->clean_cache_only) {
+            // Move to cache first
+            (void)move_directory_to_cache(library_deps_path, library_lib_path, "deps", config->verbose);
+        }
+
+        // Clean cache
+        clean_cache_directories(library_lib_path, config->verbose);
+
+        // Remove empty lib directory if it exists and is empty
+        if (dir_exists(library_lib_path)) {
+            DIR* dir = opendir(library_lib_path);
+            if (dir) {
+                bool is_empty = true;
+                struct dirent* entry = NULL;
+                while ((entry = readdir(dir)) != NULL) {
+                    if (entry->d_name[0] != '.') {
+                        is_empty = false;
+                        break;
+                    }
+                }
+                closedir(dir);
+
+                if (is_empty) {
+                    if (remove_directory_recursive(library_lib_path)) {
+                        if (config->verbose) { printf("Removed empty lib directory: %s\n", library_lib_path); }
+                    }
+                }
+            }
+        }
+    }
+
+    // Recursively clean dependencies if requested
+    if (config->clean_recur) {
+        char library_lib_dh_path[1024] = {};
+        (void)snprintf(library_lib_dh_path, sizeof(library_lib_dh_path), "%s%slib.dh", lib_config->library_path, PATH_SEPARATOR);
+
+        if (file_exists(library_lib_dh_path)) {
+            // Save current lib_configs
+            LibraryConfigArray saved_lib_configs = config->lib_configs;
+            config->lib_configs.libraries = NULL;
+            config->lib_configs.count = 0;
+
+            // Parse the library's lib.dh
+            if (parse_lib_dh_file(config, library_lib_dh_path)) {
+                // Recursively clean each dependency
+                for (int i = 0; i < config->lib_configs.count; ++i) { clean_single_library(config, &config->lib_configs.libraries[i], clean_build, clean_lib); }
+            }
+
+            // Restore lib_configs
+            free_library_configs(&config->lib_configs);
+            config->lib_configs = saved_lib_configs;
+        }
+    }
+}
+
+// Clean project build and/or lib directories
+void clean_project(BuildConfig* config, bool clean_build, bool clean_lib) {
+    if (config->verbose) {
+        printf("Cleaning project: %s\n", config->project_name);
+        if (clean_build) { printf("  - Cleaning build directories\n"); }
+        if (clean_lib) { printf("  - Cleaning lib/deps directories\n"); }
+        if (config->clean_cache_only) { printf("  - Only cleaning .cache directories\n"); }
+        if (config->clean_recur) { printf("  - Recursively cleaning dependencies\n"); }
+    }
+
+    if (clean_build) {
+        char build_output_dir[1024] = {};
+        (void)snprintf(build_output_dir, sizeof(build_output_dir), "%s%sbuild", config->project_root, PATH_SEPARATOR);
+
+        // Get profile from build config or use "dev" as default
+        const char* profile = config->build_config_name;
+        if (strlen(profile) == 0) { profile = "dev"; }
+
+        char profile_output_dir[1024] = {};
+        (void)snprintf(profile_output_dir, sizeof(profile_output_dir), "%s%s%s", build_output_dir, PATH_SEPARATOR, profile);
+
+        if (!config->clean_cache_only) {
+            // Move existing build/profile to cache
+            (void)move_directory_to_cache(profile_output_dir, build_output_dir, profile, config->verbose);
+        }
+
+        // Clean cache
+        clean_cache_directories(build_output_dir, config->verbose);
+
+        // Remove empty build directory if it exists and is empty
+        if (dir_exists(build_output_dir)) {
+            DIR* dir = opendir(build_output_dir);
+            if (dir) {
+                bool is_empty = true;
+                struct dirent* entry = NULL;
+                while ((entry = readdir(dir)) != NULL) {
+                    if (entry->d_name[0] != '.') {
+                        is_empty = false;
+                        break;
+                    }
+                }
+                closedir(dir);
+
+                if (is_empty) {
+                    if (remove_directory_recursive(build_output_dir)) {
+                        if (config->verbose) { printf("Removed empty build directory: %s\n", build_output_dir); }
+                    }
+                }
+            }
+        }
+    }
+
+    if (clean_lib) {
+        char project_lib_path[1024] = {};
+        (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+        char deps_path[1024] = {};
+        (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+        if (!config->clean_cache_only) {
+            // Move existing lib/deps to cache
+            (void)move_directory_to_cache(deps_path, project_lib_path, "deps", config->verbose);
+        }
+
+        // Clean cache
+        clean_cache_directories(project_lib_path, config->verbose);
+
+        // Remove empty lib directory if it exists and is empty
+        if (dir_exists(project_lib_path)) {
+            DIR* dir = opendir(project_lib_path);
+            if (dir) {
+                bool is_empty = true;
+                struct dirent* entry = NULL;
+                while ((entry = readdir(dir)) != NULL) {
+                    if (entry->d_name[0] != '.') {
+                        is_empty = false;
+                        break;
+                    }
+                }
+                closedir(dir);
+
+                if (is_empty) {
+                    if (remove_directory_recursive(project_lib_path)) {
+                        if (config->verbose) { printf("Removed empty lib directory: %s\n", project_lib_path); }
+                    }
+                }
+            }
+        }
+    }
+
+    // Recursively clean dependencies if requested
+    if (config->clean_recur && config->lib_configs.count > 0) {
+        if (config->verbose) {
+            printf("Recursively cleaning dependencies:\n");
+            for (int i = 0; i < config->lib_configs.count; ++i) { printf("  - %s\n", config->lib_configs.libraries[i].library_name); }
+        }
+
+        for (int i = 0; i < config->lib_configs.count; ++i) { clean_single_library(config, &config->lib_configs.libraries[i], clean_build, clean_lib); }
+    }
+}
+
 // Copy library includes to project lib directory
 bool copy_library_includes(const char* lib_src_path, const char* project_lib_path, const char* lib_name, bool verbose) {
     char lib_include_src[1024];
@@ -2954,8 +3912,13 @@ bool copy_library_includes(const char* lib_src_path, const char* project_lib_pat
     extract_library_dir_and_name(lib_name, lib_dir_part, lib_name_part);
 
     if (strlen(lib_dir_part) > 0) {
+        // Copy contents of include/ to project/lib/deps/dir_part/ (not including name_part)
+        // This way, when we use -I with this path, headers are at the root
+        // The library name is not needed in the path since the contents are already the library's contents
         (void)snprintf(lib_include_dest, sizeof(lib_include_dest), "%s%sdeps%s%s", project_lib_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_dir_part);
     } else {
+        // For libraries without dir_part, copy directly to deps/ (not deps/name_part/)
+        // This gives us deps/foo.h instead of deps/foo/foo.h
         (void)snprintf(lib_include_dest, sizeof(lib_include_dest), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
     }
 
@@ -2988,6 +3951,197 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
         printf("  Linking: %s\n", lib_config->linking_type);
     }
 
+    // Check if this library has its own lib.dh file and compile its dependencies first
+    char library_lib_dh_path[1024] = {};
+    (void)snprintf(library_lib_dh_path, sizeof(library_lib_dh_path), "%s%slib.dh", lib_config->library_path, PATH_SEPARATOR);
+
+    if (file_exists(library_lib_dh_path)) {
+        if (config->verbose) { printf("Library %s has its own lib.dh, compiling dependencies first...\n", lib_config->library_name); }
+
+        // Save current lib_configs
+        LibraryConfigArray saved_lib_configs = config->lib_configs;
+        config->lib_configs.libraries = NULL;
+        config->lib_configs.count = 0;
+
+        // Parse the library's lib.dh
+        if (parse_lib_dh_file(config, library_lib_dh_path)) {
+            // Print dependency tree
+            if (config->lib_configs.count > 0) {
+                printf("Compiling dependencies '%s':\n", lib_config->library_name);
+                for (int i = 0; i < config->lib_configs.count; ++i) { printf("- %s\n", config->lib_configs.libraries[i].library_name); }
+            }
+            // Recursively compile dependencies from the library's lib.dh
+            if (config->lib_configs.count > 0) {
+                if (!compile_libraries(config)) {
+                    (void)fprintf(stderr, "Failed to compile dependencies for library: %s\n", lib_config->library_name);
+                    // Restore original lib_configs before returning
+                    free_library_configs(&config->lib_configs);
+                    config->lib_configs = saved_lib_configs;
+                    return false;
+                }
+
+                // After compiling dependencies, copy them to the library's own lib/deps/ directory
+                // This makes the library self-contained with all its dependencies
+                char library_lib_path[1024] = {};
+                (void)snprintf(library_lib_path, sizeof(library_lib_path), "%s%slib", lib_config->library_path, PATH_SEPARATOR);
+
+                char library_deps_path[1024] = {};
+                (void)snprintf(library_deps_path, sizeof(library_deps_path), "%s%sdeps", library_lib_path, PATH_SEPARATOR);
+
+                // Create library's lib/deps/ directory if it doesn't exist
+                if (!dir_exists(library_lib_path)) {
+                    if (!create_directory_recursive(library_lib_path)) {
+                        if (config->verbose) { printf("Warning: Could not create library lib directory: %s\n", library_lib_path); }
+                    }
+                }
+
+                // Move existing library lib/deps directory to cache if it exists
+                (void)move_directory_to_cache(library_deps_path, library_lib_path, "deps", config->verbose);
+
+                if (!dir_exists(library_deps_path)) {
+                    if (!create_directory_recursive(library_deps_path)) {
+                        if (config->verbose) { printf("Warning: Could not create library deps directory: %s\n", library_deps_path); }
+                    }
+                }
+
+                // Print "Bring dependencies" message
+                printf("Bring dependencies '%s':\n", lib_config->library_name);
+
+                // Copy each dependency from its own lib/ and lib/deps/ to library's lib/deps/
+                for (int i = 0; i < config->lib_configs.count; ++i) {
+                    const LibraryConfig* dep_lib = &config->lib_configs.libraries[i];
+                    char dep_lib_dir_part[256] = {};
+                    char dep_lib_name_part[256] = {};
+                    extract_library_dir_and_name(dep_lib->library_name, dep_lib_dir_part, dep_lib_name_part);
+
+                    // Source: dependency library's own build/profile/ directory
+                    char dep_lib_build_path[1024] = {};
+                    (void)snprintf(dep_lib_build_path, sizeof(dep_lib_build_path), "%s%sbuild", dep_lib->library_path, PATH_SEPARATOR);
+
+                    // Determine effective profile for this dependency
+                    const char* dep_effective_profile = dep_lib->profile;
+                    if (strcmp(dep_lib->profile, "default") == 0) { dep_effective_profile = config->build_config_name; }
+
+                    char dep_lib_profile_path[1024] = {};
+                    (void)snprintf(dep_lib_profile_path, sizeof(dep_lib_profile_path), "%s%s%s", dep_lib_build_path, PATH_SEPARATOR, dep_effective_profile);
+
+                    // Destination: library's lib/deps/dir_part/ (not including lib_name_part as a directory)
+                    // Library binary goes to lib/deps/dir_part/lib_name_part.lib
+                    char dest_dep_dir[1024] = {};
+                    if (strlen(dep_lib_dir_part) > 0) {
+                        (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s%s%s", library_deps_path, PATH_SEPARATOR, dep_lib_dir_part);
+                    } else {
+                        (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s", library_deps_path);
+                    }
+
+                    // Copy library binary from dependency's build/profile/ to library's lib/deps/dir_part/lib_name_part.lib
+                    char src_lib_file[1024] = {};
+                    char dest_lib_file[1024] = {};
+#ifdef _WIN32
+                    (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%s%s.lib", dep_lib_profile_path, PATH_SEPARATOR, dep_lib_name_part);
+                    (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%s%s.lib", dest_dep_dir, PATH_SEPARATOR, dep_lib_name_part);
+#else
+                    (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%slib%s.a", dep_lib_profile_path, PATH_SEPARATOR, dep_lib_name_part);
+                    (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%slib%s.a", dest_dep_dir, PATH_SEPARATOR, dep_lib_name_part);
+#endif
+
+                    if (file_exists(src_lib_file)) {
+                        // Create destination directory if needed
+                        if (!dir_exists(dest_dep_dir)) {
+                            if (!create_directory_recursive(dest_dep_dir)) {
+                                (void)fprintf(stderr, "Failed to create destination directory: %s\n", dest_dep_dir);
+                                free_library_configs(&config->lib_configs);
+                                config->lib_configs = saved_lib_configs;
+                                return false;
+                            }
+                        }
+
+                        // Copy the library file
+                        FILE* src_fp = fopen(src_lib_file, "rb");
+                        if (src_fp) {
+                            FILE* dest_fp = fopen(dest_lib_file, "wb");
+                            if (dest_fp) {
+                                char buffer[4096] = {};
+                                size_t bytes = 0;
+                                while ((bytes = fread(buffer, 1, sizeof(buffer), src_fp)) > 0) {
+                                    if (fwrite(buffer, 1, bytes, dest_fp) != bytes) {
+                                        (void)fprintf(stderr, "Failed to write to %s\n", dest_lib_file);
+                                        (void)fclose(dest_fp);
+                                        (void)fclose(src_fp);
+                                        free_library_configs(&config->lib_configs);
+                                        config->lib_configs = saved_lib_configs;
+                                        return false;
+                                    }
+                                }
+                                (void)fclose(dest_fp);
+                            }
+                            (void)fclose(src_fp);
+                        }
+                    }
+
+                    // Copy dependency's lib/deps/ (transitive dependencies) to library's lib/deps/
+                    char dep_lib_lib_path_for_deps[1024] = {};
+                    (void)snprintf(dep_lib_lib_path_for_deps, sizeof(dep_lib_lib_path_for_deps), "%s%slib", dep_lib->library_path, PATH_SEPARATOR);
+                    char dep_lib_deps_path[1024] = {};
+                    (void)snprintf(dep_lib_deps_path, sizeof(dep_lib_deps_path), "%s%sdeps", dep_lib_lib_path_for_deps, PATH_SEPARATOR);
+
+                    // Print what's being copied
+                    char dest_path_str[1024] = {};
+                    if (strlen(dep_lib_dir_part) > 0) {
+                        (void)snprintf(
+                            dest_path_str, sizeof(dest_path_str), "%s%slib%sdeps%s%s%s%s", lib_config->library_name, PATH_SEPARATOR, PATH_SEPARATOR,
+                            PATH_SEPARATOR, dep_lib_dir_part, PATH_SEPARATOR, dep_lib_name_part
+                        );
+                    } else {
+                        (void)snprintf(
+                            dest_path_str, sizeof(dest_path_str), "%s%slib%sdeps%s%s", lib_config->library_name, PATH_SEPARATOR, PATH_SEPARATOR, PATH_SEPARATOR,
+                            dep_lib_name_part
+                        );
+                    }
+                    printf("- '%s' <- '%s'\n", dest_path_str, dep_lib->library_name);
+
+                    if (dir_exists(dep_lib_deps_path)) {
+                        // Copy entire deps directory recursively (transitive dependencies)
+                        (void)copy_directory_recursive(dep_lib_deps_path, dest_dep_dir, false);
+                    }
+
+                    // Copy dependency's includes directly from the dependency's include/ directory
+                    // Use the same structure: for libraries with dir_part, copy to dest_dep_dir (which is library_deps_path/dir_part/)
+                    // For libraries without dir_part, copy directly to library_deps_path (not library_deps_path/name_part/)
+                    char dep_include_src[1024] = {};
+                    (void)snprintf(dep_include_src, sizeof(dep_include_src), "%s%sinclude", dep_lib->library_path, PATH_SEPARATOR);
+
+                    if (dir_exists(dep_include_src)) {
+                        // Determine destination: same logic as copy_library_includes
+                        char dep_include_dest[1024] = {};
+                        if (strlen(dep_lib_dir_part) > 0) {
+                            // Copy to library_deps_path/dir_part/
+                            (void)snprintf(dep_include_dest, sizeof(dep_include_dest), "%s%s%s", library_deps_path, PATH_SEPARATOR, dep_lib_dir_part);
+                        } else {
+                            // Copy directly to library_deps_path/ (not library_deps_path/name_part/)
+                            (void)snprintf(dep_include_dest, sizeof(dep_include_dest), "%s", library_deps_path);
+                        }
+
+                        if (!dir_exists(dep_include_dest)) {
+                            if (!create_directory_recursive(dep_include_dest)) {
+                                (void)fprintf(stderr, "Failed to create destination directory: %s\n", dep_include_dest);
+                                free_library_configs(&config->lib_configs);
+                                config->lib_configs = saved_lib_configs;
+                                return false;
+                            }
+                        }
+                        // Copy contents of the include directory
+                        (void)copy_directory_recursive(dep_include_src, dep_include_dest, false);
+                    }
+                }
+            }
+        }
+
+        // Restore original lib_configs
+        free_library_configs(&config->lib_configs);
+        config->lib_configs = saved_lib_configs;
+    }
+
     // Find source files in the library
     char lib_src_path[1024];
     (void)snprintf(lib_src_path, sizeof(lib_src_path), "%s%ssrc", lib_config->library_path, PATH_SEPARATOR);
@@ -3006,41 +4160,44 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
         return false;
     }
 
-    // Create project lib directory
+    // Create library's own build/profile directory (not project's lib/deps/)
+    char library_build_path[1024];
+    (void)snprintf(library_build_path, sizeof(library_build_path), "%s%sbuild", lib_config->library_path, PATH_SEPARATOR);
+
+    // Determine effective profile for this library
+    const char* lib_effective_profile = lib_config->profile;
+    if (strcmp(lib_config->profile, "default") == 0) { lib_effective_profile = config->build_config_name; }
+
+    char library_profile_path[1024];
+    (void)snprintf(library_profile_path, sizeof(library_profile_path), "%s%s%s", library_build_path, PATH_SEPARATOR, lib_effective_profile);
+
+    // Move existing library build/profile directory to cache if it exists
+    (void)move_directory_to_cache(library_profile_path, library_build_path, lib_effective_profile, config->verbose);
+
+    if (!dir_exists(library_profile_path)) {
+        if (!create_directory_recursive(library_profile_path)) {
+            (void)fprintf(stderr, "Could not create library build directory: %s\n", library_profile_path);
+            free_string_array(sources, source_count);
+            return false;
+        }
+    }
+
+    // Keep reference to library's lib/deps/ path (may or may not exist depending on dependencies)
+    char library_lib_path[1024];
+    (void)snprintf(library_lib_path, sizeof(library_lib_path), "%s%slib", lib_config->library_path, PATH_SEPARATOR);
+    char library_deps_path[1024];
+    (void)snprintf(library_deps_path, sizeof(library_deps_path), "%s%sdeps", library_lib_path, PATH_SEPARATOR);
+
+    // Also keep reference to project's lib/deps/ for copying dependencies later
     char project_lib_path[1024];
     (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
-
-    if (!dir_exists(project_lib_path)) {
-        if (!create_directory(project_lib_path)) {
-            (void)fprintf(stderr, "Could not create lib directory: %s\n", project_lib_path);
-            free_string_array(sources, source_count);
-            return false;
-        }
-    }
-
-    // Create deps directory
     char deps_path[1024];
     (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
-
-    if (!dir_exists(deps_path)) {
-        if (!create_directory(deps_path)) {
-            (void)fprintf(stderr, "Could not create deps directory: %s\n", deps_path);
-            free_string_array(sources, source_count);
-            return false;
-        }
-    }
 
     // Extract directory and name parts from library name
     char lib_dir_part[256];
     char lib_name_part[256];
     extract_library_dir_and_name(lib_config->library_name, lib_dir_part, lib_name_part);
-
-    // Copy library includes
-    if (!copy_library_includes(lib_config->library_path, project_lib_path, lib_config->library_name, config->verbose)) {
-        (void)fprintf(stderr, "Failed to copy includes for library: %s\n", lib_config->library_name);
-        free_string_array(sources, source_count);
-        return false;
-    }
 
     // Prepare compilation command
     char command[8192] = {};
@@ -3048,12 +4205,63 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
     strcat(command, " -std=");
     strcat(command, config->c_standard);
 
-    // Add include paths
+    // Add include paths: src, include, and lib/deps
+    if (dir_exists(lib_src_path)) {
+        strcat(command, " -I");
+        strcat(command, lib_src_path);
+    }
+
     char lib_include_path[1024];
     (void)snprintf(lib_include_path, sizeof(lib_include_path), "%s%sinclude", lib_config->library_path, PATH_SEPARATOR);
     if (dir_exists(lib_include_path)) {
         strcat(command, " -I");
         strcat(command, lib_include_path);
+    }
+
+    // Add lib/deps as an include path
+    if (dir_exists(library_deps_path)) {
+        strcat(command, " -I");
+        strcat(command, library_deps_path);
+    }
+
+    // Add include paths from dependencies (if library has its own lib.dh)
+    // Add -I for each dependency directory so headers can be found
+    if (file_exists(library_lib_dh_path)) {
+        // We need to get the dependencies from the library's lib.dh
+        // But we've already restored the lib_configs, so we need to parse it again temporarily
+        LibraryConfigArray saved_lib_configs_temp = config->lib_configs;
+        config->lib_configs.libraries = NULL;
+        config->lib_configs.count = 0;
+
+        if (parse_lib_dh_file(config, library_lib_dh_path)) {
+            // Add include path for each dependency directory
+            for (int i = 0; i < config->lib_configs.count; ++i) {
+                const LibraryConfig* dep_lib = &config->lib_configs.libraries[i];
+                char dep_lib_dir_part[256] = {};
+                char dep_lib_name_part[256] = {};
+                extract_library_dir_and_name(dep_lib->library_name, dep_lib_dir_part, dep_lib_name_part);
+
+                // Build the dependency directory path in library's lib/deps/
+                char dep_include_path[1024] = {};
+                if (strlen(dep_lib_dir_part) > 0) {
+                    (void)snprintf(
+                        dep_include_path, sizeof(dep_include_path), "%s%s%s%s%s", library_deps_path, PATH_SEPARATOR, dep_lib_dir_part, PATH_SEPARATOR,
+                        dep_lib_name_part
+                    );
+                } else {
+                    (void)snprintf(dep_include_path, sizeof(dep_include_path), "%s%s%s", library_deps_path, PATH_SEPARATOR, dep_lib_name_part);
+                }
+
+                if (dir_exists(dep_include_path)) {
+                    strcat(command, " -I");
+                    strcat(command, dep_include_path);
+                }
+            }
+        }
+
+        // Restore lib_configs
+        free_library_configs(&config->lib_configs);
+        config->lib_configs = saved_lib_configs_temp;
     }
 
     // Add DH includes if not disabled for this library
@@ -3084,17 +4292,13 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
     // Apply build profile settings
     BuildConfigPreset* profile_preset = NULL;
 
-    // Use main project's build profile if library profile is "default"
-    const char* effective_profile = lib_config->profile;
-    if (strcmp(lib_config->profile, "default") == 0) {
-        effective_profile = config->build_config_name;
-        if (config->verbose) {
-            printf("Library profile is 'default', using main project profile: %s\n", effective_profile);
-        }
+    // Use the effective profile we determined earlier (lib_effective_profile)
+    if (config->verbose && strcmp(lib_config->profile, "default") == 0) {
+        printf("Library profile is 'default', using main project profile: %s\n", lib_effective_profile);
     }
 
     for (int i = 0; i < NUM_BUILD_PRESETS; ++i) {
-        if (strcmp(build_presets[i].name, effective_profile) == 0) {
+        if (strcmp(build_presets[i].name, lib_effective_profile) == 0) {
             profile_preset = &build_presets[i];
             break;
         }
@@ -3137,11 +4341,9 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
             strcat(command, flag);
         }
 
-        if (config->verbose) {
-            printf("Applied profile '%s' settings to library compilation\n", effective_profile);
-        }
+        if (config->verbose) { printf("Applied profile '%s' settings to library compilation\n", lib_effective_profile); }
     } else if (config->verbose) {
-        printf("Warning: Unknown profile '%s', using default settings\n", effective_profile);
+        printf("Warning: Unknown profile '%s', using default settings\n", lib_effective_profile);
     }
 
     // Add position independent code for shared libraries
@@ -3155,73 +4357,29 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
         }
     }
 
-    // Set output file
+    // Set output file to library's own build/profile/ directory
     char output_file[1024];
 
-    if (strlen(lib_dir_part) > 0) {
-        // Create the library subdirectory in deps
-        char lib_output_dir[1024];
-        (void)snprintf(lib_output_dir, sizeof(lib_output_dir), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
-
-        if (!create_directory_recursive(lib_output_dir)) {
-            (void)fprintf(stderr, "Could not create library output directory: %s\n", lib_output_dir);
-            free_string_array(sources, source_count);
-            return false;
-        }
-
-        if (strcmp(lib_config->linking_type, "static") == 0) {
+    if (strcmp(lib_config->linking_type, "static") == 0) {
 #ifdef _WIN32
-            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", lib_output_dir, PATH_SEPARATOR, lib_name_part);
+        (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", library_profile_path, PATH_SEPARATOR, lib_name_part);
 #else
-            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", lib_output_dir, PATH_SEPARATOR, lib_name_part);
+        (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", library_profile_path, PATH_SEPARATOR, lib_name_part);
 #endif
-        } else {
-#ifdef _WIN32
-            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", lib_output_dir, PATH_SEPARATOR, lib_name_part);
-#else
-            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", lib_output_dir, PATH_SEPARATOR, lib_name_part);
-#endif
-        }
     } else {
-        // No subdirectory, place directly in deps
-        if (strcmp(lib_config->linking_type, "static") == 0) {
 #ifdef _WIN32
-            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_name_part);
+        (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", library_profile_path, PATH_SEPARATOR, lib_name_part);
 #else
-            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_name_part);
+        (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", library_profile_path, PATH_SEPARATOR, lib_name_part);
 #endif
-        } else {
-#ifdef _WIN32
-            (void)snprintf(output_file, sizeof(output_file), "%s%s%s.dll", deps_path, PATH_SEPARATOR, lib_name_part);
-#else
-            (void)snprintf(output_file, sizeof(output_file), "%s%slib%s.so", deps_path, PATH_SEPARATOR, lib_name_part);
-#endif
-        }
     }
 
     if (strcmp(lib_config->linking_type, "static") == 0) {
         // For static libraries, compile to object files first, then create archive
         char obj_dir[1024];
-
-        if (strlen(lib_dir_part) > 0) {
-            (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
-        } else {
-            (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, lib_name_part);
-        }
+        (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj", library_profile_path, PATH_SEPARATOR);
 
         if (!dir_exists(obj_dir)) {
-            // Create .obj directory first if it doesn't exist
-            char obj_base_dir[1024];
-            (void)snprintf(obj_base_dir, sizeof(obj_base_dir), "%s%s.obj", deps_path, PATH_SEPARATOR);
-
-            if (!dir_exists(obj_base_dir)) {
-                if (!create_directory(obj_base_dir)) {
-                    (void)fprintf(stderr, "Could not create .obj directory: %s\n", obj_base_dir);
-                    free_string_array(sources, source_count);
-                    return false;
-                }
-            }
-
             if (!create_directory_recursive(obj_dir)) {
                 (void)fprintf(stderr, "Could not create object directory: %s\n", obj_dir);
                 free_string_array(sources, source_count);
@@ -3327,8 +4485,6 @@ bool compile_libraries(BuildConfig* config) {
         return true;
     }
 
-    printf("Compiling %d libraries...\n", config->lib_configs.count);
-
     for (int i = 0; i < config->lib_configs.count; ++i) {
         if (!compile_single_library(config, &config->lib_configs.libraries[i])) {
             (void)fprintf(stderr, "Failed to compile library: %s\n", config->lib_configs.libraries[i].library_name);
@@ -3336,7 +4492,6 @@ bool compile_libraries(BuildConfig* config) {
         }
     }
 
-    printf("All libraries compiled successfully!\n");
     return true;
 }
 
@@ -3368,6 +4523,53 @@ void add_lib_dh_includes(BuildConfig* config, char*** includes, int* include_cou
     }
 }
 
+// Recursively find all library files in a directory
+static void find_library_files(const char* dir_path, char*** lib_files, int* lib_count) { /* NOLINT(misc-no-recursion) */
+    DIR* dir = opendir(dir_path);
+    if (!dir) { return; }
+
+    struct dirent* entry = NULL;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') {
+            continue; // Skip hidden files and . / ..
+        }
+
+        char path[1024] = {};
+        int result = snprintf(path, sizeof(path), "%s%s%s", dir_path, PATH_SEPARATOR, entry->d_name);
+        if (result < 0 || (size_t)result >= sizeof(path)) {
+            continue; // Path too long, skip
+        }
+
+        struct stat st = {};
+        if (stat(path, &st) == 0) {
+            if (S_ISDIR(st.st_mode)) {
+                // Recurse into subdirectory
+                find_library_files(path, lib_files, lib_count);
+            } else if (S_ISREG(st.st_mode)) {
+                // Check if it's a library file
+                const char* ext = strrchr(entry->d_name, '.');
+                if (ext && (strcmp(ext, ".lib") == 0 || strcmp(ext, ".a") == 0)) {
+                    // Add to lib_files array
+                    *lib_files = realloc(*lib_files, (*lib_count + 1) * sizeof(char*));
+                    if (*lib_files == NULL) {
+                        (void)fprintf(stderr, "Memory allocation failed\n");
+                        closedir(dir);
+                        exit(1);
+                    }
+                    (*lib_files)[*lib_count] = strdup(path);
+                    if ((*lib_files)[*lib_count] == NULL) {
+                        (void)fprintf(stderr, "Memory allocation failed\n");
+                        closedir(dir);
+                        exit(1);
+                    }
+                    (*lib_count)++;
+                }
+            }
+        }
+    }
+    closedir(dir);
+}
+
 // Add library linking flags to the configuration
 void add_lib_dh_libraries(BuildConfig* config) {
     if (config->lib_configs.count == 0) {
@@ -3387,58 +4589,25 @@ void add_lib_dh_libraries(BuildConfig* config) {
     strcat(config->linked_libraries, "-L");
     strcat(config->linked_libraries, deps_path);
 
-    // Add library search paths for subdirectories
-    for (int i = 0; i < config->lib_configs.count; ++i) {
-        const LibraryConfig* lib = &config->lib_configs.libraries[i];
-        char                 lib_dir_part[256];
-        char                 lib_name_part[256];
-        extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
+    // Recursively find all library files in lib/deps/ (includes transitive dependencies)
+    char** lib_files = NULL;
+    int lib_count = 0;
+    if (dir_exists(deps_path)) { find_library_files(deps_path, &lib_files, &lib_count); }
 
-        if (strlen(lib_dir_part) > 0) {
-            char lib_search_path[1024];
-            (void)snprintf(lib_search_path, sizeof(lib_search_path), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
-            strcat(config->linked_libraries, " -L");
-            strcat(config->linked_libraries, lib_search_path);
-        }
+    // Add all found library files to the linking command
+    for (int i = 0; i < lib_count; ++i) {
+        if (config->linked_libraries[0] != '\0') { strcat(config->linked_libraries, " "); }
+        strcat(config->linked_libraries, "\"");
+        strcat(config->linked_libraries, lib_files[i]);
+        strcat(config->linked_libraries, "\"");
+
+        if (config->verbose) { printf("Added library link: %s\n", lib_files[i]); }
     }
 
-    // Add each library
-    for (int i = 0; i < config->lib_configs.count; ++i) {
-        const LibraryConfig* lib = &config->lib_configs.libraries[i];
-        char                 lib_dir_part[256];
-        char                 lib_name_part[256];
-        extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
-
-        if (strcmp(lib->linking_type, "static") == 0) {
-            // For static libraries, add full path to the .a/.lib file
-            char lib_file[1024];
-
-            if (strlen(lib_dir_part) > 0) {
-#ifdef _WIN32
-                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
-#else
-                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
-#endif
-            } else {
-#ifdef _WIN32
-                (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_name_part);
-#else
-                (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_name_part);
-#endif
-            }
-
-            strcat(config->linked_libraries, " \"");
-            strcat(config->linked_libraries, lib_file);
-            strcat(config->linked_libraries, "\"");
-        } else {
-            // For dynamic libraries, add -l flag with name part only
-            strcat(config->linked_libraries, " -l");
-            strcat(config->linked_libraries, lib_name_part);
-        }
-
-        if (config->verbose) {
-            printf("Added library link: %s (%s)\n", lib->library_name, lib->linking_type);
-        }
+    // Free the lib_files array
+    if (lib_files != NULL) {
+        for (int i = 0; i < lib_count; ++i) { free(lib_files[i]); }
+        free(lib_files);
     }
 }
 
@@ -3464,6 +4633,409 @@ bool create_library_command(BuildConfig* config) {
     return compile_libraries(config);
 }
 
+
+// Compile a library directory's src/ as a library (for sample files)
+bool compile_library_directory_as_library(BuildConfig* config, const char* library_path, const char* library_name) {
+    if (config->verbose) { printf("Compiling library directory as library: %s at %s\n", library_name, library_path); }
+
+    // Check if library has src/ directory
+    char lib_src_path[1024] = {};
+    (void)snprintf(lib_src_path, sizeof(lib_src_path), "%s%ssrc", library_path, PATH_SEPARATOR);
+
+    if (!dir_exists(lib_src_path)) {
+        if (config->verbose) { printf("Library %s has no src/ directory, skipping\n", library_name); }
+        return true; // Not an error if no src directory
+    }
+
+    // Find source files in the library's src directory
+    char** sources = NULL;
+    int source_count = 0;
+    find_source_files(lib_src_path, &sources, &source_count);
+
+    if (source_count == 0) {
+        if (config->verbose) { printf("No source files found in library %s\n", library_name); }
+        return true; // Not an error if no sources
+    }
+
+    // Create output directory in project's lib/deps/
+    char project_lib_path[1024] = {};
+    (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+
+    char deps_path[1024] = {};
+    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+    if (!dir_exists(deps_path)) {
+        if (!create_directory_recursive(deps_path)) {
+            (void)fprintf(stderr, "Could not create deps directory: %s\n", deps_path);
+            free_string_array(sources, source_count);
+            return false;
+        }
+    }
+
+    // Prepare base compilation command
+    char base_command[8192] = {};
+    strcat(base_command, config->compiler);
+    strcat(base_command, " -std=");
+    strcat(base_command, config->c_standard);
+
+    // Add include paths: src, include, and lib/deps
+    if (dir_exists(lib_src_path)) {
+        strcat(base_command, " -I");
+        strcat(base_command, lib_src_path);
+    }
+
+    char lib_include_path[1024] = {};
+    (void)snprintf(lib_include_path, sizeof(lib_include_path), "%s%sinclude", library_path, PATH_SEPARATOR);
+    if (dir_exists(lib_include_path)) {
+        strcat(base_command, " -I");
+        strcat(base_command, lib_include_path);
+    }
+
+    // Add lib/deps as an include path
+    char library_lib_path[1024] = {};
+    (void)snprintf(library_lib_path, sizeof(library_lib_path), "%s%slib", library_path, PATH_SEPARATOR);
+    char library_deps_path[1024] = {};
+    (void)snprintf(library_deps_path, sizeof(library_deps_path), "%s%sdeps", library_lib_path, PATH_SEPARATOR);
+    if (dir_exists(library_deps_path)) {
+        strcat(base_command, " -I");
+        strcat(base_command, library_deps_path);
+    }
+
+    // Add DH includes if not disabled
+    if (!config->no_libdh && strlen(config->dh_path) > 0) {
+        char dh_include[1024] = {};
+        (void)snprintf(dh_include, sizeof(dh_include), "%s%sinclude", config->dh_path, PATH_SEPARATOR);
+        strcat(base_command, " -I");
+        strcat(base_command, dh_include);
+        strcat(base_command, " -I");
+        strcat(base_command, config->dh_path);
+        strcat(base_command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC");
+
+        char blocks_include_path[1024] = {};
+        (void)snprintf(
+            blocks_include_path, sizeof(blocks_include_path), "%s%slibs%sBlocksRuntime%sinclude", config->dh_path, PATH_SEPARATOR, PATH_SEPARATOR,
+            PATH_SEPARATOR
+        );
+        if (dir_exists(blocks_include_path)) {
+            strcat(base_command, " -I");
+            strcat(base_command, blocks_include_path);
+        }
+
+        strcat(base_command, " -DCOMP");
+        if (config->is_test) { strcat(base_command, " -DCOMP_TEST"); }
+    }
+
+    // Apply build profile settings
+    BuildConfigPreset* profile_preset = NULL;
+    for (int i = 0; i < NUM_BUILD_PRESETS; ++i) {
+        if (strcmp(build_presets[i].name, config->build_config_name) == 0) {
+            profile_preset = &build_presets[i];
+            break;
+        }
+    }
+
+    if (profile_preset) {
+        const char* opt_flag = optimization_level_to_flag(profile_preset->optimization_level);
+        if (strlen(opt_flag) > 0) {
+            strcat(base_command, " ");
+            strcat(base_command, opt_flag);
+        }
+
+        const char* debug_flag = debug_level_to_flag(profile_preset->debug_level);
+        if (strlen(debug_flag) > 0) {
+            strcat(base_command, " ");
+            strcat(base_command, debug_flag);
+        }
+
+        if (!profile_preset->assertions_enabled) { strcat(base_command, " -DNDEBUG"); }
+
+        // Add extra flags (skip -flto for static libraries)
+        for (int i = 0; i < profile_preset->extra_flags.count; ++i) {
+            const char* flag = profile_preset->extra_flags.flags[i];
+            if (strcmp(flag, "-flto") == 0) {
+                continue; // Skip LTO for static libraries
+            }
+            strcat(base_command, " ");
+            strcat(base_command, flag);
+        }
+    }
+
+    // Create object files directory
+    char obj_dir[1024] = {};
+    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, library_name);
+
+    if (!dir_exists(obj_dir)) {
+        char obj_base_dir[1024] = {};
+        (void)snprintf(obj_base_dir, sizeof(obj_base_dir), "%s%s.obj", deps_path, PATH_SEPARATOR);
+        if (!dir_exists(obj_base_dir)) {
+            if (!create_directory(obj_base_dir)) {
+                (void)fprintf(stderr, "Could not create .obj directory: %s\n", obj_base_dir);
+                free_string_array(sources, source_count);
+                return false;
+            }
+        }
+        if (!create_directory(obj_dir)) {
+            (void)fprintf(stderr, "Could not create object directory: %s\n", obj_dir);
+            free_string_array(sources, source_count);
+            return false;
+        }
+    }
+
+    // Compile each source file to object file
+    char obj_files[16384] = {};
+    for (int i = 0; i < source_count; ++i) {
+        char obj_file[1024] = {};
+        char* filename = strrchr(sources[i], PATH_SEPARATOR[0]);
+        if (!filename) {
+            filename = sources[i];
+        } else {
+            filename++; // Skip separator
+        }
+
+        char basename[256] = {};
+        strncpy(basename, filename, sizeof(basename) - 1);
+        basename[sizeof(basename) - 1] = '\0';
+        char* dot = strrchr(basename, '.');
+        if (dot) { *dot = '\0'; }
+
+        (void)snprintf(obj_file, sizeof(obj_file), "%s%s%s.o", obj_dir, PATH_SEPARATOR, basename);
+
+        char compile_cmd[4096] = {};
+        (void)snprintf(compile_cmd, sizeof(compile_cmd), "%s -c %s -o %s", base_command, sources[i], obj_file);
+
+        if (config->show_commands) { printf("Command: %s\n", compile_cmd); }
+
+        // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+        if (system(compile_cmd) != 0) {
+            (void)fprintf(stderr, "Failed to compile %s\n", sources[i]);
+            free_string_array(sources, source_count);
+            return false;
+        }
+
+        // Add object file to list
+        if (strlen(obj_files) > 0) { strcat(obj_files, " "); }
+        strcat(obj_files, obj_file);
+    }
+
+    // Create static library
+    char lib_file[1024] = {};
+#ifdef _WIN32
+    (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, library_name);
+#else
+    (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, library_name);
+#endif
+
+    char ar_cmd[8192] = {};
+    (void)snprintf(ar_cmd, sizeof(ar_cmd), "ar rcs %s %s", lib_file, obj_files);
+
+    if (config->show_commands) { printf("Command: %s\n", ar_cmd); }
+
+    if (config->verbose) { printf("Creating library: %s\n", lib_file); }
+
+    // NOLINTNEXTLINE(security-insecure-system-use,cert-env33-c)
+    if (system(ar_cmd) != 0) {
+        (void)fprintf(stderr, "Failed to create library: %s\n", lib_file);
+        free_string_array(sources, source_count);
+        return false;
+    }
+
+    printf("Successfully compiled library: %s -> %s\n", library_name, lib_file);
+
+    free_string_array(sources, source_count);
+    return true;
+}
+
+// Compile a library for use with a sample file (from lib.dh dependencies)
+bool compile_library_for_sample(BuildConfig* config, const char* library_name) {
+    // First, ensure lib.dh is parsed
+    char lib_dh_path[1024] = {};
+    (void)snprintf(lib_dh_path, sizeof(lib_dh_path), "%s%slib.dh", config->project_root, PATH_SEPARATOR);
+
+    if (file_exists(lib_dh_path) && config->lib_configs.count == 0) { parse_lib_dh_file(config, lib_dh_path); }
+
+    // Find the library in lib_configs
+    LibraryConfig* target_lib = NULL;
+    for (int i = 0; i < config->lib_configs.count; ++i) {
+        char lib_dir_part[256] = {};
+        char lib_name_part[256] = {};
+        extract_library_dir_and_name(config->lib_configs.libraries[i].library_name, lib_dir_part, lib_name_part);
+
+        if (strcmp(lib_name_part, library_name) == 0 || strcmp(config->lib_configs.libraries[i].library_name, library_name) == 0) {
+            target_lib = &config->lib_configs.libraries[i];
+            break;
+        }
+    }
+
+    if (!target_lib) {
+        (void)fprintf(stderr, "Error: Library '%s' not found in lib.dh\n", library_name);
+        return false;
+    }
+
+    // Compile the library
+    return compile_single_library(config, target_lib);
+}
+
+// Add library include paths for a sample file
+void add_library_includes_for_sample(BuildConfig* config, const char* library_name, char*** includes, int* include_count) {
+    // First, try to use the sample_library_path if it matches
+    if (strlen(config->sample_library_path) > 0 && strcmp(config->sample_library, library_name) == 0) {
+        // Add the library's include directory directly
+        char lib_include_path[1024] = {};
+        (void)snprintf(lib_include_path, sizeof(lib_include_path), "%s%sinclude", config->sample_library_path, PATH_SEPARATOR);
+
+        if (dir_exists(lib_include_path)) {
+            *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
+            if (*includes == NULL) {
+                (void)fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            (*includes)[*include_count] = strdup(lib_include_path);
+            (*include_count)++;
+
+            if (config->verbose) { printf("Added library include path: %s\n", lib_include_path); }
+        }
+        return;
+    }
+
+    // Otherwise, find the library in lib_configs to get its path
+    LibraryConfig* target_lib = NULL;
+    for (int i = 0; i < config->lib_configs.count; ++i) {
+        char lib_dir_part[256] = {};
+        char lib_name_part[256] = {};
+        extract_library_dir_and_name(config->lib_configs.libraries[i].library_name, lib_dir_part, lib_name_part);
+
+        if (strcmp(lib_name_part, library_name) == 0 || strcmp(config->lib_configs.libraries[i].library_name, library_name) == 0) {
+            target_lib = &config->lib_configs.libraries[i];
+            break;
+        }
+    }
+
+    if (!target_lib) { return; }
+
+    // Add the library's original include directory (from source location)
+    char lib_include_path[1024] = {};
+    (void)snprintf(lib_include_path, sizeof(lib_include_path), "%s%sinclude", target_lib->library_path, PATH_SEPARATOR);
+
+    if (dir_exists(lib_include_path)) {
+        *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
+        if (*includes == NULL) {
+            (void)fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        (*includes)[*include_count] = strdup(lib_include_path);
+        (*include_count)++;
+
+        if (config->verbose) { printf("Added library include path: %s\n", lib_include_path); }
+    }
+
+    // Also add the library's include directory from lib/deps/ (where it's copied)
+    // This is already handled by add_lib_dh_includes, but we ensure it's there
+    char project_lib_path[1024] = {};
+    (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+
+    char deps_path[1024] = {};
+    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+    char lib_dir_part[256] = {};
+    char lib_name_part[256] = {};
+    extract_library_dir_and_name(target_lib->library_name, lib_dir_part, lib_name_part);
+
+    // Add deps include path (may have subdirectory structure)
+    char deps_include_path[1024] = {};
+    if (strlen(lib_dir_part) > 0) {
+        (void)snprintf(deps_include_path, sizeof(deps_include_path), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
+    } else {
+        strcpy(deps_include_path, deps_path);
+    }
+
+    if (dir_exists(deps_include_path)) {
+        // Check if we already added this path (from add_lib_dh_includes)
+        bool already_added = false;
+        for (int i = 0; i < *include_count; ++i) {
+            if (strcmp((*includes)[i], deps_include_path) == 0) {
+                already_added = true;
+                break;
+            }
+        }
+
+        if (!already_added) {
+            *includes = realloc(*includes, (*include_count + 1) * sizeof(char*));
+            if (*includes == NULL) {
+                (void)fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            (*includes)[*include_count] = strdup(deps_include_path);
+            (*include_count)++;
+
+            if (config->verbose) { printf("Added library deps include path: %s\n", deps_include_path); }
+        }
+    }
+}
+
+// Add library linking flags for a sample file
+void add_library_linking_for_sample(BuildConfig* config, const char* library_name) {
+    char project_lib_path[1024] = {};
+    (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+
+    char deps_path[1024] = {};
+    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+
+    // Find the library in lib_configs to get its structure
+    LibraryConfig* target_lib = NULL;
+    for (int i = 0; i < config->lib_configs.count; ++i) {
+        char lib_dir_part[256] = {};
+        char lib_name_part[256] = {};
+        extract_library_dir_and_name(config->lib_configs.libraries[i].library_name, lib_dir_part, lib_name_part);
+
+        if (strcmp(lib_name_part, library_name) == 0 || strcmp(config->lib_configs.libraries[i].library_name, library_name) == 0) {
+            target_lib = &config->lib_configs.libraries[i];
+            break;
+        }
+    }
+
+    if (!target_lib) { return; }
+
+    char lib_dir_part[256] = {};
+    char lib_name_part[256] = {};
+    extract_library_dir_and_name(target_lib->library_name, lib_dir_part, lib_name_part);
+
+    // Add library search path
+    if (config->linked_libraries[0] != '\0') { strcat(config->linked_libraries, " "); }
+    strcat(config->linked_libraries, "-L");
+    strcat(config->linked_libraries, deps_path);
+
+    if (strlen(lib_dir_part) > 0) {
+        char lib_search_path[1024] = {};
+        (void)snprintf(lib_search_path, sizeof(lib_search_path), "%s%s%s", deps_path, PATH_SEPARATOR, lib_dir_part);
+        strcat(config->linked_libraries, " -L");
+        strcat(config->linked_libraries, lib_search_path);
+    }
+
+    // Add the library itself
+    if (strcmp(target_lib->linking_type, "static") == 0) {
+        char lib_file[1024] = {};
+        if (strlen(lib_dir_part) > 0) {
+            // Library binary is at lib/deps/dir_part/lib_name_part.lib (not in a subdirectory)
+#ifdef _WIN32
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
+#else
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_dir_part, PATH_SEPARATOR, lib_name_part);
+#endif
+        } else {
+#ifdef _WIN32
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, lib_name_part);
+#else
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, lib_name_part);
+#endif
+        }
+        strcat(config->linked_libraries, " \"");
+        strcat(config->linked_libraries, lib_file);
+        strcat(config->linked_libraries, "\"");
+    } else {
+        strcat(config->linked_libraries, " -l");
+        strcat(config->linked_libraries, lib_name_part);
+    }
+}
 
 void extract_library_dir_and_name(const char* lib_name, char* dir_part, char* name_part) {
     const char* last_slash = strrchr(lib_name, '/');

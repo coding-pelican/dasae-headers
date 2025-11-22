@@ -79,7 +79,7 @@ fn_((mem_Tracker_initWithPath(S_const$u8 log_path))(E$void) $guard) {
 
     // Open log file
     A$$(256, u8) path_str = zero$A();
-    mem_copy(path_str.val, log_path.ptr, log_path.len);
+    mem_copyBytes(A_ref$((S$u8)path_str), log_path);
     *at$A(path_str, log_path.len) = '\0';
 
     let log_file = fopen(as$(const char*)(path_str.val), "w");
@@ -221,7 +221,7 @@ fn_((mem_Tracker_registerAlloc(P$raw ptr, usize size, SrcLoc src_loc))(void)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return; }
 
     // Create new allocation record
-    let alloc = as$(mem_Allocation *) ((malloc(sizeof(mem_Allocation))));
+    let alloc = as$(mem_Allocation*)((malloc(sizeof(mem_Allocation))));
     if (!alloc) {
         // clang-format off
         let_ignore = fprintf(mem_Tracker_s_instance.log_file, "Failed to allocate memory for tracker at %s:%d\n",

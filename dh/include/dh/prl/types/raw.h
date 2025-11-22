@@ -11,8 +11,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define $P_const$(_T...) TypeOf(const _T*)
-#define $P$(_T...)       TypeOf(_T*)
-#define $A$(_N, _T...)   TypeOf(_T[_N])
+#define $P$(_T...) TypeOf(_T*)
+#define $A$(_N, _T...) TypeOf(_T[_N])
 
 typedef TypeOf(const void*) P_const$raw;
 typedef TypeOf(void*) P$raw;
@@ -86,28 +86,34 @@ struct E$raw {
 };
 
 #define T_decl$(/*(_T)(_List_Parenthesized)*/...) __tpl_inst__T_decl$(__tpl_inst__T_decl$__parseT __VA_ARGS__)
-#define __tpl_inst__T_decl$(...)                  __tpl_inst__T_decl$__emit(__VA_ARGS__)
-#define __tpl_inst__T_decl$__parseT(_T...)        _T,
+#define __tpl_inst__T_decl$(...) __tpl_inst__T_decl$__emit(__VA_ARGS__)
+#define __tpl_inst__T_decl$__parseT(_T...) _T,
 #define __tpl_inst__T_decl$__emit(_T, _List_Parenthesized...) \
-    pp_foreach (__tpl_inst__T_decl$__each, _T, __tpl_inst__T_decl$__unwrap _List_Parenthesized)
-#define __tpl_inst__T_decl$__each(_T, _suffix) pp_cat3(T_decl_, _suffix, $)(_T);
-#define __tpl_inst__T_decl$__unwrap(_List...)  _List
+    pp_foreach(__tpl_inst__T_decl$__each, _T, __tpl_inst__T_decl$__unwrap _List_Parenthesized)
+#define __tpl_inst__T_decl$__each(_T, /*_suffix*/...) __VA_OPT__( \
+    pp_cat3(T_decl_, __VA_ARGS__, $)(_T); \
+)
+#define __tpl_inst__T_decl$__unwrap(_List...) _List
 
 #define T_impl$(/*(_T)(_List_Parenthesized)*/...) __tpl_inst__T_impl$(__tpl_inst__T_impl$__parseT __VA_ARGS__)
-#define __tpl_inst__T_impl$(...)                  __tpl_inst__T_impl$__emit(__VA_ARGS__)
-#define __tpl_inst__T_impl$__parseT(_T...)        _T,
+#define __tpl_inst__T_impl$(...) __tpl_inst__T_impl$__emit(__VA_ARGS__)
+#define __tpl_inst__T_impl$__parseT(_T...) _T,
 #define __tpl_inst__T_impl$__emit(_T, _List_Parenthesized...) \
-    pp_foreach (__tpl_inst__T_impl$__each, _T, __tpl_inst__T_impl$__unwrap _List_Parenthesized)
-#define __tpl_inst__T_impl$__each(_T, _suffix) pp_cat3(T_impl_, _suffix, $)(_T);
-#define __tpl_inst__T_impl$__unwrap(_List...)  _List
+    pp_foreach(__tpl_inst__T_impl$__each, _T, __tpl_inst__T_impl$__unwrap _List_Parenthesized)
+#define __tpl_inst__T_impl$__each(_T, /*_suffix*/...) __VA_OPT__( \
+    pp_cat3(T_impl_, __VA_ARGS__, $)(_T); \
+)
+#define __tpl_inst__T_impl$__unwrap(_List...) _List
 
 #define T_use$(/*(_T)(_List_Parenthesized)*/...) __tpl_inst__T_use$(__tpl_inst__T_use$__parseT __VA_ARGS__)
-#define __tpl_inst__T_use$(...)                  __tpl_inst__T_use$__emit(__VA_ARGS__)
-#define __tpl_inst__T_use$__parseT(_T...)        _T,
+#define __tpl_inst__T_use$(...) __tpl_inst__T_use$__emit(__VA_ARGS__)
+#define __tpl_inst__T_use$__parseT(_T...) _T,
 #define __tpl_inst__T_use$__emit(_T, _List_Parenthesized...) \
-    pp_foreach (__tpl_inst__T_use$__each, _T, __tpl_inst__T_use$__unwrap _List_Parenthesized)
-#define __tpl_inst__T_use$__each(_T, _suffix) pp_cat3(T_use_, _suffix, $)(_T);
-#define __tpl_inst__T_use$__unwrap(_List...)  _List
+    pp_foreach(__tpl_inst__T_use$__each, _T, __tpl_inst__T_use$__unwrap _List_Parenthesized)
+#define __tpl_inst__T_use$__each(_T, /*_suffix*/...) __VA_OPT__( \
+    pp_cat3(T_use_, __VA_ARGS__, $)(_T); \
+)
+#define __tpl_inst__T_use$__unwrap(_List...) _List
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -34,20 +34,22 @@ extern "C" {
 typedef enum cmp_Ord {
     cmp_Ord_lt = -1,
     cmp_Ord_eq = 0,
-    cmp_Ord_gt = 1
+    cmp_Ord_gt = 1,
 } cmp_Ord;
 
+#define cmp_Ord_inv(_ord...) (-(_ord))
+
 /* Comparators */
-#define cmp_cmp(TSelf)    pp_join(_, TSelf, cmp)
+#define cmp_cmp(TSelf) pp_join(_, TSelf, cmp)
 #define cmp_cmpApx(TSelf) pp_join(_, TSelf, cmpApx)
 
 /* Relational operators */
-#define cmp_eq(TSelf)    pp_join(_, TSelf, eq)
-#define cmp_ne(TSelf)    pp_join(_, TSelf, ne)
-#define cmp_lt(TSelf)    pp_join(_, TSelf, lt)
-#define cmp_gt(TSelf)    pp_join(_, TSelf, gt)
-#define cmp_le(TSelf)    pp_join(_, TSelf, le)
-#define cmp_ge(TSelf)    pp_join(_, TSelf, ge)
+#define cmp_eq(TSelf) pp_join(_, TSelf, eq)
+#define cmp_ne(TSelf) pp_join(_, TSelf, ne)
+#define cmp_lt(TSelf) pp_join(_, TSelf, lt)
+#define cmp_gt(TSelf) pp_join(_, TSelf, gt)
+#define cmp_le(TSelf) pp_join(_, TSelf, le)
+#define cmp_ge(TSelf) pp_join(_, TSelf, ge)
 #define cmp_eqApx(TSelf) pp_join(_, TSelf, eqApx)
 #define cmp_neApx(TSelf) pp_join(_, TSelf, neApx)
 #define cmp_ltApx(TSelf) pp_join(_, TSelf, ltApx)
@@ -56,23 +58,23 @@ typedef enum cmp_Ord {
 #define cmp_geApx(TSelf) pp_join(_, TSelf, geApx)
 
 /* Function-like macros */
-#define cmp_fnCmp(TSelf)        cmp_Ord pp_join(_, cmp, cmp)(TSelf)(const TSelf self, const TSelf other)
+#define cmp_fnCmp(TSelf) cmp_Ord pp_join(_, cmp, cmp)(TSelf)(const TSelf self, const TSelf other)
 #define cmp_fnOrd(fnCmp, TSelf) bool pp_join(_, cmp, fnCmp)(TSelf)(const TSelf self, const TSelf other)
-#define cmp_fnEq(TSelf)         cmp_fnOrd(eq, TSelf)
-#define cmp_fnNe(TSelf)         cmp_fnOrd(ne, TSelf)
-#define cmp_fnLt(TSelf)         cmp_fnOrd(lt, TSelf)
-#define cmp_fnGt(TSelf)         cmp_fnOrd(gt, TSelf)
-#define cmp_fnLe(TSelf)         cmp_fnOrd(le, TSelf)
-#define cmp_fnGe(TSelf)         cmp_fnOrd(ge, TSelf)
+#define cmp_fnEq(TSelf) cmp_fnOrd(eq, TSelf)
+#define cmp_fnNe(TSelf) cmp_fnOrd(ne, TSelf)
+#define cmp_fnLt(TSelf) cmp_fnOrd(lt, TSelf)
+#define cmp_fnGt(TSelf) cmp_fnOrd(gt, TSelf)
+#define cmp_fnLe(TSelf) cmp_fnOrd(le, TSelf)
+#define cmp_fnGe(TSelf) cmp_fnOrd(ge, TSelf)
 
-#define cmp_fnCmpApx(TSelf)           cmp_Ord pp_join(_, cmp, cmpApx)(TSelf)(const TSelf self, const TSelf other, const TSelf threshold)
+#define cmp_fnCmpApx(TSelf) cmp_Ord pp_join(_, cmp, cmpApx)(TSelf)(const TSelf self, const TSelf other, const TSelf threshold)
 #define cmp_fnOrdApx(fnCmpApx, TSelf) bool pp_join(_, cmp, fnCmpApx)(TSelf)(const TSelf self, const TSelf other, const TSelf threshold)
-#define cmp_fnEqApx(TSelf)            cmp_fnOrdApx(eqApx, TSelf)
-#define cmp_fnNeApx(TSelf)            cmp_fnOrdApx(neApx, TSelf)
-#define cmp_fnLtApx(TSelf)            cmp_fnOrdApx(ltApx, TSelf)
-#define cmp_fnGtApx(TSelf)            cmp_fnOrdApx(gtApx, TSelf)
-#define cmp_fnLeApx(TSelf)            cmp_fnOrdApx(leApx, TSelf)
-#define cmp_fnGeApx(TSelf)            cmp_fnOrdApx(geApx, TSelf)
+#define cmp_fnEqApx(TSelf) cmp_fnOrdApx(eqApx, TSelf)
+#define cmp_fnNeApx(TSelf) cmp_fnOrdApx(neApx, TSelf)
+#define cmp_fnLtApx(TSelf) cmp_fnOrdApx(ltApx, TSelf)
+#define cmp_fnGtApx(TSelf) cmp_fnOrdApx(gtApx, TSelf)
+#define cmp_fnLeApx(TSelf) cmp_fnOrdApx(leApx, TSelf)
+#define cmp_fnGeApx(TSelf) cmp_fnOrdApx(geApx, TSelf)
 
 /* Binary operators default implementation */
 // clang-format off

@@ -10,7 +10,7 @@ extern "C" {
 #include "engine/Backend.h"
 
 typedef struct engine_core_VT100_Config {
-    var_(allocator, O$mem_Allocator);
+    var_(gpa, O$mem_Allocator);
     var_(window, engine_Window*); /* TODO: Supports multi-windows */
     var_(input, engine_Input*);
 } engine_core_VT100_Config;

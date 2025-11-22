@@ -26,7 +26,8 @@ $static fn_((printPoints(ArrList$Point points))(void)) {
 }
 
 $must_check
-$static fn_((example(void))(mem_Err$void) $guard) {
+$static
+fn_((example(void))(mem_Err$void) $guard) {
     // Initialize the allocator
     let gpa = heap_Page_allocator(&(heap_Page){});
     // Initialize the array list

@@ -26,7 +26,7 @@ extern "C" {
 
 typedef struct heap_ThrdSafe {
     mem_Allocator child_allocator;
-    Thrd_Mtx      mutex;
+    Thrd_Mtx mutex;
 } heap_ThrdSafe;
 
 /// Get allocator interface for instance

@@ -16,7 +16,7 @@ fn_((ErrTrace_reset_debug(void))(void)) {
 fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
     let trace = ErrTrace__instance();
     if (trace->len < ErrTrace_max_frames) {
-        asg_lit((at$A(trace->frames, trace->len++))({
+        asg_lit((A_at((trace->frames)[trace->len++]))({
             .src_loc = src_loc,
             .ret_addr = ret_addr,
         }));

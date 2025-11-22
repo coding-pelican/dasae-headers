@@ -51,36 +51,36 @@ extern "C" {
 #else
 /* Pre-C++11 */
 #define nullptr NULL
-#define null    NULL
+#define null NULL
 #endif
 #else
 /* C */
 #define nullptr NULL
-#define null    NULL
+#define null NULL
 #endif
 
 /* Nullable-Nonnull attributes */
 #define nullable comp_attr__nullable
-#define nonnull  comp_attr__nonnull
+#define nonnull comp_attr__nonnull
 
 #define Nullable(TPtr) comp_type__Nullable(TPtr)
-#define Nonnull(TPtr)  comp_type__Nonnull(TPtr)
+#define Nonnull(TPtr) comp_type__Nonnull(TPtr)
 
 /*========== Macros Implementation ==========================================*/
 
 #if defined(__clang__)
 #define comp_attr__nullable _Nullable
-#define comp_attr__nonnull  _Nonnull
+#define comp_attr__nonnull _Nonnull
 #elif defined(__GNUC__)
 #define comp_attr__nullable __attribute__((nullable))
-#define comp_attr__nonnull  __attribute__((nonnull))
+#define comp_attr__nonnull __attribute__((nonnull))
 #else
 #define comp_attr__nullable /* nullable */
 #define comp_attr__nonnull  /* nonnull */
 #endif
 
 #define comp_type__Nullable(TPtr) TPtr nullable
-#define comp_type__Nonnull(TPtr)  TPtr nonnull
+#define comp_type__Nonnull(TPtr) TPtr nonnull
 
 #if defined(__cplusplus)
 } /* extern "C" */

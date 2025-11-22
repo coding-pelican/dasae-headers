@@ -2,7 +2,7 @@
 ## see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 ---
 BasedOnStyle: LLVM
-# Language: Cpp
+Language: Cpp
 Standard: c++20
 ColumnLimit: 0
 TabWidth: 4
@@ -19,15 +19,15 @@ InsertNewlineAtEOF: true
 # AlignAfterOpenBracket: AlwaysBreak
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments:
-  # Enabled: true
   Enabled: false
+  # Enabled: true
   AcrossEmptyLines: false
-  # AcrossComments: true
   AcrossComments: false
+  # AcrossComments: true
   AlignCompound: false
   AlignFunctionPointers: false
-  # PadOperators: true
   PadOperators: false
+  # PadOperators: true
 AlignConsecutiveBitFields:
   Enabled: true
   AcrossEmptyLines: false
@@ -36,22 +36,25 @@ AlignConsecutiveBitFields:
   AlignFunctionPointers: false
   PadOperators: true
 AlignConsecutiveDeclarations:
-  # Enabled: true
   Enabled: false
+  # Enabled: true
   AcrossEmptyLines: false
   # AcrossComments: true
   AcrossComments: false
   AlignCompound: false
   AlignFunctionPointers: false
-  # PadOperators: true
   PadOperators: false
+  # PadOperators: true
 AlignConsecutiveMacros:
-  Enabled: true
+  Enabled: false
+  # Enabled: true
   AcrossEmptyLines: false
-  AcrossComments: true
+  AcrossComments: false
+  # AcrossComments: true
   AlignCompound: false
   AlignFunctionPointers: false
-  PadOperators: true
+  PadOperators: false
+  # PadOperators: true
 AlignConsecutiveShortCaseStatements:
   Enabled: true
   AcrossEmptyLines: false
@@ -66,7 +69,8 @@ AllowShortLoopsOnASingleLine: true
 BinPackArguments: true
 BinPackParameters: true
 
-InsertBraces: true
+InsertBraces: false
+# InsertBraces: true
 BreakAfterAttributes: Leave
 BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
@@ -89,6 +93,7 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
+# Cpp11BracedListStyle: true
 Cpp11BracedListStyle: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 BreakConstructorInitializers: BeforeComma
@@ -99,123 +104,159 @@ BreakConstructorInitializers: BeforeComma
 PointerAlignment: Left
 SortIncludes: Never
 
-TypeNames:
-  # Inference
-  - var
-  - let
-  - var_
-  - let_
-  - var_const
-  - let_const
-  - var_const_
-  - let_const_
-  - TypeOf
-  - TypeOfUnqual
-  # primitive
-  - bool
-  - u8
-  - u16
-  - u32
-  - u64
-  - usize
-  - i8
-  - i16
-  - i32
-  - i64
-  - isize
-  - f32
-  - f64
-  - Void
-  - anyptr_const
-  - anyptr
-  - $P_const$
-  # - $P$
-  # - $A$
-  # Raw types
-  - P_const$raw
-  - P$raw
-  - S_const$raw
-  - S$raw
-  - A$raw
-  # Core types
-  - P_const$$
-  # - P$$
-  - P_const$
-  # - P$
-  - S_const$$
-  # - S$$
-  - S_const$
-  # - S$
-  # - A$$
-  # - A$
-  # - O$$
-  # - O$
-  # - E$$
-  # - E$
-  - E$Void
-  - E$void
-  # Legacy types
-  # Pointer
-  - Ptr_const$$
-  - Ptr$$
-  - Ptr_const$
-  - Ptr$
-  # Slice
-  - Sli_const$$
-  - Sli$$
-  - Sli_const$
-  - Sli$
-  # Array
-  - Arr$$
-  - Arr$
-  # Optional value
-  - Opt$$
-  - Opt$
-  # Error result
-  - Err$$
-  - Err$
-  - Err$Void
-  - Err$void
-  # Atomic
-  - atomic_Value$
-  - atomic_Value$$
+# TypeNames:
+#   # Inference
+#   - var
+#   - let
+#   - var_
+#   - let_
+#   - var_const
+#   - let_const
+#   - var_const_
+#   - let_const_
+#   - TypeOf
+#   - TypeOfUnqual
+#   # primitive
+#   - bool
+#   - u8
+#   - u16
+#   - u32
+#   - u64
+#   - usize
+#   - i8
+#   - i16
+#   - i32
+#   - i64
+#   - isize
+#   - f32
+#   - f64
+#   - Void
+#   - $P_const$
+#   - $P$
+#   - $A$
+#   # Raw types
+#   - P_const$raw
+#   - P$raw
+#   - S_const$raw
+#   - S$raw
+#   - A$raw
+#   # Core types
+#   - P_const$$
+#   - P$$
+#   - P_const$
+#   - P$
+#   - S_const$$
+#   - S$$
+#   - S_const$
+#   - S$
+#   - A$$
+#   - A$
+#   - O$$
+#   - O$
+#   - E$$
+#   - E$
+#   - E$Void
+#   - E$void
+#   # Legacy types
+#   - anyptr_const
+#   - anyptr
+
 Macros:
-  # - "TypeOf(T)=T"
-  # - "TypeOfUnqual(T)=T"
-  - "$P$(T)=$P$<T>"
-  - "$A$(N,T)=$A$<N,T*>"
-  - "P$$(T)=P$$<T>"
-  - "P$(T)=P$<T>"
-  - "S$$(T)=S$$<T>"
-  - "S$(T)=S$<T>"
-  # - "A$$(N,T)=A$$<N,T*>"
-  # - "A$(N,T)=A$<N,T*>"
-  - "A$$(N,T)=TypeOf(T[N])"
-  - "A$(N,T)=TypeOf(T[N])"
-  - "O$$(T)=O$$<T>"
-  - "O$(T)=O$<T>"
-  - "E$$(T)=E$$<T>"
-  - "E$(T)=E$<T>"
+  # - edittime_only(inner)=inner
+  # - comptime_only(inner)=inner
+  # - runtime_only(inner)=inner
+  # - dev_only(inner)=inner
+  # - debug_only(inner)=inner
+  # - release_only(inner)=inner
+  # - TEST_only(inner)=inner
 
-  - "as$(Expr)=Expr"
-  - "lit$(Expr)=pp_ignore Expr"
-  - "make$(Expr)=pp_ignore Expr"
-  - "create$(Expr)=pp_ignore Expr"
-  - "type$(Expr)=pp_ignore Expr"
+  - edittime_only(inner)=[](void) -> (void) inner
+  - comptime_only(inner)=[](void) -> (void) inner
+  - runtime_only(inner)=[](void) -> (void) inner
+  - dev_only(inner)=[](void) -> (void) inner
+  - debug_only(inner)=[](void) -> (void) inner
+  - release_only(inner)=[](void) -> (void) inner
+  - TEST_only(inner)=[](void) -> (void) inner
 
-  - "T_decl$(Expr)=pp_ignore Expr"
-  - "T_impl$(Expr)=pp_ignore Expr"
-  - "T_use$(Expr)=pp_ignore Expr"
-  - "errset_(Expr)=pp_ignore Expr"
-  - "variant_(Expr)=pp_ignore Expr"
+  - "T_decl$(Expr)=pp_exec_ignore Expr"
+  - "T_impl$(Expr)=pp_exec_ignore Expr"
+  - "T_use$(Expr)=pp_exec_ignore Expr"
+  - "errset_(Expr)=pp_exec_ignore Expr"
+  - "variant_(Expr)=pp_exec_ignore Expr"
 
-  - "pp_attr_(Attrs)=Attrs;"
-  - "$static="
-  - "$extern="
-  # - "some(_)=_"
-  # - "none()={}"
-  # - "unwrap(_)=_"
-  # - "try_(expr)=try_(expr)"
+  - "$P_const$(T)=const T*"
+  - "$P$(T)=T*"
+  - "$A$(N, T)=T[N]"
+
+  - "P_const$$(T)=P<const T>"
+  - "P$$(T)=P<T>"
+  - "P_const$(T)=P<const T>"
+  - "P$(T)=P<T>"
+
+  - "S_const$$(T)=S<const T>"
+  - "S$$(T)=S<T>"
+  - "S_const$(T)=S<const T>"
+  - "S$(T)=S<T>"
+
+  - "A$$(N, T)=A<N, T>"
+  - "A$(N, T)=A<N, T>"
+
+  - "O$$(T)=O<T>"
+  - "O$(T)=O<T>"
+
+  - "E$$(T)=E<T>"
+  - "E$(T)=E<T>"
+
+  - "as$(T)=(T)"
+  - "lit_n$(T)=(T)"
+  - "lit$(T_Expr)=(T_Expr)"
+  - "make$(T_Expr)=(T_Expr)"
+  - "create$(T_Expr)=(T_Expr)"
+
+  - "$attr(Attrs)=Attrs;"
+  - $inline=__attribute__(());
+  - $inline_always=__attribute__(());
+  - $inline_never=__attribute__(());
+  - $on_load=__attribute__(());
+  - $on_exit=__attribute__(());
+  - $keep_symbol=__attribute__(());
+  - $maybe_unused=__attribute__(());
+
+  - $static=static
+  - $extern=extern
+  - "fn_(Expr)=static Expr"
+  # - "la_(Expr)=[]Expr"
+  - $un_(keyword)=/**/pp_exec_expand
+  - $end(keyword)=/**/
+  - $unscoped_(keyword)=/**/
+  - $unguarded_(keyword)=/**/
+  # - "blk_defer={ do"
+  # - "blk_deferral=while(false); }"
+  # - "blk_defer=("
+  # - "blk_deferral=)"
+
+  - "return_(Expr)=return Expr"
+  - "return_void(Expr)=return Expr"
+
+  - "return_some(Expr)=return some(Expr)"
+  - "return_some_void(Expr)=return some(Expr)"
+  - "return_none(Expr)=return Expr"
+
+  - "return_ok(Expr)=return ok(Expr)"
+  - "return_ok_void(Expr)=return Expr"
+  - "return_err(Expr)=return err(Expr)"
+
+  - "$break_(Expr)=return Expr"
+  - "$break_void(Expr)=return Expr"
+
+  - "$break_some(Expr)=return some(Expr)"
+  - "$break_some_void(Expr)=return Expr"
+  - "$break_none(Expr)=return Expr"
+
+  - "$break_ok(Expr)=return ok(Expr)"
+  - "$break_ok_void(Expr)=return Expr"
+  - "$break_err(Expr)=return err(Expr)"
+
   # Control flow
   - "if_(init, cond)=if (init; cond)"
   - "else_(init)=else if (init; true)"
@@ -232,73 +273,13 @@ Macros:
   - "if_ok(expr)=if (expr)"
   - "if_ok_void(expr)=if (expr)"
   - "else_err(expr)=else if (expr)"
-  - "if_err(expr,_)=if (expr)"
+  - "if_err(expr)=if (expr)"
   - "else_ok(expr)=else if (expr)"
   - "else_ok_void=else"
-  # Union enum
-  # - tagUnion(tag,expr)=/**/
-  # - tagUnion$(T,tag,expr)=/**/
-  # - toTagUnion(addr,tag,expr)=/**/
-  # Match
-  # - "match_(expr)=switch (expr)"
-  # - "pattern_(tag, capture)=case tag:"
-  # - "fallback_(_)=default:"
-  # Eval
-  # - "eval_(_)=({ _; })"
-  # - "eval_(T,_)=(T)({ _; })"
-  # - "eval_return_(_)=return _"
-  # - "asg_eval(_)=({ _; })"
-  # # Scope
-  - $block_guard=/**/
-  - $block_unguarded=/**/
-  - "blk_defer=/*do { /**/ } while (false)*/"
-  - "blk_deferral=/**/"
-  - "blk_return=return"
-  - "break_defer=goto __step_deferred"
-  # - "expr_(keyword)=if (true) {} keyword"
-  # - "expr_(Expr)=({"
-  # - "$unscoped_expr=})"
-  # - "expr_else=else pp_expand"
-  # - "pp_if_(Cond)=pp_expand"
-  # - "pp_then_(Expr)=Expr"
-  # - "pp_else_(Expr)=Expr"
-  - "fn_(Expr)=;pp_expand Expr"
-  - "la_(Expr)=;pp_expand Expr"
-  - "expr_=la_((void)(void))"
-  - "eval_(Expr)=Expr"
-  - $un_(keyword)=/**/pp_expand
-  - $unscoped_(keyword)=/**/
-  - $unguarded_(keyword)=/**/
-  - $unscoped_fn=/**/
-  - $unguarded_fn=/**/
-  - $unscoped_TEST_fn=/**/
-  - $unguarded_TEST_fn=/**/
-  - $unscoped_Thrd_fn=/**/
-  - $unguarded_Thrd_fn=/**/
-  - $unscoped_async_fn=/**/
-  - $unguarded_async_fn=/**/
-  - $unscoped_la=/**/
-  - $unguarded_la=/**/
-  - $unscoped_expr=/**/
-  - $unguarded_expr=/**/
-  - $unscoped_eval=/**/
-  - $unguarded_eval=/**/
-  - edittime_only(inner)=inner
-  - comptime_only(inner)=inner
-  - runtime_only(inner)=inner
-  - dev_only(inner)=inner
-  - debug_only(inner)=inner
-  - release_only(inner)=inner
-  - TEST_only(inner)=inner
-  # - "case_(expr)=expr"
-  # - "default_(expr)=expr"
 
-ForEachMacros:
-  - pp_foreach
+  - "match_(Expr)=switch (expr)"
+
 AttributeMacros:
-  - $static
-  - $extern
-
   - $inline
   - $inline_always
   - $inline_never
@@ -306,63 +287,23 @@ AttributeMacros:
   - $on_load
   - $on_exit
 
-  - $must_check
-  - $must_use
+  - $keep_symbol
   - $maybe_unused
+  - $must_use
+  - $must_check
   - $no_return
-
-  - $ignore_void
-  - $ignore
-  - let_ignore
 
   - $deprecated
   - $deprecated_msg
   - $deprecated_instead
 
+  - $ignore_void
+  - $ignore
+
   - $nullable
   - $nonnull
-StatementAttributeLikeMacros:
-  - $ignore
-  - $ignore_void
-  - eval_return
-  - type$
-  - make$
-  - create$
-  - initial
-  - cleared
-  # - unwrap
-  # - orelse
-  # - try_
-  # - catch_
-  # - catch_from
+
+  - $fallthrough
+
 WhitespaceSensitiveMacros:
-  # - return_
-  # - return_void
-  # - return_some
-  # - return_none
-  # - return_ok
-  # - return_err
   - pipe
-  - config_ErrSet
-  - config_UnionEnum
-  - config_UnionEnumAsField
-  # - fn_
-  # - fn_scope
-  # - fn_scope_ext
-  # - with_
-  # - try_
-  # - catch_
-  # - catch_from
-  # - unwrap
-  # - orelse
-  # - meta_refPtr
-  # - meta_refSli
-  # - meta_refPtr_const
-  # - meta_refSli_const
-  # - meta_castPtr$
-  # - meta_castSli$
-  # - meta_cast$
-  # - meta_ptrToAny
-  # - meta_sliToAny
-  # - make$
-  # - create$

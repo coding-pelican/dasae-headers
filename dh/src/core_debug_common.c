@@ -33,7 +33,7 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
 #include <sys/sysctl.h>
 #include <unistd.h>
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    i32 mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
+    i32 mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
     struct kinfo_proc info;
     usize size = sizeof(info);
     if (sysctl(mib, 4, &info, &size, null, 0) == 0) {

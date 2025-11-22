@@ -23,14 +23,14 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define claim__fail_logging_default_enabled __comp_flag__claim__fail_logging_default_enabled
-#define claim_fail_logging_comp_enabled     __comp_bool__claim_fail_logging_comp_enabled
+#define claim_fail_logging_comp_enabled __comp_bool__claim_fail_logging_comp_enabled
 
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
 
 #define __comp_flag__claim__fail_logging_default_enabled 1
-#define __comp_bool__claim_fail_logging_comp_enabled     claim__fail_logging_default_enabled
+#define __comp_bool__claim_fail_logging_comp_enabled claim__fail_logging_default_enabled
 
 /* Override values */
 

@@ -75,8 +75,8 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 #if on_comptime
 
 #define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define log_info(...)  log_message(log_Level_info, __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define log_warn(...)  log_message(log_Level_warn, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_info(...) log_message(log_Level_info, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_warn(...) log_message(log_Level_warn, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define log_error(...) log_message(log_Level_error, __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 #else
@@ -90,8 +90,8 @@ static $inline_always void log_error(const char* fmt, ...) { let_ignore = fmt; }
 #else
 
 #define log_debug(...) $unused(0)
-#define log_info(...)  $unused(0)
-#define log_warn(...)  $unused(0)
+#define log_info(...) $unused(0)
+#define log_warn(...) $unused(0)
 #define log_error(...) $unused(0)
 
 #endif

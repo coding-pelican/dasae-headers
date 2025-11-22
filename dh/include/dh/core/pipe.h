@@ -5,16 +5,15 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 // Check if argument list is empty
-#define PIPE_HAS_ARGS(...) \
-    PIPE_HAS_ARGS_IMPL(__VA_OPT__(, ) __VA_ARGS__, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0) // 드디어 해냈다 ㅜㅜㅜㅜㅜ
+#define PIPE_HAS_ARGS(...) PIPE_HAS_ARGS_IMPL(__VA_OPT__(, ) __VA_ARGS__, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0) // 드디어 해냈다 ㅜㅜㅜㅜㅜ
 #define PIPE_HAS_ARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) N
 
 // Conditional comma macro
 #define PIPE_EMPTY()
 #define PIPE_IGNORE(...)
 #define PIPE_EXPAND(...) __VA_ARGS__
-#define PIPE_DEFER(...)  __VA_ARGS__ PIPE_EMPTY()
-#define PIPE_COMMA()     ,
+#define PIPE_DEFER(...) __VA_ARGS__ PIPE_EMPTY()
+#define PIPE_COMMA() ,
 
 // Helper macros
 #define PAREN_OPEN() (
@@ -29,8 +28,7 @@ extern "C" {
 #define PIPE_COMMA_IGNORE_OPEN() , PIPE_IGNORE(
 #define PIPE_COMMA_IGNORE_CLOSE() )
 
-#define PIPE_exec(...) \
-    pp_join($, __PIPE_exec, __VA_ARGS__)
+#define PIPE_exec(...) pp_join($, __PIPE_exec, __VA_ARGS__)
 #define __PIPE_exec$0comma_ignore_open \
     , PIPE_DEFER(PIPE_IGNORE)(
 #define __PIPE_exec$0comma_ignore_close \
@@ -41,21 +39,21 @@ extern "C" {
     )
 
 #define PIPE_REPLACE_COMMA_AND_IGNORE_IF(...) PIPE_IF((PIPE_HAS_ARGS(__VA_ARGS__)), 0comma_ignore_open, 0ignore_open)
-#define PIPE_IF(_cond, _t, _f)                PIPE_IF_IMPL(PIPE_EXPAND _cond, _t, _f)
-#define PIPE_IF_IMPL(_cond, _t, _f)           pp_join(_, PIPE_IF, _cond)(_t, _f)
-#define PIPE_IF_1(_t, _f)                     _t
-#define PIPE_IF_0(_t, _f)                     _f
+#define PIPE_IF(_cond, _t, _f) PIPE_IF_IMPL(PIPE_EXPAND _cond, _t, _f)
+#define PIPE_IF_IMPL(_cond, _t, _f) pp_join(_, PIPE_IF, _cond)(_t, _f)
+#define PIPE_IF_1(_t, _f) _t
+#define PIPE_IF_0(_t, _f) _f
 
 // Apply a function with a value and arguments
-#define PIPE_MAP(F, ARG...)                     F ARG
-#define PIPE_JOIN_VALUE_TO_ARGS(value, args...) PIPE_EXPAND_WITH_PARENS_OPEN value PIPE_exec(PIPE_REPLACE_COMMA_AND_IGNORE_IF args) PIPE_exec(0comma_ignore_close) PIPE_EXPAND_WITH_PARENS_CLOSE args
-#define PIPE_APPLY(value, func, args...)        PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
+#define PIPE_MAP(F, ARG...) F ARG
+#define PIPE_JOIN_VALUE_TO_ARGS(value, args...) \
+    PIPE_EXPAND_WITH_PARENS_OPEN value PIPE_exec(PIPE_REPLACE_COMMA_AND_IGNORE_IF args) PIPE_exec(0comma_ignore_close) PIPE_EXPAND_WITH_PARENS_CLOSE args
+#define PIPE_APPLY(value, func, args...) PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
 
 // Process a single step in the pipe
 #define PIPE_STEP(prev_result_var, step_num, func, args...) \
     var ret##step_num = Generic_match$( \
-        TypeOf(PIPE_APPLY((prev_result_var), func, args)), \
-        Generic_pattern$(void) blk({ \
+        TypeOf(PIPE_APPLY((prev_result_var), func, args)), Generic_pattern$(void) blk({ \
             let_ignore = PIPE_APPLY((prev_result_var), func, args); \
             blk_return make$((Void){}); \
         }), \
@@ -66,11 +64,12 @@ extern "C" {
 #define PIPE_RESULT(step_num) ret##step_num
 
 // Main pipe implementation
-#define pipe(initial_value...)             comp_syn__pipe(initial_value)
-#define comp_syn__pipe(initial_value, ...) ({ \
-    var __pipe_initial = initial_value; \
-    PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
-})
+#define pipe(initial_value...) comp_syn__pipe(initial_value)
+#define comp_syn__pipe(initial_value, ...) \
+    ({ \
+        var __pipe_initial = initial_value; \
+        PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
+    })
 
 // Extract function and args from pair
 #define PIPE_GET_FUNC(_func, _args) _func

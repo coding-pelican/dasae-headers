@@ -28,10 +28,10 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_use_ListDbl_Node$(T)  comp_type_gen__T_use_ListDbl_Node$(T)
+#define T_use_ListDbl_Node$(T) comp_type_gen__T_use_ListDbl_Node$(T)
 #define T_decl_ListDbl_Node$(T) comp_type_gen__T_decl_ListDbl_Node$(T)
 #define T_impl_ListDbl_Node$(T) comp_type_gen__T_impl_ListDbl_Node$(T)
-#define ListDbl_Node$(T)        comp_type_alias__ListDbl_Node$(T)
+#define ListDbl_Node$(T) comp_type_alias__ListDbl_Node$(T)
 
 typedef struct ListDbl_Node ListDbl_Node;
 T_use_P$(ListDbl_Node);
@@ -46,10 +46,10 @@ extern fn_((ListDbl_Node_init(TypeInfo type))(ListDbl_Node));
 extern fn_((ListDbl_Node_data(ListDbl_Node* node))(u_P_const$raw));
 extern fn_((ListDbl_Node_dataMut(ListDbl_Node* node))(u_P$raw));
 
-#define T_use_ListDbl$(T)  comp_type_gen__T_use_ListDbl$(T)
+#define T_use_ListDbl$(T) comp_type_gen__T_use_ListDbl$(T)
 #define T_decl_ListDbl$(T) comp_type_gen__T_decl_ListDbl$(T)
 #define T_impl_ListDbl$(T) comp_type_gen__T_impl_ListDbl$(T)
-#define ListDbl$(T)        comp_type_alias__ListDbl$(T)
+#define ListDbl$(T) comp_type_alias__ListDbl$(T)
 
 typedef struct ListDbl$raw {
     var_(first, O$P$ListDbl_Node);

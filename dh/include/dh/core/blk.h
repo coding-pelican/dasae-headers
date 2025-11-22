@@ -25,10 +25,10 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define blk_(_label, _BreakType_and_Body...) pp_overload(__blk, _BreakType_and_Body)(_label, _BreakType_and_Body)
-#define __blk_1(_label, _Body...)            comp_syn__blk_((_label, Void), _Body)
-#define __blk_2(_label, _RetType, _Body...)  comp_syn__blk_((_label, _RetType), _Body)
-#define blk_break_(_label, ...)              comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
-#define break_(_label, ...)                  comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
+#define __blk_1(_label, _Body...) comp_syn__blk_((_label, Void), _Body)
+#define __blk_2(_label, _RetType, _Body...) comp_syn__blk_((_label, _RetType), _Body)
+#define blk_break_(_label, ...) comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
+#define break_(_label, ...) comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
 
 /*========== Macros and Definitions =========================================*/
 

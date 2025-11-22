@@ -193,17 +193,20 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     __VA_ARGS__
 
 // Helper macros for generating individual cases
-#define GEN__config_ErrSet__ENUM__Code__member(Name, Value) \
-    pp_cat3(Name, Code_, Value),
+#define GEN__config_ErrSet__ENUM__Code__member(Name, ...) __VA_OPT__( \
+    pp_cat3(Name, Code_, __VA_ARGS__), \
+)
 
-#define GEN__config_ErrSet__FN__codeToStrZ__case(Name, Value) \
-    case pp_cat3(Name, Code_, Value): \
-        return u8_l0(#Value);
+#define GEN__config_ErrSet__FN__codeToStrZ__case(Name, ...) __VA_OPT__( \
+    case pp_cat3(Name, Code_, __VA_ARGS__): \
+        return u8_l0(#__VA_ARGS__); \
+)
 
-#define GEN__config_ErrSet__FN__ctorTemplate(Name, Value) \
-    static $inline $maybe_unused fn_((pp_join(_, Name, Value)(void))(Err)) { \
-        return pp_join(_, Name, err)(pp_cat3(Name, Code_, Value)); \
-    }
+#define GEN__config_ErrSet__FN__ctorTemplate(Name, ...) __VA_OPT__( \
+    static $inline $maybe_unused fn_((pp_join(_, Name, __VA_ARGS__)(void))(Err)) { \
+        return pp_join(_, Name, err)(pp_cat3(Name, Code_, __VA_ARGS__)); \
+    } \
+)
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

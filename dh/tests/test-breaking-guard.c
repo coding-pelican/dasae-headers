@@ -4,14 +4,10 @@
 $static fn_((checkFlag(void))(bool)) { return false; }
 TEST_fn_("test breaking guard" $guard) {
     T_use_A$(10, i32);
-    // use_A$(10, i32) arr = A_zero();
-    // var deferred_list = Sli_from$(S$i32, arr.buf, 0);
-    // S$i32 deferred_list = { .ptr = ({ A$$(10, i32) a = {}; a; }).buf, .len = 0 };
-    // S$i32 deferred_list = { .ptr = (&copy(({ A$(10, i32) a = {}; a; })))->buf, .len = 0 };
-    S$i32 deferred_list = { .ptr = ((A$(10, i32)){}).val, .len = 0 };
-    let append = la_((S$i32* list, i32 val)(void)) { list->ptr[list->len++] = val; };
+    S$i32 deferred_list = { .ptr = lit$((A$(10, i32)){}).val, .len = 0 };
+    let append = la_((S$i32 * list, i32 val)(void)) { list->ptr[list->len++] = val; };
 
-    blk_defer {
+    blk_defer_({
         defer_({
             io_stream_println(u8_l("defer1"));
             append(&deferred_list, 1);
@@ -20,35 +16,35 @@ TEST_fn_("test breaking guard" $guard) {
         io_stream_println(u8_l("checkFlag: {:s}"), checkFlag() ? u8_l("true") : u8_l("false"));
         io_stream_println(u8_l("before blk_defer"));
 
-        if (checkFlag()) blk_defer {
+        if (checkFlag()) blk_defer_({
             defer_({
                 io_stream_println(u8_l("defer2"));
                 append(&deferred_list, 2);
             });
             io_stream_println(u8_l("checkFlag is true"));
-        } blk_deferral else blk_defer {
+        }) blk_deferral else blk_defer_({
             defer_({
                 io_stream_println(u8_l("defer3"));
                 append(&deferred_list, 3);
             });
             io_stream_println(u8_l("checkFlag is false"));
-        } blk_deferral;
+        }) blk_deferral;
         io_stream_println(u8_l("after blk_defer"));
 
         defer_({
             io_stream_println(u8_l("defer4"));
             append(&deferred_list, 4);
         });
-        let something = expr_(i32 $guard) {
+        let something = expr_(i32 $guard)({
             defer_({
                 io_stream_println(u8_l("defer5"));
                 append(&deferred_list, 5);
             });
             if (true) { $break_(123); }
             return_ok({});
-        } $unguarded_(expr);
+        }) $unguarded_(expr);
         io_stream_println(u8_l("something: {:d}"), something);
-    } blk_deferral;
+    }) blk_deferral;
 
     let expected_list = A_from$((i32){ 3, 5, 4, 1 });
     io_stream_println(u8_l("{:z}: {:d}"), nameOf(S_len(deferred_list)), deferred_list.len);

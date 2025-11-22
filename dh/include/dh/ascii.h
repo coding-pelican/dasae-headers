@@ -118,7 +118,7 @@ static $inline fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; 
 static $inline fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); }
 /// Whitespace for general use.
 /// This may be used with e.g. `mem_trim` to trim whitespace.
-static let ascii_whitespaces = init$A$$((6, u8){ ' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff });
+static let ascii_whitespaces = init$A$$((6, u8){' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff});
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 static $inline fn_((ascii_toUpper(u8 c))(u8)) {

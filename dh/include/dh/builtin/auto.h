@@ -11,8 +11,8 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #define auto __comp_syn__auto
-#define var  __comp_syn__var
-#define let  __comp_syn__let
+#define var __comp_syn__var
+#define let __comp_syn__let
 
 #define var_(_ident, _T...) __comp_syn__var_(_ident, _T)
 #define let_(_ident, _T...) __comp_syn__let_(_ident, _T)
@@ -35,8 +35,8 @@ extern "C" {
 #else
 /* Pre-C++11 */
 #define __comp_syn__auto __no_support__auto
-#define __comp_syn__var  __no_support__var
-#define __comp_syn__let  __no_support__let
+#define __comp_syn__var __no_support__var
+#define __comp_syn__let __no_support__let
 #warning "C++11 or later is required for auto keyword support"
 #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ > 201710L)
@@ -47,13 +47,13 @@ extern "C" {
 #elif defined(__GNUC__) || defined(__GNUG__)
 /* GCC or Clang - use __auto_type extension available in C99 and later */
 #define __comp_syn__auto __auto_type
-#define __comp_syn__var  __auto_type
-#define __comp_syn__let  __auto_type const
+#define __comp_syn__var __auto_type
+#define __comp_syn__let __auto_type const
 #else
 /* Compiler does not support auto type deduction */
 #define __comp_syn__auto __no_support__auto
-#define __comp_syn__var  __no_support__var
-#define __comp_syn__let  __no_support__let
+#define __comp_syn__var __no_support__var
+#define __comp_syn__let __no_support__let
 #warning "No support for auto type deduction in this compiler"
 #endif
 
