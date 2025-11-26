@@ -25,27 +25,24 @@ $static fn_((printPoints(ArrList$Point points))(void)) {
     });
 }
 
-$must_check
-$static
-fn_((example(void))(mem_Err$void) $guard) {
+$attr($must_check)
+$static fn_((example(void))(mem_Err$void) $guard) {
     // Initialize the allocator
     let gpa = heap_Page_allocator(&(heap_Page){});
+
     // Initialize the array list
     var points = try_(ArrList_init$Point(gpa, 8));
-
     // ArrList$Point points = { .as_raw[0] =  };
     defer_(ArrList_fini$Point(&points, gpa));
 
     // Append a single item
     try_(ArrList_append$Point(&points, gpa, (Point){ .x = 10, .y = 20 }));
-
     // Append multiple items at once
     var more_points = A_from$((Point){
         [0] = { .x = 30, .y = 40 },
         [1] = { .x = 50, .y = 60 },
     });
     try_(ArrList_appendS$Point(&points, gpa, ref$A$((Point)(more_points)).as_const));
-
     // Print current state
     printPoints(points);
 

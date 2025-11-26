@@ -12,7 +12,7 @@ $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
 } $unscoped_(fn);
 
 // Function that uses unwrap and orelse for default values
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
     // unwrap_() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
@@ -71,14 +71,14 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     // Create some optional values
     let opt_with_value = (O$i32)some(42);
-    let opt_empty      = (O$i32)none();
+    let opt_empty = (O$i32)none();
 
     // Array for demonstration
     A$$(5, i32) numbers = A_init({ 1, 3, 5, 7, 9 });
 
     // Demonstrate finding values
     let found_index = findValueIndex(5, A_ref$((S_const$i32)(numbers)));
-    let not_found   = findValueIndex(6, A_ref$((S_const$i32)(numbers)));
+    let not_found = findValueIndex(6, A_ref$((S_const$i32)(numbers)));
 
     io_stream_println(u8_l("---- Optional Value Demonstration ----"));
 
@@ -128,7 +128,7 @@ $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     });
-    return_none(); // Return with no value
+    return_none();                // Return with no value
 } $unscoped_(fn);
 
 $static fn_((example(void))(void) $scope) {

@@ -1,21 +1,21 @@
 #include "dh/main.h"
 
-$must_check
+$attr($must_check)
 $static fn_((alwaysFailure(void))(E$void) $scope) {
     return_err(Err_Unexpected());
 } $unscoped_(fn);
 
-$must_check
+$attr($must_check)
 $static fn_((func3(void))(E$void) $scope) {
     return_ok(try_(alwaysFailure()));
 } $unscoped_(fn);
 
-$must_check
+$attr($must_check)
 $static fn_((func2(void))(E$void) $scope) {
     return_ok(try_(func3()));
 } $unscoped_(fn);
 
-$must_check
+$attr($must_check)
 $static fn_((func1(void))(E$void) $scope) {
     return_ok(try_(func2()));
 } $unscoped_(fn);

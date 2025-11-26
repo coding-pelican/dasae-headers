@@ -398,16 +398,16 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_appendS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_appendS, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_appendS(self->as_raw, gpa, u_anyS_const(items)); \
+        return ArrList_appendS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrList_appendFixedS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_appendFixedS, _T)(P$$(ArrList$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_appendFixedS(self->as_raw, u_anyS_const(items)); \
+        return ArrList_appendFixedS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrList_appendWithinS$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_appendWithinS, _T)(P$$(ArrList$(_T)) self, S$(const _T) items))(void)) { \
-        return ArrList_appendWithinS(self->as_raw, u_anyS_const(items)); \
+        return ArrList_appendWithinS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrList_appendN$(_T...) \
     $must_check \
@@ -441,16 +441,16 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_insertS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_insertS, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, usize idx, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_insertS(self->as_raw, gpa, idx, u_anyS_const(items)); \
+        return ArrList_insertS(self->as_raw, gpa, idx, u_anyS(items)); \
     }
 #define T_use_ArrList_insertFixedS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_insertFixedS, _T)(P$$(ArrList$(_T)) self, usize idx, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_insertFixedS(self->as_raw, idx, u_anyS_const(items)); \
+        return ArrList_insertFixedS(self->as_raw, idx, u_anyS(items)); \
     }
 #define T_use_ArrList_insertWithinS$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_insertWithinS, _T)(P$$(ArrList$(_T)) self, usize idx, S$(const _T) items))(void)) { \
-        return ArrList_insertWithinS(self->as_raw, idx, u_anyS_const(items)); \
+        return ArrList_insertWithinS(self->as_raw, idx, u_anyS(items)); \
     }
 
 #define T_use_ArrList_prepend$(_T...) \
@@ -470,16 +470,16 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_prependS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_prependS, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_prependS(self->as_raw, gpa, u_anyS_const(items)); \
+        return ArrList_prependS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrList_prependFixedS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_prependFixedS, _T)(P$$(ArrList$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
-        return ArrList_prependFixedS(self->as_raw, u_anyS_const(items)); \
+        return ArrList_prependFixedS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrList_prependWithinS$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_prependWithinS, _T)(P$$(ArrList$(_T)) self, S$(const _T) items))(void)) { \
-        return ArrList_prependWithinS(self->as_raw, u_anyS_const(items)); \
+        return ArrList_prependWithinS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrList_prependN$(_T...) \
     $must_check \
@@ -499,16 +499,16 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_replace$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_replace, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, R range, S$(const _T) new_items))(mem_Err$void)) { \
-        return ArrList_replace(self->as_raw, gpa, range, u_anyS_const(new_items)); \
+        return ArrList_replace(self->as_raw, gpa, range, u_anyS(new_items)); \
     }
 #define T_use_ArrList_replaceFixed$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrList_replaceFixed, _T)(P$$(ArrList$(_T)) self, R range, S$(const _T) new_items))(mem_Err$void)) { \
-        return ArrList_replaceFixed(self->as_raw, range, u_anyS_const(new_items)); \
+        return ArrList_replaceFixed(self->as_raw, range, u_anyS(new_items)); \
     }
 #define T_use_ArrList_replaceWithin$(_T...) \
     $inline_always $static fn_((tpl_id(ArrList_replaceWithin, _T)(P$$(ArrList$(_T)) self, R range, S$(const _T) new_items))(void)) { \
-        return ArrList_replaceWithin(self->as_raw, range, u_anyS_const(new_items)); \
+        return ArrList_replaceWithin(self->as_raw, range, u_anyS(new_items)); \
     }
 
 #define T_use_ArrList_pop$(_T...) \

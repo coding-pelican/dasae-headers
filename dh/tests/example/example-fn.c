@@ -8,7 +8,7 @@
 
 /* declarations */
 T_use_E$($set(math_Err)(i32));
-$must_check
+$attr($must_check)
 $static fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32));
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {

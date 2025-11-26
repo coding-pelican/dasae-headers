@@ -481,7 +481,7 @@ typedef enum chain__State : u8 {
         $break_(_default); \
     } else { \
         let _p_e = __reserved; \
-        let _acc = __reserved_acc; \
+        var _acc = __reserved_acc; \
         $break_(_combine); \
     }; \
 }) $unscoped_(expr)
@@ -498,7 +498,7 @@ typedef enum chain__State : u8 {
             continue; \
         }; \
         let _p_e = __reserved; \
-        let _acc = orelse_((__reserved_acc)(*__reserved)); \
+        var _acc = orelse_((__reserved_acc)(*__reserved)); \
         $break_(some(_combine)); \
     }; \
 }) $unscoped_(expr)

@@ -265,16 +265,16 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
 #define T_use_ArrPQue_enqueS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrPQue_enqueS, _T)(P$$(ArrPQue$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
-        return ArrPQue_enqueS(self->as_raw, gpa, u_anyS_const(items)); \
+        return ArrPQue_enqueS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrPQue_enqueSFixed$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrPQue_enqueSFixed, _T)(P$$(ArrPQue$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
-        return ArrPQue_enqueSFixed(self->as_raw, u_anyS_const(items)); \
+        return ArrPQue_enqueSFixed(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrPQue_enqueSWithin$(_T...) \
     $inline_always $static fn_((tpl_id(ArrPQue_enqueSWithin, _T)(P$$(ArrPQue$(_T)) self, S$(const _T) items))(void)) { \
-        return ArrPQue_enqueSWithin(self->as_raw, u_anyS_const(items)); \
+        return ArrPQue_enqueSWithin(self->as_raw, u_anyS(items)); \
     }
 
 #define T_use_ArrPQue_deque$(_T...) \

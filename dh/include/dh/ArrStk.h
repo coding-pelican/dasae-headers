@@ -301,16 +301,16 @@ extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrStk_pushS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrStk_pushS, _T)(P$$(ArrStk$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
-        return ArrStk_pushS(self->as_raw, gpa, u_anyS_const(items)); \
+        return ArrStk_pushS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushFixedS$(_T...) \
     $must_check \
     $inline_always $static fn_((tpl_id(ArrStk_pushFixedS, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
-        return ArrStk_pushFixedS(self->as_raw, u_anyS_const(items)); \
+        return ArrStk_pushFixedS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushWithinS$(_T...) \
     $inline_always $static fn_((tpl_id(ArrStk_pushWithinS, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(void)) { \
-        return ArrStk_pushWithinS(self->as_raw, u_anyS_const(items)); \
+        return ArrStk_pushWithinS(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushN$(_T...) \
     $must_check \
