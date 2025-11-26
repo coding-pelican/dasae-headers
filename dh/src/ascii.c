@@ -167,10 +167,10 @@ fn_((ascii_cmpSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) {
     let min_len = prim_min(ascii_lhs.len, ascii_rhs.len);
     for (usize i = 0; i < min_len; ++i) {
         switch (prim_ord(ascii_lhs.ptr[i], ascii_rhs.ptr[i])) {
-            case_((cmp_Ord_lt)(return cmp_Ord_lt));
-            case_((cmp_Ord_gt)(return cmp_Ord_gt));
-            case_((cmp_Ord_eq)(continue));
-            default_(claim_unreachable);
+            case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
+            case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
+            case_((cmp_Ord_eq)) continue $end(case);
+            default_() claim_unreachable $end(default);
         }
     }
     return prim_ord(ascii_lhs.len, ascii_rhs.len);
@@ -183,10 +183,10 @@ fn_((ascii_cmpIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) 
     let min_len = prim_min(ascii_lhs.len, ascii_rhs.len);
     for (usize i = 0; i < min_len; ++i) {
         switch (prim_ord(ascii_toLower(ascii_lhs.ptr[i]), ascii_toLower(ascii_rhs.ptr[i]))) {
-            case_((cmp_Ord_lt)(return cmp_Ord_lt));
-            case_((cmp_Ord_gt)(return cmp_Ord_gt));
-            case_((cmp_Ord_eq)(continue));
-            default_(claim_unreachable);
+            case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
+            case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
+            case_((cmp_Ord_eq)) continue $end(case);
+            default_() claim_unreachable $end(default);
         }
     }
     return prim_ord(ascii_lhs.len, ascii_rhs.len);

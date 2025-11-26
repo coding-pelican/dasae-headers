@@ -29,7 +29,7 @@ extern "C" {
 
 #include "prl.h"
 #include "mem/Allocator.h"
-#include "ArrSet.h"  // For u_HashCtxFn definition
+#include "ArrSet.h" // For u_HashCtxFn definition
 
 /*========== Macros and Declarations ========================================*/
 
@@ -47,7 +47,7 @@ typedef struct ArrMap {
     var_(keys, S$raw);
     var_(vals, S$raw);
     var_(cap, usize);
-    var_(index, u_P$raw);         // Hash index (null if len < 8)
+    var_(index, u_P$raw); // Hash index (null if len < 8)
     var_(hashFn, u_HashCtxFn);
     var_(eqlFn, u_EqlCtxFn);
     var_(ctx, u_P_const$raw);
@@ -56,6 +56,7 @@ typedef struct ArrMap {
 } ArrMap;
 T_use$((ArrMap)(O, E));
 T_use_E$($set(mem_Err)(ArrMap));
+typedef E$$($set(mem_Err)(bool)) ArrMap_mem_Err$bool;
 
 /* ArrMap_KV - Key-Value pair structure */
 typedef struct ArrMap_KV {
@@ -108,9 +109,9 @@ extern fn_((ArrMap_clearRetainingCap(ArrMap* self))(void));
 extern fn_((ArrMap_clearAndFree(ArrMap* self, TypeInfo key_type, TypeInfo val_type, mem_Allocator gpa))(void));
 
 /* Insertion operations - three-tier pattern */
-extern fn_((ArrMap_put(ArrMap* self, mem_Allocator gpa, u_V$raw key, u_V$raw val))(mem_Err$bool)) $must_check;
-extern fn_((ArrMap_putFixed(ArrMap* self, u_V$raw key, u_V$raw val))(mem_Err$bool)) $must_check;
-extern fn_((ArrMap_putWithin(ArrMap* self, u_V$raw key, u_V$raw val))(bool));
+extern fn_((ArrMap_put(ArrMap* self, mem_Allocator gpa, u_V$raw key, u_V$raw val))(ArrMap_mem_Err$bool)) $must_check;
+extern fn_((ArrMap_putFixed(ArrMap* self, u_V$raw key, u_V$raw val))(ArrMap_mem_Err$bool)) $must_check;
+extern fn_((ArrMap_putWithin(ArrMap* self, u_V$raw key, u_V$raw val))(ArrMap_mem_Err$bool));
 
 /* GetOrPut pattern - returns pointers to key and value, and whether it was newly inserted */
 typedef struct ArrMap_GetOrPutResult {
@@ -195,8 +196,7 @@ extern fn_((ArrMap_ValIter_nextMut(ArrMap_ValIter* self, TypeInfo val_type))(O$u
             var_(hashFn, u_HashCtxFn); \
             var_(eqlFn, u_EqlCtxFn); \
             var_(ctx, u_P_const$raw); \
-            debug_only(var_(key_type, TypeInfo);) \
-            debug_only(var_(val_type, TypeInfo);) \
+            debug_only(var_(key_type, TypeInfo);) debug_only(var_(val_type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrMap); \
     }
@@ -216,8 +216,7 @@ extern fn_((ArrMap_ValIter_nextMut(ArrMap_ValIter* self, TypeInfo val_type))(O$u
             var_(hashFn, u_HashCtxFn); \
             var_(eqlFn, u_EqlCtxFn); \
             var_(ctx, u_P_const$raw); \
-            debug_only(var_(key_type, TypeInfo);) \
-            debug_only(var_(val_type, TypeInfo);) \
+            debug_only(var_(key_type, TypeInfo);) debug_only(var_(val_type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrMap); \
     }; \
@@ -233,8 +232,7 @@ extern fn_((ArrMap_ValIter_nextMut(ArrMap_ValIter* self, TypeInfo val_type))(O$u
         struct { \
             var_(map, P_const$$(ArrMap$$(_K, _V))); \
             var_(index, usize); \
-            debug_only(var_(key_type, TypeInfo);) \
-            debug_only(var_(val_type, TypeInfo);) \
+            debug_only(var_(key_type, TypeInfo);) debug_only(var_(val_type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrMap_Iter); \
     }
@@ -246,8 +244,7 @@ extern fn_((ArrMap_ValIter_nextMut(ArrMap_ValIter* self, TypeInfo val_type))(O$u
         struct { \
             var_(map, P_const$$(ArrMap$$(_K, _V))); \
             var_(index, usize); \
-            debug_only(var_(key_type, TypeInfo);) \
-            debug_only(var_(val_type, TypeInfo);) \
+            debug_only(var_(key_type, TypeInfo);) debug_only(var_(val_type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrMap_Iter); \
     }

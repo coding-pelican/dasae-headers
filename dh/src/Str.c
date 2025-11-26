@@ -273,22 +273,6 @@ StrHash Str_hash(S_const$u8 self) {
     return hashMurmur3(self.ptr, self.len);
 }
 
-cmp_fnCmp(S_const$u8) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(other.ptr);
-    let cmp = mem_ordBytes(self, other);
-    if (cmp != 0) { return cmp; }
-    return prim_ord(self.len, self.len);
-}
-
-cmp_fnCmp(S$u8) {
-    debug_assert_nonnull(self.ptr);
-    debug_assert_nonnull(other.ptr);
-    let cmp = mem_ordBytes(self.as_const, other.as_const);
-    if (cmp != 0) { return cmp; }
-    return prim_ord(self.len, self.len);
-}
-
 usize StrUtf8_len(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     usize count = 0;

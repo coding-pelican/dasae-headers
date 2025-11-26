@@ -43,8 +43,8 @@ fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
     GetSystemInfo(&sysInfo);
     return_ok(as$(usize)(sysInfo.dwNumberOfProcessors));
 #elif defined(__APPLE__) && defined(__MACH__)
-    i32   cpu_count = 0;
-    usize size      = sizeOf(cpu_count);
+    i32 cpu_count = 0;
+    usize size = sizeOf(cpu_count);
     if (sysctlbyname("hw.ncpu", &cpu_count, &size, null, 0) != 0) {
         return_err(E_Unspecified()); // TODO: Change to specified err
     }
@@ -133,13 +133,13 @@ fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
 
     // Couldn't we pass the stack size to Thrd_SpawnConfig?
     switch_((Thrd_Handle handle = {})(
-        pthread_create(&handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx))
-    ) {
-        case_((/*SUCCESS*/ 0)    (return_ok({ .handle = handle })));
-        case_((/*AGAIN*/ EAGAIN) (return_err(Err_Unspecified()))); // TODO: Change to specified err
-        case_((/*PERM*/ EPERM)   ($fallthrough));
-        case_((/*INVAL*/ EINVAL) (claim_unreachable));
-        default_((return_err(Err_Unexpected())));
+        pthread_create(&handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx)
+    )) {
+        case_((/*SUCCESS*/ 0)) return_ok({ .handle = handle }) $end(case);
+        case_((/*AGAIN*/ EAGAIN)) return_err(Err_Unspecified()) $end(case); // TODO: Change to specified err
+        case_((/*PERM*/ EPERM)) $fallthrough $end(case);
+        case_((/*INVAL*/ EINVAL)) claim_unreachable $end(case);
+        default_() return_err(Err_Unexpected()) $end(default);
     }
     claim_unreachable;
 } $unscoped_(fn);
@@ -152,6 +152,6 @@ fn_((Thrd_detach(Thrd self))(void)) {
 fn_((Thrd_join(Thrd self))(Thrd_FnCtx*)) {
     debug_assert(self.handle != 0);
     P$raw ctx_ptr = null;
-    let_ignore        = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
+    let_ignore = pthread_join(self.handle, &ctx_ptr); // TODO: handle err
     return as$(Thrd_FnCtx*)(ctx_ptr);
 }

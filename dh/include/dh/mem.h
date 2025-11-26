@@ -14,8 +14,8 @@
  * @details Provides memory management utilities with type-safe operations.
  */
 
-#ifndef MEM_INCLUDED
-#define MEM_INCLUDED (1)
+#ifndef mem__included
+#define mem__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -30,4 +30,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* MEM_INCLUDED */
+#endif /* mem__included */

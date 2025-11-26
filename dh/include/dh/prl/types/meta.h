@@ -407,8 +407,8 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // #define u_anyP(_p...) ((u_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 #define u_anyP(_p...) _Generic( \
     TypeOf(*_p), \
-    const TypeOfUnqual(*_p): ((u_P_const$raw){ .raw = *(P_const$raw*)(_p), .type = typeInfo$(TypeOf(*_p)) }), \
-    TypeOfUnqual(*_p): ((u_P$raw){ .raw = *(P$raw*)(_p), .type = typeInfo$(TypeOf(*_p)) }) \
+    const TypeOfUnqual(*_p): ((u_P_const$raw){ .raw = (P_const$raw)(_p), .type = typeInfo$(TypeOf(*_p)) }), \
+    TypeOfUnqual(*_p): ((u_P$raw){ .raw = (P$raw)(_p), .type = typeInfo$(TypeOf(*_p)) }) \
 )
 // #define u_anyS_const(_s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 // #define u_anyS(_s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })

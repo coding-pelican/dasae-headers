@@ -37,11 +37,13 @@ extern "C" {
 
 #define pp_cat(_LhsTok, _RhsTok...) pp_exec_cat(_LhsTok, _RhsTok)
 #define pp_cat2(_LhsTok, _RhsTok...) pp_exec_cat2(_LhsTok, _RhsTok)
-#define pp_cat3(_LhsTok, _Tok_mid, _RhsTok...) pp_exec_cat3(_LhsTok, _Tok_mid, _RhsTok)
+#define pp_cat3(_LhsTok, _MidTok, _RhsTok...) pp_exec_cat3(_LhsTok, _MidTok, _RhsTok)
+#define pp_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok)
 
 #define pp_join(_SepTok, _LhsTok, _RhsTok...) pp_exec_join(_SepTok, _LhsTok, _RhsTok)
 #define pp_join2(_SepTok, _LhsTok, _RhsTok...) pp_exec_join2(_SepTok, _LhsTok, _RhsTok)
-#define pp_join3(_SepTok, _LhsTok, _Tok_mid, _RhsTok...) pp_exec_join3(_SepTok, _LhsTok, _Tok_mid, _RhsTok)
+#define pp_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok)
+#define pp_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok)
 
 #define pp_uniqTok(_Tok...) pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
@@ -135,11 +137,13 @@ extern "C" {
 
 #define pp_exec_cat(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
-#define pp_exec_cat3(_LhsTok, _Tok_mid, _RhsTok...) _LhsTok##_Tok_mid##_RhsTok
+#define pp_exec_cat3(_LhsTok, _MidTok, _RhsTok...) _LhsTok##_MidTok##_RhsTok
+#define pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) _LhsTok##_LMidTok##_RMidTok##_RhsTok
 
 #define pp_exec_join(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
 #define pp_exec_join2(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
-#define pp_exec_join3(_SepTok, _LhsTok, _Tok_mid, _RhsTok...) _LhsTok##_SepTok##_Tok_mid##_SepTok##_RhsTok
+#define pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) _LhsTok##_SepTok##_MidTok##_SepTok##_RhsTok
+#define pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) _LhsTok##_SepTok##_LMidTok##_SepTok##_RMidTok##_SepTok##_RhsTok
 
 #define pp_exec_uniqTok(_Tok...) pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
 #define pp_exec_uniqTokByLine(_Tok...) pp_join(_, pp_join2(_, _, __LINE__), _Tok)

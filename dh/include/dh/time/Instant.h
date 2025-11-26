@@ -18,8 +18,8 @@
  *          - Platform-independent time operations
  */
 
-#ifndef TIME_INSTANT_INCLUDED
-#define TIME_INSTANT_INCLUDED (1)
+#ifndef time_Instant__included
+#define time_Instant__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -30,53 +30,65 @@ extern "C" {
 #include "common.h"
 #include "SysTime.h"
 
-/*========== Structures =====================================================*/
+/*========== Macros and Declarations ========================================*/
 
+/* --- Structures --- */
 struct time_Instant {
     time_SysTime point;
 };
 T_impl_O$(time_Instant);
 
-/*========== Operations =====================================================*/
+/* --- Constants --- */
+#define time_Instant_unix_epoch __comp_const__time_Instant_unix_epoch
 
-extern time_Instant time_Instant_now(void);
-extern time_Duration time_Instant_elapsed(time_Instant self);
-extern time_Duration time_Instant_durationSince(time_Instant later, time_Instant earlier);
-extern O$time_Duration time_Instant_durationSinceChkd(time_Instant later, time_Instant earlier);
+/* --- Operations --- */
+$extern fn_((time_Instant_now(void))(time_Instant));
+$extern fn_((time_Instant_elapsed(time_Instant self))(time_Duration));
+$extern fn_((time_Instant_durationSince(time_Instant later, time_Instant earlier))(time_Duration));
+$extern fn_((time_Instant_durationSinceChkd(time_Instant later, time_Instant earlier))(O$time_Duration));
 
-/*========== Arithmetic Operations ==========================================*/
+/* --- Arithmetic Operations --- */
+$extern op_fn_addWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
+$static op_fn_addWith$(addDuration, ((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
+$extern op_fn_addAsgWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant*));
+$static op_fn_addAsgWith$(addAsgDuration, ((time_Instant, time_Duration)(lhs, rhs))(time_Instant*));
+$extern op_fn_subWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
+$static op_fn_subWith$(subDuration, ((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
+$extern op_fn_subAsgWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant*));
+$static op_fn_subAsgWith$(subAsgDuration, ((time_Instant, time_Duration)(lhs, rhs))(time_Instant*));
+$extern fn_((time_Instant_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant));
+$extern fn_((time_Instant_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant));
 
-extern time_Instant op_fnAddBy(time_Instant, time_Duration);
-extern time_Instant op_fnAddAsgBy(time_Instant, time_Duration);
-static op_fnWrapAddBy(addDuration, time_Instant, time_Duration, time_Instant);
-static op_fnWrapAddAsgBy(addAsgDuration, time_Instant, time_Duration, time_Instant);
-extern time_Instant op_fnSubBy(time_Instant, time_Duration);
-extern time_Instant op_fnSubAsgBy(time_Instant, time_Duration);
-static op_fnWrapSubBy(subDuration, time_Instant, time_Duration, time_Instant);
-static op_fnWrapSubAsgBy(subAsgDuration, time_Instant, time_Duration, time_Instant);
-extern O$time_Instant time_Instant_addChkdDuration(time_Instant lhs, time_Duration rhs);
-extern O$time_Instant time_Instant_subChkdDuration(time_Instant lhs, time_Duration rhs);
+/* --- Time Conversion to/from Unix Epoch --- */
+$extern fn_((time_Instant_fromUnixEpoch(u64 secs))(time_Instant));
+$extern fn_((time_Instant_toUnixEpoch(time_Instant self))(u64));
 
-/*========== Time Conversion to/from Unix Epoch =============================*/
+/* --- Comparison --- */
+$extern cmp_fn_ord$((time_Instant)(lhs, rhs));
+$extern cmp_fn_eq$((time_Instant)(lhs, rhs));
+$extern cmp_fn_ne$((time_Instant)(lhs, rhs));
+$extern cmp_fn_lt$((time_Instant)(lhs, rhs));
+$extern cmp_fn_gt$((time_Instant)(lhs, rhs));
+$extern cmp_fn_le$((time_Instant)(lhs, rhs));
+$extern cmp_fn_ge$((time_Instant)(lhs, rhs));
+$extern cmp_fn_ordCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_eqCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_neCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_ltCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_gtCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_leCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_geCtx$((time_Instant)(lhs, rhs, ctx));
 
-extern time_Instant time_Instant_fromUnixEpoch(u64 secs);
-extern u64 time_Instant_toUnixEpoch(time_Instant self);
+$extern cmp_fn_eql$((time_Instant)(lhs, rhs));
+$extern cmp_fn_neq$((time_Instant)(lhs, rhs));
+$extern cmp_fn_eqlCtx$((time_Instant)(lhs, rhs, ctx));
+$extern cmp_fn_neqCtx$((time_Instant)(lhs, rhs, ctx));
 
-/*========== Comparison =====================================================*/
+/*========== Macros and Definitions =========================================*/
 
-extern cmp_fnCmp(time_Instant);
-cmp_fnEq_default(time_Instant);
-cmp_fnNe_default(time_Instant);
-cmp_fnLt_default(time_Instant);
-cmp_fnGt_default(time_Instant);
-cmp_fnLe_default(time_Instant);
-cmp_fnGe_default(time_Instant);
-
-/*========== Constants ======================================================*/
-
-static const time_Instant time_Instant_unix_epoch = {.point = time_SysTime_unix_epoch};
+#define __comp_const__time_Instant_unix_epoch lit$((time_Instant){ .point = time_SysTime_unix_epoch })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TIME_INSTANT_INCLUDED */
+#endif /* time_Instant__included */

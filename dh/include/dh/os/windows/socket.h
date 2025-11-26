@@ -1,5 +1,5 @@
-#ifndef os_windows_mem__included
-#define os_windows_mem__included 1
+#ifndef os_windows_socket__included
+#define os_windows_socket__included 1
 
 #include "dh/builtin.h"
 
@@ -8,9 +8,10 @@
 #undef var
 #undef let
 
-#include <memoryapi.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #if BUILTIN_COMP_MSVC
-#pragma comment(lib, "kernel32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #endif /* BUILTIN_COMP_MSVC */
 
 #define auto __comp_syn__auto
@@ -18,4 +19,4 @@
 #define let __comp_syn__let
 #endif /* plat_windows */
 
-#endif /* os_windows_mem__included */
+#endif /* os_windows_socket__included */

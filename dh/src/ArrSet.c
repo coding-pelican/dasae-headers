@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @file ArrSet.c
  * @brief Array-based hash set implementation
@@ -810,3 +811,5 @@ fn_((ArrSet_Iter_nextMut(ArrSet_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
 
     return_some(item_ptr);
 } $unscoped_(fn);
+
+#endif /* UNUSED_CODE */

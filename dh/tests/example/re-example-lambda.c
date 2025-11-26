@@ -7,7 +7,7 @@
 // Original function pointer
 typedef fn_(((*IntBinaryOp)(i32, i32))(i32));
 // Compatible callback type that works with both function pointers and blocks
-use_Callback(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
+use_Callable(IntBinOp_compat, (i32 lhs, i32 rhs), i32);
 
 // Function that accepts only function pointers
 static fn_((operateFnptr(i32 a, i32 b, IntBinaryOp op))(void)) {
@@ -26,7 +26,7 @@ static fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
 #include "dh/ArrList.h"
 #include "dh/heap/Page.h"
 
-#define cinq_select(var_collection, _PayloadCapture, _Body...)           comp_syn__cinq_select(var_collection, _PayloadCapture, _Body)
+#define cinq_select(var_collection, _PayloadCapture, _Body...) comp_syn__cinq_select(var_collection, _PayloadCapture, _Body)
 #define comp_syn__cinq_select(var_collection, _PayloadCapture, _Body...) blk({ \
     let __collection = var_collection; \
     var __temp = try_(ArrList_initCap(__collection.type, __collection.allocator, 8)); \

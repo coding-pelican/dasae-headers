@@ -148,6 +148,8 @@ extern "C" {
 #define __lit$__expandInitial(_initial...) _initial
 #endif /* UNUSED_CODE */
 
+#define comp_const_(_type, _initial...) lit$((_type)_initial)
+
 #define lit_n$(_T) (_T) __op__lit_n$__parseLits
 #define __op__lit_n$__parseLits(...) { lit_num(__VA_ARGS__) }
 

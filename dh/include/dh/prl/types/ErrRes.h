@@ -109,7 +109,7 @@ typedef union E$Void {
 /* Determines error result */
 #define ok(_val...) { \
     .is_ok = true, \
-    .payload = {.ok = _val}, \
+    .payload = { .ok = _val }, \
 }
 #define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
@@ -118,7 +118,7 @@ typedef union E$Void {
 
 #define err(_val...) { \
     .is_ok = false, \
-    .payload = {.err = _val}, \
+    .payload = { .err = _val }, \
 }
 #define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
@@ -130,7 +130,7 @@ typedef union E$Void {
 #define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
 #define E_asP$(/*(_E: E(P(T)))(_p_e: P(E(T)))*/... /*(_E)*/) \
-    __step__E_asP$(__step__E_asP$__parseE __VA_ARGS__)
+    __step__E_asP$(__VA_ARGS__)
 #define E_asP(_p_e /*: P(E(T))*/... /*(E(P(T)))*/) \
     __step__E_asP(_p_e)
 
@@ -178,12 +178,13 @@ typedef union E$Void {
 #define __block_inline1__err$$$(_T, _val...) lit$((E$$(_T))err(_val))
 
 #define __step__E_asP$(...) \
-    __step__E_asP$__emit(__VA_ARGS__)
-#define __step__E_asP$__parseOPT(_EPT...) \
+    __step__E_asP$__emit(__step__E_asP$__parseEPT __VA_ARGS__)
+#define __step__E_asP$__parseEPT(_EPT...) \
     _EPT, __step__E_asP$__parsePE
 #define __step__E_asP$__parsePE(_p_e...) \
     pp_uniqTok(p_e), _p_e
-#define __step__E_asP$__emit(_EPT, __p_e, _p_e...) ({ \
+#define __step__E_asP$__emit(...) __E_asP$(__VA_ARGS__)
+#define __E_asP$(_EPT, __p_e, _p_e...) ({ \
     typedef _EPT E$Ret$E_asP; \
     let_(__p_e, TypeOf(_p_e)) = _p_e; \
     claim_assert_nonnull(__p_e); \
@@ -192,7 +193,7 @@ typedef union E$Void {
         : lit$((E$Ret$E_asP)err(__p_e->payload.err)); \
 })
 #define __step__E_asP(_p_e...) \
-    E_asP$((E$$(FieldType$(TypeOf(*_p_e), payload.some)*))(_p_e))
+    E_asP$((E$$(FieldType$(TypeOf(*_p_e), payload.ok)*))(_p_e))
 
 #define __return_ok_void_0() (return_(ok({})))
 #define __return_ok_void_1(_Expr...) (_Expr, return_(ok({})))
@@ -276,8 +277,8 @@ $static fn_((safeDivide(i32 lhs, i32 rhs))(math_E$i32) $scope) {
     return_ok(lhs / rhs);
 } $unscoped_(fn);
 $static fn_((test(void))(E$void) $scope) {
-    let result_invalid  = try_(safeDivide(10, 0));
-    let result_default  = catch_((safeDivide(10, 0))($ignore, 1));
+    let result_invalid = try_(safeDivide(10, 0));
+    let result_default = catch_((safeDivide(10, 0))($ignore, 1));
     let result_handling = catch_((safeDivide(10, 0))(err, {
         Err_print(err);
         ErrTrace_print();

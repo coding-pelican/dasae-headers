@@ -171,8 +171,9 @@ extern "C" {
 }
 
 #define case_(_tag...) \
-case __step__case_ _tag:
+case __step__case_ _tag: {
 #define __step__case_(...) __VA_ARGS__
+#define $end_case() }
 
 #define pattern_(/*(_tag)(_capture)*/...) __step__pattern_(__step__pattern___parseTag __VA_ARGS__)
 #define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)

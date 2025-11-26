@@ -114,26 +114,6 @@ extern O$usize Str_endsWith(S_const$u8 self, S_const$u8 suffix);
 /// Calculate string hash
 extern StrHash Str_hash(S_const$u8 self);
 
-/*========== Comparison Operations ==========================================*/
-
-/* Comparison (S_const$u8) */
-extern cmp_fnCmp(S_const$u8);
-cmp_fnEq_default(S_const$u8);
-cmp_fnNe_default(S_const$u8);
-cmp_fnLt_default(S_const$u8);
-cmp_fnGt_default(S_const$u8);
-cmp_fnLe_default(S_const$u8);
-cmp_fnGe_default(S_const$u8);
-
-/* Comparison */
-extern cmp_fnCmp(S$u8);
-cmp_fnEq_default(S$u8);
-cmp_fnNe_default(S$u8);
-cmp_fnLt_default(S$u8);
-cmp_fnGt_default(S$u8);
-cmp_fnLe_default(S$u8);
-cmp_fnGe_default(S$u8);
-
 /*========== UTF-8 Constants ================================================*/
 
 #define StrUtf8_1byte_mask /* 10000000 */ (0x80)

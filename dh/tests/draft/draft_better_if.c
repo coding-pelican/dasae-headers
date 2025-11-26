@@ -7,7 +7,15 @@ typedef struct Foo {
 } Foo;
 prl_T_use$(Foo);
 
-#define pp_openBrace()  {
+op_fn_addWith$(((Foo, f32)(lhs, rhs))(Foo)) {
+    return (Foo){
+        .a = lhs.a + rhs,
+        .b = lhs.b + rhs,
+    };
+}
+op_fn_addWith$(addFlt, ((Foo, f32)(lhs, rhs))(Foo));
+
+#define pp_openBrace() {
 #define pp_closeBrace() }
 
 #define $with $_with,
@@ -18,17 +26,17 @@ prl_T_use$(Foo);
 #undef else_
 #define if_(/*$extn(_stmt|_expr)(_cond|_capture) | _cond)*/...) \
     pp_overload(__if_, __VA_ARGS__)(__VA_ARGS__)
-#define __if__1(_cond...)   __syn__if_$_cond(_cond)
+#define __if__1(_cond...) __syn__if_$_cond(_cond)
 #define __if__2(_extn, ...) pp_openBrace() pp_cat(__syn__if_, _extn)(__if__expand __VA_ARGS__)
-#define __if__expand(...)   __VA_ARGS__,
+#define __if__expand(...) __VA_ARGS__,
 #define else_(...) \
     pp_overload(__else_, __VA_ARGS__)(__VA_ARGS__)
-#define __else__0(_cond...)   __syn__else_$_cond(_cond)
+#define __else__0(_cond...) __syn__else_$_cond(_cond)
 #define __else__2(_extn, ...) pp_cat(__syn__else_, _extn)(__else__expand __VA_ARGS__)
-#define __else__expand(...)   __VA_ARGS__,
+#define __else__expand(...) __VA_ARGS__,
 #define $done(...) \
     pp_overload(__$done, __VA_ARGS__)(__VA_ARGS__)
-#define __$done_0(...)                pp_closeBrace()
+#define __$done_0(...) pp_closeBrace()
 #define __$done_2(_extn, _$ignore...) pp_cat(__syn__$done, _extn)()
 
 #define __syn__if_$_cond(...) __syn__if_$_cond__emit(__VA_ARGS__)
@@ -79,47 +87,60 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
 
     if_(args.len > 0) {
         debug_assert(true);
-    } else {
+    }
+    else {
         claim_unreachable;
     }
 
     if_($with(let value = getValue())(value > 0)) {
         debug_assert(value > 0);
-    } else {
+    }
+    else {
         debug_assert(value <= 0);
-    } $done();
+    }
+    $done();
 
     if_($with(let value = getValue())(value > 0)) {
         debug_assert(value > 0);
-    } else_() {
+    }
+    else_() {
         debug_assert(value <= 0);
-    } $done();
+    }
+    $done();
 
     if_($some(maybeFoo())(foo)) {
         let_ignore = foo;
-    } $done($some);
+    }
+    $done($some);
 
     if_($some(maybeFoo())($ignore)) {
         debug_assert(true);
-    } else_($none) {
+    }
+    else_($none) {
         debug_assert(true);
-    } $done($none);
+    }
+    $done($none);
 
     if_($none(maybeFoo())) {
         debug_assert(true);
-    } $done($none);
+    }
+    $done($none);
 
     if_($none(maybeFoo())) {
         debug_assert(true);
-    } else_($some(foo)) {
+    }
+    else_($some(foo)) {
         let_ignore = foo;
-    } $done($some);
+    }
+    $done($some);
 
     if_($none(maybeFoo())) {
         debug_assert(true);
-    } else_($some($ignore)) {
+    }
+    else_($some($ignore)) {
         debug_assert(true);
-    } $done($some);
+    }
+    $done($some);
 
     return_ok({});
 } $unscoped_(fn);

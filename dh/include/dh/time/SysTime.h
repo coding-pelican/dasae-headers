@@ -18,8 +18,8 @@
  *          - Platform-independent time operations
  */
 
-#ifndef TIME_SYS_TIME_INCLUDED
-#define TIME_SYS_TIME_INCLUDED (1)
+#ifndef time_SysTime__included
+#define time_SysTime__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -30,90 +30,110 @@ extern "C" {
 #include "common.h"
 #include "Duration.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
-static const u64 time_SysTime_nanos_per_sec = lit_num(1, 000, 000, 000ull);            // 1ns intervals per second
-static const u64 time_SysTime_intervals_per_sec = time_SysTime_nanos_per_sec / 100ull; // 100ns intervals per second
-static const u64 time_SysTime_intervals_to_unix_epoch = lit_num(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec;
-
-/*========== Structures =====================================================*/
+/* --- Structures --- */
 
 struct time_SysTime {
     time_SysTimePlatform impl_;
 };
 T_impl_O$(time_SysTime);
 
-/*========== Accessors ======================================================*/
+/* --- Constants --- */
+
+#define time_SysTime_nanos_per_sec /* 1ns intervals per second */ __comp_const__time_SysTime_nanos_per_sec
+#define time_SysTime_intervals_per_sec /* 100ns intervals per second */ __comp_const__time_SysTime_intervals_per_sec
+#define time_SysTime_intervals_to_unix_epoch __comp_const__time_SysTime_intervals_to_unix_epoch
+#define time_SysTime_unix_epoch __comp_const__time_SysTime_unix_epoch
+
+/* --- Accessors --- */
 
 /// Get the frequency of the performance counter in ticks per second.
-extern time_SysTime time_SysTime_freq(void);
+$extern fn_((time_SysTime_freq(void))(time_SysTime));
 /// Get the inverse of the performance counter frequency.
-extern f64 time_SysTime_freqInv(void);
+$extern fn_((time_SysTime_freqInv(void))(f64));
 /// Get the offset value of the performance counter (relative time).
-extern time_SysTime time_SysTime_offset(void);
+$extern fn_((time_SysTime_offset(void))(time_SysTime));
 /// Get the current system time in high resolution.
-extern time_SysTime time_SysTime_value(void);
+$extern fn_((time_SysTime_value(void))(time_SysTime));
 
-/*========== Operations =====================================================*/
+/* --- Operations --- */
 
 /// Get the current time as a system time object.
-extern time_SysTime time_SysTime_now(void);
+$extern fn_((time_SysTime_now(void))(time_SysTime));
 /// Get the elapsed duration from a given time.
-extern time_Duration time_SysTime_elapsed(time_SysTime self);
+$extern fn_((time_SysTime_elapsed(time_SysTime self))(time_Duration));
 /// Get the duration since another time point.
-extern time_Duration time_SysTime_durationSince(time_SysTime later, time_SysTime earlier);
+$extern fn_((time_SysTime_durationSince(time_SysTime later, time_SysTime earlier))(time_Duration));
 /// Get the duration since another time point with overflow checking.
-extern O$time_Duration time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier);
+$extern fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
 
-/*========== Arithmetic Operations ==========================================*/
+/* --- Arithmetic Operations --- */
 
 /// Add a duration to the time.
-extern time_SysTime op_fnAddBy(time_SysTime, time_Duration);
-extern time_SysTime op_fnAddAsgBy(time_SysTime, time_Duration);
-static op_fnWrapAddBy(addDuration, time_SysTime, time_Duration, time_SysTime);
-static op_fnWrapAddAsgBy(addAsgDuration, time_SysTime, time_Duration, time_SysTime);
+$extern op_fn_addWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$static op_fn_addWith$(addDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$extern op_fn_addAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
+$static op_fn_addAsgWith$(addAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
 /// Sub a duration from the time.
-extern time_SysTime op_fnSubBy(time_SysTime, time_Duration);
-extern time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration);
-static op_fnWrapSubBy(subDuration, time_SysTime, time_Duration, time_SysTime);
-static op_fnWrapSubAsgBy(subAsgDuration, time_SysTime, time_Duration, time_SysTime);
+$extern op_fn_subWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$static op_fn_subWith$(subDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$extern op_fn_subAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
+$static op_fn_subAsgWith$(subAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
 /// Add a duration to the time with overflow checking.
-extern O$time_SysTime time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs);
+$extern fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
 /// Sub a duration from the time with underflow checking.
-extern O$time_SysTime time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs);
+$extern fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
 
-/*========== Time Conversion to/from Unix Epoch =============================*/
+/* --- Time Conversion to/from Unix Epoch --- */
 
 /// Convert system time to Unix epoch time.
-extern time_SysTime time_SysTime_fromUnixEpoch(u64 secs);
+$extern fn_((time_SysTime_fromUnixEpoch(u64 secs))(time_SysTime));
 /// Convert system time to Unix epoch seconds (useful for comparisons).
-extern u64 time_SysTime_toUnixEpoch(time_SysTime self);
+$extern fn_((time_SysTime_toUnixEpoch(time_SysTime self))(u64));
 
-/*========== Comparison =====================================================*/
+/* --- Comparison --- */
 
-/// Compare two system times.
-extern cmp_fnCmp(time_SysTime);
-cmp_fnEq_default(time_SysTime);
-cmp_fnNe_default(time_SysTime);
-cmp_fnLt_default(time_SysTime);
-cmp_fnGt_default(time_SysTime);
-cmp_fnLe_default(time_SysTime);
-cmp_fnGe_default(time_SysTime);
+$extern cmp_fn_ord$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_eq$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_ne$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_lt$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_gt$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_le$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_ge$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_ordCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_eqCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_neCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_ltCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_gtCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_leCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_geCtx$((time_SysTime)(lhs, rhs, ctx));
 
-/*========== Constants ======================================================*/
+$extern cmp_fn_eql$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_neq$((time_SysTime)(lhs, rhs));
+$extern cmp_fn_eqlCtx$((time_SysTime)(lhs, rhs, ctx));
+$extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 
-static const time_SysTime time_SysTime_unix_epoch = {
-    .impl_ = {
+/*========== Macros and Definitions =========================================*/
+
+#define __comp_const__time_SysTime_nanos_per_sec \
+    (lit_n$(u64)(1, 000, 000, 000ull))
+#define __comp_const__time_SysTime_intervals_per_sec \
+    (lit_n$(u64)(time_SysTime_nanos_per_sec / 100ull))
+#define __comp_const__time_SysTime_intervals_to_unix_epoch \
+    (lit_n$(u64)(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec)
+
 #if plat_windows && (plat_32bit || plat_64bit)
-        .QuadPart = as$( LONGLONG)(time_SysTime_intervals_to_unix_epoch),
+#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
+    .impl_ = { .QuadPart = as$(LONGLONG)(time_SysTime_intervals_to_unix_epoch) }, \
+})
 #else /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
-        .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch),
-        .tv_nsec = 0,
+#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
+    .impl_ = { .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch), .tv_nsec = 0 }, \
+})
 #endif
-    }
-};
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TIME_SYS_TIME_INCLUDED */
+#endif /* time_SysTime__included */

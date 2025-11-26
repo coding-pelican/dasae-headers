@@ -157,8 +157,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $
         });
     }
     let mem = orelse_((mem_Allocator_rawAlloc(self, type.size, type.align))(
-        return_err(mem_Err_OutOfMemory())
-    ));
+        return_err(mem_Err_OutOfMemory()) ));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
@@ -172,7 +171,7 @@ fn_((mem_Allocator_destroy(mem_Allocator self, u_P$raw ptr))(void)) {
     if (ptr.type.size == 0) { return; }
     // Convert to slice for freeing
     S$u8 mem = {
-        .ptr = as$( u8*)(ptr.inner),
+        .ptr = as$(u8*)(ptr.raw),
         .len = ptr.type.size,
     };
     mem_Allocator_rawFree(self, mem, ptr.type.align);
@@ -189,11 +188,9 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Er
     }
     // Check for overflow in multiplication
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_Err_OutOfMemory())
-    ));
+        return_err(mem_Err_OutOfMemory()) ));
     let mem = orelse_((mem_Allocator_rawAlloc(self, byte_count, type.align))(
-        return_err(mem_Err_OutOfMemory())
-    ));
+        return_err(mem_Err_OutOfMemory()) ));
     mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
@@ -257,11 +254,9 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_none();
-    ));
+        return_none();));
     let new_ptr = orelse_((mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count))(
-        return_none();
-    ));
+        return_none();));
     return_some({
         .ptr = new_ptr,
         .len = new_len,
@@ -299,8 +294,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count);
     if_some((new_ptr)(ptr)) {
@@ -312,8 +306,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     }
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Allocator_rawAlloc(self, new_byte_count, old_mem.type.align))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
@@ -388,8 +381,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
         });
     }
     let mem = orelse_((mem_Allocator_rawAlloc_debug(self, type.size, type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
@@ -405,7 +397,7 @@ fn_((mem_Allocator_destroy_debug(mem_Allocator self, u_P$raw ptr, SrcLoc src_loc
     }
     // Convert to slice for freeing
     S$u8 mem = {
-        .ptr = as$(u8*)(ptr.inner),
+        .ptr = as$(u8*)(ptr.raw),
         .len = ptr.type.size,
     };
     mem_Allocator_rawFree_debug(self, mem, ptr.type.align, src_loc);
@@ -422,11 +414,9 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
     }
     // Check for overflow in multiplication
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     let mem = orelse_((mem_Allocator_rawAlloc_debug(self, byte_count, type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
@@ -491,11 +481,9 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_none();
-    ));
+        return_none();));
     let new_ptr = orelse_((mem_Allocator_rawRemap_debug(self, old_bytes, old_mem.type.align, new_byte_count, src_loc))(
-        return_none();
-    ));
+        return_none();));
     return_some({
         .ptr = new_ptr,
         .len = new_len,
@@ -533,8 +521,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count);
     if_some((new_ptr)(ptr)) {
@@ -546,8 +533,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     }
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Allocator_rawAlloc_debug(self, new_byte_count, old_mem.type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());
-    ));
+        return_err(mem_Err_OutOfMemory());));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);

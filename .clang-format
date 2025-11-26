@@ -183,6 +183,7 @@ Macros:
   - "T_use$(Expr)=pp_exec_ignore Expr"
   - "errset_(Expr)=pp_exec_ignore Expr"
   - "variant_(Expr)=pp_exec_ignore Expr"
+  - "chain$(Expr)=pp_exec_ignore Expr"
 
   - "$P_const$(T)=const T*"
   - "$P$(T)=T*"
@@ -260,7 +261,7 @@ Macros:
   # Control flow
   - "if_(init, cond)=if (init; cond)"
   - "else_(init)=else if (init; true)"
-  - "switch_(init, cond)=switch (init; cond)"
+  - "switch_(init_cond)=switch (init_cond)"
   - "while_(init, cond)=while (init; cond)"
   # Optional value
   - "if_some(expr)=if (expr)"

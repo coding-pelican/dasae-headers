@@ -18,8 +18,8 @@
  *          - Platform-independent time operations
  */
 
-#ifndef TIME_INCLUDED
-#define TIME_INCLUDED (1)
+#ifndef time__included
+#define time__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -35,4 +35,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TIME_INCLUDED */
+#endif /* time__included */

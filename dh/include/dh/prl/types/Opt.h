@@ -102,11 +102,11 @@ typedef union O$Void {
 #define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)(!(_o).is_some)
 
 #define O_asP$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
-    __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
+    __step__O_asP$(__VA_ARGS__)
 #define O_asP(_p_o /*: P(O(T))*/... /*(O(P(T)))*/) \
     __step__O_asP(_p_o)
 #define O_ref$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
-    __step__O_asP$(__step__O_asP$__parseOPT __VA_ARGS__)
+    __step__O_asP$(__VA_ARGS__)
 #define O_ref(_p_o /*: P(O(T))*/... /*(O(P(T)))*/) \
     __step__O_asP(_p_o)
 #define O_deref$(/*(_OT: O(T))(_o: O(P(T)))*/... /*(_OT)*/) \
@@ -146,12 +146,13 @@ typedef union O$Void {
 #define __block_inline1__none$(_T...) lit$((_T)none())
 
 #define __step__O_asP$(...) \
-    __step__O_asP$__emit(__VA_ARGS__)
+    __step__O_asP$__emit(__step__O_asP$__parseOPT __VA_ARGS__)
 #define __step__O_asP$__parseOPT(_OPT...) \
     _OPT, __step__O_asP$__parsePO
 #define __step__O_asP$__parsePO(_p_o...) \
     pp_uniqTok(p_o), _p_o
-#define __step__O_asP$__emit(_OPT, __p_o, _p_o...) ({ \
+#define __step__O_asP$__emit(...) __O_asP$(__VA_ARGS__)
+#define __O_asP$(_OPT, __p_o, _p_o...) ({ \
     typedef _OPT O$Ret$O_asP; \
     let_(__p_o, TypeOf(_p_o)) = _p_o; \
     claim_assert_nonnull(__p_o); \

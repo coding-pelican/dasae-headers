@@ -15,8 +15,8 @@
  *          for time-related operations and utilities.
  */
 
-#ifndef TIME_CFG_INCLUDED
-#define TIME_CFG_INCLUDED (1)
+#ifndef time_cfg__included
+#define time_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -46,4 +46,4 @@ typedef pp_if_(plat_windows)(
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TIME_CFG_INCLUDED */
+#endif /* time_cfg__included */

@@ -22,20 +22,20 @@ O$time_Duration time_Instant_durationSinceChkd(time_Instant later, time_Instant 
 
 /*========== Arithmetic Operations ==========================================*/
 
-time_Instant op_fnAddBy(time_Instant, time_Duration) {
-    return unwrap_(time_Instant_addChkdDuration(self, other));
+op_fn_addWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant)) {
+    return unwrap_(time_Instant_addChkdDuration(lhs, rhs));
 }
 
-time_Instant op_fnAddAsgBy(time_Instant, time_Duration) {
-    return *self = op_addBy(time_Instant, time_Duration)(*self, other);
+op_fn_addAsgWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant*)) {
+    return *lhs = unwrap_(time_Instant_addChkdDuration(*lhs, rhs)), lhs;
 }
 
-time_Instant op_fnSubBy(time_Instant, time_Duration) {
-    return unwrap_(time_Instant_subChkdDuration(self, other));
+op_fn_subWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant)) {
+    return unwrap_(time_Instant_subChkdDuration(lhs, rhs));
 }
 
-time_Instant op_fnSubAsgBy(time_Instant, time_Duration) {
-    return *self = op_subBy(time_Instant, time_Duration)(*self, other);
+op_fn_subAsgWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant*)) {
+    return *lhs = unwrap_(time_Instant_subChkdDuration(*lhs, rhs)), lhs;
 }
 
 fn_((time_Instant_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
@@ -64,6 +64,32 @@ u64 time_Instant_toUnixEpoch(time_Instant self) {
 
 /*========== Comparison Operations ==========================================*/
 
-cmp_fnCmp(time_Instant) {
-    return time_SysTime_cmp(self.point, other.point);
+cmp_fn_ord$((time_Instant)(lhs, rhs)) {
+    return time_SysTime_ord(lhs.point, rhs.point);
 }
+cmp_fn_eq_default$((time_Instant)(lhs, rhs));
+cmp_fn_ne_default$((time_Instant)(lhs, rhs));
+cmp_fn_lt_default$((time_Instant)(lhs, rhs));
+cmp_fn_gt_default$((time_Instant)(lhs, rhs));
+cmp_fn_le_default$((time_Instant)(lhs, rhs));
+cmp_fn_ge_default$((time_Instant)(lhs, rhs));
+cmp_fn_ordCtx$((time_Instant)(lhs, rhs, ctx)) {
+    let_ignore = ctx;
+    return cmp_ord$(time_Instant)(lhs, rhs);
+}
+cmp_fn_eqCtx_default$((time_Instant)(lhs, rhs, ctx));
+cmp_fn_neCtx_default$((time_Instant)(lhs, rhs, ctx));
+cmp_fn_ltCtx_default$((time_Instant)(lhs, rhs, ctx));
+cmp_fn_gtCtx_default$((time_Instant)(lhs, rhs, ctx));
+cmp_fn_leCtx_default$((time_Instant)(lhs, rhs, ctx));
+cmp_fn_geCtx_default$((time_Instant)(lhs, rhs, ctx));
+
+cmp_fn_eql$((time_Instant)(lhs, rhs)) {
+    return cmp_ord$(time_Instant)(lhs, rhs) == cmp_Ord_eq;
+}
+cmp_fn_neq_default$((time_Instant)(lhs, rhs));
+cmp_fn_eqlCtx$((time_Instant)(lhs, rhs, ctx)) {
+    let_ignore = ctx;
+    return cmp_eql$(time_Instant)(lhs, rhs);
+}
+cmp_fn_neqCtx_default$((time_Instant)(lhs, rhs, ctx));

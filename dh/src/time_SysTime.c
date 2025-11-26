@@ -38,29 +38,34 @@ fn_((init(void))(void)) {
         claim_unreachable_msg("Failed to initialize high-resolution timer");
     }
     // Assuming 1 second = 1 billion nanoseconds (nanoseconds per second)
-    s_perf_freq.tv_sec  = 1;                          // 1 second
+    s_perf_freq.tv_sec = 1;                           // 1 second
     s_perf_freq.tv_nsec = time_SysTime_nanos_per_sec; // 1 billion nanoseconds (nanosecond precision)
-    s_perf_freq_inv     = 1.0 / as$(f64)(time_SysTime_nanos_per_sec);
+    s_perf_freq_inv = 1.0 / as$(f64)(time_SysTime_nanos_per_sec);
     // Set the initial offset value to the current time
     s_pref_offset_value = value;
 #endif
     s_pref_initialized = true;
 }
-$inline_always void ensureInit(void) {
+$inline_always
+void ensureInit(void) {
     return init(), debug_assert_fmt(s_pref_initialized, "SysTime not initialized");
 }
 
 /* Accessors */
-$inline_always time_SysTime freq(void) {
+$inline_always
+time_SysTime freq(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_perf_freq };
 }
-$inline_always f64 freqInv(void) {
+$inline_always
+f64 freqInv(void) {
     return ensureInit(), s_perf_freq_inv;
 }
-$inline_always time_SysTime offset(void) {
+$inline_always
+time_SysTime offset(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_pref_offset_value };
 }
-$inline_always time_SysTime value(void) {
+$inline_always
+time_SysTime value(void) {
     return ensureInit(), (time_SysTime){
         .impl_ = blk({
             var current = make$((time_SysTimePlatform){});
@@ -77,7 +82,7 @@ $inline_always time_SysTime value(void) {
 /*========== Accessors =====================================================*/
 
 time_SysTime time_SysTime_freq(void) { return freq(); }
-f64          time_SysTime_freqInv(void) { return freqInv(); }
+f64 time_SysTime_freqInv(void) { return freqInv(); }
 time_SysTime time_SysTime_offset(void) { return offset(); }
 time_SysTime time_SysTime_value(void) { return value(); }
 
@@ -96,17 +101,17 @@ time_Duration time_SysTime_durationSince(time_SysTime later, time_SysTime earlie
 }
 
 fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration) $scope) {
-    if (time_SysTime_lt(later, earlier)) {
+    if (time_SysTime_ord(later, earlier) == cmp_Ord_lt) {
         return_none();
     }
 #if plat_windows && (plat_32bit || plat_64bit)
     // Calculate the difference in ticks
-    let diff  = as$(f64)(later.impl_.QuadPart - earlier.impl_.QuadPart);
+    let diff = as$(f64)(later.impl_.QuadPart - earlier.impl_.QuadPart);
     // Convert ticks to nanoseconds
     let nanos = as$(u64)(diff * time_SysTime_nanos_per_sec * freqInv());
-#else  /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
+#else /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
     // Calculate the difference in seconds and nanoseconds
-    var diff    = makeCleared$(time_SysTimePlatform);
+    var diff = makeCleared$(time_SysTimePlatform);
     diff.tv_sec = later.impl_.tv_sec - earlier.impl_.tv_sec;
     if (later.impl_.tv_nsec < earlier.impl_.tv_nsec) {
         diff.tv_sec--;
@@ -121,20 +126,20 @@ fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O
 
 /*========== Arithmetic Operations ==========================================*/
 
-time_SysTime op_fnAddBy(time_SysTime, time_Duration) {
-    return unwrap_(time_SysTime_addChkdDuration(self, other));
+op_fn_addWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime)) {
+    return unwrap_(time_SysTime_addChkdDuration(lhs, rhs));
 }
 
-time_SysTime op_fnAddAsgBy(time_SysTime, time_Duration) {
-    return *self = op_addBy(time_SysTime, time_Duration)(*self, other);
+op_fn_addAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*)) {
+    return *lhs = unwrap_(time_SysTime_addChkdDuration(*lhs, rhs)), lhs;
 }
 
-time_SysTime op_fnSubBy(time_SysTime, time_Duration) {
-    return unwrap_(time_SysTime_subChkdDuration(self, other));
+op_fn_subWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime)) {
+    return unwrap_(time_SysTime_subChkdDuration(lhs, rhs));
 }
 
-time_SysTime op_fnSubAsgBy(time_SysTime, time_Duration) {
-    return *self = op_subBy(time_SysTime, time_Duration)(*self, other);
+op_fn_subAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*)) {
+    return *lhs = unwrap_(time_SysTime_subChkdDuration(*lhs, rhs)), lhs;
 }
 
 fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
@@ -147,7 +152,7 @@ fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_S
     if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max - as$(u64)(lhs.impl_.tv_sec))) {
         return_some({
             .impl_ = {
-                .tv_sec  = lhs.impl_.tv_sec + (ticks / time_SysTime_nanos_per_sec),
+                .tv_sec = lhs.impl_.tv_sec + (ticks / time_SysTime_nanos_per_sec),
                 .tv_nsec = lhs.impl_.tv_nsec + (ticks % time_SysTime_nanos_per_sec),
             },
         });
@@ -166,7 +171,7 @@ fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_S
     if ((0 <= lhs.impl_.tv_sec) && ticks <= (u64_limit_max + as$(u64)(lhs.impl_.tv_sec))) {
         return_some({
             .impl_ = {
-                .tv_sec  = lhs.impl_.tv_sec - (ticks / time_SysTime_nanos_per_sec),
+                .tv_sec = lhs.impl_.tv_sec - (ticks / time_SysTime_nanos_per_sec),
                 .tv_nsec = lhs.impl_.tv_nsec - (ticks % time_SysTime_nanos_per_sec),
             },
         });
@@ -186,7 +191,7 @@ time_SysTime time_SysTime_fromUnixEpoch(u64 secs) {
 #if plat_windows && (plat_32bit || plat_64bit)
             .QuadPart = time_SysTime_unix_epoch.impl_.QuadPart + as$(LONGLONG)(intervals),
 #else /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
-            .tv_sec  = time_SysTime_unix_epoch.impl_.tv_sec + (intervals / time_SysTime_nanos_per_sec),
+            .tv_sec = time_SysTime_unix_epoch.impl_.tv_sec + (intervals / time_SysTime_nanos_per_sec),
             .tv_nsec = time_SysTime_unix_epoch.impl_.tv_nsec + (intervals % time_SysTime_nanos_per_sec),
 #endif
         }
@@ -206,7 +211,7 @@ u64 time_SysTime_toUnixEpoch(time_SysTime self) {
 
 /*========== Comparison =====================================================*/
 
-cmp_fnCmp(time_SysTime) {
+cmp_fn_ord$((time_SysTime)(self, other)) {
 #if plat_windows && (plat_32bit || plat_64bit)
     if (self.impl_.QuadPart < other.impl_.QuadPart) { return cmp_Ord_lt; }
     if (self.impl_.QuadPart > other.impl_.QuadPart) { return cmp_Ord_gt; }
@@ -218,3 +223,29 @@ cmp_fnCmp(time_SysTime) {
 #endif
     return cmp_Ord_eq;
 }
+cmp_fn_eq_default$((time_SysTime)(lhs, rhs));
+cmp_fn_ne_default$((time_SysTime)(lhs, rhs));
+cmp_fn_lt_default$((time_SysTime)(lhs, rhs));
+cmp_fn_gt_default$((time_SysTime)(lhs, rhs));
+cmp_fn_le_default$((time_SysTime)(lhs, rhs));
+cmp_fn_ge_default$((time_SysTime)(lhs, rhs));
+cmp_fn_ordCtx$((time_SysTime)(lhs, rhs, ctx)) {
+    let_ignore = ctx;
+    return cmp_ord$(time_SysTime)(lhs, rhs);
+}
+cmp_fn_eqCtx_default$((time_SysTime)(lhs, rhs, ctx));
+cmp_fn_neCtx_default$((time_SysTime)(lhs, rhs, ctx));
+cmp_fn_ltCtx_default$((time_SysTime)(lhs, rhs, ctx));
+cmp_fn_gtCtx_default$((time_SysTime)(lhs, rhs, ctx));
+cmp_fn_leCtx_default$((time_SysTime)(lhs, rhs, ctx));
+cmp_fn_geCtx_default$((time_SysTime)(lhs, rhs, ctx));
+
+cmp_fn_eql$((time_SysTime)(lhs, rhs)) {
+    return cmp_ord$(time_SysTime)(lhs, rhs) == cmp_Ord_eq;
+}
+cmp_fn_neq_default$((time_SysTime)(lhs, rhs));
+cmp_fn_eqlCtx$((time_SysTime)(lhs, rhs, ctx)) {
+    let_ignore = ctx;
+    return cmp_eql$(time_SysTime)(lhs, rhs);
+}
+cmp_fn_neqCtx_default$((time_SysTime)(lhs, rhs, ctx));
