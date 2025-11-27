@@ -464,7 +464,7 @@ typedef enum chain__State : u8 {
 #define __step__map$__parse(_T...) _T, __step__map$__parseP
 #define __step__map$__parseP(_p_e...) _p_e,
 #define __step__map$__emit(...) __map$(__VA_ARGS__)
-#define __map$(_T, _p_e, _xform...) expr_($P$(_T) $scope)({ \
+#define __map$(_T, _p_e, _xform...) expr_(_T* $scope)({ \
     if (__chain_state != chain__State_eval) { \
         $break_(&(_T){}); \
     } else { \

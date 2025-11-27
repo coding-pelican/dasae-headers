@@ -121,11 +121,11 @@ static fn_(QuadTree_subdivide(QuadTree* self, usize node, S$Body bodies, Range r
     usize split[] = { range.begin, 0, 0, 0, range.end };
 
     // predLtY
-    let predLtY = wrapLam$(Callable$partition, lam_((const Body* body, m_V2f32 center), bool) { return body->pos.y < center.y; });
+    let predLtY = wrapLa$(Callable$partition, lam_((const Body* body, m_V2f32 center), bool) { return body->pos.y < center.y; });
     split[2] = split[0] + partition(Sli_slice(bodies, (split[0], split[4])), predLtY, center);
 
     // predLtX
-    let predLtX = wrapLam$(Callable$partition, lam_((const Body* body, m_V2f32 center), bool) { return body->pos.x < center.x; });
+    let predLtX = wrapLa$(Callable$partition, lam_((const Body* body, m_V2f32 center), bool) { return body->pos.x < center.x; });
     split[1] = split[0] + partition(Sli_slice(bodies, (split[0], split[2])), predLtX, center);
     split[3] = split[2] + partition(Sli_slice(bodies, (split[2], split[4])), predLtX, center);
 

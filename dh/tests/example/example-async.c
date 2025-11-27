@@ -268,7 +268,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
         io_stream_print(u8_l("\n"));
 
         try_(sort_stableSort(
-            times.allocator, times.base->items, wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
+            times.allocator, times.base->items, wrapLa$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
                 let dur_lhs = as$(const time_Duration*)((lhs));
                 let dur_rhs = as$(const time_Duration*)((rhs));
                 return time_Duration_cmp(*dur_lhs, *dur_rhs);

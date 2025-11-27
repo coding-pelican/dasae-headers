@@ -31,10 +31,10 @@ extern "C" {
 #define use_Callable(T_Callable, _Params, T_Return...) comp_gen__use_Callable(T_Callable, _Params, T_Return)
 
 /// Create a wrapper from a function pointer or block obj
-#define wrapLam(val_callableLamObj...) comp_op__wrapLam(val_callableLamObj)
+#define wrapLa(val_callableLamObj...) comp_op__wrapLa(val_callableLamObj)
 #define wrapFn(val_callableFnPtr...) comp_op__wrapFn(val_callableFnPtr)
 
-#define wrapLam$(T_Callable, val_callableLamObj...) comp_op__wrapLam$(T_Callable, val_callableLamObj)
+#define wrapLa$(T_Callable, val_callableLamObj...) comp_op__wrapLa$(T_Callable, val_callableLamObj)
 #define wrapFn$(T_Callable, val_callableFnPtr...) comp_op__wrapFn$(T_Callable, val_callableFnPtr)
 
 /// Invoke the callable wrapper with given arguments
@@ -78,10 +78,10 @@ bool is_lam;
 T_Callable
 #endif /* others */
 
-#define comp_op__wrapLam(val_callableLamObj...) { .callable = { .lamObj = val_callableLamObj }, .is_lam = true }
+#define comp_op__wrapLa(val_callableLamObj...) { .callable = { .lamObj = val_callableLamObj }, .is_lam = true }
 #define comp_op__wrapFn(val_callableFnPtr...) { .callable = { .fnPtr = val_callableFnPtr }, .is_lam = false }
 
-#define comp_op__wrapLam$(T_Callable, val_callableLamObj...) ((T_Callable)wrapLam(val_callableLamObj))
+#define comp_op__wrapLa$(T_Callable, val_callableLamObj...) ((T_Callable)wrapLa(val_callableLamObj))
 #define comp_op__wrapFn$(T_Callable, val_callableFnPtr...) ((T_Callable)wrapFn(val_callableFnPtr))
 
 #define comp_op__invoke(__wrapper, val_wrapper, _Args...) \
@@ -139,12 +139,12 @@ fn_((dh_main(void))(E$void) $guard) {
     io_stream_print(u8_l("Function via compat: {:d}\n"), invoke(compatFn, 10, 5));
 
     // Using compatibility wrapper with lambda/block
-    IntBinOp_compat compatLambda = wrapLam(lambdaAdd);
+    IntBinOp_compat compatLambda = wrapLa(lambdaAdd);
     io_stream_print(u8_l("Lambda via compat: {:d}\n"), invoke(compatLambda, 10, 5));
 
     // Both function pointers and blocks work with the operate_compat function
     operateCompat(10, 5, (IntBinOp_compat)wrapFn(funcAdd));
-    operateCompat(10, 5, wrapLam$(IntBinOp_compat, lambdaAdd));
+    operateCompat(10, 5, wrapLa$(IntBinOp_compat, lambdaAdd));
 
     // Only function pointers work with operate_fnptr
     operateFnptr(10, 5, funcAdd);

@@ -8,7 +8,7 @@
  * @updated 2025-02-12 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/builtin
- * @prefix  bti
+ * @prefix  (none)
  *
  * @brief
  * @details

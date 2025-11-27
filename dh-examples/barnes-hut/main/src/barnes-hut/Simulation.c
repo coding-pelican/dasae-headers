@@ -6,9 +6,9 @@
 
 // n target: 100000
 fn_(Simulation_create(mem_Allocator allocator, usize n), E$Simulation $guard) {
-    const f32   dt       = 0.05f;
-    const f32   theta    = 1.0f;
-    const f32   eps      = 1.0f;
+    const f32 dt = 0.05f;
+    const f32 theta = 1.0f;
+    const f32 eps = 1.0f;
     const usize leaf_cap = 16;
 
     var bodies = try_(utils_uniformDisc(allocator, n));
@@ -29,19 +29,20 @@ fn_(Simulation_create(mem_Allocator allocator, usize n), E$Simulation $guard) {
     errdefer_(mem_Allocator_free(allocator, anySli(sort_rect_indices_cache)));
 
     return_ok((Simulation){
-        .dt                              = dt,
-        .frame                           = 0,
-        .bodies                          = bodies,
-        .rects                           = rects,
-        .quadtree                        = quadtree,
-        .sort_body_indices_cache         = sort_body_indices_cache,
+        .dt = dt,
+        .frame = 0,
+        .bodies = bodies,
+        .rects = rects,
+        .quadtree = quadtree,
+        .sort_body_indices_cache = sort_body_indices_cache,
         .sort_rect_indices_cache_as_temp = sort_rect_indices_cache,
 #if debug_comp_enabled || Simulation_comp_enabled_record_collision_count
         .collision_count = 0,
 #endif
         .allocator = allocator,
     });
-} $unguarded;
+}
+$unguarded;
 
 fn_(Simulation_destroy(Simulation* self), void) {
     debug_assert_nonnull(self);
@@ -64,19 +65,20 @@ fn_(Simulation_step(Simulation* self), E$void $scope) {
     self->frame += 1;
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
 fn_(Simulation_iterate(Simulation* self), void) {
     debug_assert_nonnull(self);
 
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         Body_update(body, self->dt);
     }
 }
 
 #define CollideMethod_simply_o_n_pow_2 (0)
-#define CollideMethod_sweep_and_prune  (1)
-#define COLLIDE_METHOD                 CollideMethod_sweep_and_prune
+#define CollideMethod_sweep_and_prune (1)
+#define COLLIDE_METHOD CollideMethod_sweep_and_prune
 #if COLLIDE_METHOD == (CollideMethod_simply_o_n_pow_2 || CollideMethod_sweep_and_prune)
 #if COLLIDE_METHOD == CollideMethod_simply_o_n_pow_2
 fn_(Simulation_collide(Simulation* self), E$void $scope) {
@@ -85,12 +87,12 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
     self->collision_count = 0;
 #endif
     // Update collision rects for current frame
-    for_slice_indexed (self->bodies.items, body, index) {
-        let pos        = body->pos;
-        let radius     = body->radius;
+    for_slice_indexed(self->bodies.items, body, index) {
+        let pos = body->pos;
+        let radius = body->radius;
         let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
-        let rect  = Sli_at(self->rects.items, index);
+        let rect = Sli_at(self->rects.items, index);
         rect->min = m_V2f32_sub(pos, radius_vec);
         rect->max = m_V2f32_add(pos, radius_vec);
     }
@@ -104,15 +106,16 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
     }
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 #endif /* CollideMethod_simply_o_n_pow_2 */
 #if COLLIDE_METHOD == CollideMethod_sweep_and_prune
 // Comparison function for qsort (C-style)
 $maybe_unused
 $static fn_(compareRects(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), cmp_Ord) {
-    let self     = as$(const Simulation*, arg);
-    let idx_lhs  = *as$(const usize*, lhs);
-    let idx_rhs  = *as$(const usize*, rhs);
+    let self = as$(const Simulation*, arg);
+    let idx_lhs = *as$(const usize*, lhs);
+    let idx_rhs = *as$(const usize*, rhs);
     let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
     let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
     if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
@@ -137,18 +140,18 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
     }
 
     // Update collision rects for current frame
-    for_slice_indexed (self->bodies.items, body, index) {
-        let pos        = body->pos;
-        let radius     = body->radius;
+    for_slice_indexed(self->bodies.items, body, index) {
+        let pos = body->pos;
+        let radius = body->radius;
         let radius_vec = m_V2f32_scale(m_V2f32_one, radius);
 
-        let rect  = Sli_at(self->rects.items, index);
+        let rect = Sli_at(self->rects.items, index);
         rect->min = m_V2f32_sub(pos, radius_vec);
         rect->max = m_V2f32_add(pos, radius_vec);
     }
 
     let indices = self->sort_body_indices_cache;
-    for_slice_indexed (indices, index, i) {
+    for_slice_indexed(indices, index, i) {
         *index = i;
     }
 
@@ -156,9 +159,9 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
     try_(sort_stableSortUsingTemp(
         self->sort_rect_indices_cache_as_temp,
         meta_refSli(indices),
-        wrapLam$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
-            let idx_lhs  = *as$(const usize*, lhs);
-            let idx_rhs  = *as$(const usize*, rhs);
+        wrapLa$(sort_CmpFn, lam_((P_const$raw lhs, P_const$raw rhs), cmp_Ord) {
+            let idx_lhs = *as$(const usize*, lhs);
+            let idx_rhs = *as$(const usize*, rhs);
             let rect_lhs = Sli_at(self->rects.items, idx_lhs); // Access rects using array indexing
             let rect_rhs = Sli_at(self->rects.items, idx_rhs); // Access rects using array indexing
             if (rect_lhs->min.x < rect_rhs->min.x) { return cmp_Ord_lt; }
@@ -170,10 +173,10 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
 
     // Sweep through sorted indices and check for AABB overlaps
     for (usize current = 0; current < indices.len; ++current) {
-        let current_idx  = *Sli_at(indices, current);
+        let current_idx = *Sli_at(indices, current);
         let current_rect = Sli_at(self->rects.items, current_idx);
         for (usize other = current + 1; other < indices.len; ++other) {
-            let other_idx  = *Sli_at(indices, other);
+            let other_idx = *Sli_at(indices, other);
             let other_rect = Sli_at(self->rects.items, other_idx);
 
             // Exit early if no overlap in x-axis
@@ -193,7 +196,8 @@ fn_(Simulation_collide(Simulation* self), E$void $scope) {
     }
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 #endif /* CollideMethod_sweep_and_prune */
 #endif /* COLLIDE_METHOD */
 
@@ -203,12 +207,13 @@ fn_(Simulation_attract(Simulation* self), E$void $scope) {
     try_(QuadTree_build(&self->quadtree, self->bodies.items));
 
     // Calculate accelerations
-    for_slice (self->bodies.items, body) {
+    for_slice(self->bodies.items, body) {
         body->acc = QuadTree_accelerate(&self->quadtree, body->pos, self->bodies.items);
     }
 
     return_ok({});
-} $unscoped;
+}
+$unscoped;
 
 fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     debug_assert_nonnull(self);
@@ -222,11 +227,11 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     // Calculate distances and radiuses
     let p1 = b1->pos;
     let p2 = b2->pos;
-    let d  = m_V2f32_sub(p2, p1);
+    let d = m_V2f32_sub(p2, p1);
 
     let r1 = b1->radius;
     let r2 = b2->radius;
-    let r  = r1 + r2;
+    let r = r1 + r2;
 
     // Early exit if not colliding
     scope_if(const bool collides = m_V2f32_lenSq(d) < r * r, !collides) { return; }
@@ -237,12 +242,12 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     // Get velocities and masses
     let v1 = b1->vel;
     let v2 = b2->vel;
-    let v  = m_V2f32_sub(v2, v1);
+    let v = m_V2f32_sub(v2, v1);
 
     let d_dot_v = m_V2f32_dot(d, v);
 
-    let m1      = b1->mass;
-    let m2      = b2->mass;
+    let m1 = b1->mass;
+    let m2 = b2->mass;
     let weight1 = m2 / (m1 + m2);
     let weight2 = m1 / (m1 + m2);
 
@@ -265,14 +270,14 @@ fn_(Simulation_resolve(Simulation* self, usize lhs, usize rhs), void) {
     m_V2f32_subAsg(&b2->pos, m_V2f32_scale(v2, t));
 
     // Update distances post-collision
-    let p1_new      = b1->pos;
-    let p2_new      = b2->pos;
-    let d_new       = m_V2f32_sub(p2_new, p1_new);
+    let p1_new = b1->pos;
+    let p2_new = b2->pos;
+    let d_new = m_V2f32_sub(p2_new, p1_new);
     let d_dot_v_new = m_V2f32_dot(d_new, v);
-    let d_sq_new    = m_V2f32_lenSq(d_new);
+    let d_sq_new = m_V2f32_lenSq(d_new);
 
     // Calculate collision response
-    let tmp    = m_V2f32_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
+    let tmp = m_V2f32_scale(d_new, 1.5f * d_dot_v_new / d_sq_new);
     let v1_new = m_V2f32_add(v1, m_V2f32_scale(tmp, weight1));
     let v2_new = m_V2f32_sub(v2, m_V2f32_scale(tmp, weight2));
 

@@ -45,30 +45,43 @@ fn_((dh_main(void))(E$void) $guard) {
     });
     io_stream_nl();
 
-    var squared_list = chain$((ArrList$i32)(num_list.items)(
+    var sq_list = chain$((ArrList$i32)(num_list.items)(
         map$((i32)(x)(*x * *x)),
-        fold_(try_(init(gpa, num_list.cap)), (arr, item)(append(&arr, *item), arr))
+        fold_(try_(init(gpa, num_list.cap)), (collect, x)(append(&collect, *x), collect))
     ));
-    defer_(fini(&squared_list, gpa));
+    defer_(fini(&sq_list, gpa));
     io_stream_print(u8_l("squared: "));
-    for_(($s(squared_list.items))(item) {
+    for_(($s(sq_list.items))(item) {
         io_stream_print(u8_l("{:d} "), *item);
     });
     io_stream_nl();
 
     // Create a block/lambda
-    let lambdaAdd = la_((i32 lhs, i32 rhs)(i32)) { return lhs + rhs; };
+    var lambdaAdd = la_((i32 lhs, i32 rhs)(i32)) { return lhs + rhs; };
     // Using compatibility wrapper with function pointer
     IntBinOp_compat compatFn = wrapFn(funcAdd);
     io_stream_print(u8_l("Function via compat: {:d}\n"), invoke(compatFn, 10, 5));
     // Using compatibility wrapper with lambda/block
-    IntBinOp_compat compatLambda = wrapLam(lambdaAdd);
+    IntBinOp_compat compatLambda = wrapLa(lambdaAdd);
     io_stream_print(u8_l("Lambda via compat: {:d}\n"), invoke(compatLambda, 10, 5));
     // Both function pointers and blocks work with the operate_compat function
     operateCompat(10, 5, (IntBinOp_compat)wrapFn(funcAdd));
-    operateCompat(10, 5, wrapLam$(IntBinOp_compat, lambdaAdd));
+    operateCompat(10, 5, wrapLa$(IntBinOp_compat, lambdaAdd));
     // Only function pointers work with operate_fnptr
     operateFnptr(10, 5, funcAdd);
     // operate_fnptr(10, 5, lambda_add); // This would fail!
+
+    let lambdaSq = la_((i32 x)(i32)) { return x * x; };
+    var qd_list = chain$((ArrList$i32)(sq_list.items)(
+        map$((i32)(x)(lambdaSq(*x))),
+        fold_(try_(init(gpa, sq_list.cap)), (collect, x)(append(&collect, *x), collect))
+    ));
+    defer_(fini(&qd_list, gpa));
+    io_stream_print(u8_l("quadrupled: "));
+    for_(($s(qd_list.items))(item) {
+        io_stream_print(u8_l("{:d} "), *item);
+    });
+    io_stream_nl();
+
     return_(ok({}));
 } $unguarded_(fn);
