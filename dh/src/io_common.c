@@ -2,13 +2,13 @@
 #include "dh/fs/common.h"
 
 #include "dh/posix.h"
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
-#endif /* plat_windows */
+#endif /* plat_is_windows */
 
 $inline_always
 $static fn_((io_getStdInHandle(void))(posix_fd_t)) {
-    return pp_if_(plat_windows)(
+    return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
         pp_else_(posix_STDIN_FILENO)
     );
@@ -16,7 +16,7 @@ $static fn_((io_getStdInHandle(void))(posix_fd_t)) {
 
 $inline_always
 $static fn_((io_getStdOutHandle(void))(posix_fd_t)) {
-    return pp_if_(plat_windows)(
+    return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
         pp_else_(posix_STDOUT_FILENO)
     );
@@ -24,7 +24,7 @@ $static fn_((io_getStdOutHandle(void))(posix_fd_t)) {
 
 $inline_always
 $static fn_((io_getStdErrHandle(void))(posix_fd_t)) {
-    return pp_if_(plat_windows)(
+    return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
         pp_else_(posix_STDERR_FILENO)
     );

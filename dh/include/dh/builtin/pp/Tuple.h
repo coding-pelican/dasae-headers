@@ -5,9 +5,9 @@
  * @file    Tuple.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2025-05-23 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/builtin/pp
+ * @updated 2025-11-27 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/foundation/pp
  * @prefix  pp_Tuple
  *
  * @brief   Preprocessor tuple utilities
@@ -18,9 +18,8 @@
  *          - Tuple element counting
  *          - Tuple element iteration
  */
-
-#ifndef builtin_pp_Tuple__included
-#define builtin_pp_Tuple__included 1
+#ifndef foundation_pp_Tuple__included
+#define foundation_pp_Tuple__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -62,6 +61,6 @@ extern "C" {
 #define pp_Tuple_pushBack(_Elem, _Tuple) pp_Tuple_wrap(pp_Tuple_unwrap _Tuple, _Elem)
 
 #if defined(__cplusplus)
-}
+} /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* builtin_pp_Tuple__included */
+#endif /* foundation_pp_Tuple__included */

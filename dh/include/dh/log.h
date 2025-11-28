@@ -81,10 +81,14 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 
 #else
 
-static $inline_always void log_debug(const char* fmt, ...) { let_ignore = fmt; }
-static $inline_always void log_info(const char* fmt, ...) { let_ignore = fmt; }
-static $inline_always void log_warn(const char* fmt, ...) { let_ignore = fmt; }
-static $inline_always void log_error(const char* fmt, ...) { let_ignore = fmt; }
+$inline_always
+$static void log_debug(const char* fmt, ...) { let_ignore = fmt; }
+$inline_always
+$static void log_info(const char* fmt, ...) { let_ignore = fmt; }
+$inline_always
+$static void log_warn(const char* fmt, ...) { let_ignore = fmt; }
+$inline_always
+$static void log_error(const char* fmt, ...) { let_ignore = fmt; }
 
 #endif
 #else

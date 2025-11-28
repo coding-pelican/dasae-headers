@@ -5,14 +5,17 @@
  * @file    pp.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-05 (date of creation)
- * @updated 2025-05-23 (date of last update)
- * @version v0.1-alpha.2
- * @ingroup dasae-headers(dh)/builtin/pp
+ * @updated 2025-11-27 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/foundation/pp
  * @prefix  pp
+ *
+ * @brief   Preprocessor metaprogramming foundation
+ * @details The foundation of all metaprogramming in dh. Provides pure
+ *          preprocessor utilities with zero dependencies.
  */
-
-#ifndef builtin_pp__included
-#define builtin_pp__included 1
+#ifndef foundation_pp__included
+#define foundation_pp__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -25,4 +28,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* builtin_pp__included  */
+#endif /* foundation_pp__included */

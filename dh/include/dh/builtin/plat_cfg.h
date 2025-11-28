@@ -5,251 +5,140 @@
  * @file    plat_cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)/builtin
+ * @updated 2025-11-27 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/foundation
  * @prefix  plat
  *
- * @brief   Platform detection configuration
- * @details Detects operating system, environment specifics, and platform features.
- *          Includes OS family, bit width, endianness, and system-specific attributes.
+ * @brief   Platform detection and configuration
+ * @details Detects operating system and platform-specific features.
+ *          Focus: Windows, Linux, Darwin, and WASI.
  */
-
-#ifndef BUILTIN_PLAT_CFG_INCLUDED
-#define BUILTIN_PLAT_CFG_INCLUDED (1)
-
+#ifndef foundation_plat_cfg__included
+#define foundation_plat_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-/*========== Platform Detection =============================================*/
+/*========== Includes =======================================================*/
 
-#define os_type __comp_enum__os_type
-#define os_type_unknown __comp_enum__os_type_unknown
-#define os_type_windows __comp_enum__os_type_windows
-#define os_type_linux __comp_enum__os_type_linux
-#define os_type_darwin __comp_enum__os_type_darwin
+#include "pp.h"
 
-#define os_name __comp_str__os_name
-#define os_name_unknown __comp_str__os_name_unknown
-#define os_name_windows __comp_str__os_name_windows
-#define os_name_linux __comp_str__os_name_linux
-#define os_name_darwin __comp_str__os_name_darwin
+/*========== Macros and Declarations ========================================*/
 
-#define os_based_unix __comp_bool__os_based_unix
+/* --- Platform Detection --- */
 
-#define __comp_enum__os_type os_type_unknown
-#define __comp_enum__os_type_unknown 0
-#define __comp_enum__os_type_windows 1
-#define __comp_enum__os_type_linux 2
-#define __comp_enum__os_type_darwin 3
+#define plat_type __comp_enum__plat_type
+#define plat_type_unknown __comp_enum__plat_type_unknown
+#define plat_type_windows __comp_enum__plat_type_windows
+#define plat_type_linux __comp_enum__plat_type_linux
+#define plat_type_darwin __comp_enum__plat_type_darwin
+#define plat_type_wasi __comp_enum__plat_type_wasi
 
-#define __comp_str__os_name \
-    pp_if_(pp_eq(os_type, os_type_windows))( \
-        pp_then_(os_name_windows), \
-        pp_else_(pp_if_(pp_eq(os_type, os_type_linux))( \
-            pp_then_(os_name_linux), pp_else_(pp_if_(pp_eq(os_type, os_type_darwin))(pp_then_(os_name_darwin), pp_else_(os_name_unknown))) \
-        )) \
-    )
-#define __comp_str__os_name_unknown "unknown"
-#define __comp_str__os_name_windows "windows"
-#define __comp_str__os_name_linux "linux"
-#define __comp_str__os_name_darwin "darwin"
+#define plat_name __comp_str__plat_name
+#define plat_name_unknown __comp_str__plat_name_unknown
+#define plat_name_windows __comp_str__plat_name_windows
+#define plat_name_linux __comp_str__plat_name_linux
+#define plat_name_darwin __comp_str__plat_name_darwin
+#define plat_name_wasi __comp_str__plat_name_wasi
 
-#define __comp_bool__os_based_unix pp_ne(os_type, os_type_windows)
+#define plat_based_unix __comp_bool__plat_based_unix
+#define plat_is_posix __comp_bool__plat_is_posix
 
-#define plat_windows VAL__plat_windows
-#define plat_posix VAL__plat_posix
-#define plat_unix VAL__plat_unix
-#define plat_linux VAL__plat_linux
-#define plat_darwin VAL__plat_darwin
-#define plat_wasm VAL__plat_wasm
-#define plat_wasi VAL__plat_wasi
+#define plat_is_windows __comp_bool__plat_is_windows
+#define plat_is_linux __comp_bool__plat_is_linux
+#define plat_is_darwin __comp_bool__plat_is_darwin
+#define plat_is_wasi __comp_bool__plat_is_wasi
 
-#define plat_name VAL__plat_name
+/* --- Calling Conventions --- */
 
-#define plat_64bit VAL__plat_64bit
-#define plat_32bit VAL__plat_32bit
-#define plat_bits VAL__plat_bits
+#define plat_cdecl __comp_attr__plat_cdecl
+#define plat_stdcall __comp_attr__plat_stdcall
+#define plat_fastcall __comp_attr__plat_fastcall
+#define plat_vectorcall __comp_attr__plat_vectorcall
 
-#define plat_byte_order VAL__plat_byte_order
-#define plat_endian VAL__plat_endian
-#define plat_byte_order_little_endian VAL__plat_byte_order_little_endian
-#define plat_byte_order_big_endian VAL__plat_byte_order_big_endian
+/*========== Macros and Definitions =========================================*/
 
-#define plat_export ATTR__plat_export
-#define plat_import ATTR__plat_import
+/* --- Platform Detection --- */
 
-/*========== Implementations Platform Detection =============================*/
+/* Default: unknown platform */
+#define __comp_enum__plat_type plat_type_unknown
+#define __comp_enum__plat_type_unknown 0
+#define __comp_enum__plat_type_windows 1
+#define __comp_enum__plat_type_linux 2
+#define __comp_enum__plat_type_darwin 3
+#define __comp_enum__plat_type_wasi 4
 
-#undef VAL__plat_windows
-#undef VAL__plat_unix
-#undef VAL__plat_darwin
-#undef VAL__plat_linux
-#undef VAL__plat_bsd
-#undef VAL__plat_wasm
-#undef VAL__plat_wasi
+/* Detect WASI (WebAssembly System Interface) */
+#if defined(__wasi__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_wasi
 
-#define VAL__plat_windows 0
-#define VAL__plat_unix 0
-#define VAL__plat_darwin 0
-#define VAL__plat_linux 0
-#define VAL__plat_bsd 0
-#define VAL__plat_wasm 0 /* Emscripten or other WASM environment */
-#define VAL__plat_wasi 0 /* WASI environment */
-#define VAL__plat_name "Unknown"
+/* Detect Windows */
+#elif defined(_WIN32) || defined(_WIN64)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_windows
 
-#if defined(__EMSCRIPTEN__)
-/* Emscripten: usually compiles to WebAssembly, often in a browser or Node. */
-#undef VAL__plat_wasm
-#define VAL__plat_wasm 1
-#undef VAL__plat_name
-#define VAL__plat_name "Emscripten (WASM)"
-
-#elif defined(__wasi__)
-/* WASI: WebAssembly System Interface (standalone environment) */
-#undef VAL__plat_wasi
-#define VAL__plat_wasi 1
-#undef VAL__plat_name
-#define VAL__plat_name "WASI"
-
-#else
-/* If not WASM or WASI, check traditional OSes. */
-
-#if defined(_WIN32) || defined(_WIN64)
-#undef __comp_enum__os_type
-#define __comp_enum__os_type os_type_windows
-#undef VAL__plat_windows
-#define VAL__plat_windows 1
-#undef VAL__plat_name
-#define VAL__plat_name "Windows"
-
+/* Detect Darwin (macOS, iOS, etc.) */
 #elif defined(__APPLE__)
-#undef __comp_enum__os_type
-#define __comp_enum__os_type os_type_darwin
-#undef VAL__plat_unix
-#undef VAL__plat_darwin
-#define VAL__plat_unix 1
-#define VAL__plat_darwin 1
-#undef VAL__plat_name
-#define VAL__plat_name "Darwin"
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_darwin
 
+/* Detect Linux */
 #elif defined(__linux__)
-#undef __comp_enum__os_type
-#define __comp_enum__os_type os_type_linux
-#undef VAL__plat_unix
-#undef VAL__plat_linux
-#define VAL__plat_unix 1
-#define VAL__plat_linux 1
-#undef VAL__plat_name
-#define VAL__plat_name "Linux"
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_linux
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#undef VAL__plat_unix
-#undef VAL__plat_bsd
-#define VAL__plat_unix 1
-#define VAL__plat_bsd 1
-#undef VAL__plat_name
-#define VAL__plat_name "BSD"
+// /* Detect generic Unix */
+// #elif defined(__unix__) || defined(__unix)
+// #undef __comp_enum__plat_type
+// #define __comp_enum__plat_type plat_type_unix
 
 #else
-/* Unknown OS environment */
 #warning "Unknown platform detected. Some features may not work as expected."
 #endif
-#endif /* WASM/WASI detection vs. Traditional OSes */
 
-#undef VAL__plat_64bit
-#undef VAL__plat_32bit
-#undef VAL__plat_bits
+#define __comp_str__plat_name pp_switch_( \
+    (plat_type)(pp_case_((plat_type_windows)(plat_name_windows)), \
+                pp_case_((plat_type_linux)(plat_name_linux)), \
+                pp_case_((plat_type_darwin)(plat_name_darwin)), \
+                pp_case_((plat_type_wasi)(plat_name_wasi)), \
+                pp_default_(plat_name_unknown)) \
+)
+#define __comp_str__plat_name_unknown "Unknown"
+#define __comp_str__plat_name_windows "Windows"
+#define __comp_str__plat_name_linux "Linux"
+#define __comp_str__plat_name_darwin "Darwin"
+#define __comp_str__plat_name_wasi "WASI"
 
-#define VAL__plat_64bit 0
-#define VAL__plat_32bit 0
-#define VAL__plat_bits 0
+#define __comp_bool__plat_based_unix pp_switch_( \
+    (plat_type)(pp_case_((plat_type_linux)(pp_true)), \
+                pp_case_((plat_type_darwin)(pp_true)), \
+                pp_default_(pp_false)) \
+)
+#define __comp_bool__plat_is_posix plat_based_unix
 
-#if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) || defined(__ppc64__) || defined(__powerpc64__) \
-    || defined(__EMSCRIPTEN__) && (defined(__wasm64__))
-/*
- * For WASM64, you might check something like:
- *   #if (defined(__wasm64__) || (__EMSCRIPTEN_major__ >= ??? && ...))
- * Adjust for your toolchain.
- */
-#undef VAL__plat_64bit
-#define VAL__plat_64bit 1
-#undef VAL__plat_bits
-#define VAL__plat_bits 64
+#define __comp_bool__plat_is_windows pp_Tok_eq(plat_type, plat_type_windows)
+#define __comp_bool__plat_is_linux pp_Tok_eq(plat_type, plat_type_linux)
+#define __comp_bool__plat_is_darwin pp_Tok_eq(plat_type, plat_type_darwin)
+#define __comp_bool__plat_is_wasi pp_Tok_eq(plat_type, plat_type_wasi)
 
-#elif defined(_WIN32) || defined(__i386__) || defined(__arm__) || defined(__ppc__) || defined(__EMSCRIPTEN__) /* Typically wasm32 if no __wasm64__ */
-#undef VAL__plat_32bit
-#define VAL__plat_32bit 1
-#undef VAL__plat_bits
-#define VAL__plat_bits 32
+/* --- Calling Conventions --- */
 
-#else
-/*
- * Might be 16-bit or some unusual environment.
- */
-#warning "Unknown platform bit width - defaulting to 16"
-#undef VAL__plat_bits
-#define VAL__plat_bits 16
-#endif
-
-
-#undef VAL__plat_byte_order
-#undef VAL__plat_endian
-#undef VAL__plat_byte_order_little_endian
-#undef VAL__plat_byte_order_big_endian
-
-#define VAL__plat_byte_order __BYTE_ORDER__
-#define VAL__plat_endian 0
-#define VAL__plat_byte_order_little_endian __ORDER_LITTLE_ENDIAN__
-#define VAL__plat_byte_order_big_endian __ORDER_BIG_ENDIAN__
-
-#if (plat_wasm || plat_wasi)
-/* WebAssembly is always little-endian per the spec. */
-#undef VAL__plat_endian
-#define VAL__plat_endian plat_byte_order_little_endian
-
-#elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
-#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-#undef VAL__plat_endian
-#define VAL__plat_endian plat_byte_order_little_endian
-#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-#undef VAL__plat_endian
-#define VAL__plat_endian plat_byte_order_big_endian
-#else
-#warning "Unknown __BYTE_ORDER__ - defaulting to little-endian"
-#undef VAL__plat_endian
-#define VAL__plat_endian plat_byte_order_little_endian
-#endif
-
-#else
-/*
- * Fallback if __BYTE_ORDER__ not defined. Common on older compilers or exotic platforms.
- */
-#warning "No known byte-order macros - defaulting to little-endian"
-#undef VAL__plat_endian
-#define VAL__plat_endian plat_byte_order_little_endian
-#endif
-
-#undef ATTR__plat_export
-#undef ATTR__plat_import
-
-#if plat_windows
-#define ATTR__plat_export __declspec(dllexport)
-#define ATTR__plat_import __declspec(dllimport)
-#else
-#define ATTR__plat_export __attribute__((visibility("default")))
-#define ATTR__plat_import
-#endif
-
-#undef VAL__plat_posix
-#if plat_unix
-#define VAL__plat_posix 1
-#else
-#define VAL__plat_posix 0
+#if plat_type == plat_type_windows
+#define __comp_attr__plat_cdecl __cdecl
+#define __comp_attr__plat_stdcall __stdcall
+#define __comp_attr__plat_fastcall __fastcall
+#define __comp_attr__plat_vectorcall __vectorcall
+#else /* plat_type != plat_type_windows */
+/* Linux/Unix typically ignores these or they are default */
+#define __comp_attr__plat_cdecl
+#define __comp_attr__plat_stdcall
+#define __comp_attr__plat_fastcall
+#define __comp_attr__plat_vectorcall
 #endif
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* BUILTIN_PLAT_CFG_INCLUDED */
+#endif /* foundation_plat_cfg__included */

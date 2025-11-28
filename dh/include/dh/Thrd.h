@@ -17,7 +17,6 @@
  *          - Thread-local storage management
  *          - Thread-specific data handling
  */
-
 #ifndef Thrd__included
 #define Thrd__included 1
 #if defined(__cplusplus)

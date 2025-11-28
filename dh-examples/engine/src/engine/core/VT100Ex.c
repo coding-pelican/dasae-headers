@@ -25,7 +25,7 @@
 #include "dh/time.h"
 #include "engine/KeyCode.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 
 /* ========== Structure ======================================================== */
@@ -886,4 +886,4 @@ fn_((getMouseWheelScrollDelta(const P$raw ctx))(m_V2f32)) {
 
 #else
 /* Non-Windows stub */
-#endif /* plat_windows */
+#endif /* plat_is_windows */

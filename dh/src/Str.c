@@ -2,7 +2,7 @@
 #include "dh/ascii.h"
 #include "dh/mem/common.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
@@ -56,7 +56,7 @@ bool Str_eqlNoCase(S_const$u8 lhs, S_const$u8 rhs) {
 
 bool S_const$u8Castable(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
-#if plat_windows
+#if plat_is_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();
     if (!VirtualQuery(self.ptr, &mbi, sizeOf$(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;

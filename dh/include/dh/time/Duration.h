@@ -17,7 +17,6 @@
  *          - Time formatting and parsing
  *          - Platform-independent time operations
  */
-
 #ifndef time_Duration__included
 #define time_Duration__included 1
 #if defined(__cplusplus)

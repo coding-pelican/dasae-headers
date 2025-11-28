@@ -10,7 +10,6 @@
  * @ingroup dasae-headers(dh)
  * @prefix  ascii
  */
-
 #ifndef ascii__included
 #define ascii__included 1
 #if defined(__cplusplus)
@@ -97,41 +96,54 @@ enum ascii_CtrlCode {
 };
 
 /// Returns whether the character is a 7-bit ASCII character.
-static $inline fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; }
+static $inline
+fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; }
 /// Returns whether the character is an uppercase letter: A-Z.
-static $inline fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; }
+static $inline
+fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; }
 /// Returns whether the character is a lowercase letter: a-z.
-static $inline fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; }
+static $inline
+fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; }
 /// Returns whether the character is alphabetic: A-Z || a-z.
-static $inline fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); }
+static $inline
+fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); }
 /// Returns whether the character is a digit: 0-9.
-static $inline fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; }
+static $inline
+fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; }
 /// Returns whether the character is alphanumeric: A-Z, a-z, || 0-9.
-static $inline fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); }
+static $inline
+fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); }
 /// Returns whether the character is a hexadecimal digit: A-F, a-f, || 0-9.
-static $inline fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); }
+static $inline
+fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); }
 /// Returns whether the character is a control character.
-static $inline fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; }
+static $inline
+fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; }
 /// Returns whether the character is a glyph.
-static $inline fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; }
+static $inline
+fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; }
 /// Returns whether the character is a whitespace character.
-static $inline fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); }
+static $inline
+fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); }
 /// Whitespace for general use.
 /// This may be used with e.g. `mem_trim` to trim whitespace.
-static let ascii_whitespaces = init$A$$((6, u8){' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff});
+static let ascii_whitespaces = init$A$$((6, u8){ ' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff });
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
-static $inline fn_((ascii_toUpper(u8 c))(u8)) {
+static $inline
+fn_((ascii_toUpper(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isLower(c)) << 5;
     return c ^ mask;
 }
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
-static $inline fn_((ascii_toLower(u8 c))(u8)) {
+static $inline
+fn_((ascii_toLower(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isUpper(c)) << 5;
     return c | mask;
 }
 /// Toggles the case of the character && returns it as-is if not a letter.
-static $inline fn_((ascii_toggleCase(u8 c))(u8)) {
+static $inline
+fn_((ascii_toggleCase(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isAlpha(c)) << 5;
     return c ^ mask;
 }

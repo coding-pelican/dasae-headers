@@ -1,4 +1,3 @@
-// Co.h
 #ifndef CO_INCLUDED
 #define CO_INCLUDED (1)
 

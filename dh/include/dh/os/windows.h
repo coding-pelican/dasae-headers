@@ -3,10 +3,10 @@
 
 #include "dh/builtin.h"
 
-#if plat_windows
+#if plat_type == plat_type_windows
 #include "dh/os/windows/common.h"
 #include "dh/os/windows/mem.h"
 #include "dh/os/windows/socket.h"
-#endif /* plat_windows */
+#endif /* plat_type == plat_type_windows */
 
 #endif /* os_windows__included */

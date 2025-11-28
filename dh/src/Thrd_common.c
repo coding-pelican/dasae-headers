@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 #endif
 
@@ -30,7 +30,7 @@ fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
 }
 
 fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
-#if plat_windows
+#if plat_is_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
     let cpu_count = sysconf(_SC_NPROCESSORS_ONLN);

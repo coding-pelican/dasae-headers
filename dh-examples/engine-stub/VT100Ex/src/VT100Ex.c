@@ -23,7 +23,7 @@
 #if !defined(engine_core_VT100Ex_comp_sharded)
 #include "dh/main.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 #if BUILTIN_COMP_MSVC
 #pragma comment(lib, "user32.lib")
@@ -1151,6 +1151,6 @@ $static fn_((calculateCellSize(WTSettings* settings, f64* w, f64* h))(void)) {
 }
 #endif /* UNUSED_CODE */
 
-#endif /* plat_windows */
+#endif /* plat_is_windows */
 
 #endif /* !engine_core_VT100Ex_comp_sharded */

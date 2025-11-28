@@ -13,9 +13,8 @@
  * @brief   POSIX constants
  * @details Provides POSIX constants for standard file descriptors.
  */
-
-#ifndef POSIX_INCLUDED
-#define POSIX_INCLUDED (1)
+#ifndef posix__included
+#define posix__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -24,13 +23,13 @@ extern "C" {
 
 #include "core.h"
 
-#if plat_windows
+#if plat_type == plat_type_windows
 #include "os/windows.h"
-#endif /* plat_windows */
+#endif /* plat_type == plat_type_windows */
 
 /*========== Macros and Declarations ========================================*/
 
-typedef pp_if_(plat_windows)(
+typedef pp_if_(pp_Tok_eq(plat_type, plat_type_windows))(
     pp_then_(HANDLE),
     pp_else_(i32)
 ) posix_fd_t;
@@ -49,4 +48,4 @@ typedef i32 posix_mode_t;
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* POSIX_INCLUDED */
+#endif /* posix__included */

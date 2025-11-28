@@ -1,11 +1,11 @@
 #include "dh/core/debug/common.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return IsDebuggerPresent();
 }
-#elif plat_linux
+#elif plat_is_linux
 #include <stdio.h> /* TODO: Use io or fs instead of this */
 fn_((debug_isDebuggerPresent(void))(bool)) {
     /* Check /proc/self/status for TracerPid */
@@ -29,11 +29,11 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
     fclose(f);
     return result;
 }
-#elif plat_darwin
+#elif plat_is_darwin
 #include <sys/sysctl.h>
 #include <unistd.h>
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    i32 mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    i32 mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
     struct kinfo_proc info;
     usize size = sizeof(info);
     if (sysctl(mib, 4, &info, &size, null, 0) == 0) {

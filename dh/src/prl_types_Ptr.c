@@ -2,7 +2,7 @@
 #include "dh/ptr.h"
 #include "dh/fn.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
@@ -11,7 +11,7 @@
 
 fn_((constCastable$P(P_const$raw ptr))(bool)) {
     debug_assert_nonnull(ptr);
-#if plat_windows
+#if plat_is_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();
     if (!VirtualQuery(ptr, &mbi, sizeOf$(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;

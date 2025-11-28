@@ -33,7 +33,7 @@
 #include "dh/time.h"
 #include "dh/Rand.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 #else /* others */
 #include <unistd.h>
@@ -48,10 +48,10 @@ use_ArrList$(i32);
 
 /* Constants ================================================================*/
 
-#define tetris_screen_width  (80)
+#define tetris_screen_width (80)
 #define tetris_screen_height (30)
-#define tetris_field_width   (12ull)
-#define tetris_field_height  (18ull)
+#define tetris_field_width (12ull)
+#define tetris_field_height (18ull)
 
 /* Game Types ===============================================================*/
 
@@ -96,7 +96,7 @@ static fn_((tetris_PlayField_doesPieceFit(const tetris_PlayField* field, i32 tet
 static fn_((tetris_PlayField_clearLines(tetris_PlayField* field, ArrList$i32* lines))(E$i32)) $must_check;
 static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 rotation, i32 pos_x, i32 pos_y))(void));
 
-#if plat_windows
+#if plat_is_windows
 use_S$(wchar);
 static HANDLE tetris_Console_output_handle = null;
 static S$wchar tetris_Console_screen_buffer = cleared();
@@ -218,7 +218,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     }
 
 /* Game over message */
-#if plat_windows
+#if plat_is_windows
     DWORD dwBytesWritten = 0;
     COORD coord = { 0, tetris_screen_height };
     WriteConsoleOutputCharacterW(tetris_Console_output_handle, L"Game Over!", 10, coord, &dwBytesWritten);
@@ -233,8 +233,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
 /* Function Implementations =================================================*/
 
-static fn_((tetris_Console_bootup(void))(E$void) pp_if_(plat_windows)(pp_then_($guard), pp_else_($scope))) {
-#if plat_windows
+static fn_((tetris_Console_bootup(void))(E$void) pp_if_(plat_is_windows)(pp_then_($guard), pp_else_($scope))) {
+#if plat_is_windows
     /* Set up Windows console */
     var screen_size = tetris_screen_width * tetris_screen_height;
 
@@ -286,10 +286,10 @@ static fn_((tetris_Console_bootup(void))(E$void) pp_if_(plat_windows)(pp_then_($
 #endif
 
     return_ok({});
-} $un_(pp_if_(plat_windows)(pp_then_(guarded), pp_else_(scoped)))(fn);
+} $un_(pp_if_(plat_is_windows)(pp_then_(guarded), pp_else_(scoped)))(fn);
 
 static fn_((tetris_Console_shutdown(void))(void)) {
-#if plat_windows
+#if plat_is_windows
     var allocator = heap_Page_allocator(create$(heap_Page));
     mem_Allocator_free(allocator, anySli(tetris_Console_screen_buffer));
     CloseHandle(tetris_Console_output_handle);
@@ -300,7 +300,7 @@ static fn_((tetris_Console_shutdown(void))(void)) {
 }
 
 static fn_((tetris_isKeyPressed(i32 key))(bool)) {
-#if plat_windows
+#if plat_is_windows
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
     static const A$$(5, i8) s_key_map = A_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
     return (GetAsyncKeyState(A_getAt(s_key_map, key)) & 0x8000) != 0;
@@ -347,7 +347,7 @@ static fn_((tetris_PlayField_init(mem_Allocator allocator))(E$tetris_PlayField) 
 } $unscoped_(fn);
 
 static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 current_piece, i32 rotation, i32 pos_x, i32 pos_y, i32 score))(E$void) $scope) {
-#if plat_windows
+#if plat_is_windows
     /* Clear screen buffer */
     for_(($s(tetris_Console_screen_buffer))(cell) {
         *cell = L' ';
@@ -396,7 +396,7 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     /* Output to console */
     DWORD dwBytesWritten = 0;
     WriteConsoleOutputCharacterW(tetris_Console_output_handle, tetris_Console_screen_buffer.ptr, tetris_Console_screen_buffer.len, (COORD){ 0, 0 }, &dwBytesWritten);
-#else  /* others */
+#else /* others */
     /* Move cursor to top-left */
     printf("\033[H");
 

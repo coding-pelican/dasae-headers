@@ -1,5 +1,5 @@
-#ifndef ERR_TRACE_INCLUDED
-#define ERR_TRACE_INCLUDED (1)
+#ifndef prl_ErrTrace__included
+#define prl_ErrTrace__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -14,7 +14,7 @@ extern "C" {
 #define ErrTrace_comp_enabled (debug_comp_enabled)
 #endif /* !defined(ErrTrace_comp_enabled) */
 
-#define ErrTrace_max_frames /* Platform-specific stack trace size optimization */ VAL__ErrTrace_max_frames
+#define ErrTrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ErrTrace_max_frames
 /// Stack frame info
 typedef struct ErrTrace_Frame ErrTrace_Frame;
 /// Fixed-size stack trace buffer
@@ -28,30 +28,23 @@ extern void ErrTrace_print(void);
 
 /*========== Implementations ================================================*/
 
-// clang-format off
-#if plat_64bit
-    #if arch_family_x86
-        #define VAL__ErrTrace_max_frames (32)
-    #elif arch_family_arm
-        #define VAL__ErrTrace_max_frames (24)
-    #elif arch_family_riscv
-        #define VAL__ErrTrace_max_frames (24)
-    #else /* others */
-    #endif /* others */
-#else /* plat_32bit */
-    #if arch_family_x86
-        #define VAL__ErrTrace_max_frames (16)
-    #elif arch_family_arm
-        #define VAL__ErrTrace_max_frames (12)
-    #elif arch_family_riscv
-        #define VAL__ErrTrace_max_frames (12)
-    #else /* others */
-    #endif /* others */
-#endif /* plat_32bit */
-#if !defined(VAL__ErrTrace_max_frames)
-#define VAL__ErrTrace_max_frames (8)
-#endif /* !defined(VAL__ErrTrace_max_frames) */
-// clang-format on
+/* clang-format off */
+#define __comp_int__ErrTrace_max_frames pp_switch_((arch_bits_unit)( \
+    pp_case_((arch_bits_unit_64bit)(pp_switch_((arch_family_type)(\
+        pp_case_((arch_family_type_x86)(32)), \
+        pp_case_((arch_family_type_arm)(24)), \
+        pp_case_((arch_family_type_riscv)(24)), \
+        pp_default_(8) \
+    )))), \
+    pp_case_((arch_bits_unit_32bit)(pp_switch_((arch_family_type)(\
+        pp_case_((arch_family_type_x86)(16)), \
+        pp_case_((arch_family_type_arm)(12)), \
+        pp_case_((arch_family_type_riscv)(12)), \
+        pp_default_(8) \
+    )))), \
+    pp_default_(8) \
+))
+/* clang-format on */
 
 struct ErrTrace_Frame {
     SrcLoc src_loc;
@@ -90,4 +83,4 @@ extern void ErrTrace_print_debug(void);
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* ERR_TRACE_INCLUDED */
+#endif /* prl_ErrTrace__included */

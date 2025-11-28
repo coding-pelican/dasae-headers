@@ -1,7 +1,7 @@
 #include "dh/time.h"
 
 fn_((time_sleep(time_Duration duration))(void)) {
-#if plat_windows && (plat_32bit || plat_64bit)
+#if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
     HANDLE timer = CreateWaitableTimerExW(
         null,
         null,
@@ -24,7 +24,7 @@ fn_((time_sleep(time_Duration duration))(void)) {
     }
 
     CloseHandle(timer);
-#else  /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
+#else  /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
     struct timespec req = {
         .tv_sec = duration.secs,
         .tv_nsec = duration.nanos
@@ -36,7 +36,7 @@ fn_((time_sleep(time_Duration duration))(void)) {
         // If interrupted by signal, retry with remaining time
         req = rem;
     }
-#endif /* plat_windows && (plat_32bit || plat_64bit) */
+#endif /* plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit) */
 }
 
 fn_((time_sleepSecs(u64 secs))(void)) {

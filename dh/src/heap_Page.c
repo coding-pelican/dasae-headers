@@ -1,7 +1,7 @@
 #include "dh/heap/Page.h"
 #include "dh/mem/common.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
 #include <sys/mman.h>
@@ -45,7 +45,7 @@ $static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     // Check for overflow when aligning to page size
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
 
-#if plat_windows
+#if plat_is_windows
     // Windows allocation logic similar to zig's PageAllocator
     let addr = VirtualAlloc(
         null,
@@ -138,7 +138,7 @@ $static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
         return true; // No resize needed
     }
 
-#if plat_windows
+#if plat_is_windows
     if (new_len <= buf.len) {
         let base_addr = ptrToInt(buf.ptr);
         let old_addr_end = base_addr + buf_aligned_len;
@@ -199,7 +199,7 @@ $static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(
         return_some(buf.ptr); // No resize needed
     }
 
-#if plat_windows
+#if plat_is_windows
     // Windows PageAllocator in zig doesn't support resize larger.
     return_none(); // Indicate remap failure, as resize up is not supported.
 
@@ -233,7 +233,7 @@ $static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
     debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
     let_ignore = ptr_align;
 
-#if plat_windows
+#if plat_is_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);
 #else  /* posix */
     let buf_aligned_len = mem_alignFwd(buf.len, mem_page_size);

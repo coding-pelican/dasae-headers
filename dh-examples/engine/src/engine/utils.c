@@ -1,6 +1,6 @@
 #include "engine/utils.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 
 fn_((engine_utils_getch(void))(u8)) {
@@ -43,7 +43,7 @@ fn_((engine_utils_kbhit(void))(bool)) {
     return false;
 }
 
-#else /* plat_unix */
+#else /* plat_based_unix */
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -92,4 +92,4 @@ fn_((engine_utils_kbhit(void))(bool)) {
     }
     return false;
 }
-#endif /* plat_unix */
+#endif /* plat_based_unix */

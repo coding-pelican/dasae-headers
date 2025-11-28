@@ -13,12 +13,15 @@
  * @brief   Static assertion utilities
  * @details Provides utilities for compile-time assertions
  */
-
 #ifndef builtin_static_assert__included
 #define builtin_static_assert__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
+
+#include "pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -37,7 +40,6 @@ extern "C" {
 #define __step__static_assert_msg(_Expr, _msg) _Static_assert((_Expr), "Failed assertion: " _msg)
 #else
 /* Older versions - emulate static assert */
-#include "pp.h"
 #ifdef __COUNTER__
 #define __step__static_assert(_Expr) typedef int pp_join(__, __step__static_assert, __COUNTER__)[(_Expr) ? 1 : -1]
 #define __step__static_assert_msg(_Expr, _msg) typedef int pp_join(__, __step__static_assert_msg, __COUNTER__)[(_Expr) ? 1 : -1]

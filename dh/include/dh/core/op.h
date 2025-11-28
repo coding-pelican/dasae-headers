@@ -18,7 +18,6 @@
  *          - Wrapper macros
  *          - Externalized static functions
  */
-
 #ifndef core_op__included
 #define core_op__included 1
 #if defined(__cplusplus)

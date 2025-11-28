@@ -3,7 +3,7 @@
 
 #include "dh/builtin.h"
 
-#if plat_windows
+#if plat_type == plat_type_windows
 #undef auto
 #undef var
 #undef let
@@ -19,6 +19,6 @@
 #define auto __comp_syn__auto
 #define var __comp_syn__var
 #define let __comp_syn__let
-#endif /* plat_windows */
+#endif /* plat_type == plat_type_windows */
 
 #endif /* os_windows_common__included */

@@ -13,9 +13,8 @@
  * @brief   "Make C Great Again"
  * @details Provides core utilities and definitions for the project.
  */
-
-#ifndef CORE_INCLUDED
-#define CORE_INCLUDED (1)
+#ifndef core__included
+#define core__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -40,4 +39,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_INCLUDED */
+#endif /* core__included */

@@ -34,7 +34,7 @@ typedef posix_mode_t fs_File_Mode;
 /// the `touch` command, which would correspond to `0o644`. However, POSIX
 /// libc implementations use `0666` inside `fopen` and then rely on the
 /// process-scoped "umask" setting to adjust this number for file creation.
-static const fs_File_Mode fs_file_default_mode = pp_if_(plat_posix)(
+static const fs_File_Mode fs_file_default_mode = pp_if_(plat_is_posix)(
     pp_then_(0666),
     pp_else_(0)
 );
@@ -69,20 +69,20 @@ $static $inline_always
 fn_((fs_File_OpenFlags_isWrite(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_read_only; }
 
 typedef struct fs_File_CreateFlags {
-    bool         read;
-    bool         truncate;
-    bool         exclusive;
-    bool         lock;
-    bool         lock_nonblocking;
+    bool read;
+    bool truncate;
+    bool exclusive;
+    bool lock;
+    bool lock_nonblocking;
     fs_File_Mode mode;
 } fs_File_CreateFlags;
 static const fs_File_CreateFlags fs_File_CreateFlags_default = {
-    .read             = false,
-    .truncate         = true,
-    .exclusive        = false,
-    .lock             = fs_File_Lock_none,
+    .read = false,
+    .truncate = true,
+    .exclusive = false,
+    .lock = fs_File_Lock_none,
     .lock_nonblocking = false,
-    .mode             = fs_file_default_mode,
+    .mode = fs_file_default_mode,
 };
 
 typedef struct fs_File {

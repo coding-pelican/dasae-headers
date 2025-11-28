@@ -5,7 +5,7 @@
 #include "dh/mem/common.h"
 #include "dh/ArrList.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 
 T_use$((u8)(

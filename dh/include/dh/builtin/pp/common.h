@@ -5,9 +5,9 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-05 (date of creation)
- * @updated 2025-05-23 (date of last update)
- * @version v0.1-alpha.2
- * @ingroup dasae-headers(dh)/builtin/pp
+ * @updated 2025-11-27 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/foundation/pp
  * @prefix  pp
  *
  * @brief   Preprocessor utilities
@@ -18,14 +18,13 @@
  *          - Token counting
  *          - Token iteration
  */
-
-#ifndef builtin_pp_common__included
-#define builtin_pp_common__included 1
+#ifndef foundation_pp_common__included
+#define foundation_pp_common__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #define pp_nothing(...) pp_exec_nothing(__VA_ARGS__)
 #define pp_ignore(...) pp_exec_ignore(__VA_ARGS__)
@@ -33,7 +32,7 @@ extern "C" {
 #define pp_defer(...) pp_exec_defer(__VA_ARGS__)
 
 #define pp_stringify(_Tok...) pp_exec_stringify(_Tok)
-#define nameOf(_Tok...) comp_op__nameOf(_Tok, #_Tok)
+#define nameOf(_Tok...) __comp_op__nameOf(_Tok, #_Tok)
 
 #define pp_cat(_LhsTok, _RhsTok...) pp_exec_cat(_LhsTok, _RhsTok)
 #define pp_cat2(_LhsTok, _RhsTok...) pp_exec_cat2(_LhsTok, _RhsTok)
@@ -47,6 +46,9 @@ extern "C" {
 
 #define pp_uniqTok(_Tok...) pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
+
+#define pp_true 1
+#define pp_false 0
 
 #define pp_not(_Cond...) pp_join(_, __pp_not, _Cond)
 #define __pp_not_1 0
@@ -82,16 +84,41 @@ extern "C" {
 #define __pp_ne_1_0 1
 #define __pp_ne_1_1 0
 
+#define __call__pp_if() pp_if_
 #define pp_if_(Cond...) pp_join(_, __pp_if, Cond)
-#define __pp_if_1(_Than, _Else...) pp_expand _Than
-#define __pp_if_0(_Than, _Else) pp_expand _Else
+#define __pp_if_1(_Then, _Else...) __pp_if_1__then _Then
+#define __pp_if_1__then(...) __VA_ARGS__
+#define __pp_if_0(_Then, _Else) __pp_if_0__else _Else
+#define __pp_if_0__else(...) __VA_ARGS__
 #define pp_then_
 #define pp_else_
 
-#define tpl_id(_tpl, _T...) pp_join($, _tpl, _T)
-#define tpl_fn_(_tpl_T, _id, _Ret...) fn_((tpl_id(_tpl_T, _id))(_Ret))
-#define tpl_T(_tpl, _T...) pp_join($, _tpl, _T)
-#define tpl_Ret(_tpl, _T...) tpl_T(Ret, tpl_id(_tpl, _T))
+#define __call__pp_switch_() __pp_switch_
+#define pp_switch_(/*(_pp_cond)(_pp_cases...)*/...) __step__pp_switch_(__step__pp_switch___parseCond __VA_ARGS__)
+#define __step__pp_switch___parseCond(_pp_cond...) _pp_cond, __step__pp_switch___parseCases
+#define __step__pp_switch___parseCases(_pp_cases...) _pp_cases
+#define __step__pp_switch_(...) __pp_switch_(__VA_ARGS__)
+#define __pp_switch_(_pp_cond, _pp_cases...) __pp_switch__expand(__pp_switch___eval(_pp_cond, _pp_cases))
+#define __pp_switch__expand(...) /* evaluate 2^5 */ __pp_switch__expand5(__VA_ARGS__)
+#define __pp_switch__expand5(...) __pp_switch__expand4(__pp_switch__expand4(__VA_ARGS__))
+#define __pp_switch__expand4(...) __pp_switch__expand3(__pp_switch__expand3(__VA_ARGS__))
+#define __pp_switch__expand3(...) __pp_switch__expand2(__pp_switch__expand2(__VA_ARGS__))
+#define __pp_switch__expand2(...) __pp_switch__expand1(__pp_switch__expand1(__VA_ARGS__))
+#define __pp_switch__expand1(...) __VA_ARGS__
+#define __call__pp_switch___eval() __pp_switch___eval
+#define __pp_switch___eval(_pp_cond, _tag, ...) \
+    pp_cat(__pp_switch___eval, _tag)(_pp_cond, __VA_ARGS__)
+#define __pp_switch___eval$_pp_case(_pp_cond, _pp_enum, _pp_expr, ...) \
+    pp_defer(__call__pp_if)()(pp_Tok_eq(_pp_cond, _pp_enum))(_pp_expr, (__call__pp_switch___eval)()(_pp_cond, __VA_ARGS__))
+#define __pp_switch___eval$_pp_default(_pp_cond, _pp_expr...) \
+    _pp_expr
+
+#define pp_case_(/*(_pp_enum)(_pp_expr)*/...) __step__pp_case_(__step__pp_case___parse __VA_ARGS__)
+#define __step__pp_case___parse(_pp_enum...) _pp_enum,
+#define __step__pp_case_(...) __pp_case_(__VA_ARGS__)
+#define __pp_case_(_pp_enum, _pp_expr...) $_pp_case, _pp_enum, _pp_expr
+#define pp_default_(_pp_expr...) __pp_default_(_pp_expr)
+#define __pp_default_(_pp_expr...) $_pp_default, _pp_expr
 
 #define pp_countArg(_Args...) \
     /** \
@@ -125,7 +152,12 @@ extern "C" {
      */ \
     pp_exec_foreach_(pp_exec_foreach_NARG(__VA_ARGS__), _Macro, _Name, __VA_ARGS__)
 
-/*========== Macros Implementation ==========================================*/
+#define tpl_id(_tpl, _T...) pp_join($, _tpl, _T)
+#define tpl_fn_(_tpl_T, _id, _Ret...) fn_((tpl_id(_tpl_T, _id))(_Ret))
+#define tpl_T(_tpl, _T...) pp_join($, _tpl, _T)
+#define tpl_Ret(_tpl, _T...) tpl_T(Ret, tpl_id(_tpl, _T))
+
+/*========== Macros and Definitions =========================================*/
 
 #define pp_exec_nothing(...)
 #define pp_exec_ignore(...)
@@ -133,7 +165,7 @@ extern "C" {
 #define pp_exec_defer(...) __VA_ARGS__ pp_exec_nothing()
 
 #define pp_exec_stringify(_Tok...) #_Tok
-#define comp_op__nameOf(_Tok, _Str...) ((void)(_Tok), #_Str)
+#define __comp_op__nameOf(_Tok, _Str...) ((void)(_Tok), #_Str)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
@@ -258,7 +290,39 @@ extern "C" {
 #define Tok_removeConst$(_const_T...) pp_cat(__Tok_removeConst$__remove_, _const_T)
 #define __Tok_removeConst$__remove_const
 
+#define pp_Tok_cmp__0(_x) _x
+#define pp_Tok_cmp__1(_x) _x
+#define pp_Tok_cmp__2(_x) _x
+#define pp_Tok_cmp__3(_x) _x
+#define pp_Tok_cmp__4(_x) _x
+#define pp_Tok_cmp__5(_x) _x
+#define pp_Tok_cmp__6(_x) _x
+#define pp_Tok_cmp__7(_x) _x
+#define pp_Tok_cmp__8(_x) _x
+#define pp_Tok_cmp__10(_x) _x
+#define pp_Tok_cmp__11(_x) _x
+#define pp_Tok_cmp__12(_x) _x
+#define pp_Tok_cmp__13(_x) _x
+#define pp_Tok_cmp__14(_x) _x
+#define pp_Tok_cmp__15(_x) _x
+#define pp_Tok_cmp__16(_x) _x
+#define pp_Tok_cmp__17(_x) _x
+#define pp_Tok_cmp__18(_x) _x
+#define pp_Tok_cmp__19(_x) _x
+#define pp_Tok_cmp__20(_x) _x
+#define pp_Tok_cmp__21(_x) _x
+#define pp_Tok_cmp__22(_x) _x
+#define pp_Tok_cmp__23(_x) _x
+#define pp_Tok_cmp__24(_x) _x
+#define pp_Tok_cmp__25(_x) _x
+#define pp_Tok_cmp__26(_x) _x
+#define pp_Tok_cmp__27(_x) _x
+#define pp_Tok_cmp__28(_x) _x
+#define pp_Tok_cmp__29(_x) _x
+#define pp_Tok_cmp__30(_x) _x
+#define pp_Tok_cmp__31(_x) _x
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* builtin_pp_common__included  */
+#endif /* foundation_pp_common__included  */

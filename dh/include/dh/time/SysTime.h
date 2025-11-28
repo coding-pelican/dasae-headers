@@ -17,7 +17,6 @@
  *          - Time formatting and parsing
  *          - Platform-independent time operations
  */
-
 #ifndef time_SysTime__included
 #define time_SysTime__included 1
 #if defined(__cplusplus)
@@ -123,11 +122,11 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 #define __comp_const__time_SysTime_intervals_to_unix_epoch \
     (lit_n$(u64)(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec)
 
-#if plat_windows && (plat_32bit || plat_64bit)
+#if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
 #define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
     .impl_ = { .QuadPart = as$(LONGLONG)(time_SysTime_intervals_to_unix_epoch) }, \
 })
-#else /* plat_unix && (plat_linux || plat_bsd || plat_darwin) */
+#else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
 #define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
     .impl_ = { .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch), .tv_nsec = 0 }, \
 })

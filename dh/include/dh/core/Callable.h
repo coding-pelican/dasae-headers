@@ -42,7 +42,7 @@ extern "C" {
 
 /*========== Macros and Implementations =====================================*/
 
-#if lang_mode == lang_mode_c && BUILTIN_COMP_CLANG
+#if lang_mode == lang_mode_c && comp_type == comp_type_clang
 #define comp_type_unnamed__Callable(_Params, T_Return...) \
     struct { \
         union { \
@@ -68,14 +68,14 @@ extern "C" {
         } callable; \
         bool is_lam; \
     }
-#define comp_gen__use_Callable(T_Callable, _Params, T_Return...) typedef struct T_Callable {
-union {
-    fn_(((^lamObj)_Params)(T_Return));
-    fn_(((*fnPtr)_Params)(T_Return));
-} callable;
-bool is_lam;
-}
-T_Callable
+#define comp_gen__use_Callable(T_Callable, _Params, T_Return...) \
+    typedef struct T_Callable { \
+        union { \
+            fn_(((^lamObj)_Params)(T_Return)); \
+            fn_(((*fnPtr)_Params)(T_Return)); \
+        } callable; \
+        bool is_lam; \
+    } T_Callable
 #endif /* others */
 
 #define comp_op__wrapLa(val_callableLamObj...) { .callable = { .lamObj = val_callableLamObj }, .is_lam = true }

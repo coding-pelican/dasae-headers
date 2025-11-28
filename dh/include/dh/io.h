@@ -15,7 +15,6 @@
  * @details Provides utilities for input/output operations, including file handling,
  *          string formatting, and console input/output.
  */
-
 #ifndef io__included
 #define io__included 1
 #if defined(__cplusplus)

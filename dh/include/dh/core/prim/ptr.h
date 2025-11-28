@@ -39,7 +39,7 @@ typedef TypeOf(const void*) P_const$raw;
 typedef TypeOf(void*) P$raw;
 
 #define $P_const$(_T...) TypeOf(const _T*)
-#define $P$(_T...)       TypeOf(_T*)
+#define $P$(_T...) TypeOf(_T*)
 
 #define ptrCast$(TDestRawptr, var_rawptr) \
     /** \
@@ -57,7 +57,7 @@ typedef TypeOf(void*) P$raw;
      * @brief Convert rawptr to int(usize) \
      */ \
     comp_op__ptrToInt(val_rawptr)
-#define ptrFromInt$    intToPtr$
+#define ptrFromInt$ intToPtr$
 #define rawptrFromInt$ intToPtr$
 #define intToPtr$(TDestRawptr, val_int) \
     /** \
@@ -79,19 +79,19 @@ typedef TypeOf(void*) P$raw;
 
 #define ensureNonnull(val_ptr...) comp_op__ensureNonnull(pp_uniqTok(ptr), val_ptr)
 
-#define rawref(var_src...)   comp_op__rawref(var_src)
+#define rawref(var_src...) comp_op__rawref(var_src)
 #define rawderef(val_ptr...) comp_op__rawderef(val_ptr)
 
-#define ref(val_src...)   comp_op__ref(val_src)
+#define ref(val_src...) comp_op__ref(val_src)
 #define deref(val_ptr...) comp_op__deref(val_ptr)
 
 /*========== Macros Implementation ==========================================*/
 
 #define comp_op__ptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
-#define comp_op__ptrToInt(val_rawptr)              ((usize)(val_rawptr))    // NOLINT
-#define comp_op__intToPtr$(TDestRawptr, val_int)   ((TDestRawptr)(val_int)) // NOLINT
+#define comp_op__ptrToInt(val_rawptr) ((usize)(val_rawptr))               // NOLINT
+#define comp_op__intToPtr$(TDestRawptr, val_int) ((TDestRawptr)(val_int)) // NOLINT
 
-#define comp_op__ptrIsNull(var_rawptr)    ((var_rawptr) == null)
+#define comp_op__ptrIsNull(var_rawptr) ((var_rawptr) == null)
 #define comp_op__ptrIsNonnull(var_rawptr) ((var_rawptr) != null)
 
 #define comp_op__ensureNonnull(__ptr, val_ptr...) blk({ \
@@ -99,18 +99,18 @@ typedef TypeOf(void*) P$raw;
     blk_return debug_assert_nonnull(__ptr), __ptr; \
 })
 
-#define comp_op__rawref(var_src...)   (&(var_src))
+#define comp_op__rawref(var_src...) (&(var_src))
 #define comp_op__rawderef(val_ptr...) (*(val_ptr))
 
-#define comp_op__ref(val_src...)   (&(val_src))
+#define comp_op__ref(val_src...) (&(val_src))
 #define comp_op__deref(val_ptr...) (*ensureNonnull(val_ptr))
 
 /*========== Validation Checks ==============================================*/
 
-#if plat_64bit
+#if arch_bits_is_64bit
 /* 64-bit */
 claim_assert_static_msg(sizeof(P$raw) == 8, "pointer must be 8 bytes on 64-bit");
-#elif plat_32bit
+#elif arch_bits_is_32bit
 /* 32-bit */
 claim_assert_static_msg(sizeof(P$raw) == 4, "pointer must be 4 bytes on 32-bit");
 #endif

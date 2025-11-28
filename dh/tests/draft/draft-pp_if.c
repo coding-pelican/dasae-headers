@@ -1,9 +1,9 @@
 #include "dh/prl.h"
 
 #if UNUSED_CODE
-#define pp_if_(Cond...)            pp_join(_, __pp_if, Cond)
+#define pp_if_(Cond...) pp_join(_, __pp_if, Cond)
 #define __pp_if_1(_Than, _Else...) pp_expand _Than
-#define __pp_if_0(_Than, _Else)    pp_expand _Else
+#define __pp_if_0(_Than, _Else) pp_expand _Else
 #define pp_then_
 #define pp_else_
 #endif /* UNUSED_CODE */
@@ -33,9 +33,9 @@ typedef pp_if_(target_1)(
 #define show_legacy 0
 pp_if_(show_legacy)(
     pp_then_(
-#if plat_windows
+#if plat_is_windows
         typedef HANDLE posix_fd_t;
-#elif plat_unix
+#elif plat_based_unix
         typedef fd_t posix_fd_t;
 #elif plat_wasi
         typedef my_fd_t posix_fd_t;
@@ -44,9 +44,9 @@ pp_if_(show_legacy)(
 #endif
     ),
     pp_else_(
-        typedef pp_if_(plat_windows)(
+        typedef pp_if_(plat_is_windows)(
             pp_then_(HANDLE),
-            pp_else_(pp_if_(plat_unix)(
+            pp_else_(pp_if_(plat_based_unix)(
                 pp_then_(fd_t),
                 pp_else_(pp_if_(plat_wasi)(
                     pp_then_(my_fd_t),

@@ -74,9 +74,9 @@ extern fn_((TEST_Framework_run(void))(void));
     pp_join(_, TEST_fn, _Extension)(_Name)
 
 #define TEST_fn_$_scope(_Name...) comp_syn__TEST_fn_$_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
-#define $unscoped_TEST_fn         comp_syn__$unscoped_TEST_fn
+#define $unscoped_TEST_fn comp_syn__$unscoped_TEST_fn
 #define TEST_fn_$_guard(_Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
-#define $unguarded_TEST_fn        comp_syn__$unguarded_TEST_fn
+#define $unguarded_TEST_fn comp_syn__$unguarded_TEST_fn
 
 #if !on_comptime
 $extern $must_check
@@ -100,8 +100,8 @@ fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
     TEST__caseFn_ext(_ID_binder, _ID_caseFn)
 
 #define TEST__binder(_ID_binder, _ID_caseFn, _Name...) comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name)
-#define TEST__caseFn(_ID_binder, _ID_caseFn...)        comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn)
-#define TEST__caseFn_ext(_ID_binder, _ID_caseFn...)    comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
+#define TEST__caseFn(_ID_binder, _ID_caseFn...) comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn)
+#define TEST__caseFn_ext(_ID_binder, _ID_caseFn...) comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
 
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...) \
     $static fn_((_ID_caseFn(void))(E$void)) $must_check; \
@@ -114,10 +114,10 @@ fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
     }
 #if TEST_comp_enabled
 #define comp_fn_gen__TEST__binder__sgn(_ID_binder) $on_load fn_((_ID_binder(void))(void))
-#define comp_fn_gen__TEST__binder__isEnabled()     (true)
+#define comp_fn_gen__TEST__binder__isEnabled() (true)
 #else /* !TEST_comp_enabled */
 #define comp_fn_gen__TEST__binder__sgn(_ID_binder) fn_((_ID_binder(void))(void))
-#define comp_fn_gen__TEST__binder__isEnabled()     (false)
+#define comp_fn_gen__TEST__binder__isEnabled() (false)
 #endif /* !TEST_comp_enabled */
 // clang-format off
 #define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
@@ -142,10 +142,10 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
 $extern $must_check
 fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void));
 
-#define TEST_expect(_expr...)          TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
+#define TEST_expect(_expr...) TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), u8_l(#_expr))
 
-#define TEST_expect_callTest(_expr, _loc, _eval_str)          TEST_expect_test(_expr, _loc, _eval_str)
+#define TEST_expect_callTest(_expr, _loc, _eval_str) TEST_expect_test(_expr, _loc, _eval_str)
 #define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)
 #endif /* on_comptime */
 

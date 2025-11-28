@@ -14,7 +14,6 @@
  * @details Defines compile-time options and configuration parameters
  *          for time-related operations and utilities.
  */
-
 #ifndef time_cfg__included
 #define time_cfg__included 1
 #if defined(__cplusplus)
@@ -24,21 +23,21 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows/common.h"
 #else /* posix */
 #include <sys/time.h>
-#endif /* posix */
+#endif
 #include <time.h>
 
 /*========== Macros and Definitions =========================================*/
 
-#if plat_windows
+#if plat_is_windows
 typedef LARGE_INTEGER time_SysTimeWindows;
 #else /* posix */
 typedef struct timespec time_SysTimeUnix;
 #endif
-typedef pp_if_(plat_windows)(
+typedef pp_if_(plat_is_windows)(
     pp_then_(time_SysTimeWindows),
     pp_else_(time_SysTimeUnix)
 ) time_SysTimePlatform;

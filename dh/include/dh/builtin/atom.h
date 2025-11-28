@@ -10,7 +10,6 @@
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  atom
  */
-
 #ifndef builtin_atom__included
 #define builtin_atom__included 1
 #if defined(__cplusplus)
@@ -86,15 +85,17 @@ typedef enum atom_MemOrd {
     ({ \
         typedef _OT O$Ret$atom_cmpXchgWeak; \
         var_(__expected, TypeOfUnqual(_expected)) = _expected; \
-        __atomic_compare_exchange(_ptr, &__expected, &copy(_desired), true, _succ_ord, _fail_ord) ? lit$((O$Ret$atom_cmpXchgWeak)some(__expected)) \
-                                                                                                  : lit$((O$Ret$atom_cmpXchgWeak)none()); \
+        __atomic_compare_exchange(_ptr, &__expected, &copy(_desired), true, _succ_ord, _fail_ord) \
+            ? lit$((O$Ret$atom_cmpXchgWeak)some(__expected)) \
+            : lit$((O$Ret$atom_cmpXchgWeak)none()); \
     })
 #define __op__atom_cmpXchgStrong$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
     ({ \
         typedef _OT O$Ret$atom_cmpXchgStrong; \
         var_(__expected, TypeOfUnqual(_expected)) = _expected; \
-        __atomic_compare_exchange(_ptr, &__expected, &copy(_desired), false, _succ_ord, _fail_ord) ? lit$((O$Ret$atom_cmpXchgStrong)some(__expected)) \
-                                                                                                   : lit$((O$Ret$atom_cmpXchgStrong)none()); \
+        __atomic_compare_exchange(_ptr, &__expected, &copy(_desired), false, _succ_ord, _fail_ord) \
+            ? lit$((O$Ret$atom_cmpXchgStrong)some(__expected)) \
+            : lit$((O$Ret$atom_cmpXchgStrong)none()); \
     })
 
 #if defined(__cplusplus)

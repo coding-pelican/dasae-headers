@@ -18,7 +18,6 @@
  *          - Ordering operations
  *          - Comparison utilities
  */
-
 #ifndef core_cmp__included
 #define core_cmp__included 1
 #if defined(__cplusplus)

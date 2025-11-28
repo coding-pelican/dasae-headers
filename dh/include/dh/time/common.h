@@ -17,7 +17,6 @@
  *          - Time formatting and parsing
  *          - Platform-independent time operations
  */
-
 #ifndef time_common__included
 #define time_common__included 1
 #if defined(__cplusplus)

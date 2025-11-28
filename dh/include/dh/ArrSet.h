@@ -16,9 +16,6 @@
  *          For small sets (len < 8), linear scanning is used instead of hash index.
  *          Supports operations for initialization, modification, and element access.
  */
-
-/*========== Cheat Sheet ====================================================*/
-
 #ifndef ArrSet__included
 #define ArrSet__included 1
 #if defined(__cplusplus)

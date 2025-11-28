@@ -25,9 +25,9 @@ extern "C" {
 #include "comp_cfg.h"
 #include "lang_cfg.h"
 
-#if BUILTIN_COMP_CLANG
+#if comp_type == comp_type_clang
 #include "BlocksRuntime/Block.h"
-#endif /* BUILTIN_COMP_CLANG */
+#endif /* comp_type == comp_type_clang */
 
 /*========== Macros and Declarations ========================================*/
 
@@ -51,11 +51,11 @@ extern "C" {
 #define __la_(_Parens_Params, T_Return...) [] _Parens_Params -> T_Return
 #elif lang_mode == lang_mode_c
 /* C11 */
-#if BUILTIN_COMP_CLANG
+#if comp_type == comp_type_clang
 /* Needs compile flag `-fblocks -lBlocksRuntime` */
 #define __step__la___impl(_Params, _TReturn...) __la_(_Params, _TReturn)
 #define __la_(_Parens_Params, T_Return...) ^T_Return _Parens_Params
-#elif BUILTIN_COMP_GCC
+#elif comp_type == comp_type_gcc
 #define __step__la___impl(_Params, _TReturn...) __la_(pp_uniqTok(la), _Params, _TReturn)
 #define __la_(__lambda, _Parens_Params, T_Return...) T_Return __lambda _Parens_Params
 #else /* others */

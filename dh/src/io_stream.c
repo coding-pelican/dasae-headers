@@ -4,9 +4,9 @@
 #include "dh/fs/File.h"
 #include "dh/Thrd/Mtx.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
-#endif /* plat_windows */
+#endif /* plat_is_windows */
 #include <locale.h>
 
 $static var_(io_stream__s_out_mtx, Thrd_MtxRecur) = {};
@@ -16,12 +16,12 @@ $on_load
 $static fn_((io_stream__init(void))(void)) {
     io_stream__s_out_mtx = Thrd_MtxRecur_init();
     io_stream__s_err_mtx = Thrd_MtxRecur_init();
-    #if plat_windows
+#if plat_is_windows
     // [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     // chcp 65001
     let_ignore = SetConsoleCP(CP_UTF8);
     let_ignore = SetConsoleOutputCP(CP_UTF8);
-    #endif /* plat_windows */
+#endif /* plat_is_windows */
     /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
     let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
 }

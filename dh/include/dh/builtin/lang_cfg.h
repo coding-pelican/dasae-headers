@@ -14,12 +14,15 @@
  * @details Detects C/C++ language standards, features, and compilation modes.
  *          Includes standard versions, language extensions, and dialect support.
  */
-
 #ifndef builtin_lang_cfg__included
 #define builtin_lang_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
+
+#include "pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -89,18 +92,20 @@ extern "C" {
 #define __comp_enum__lang_mode_c 1
 #define __comp_enum__lang_mode_cpp 2
 
-#define __comp_str__lang_name \
-    pp_if_(pp_eq(lang_mode, lang_mode_c))( \
-        pp_then_(lang_name_c), pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))(pp_then_(lang_name_cpp), pp_else_(lang_name_unknown))) \
-    )
+#define __comp_str__lang_name pp_switch_( \
+    (lang_mode)(pp_case_((lang_mode_c)(lang_name_c)), \
+                pp_case_((lang_mode_cpp)(lang_name_cpp)), \
+                pp_default_(lang_name_unknown)) \
+)
 #define __comp_str__lang_name_unknown "unknown"
 #define __comp_str__lang_name_c "c"
 #define __comp_str__lang_name_cpp "cpp"
 
-#define __comp_int__lang_version \
-    pp_if_(pp_eq(lang_mode, lang_mode_c))( \
-        pp_then_(lang_version_c), pp_else_(pp_if_(pp_eq(lang_mode, lang_mode_cpp))(pp_then_(lang_version_cpp), pp_else_(lang_version_unknown))) \
-    )
+#define __comp_int__lang_version pp_switch_( \
+    (lang_mode)(pp_case_((lang_mode_c)(lang_version_c)), \
+                pp_case_((lang_mode_cpp)(lang_version_cpp)), \
+                pp_default_(lang_version_unknown)) \
+)
 #define __comp_int__lang_version_unknown 0
 
 #define __comp_int__lang_version_c lang_version_unknown

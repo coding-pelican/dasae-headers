@@ -13,7 +13,6 @@
  * @brief   hijacked main for error handling
  * @details Provides a hijacked main function for error handling.
  */
-
 #ifndef main__included
 #define main__included 1
 #if defined(__cplusplus)

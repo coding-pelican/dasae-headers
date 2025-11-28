@@ -162,14 +162,6 @@ SortIncludes: Never
 #   - anyptr
 
 Macros:
-  # - edittime_only(inner)=inner
-  # - comptime_only(inner)=inner
-  # - runtime_only(inner)=inner
-  # - dev_only(inner)=inner
-  # - debug_only(inner)=inner
-  # - release_only(inner)=inner
-  # - TEST_only(inner)=inner
-
   - edittime_only(inner)=[](void) -> (void) inner
   - comptime_only(inner)=[](void) -> (void) inner
   - runtime_only(inner)=[](void) -> (void) inner
@@ -177,6 +169,8 @@ Macros:
   - debug_only(inner)=[](void) -> (void) inner
   - release_only(inner)=[](void) -> (void) inner
   - TEST_only(inner)=[](void) -> (void) inner
+
+  - "pp_switch_(Expr)=pp_exec_ignore Expr"
 
   - "T_decl$(Expr)=pp_exec_ignore Expr"
   - "T_impl$(Expr)=pp_exec_ignore Expr"

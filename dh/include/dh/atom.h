@@ -13,7 +13,6 @@
  * @brief   Cross-platform atomic operations
  * @details This provides atomic operations for primitive types to prevent data races.
  */
-
 #ifndef atom__included
 #define atom__included 1
 #if defined(__cplusplus)
@@ -71,31 +70,31 @@ $static fn_((atom_spinLoopHint(void))(void));
 
 #define __comp_int__atom_cache_line arch_cache_line
 
-#define __op__atom_V_init(_val...)                 { .raw = _val }
-#define __op__atom_V_init$(_VT, _val...)           lit$((_VT)atom_V_init(_val))
-#define __op__atom_V_load(_p_self, _ord...)        atom_load(&(_p_self)->raw, _ord)
+#define __op__atom_V_init(_val...) { .raw = _val }
+#define __op__atom_V_init$(_VT, _val...) lit$((_VT)atom_V_init(_val))
+#define __op__atom_V_load(_p_self, _ord...) atom_load(&(_p_self)->raw, _ord)
 #define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, _val, _ord)
 
 #define __op__atom_V_fetchXchg(_p_self, _val, _ord...) atom_fetchXchg(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchAdd(_p_self, _val, _ord...)  atom_fetchAdd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchSub(_p_self, _val, _ord...)  atom_fetchSub(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchAdd(_p_self, _val, _ord...) atom_fetchAdd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchSub(_p_self, _val, _ord...) atom_fetchSub(&(_p_self)->raw, _val, _ord)
 #define __op__atom_V_fetchNand(_p_self, _val, _ord...) atom_fetchNand(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchAnd(_p_self, _val, _ord...)  atom_fetchAnd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchOr(_p_self, _val, _ord...)   atom_fetchOr(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchXor(_p_self, _val, _ord...)  atom_fetchXor(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchAnd(_p_self, _val, _ord...) atom_fetchAnd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchOr(_p_self, _val, _ord...) atom_fetchOr(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchXor(_p_self, _val, _ord...) atom_fetchXor(&(_p_self)->raw, _val, _ord)
 
 $inline_always
 $static fn_((atom_spinLoopHint(void))(void)) {
     /* NOLINTBEGIN */
-#if arch_is_x86 || arch_is_x64
+#if arch_family_type == arch_family_type_x86
     __asm__ volatile("pause");
-#elif arch_is_arm64
+#elif arch_type == arch_type_aarch64
     /*
      * Some code uses 'isb' in spin-wait.
      * Alternatively, "yield" or "wfe" might be used for different strategies.
      */
     __asm__ volatile("isb");
-#elif arch_is_arm32
+#elif arch_type == arch_type_arm
 #if arch_has_armv6k || arch_has_armv6m
     __asm__ volatile("yield");
 #else
@@ -104,7 +103,7 @@ $static fn_((atom_spinLoopHint(void))(void)) {
     __asm__ volatile("nop");
 #endif /* arch_has_armv6k || arch_has_armv6m */
 
-#elif (arch_is_riscv32 || arch_is_riscv64)
+#elif arch_family_type == arch_family_type_riscv
 #if arch_has_zihintpause
     /* RISC-V Zihintpause extension offers 'pause'
      * (some compilers also accept "__asm__ volatile(\"pause\")").

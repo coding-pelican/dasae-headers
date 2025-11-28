@@ -377,7 +377,7 @@ fn_((mem_byteSwap64(u64 x))(u64)) {
 $inline_always
 $static
 fn_((mem_littleToNative16(u16 x))(u16)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap16(x);
@@ -386,7 +386,7 @@ fn_((mem_littleToNative16(u16 x))(u16)) {
 $inline_always
 $static
 fn_((mem_littleToNative32(u32 x))(u32)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap32(x);
@@ -395,7 +395,7 @@ fn_((mem_littleToNative32(u32 x))(u32)) {
 $inline_always
 $static
 fn_((mem_littleToNative64(u64 x))(u64)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap64(x);
@@ -404,7 +404,7 @@ fn_((mem_littleToNative64(u64 x))(u64)) {
 $inline_always
 $static
 fn_((mem_bigToNative16(u16 x))(u16)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap16(x);
@@ -413,7 +413,7 @@ fn_((mem_bigToNative16(u16 x))(u16)) {
 $inline_always
 $static
 fn_((mem_bigToNative32(u32 x))(u32)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap32(x);
@@ -422,7 +422,7 @@ fn_((mem_bigToNative32(u32 x))(u32)) {
 $inline_always
 $static
 fn_((mem_bigToNative64(u64 x))(u64)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap64(x);
@@ -431,7 +431,7 @@ fn_((mem_bigToNative64(u64 x))(u64)) {
 $inline_always
 $static
 fn_((mem_nativeToLittle16(u16 x))(u16)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap16(x);
@@ -440,7 +440,7 @@ fn_((mem_nativeToLittle16(u16 x))(u16)) {
 $inline_always
 $static
 fn_((mem_nativeToLittle32(u32 x))(u32)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap32(x);
@@ -449,7 +449,7 @@ fn_((mem_nativeToLittle32(u32 x))(u32)) {
 $inline_always
 $static
 fn_((mem_nativeToLittle64(u64 x))(u64)) {
-#if plat_byte_order == plat_byte_order_little_endian
+#if arch_byte_order == arch_byte_order_little_endian
     return x;
 #else
     return mem_byteSwap64(x);
@@ -458,7 +458,7 @@ fn_((mem_nativeToLittle64(u64 x))(u64)) {
 $inline_always
 $static
 fn_((mem_nativeToBig16(u16 x))(u16)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap16(x);
@@ -467,7 +467,7 @@ fn_((mem_nativeToBig16(u16 x))(u16)) {
 $inline_always
 $static
 fn_((mem_nativeToBig32(u32 x))(u32)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap32(x);
@@ -476,7 +476,7 @@ fn_((mem_nativeToBig32(u32 x))(u32)) {
 $inline_always
 $static
 fn_((mem_nativeToBig64(u64 x))(u64)) {
-#if plat_byte_order == plat_byte_order_big_endian
+#if arch_byte_order == arch_byte_order_big_endian
     return x;
 #else
     return mem_byteSwap64(x);

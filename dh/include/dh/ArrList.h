@@ -15,9 +15,6 @@
  *          The array list automatically resizes as elements are added or removed.
  *          Supports operations for initialization, modification, and element access.
  */
-
-/*========== Cheat Sheet ====================================================*/
-
 #ifndef ArrList__included
 #define ArrList__included 1
 #if defined(__cplusplus)

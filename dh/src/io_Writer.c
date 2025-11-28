@@ -63,15 +63,15 @@ fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E
 } $unscoped_(fn);
 
 fn_((io_Writer_nl(io_Writer self))(E$void) $scope) {
-    static let pp_if_(plat_windows)(
+    static let pp_if_(plat_is_windows)(
         pp_then_(s_crlf = u8_l("\r\n")),
         pp_else_(s_lf = u8_c('\n'))
     );
-    static let s_line_feed = pp_if_(plat_windows)(
+    static let s_line_feed = pp_if_(plat_is_windows)(
         pp_then_(s_crlf),
         pp_else_(s_lf)
     );
-    static let s_write = pp_if_(plat_windows)(
+    static let s_write = pp_if_(plat_is_windows)(
         pp_then_(io_Writer_write),
         pp_else_(io_Writer_writeByte)
     );

@@ -13,19 +13,18 @@
  * @brief   Compiler-specific configurations and optimizations
  * @details Provides compiler-specific inline directives and optimizations based on detected environment
  */
-
-#ifndef BUILTIN_COMP_INCLUDED
-#define BUILTIN_COMP_INCLUDED (1)
+#ifndef builtin_comp__included
+#define builtin_comp__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "arch_cfg.h"
-#include "comp_cfg.h"
 #include "lang_cfg.h"
+#include "arch_cfg.h"
 #include "plat_cfg.h"
+#include "comp_cfg.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -344,24 +343,24 @@ extern "C" {
 
 /*========== Macros and Implementations =====================================*/
 
-#define comp_attr__$inline BUILTIN_COMP_INLINE
-#define comp_attr__$inline_always BUILTIN_COMP_ALWAYS_INLINE
-#define comp_attr__$inline_never BUILTIN_COMP_NO_INLINE
+#define comp_attr__$inline comp_inline
+#define comp_attr__$inline_always comp_inline_always
+#define comp_attr__$inline_never comp_inline_never
 
-#define comp_attr__$deprecated BUILTIN_COMP_DEPRECATED
-#define comp_attr__$deprecated_msg(_Msg) BUILTIN_COMP_DEPRECATED_MSG(_Msg)
-#define comp_attr__$deprecated_instead(_Msg, _Replacement) BUILTIN_COMP_DEPRECATED_MSG(_Msg, _Replacement)
+#define comp_attr__$deprecated comp_deprecated
+#define comp_attr__$deprecated_msg(_Msg) comp_deprecated_msg(_Msg)
+#define comp_attr__$deprecated_instead(_Msg, _Replacement) comp_deprecated_instead(_Msg, _Replacement)
 
-#define comp_attr__$on_load __attribute__((constructor))
-#define comp_attr__$on_exit __attribute__((destructor))
+#define comp_attr__$on_load comp_on_load
+#define comp_attr__$on_exit comp_on_exit
 
-#define comp_attr__$must_check BUILTIN_COMP_MUST_CHECK
-#define comp_attr__$no_return BUILTIN_COMP_NO_RETURN
+#define comp_attr__$must_check comp_must_use
+#define comp_attr__$no_return comp_noreturn
 #define comp_attr__$ignore_void (void)
 #define comp_attr__$ignore \
-    __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
+    $maybe_unused pp_uniqTok(ignored) = (Void){}; \
     let_ignore
-#define comp_attr__let_ignore __attribute__((unused)) let pp_uniqTok(ignored)
+#define comp_attr__let_ignore $maybe_unused let pp_uniqTok(ignored)
 
 
 #define comp_attr__$used(_Expr...) _Expr
@@ -400,9 +399,9 @@ extern "C" {
         (void)(x13), (void)(x14), (void)(x15), (void)(x16)
 /* end unused */
 
-#define comp_attr__$keep_symbol __attribute__((used))
-#define comp_attr__$maybe_unused __attribute__((unused))
-#define comp_attr__$must_use __attribute__((warn_unused_result))
+#define comp_attr__$keep_symbol comp_keep_symbol
+#define comp_attr__$maybe_unused comp_maybe_unused
+#define comp_attr__$must_use comp_must_use
 
 #define comp_syn__Generic_match$(T, _Pattern...) _Generic(T, _Pattern)
 #define comp_syn__Generic_pattern$(T) \
@@ -434,8 +433,4 @@ T:
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* BUILTIN_COMP_INCLUDED */
-
-
-// as$(T)(Expr)
-// as$(T)(Expr)
+#endif /* builtin_comp__included */

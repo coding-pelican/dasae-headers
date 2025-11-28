@@ -21,7 +21,6 @@
  *          include built-in error detection. Memory leaks are prevented
  *          through explicit allocation tracking and deallocation checks.
  */
-
 #ifndef heap__included
 #define heap__included 1
 #if defined(__cplusplus)

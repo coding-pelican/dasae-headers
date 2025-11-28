@@ -13,7 +13,6 @@
  * @brief   Prelude for dh
  * @details Provides a prelude for dh.
  */
-
 #ifndef prl__included
 #define prl__included 1
 #if defined(__cplusplus)

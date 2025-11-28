@@ -5,118 +5,238 @@
  * @file    comp_cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)/builtin
- * @prefix  BUILTIN_COMP
+ * @updated 2025-11-27 (date of last update)
+ * @version v0.1
+ * @ingroup dasae-headers(dh)/foundation
+ * @prefix  comp
  *
- * @brief   Compiler detection configuration
- * @details Detects compiler type (Clang, GCC, MSVC) and provides version information.
- *          Includes compiler-specific calling conventions and optimization hints.
+ * @brief   Compiler detection and feature configuration
+ * @details Detects compiler (Clang, GCC, MSVC) and provides compiler-specific
+ *          features, extensions, and attributes.
+ *          Primary support: Clang, then GCC. MSVC planned for future.
  */
-
-#ifndef BUILTIN_COMP_CFG_INCLUDED
-#define BUILTIN_COMP_CFG_INCLUDED (1)
+#ifndef foundation_comp_cfg__included
+#define foundation_comp_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-/*========== Compiler Type Detection ========================================*/
+/*========== Includes =======================================================*/
+
+#include "pp.h"
+
+/*========== Macros and Declarations ========================================*/
+
+/* --- Compiler Type --- */
+
+#define comp_type __comp_enum__comp_type
+#define comp_type_unknown __comp_enum__comp_type_unknown
+#define comp_type_clang __comp_enum__comp_type_clang
+#define comp_type_gcc __comp_enum__comp_type_gcc
+#define comp_type_msvc __comp_enum__comp_type_msvc
+
+#define comp_name __comp_str__comp_name
+#define comp_name_unknown __comp_str__comp_name_unknown
+#define comp_name_clang __comp_str__comp_name_clang
+#define comp_name_gcc __comp_str__comp_name_gcc
+#define comp_name_msvc __comp_str__comp_name_msvc
+
+/* --- Compiler Version --- */
+
+#define comp_version __comp_int__comp_version
+#define comp_version_major __comp_int__comp_version_major
+#define comp_version_minor __comp_int__comp_version_minor
+#define comp_version_patch __comp_int__comp_version_patch
+
+/* --- Compiler Attributes --- */
+
+#define comp_align(_align) __comp_attr__comp_align(_align)
+
+#define comp_inline __comp_attr__comp_inline
+#define comp_inline_always __comp_attr__comp_inline_always
+#define comp_inline_never __comp_attr__comp_inline_never
+
+#define comp_keep_symbol __comp_attr__comp_keep_symbol
+#define comp_maybe_unused __comp_attr__comp_maybe_unused
+#define comp_must_use __comp_attr__comp_must_use
+
+#define comp_import __comp_attr__comp_import
+#define comp_export __comp_attr__comp_export
+
+#define comp_on_load __comp_attr__comp_on_load
+#define comp_on_exit __comp_attr__comp_on_exit
+#define comp_on_load_priority(_priority) __comp_attr__comp_on_load_priority(_priority)
+#define comp_on_exit_priority(_priority) __comp_attr__comp_on_exit_priority(_priority)
+
+#define comp_noreturn __comp_attr__comp_noreturn
+
+#define comp_deprecated __comp_attr__comp_deprecated
+#define comp_deprecated_msg(_msg) __comp_attr__comp_deprecated_msg(_msg)
+#define comp_deprecated_instead(_msg, _replacement) __comp_attr__comp_deprecated_instead(_msg, _replacement)
+
+/*========== Macros and Definitions =========================================*/
+
+/* --- Compiler Type --- */
+
+/* Default: unknown compiler */
+#define __comp_enum__comp_type comp_type_unknown
+#define __comp_enum__comp_type_unknown 0
+#define __comp_enum__comp_type_clang 1
+#define __comp_enum__comp_type_gcc 2
+#define __comp_enum__comp_type_msvc 3
 
 #if defined(__clang__)
-#define BUILTIN_COMP_CLANG 1
-#define BUILTIN_COMP_GCC 0
-#define BUILTIN_COMP_MSVC 0
-#define BUILTIN_COMP_NAME "Clang"
+#undef __comp_enum__comp_type
+#define __comp_enum__comp_type comp_type_clang
+
 #elif defined(__GNUC__)
-#define BUILTIN_COMP_CLANG 0
-#define BUILTIN_COMP_GCC 1
-#define BUILTIN_COMP_MSVC 0
-#define BUILTIN_COMP_NAME "GCC"
+#undef __comp_enum__comp_type
+#define __comp_enum__comp_type comp_type_gcc
+
 #elif defined(_MSC_VER)
-#define BUILTIN_COMP_CLANG 0
-#define BUILTIN_COMP_GCC 0
-#define BUILTIN_COMP_MSVC 1
-#define BUILTIN_COMP_NAME "MSVC"
+#undef __comp_enum__comp_type
+#define __comp_enum__comp_type comp_type_msvc
+
 #else
-#define BUILTIN_COMP_CLANG 0
-#define BUILTIN_COMP_GCC 0
-#define BUILTIN_COMP_MSVC 0
-#define BUILTIN_COMP_NAME "Unknown"
 #warning "Unknown compiler detected. Please check your compiler settings."
 #endif
 
-/*========== Compiler Version Information ===================================*/
+/* Derive name from type */
+#define __comp_str__comp_name pp_switch_( \
+    (comp_type)(pp_case_((comp_type_clang)(comp_name_clang)), \
+                pp_case_((comp_type_gcc)(comp_name_gcc)), \
+                pp_case_((comp_type_msvc)(comp_name_msvc)), \
+                pp_default_(comp_name_unknown)) \
+)
+#define __comp_str__comp_name_unknown "Unknown"
+#define __comp_str__comp_name_clang "Clang"
+#define __comp_str__comp_name_gcc "GCC"
+#define __comp_str__comp_name_msvc "MSVC"
 
-#if BUILTIN_COMP_MSVC
-#define BUILTIN_COMP_VERSION _MSC_VER
-#define BUILTIN_COMP_VERSION_MAJOR (_MSC_VER / 100)
-#define BUILTIN_COMP_VERSION_MINOR (_MSC_VER % 100)
-#elif BUILTIN_COMP_GCC
-#define BUILTIN_COMP_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#define BUILTIN_COMP_VERSION_MAJOR __GNUC__
-#define BUILTIN_COMP_VERSION_MINOR __GNUC_MINOR__
-#define BUILTIN_COMP_VERSION_PATCH __GNUC_PATCHLEVEL__
-#elif BUILTIN_COMP_CLANG
-#define BUILTIN_COMP_VERSION (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
-#define BUILTIN_COMP_VERSION_MAJOR __clang_major__
-#define BUILTIN_COMP_VERSION_MINOR __clang_minor__
-#define BUILTIN_COMP_VERSION_PATCH __clang_patchlevel__
-#else
-#define BUILTIN_COMP_VERSION 0
-#define BUILTIN_COMP_VERSION_MAJOR 0
-#define BUILTIN_COMP_VERSION_MINOR 0
-#define BUILTIN_COMP_VERSION_PATCH 0
+/* --- Compiler Version --- */
+
+/* Default: 0.0.0 */
+#define __comp_int__comp_version 0
+#define __comp_int__comp_version_major 0
+#define __comp_int__comp_version_minor 0
+#define __comp_int__comp_version_patch 0
+
+#if comp_type == comp_type_clang
+#undef __comp_int__comp_version
+#define __comp_int__comp_version (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
+#undef __comp_int__comp_version_major
+#define __comp_int__comp_version_major __clang_major__
+#undef __comp_int__comp_version_minor
+#define __comp_int__comp_version_minor __clang_minor__
+#undef __comp_int__comp_version_patch
+#define __comp_int__comp_version_patch __clang_patchlevel__
+
+#elif comp_type == comp_type_gcc
+#undef __comp_int__comp_version
+#define __comp_int__comp_version (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#undef __comp_int__comp_version_major
+#define __comp_int__comp_version_major __GNUC__
+#undef __comp_int__comp_version_minor
+#define __comp_int__comp_version_minor __GNUC_MINOR__
+#undef __comp_int__comp_version_patch
+#define __comp_int__comp_version_patch __GNUC_PATCHLEVEL__
+
+#elif comp_type == comp_type_msvc
+#undef __comp_int__comp_version
+#define __comp_int__comp_version _MSC_VER
+#undef __comp_int__comp_version_major
+#define __comp_int__comp_version_major (_MSC_VER / 100)
+#undef __comp_int__comp_version_minor
+#define __comp_int__comp_version_minor (_MSC_VER % 100)
 #endif
 
-/*========== Compiler-Specific Attributes ===================================*/
+/* --- Compiler Attributes --- */
 
-#if BUILTIN_COMP_MSVC
-#define BUILTIN_COMP_INLINE __inline
-#define BUILTIN_COMP_ALWAYS_INLINE __forceinline
-#define BUILTIN_COMP_NO_INLINE __declspec(noinline)
-#define BUILTIN_COMP_ALIGN(_align) __declspec(align(_align))
-#define BUILTIN_COMP_DEPRECATED __declspec(deprecated)
-#define BUILTIN_COMP_DEPRECATED_MSG(_msg) __declspec(deprecated(_msg))
-#define BUILTIN_COMP_DEPRECATED_INSTEAD(_msg, _replacement) __declspec(deprecated(_msg, _replacement))
-#define BUILTIN_COMP_NO_RETURN __declspec(noreturn)
-#define BUILTIN_COMP_MUST_CHECK _Must_inspect_result_
-#elif BUILTIN_COMP_GCC || BUILTIN_COMP_CLANG
-#define BUILTIN_COMP_INLINE inline
-#define BUILTIN_COMP_ALWAYS_INLINE __attribute__((always_inline)) inline
-#define BUILTIN_COMP_NO_INLINE __attribute__((noinline))
-#define BUILTIN_COMP_ALIGN(_align) __attribute__((aligned(_align)))
-#define BUILTIN_COMP_DEPRECATED __attribute__((deprecated))
-#define BUILTIN_COMP_DEPRECATED_MSG(_msg) __attribute__((deprecated(_msg)))
-#define BUILTIN_COMP_DEPRECATED_INSTEAD(_msg, _replacement) __attribute__((deprecated(_msg, _replacement)))
-#define BUILTIN_COMP_NO_RETURN __attribute__((noreturn))
-#define BUILTIN_COMP_MUST_CHECK __attribute__((warn_unused_result))
+#if comp_type == comp_type_clang || comp_type == comp_type_gcc
+#define __comp_attr__comp_align(_align) __attribute__((aligned(_align)))
+
+#define __comp_attr__comp_inline inline
+#define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
+#define __comp_attr__comp_inline_never __attribute__((noinline))
+
+#define __comp_attr__comp_keep_symbol __attribute__((used))
+#define __comp_attr__comp_maybe_unused __attribute__((unused))
+#define __comp_attr__comp_must_use __attribute__((warn_unused_result))
+
+/* Visibility */
+#define __comp_attr__comp_import
+#define __comp_attr__comp_export __attribute__((visibility("default")))
+
+#define __comp_attr__comp_on_load __attribute__((constructor))
+#define __comp_attr__comp_on_exit __attribute__((destructor))
+/* Note: Priority works, but syntax is validated strictly by some parsers */
+#define __comp_attr__comp_on_load_priority(_priority) __attribute__((constructor(_priority)))
+#define __comp_attr__comp_on_exit_priority(_priority) __attribute__((destructor(_priority)))
+
+#define __comp_attr__comp_noreturn __attribute__((noreturn))
+
+#define __comp_attr__comp_deprecated __attribute__((deprecated))
+#define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+
+#elif comp_type == comp_type_msvc
+#define __comp_attr__comp_align(_align) __declspec(align(_align))
+
+#define __comp_attr__comp_inline __inline
+#define __comp_attr__comp_inline_always __forceinline
+#define __comp_attr__comp_inline_never __declspec(noinline)
+
+/* FIX: MSVC does not strictly support 'used' via declspec. Often ignored or creates warning C4230.
+   Usually relies on linker pragmas, but strictly speaking declspec(noinline) is often enough to keep it. */
+#define __comp_attr__comp_keep_symbol
+#define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
+#define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
+
+/* DLL Import/Export */
+#define __comp_attr__comp_import __declspec(dllimport)
+#define __comp_attr__comp_export __declspec(dllexport)
+
+/* FIX: MSVC does NOT support constructor/destructor attributes.
+   Implementing this requires .CRT$XCU section hacking.
+   For now, define as nothing to avoid compile errors. */
+#define __comp_attr__comp_on_load
+#define __comp_attr__comp_on_exit
+#define __comp_attr__comp_on_load_priority(_priority)
+#define __comp_attr__comp_on_exit_priority(_priority)
+
+#define __comp_attr__comp_noreturn __declspec(noreturn)
+
+#define __comp_attr__comp_deprecated __declspec(deprecated)
+#define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
+
 #else
-#define BUILTIN_COMP_INLINE
-#define BUILTIN_COMP_ALWAYS_INLINE
-#define BUILTIN_COMP_NO_INLINE
-#define BUILTIN_COMP_ALIGN(_align)
-#define BUILTIN_COMP_DEPRECATED
-#define BUILTIN_COMP_DEPRECATED_MSG(_msg)
-#define BUILTIN_COMP_NO_RETURN
-#define BUILTIN_COMP_MUST_CHECK
-#endif
+#define __comp_attr__comp_align(_align)
 
-/*========== Calling Conventions ============================================*/
+#define __comp_attr__comp_inline
+#define __comp_attr__comp_inline_always
+#define __comp_attr__comp_inline_never
 
-#if BUILTIN_COMP_MSVC
-#define BUILTIN_COMP_CDECL __cdecl
-#define BUILTIN_COMP_STDCALL __stdcall
-#define BUILTIN_COMP_FASTCALL __fastcall
-#define BUILTIN_COMP_VECTORCALL __vectorcall
-#else
-#define BUILTIN_COMP_CDECL
-#define BUILTIN_COMP_STDCALL
-#define BUILTIN_COMP_FASTCALL
-#define BUILTIN_COMP_VECTORCALL
+#define __comp_attr__comp_keep_symbol
+#define __comp_attr__comp_maybe_unused
+#define __comp_attr__comp_must_use
+
+#define __comp_attr__comp_import
+#define __comp_attr__comp_export
+
+#define __comp_attr__comp_on_load
+#define __comp_attr__comp_on_exit
+#define __comp_attr__comp_on_load_priority(_priority)
+#define __comp_attr__comp_on_exit_priority(_priority)
+
+#define __comp_attr__comp_noreturn
+
+#define __comp_attr__comp_deprecated
+#define __comp_attr__comp_deprecated_msg(_msg)
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement)
 #endif
 
 #if defined(__cplusplus)
 } /* extern "C" */
-#endif
-#endif /* BUILTIN_COMP_CFG_INCLUDED */
+#endif /* defined(__cplusplus) */
+#endif /* foundation_comp_cfg__included */

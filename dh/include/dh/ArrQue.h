@@ -16,9 +16,6 @@
  *          Supports operations for initialization, modification, and element access.
  *          Enqueuing/dequeuing items from the queue is O(1).
  */
-
-/*========== Cheat Sheet ====================================================*/
-
 #ifndef ArrQue__included
 #define ArrQue__included 1
 #if defined(__cplusplus)

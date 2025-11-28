@@ -8,7 +8,7 @@ extern "C" {
 #include "dh/time.h"
 #include "dh/math/vec.h"
 
-#if plat_windows
+#if plat_is_windows
 #include "dh/os/windows.h"
 
 #define engine_stub_VT100Ex_shared_mem_name L"Local\\EngineVT100ExSharedMemory"
@@ -232,7 +232,7 @@ $static fn_((engine_stub_VT100Ex_WindowQueue_pop(
     return true;
 }
 
-#endif /* plat_windows */
+#endif /* plat_is_windows */
 
 #if defined(__cplusplus)
 } /* extern "C" */
