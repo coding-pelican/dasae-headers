@@ -6,7 +6,7 @@
 
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     // if you want to ignore variable, you can use $ignore
     let_ignore = args;
     // Get the standard output file writer

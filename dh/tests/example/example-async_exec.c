@@ -150,7 +150,7 @@ async_fn_scope(runMain, {
     areturn_(locals->total);
 } $unscoped_(async_fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     var task = async_((runMain)(args));
     io_stream_println(u8_l("run size: {:uz}"), sizeOf$(*task));

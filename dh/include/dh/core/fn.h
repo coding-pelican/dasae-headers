@@ -386,7 +386,7 @@ $static $must_check
 fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32));
 
 /* main */
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);
     catch_((math_divideSafe(10, 0))(err, {

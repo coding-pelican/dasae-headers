@@ -26,7 +26,7 @@ TEST_fn_("Always Fails" $scope) {
 #include "dh/main.h"
 #include "dh/io/stream.h"
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let a = 1;

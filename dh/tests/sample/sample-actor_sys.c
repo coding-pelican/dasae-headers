@@ -284,7 +284,7 @@ async_fn_scope(echo_actor, {
 
 #include "dh/heap/Page.h"
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     // Page allocator (OS virtual memory)

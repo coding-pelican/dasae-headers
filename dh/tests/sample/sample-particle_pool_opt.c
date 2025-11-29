@@ -398,7 +398,7 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
 #include "dh/heap/Page.h"
 #include "dh/io/common.h"
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("╔═══════════════════════════════════════╗"));
     io_stream_println(u8_l("║  Particle Simulation                  ║"));
     io_stream_println(u8_l("║  Thrd + pool + atom (opt)             ║"));

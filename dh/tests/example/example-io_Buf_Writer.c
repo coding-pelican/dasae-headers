@@ -2,7 +2,7 @@
 #include "dh/io/Buf.h"
 #include "dh/io/common.h"
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let stdout_file = io_getStdOut();

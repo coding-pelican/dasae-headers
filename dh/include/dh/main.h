@@ -113,6 +113,8 @@ fn_((main(void))(int)) {
 
 #endif /* main__root_included */
 
+#define main dh_main
+
 #endif /* !main_no_hijack */
 
 #if defined(__cplusplus)

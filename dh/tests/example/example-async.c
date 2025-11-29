@@ -313,7 +313,7 @@ $static cmp_fn_ord$((Task)(lhs, rhs)) { return cmp_ord$(time_Instant)(lhs.expire
 $static cmp_fn_ordCtx$((Task)(lhs, rhs, ctx)) { return $unused(ctx), cmp_ord$(Task)(lhs, rhs); }
 $static cmp_fn_u_ordCtx_default$((Task)(lhs, rhs, ctx));
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     for_(($rf(0), $s(args))(idx, arg) {
         io_stream_print(u8_l("args[{:uz}]: {:s}\n"), idx, arg);
     });

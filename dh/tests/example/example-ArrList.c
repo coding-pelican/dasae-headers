@@ -67,7 +67,7 @@ $static fn_((example(void))(mem_Err$void) $guard) {
     return_ok({});
 } $unguarded_(fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     try_(example());
     io_stream_print(u8_l("Hello, world!\n"));

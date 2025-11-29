@@ -4,7 +4,7 @@
 #include "dh/io/stream.h"
 #include "dh/fmt/common.h"
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let stdin_file = io_getStdIn();

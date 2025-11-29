@@ -11,7 +11,7 @@ T_use_E$($set(math_Err)(i32));
 $attr($must_check)
 $static fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32));
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     debug_assert_true(0 < args.len);
     debug_assert_true(try_(math_divideSafe(10, 2)) == 5);

@@ -30,7 +30,7 @@ T_use$((i32)(
 ));
 
 // Example main function showing how to use the compatibility layer
-fn_((dh_main(void))(E$void) $guard) {
+fn_((main(void))(E$void) $guard) {
     var gpa = heap_Page_allocator(&(heap_Page){});
     let init = ArrList_init$i32;
     let fini = ArrList_fini$i32;

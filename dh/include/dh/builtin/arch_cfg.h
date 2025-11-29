@@ -79,7 +79,7 @@ extern "C" {
 #define arch_bits_unit_32bit __comp_enum__arch_bits_unit_32bit
 
 #define arch_bits_wide __comp_int__arch_bits_wide
-#define arch_bits_wide_unknown __comp_int__arch_bits_wide_unknowns
+#define arch_bits_wide_unknown __comp_int__arch_bits_wide_unknown
 #define arch_bits_wide_64bit __comp_int__arch_bits_wide_64bit
 #define arch_bits_wide_32bit __comp_int__arch_bits_wide_32bit
 

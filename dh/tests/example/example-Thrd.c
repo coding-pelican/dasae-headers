@@ -38,7 +38,7 @@ $static Thrd_fn_(demoThrdDefer, ({ time_Duration wait; }, i32), ($ignore, args)$
     return_(cnt);
 } $unguarded_(Thrd_fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     var thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((demoThrd)(time_Duration_sec)).as_raw));

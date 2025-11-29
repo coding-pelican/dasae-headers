@@ -106,7 +106,7 @@ struct termios tetris_Console_original = cleared();
 
 /* Main Function ============================================================*/
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     /* Initialize random number generator */

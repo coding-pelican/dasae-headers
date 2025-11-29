@@ -17,7 +17,7 @@ cmp_fn_u_gt_default$((i32)(lhs, rhs));
 cmp_fn_u_le_default$((i32)(lhs, rhs));
 cmp_fn_u_ge_default$((i32)(lhs, rhs));
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     let lhs = 1;

@@ -355,7 +355,7 @@ async_fn_scope(runMain, {
     areturn_({});
 } $unscoped_(async_fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     var task = async_((runMain)(args));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));

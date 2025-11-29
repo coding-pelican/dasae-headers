@@ -129,7 +129,7 @@ fn_((funcAdd(i32 lhs, i32 rhs))(i32)) {
     return lhs + rhs;
 }
 // Example main function showing how to use the compatibility layer
-fn_((dh_main(void))(E$void) $guard) {
+fn_((main(void))(E$void) $guard) {
     // Create a block/lambda
     let lambdaAdd = lam_((i32 lhs, i32 rhs)(i32)) { return lhs + rhs; };
 

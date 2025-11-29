@@ -66,7 +66,7 @@ $static fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) 
     claim_unreachable;
 } $unscoped_(fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     // Create some optional values

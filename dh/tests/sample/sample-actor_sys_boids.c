@@ -437,7 +437,7 @@ async_fn_scope(boid_actor, {
 #include "dh/Rand.h"
 
 // 메인
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     Rand_init();
 

@@ -72,7 +72,7 @@ $static Thrd_fn_(consumer, ({ SharedBuf* buf; }, Void), ($ignore, args)$scope) {
     return_void();
 } $unscoped_(Thrd_fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     var_(buffer, SharedBuf) = SharedBuf_init();
     let producer_thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((producer)(&buffer)).as_raw));

@@ -299,7 +299,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $sco
     }
 } $unscoped_(TEST_fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     T_use_A$(256, u8);

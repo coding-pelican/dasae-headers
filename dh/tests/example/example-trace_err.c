@@ -20,7 +20,7 @@ $static fn_((func1(void))(E$void) $scope) {
     return_ok(try_(func2()));
 } $unscoped_(fn);
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     return_ok(try_(func1()));
 } $unscoped_(fn);

@@ -82,7 +82,7 @@ op_fn_addWith$(addFlt, ((Foo, f32)(lhs, rhs))(Foo));
 $extern fn_((getValue(void))(i32));
 $extern fn_((maybeFoo(void))(O$Foo));
 
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     if_(args.len > 0) {

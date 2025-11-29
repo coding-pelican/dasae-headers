@@ -61,7 +61,7 @@ $static fn_((Dataset_loadFromCSV(mem_Allocator gpa, S_const$u8 filename, bool ha
 $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
 // Main function
-fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     // Initialize logging to a file
