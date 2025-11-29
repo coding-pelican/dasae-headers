@@ -102,11 +102,13 @@ extern "C" {
 #endif
 
 /* Derive name from type */
-#define __comp_str__comp_name pp_switch_( \
-    (comp_type)(pp_case_((comp_type_clang)(comp_name_clang)), \
-                pp_case_((comp_type_gcc)(comp_name_gcc)), \
-                pp_case_((comp_type_msvc)(comp_name_msvc)), \
-                pp_default_(comp_name_unknown)) \
+#define __comp_str__comp_name pp_expand( \
+    pp_switch_ pp_begin(comp_type)( \
+        pp_case_((comp_type_clang)(comp_name_clang)), \
+        pp_case_((comp_type_gcc)(comp_name_gcc)), \
+        pp_case_((comp_type_msvc)(comp_name_msvc)), \
+        pp_default_(comp_name_unknown) \
+    ) pp_end \
 )
 #define __comp_str__comp_name_unknown "Unknown"
 #define __comp_str__comp_name_clang "Clang"

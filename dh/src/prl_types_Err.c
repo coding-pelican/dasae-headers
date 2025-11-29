@@ -6,13 +6,13 @@
 fn_((Err_domainToStr(Err self))(S_const$u8)) {
     claim_assert(self.ctx != 0);
     claim_assert_nonnull(self.vt);
-    return mem_spanZ0_const$u8(Err_domainToStrZ(self));
+    return mem_spanZ0$u8(Err_domainToStrZ(self));
 }
 
 fn_((Err_codeToStr(Err self))(S_const$u8)) {
     claim_assert(self.ctx != 0);
     claim_assert_nonnull(self.vt);
-    return mem_spanZ0_const$u8(Err_codeToStrZ(self));
+    return mem_spanZ0$u8(Err_codeToStrZ(self));
 }
 
 fn_((Err_print(Err self))(void)) {

@@ -17,7 +17,6 @@
  *          - Conditional defer execution
  *          - Loop-level defer execution
  */
-
 #ifndef SCOPE_DEFER_INCLUDED
 #define SCOPE_DEFER_INCLUDED (1)
 #if defined(__cplusplus)

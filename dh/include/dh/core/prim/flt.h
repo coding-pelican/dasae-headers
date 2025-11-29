@@ -17,7 +17,6 @@
  *          - Floating point type operations
  *          - Floating point type utilities
  */
-
 #ifndef core_prim_flt__included
 #define core_prim_flt__included 1
 #if defined(__cplusplus)

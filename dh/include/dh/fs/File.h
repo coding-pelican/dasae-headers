@@ -10,7 +10,6 @@
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs_File
  */
-
 #ifndef fs_File__included
 #define fs_File__included 1
 #if defined(__cplusplus)

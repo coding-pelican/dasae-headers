@@ -90,7 +90,6 @@
  *    - {:!s}      → E$S_const$u8 (result)
  *    - {:e}       → Err (error object)
  */
-
 #ifndef fmt_common__included
 #define fmt_common__included 1
 #if defined(__cplusplus)
@@ -209,9 +208,9 @@ $extern fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size));
 
 /// Sign display mode for numeric formatting
 typedef enum fmt_Sign : u8 {
-    fmt_Sign_auto = 0,   // Only show sign for negative numbers (default)
-    fmt_Sign_always, // Always show sign (+ or -)
-    fmt_Sign_space,  // Show space for positive, - for negative
+    fmt_Sign_auto = 0, // Only show sign for negative numbers (default)
+    fmt_Sign_always,   // Always show sign (+ or -)
+    fmt_Sign_space,    // Show space for positive, - for negative
 } fmt_Sign;
 
 typedef struct fmt_Spec {

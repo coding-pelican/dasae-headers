@@ -1,5 +1,5 @@
-#ifndef types_meta__included
-#define types_meta__included 1
+#ifndef prl_types_meta__included
+#define prl_types_meta__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -522,4 +522,4 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_meta__included */
+#endif /* prl_types_meta__included */

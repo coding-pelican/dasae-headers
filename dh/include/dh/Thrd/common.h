@@ -13,9 +13,8 @@
  * @brief   Common definitions for thread management
  * @details Defines common definitions for thread management.
  */
-
-#ifndef THRD_COMMON_INCLUDED
-#define THRD_COMMON_INCLUDED (1)
+#ifndef Thrd_common__included
+#define Thrd_common__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -145,8 +144,8 @@ typedef struct Thrd_RwLock Thrd_RwLock;
     _fnName,
 #define __step__Thrd_FnCtx_from$__emit(_fnName, _args...) lit$((Thrd_FnCtx$(_fnName)){ \
     .fn = _fnName, \
-    .args = {.as_typed = {__step__Thrd_FnCtx_from$__expand _args}}, \
-    .ret = {.as_typed = {}}, \
+    .args = { .as_typed = { __step__Thrd_FnCtx_from$__expand _args } }, \
+    .ret = { .as_typed = {} }, \
 })
 #define __step__Thrd_FnCtx_from$__expand(_args...) \
     _args
@@ -190,6 +189,8 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
         (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
     ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
+    $maybe_unused typedef ReturnType ReturnT; \
     if (false) { \
 __step_return: goto __step_unscope; \
     } \
@@ -211,6 +212,8 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
         (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
     ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
+    $maybe_unused typedef ReturnType ReturnT; \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
     }; \
@@ -243,4 +246,4 @@ comp_syn__Thrd_fn_impl$guard(_fnName, _Tuple_Captures)
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* THRD_COMMON_INCLUDED */
+#endif /* Thrd_common__included */

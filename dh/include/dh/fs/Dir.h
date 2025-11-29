@@ -18,7 +18,6 @@
  *          - Directory deletion
  *          - Directory utilities
  */
-
 #ifndef fs_Dir__included
 #define fs_Dir__included 1
 #if defined(__cplusplus)

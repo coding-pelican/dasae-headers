@@ -18,9 +18,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     io_stream_print(u8_l("Hello World!\n"));
     catch_((math_divideSafe(10, 0))(err, {
         io_stream_println(u8_l("Occurs error"));
-        let err_code = mem_spanZ0_const$u8(Err_codeToStrZ(err));
+        let err_code = mem_spanZ0$u8(Err_codeToStrZ(err));
         debug_assert_true(mem_eqBytes(err_code, u8_l("DivisionByZero")));
-        let_ignore   = err_code;
+        let_ignore = err_code;
         io_stream_eprintln(u8_l("Error: {:e}"), err);
         ErrTrace_print();
     }));

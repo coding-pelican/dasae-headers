@@ -10,7 +10,6 @@
  * @ingroup dasae-headers(dh)/io
  * @prefix  io_Reader
  */
-
 #ifndef io_Reader__included
 #define io_Reader__included 1
 #if defined(__cplusplus)

@@ -13,7 +13,6 @@
  * @brief   Condition variable for thread management
  * @details Defines condition variable for thread management.
  */
-
 #ifndef Thrd_Cond__included
 #define Thrd_Cond__included 1
 #if defined(__cplusplus)

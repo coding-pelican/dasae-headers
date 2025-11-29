@@ -1,5 +1,5 @@
-#ifndef types_Err__included
-#define types_Err__included 1
+#ifndef prl_types_Err__included
+#define prl_types_Err__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -41,10 +41,10 @@ $inline
 $static fn_((Err_None(void))(Err));
 
 #define errset_(/*(_Id)(_enums...)*/...) __errset__exec(pp_defer(__errset__emit)(__errset__parse0 __VA_ARGS__))
-#define __errset__exec(...)              __VA_ARGS__
-#define __errset__parse0(_Id...)         _Id, __errset__parse1
-#define __errset__parse1(_enums...)      _enums
-#define __errset__emit(...)              __errset__emitNext(__VA_ARGS__)
+#define __errset__exec(...) __VA_ARGS__
+#define __errset__parse0(_Id...) _Id, __errset__parse1
+#define __errset__parse1(_enums...) _enums
+#define __errset__emit(...) __errset__emitNext(__VA_ARGS__)
 #define __errset__emitNext(_Id, _enums...) \
     GEN__config_ErrSet(_Id, _enums)
 
@@ -90,11 +90,11 @@ $inline
 $static fn_((GeneralErr_err(ErrCode self))(Err)) {
     static const Err_VT vt[1] = { {
         .domainToStrZ = GeneralErr_domainToStrZ,
-        .codeToStrZ   = GeneralErr_codeToStrZ,
+        .codeToStrZ = GeneralErr_codeToStrZ,
     } };
     return (Err){
         .ctx = self,
-        .vt  = vt,
+        .vt = vt,
     };
 }
 
@@ -117,14 +117,14 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     typedef enum pp_cat(Name, Code) { \
         GEN__config_ErrSet__ENUM__Code__members( \
             Name, \
-            pp_foreach ( \
+            pp_foreach( \
                 GEN__config_ErrSet__ENUM__Code__member, \
                 Name, \
                 __VA_ARGS__ \
             ) \
         ) \
     } pp_cat(Name, Code); \
-    typedef Err    Name; \
+    typedef Err Name; \
     static $inline fn_((pp_join(_, Name, domainToStrZ)(ErrCode ctx))(const u8*)) { \
         let_ignore = ctx; \
         return u8_l0(#Name); \
@@ -134,7 +134,7 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
         switch (code) { \
             GEN__config_ErrSet__FN__codeToStrZ__cases( \
                 Name, \
-                pp_foreach ( \
+                pp_foreach( \
                     GEN__config_ErrSet__FN__codeToStrZ__case, \
                     Name, \
                     __VA_ARGS__ \
@@ -145,16 +145,16 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
     static $inline fn_((pp_join(_, Name, err)(pp_cat(Name, Code) self))(Err)) { \
         static const Err_VT vt[1] = { { \
             .domainToStrZ = pp_join(_, Name, domainToStrZ), \
-            .codeToStrZ   = pp_join(_, Name, codeToStrZ), \
+            .codeToStrZ = pp_join(_, Name, codeToStrZ), \
         } }; \
         return (Name){ \
             .ctx = self, \
-            .vt  = vt, \
+            .vt = vt, \
         }; \
     } \
     GEN__config_ErrSet__FN__ctorTemplates( \
         Name, \
-        pp_foreach ( \
+        pp_foreach( \
             GEN__config_ErrSet__FN__ctorTemplate, \
             Name, \
             __VA_ARGS__ \
@@ -198,8 +198,7 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
 )
 
 #define GEN__config_ErrSet__FN__codeToStrZ__case(Name, ...) __VA_OPT__( \
-    case pp_cat3(Name, Code_, __VA_ARGS__): \
-        return u8_l0(#__VA_ARGS__); \
+    case pp_cat3(Name, Code_, __VA_ARGS__) : return u8_l0(#__VA_ARGS__); \
 )
 
 #define GEN__config_ErrSet__FN__ctorTemplate(Name, ...) __VA_OPT__( \
@@ -240,4 +239,4 @@ errset_((mem_AllocErr)(OutOfMemory));
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_Err__included */
+#endif /* prl_types_Err__included */

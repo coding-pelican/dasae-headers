@@ -11,7 +11,6 @@
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  */
-
 #ifndef core_blk__included
 #define core_blk__included 1
 #if defined(__cplusplus)

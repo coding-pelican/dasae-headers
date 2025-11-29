@@ -16,9 +16,8 @@
  * implementations. Supports custom comparison functions and optional memory
  * allocation.
  */
-
-#ifndef SORT_INCLUDED
-#define SORT_INCLUDED (1)
+#ifndef sort__included
+#define sort__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -51,14 +50,14 @@ $extern fn_((sort_insertionSortWithArg(
     P_const$raw arg
 ))(void));
 /// Modernized merge sort using temporary buffer instead of allocating new memory
-$must_check
+$attr($must_check)
 $extern fn_((sort_mergeSortUsingTempRecur(
     S$u8 temp_buf,
     u_S$raw base_sli,
     sort_CmpFn cmpFn
 ))(mem_Err$void));
 /// Modernized merge sort using temporary buffer with arg
-$must_check
+$attr($must_check)
 $extern fn_((sort_mergeSortWithArgUsingTempRecur(
     S$u8 temp_buf,
     u_S$raw base_sli,
@@ -66,14 +65,14 @@ $extern fn_((sort_mergeSortWithArgUsingTempRecur(
     P_const$raw arg
 ))(mem_Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
-$must_check
+$attr($must_check)
 $extern fn_((sort_stableSort(
     mem_Allocator allocator,
     u_S$raw base_sli,
     sort_CmpFn cmpFn
 ))(mem_Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
-$must_check
+$attr($must_check)
 $extern fn_((sort_stableSortWithArg(
     mem_Allocator allocator,
     u_S$raw base_sli,
@@ -81,14 +80,14 @@ $extern fn_((sort_stableSortWithArg(
     P_const$raw arg
 ))(mem_Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
-$must_check
+$attr($must_check)
 $extern fn_((sort_stableSortUsingTemp(
     S$u8 temp_buf,
     u_S$raw base_sli,
     sort_CmpFn cmpFn
 ))(mem_Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
-$must_check
+$attr($must_check)
 $extern fn_((sort_stableSortWithArgUsingTemp(
     S$u8 temp_buf,
     u_S$raw base_sli,
@@ -99,4 +98,4 @@ $extern fn_((sort_stableSortWithArgUsingTemp(
 #if defined(__cplusplus)
 } /* $extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* SORT_INCLUDED */
+#endif /* sort__included */

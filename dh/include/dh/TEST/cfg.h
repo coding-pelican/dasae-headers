@@ -13,7 +13,6 @@
  * @brief   Test framework configuration
  * @details This header provides a testing framework configuration.
  */
-
 #ifndef TEST_cfg__included
 #define TEST_cfg__included 1
 #if defined(__cplusplus)

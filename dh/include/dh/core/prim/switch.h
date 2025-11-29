@@ -16,7 +16,6 @@
  *          - Case return
  *          - Default return
  */
-
 #ifndef core_prim_switch__included
 #define core_prim_switch__included 1
 #if defined(__cplusplus)

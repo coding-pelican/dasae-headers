@@ -17,7 +17,6 @@
  *          - Union type operations
  *          - Union type utilities
  */
-
 #ifndef CORE_PRIM_UNION_INCLUDED
 #define CORE_PRIM_UNION_INCLUDED (1)
 #if defined(__cplusplus)

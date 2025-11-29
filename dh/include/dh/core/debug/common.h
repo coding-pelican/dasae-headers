@@ -17,7 +17,6 @@
  *          - Debugger detection
  *          - Debug configuration
  */
-
 #ifndef core_debug_common__included
 #define core_debug_common__included 1
 #if defined(__cplusplus)
@@ -47,7 +46,7 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 #define __comp_syn__debug_only(_inner...) pp_if_(debug_comp_enabled)(pp_then_(_inner), pp_else_())
 #if !debug_comp_enabled
-#define __comp_inline__debug_break()    $unused(0)
+#define __comp_inline__debug_break() $unused(0)
 #else /* debug_comp_enabled */
 
 /* Only trigger debug break if a debugger is attached */

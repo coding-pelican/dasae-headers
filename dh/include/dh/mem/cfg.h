@@ -14,7 +14,6 @@
  * @details Defines compile-time options and configuration parameters
  *          for memory-related operations and utilities.
  */
-
 #ifndef mem_cfg__included
 #define mem_cfg__included 1
 #if defined(__cplusplus)

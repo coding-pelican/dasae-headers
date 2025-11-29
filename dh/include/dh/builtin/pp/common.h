@@ -47,6 +47,9 @@ extern "C" {
 #define pp_uniqTok(_Tok...) pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
 
+#define pp_begin (
+#define pp_end )
+
 #define pp_true 1
 #define pp_false 0
 

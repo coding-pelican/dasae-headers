@@ -92,19 +92,23 @@ extern "C" {
 #define __comp_enum__lang_mode_c 1
 #define __comp_enum__lang_mode_cpp 2
 
-#define __comp_str__lang_name pp_switch_( \
-    (lang_mode)(pp_case_((lang_mode_c)(lang_name_c)), \
-                pp_case_((lang_mode_cpp)(lang_name_cpp)), \
-                pp_default_(lang_name_unknown)) \
+#define __comp_str__lang_name pp_expand( \
+    pp_switch_ pp_begin(lang_mode)( \
+        pp_case_((lang_mode_c)(lang_name_c)), \
+        pp_case_((lang_mode_cpp)(lang_name_cpp)), \
+        pp_default_(lang_name_unknown) \
+    ) pp_end \
 )
 #define __comp_str__lang_name_unknown "unknown"
 #define __comp_str__lang_name_c "c"
 #define __comp_str__lang_name_cpp "cpp"
 
-#define __comp_int__lang_version pp_switch_( \
-    (lang_mode)(pp_case_((lang_mode_c)(lang_version_c)), \
-                pp_case_((lang_mode_cpp)(lang_version_cpp)), \
-                pp_default_(lang_version_unknown)) \
+#define __comp_int__lang_version pp_expand( \
+    pp_switch_ pp_begin(lang_mode)( \
+        pp_case_((lang_mode_c)(lang_version_c)), \
+        pp_case_((lang_mode_cpp)(lang_version_cpp)), \
+        pp_default_(lang_version_unknown) \
+    ) pp_end \
 )
 #define __comp_int__lang_version_unknown 0
 

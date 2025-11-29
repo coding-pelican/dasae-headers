@@ -15,9 +15,8 @@
  *          Tests are organized into test cases that can be automatically discovered and run.
  *          Each test is isolated and reports detailed information on failures.
  */
-
-#ifndef TEST_INCLUDED
-#define TEST_INCLUDED (1)
+#ifndef TEST__included
+#define TEST__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -152,4 +151,4 @@ fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* TEST_INCLUDED */
+#endif /* TEST__included */

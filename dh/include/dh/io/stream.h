@@ -11,7 +11,6 @@
  * @ingroup dasae-headers(dh)/io
  * @prefix  io_stream
  */
-
 #ifndef io_stream__included
 #define io_stream__included 1
 #if defined(__cplusplus)

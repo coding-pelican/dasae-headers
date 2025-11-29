@@ -98,12 +98,14 @@ extern "C" {
 #warning "Unknown platform detected. Some features may not work as expected."
 #endif
 
-#define __comp_str__plat_name pp_switch_( \
-    (plat_type)(pp_case_((plat_type_windows)(plat_name_windows)), \
-                pp_case_((plat_type_linux)(plat_name_linux)), \
-                pp_case_((plat_type_darwin)(plat_name_darwin)), \
-                pp_case_((plat_type_wasi)(plat_name_wasi)), \
-                pp_default_(plat_name_unknown)) \
+#define __comp_str__plat_name pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_case_((plat_type_windows)(plat_name_windows)), \
+        pp_case_((plat_type_linux)(plat_name_linux)), \
+        pp_case_((plat_type_darwin)(plat_name_darwin)), \
+        pp_case_((plat_type_wasi)(plat_name_wasi)), \
+        pp_default_(plat_name_unknown) \
+    ) pp_end \
 )
 #define __comp_str__plat_name_unknown "Unknown"
 #define __comp_str__plat_name_windows "Windows"
@@ -111,10 +113,12 @@ extern "C" {
 #define __comp_str__plat_name_darwin "Darwin"
 #define __comp_str__plat_name_wasi "WASI"
 
-#define __comp_bool__plat_based_unix pp_switch_( \
-    (plat_type)(pp_case_((plat_type_linux)(pp_true)), \
-                pp_case_((plat_type_darwin)(pp_true)), \
-                pp_default_(pp_false)) \
+#define __comp_bool__plat_based_unix pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_case_((plat_type_linux)(pp_true)), \
+        pp_case_((plat_type_darwin)(pp_true)), \
+        pp_default_(pp_false) \
+    ) pp_end \
 )
 #define __comp_bool__plat_is_posix plat_based_unix
 

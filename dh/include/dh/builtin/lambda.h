@@ -13,7 +13,6 @@
  * @brief   Header of some software
  * @details Some detailed explanation
  */
-
 #ifndef builtin_lambda__included
 #define builtin_lambda__included 1
 #if defined(__cplusplus)

@@ -17,7 +17,6 @@
  *          - Pointer operations
  *          - Pointer utilities
  */
-
 #ifndef CORE_PRIM_PTR_INCLUDED
 #define CORE_PRIM_PTR_INCLUDED (1)
 #if defined(__cplusplus)

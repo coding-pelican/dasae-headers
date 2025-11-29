@@ -13,7 +13,6 @@
  * @brief   Debug utilities
  * @details Provides debug utilities for the project.
  */
-
 #ifndef debug__included
 #define debug__included 1
 #if defined(__cplusplus)

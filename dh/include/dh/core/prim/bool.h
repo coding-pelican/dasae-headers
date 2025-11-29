@@ -13,7 +13,6 @@
  * @brief   Header for boolean type and operations
  * @details Provides boolean type definitions and operations for C/C++ compatibility
  */
-
 #ifndef CORE_PRIM_BOOL_INCLUDED
 #define CORE_PRIM_BOOL_INCLUDED (1)
 #if defined(__cplusplus)

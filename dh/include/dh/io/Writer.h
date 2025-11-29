@@ -11,7 +11,6 @@
  * @ingroup dasae-headers(dh)/io
  * @prefix  io_Writer
  */
-
 #ifndef io_Writer__included
 #define io_Writer__included 1
 #if defined(__cplusplus)

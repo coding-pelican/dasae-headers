@@ -1,5 +1,5 @@
-#ifndef types_ErrRes__included
-#define types_ErrRes__included 1
+#ifndef prl_types_ErrRes__included
+#define prl_types_ErrRes__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -291,4 +291,4 @@ $static fn_((test(void))(E$void) $scope) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_ErrRes__included */
+#endif /* prl_types_ErrRes__included */

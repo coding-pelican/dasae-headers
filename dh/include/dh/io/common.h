@@ -17,7 +17,6 @@
  *          - Buffer operations
  *          - Utility functions
  */
-
 #ifndef io_common__included
 #define io_common__included 1
 #if defined(__cplusplus)

@@ -17,7 +17,6 @@
  *          - Integer type operations
  *          - Integer type utilities
  */
-
 #ifndef core_prim_int__included
 #define core_prim_int__included 1
 #if defined(__cplusplus)

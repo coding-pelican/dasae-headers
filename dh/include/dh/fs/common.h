@@ -18,7 +18,6 @@
  *          - File system operations
  *          - File system utilities
  */
-
 #ifndef fs_common__included
 #define fs_common__included 1
 #if defined(__cplusplus)

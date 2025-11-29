@@ -17,7 +17,6 @@
  *          - Struct type operations
  *          - Struct type utilities
  */
-
 #ifndef CORE_PRIM_STRUCT_INCLUDED
 #define CORE_PRIM_STRUCT_INCLUDED (1)
 #if defined(__cplusplus)

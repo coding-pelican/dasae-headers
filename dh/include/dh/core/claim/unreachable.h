@@ -13,7 +13,6 @@
  * @brief   Unreachable code assertions
  * @details Provides macros for marking and asserting unreachable code paths
  */
-
 #ifndef claim_unreachable__included
 #define claim_unreachable__included 1
 #if defined(__cplusplus)
@@ -42,7 +41,8 @@ extern "C" {
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-typedef enum Status { Status_OK, Status_ERROR } Status;
+typedef enum Status { Status_OK,
+                      Status_ERROR } Status;
 
 int exampleFunction(Status status) {
     switch (status) {

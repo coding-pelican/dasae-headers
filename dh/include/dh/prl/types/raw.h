@@ -1,5 +1,5 @@
-#ifndef types_raw__included
-#define types_raw__included 1
+#ifndef prl_types_raw__included
+#define prl_types_raw__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -118,4 +118,4 @@ struct E$raw {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_raw__included */
+#endif /* prl_types_raw__included */

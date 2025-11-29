@@ -17,7 +17,6 @@
  *          - Nullable-Nonnull attributes
  *          - Nullable-Nonnull macros
  */
-
 #ifndef CORE_PRIM_NULL_INCLUDED
 #define CORE_PRIM_NULL_INCLUDED (1)
 #if defined(__cplusplus)

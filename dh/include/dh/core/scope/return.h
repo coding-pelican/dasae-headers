@@ -17,7 +17,6 @@
  *          - Return value management
  *          - Return value cleanup
  */
-
 #ifndef SCOPE_RETURN_INCLUDED
 #define SCOPE_RETURN_INCLUDED (1)
 #if defined(__cplusplus)

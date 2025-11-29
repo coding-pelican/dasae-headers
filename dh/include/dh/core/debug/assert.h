@@ -14,7 +14,6 @@
  * @details Provides conditional utilities for runtime debug assertions
  *          that only execute when debug mode is enabled.
  */
-
 #ifndef core_debug_assert__included
 #define core_debug_assert__included 1
 #if defined(__cplusplus)

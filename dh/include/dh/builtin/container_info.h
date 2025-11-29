@@ -13,7 +13,6 @@
  * @brief   Container and field relationship utilities
  * @details Provides type-safe container operations and field analysis utilities
  */
-
 #ifndef BUILTIN_CONTAINER_INFO_INCLUDED
 #define BUILTIN_CONTAINER_INFO_INCLUDED (1)
 

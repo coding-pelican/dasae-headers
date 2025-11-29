@@ -1,5 +1,5 @@
-#ifndef types_Arr__included
-#define types_Arr__included 1
+#ifndef prl_types_Arr__included
+#define prl_types_Arr__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -47,7 +47,7 @@ extern "C" {
 #define asgA3(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val))
 #define asgA4(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val.val))
 
-#define init$A(_initial...) {.val = _initial}
+#define init$A(_initial...) { .val = _initial }
 #define init$A$(/*(_N, _T){_initial...}*/... /*(A$(_N,_T))*/) \
     __lit_init$A__step(pp_defer(__lit_init$A__emit)(A$, __lit_init$A__parseT __VA_ARGS__))
 #define init$A$$(/*(_N, _T){_initial...}*/... /*(A$$(_N,_T))*/) \
@@ -81,7 +81,7 @@ extern "C" {
 #define __op__A_ref$(...) __op__A_ref$__emit(__VA_ARGS__)
 #define __op__A_ref$__parseST(_ST...) _ST,
 #define __op__A_ref$__emit(_ST, _a...) \
-    lit$((_ST){.ptr = A_ptr(_a), .len = A_len(_a)})
+    lit$((_ST){ .ptr = A_ptr(_a), .len = A_len(_a) })
 // #define A_ref(_a /*: A$$(_N,_T)*/... /*(_ST)*/) \
 //     A_ref$((S$$(A_InnerT$(TypeOf(_a))))(_a)) /* TODO: Detect const */
 
@@ -122,7 +122,7 @@ extern "C" {
 #define __A_from__step(...) __VA_ARGS__
 #define __A_from__parseT(_T...) _T,
 #define __A_from__emit(_T, _a...) \
-    lit$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){.val = _a})
+    lit$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
 
 #define A_cat$(/*(_T)(_lhs, _rhs)*/... /*(_T)*/) \
     __op__A_cat$(__op__A_cat$__parseT __VA_ARGS__)
@@ -142,7 +142,7 @@ extern "C" {
         }; \
         var_(catted, _T); \
     } Catting; \
-    lit$((Catting){.lhs = *__lhs, .rhs = *__rhs}).catted; \
+    lit$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
 })
 #define A_cat(_lhs, _rhs...) \
     A_cat$((A$$(A_innerN$(TypeOf(_lhs)) + A_innerN$(TypeOf(_rhs)), A_InnerT$(TypeOf(_lhs))))(_lhs, _rhs))
@@ -223,4 +223,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_Arr__included */
+#endif /* prl_types_Arr__included */

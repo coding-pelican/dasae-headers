@@ -23,7 +23,6 @@
  *          All operations use Clang built-ins for zero runtime cost.
  *          Debug assertions check for undefined behavior (overflow, division by zero).
  */
-
 #ifndef core_prim__included
 #define core_prim__included 1
 #if defined(__cplusplus)
@@ -753,7 +752,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 
 #define __op__prim_clamp_static(_x, _lo, _hi...) prim_min2_static(prim_max2_static(_lo, _x), _hi)
-#define __op__prim_clamp__step(_x, _lo, _hi...) __op__prim_clamp__step(_x, _lo, _hi)
+#define __op__prim_clamp__step(_x, _lo, _hi...) __op__prim_clamp(pp_uniqTok(x), pp_uniqTok(lo), pp_uniqTok(hi), _x, _lo, _hi)
 #define __op__prim_clamp(__x, __lo, __hi, _x, _lo, _hi...) ({ \
     let __x = _x; \
     let __lo = _lo; \

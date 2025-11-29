@@ -14,7 +14,6 @@
  * @details Defines compile-time options and configuration parameters
  *          for thread management.
  */
-
 #ifndef THRD_CFG_INCLUDED
 #define THRD_CFG_INCLUDED (1)
 #if defined(__cplusplus)

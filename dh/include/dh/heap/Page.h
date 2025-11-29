@@ -14,7 +14,6 @@
  * @details Uses OS-level virtual memory APIs to allocate memory in page-sized blocks.
  *          Provides a simple interface for allocating and freeing memory.
  */
-
 #ifndef heap_Page__included
 #define heap_Page__included 1
 #if defined(__cplusplus)

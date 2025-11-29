@@ -17,7 +17,6 @@
  *          - Conditional scope execution
  *          - Loop constructs with initialization
  */
-
 #ifndef SCOPE_COMMON_INCLUDED
 #define SCOPE_COMMON_INCLUDED (1)
 #if defined(__cplusplus)
@@ -86,7 +85,7 @@ extern "C"
              R range; \
              usize iter; \
          } __state \
-         = {.once = false, .range = (_range), .iter = 0}; \
+         = { .once = false, .range = (_range), .iter = 0 }; \
          !__state.once; __state.once = true) \
         for (__state.iter = __state.range.begin; __state.iter < __state.range.end; ++__state.iter) with_(let_(_iter, usize) = __state.iter)
 #define __for_$_rev(_range, _iter) \
@@ -95,7 +94,7 @@ extern "C"
              R range; \
              usize iter; \
          } __state \
-         = {.once = false, .range = (_range), .iter = 0}; \
+         = { .once = false, .range = (_range), .iter = 0 }; \
          !__state.once; __state.once = true) \
         for (__state.iter = __state.range.end; __state.iter > __state.range.begin; --__state.iter) with_(let_(_iter, usize) = (__state.iter - 1))
 #define __for_$_asc(_range, _iter) __for_$_fwd(_range, _iter)

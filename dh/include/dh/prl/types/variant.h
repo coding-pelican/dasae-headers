@@ -7,7 +7,7 @@
  * @date    2024-12-02 (date of creation)
  * @updated 2025-06-15 (date of last update)
  * @version v0.1-alpha.3
- * @ingroup dasae-headers(dh)
+ * @ingroup dasae-headers(dh)/prl/types
  * @prefix  (none)
  *
  * @brief   Variant implementation with pattern matching
@@ -15,9 +15,8 @@
  *          including pattern matching syntax, payload extraction, and type-safe union construction.
  *          Supports compile-time type checking and exhaustive pattern matching.
  */
-
-#ifndef VARIANT_INCLUDED
-#define VARIANT_INCLUDED (1)
+#ifndef prl_types_variant__included
+#define prl_types_variant__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -192,4 +191,4 @@ case _tag: { \
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* VARIANT_INCLUDED */
+#endif /* prl_types_variant__included */

@@ -14,7 +14,6 @@
  * @details Takes an existing allocator, wraps it, and provides an interface
  *          where you can allocate without freeing, and then free it all together.
  */
-
 #ifndef heap_Arena__included
 #define heap_Arena__included 1
 #if defined(__cplusplus)

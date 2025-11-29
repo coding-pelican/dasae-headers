@@ -12,7 +12,6 @@
  *
  * @brief   Compatibility layer for function pointers and block objects
  */
-
 #ifndef core_Callable__included
 #define core_Callable__included 1
 #if defined(__cplusplus)

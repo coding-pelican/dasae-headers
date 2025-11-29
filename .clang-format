@@ -171,6 +171,8 @@ Macros:
   - TEST_only(inner)=[](void) -> (void) inner
 
   - "pp_switch_(Expr)=pp_exec_ignore Expr"
+  - "pp_case_(Expr)=pp_exec_ignore Expr"
+  - "pp_default_(Expr)=pp_exec_ignore Expr"
 
   - "T_decl$(Expr)=pp_exec_ignore Expr"
   - "T_impl$(Expr)=pp_exec_ignore Expr"

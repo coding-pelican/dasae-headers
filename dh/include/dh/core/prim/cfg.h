@@ -14,7 +14,6 @@
  * @details Defines compile-time options and configuration parameters
  *          for primitive types and functions.
  */
-
 #ifndef CORE_PRIM_CFG_INCLUDED
 #define CORE_PRIM_CFG_INCLUDED (1)
 #if defined(__cplusplus)

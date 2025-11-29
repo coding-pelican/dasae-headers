@@ -83,7 +83,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     let args_buf = as$(S$(const u8)*)(prim_alloca(argc * sizeOf$(S$(const u8))));
     let args = ({
         for_(($r(0, argc))(i) {
-            args_buf[i] = mem_spanZ0_const$u8(as$(const u8*)(argv[i]));
+            args_buf[i] = mem_spanZ0$u8(as$(const u8*)(argv[i]));
         });
         lit$((S$S_const$u8){ .ptr = args_buf, .len = argc });
     });
@@ -92,7 +92,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     let args_buf = as$(S$(const u8)*)(prim_alloca(argc * sizeOf$(S$(const u8))));
     let args = ({
         for_(($r(0, argc))(i) {
-            args_buf[i] = mem_spanZ0_const$u8(as$(const u8*)(argv[i]));
+            args_buf[i] = mem_spanZ0$u8(as$(const u8*)(argv[i]));
         });
         lit$((S$S_const$u8){ .ptr = args_buf, .len = argc });
     });

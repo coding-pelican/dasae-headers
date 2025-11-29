@@ -1,5 +1,5 @@
-#ifndef types_Ptr__included
-#define types_Ptr__included 1
+#ifndef prl_types_Ptr__included
+#define prl_types_Ptr__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -120,4 +120,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_Ptr__included */
+#endif /* prl_types_Ptr__included */

@@ -8,7 +8,7 @@ extern "C" {
 
 #include "common.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #if !defined(ErrTrace_comp_enabled)
 #define ErrTrace_comp_enabled (debug_comp_enabled)
@@ -26,25 +26,29 @@ extern void ErrTrace_captureFrame(void);
 extern void ErrTrace_print(void);
 #endif /* !on_comptime */
 
-/*========== Implementations ================================================*/
+/*========== Macros and Definitions =========================================*/
 
-/* clang-format off */
-#define __comp_int__ErrTrace_max_frames pp_switch_((arch_bits_unit)( \
-    pp_case_((arch_bits_unit_64bit)(pp_switch_((arch_family_type)(\
-        pp_case_((arch_family_type_x86)(32)), \
-        pp_case_((arch_family_type_arm)(24)), \
-        pp_case_((arch_family_type_riscv)(24)), \
+#define __comp_int__ErrTrace_max_frames pp_expand( \
+    pp_switch_ pp_begin(arch_bits_unit)( \
+        pp_case_((arch_bits_unit_64bit)(pp_expand( \
+            pp_switch_ pp_begin(arch_family_type)( \
+                pp_case_((arch_family_type_x86)(32)), \
+                pp_case_((arch_family_type_arm)(24)), \
+                pp_case_((arch_family_type_riscv)(24)), \
+                pp_default_(8) \
+            ) pp_end \
+        ))), \
+        pp_case_((arch_bits_unit_32bit)(pp_expand( \
+            pp_switch_ pp_begin(arch_family_type)( \
+                pp_case_((arch_family_type_x86)(16)), \
+                pp_case_((arch_family_type_arm)(12)), \
+                pp_case_((arch_family_type_riscv)(12)), \
+                pp_default_(8) \
+            ) pp_end \
+        ))), \
         pp_default_(8) \
-    )))), \
-    pp_case_((arch_bits_unit_32bit)(pp_switch_((arch_family_type)(\
-        pp_case_((arch_family_type_x86)(16)), \
-        pp_case_((arch_family_type_arm)(12)), \
-        pp_case_((arch_family_type_riscv)(12)), \
-        pp_default_(8) \
-    )))), \
-    pp_default_(8) \
-))
-/* clang-format on */
+    ) pp_end \
+)
 
 struct ErrTrace_Frame {
     SrcLoc src_loc;

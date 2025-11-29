@@ -18,7 +18,6 @@
  *          - Type conversion
  *          - Type utility functions
  */
-
 #ifndef core_type_info__included
 #define core_type_info__included 1
 #if defined(__cplusplus)
@@ -50,7 +49,7 @@ typedef union TypeInfo {
 
 /*========== Macros and Implementations =====================================*/
 
-#define __step__typeInfo$(_T...) lit$((TypeInfo){.size = sizeOf$(_T), .align = alignOf$(_T)})
+#define __step__typeInfo$(_T...) lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
 #define __step__TypeInfo_eq(_lhs, _rhs...) ((_lhs).packed == (_rhs).packed)
 
 

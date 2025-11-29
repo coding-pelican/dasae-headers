@@ -1,5 +1,5 @@
-#ifndef types_Sli__included
-#define types_Sli__included 1
+#ifndef prl_types_Sli__included
+#define prl_types_Sli__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -316,4 +316,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* types_Sli__included */
+#endif /* prl_types_Sli__included */

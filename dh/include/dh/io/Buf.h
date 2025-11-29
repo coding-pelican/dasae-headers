@@ -10,7 +10,6 @@
  * @ingroup dasae-headers(dh)/io
  * @prefix  io_Buf
  */
-
 #ifndef io_Buf__included
 #define io_Buf__included 1
 #if defined(__cplusplus)
@@ -59,14 +58,14 @@ $extern fn_((io_Buf_Reader_reader(io_Buf_Reader* self))(io_Reader));
 
 typedef struct io_Buf_Writer {
     io_Writer inner;
-    S$u8    buf;
-    usize     used;
+    S$u8 buf;
+    usize used;
 } io_Buf_Writer;
 /// Initialize buffered writer with external buffer
 $extern fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer));
- /// Flush buffered data to inner writer
+/// Flush buffered data to inner writer
 $extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void)) $must_check;
- /// Get io_Writer interface
+/// Get io_Writer interface
 $extern fn_((io_Buf_Writer_writer(io_Buf_Writer* self))(io_Writer));
 
 #if defined(__cplusplus)

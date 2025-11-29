@@ -161,16 +161,18 @@ extern "C" {
 /* --- Architecture Name --- */
 
 /* Derive name from type */
-#define __comp_str__arch_name pp_switch_( \
-    (arch_type)(pp_case_((arch_type_x86_64)(arch_name_x86_64)), \
-                pp_case_((arch_type_x86)(arch_name_x86)), \
-                pp_case_((arch_type_aarch64)(arch_name_aarch64)), \
-                pp_case_((arch_type_arm)(arch_name_arm)), \
-                pp_case_((arch_type_riscv64)(arch_name_riscv64)), \
-                pp_case_((arch_type_riscv32)(arch_name_riscv32)), \
-                pp_case_((arch_type_wasm64)(arch_name_wasm64)), \
-                pp_case_((arch_type_wasm32)(arch_name_wasm32)), \
-                pp_default_(arch_name_unknown)) \
+#define __comp_str__arch_name pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(arch_name_x86_64)), \
+        pp_case_((arch_type_x86)(arch_name_x86)), \
+        pp_case_((arch_type_aarch64)(arch_name_aarch64)), \
+        pp_case_((arch_type_arm)(arch_name_arm)), \
+        pp_case_((arch_type_riscv64)(arch_name_riscv64)), \
+        pp_case_((arch_type_riscv32)(arch_name_riscv32)), \
+        pp_case_((arch_type_wasm64)(arch_name_wasm64)), \
+        pp_case_((arch_type_wasm32)(arch_name_wasm32)), \
+        pp_default_(arch_name_unknown) \
+    ) pp_end \
 )
 #define __comp_str__arch_name_unknown "unknown"
 #define __comp_str__arch_name_x86_64 "x86_64"
@@ -185,16 +187,18 @@ extern "C" {
 /* --- Architecture Family --- */
 
 /* Derive family from type */
-#define __comp_enum__arch_family_type pp_switch_( \
-    (arch_type)(pp_case_((arch_type_x86_64)(arch_family_type_x86)), \
-                pp_case_((arch_type_x86)(arch_family_type_x86)), \
-                pp_case_((arch_type_aarch64)(arch_family_type_arm)), \
-                pp_case_((arch_type_arm)(arch_family_type_arm)), \
-                pp_case_((arch_type_riscv64)(arch_family_type_riscv)), \
-                pp_case_((arch_type_riscv32)(arch_family_type_riscv)), \
-                pp_case_((arch_type_wasm64)(arch_family_type_wasm)), \
-                pp_case_((arch_type_wasm32)(arch_family_type_wasm)), \
-                pp_default_(arch_family_type_unknown)) \
+#define __comp_enum__arch_family_type pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(arch_family_type_x86)), \
+        pp_case_((arch_type_x86)(arch_family_type_x86)), \
+        pp_case_((arch_type_aarch64)(arch_family_type_arm)), \
+        pp_case_((arch_type_arm)(arch_family_type_arm)), \
+        pp_case_((arch_type_riscv64)(arch_family_type_riscv)), \
+        pp_case_((arch_type_riscv32)(arch_family_type_riscv)), \
+        pp_case_((arch_type_wasm64)(arch_family_type_wasm)), \
+        pp_case_((arch_type_wasm32)(arch_family_type_wasm)), \
+        pp_default_(arch_family_type_unknown) \
+    ) pp_end \
 )
 #define __comp_enum__arch_family_type_unknown 0
 #define __comp_enum__arch_family_type_x86 1
@@ -203,12 +207,14 @@ extern "C" {
 #define __comp_enum__arch_family_type_wasm 4
 
 /* Derive family name from type */
-#define __comp_str__arch_family_name pp_switch_( \
-    (arch_family_type)(pp_case_((arch_family_type_x86)(arch_family_name_x86)), \
-                       pp_case_((arch_family_type_arm)(arch_family_name_arm)), \
-                       pp_case_((arch_family_type_riscv)(arch_family_name_riscv)), \
-                       pp_case_((arch_family_type_wasm)(arch_family_name_wasm)), \
-                       pp_default_(arch_family_name_unknown)) \
+#define __comp_str__arch_family_name pp_expand( \
+    pp_switch_ pp_begin(arch_family_type)( \
+        pp_case_((arch_family_type_x86)(arch_family_name_x86)), \
+        pp_case_((arch_family_type_arm)(arch_family_name_arm)), \
+        pp_case_((arch_family_type_riscv)(arch_family_name_riscv)), \
+        pp_case_((arch_family_type_wasm)(arch_family_name_wasm)), \
+        pp_default_(arch_family_name_unknown) \
+    ) pp_end \
 )
 #define __comp_str__arch_family_name_unknown "unknown"
 #define __comp_str__arch_family_name_x86 "x86"
@@ -219,26 +225,30 @@ extern "C" {
 /* --- Bit Width --- */
 
 /* Derive bit width unit from type */
-#define __comp_enum__arch_bits_unit pp_switch_( \
-    (arch_type)(pp_case_((arch_type_x86_64)(arch_bits_unit_64bit)), \
-                pp_case_((arch_type_x86)(arch_bits_unit_32bit)), \
-                pp_case_((arch_type_aarch64)(arch_bits_unit_64bit)), \
-                pp_case_((arch_type_arm)(arch_bits_unit_32bit)), \
-                pp_case_((arch_type_riscv64)(arch_bits_unit_64bit)), \
-                pp_case_((arch_type_riscv32)(arch_bits_unit_32bit)), \
-                pp_case_((arch_type_wasm64)(arch_bits_unit_64bit)), \
-                pp_case_((arch_type_wasm32)(arch_bits_unit_32bit)), \
-                pp_default_(arch_bits_unit_unknown)) \
+#define __comp_enum__arch_bits_unit pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(arch_bits_unit_64bit)), \
+        pp_case_((arch_type_x86)(arch_bits_unit_32bit)), \
+        pp_case_((arch_type_aarch64)(arch_bits_unit_64bit)), \
+        pp_case_((arch_type_arm)(arch_bits_unit_32bit)), \
+        pp_case_((arch_type_riscv64)(arch_bits_unit_64bit)), \
+        pp_case_((arch_type_riscv32)(arch_bits_unit_32bit)), \
+        pp_case_((arch_type_wasm64)(arch_bits_unit_64bit)), \
+        pp_case_((arch_type_wasm32)(arch_bits_unit_32bit)), \
+        pp_default_(arch_bits_unit_unknown) \
+    ) pp_end \
 )
 #define __comp_enum__arch_bits_unit_unknown 0
 #define __comp_enum__arch_bits_unit_64bit 1
 #define __comp_enum__arch_bits_unit_32bit 2
 
 /* Derive bit width from unit */
-#define __comp_int__arch_bits_wide pp_switch_( \
-    (arch_bits_unit)(pp_case_((arch_bits_unit_64bit)(arch_bits_wide_64bit)), \
-                     pp_case_((arch_bits_unit_32bit)(arch_bits_wide_32bit)), \
-                     pp_default_(arch_bits_wide_unknown)) \
+#define __comp_int__arch_bits_wide pp_expand( \
+    pp_switch_ pp_begin(arch_bits_unit)( \
+        pp_case_((arch_bits_unit_64bit)(arch_bits_wide_64bit)), \
+        pp_case_((arch_bits_unit_32bit)(arch_bits_wide_32bit)), \
+        pp_default_(arch_bits_wide_unknown) \
+    ) pp_end \
 )
 #define __comp_int__arch_bits_wide_unknown 0
 #define __comp_int__arch_bits_wide_64bit 64
