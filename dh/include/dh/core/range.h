@@ -47,7 +47,7 @@ extern "C" {
 #define eq$R R_eq
 #define ne$R R_ne
 
-typedef enum R_Bound_Tag : u8 {
+typedef enum_(R_Bound_Tag $bits(8)) {
     R_Bound_incl = 0,
     R_Bound_excl = 1,
 } R_Bound;

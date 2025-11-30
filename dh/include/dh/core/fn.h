@@ -30,8 +30,12 @@ extern "C" {
 #define $guard , $_guard
 #define $T , $_T
 
-#define fn_(/*(_ident(_Params...))(_T_Return) <$ext> | (_Params...)(_T_Return) $T*/...) pp_expand(pp_defer(__block_inline__fn_)(__param_expand__fn_ __VA_ARGS__))
-#define __param_expand__fn_(...) (__VA_ARGS__), pp_expand
+#define fn_(/*(_ident(_Params...))(_T_Return) <$ext> | (_Params...)(_T_Return) $T*/...) \
+    __step__fn_(__param_expand__fn_ __VA_ARGS__)
+#define __step__fn_(...) __step__fn___emit(__VA_ARGS__)
+#define __step__fn___emit(...) __block_inline__fn_(__VA_ARGS__)
+#define __param_expand__fn_(...) (__VA_ARGS__), __param_expand__fn___next
+#define __param_expand__fn___next(...) __VA_ARGS__
 #define __block_inline__fn_(...) pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
 #define __block_inline__fn_2(_ident_w_Params, _T_Return...) comp_syn__fn_(__param_extract__fn_ _ident_w_Params, _T_Return)
 #define __block_inline__fn_3(_ident_w_Params_OR_Params, _T_Return, _$ext...) pp_join(_, __block_inline__fn_3, _$ext)(_ident_w_Params_OR_Params, _T_Return)
@@ -84,27 +88,28 @@ extern "C" {
 // clang-format off
 #define comp_syn__fn_$_scope(_ident_w_Params, _T_Return...) \
 _T_Return _ident_w_Params { \
-    let_(__reserved_return, _T_Return*) = as$(_T_Return*)( \
-        (u8[Generic_match$(_T_Return, \
-            Generic_pattern$(void) 0, \
-            Generic_fallback_ sizeOf$(_T_Return))]){} \
-        ); \
-    $maybe_unused typedef TypeOfUnqual(*__reserved_return) ReturnType; \
+    let __reserved_return = as$(_T_Return*)( \
+        (u8[T_switch$((_T_Return)( \
+            T_case$((void)(0)), \
+            T_default_(sizeOf$(_T_Return)) \
+        ))]){} \
+    ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     if (false) { __step_return: goto __step_unscope; } \
     do
 #define comp_syn__$unscoped_fn \
     while (false); \
-    _Generic(ReturnT, \
-        void: ({ goto __step_return; }), \
-        Void: ({ goto __step_return; }), \
-        default: ({}) \
-    ); \
+    T_switch$((ReturnT)( \
+        T_case$((void)({ goto __step_return; })), \
+        T_case$((Void)({ goto __step_return; })), \
+        T_default_(({})) \
+    )); \
     if (false) { __step_unscope: \
-        if (Generic_match$(ReturnT, \
-            Generic_pattern$(void) false, \
-            Generic_fallback_ true) \
-        ) { return reservedReturn(); } \
+        if (T_switch$((ReturnT)( \
+            T_case$((void)(false)), \
+            T_default_(true) \
+        ))) { return reservedReturn(); } \
     } \
 }
 // clang-format on
@@ -116,12 +121,13 @@ struct fn__ScopeCounter {
 // clang-format off
 #define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) \
 _T_Return _ident_w_Params { \
-    volatile let_(__reserved_return, _T_Return*) = as$(_T_Return*)( \
-        (u8[Generic_match$(_T_Return, \
-            Generic_pattern$(void) 0, \
-            Generic_fallback_ sizeOf$(_T_Return))]){} \
-        ); \
-    $maybe_unused typedef TypeOfUnqual(*__reserved_return) ReturnType; \
+    volatile let __reserved_return = as$(_T_Return*)( \
+        (u8[T_switch$((_T_Return)( \
+            T_case$((void)(0)), \
+            T_default_(sizeOf$(_T_Return)) \
+        ))]){} \
+    ); \
+    $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     var __scope_counter   = (struct fn__ScopeCounter){ \
         .is_returning = false, .current_line = __LINE__ \
@@ -136,16 +142,16 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__$unguarded_fn \
         break; \
     } \
-    _Generic(ReturnT, \
-        void: ({ goto __step_return; }), \
-        Void: ({ goto __step_return; }), \
-        default: ({}) \
-    ); \
+    T_switch$((ReturnT)( \
+        T_case$((void)({ goto __step_return; })), \
+        T_case$((Void)({ goto __step_return; })), \
+        T_default_(({})) \
+    )); \
     if (false) { __step_unscope: \
-        if (Generic_match$(ReturnT, \
-            Generic_pattern$(void) false, \
-            Generic_fallback_ true) \
-        ) { return reservedReturn(); } \
+        if (T_switch$((ReturnT)( \
+            T_case$((void)(false)), \
+            T_default_(true) \
+        ))) { return reservedReturn(); } \
     } \
 }
 // clang-format on
@@ -171,23 +177,33 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
     ); \
     goto __step_return; \
 }) */
-#define comp_syn__return_(_Expr...) \
-    blk({ \
-        fn__memcpy(as$(u8*)(__reserved_return), as$(u8*)((ReturnT[1]){ [0] = _Expr }), sizeOf$(ReturnT)); \
-        goto __step_return; \
-    })
-#define comp_syn__return_void_0() \
-    blk({ \
-        claim_assert_static(isSameType$(ReturnT, void) || isSameType$(ReturnT, Void)); \
-        goto __step_return; \
-    })
-#define comp_syn__return_void_1(_Expr...) \
-    blk({ \
-        claim_assert_static(isSameType$(ReturnT, void) || isSameType$(ReturnT, Void)); \
-        claim_assert_static(isSameType$(TypeOf(({ _Expr; })), void) || isSameType$(TypeOf(({ _Expr; })), Void)); \
-        _Expr; \
-        goto __step_return; \
-    })
+#define comp_syn__return_(_Expr...) ({ \
+    fn__memcpy( \
+        as$(u8*)(__reserved_return), \
+        as$(u8*)((ReturnT[1]){ [0] = _Expr }), \
+        sizeOf$(ReturnT) \
+    ); \
+    goto __step_return; \
+})
+#define comp_syn__return_void_0() ({ \
+    claim_assert_static( \
+        isSameType$(ReturnT, void) \
+        || isSameType$(ReturnT, Void) \
+    ); \
+    goto __step_return; \
+})
+#define comp_syn__return_void_1(_Expr...) ({ \
+    claim_assert_static( \
+        isSameType$(ReturnT, void) \
+        || isSameType$(ReturnT, Void) \
+    ); \
+    claim_assert_static( \
+        isSameType$(TypeOf(({ _Expr; })), void) \
+        || isSameType$(TypeOf(({ _Expr; })), Void) \
+    ); \
+    _Expr; \
+    goto __step_return; \
+})
 
 #define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
@@ -220,9 +236,9 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
         } \
     }
 
-#define callFn(/*(_ident)(_Args...)*/) pp_expand(pp_exec_defer(__exec_callFn)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
-#define __exec_callFn() __callFn
-#define __callFn(_ident, _Args...) (ensureNonnull(_ident)(_Args))
+#define call(/*(_ident)(_Args...)*/...) pp_expand(pp_exec_defer(__exec_call)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
+#define __exec_call() __call
+#define __call(_ident, _Args...) (ensureNonnull(_ident)(_Args))
 
 // clang-format off
 /* if-else as expression block */
@@ -233,10 +249,10 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define __expr__2(_T_Break, _ext...) pp_cat(comp_syn__expr_, _ext)(_T_Break)
 #define comp_syn__expr_$_scope(_T_Break...) ({ \
     $local_label __step_break, __step_unscope; \
-    let __reserved_break = as$(_T_Break*)((u8[_Generic(_T_Break, \
-        void: 0, \
-        default: sizeOf$(_T_Break) \
-    )]){}); \
+    let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
+        T_case$((void)(0)), \
+        T_default_(sizeOf$(_T_Break)) \
+    ))]){}); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false; /* for integration with `eval_` */ \
@@ -246,18 +262,18 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define comp_syn__expr_$unscoped \
     /* while(false) */; \
 __step_unscope: \
-    _Generic(BreakT, \
-        void: ({}), \
-        default: reservedBreak() \
-    ); \
+    T_switch$((BreakT)( \
+        T_case$((void)({})), \
+        T_default_(reservedBreak()) \
+    )); \
 })
 #define comp_syn__expr_$_guard(_T_Break...) ({ \
     $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
-    volatile let __reserved_break = as$(_T_Break*)((u8[_Generic(_T_Break, \
-        void: 0, \
-        default: sizeOf$(_T_Break) \
-    )]){}); \
+    volatile let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
+        T_case$((void)(0)), \
+        T_default_(sizeOf$(_T_Break)) \
+    ))]){}); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     var __scope_counter = (struct fn__ScopeCounter){ \
@@ -281,10 +297,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
     } \
     __step_unscope: \
     if (!__has_broken) { goto __step_return_inner; } \
-    _Generic(BreakT, \
-        void: ({}), \
-        default: reservedBreak() \
-    ); \
+    T_switch$((BreakT)( \
+        T_case$((void)({})), \
+        T_default_(reservedBreak()) \
+    )); \
 })
 // clang-format on
 
@@ -330,10 +346,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__eval_2(_T_Break, _ext...) pp_cat(inline__eval_2, _ext)(_T_Break)
 #define inline__eval_2$_scope(_T_Break...) ({ \
     $local_label __step_break; \
-    let __reserved_break = as$(_T_Break*)((u8[_Generic(_T_Break, \
-        void: 0, \
-        default: sizeOf$(_T_Break) \
-    )]){}); \
+    let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
+        T_case$((void)(0)), \
+        T_default_(sizeOf$(_T_Break)) \
+    ))]){}); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false;\
@@ -342,10 +358,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__eval_$unscoped \
     /* while(false) */; \
     __step_break: \
-    _Generic(BreakT, \
-        void: ({}), \
-        default: reservedBreak() \
-    ); \
+    T_switch$((BreakT)( \
+        T_case$((void)({})), \
+        T_default_(reservedBreak()) \
+    )); \
 })
 // clang-format on
 

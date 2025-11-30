@@ -134,7 +134,7 @@ __step_unscope: \
 }
 // clang-format on
 
-#define areturn_(_expr...)           comp_syn__areturn_(_expr)
+#define areturn_(_expr...) comp_syn__areturn_(_expr)
 #define comp_syn__areturn_(_expr...) blk({ \
     debug_assert_nonnull(ctx); \
     *__reserved_return = *(TypeOf(ctx->ret->value)[1]){ [0] = _expr }; \
@@ -179,14 +179,14 @@ __step_unscope: \
         ctx->state = Co_State_pending; \
     } while (false)
 
-#define resume_(_ctx...)                  comp_syn__resume_(pp_uniqTok(ctx), _ctx)
+#define resume_(_ctx...) comp_syn__resume_(pp_uniqTok(ctx), _ctx)
 #define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
     debug_assert(__ctx->is_init); \
-    __callFn(as$(Co_FnWork*)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
+    __call(as$(Co_FnWork*)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
 })
 
-#define nosuspend_(_expr...)           comp_syn__nosuspend_(_expr)
+#define nosuspend_(_expr...) comp_syn__nosuspend_(_expr)
 #define comp_syn__nosuspend_(_expr...) blk_(__nosuspend, { \
     $local_label __step_suspend; \
     var ctx = (&lit$((Co_Ctx){ .is_init = true, .count = 0, .state = Co_State_pending })); \
@@ -205,7 +205,7 @@ __step_suspend: \
     blk_break_(__nosuspend, {}); \
 })
 
-#define Co_Ctx_from(_fnName, _args...)              comp_inline__Co_Ctx_from(_fnName, _args)
+#define Co_Ctx_from(_fnName, _args...) comp_inline__Co_Ctx_from(_fnName, _args)
 #define comp_inline__Co_Ctx_from(_fnName, _args...) lit$((Co_Ctx$(_fnName)){ \
     .fn = as$(Co_FnWork*)(_fnName), \
     .is_init = true, \

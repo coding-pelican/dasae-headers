@@ -126,13 +126,17 @@ extern "C" {
 #define __syn__as$__emit(_TDest...) (_TDest)
 #endif
 
-#define lit$(/*(_T){_initial...}*/... /*(_T)*/) __lit$__emit(__VA_ARGS__)
+#define lit$(/*(_T){_initial...}*/... /*(_T)*/) __lit$(__VA_ARGS__)
 #if defined(__cplusplus)
-#define __lit$__emit(...) (__lit$__expandT __VA_ARGS__)
+#define __lit$(...) (__lit$__expandT __VA_ARGS__)
 #define __lit$__expandT(_T...) _T
 #else
-#define __lit$__emit(...) (__VA_ARGS__)
+#define __lit$(...) (__VA_ARGS__)
 #endif
+
+#define lit0$(/*(_T)*/... /*(_T)*/) __lit0$(__step__lit0$__parse __VA_ARGS__)
+#define __step__lit0$__parse(_T...) _T
+#define __lit0$(_T...) (lit$((struct { _T val; }){}).val)
 
 #if UNUSED_CODE
 #define lit$(/*(_T){_initial...}*/... /*(_T)*/) __lit$__step(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
@@ -196,7 +200,7 @@ extern "C" {
 #define __typeV$__sep(_T...) _T, __typeV$__sepRaw
 #define __typeV$__sepRaw(_raw...) _raw
 #define __typeV$__emit(_T, _raw...) __typeV$__emitNext(_T, _raw)
-#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit$((_T){}), &copy(_raw), sizeOf$(_T)))
+#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit0$(_T), &copy(_raw), sizeOf$(_T)))
 
 #define typeO$(/*(_T)(_raw...)*/... /*(_T)*/) __typeO$__step(pp_defer(__typeO$__emit)(__typeO$__sep __VA_ARGS__))
 #define __typeO$__step(...) __VA_ARGS__
@@ -308,17 +312,50 @@ extern "C" {
 #define move(_p_val... /*(TypeOf(*_p_val))*/) comp_syn__move(_p_val)
 #define comp_syn__move(_p_val...) \
     ({ \
-        let_(__p_val, TypeOfUnqual(_p_val)) = _p_val; \
+        let_(__p_val, TypeOf(_p_val)) = _p_val; \
         let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
-        *__p_val = ((TypeOfUnqual(__val)){}); \
+        *__p_val = lit0$(TypeOf(__val)); \
         __val; \
     })
 #define copy(_val... /*(TypeOf(_val))*/) comp_syn__copy(_val)
 #define comp_syn__copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 
+#define T_switch$(/*(_T_Cond)(_T_Cases...)*/...) \
+    __step__T_switch$(__step__T_switch$__parseTCond __VA_ARGS__)
+#define __step__T_switch$(...) __T_switch$(__VA_ARGS__)
+#define __step__T_switch$__parseTCond(_T_Cond...) _T_Cond, __step__T_switch$__parseTCases
+#define __step__T_switch$__parseTCases(_T_Cases...) _T_Cases
+#define __T_switch$(_T_Cond, _T_Cases...) _Generic(as$($P$(_T_Cond))(null), _T_Cases)
+#define T_case$(/*(_T_Case)(_expr...)*/...) \
+    __step__T_case$(__step__T_case$__parseTCase __VA_ARGS__)
+#define __step__T_case$(...) __T_case$(__VA_ARGS__)
+#define __step__T_case$__parseTCase(_T_Case...) _T_Case,
+#define __T_case$(_T_Case, _expr...) /* clang-format off */ \
+    $P$(const _T_Case): \
+        _expr, \
+    $P$(_T_Case): \
+        _expr /* clang-format on */
+#define T_qual$(/*(_T_Case)(_expr...)*/...) \
+    __step__T_qual$(__step__T_qual$__parseTCase __VA_ARGS__)
+#define __step__T_qual$(...) __T_qual$(__VA_ARGS__)
+#define __step__T_qual$__parseTCase(_T_Case...) _T_Case,
+#define __T_qual$(_T_Case, _expr...) /* clang-format off */ \
+    $P$(_T_Case): \
+        _expr /* clang-format on */
+#define T_default_(_expr...) \
+    default: \
+        _expr
+
+#if UNUSED_CODE
+#define T_case$(_T_Case...) $P$(_T_Case)
+#define T_default_() default
+#endif /* UNUSED_CODE */
+
+#if UNUSED_CODE
 #define Generic_match$(T, _Pattern...) comp_syn__Generic_match$(T, _Pattern)
 #define Generic_pattern$(T) comp_syn__Generic_pattern$(T)
 #define Generic_fallback_ comp_syn__Generic_fallback_
+#endif /* UNUSED_CODE */
 
 #define blk comp_syn__blk
 #define blk_return comp_syn__blk_return

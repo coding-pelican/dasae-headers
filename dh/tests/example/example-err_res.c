@@ -41,7 +41,7 @@ $static fn_((handleDivision(i32 a, i32 b))(i32)) {
     ));
 }
 
-typedef variant_((math_ErrRes $fits u8)(
+typedef variant_((math_ErrRes $bits(8))(
     (math_ErrRes_i32, math_Err$i32),
     (math_ErrRes_f32, math_Err$f32)
 )) math_ErrRes;

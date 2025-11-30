@@ -182,7 +182,7 @@ __step_unscope: \
 #define comp_syn__resume_(__ctx, _ctx...) blk({ \
     let __ctx = ensureNonnull(_ctx); \
     debug_assert(__ctx->is_init); \
-    __callFn(as$(Co_FnWork*)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
+    __call(as$(Co_FnWork*)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
 })
 
 #define nosuspend_(_expr...) comp_syn__nosuspend_(_expr)

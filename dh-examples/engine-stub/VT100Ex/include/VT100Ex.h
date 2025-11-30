@@ -47,26 +47,26 @@ typedef struct engine_stub_VT100Ex_InputEvent_MouseWheel {
 
 struct engine_stub_VT100Ex_InputEvent {
     time_Instant timestamp;
-    variant_(
-        ()((engine_stub_VT100Ex_InputEvent_key_down, engine_stub_VT100Ex_InputEvent_KeyboardKey),
-           (engine_stub_VT100Ex_InputEvent_key_up, engine_stub_VT100Ex_InputEvent_KeyboardKey),
-           (engine_stub_VT100Ex_InputEvent_mouse_button_down, engine_stub_VT100Ex_InputEvent_MouseButton),
-           (engine_stub_VT100Ex_InputEvent_mouse_button_up, engine_stub_VT100Ex_InputEvent_MouseButton),
-           (engine_stub_VT100Ex_InputEvent_mouse_move, engine_stub_VT100Ex_InputEvent_MouseMove),
-           (engine_stub_VT100Ex_InputEvent_mouse_wheel, engine_stub_VT100Ex_InputEvent_MouseWheel))
-    ) data;
+    variant_(($bits(8))(
+        (engine_stub_VT100Ex_InputEvent_key_down, engine_stub_VT100Ex_InputEvent_KeyboardKey),
+        (engine_stub_VT100Ex_InputEvent_key_up, engine_stub_VT100Ex_InputEvent_KeyboardKey),
+        (engine_stub_VT100Ex_InputEvent_mouse_button_down, engine_stub_VT100Ex_InputEvent_MouseButton),
+        (engine_stub_VT100Ex_InputEvent_mouse_button_up, engine_stub_VT100Ex_InputEvent_MouseButton),
+        (engine_stub_VT100Ex_InputEvent_mouse_move, engine_stub_VT100Ex_InputEvent_MouseMove),
+        (engine_stub_VT100Ex_InputEvent_mouse_wheel, engine_stub_VT100Ex_InputEvent_MouseWheel)
+    )) data;
 };
 
 /* ========== Window Event Types =============================================== */
 
 typedef struct engine_stub_VT100Ex_WindowEvent {
     time_Instant timestamp;
-    variant_(
-        ()((engine_stub_VT100Ex_WindowEvent_resized, m_V2u32), (engine_stub_VT100Ex_WindowEvent_moved, m_V2i32),
-           (engine_stub_VT100Ex_WindowEvent_focus_gained, Void), (engine_stub_VT100Ex_WindowEvent_focus_lost, Void),
-           (engine_stub_VT100Ex_WindowEvent_minimized, Void), (engine_stub_VT100Ex_WindowEvent_maximized, Void),
-           (engine_stub_VT100Ex_WindowEvent_restored, Void), (engine_stub_VT100Ex_WindowEvent_close_requested, Void))
-    ) data;
+    variant_(($bits(8))(
+        (engine_stub_VT100Ex_WindowEvent_resized, m_V2u32), (engine_stub_VT100Ex_WindowEvent_moved, m_V2i32),
+        (engine_stub_VT100Ex_WindowEvent_focus_gained, Void), (engine_stub_VT100Ex_WindowEvent_focus_lost, Void),
+        (engine_stub_VT100Ex_WindowEvent_minimized, Void), (engine_stub_VT100Ex_WindowEvent_maximized, Void),
+        (engine_stub_VT100Ex_WindowEvent_restored, Void), (engine_stub_VT100Ex_WindowEvent_close_requested, Void)
+    )) data;
 } engine_stub_VT100Ex_WindowEvent;
 
 /* ========== Frame Buffer ===================================================== */

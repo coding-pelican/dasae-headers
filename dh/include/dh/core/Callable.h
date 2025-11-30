@@ -26,68 +26,75 @@ extern "C" {
 /*========== Callable Wrapper ===============================================*/
 
 // Define the callable wrapper structure - contains both function pointer and block
-#define Callable(_Params, T_Return...) comp_type_unnamed__Callable(_Params, T_Return)
-#define use_Callable(T_Callable, _Params, T_Return...) comp_gen__use_Callable(T_Callable, _Params, T_Return)
+#define Callable(_Params, _T_Return...) comp_type_unnamed__Callable(_Params, _T_Return)
+#define use_Callable(_T_Callable, _Params, _T_Return...) comp_gen__use_Callable(_T_Callable, _Params, _T_Return)
 
 /// Create a wrapper from a function pointer or block obj
-#define wrapLa(val_callableLamObj...) comp_op__wrapLa(val_callableLamObj)
-#define wrapFn(val_callableFnPtr...) comp_op__wrapFn(val_callableFnPtr)
+#define wrapLa(_laBlk...) comp_op__wrapLa(_laBlk)
+#define wrapFn(_fnPtr...) comp_op__wrapFn(_fnPtr)
 
-#define wrapLa$(T_Callable, val_callableLamObj...) comp_op__wrapLa$(T_Callable, val_callableLamObj)
-#define wrapFn$(T_Callable, val_callableFnPtr...) comp_op__wrapFn$(T_Callable, val_callableFnPtr)
+#define wrapLa$(_T_Callable, _laBlk...) comp_op__wrapLa$(_T_Callable, _laBlk)
+#define wrapFn$(_T_Callable, _fnPtr...) comp_op__wrapFn$(_T_Callable, _fnPtr)
 
 /// Invoke the callable wrapper with given arguments
-#define invoke(val_wrapper, _Args...) comp_op__invoke(pp_uniqTok(wrapper), val_wrapper, _Args)
+#define invoke(_callable, _Args...) comp_op__invoke(pp_uniqTok(callable), _callable, _Args)
 
 /*========== Macros and Implementations =====================================*/
 
 #if lang_mode == lang_mode_c && comp_type == comp_type_clang
-#define comp_type_unnamed__Callable(_Params, T_Return...) \
+#define comp_type_unnamed__Callable(_Params, _T_Return...) \
     struct { \
+        bool wraps_lambda; \
         union { \
-            fn_(((^lamObj)_Params)(T_Return)); \
-            fn_(((*fnPtr)_Params)(T_Return)); \
-        } callable; \
-        bool is_lam; \
+            fn_(((^laBlk)_Params)(_T_Return)); \
+            fn_(((*fnPtr)_Params)(_T_Return)); \
+        } payload; \
     }
-#define comp_gen__use_Callable(T_Callable, _Params, T_Return...) \
-    typedef struct T_Callable { \
+#define comp_gen__use_Callable(_T_Callable, _Params, _T_Return...) \
+    typedef struct _T_Callable { \
+        bool wraps_lambda; \
         union { \
-            fn_(((^lamObj)_Params)(T_Return)); \
-            fn_(((*fnPtr)_Params)(T_Return)); \
-        } callable; \
-        bool is_lam; \
-    } T_Callable
+            fn_(((^laBlk)_Params)(_T_Return)); \
+            fn_(((*fnPtr)_Params)(_T_Return)); \
+        } payload; \
+    } _T_Callable
 #else /* others */
-#define comp_type_unnamed__Callable(_Params, T_Return...) \
+#define comp_type_unnamed__Callable(_Params, _T_Return...) \
     struct { \
+        bool wraps_lambda; \
         union { \
-            fn_(((^lamObj)_Params)(T_Return)); \
-            fn_(((*fnPtr)_Params)(T_Return)); \
-        } callable; \
-        bool is_lam; \
+            fn_(((^laBlk)_Params)(_T_Return)); \
+            fn_(((*fnPtr)_Params)(_T_Return)); \
+        } payload; \
     }
-#define comp_gen__use_Callable(T_Callable, _Params, T_Return...) \
-    typedef struct T_Callable { \
+#define comp_gen__use_Callable(_T_Callable, _Params, _T_Return...) \
+    typedef struct _T_Callable { \
+        bool wraps_lambda; \
         union { \
-            fn_(((^lamObj)_Params)(T_Return)); \
-            fn_(((*fnPtr)_Params)(T_Return)); \
-        } callable; \
-        bool is_lam; \
-    } T_Callable
+            fn_(((^laBlk)_Params)(_T_Return)); \
+            fn_(((*fnPtr)_Params)(_T_Return)); \
+        } payload; \
+    } _T_Callable
 #endif /* others */
 
-#define comp_op__wrapLa(val_callableLamObj...) { .callable = { .lamObj = val_callableLamObj }, .is_lam = true }
-#define comp_op__wrapFn(val_callableFnPtr...) { .callable = { .fnPtr = val_callableFnPtr }, .is_lam = false }
+#define comp_op__wrapLa(_laBlk...) \
+    { \
+        .wraps_lambda = true, .callable = {.laBlk = _laBlk } \
+    }
+#define comp_op__wrapFn(_fnPtr...) \
+    { \
+        .wraps_lambda = false, .callable = {.fnPtr = _fnPtr } \
+    }
 
-#define comp_op__wrapLa$(T_Callable, val_callableLamObj...) ((T_Callable)wrapLa(val_callableLamObj))
-#define comp_op__wrapFn$(T_Callable, val_callableFnPtr...) ((T_Callable)wrapFn(val_callableFnPtr))
+#define comp_op__wrapLa$(_T_Callable, _laBlk...) ((_T_Callable)wrapLa(_laBlk))
+#define comp_op__wrapFn$(_T_Callable, _fnPtr...) ((_T_Callable)wrapFn(_fnPtr))
 
-#define comp_op__invoke(__wrapper, val_wrapper, _Args...) \
-    blk({ \
-        let __wrapper = val_wrapper; \
-        blk_return((__wrapper).is_lam ? (__wrapper).callable.lamObj(_Args) : (__wrapper).callable.fnPtr(_Args)); \
-    })
+#define comp_op__invoke(__callable, _callable, _Args...) blk({ \
+    let __callable = _callable; \
+    __callable.wraps_lambda \
+        ? __callable.payload.laBlk(_Args) \
+        : __callable.payload.fnPtr(_Args); \
+})
 
 /*========== Example Usage ==================================================*/
 

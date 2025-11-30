@@ -36,7 +36,7 @@ extern "C" {
 #define __step__claim_unreachable (debug_assert_trap_msg("Reached unreachable code"), unreachable)
 #define __step__claim_unreachable_msg(_msg...) (debug_assert_trap_msg(_msg), unreachable)
 #define __step__claim_unreachable_fmt(_fmt...) (debug_assert_trap_fmt(_fmt), unreachable)
-#define __step__claim_unreachable_val$(_T...) (claim_unreachable, lit$((_T){}))
+#define __step__claim_unreachable_val$(_T...) (claim_unreachable, lit0$((_T)))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 

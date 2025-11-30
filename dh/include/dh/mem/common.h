@@ -221,7 +221,7 @@ $extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
         return mem_endsWith(u_anyS(haystack), u_anyS(needle)); \
     }
 
-typedef enum mem_DelimType : u8 {
+typedef enum_(mem_DelimType $bits(8)) {
     mem_delimType_value = 0,
     mem_delimType_pattern = 1,
     mem_delimType_choice = 2,
@@ -267,17 +267,17 @@ $extern fn_((mem_TokenIter_rest(mem_TokenIter* self, TypeInfo type))(O$u_S_const
 #define T_use_mem_tokenizeValue$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(mem_tokenizeValue, _T)(S$(const _T) buf, _T value))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeValue(u_anyS(buf), u_anyV(value), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeValue(u_anyS(buf), u_anyV(value), lit0$((mem_TokenIter$(_T))).as_raw)); \
     }
 #define T_use_mem_tokenizePattern$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(mem_tokenizePattern, _T)(S$(const _T) buf, S$(const _T) pattern))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizePattern(u_anyS(buf), u_anyS(pattern), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizePattern(u_anyS(buf), u_anyS(pattern), lit0$((mem_TokenIter$(_T))).as_raw)); \
     }
 #define T_use_mem_tokenizeChoice$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(mem_tokenizeChoice, _T)(S$(const _T) buf, S$(const _T) choice))(mem_TokenIter$(_T))) { \
-        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeChoice(u_anyS(buf), u_anyS(choice), lit$((mem_TokenIter$(_T)){}).as_raw)); \
+        return *as$(mem_TokenIter$(_T)*)(mem_tokenizeChoice(u_anyS(buf), u_anyS(choice), lit0$((mem_TokenIter$(_T))).as_raw)); \
     }
 #define T_use_mem_TokenIter_reset$(_T...) \
     $attr($inline_always) \

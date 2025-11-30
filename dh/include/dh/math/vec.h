@@ -39,7 +39,7 @@
 #define m_V2f32_limit_max ((m_V2f32){ .x = f32_limit_max, .y = f32_limit_max })
 
 /* Construction */
-#define lit_m_V2f32_from(f32_x, f32_y) ((m_V2f32){ .x = (f32_x), .y = (f32_y) })
+#define m_V2f32_from_static(f32_x, f32_y) ((m_V2f32){ .x = (f32_x), .y = (f32_y) })
 $inline_always
 m_V2f32 m_V2f32_from(f32 x, f32 y);
 $inline_always
@@ -200,7 +200,7 @@ m_V2f32 m_V2f32_perp(m_V2f32 v);
 #define m_V3f32_limit_max ((m_V3f32){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max })
 
 /* Construction */
-#define lit_m_V3f32_from(f32_x, f32_y, f32_z) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z) })
+#define m_V3f32_from_static(f32_x, f32_y, f32_z) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z) })
 $inline_always
 m_V3f32 m_V3f32_from(f32 x, f32 y, f32 z);
 $inline_always
@@ -318,7 +318,7 @@ m_V3f32 m_V3f32_perp(m_V3f32 v);
 #define m_V4f32_limit_max ((m_V4f32){ .x = f32_limit_max, .y = f32_limit_max, .z = f32_limit_max, .w = f32_limit_max })
 
 /* Construction */
-#define lit_m_V4f32_from(f32_x, f32_y, f32_z, f32_w) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z), .w = (f32_w) })
+#define m_V4f32_from_static(f32_x, f32_y, f32_z, f32_w) ((m_V3f32){ .x = (f32_x), .y = (f32_y), .z = (f32_z), .w = (f32_w) })
 $inline_always
 m_V4f32 m_V4f32_from(f32 x, f32 y, f32 z, f32 w);
 $inline_always
@@ -428,7 +428,7 @@ m_V4f32 m_V4f32_reflect(m_V4f32 v, m_V4f32 normal);
 #define m_V2f64_limit_max ((m_V2f64){ .x = f64_limit_max, .y = f64_limit_max })
 
 /* Construction */
-#define lit_m_V2f64_from(f64_x, f64_y) ((m_V2f64){ .x = (f64_x), .y = (f64_y) })
+#define m_V2f64_from_static(f64_x, f64_y) ((m_V2f64){ .x = (f64_x), .y = (f64_y) })
 $inline_always
 m_V2f64 m_V2f64_from(f64 x, f64 y);
 $inline_always
@@ -572,7 +572,7 @@ m_V2f64 m_V2f64_perp(m_V2f64 v);
 #define m_V3f64_inf ((m_V3f64){ .x = f64_inf, .y = f64_inf, .z = f64_inf })
 
 /* Construction */
-#define lit_m_V3f64_from(f64_x, f64_y, f64_z) ((m_V3f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z) })
+#define m_V3f64_from_static(f64_x, f64_y, f64_z) ((m_V3f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z) })
 $inline_always
 m_V3f64 m_V3f64_from(f64 x, f64 y, f64 z);
 $inline_always
@@ -675,7 +675,7 @@ m_V3f64 m_V3f64_perp(m_V3f64 v);
 #define m_V4f64_limit_max ((m_V4f64){ .x = f64_limit_max, .y = f64_limit_max, .z = f64_limit_max, .w = f64_limit_max })
 
 /* Construction */
-#define lit_m_V4f64_from(f64_x, f64_y, f64_z, f64_w) ((m_V4f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z), .w = (f64_w) })
+#define m_V4f64_from_static(f64_x, f64_y, f64_z, f64_w) ((m_V4f64){ .x = (f64_x), .y = (f64_y), .z = (f64_z), .w = (f64_w) })
 $inline_always
 m_V4f64 m_V4f64_from(f64 x, f64 y, f64 z, f64 w);
 $inline_always
@@ -767,7 +767,7 @@ m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal);
 #define m_V2i32_limit_max ((m_V2i32){ .x = i32_limit_max, .y = i32_limit_max })
 
 /* Construction */
-#define lit_m_V2i32_from(i32_x, i32_y) ((m_V2i32){ .x = (i32_x), .y = (i32_y) })
+#define m_V2i32_from_static(i32_x, i32_y) ((m_V2i32){ .x = (i32_x), .y = (i32_y) })
 $inline_always
 m_V2i32 m_V2i32_from(i32 x, i32 y);
 $inline_always
@@ -851,7 +851,7 @@ m_V2i32 m_V2i32_perp(m_V2i32 v);
 #define m_V3i32_limit_max ((m_V3i32){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max })
 
 /* Construction */
-#define lit_m_V3i32_from(i32_x, i32_y, i32_z) ((m_V3i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z) })
+#define m_V3i32_from_static(i32_x, i32_y, i32_z) ((m_V3i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z) })
 $inline_always
 m_V3i32 m_V3i32_from(i32 x, i32 y, i32 z);
 $inline_always
@@ -933,7 +933,7 @@ m_V3i32 m_V3i32_perp(m_V3i32 v);
 #define m_V4i32_limit_max ((m_V4i32){ .x = i32_limit_max, .y = i32_limit_max, .z = i32_limit_max, .w = i32_limit_max })
 
 /* Construction */
-#define lit_m_V4i32_from(i32_x, i32_y, i32_z, i32_w) ((m_V4i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z), .w = (i32_w) })
+#define m_V4i32_from_static(i32_x, i32_y, i32_z, i32_w) ((m_V4i32){ .x = (i32_x), .y = (i32_y), .z = (i32_z), .w = (i32_w) })
 $inline_always
 m_V4i32 m_V4i32_from(i32 x, i32 y, i32 z, i32 w);
 $inline_always
@@ -1009,7 +1009,7 @@ i32 m_V4i32_dot(m_V4i32 lhs, m_V4i32 rhs);
 #define m_V2i64_limit_max ((m_V2i64){ .x = i64_limit_max, .y = i64_limit_max })
 
 /* Construction */
-#define lit_m_V2i64_from(i64_x, i64_y) ((m_V2i64){ .x = (i64_x), .y = (i64_y) })
+#define m_V2i64_from_static(i64_x, i64_y) ((m_V2i64){ .x = (i64_x), .y = (i64_y) })
 $inline_always
 m_V2i64 m_V2i64_from(i64 x, i64 y);
 $inline_always
@@ -1093,7 +1093,7 @@ m_V2i64 m_V2i64_perp(m_V2i64 v);
 #define m_V3i64_limit_max ((m_V3i64){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max })
 
 /* Construction */
-#define lit_m_V3i64_from(i64_x, i64_y, i64_z) ((m_V3i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z) })
+#define m_V3i64_from_static(i64_x, i64_y, i64_z) ((m_V3i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z) })
 $inline_always
 m_V3i64 m_V3i64_from(i64 x, i64 y, i64 z);
 $inline_always
@@ -1175,7 +1175,7 @@ m_V3i64 m_V3i64_perp(m_V3i64 v);
 #define m_V4i64_limit_max ((m_V4i64){ .x = i64_limit_max, .y = i64_limit_max, .z = i64_limit_max, .w = i64_limit_max })
 
 /* Construction */
-#define lit_m_V4i64_from(i64_x, i64_y, i64_z, i64_w) ((m_V4i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z), .w = (i64_w) })
+#define m_V4i64_from_static(i64_x, i64_y, i64_z, i64_w) ((m_V4i64){ .x = (i64_x), .y = (i64_y), .z = (i64_z), .w = (i64_w) })
 $inline_always
 m_V4i64 m_V4i64_from(i64 x, i64 y, i64 z, i64 w);
 $inline_always

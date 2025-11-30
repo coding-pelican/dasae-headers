@@ -46,7 +46,7 @@ extern "C" {
 
 /* --- Ordering Operators --- */
 
-typedef enum cmp_Ord : i8 {
+typedef enum_(cmp_Ord $bits(8)) {
     cmp_Ord_lt = -1,
     cmp_Ord_eq = 0,
     cmp_Ord_gt = 1,

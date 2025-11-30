@@ -2,14 +2,14 @@
 #ifndef Actor__included
 #define Actor__included 1
 
-#include "draft-async_ex.h"
+#include "dh/async.h"
 use_Co_Ctx$(Void);
 
 #include "dh/mem/Allocator.h"
 #include "dh/heap/Arena.h"
 
 // 메시지 타입
-typedef enum MessageType : u8 {
+typedef enum_(MessageType $bits(8)) {
     MessageType_none = 0,
     MessageType_increment = 1,
     MessageType_get_value = 2,
@@ -147,12 +147,11 @@ fn_((ActorSystem_runLoop(ActorSystem* self, bool endless))(void)) {
 // Actor 생성
 fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state))(E$P$Actor) $scope) {
     // 빈 슬롯 찾기
-    let free_actor = expr_(P$Actor $scope) if (self->next_id < self->actors.len) {
+    let free_actor = expr_(P$Actor $scope)(if (self->next_id < self->actors.len) {
         $break_(at$S(self->actors, self->next_id));
-    }
-    else {
+    }) expr_(else)({
         return_err(mem_Err_OutOfMemory());
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
 
     // Actor 초기화
     free_actor->coroutine = coroutine;

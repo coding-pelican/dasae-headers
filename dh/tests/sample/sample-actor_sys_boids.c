@@ -2,7 +2,7 @@
 #ifndef Actor__included
 #define Actor__included 1
 
-#include "draft-async_ex.h"
+#include "dh/async.h"
 use_Co_Ctx$(Void);
 
 #include "dh/mem/Allocator.h"
@@ -10,23 +10,23 @@ use_Co_Ctx$(Void);
 
 // 메시지 타입
 typedef enum MessageType : u8 {
-    MessageType_none      = 0,
+    MessageType_none = 0,
     MessageType_increment = 1,
     MessageType_get_value = 2,
-    MessageType_print     = 3,
+    MessageType_print = 3,
     MessageType_broadcast = 4,
-    MessageType_stop      = 5,
-    BoidMsg_neighbor_info  = 100,  // 이웃 정보
-    BoidMsg_update         = 101,  // 프레임 업데이트
-    BoidMsg_stop           = 102,
+    MessageType_stop = 5,
+    BoidMsg_neighbor_info = 100, // 이웃 정보
+    BoidMsg_update = 101,        // 프레임 업데이트
+    BoidMsg_stop = 102,
 } MessageType;
 
 // 메시지 구조 (작은 크기로 최적화)
 typedef struct Message {
     MessageType tag;
     union {
-        u64   u64_val;
-        i64   i64_val;
+        u64 u64_val;
+        i64 i64_val;
         void* ptr_val;
         A$$(48, u8) inline_data;
     } payload;
@@ -38,28 +38,28 @@ T_use$((Message)(P, O, E));
 typedef struct Mailbox {
     Message* head;
     Message* tail;
-    usize    count;
+    usize count;
 } Mailbox;
 
 // Actor 구조
 typedef struct Actor {
     Co_Ctx* coroutine; // 코루틴 컨텍스트
     Mailbox mailbox;   // 메시지 큐
-    P$raw  state;     // Actor 상태 (타입 소거)
-    u32     id;        // Actor ID
-    bool    active       : 1;
-    bool    has_messages : 1;
+    P$raw state;       // Actor 상태 (타입 소거)
+    u32 id;            // Actor ID
+    bool active       : 1;
+    bool has_messages : 1;
 } Actor;
 T_use$((Actor)(P, S));
 T_use_E$(P$Actor);
 
 // Actor 시스템 (Arena allocator 사용)
 typedef struct ActorSystem {
-    mem_Allocator allocator;     // 기본 allocator
-    heap_Arena    arena_actor;   // Actor 전용 arena
-    heap_Arena    arena_message; // 메시지 전용 arena
-    S$Actor     actors;        // Actor 슬라이스
-    usize         next_id;
+    mem_Allocator allocator;  // 기본 allocator
+    heap_Arena arena_actor;   // Actor 전용 arena
+    heap_Arena arena_message; // 메시지 전용 arena
+    S$Actor actors;           // Actor 슬라이스
+    usize next_id;
 } ActorSystem;
 T_use_E$(ActorSystem);
 
@@ -85,20 +85,20 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message));
 // Actor 시스템 초기화
 fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem) $scope) {
     ActorSystem sys = {
-        .allocator     = base_allocator,
-        .arena_actor   = heap_Arena_init(base_allocator),
+        .allocator = base_allocator,
+        .arena_actor = heap_Arena_init(base_allocator),
         .arena_message = heap_Arena_init(base_allocator),
-        .next_id       = 0,
+        .next_id = 0,
     };
     sys.actors = blk({
-        let gpa    = heap_Arena_allocator(&sys.arena_actor);
+        let gpa = heap_Arena_allocator(&sys.arena_actor);
         let actors = u_castS$((S$Actor)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), max_actors))));
         for_(($s(actors))(actor) {
-            actor->coroutine    = null;
-            actor->mailbox      = (Mailbox){ 0 };
-            actor->state        = null;
-            actor->id           = 0;
-            actor->active       = false;
+            actor->coroutine = null;
+            actor->mailbox = (Mailbox){ 0 };
+            actor->state = null;
+            actor->id = 0;
+            actor->active = false;
             actor->has_messages = false;
         });
         blk_return_(actors);
@@ -116,7 +116,7 @@ fn_((ActorSystem_fini(ActorSystem* self))(void)) {
 fn_((ActorSystem_runLoop(ActorSystem* self, bool endless))(void)) {
     io_stream_println(u8_l("[ActorSystem] Starting event loop"));
     while_(usize iteration = 0, true) {
-        bool  any_active         = false;
+        bool any_active = false;
         usize messages_processed = 0;
         // 모든 Actor 순회
         for_(($s(self->actors))(actor) {
@@ -146,18 +146,18 @@ fn_((ActorSystem_runLoop(ActorSystem* self, bool endless))(void)) {
 // Actor 생성
 fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state))(E$P$Actor) $scope) {
     // 빈 슬롯 찾기
-    let free_actor = expr_(P$Actor $scope) if (self-> next_id < self->actors.len) {
+    let free_actor = expr_(P$Actor $scope)(if (self->next_id < self->actors.len) {
         $break_(at$S(self->actors, self->next_id));
-    } else {
+    }) expr_(else)({
         return_err(mem_Err_OutOfMemory());
-    } $unscoped_(expr);
+    }) $unscoped_(expr);
 
     // Actor 초기화
-    free_actor->coroutine    = coroutine;
-    free_actor->mailbox      = (Mailbox){ 0 };
-    free_actor->state        = initial_state;
-    free_actor->id           = self->next_id++;
-    free_actor->active       = true;
+    free_actor->coroutine = coroutine;
+    free_actor->mailbox = (Mailbox){ 0 };
+    free_actor->state = initial_state;
+    free_actor->id = self->next_id++;
+    free_actor->active = true;
     free_actor->has_messages = false;
 
     return_ok(free_actor);
@@ -165,15 +165,15 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
 
 // 메시지 전송 (arena에서 할당)
 fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
-    let gpa       = heap_Arena_allocator(&sys->arena_message);
+    let gpa = heap_Arena_allocator(&sys->arena_message);
     // 메시지 복사 (arena에서)
-    let new_msg   = u_castP$((P$Message)(try_(mem_Allocator_create(gpa, typeInfo$(InnerType)))));
-    *new_msg      = msg;
+    let new_msg = u_castP$((P$Message)(try_(mem_Allocator_create(gpa, typeInfo$(InnerType)))));
+    *new_msg = msg;
     new_msg->next = null;
     // 메일박스에 추가
     if (self->mailbox.tail) {
         self->mailbox.tail->next = new_msg;
-        self->mailbox.tail       = new_msg;
+        self->mailbox.tail = new_msg;
     } else {
         self->mailbox.head = self->mailbox.tail = new_msg;
     }
@@ -232,13 +232,13 @@ typedef struct NeighborInfo {
 
 // Boids 파라미터
 typedef struct BoidsParams {
-    f32 separation_radius;  // 분리 반경
-    f32 alignment_radius;   // 정렬 반경
-    f32 cohesion_radius;    // 응집 반경
-    f32 separation_force;   // 분리 힘
-    f32 alignment_force;    // 정렬 힘
-    f32 cohesion_force;     // 응집 힘
-    f32 max_speed;          // 최대 속도
+    f32 separation_radius; // 분리 반경
+    f32 alignment_radius;  // 정렬 반경
+    f32 cohesion_radius;   // 응집 반경
+    f32 separation_force;  // 분리 힘
+    f32 alignment_force;   // 정렬 힘
+    f32 cohesion_force;    // 응집 힘
+    f32 max_speed;         // 최대 속도
     f32 world_width;
     f32 world_height;
 } BoidsParams;
@@ -305,12 +305,7 @@ fn_((m_V2f32_limit(m_V2f32 self, f32 max))(m_V2f32)) {
 
 T_use_S$(P$Actor);
 // Boid Actor
-async_fn_(boid_actor, (
-    var_(sys, ActorSystem*);
-    var_(self, P$Actor);
-    var_(params, const BoidsParams*);
-    var_(all_boids, S$P$Actor);
-), Void);
+async_fn_(boid_actor, (var_(sys, ActorSystem*); var_(self, P$Actor); var_(params, const BoidsParams*); var_(all_boids, S$P$Actor);), Void);
 
 async_fn_scope(boid_actor, {
     var_(msg, Message);
@@ -334,7 +329,7 @@ async_fn_scope(boid_actor, {
 
             let diff = m_V2f32_sub(info.pos, state->pos);
             let dist = m_V2f32_len(diff);
-            if (dist < 0.001f) { break; }  // 자기 자신
+            if (dist < 0.001f) { break; } // 자기 자신
 
             // Separation (분리) - 가까운 이웃 피하기
             if (dist < args->params->separation_radius) {
@@ -373,10 +368,10 @@ async_fn_scope(boid_actor, {
             m_V2f32_addAsg(&state->pos, state->vel);
 
             // 화면 wrap (월드 경계)
-            if (state->pos.x < 0) {state->pos.x += args->params->world_width;}
-            if (state->pos.x >= args->params->world_width) {state->pos.x -= args->params->world_width;}
-            if (state->pos.y < 0) {state->pos.y += args->params->world_height;}
-            if (state->pos.y >= args->params->world_height) {state->pos.y -= args->params->world_height;}
+            if (state->pos.x < 0) { state->pos.x += args->params->world_width; }
+            if (state->pos.x >= args->params->world_width) { state->pos.x -= args->params->world_width; }
+            if (state->pos.y < 0) { state->pos.y += args->params->world_height; }
+            if (state->pos.y >= args->params->world_height) { state->pos.y -= args->params->world_height; }
 
             // 다음 프레임을 위해 초기화
             state->neighbor_sum_pos = m_V2f32_zero;
@@ -392,7 +387,7 @@ async_fn_scope(boid_actor, {
             };
             Message neighbor_msg = {
                 .tag = BoidMsg_neighbor_info,
-                .payload = { },
+                .payload = {},
             };
             prim_memcpy(neighbor_msg.payload.inline_data.val, &my_info, sizeof(NeighborInfo));
 
@@ -426,7 +421,8 @@ async_fn_scope(boid_actor, {
             areturn_({});
         } break;
 
-        default: break;
+        default:
+            break;
         }
     }
 
@@ -450,14 +446,14 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     // Boids 파라미터
     BoidsParams params = {
         .separation_radius = 25.0f,
-        .alignment_radius  = 50.0f,
-        .cohesion_radius   = 50.0f,
-        .separation_force  = 0.05f,
-        .alignment_force   = 0.03f,
-        .cohesion_force    = 0.02f,
-        .max_speed         = 4.0f,
-        .world_width       = 1920.0f,
-        .world_height      = 1080.0f,
+        .alignment_radius = 50.0f,
+        .cohesion_radius = 50.0f,
+        .separation_force = 0.05f,
+        .alignment_force = 0.03f,
+        .cohesion_force = 0.02f,
+        .max_speed = 4.0f,
+        .world_width = 1920.0f,
+        .world_height = 1080.0f,
     };
 
     // Actor 시스템 초기화
@@ -489,13 +485,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     var rng = Rand_default;
     for_(($rf(0), $s(states), $s(ctxs), $s(actors))(i, state, ctx, actor_slot) {
-        *state = l$(BoidState)({
-            .self = actor_slot,
+        *state = lit$((BoidState){
+            .self = *actor_slot,
             .id = i,
             .pos = m_V2f32_from(
                 as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_width))),
-                as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))
-            ),
+                as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))),
             .vel = m_V2f32_from(
                 (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed,
                 (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed
@@ -507,8 +502,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         state->id = i;
         state->pos = m_V2f32_from(
             as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_width))),
-            as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))
-        );
+            as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height))));
         state->vel = m_V2f32_from(
             (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed,
             (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed
@@ -521,7 +515,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         ctx->args.sys = &sys;
         ctx->args.self = try_(ActorSystem_spawn(&sys, ctx->anyraw, state));
         ctx->args.params = &params;
-        ctx->args.all_boids = actors;  // 모든 boid 참조
+        ctx->args.all_boids = actors; // 모든 boid 참조
         *actor_slot = ctx->args.self;
 
         if (i % lit_num(10, 000) == 0) {
@@ -544,12 +538,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("  Messages: {:zu} MB\n"), msg_mem / lit_n$(usize)(1024) * 1024);
 
     // 시뮬레이션 실행
-    const usize num_frames = 100;  // 100 프레임
+    const usize num_frames = 100; // 100 프레임
     io_stream_println(u8_l("Running simulation for {:zu} frames..."), num_frames);
     start = time_Instant_now();
 
     for_(($r(0, num_frames))(frame) {
-            // 모든 boid에게 update 메시지
+        // 모든 boid에게 update 메시지
         Message update_msg = { .tag = BoidMsg_update };
         for_(($s(actors))(actor_slot) {
             let actor = *actor_slot;
@@ -575,7 +569,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     // 성능 메트릭
     let fps = as$(f64)(num_frames) / time_Duration_asSecs$f64(sim_time);
-    let boids_per_sec = as$(f64)(num_boids) * fps;
+    let boids_per_sec = as$(f64)(num_boids)*fps;
 
     io_stream_println(u8_l("\n=== Performance ==="));
     io_stream_println(u8_l("FPS: {:f}"), fps);

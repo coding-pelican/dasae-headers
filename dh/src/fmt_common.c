@@ -63,7 +63,7 @@ T_use_E$(ParsedFormat);
 $must_check
 $static fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat));
 
-typedef variant_((fmt_ArgValue $fits u8)(
+typedef variant_((fmt_ArgValue $bits(8))(
     (fmt_ArgValue_void, Void),
     (fmt_ArgValue_bool, bool),
     (fmt_ArgValue_u8, u8),
@@ -91,7 +91,7 @@ T_use$((fmt_ArgValue_Tag)(O, E));
 $must_check
 $static fn_((specToArgTag(fmt_Type type, fmt_Size size))(E$fmt_ArgValue_Tag));
 
-typedef variant_((fmt_ArgType $fits u8)(
+typedef variant_((fmt_ArgType $bits(8))(
     (fmt_ArgType_value, fmt_ArgValue),
     (fmt_ArgType_optional, O$fmt_ArgValue),
     (fmt_ArgType_error_result, E$fmt_ArgValue)

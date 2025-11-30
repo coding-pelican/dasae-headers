@@ -48,7 +48,7 @@ typedef struct engine_InputEvent_MouseScroll {
     m_V2f32 delta; /**< The amount the mouse wheel was scrolled */
 } engine_InputEvent_MouseScroll;
 
-typedef variant_((engine_InputEvent)(
+typedef variant_((engine_InputEvent $bits(8))(
     (engine_InputEvent_key_press, engine_InputEvent_KeyboardKey),
     (engine_InputEvent_key_hold, engine_InputEvent_KeyboardKey),
     (engine_InputEvent_key_release, engine_InputEvent_KeyboardKey),

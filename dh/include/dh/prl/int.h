@@ -667,15 +667,15 @@ isize isize_powSat(isize base, u32 exp);
 
 $inline_always
 u8 u8_add(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u8){})), as$(u8)(lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((u8)))), as$(u8)(lhs + rhs);
 }
 $inline_always
 u8 u8_sub(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u8){})), as$(u8)(lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((u8)))), as$(u8)(lhs - rhs);
 }
 $inline_always
 u8 u8_mul(u8 lhs, u8 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u8){})), as$(u8)(lhs * rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((u8)))), as$(u8)(lhs * rhs);
 }
 $inline_always
 u8 u8_div(u8 lhs, u8 rhs) {
@@ -690,7 +690,7 @@ u8 u8_pow(u8 base, u32 exp) {
     if (exp == 0) { return 1; }
     u8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(u8){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((u8))));
         result = as$(u8)(result * base);
     }
     return result;
@@ -706,15 +706,15 @@ u8 u8_shr(u8 x, u32 shift) {
 
 $inline_always
 u16 u16_add(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u16){})), as$(u16)(lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((u16)))), as$(u16)(lhs + rhs);
 }
 $inline_always
 u16 u16_sub(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u16){})), as$(u16)(lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((u16)))), as$(u16)(lhs - rhs);
 }
 $inline_always
 u16 u16_mul(u16 lhs, u16 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u16){})), as$(u16)(lhs * rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((u16)))), as$(u16)(lhs * rhs);
 }
 $inline_always
 u16 u16_div(u16 lhs, u16 rhs) {
@@ -729,7 +729,7 @@ u16 u16_pow(u16 base, u32 exp) {
     if (exp == 0) { return 1; }
     u16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(u16){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((u16))));
         result = as$(u16)(result * base);
     }
     return result;
@@ -745,15 +745,15 @@ u16 u16_shr(u16 x, u32 shift) {
 
 $inline_always
 u32 u32_add(u32 lhs, u32 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u32){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((u32)))), lhs + rhs;
 }
 $inline_always
 u32 u32_sub(u32 lhs, u32 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u32){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((u32)))), lhs - rhs;
 }
 $inline_always
 u32 u32_mul(u32 lhs, u32 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u32){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((u32)))), lhs * rhs;
 }
 $inline_always
 u32 u32_div(u32 lhs, u32 rhs) {
@@ -768,7 +768,7 @@ u32 u32_pow(u32 base, u32 exp) {
     if (exp == 0) { return 1; }
     u32 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(u32){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((u32))));
         result *= base;
     }
     return result;
@@ -784,15 +784,15 @@ u32 u32_shr(u32 x, u32 shift) {
 
 $inline_always
 u64 u64_add(u64 lhs, u64 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(u64){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((u64)))), lhs + rhs;
 }
 $inline_always
 u64 u64_sub(u64 lhs, u64 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(u64){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((u64)))), lhs - rhs;
 }
 $inline_always
 u64 u64_mul(u64 lhs, u64 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(u64){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((u64)))), lhs * rhs;
 }
 $inline_always
 u64 u64_div(u64 lhs, u64 rhs) {
@@ -807,7 +807,7 @@ u64 u64_pow(u64 base, u32 exp) {
     if (exp == 0) { return 1; }
     u64 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(u64){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((u64))));
         result *= base;
     }
     return result;
@@ -823,15 +823,15 @@ u64 u64_shr(u64 x, u32 shift) {
 
 $inline_always
 usize usize_add(usize lhs, usize rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(usize){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((usize)))), lhs + rhs;
 }
 $inline_always
 usize usize_sub(usize lhs, usize rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(usize){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((usize)))), lhs - rhs;
 }
 $inline_always
 usize usize_mul(usize lhs, usize rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(usize){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((usize)))), lhs * rhs;
 }
 $inline_always
 usize usize_div(usize lhs, usize rhs) {
@@ -846,7 +846,7 @@ usize usize_pow(usize base, u32 exp) {
     if (exp == 0) { return 1; }
     usize result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(usize){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((usize))));
         result *= base;
     }
     return result;
@@ -864,15 +864,15 @@ usize usize_shr(usize x, u32 shift) {
 
 $inline_always
 i8 i8_add(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i8){})), as$(i8)(lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((i8)))), as$(i8)(lhs + rhs);
 }
 $inline_always
 i8 i8_sub(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i8){})), as$(i8)(lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((i8)))), as$(i8)(lhs - rhs);
 }
 $inline_always
 i8 i8_mul(i8 lhs, i8 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i8){})), as$(i8)(lhs * rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((i8)))), as$(i8)(lhs * rhs);
 }
 $inline_always
 i8 i8_div(i8 lhs, i8 rhs) {
@@ -895,7 +895,7 @@ i8 i8_pow(i8 base, u32 exp) {
     if (exp == 0) { return 1; }
     i8 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(i8){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((i8))));
         result = as$(i8)(result * base);
     }
     return result;
@@ -911,15 +911,15 @@ i8 i8_shr(i8 x, u32 shift) {
 
 $inline_always
 i16 i16_add(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i16){})), as$(i16)(lhs + rhs);
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((i16)))), as$(i16)(lhs + rhs);
 }
 $inline_always
 i16 i16_sub(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i16){})), as$(i16)(lhs - rhs);
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((i16)))), as$(i16)(lhs - rhs);
 }
 $inline_always
 i16 i16_mul(i16 lhs, i16 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i16){})), as$(i16)(lhs * rhs);
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((i16)))), as$(i16)(lhs * rhs);
 }
 $inline_always
 i16 i16_div(i16 lhs, i16 rhs) {
@@ -942,7 +942,7 @@ i16 i16_pow(i16 base, u32 exp) {
     if (exp == 0) { return 1; }
     i16 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(i16){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((i16))));
         result = as$(i16)(result * base);
     }
     return result;
@@ -958,15 +958,15 @@ i16 i16_shr(i16 x, u32 shift) {
 
 $inline_always
 i32 i32_add(i32 lhs, i32 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i32){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((i32)))), lhs + rhs;
 }
 $inline_always
 i32 i32_sub(i32 lhs, i32 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i32){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((i32)))), lhs - rhs;
 }
 $inline_always
 i32 i32_mul(i32 lhs, i32 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i32){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((i32)))), lhs * rhs;
 }
 $inline_always
 i32 i32_div(i32 lhs, i32 rhs) {
@@ -989,7 +989,7 @@ i32 i32_pow(i32 base, u32 exp) {
     if (exp == 0) { return 1; }
     i32 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(i32){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((i32))));
         result *= base;
     }
     return result;
@@ -1005,15 +1005,15 @@ i32 i32_shr(i32 x, u32 shift) {
 
 $inline_always
 i64 i64_add(i64 lhs, i64 rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(i64){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((i64)))), lhs + rhs;
 }
 $inline_always
 i64 i64_sub(i64 lhs, i64 rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(i64){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((i64)))), lhs - rhs;
 }
 $inline_always
 i64 i64_mul(i64 lhs, i64 rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(i64){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((i64)))), lhs * rhs;
 }
 $inline_always
 i64 i64_div(i64 lhs, i64 rhs) {
@@ -1036,7 +1036,7 @@ i64 i64_pow(i64 base, u32 exp) {
     if (exp == 0) { return 1; }
     i64 result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(i64){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((i64))));
         result *= base;
     }
     return result;
@@ -1052,15 +1052,15 @@ i64 i64_shr(i64 x, u32 shift) {
 
 $inline_always
 isize isize_add(isize lhs, isize rhs) {
-    return debug_assert(!__builtin_add_overflow(lhs, rhs, &(isize){})), lhs + rhs;
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &lit0$((isize)))), lhs + rhs;
 }
 $inline_always
 isize isize_sub(isize lhs, isize rhs) {
-    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &(isize){})), lhs - rhs;
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &lit0$((isize)))), lhs - rhs;
 }
 $inline_always
 isize isize_mul(isize lhs, isize rhs) {
-    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &(isize){})), lhs * rhs;
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &lit0$((isize)))), lhs * rhs;
 }
 $inline_always
 isize isize_div(isize lhs, isize rhs) {
@@ -1083,7 +1083,7 @@ isize isize_pow(isize base, u32 exp) {
     if (exp == 0) { return 1; }
     isize result = 1;
     for (u32 i = 0; i < exp; ++i) {
-        debug_assert(!__builtin_mul_overflow(result, base, &(isize){}));
+        debug_assert(!__builtin_mul_overflow(result, base, &lit0$((isize))));
         result *= base;
     }
     return result;

@@ -4,7 +4,7 @@
 $static fn_((checkFlag(void))(bool)) { return false; }
 TEST_fn_("test breaking guard" $guard) {
     T_use_A$(10, i32);
-    S$i32 deferred_list = { .ptr = lit$((A$(10, i32)){}).val, .len = 0 };
+    S$i32 deferred_list = { .ptr = lit0$((A$(10, i32))).val, .len = 0 };
     let append = la_((S$i32 * list, i32 val)(void)) { list->ptr[list->len++] = val; };
 
     blk_defer_({

@@ -41,6 +41,7 @@ extern "C" {
 #include "prim/wchar.h"
 
 #include "prim/struct.h"
+#include "prim/enum.h"
 #include "prim/union.h"
 #include "prim/switch.h"
 
@@ -885,7 +886,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert_static(isInt$(IntType)); \
     let_(__lhs, IntType) = _lhs; \
     let_(__rhs, IntType) = _rhs; \
-    debug_assert(!__builtin_add_overflow(__lhs, __rhs, &(IntType){})); \
+    debug_assert(!__builtin_add_overflow(__lhs, __rhs, &lit0$((IntType)))); \
     as$(IntType)(__lhs + __rhs); \
 })
 #define __op__int_sub__step(_lhs, _rhs...) __op__int_sub(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -894,7 +895,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert_static(isInt$(IntType)); \
     let_(__lhs, IntType) = _lhs; \
     let_(__rhs, IntType) = _rhs; \
-    debug_assert(!__builtin_sub_overflow(__lhs, __rhs, &(IntType){})); \
+    debug_assert(!__builtin_sub_overflow(__lhs, __rhs, &lit0$((IntType)))); \
     as$(IntType)(__lhs - __rhs); \
 })
 #define __op__int_mul__step(_lhs, _rhs...) __op__int_mul(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -903,7 +904,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert_static(isInt$(IntType)); \
     let_(__lhs, IntType) = _lhs; \
     let_(__rhs, IntType) = _rhs; \
-    debug_assert(!__builtin_mul_overflow(__lhs, __rhs, &(IntType){})); \
+    debug_assert(!__builtin_mul_overflow(__lhs, __rhs, &lit0$((IntType)))); \
     as$(IntType)(__lhs * __rhs); \
 })
 #define __op__int_mulAdd(_x, _y, _z...) int_add(int_mul(_x, _y), _z)

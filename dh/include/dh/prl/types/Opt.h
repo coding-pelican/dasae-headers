@@ -193,14 +193,13 @@ typedef union O$Void {
     ({ \
         var __result = _Expr; \
         if (isNone(__result)) { \
-            __result.payload.some = _Generic( \
-                TypeOfUnqual(_DefaultExpr_OR_Body), \
-                void: ({ \
+            __result.payload.some = T_switch$((TypeOf(_DefaultExpr_OR_Body))( \
+                T_case$((void)({ \
                     $ignore_void _DefaultExpr_OR_Body; \
-                    lit$((TypeOf(__result.payload.some)){}); \
-                }), \
-                default: _DefaultExpr_OR_Body \
-            ); \
+                    lit0$((TypeOf(__result.payload.some))); \
+                })), \
+                T_default_(_DefaultExpr_OR_Body) \
+            )); \
         } \
         __result.payload.some; \
     }) \

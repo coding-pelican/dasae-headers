@@ -111,7 +111,7 @@ fn_((Thrd_getCpuCount(void))(usize)) {
                 .completed = > unreachable,
                 .detached = > self.thread.free(),
                 };
-            return callFn(f, self.fn_args);
+            return call(f, self.fn_args);
         }
     };
 
@@ -371,7 +371,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     .completed = > unreachable,
                     .detached = > self.thread.freeAndExit(),
                     };
-                return callFn(f, self.fn_args);
+                return call(f, self.fn_args);
             }
         };
 
@@ -521,7 +521,7 @@ fn_((Thrd_join(Thrd self))(void)) {
 
 #if UNUSED_CODE
 #undef Thrd_FnCtx$
-#define Thrd_FnCtx$(_fnName...)          __alias__Thrd_FnCtx$(_fnName)
+#define Thrd_FnCtx$(_fnName...) __alias__Thrd_FnCtx$(_fnName)
 #define __alias__Thrd_FnCtx$(_fnName...) pp_join($, Thrd_FnCtx, _fnName)
 
 #define Thrd_FnCtx_from$(/*(_fnName)(_args...)*/... /*(Thrd_FnCtx$(_fnName))*/) \

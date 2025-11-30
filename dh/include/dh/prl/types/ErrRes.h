@@ -221,7 +221,7 @@ typedef union E$Void {
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
                 void: ({ \
                     _DefaultExpr_OR_Body; \
-                    lit$((TypeOf(__result.payload.ok)){}); \
+                    lit0$((TypeOf(__result.payload.ok))); \
                 }), \
                 default: _DefaultExpr_OR_Body \
             ); \

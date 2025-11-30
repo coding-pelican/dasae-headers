@@ -398,7 +398,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // ============================================================================
 
 #define u_ret$ u_retV$
-#define u_retV$(_T) ((u_V$raw){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
+#define u_retV$(_T) ((u_V$raw){ .inner_type = typeInfo$(_T), .inner = &lit0$((_T)) })
 #define u_retA$(_N, _T) ((u_A$raw){ .inner_type = typeInfo$(FieldType$(A$$(_N, _T), val[0])), .inner = ref$A((A$$(_N, _T)){}) })
 #define u_retO$(_T) ((u_O$raw){ .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)), .inner = ((O$$(_T)){}).ref_raw })
 #define u_retE$(_T) ((u_E$raw){ .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)), .inner = ((E$$(_T)){}).ref_raw })

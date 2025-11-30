@@ -137,7 +137,7 @@ $static fn_((engineWritesWTHandleToInit(Inst* self))(bool)) {
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    var page = lit$((heap_Page){});
+    var page = lit0$((heap_Page));
     let gpa = heap_Page_allocator(&page);
     var inst = try_(Inst_init(gpa));
     defer_(Inst_fini(&inst, gpa));

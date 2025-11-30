@@ -52,13 +52,13 @@ extern "C" {
 
 // Process a single step in the pipe
 #define PIPE_STEP(prev_result_var, step_num, func, args...) \
-    var ret##step_num = Generic_match$( \
-        TypeOf(PIPE_APPLY((prev_result_var), func, args)), Generic_pattern$(void) blk({ \
+    var ret##step_num = T_switch$((TypeOf(PIPE_APPLY((prev_result_var), func, args)))( \
+        T_case$((void)({ \
             let_ignore = PIPE_APPLY((prev_result_var), func, args); \
-            blk_return make$((Void){}); \
-        }), \
-        Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
-    );
+            make$((Void){}); \
+        })), \
+        T_default_(PIPE_APPLY((prev_result_var), func, args)) \
+    ));
 
 // Generate a unique variable name for each step
 #define PIPE_RESULT(step_num) ret##step_num

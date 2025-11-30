@@ -119,7 +119,7 @@ errset_((fmt_Err)(
     TooFewArguments
 ));
 
-typedef enum fmt_Align : u8 {
+typedef enum_(fmt_Align $bits(8)) {
     fmt_Align_left = 0,
     fmt_Align_center = 1,
     fmt_Align_right = 2
@@ -133,7 +133,7 @@ $static let_(fmt_Align_values, A$$(3, u8)) = init$A({
 });
 $extern fn_((fmt_Align_parse(u8 ch))(O$fmt_Align));
 
-typedef enum fmt_TypePrefix : u8 {
+typedef enum_(fmt_TypePrefix $bits(8)) {
     fmt_TypePrefix_optional = 0,
     fmt_TypePrefix_error_result = 1,
 } fmt_TypePrefix;
@@ -144,7 +144,7 @@ $static let_(fmt_TypePrefix_values, A$$(2, u8)) = init$A({
 });
 $extern fn_((fmt_TypePrefix_parse(u8 ch))(O$fmt_TypePrefix));
 
-typedef enum fmt_Type : u8 {
+typedef enum_(fmt_Type $bits(8)) {
     fmt_Type_hex_lower = 0,
     fmt_Type_hex_upper,
     fmt_Type_octal,
@@ -185,7 +185,7 @@ $static let fmt_Type_values = A_from$((S_const$u8){
 });
 $extern fn_((fmt_Type_parse(S_const$u8 str))(O$fmt_Type));
 
-typedef enum fmt_Size : u8 {
+typedef enum_(fmt_Size $bits(8)) {
     fmt_Size_8 = 0,
     fmt_Size_16 = 1,
     fmt_Size_32 = 2,
@@ -207,7 +207,7 @@ $static let fmt_Size_values = A_from$((S_const$u8){
 $extern fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size));
 
 /// Sign display mode for numeric formatting
-typedef enum fmt_Sign : u8 {
+typedef enum_(fmt_Sign $bits(8)) {
     fmt_Sign_auto = 0, // Only show sign for negative numbers (default)
     fmt_Sign_always,   // Always show sign (+ or -)
     fmt_Sign_space,    // Show space for positive, - for negative

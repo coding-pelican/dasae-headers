@@ -38,13 +38,13 @@ static const fs_File_Mode fs_file_default_mode = pp_if_(plat_is_posix)(
     pp_else_(0)
 );
 
-typedef enum fs_File_OpenMode {
+typedef enum_(fs_File_OpenMode $bits(8)) {
     fs_File_OpenMode_read_only = 0,
     fs_File_OpenMode_write_only,
     fs_File_OpenMode_read_write,
 } fs_File_OpenMode;
 
-typedef enum fs_File_Lock {
+typedef enum_(fs_File_Lock $bits(8)) {
     fs_File_Lock_none = 0,
     fs_File_Lock_shared,
     fs_File_Lock_exclusive,

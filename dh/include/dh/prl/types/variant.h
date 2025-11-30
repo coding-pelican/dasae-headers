@@ -41,7 +41,7 @@ extern "C" {
 #define __gen__variant___parseAlias(...) pp_overload(__gen__variant___parseAlias, __VA_ARGS__)(__VA_ARGS__)
 #define __gen__variant___parseAlias_0() , , __gen__variant___parsePairEnumTypeList
 #define __gen__variant___parseAlias_1(_Alias...) _Alias, , __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...) _Alias, : _UnderlyingType, __gen__variant___parsePairEnumTypeList
+#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...) _Alias, _UnderlyingType, __gen__variant___parsePairEnumTypeList
 #define __gen__variant___parsePairEnumTypeList(_Pair_Enum_Type...) _Pair_Enum_Type
 #define __gen__variant___emit(_Alias, _EnumUnderlying, _Pair_Enum_Type...) \
     struct _Alias { \

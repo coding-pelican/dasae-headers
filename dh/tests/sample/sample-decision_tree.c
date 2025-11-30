@@ -27,7 +27,7 @@
 // Decision tree structures
 typedef struct TreeNode_Decision TreeNode_Decision;
 typedef struct TreeNode_Leaf TreeNode_Leaf;
-typedef variant_((TreeNode)(
+typedef variant_((TreeNode $bits(8))(
     (TreeNode_decision, struct TreeNode_Decision {
         variant_(TreeNode $T)* left;
         variant_(TreeNode $T)* right;

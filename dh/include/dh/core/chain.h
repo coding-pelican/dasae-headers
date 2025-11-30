@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef enum chain__State : u8 {
+typedef enum_(chain__State $bits(8)) {
     chain__State_none = 0,
     chain__State_init = 1,
     chain__State_eval = 2
@@ -466,7 +466,7 @@ typedef enum chain__State : u8 {
 #define __step__map$__emit(...) __map$(__VA_ARGS__)
 #define __map$(_T, _p_e, _xform...) expr_(_T* $scope)({ \
     if (__chain_state != chain__State_eval) { \
-        $break_(&(_T){}); \
+        $break_(&lit0$((_T))); \
     } else { \
         let _p_e = __reserved; \
         $break_(&copy(_xform)); \

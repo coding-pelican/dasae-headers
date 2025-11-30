@@ -103,13 +103,16 @@ dasae-headers was developed with inspiration from the syntax and standard librar
 **Development Tools**
 - Built-in testing framework for unit and integration tests
 - Multi-platform support for various architectures
-- Major compiler compatibility (clang, gcc (planned), msvc-cl (planned))
+- Major compiler compatibility (Clang, GCC, MSVC-CL (planned))
 
 ## Platform Support
 
-- **Operating Systems**: Windows, Unix, Linux, macOS, etc.
-- **CPU Architectures**: Considers 64/32-bit architectures
-- **Compiler Compatibility**: clang, gcc (planned), msvc-cl (planned), etc.
+- **Operating Systems**: Windows, Linux, macOS, etc.
+- **CPU Architectures**: 64/32-bit architectures
+- **Compiler Compatibility**: Clang, GCC, MSVC-CL (planned), etc.
+    - Clang:   19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+, TBU (Required with -std=gnu11)
+    - GCC:     15.1.0+ (Recommended) / 13.1.0+ (Supported) / N/A, TBU (Required with -std=gnu11)
+    - MSVC-CL: TBD
 
 ## 🚀 Getting Started
 
@@ -212,7 +215,7 @@ fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
 
 fn_((example(void))(void)) {
     // Create an array with 5 elements
-    var nums = A_from((i32){ 10, 20, 30, 40, 50 });
+    var nums = A_from$((i32){ 10, 20, 30, 40, 50 });
 
     // Create optional values
     let opt_value = some$((O$i32)(42));
@@ -278,7 +281,7 @@ fn_((example(void))(E$void) $guard) {
 ### Pattern Matching Example
 
 ```c
-typedef variant_((InputEvent)(
+typedef variant_((InputEvent $bits(8))(
     (InputEvent_press_key,      struct { i32 key; }),
     (InputEvent_release_button, struct { i8 button; })
 )) InputEvent;
@@ -286,25 +289,23 @@ T_use_O$(InputEvent);
 fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
-    if_some((pullInputEvent())(event)) {
-        match_(event) {
-            pattern_((InputEvent_press_key)(on_pressed)) {
-                debug_assert_true_fmt(
-                    -1 < on_pressed->key && on_pressed->key <= 255,
-                    "key is out of range"
-                );
-                break;
-            } $end(pattern);
-            pattern_((InputEvent_release_button)(on_released)) {
-                debug_assert_true_fmt(
-                    -1 < on_released->button && on_released->button <= 5,
-                    "button is out of range"
-                );
-                break;
-            } $end(pattern);
-            fallback_(claim_unreachable);
-        } $end(match);
-    }
+    if_some((pullInputEvent())(event)) match_(event) {
+        pattern_((InputEvent_press_key)(on_pressed)) {
+            debug_assert_true_fmt(
+                -1 < on_pressed->key && on_pressed->key <= 255,
+                "key is out of range"
+            );
+            break;
+        } $end(pattern);
+        pattern_((InputEvent_release_button)(on_released)) {
+            debug_assert_true_fmt(
+                -1 < on_released->button && on_released->button <= 5,
+                "button is out of range"
+            );
+            break;
+        } $end(pattern);
+        fallback_(claim_unreachable);
+    } $end(match);
 }
 ```
 

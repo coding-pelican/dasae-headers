@@ -62,8 +62,8 @@ fn_((printSet(ArrSet$u32 set))(void)) {
 }
 
 TEST_fn_("empty set" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    var set = try_(ArrSet_init$u32(gpa, 0, u32Hash, u32Eql, u_anyP(&(const Void){})));
+    let gpa = heap_Page_allocator(&lit0$((heap_Page){}));
+    var set = try_(ArrSet_init$u32(gpa, 0, u32Hash, u32Eql, u_anyP(&lit0$((const Void)))));
     defer_(ArrSet_fini$u32(&set, gpa));
 
     try_(TEST_expect(ArrSet_len$u32(set) == 0));
@@ -71,8 +71,8 @@ TEST_fn_("empty set" $guard) {
 } $unguarded_(TEST_fn);
 
 TEST_fn_("insert and contains - small set" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    var set = try_(ArrSet_init$u32(gpa, 8, u32Hash, u32Eql, u_anyP(&(const Void){})));
+    let gpa = heap_Page_allocator(&lit0$((heap_Page){}));
+    var set = try_(ArrSet_init$u32(gpa, 8, u32Hash, u32Eql, u_anyP(&lit0$((const Void)))));
     defer_(ArrSet_fini$u32(&set, gpa));
 
     // Insert a few items (below threshold for hash index)

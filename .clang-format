@@ -174,9 +174,11 @@ Macros:
   - "pp_case_(Expr)=pp_exec_ignore Expr"
   - "pp_default_(Expr)=pp_exec_ignore Expr"
 
+  - "T_switch$(Expr)=pp_exec_ignore Expr"
   - "T_decl$(Expr)=pp_exec_ignore Expr"
   - "T_impl$(Expr)=pp_exec_ignore Expr"
   - "T_use$(Expr)=pp_exec_ignore Expr"
+  - "enum_(Expr)=enum"
   - "errset_(Expr)=pp_exec_ignore Expr"
   - "variant_(Expr)=pp_exec_ignore Expr"
   - "chain$(Expr)=pp_exec_ignore Expr"
