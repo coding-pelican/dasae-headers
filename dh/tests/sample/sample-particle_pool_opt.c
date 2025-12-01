@@ -261,10 +261,14 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 
 #define State_particles_log2 (20ull)
 #define State_particles (1ull << State_particles_log2) // 2^20 = 1,048,576
-#define State_cell_size (20.0)                         // Was 10.0
-#define State_grid_width (100ull)                      // Was 200
-#define State_grid_height (100ull)                     // Was 200
-#define State_max_particles_per_cell (16ull)           // Was 32
+// #define State_cell_size (20.0)                         // Was 10.0
+// #define State_grid_width (100ull)                      // Was 200
+// #define State_grid_height (100ull)                     // Was 200
+// #define State_max_particles_per_cell (31ull)           // Was 32
+#define State_cell_size (10.0)              // 20.0 → 10.0
+#define State_grid_width (200ull)           // 100 → 200
+#define State_grid_height (200ull)          // 100 → 200
+#define State_max_particles_per_cell (3ull) // 16 → 63
 
 #define State_boundary_radius (500.0)
 #define State_gravity (9.81)
@@ -313,16 +317,8 @@ $static fn_((State_init(mp_ThrdPool* pool, S$Particle particles, S$Cell grid))(S
 $static fn_((State_clearGrid_worker(R range, u_V$raw params))(void));
 $static fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void));
 $static fn_((State_hashPosition(m_V2f64 pos))(usize));
-$static fn_((State_buildSpatialGrid(State* self))(void)) {
-    State_clearGrid(self->pool, self->grid);
-    for_(($r(0, State_particles), $s(self->particles))(i, particle) {
-        let cell_idx = State_hashPosition(particle->pos);
-        let pos = atom_fetchAdd(&S_at((self->grid)[cell_idx])->count, 1, atom_MemOrd_release);
-        if (pos < State_max_particles_per_cell) {
-            *A_at((S_at((self->grid)[cell_idx])->indices)[pos]) = i;
-        }
-    });
-}
+$static fn_((State_buildSpatialGrid_worker(R range, u_V$raw params))(void));
+$static fn_((State_buildSpatialGrid(State* self))(void));
 
 // ============================================
 // 중력 적용
@@ -352,6 +348,8 @@ $static fn_((State_updatePositions(State* self))(void));
 #include "dh/io/stream.h"
 #include "dh/time/Instant.h"
 
+#define enable_print_frame_stats 1
+
 $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
     io_stream_println(u8_l("\nStarting simulation for {:uz} frames at {:.1fl} FPS..."), frame_amount, State_target_fps);
     io_stream_println(u8_l("Using {:uz} threads (Pool)"), pool->threads.len);
@@ -367,7 +365,7 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
         if (frame % as$(usize)(State_target_fps) == 0) {
-            io_stream_println(
+            pp_if_(enable_print_frame_stats)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
                 (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
@@ -543,6 +541,58 @@ fn_((State_hashPosition(m_V2f64 pos))(usize)) {
     let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width)-1));
     let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height)-1));
     return gy_1 * State_grid_width + gx_1;
+}
+
+typedef struct State_BuildGridArgs {
+    S$Particle particles;
+    S$Cell grid; // shared global grid
+} State_BuildGridArgs;
+
+fn_((State_buildSpatialGrid_worker(R range, u_V$raw params))(void)) {
+    typedef struct LocalGrid {
+        var_(cells, A$$(State_grid_width * State_grid_height, Cell));
+    } LocalGrid;
+    $static $Thrd_local LocalGrid local_grid = {};
+    mem_setBytes0(mem_asBytes(&local_grid));
+    let args = u_castV$((State_BuildGridArgs)(params));
+    let particles = args.particles;
+    let grid = args.grid;
+
+    for_(((range), $s(particles))(i, particle) {
+        let cell_idx = State_hashPosition(particle->pos);
+        let local_cell = A_at((local_grid.cells)[cell_idx]);
+        if (local_cell->count < State_max_particles_per_cell) {
+            *A_at((local_cell->indices)[local_cell->count++]) = i;
+        }
+    });
+
+    for_(($r(0, State_grid_width * State_grid_height))(cell_idx) {
+        let local_cell = A_at((local_grid.cells)[cell_idx]);
+        if (local_cell->count == 0) { continue; }
+        let global_cell = S_at((grid)[cell_idx]);
+        // 전역 그리드에 공간 예약 (atomic 1회)
+        let global_pos = atom_fetchAdd(&global_cell->count, local_cell->count, atom_MemOrd_acq_rel);
+        // 예약된 공간에 로컬 데이터 복사 (atomic 불필요)
+        let copy_count = prim_min(local_cell->count, State_max_particles_per_cell - global_pos);
+        for_(($r(0, copy_count))(k) {
+            let src_idx = *A_at((local_cell->indices)[k]);
+            let dst_pos = global_pos + k;
+            if (dst_pos < State_max_particles_per_cell) {
+                *A_at((global_cell->indices)[dst_pos]) = src_idx;
+            }
+        });
+    });
+}
+
+fn_((State_buildSpatialGrid(State* self))(void)) {
+    State_clearGrid(self->pool, self->grid);
+    mp_parallel_for_pooled(
+        self->pool, $r(0, State_particles), State_buildSpatialGrid_worker,
+        u_anyV(lit$((State_BuildGridArgs){
+            .particles = self->particles,
+            .grid = self->grid,
+        }))
+    );
 }
 
 typedef struct State_ApplyGravityArgs {
