@@ -321,11 +321,11 @@ $static fn_((State_buildSpatialGrid_worker(R range, u_V$raw params))(void));
 $static fn_((State_buildSpatialGrid(State* self))(void));
 
 // ============================================
-// 중력 적용
+// 중력 적용 및 위치 업데이트
 // ============================================
 
-$static fn_((State_applyGravity_worker(R range, u_V$raw params))(void));
-$static fn_((State_applyGravity(State* self))(void));
+$static fn_((State_applyGravityAndUpdate_worker(R range, u_V$raw params))(void));
+$static fn_((State_applyGravityAndUpdate(State* self))(void));
 
 // ============================================
 // 충돌 처리
@@ -333,13 +333,6 @@ $static fn_((State_applyGravity(State* self))(void));
 
 $static fn_((State_handleCollisions_worker(R range, u_V$raw params))(void));
 $static fn_((State_handleCollisions(State* self))(void));
-
-// ============================================
-// 위치 업데이트 및 경계 처리
-// ============================================
-
-$static fn_((State_updatePositions_worker(R range, u_V$raw params))(void));
-$static fn_((State_updatePositions(State* self))(void));
 
 // ============================================
 // 시뮬레이션 루프
@@ -356,24 +349,20 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
 
     f64 total_time = 0.0;
     f64 build_grid_time = 0.0;
-    f64 gravity_time = 0.0;
+    f64 gravity_update_time = 0.0;
     f64 collision_time = 0.0;
-    f64 update_time = 0.0;
     for_(($r(0, frame_amount))(frame) {
         let frame_start = time_Instant_now();
         let t0 = time_Instant_now();
         State_buildSpatialGrid(self);
         let t1 = time_Instant_now();
         build_grid_time += time_Duration_asSecs$f64(time_Instant_durationSince(t1, t0));
-        State_applyGravity(self);
+        State_applyGravityAndUpdate(self);
         let t2 = time_Instant_now();
-        gravity_time += time_Duration_asSecs$f64(time_Instant_durationSince(t2, t1));
+        gravity_update_time += time_Duration_asSecs$f64(time_Instant_durationSince(t2, t1));
         State_handleCollisions(self);
         let t3 = time_Instant_now();
         collision_time += time_Duration_asSecs$f64(time_Instant_durationSince(t3, t2));
-        State_updatePositions(self);
-        let t4 = time_Instant_now();
-        update_time += time_Duration_asSecs$f64(time_Instant_durationSince(t4, t3));
         let frame_end = time_Instant_now();
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
@@ -390,26 +379,20 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
         u8_l("\n=== Performance Breakdown ===")
     );
     io_stream_println(
-        u8_l("Build Grid:   {:.2fl} ms ({:.1fl}%)"),
+        u8_l("Build Grid:     {:.2fl} ms ({:.1fl}%)"),
         (build_grid_time / as$(f64)(frame_amount)) * 1000.0,
         (build_grid_time / total_time) * 100.0
     );
     io_stream_println(
-        u8_l("Apply Gravity: {:.2fl} ms ({:.1fl}%)"),
-        (gravity_time / as$(f64)(frame_amount)) * 1000.0,
-        (gravity_time / total_time) * 100.0
+        u8_l("Gravity+Update: {:.2fl} ms ({:.1fl}%)"),
+        (gravity_update_time / as$(f64)(frame_amount)) * 1000.0,
+        (gravity_update_time / total_time) * 100.0
     );
     io_stream_println(
-        u8_l("Collisions:    {:.2fl} ms ({:.1fl}%)"),
+        u8_l("Collisions:     {:.2fl} ms ({:.1fl}%)"),
         (collision_time / as$(f64)(frame_amount)) * 1000.0,
         (collision_time / total_time) * 100.0
     );
-    io_stream_println(
-        u8_l("Update Pos:    {:.2fl} ms ({:.1fl}%)"),
-        (update_time / as$(f64)(frame_amount)) * 1000.0,
-        (update_time / total_time) * 100.0
-    );
-
     let avg_fps = as$(f64)(frame_amount) / total_time;
     let avg_spf = total_time / as$(f64)(frame_amount);
     io_stream_println(u8_l("\n=== Simulation Complete ===\n"));
@@ -640,44 +623,60 @@ fn_((State_buildSpatialGrid(State* self))(void)) {
     );
 }
 
-typedef struct State_ApplyGravityArgs {
+typedef struct State_ApplyGravityAndUpdateArgs {
     S$Particle particles;
-} State_ApplyGravityArgs;
+} State_ApplyGravityAndUpdateArgs;
 
-fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
-    let args = u_castV$((State_ApplyGravityArgs)(params));
+fn_((State_applyGravityAndUpdate_worker(R range, u_V$raw params))(void)) {
+    let args = u_castV$((State_ApplyGravityAndUpdateArgs)(params));
     let particles = args.particles;
     let targets = slice$S(particles, range);
 
-    // 상수 미리 계산
     let gravity_dt = State_gravity * State_delta_time;
+    let dt = State_delta_time;
 
     for_(($s(targets))(particle) {
         var self_i = *particle;
 
-        // 벡터 연산 최적화 (분기 제거)
+        // 중력 적용
         let px = self_i.pos.x;
         let py = self_i.pos.y;
         let d_sq = px * px + py * py;
-
-        // rsqrt 사용 (더 빠름)
         let inv_d = (d_sq > 0.01) ? (1.0 / flt_sqrt(d_sq)) : 0.0;
-        let force = gravity_dt / (d_sq + 0.01); // 0 나누기 방지
+        let force = gravity_dt / (d_sq + 0.01);
 
-        let ax = -px * inv_d * force;
-        let ay = -py * inv_d * force;
+        self_i.vel.x = (self_i.vel.x - px * inv_d * force) * State_damping;
+        self_i.vel.y = (self_i.vel.y - py * inv_d * force) * State_damping;
 
-        self_i.vel.x = (self_i.vel.x + ax) * State_damping;
-        self_i.vel.y = (self_i.vel.y + ay) * State_damping;
+        // 즉시 위치 업데이트 (메모리 접근 1회로 감소)
+        self_i.pos.x += self_i.vel.x * dt;
+        self_i.pos.y += self_i.vel.y * dt;
+
+        // 경계 처리
+        let d = flt_sqrt(self_i.pos.x * self_i.pos.x + self_i.pos.y * self_i.pos.y);
+        if (d > State_boundary_radius) {
+            let inv_d = 1.0 / d;
+            let nx = self_i.pos.x * inv_d;
+            let ny = self_i.pos.y * inv_d;
+
+            self_i.pos.x = nx * State_boundary_radius;
+            self_i.pos.y = ny * State_boundary_radius;
+
+            let dot = self_i.vel.x * nx + self_i.vel.y * ny;
+            self_i.vel.x -= nx * dot * 2.0;
+            self_i.vel.y -= ny * dot * 2.0;
+            self_i.vel.x *= 0.8;
+            self_i.vel.y *= 0.8;
+        }
 
         *particle = self_i;
     });
 }
 
-fn_((State_applyGravity(State* self))(void)) {
+fn_((State_applyGravityAndUpdate(State* self))(void)) {
     mp_parallel_for_pooled(
-        self->pool, $r(0, State_particles), State_applyGravity_worker,
-        u_anyV(lit$((State_ApplyGravityArgs){
+        self->pool, $r(0, State_particles), State_applyGravityAndUpdate_worker,
+        u_anyV(lit$((State_ApplyGravityAndUpdateArgs){
             .particles = self->particles,
         }))
     );
@@ -768,38 +767,6 @@ fn_((State_handleCollisions(State* self))(void)) {
         u_anyV(lit$((State_HandleCollisionsArgs){
             .particles = self->particles,
             .grid = self->grid,
-        }))
-    );
-}
-
-typedef struct State_UpdatePositionsArgs {
-    S$Particle particles;
-} State_UpdatePositionsArgs;
-
-fn_((State_updatePositions_worker(R range, u_V$raw params))(void)) {
-    let args = u_castV$((State_UpdatePositionsArgs)(params));
-    let particles = args.particles;
-    let targets = slice$S(particles, range);
-    for_(($s(targets))(particle) {
-        var self_i = *particle;
-        m_V2f64_addAsg(&self_i.pos, m_V2f64_scale(self_i.vel, State_delta_time));
-        let d = m_V2f64_len(self_i.pos);
-        if (d > State_boundary_radius) {
-            let n = m_V2f64_scaleInv(self_i.pos, d);
-            self_i.pos = m_V2f64_scale(n, State_boundary_radius);
-            let dot = m_V2f64_dot(self_i.vel, n);
-            m_V2f64_subAsg(&self_i.vel, m_V2f64_scale(n, dot * 2.0f));
-            m_V2f64_scaleAsg(&self_i.vel, 0.8);
-        }
-        *particle = self_i;
-    });
-}
-
-fn_((State_updatePositions(State* self))(void)) {
-    mp_parallel_for_pooled(
-        self->pool, $r(0, State_particles), State_updatePositions_worker,
-        u_anyV(lit$((State_UpdatePositionsArgs){
-            .particles = self->particles,
         }))
     );
 }
