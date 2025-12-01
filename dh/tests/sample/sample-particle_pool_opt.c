@@ -2,6 +2,9 @@
 #include "dh/Thrd.h"
 #include "dh/atom.h"
 
+#include "dh/io/stream.h"
+#include "dh/time/Instant.h"
+
 #define mp_max_thrd_count (32ull)
 #define mp_max_task_count (mp_max_thrd_count << 3ull)
 
@@ -81,17 +84,90 @@ typedef struct mp_ThrdPool {
 T_use_P$(mp_ThrdPool);
 T_use_E$(P$mp_ThrdPool);
 
-$static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, args)$scope) {
+// ============================================
+// ThreadPool 성능 측정 추가
+// ============================================
+
+typedef struct mp_ThrdPool_Stats {
+    atom_V$$(f64) total_work_time;
+    atom_V$$(f64) total_idle_time;
+    atom_V$$(f64) total_sync_time;
+    atom_V$$(usize) task_count;
+    atom_V$$(usize) wait_count;
+} mp_ThrdPool_Stats;
+
+$static mp_ThrdPool_Stats mp__worker_stats[mp_max_thrd_count];
+$static atom_V$$(bool) mp__stats_enabled = atom_V_init(false);
+
+$static fn_((mp_ThrdPool_enableStats(void))(void)) {
+    atom_V_store(&mp__stats_enabled, true, atom_MemOrd_release);
+    for_(($r(0, mp_max_thrd_count))(i) {
+        atom_V_store(&mp__worker_stats[i].total_work_time, 0.0, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].total_idle_time, 0.0, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].total_sync_time, 0.0, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].task_count, 0ull, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].wait_count, 0ull, atom_MemOrd_monotonic);
+    });
+}
+
+$static fn_((mp_ThrdPool_printStats(mp_ThrdPool* pool))(void)) {
+    if (!atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire)) { return; }
+    io_stream_println(u8_l("\n=== ThreadPool Performance Stats ==="));
+
+    f64 total_work = 0.0;
+    f64 total_idle = 0.0;
+    f64 total_sync = 0.0;
+    usize total_tasks = 0;
+    for_(($r(0, pool->threads.len))(i) {
+        let work = atom_V_load(&mp__worker_stats[i].total_work_time, atom_MemOrd_monotonic);
+        let idle = atom_V_load(&mp__worker_stats[i].total_idle_time, atom_MemOrd_monotonic);
+        let sync = atom_V_load(&mp__worker_stats[i].total_sync_time, atom_MemOrd_monotonic);
+        let tasks = atom_V_load(&mp__worker_stats[i].task_count, atom_MemOrd_monotonic);
+
+        let total = work + idle + sync;
+        let efficiency = (total > 0.0) ? (work / total * 100.0) : 0.0;
+
+        io_stream_println(
+            u8_l("Worker {:uz}: {:.1fl}% eff | Work: {:.2fl}s | Idle: {:.2fl}s | Sync: {:.2fl}s | Tasks: {:uz}"),
+            i, efficiency, work, idle, sync, tasks
+        );
+
+        total_work += work;
+        total_idle += idle;
+        total_sync += sync;
+        total_tasks += tasks;
+    });
+
+    let total = total_work + total_idle + total_sync;
+    let avg_efficiency = (total > 0.0) ? (total_work / total * 100.0) : 0.0;
+
+    io_stream_println(u8_l("\n--- Summary ---"));
+    io_stream_println(u8_l("Average Efficiency: {:.1fl}%"), avg_efficiency);
+    io_stream_println(u8_l("Total Work Time: {:.2fl}s"), total_work);
+    io_stream_println(u8_l("Total Idle Time: {:.2fl}s ({:.1fl}%)"), total_idle, (total_idle / total * 100.0));
+    io_stream_println(u8_l("Total Sync Time: {:.2fl}s ({:.1fl}%)"), total_sync, (total_sync / total * 100.0));
+    io_stream_println(u8_l("Total Tasks: {:uz}"), total_tasks);
+    io_stream_println(u8_l("Avg Tasks per Worker: {:.1fl}"), as$(f64)(total_tasks) / as$(f64)(pool->threads.len));
+}
+
+// Worker 함수 수정 (측정 추가)
+$static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, Void), ($ignore, args)$scope) {
     let pool = args->pool;
+    let worker_id = args->worker_id;
+    let stats_enabled = atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire);
+
     while (atom_V_load(&pool->running, atom_MemOrd_acquire)) {
+        let idle_start = time_Instant_now();
+
         O$$(P$mp_ThrdPool_Task) maybe_task = none();
+
+        let sync_start = time_Instant_now();
         with_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
-            /* clang-format off */
             while (atom_V_load(&pool->count, atom_MemOrd_acquire) == 0
-                && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
+                   && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
                 Thrd_Cond_wait(&pool->cond_has_task, &pool->mutex);
             }
-            /* clang-format on */
+
             if (atom_V_load(&pool->count, atom_MemOrd_monotonic) > 0) {
                 let tail = atom_V_load(&pool->tail, atom_MemOrd_monotonic);
                 asg_lit((&maybe_task)(some(S_at((pool->tasks)[tail % mp_max_task_count]))));
@@ -100,8 +176,24 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_monotonic);
             }
         }
+        let sync_end = time_Instant_now();
+
         if_some((maybe_task)(task)) {
+            let work_start = time_Instant_now();
             task->workerFn(task->range, task->params);
+            let work_end = time_Instant_now();
+
+            if (stats_enabled) {
+                let idle_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_start, idle_start));
+                let sync_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_end, sync_start));
+                let work_time = time_Duration_asSecs$f64(time_Instant_durationSince(work_end, work_start));
+
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].total_idle_time, idle_time, atom_MemOrd_monotonic);
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].total_sync_time, sync_time, atom_MemOrd_monotonic);
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].total_work_time, work_time, atom_MemOrd_monotonic);
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].task_count, 1, atom_MemOrd_monotonic);
+            }
+
             let remaining = atom_V_fetchSub(&pool->active_tasks, 1, atom_MemOrd_acq_rel) - 1;
             if (remaining == 0 && atom_V_load(&pool->count, atom_MemOrd_acquire) == 0) {
                 Thrd_Mtx_lock(&pool->mutex);
@@ -113,12 +205,13 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
     return_({});
 } $unscoped_(Thrd_fn);
 
+// ThreadPool 초기화 수정 (worker_id 전달)
 $attr($must_check)
 $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     let_(pool, mp_ThrdPool*) = u_castP$((mp_ThrdPool*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
     asg_lit((pool)($init((LitType){
         $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
-            gpa, typeInfo$(InnerType), mp_max_task_count
+            gpa, typeInfo$(InnerType), thrd_count
         )))))),
         $field((threads)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
             gpa, typeInfo$(InnerType), thrd_count
@@ -135,8 +228,8 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         .active_tasks = atom_V_init(0ull),
         .running = atom_V_init(true),
     })));
-    for_(($s(pool->workers), $s(pool->threads))(worker, thread) {
-        *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool));
+    for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
+        *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
         *thread = catch_((Thrd_spawn(
             Thrd_SpawnConfig_default, worker->as_raw
         ))($ignore, claim_unreachable));
@@ -338,9 +431,6 @@ $static fn_((State_handleCollisions(State* self))(void));
 // 시뮬레이션 루프
 // ============================================
 
-#include "dh/io/stream.h"
-#include "dh/time/Instant.h"
-
 #define enable_print_frame_stats 1
 
 fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
@@ -444,6 +534,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var gpa = heap_Page_allocator(&(heap_Page){});
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
     defer_(mp_ThrdPool_fini(pool, gpa));
+    mp_ThrdPool_enableStats();
+    defer_(mp_ThrdPool_printStats(pool));
     io_stream_println(u8_l("Using Thread Pool with {:uz} workers\n"), pool->threads.len);
 
     io_stream_println(u8_l("\nAllocating memory..."));
