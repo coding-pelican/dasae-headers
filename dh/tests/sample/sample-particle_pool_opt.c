@@ -350,17 +350,30 @@ $static fn_((State_updatePositions(State* self))(void));
 
 #define enable_print_frame_stats 1
 
-$static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
+fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
     io_stream_println(u8_l("\nStarting simulation for {:uz} frames at {:.1fl} FPS..."), frame_amount, State_target_fps);
     io_stream_println(u8_l("Using {:uz} threads (Pool)"), pool->threads.len);
 
     f64 total_time = 0.0;
+    f64 build_grid_time = 0.0;
+    f64 gravity_time = 0.0;
+    f64 collision_time = 0.0;
+    f64 update_time = 0.0;
     for_(($r(0, frame_amount))(frame) {
         let frame_start = time_Instant_now();
+        let t0 = time_Instant_now();
         State_buildSpatialGrid(self);
+        let t1 = time_Instant_now();
+        build_grid_time += time_Duration_asSecs$f64(time_Instant_durationSince(t1, t0));
         State_applyGravity(self);
+        let t2 = time_Instant_now();
+        gravity_time += time_Duration_asSecs$f64(time_Instant_durationSince(t2, t1));
         State_handleCollisions(self);
+        let t3 = time_Instant_now();
+        collision_time += time_Duration_asSecs$f64(time_Instant_durationSince(t3, t2));
         State_updatePositions(self);
+        let t4 = time_Instant_now();
+        update_time += time_Duration_asSecs$f64(time_Instant_durationSince(t4, t3));
         let frame_end = time_Instant_now();
         let frame_time = time_Instant_durationSince(frame_end, frame_start);
         total_time += time_Duration_asSecs$f64(frame_time);
@@ -372,6 +385,30 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
             );
         }
     });
+
+    io_stream_println(
+        u8_l("\n=== Performance Breakdown ===")
+    );
+    io_stream_println(
+        u8_l("Build Grid:   {:.2fl} ms ({:.1fl}%)"),
+        (build_grid_time / as$(f64)(frame_amount)) * 1000.0,
+        (build_grid_time / total_time) * 100.0
+    );
+    io_stream_println(
+        u8_l("Apply Gravity: {:.2fl} ms ({:.1fl}%)"),
+        (gravity_time / as$(f64)(frame_amount)) * 1000.0,
+        (gravity_time / total_time) * 100.0
+    );
+    io_stream_println(
+        u8_l("Collisions:    {:.2fl} ms ({:.1fl}%)"),
+        (collision_time / as$(f64)(frame_amount)) * 1000.0,
+        (collision_time / total_time) * 100.0
+    );
+    io_stream_println(
+        u8_l("Update Pos:    {:.2fl} ms ({:.1fl}%)"),
+        (update_time / as$(f64)(frame_amount)) * 1000.0,
+        (update_time / total_time) * 100.0
+    );
 
     let avg_fps = as$(f64)(frame_amount) / total_time;
     let avg_spf = total_time / as$(f64)(frame_amount);
@@ -404,6 +441,14 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     io_stream_println(u8_l("Particles: 2^{:uz} = {:uz}"), State_particles_log2, State_particles);
     io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
+    io_stream_println(u8_l("Cell Size: {:.1fl}"), State_cell_size);
+    io_stream_println(u8_l("Grid Width: {:uz}"), State_grid_width);
+    io_stream_println(u8_l("Grid Height: {:uz}"), State_grid_height);
+    io_stream_println(u8_l("Max Particles per Cell: {:uz}"), State_max_particles_per_cell);
+    io_stream_println(u8_l("Boundary Radius: {:.1fl}"), State_boundary_radius);
+    io_stream_println(u8_l("Gravity: {:.2fl}"), State_gravity);
+    io_stream_println(u8_l("Damping: {:.2fl}"), State_damping);
+    io_stream_println(u8_l("Delta Time: {:.2fl}"), State_delta_time);
     let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
     let cpu_count = prim_clamp(
         expr_(usize $scope)(if (1 < args.len) {
