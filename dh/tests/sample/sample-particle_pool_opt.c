@@ -648,16 +648,28 @@ fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
     let args = u_castV$((State_ApplyGravityArgs)(params));
     let particles = args.particles;
     let targets = slice$S(particles, range);
+
+    // 상수 미리 계산
+    let gravity_dt = State_gravity * State_delta_time;
+
     for_(($s(targets))(particle) {
         var self_i = *particle;
-        let dp = m_V2f64_neg(self_i.pos);
-        let d_sq = m_V2f64_lenSq(dp);         // ← No sqrt
-        if (d_sq > 0.01f) {                   // 0.1*0.1
-            let inv_d = 1.0 / flt_sqrt(d_sq); // Single sqrt + division
-            let force = State_gravity / d_sq;
-            m_V2f64_addAsg(&self_i.vel, m_V2f64_scale(dp, inv_d * force * State_delta_time));
-        }
-        m_V2f64_scaleAsg(&self_i.vel, State_damping);
+
+        // 벡터 연산 최적화 (분기 제거)
+        let px = self_i.pos.x;
+        let py = self_i.pos.y;
+        let d_sq = px * px + py * py;
+
+        // rsqrt 사용 (더 빠름)
+        let inv_d = (d_sq > 0.01) ? (1.0 / flt_sqrt(d_sq)) : 0.0;
+        let force = gravity_dt / (d_sq + 0.01); // 0 나누기 방지
+
+        let ax = -px * inv_d * force;
+        let ay = -py * inv_d * force;
+
+        self_i.vel.x = (self_i.vel.x + ax) * State_damping;
+        self_i.vel.y = (self_i.vel.y + ay) * State_damping;
+
         *particle = self_i;
     });
 }
@@ -682,6 +694,8 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
     let targets = slice$S(particles, range);
     let grid = args.grid;
     let collision_radius = 0.5;
+    let collision_radius_sq = collision_radius * collision_radius;
+    let check_radius_sq = (collision_radius * 3.0) * (collision_radius * 3.0); // 셀 범위
 
     for_(((range), $s(targets))(i, particle) {
         var self_i = *particle;
@@ -689,11 +703,10 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
         let gx = cell_idx % State_grid_width;
         let gy = cell_idx / State_grid_width;
 
-        for_(($r(0, 3))(dy_offset) {          // 0, 1, 2
-            for_(($r(0, 3))(dx_offset) {      // 0, 1, 2
-                let dx = as$(isize)(dx_offset)-1; // Convert to -1, 0, 1
+        for_(($r(0, 3))(dy_offset) {
+            for_(($r(0, 3))(dx_offset) {
+                let dx = as$(isize)(dx_offset)-1;
                 let dy = as$(isize)(dy_offset)-1;
-
                 let nx = as$(isize)(gx) + dx;
                 let ny = as$(isize)(gy) + dy;
 
@@ -703,25 +716,44 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
 
                 let neighbor_idx = as$(usize)(ny)*State_grid_width + as$(usize)(nx);
                 let neighbor = S_at((grid)[neighbor_idx]);
-                let count = atom_load(&neighbor->count, atom_MemOrd_acquire);
 
-                for (usize k = 0; k < count && k < State_max_particles_per_cell; ++k) {
+                // Relaxed load (충돌 단계에서는 grid가 변하지 않음)
+                let count = neighbor->count;
+                if (count == 0) { continue; }
+
+                let limit = prim_min(count, State_max_particles_per_cell);
+
+                // 셀 중심까지의 거리로 빠른 컬링
+                let cell_center_x = (as$(f64)(nx)-100.0) * State_cell_size + State_cell_size * 0.5;
+                let cell_center_y = (as$(f64)(ny)-100.0) * State_cell_size + State_cell_size * 0.5;
+                let dcx = cell_center_x - self_i.pos.x;
+                let dcy = cell_center_y - self_i.pos.y;
+                let dist_to_cell_sq = dcx * dcx + dcy * dcy;
+
+                // 셀이 너무 멀면 스킵
+                if (dist_to_cell_sq > check_radius_sq) { continue; }
+
+                for (usize k = 0; k < limit; ++k) {
                     let j = *A_at((neighbor->indices)[k]);
                     if (j <= i) { continue; }
 
-                    let self = &self_i;
                     let other = *S_at((particles)[j]);
-                    let dp_col = m_V2f64_sub(other.pos, self->pos);
-                    let d_sq = m_V2f64_lenSq(dp_col);
-                    let min_d = collision_radius * 2.0f;
-                    let min_d_sq = min_d * min_d;
-                    if (d_sq < min_d_sq && 0.001f < d_sq) {
-                        let inv_d = 1.0 / flt_sqrt(d_sq); // Or use fast_inv_sqrt if available
+                    let dpx = other.pos.x - self_i.pos.x;
+                    let dpy = other.pos.y - self_i.pos.y;
+                    let d_sq = dpx * dpx + dpy * dpy;
+
+                    // 상수로 비교 (min_d 계산 제거)
+                    let min_d_sq = collision_radius_sq * 4.0; // (2*r)^2
+
+                    if (d_sq < min_d_sq && d_sq > 0.001) {
+                        let inv_d = 1.0 / flt_sqrt(d_sq);
                         let d = d_sq * inv_d;
-                        let overlap = min_d - d;
-                        let n_norm = m_V2f64_scale(dp_col, inv_d); // Normalize using inv_d
-                        let separation = overlap * 0.5f;
-                        m_V2f64_subAsg(&self->pos, m_V2f64_scale(n_norm, separation));
+                        let overlap = (collision_radius * 2.0) - d;
+                        let nx = dpx * inv_d;
+                        let ny = dpy * inv_d;
+                        let separation = overlap * 0.5;
+                        self_i.pos.x -= nx * separation;
+                        self_i.pos.y -= ny * separation;
                     }
                 }
             });
