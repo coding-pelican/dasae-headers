@@ -39,12 +39,18 @@ extern "C" {
 #define T_impl_ArrMap$(_K, _V...) __comp_gen__T_impl_ArrMap$(_K, _V)
 #define T_use_ArrMap$(_K, _V...) __comp_gen__T_use_ArrMap$(_K, _V)
 
+typedef struct ArrMap_Index {
+    var_(hash, u64);
+    var_(index, usize);
+} ArrMap_Index;
+T_use$((ArrMap_Index)(O, E));
+
 /* ArrMap Raw Structure */
 typedef struct ArrMap {
     var_(keys, S$raw);
     var_(vals, S$raw);
     var_(cap, usize);
-    var_(index, u_P$raw); // Hash index (null if len < 8)
+    var_(index, O$ArrMap_Index); // Hash index (null if len < 8)
     var_(hashFn, u_HashCtxFn);
     var_(eqlFn, u_EqlCtxFn);
     var_(ctx, u_P_const$raw);

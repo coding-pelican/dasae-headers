@@ -140,7 +140,7 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
 /* clang-format off */
 #define T_use_ArrDeq_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrDeq_empty, _T))(ArrDeq$(_T))) { \
+    $static fn_((tpl_id(ArrDeq_empty, _T)(void))(ArrDeq$(_T))) { \
         return type$((ArrDeq$(_T))(ArrDeq_empty(typeInfo$(_T)))); \
     }
 #define T_use_ArrDeq_fromBuf$(_T...) \

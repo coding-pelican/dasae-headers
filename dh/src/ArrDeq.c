@@ -252,6 +252,7 @@ fn_((ArrDeq_shift(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
 
 fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    let_ignore = type;
     return (ArrDeq_Iter){
         .deque = self,
         .index = 0,

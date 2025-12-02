@@ -42,6 +42,28 @@ fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk
     return_ok(listToStk(try_(ArrList_clone(stkToList(self), type, gpa))));
 } $unscoped_(fn);
 
+claim_assert_static(sizeOf$(TypeOf(ArrStk_Parts)) == sizeOf$(TypeOf(ArrList_Parts)));
+claim_assert_static(alignOf$(TypeOf(ArrStk_Parts)) == alignOf$(TypeOf(ArrList_Parts)));
+claim_assert_static(offsetTo(ArrStk_Parts, buf) == offsetTo(ArrList_Parts, buf));
+claim_assert_static(offsetTo(ArrStk_Parts, len) == offsetTo(ArrList_Parts, len));
+debug_assert_static(offsetTo(ArrStk_Parts, type) == offsetTo(ArrList_Parts, type));
+
+#define listPartsAsStkParts(_p_parts...) _Generic( \
+    TypeOf(_p_parts), \
+    const ArrList_Parts*: as$(const ArrStk_Parts*)(_p_parts), \
+    ArrList_Parts*: as$(ArrStk_Parts*)(_p_parts) \
+)
+$inline_always
+$static fn_((listPartsToStkParts(ArrList_Parts self))(ArrStk_Parts)) { return *listPartsAsStkParts(&self); }
+
+fn_((ArrStk_fromParts(u_S$raw buf, usize len))(ArrStk)) {
+    return listToStk(ArrList_fromParts(buf, len));
+}
+
+fn_((ArrStk_intoParts(ArrStk* self, TypeInfo type))(ArrStk_Parts)) {
+    return listPartsToStkParts(ArrList_intoParts(stkAsList(self), type));
+}
+
 fn_((ArrStk_len(ArrStk self))(usize)) {
     return ArrList_len(stkToList(self));
 }

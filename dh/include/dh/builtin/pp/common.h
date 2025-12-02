@@ -89,9 +89,9 @@ extern "C" {
 
 #define __call__pp_if() pp_if_
 #define pp_if_(Cond...) pp_join(_, __pp_if, Cond)
-#define __pp_if_1(_Then, _Else...) __pp_if_1__then _Then
+#define __pp_if_1(_Then, ...) __pp_if_1__then _Then
 #define __pp_if_1__then(...) __VA_ARGS__
-#define __pp_if_0(_Then, _Else) __pp_if_0__else _Else
+#define __pp_if_0(_Then, _Else...) __pp_if_0__else _Else
 #define __pp_if_0__else(...) __VA_ARGS__
 #define pp_then_
 #define pp_else_

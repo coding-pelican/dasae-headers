@@ -59,6 +59,24 @@ fn_((ArrList_clone(ArrList self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrL
     return_ok(cloned);
 } $unscoped_(fn);
 
+fn_((ArrList_fromParts(u_S$raw buf, usize len))(ArrList)) {
+    return (ArrList){
+        .items = u_prefixS(buf, len).raw,
+        .cap = buf.len,
+        debug_only(.type = buf.type)
+    };
+}
+
+fn_((ArrList_intoParts(ArrList* self, TypeInfo type))(ArrList_Parts)) {
+    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    let parts = (ArrList_Parts){
+        .buf = ArrList_itemsCappedMut(*self, type).raw,
+        .len = self->items.len,
+        debug_only(.type = type)
+    };
+    return *self = ArrList_empty(type), parts;
+}
+
 fn_((ArrList_len(ArrList self))(usize)) {
     return self.items.len;
 }

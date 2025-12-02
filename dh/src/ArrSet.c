@@ -243,13 +243,6 @@ fn_((ArrSet_clone(ArrSet self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrSet
     return_ok(cloned);
 } $unscoped_(fn);
 
-fn_((ArrSet_move(ArrSet* self))(ArrSet)) {
-    claim_assert_nonnull(self);
-    ArrSet result = *self;
-    *self = ArrSet_empty(self->type, self->hashFn, self->eqlFn, self->ctx);
-    return result;
-}
-
 fn_((ArrSet_len(ArrSet self))(usize)) {
     return self.items.len;
 }

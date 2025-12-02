@@ -54,6 +54,24 @@ extern fn_((ArrList_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$A
 extern fn_((ArrList_fini(ArrList* self, TypeInfo type, mem_Allocator gpa))(void));
 extern fn_((ArrList_clone(ArrList self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrList)) $must_check;
 
+#if UNUSED_CODE
+extern fn_((ArrList_borrowParts(u_S$raw buf, usize len))(ArrList));
+extern fn_((ArrList_commitParts(ArrList self, u_S$raw buf, usize* len))(u_S$raw));
+#endif /* UNUSED_CODE */
+
+typedef struct ArrList_Parts {
+    var_(buf, S$raw);
+    var_(len, usize);
+    debug_only(var_(type, TypeInfo);)
+} ArrList_Parts;
+#define ArrList_Parts$$(_T...) __comp_anon__ArrList_Parts$$(_T)
+#define ArrList_Parts$(_T...) __comp_alias__ArrList_Parts$(_T)
+#define T_decl_ArrList_Parts$(_T...) __comp_gen__T_decl_ArrList_Parts$(_T)
+#define T_impl_ArrList_Parts$(_T...) __comp_gen__T_impl_ArrList_Parts$(_T)
+#define T_use_ArrList_Parts$(_T...) __comp_gen__T_use_ArrList_Parts$(_T)
+extern fn_((ArrList_fromParts(u_S$raw buf, usize len))(ArrList));
+extern fn_((ArrList_intoParts(ArrList* self, TypeInfo type))(ArrList_Parts));
+
 extern fn_((ArrList_len(ArrList self))(usize));
 extern fn_((ArrList_cap(ArrList self))(usize));
 extern fn_((ArrList_at(ArrList self, TypeInfo type, usize idx))(u_P_const$raw));
@@ -166,27 +184,10 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     T_decl_ArrList$(_T); \
     T_impl_ArrList$(_T)
 
-/* #define comp_op__ArrList_anonCast$(__anon, T_ArrList, var_anon...) blk({ \
-    let __anon = &var_anon; \
-    claim_assert_static(sizeOf(TypeOf(*__anon)) == sizeOf(T_ArrList)); \
-    claim_assert_static(alignOf(TypeOf(*__anon)) == alignOf(T_ArrList)); \
-    claim_assert_static(validateField(TypeOf(*__anon), base, FieldType$(T_ArrList, base))); \
-    claim_assert_static(validateField(TypeOf(*__anon), type, FieldType$(T_ArrList, type))); \
-    claim_assert_static(fieldAnonTypeCastable(T_ArrList, *__anon, Sli, items)); \
-    claim_assert_static(validateField(TypeOf(*__anon), cap, FieldType$(T_ArrList, cap))); \
-    claim_assert_static(validateField(TypeOf(*__anon), gpa, FieldType$(T_ArrList, gpa))); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), base) == fieldPadding(T_ArrList, base)); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), type) == fieldPadding(T_ArrList, type)); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), items) == fieldPadding(T_ArrList, items)); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), cap) == fieldPadding(T_ArrList, cap)); \
-    claim_assert_static(fieldPadding(TypeOf(*__anon), gpa) == fieldPadding(T_ArrList, gpa)); \
-    blk_return rawderef(as$($P$(T_ArrList))(__anon)); \
-}) */
-
 /* clang-format off */
 #define T_use_ArrList_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrList_empty, _T))(ArrList$(_T))) { \
+    $static fn_((tpl_id(ArrList_empty, _T)(void))(ArrList$(_T))) { \
         return type$((ArrList$(_T))(ArrList_empty(typeInfo$(_T)))); \
     }
 #define T_use_ArrList_fromBuf$(_T...) \
@@ -209,6 +210,42 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrList_clone, _T)(ArrList$(_T) self, mem_Allocator gpa))(E$($set(mem_Err)(ArrList$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrList_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped_(fn)
+
+#define __comp_anon__ArrList_Parts$$(_T...) \
+    union { \
+        struct { \
+            var_(buf, S$$(_T)); \
+            var_(len, usize); \
+            debug_only(var_(type, TypeInfo);) \
+        }; \
+        var_(as_raw $like_ref, ArrList_Parts); \
+    }
+#define __comp_alias__ArrList_Parts$(_T...) pp_join($, ArrList_Parts, _T)
+#define __comp_gen__T_decl_ArrList_Parts$(_T...) \
+    $maybe_unused typedef union ArrList_Parts$(_T) ArrList_Parts$(_T)
+#define __comp_gen__T_impl_ArrList_Parts$(_T...) \
+    union ArrList_Parts$(_T) { \
+        struct { \
+            var_(buf, S$(_T)); \
+            var_(len, usize); \
+            debug_only(var_(type, TypeInfo);) \
+        }; \
+        var_(as_raw $like_ref, ArrList_Parts); \
+    }
+#define __comp_gen__T_use_ArrList_Parts$(_T...) \
+    T_decl_ArrList_Parts$(_T); \
+    T_impl_ArrList_Parts$(_T)
+
+#define T_use_ArrList_fromParts$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrList_fromParts, _T)(S$(_T) buf, usize len))(ArrList$(_T))) { \
+        return type$((ArrList$(_T))(ArrList_fromParts(u_anyS(buf), len))); \
+    }
+#define T_use_ArrList_intoParts$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrList_intoParts, _T)(P$$(ArrList$(_T)) self))(ArrList_Parts$(_T))) { \
+        return type$((ArrList_Parts$(_T))(ArrList_intoParts(self->as_raw, typeInfo$(_T)))); \
+    }
 
 #define T_use_ArrList_len$(_T...) \
     $attr($inline_always) \

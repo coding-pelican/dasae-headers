@@ -200,7 +200,7 @@ extern "C" {
 #define __typeV$__sep(_T...) _T, __typeV$__sepRaw
 #define __typeV$__sepRaw(_raw...) _raw
 #define __typeV$__emit(_T, _raw...) __typeV$__emitNext(_T, _raw)
-#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit0$(_T), &copy(_raw), sizeOf$(_T)))
+#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit0$((_T)), &copy(_raw), sizeOf$(_T)))
 
 #define typeO$(/*(_T)(_raw...)*/... /*(_T)*/) __typeO$__step(pp_defer(__typeO$__emit)(__typeO$__sep __VA_ARGS__))
 #define __typeO$__step(...) __VA_ARGS__
@@ -225,7 +225,7 @@ extern "C" {
         claim_assert_nonnull(__p_lhs); \
         claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
         claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-        claim_assert_static(isSameType$(TypeOf(*__p_lhs), TypeOf(__rhs))); \
+        claim_assert_static(isSameType$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
         *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
         __p_lhs; \
     })
@@ -238,7 +238,7 @@ extern "C" {
         claim_assert_nonnull(__p_lhs); \
         claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
         claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-        pp_foreach(__op__asg_compat__assert, (TypeOf(*__p_lhs), TypeOf(__rhs)), _fields); \
+        pp_foreach(__op__asg_compat__assert, (TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs)), _fields); \
         *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
         __p_lhs; \
     })
@@ -314,7 +314,7 @@ extern "C" {
     ({ \
         let_(__p_val, TypeOf(_p_val)) = _p_val; \
         let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
-        *__p_val = lit0$(TypeOf(__val)); \
+        *__p_val = lit0$((TypeOf(__val))); \
         __val; \
     })
 #define copy(_val... /*(TypeOf(_val))*/) comp_syn__copy(_val)

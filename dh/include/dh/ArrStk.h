@@ -55,6 +55,19 @@ extern fn_((ArrStk_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$Ar
 extern fn_((ArrStk_fini(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void));
 extern fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk)) $must_check;
 
+typedef struct ArrStk_Parts {
+    var_(buf, S$raw);
+    var_(len, usize);
+    debug_only(var_(type, TypeInfo);)
+} ArrStk_Parts;
+#define ArrStk_Parts$$(_T...) __comp_anon__ArrStk_Parts$$(_T)
+#define ArrStk_Parts$(_T...) __comp_alias__ArrStk_Parts$(_T)
+#define T_decl_ArrStk_Parts$(_T...) __comp_gen__T_use_ArrStk_Parts$(_T)
+#define T_impl_ArrStk_Parts$(_T...) __comp_gen__T_impl_ArrStk_Parts$(_T)
+#define T_use_ArrStk_Parts$(_T...) __comp_gen__T_use_ArrStk_Parts$(_T)
+extern fn_((ArrStk_fromParts(u_S$raw buf, usize len))(ArrStk));
+extern fn_((ArrStk_intoParts(ArrStk* self, TypeInfo type))(ArrStk_Parts));
+
 extern fn_((ArrStk_len(ArrStk self))(usize));
 extern fn_((ArrStk_cap(ArrStk self))(usize));
 extern fn_((ArrStk_at(ArrStk self, TypeInfo type, usize idx))(u_P_const$raw));
@@ -133,7 +146,7 @@ extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 /* clang-format off */
 #define T_use_ArrStk_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_empty, _T))(ArrStk$(_T))) { \
+    $static fn_((tpl_id(ArrStk_empty, _T)(void))(ArrStk$(_T))) { \
         return type$((ArrStk$(_T))(ArrStk_empty(typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_fromBuf$(_T...) \
@@ -156,6 +169,42 @@ extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrStk_clone, _T)(ArrStk$(_T) self, mem_Allocator gpa))(E$($set(mem_Err)(ArrStk$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrStk_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped_(fn)
+
+#define __comp_anon__ArrStk_Parts$$(_T...) \
+    union { \
+        struct { \
+            var_(buf, S$$(_T)); \
+            var_(len, usize); \
+            debug_only(var_(type, TypeInfo);) \
+        }; \
+        var_(as_raw $like_ref, ArrStk_Parts); \
+    }
+#define __comp_alias__ArrStk_Parts$(_T...) pp_join($, ArrStk_Parts, _T)
+#define __comp_gen__T_decl_ArrStk_Parts$(_T...) \
+    $maybe_unused typedef union ArrStk_Parts$(_T) ArrStk_Parts$(_T)
+#define __comp_gen__T_impl_ArrStk_Parts$(_T...) \
+    union ArrStk_Parts$(_T) { \
+        struct { \
+            var_(buf, S$(_T)); \
+            var_(len, usize); \
+            debug_only(var_(type, TypeInfo);) \
+        }; \
+        var_(as_raw $like_ref, ArrStk_Parts); \
+    }
+#define __comp_gen__T_use_ArrStk_Parts$(_T...) \
+    T_decl_ArrStk_Parts$(_T); \
+    T_impl_ArrStk_Parts$(_T)
+
+#define T_use_ArrStk_fromParts$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrStk_fromParts, _T)(S$(_T) buf, usize len))(ArrStk$(_T))) { \
+        return type$((ArrStk$(_T))(ArrStk_fromParts(u_anyS(buf), len))); \
+    }
+#define T_use_ArrStk_intoParts$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrStk_intoParts, _T)(P$$(ArrStk$(_T)) self))(ArrStk_Parts$(_T))) { \
+        return type$((ArrStk_Parts$(_T))(ArrStk_intoParts(self->as_raw, typeInfo$(_T)))); \
+    }
 
 #define T_use_ArrStk_len$(_T...) \
     $attr($inline_always) \

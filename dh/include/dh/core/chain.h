@@ -39,6 +39,8 @@ typedef enum_(chain__State $bits(8)) {
 #define map$(/*(_T)(_p_e)_xform*/...) __step__map$(__step__map$__parse __VA_ARGS__)
 #define fold_(/*(_default), (_acc, _p_e)_combine*/...) __step__fold_(__VA_ARGS__)
 #define reduce_(/*(_acc, _p_e)_combine*/...) __step__reduce_(__VA_ARGS__)
+#define all_(/*(_p_e)_pred*/...) __step__all_(__step__all___capt __VA_ARGS__)
+#define any_(/*(_p_e)_pred*/...) __step__any_(__step__any___capt __VA_ARGS__)
 #if UNUSED_CODE
 #define collect_(/*(_gpa)*/...) __step__collect_(__step__collect___gpa __VA_ARGS__)
 #define collectFixed_(/*(_out)*/...) __step__collectFixed_(__step__collectFixed___out __VA_ARGS__)
@@ -448,8 +450,7 @@ typedef enum_(chain__State $bits(8)) {
 })
 
 #define __step__filter_(...) __step__filter___emit(__VA_ARGS__)
-#define __step__filter___capt(_p_e...) _p_e, __step__filter___pred
-#define __step__filter___pred(_pred...) _pred
+#define __step__filter___capt(_p_e...) _p_e,
 #define __step__filter___emit(...) __filter_(__VA_ARGS__)
 #define __filter_(_p_e, _pred...) ({ \
     if (__chain_state != chain__State_eval) { \
@@ -485,6 +486,7 @@ typedef enum_(chain__State $bits(8)) {
         $break_(_combine); \
     }; \
 }) $unscoped_(expr)
+/* TODO: support tryFold_ */
 
 #define __step__reduce_(...) __step__reduce___emit(__step__reduce___capt __VA_ARGS__)
 #define __step__reduce___capt(_acc, _p_e...) _acc, _p_e,
@@ -502,6 +504,17 @@ typedef enum_(chain__State $bits(8)) {
         $break_(some(_combine)); \
     }; \
 }) $unscoped_(expr)
+/* TODO: support tryReduce_ */
+
+#define __step__all_(...) __step__all___emit(__VA_ARGS__)
+#define __step__all___capt(_p_e...) _p_e,
+#define __step__all___emit(...) __all_(__VA_ARGS__)
+#define __all_(_p_e, _pred...) fold_((true), (__acc, _p_e)(__acc && _pred))
+
+#define __step__any_(...) __step__any___emit(__VA_ARGS__)
+#define __step__any___capt(_p_e...) _p_e,
+#define __step__any___emit(...) __any_(__VA_ARGS__)
+#define __any_(_p_e, _pred...) fold_((false), (__acc, _p_e)(__acc || _pred))
 
 #if UNUSED_CODE
 #define collect_(/*(_gpa)*/) __step__collect_(__step__collect___gpa __VA_ARGS__)

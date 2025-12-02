@@ -4,9 +4,9 @@
  *
  * @file    ArrSet.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2025-01-22 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha
+ * @date    2025-11-22 (date of creation)
+ * @updated 2025-12-01 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrSet
  *
@@ -63,7 +63,6 @@ extern fn_((ArrSet_fromBuf(u_S$raw buf, u_HashCtxFn hashFn, u_EqlCtxFn eqlFn, u_
 extern fn_((ArrSet_init(TypeInfo type, mem_Allocator gpa, usize cap, u_HashCtxFn hashFn, u_EqlCtxFn eqlFn, u_P_const$raw ctx))(mem_Err$ArrSet)) $must_check;
 extern fn_((ArrSet_fini(ArrSet* self, TypeInfo type, mem_Allocator gpa))(void));
 extern fn_((ArrSet_clone(ArrSet self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrSet)) $must_check;
-extern fn_((ArrSet_move(ArrSet* self))(ArrSet));
 
 /* Access operations */
 extern fn_((ArrSet_len(ArrSet self))(usize));

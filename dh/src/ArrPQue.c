@@ -429,6 +429,7 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
 
 fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    let_ignore = type;
     return (ArrPQue_Iter){
         .queue = self,
         .index = 0,

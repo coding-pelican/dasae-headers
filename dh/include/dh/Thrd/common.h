@@ -179,7 +179,8 @@ union Thrd_FnCtx$(_fnName) { \
     }; \
 }
 
-#define comp_syn__Thrd_fn_impl$scope(_fnName, _Tuple_Captures) \
+#define comp_syn__Thrd_fn_impl$scope(...) comp_syn__Thrd_fn_impl$_scope(__VA_ARGS__)
+#define comp_syn__Thrd_fn_impl$_scope(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ctx = as$(Thrd_FnCtx$(_fnName)*)(thrd_ctx); \
     let __passed_args = __passed_ctx->args.as_typed; \
@@ -202,7 +203,8 @@ __step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw;
     } \
 }
 
-#define comp_syn__Thrd_fn_impl$guard(_fnName, _Tuple_Captures) \
+#define comp_syn__Thrd_fn_impl$guard(...) comp_syn__Thrd_fn_impl$_guard(__VA_ARGS__)
+#define comp_syn__Thrd_fn_impl$_guard(_fnName, _Tuple_Captures) \
 Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ctx = as$(Thrd_FnCtx$(_fnName)*)(thrd_ctx); \
     let __passed_args = __passed_ctx->args.as_typed; \
