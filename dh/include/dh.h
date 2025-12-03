@@ -43,14 +43,20 @@ extern "C" {
 
 #include "dh/ListSgl.h"
 #include "dh/ListDbl.h"
+
 #include "dh/ArrList.h"
 #include "dh/ArrStk.h"
 #include "dh/ArrDeq.h"
 #include "dh/ArrQue.h"
 #include "dh/ArrPDeq.h"
 #include "dh/ArrPQue.h"
-#include "dh/ArrSet.h"
-#include "dh/ArrMap.h"
+
+// #include "dh/HashMap.h"
+// #include "dh/HashSet.h"
+// #include "dh/HashMapSeq.h"
+// #include "dh/HashSetSeq.h"
+// #include "dh/BTreeMap.h"
+// #include "dh/BTreeSet.h"
 
 #include "dh/time.h"
 #include "dh/Rand.h"

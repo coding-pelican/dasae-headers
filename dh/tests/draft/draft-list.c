@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 // dh-c build draft-list.c --no-libdh --args="-IC:\dasae\dev\dasae-headers\dh\include -IC:\dasae\dev\dasae-headers\dh\libs\BlocksRuntime\include"
 
 #include "dh/prl.h"
@@ -21,10 +22,10 @@ typedef union MRaw$i32 {
 
 /* Singly Linked List */
 
-#define T_use_ListSgl_Node$(_T)  comp_type_gen__T_use_ListSgl_Node$(_T)
+#define T_use_ListSgl_Node$(_T) comp_type_gen__T_use_ListSgl_Node$(_T)
 #define T_decl_ListSgl_Node$(_T) comp_type_gen__T_decl_ListSgl_Node$(_T)
 #define T_impl_ListSgl_Node$(_T) comp_type_gen__T_impl_ListSgl_Node$(_T)
-#define ListSgl_Node$(_T)        comp_type_alias__ListSgl_Node$(_T)
+#define ListSgl_Node$(_T) comp_type_alias__ListSgl_Node$(_T)
 
 typedef struct ListSgl_Node ListSgl_Node;
 T_use_P$(ListSgl_Node);
@@ -43,10 +44,10 @@ extern fn_((ListSgl_Node_findLast(ListSgl_Node* node))(ListSgl_Node*));
 extern fn_((ListSgl_Node_countChildren(const ListSgl_Node* node))(usize));
 extern fn_((ListSgl_Node_reverse(O$P$ListSgl_Node* indirect))(void));
 
-#define T_use_ListSgl$(_T)  comp_type_gen__T_use_ListSgl$(_T)
+#define T_use_ListSgl$(_T) comp_type_gen__T_use_ListSgl$(_T)
 #define T_decl_ListSgl$(_T) comp_type_gen__T_decl_ListSgl$(_T)
 #define T_impl_ListSgl$(_T) comp_type_gen__T_impl_ListSgl$(_T)
-#define ListSgl$(_T)        comp_type_alias__ListSgl$(_T)
+#define ListSgl$(_T) comp_type_alias__ListSgl$(_T)
 
 typedef struct ListSgl$raw {
     var_(type, TypeInfo);
@@ -180,8 +181,8 @@ typedef O$$(MVal) O$MVal;
     pp_join(_, __block_inline__meta_fn_3, _$ext)(_ident_w_Params_OR_Params, _TReturn)
 #define __block_inline__meta_fn_3_$_scope(_ident_w_Params, _TReturn...) comp_syn__meta_fn_$_scope(__param_extract__meta_fn_ _ident_w_Params, _TReturn)
 #define __block_inline__meta_fn_3_$_guard(_ident_w_Params, _TReturn...) comp_syn__meta_fn_$_guard(__param_extract__meta_fn_ _ident_w_Params, _TReturn)
-#define __block_inline__meta_fn_3_$_T(_Params, _TReturn...)             comp_syn__meta_fn_$_T(_Params, _TReturn)
-#define __param_extract__meta_fn_(...)                                  __VA_ARGS__
+#define __block_inline__meta_fn_3_$_T(_Params, _TReturn...) comp_syn__meta_fn_$_T(_Params, _TReturn)
+#define __param_extract__meta_fn_(...) __VA_ARGS__
 
 #define comp_syn__meta_fn_$_scope(_ident_w_Params, _TReturn...) \
     _TReturn _ident_w_Params { \
@@ -247,6 +248,127 @@ int main(void) {
     printf("shallow_copy(): %d\n", *as$(i32*)(shallow_copy.inner->untyped));
 
     let item = spawnItem(lit$((O$MVal){ .payload = { .some = { .inner = (void*)&lit$((Label){}) } } }));
-    printf("item: %s\n", (*as$(Label *) ((item.payload.some.inner->untyped))).name);
+    printf("item: %s\n", (*as$(Label*) ((item.payload.some.inner->untyped))).name);
     return 0;
 }
+#endif /* UNUSED_CODE */
+
+#include "dh/main.h"
+
+T_use_P$(TypeInfo);
+T_use_S$(TypeInfo);
+
+#define T_use_ListSgl_Node$(_T) __comp_gen__T_use_ListSgl_Node$(_T)
+#define T_decl_ListSgl_Node$(_T) __comp_gen__T_decl_ListSgl_Node$(_T)
+#define T_impl_ListSgl_Node$(_T) __comp_gen__T_impl_ListSgl_Node$(_T)
+#define ListSgl_Node$(_T) __comp_alias__ListSgl_Node$(_T)
+
+typedef struct ListSgl_Node$raw ListSgl_Node$raw;
+T_use_P$(ListSgl_Node$raw);
+T_use_O$(P$ListSgl_Node$raw);
+struct ListSgl_Node$raw {
+    struct {
+        var_(next, O$P$ListSgl_Node$raw);
+        debug_only(var_(type, TypeInfo);)
+    };
+    var_(data $flexible, u8);
+};
+
+extern fn_((ListSgl_Node_init(P$ListSgl_Node$raw self, TypeInfo type))(P$ListSgl_Node$raw));
+extern fn_((ListSgl_Node_data(P_const$ListSgl_Node$raw self, TypeInfo type))(u_P_const$raw));
+extern fn_((ListSgl_Node_dataMut(P$ListSgl_Node$raw self, TypeInfo type))(u_P$raw));
+extern fn_((ListSgl_Node_insertNext(P$ListSgl_Node$raw self, P$ListSgl_Node$raw after))(void));
+extern fn_((ListSgl_Node_removeNext(P$ListSgl_Node$raw self))(O$P$ListSgl_Node$raw));
+extern fn_((ListSgl_Node_findLast(P$ListSgl_Node$raw self))(P$ListSgl_Node$raw));
+extern fn_((ListSgl_Node_countChildren(P_const$ListSgl_Node$raw self))(usize));
+extern fn_((ListSgl_Node_reverse(O$P$ListSgl_Node$raw* indirect))(void));
+
+#define T_use_ListSgl$(_T) __comp_gen__T_use_ListSgl$(_T)
+#define T_decl_ListSgl$(_T) __comp_gen__T_decl_ListSgl$(_T)
+#define T_impl_ListSgl$(_T) __comp_gen__T_impl_ListSgl$(_T)
+#define ListSgl$(_T) __comp_alias__ListSgl$(_T)
+
+typedef struct ListSgl$raw {
+    var_(first, O$P$ListSgl_Node$raw);
+    debug_only(var_(type, TypeInfo);)
+} ListSgl$raw;
+
+extern fn_((ListSgl_init(TypeInfo type))(ListSgl$raw));
+extern fn_((ListSgl_prepend(ListSgl$raw* self, P$ListSgl_Node$raw before))(void));
+extern fn_((ListSgl_remove(ListSgl$raw* self, P$ListSgl_Node$raw node))(void));
+extern fn_((ListSgl_shift(ListSgl$raw* self))(O$P$ListSgl_Node$raw));
+extern fn_((ListSgl_len(const ListSgl$raw* self))(usize));
+
+typedef struct ListSgl_Link ListSgl_Link;
+T_use_P$(ListSgl_Link);
+T_use_O$(P$ListSgl_Link);
+struct ListSgl_Link {
+    var_(next, O$P$ListSgl_Link);
+};
+fn_((ListSgl_Link_data(P_const$ListSgl_Link self, usize in_offset))(u_P_const$raw)) {}
+fn_((ListSgl_Link_dataMut(P$ListSgl_Link self, usize in_offset))(u_P$raw)) {}
+
+
+
+#define typeInfos$(_T...) A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(__typeInfos$__each, ~, _T) }))
+#define __typeInfos$__each(_$ignored, _T...) typeInfo$(_T),
+
+let a = typeInfos$(u32, i32, usize);
+
+
+fn_((ListSgl_Node_link(P$ListSgl_Node$raw self, P$ListSgl_Link link))(void));
+
+
+TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
+    typedef struct L {
+        var_(data, u32);
+        var_(link, ListSgl_Link);
+    } L;
+    var list = (ListSgl){};
+
+    try_(TEST_expect(ListSgl_len(&list) == 0));
+
+    var one = (L){ .data = 1 };
+    var two = (L){ .data = 2 };
+    var three = (L){ .data = 3 };
+    var four = (L){ .data = 4 };
+    var five = (L){ .data = 5 };
+
+    ListSgl_prepend(&list, &two.link);          // {2}
+    ListSgl_Node_insertNext(two, &five.link);   // {2, 5}
+    ListSgl_prepend(&list, &one.link);          // {1, 2, 5}
+    ListSgl_Node_insertNext(&two.link, &three.link);  // {1, 2, 3, 5}
+    ListSgl_Node_insertNext(&three.link, &four.link); // {1, 2, 3, 4, 5}
+
+    try_(TEST_expect(ListSgl_len(list.as_raw) == 5));
+
+    // Traverse forwards.
+    {
+        var it = list.first;
+        u32 index = 1;
+        while_some(it, node) blk_defer_({
+            defer_(index += 1, it = node->next);
+            try_(TEST_expect(ListSgl_Link_data(node, offsetTo(L, data)) == index));
+        }) blk_deferral;
+    }
+
+    let_ignore = ListSgl_shift$u32(&list);         // {2, 3, 4, 5}
+    ListSgl_remove$u32(&list, five);               // {2, 3, 4}
+    let_ignore = ListSgl_Node_removeNext$u32(two); // {2, 4}
+
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->data)) == 2));
+    // try_(TEST_expect(unwrap_(list.first)->data == 2));
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->data)) == 4));
+    // // try_(TEST_expect(unwrap_(unwrap_(list.first)->next)->data == 4));
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->next),(isNone,()))));
+    // // try_(TEST_expect(isNone(unwrap_(unwrap_(list.first)->next)->next)));
+
+    ListSgl_Node_reverse$u32(&list.first);
+
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->data)) == 4));
+    // // try_(TEST_expect(unwrap_(list.first)->data == 4));
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->data)) == 2));
+    // // try_(TEST_expect(unwrap_(unwrap_(list.first)->next)->data == 2));
+    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->next),(isNone,()))));
+    // // try_(TEST_expect(isNone(unwrap_(unwrap_(list.first)->next)->next)));
+} $unguarded_(TEST_fn);

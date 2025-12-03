@@ -27,11 +27,11 @@ extern "C" {
 
 /*========== Arena Allocator ===============================================*/
 
-T_use$((usize)(ListSgl_Node, ListSgl));
+T_use$((usize)(ListSgl_Link, ListSgl));
 typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
-    ListSgl$usize buffer_list;
-    usize end_index;
+    ListSgl$usize buf_list;
+    usize end_idx;
 } heap_Arena_State;
 /// Default state of ArenaAllocator
 $extern fn_((heap_Arena_State_default(void))(heap_Arena_State));

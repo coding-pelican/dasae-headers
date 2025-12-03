@@ -1,80 +1,131 @@
-#if UNUSED_CODE
 #include "dh/ListDbl.h"
+#include "dh/mem/common.h"
 
-$static fn_((alignUp(TypeInfo type))(usize)) {
-    return (type.size + (1ull << type.align) - 1) & ~((1ull << type.align) - 1);
-}
-
-fn_((ListDbl_Node_init(TypeInfo type))(ListDbl_Node)) {
-    return (ListDbl_Node){
-        .type = type,
+fn_((ListDbl_Link_empty(TypeInfo type))(ListDbl_Link)) {
+    let_ignore = type;
+    return (ListDbl_Link){
         .prev = none(),
         .next = none(),
+        debug_only(.type = type)
     };
-}
+};
 
-fn_((ListDbl_Node_data(ListDbl_Node* node))(u_P$raw)) {
-    debug_assert_nonnull(node);
-    return (u_P$raw){
-        .type = node->type,
-        .inner = as$(u8*)(node) - alignUp(node->type),
-    };
-}
+fn_((ListDbl_Link_adp(P_const$ListDbl_Link self))(const ListDbl_Adp$raw*)) {
+    claim_assert_nonnull(self);
+    return as$(const ListDbl_Adp$raw*)(self);
+};
 
-fn_((ListDbl_init(TypeInfo type))(ListDbl$raw)) {
-    return (ListDbl$raw){
-        .type = type,
+fn_((ListDbl_Link_adpMut(P$ListDbl_Link self))(ListDbl_Adp$raw*)) {
+    claim_assert_nonnull(self);
+    return as$(ListDbl_Adp$raw*)(self);
+};
+
+fn_((ListDbl_Link_data(P_const$ListDbl_Link self, TypeInfo type))(u_P_const$raw)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    return (u_P_const$raw){ .raw = ListDbl_Link_adp(self)->data, .type = type };
+};
+
+fn_((ListDbl_Link_dataMut(P$ListDbl_Link self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    return (u_P$raw){ .raw = ListDbl_Link_adpMut(self)->data, .type = type };
+};
+
+fn_((ListDbl_Adp_empty(TypeInfo type, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)) {
+    claim_assert_nonnull(ret_mem);
+    ret_mem->link = ListDbl_Link_empty(type);
+    mem_set0((u_S$raw){ .ptr = ret_mem->data, .len = 1, .type = type });
+    debug_only(ret_mem -> type = type;)
+    return ret_mem;
+};
+
+fn_((ListDbl_Adp_init(u_V$raw data, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)) {
+    claim_assert_nonnull(ret_mem);
+    let type = data.inner_type;
+    ret_mem->link = ListDbl_Link_empty(type);
+    mem_set((u_S$raw){ .ptr = ret_mem->data, .len = 1, .type = type }, data);
+    debug_only(ret_mem -> type = type;)
+    return ret_mem;
+};
+
+fn_((ListDbl_Adp_link(const ListDbl_Adp$raw* self))(P_const$ListDbl_Link)) {
+    claim_assert_nonnull(self);
+    return &self->link;
+};
+
+fn_((ListDbl_Adp_linkMut(ListDbl_Adp$raw* self))(P$ListDbl_Link)) {
+    claim_assert_nonnull(self);
+    return &self->link;
+};
+
+fn_((ListDbl_Adp_data(const ListDbl_Adp$raw* self, TypeInfo type))(u_P_const$raw)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    return (u_P_const$raw){ .raw = self->data, .type = type };
+};
+
+fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    return (u_P$raw){ .raw = self->data, .type = type };
+};
+
+fn_((ListDbl_empty(TypeInfo type))(ListDbl)) {
+    let_ignore = type;
+    return (ListDbl){
         .first = none(),
         .last = none(),
         .len = 0,
+        debug_only(.type = type)
     };
-}
+};
 
-fn_((ListDbl_insertNext(ListDbl$raw* self, ListDbl_Node* node, ListDbl_Node* new_node))(void)) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(node);
-    debug_assert_nonnull(new_node);
-    debug_assert(TypeInfo_eq(self->type, node->type));
-    debug_assert(TypeInfo_eq(node->type, new_node->type));
+fn_((ListDbl_insertNext(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_link))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(link);
+    claim_assert_nonnull(new_link);
+    debug_assert_eqBy(self->type, link->type, TypeInfo_eq);
+    debug_assert_eqBy(link->type, new_link->type, TypeInfo_eq);
 
-    asg$O((&new_node->prev)(some(node)));
-    new_node->next = node->next;
-    if_some((node->next)(next)) {
-        asg$O((&next->prev)(some(new_node)));
+    asg_lit((&new_link->prev)(some(link)));
+    new_link->next = link->next;
+    if_some((link->next)(next)) {
+        asg_lit((&next->prev)(some(new_link)));
     } else {
-        asg$O((&self->last)(some(new_node)));
+        asg_lit((&self->last)(some(new_link)));
     }
-    asg$O((&node->next)(some(new_node)));
+    asg_lit((&link->next)(some(new_link)));
     self->len++;
-}
+};
 
-fn_((ListDbl_insertPrev(ListDbl$raw* self, ListDbl_Node* node, ListDbl_Node* new_node))(void)) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(node);
-    debug_assert_nonnull(new_node);
-    debug_assert(TypeInfo_eq(self->type, node->type));
-    debug_assert(TypeInfo_eq(node->type, new_node->type));
+fn_((ListDbl_insertPrev(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_link))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(link);
+    claim_assert_nonnull(new_link);
+    debug_assert_eqBy(self->type, link->type, TypeInfo_eq);
+    debug_assert_eqBy(link->type, new_link->type, TypeInfo_eq);
 
-    new_node->next = some$((P$ListDbl_Node)(node));
-    new_node->prev = node->prev;
-    if_some((node->prev)(prev)) {
-        asg$O((&prev->next)(some(new_node)));
+    asg_lit((&new_link->next)(some(link)));
+    new_link->prev = link->prev;
+    if_some((link->prev)(prev)) {
+        asg_lit((&prev->next)(some(new_link)));
     } else {
-        asg$O((&self->first)(some(new_node)));
+        asg_lit((&self->first)(some(new_link)));
     }
-    asg$O((&node->prev)(some(new_node)));
+    asg_lit((&link->prev)(some(new_link)));
     self->len++;
-}
+};
 
-fn_((ListDbl_concatByMoving(ListDbl$raw* dst, ListDbl$raw* src))(void)) {
-    debug_assert_nonnull(dst);
-    debug_assert_nonnull(src);
-    debug_assert(TypeInfo_eq(dst->type, src->type));
+fn_((ListDbl_concatByMoving(ListDbl* dst, ListDbl* src))(void)) {
+    claim_assert_nonnull(dst);
+    claim_assert_nonnull(src);
+    debug_assert_eqBy(dst->type, src->type, TypeInfo_eq);
 
     if_some((dst->last)(last)) {
         if_some((src->first)(first)) {
             last->next = src->first;
-            asg$O((&first->prev)(some(last)));
+            asg_lit((&first->prev)(some(last)));
             dst->last = src->last;
             dst->len += src->len;
         }
@@ -83,86 +134,78 @@ fn_((ListDbl_concatByMoving(ListDbl$raw* dst, ListDbl$raw* src))(void)) {
         dst->last = src->last;
         dst->len = src->len;
     }
-    asg$O((&src->first)(none()));
-    asg$O((&src->last)(none()));
+    asg_lit((&src->first)(none()));
+    asg_lit((&src->last)(none()));
     src->len = 0;
-}
+};
 
-fn_((ListDbl_append(ListDbl$raw* self, ListDbl_Node* new_node))(void)) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(new_node);
-    debug_assert(TypeInfo_eq(self->type, new_node->type));
+fn_((ListDbl_append(ListDbl* self, P$ListDbl_Link new_link))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(new_link);
+    debug_assert_eqBy(self->type, new_link->type, TypeInfo_eq);
 
     if_some((self->last)(last)) {
-        ListDbl_insertNext(self, last, new_node);
+        ListDbl_insertNext(self, last, new_link);
     } else {
-        asg$O((&new_node->prev)(none()));
-        asg$O((&new_node->next)(none()));
-        asg$O((&self->first)(some(new_node)));
-        asg$O((&self->last)(some(new_node)));
+        asg_lit((&new_link->prev)(none()));
+        asg_lit((&new_link->next)(none()));
+        asg_lit((&self->first)(some(new_link)));
+        asg_lit((&self->last)(some(new_link)));
         self->len = 1;
     }
-}
+};
 
-fn_((ListDbl_prepend(ListDbl$raw* self, ListDbl_Node* new_node))(void)) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(new_node);
-    debug_assert(TypeInfo_eq(self->type, new_node->type));
+fn_((ListDbl_prepend(ListDbl* self, P$ListDbl_Link new_link))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(new_link);
+    debug_assert_eqBy(self->type, new_link->type, TypeInfo_eq);
 
     if_some((self->first)(first)) {
-        ListDbl_insertPrev(self, first, new_node);
+        ListDbl_insertPrev(self, first, new_link);
     } else {
-        asg$O((&new_node->prev)(none()));
-        asg$O((&new_node->next)(none()));
-        asg$O((&self->first)(some(new_node)));
-        asg$O((&self->last)(some(new_node)));
+        asg_lit((&new_link->prev)(none()));
+        asg_lit((&new_link->next)(none()));
+        asg_lit((&self->first)(some(new_link)));
+        asg_lit((&self->last)(some(new_link)));
         self->len = 1;
     }
-}
+};
 
-fn_((ListDbl_remove(ListDbl$raw* self, ListDbl_Node* node))(void)) {
-    debug_assert_nonnull(self);
-    debug_assert_nonnull(node);
-    debug_assert(TypeInfo_eq(self->type, node->type));
+fn_((ListDbl_remove(ListDbl* self, P$ListDbl_Link link))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(link);
+    debug_assert_eqBy(self->type, link->type, TypeInfo_eq);
 
-    if_some((node->prev)(prev)) {
-        prev->next = node->next;
+    if_some((link->prev)(prev)) {
+        prev->next = link->next;
     } else {
-        self->first = node->next;
+        self->first = link->next;
     }
-    if_some((node->next)(next)) {
-        next->prev = node->prev;
+    if_some((link->next)(next)) {
+        next->prev = link->prev;
     } else {
-        self->last = node->prev;
+        self->last = link->prev;
     }
-    asg$O((&node->prev)(none()));
-    asg$O((&node->next)(none()));
+    asg_lit((&link->prev)(none()));
+    asg_lit((&link->next)(none()));
     self->len--;
-}
+};
 
-fn_((ListDbl_pop(ListDbl$raw* self))(O$P$ListDbl_Node) $scope) {
-    debug_assert_nonnull(self);
-    if_none(self->last) {
-        return_none();
-    }
-    var last = unwrap_(self->last);
+fn_((ListDbl_pop(ListDbl* self))(O$P$ListDbl_Link) $scope) {
+    claim_assert_nonnull(self);
+    let last = orelse_((self->last)(return_none()));
     ListDbl_remove(self, last);
     return_some(last);
 } $unscoped_(fn);
 
-fn_((ListDbl_shift(ListDbl$raw* self))(O$P$ListDbl_Node) $scope) {
-    debug_assert_nonnull(self);
-    if_none(self->first) {
-        return_none();
-    }
-    var first = unwrap_(self->first);
+fn_((ListDbl_shift(ListDbl* self))(O$P$ListDbl_Link) $scope) {
+    claim_assert_nonnull(self);
+    let first = orelse_((self->first)(return_none()));
     ListDbl_remove(self, first);
     return_some(first);
 } $unscoped_(fn);
 
-fn_((ListDbl_len(const ListDbl$raw* self))(usize)) {
-    debug_assert_nonnull(self);
+fn_((ListDbl_len(const ListDbl* self))(usize)) {
+    claim_assert_nonnull(self);
     return self->len;
-}
-
-#endif /* UNUSED_CODE */
+};

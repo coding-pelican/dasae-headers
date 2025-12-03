@@ -12,7 +12,7 @@ TEST_fn_("test heap_Arena reset while retaining a buffer" $guard) {
     let_ignore = try_(mem_Allocator_alloc(a, typeInfo$(u8), 1000));
 
     // Check that we have at least two buffers
-    try_(TEST_expect(isSome(unwrap_(arena.state.buffer_list.first)->next)));
+    try_(TEST_expect(isSome(unwrap_(arena.state.buf_list.first)->next)));
 
     // This retains the first allocated buffer
     try_(TEST_expect(heap_Arena_reset(

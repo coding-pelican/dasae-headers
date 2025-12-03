@@ -281,7 +281,7 @@ __step_unscope: \
     }; \
     bool __has_broken = false; { \
         $local_label __step_return; \
-        if (false) { __step_return: __step_break: \
+        if (false) { __step_return: goto __step_break; __step_break: \
             __scope_counter.is_returning = true; \
             goto __step_deferred; \
         } \
