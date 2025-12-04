@@ -47,6 +47,14 @@ fn_((ArrQue_cap(ArrQue self))(usize)) {
     return ArrDeq_cap(queToDeq(self));
 }
 
+fn_((ArrQue_isEmpty(ArrQue self))(bool)) {
+    return ArrDeq_isEmpty(queToDeq(self));
+}
+
+fn_((ArrQue_isFull(ArrQue self))(bool)) {
+    return ArrDeq_isFull(queToDeq(self));
+}
+
 fn_((ArrQue_head(ArrQue self))(usize)) {
     return ArrDeq_head(queToDeq(self));
 }
@@ -117,8 +125,8 @@ fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw)) {
 
 claim_assert_static(sizeOf$(TypeOf(ArrQue_Iter)) == sizeOf$(TypeOf(ArrDeq_Iter)));
 claim_assert_static(alignOf$(TypeOf(ArrQue_Iter)) == alignOf$(TypeOf(ArrDeq_Iter)));
-claim_assert_static(offsetTo(ArrQue_Iter, queue) == offsetTo(ArrDeq_Iter, deque));
-claim_assert_static(offsetTo(ArrQue_Iter, index) == offsetTo(ArrDeq_Iter, index));
+claim_assert_static(offsetTo(ArrQue_Iter, que) == offsetTo(ArrDeq_Iter, deq));
+claim_assert_static(offsetTo(ArrQue_Iter, idx) == offsetTo(ArrDeq_Iter, idx));
 debug_assert_static(offsetTo(ArrQue_Iter, type) == offsetTo(ArrDeq_Iter, type));
 
 #define queIterAsDeqIter(_p_que_iter...) _Generic( \

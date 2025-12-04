@@ -69,6 +69,14 @@ fn_((ArrDeq_cap(ArrDeq self))(usize)) {
     return self.buf.len;
 }
 
+fn_((ArrDeq_isEmpty(ArrDeq self))(bool)) {
+    return self.len == 0;
+}
+
+fn_((ArrDeq_isFull(ArrDeq self))(bool)) {
+    return self.len == self.buf.len;
+}
+
 fn_((ArrDeq_head(ArrDeq self))(usize)) {
     return self.head;
 }
@@ -254,8 +262,8 @@ fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let_ignore = type;
     return (ArrDeq_Iter){
-        .deque = self,
-        .index = 0,
+        .deq = self,
+        .idx = 0,
         debug_only(.type = type)
     };
 }
@@ -263,8 +271,8 @@ fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter)) {
 fn_((ArrDeq_Iter_next(ArrDeq_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return expr_(ReturnType $scope)(
-        self->index < self->deque->len
-            ? $break_(some(u_atS(ArrDeq_buf(*self->deque, type), bufIdx(self->deque, self->index++))))
+        self->idx < self->deq->len
+            ? $break_(some(u_atS(ArrDeq_buf(*self->deq, type), bufIdx(self->deq, self->idx++))))
             : $break_(none())
     ) $unscoped_(expr);
 } $unscoped_(fn);
@@ -272,8 +280,8 @@ fn_((ArrDeq_Iter_next(ArrDeq_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope
 fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return expr_(ReturnType $scope)(
-        self->index < self->deque->len
-            ? $break_(some(u_atS(ArrDeq_bufMut(*self->deque, type), bufIdx(self->deque, self->index++))))
+        self->idx < self->deq->len
+            ? $break_(some(u_atS(ArrDeq_bufMut(*self->deq, type), bufIdx(self->deq, self->idx++))))
             : $break_(none())
     ) $unscoped_(expr);
 } $unscoped_(fn);

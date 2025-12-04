@@ -49,7 +49,7 @@ $static fn_((siftUp(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
         let parent_idx = parentIdx(child_idx);
         let parent = u_atS(ArrPQue_itemsMut(*self, type), parent_idx);
         // If child >= parent (min-heap), we're done
-        if (!u_ltCtx(child, u_load(u_deref(parent)), self->ordFn, u_load(u_deref(self->ord_ctx)))) { break; }
+        if (!u_ltCtx(child, u_load(u_deref(parent)), self->ordFn, u_load(u_deref(self->ctx)))) { break; }
         // Move parent down
         u_memcpy(u_atS(ArrPQue_itemsMut(*self, type), child_idx), parent.as_const);
         child_idx = parent_idx;
@@ -72,13 +72,13 @@ $static fn_((siftDown(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
             let left = u_atS(ArrPQue_items(*self, type), left_idx);
             let right = u_atS(ArrPQue_items(*self, type), right_idx);
             // If right < left, then right is the smaller child
-            if (u_ltCtx(u_load(u_deref(right)), u_load(u_deref(left)), self->ordFn, u_load(u_deref(self->ord_ctx)))) {
+            if (u_ltCtx(u_load(u_deref(right)), u_load(u_deref(left)), self->ordFn, u_load(u_deref(self->ctx)))) {
                 min_child_idx = right_idx;
             }
         }
         let min_child = u_atS(ArrPQue_items(*self, type), min_child_idx);
         // If elem <= min_child, we're done
-        if (!u_gtCtx(elem, u_load(u_deref(min_child)), self->ordFn, u_load(u_deref(self->ord_ctx)))) {
+        if (!u_gtCtx(elem, u_load(u_deref(min_child)), self->ordFn, u_load(u_deref(self->ctx)))) {
             break;
         }
         // Move min_child up
@@ -103,29 +103,29 @@ $static fn_((heapify(ArrPQue* self, TypeInfo type))(void)) {
 // Core Functions
 // ============================================================================
 
-fn_((ArrPQue_empty(TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ord_ctx))(ArrPQue)) {
+fn_((ArrPQue_empty(TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue)) {
     let_ignore = type;
     return (ArrPQue){
         .items = zero$S(),
         .cap = 0,
         .ordFn = ordFn,
-        .ord_ctx = ord_ctx,
+        .ctx = ctx,
         debug_only(.type = type)
     };
 }
 
-fn_((ArrPQue_fromBuf(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ord_ctx))(ArrPQue)) {
+fn_((ArrPQue_fromBuf(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue)) {
     return (ArrPQue){
         .items = u_sliceS(buf, $r(0, 0)).raw,
         .cap = buf.len,
         .ordFn = ordFn,
-        .ord_ctx = ord_ctx,
+        .ctx = ctx,
         debug_only(.type = buf.type)
     };
 }
 
-fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, u_OrdCtxFn ordFn, u_P_const$raw ord_ctx))(mem_Err$ArrPQue) $scope) {
-    var pq = ArrPQue_empty(type, ordFn, ord_ctx);
+fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, u_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$ArrPQue) $scope) {
+    var pq = ArrPQue_empty(type, ordFn, ctx);
     try_(ArrPQue_ensureCapPrecise(&pq, type, gpa, cap));
     return_ok(pq);
 } $unscoped_(fn);
@@ -134,7 +134,7 @@ fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     mem_Allocator_free(gpa, ArrPQue_itemsCappedMut(*self, type));
-    *self = ArrPQue_empty(type, self->ordFn, self->ord_ctx);
+    *self = ArrPQue_empty(type, self->ordFn, self->ctx);
 }
 
 fn_((ArrPQue_len(ArrPQue self))(usize)) {
@@ -271,7 +271,7 @@ fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     mem_Allocator_free(gpa, ArrPQue_itemsCappedMut(*self, type));
-    *self = ArrPQue_empty(type, self->ordFn, self->ord_ctx);
+    *self = ArrPQue_empty(type, self->ordFn, self->ctx);
 }
 
 // ============================================================================
@@ -378,7 +378,7 @@ fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scop
         let elem = u_atS(ArrPQue_items(*self, type), idx);
         let parent = u_atS(ArrPQue_items(*self, type), parent_idx);
         // If elem < parent, violates min-heap, need to siftUp
-        if (u_ltCtx(u_load(u_deref(elem)), u_load(u_deref(parent)), self->ordFn, u_load(u_deref(self->ord_ctx)))) {
+        if (u_ltCtx(u_load(u_deref(elem)), u_load(u_deref(parent)), self->ordFn, u_load(u_deref(self->ctx)))) {
             siftUp(self, type, idx);
         } else {
             siftDown(self, type, idx);
@@ -401,7 +401,7 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
     while (idx < self->items.len) {
         let item = u_atS(ArrPQue_items(*self, type), idx);
         // Use ordCtx and check for equality (cmp_Ord_eq)
-        if (u_eqCtx(u_load(u_deref(item)), u_load(u_deref(old_item)), self->ordFn, u_load(u_deref(self->ord_ctx)))) {
+        if (u_eqCtx(u_load(u_deref(item)), u_load(u_deref(old_item)), self->ordFn, u_load(u_deref(self->ctx)))) {
             break;
         }
         idx++;
@@ -413,7 +413,7 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
     let old_elem = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_items(*self, type), idx)));
     u_memcpy(u_atS(ArrPQue_itemsMut(*self, type), idx), new_item.ref.as_const);
     // Restore heap property based on comparison
-    let cmp = u_ordCtx(new_item, old_elem, self->ordFn, u_load(u_deref(self->ord_ctx)));
+    let cmp = u_ordCtx(new_item, old_elem, self->ordFn, u_load(u_deref(self->ctx)));
     if (cmp == cmp_Ord_lt) {
         siftUp(self, type, idx);
     } else if (cmp == cmp_Ord_gt) {
@@ -431,8 +431,8 @@ fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter)) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let_ignore = type;
     return (ArrPQue_Iter){
-        .queue = self,
-        .index = 0,
+        .que = self,
+        .idx = 0,
         debug_only(.type = type)
     };
 }
@@ -440,8 +440,8 @@ fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter)) {
 fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return expr_(ReturnType $scope)(
-        self->index < self->queue->items.len
-            ? $break_(some(u_atS(ArrPQue_items(*self->queue, type), self->index++)))
+        self->idx < self->que->items.len
+            ? $break_(some(u_atS(ArrPQue_items(*self->que, type), self->idx++)))
             : $break_(none())
     ) $unscoped_(expr);
 } $unscoped_(fn);
@@ -449,8 +449,8 @@ fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw) $sco
 fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return expr_(ReturnType $scope)(
-        self->index < self->queue->items.len
-            ? $break_(some(u_atS(ArrPQue_itemsMut(*self->queue, type), self->index++)))
+        self->idx < self->que->items.len
+            ? $break_(some(u_atS(ArrPQue_itemsMut(*self->que, type), self->idx++)))
             : $break_(none())
     ) $unscoped_(expr);
 } $unscoped_(fn);

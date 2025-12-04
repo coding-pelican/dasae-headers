@@ -5,8 +5,8 @@
  * @file    ArrQue.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-12-03 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrQue
  *
@@ -55,6 +55,8 @@ extern fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
 extern fn_((ArrQue_len(ArrQue self))(usize));
 extern fn_((ArrQue_cap(ArrQue self))(usize));
+extern fn_((ArrQue_isEmpty(ArrQue self))(bool));
+extern fn_((ArrQue_isFull(ArrQue self))(bool));
 extern fn_((ArrQue_head(ArrQue self))(usize));
 extern fn_((ArrQue_tail(ArrQue self))(usize));
 extern fn_((ArrQue_at(ArrQue self, TypeInfo type, usize idx))(u_P_const$raw));
@@ -89,8 +91,8 @@ extern fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw));
 
 /* ArrQue_Iter Raw Structure */
 typedef struct ArrQue_Iter {
-    var_(queue, const ArrQue*);
-    var_(index, usize);
+    var_(que, const ArrQue*);
+    var_(idx, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrQue_Iter;
 extern fn_((ArrQue_iter(const ArrQue* self, TypeInfo type))(ArrQue_Iter));
@@ -266,8 +268,8 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 #define __comp_anon__ArrQue_Iter$$(_T...) \
     union { \
         struct { \
-            var_(queue, P_const$$(ArrQue$$(_T))); \
-            var_(index, usize); \
+            var_(que, P_const$$(ArrQue$$(_T))); \
+            var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrQue_Iter); \
@@ -278,8 +280,8 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 #define __comp_gen__T_impl_ArrQue_Iter$(_T...) \
     union ArrQue_Iter$(_T) { \
         struct { \
-            var_(queue, P_const$$(ArrQue$(_T))); \
-            var_(index, usize); \
+            var_(que, P_const$$(ArrQue$(_T))); \
+            var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrQue_Iter); \

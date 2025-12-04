@@ -118,21 +118,33 @@ extern "C" {
 #if defined(__x86_64__) || defined(_M_X64)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_x86_64
+#if defined(__SSE2__)
+#include <immintrin.h>
+#endif /* defined(__SSE2__) */
 
 /* Detect x86 (32-bit) */
 #elif defined(__i386__) || defined(_M_IX86)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_x86
+#if defined(__SSE2__)
+#include <emmintrin.h>
+#endif /* defined(__SSE2__) */
 
 /* Detect ARM64 (aarch64) */
 #elif defined(__aarch64__) || defined(_M_ARM64)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_aarch64
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif /* defined(__ARM_NEON) */
 
 /* Detect ARM (32-bit) */
 #elif defined(__arm__) || defined(_M_ARM)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_arm
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif /* defined(__ARM_NEON) */
 
 /* Detect RISC-V */
 #elif defined(__riscv)

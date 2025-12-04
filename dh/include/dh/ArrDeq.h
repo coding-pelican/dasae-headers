@@ -5,8 +5,8 @@
  * @file    ArrDeq.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-12-03 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrDeq
  *
@@ -55,6 +55,8 @@ extern fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
 
 extern fn_((ArrDeq_len(ArrDeq self))(usize));
 extern fn_((ArrDeq_cap(ArrDeq self))(usize));
+extern fn_((ArrDeq_isEmpty(ArrDeq self))(bool));
+extern fn_((ArrDeq_isFull(ArrDeq self))(bool));
 extern fn_((ArrDeq_head(ArrDeq self))(usize));
 extern fn_((ArrDeq_tail(ArrDeq self))(usize));
 extern fn_((ArrDeq_at(ArrDeq self, TypeInfo type, usize idx))(u_P_const$raw));
@@ -94,8 +96,8 @@ extern fn_((ArrDeq_shift(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw));
 
 /* ArrDeq_Iter Raw Structure */
 typedef struct ArrDeq_Iter {
-    var_(deque, const ArrDeq*);
-    var_(index, usize);
+    var_(deq, const ArrDeq*);
+    var_(idx, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrDeq_Iter;
 extern fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter));
@@ -292,8 +294,8 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
 #define __comp_anon__ArrDeq_Iter$$(_T...) \
     union { \
         struct { \
-            var_(deque, P_const$$(ArrDeq$$(_T))); \
-            var_(index, usize); \
+            var_(deq, P_const$$(ArrDeq$$(_T))); \
+            var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrDeq_Iter); \
@@ -304,8 +306,8 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
 #define __comp_gen__T_impl_ArrDeq_Iter$(_T...) \
     union ArrDeq_Iter$(_T) { \
         struct { \
-            var_(deque, P_const$$(ArrDeq$(_T))); \
-            var_(index, usize); \
+            var_(deq, P_const$$(ArrDeq$(_T))); \
+            var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw $like_ref, ArrDeq_Iter); \

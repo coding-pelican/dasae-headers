@@ -5,8 +5,8 @@
  * @file    ArrStk.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-12-03 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrStk
  *
@@ -70,6 +70,8 @@ extern fn_((ArrStk_intoParts(ArrStk* self, TypeInfo type))(ArrStk_Parts));
 
 extern fn_((ArrStk_len(ArrStk self))(usize));
 extern fn_((ArrStk_cap(ArrStk self))(usize));
+extern fn_((ArrStk_isEmpty(ArrStk self))(bool));
+extern fn_((ArrStk_isFull(ArrStk self))(bool));
 extern fn_((ArrStk_at(ArrStk self, TypeInfo type, usize idx))(u_P_const$raw));
 extern fn_((ArrStk_atMut(ArrStk self, TypeInfo type, usize idx))(u_P$raw));
 extern fn_((ArrStk_top(ArrStk self, TypeInfo type))(O$u_P_const$raw));

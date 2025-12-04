@@ -79,11 +79,11 @@ extern "C" {
 
 #define comp_op__wrapLa(_laBlk...) \
     { \
-        .wraps_lambda = true, .callable = {.laBlk = _laBlk } \
+        .wraps_lambda = true, .payload = {.laBlk = _laBlk } \
     }
 #define comp_op__wrapFn(_fnPtr...) \
     { \
-        .wraps_lambda = false, .callable = {.fnPtr = _fnPtr } \
+        .wraps_lambda = false, .payload = {.fnPtr = _fnPtr } \
     }
 
 #define comp_op__wrapLa$(_T_Callable, _laBlk...) ((_T_Callable)wrapLa(_laBlk))

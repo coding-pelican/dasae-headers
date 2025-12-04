@@ -5,8 +5,8 @@
  * @file    ArrList.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-03-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-12-03 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrList
  *
@@ -74,6 +74,8 @@ extern fn_((ArrList_intoParts(ArrList* self, TypeInfo type))(ArrList_Parts));
 
 extern fn_((ArrList_len(ArrList self))(usize));
 extern fn_((ArrList_cap(ArrList self))(usize));
+extern fn_((ArrList_isEmpty(ArrList self))(bool));
+extern fn_((ArrList_isFull(ArrList self))(bool));
 extern fn_((ArrList_at(ArrList self, TypeInfo type, usize idx))(u_P_const$raw));
 extern fn_((ArrList_atMut(ArrList self, TypeInfo type, usize idx))(u_P$raw));
 extern fn_((ArrList_front(ArrList self, TypeInfo type))(O$u_P_const$raw));

@@ -72,6 +72,14 @@ fn_((ArrStk_cap(ArrStk self))(usize)) {
     return ArrList_cap(stkToList(self));
 }
 
+fn_((ArrStk_isEmpty(ArrStk self))(bool)) {
+    return ArrList_isEmpty(stkToList(self));
+}
+
+fn_((ArrStk_isFull(ArrStk self))(bool)) {
+    return ArrList_isFull(stkToList(self));
+}
+
 fn_((ArrStk_at(ArrStk self, TypeInfo type, usize idx))(u_P_const$raw)) {
     return ArrList_at(stkToList(self), type, idx);
 }

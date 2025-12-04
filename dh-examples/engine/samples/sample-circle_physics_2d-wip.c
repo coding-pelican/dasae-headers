@@ -18,42 +18,35 @@ static const f32 window_res_x = window_res_width;
 static const f32 window_res_y = window_res_height;
 static const f32 window_res_scale = 1.0f;
 
+/* FIXME: Correct collision detection and resolution logic */
+
 // Circular collision and physics structures
 typedef struct Circ2f32 {
     m_V2f32 center;
     f32 radius;
 } Circ2f32;
-$inline_always
+$attr($inline_always)
 $static fn_((Circ2f32_intersects(Circ2f32 a, Circ2f32 b))(bool)) {
     let diff = m_V2f32_sub(b.center, a.center);
     let dist_sq = m_V2f32_lenSq(diff);
     let sum_radii = a.radius + b.radius;
     return dist_sq <= (sum_radii * sum_radii);
 };
-$inline_always
+$attr($inline_always)
 $static fn_((Circ2f32_containsPoint(Circ2f32 c, m_V2f32 point))(bool)) {
     let diff = m_V2f32_sub(point, c.center);
     let dist_sq = m_V2f32_lenSq(diff);
     return dist_sq <= (c.radius * c.radius);
 };
 
-// Ball entity
 typedef struct Ball {
-    Circ2f32 transform;
-    m_V2f32 vel;
-    m_V2f32 acc;
-    f32 mass;
+    var_(transform, Circ2f32);
+    var_(vel, m_V2f32);
+    var_(acc, m_V2f32);
+    var_(mass, f32);
 } Ball;
 T_use$((Ball)(P, S));
 T_use$((P$Ball)(O));
-T_use$((Ball)(
-    ArrList,
-    ArrList_init,
-    ArrList_fini,
-    ArrList_clearRetainingCap,
-    ArrList_ensureCap,
-    ArrList_appendWithin
-));
 $static let_(Ball_mass_scaler_by_radius, f32) = 10.0f;
 $static let_(Ball_velocity_tolerance, f32) = 0.01f;
 $static let_(Ball_drag_coefficient, f32) = 0.8f;
@@ -69,24 +62,23 @@ $static fn_((Ball_init(f32 x, f32 y, f32 radius))(Ball)) {
     };
 };
 
-// Ball collision record
-typedef struct BallCollisionPair {
-    usize collider_index;
-    usize collidee_index;
-} BallCollisionPair;
-T_use_S$(BallCollisionPair);
-
-// Ball system manager
+T_use$((Ball)(
+    ArrList,
+    ArrList_init,
+    ArrList_fini,
+    ArrList_clearRetainingCap,
+    ArrList_ensureCap,
+    ArrList_appendWithin
+));
 typedef struct BallManager {
-    ArrList$Ball balls;
-    O$P$Ball selected_ball;
-    Rand* rng;
-    mem_Allocator gpa;
+    var_(balls, ArrList$Ball);
+    var_(selected_ball, O$P$Ball);
+    var_(rng, Rand*);
+    var_(gpa, mem_Allocator);
 } BallManager;
 T_use_E$(BallManager);
-$must_check
-$static
-fn_((BallManager_init(mem_Allocator gpa, Rand* rng))(E$BallManager) $scope) {
+$attr($must_check)
+$static fn_((BallManager_init(mem_Allocator gpa, Rand* rng))(E$BallManager) $scope) {
     return_ok({
         .balls = try_(ArrList_init$Ball(gpa, 32)),
         .selected_ball = none(),
@@ -115,6 +107,13 @@ $static fn_((BallManager_replaceAllRandomly(BallManager* self, u32 count))(void)
         ball->mass = ball->transform.radius * Ball_mass_scaler_by_radius;
     });
 };
+
+// Ball collision record
+typedef struct BallCollisionPair {
+    usize collider_index;
+    usize collidee_index;
+} BallCollisionPair;
+T_use_S$(BallCollisionPair);
 $static fn_((BallManager_resolveCollisions(BallManager* self))(void)) {
     // Quick n^2 collision check between all balls
     for (usize i = 0; i < self->balls.items.len; ++i) {
@@ -201,7 +200,7 @@ $static fn_((BallManager_update(BallManager* self, f32 dt))(void)) {
 };
 
 // Convert world space to screen space for a ball
-$inline_always
+$attr($inline_always)
 $static fn_((worldToScreen(m_V2f32 pos, engine_Canvas* canvas))(m_V2f32)) {
     let scale = window_res_scale;
     let center = (m_V2f32){
@@ -231,7 +230,7 @@ $static fn_((BallManager_render(BallManager* self, engine_Canvas* canvas, const 
     }
 };
 
-$inline_always
+$attr($inline_always)
 $static fn_((screenToWorld(m_V2i32 screen_pos))(m_V2f32)) {
     var pos = (m_V2f32){
         .x = as$(f32)(screen_pos.x),

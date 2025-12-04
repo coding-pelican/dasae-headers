@@ -85,6 +85,14 @@ fn_((ArrList_cap(ArrList self))(usize)) {
     return self.cap;
 }
 
+fn_((ArrList_isEmpty(ArrList self))(bool)) {
+    return self.items.len == 0;
+}
+
+fn_((ArrList_isFull(ArrList self))(bool)) {
+    return self.items.len == self.cap;
+}
+
 fn_((ArrList_at(ArrList self, TypeInfo type, usize idx))(u_P_const$raw)) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
     return u_atS(ArrList_items(self, type), idx);
