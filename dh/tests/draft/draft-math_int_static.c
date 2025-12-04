@@ -2,7 +2,6 @@
 
 #define int_sq_static(_n...) \
     ((_n) * (_n))
-
 /* clang-format off */
 #define uint_sqrt_static(_n...) \
     /* \
@@ -10,8 +9,6 @@
      * \
      * if `_n` <= `1`, return `_n` for simplification \
      * otherwise, return result of Newton-Raphson method \
-     * \
-     * implementation is overflow-safe \
      */ ( \
     (_n) <= 1     ? (_n) : \
     (_n) < 256    ? __uint_sqrt_static__small(_n) : \
@@ -73,7 +70,7 @@
      * if `_g` == `0`, return `1` for division-by-zero prevention \
      * otherwise, return `(_g + _n/_g) / 2` as next guess \
      */ \
-    ((_g) == 0 ? 1 : ((_g) / 2 + (_n) / (2 * (_g))))
+    ((_g) == 0 ? 1 : (((_g) + (_n) / (_g)) / 2))
 /* clang-format on */
 
 #define int_cb_static(_n...) \
@@ -85,8 +82,6 @@
      * \
      * if `_n` <= `1`, return `_n` for simplification \
      * otherwise, return result of Newton-Raphson method \
-     * \
-     * implementation is overflow-safe \
      */ ( \
     (_n) <= 1     ? (_n) : \
     (_n) < 512    ? __uint_cbrt_static__small(_n) : \
@@ -142,7 +137,7 @@
      * if `_g` == `0`, return `1` for division-by-zero prevention \
      * otherwise, return `(2*_g + _n/(_g*_g)) / 3` as next guess \
      */ \
-    ((_g) == 0 ? 1 : ((2 * (_g)) / 3 + (_n) / (3 * (_g) * (_g))))
+    ((_g) == 0 ? 1 : (((2 * (_g)) + (_n) / ((_g) * (_g))) / 3))
 /* clang-format on */
 
 #define int_hypotSq_static(_x, _y...) \
@@ -154,12 +149,14 @@
 
 // Static 변수 초기화
 static const u32 val_small = uint_sqrt_static(100);     // 10
+static const u32 val_medium = uint_sqrt_static(150000); // 387 (실제: 387.29)
 static const u32 val_large = uint_sqrt_static(1234567); // 1111 (실제: 1111.11)
 static const u32 val_prime = uint_sqrt_static(30);      // 5 (실제: 5.47 -> 정수버림 5)
 static const u32 val_27 = uint_cbrt_static(27);
 
 fn_((someFunc(void))(void)) {
     io_stream_println(u8_l("SQRT(100)     = {:u}"), val_small);
+    io_stream_println(u8_l("SQRT(150000)  = {:u}"), val_medium);
     io_stream_println(u8_l("SQRT(1234567) = {:u}"), val_large);
     io_stream_println(u8_l("SQRT(30)      = {:u}"), val_prime);
     io_stream_println(u8_l("CBRT(27)      = {:u}"), val_27);
