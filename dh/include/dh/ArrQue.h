@@ -53,6 +53,20 @@ extern fn_((ArrQue_fixed(u_S$raw buf))(ArrQue));
 extern fn_((ArrQue_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrQue)) $must_check;
 extern fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
+typedef struct ArrQue_Grip {
+    var_(buf, S$raw);
+    var_(head, usize*);
+    var_(len, usize*);
+    var_(ctx, ArrQue);
+} ArrQue_Grip;
+#define ArrQue_Grip$$(_T...) __comp_anon__ArrQue_Grip$$(_T)
+#define ArrQue_Grip$(_T...) __comp_alias__ArrQue_Grip$(_T)
+#define T_decl_ArrQue_Grip$(_T...) __comp_gen__T_decl_ArrQue_Grip$(_T)
+#define T_impl_ArrQue_Grip$(_T...) __comp_gen__T_impl_ArrQue_Grip$(_T)
+#define T_use_ArrQue_Grip$(_T...) __comp_gen__T_use_ArrQue_Grip$(_T)
+extern fn_((ArrQue_grip(u_S$raw buf, usize* head, usize* len))(ArrQue_Grip));
+extern fn_((ArrQue_Grip_release(ArrQue_Grip* self, TypeInfo type))(void));
+
 extern fn_((ArrQue_len(ArrQue self))(usize));
 extern fn_((ArrQue_cap(ArrQue self))(usize));
 extern fn_((ArrQue_isEmpty(ArrQue self))(bool));
@@ -109,7 +123,7 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrQue); \
+        var_(as_raw, ArrQue) $like_ref; \
     }
 #define __comp_alias__ArrQue$(_T...) pp_join($, ArrQue, _T)
 #define __comp_gen__T_decl_ArrQue$(_T...) \
@@ -125,7 +139,7 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrQue); \
+        var_(as_raw, ArrQue) $like_ref; \
     }; \
     T_impl_O$(ArrQue$(_T)); \
     T_impl_E$(ArrQue$(_T)); \
@@ -155,7 +169,49 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
     $static fn_((tpl_id(ArrQue_fini, _T)(P$$(ArrQue$(_T)) self, mem_Allocator gpa))(void)) { \
         return ArrQue_fini(self->as_raw, typeInfo$(_T), gpa); \
     }
+/* clang-format on */
 
+#define __comp_anon__ArrQue_Grip$$(_T...) \
+    union { \
+        struct { \
+            var_(buf, S$$(_T)); \
+            var_(head, usize*); \
+            var_(len, usize*); \
+            var_(ctx, ArrQue$$(_T)); \
+        }; \
+        var_(as_raw, ArrQue_Grip) $like_ref; \
+    }
+#define __comp_alias__ArrQue_Grip$(_T...) pp_join($, ArrQue_Grip, _T)
+#define __comp_gen__T_decl_ArrQue_Grip$(_T...) \
+    $maybe_unused typedef union ArrQue_Grip$(_T) ArrQue_Grip$(_T)
+#define __comp_gen__T_impl_ArrQue_Grip$(_T...) \
+    union ArrQue_Grip$(_T) { \
+        struct { \
+            var_(buf, S$(_T)); \
+            var_(head, usize*); \
+            var_(len, usize*); \
+            var_(ctx, ArrQue$(_T)); \
+        }; \
+        var_(as_raw, ArrQue_Grip) $like_ref; \
+    }
+#define __comp_gen__T_use_ArrQue_Grip$(_T...) \
+    T_decl_ArrQue_Grip$(_T); \
+    T_impl_ArrQue_Grip$(_T)
+
+/* clang-format off */
+#define T_use_ArrQue_grip$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrQue_grip, _T)(S$(_T) buf, usize* head, usize* len))(ArrQue_Grip$(_T))) { \
+        return type$((ArrDeq_Grip$(_T))(ArrDeq_grip(u_anyS(buf), head, len))); \
+    }
+#define T_use_ArrQue_Grip_release$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrQue_Grip_release, _T)(P$$(ArrQue_Grip$(_T)) self))(void)) { \
+        return ArrQue_Grip_release(self->as_raw, typeInfo$(_T)); \
+    }
+/* clang-format on */
+
+/* clang-format off */
 #define T_use_ArrQue_len$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrQue_len, _T)(ArrQue$(_T) self))(usize)) { \
@@ -272,7 +328,7 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrQue_Iter); \
+        var_(as_raw, ArrQue_Iter) $like_ref; \
     }
 #define __comp_alias__ArrQue_Iter$(_T...) pp_join($, ArrQue_Iter, _T)
 #define __comp_gen__T_decl_ArrQue_Iter$(_T...) \
@@ -284,7 +340,7 @@ extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrQue_Iter); \
+        var_(as_raw, ArrQue_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_ArrQue_Iter$(_T...) \
     T_decl_ArrQue_Iter$(_T); \

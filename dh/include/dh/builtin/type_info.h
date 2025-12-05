@@ -39,6 +39,10 @@ extern "C" {
      */ \
     __typeof__(_Expr)
 
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+
+/* clang >= 16.0, gcc >= 13.1 */
+#if defined(__clang__) && GCC_VERSION >= 16
 #define TypeOfUnqual(_Expr...) \
     /** \
      * @brief Get unqualified type of an expression at compile time \
@@ -46,7 +50,10 @@ extern "C" {
      * @param _Expr Value or expression to get type of \
      * @return Unqualified type of the expression \
      */ \
-    __typeof_unqual(_Expr)
+    __typeof_unqual__(_Expr)
+#else
+#define TypeOfUnqual(_Expr...) TypeOf((TypeOf(_Expr))(lit0$((TypeOf(_Expr)))))
+#endif
 
 #define isCompTimeFoldable(_Expr...) \
     /** \
@@ -126,29 +133,16 @@ extern "C" {
 /*========== Macros and Implementations =====================================*/
 
 #define FUNC__TypeOf(_Expr...)
-
-
 #define FUNC__TypeOfUnqual(_Expr...)
-
-
 #define FUNC__isCompTimeFoldable(_Expr...)
 
-
 #define FUNC__isSameType$(T_lhs, T_rhs...)
-
-
 #define FUNC__isSameTypeUnqual(T_lhs, T_rhs...)
-
-
-#define FUNC__isUnsigned(T) _Generic((T){0}, u8: true, u16: true, u32: true, u64: true, default: false)
-
-#define FUNC__isSigned(T) _Generic((T){0}, i8: true, i16: true, i32: true, i64: true, default: false)
-
+#define FUNC__isUnsigned(T) _Generic((T){ 0 }, u8: true, u16: true, u32: true, u64: true, default: false)
+#define FUNC__isSigned(T) _Generic((T){ 0 }, i8: true, i16: true, i32: true, i64: true, default: false)
 #define FUNC__isInt(T) (isUnsigned(T) || isSigned(T))
-
-#define FUNC__isFlt(T) _Generic((T){0}, f32: true, f64: true, default: false)
-
-#define FUNC__isBool(T) _Generic((T){0}, bool: true, default: false)
+#define FUNC__isFlt(T) _Generic((T){ 0 }, f32: true, f64: true, default: false)
+#define FUNC__isBool(T) _Generic((T){ 0 }, bool: true, default: false)
 
 #if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L)
 #ifndef __cplusplus
@@ -170,7 +164,7 @@ void example_usage(void) {
     usize int_align = alignOf(i32);
 
     /* Array operations */
-    i32 numbers[] = {1, 2, 3, 4, 5};
+    i32 numbers[] = { 1, 2, 3, 4, 5 };
     usize arr_count = countOf(numbers);
 
     /* Type checking */

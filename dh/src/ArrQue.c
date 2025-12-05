@@ -39,6 +39,34 @@ fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
     ArrDeq_fini(queAsDeq(self), type, gpa);
 }
 
+claim_assert_static(sizeOf$(TypeOf(ArrQue_Grip)) == sizeOf$(TypeOf(ArrDeq_Grip)));
+claim_assert_static(alignOf$(TypeOf(ArrQue_Grip)) == alignOf$(TypeOf(ArrDeq_Grip)));
+claim_assert_static(offsetTo(ArrQue_Grip, buf) == offsetTo(ArrDeq_Grip, buf));
+claim_assert_static(offsetTo(ArrQue_Grip, head) == offsetTo(ArrDeq_Grip, head));
+claim_assert_static(offsetTo(ArrQue_Grip, len) == offsetTo(ArrDeq_Grip, len));
+claim_assert_static(offsetTo(ArrQue_Grip, ctx) == offsetTo(ArrDeq_Grip, ctx));
+
+#define deqGripAsQueGrip(_p_grip...) _Generic( \
+    TypeOf(_p_grip), \
+    const ArrDeq_Grip*: as$(const ArrQue_Grip*)(_p_grip), \
+    ArrDeq_Grip*: as$(ArrQue_Grip*)(_p_grip) \
+)
+#define queGripAsDeqGrip(_p_grip...) _Generic( \
+    TypeOf(_p_grip), \
+    const ArrQue_Grip*: as$(const ArrDeq_Grip*)(_p_grip), \
+    ArrQue_Grip*: as$(ArrDeq_Grip*)(_p_grip) \
+)
+$attr($inline_always)
+$static fn_((deqGripToQueGrip(ArrDeq_Grip self))(ArrQue_Grip)) { return *deqGripAsQueGrip(&self); }
+
+fn_((ArrQue_grip(u_S$raw buf, usize* head, usize* len))(ArrQue_Grip)) {
+    return deqGripToQueGrip(ArrDeq_grip(buf, head, len));
+}
+
+fn_((ArrQue_Grip_release(ArrQue_Grip* self, TypeInfo type))(void)) {
+    return ArrDeq_Grip_release(queGripAsDeqGrip(self), type);
+}
+
 fn_((ArrQue_len(ArrQue self))(usize)) {
     return ArrDeq_len(queToDeq(self));
 }

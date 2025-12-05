@@ -53,6 +53,20 @@ extern fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq));
 extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrDeq)) $must_check;
 extern fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
 
+typedef struct ArrDeq_Grip {
+    var_(buf, S$raw);
+    var_(head, usize*);
+    var_(len, usize*);
+    var_(ctx, ArrDeq);
+} ArrDeq_Grip;
+#define ArrDeq_Grip$$(_T...) __comp_anon__ArrDeq_Grip$$(_T)
+#define ArrDeq_Grip$(_T...) __comp_alias__ArrDeq_Grip$(_T)
+#define T_decl_ArrDeq_Grip$(_T...) __comp_gen__T_decl_ArrDeq_Grip$(_T)
+#define T_impl_ArrDeq_Grip$(_T...) __comp_gen__T_impl_ArrDeq_Grip$(_T)
+#define T_use_ArrDeq_Grip$(_T...) __comp_gen__T_use_ArrDeq_Grip$(_T)
+extern fn_((ArrDeq_grip(u_S$raw buf, usize* head, usize* len))(ArrDeq_Grip));
+extern fn_((ArrDeq_Grip_release(ArrDeq_Grip* self, TypeInfo type))(void));
+
 extern fn_((ArrDeq_len(ArrDeq self))(usize));
 extern fn_((ArrDeq_cap(ArrDeq self))(usize));
 extern fn_((ArrDeq_isEmpty(ArrDeq self))(bool));
@@ -114,7 +128,7 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrDeq); \
+        var_(as_raw, ArrDeq) $like_ref; \
     }
 #define __comp_alias__ArrDeq$(_T...) pp_join($, ArrDeq, _T)
 #define __comp_gen__T_decl_ArrDeq$(_T...) \
@@ -130,7 +144,7 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrDeq); \
+        var_(as_raw, ArrDeq) $like_ref; \
     }; \
     T_impl_O$(ArrDeq$(_T)); \
     T_impl_E$(ArrDeq$(_T)); \
@@ -160,7 +174,49 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
     $static fn_((tpl_id(ArrDeq_fini, _T)(P$$(ArrDeq$(_T)) self, mem_Allocator gpa))(void)) { \
         return ArrDeq_fini(self->as_raw, typeInfo$(_T), gpa); \
     }
+/* clang-format on */
 
+#define __comp_anon__ArrDeq_Grip$$(_T...) \
+    union { \
+        struct { \
+            var_(buf, S$$(_T)); \
+            var_(head, usize*); \
+            var_(len, usize*); \
+            var_(ctx, ArrDeq$$(_T)); \
+        }; \
+        var_(as_raw, ArrDeq_Grip) $like_ref; \
+    }
+#define __comp_alias__ArrDeq_Grip$(_T...) pp_join($, ArrDeq_Grip, _T)
+#define __comp_gen__T_decl_ArrDeq_Grip$(_T...) \
+    $maybe_unused typedef union ArrDeq_Grip$(_T) ArrDeq_Grip$(_T)
+#define __comp_gen__T_impl_ArrDeq_Grip$(_T...) \
+    union ArrDeq_Grip$(_T) { \
+        struct { \
+            var_(buf, S$(_T)); \
+            var_(head, usize*); \
+            var_(len, usize*); \
+            var_(ctx, ArrDeq$(_T)); \
+        }; \
+        var_(as_raw, ArrDeq_Grip) $like_ref; \
+    }
+#define __comp_gen__T_use_ArrDeq_Grip$(_T...) \
+    T_decl_ArrDeq_Grip$(_T); \
+    T_impl_ArrDeq_Grip$(_T)
+
+/* clang-format off */
+#define T_use_ArrDeq_grip$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrDeq_grip, _T)(S$(_T) buf, usize* head, usize* len))(ArrDeq_Grip$(_T))) { \
+        return type$((ArrDeq_Grip$(_T))(ArrDeq_grip(u_anyS(buf), head, len))); \
+    }
+#define T_use_ArrDeq_Grip_release$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrDeq_Grip_release, _T)(P$$(ArrDeq_Grip$(_T)) self))(void)) { \
+        return ArrDeq_Grip_release(self->as_raw, typeInfo$(_T)); \
+    }
+/* clang-format on */
+
+/* clang-format off */
 #define T_use_ArrDeq_len$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrDeq_len, _T)(ArrDeq$(_T) self))(usize)) { \
@@ -290,6 +346,7 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
     $static fn_((tpl_id(ArrDeq_shift, _T)(P$$(ArrDeq$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrDeq_shift(self->as_raw, u_retV$(_T))))); \
     } $unscoped_(fn)
+/* clang-format on */
 
 #define __comp_anon__ArrDeq_Iter$$(_T...) \
     union { \
@@ -298,7 +355,7 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrDeq_Iter); \
+        var_(as_raw, ArrDeq_Iter) $like_ref; \
     }
 #define __comp_alias__ArrDeq_Iter$(_T...) pp_join($, ArrDeq_Iter, _T)
 #define __comp_gen__T_decl_ArrDeq_Iter$(_T...) \
@@ -310,12 +367,13 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrDeq_Iter); \
+        var_(as_raw, ArrDeq_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_ArrDeq_Iter$(_T...) \
     T_decl_ArrDeq_Iter$(_T); \
     T_impl_ArrDeq_Iter$(_T)
 
+/* clang-format off */
 #define T_use_ArrDeq_iter$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrDeq_iter, _T)(P_const$$(ArrDeq$(_T)) self))(ArrDeq_Iter$(_T))) { \

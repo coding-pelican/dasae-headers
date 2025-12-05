@@ -121,7 +121,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
             var_(ctx, u_P_const$raw); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrPQue); \
+        var_(as_raw, ArrPQue) $like_ref; \
     }
 #define __comp_alias__ArrPQue$(_T...) pp_join($, ArrPQue, _T)
 #define __comp_gen__T_decl_ArrPQue$(_T...) \
@@ -138,7 +138,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
             var_(ctx, u_P_const$raw); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrPQue); \
+        var_(as_raw, ArrPQue) $like_ref; \
     }; \
     T_impl_O$(ArrPQue$(_T)); \
     T_impl_E$(ArrPQue$(_T)); \
@@ -321,7 +321,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrPQue_Iter); \
+        var_(as_raw, ArrPQue_Iter) $like_ref; \
     }
 #define __comp_alias__ArrPQue_Iter$(_T...) pp_join($, ArrPQue_Iter, _T)
 #define __comp_gen__T_decl_ArrPQue_Iter$(_T...) \
@@ -333,7 +333,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrPQue_Iter); \
+        var_(as_raw, ArrPQue_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_ArrPQue_Iter$(_T...) \
     T_decl_ArrPQue_Iter$(_T); \

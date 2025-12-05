@@ -79,9 +79,10 @@ fn_((ArrList_Grip_release(ArrList_Grip* self, TypeInfo type))(void)) {
     claim_assert(self->buf.len == self->ctx.cap);
     claim_assert_nonnull(self->len);
     debug_assert_eqBy(self->ctx.type, type, TypeInfo_eq);
-    *self->len = self->ctx.items.len;
-    self->buf.ptr = null;
     self->ctx = ArrList_empty(type);
+    *self->len = self->ctx.items.len;
+    self->len = null;
+    self->buf.ptr = null;
 };
 
 fn_((ArrList_len(ArrList self))(usize)) {
