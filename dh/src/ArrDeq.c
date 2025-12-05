@@ -10,7 +10,7 @@ $static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
     claim_unreachable;
 } $unscoped_(fn);
 
-$inline_always
+$attr($inline_always)
 $static fn_((calcInitCap(TypeInfo type))(usize)) {
     return as$(usize)(prim_max(1, arch_cache_line / type.size));
 }
@@ -39,7 +39,7 @@ fn_((ArrDeq_empty(TypeInfo type))(ArrDeq)) {
     };
 }
 
-fn_((ArrDeq_fromBuf(u_S$raw buf))(ArrDeq)) {
+fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq)) {
     return (ArrDeq){
         .buf = buf.raw,
         .head = 0,

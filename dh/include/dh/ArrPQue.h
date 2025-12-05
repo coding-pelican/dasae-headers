@@ -52,7 +52,7 @@ T_use_E$($set(mem_Err)(ArrPQue));
 /*========== Function Prototypes ============================================*/
 
 extern fn_((ArrPQue_empty(TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue));
-extern fn_((ArrPQue_fromBuf(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue));
+extern fn_((ArrPQue_fixed(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue));
 extern fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, u_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$ArrPQue)) $must_check;
 extern fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
@@ -153,10 +153,10 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
     $static fn_((tpl_id(ArrPQue_empty, _T)(u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue$(_T))) { \
         return type$((ArrPQue$(_T))(ArrPQue_empty(typeInfo$(_T), ordFn, ctx))); \
     }
-#define T_use_ArrPQue_fromBuf$(_T...) \
+#define T_use_ArrPQue_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPQue_fromBuf, _T)(S$(_T) buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue$(_T))) { \
-        return type$((ArrPQue$(_T))(ArrPQue_fromBuf(u_anyS(buf), ordFn, ctx))); \
+    $static fn_((tpl_id(ArrPQue_fixed, _T)(S$(_T) buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue$(_T))) { \
+        return type$((ArrPQue$(_T))(ArrPQue_fixed(u_anyS(buf), ordFn, ctx))); \
     }
 #define T_use_ArrPQue_init$(_T...) \
     $attr($inline_always $must_check) \

@@ -10,7 +10,7 @@ $static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
     claim_unreachable;
 } $unscoped_(fn);
 
-$inline_always
+$attr($inline_always)
 $static fn_((calcInitCap(TypeInfo type))(usize)) {
     return as$(usize)(prim_max(1, arch_cache_line / type.size));
 }
@@ -26,17 +26,17 @@ $static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
 // Heap Operations (Binary Min-Heap)
 // ============================================================================
 
-$inline_always
+$attr($inline_always)
 $static fn_((parentIdx(usize idx))(usize)) {
     return (idx - 1) >> 1;
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((leftChildIdx(usize idx))(usize)) {
     return (idx << 1) + 1;
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((rightChildIdx(usize idx))(usize)) {
     return (idx << 1) + 2;
 }
@@ -114,7 +114,7 @@ fn_((ArrPQue_empty(TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue)
     };
 }
 
-fn_((ArrPQue_fromBuf(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue)) {
+fn_((ArrPQue_fixed(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue)) {
     return (ArrPQue){
         .items = u_sliceS(buf, $r(0, 0)).raw,
         .cap = buf.len,

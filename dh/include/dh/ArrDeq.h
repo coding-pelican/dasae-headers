@@ -49,7 +49,7 @@ T_use$((ArrDeq)(O, E));
 T_use_E$($set(mem_Err)(ArrDeq));
 
 extern fn_((ArrDeq_empty(TypeInfo type))(ArrDeq));
-extern fn_((ArrDeq_fromBuf(u_S$raw buf))(ArrDeq));
+extern fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq));
 extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrDeq)) $must_check;
 extern fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
 
@@ -145,10 +145,10 @@ extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
     $static fn_((tpl_id(ArrDeq_empty, _T)(void))(ArrDeq$(_T))) { \
         return type$((ArrDeq$(_T))(ArrDeq_empty(typeInfo$(_T)))); \
     }
-#define T_use_ArrDeq_fromBuf$(_T...) \
+#define T_use_ArrDeq_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrDeq_fromBuf, _T)(S$(_T) buf))(ArrDeq$(_T))) { \
-        return type$((ArrDeq$(_T))(ArrDeq_fromBuf(u_anyS(buf)))); \
+    $static fn_((tpl_id(ArrDeq_fixed, _T)(S$(_T) buf))(ArrDeq$(_T))) { \
+        return type$((ArrDeq$(_T))(ArrDeq_fixed(u_anyS(buf)))); \
     }
 #define T_use_ArrDeq_init$(_T...) \
     $attr($inline_always $must_check) \

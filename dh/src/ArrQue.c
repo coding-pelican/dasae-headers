@@ -18,17 +18,17 @@ debug_assert_static(offsetTo(ArrQue, type) == offsetTo(ArrDeq, type));
     const ArrDeq*: as$(const ArrQue*)(_p_deq), \
     ArrDeq*: as$(ArrQue*)(_p_deq) \
 )
-$inline_always
+$attr($inline_always)
 $static fn_((queToDeq(ArrQue self))(ArrDeq)) { return *queAsDeq(&self); }
-$inline_always
+$attr($inline_always)
 $static fn_((deqToQue(ArrDeq self))(ArrQue)) { return *deqAsQue(&self); }
 
 fn_((ArrQue_empty(TypeInfo type))(ArrQue)) {
     return deqToQue(ArrDeq_empty(type));
 }
 
-fn_((ArrQue_fromBuf(u_S$raw buf))(ArrQue)) {
-    return deqToQue(ArrDeq_fromBuf(buf));
+fn_((ArrQue_fixed(u_S$raw buf))(ArrQue)) {
+    return deqToQue(ArrDeq_fixed(buf));
 }
 
 fn_((ArrQue_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrQue) $scope) {
@@ -139,7 +139,7 @@ debug_assert_static(offsetTo(ArrQue_Iter, type) == offsetTo(ArrDeq_Iter, type));
     const ArrDeq_Iter*: as$(const ArrQue_Iter*)(_p_deq_iter), \
     ArrDeq_Iter*: as$(ArrQue_Iter*)(_p_deq_iter) \
 )
-$inline_always
+$attr($inline_always)
 $static fn_((deqIterToQueIter(ArrDeq_Iter self))(ArrQue_Iter)) { return *deqIterAsQueIter(&self); }
 
 fn_((ArrQue_iter(const ArrQue* self, TypeInfo type))(ArrQue_Iter)) {

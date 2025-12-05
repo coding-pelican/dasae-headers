@@ -3,7 +3,7 @@
 #include "Backend_Internal.h"
 
 T_use$((engine_CanvasView)(
-    ArrList_fromBuf,
+    ArrList_fixed,
     ArrList_init,
     ArrList_fini,
     ArrList_addBackWithin,
@@ -40,7 +40,7 @@ fn_((engine_Window_init(engine_Window_Config config))(E$P$engine_Window) $guard)
     /* Init canvas views */
     window->views_buf = config.views_buf;
     if_some((window->views_buf)(views_buf)) {
-        window->views = ArrList_fromBuf$engine_CanvasView(views_buf);
+        window->views = ArrList_fixed$engine_CanvasView(views_buf);
     } else_none {
         window->views = try_(ArrList_init$engine_CanvasView(gpa, engine_Window_view_count_limit));
     };

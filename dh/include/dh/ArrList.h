@@ -49,28 +49,23 @@ T_use_E$($set(mem_Err)(ArrList));
 /*========== Function Prototypes ============================================*/
 
 extern fn_((ArrList_empty(TypeInfo type))(ArrList));
-extern fn_((ArrList_fromBuf(u_S$raw buf))(ArrList));
+extern fn_((ArrList_fixed(u_S$raw buf))(ArrList));
 extern fn_((ArrList_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrList)) $must_check;
 extern fn_((ArrList_fini(ArrList* self, TypeInfo type, mem_Allocator gpa))(void));
 extern fn_((ArrList_clone(ArrList self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrList)) $must_check;
 
-#if UNUSED_CODE
-extern fn_((ArrList_borrowParts(u_S$raw buf, usize len))(ArrList));
-extern fn_((ArrList_commitParts(ArrList self, u_S$raw buf, usize* len))(u_S$raw));
-#endif /* UNUSED_CODE */
-
-typedef struct ArrList_Parts {
+typedef struct ArrList_Grip {
     var_(buf, S$raw);
-    var_(len, usize);
-    debug_only(var_(type, TypeInfo);)
-} ArrList_Parts;
-#define ArrList_Parts$$(_T...) __comp_anon__ArrList_Parts$$(_T)
-#define ArrList_Parts$(_T...) __comp_alias__ArrList_Parts$(_T)
-#define T_decl_ArrList_Parts$(_T...) __comp_gen__T_decl_ArrList_Parts$(_T)
-#define T_impl_ArrList_Parts$(_T...) __comp_gen__T_impl_ArrList_Parts$(_T)
-#define T_use_ArrList_Parts$(_T...) __comp_gen__T_use_ArrList_Parts$(_T)
-extern fn_((ArrList_fromParts(u_S$raw buf, usize len))(ArrList));
-extern fn_((ArrList_intoParts(ArrList* self, TypeInfo type))(ArrList_Parts));
+    var_(len, usize*);
+    var_(ctx, ArrList);
+} ArrList_Grip;
+#define ArrList_Grip$$(_T...) __comp_anon__ArrList_Grip$$(_T)
+#define ArrList_Grip$(_T...) __comp_alias__ArrList_Grip$(_T)
+#define T_decl_ArrList_Grip$(_T...) __comp_gen__T_decl_ArrList_Grip$(_T)
+#define T_impl_ArrList_Grip$(_T...) __comp_gen__T_impl_ArrList_Grip$(_T)
+#define T_use_ArrList_Grip$(_T...) __comp_gen__T_use_ArrList_Grip$(_T)
+extern fn_((ArrList_grip(u_S$raw buf, usize* len))(ArrList_Grip));
+extern fn_((ArrList_Grip_release(ArrList_Grip* self, TypeInfo type))(void));
 
 extern fn_((ArrList_len(ArrList self))(usize));
 extern fn_((ArrList_cap(ArrList self))(usize));
@@ -162,7 +157,7 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrList); \
+        var_(as_raw, ArrList) $like_ref; \
     }
 #define __comp_alias__ArrList$(_T...) pp_join($, ArrList, _T)
 #define __comp_gen__T_decl_ArrList$(_T...) \
@@ -177,7 +172,7 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        var_(as_raw $like_ref, ArrList); \
+        var_(as_raw, ArrList) $like_ref; \
     }; \
     T_impl_O$(ArrList$(_T)); \
     T_impl_E$(ArrList$(_T)); \
@@ -192,10 +187,10 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrList_empty, _T)(void))(ArrList$(_T))) { \
         return type$((ArrList$(_T))(ArrList_empty(typeInfo$(_T)))); \
     }
-#define T_use_ArrList_fromBuf$(_T...) \
+#define T_use_ArrList_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrList_fromBuf, _T)(S$(_T) buf))(ArrList$(_T))) { \
-        return type$((ArrList$(_T))(ArrList_fromBuf(u_anyS(buf)))); \
+    $static fn_((tpl_id(ArrList_fixed, _T)(S$(_T) buf))(ArrList$(_T))) { \
+        return type$((ArrList$(_T))(ArrList_fixed(u_anyS(buf)))); \
     }
 #define T_use_ArrList_init$(_T...) \
     $attr($inline_always $must_check) \
@@ -212,43 +207,47 @@ extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrList_clone, _T)(ArrList$(_T) self, mem_Allocator gpa))(E$($set(mem_Err)(ArrList$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrList_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped_(fn)
+/* clang-format on */
 
-#define __comp_anon__ArrList_Parts$$(_T...) \
+#define __comp_anon__ArrList_Grip$$(_T...) \
     union { \
         struct { \
             var_(buf, S$$(_T)); \
-            var_(len, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(len, usize*); \
+            var_(ctx, ArrList$$(_T)); \
         }; \
-        var_(as_raw $like_ref, ArrList_Parts); \
+        var_(as_raw, ArrList_Grip) $like_ref; \
     }
-#define __comp_alias__ArrList_Parts$(_T...) pp_join($, ArrList_Parts, _T)
-#define __comp_gen__T_decl_ArrList_Parts$(_T...) \
-    $maybe_unused typedef union ArrList_Parts$(_T) ArrList_Parts$(_T)
-#define __comp_gen__T_impl_ArrList_Parts$(_T...) \
-    union ArrList_Parts$(_T) { \
+#define __comp_alias__ArrList_Grip$(_T...) pp_join($, ArrList_Grip, _T)
+#define __comp_gen__T_decl_ArrList_Grip$(_T...) \
+    $maybe_unused typedef union ArrList_Grip$(_T) ArrList_Grip$(_T)
+#define __comp_gen__T_impl_ArrList_Grip$(_T...) \
+    union ArrList_Grip$(_T) { \
         struct { \
             var_(buf, S$(_T)); \
-            var_(len, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(len, usize*); \
+            var_(ctx, ArrList$(_T)); \
         }; \
-        var_(as_raw $like_ref, ArrList_Parts); \
+        var_(as_raw, ArrList_Grip) $like_ref; \
     }
-#define __comp_gen__T_use_ArrList_Parts$(_T...) \
-    T_decl_ArrList_Parts$(_T); \
-    T_impl_ArrList_Parts$(_T)
+#define __comp_gen__T_use_ArrList_Grip$(_T...) \
+    T_decl_ArrList_Grip$(_T); \
+    T_impl_ArrList_Grip$(_T)
 
-#define T_use_ArrList_fromParts$(_T...) \
+/* clang-format off */
+#define T_use_ArrList_grip$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrList_fromParts, _T)(S$(_T) buf, usize len))(ArrList$(_T))) { \
-        return type$((ArrList$(_T))(ArrList_fromParts(u_anyS(buf), len))); \
+    $static fn_((tpl_id(ArrList_grip, _T)(S$(_T) buf, usize* len))(ArrList_Grip$(_T))) { \
+        return type$((ArrList_Grip$(_T))(ArrList_grip(u_anyS(buf), len))); \
     }
-#define T_use_ArrList_intoParts$(_T...) \
+#define T_use_ArrList_Grip_release$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrList_intoParts, _T)(P$$(ArrList$(_T)) self))(ArrList_Parts$(_T))) { \
-        return type$((ArrList_Parts$(_T))(ArrList_intoParts(self->as_raw, typeInfo$(_T)))); \
+    $static fn_((tpl_id(ArrList_Grip_release, _T)(P$$(ArrList_Grip$(_T)) self))(void)) { \
+        return ArrList_Grip_release(self->as_raw, typeInfo$(_T)); \
     }
+/* clang-format on */
 
+/* clang-format off */
 #define T_use_ArrList_len$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrList_len, _T)(ArrList$(_T) self))(usize)) { \

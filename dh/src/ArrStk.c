@@ -17,17 +17,17 @@ debug_assert_static(offsetTo(ArrStk, type) == offsetTo(ArrList, type));
     const ArrList*: as$(const ArrStk*)(_p_list), \
     ArrList*: as$(ArrStk*)(_p_list) \
 )
-$inline_always
+$attr($inline_always)
 $static fn_((stkToList(ArrStk self))(ArrList)) { return *stkAsList(&self); }
-$inline_always
+$attr($inline_always)
 $static fn_((listToStk(ArrList self))(ArrStk)) { return *listAsStk(&self); }
 
 fn_((ArrStk_empty(TypeInfo type))(ArrStk)) {
     return listToStk(ArrList_empty(type));
 }
 
-fn_((ArrStk_fromBuf(u_S$raw buf))(ArrStk)) {
-    return listToStk(ArrList_fromBuf(buf));
+fn_((ArrStk_fixed(u_S$raw buf))(ArrStk)) {
+    return listToStk(ArrList_fixed(buf));
 }
 
 fn_((ArrStk_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrStk) $scope) {
@@ -42,26 +42,31 @@ fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk
     return_ok(listToStk(try_(ArrList_clone(stkToList(self), type, gpa))));
 } $unscoped_(fn);
 
-claim_assert_static(sizeOf$(TypeOf(ArrStk_Parts)) == sizeOf$(TypeOf(ArrList_Parts)));
-claim_assert_static(alignOf$(TypeOf(ArrStk_Parts)) == alignOf$(TypeOf(ArrList_Parts)));
-claim_assert_static(offsetTo(ArrStk_Parts, buf) == offsetTo(ArrList_Parts, buf));
-claim_assert_static(offsetTo(ArrStk_Parts, len) == offsetTo(ArrList_Parts, len));
-debug_assert_static(offsetTo(ArrStk_Parts, type) == offsetTo(ArrList_Parts, type));
+claim_assert_static(sizeOf$(TypeOf(ArrStk_Grip)) == sizeOf$(TypeOf(ArrList_Grip)));
+claim_assert_static(alignOf$(TypeOf(ArrStk_Grip)) == alignOf$(TypeOf(ArrList_Grip)));
+claim_assert_static(offsetTo(ArrStk_Grip, buf) == offsetTo(ArrList_Grip, buf));
+claim_assert_static(offsetTo(ArrStk_Grip, len) == offsetTo(ArrList_Grip, len));
+claim_assert_static(offsetTo(ArrStk_Grip, ctx) == offsetTo(ArrList_Grip, ctx));
 
-#define listPartsAsStkParts(_p_parts...) _Generic( \
-    TypeOf(_p_parts), \
-    const ArrList_Parts*: as$(const ArrStk_Parts*)(_p_parts), \
-    ArrList_Parts*: as$(ArrStk_Parts*)(_p_parts) \
+#define listGripAsStkGrip(_p_grip...) _Generic( \
+    TypeOf(_p_grip), \
+    const ArrList_Grip*: as$(const ArrStk_Grip*)(_p_grip), \
+    ArrList_Grip*: as$(ArrStk_Grip*)(_p_grip) \
 )
-$inline_always
-$static fn_((listPartsToStkParts(ArrList_Parts self))(ArrStk_Parts)) { return *listPartsAsStkParts(&self); }
+#define stkGripAsListGrip(_p_grip...) _Generic( \
+    TypeOf(_p_grip), \
+    const ArrStk_Grip*: as$(const ArrList_Grip*)(_p_grip), \
+    ArrStk_Grip*: as$(ArrList_Grip*)(_p_grip) \
+)
+$attr($inline_always)
+$static fn_((listGripToStkGrip(ArrList_Grip self))(ArrStk_Grip)) { return *listGripAsStkGrip(&self); }
 
-fn_((ArrStk_fromParts(u_S$raw buf, usize len))(ArrStk)) {
-    return listToStk(ArrList_fromParts(buf, len));
+fn_((ArrStk_grip(u_S$raw buf, usize* len))(ArrStk_Grip)) {
+    return listGripToStkGrip(ArrList_grip(buf, len));
 }
 
-fn_((ArrStk_intoParts(ArrStk* self, TypeInfo type))(ArrStk_Parts)) {
-    return listPartsToStkParts(ArrList_intoParts(stkAsList(self), type));
+fn_((ArrStk_Grip_release(ArrStk_Grip* self, TypeInfo type))(void)) {
+    return ArrList_Grip_release(stkGripAsListGrip(self), type);
 }
 
 fn_((ArrStk_len(ArrStk self))(usize)) {
