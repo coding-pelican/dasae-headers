@@ -23,8 +23,8 @@ static bool s_pref_initialized = false;
 
 /* Initialization */
 /// Initialize performance counter frequency and offset.
-$static $on_load
-fn_((init(void))(void)) {
+$attr($on_load)
+$static fn_((init(void))(void)) {
     if (s_pref_initialized) { return; }
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
     if (!QueryPerformanceFrequency(&s_perf_freq)) {
@@ -46,25 +46,25 @@ fn_((init(void))(void)) {
 #endif
     s_pref_initialized = true;
 }
-$inline_always
+$attr($inline_always)
 void ensureInit(void) {
     return init(), debug_assert_fmt(s_pref_initialized, "SysTime not initialized");
 }
 
 /* Accessors */
-$inline_always
+$attr($inline_always)
 time_SysTime freq(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_perf_freq };
 }
-$inline_always
+$attr($inline_always)
 f64 freqInv(void) {
     return ensureInit(), s_perf_freq_inv;
 }
-$inline_always
+$attr($inline_always)
 time_SysTime offset(void) {
     return ensureInit(), (time_SysTime){ .impl_ = s_pref_offset_value };
 }
-$inline_always
+$attr($inline_always)
 time_SysTime value(void) {
     return ensureInit(), (time_SysTime){
         .impl_ = blk({
@@ -109,7 +109,7 @@ fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O
     let diff = as$(f64)(later.impl_.QuadPart - earlier.impl_.QuadPart);
     // Convert ticks to nanoseconds
     let nanos = as$(u64)(diff * time_SysTime_nanos_per_sec * freqInv());
-#else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
+#else  /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
     // Calculate the difference in seconds and nanoseconds
     var diff = makeCleared$(time_SysTimePlatform);
     diff.tv_sec = later.impl_.tv_sec - earlier.impl_.tv_sec;

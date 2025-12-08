@@ -6,7 +6,7 @@
 #include "dh/os/windows.h"
 #endif /* plat_is_windows */
 
-$inline_always
+$attr($inline_always)
 $static fn_((io_getStdInHandle(void))(posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
@@ -14,7 +14,7 @@ $static fn_((io_getStdInHandle(void))(posix_fd_t)) {
     );
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((io_getStdOutHandle(void))(posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
@@ -22,7 +22,7 @@ $static fn_((io_getStdOutHandle(void))(posix_fd_t)) {
     );
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((io_getStdErrHandle(void))(posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),

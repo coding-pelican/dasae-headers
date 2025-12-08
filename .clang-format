@@ -7,6 +7,7 @@ Standard: c++20
 ColumnLimit: 0
 TabWidth: 4
 IndentWidth: 4
+IndentPPDirectives: None
 IndentExternBlock: NoIndent
 IndentGotoLabels: false
 ObjCBlockIndentWidth: 4
@@ -66,7 +67,9 @@ AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Always
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLoopsOnASingleLine: true
+# BinPackArguments: false
 BinPackArguments: true
+# BinPackParameters: false
 BinPackParameters: true
 
 InsertBraces: false
@@ -212,7 +215,7 @@ Macros:
   - "make$(T_Expr)=(T_Expr)"
   - "create$(T_Expr)=(T_Expr)"
 
-  - "$attr(Attrs)=Attrs;"
+  - $attr(Attrs)=(void)Attrs;
   - $inline=__attribute__(());
   - $inline_always=__attribute__(());
   - $inline_never=__attribute__(());
@@ -237,24 +240,24 @@ Macros:
   - "return_(Expr)=return Expr"
   - "return_void(Expr)=return Expr"
 
-  - "return_some(Expr)=return some(Expr)"
-  - "return_some_void(Expr)=return some(Expr)"
-  - "return_none(Expr)=return Expr"
+  # - "return_some(Expr)=return Expr"
+  # - "return_some_void(Expr)=return Expr"
+  # - "return_none(Expr)=return Expr"
 
-  - "return_ok(Expr)=return ok(Expr)"
-  - "return_ok_void(Expr)=return Expr"
-  - "return_err(Expr)=return err(Expr)"
+  # - "return_ok(Expr)=return Expr"
+  # - "return_ok_void(Expr)=return Expr"
+  # - "return_err(Expr)=return Expr"
 
   - "$break_(Expr)=return Expr"
   - "$break_void(Expr)=return Expr"
 
-  - "$break_some(Expr)=return some(Expr)"
+  - "$break_some(Expr)=return Expr"
   - "$break_some_void(Expr)=return Expr"
   - "$break_none(Expr)=return Expr"
 
-  - "$break_ok(Expr)=return ok(Expr)"
+  - "$break_ok(Expr)=return Expr"
   - "$break_ok_void(Expr)=return Expr"
-  - "$break_err(Expr)=return err(Expr)"
+  - "$break_err(Expr)=return Expr"
 
   # Control flow
   - "if_(init, cond)=if (init; cond)"
@@ -279,6 +282,8 @@ Macros:
   - "match_(Expr)=switch (expr)"
 
 AttributeMacros:
+  - $attr
+
   - $inline
   - $inline_always
   - $inline_never

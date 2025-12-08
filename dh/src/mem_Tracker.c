@@ -56,7 +56,8 @@ typedef struct LeakSite {
 static mem_Tracker mem_Tracker_s_instance = cleared();
 
 /// Automatic initialization at program start
-static $on_load fn_((mem_Tracker_init(void))(void)) {
+$attr($on_load)
+$static fn_((mem_Tracker__init(void))(void)) {
     catch_((mem_Tracker_initWithPath(mem_Tracker_default_log_file))(err, {
         /* If initialization fails, try to log to stderr */
         printf("ERROR: Failed to initialize memory tracker: [%s] %s\n", Err_domainToCStr(err), Err_codeToCStr(err));
@@ -66,7 +67,8 @@ static $on_load fn_((mem_Tracker_init(void))(void)) {
 }
 
 /// Automatic finalization at program exit (will call atexit handler)
-static $on_exit fn_((mem_Tracker_fini(void))(void)) {
+$attr($on_exit)
+$static fn_((mem_Tracker__fini(void))(void)) {
     mem_Tracker_finiAndGenerateReport();
 }
 

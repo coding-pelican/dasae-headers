@@ -107,11 +107,11 @@ struct E$raw {
 
 #define T_use$(/*(_T)(_List_Parenthesized)*/...) __tpl_inst__T_use$(__tpl_inst__T_use$__parseT __VA_ARGS__)
 #define __tpl_inst__T_use$(...) __tpl_inst__T_use$__emit(__VA_ARGS__)
-#define __tpl_inst__T_use$__parseT(_T...) _T,
+#define __tpl_inst__T_use$__parseT(_T...) (_T),
 #define __tpl_inst__T_use$__emit(_T, _List_Parenthesized...) \
     pp_foreach(__tpl_inst__T_use$__each, _T, __tpl_inst__T_use$__unwrap _List_Parenthesized)
 #define __tpl_inst__T_use$__each(_T, /*_suffix*/...) __VA_OPT__( \
-    pp_cat3(T_use_, __VA_ARGS__, $)(_T); \
+    pp_cat3(T_use_, __VA_ARGS__, $) _T; \
 )
 #define __tpl_inst__T_use$__unwrap(_List...) _List
 

@@ -28,11 +28,11 @@ typedef struct test_Buf {
     S$u8 data;
     usize pos;
 } test_Buf;
-$must_check
+$attr($must_check)
 $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
-    let self      = as$(test_Buf*)(ctx);
+    let self = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
-    let to_write  = prim_min(bytes.len, remaining);
+    let to_write = prim_min(bytes.len, remaining);
     if (0 < to_write) {
         prim_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
         self->pos += to_write;
@@ -42,7 +42,7 @@ $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $sco
 $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
-        .pos  = 0
+        .pos = 0
     };
 }
 $static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
@@ -57,7 +57,7 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
     if (self.pos == 0) { return zeroS$((const u8)); }
     return sliceS(self.data, $r(0, self.pos)).as_const;
 }
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((test_Buf_take(test_Buf* self, S_const$u8 data))(bool)) {
     claim_assert_nonnull(self);
     if (self->data.len < data.len) { return false; }
@@ -65,7 +65,7 @@ $static fn_((test_Buf_take(test_Buf* self, S_const$u8 data))(bool)) {
     self->pos = data.len;
     return true;
 }
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((test_Buf_give(test_Buf* self, S$u8 output))(O$S$u8) $scope) {
     claim_assert_nonnull(self);
     if (output.len < self->pos) { return_none(); }
@@ -73,7 +73,7 @@ $static fn_((test_Buf_give(test_Buf* self, S$u8 output))(O$S$u8) $scope) {
     self->pos = 0;
     return_some(output);
 } $unscoped_(fn);
-$must_check $maybe_unused
+$attr($must_check $maybe_unused)
 $static fn_((test_Buf_giveAlloc(test_Buf* self, mem_Allocator allocator))(E$S$u8) $scope) {
     claim_assert_nonnull(self);
     let out = try_(u_castE$((E$S$u8)(mem_Allocator_alloc(allocator, typeInfo$(u8), self->pos))));
@@ -87,7 +87,7 @@ $static fn_((test_Buf_giveAlloc(test_Buf* self, mem_Allocator allocator))(E$S$u8
 TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = zero$A();
-    test_Buf buf    = test_Buf_init(ref$A$((u8)(mem)));
+    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test basic integers
@@ -585,10 +585,10 @@ TEST_fn_("io_Writer-print: Complex format combinations" $scope) {
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test a complex real-world-like format string
-    let name  = u8_l("Alice");
-    let age   = 25;
+    let name = u8_l("Alice");
+    let age = 25;
     let score = 95.7f;
-    let addr  = &age;
+    let addr = &age;
 
     try_(io_Writer_print(
         writer,

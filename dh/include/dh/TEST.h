@@ -33,7 +33,7 @@ extern "C" {
 errset_((TEST_Err)(Unexpected));
 
 /* Test case function type */
-typedef fn_((((*TEST_CaseFn)(void)))(E$void));
+typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;
 
 /* Test case structure */
 typedef struct TEST_Case {
@@ -57,11 +57,11 @@ typedef struct TEST_Framework {
 } TEST_Framework;
 
 /// @brief Access test framework singleton instance
-extern fn_((TEST_Framework_instance(void))(TEST_Framework*));
+$extern fn_((TEST_Framework_instance(void))(TEST_Framework*));
 /// @brief Bind test case to framework
-extern fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void));
+$extern fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void));
 /// @brief Run all registered tests
-extern fn_((TEST_Framework_run(void))(void));
+$extern fn_((TEST_Framework_run(void))(void));
 
 /*========== Test Macros ====================================================*/
 
@@ -78,12 +78,12 @@ extern fn_((TEST_Framework_run(void))(void));
 #define $unguarded_TEST_fn comp_syn__$unguarded_TEST_fn
 
 #if !on_comptime
-$extern $must_check
 /// @brief Check expression and record result
 /// @brief Same as TEST_expect but with custom message
-fn_((TEST_expect(bool expr))(E$void));
-$extern $must_check
-fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
+$attr($must_check)
+$extern fn_((TEST_expect(bool expr))(E$void));
+$attr($must_check)
+$extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
 #endif /* !on_comptime */
 
 /*========== Implementation Details ========================================*/
@@ -105,7 +105,7 @@ fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
 #define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...) \
     $static fn_((_ID_caseFn(void))(E$void)) $must_check; \
     $static comp_fn_gen__TEST__binder__sgn(_ID_binder) { \
-        static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
+        $static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) { \
             TEST_Framework_bindCase(_ID_caseFn, u8_l(_Name)); \
             s_is_bound = true; \
@@ -136,10 +136,10 @@ fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
 // clang-format on
 
 #if on_comptime
-$extern $must_check
-fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
-$extern $must_check
-fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void));
+$attr($must_check)
+$extern fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
+$attr($must_check)
+$extern fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void));
 
 #define TEST_expect(_expr...) TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), u8_l(#_expr))

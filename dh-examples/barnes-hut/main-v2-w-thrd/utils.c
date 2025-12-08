@@ -4,17 +4,9 @@
 #include "dh/mem/cfg.h"
 #include <malloc.h>
 
-void mem_swapBytes(S$u8 lhs, S$u8 rhs) {
-    debug_assert_true(lhs.len == rhs.len);
-    let tmp_len = lhs.len;
-    let tmp_ptr = as$(u8*, alloca(tmp_len));
-    prim_memcpy(tmp_ptr, lhs.ptr, lhs.len);
-    prim_memcpy(lhs.ptr, rhs.ptr, rhs.len);
-    prim_memcpy(rhs.ptr, tmp_ptr, tmp_len);
-}
-
 // Swap two elements of given size
-$inline_always void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
+$inline_always
+void utils_swapBytes(u8* const lhs, u8* const rhs, usize byte_len) {
     let tmp = as$(u8*, alloca(byte_len));
     prim_memcpy(tmp, lhs, byte_len);
     prim_memcpy(lhs, rhs, byte_len);
@@ -64,7 +56,9 @@ void utils_insertionSortWithArg(
 
 // TODO: 와 큰일 날 뻔... 직접적인 meta_S 생성은 금지해야겠다. meta_S_slice 함수 작성이 시급하다.
 E$void utils_mergeSortUsingTempRecur( // NOLINT
-    S$u8 temp_buffer, meta_S base_slice, cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
+    S$u8 temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs)
 ) {
     reserveReturn(E$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
@@ -138,7 +132,10 @@ E$void utils_mergeSortUsingTempRecur( // NOLINT
 }
 
 E$void utils_mergeSortWithArgUsingTempRecur( // NOLINT
-    S$u8 temp_buffer, meta_S base_slice, cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P_const$raw arg
+    S$u8 temp_buffer,
+    meta_S base_slice,
+    cmp_Ord (*compareFn)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P_const$raw arg
 ) {
     reserveReturn(E$void);
     if (base_slice.len <= utils_stableSort_threshold_merge_to_insertion) {
@@ -273,7 +270,8 @@ E$void utils_stableSortWithArgUsingTemp(
     return_void();
 }
 
-static $inline cmp_Ord compareBodyDistance(P_const$raw lhs, P_const$raw rhs) {
+static $inline
+cmp_Ord compareBodyDistance(P_const$raw lhs, P_const$raw rhs) {
     let lhs_body = as$(const Body*, lhs);
     let rhs_body = as$(const Body*, rhs);
     let lhs_dist = m_V2f32_lenSq(lhs_body->pos);
@@ -354,7 +352,8 @@ E$ArrList$Body utils_uniformDisc(mem_Allocator allocator, usize n) {
 #if DEPRECATED_CODE
 // Helper function to perform a safe multiplication, avoiding potential overflow
 use_Err(MulErr, Overflow);
-$inline_always E$usize mulSafe(usize lhs, usize rhs) {
+$inline_always
+E$usize mulSafe(usize lhs, usize rhs) {
     reserveReturn(E$usize);
     if (0 < lhs && SIZE_MAX / lhs < rhs) {
         // Multiplication would overflow
@@ -364,7 +363,12 @@ $inline_always E$usize mulSafe(usize lhs, usize rhs) {
 }
 // Modernized merge sort with temporary buffer (stable sort)
 static E$void mergeSortWithTmpRecur( // NOLINT
-    P$raw base, usize num, usize size, cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg), P$raw arg, S$u8 temp_buffer
+    P$raw base,
+    usize num,
+    usize size,
+    cmp_Ord (*comp)(P_const$raw lhs, P_const$raw rhs, P_const$raw arg),
+    P$raw arg,
+    S$u8 temp_buffer
 ) {
     scope_reserveReturn(E$void) {
         if (num <= 1) { return_void(); /* Nothing to sort */ }

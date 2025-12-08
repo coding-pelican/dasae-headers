@@ -10,10 +10,10 @@ T_use$((usize)(
     ListSgl_Adp_init
 ));
 // Forward declarations for allocator vtable functions
-$static fn_((heap_Arena__alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
-$static fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
-$static fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Arena__free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
+$static fn_((heap_Arena__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Arena__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 // Internal helper functions
 $static fn_((heap_Arena__createLink(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Link$usize));
@@ -134,10 +134,10 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-fn_((heap_Arena__alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+fn_((heap_Arena__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Arena*)(ctx);
-    let ptr_align = 1ull << align;
+    let ptr_align = mem_log2ToAlign(align);
 
     // 문제로 예상되는 지점 - Fixed
     var cur_link = expr_($P$(ListSgl_Link$usize) $scope)(if_some((self->state.buf_list.first)(first_link)) {
@@ -176,7 +176,7 @@ fn_((heap_Arena__alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     }
 } $unscoped_(fn);
 
-fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Arena*)(ctx);
     let_ignore = buf_align;
@@ -206,7 +206,7 @@ fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)
     return false;
 };
 
-fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
     if (heap_Arena__resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
@@ -214,7 +214,7 @@ fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8
     return_none();
 } $unscoped_(fn);
 
-fn_((heap_Arena__free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+fn_((heap_Arena__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Arena*)(ctx);
     let_ignore = buf_align;

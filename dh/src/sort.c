@@ -1,18 +1,8 @@
 #include "dh/sort.h"
 #include "dh/mem/cfg.h"
 
-$inline_always
-fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
-    debug_assert_true(lhs.len == rhs.len);
-    let tmp_len = lhs.len;
-    let tmp_ptr = as$(u8*)(alloca(tmp_len));
-    prim_memcpy(tmp_ptr, lhs.ptr, lhs.len);
-    prim_memcpy(lhs.ptr, rhs.ptr, rhs.len);
-    prim_memcpy(rhs.ptr, tmp_ptr, tmp_len);
-}
-
 /// Swap two elements of given size
-$inline_always
+$attr($inline_always)
 fn_((sort_swapBytes(u8* const lhs, u8* const rhs, usize byte_len))(void)) {
     let tmp = as$(u8*)(alloca(byte_len));
     prim_memcpy(tmp, lhs, byte_len);

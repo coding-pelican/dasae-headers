@@ -6,10 +6,10 @@
 /*========== Static Function Prototypes =====================================*/
 
 // Using xorshiro256** algorithm
-$inline_always
+$attr($inline_always)
 $static fn_((Rand__xorshiro256(u64 x, u32 k))(u64));
 // Generate next random number
-$inline_always
+$attr($inline_always)
 $static fn_((Rand__next(Rand* self))(u64));
 
 /*========== Extern Function Implementations ================================*/
@@ -107,12 +107,12 @@ fn_((Rand_rangeFlt(Rand* self, f64 min, f64 max))(f64)) {
 
 /*========== Static Function Implementations ================================*/
 
-$inline_always
+$attr($inline_always)
 $static fn_((Rand__xorshiro256(u64 x, u32 k))(u64)) {
     return (x << k) | (x >> (64ull - k));
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((Rand__next(Rand* self))(u64)) {
     const u64 next = Rand__xorshiro256(self->state * 5, 7) * 9;
     const u64 t = self->stream << 17ull;

@@ -4,10 +4,10 @@
 #include <stdlib.h>
 
 // Forward declarations for allocator vtable functions
-$static fn_((heap_Classic_alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
-$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
-$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
+$static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
     claim_assert_nonnull(self);
@@ -26,9 +26,9 @@ fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-$static fn_((heap_Classic_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+$static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
-    let ptr_align = 1ull << align;
+    let ptr_align = mem_log2ToAlign(align);
 
     // Allocate aligned memory
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
@@ -62,7 +62,7 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope)
     return_none();
 } $unscoped_(fn);
 
-$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 
@@ -87,9 +87,9 @@ $static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_le
     return false;
 }
 
-$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     let_ignore = ctx;
-    let ptr_align = 1ull << buf_align;
+    let ptr_align = mem_log2ToAlign(buf_align);
 
     // If the buffer is null, treat it as a malloc.
     if (buf.ptr == null) {
@@ -145,7 +145,7 @@ $static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len
     return_none();
 } $unscoped_(fn);
 
-$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 

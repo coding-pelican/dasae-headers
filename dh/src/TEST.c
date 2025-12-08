@@ -18,6 +18,8 @@
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
 
+#include <stdio.h>
+
 /* ANSI color codes */
 #define TEST_color_reset "\033[0m"
 #define TEST_color_red "\033[31m"
@@ -34,20 +36,18 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     static bool s_is_initialized = false;
     if (!s_is_initialized) {
         s_instance.gpa = heap_Page_allocator(&s_heap_ctx);
-        s_instance.cases[0] = catch_((ArrList_init$TEST_Case(s_instance.gpa, 8))($ignore, claim_unreachable));
+        s_instance.cases $like_deref = catch_((ArrList_init$TEST_Case(s_instance.gpa, 8))($ignore, claim_unreachable));
         s_is_initialized = true;
     }
     return &s_instance;
-}
+};
 
-$on_exit
-$static
-fn_((TEST_Framework_fini(void))(void)) {
+$static fn_((TEST_Framework_fini(void))(void)) {
     let instance = TEST_Framework_instance();
     let cases = instance->cases;
     let gpa = instance->gpa;
     ArrList_fini$TEST_Case(cases, gpa);
-}
+};
 
 fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
     let instance = TEST_Framework_instance();
@@ -57,10 +57,12 @@ fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
     // printf("self: %*s\n", (int)lenS(name), name.ptr);
     catch_((ArrList_append$TEST_Case(cases, gpa, (TEST_Case){ .fn = fn, .name = name }))($ignore, claim_unreachable));
     // printf("--- debug print: TEST_Framework_bindCase done ---\n");
-}
+};
 
-fn_((TEST_Framework_run(void))(void)) {
-    static let print = io_Writer_print;
+fn_((TEST_Framework_run(void))(void) $guard) {
+    defer_(TEST_Framework_fini());
+
+    let print = io_Writer_print;
     let out = fs_File_writer(io_getStdOut());
     let instance = TEST_Framework_instance();
     let cases = instance->cases;
@@ -76,28 +78,22 @@ fn_((TEST_Framework_run(void))(void)) {
     for_(($s(cases->items))(test_case) {
         instance->stats.total++;
         catch_((print(
-            out, u8_l("Running test: {:s}{:s}{:s}\n"),
-            u8_l(TEST_color_yellow), test_case->name, u8_l(TEST_color_reset)
+            out, u8_l("Running test: {:s}{:s}{:s}\n"), u8_l(TEST_color_yellow), test_case->name, u8_l(TEST_color_reset)
         ))($ignore, claim_unreachable));
 
         // Run the test
         if_err((test_case->fn())(err)) {
             instance->stats.failed++;
             catch_((print(
-                out, u8_l("    {:s}: [{:s}] {:s}\n"),
-                u8_l(TEST_color_red "[FAIL]" TEST_color_reset),
-                Err_domainToStr(err),
-                Err_codeToStr(err)
+                out, u8_l("    {:s}: [{:s}] {:s}\n"), u8_l(TEST_color_red "[FAIL]" TEST_color_reset), Err_domainToStr(err), Err_codeToStr(err)
             ))($ignore, claim_unreachable));
             Err_print(err);
             ErrTrace_print();
             ErrTrace_reset();
-        }
-        else_ok_void {
+        } else_ok_void {
             instance->stats.passed++;
             catch_((print(
-                out, u8_l("    {:s}\n"),
-                u8_l(TEST_color_green "[PASS]" TEST_color_reset)
+                out, u8_l("    {:s}\n"), u8_l(TEST_color_green "[PASS]" TEST_color_reset)
             ))($ignore, claim_unreachable));
         }
     });
@@ -111,13 +107,12 @@ fn_((TEST_Framework_run(void))(void)) {
         catch_((print(out, u8_l(TEST_color_red "Failed: {:u}" TEST_color_reset "\n"), instance->stats.failed))($ignore, claim_unreachable));
     }
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
-}
+} $unguarded_(fn);
 
 /* Debug versions of test functions */
 fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void) $scope) {
     let_ignore = loc;
     let_ignore = eval_str;
-
     if (!expr) {
         return_err(TEST_Err_Unexpected());
     }
@@ -128,7 +123,6 @@ fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_
     let_ignore = msg;
     let_ignore = loc;
     let_ignore = eval_str;
-
     if (!expr) {
         return_err(TEST_Err_Unexpected());
     }

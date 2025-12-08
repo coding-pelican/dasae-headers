@@ -82,7 +82,7 @@ extern "C" {
      * @param T_rhs Second type to compare \
      * @return bool True if types are the same \
      */ \
-    __builtin_types_compatible_p(T_lhs, T_rhs)
+    __builtin_types_compatible_p(TypeOfUnqual(T_lhs), TypeOfUnqual(T_rhs))
 
 /* Type Classification */
 #define isUnsigned(T) \

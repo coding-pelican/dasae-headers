@@ -118,6 +118,50 @@ fn_((mem_gt(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, 
 fn_((mem_le(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
 fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
 
+fn_((mem_swapBytesTemp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
+    claim_assert_nonnull(lhs.ptr);
+    claim_assert_nonnull(rhs.ptr);
+    claim_assert_nonnull(tmp.ptr);
+    claim_assert_true(lhs.len == rhs.len);
+    claim_assert_true(rhs.len <= tmp.len);
+    let buf = prefixS(tmp, lhs.len);
+    u_memcpyS(u_anyS(buf), u_anyS(lhs).as_const);
+    u_memcpyS(u_anyS(lhs), u_anyS(rhs).as_const);
+    u_memcpyS(u_anyS(rhs), u_anyS(buf).as_const);
+    return buf;
+};
+fn_((mem_swapTemp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw)) {
+    claim_assert_nonnull(lhs.ptr);
+    claim_assert_nonnull(rhs.ptr);
+    claim_assert_nonnull(tmp.ptr);
+    claim_assert_true(lhs.len == rhs.len);
+    claim_assert_true(rhs.len <= tmp.len);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    claim_assert(TypeInfo_eq(rhs.type, tmp.type));
+    let buf = u_prefixS(tmp, lhs.len);
+    for_(($us(lhs), $us(rhs), $us(buf))(l, r, t) {
+        u_memcpy(l, r.as_const);
+        u_memcpy(r, t.as_const);
+        u_memcpy(t, l.as_const);
+    });
+    return buf;
+};
+fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
+    claim_assert_nonnull(lhs.ptr);
+    claim_assert_nonnull(rhs.ptr);
+    claim_assert_true(lhs.len == rhs.len);
+    let tmp = u_castS$((S$u8)(u_allocA(lhs.len, typeInfo$(u8)).ref));
+    mem_swapBytesTemp(lhs, rhs, tmp);
+};
+fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void)) {
+    claim_assert_nonnull(lhs.ptr);
+    claim_assert_nonnull(rhs.ptr);
+    claim_assert_true(lhs.len == rhs.len);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    let tmp = u_allocA(lhs.len, typeInfo$(u8)).ref;
+    mem_swapTemp(lhs, rhs, tmp);
+};
+
 fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
     claim_assert_nonnull(haystack.ptr);
     claim_assert_nonnull(needle.ptr);

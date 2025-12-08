@@ -12,7 +12,9 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
         io_stream_eprintln(u8_l("opt is none!"));
         claim_unreachable;
     }));
-    let e = orelse_((opt)((io_stream_eprintln(u8_l("opt is none!")), 123)));
+    let e = orelse_((opt)((
+        io_stream_eprintln(u8_l("opt is none!")), 123
+    )));
     let f = unwrap_(opt);
 
     return_ok({});

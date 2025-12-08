@@ -6,7 +6,7 @@
 #define mp_max_task_count (mp_max_thrd_count << 3ull)
 
 $static var_(mp__thrd_count, usize) = 3;
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((mp_setThrdCount(usize thrd_count))(void)) { mp__thrd_count = thrd_count; }
 $static fn_((mp_getThrdCount(void))(usize)) { return mp__thrd_count; }
 
@@ -25,7 +25,7 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
     return_({});
 } $unscoped_(Thrd_fn);
 
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)) {
     let thrd_count = mp_getThrdCount();
 
@@ -113,9 +113,8 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
     return_({});
 } $unscoped_(Thrd_fn);
 
-$must_check
-$static
-fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
+$attr($must_check)
+$static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     let_(pool, mp_ThrdPool*) = u_castP$((mp_ThrdPool*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
     asg_lit((pool)($init((LitType){
         $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(

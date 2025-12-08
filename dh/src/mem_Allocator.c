@@ -4,14 +4,14 @@
 
 /*========== Common VTable Functions ========================================*/
 
-fn_((mem_Allocator_VT_noAlloc(P$raw ctx, usize len, u8 align))(O$P$u8)) {
+fn_((mem_Allocator_VT_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
     let_ignore = ctx;
     let_ignore = len;
     let_ignore = align;
     return none$((O$P$u8));
 }
 
-fn_((mem_Allocator_VT_noResize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+fn_((mem_Allocator_VT_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
     let_ignore = buf;
     let_ignore = buf_align;
@@ -19,7 +19,7 @@ fn_((mem_Allocator_VT_noResize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len)
     return false;
 }
 
-fn_((mem_Allocator_VT_noRemap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8)) {
+fn_((mem_Allocator_VT_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
     let_ignore = ctx;
     let_ignore = buf;
     let_ignore = buf_align;
@@ -27,7 +27,7 @@ fn_((mem_Allocator_VT_noRemap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
     return none$((O$P$u8));
 }
 
-fn_((mem_Allocator_VT_noFree(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+fn_((mem_Allocator_VT_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf;
     let_ignore = buf_align;
@@ -37,9 +37,9 @@ fn_((mem_Allocator_VT_noFree(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
 
 fn_((
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
-    mem_Allocator_rawAlloc(mem_Allocator self, usize len, u8 align)
+    mem_Allocator_rawAlloc(mem_Allocator self, usize len, mem_Align align)
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
-    mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, u8 align, SrcLoc src_loc)
+    mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, mem_Align align, SrcLoc src_loc)
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 )(O$P$u8)) {
     debug_assert_nonnull(self.vt);
@@ -48,7 +48,7 @@ fn_((
     if (len == 0) {
         // For zero-sized allocations, return a non-null pointer at max address
         // aligned to the requested alignment
-        let addr = intToPtr$(u8*, usize_limit_max & ~((1ull << align) - 1));
+        let addr = intToPtr$(u8*, usize_limit_max & ~(mem_log2ToAlign(align) - 1));
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else  /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerAlloc(addr, len, src_loc);
@@ -105,7 +105,7 @@ fn_((
     // Special case for zero-sized allocations
     if (new_len == 0) {
         mem_Allocator_rawFree(self, buf, buf_align);
-        let addr = intToPtr$(u8*, usize_limit_max & ~((1ull << buf_align) - 1));
+        let addr = intToPtr$(u8*, usize_limit_max & ~(mem_log2ToAlign(buf_align) - 1));
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else  /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerRemap(buf.ptr, addr, new_len, src_loc);
@@ -152,12 +152,13 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
-            .raw = intToPtr$(P$raw, usize_limit_max & ~((1ull << type.align) - 1)),
+            .raw = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
             .type = type,
         });
     }
     let mem = orelse_((mem_Allocator_rawAlloc(self, type.size, type.align))(
-        return_err(mem_Err_OutOfMemory()) ));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
@@ -181,16 +182,18 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Er
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
             .len = count,
             .type = type,
         });
     }
     // Check for overflow in multiplication
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_Err_OutOfMemory()) ));
+        return_err(mem_Err_OutOfMemory())
+    ));
     let mem = orelse_((mem_Allocator_rawAlloc(self, byte_count, type.align))(
-        return_err(mem_Err_OutOfMemory()) ));
+        return_err(mem_Err_OutOfMemory())
+    ));
     mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
@@ -220,7 +223,7 @@ fn_((mem_Allocator_resize(mem_Allocator self, u_S$raw old_mem, usize new_len))(b
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return false;
+        return false
     ));
     return mem_Allocator_rawResize(self, old_bytes, old_mem.type.align, new_byte_count);
 }
@@ -229,7 +232,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -238,7 +241,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = 0,
             .type = old_mem.type,
         });
@@ -254,9 +257,11 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_none();));
+        return_none()
+    ));
     let new_ptr = orelse_((mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count))(
-        return_none();));
+        return_none()
+    ));
     return_some({
         .ptr = new_ptr,
         .len = new_len,
@@ -268,13 +273,15 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     // Special case for empty old memory
     if (old_mem.len == 0) {
         // This is equivalent to a new allocation
-        return_ok(try_(mem_Allocator_alloc(self, old_mem.type, new_len)));
+        return_ok(
+            try_(mem_Allocator_alloc(self, old_mem.type, new_len))
+        );
     }
     // Special case for zero new length
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = 0,
             .type = old_mem.type,
         });
@@ -282,7 +289,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(old_mem.type.align - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -294,7 +301,8 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count);
     if_some((new_ptr)(ptr)) {
@@ -306,7 +314,8 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     }
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Allocator_rawAlloc(self, new_byte_count, old_mem.type.align))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
@@ -376,12 +385,13 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
-            .raw = intToPtr$(P$raw, usize_limit_max & ~((1ull << type.align) - 1)),
+            .raw = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
             .type = type,
         });
     }
     let mem = orelse_((mem_Allocator_rawAlloc_debug(self, type.size, type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, type.size)));
     return_ok({
@@ -407,16 +417,18 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
             .len = count,
             .type = type,
         });
     }
     // Check for overflow in multiplication
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     let mem = orelse_((mem_Allocator_rawAlloc_debug(self, byte_count, type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Initialize memory to undefined pattern
     mem_setBytes0(init$S$((u8)(mem, byte_count)));
     return_ok({
@@ -447,7 +459,7 @@ fn_((mem_Allocator_resize_debug(mem_Allocator self, u_S$raw old_mem, usize new_l
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return false;
+        return false
     ));
     return mem_Allocator_rawResize_debug(self, old_bytes, old_mem.type.align, new_byte_count, src_loc);
 }
@@ -456,7 +468,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -465,7 +477,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     if (new_len == 0) {
         mem_Allocator_free_debug(self, old_mem, src_loc);
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = 0,
             .type = old_mem.type,
         });
@@ -481,9 +493,11 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_none();));
+        return_none()
+    ));
     let new_ptr = orelse_((mem_Allocator_rawRemap_debug(self, old_bytes, old_mem.type.align, new_byte_count, src_loc))(
-        return_none();));
+        return_none()
+    ));
     return_some({
         .ptr = new_ptr,
         .len = new_len,
@@ -501,7 +515,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     if (new_len == 0) {
         mem_Allocator_free_debug(self, old_mem, src_loc);
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = 0,
             .type = old_mem.type,
         });
@@ -509,7 +523,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~((1ull << old_mem.type.align) - 1)),
+            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -521,7 +535,8 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     };
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Allocator_rawRemap(self, old_bytes, old_mem.type.align, new_byte_count);
     if_some((new_ptr)(ptr)) {
@@ -533,7 +548,8 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     }
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Allocator_rawAlloc_debug(self, new_byte_count, old_mem.type.align, src_loc))(
-        return_err(mem_Err_OutOfMemory());));
+        return_err(mem_Err_OutOfMemory())
+    ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);

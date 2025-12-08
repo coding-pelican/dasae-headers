@@ -28,13 +28,13 @@ fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size) $scope) {
 } $unscoped_(fn);
 
 
-$inline_always
+$attr($inline_always)
 $static fn_((digitToInt(u8 c))(u8)) {
     claim_assert(ascii_isDigit(c));
     return c - u8_c('0');
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((skipWhitespace(S_const$u8 str))(S_const$u8)) {
     while (0 < str.len && ascii_isWhitespace(*at$S(str, 0))) {
         str.ptr++;
@@ -44,7 +44,7 @@ $static fn_((skipWhitespace(S_const$u8 str))(S_const$u8)) {
 }
 
 
-$must_check
+$attr($must_check)
 $static fn_((parseU8(S_const$u8 str))(E$u8));
 
 typedef struct ConsumedU8 {
@@ -52,7 +52,7 @@ typedef struct ConsumedU8 {
     S_const$u8 remain;
 } ConsumedU8;
 T_use_E$(ConsumedU8);
-$must_check
+$attr($must_check)
 $static fn_((consumeU8(S_const$u8 str))(E$ConsumedU8));
 
 typedef struct ParsedFormat {
@@ -60,7 +60,7 @@ typedef struct ParsedFormat {
     S_const$u8 remain;
 } ParsedFormat;
 T_use_E$(ParsedFormat);
-$must_check
+$attr($must_check)
 $static fn_((parseFormat(S_const$u8 fmt_str))(E$ParsedFormat));
 
 typedef variant_((fmt_ArgValue $bits(8))(
@@ -88,7 +88,7 @@ typedef variant_((fmt_ArgValue $bits(8))(
 T_use$((fmt_ArgValue)(O, E));
 typedef FieldType$(fmt_ArgValue, tag) fmt_ArgValue_Tag;
 T_use$((fmt_ArgValue_Tag)(O, E));
-$must_check
+$attr($must_check)
 $static fn_((specToArgTag(fmt_Type type, fmt_Size size))(E$fmt_ArgValue_Tag));
 
 typedef variant_((fmt_ArgType $bits(8))(
@@ -102,35 +102,35 @@ $static fn_((collectArgValue(va_list* ap, fmt_ArgValue_Tag tag))(fmt_ArgValue));
 $static fn_((collectArgOptional(va_list* ap, fmt_ArgValue_Tag tag))(O$fmt_ArgValue));
 $static fn_((collectArgErrorResult(va_list* ap, fmt_ArgValue_Tag tag))(E$fmt_ArgValue));
 
-$must_check
+$attr($must_check)
 $static fn_((formatArg(io_Writer writer, fmt_ArgType arg, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatArgOptional(io_Writer writer, O$fmt_ArgValue optional, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatArgErrorResult(io_Writer writer, E$fmt_ArgValue error_result, fmt_Spec spec))(E$void));
 
-$must_check
+$attr($must_check)
 $static fn_((formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatPtr(io_Writer writer, const void* ptr, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatASCIICode(io_Writer writer, u8 c, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatUTF8Codepoint(io_Writer writer, u32 cp, fmt_Spec spec))(E$void));
-$must_check
+$attr($must_check)
 $static fn_((formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void));
 
-$must_check
+$attr($must_check)
 $static fn_((writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void));
 
 #include <stdio.h>
@@ -210,10 +210,12 @@ fn_((parseFormatSpecOnce(S_const$u8 fmt))(E$ParsedFormatSpec) $scope) {
             if (arg_index >= fmt_max_args) {
                 return_err(fmt_Err_IndexOutOfBounds());
             }
-            asg_lit((atA(result.occurrences, result.occurrence_count))({ .spec = parsed.spec,
-                                                                         .arg_index = arg_index,
-                                                                         .literal_start = current_literal_start,
-                                                                         .literal_len = offset - current_literal_start }));
+            asg_lit((atA(result.occurrences, result.occurrence_count))({
+                .spec = parsed.spec,
+                .arg_index = arg_index,
+                .literal_start = current_literal_start,
+                .literal_len = offset - current_literal_start,
+            }));
             // printf("Stored in occurrence[%zu]: type=%d, size=%d\n", result.occurrence_count, atA(result.occurrences, result.occurrence_count)->spec.type, atA(result.occurrences, result.occurrence_count)->spec.size);
             result.occurrence_count++;
             result.max_arg_index = prim_max(result.max_arg_index, arg_index);
@@ -619,8 +621,12 @@ fn_((parseU8(S_const$u8 str))(E$u8) $scope) {
     for_(($s(str))(ch) {
         if (!ascii_isDigit(*ch)) { break; }
         let digit = digitToInt(*ch);
-        let mul = orelse_((u8_mulChkd(result, 10))(return_err(fmt_Err_InvalidIntegerFormat())));
-        let add = orelse_((u8_addChkd(mul, digit))(return_err(fmt_Err_InvalidIntegerFormat())));
+        let mul = orelse_((u8_mulChkd(result, 10))(
+            return_err(fmt_Err_InvalidIntegerFormat())
+        ));
+        let add = orelse_((u8_addChkd(mul, digit))(
+            return_err(fmt_Err_InvalidIntegerFormat())
+        ));
         result = add;
     });
     return_ok(result);

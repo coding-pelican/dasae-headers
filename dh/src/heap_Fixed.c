@@ -2,18 +2,18 @@
 #include "dh/mem/common.h"
 
 // Forward declarations for allocator vtable functions
-$static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
-$static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
-$static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
+$static fn_((heap_Fixed_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 // Thread-safe variants
-$static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8));
+$static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 
 // Utility functions
-$inline_always
+$attr($inline_always)
 $static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool));
-$inline_always
+$attr($inline_always)
 $static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool));
 
 fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator)) {
@@ -79,10 +79,10 @@ fn_((heap_Fixed_isLastAllocation(const heap_Fixed* self, S_const$u8 buf))(bool))
 
 /*========== Allocator Interface Implementation =============================*/
 
-$static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+$static fn_((heap_Fixed_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Fixed*)(ctx);
-    let ptr_align = 1ull << align;
+    let ptr_align = mem_log2ToAlign(align);
 
     // Calculate aligned offset
     let ptr_addr = ptrToInt(self->buffer.ptr) + self->end_index;
@@ -99,7 +99,7 @@ $static fn_((heap_Fixed_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
     return_some(intToPtr$(u8*, aligned_addr));
 } $unscoped_(fn);
 
-$static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+$static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Fixed*)(ctx);
     let_ignore = buf_align;
@@ -131,7 +131,7 @@ $static fn_((heap_Fixed_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len)
     return true;
 }
 
-$static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+$static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
     if (heap_Fixed_resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
@@ -139,7 +139,7 @@ $static fn_((heap_Fixed_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
     return_none();
 } $unscoped_(fn);
 
-$static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+$static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Fixed*)(ctx);
     let_ignore = buf_align;
@@ -159,10 +159,10 @@ $static fn_((heap_Fixed_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
 
 /*========== Thread-Safe Implementation =====================================*/
 
-$static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+$static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
     let self = as$(heap_Fixed*)(ctx);
-    let ptr_align = 1ull << align;
+    let ptr_align = mem_log2ToAlign(align);
 
     // Use atomic operations for thread safety
     usize end_index = atom_load(&self->end_index, atom_MemOrd_seq_cst);
@@ -183,7 +183,7 @@ $static fn_((heap_Fixed_thrdSafeAlloc(P$raw ctx, usize len, u8 align))(O$P$u8) $
 
 /*========== Utility Functions ==============================================*/
 
-$inline_always
+$attr($inline_always)
 $static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool)) {
     let container_start = ptrToInt(container.ptr);
     let container_end = container_start + container.len;
@@ -191,7 +191,7 @@ $static fn_((heap_Fixed_sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bo
     return container_start <= ptr_addr && ptr_addr < container_end;
 }
 
-$inline_always
+$attr($inline_always)
 $static fn_((heap_Fixed_sliContainsSli(S_const$u8 container, S_const$u8 sli))(bool)) {
     let container_start = ptrToInt(container.ptr);
     let container_end = container_start + container.len;

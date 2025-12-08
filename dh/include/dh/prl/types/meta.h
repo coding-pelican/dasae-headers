@@ -43,7 +43,10 @@ typedef union u_V$raw {
             V$raw raw;
             P$raw inner;
         };
-        TypeInfo inner_type;
+        union {
+            TypeInfo inner_type;
+            TypeInfo type;
+        };
     };
     u_P$raw ref;
 } u_V$raw;
@@ -83,7 +86,10 @@ typedef union u_S$raw {
 typedef union u_A$raw {
     struct {
         S$raw inner;
-        TypeInfo inner_type;
+        union {
+            TypeInfo inner_type;
+            TypeInfo type;
+        };
     };
     u_S$raw ref;
 } u_A$raw;
@@ -179,6 +185,59 @@ typedef struct u_E$raw {
     const u_V$raw __b = u_allocV(__v.inner_type); \
     prim_memcpy(__b.inner, __v.inner, __v.inner_type.size); \
     __b; \
+})
+
+#define u_sliceP(_p, _range) __u_sliceP(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define __u_sliceP(__p, __range, _p, _range...) blk({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__range, R) = _range; \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
+    T_switch$((TypeOf(__p))( \
+        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+            .type = __p.type, \
+            .ptr = as$(const u8*)(__p.raw) + (__range.begin * __p.type.size), \
+            .len = len$R(__range), \
+        }))), \
+        T_case$((u_P$raw)(lit$((u_S$raw){ \
+            .type = __p.type, \
+            .ptr = as$(u8*)(__p.raw) + (__range.begin * __p.type.size), \
+            .len = len$R(__range), \
+        }))) \
+    )); \
+})
+#define u_prefixP(_p, _end) __u_prefixP(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
+#define __u_prefixP(__p, __end, _p, _end...) blk({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__end, usize) = _end; \
+    T_switch$((TypeOf(__p))( \
+        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+            .type = __p.type, \
+            .ptr = as$(const u8*)(__p.raw), \
+            .len = __end, \
+        }))), \
+        T_case$((u_P$raw)(lit$((u_S$raw){ \
+            .type = __p.type, \
+            .ptr = as$(u8*)(__p.raw), \
+            .len = __end, \
+        }))) \
+    )); \
+})
+#define u_suffixP(_p, _begin) __u_suffixP(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
+#define __u_suffixP(__p, __begin, _p, _begin...) blk({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__begin, usize) = _begin; \
+    T_switch$((TypeOf(__p))( \
+        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+            .type = __p.type, \
+            .ptr = as$(const u8*)(__p.raw) + (__begin * __p.type.size), \
+            .len = usize_limit_max - __begin, \
+        }))), \
+        T_case$((u_P$raw)(lit$((u_S$raw){ \
+            .type = __p.type, \
+            .ptr = as$(u8*)(__p.raw) + (__begin * __p.type.size), \
+            .len = usize_limit_max - __begin, \
+        }))) \
+    )); \
 })
 
 #define u_sliceS(_s, _range) __u_sliceS(pp_uniqTok(s), pp_uniqTok(range), _s, _range)
@@ -453,6 +512,10 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     typedef _PT CastType; \
     $maybe_unused typedef DerefType$(CastType) DerefType; \
     $maybe_unused typedef DerefType InnerType; \
+    claim_assert(T_switch$((TypeOf(_meta.raw))( \
+        T_qual$((P_const$raw)(P_isConst$(CastType))), \
+        T_default_(true) \
+    ))); \
     *as$(CastType*)(_meta.inner); \
 })
 
@@ -476,6 +539,10 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     $maybe_unused typedef FieldType$(CastType, ptr) PtrType; \
     $maybe_unused typedef DerefType$(PtrType) DerefType; \
     $maybe_unused typedef DerefType InnerType; \
+    claim_assert(T_switch$((TypeOf(_meta.raw.ptr))( \
+        T_qual$((P_const$raw)(P_isConst$(PtrType))), \
+        T_default_(true) \
+    ))); \
     *as$(CastType*)(_meta.inner); \
 })
 

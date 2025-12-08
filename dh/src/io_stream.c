@@ -12,7 +12,7 @@
 $static var_(io_stream__s_out_mtx, Thrd_MtxRecur) = {};
 $static var_(io_stream__s_err_mtx, Thrd_MtxRecur) = {};
 
-$on_load
+$attr($on_load)
 $static fn_((io_stream__init(void))(void)) {
     io_stream__s_out_mtx = Thrd_MtxRecur_init();
     io_stream__s_err_mtx = Thrd_MtxRecur_init();
@@ -26,7 +26,7 @@ $static fn_((io_stream__init(void))(void)) {
     let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
 }
 
-$on_exit
+$attr($on_exit)
 $static fn_((io_stream__fini(void))(void)) {
     Thrd_MtxRecur_fini(&io_stream__s_out_mtx);
     Thrd_MtxRecur_fini(&io_stream__s_err_mtx);

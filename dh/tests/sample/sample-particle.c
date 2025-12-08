@@ -1,7 +1,7 @@
 #include "dh/prl.h"
 #include "dh/Thrd.h"
 
-#define mp_max_thrd_count (32)
+#define mp_max_thrd_count (32ull)
 
 $static var_(mp__thrd_count, usize) = 3;
 $static fn_((mp_setThrdCount(usize thrd_count))(void)) { mp__thrd_count = thrd_count; }

@@ -9,10 +9,10 @@
 #endif
 
 // Forward declarations for allocator vtable functions
-$static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8));
-$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool));
-$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u8 buf_align))(void));
+$static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
     claim_assert_nonnull(self);
@@ -31,9 +31,9 @@ fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
 
 /*========== Allocator Interface Implementation =============================*/
 
-$static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
+$static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
-    let ptr_align = 1ull << align;
+    let ptr_align = mem_log2ToAlign(align);
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
     // Verify requested alignment is not stricter than page alignment
     debug_assert_fmt(
@@ -124,9 +124,9 @@ $static fn_((heap_Page_alloc(P$raw ctx, usize len, u8 align))(O$P$u8) $scope) {
 #endif /* posix */
 } $unscoped_(fn);
 
-$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(bool)) {
+$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
-    let ptr_align = 1ull << buf_align;
+    let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
     debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
     let_ignore = ptr_align;
@@ -185,9 +185,9 @@ $static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))
 #endif /* posix */
 }
 
-$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(O$P$u8) $scope) {
+$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     let_ignore = ctx;
-    let ptr_align = 1ull << buf_align;
+    let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
     debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
     let_ignore = ptr_align;
@@ -226,9 +226,9 @@ $static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, u8 buf_align, usize new_len))(
 #endif /* posix */
 } $unscoped_(fn);
 
-$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, u8 buf_align))(void)) {
+$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
-    let ptr_align = 1ull << buf_align;
+    let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
     debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
     let_ignore = ptr_align;

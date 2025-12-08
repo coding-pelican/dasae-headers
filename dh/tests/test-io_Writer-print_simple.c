@@ -29,11 +29,11 @@ typedef struct test_Buf {
     S$u8 data;
     usize pos;
 } test_Buf;
-$must_check
+$attr($must_check)
 $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
-    let self      = as$(test_Buf*)(ctx);
+    let self = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
-    let to_write  = prim_min(bytes.len, remaining);
+    let to_write = prim_min(bytes.len, remaining);
     if (0 < to_write) {
         prim_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
         self->pos += to_write;
@@ -43,14 +43,14 @@ $static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $sco
 $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
-        .pos  = 0
+        .pos = 0
     };
 }
 $static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     claim_assert_nonnull(self);
     return lit$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
 }
-$maybe_unused
+$attr($maybe_unused)
 $static fn_((test_Buf_clear(test_Buf* self))(void)) {
     claim_assert_nonnull(self);
     self->pos = 0;
@@ -64,8 +64,8 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
 
 TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8   mem    = zero$A();
-    test_Buf  buf    = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = zero$A();
+    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic integer
@@ -78,8 +78,8 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
 
 TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8   mem    = zero$A();
-    test_Buf  buf    = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = zero$A();
+    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic character
@@ -92,8 +92,8 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
 
 TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8   mem    = zero$A();
-    test_Buf  buf    = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = zero$A();
+    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic hex

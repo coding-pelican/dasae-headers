@@ -162,6 +162,8 @@ extern "C" {
 
 #define tpl_id$T(_tpl, _T...) \
     pp_join($, _tpl, _T)
+#define tpl_id$1T(_tpl, _T...) \
+    pp_join($, _tpl, _T)
 #define tpl_id$1T$2U(_tpl, _T, _U...) \
     pp_cat(_tpl, pp_cat2(pp_cat($1, _T), pp_cat($2, _U)))
 #define tpl_id$2T$2U$3V(_tpl, _T, _U, _V...) \
@@ -170,6 +172,8 @@ extern "C" {
     pp_cat(_tpl, pp_cat4(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W)))
 #define tpl_fn$T(_tpl_w_T_and_Params, _Ret_T...) \
     fn_((tpl_id$T _tpl_w_T_and_Params)(_Ret_T))
+#define tpl_fn$1T(_tpl_w_T_and_Params, _Ret_T...) \
+    fn_((tpl_id$1T _tpl_w_T_and_Params)(_Ret_T))
 #define tpl_fn$1T$2U(_tpl_w_T_w_U_and_Params, _Ret_T...) \
     fn_((tpl_id$1T$2U _tpl_w_T_w_U_and_Params)(_Ret_T))
 #define tpl_fn$2T$2U$3V(_tpl_w_T_w_U_w_V_and_Params, _Ret_T...) \

@@ -404,8 +404,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_memcmp(_p_lhs, _p_rhs, _len...) memcmp(_p_lhs, _p_rhs, _len)
 #define __op__prim_alloca(_bytes...) alloca(_bytes)
 #define __op__prim_swap__step(_p_lhs, _p_rhs...) __op__prim_swap( \
-    pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), pp_uniqTok(tmp), \
-    _p_lhs, _p_rhs \
+    pp_uniqTok(p_lhs), pp_uniqTok(p_rhs), pp_uniqTok(tmp), _p_lhs, _p_rhs \
 )
 #define __op__prim_swap(__p_lhs, __p_rhs, __tmp, _p_lhs, _p_rhs...) ({ \
     let __p_lhs = _p_lhs; \
@@ -423,9 +422,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_div(_lhs, _rhs...) ((_lhs) / (_rhs))
 
 #define __op__int_divRound__step(_x, _n...) __op__int_divRound( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), \
-    pp_uniqTok(half), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(half), _x, _n \
 )
 #define __op__int_divRound(__x, __n, __q, __r, __half, _x, _n...) ({ \
     let __x = _x; \
@@ -440,9 +437,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         : __q; \
 })
 #define __op__iint_divFloor__step(_x, _n...) __op__iint_divFloor( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), \
-    pp_uniqTok(has_r), pp_uniqTok(diff_sgn), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(diff_sgn), _x, _n \
 )
 #define __op__iint_divFloor(__x, __n, __q, __r, __has_r, __diff_sgn, _x, _n...) ({ \
     let __x = _x; \
@@ -454,8 +449,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __has_r&& __diff_sgn ? __q - 1 : __q; \
 })
 #define __op__iint_divEuclid__step(_x, _n...) __op__iint_divEuclid( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), _x, _n \
 )
 #define __op__iint_divEuclid(__x, __n, __q, __r, _x, _n...) ({ \
     let __x = _x; \
@@ -465,9 +459,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __r < 0 ? (__n > 0 ? __q - 1 : __q + 1) : __q; \
 })
 #define __op__int_divCeil__step(_x, _n...) __op__int_divCeil( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), \
-    pp_uniqTok(has_r), pp_uniqTok(same_sgn), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(same_sgn), _x, _n \
 )
 #define __op__int_divCeil(__x, __n, __q, __r, __has_r, __same_sgn, _x, _n...) ({ \
     let __x = _x; \
@@ -512,9 +504,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __x - int_divRound(__x, __n) * __n; \
 })
 #define __op__iint_mod__step(_x, _n...) __op__iint_mod( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), \
-    pp_uniqTok(has_r), pp_uniqTok(diff_sgn), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(diff_sgn), _x, _n \
 )
 #define __op__iint_mod(__x, __n, __r, __has_r, __diff_sgn, _x, _n...) ({ \
     let __x = _x; \
@@ -525,8 +515,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __has_r&& __diff_sgn ? __r + __n : __r; \
 })
 #define __op__int_modEuclid__step(_x, _n...) __op__int_modEuclid( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), _x, _n \
 )
 #define __op__int_modEuclid(__x, __n, __r, _x, _n...) ({ \
     let __x = _x; \
@@ -535,9 +524,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __r < 0 ? __r + prim_abs(__n) : __r; \
 })
 #define __op__int_modCeil__step(_x, _n...) __op__int_modCeil( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), \
-    pp_uniqTok(has_r), pp_uniqTok(same_sgn), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(same_sgn), _x, _n \
 )
 #define __op__int_modCeil(__x, __n, __r, __has_r, __same_sgn, _x, _n...) ({ \
     let __x = _x; \
@@ -595,8 +582,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __x - flt_divFloor(__x, __n) * __n; \
 })
 #define __op__flt_modEuclid__step(_x, _n...) __op__flt_modEuclid( \
-    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), \
-    _x, _n \
+    pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), _x, _n \
 )
 #define __op__flt_modEuclid(__x, __n, __r, _x, _n...) ({ \
     typedef TypeOfUnqual(_x) FltType; \
@@ -661,8 +647,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 
 #define __op__prim_min2_static(_lhs, _rhs...) ((_rhs) < (_lhs) ? (_rhs) : (_lhs))
 #define __op__prim_min2__step(_lhs, _rhs...) __op__prim_min2( \
-    pp_uniqTok(lhs), pp_uniqTok(rhs), \
-    _lhs, _rhs \
+    pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
 #define __op__prim_min2(__lhs, __rhs, _lhs, _rhs...) ({ \
     let __lhs = _lhs; \
@@ -672,8 +657,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_min3_static(_1st, _2nd, _3rd...) \
     prim_min2_static(prim_min2_static(_1st, _2nd), _3rd)
 #define __op__prim_min3__step(_1st, _2nd, _3rd...) __op__prim_min3( \
-    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), \
-    _1st, _2nd, _3rd \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), _1st, _2nd, _3rd \
 )
 #define __op__prim_min3(__1st, __2nd, __3rd, _1st, _2nd, _3rd...) ({ \
     let __1st = _1st; \
@@ -684,8 +668,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_min4_static(_1st, _2nd, _3rd, _4th...) \
     prim_min2_static(prim_min3_static(_1st, _2nd, _3rd), _4th)
 #define __op__prim_min4__step(_1st, _2nd, _3rd, _4th...) __op__prim_min4( \
-    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), \
-    _1st, _2nd, _3rd, _4th \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), _1st, _2nd, _3rd, _4th \
 )
 #define __op__prim_min4(__1st, __2nd, __3rd, __4th, _1st, _2nd, _3rd, _4th...) ({ \
     let __1st = _1st; \
@@ -695,8 +678,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     prim_min4_static(__1st, __2nd, __3rd, __4th); \
 })
 #define __op__prim_findMin__step(__best, __vals...) __op__prim_findMin( \
-    pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), \
-    __best, __vals \
+    pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), __best, __vals \
 )
 #define __op__prim_findMin(__best, __vals, __val, _best, _vals...) ({ \
     var __best = _best; \
@@ -708,8 +690,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 #define __op__prim_max2_static(_lhs, _rhs...) ((_rhs) > (_lhs) ? (_rhs) : (_lhs))
 #define __op__prim_max2__step(_lhs, _rhs...) __op__prim_max2( \
-    pp_uniqTok(lhs), pp_uniqTok(rhs), \
-    _lhs, _rhs \
+    pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
 #define __op__prim_max2(__lhs, __rhs, _lhs, _rhs...) ({ \
     let __lhs = _lhs; \
@@ -718,8 +699,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 #define __op__prim_max3_static(_1st, _2nd, _3rd...) prim_max2_static(prim_max2_static(_1st, _2nd), _3rd)
 #define __op__prim_max3__step(_1st, _2nd, _3rd...) __op__prim_max3( \
-    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), \
-    _1st, _2nd, _3rd \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), _1st, _2nd, _3rd \
 )
 #define __op__prim_max3(__1st, __2nd, __3rd, _1st, _2nd, _3rd...) ({ \
     let __1st = _1st; \
@@ -729,8 +709,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 #define __op__prim_max4_static(_1st, _2nd, _3rd, _4th...) prim_max2_static(prim_max3_static(_1st, _2nd, _3rd), _4th)
 #define __op__prim_max4__step(_1st, _2nd, _3rd, _4th...) __op__prim_max4( \
-    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), \
-    _1st, _2nd, _3rd, _4th \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), _1st, _2nd, _3rd, _4th \
 )
 #define __op__prim_max4(__1st, __2nd, __3rd, __4th, _1st, _2nd, _3rd, _4th...) ({ \
     let __1st = _1st; \
@@ -740,8 +719,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     prim_max4_static(__1st, __2nd, __3rd, __4th); \
 })
 #define __op__prim_findMax__step(__best, __vals...) __op__prim_findMax( \
-    pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), \
-    __best, __vals \
+    pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), __best, __vals \
 )
 #define __op__prim_findMax(__best, __vals, __val, _best, _vals...) ({ \
     var __best = _best; \

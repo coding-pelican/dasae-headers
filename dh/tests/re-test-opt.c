@@ -5,12 +5,12 @@
 static fn_(getValueIfPositive(i32 value), O$i32 $scope) {
     if (value <= 0) { return_none(); }
     return_some(value);
-} $unscoped;
+} $unscoped_(fn);
 
 static fn_(getCharIfNumeric(u8 value), O$u8 $scope) {
     if ('0' <= value && value <= '9') { return_some(value); }
     return_none();
-} $unscoped;
+} $unscoped_(fn);
 
 fn_(dh_main(void), void) {
     if_some(getValueIfPositive(10), value) {
