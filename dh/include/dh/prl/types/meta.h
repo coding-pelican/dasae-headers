@@ -116,6 +116,29 @@ typedef struct u_E$raw {
     };
 } u_E$raw;
 
+#define V_meta(/*(_type: TypeInfo)(_raw: u_Inner*)*/... /*(u_V_const$T|u_V$T)*/) \
+    __step__V_meta(__step__V_meta__parse __VA_ARGS__)
+#define __step__V_meta__parse(_type...) _type,
+#define __step__V_meta(...) ____V_meta(__VA_ARGS__)
+#define ____V_meta(_type, _raw...) T_switch$((TypeOf(_raw))( \
+    T_case$((u_V_const$raw)(lit$((u_V_const$raw){ .type = _type, .raw = _raw }))), \
+    T_case$((u_V$raw)(lit$((u_V$raw){ .type = _type, .raw = _raw }))) \
+))
+#define P_meta(/*(_type: TypeInfo)(_raw: P_const$T|P$T)*/... /*(u_P_const$T|u_P$T)*/) \
+    __step__P_meta(__step__P_meta__parse __VA_ARGS__)
+#define __step__P_meta__parse(_type...) _type,
+#define __step__P_meta(...) ____P_meta(__VA_ARGS__)
+#define ____P_meta(_type, _raw...) /* TODO: Implement */
+#define S_meta(/*(_type: TypeInfo)(_raw: S_const$T|S$T)*/... /*(u_S_const$T|u_S$T)*/) \
+    __step__S_meta(__step__S_meta__parse __VA_ARGS__)
+#define __step__S_meta__parse(_type...) _type,
+#define __step__S_meta(...) ____S_meta(__VA_ARGS__)
+#define ____S_meta(_type, _raw...) /* TODO: Implement */
+
+#define V_raw(_v /*: u_V_const$T|u_V$T*/... /*(u_Inner*)*/) (_v.inner)
+#define P_raw(_p /*: u_P_const$T|u_P$T*/... /*(P_const$T|P$T)*/) (_p.raw)
+#define S_raw(_s /*: u_S_const$T|u_S$T*/... /*(S_const$T|S$T)*/) (_s.raw)
+
 #define u_allocV(_type...) ({ \
     const TypeInfo __type = _type; \
     const P$raw __ptr = alloca(__type.size); \

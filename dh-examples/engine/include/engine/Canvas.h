@@ -17,7 +17,7 @@ typedef struct engine_Canvas {
     engine_CanvasType type;
     mem_Allocator gpa;
 } engine_Canvas;
-prl_T_use$(engine_Canvas);
+T_use_prl$(engine_Canvas);
 
 typedef struct engine_Canvas_Config {
     O$mem_Allocator gpa;
@@ -75,7 +75,7 @@ typedef struct engine_CanvasView {
     } rect;
     bool visible; // Visibility flag
 } engine_CanvasView;
-prl_T_use$(engine_CanvasView);
+T_use_prl$(engine_CanvasView);
 
 typedef struct engine_CanvasView_Config {
     engine_Canvas* canvas;

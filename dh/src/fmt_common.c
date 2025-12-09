@@ -1237,7 +1237,7 @@ fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void
             return_ok(*value);
         } $end(pattern);
         pattern_((fmt_ArgValue_bool)(value)) {
-            return formatBool(writer, value, spec);
+            return formatBool(writer, *value, spec);
         } $end(pattern);
         pattern_((fmt_ArgValue_u8)(value)) {
             // printf("formatArgValue u8: value=%d, spec.type=%d\n", *value, spec.type);

@@ -71,7 +71,7 @@ extern "C" {
 
 #define S_InnerT$(_T...) TypeOf(*(as$(_T*)(null))->ptr)
 #define S_InnerTUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
-#define S_isConst$(_T...) isSameType$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
+#define S_isConst$(_T...) Type_eq$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
 
 /* Slice Operations */
 #define zeroS zero$S

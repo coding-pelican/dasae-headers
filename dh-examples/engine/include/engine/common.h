@@ -16,16 +16,16 @@ extern "C" {
 #include "Grid.h"
 
 /* clang-format off */
-prl_T_use$(m_V2f32);   prl_T_use$(m_V3f32);   prl_T_use$(m_V4f32);
-prl_T_use$(m_V2f64);   prl_T_use$(m_V3f64);   prl_T_use$(m_V4f64);
+T_use_prl$(m_V2f32);   T_use_prl$(m_V3f32);   T_use_prl$(m_V4f32);
+T_use_prl$(m_V2f64);   T_use_prl$(m_V3f64);   T_use_prl$(m_V4f64);
 
-prl_T_use$(m_V2i32);   prl_T_use$(m_V3i32);   prl_T_use$(m_V4i32);
-prl_T_use$(m_V2i64);   prl_T_use$(m_V3i64);   prl_T_use$(m_V4i64);
-prl_T_use$(m_V2isize); prl_T_use$(m_V3isize); prl_T_use$(m_V4isize);
+T_use_prl$(m_V2i32);   T_use_prl$(m_V3i32);   T_use_prl$(m_V4i32);
+T_use_prl$(m_V2i64);   T_use_prl$(m_V3i64);   T_use_prl$(m_V4i64);
+T_use_prl$(m_V2isize); T_use_prl$(m_V3isize); T_use_prl$(m_V4isize);
 
-prl_T_use$(m_V2u32);   prl_T_use$(m_V3u32);   prl_T_use$(m_V4u32);
-prl_T_use$(m_V2u64);   prl_T_use$(m_V3u64);   prl_T_use$(m_V4u64);
-prl_T_use$(m_V2usize); prl_T_use$(m_V3usize); prl_T_use$(m_V4usize);
+T_use_prl$(m_V2u32);   T_use_prl$(m_V3u32);   T_use_prl$(m_V4u32);
+T_use_prl$(m_V2u64);   T_use_prl$(m_V3u64);   T_use_prl$(m_V4u64);
+T_use_prl$(m_V2usize); T_use_prl$(m_V3usize); T_use_prl$(m_V4usize);
 /* clang-format on */
 
 #if defined(__cplusplus)

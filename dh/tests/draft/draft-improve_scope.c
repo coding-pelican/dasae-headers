@@ -59,7 +59,7 @@ T_Return _Name_With_Params {                               \
 #define comp_syn__return_some(_Expr...) return_(some(_Expr))
 #define comp_syn__return_none()         return_(none())
 #define comp_syn__return_void()         blk({                                 \
-    claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void))); \
+    claim_assert_static(Type_eq$(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
 
@@ -246,7 +246,7 @@ T_Return _Name_With_Params {                                    \
     goto __step_return */
 
 /* #define ret_void blk({                                                        \
-    claim_assert_static(isSameType$(TypeOf(*__reserved_return), TypeOf(void))); \
+    claim_assert_static(Type_eq$(TypeOf(*__reserved_return), TypeOf(void))); \
     goto __step_return;                                                        \
 })
 #define ret_(_Expr...) blk({                                       \

@@ -7,22 +7,22 @@
 // #undef a$
 // #undef s$
 
-#define raw$$p$(_T)        TypeOf(_T*)
+#define raw$$p$(_T) TypeOf(_T*)
 #define raw$$a$(_N, _T...) TypeOf(_T[_N])
 
 #define tpl$(_T) pp_join($, tpl, _T)
 
-#define const$(_T...)  pp_join($, const, _T)
+#define const$(_T...) pp_join($, const, _T)
 #define const$$(_T...) TypeOf(const _T)
 #define tpl$const$(_T...) \
     typedef const$$(_T) const$(_T)
 
-#define p$(_T...)  pp_join($, p, _T)
+#define p$(_T...) pp_join($, p, _T)
 #define p$$(_T...) raw$$p$(_T)
 #define tpl$p$(_T...) \
     typedef raw$$p$(_T) p$(_T)
 
-#define a$(_N, _T...)  pp_join($, a##$##_N, _T)
+#define a$(_N, _T...) pp_join($, a##$##_N, _T)
 #define a$$(_N, _T...) TypeOf(struct { raw$$a$(_N, _T) val; })
 #define tpl$a$(_N, _T...) \
     typedef struct a$(_N, _T) a$(_N, _T); \
@@ -43,7 +43,7 @@
 
 #define from$a$(_T__initial...) \
     pp_expand(pp_defer(comp_inline__from$a$)(comp_param__from$a$ _T__initial))
-#define comp_param__from$a$(_T...)            _T, pp_expand
+#define comp_param__from$a$(_T...) _T, pp_expand
 #define comp_inline__from$a$(_T, _initial...) ((struct { \
     raw$$a$(sizeOf$((_T[])_initial) / sizeOf$(_T), _T) val; \
 }){ .val = _initial })
@@ -59,7 +59,7 @@
     var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
+    claim_assert_static(Type_eq$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })
@@ -74,7 +74,7 @@
     &val$a(*__a)[__index]; \
 })
 
-#define s$(_T...)  pp_join($, s, _T)
+#define s$(_T...) pp_join($, s, _T)
 #define s$$(_T...) TypeOf(struct { p$$(_T) ptr; usize len; })
 #define tpl$s$(_T...) \
     typedef struct s$(_T) { \
@@ -91,7 +91,7 @@
     var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(isSameType$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
+    claim_assert_static(Type_eq$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })

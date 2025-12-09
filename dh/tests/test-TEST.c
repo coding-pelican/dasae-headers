@@ -56,8 +56,8 @@ TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
 TEST_fn_("Simply Type Comparison with Failing Test" $scope) {
     const i32 integer = 10;
     const f32 floating = 10.0f;
-    try_(TEST_expect(!isSameType$(TypeOf(integer), TypeOf(floating))));
-    try_(TEST_expect(isSameType$(TypeOf(integer), TypeOf(floating)))); // This will always fail
+    try_(TEST_expect(!Type_eq$(TypeOf(integer), TypeOf(floating))));
+    try_(TEST_expect(Type_eq$(TypeOf(integer), TypeOf(floating)))); // This will always fail
 } $unscoped_(TEST_fn);
 
 #include "dh/main.h"

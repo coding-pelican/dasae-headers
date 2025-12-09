@@ -58,7 +58,7 @@ typedef variant_((engine_InputEvent $bits(8))(
     (engine_InputEvent_mouse_motion, engine_InputEvent_MouseMotion),
     (engine_InputEvent_mouse_scroll, engine_InputEvent_MouseScroll)
 )) engine_InputEvent;
-prl_T_use$(engine_InputEvent);
+T_use_prl$(engine_InputEvent);
 
 T_use_ArrQue$(engine_InputEvent);
 #define engine_Input_event_queue_len /* Circular buffer for input event stack */ (32)

@@ -48,7 +48,7 @@ union Rgb {
         u8 b; // Blue channel in [0,255]
     };
 };
-#define Rgb_(...)                    lit$((Rgb){ __VA_ARGS__ })
+#define Rgb_(...) lit$((Rgb){ __VA_ARGS__ })
 #define literal_Rgb_from(_r, _g, _b) Rgb_(.r = (_r), .g = (_g), .b = (_b))
 extern Rgb Rgb_from(u8 r, u8 g, u8 b);
 
@@ -67,7 +67,7 @@ union Hsl {
         f64 l; // Lightness in [0,100]
     };
 };
-#define Hsl_(...)                    lit$((Hsl){__VA_ARGS__})
+#define Hsl_(...) lit$((Hsl){ __VA_ARGS__ })
 #define literal_Hsl_from(_h, _s, _l) Hsl_(.h = (_h), .s = (_s), .l = (_l))
 extern Hsl Hsl_from(f64 h, f64 s, f64 l);
 extern f64 Hsl_hueToRgbSpace(f64 p, f64 q, f64 t);
@@ -94,13 +94,13 @@ union Color {
     };
     u32 packed; // RGBA channel components in [0,255]
 };
-prl_T_use$(Color);
+T_use_prl$(Color);
 T_use_Grid$(Color);
 
-#define Color_(...)                               lit$((Color){__VA_ARGS__})
-#define literal_Color_from(_r, _g, _b, _a)        Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
+#define Color_(...) lit$((Color){ __VA_ARGS__ })
+#define literal_Color_from(_r, _g, _b, _a) Color_(.r = (_r), .g = (_g), .b = (_b), .a = (_a))
 #define literal_Color_fromTransparent(_r, _g, _b) Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_min_value)
-#define literal_Color_fromOpaque(_r, _g, _b)      Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_max_value)
+#define literal_Color_fromOpaque(_r, _g, _b) Color_(.r = (_r), .g = (_g), .b = (_b), .a = ColorChannel_max_value)
 extern Color Color_from(u8 r, u8 g, u8 b, u8 a);
 extern Color Color_fromTransparent(u8 r, u8 g, u8 b);
 extern Color Color_fromOpaque(u8 r, u8 g, u8 b);

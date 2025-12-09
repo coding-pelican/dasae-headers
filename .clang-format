@@ -165,13 +165,13 @@ SortIncludes: Never
 #   - anyptr
 
 Macros:
-  - edittime_only(inner)=[](void) -> (void) inner
-  - comptime_only(inner)=[](void) -> (void) inner
-  - runtime_only(inner)=[](void) -> (void) inner
-  - dev_only(inner)=[](void) -> (void) inner
-  - debug_only(inner)=[](void) -> (void) inner
-  - release_only(inner)=[](void) -> (void) inner
-  - TEST_only(inner)=[](void) -> (void) inner
+  - edittime_only(inner)="[](void) -> (void) inner"
+  - comptime_only(inner)="[](void) -> (void) inner"
+  - runtime_only(inner)="[](void) -> (void) inner"
+  - dev_only(inner)="[](void) -> (void) inner"
+  - debug_only(inner)="[](void) -> (void) inner"
+  - release_only(inner)="[](void) -> (void) inner"
+  - TEST_only(inner)="[](void) -> (void) inner"
 
   - "pp_switch_(Expr)=pp_exec_ignore Expr"
   - "pp_case_(Expr)=pp_exec_ignore Expr"
@@ -251,13 +251,13 @@ Macros:
   - "$break_(Expr)=return Expr"
   - "$break_void(Expr)=return Expr"
 
-  - "$break_some(Expr)=return Expr"
-  - "$break_some_void(Expr)=return Expr"
-  - "$break_none(Expr)=return Expr"
+  # - "$break_some(Expr)=return Expr"
+  # - "$break_some_void(Expr)=return Expr"
+  # - "$break_none(Expr)=return Expr"
 
-  - "$break_ok(Expr)=return Expr"
-  - "$break_ok_void(Expr)=return Expr"
-  - "$break_err(Expr)=return Expr"
+  # - "$break_ok(Expr)=return Expr"
+  # - "$break_ok_void(Expr)=return Expr"
+  # - "$break_err(Expr)=return Expr"
 
   # Control flow
   - "if_(init, cond)=if (init; cond)"

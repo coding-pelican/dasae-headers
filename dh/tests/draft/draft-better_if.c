@@ -5,7 +5,7 @@ typedef struct Foo {
     i32 a;
     f32 b;
 } Foo;
-prl_T_use$(Foo);
+T_use_prl$(Foo);
 
 op_fn_addWith$(((Foo, f32)(lhs, rhs))(Foo)) {
     return (Foo){

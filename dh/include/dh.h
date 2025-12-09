@@ -51,8 +51,8 @@ extern "C" {
 #include "dh/ArrPDeq.h"
 #include "dh/ArrPQue.h"
 
-// #include "dh/HashMap.h"
-// #include "dh/HashSet.h"
+#include "dh/HashMap.h"
+#include "dh/HashSet.h"
 // #include "dh/HashMapSeq.h"
 // #include "dh/HashSetSeq.h"
 // #include "dh/BTreeMap.h"

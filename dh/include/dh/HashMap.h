@@ -5,7 +5,7 @@
  * @file    HashMap.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-11-22 (date of creation)
- * @updated 2025-12-07 (date of last update)
+ * @updated 2025-12-09 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  HashMap
@@ -110,7 +110,7 @@ typedef struct HashMap_Header {
     });
 } HashMap_Header;
 
-/* --- HashMap_Pair: Key-Value pair --- */
+/* --- HashMap_Pair: Key-Value pair type (2-tuple) --- */
 
 #define HashMap_Pair$$(_K, _V...) __comp_anon__HashMap_Pair$$(_K, _V)
 #define HashMap_Pair$(_K, _V...) __comp_alias__HashMap_Pair$(_K, _V)
@@ -129,8 +129,8 @@ T_use_P$(HashMap_Pair$raw);
 typedef P$HashMap_Pair$raw V$HashMap_Pair$raw;
 T_use_O$(V$HashMap_Pair$raw);
 T_use_E$($set(mem_Err)(O$V$HashMap_Pair$raw));
-$extern fn_((HashMap_Pair_key(HashMap_Pair$raw* self, TypeInfo key_ty, u_V$raw ret_mem))(u_V$raw));
-$extern fn_((HashMap_Pair_val(HashMap_Pair$raw* self, TypeInfo val_ty, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((HashMap_Pair_key(V$HashMap_Pair$raw self, TypeInfo val_ty, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((HashMap_Pair_val(V$HashMap_Pair$raw self, TypeInfo key_ty, u_V$raw ret_mem))(u_V$raw));
 
 /* --- HashMap_Entry: Pointers to key and value in map --- */
 
@@ -206,10 +206,10 @@ $extern fn_((HashMap_Ensured_foundExistingMut(
 
 typedef u_HashCtxFn HashMap_HashFn;
 $extern fn_((HashMap_HashFn_default(u_V$raw val, u_V$raw ctx))(u64));
-claim_assert_static(isSameType$(HashMap_HashFn, TypeOf(&HashMap_HashFn_default)));
+claim_assert_static(Type_eq$(HashMap_HashFn, TypeOf(&HashMap_HashFn_default)));
 typedef u_EqlCtxFn HashMap_EqlFn;
 $extern fn_((HashMap_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool));
-claim_assert_static(isSameType$(HashMap_EqlFn, TypeOf(&HashMap_EqlFn_default)));
+claim_assert_static(Type_eq$(HashMap_EqlFn, TypeOf(&HashMap_EqlFn_default)));
 
 typedef struct HashMap_Ctx {
     var_(inner, u_P_const$raw);
@@ -316,9 +316,6 @@ $extern fn_((HashMap_putNoClobber(
 $extern fn_((HashMap_putNoClobberWithin(
     HashMap* self, u_V$raw key, u_V$raw val
 ))(void));
-
-/* --- Fetch Operations (return previous value if any) --- */
-
 /// Insert or update, returning previous value if it existed. May allocate.
 $attr($must_check)
 $extern fn_((HashMap_fetchPut(
@@ -475,12 +472,13 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
                 }; \
             }; \
         }; \
-        var_(as_raw, HashMap_Pair) $like_ref; \
+        var_(as_raw, HashMap_Pair$raw) $like_ref; \
     }
 #define __comp_alias__HashMap_Pair$(_K, _V...) tpl_id$1T$2U(HashMap_Pair, _K, _V)
 #define __comp_gen__T_decl_HashMap_Pair$(_K, _V...) \
     $maybe_unused typedef union HashMap_Pair$(_K, _V) HashMap_Pair$(_K, _V); \
-    T_decl_O$(HashMap_Pair$(_K, _V))
+    T_decl_O$(HashMap_Pair$(_K, _V)); \
+    T_decl_E$($set(mem_Err)(O$(HashMap_Pair$(_K, _V))))
 #define __comp_gen__T_impl_HashMap_Pair$(_K, _V...) \
     union HashMap_Pair$(_K, _V) { \
         struct { \
@@ -499,15 +497,25 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
                 }; \
             }; \
         }; \
-        var_(as_raw, HashMap_Pair) $like_ref; \
+        var_(as_raw, HashMap_Pair$raw) $like_ref; \
     }; \
-    T_impl_O$(HashMap_Pair$(_K, _V))
+    T_impl_O$(HashMap_Pair$(_K, _V)); \
+    T_impl_E$($set(mem_Err)(O$(HashMap_Pair$(_K, _V))))
 #define __comp_gen__T_use_HashMap_Pair$(_K, _V...) \
     T_decl_HashMap_Pair$(_K, _V); \
     T_impl_HashMap_Pair$(_K, _V)
 
 /* clang-format off */
-
+#define T_use_HashMap_Pair_key$(_K, _V...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_key, _K, _V)(HashMap_Pair$(_K, _V) self))(u_V$raw)) { \
+        return u_castV$((_K)(HashMap_Pair_key(self.as_raw, typeInfo$(_V), u_retV$(_K)))); \
+    }
+#define T_use_HashMap_Pair_val$(_K, _V...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_val, _K, _V)(HashMap_Pair$(_K, _V) self))(u_V$raw)) { \
+        return u_castV$((_V)(HashMap_Pair_val(self.as_raw, typeInfo$(_K), u_retV$(_V)))); \
+    }
 /* clang-format on */
 
 #define __comp_anon__HashMap_Entry$$(_K, _V...) \
@@ -624,7 +632,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_alias__HashMap_Ensured$(_K, _V...) tpl_id$1T$2U(HashMap_Ensured, _K, _V)
 #define __comp_gen__T_decl_HashMap_Ensured$(_K, _V...) \
     $maybe_unused typedef union HashMap_Ensured$(_K, _V) HashMap_Ensured$(_K, _V); \
-    T_decl_O$(HashMap_Ensured$(_K, _V))
+    T_decl_O$(HashMap_Ensured$(_K, _V)); \
+    T_decl_E$($set(mem_Err)(HashMap_Ensured$(_K, _V)))
 #define __comp_gen__T_impl_HashMap_Ensured$(_K, _V...) \
     union HashMap_Ensured$(_K, _V) { \
         struct { \
@@ -638,7 +647,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         }; \
         var_(as_raw, HashMap_Ensured) $like_ref; \
     }; \
-    T_impl_O$(HashMap_Ensured$(_K, _V))
+    T_impl_O$(HashMap_Ensured$(_K, _V)); \
+    T_impl_E$($set(mem_Err)(HashMap_Ensured$(_K, _V)))
 #define __comp_gen__T_use_HashMap_Ensured$(_K, _V...) \
     T_decl_HashMap_Ensured$(_K, _V); \
     T_impl_HashMap_Ensured$(_K, _V)
@@ -748,14 +758,14 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $static fn_((tpl_id$1T$2U(HashMap_clone, _K, _V)( \
         HashMap$(_K, _V) self, mem_Allocator gpa \
     ))(E$($set(mem_Err)(HashMap$(_K, _V)))) $scope) { \
-        return_(typeE$((ReturnT)(HashMap_clone(*self->as_raw, typeInfo$(_K), typeInfo$(_V), gpa)))); \
+        return_(typeE$((ReturnT)(HashMap_clone(*self.as_raw, typeInfo$(_K), typeInfo$(_V), gpa)))); \
     } $unscoped_(fn)
 #define T_use_HashMap_cloneWithCtx$(_K, _V...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T$2U(HashMap_cloneWithCtx, _K, _V)( \
         HashMap$(_K, _V) self, P_const$HashMap_Ctx ctx, mem_Allocator gpa \
     ))(E$($set(mem_Err)(HashMap$(_K, _V)))) $scope) { \
-        return_(typeE$((ReturnT)(HashMap_cloneWithCtx(*self->as_raw, typeInfo$(_K), typeInfo$(_V), ctx, gpa)))); \
+        return_(typeE$((ReturnT)(HashMap_cloneWithCtx(*self.as_raw, typeInfo$(_K), typeInfo$(_V), ctx, gpa)))); \
     } $unscoped_(fn)
 
 #define T_use_HashMap_count$(_K, _V...) \
@@ -814,34 +824,34 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define T_use_HashMap_for$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_for, _K, _V)(HashMap$(_K, _V) self, _V key))(O$(_K))) { \
+    $static fn_((tpl_id$1T$2U(HashMap_for, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(_K))) { \
         return u_castO$((O$(_K))(HashMap_for(*self.as_raw, typeInfo$(_V), u_anyV(key), u_retV$(_K)))); \
     }
 #define T_use_HashMap_ptrFor$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_ptrFor, _K, _V)(HashMap$(_K, _V) self, _V key))(O$(P_const$(_K)))) { \
+    $static fn_((tpl_id$1T$2U(HashMap_ptrFor, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(P_const$(_K)))) { \
         return u_castO$((O$(P_const$(_K)))(HashMap_ptrFor(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
     }
 #define T_use_HashMap_ptrMutFor$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_ptrMutFor, _K, _V)(HashMap$(_K, _V) self, _V key))(O$(P$(_K)))) { \
+    $static fn_((tpl_id$1T$2U(HashMap_ptrMutFor, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(P$(_K)))) { \
         return u_castO$((O$(P$(_K)))(HashMap_ptrMutFor(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
     }
 
 #define T_use_HashMap_entry$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_entry, _K, _V)(HashMap$(_K, _V) self, _V key))(O$(HashMap_Entry$(_K, _V)))) { \
-        return u_castO$((O$(HashMap_Entry$(_K, _V)))(HashMap_entry(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_entry, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(HashMap_Entry$(_K, _V)))) { \
+        return typeO$((O$(HashMap_Entry$(_K, _V)))(HashMap_entry(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
     }
 #define T_use_HashMap_entryMut$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_entryMut, _K, _V)(HashMap$(_K, _V) self, _V key))(O$(HashMap_EntryMut$(_K, _V)))) { \
-        return u_castO$((O$(HashMap_EntryMut$(_K, _V)))(HashMap_entryMut(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_entryMut, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(HashMap_EntryMut$(_K, _V)))) { \
+        return typeO$((O$(HashMap_EntryMut$(_K, _V)))(HashMap_entryMut(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
     }
 
 #define T_use_HashMap_contains$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_contains, _K, _V)(HashMap$(_K, _V) self, _V key))(bool)) { \
+    $static fn_((tpl_id$1T$2U(HashMap_contains, _K, _V)(HashMap$(_K, _V) self, _K key))(bool)) { \
         return HashMap_contains(*self.as_raw, typeInfo$(_V), u_anyV(key)); \
     }
 
@@ -865,21 +875,24 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $static fn_((tpl_id$1T$2U(HashMap_putNoClobberWithin, _K, _V)(HashMap$(_K, _V)* self, _K key, _V val))(void)) { \
         return HashMap_putNoClobberWithin(self->as_raw, u_anyV(key), u_anyV(val)); \
     }
-
 #define T_use_HashMap_fetchPut$(_K, _V...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T$2U(HashMap_fetchPut, _K, _V)( \
         HashMap$(_K, _V)* self, mem_Allocator gpa, _K key, _V val \
-    ))(E$($set(mem_Err)(O$(HashMap_Pair$(_K, _V)))))) { \
-        /* TODO: Implement */ \
-    }
+    ))(E$($set(mem_Err)(O$(HashMap_Pair$(_K, _V))))) $scope) { \
+        let opt_pair = try_(HashMap_fetchPut(self->as_raw, gpa, u_anyV(key), u_anyV(val), lit0$((HashMap_Pair$(_K, _V))).as_raw)); \
+        let pair = orelse_((opt_pair)(return_ok(none()))); \
+        return_ok(some(*as$(HashMap_Pair$(_K, _V)*)(pair))); \
+    } $unscoped_(fn)
 #define T_use_HashMap_fetchPutWithin$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T$2U(HashMap_fetchPutWithin, _K, _V)( \
         HashMap$(_K, _V)* self, _K key, _V val \
-    ))(O$(HashMap_Pair$(_K, _V)))) { \
-        /* TODO: Implement */ \
-    }
+    ))(O$(HashMap_Pair$(_K, _V))) $scope) { \
+        let opt_pair = HashMap_fetchPutWithin(self->as_raw, u_anyV(key), u_anyV(val), lit0$((HashMap_Pair$(_K, _V))).as_raw); \
+        let pair = orelse_((opt_pair)(return_none())); \
+        return_some(*as$(HashMap_Pair$(_K, _V)*)(pair)); \
+    } $unscoped_(fn)
 
 #define T_use_HashMap_ensure$(_K, _V...) \
     $attr($inline_always $must_check) \
@@ -893,7 +906,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $static fn_((tpl_id$1T$2U(HashMap_ensureWithin, _K, _V)( \
         HashMap$(_K, _V)* self, _K key \
     ))(HashMap_Ensured$(_K, _V))) { \
-        return type$((HashMap_Ensured$(_K, _V))(HashMap_ensureWithin(self.as_raw, typeInfo$(_V), u_anyV(key)))); \
+        return type$((HashMap_Ensured$(_K, _V))(HashMap_ensureWithin(self->as_raw, typeInfo$(_V), u_anyV(key)))); \
     }
 #define T_use_HashMap_ensureValue$(_K, _V...) \
     $attr($inline_always $must_check) \
@@ -910,9 +923,11 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     }
 #define T_use_HashMap_fetchRemove$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_fetchRemove, _K, _V)(HashMap$(_K, _V)* self, _K key))(O$(HashMap_Pair$(_K, _V)))) { \
-        /* TODO: Implement */ \
-    }
+    $static fn_((tpl_id$1T$2U(HashMap_fetchRemove, _K, _V)(HashMap$(_K, _V)* self, _K key))(O$(HashMap_Pair$(_K, _V))) $scope) { \
+        let opt_pair = HashMap_fetchRemove(self->as_raw, typeInfo$(_V), u_anyV(key), lit0$((HashMap_Pair$(_K, _V))).as_raw); \
+        let pair = orelse_((opt_pair)(return_none())); \
+        return_some(*as$(HashMap_Pair$(_K, _V)*)(pair)); \
+    } $unscoped_(fn)
 #define T_use_HashMap_removeByPtr$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T$2U(HashMap_removeByPtr, _K, _V)(HashMap$(_K, _V)* self, _K* key))(void)) { \
@@ -929,7 +944,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_anon__HashMap_Iter$$(_K, _V...) \
     union { \
         struct { \
-            var_(map, const HashMap$(_K, _V) *); \
+            var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
             debug_only(struct { \
                 var_(key_ty, TypeInfo); \
@@ -944,7 +959,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_gen__T_impl_HashMap_Iter$(_K, _V...) \
     union HashMap_Iter$(_K, _V) { \
         struct { \
-            var_(map, const HashMap$(_K, _V) *); \
+            var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
             debug_only(struct { \
                 var_(key_ty, TypeInfo); \
@@ -1005,18 +1020,18 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 /* clang-format off */
 #define T_use_HashMap_keyIter$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_keyIter, _K, _V)(const HashMap$(_K, _V)* self))(HashMap_KeyIter$(_K, _V))) { \
-        return type$((HashMap_KeyIter$(_K, _V))(HashMap_keyIter(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_keyIter, _K, _V)(HashMap$(_K, _V) self))(HashMap_KeyIter$(_K, _V))) { \
+        return type$((HashMap_KeyIter$(_K, _V))(HashMap_keyIter(*self.as_raw, typeInfo$(_K), typeInfo$(_V)))); \
     }
 #define T_use_HashMap_KeyIter_next$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T$2U(HashMap_KeyIter_next, _K, _V)(HashMap_KeyIter$(_K, _V)* self))(O$(P_const$(_K)))) { \
-        return u_castO$((O$P_const$(_K))(HashMap_KeyIter_next(self->as_raw, typeInfo$(_K)))); \
+        return u_castO$((O$(P_const$(_K)))(HashMap_KeyIter_next(self->as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashMap_KeyIter_nextMut$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T$2U(HashMap_KeyIter_nextMut, _K, _V)(HashMap_KeyIter$(_K, _V)* self))(O$(P$(_K)))) { \
-        return u_castO$((O$P$(_K))(HashMap_KeyIter_nextMut(self->as_raw, typeInfo$(_K)))); \
+        return u_castO$((O$(P$(_K)))(HashMap_KeyIter_nextMut(self->as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
 
@@ -1051,8 +1066,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 /* clang-format off */
 #define T_use_HashMap_valIter$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_valIter, _K, _V)(const HashMap$(_K, _V)* self))(HashMap_ValIter$(_K, _V))) { \
-        return type$((HashMap_ValIter$(_K, _V))(HashMap_valIter(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_valIter, _K, _V)(HashMap$(_K, _V) self))(HashMap_ValIter$(_K, _V))) { \
+        return type$((HashMap_ValIter$(_K, _V))(HashMap_valIter(*self.as_raw, typeInfo$(_K), typeInfo$(_V)))); \
     }
 #define T_use_HashMap_ValIter_next$(_K, _V...) \
     $attr($inline_always) \

@@ -70,7 +70,7 @@ extern "C" {
 #define comp_syn__ext_unscoped                      \
             goto __returned_scope;                  \
         }                                           \
-        return (blk({ if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
+        return (blk({ if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
     }
 /* #define comp_syn__ext_scope(T_ReservedReturn...)            \
     {                                                       \
@@ -107,7 +107,7 @@ extern "C" {
     struct { \
         i32 curr; \
         bool returns; \
-    } __scope_defer = {.curr = 0, .returns = false}; \
+    } __scope_defer = { .curr = 0, .returns = false }; \
     if (0) { \
 __returned_scope: \
         goto __ext_unscoped; \
@@ -128,7 +128,7 @@ __ext_unscoped: \
     } \
     return ( \
         blk({ \
-            if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+            if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
         }), \
         __reserved_return[0] \
     )
@@ -139,7 +139,7 @@ __ext_unscoped: \
         goto __returned_scope; \
     }
 
-#define SYN__return_(val_return...) scope_return(*(TypeOf(getReservedReturn()[0])[1]){[0] = val_return})
+#define SYN__return_(val_return...) scope_return(*(TypeOf(getReservedReturn()[0])[1]){ [0] = val_return })
 
 #else
 #endif /* SCOPE_RESERVE_RETURN_CONTAINS_DEFER */
@@ -155,7 +155,7 @@ __returned_scope: \
 #define SYN__returnReserved \
     return ( \
         blk({ \
-            if (!isSameType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+            if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
         }), \
         __reserved_return[0] \
     )

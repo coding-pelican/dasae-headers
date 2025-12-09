@@ -1,807 +1,758 @@
-#if UNUSED_CODE
-/**
- * @file ArrSet.c
- * @brief Array-based hash set implementation
- */
+#include "dh/HashSet.h"
+#include "dh/meta.h"
 
-#include "dh/ArrSet.h"
-#include "dh/mem/common.h"
+fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64)) {
+    return HashMap_HashFn_default(val, ctx);
+};
 
-// Small set threshold - use linear scan instead of hash index for small sets
-#define SMALL_SET_THRESHOLD 8
+fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
+    return HashMap_EqlFn_default(lhs, rhs, ctx);
+};
 
-// Hash index constants
-#define INDEX_EMPTY usize_limit_max
-#define INDEX_TOMBSTONE (usize_limit_max - 1)
+fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx)) {
+    return HashMap_Ctx_default();
+};
 
-// Hash index entry
-typedef struct HashIndexEntry {
-    usize hash;
-    usize index; // Index into items array
-} HashIndexEntry;
+fn_((HashSet_Sgl_init(u_V$raw key, V$HashSet_Sgl$raw ret_mem))(V$HashSet_Sgl$raw)) {
+    debug_only({
+        ret_mem->key_ty = key.type;
+    });
+    let self_type = u_typeInfoRecord(typeInfosFrom(key.type));
+    let p_self = (u_V$raw){ .type = self_type, .inner = ret_mem->data.inner }.ref;
+    let p_key = u_fieldPtrMut(p_self, typeInfosFrom(key.type), 0);
+    u_memcpy(p_key, key.ref.as_const);
+    return ret_mem;
+};
 
-/*========== Helper Functions ===============================================*/
+fn_((HashSet_Sgl_key(V$HashSet_Sgl$raw self, u_V$raw ret_mem))(u_V$raw)) {
+    debug_assert_nonnull(ret_mem.inner);
+    debug_assert_eqBy(self->key_ty, ret_mem.type, TypeInfo_eq);
+    let self_type = u_typeInfoRecord(typeInfosFrom(ret_mem.type));
+    let p_self = u_load((u_V$raw){ .type = self_type, .inner = self->data.inner }).ref;
+    let p_key = u_fieldPtr(p_self.as_const, typeInfosFrom(ret_mem.type), 0);
+    return u_deref(u_memcpy(ret_mem.ref, p_key));
+};
 
-T_use_E$($set(mem_Err)(usize));
-$static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
-    if_some((usize_addChkd(lhs, rhs))(result)) {
-        return_ok(result);
-    } else_none {
-        return_err(mem_Err_OutOfMemory());
-    }
-    claim_unreachable;
-} $unscoped_(fn);
+fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$raw)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    return (u_P_const$raw){ .raw = self.key, .type = key_ty };
+};
 
-$inline_always
-$static fn_((calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(prim_max(1, arch_cache_line / type.size));
-}
+fn_((HashSet_EntryMut_key(HashSet_EntryMut self, TypeInfo key_ty))(u_P$raw)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    return (u_P$raw){ .raw = self.key, .type = key_ty };
+};
 
-$static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
-    let init_cap = calcInitCap(type);
-    usize new = current;
-    do { new = usize_addSat(new, new / 2 + init_cap); } while (new < minimum);
-    return new;
-}
+fn_((HashSet_Ensured_key(HashSet_Ensured self, TypeInfo key_ty))(u_P_const$raw)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    return (u_P_const$raw){ .raw = self.key, .type = key_ty };
+};
 
-// Calculate index capacity (must be power of 2 and >= 2 * items capacity)
-$static fn_((calcIndexCap(usize items_cap))(usize)) {
-    // Start with items_cap * 2 for good load factor
-    usize cap = items_cap * 2;
-    // Round up to next power of 2
-    cap--;
-    cap |= cap >> 1;
-    cap |= cap >> 2;
-    cap |= cap >> 4;
-    cap |= cap >> 8;
-    cap |= cap >> 16;
-#if usize_limit_max > UINT32_MAX
-    cap |= cap >> 32;
-#endif
-    cap++;
-    return prim_max(cap, 16); // Minimum 16 slots
-}
+fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$raw)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    return (u_P$raw){ .raw = self.key, .type = key_ty };
+};
 
-// Hash with context
-$static fn_((hashItem(ArrSet self, u_V$raw item))(u64)) {
-    return self.hashFn(item, u_anyV(self.ctx));
-}
+fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry)) {
+    return expr_(O$HashSet_Entry $scope)(if (self.found_existing) {
+        $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
+    }) expr_(else)({
+        $break_(none());
+    }) $unscoped_(expr);
+};
 
-// Check equality with context
-$static fn_((eqlItems(ArrSet self, u_V$raw lhs, u_V$raw rhs))(bool)) {
-    return self.eqlFn(lhs, rhs, u_anyV(self.ctx));
-}
+fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_EntryMut)) {
+    return expr_(O$HashSet_EntryMut $scope)(if (self.found_existing) {
+        $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
+    }) expr_(else)({
+        $break_(none());
+    }) $unscoped_(expr);
+};
 
-// Find item using linear search (for small sets)
-$static fn_((findLinear(ArrSet self, TypeInfo type, u_V$raw item))(O$usize) $scope) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = type };
+/* --- Internal helper functions --- */
 
-    for (usize i = 0; i < items.len; i++) {
-        u_V$raw current = u_deref(u_atS(items, i));
-        if (eqlItems(self, item, current)) {
-            return_some(i);
-        }
-    }
-    return_none();
-} $unscoped_(fn);
+$static fn_((HashSet__header(HashSet self))(HashSet_Header*)) {
+    let metadata_ptr = unwrap_(self.metadata);
+    return as$(HashSet_Header*)(as$(u8*)(metadata_ptr)-sizeOf$(HashSet_Header));
+};
 
-// Find item using hash index
-$static fn_((findHashed(ArrSet self, TypeInfo type, u_V$raw item, usize hash))(O$usize) $scope) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    claim_assert_nonnull(self.index);
+$static fn_((HashSet__keys(HashSet self, TypeInfo key_ty))(u_P$raw)) {
+    return (u_P$raw){ .raw = HashSet__header(self)->keys, .type = key_ty };
+};
 
-    HashIndexEntry* index = (HashIndexEntry*)self.index;
-    usize index_cap = calcIndexCap(self.cap);
-    usize mask = index_cap - 1;
-    usize pos = hash & mask;
+$static fn_((HashSet__keyAt(HashSet self, TypeInfo key_ty, usize idx))(u_P$raw)) {
+    return (u_P$raw){ .raw = as$(u8*)(HashSet__keys(self, key_ty).raw) + idx * key_ty.size, .type = key_ty };
+};
 
-    u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = type };
+$static fn_((HashSet__metadataAt(HashSet self, usize idx))(HashMap_Ctrl*)) {
+    return unwrap_(self.metadata) + idx;
+};
 
-    // Linear probing
-    for (usize i = 0; i < index_cap; i++) {
-        usize slot = (pos + i) & mask;
+$static fn_((HashSet__capacityForSize(u32 size))(u32)) {
+    var_(new_cap, u64) = (as$(u64)(size) * 100) / HashSet_default_max_load_ratio + 1;
+    // Round up to power of 2
+    new_cap--;
+    new_cap |= new_cap >> 1;
+    new_cap |= new_cap >> 2;
+    new_cap |= new_cap >> 4;
+    new_cap |= new_cap >> 8;
+    new_cap |= new_cap >> 16;
+    new_cap |= new_cap >> 32;
+    new_cap++;
+    return as$(u32)(new_cap);
+};
 
-        if (index[slot].index == INDEX_EMPTY) {
-            return_none();
-        }
+$static fn_((HashSet__initMetadata(HashSet* self))(void)) {
+    mem_set0(u_anyS(slice$P(unwrap_(self->metadata), $r(0, HashSet_cap(*self)))));
+};
 
-        if (index[slot].index != INDEX_TOMBSTONE && index[slot].hash == hash) {
-            usize item_idx = index[slot].index;
-            if (item_idx < items.len) {
-                u_V$raw current = u_deref(u_atS(items, item_idx));
-                if (eqlItems(self, item, current)) {
-                    return_some(item_idx);
-                }
-            }
-        }
-    }
+$static fn_((HashSet__alloc(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_cap))(mem_Err$void) $scope) {
+    let header_align = alignOf$(HashSet_Header);
+    let key_align = key_ty.size == 0 ? 1 : mem_log2ToAlign(key_ty.align);
+    let max_align = prim_max(header_align, key_align);
 
-    return_none();
-} $unscoped_(fn);
+    let meta_size = sizeOf$(HashSet_Header) + as$(usize)(new_cap)*sizeOf$(HashMap_Ctrl);
+    let keys_start = mem_alignFwd(meta_size, key_align);
+    let keys_end = keys_start + as$(usize)(new_cap)*key_ty.size;
+    let total_size = mem_alignFwd(keys_end, max_align);
 
-// Build hash index from items
-$static fn_((buildIndex(ArrSet* self, TypeInfo type, mem_Allocator gpa))(mem_Err$void) $scope) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    let slice = u_castS$((S$u8)(try_(mem_Allocator_alloc(gpa, typeInfo$(u8), total_size))));
+    let ptr = as$(u8*)(slice.ptr);
+    let hdr = as$(HashSet_Header*)(ptr);
+    hdr->keys = ptr + keys_start;
+    hdr->cap = new_cap;
+    debug_only({
+        hdr->key_ty = key_ty;
+    });
 
-    if (self->items.len < SMALL_SET_THRESHOLD) {
-        // No index needed for small sets
-        if (self->index != NULL) {
-            mem_free(gpa, self->index);
-            self->index = NULL;
-        }
-        return_ok({});
-    }
-
-    usize index_cap = calcIndexCap(self->cap);
-    usize index_size = index_cap * sizeOf(HashIndexEntry);
-
-    // Allocate or reallocate index
-    HashIndexEntry* new_index = (HashIndexEntry*)mem_alloc(gpa, index_size, alignOf(HashIndexEntry));
-    if (new_index == NULL) {
-        return_err(mem_Err_OutOfMemory());
-    }
-
-    // Initialize all slots to empty
-    for (usize i = 0; i < index_cap; i++) {
-        new_index[i].index = INDEX_EMPTY;
-    }
-
-    // Free old index
-    if (self->index != NULL) {
-        mem_free(gpa, self->index);
-    }
-
-    self->index = new_index;
-
-    // Insert all items into index
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = type };
-    usize mask = index_cap - 1;
-
-    for (usize item_idx = 0; item_idx < items.len; item_idx++) {
-        u_V$raw item = u_deref(u_atS(items, item_idx));
-        u64 hash = hashItem(*self, item);
-        usize pos = hash & mask;
-
-        // Find empty slot using linear probing
-        for (usize i = 0; i < index_cap; i++) {
-            usize slot = (pos + i) & mask;
-            if (new_index[slot].index == INDEX_EMPTY) {
-                new_index[slot].hash = hash;
-                new_index[slot].index = item_idx;
-                break;
-            }
-        }
-    }
-
+    asg_lit((&self->metadata)(some(as$(HashMap_Ctrl*)(ptr + sizeOf$(HashSet_Header)))));
     return_ok({});
 } $unscoped_(fn);
 
-/*========== Public API =====================================================*/
+$static fn_((HashSet__free(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(void)) {
+    if_none(self->metadata) { return; }
 
-fn_((ArrSet_empty(TypeInfo type, u_HashCtxFn hashFn, u_EqlCtxFn eqlFn, u_P_const$raw ctx))(ArrSet)) {
-    let_ignore = type;
-    return (ArrSet){
-        .items = zero$S(),
-        .cap = 0,
-        .index = NULL,
-        .hashFn = hashFn,
-        .eqlFn = eqlFn,
+    let header_align = alignOf$(HashSet_Header);
+    let key_align = key_ty.size == 0 ? 1 : (1ull << key_ty.align);
+    let max_align = prim_max(header_align, key_align);
+
+    let cap = HashSet_cap(*self);
+    let meta_size = sizeOf$(HashSet_Header) + as$(usize)(cap)*sizeOf$(HashMap_Ctrl);
+    let keys_start = mem_alignFwd(meta_size, key_align);
+    let keys_end = keys_start + as$(usize)(cap)*key_ty.size;
+    let total_size = mem_alignFwd(keys_end, max_align);
+
+    let ptr = as$(u8*)(HashSet__header(*self));
+    mem_Allocator_free(gpa, (u_S$raw){ .ptr = ptr, .len = total_size, .type = typeInfo$(u8) });
+
+    asg_lit((&self->metadata)(none()));
+    self->available = 0;
+};
+
+$static fn_((HashSet__idx(HashSet self, u_V$raw key))(O$usize) $scope) {
+    if (self.size == 0) { return_none(); }
+
+    let ctx = self.ctx;
+    let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
+
+    let cap = HashSet_cap(self);
+    let mask = cap - 1;
+    let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
+    var_(idx, usize) = hash & mask;
+    var_(limit, u32) = cap;
+    while (limit > 0) {
+        let ctrl = *HashSet__metadataAt(self, idx);
+        if (HashMap_Ctrl_isFree(ctrl)) {
+            return_none();
+        }
+        if (HashMap_Ctrl_isUsed(ctrl) && ctrl.fingerprint == fingerprint) {
+            if (ctx->eqlFn(key, u_load(u_deref(HashSet__keyAt(self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
+                return_some(idx);
+            }
+        }
+        limit--;
+        idx = (idx + 1) & mask;
+    }
+
+    return_none();
+} $unscoped_(fn);
+
+$static fn_((HashSet__grow(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_capacity))(mem_Err$void) $scope) {
+    let new_cap = prim_max(new_capacity, HashSet_default_min_cap);
+    claim_assert(new_cap > HashSet_cap(*self));
+
+    var_(new_set, HashSet) = HashSet_empty(key_ty, self->ctx);
+    try_(HashSet__alloc(&new_set, key_ty, gpa, new_cap));
+    HashSet__initMetadata(&new_set);
+    new_set.available = (new_cap * HashSet_default_max_load_ratio) / 100;
+
+    if (self->size != 0) {
+        let old_cap = HashSet_cap(*self);
+        for_(($r(0, old_cap))(i) {
+            let ctrl = *HashSet__metadataAt(*self, i);
+            if (!HashMap_Ctrl_isUsed(ctrl)) { continue; }
+            let k = u_load(u_deref(HashSet__keyAt(*self, key_ty, i)));
+            HashSet_putWithin(&new_set, k);
+            if (new_set.size == self->size) { break; }
+        });
+    }
+
+    HashSet__free(self, key_ty, gpa);
+    *self = new_set;
+    return_ok({});
+} $unscoped_(fn);
+
+$static fn_((HashSet__growIfNeeded(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_count))(mem_Err$void) $scope) {
+    if (new_count > self->available) {
+        let load = (HashSet_cap(*self) * HashSet_default_max_load_ratio) / 100 - self->available;
+        try_(HashSet__grow(self, key_ty, gpa, HashSet__capacityForSize(load + new_count)));
+    }
+    return_ok({});
+} $unscoped_(fn);
+
+/* --- Public API implementation --- */
+
+fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet)) {
+    claim_assert_nonnull(ctx);
+    return (HashSet){
+        .metadata = none(),
+        .size = 0,
+        .available = 0,
         .ctx = ctx,
-        debug_only(.type = type)
+        debug_only(.key_ty = key_ty)
     };
-}
+};
 
-fn_((ArrSet_fromBuf(u_S$raw buf, u_HashCtxFn hashFn, u_EqlCtxFn eqlFn, u_P_const$raw ctx))(ArrSet)) {
-    return (ArrSet){
-        .items = u_sliceS(buf, $r(0, 0)).raw,
-        .cap = buf.len,
-        .index = NULL,
-        .hashFn = hashFn,
-        .eqlFn = eqlFn,
-        .ctx = ctx,
-        debug_only(.type = buf.type)
-    };
-}
-
-fn_((ArrSet_init(TypeInfo type, mem_Allocator gpa, usize cap, u_HashCtxFn hashFn, u_EqlCtxFn eqlFn, u_P_const$raw ctx))(mem_Err$ArrSet) $scope) {
-    var set = ArrSet_empty(type, hashFn, eqlFn, ctx);
-    try_(ArrSet_ensureCapPrecise(&set, type, gpa, cap));
+fn_((HashSet_init(TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Allocator gpa, u32 cap))(mem_Err$HashSet) $scope) {
+    claim_assert_nonnull(ctx);
+    var set = HashSet_empty(key_ty, ctx);
+    if (cap > 0) {
+        let actual_cap = prim_max(HashSet__capacityForSize(cap), HashSet_default_min_cap);
+        try_(HashSet__alloc(&set, key_ty, gpa, actual_cap));
+        HashSet__initMetadata(&set);
+        set.available = (actual_cap * HashSet_default_max_load_ratio) / 100;
+    }
     return_ok(set);
 } $unscoped_(fn);
 
-fn_((ArrSet_fini(ArrSet* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((HashSet_fini(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    HashSet__free(self, key_ty, gpa);
+    *self = HashSet_empty(key_ty, self->ctx);
+};
 
-    // Free items array
-    u_S$raw items_capped = (u_S$raw){ .ptr = self->items.ptr, .len = self->cap, .type = type };
-    mem_Allocator_free(gpa, items_capped);
-
-    // Free hash index
-    if (self->index != NULL) {
-        mem_free(gpa, self->index);
-    }
-
-    *self = ArrSet_empty(type, self->hashFn, self->eqlFn, self->ctx);
-}
-
-fn_((ArrSet_clone(ArrSet self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrSet) $scope) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    var cloned = try_(ArrSet_init(type, gpa, self.cap, self.hashFn, self.eqlFn, self.ctx));
-
-    // Copy items
-    u_S$raw src_items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = type };
-    u_S$raw dst_items = (u_S$raw){ .ptr = cloned.items.ptr, .len = 0, .type = type };
-    mem_copy(dst_items.ptr, src_items.ptr, src_items.len * type.size);
-    cloned.items.len = src_items.len;
-
-    // Rebuild index
-    try_(buildIndex(&cloned, type, gpa));
-
-    return_ok(cloned);
+fn_((HashSet_clone(HashSet self, TypeInfo key_ty, mem_Allocator gpa))(mem_Err$HashSet) $scope) {
+    return_ok(try_(HashSet_cloneWithCtx(self, key_ty, self.ctx, gpa)));
 } $unscoped_(fn);
 
-fn_((ArrSet_len(ArrSet self))(usize)) {
-    return self.items.len;
-}
+fn_((HashSet_cloneWithCtx(
+    HashSet self, TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Allocator gpa
+))(mem_Err$HashSet) $scope) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
 
-fn_((ArrSet_cap(ArrSet self))(usize)) {
-    return self.cap;
-}
-
-fn_((ArrSet_contains(ArrSet self, u_V$raw item))(bool) $scope) {
-    if_some((ArrSet_getIndex(self, item))(idx)) {
-        let_ignore = idx;
-        return true;
-    } else_none {
-        return false;
+    var_(other, HashSet) = HashSet_empty(key_ty, ctx);
+    if (self.size == 0) {
+        return_ok(other);
     }
+
+    let new_cap = HashSet__capacityForSize(self.size);
+    try_(HashSet__alloc(&other, key_ty, gpa, new_cap));
+    HashSet__initMetadata(&other);
+    other.available = (new_cap * HashSet_default_max_load_ratio) / 100;
+
+    let cap = HashSet_cap(self);
+    for_(($r(0, cap))(i) {
+        let ctrl = *HashSet__metadataAt(self, i);
+        if (HashMap_Ctrl_isUsed(ctrl)) {
+            let k = u_load(u_deref(HashSet__keyAt(self, key_ty, i)));
+            HashSet_putWithin(&other, k);
+            if (other.size == self.size) { break; }
+        }
+    });
+
+    return_ok(other);
 } $unscoped_(fn);
 
-fn_((ArrSet_get(ArrSet self, u_V$raw item))(O$u_P_const$raw) $scope) {
-    if_some((ArrSet_getIndex(self, item))(idx)) {
-        u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = self.type };
-        return_some(u_atS(items, idx));
-    } else_none {
-        return_none();
-    }
-} $unscoped_(fn);
+fn_((HashSet_count(HashSet self))(u32)) {
+    return self.size;
+};
 
-fn_((ArrSet_getMut(ArrSet self, u_V$raw item))(O$u_P$raw) $scope) {
-    if_some((ArrSet_getIndex(self, item))(idx)) {
-        u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = self.type };
-        return_some(u_atS(items, idx));
-    } else_none {
-        return_none();
-    }
-} $unscoped_(fn);
+fn_((HashSet_cap(HashSet self))(u32)) {
+    if_none(self.metadata) { return 0; }
+    return HashSet__header(self)->cap;
+};
 
-fn_((ArrSet_getIndex(ArrSet self, u_V$raw item))(O$usize) $scope) {
-    if (self.items.len == 0) {
-        return_none();
-    }
-
-    if (self.items.len < SMALL_SET_THRESHOLD || self.index == NULL) {
-        return findLinear(self, self.type, item);
-    } else {
-        u64 hash = hashItem(self, item);
-        return findHashed(self, self.type, item, hash);
-    }
-} $unscoped_(fn);
-
-fn_((ArrSet_at(ArrSet self, TypeInfo type, usize idx))(u_P_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = type };
-    return u_atS(items, idx);
-}
-
-fn_((ArrSet_atMut(ArrSet self, TypeInfo type, usize idx))(u_P$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    u_S$raw items = (u_S$raw){ .ptr = self.items.ptr, .len = self.items.len, .type = type };
-    return u_atS(items, idx);
-}
-
-fn_((ArrSet_items(ArrSet self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_from$S((const type)(self.items.as_const));
-}
-
-fn_((ArrSet_itemsMut(ArrSet self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_from$S((type)(self.items));
-}
-
-fn_((ArrSet_itemsCapped(ArrSet self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_init$S((const type)(ArrSet_items(self, type).ptr, self.cap));
-}
-
-fn_((ArrSet_itemsCappedMut(ArrSet self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_init$S((type)(ArrSet_itemsMut(self, type).ptr, self.cap));
-}
-
-fn_((ArrSet_itemsUnused(ArrSet self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_sliceS(ArrSet_itemsCapped(self, type), $r(self.items.len, self.cap - self.items.len));
-}
-
-fn_((ArrSet_itemsUnusedMut(ArrSet self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_sliceS(ArrSet_itemsCappedMut(self, type), $r(self.items.len, self.cap - self.items.len));
-}
-
-fn_((ArrSet_ensureCap(ArrSet* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
+fn_((HashSet_ensureCap(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_size))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    if (new_cap <= self->cap) { return_ok({}); }
-    return ArrSet_ensureCapPrecise(self, type, gpa, growCap(type, self->cap, new_cap));
-} $unscoped_(fn);
-
-fn_((ArrSet_ensureCapPrecise(ArrSet* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    if (type.size == 0) {
-        self->cap = usize_limit_max;
-        return_ok({});
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    if (new_size > self->size) {
+        try_(HashSet__growIfNeeded(self, key_ty, gpa, new_size - self->size));
     }
-    if (new_cap <= self->cap) { return_ok({}); }
-
-    u_S$raw old_items = (u_S$raw){ .ptr = self->items.ptr, .len = self->cap, .type = type };
-    if_some((mem_Allocator_remap(gpa, old_items, new_cap))(new_items)) {
-        self->items.ptr = new_items.ptr;
-        self->cap = new_items.len;
-    } else_none {
-        return_err(mem_Err_OutOfMemory());
-    }
-
-    // Rebuild index if needed
-    if (self->items.len >= SMALL_SET_THRESHOLD) {
-        try_(buildIndex(self, type, gpa));
-    }
-
     return_ok({});
 } $unscoped_(fn);
 
-fn_((ArrSet_ensureUnusedCap(ArrSet* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void) $scope) {
+fn_((HashSet_ensureUnusedCap(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 additional))(mem_Err$void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    let new_len = try_(addOrOom(self->items.len, additional));
-    return ArrSet_ensureCap(self, type, gpa, new_len);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    return HashSet_ensureCap(self, key_ty, gpa, self->size + additional);
+};
+
+fn_((HashSet_clearRetainingCap(HashSet* self))(void)) {
+    claim_assert_nonnull(self);
+    if_none(self->metadata) { return; }
+    HashSet__initMetadata(self);
+    self->size = 0;
+    self->available = (HashSet_cap(*self) * HashSet_default_max_load_ratio) / 100;
+};
+
+fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(void)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    HashSet__free(self, key_ty, gpa);
+    self->size = 0;
+    self->available = 0;
+};
+
+fn_((HashSet_for(HashSet self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw) $scope) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(self, key))(idx)) {
+        return_some({ .inner = u_memcpy(ret_mem.ref, HashSet__keyAt(self, key.type, idx).as_const).raw });
+    }
+    return_none();
 } $unscoped_(fn);
 
-fn_((ArrSet_shrinkRetainingCap(ArrSet* self, usize new_len))(void)) {
-    claim_assert_nonnull(self);
-    claim_assert(new_len <= self->items.len);
-    self->items.len = new_len;
-}
-
-fn_((ArrSet_shrinkAndFree(ArrSet* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    claim_assert(new_len <= self->items.len);
-
-    self->items.len = new_len;
-
-    if (new_len == 0) {
-        ArrSet_clearAndFree(self, type, gpa);
-        return;
+fn_((HashSet_ptrFor(HashSet self, u_V$raw key))(O$u_P_const$raw) $scope) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(self, key))(idx)) {
+        return_some(HashSet__keyAt(self, key.type, idx).as_const);
     }
-
-    // Shrink capacity if significantly over-allocated
-    if (self->cap > new_len * 2) {
-        u_S$raw old_items = (u_S$raw){ .ptr = self->items.ptr, .len = self->cap, .type = type };
-        if_some((mem_Allocator_remap(gpa, old_items, new_len))(new_items)) {
-            self->items.ptr = new_items.ptr;
-            self->cap = new_items.len;
-        } else_none {
-            // Remap failed, keep existing capacity
-        }
-    }
-
-    // Rebuild index if needed
-    if (self->items.len >= SMALL_SET_THRESHOLD) {
-        buildIndex(self, type, gpa); // Ignore errors here
-    } else if (self->index != NULL) {
-        mem_free(gpa, self->index);
-        self->index = NULL;
-    }
-}
-
-fn_((ArrSet_clearRetainingCap(ArrSet* self))(void)) {
-    claim_assert_nonnull(self);
-    self->items.len = 0;
-}
-
-fn_((ArrSet_clearAndFree(ArrSet* self, TypeInfo type, mem_Allocator gpa))(void)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-
-    u_S$raw items_capped = (u_S$raw){ .ptr = self->items.ptr, .len = self->cap, .type = type };
-    mem_Allocator_free(gpa, items_capped);
-
-    if (self->index != NULL) {
-        mem_free(gpa, self->index);
-    }
-
-    self->items.ptr = NULL;
-    self->items.len = 0;
-    self->cap = 0;
-    self->index = NULL;
-}
-
-fn_((ArrSet_insert(ArrSet* self, mem_Allocator gpa, u_V$raw item))(mem_Err$bool) $scope) {
-    claim_assert_nonnull(self);
-
-    // Check if item already exists
-    if (ArrSet_contains(*self, item)) {
-        return_ok(false);
-    }
-
-    // Ensure capacity
-    try_(ArrSet_ensureUnusedCap(self, self->type, gpa, 1));
-
-    // Insert item
-    ArrSet_insertWithin(self, item);
-    return_ok(true);
+    return_none();
 } $unscoped_(fn);
 
-fn_((ArrSet_insertFixed(ArrSet* self, u_V$raw item))(mem_Err$bool) $scope) {
-    claim_assert_nonnull(self);
-
-    // Check if item already exists
-    if (ArrSet_contains(*self, item)) {
-        return_ok(false);
+fn_((HashSet_ptrMutFor(HashSet self, u_V$raw key))(O$u_P$raw) $scope) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(self, key))(idx)) {
+        return_some(HashSet__keyAt(self, key.type, idx));
     }
-
-    // Check capacity
-    if (self->items.len >= self->cap) {
-        return_err(mem_Err_OutOfMemory());
-    }
-
-    // Insert item
-    ArrSet_insertWithin(self, item);
-    return_ok(true);
+    return_none();
 } $unscoped_(fn);
 
-fn_((ArrSet_insertWithin(ArrSet* self, u_V$raw item))(bool)) {
-    claim_assert_nonnull(self);
-    claim_assert(self->items.len < self->cap);
-
-    // Check if item already exists
-    if (ArrSet_contains(*self, item)) {
-        return false;
+fn_((HashSet_entry(HashSet self, u_V$raw key))(O$HashSet_Entry) $scope) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(self, key))(idx)) {
+        let k = HashSet__keyAt(self, key.type, idx).as_const;
+        return_some({ .key = k.raw, debug_only(.key_ty = key.type) });
     }
-
-    // Add item to end of array
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-    u_P$raw dest = u_atS(items, items.len);
-    mem_copy(dest, item.ref.as_const, self->type.size);
-    self->items.len++;
-
-    // Update index if we crossed the threshold
-    if (self->items.len == SMALL_SET_THRESHOLD && self->index == NULL) {
-        // We need to build an index, but we can't allocate in Within variant
-        // So we'll defer index building until next allocation operation
-    }
-    // TODO: Update index incrementally if it exists
-
-    return true;
-}
-
-fn_((ArrSet_getOrPut(ArrSet* self, mem_Allocator gpa, u_V$raw item))(mem_Err$ArrSet_GetOrPutResult) $scope) {
-    claim_assert_nonnull(self);
-
-    // Check if item exists
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        return_ok((ArrSet_GetOrPutResult){
-            .item_ptr = u_atS(items, idx),
-            .found_existing = true,
-            .index = idx });
-    } else_none {
-        // Ensure capacity
-        try_(ArrSet_ensureUnusedCap(self, self->type, gpa, 1));
-
-        // Add new item
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        usize idx = items.len;
-        u_P$raw dest = u_atS(items, idx);
-        mem_copy(dest, item.ref.as_const, self->type.size);
-        self->items.len++;
-
-        // Rebuild index if needed
-        if (self->items.len >= SMALL_SET_THRESHOLD) {
-            try_(buildIndex(self, self->type, gpa));
-        }
-
-        return_ok((ArrSet_GetOrPutResult){
-            .item_ptr = dest,
-            .found_existing = false,
-            .index = idx });
-    }
+    return_none();
 } $unscoped_(fn);
 
-fn_((ArrSet_getOrPutFixed(ArrSet* self, u_V$raw item))(mem_Err$ArrSet_GetOrPutResult) $scope) {
-    claim_assert_nonnull(self);
-
-    // Check if item exists
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        return_ok((ArrSet_GetOrPutResult){
-            .item_ptr = u_atS(items, idx),
-            .found_existing = true,
-            .index = idx });
-    } else_none {
-        // Check capacity
-        if (self->items.len >= self->cap) {
-            return_err(mem_Err_OutOfMemory());
-        }
-
-        // Add new item
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        usize idx = items.len;
-        u_P$raw dest = u_atS(items, idx);
-        mem_copy(dest, item.ref.as_const, self->type.size);
-        self->items.len++;
-
-        return_ok((ArrSet_GetOrPutResult){
-            .item_ptr = dest,
-            .found_existing = false,
-            .index = idx });
+fn_((HashSet_entryMut(HashSet self, u_V$raw key))(O$HashSet_EntryMut) $scope) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(self, key))(idx)) {
+        let k = HashSet__keyAt(self, key.type, idx);
+        return_some({ .key = k.raw, debug_only(.key_ty = key.type) });
     }
+    return_none();
 } $unscoped_(fn);
 
-fn_((ArrSet_getOrPutWithin(ArrSet* self, u_V$raw item))(ArrSet_GetOrPutResult) $scope) {
+fn_((HashSet_contains(HashSet self, u_V$raw key))(bool)) {
+    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
+    return isSome(HashSet__idx(self, key));
+};
+
+#if UNUSED_CODE
+fn_((HashSet_add(HashSet* self, mem_Allocator gpa, u_V$raw key))(mem_Err$bool) $scope) {
     claim_assert_nonnull(self);
-
-    // Check if item exists
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        return (ArrSet_GetOrPutResult){
-            .item_ptr = u_atS(items, idx),
-            .found_existing = true,
-            .index = idx
-        };
-    } else_none {
-        claim_assert(self->items.len < self->cap);
-
-        // Add new item
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        usize idx = items.len;
-        u_P$raw dest = u_atS(items, idx);
-        mem_copy(dest, item.ref.as_const, self->type.size);
-        self->items.len++;
-
-        return (ArrSet_GetOrPutResult){
-            .item_ptr = dest,
-            .found_existing = false,
-            .index = idx
-        };
-    }
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    let prev_count = self->size;
+    let ensured = try_(HashSet_ensure(self, gpa, key));
+    let_ignore = ensured;
+    return_ok(prev_count != self->size);
 } $unscoped_(fn);
 
-fn_((ArrSet_remove(ArrSet* self, u_V$raw item))(bool) $scope) {
+fn_((HashSet_addWithin(HashSet* self, u_V$raw key))(bool)) {
     claim_assert_nonnull(self);
-
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        // Remove by swapping with last element
-        u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-        if (idx < items.len - 1) {
-            u_P$raw dest = u_atS(items, idx);
-            u_P$raw src = u_atS(items, items.len - 1);
-            mem_copy(dest, src, self->type.size);
-        }
-        self->items.len--;
-
-        // Rebuild index if needed
-        if (self->items.len >= SMALL_SET_THRESHOLD && self->index != NULL) {
-            buildIndex(self, self->type, mem_Allocator_noop()); // Using noop allocator - should we pass gpa?
-        } else if (self->items.len < SMALL_SET_THRESHOLD && self->index != NULL) {
-            // Free index for small sets
-            // Can't free without allocator - this is a design issue
-        }
-
-        return true;
-    } else_none {
-        return false;
-    }
-} $unscoped_(fn);
-
-fn_((ArrSet_removeOrd(ArrSet* self, usize idx, u_V$raw ret_mem))(u_V$raw)) {
-    claim_assert_nonnull(self);
-    claim_assert(idx < self->items.len);
-
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-    u_P$raw item_ptr = u_atS(items, idx);
-
-    // Copy item to return memory
-    mem_copy(ret_mem.ref, item_ptr, self->type.size);
-
-    // Shift items down
-    if (idx < items.len - 1) {
-        u_P$raw dest = u_atS(items, idx);
-        u_P$raw src = u_atS(items, idx + 1);
-        usize count = items.len - idx - 1;
-        mem_move(dest, src, count * self->type.size);
-    }
-
-    self->items.len--;
-
-    // TODO: Update or rebuild index
-
-    return ret_mem;
-}
-
-fn_((ArrSet_removeSwap(ArrSet* self, usize idx, u_V$raw ret_mem))(u_V$raw)) {
-    claim_assert_nonnull(self);
-    claim_assert(idx < self->items.len);
-
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-    u_P$raw item_ptr = u_atS(items, idx);
-
-    // Copy item to return memory
-    mem_copy(ret_mem.ref, item_ptr, self->type.size);
-
-    // Swap with last element
-    if (idx < items.len - 1) {
-        u_P$raw src = u_atS(items, items.len - 1);
-        mem_copy(item_ptr, src, self->type.size);
-    }
-
-    self->items.len--;
-
-    // TODO: Update or rebuild index
-
-    return ret_mem;
-}
-
-fn_((ArrSet_fetch(ArrSet* self, u_V$raw item, u_V$raw ret_mem))(O$u_V$raw) $scope) {
-    return ArrSet_fetchSwap(self, item, ret_mem);
-} $unscoped_(fn);
-
-fn_((ArrSet_fetchOrd(ArrSet* self, u_V$raw item, u_V$raw ret_mem))(O$u_V$raw) $scope) {
-    claim_assert_nonnull(self);
-
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        return_some(ArrSet_removeOrd(self, idx, ret_mem));
-    } else_none {
-        return_none();
-    }
-} $unscoped_(fn);
-
-fn_((ArrSet_fetchSwap(ArrSet* self, u_V$raw item, u_V$raw ret_mem))(O$u_V$raw) $scope) {
-    claim_assert_nonnull(self);
-
-    if_some((ArrSet_getIndex(*self, item))(idx)) {
-        return_some(ArrSet_removeSwap(self, idx, ret_mem));
-    } else_none {
-        return_none();
-    }
-} $unscoped_(fn);
-
-fn_((ArrSet_unionWith(ArrSet* self, mem_Allocator gpa, ArrSet other))(mem_Err$void) $scope) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, other.type, TypeInfo_eq);
-
-    u_S$raw other_items = (u_S$raw){ .ptr = other.items.ptr, .len = other.items.len, .type = other.type };
-
-    for (usize i = 0; i < other_items.len; i++) {
-        u_V$raw item = u_deref(u_atS(other_items, i));
-        try_(ArrSet_insert(self, gpa, item));
-    }
-
-    return_ok({});
-} $unscoped_(fn);
-
-fn_((ArrSet_intersectWith(ArrSet* self, ArrSet other))(void)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, other.type, TypeInfo_eq);
-
-    // Remove items that are not in other
-    usize write_idx = 0;
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-
-    for (usize read_idx = 0; read_idx < items.len; read_idx++) {
-        u_V$raw item = u_deref(u_atS(items, read_idx));
-        if (ArrSet_contains(other, item)) {
-            if (write_idx != read_idx) {
-                u_P$raw dest = u_atS(items, write_idx);
-                u_P$raw src = u_atS(items, read_idx);
-                mem_copy(dest, src, self->type.size);
-            }
-            write_idx++;
-        }
-    }
-
-    self->items.len = write_idx;
-
-    // TODO: Rebuild index
-}
-
-fn_((ArrSet_differenceWith(ArrSet* self, ArrSet other))(void)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, other.type, TypeInfo_eq);
-
-    // Remove items that are in other
-    usize write_idx = 0;
-    u_S$raw items = (u_S$raw){ .ptr = self->items.ptr, .len = self->items.len, .type = self->type };
-
-    for (usize read_idx = 0; read_idx < items.len; read_idx++) {
-        u_V$raw item = u_deref(u_atS(items, read_idx));
-        if (!ArrSet_contains(other, item)) {
-            if (write_idx != read_idx) {
-                u_P$raw dest = u_atS(items, write_idx);
-                u_P$raw src = u_atS(items, read_idx);
-                mem_copy(dest, src, self->type.size);
-            }
-            write_idx++;
-        }
-    }
-
-    self->items.len = write_idx;
-
-    // TODO: Rebuild index
-}
-
-fn_((ArrSet_reIndex(ArrSet* self, TypeInfo type, mem_Allocator gpa))(mem_Err$void) $scope) {
-    return buildIndex(self, type, gpa);
-} $unscoped_(fn);
-
-fn_((ArrSet_sort(ArrSet* self, TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ord_ctx))(void)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-
-    // TODO: Implement sorting
-    // We would need to implement a sorting algorithm or use qsort
-    // For now, this is a placeholder
-    let_ignore = ordFn;
-    let_ignore = ord_ctx;
-}
-
-/* Iterator implementation */
-
-fn_((ArrSet_iter(const ArrSet* self, TypeInfo type))(ArrSet_Iter)) {
-    claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return (ArrSet_Iter){
-        .set = self,
-        .index = 0,
-        debug_only(.type = type)
-    };
-}
-
-fn_((ArrSet_Iter_next(ArrSet_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope) {
-    claim_assert_nonnull(self);
-    claim_assert_nonnull(self->set);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-
-    if (self->index >= self->set->items.len) {
-        return_none();
-    }
-
-    u_S$raw items = (u_S$raw){ .ptr = self->set->items.ptr, .len = self->set->items.len, .type = type };
-    u_P$raw item_ptr = u_atS(items, self->index);
-    self->index++;
-
-    return_some(item_ptr);
-} $unscoped_(fn);
-
-fn_((ArrSet_Iter_nextMut(ArrSet_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
-    claim_assert_nonnull(self);
-    claim_assert_nonnull(self->set);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-
-    if (self->index >= self->set->items.len) {
-        return_none();
-    }
-
-    u_S$raw items = (u_S$raw){ .ptr = self->set->items.ptr, .len = self->set->items.len, .type = type };
-    u_P$raw item_ptr = u_atS(items, self->index);
-    self->index++;
-
-    return_some(item_ptr);
-} $unscoped_(fn);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    let prev_count = self->size;
+    let ensured = HashSet_ensureWithin(self, key);
+    let_ignore = ensured;
+    return prev_count != self->size;
+};
 #endif /* UNUSED_CODE */
+
+fn_((HashSet_put(HashSet* self, mem_Allocator gpa, u_V$raw key))(mem_Err$void) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    try_(HashSet__growIfNeeded(self, key.type, gpa, 1));
+    HashSet_putWithin(self, key);
+    return_ok({});
+} $unscoped_(fn);
+
+fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    claim_assert(!HashSet_contains(*self, key));
+    let ctx = self->ctx;
+    let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
+    let cap = HashSet_cap(*self);
+    let mask = cap - 1;
+    var_(idx, usize) = hash & mask;
+    while (HashMap_Ctrl_isUsed(*HashSet__metadataAt(*self, idx))) {
+        idx = (idx + 1) & mask;
+    }
+    claim_assert(self->available > 0);
+    self->available--;
+
+    let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
+    HashMap_Ctrl_fill(HashSet__metadataAt(*self, idx), fingerprint);
+    u_memcpy(HashSet__keyAt(*self, key.type, idx), key.ref.as_const);
+    self->size++;
+};
+
+fn_((HashSet_fetchPut(HashSet* self, mem_Allocator gpa, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(mem_Err$O$V$HashSet_Sgl$raw) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    let ensured = try_(HashSet_ensure(self, gpa, key));
+    let result = expr_(O$V$HashSet_Sgl$raw $scope)(if (ensured.found_existing) {
+        let k = HashSet_Ensured_key(ensured, key.type);
+        $break_(some(HashSet_Sgl_init(u_load(u_deref(k)), ret_mem)));
+    } else_none {
+        $break_(none());
+    }) $unscoped_(expr);
+    return_ok(result);
+} $unscoped_(fn);
+
+fn_((HashSet_fetchPutWithin(HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(O$V$HashSet_Sgl$raw) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    let ensured = HashSet_ensureWithin(self, key);
+    let result = expr_(O$V$HashSet_Sgl$raw $scope)(if (ensured.found_existing) {
+        let k = HashSet_Ensured_key(ensured, key.type);
+        $break_(some(HashSet_Sgl_init(u_load(u_deref(k)), ret_mem)));
+    } else_none {
+        $break_(none());
+    }) $unscoped_(expr);
+    return result;
+} $unscoped_(fn);
+
+fn_((HashSet_ensure(HashSet* self, mem_Allocator gpa, u_V$raw key))(mem_Err$HashSet_Ensured) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    // Try to grow first, but if it fails and key exists, we can still return it
+    catch_((HashSet__growIfNeeded(self, key.type, gpa, 1))(err, if_some((HashSet__idx(*self, key))(idx)) {
+        let k = HashSet__keyAt(*self, key.type, idx);
+        return_ok((HashSet_Ensured){
+            .key = k.raw,
+            .found_existing = true,
+            debug_only(.key_ty = key.type) });
+    } else_none {
+        return_err(err);
+    }));
+    return_ok(HashSet_ensureWithin(self, key));
+} $unscoped_(fn);
+
+fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    let ctx = self->ctx;
+    let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
+    let cap = HashSet_cap(*self);
+    let mask = cap - 1;
+    let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
+
+    var_(first_tombstone_idx, usize) = cap; // Invalid index
+    var_(idx, usize) = hash & mask;
+    var_(limit, u32) = cap;
+    while (limit > 0) {
+        let ctrl = *HashSet__metadataAt(*self, idx);
+        if (HashMap_Ctrl_isFree(ctrl)) {
+            break;
+        }
+        if (HashMap_Ctrl_isUsed(ctrl) && ctrl.fingerprint == fingerprint) {
+            if (ctx->eqlFn(key, u_load(u_deref(HashSet__keyAt(*self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
+                return (HashSet_Ensured){
+                    .key = HashSet__keyAt(*self, key.type, idx).raw,
+                    .found_existing = true,
+                    debug_only(.key_ty = key.type)
+                };
+            }
+        } else if (first_tombstone_idx == cap && HashMap_Ctrl_isTombstone(ctrl)) {
+            first_tombstone_idx = idx;
+        }
+        limit--;
+        idx = (idx + 1) & mask;
+    }
+    // Not found, insert at first tombstone or current free slot
+    if (first_tombstone_idx < cap) {
+        idx = first_tombstone_idx;
+    }
+    claim_assert(self->available > 0);
+    self->available--;
+    HashMap_Ctrl_fill(HashSet__metadataAt(*self, idx), fingerprint);
+    u_memcpy(HashSet__keyAt(*self, key.type, idx), key.ref.as_const);
+    self->size++;
+    return (HashSet_Ensured){
+        .key = HashSet__keyAt(*self, key.type, idx).raw,
+        .found_existing = false,
+        debug_only(.key_ty = key.type)
+    };
+};
+
+fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(*self, key))(idx)) {
+        HashMap_Ctrl_remove(HashSet__metadataAt(*self, idx));
+        self->size--;
+        self->available++;
+        return true;
+    }
+    return false;
+};
+
+fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(O$V$HashSet_Sgl$raw) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
+    if_some((HashSet__idx(*self, key))(idx)) {
+        let old_key = HashSet__keyAt(*self, key.type, idx);
+        let result = HashSet_Sgl_init(u_load(u_deref(old_key)), ret_mem);
+        HashMap_Ctrl_remove(HashSet__metadataAt(*self, idx));
+        mem_set0(u_prefixP(old_key, 1));
+        self->size--;
+        self->available++;
+        return_some(result);
+    }
+    return_none();
+} $unscoped_(fn);
+
+fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void)) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(key_ptr.raw);
+    debug_assert_eqBy(self->key_ty, key_ptr.type, TypeInfo_eq);
+    let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
+        $break_((intFromPtr(key_ptr.raw) - intFromPtr(HashSet__keys(*self, key_ptr.type).raw)) / key_ptr.type.size);
+    }) expr_(else)({
+        $break_(0);
+    }) $unscoped_(expr);
+    HashMap_Ctrl_remove(HashSet__metadataAt(*self, idx));
+    self->size--;
+    self->available++;
+};
+
+fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+
+    if_none(self->metadata) { return; }
+
+    let cap = HashSet_cap(*self);
+    let mask = cap - 1;
+    let ctx = self->ctx;
+
+    // Mark all slots as free but keep used flag
+    for_(($r(0, cap))(i) {
+        HashSet__metadataAt(*self, i)->fingerprint = HashMap_Ctrl_free;
+    });
+
+    // Rehash all used slots
+    var_(curr, u32) = 0;
+    while (curr < cap) {
+        let ctrl = HashSet__metadataAt(*self, curr);
+        if (!HashMap_Ctrl_isUsed(*ctrl)) {
+            claim_assert(HashMap_Ctrl_isFree(*ctrl));
+            curr++;
+            continue;
+        }
+        let key = HashSet__keyAt(*self, key_ty, curr);
+        let hash = ctx->hashFn(u_load(u_deref(key)), u_load(u_deref(ctx->inner)));
+        let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
+        var_(idx, usize) = hash & mask;
+
+        // Find target slot
+        while ((idx < curr && HashMap_Ctrl_isUsed(*HashSet__metadataAt(*self, idx)))
+               || (idx > curr && HashMap_Ctrl_isTombstone(*HashSet__metadataAt(*self, idx)))) {
+            idx = (idx + 1) & mask;
+        }
+        if (idx < curr) {
+            // Move to earlier slot
+            claim_assert(HashMap_Ctrl_isFree(*HashSet__metadataAt(*self, idx)));
+            HashMap_Ctrl_fill(HashSet__metadataAt(*self, idx), fingerprint);
+
+            // Copy key
+            let dst_key = HashSet__keyAt(*self, key_ty, idx);
+            let src_key = HashSet__keyAt(*self, key_ty, curr);
+            u_memcpy(dst_key, src_key.as_const);
+
+            ctrl->used = 0;
+            claim_assert(HashMap_Ctrl_isFree(*ctrl));
+            curr++;
+        } else if (idx == curr) {
+            ctrl->fingerprint = fingerprint;
+            curr++;
+        } else {
+            // Swap with later slot
+            let target_ctrl = HashSet__metadataAt(*self, idx);
+            HashMap_Ctrl_remove(target_ctrl);
+            if (HashMap_Ctrl_isUsed(*target_ctrl)) {
+                mem_swap(
+                    u_prefixP(HashSet__keyAt(*self, key_ty, curr), 1),
+                    u_suffixP(HashSet__keyAt(*self, key_ty, idx), 1)
+                );
+            } else {
+                target_ctrl->used = 1;
+                u_memcpy(HashSet__keyAt(*self, key_ty, idx), HashSet__keyAt(*self, key_ty, curr).as_const);
+                ctrl->fingerprint = HashMap_Ctrl_free;
+                ctrl->used = 0;
+                curr++;
+            }
+        }
+    }
+};
+
+fn_((HashSet_isSubset(HashSet self, HashSet other))(bool)) {
+    if (self.size > other.size) { return false; }
+    if (self.size == 0) { return true; }
+
+    let cap = HashSet_cap(self);
+    for_(($r(0, cap))(i) {
+        let ctrl = *HashSet__metadataAt(self, i);
+        if (HashMap_Ctrl_isUsed(ctrl)) {
+            let key = HashSet__keyAt(self, self.key_ty, i);
+            if (!HashSet_contains(other, u_load(u_deref(key)))) {
+                return false;
+            }
+        }
+    });
+    return true;
+};
+
+fn_((HashSet_isSuperset(HashSet self, HashSet other))(bool)) {
+    prim_swap(&self, &other);
+    return HashSet_isSubset(self, other);
+};
+
+fn_((HashSet_isDisjoint(HashSet self, HashSet other))(bool)) {
+    // Check the smaller set's elements against the larger set
+    let smaller = self.size <= other.size ? self : other;
+    let larger = self.size <= other.size ? other : self;
+
+    if (smaller.size == 0) { return true; }
+
+    let cap = HashSet_cap(smaller);
+    for_(($r(0, cap))(i) {
+        let ctrl = *HashSet__metadataAt(smaller, i);
+        if (HashMap_Ctrl_isUsed(ctrl)) {
+            let key = HashSet__keyAt(smaller, smaller.key_ty, i);
+            if (HashSet_contains(larger, u_load(u_deref(key)))) {
+                return false;
+            }
+        }
+    });
+    return true;
+};
+
+/* --- Iterator implementations --- */
+
+fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter)) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    return (HashSet_Iter){
+        .set = self,
+        .idx = 0,
+        debug_only(.key_ty = key_ty)
+    };
+};
+
+fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry) $scope) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(self->set);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    if (self->set->size == 0) { return_none(); }
+    let cap = HashSet_cap(*self->set);
+    while (cap > self->idx) {
+        let ctrl = *HashSet__metadataAt(*self->set, self->idx);
+        if (HashMap_Ctrl_isUsed(ctrl)) {
+            return_some(expr_(HashSet_Entry $guard)({
+                defer_(self->idx++);
+                $break_((HashSet_Entry){
+                    .key = HashSet__keyAt(*self->set, key_ty, self->idx).as_const.raw,
+                    debug_only(.key_ty = key_ty) });
+            }) $unguarded_(expr));
+        }
+        self->idx++;
+    }
+    return_none();
+} $unscoped_(fn);
+
+fn_((HashSet_Iter_nextMut(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_EntryMut) $scope) {
+    claim_assert_nonnull(self);
+    claim_assert_nonnull(self->set);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    if (self->set->size == 0) { return_none(); }
+    let cap = HashSet_cap(*self->set);
+    while (cap > self->idx) {
+        let ctrl = *HashSet__metadataAt(*self->set, self->idx);
+        if (HashMap_Ctrl_isUsed(ctrl)) {
+            return_some(expr_(HashSet_EntryMut $guard)({
+                defer_(self->idx++);
+                $break_((HashSet_EntryMut){
+                    .key = HashSet__keyAt(*self->set, key_ty, self->idx).raw,
+                    debug_only(.key_ty = key_ty) });
+            }) $unguarded_(expr));
+        }
+        self->idx++;
+    }
+    return_none();
+} $unscoped_(fn);
+
+fn_((HashSet_keyIter(HashSet self, TypeInfo key_ty))(HashSet_KeyIter) $scope) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    return_(expr_(HashSet_KeyIter $scope)(
+        if_some((self.metadata)(metadata)) {
+            $break_((HashSet_KeyIter){
+                .len = HashSet_cap(self),
+                .metadata = metadata,
+                .keys = HashSet__keys(self, key_ty).raw,
+                debug_only(.key_ty = key_ty) });
+        } else_none {
+            $break_((HashSet_KeyIter){
+                .len = 0,
+                .metadata = null,
+                .keys = null,
+                debug_only(.key_ty = key_ty) });
+        }
+    ) $unscoped_(expr));
+} $unscoped_(fn);
+
+fn_((HashSet_KeyIter_next(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    while (self->len > 0) {
+        self->len--;
+        let used = HashMap_Ctrl_isUsed(*self->metadata);
+        let key_ptr = self->keys;
+        self->metadata++;
+        self->keys = as$(u8*)(self->keys) + key_ty.size;
+        if (used) {
+            return_some({ .raw = key_ptr, .type = key_ty });
+        }
+    }
+    return_none();
+} $unscoped_(fn);
+
+fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P$raw) $scope) {
+    claim_assert_nonnull(self);
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    while (self->len > 0) {
+        self->len--;
+        let used = HashMap_Ctrl_isUsed(*self->metadata);
+        let key_ptr = self->keys;
+        self->metadata++;
+        self->keys = as$(u8*)(self->keys) + key_ty.size;
+        if (used) {
+            return_some({ .raw = key_ptr, .type = key_ty });
+        }
+    }
+    return_none();
+} $unscoped_(fn);

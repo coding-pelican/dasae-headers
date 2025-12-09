@@ -42,7 +42,7 @@ extern "C" {
 #define P_DerefTUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
 #define P_InnerT$(_T...) TypeOf(*as$(_T)(null))
 #define P_InnerTUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
-#define P_isConst$(_T...) isSameType$(P_DerefT$(_T)*, const P_DerefTUnqual$(_T)*)
+#define P_isConst$(_T...) Type_eq$(P_DerefT$(_T)*, const P_DerefTUnqual$(_T)*)
 
 /* Pointer Operations */
 #define deref$P(_p /*: P$$(_T)*/... /*(_T)*/) deref(_p)

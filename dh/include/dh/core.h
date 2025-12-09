@@ -35,6 +35,7 @@ extern "C" {
 #include "core/scope.h"
 #include "core/src_loc.h"
 #include "core/type_info.h"
+#include "core/struct_layout.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -26,7 +26,7 @@ extern "C" {
 #include "plat_cfg.h"
 #include "comp_cfg.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #define on_comptime__default __comp_flag__on_comptime__default
 #define on_comptime __comp_bool__on_comptime
@@ -89,7 +89,6 @@ extern "C" {
      * @brief Ignores expression or return value \
      */ \
     comp_attr__let_ignore
-
 
 #define $used(_Expr... /*void*/) \
     /** \
@@ -225,7 +224,7 @@ extern "C" {
         claim_assert_nonnull(__p_lhs); \
         claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
         claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-        claim_assert_static(isSameType$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
+        claim_assert_static(Type_eq$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
         *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
         __p_lhs; \
     })
@@ -245,7 +244,7 @@ extern "C" {
 #define __op__asg_compat__assert(...) __op__asg_compat____assert(__op__asg_compat____assert__parse __VA_ARGS__)
 #define __op__asg_compat____assert__parse(...) __VA_ARGS__,
 #define __op__asg_compat____assert(...) __op__asg_compat____assert__emit(__VA_ARGS__)
-#define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) claim_assert_static(isSameType$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
+#define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) claim_assert_static(Type_eq$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
 
 #define asg_lit(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) __op__asg_lit(__op__asg_lit__parsePLhs __VA_ARGS__)
 #define __op__asg_lit(...) __op__asg_lit__emit(__VA_ARGS__)
@@ -378,7 +377,7 @@ extern "C" {
 #define $extern extern
 #define $Thrd_local _Thread_local
 
-/*========== Macros and Implementations =====================================*/
+/*========== Macros and Definitions =========================================*/
 
 #define comp_attr__$inline comp_inline
 #define comp_attr__$inline_always comp_inline_always

@@ -187,19 +187,19 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 })
 #define comp_syn__return_void_0() ({ \
     claim_assert_static( \
-        isSameType$(ReturnT, void) \
-        || isSameType$(ReturnT, Void) \
+        Type_eq$(ReturnT, void) \
+        || Type_eq$(ReturnT, Void) \
     ); \
     goto __step_return; \
 })
 #define comp_syn__return_void_1(_Expr...) ({ \
     claim_assert_static( \
-        isSameType$(ReturnT, void) \
-        || isSameType$(ReturnT, Void) \
+        Type_eq$(ReturnT, void) \
+        || Type_eq$(ReturnT, Void) \
     ); \
     claim_assert_static( \
-        isSameType$(TypeOf(({ _Expr; })), void) \
-        || isSameType$(TypeOf(({ _Expr; })), Void) \
+        Type_eq$(TypeOf(({ _Expr; })), void) \
+        || Type_eq$(TypeOf(({ _Expr; })), Void) \
     ); \
     _Expr; \
     goto __step_return; \
@@ -318,19 +318,19 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define $break_void(_Expr...) pp_overload(comp_syn__$break_void, _Expr)(_Expr)
 #define comp_syn__$break_void_0() blk({ \
     claim_assert_static( \
-        isSameType$(BreakT, void) \
-        || isSameType$(BreakT, Void) \
+        Type_eq$(BreakT, void) \
+        || Type_eq$(BreakT, Void) \
     ); \
     goto __step_break; \
 })
 #define comp_syn__$break_void_1(_Expr...) blk({ \
     claim_assert_static( \
-        isSameType$(BreakT, void) \
-        || isSameType$(BreakT, Void) \
+        Type_eq$(BreakT, void) \
+        || Type_eq$(BreakT, Void) \
     ); \
     claim_assert_static( \
-        isSameType$(TypeOf(({ _Expr; })), void) \
-        || isSameType$(TypeOf(({ _Expr; })), Void) \
+        Type_eq$(TypeOf(({ _Expr; })), void) \
+        || Type_eq$(TypeOf(({ _Expr; })), Void) \
     ); \
     _Expr; \
     goto __step_break; \

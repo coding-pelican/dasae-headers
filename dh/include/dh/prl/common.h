@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define prl_T_use$(_T...) \
+#define T_use_prl$(_T...) \
     T_use$((_T)(P, S, O, E)); \
     T_use$((P$(const _T))(P, S, O, E)); \
     T_use$((P$(_T))(P, S, O, E)); \
@@ -35,17 +35,30 @@ extern "C" {
     T_use$((O$(_T))(P, S, O, E)); \
     T_use$((E$(_T))(P, S, O, E))
 
+T_use$((TypeInfo)(P, S));
+#define typeInfos$(_T...) ____typeInfos$(_T)
+#define typeInfosFrom(_type_infos...) ____typeInfosFrom(_type_infos)
+
 /*========== Macros and Definitions =========================================*/
 
 // clang-format off
-prl_T_use$(u8); prl_T_use$(u16); prl_T_use$(u32); prl_T_use$(u64); prl_T_use$(usize);
-prl_T_use$(i8); prl_T_use$(i16); prl_T_use$(i32); prl_T_use$(i64); prl_T_use$(isize);
-prl_T_use$(f32); prl_T_use$(f64);
-prl_T_use$(bool);
-prl_T_use$(u_P_const$raw); prl_T_use$(u_S_const$raw);
-prl_T_use$(u_P$raw); prl_T_use$(u_S$raw);
-prl_T_use$(u_V$raw); prl_T_use$(u_A$raw);
+T_use_prl$(u8); T_use_prl$(u16); T_use_prl$(u32); T_use_prl$(u64); T_use_prl$(usize);
+T_use_prl$(i8); T_use_prl$(i16); T_use_prl$(i32); T_use_prl$(i64); T_use_prl$(isize);
+T_use_prl$(f32); T_use_prl$(f64);
+T_use_prl$(bool);
+T_use_prl$(u_P_const$raw); T_use_prl$(u_S_const$raw);
+T_use_prl$(u_P$raw); T_use_prl$(u_S$raw);
+T_use_prl$(u_V$raw); T_use_prl$(u_A$raw);
 // clang-format on
+
+#define ____typeInfos$(_T...) \
+    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfos$__each, ~, _T) }))
+#define ____typeInfos$__each(_$ignored, _T...) \
+    typeInfo$(_T),
+#define ____typeInfosFrom(_type_infos...) \
+    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfosFrom__each, ~, _type_infos) }))
+#define ____typeInfosFrom__each(_$ignored, _type_info...) \
+    (_type_info),
 
 #if defined(__cplusplus)
 } /* extern "C" */
