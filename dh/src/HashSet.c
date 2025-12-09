@@ -1,6 +1,34 @@
 #include "dh/HashSet.h"
 #include "dh/meta.h"
 
+/*========== SIMD Configuration =============================================*/
+
+#ifndef HashSet_use_simd
+#if defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+#define HashSet_use_simd 1
+#define HashSet_simd_sse2 1
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+#define HashSet_use_simd 1
+#define HashSet_simd_neon 1
+#else
+#define HashSet_use_simd 0
+#endif
+#endif /* !HashSet_use_simd */
+
+#if HashSet_use_simd
+#if HashSet_simd_sse2
+#include <emmintrin.h> /* SSE2 */
+#elif HashSet_simd_neon
+#include <arm_neon.h> /* NEON */
+#endif
+#endif /* HashSet_use_simd */
+
+#if HashSet_use_simd
+#define HashSet_simd_group_size 16 /* 128-bit SIMD = 16 bytes */
+#endif                             /* HashSet_use_simd */
+
+/*========== Definitions ====================================================*/
+
 fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64)) {
     return HashMap_HashFn_default(val, ctx);
 };
@@ -149,7 +177,17 @@ $static fn_((HashSet__free(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(v
     self->available = 0;
 };
 
+#if HashSet_use_simd
+$static fn_((HashSet__idx_simd(HashSet self, u_V$raw key))(O$usize));
+#endif /* HashSet_use_simd */
 $static fn_((HashSet__idx(HashSet self, u_V$raw key))(O$usize) $scope) {
+#if HashSet_use_simd
+    /* Use SIMD path when capacity is aligned to group size */
+    if (HashSet_cap(self) >= HashSet_simd_group_size && (HashSet_cap(self) % HashSet_simd_group_size) == 0) {
+        return HashSet__idx_simd(self, key);
+    }
+#endif /* HashSet_use_simd */
+
     if (self.size == 0) { return_none(); }
 
     let ctx = self.ctx;
@@ -176,6 +214,145 @@ $static fn_((HashSet__idx(HashSet self, u_V$raw key))(O$usize) $scope) {
 
     return_none();
 } $unscoped_(fn);
+
+#if HashSet_use_simd
+/// Count trailing zeros (find first set bit position)
+$attr($inline_always)
+$static fn_((HashSet__ctz(u32 x))(u32));
+/// Load 16 control bytes and find matches for fingerprint
+$attr($inline_always)
+$static fn_((HashSet__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32));
+/// Find free (not tombstone) slots in a group
+$attr($inline_always)
+$static fn_((HashSet__simd_match_free(const HashMap_Ctrl* group))(u32));
+/// SIMD-accelerated lookup
+$static fn_((HashSet__idx_simd(HashSet self, u_V$raw key))(O$usize) $scope) {
+    if (self.size == 0) { return_none(); }
+
+    let ctx = self.ctx;
+    let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
+    let cap = HashSet_cap(self);
+    let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
+
+    let start_idx = hash & (cap - 1);
+    let start_group = start_idx / HashSet_simd_group_size;
+    let start_offset_in_group = start_idx % HashSet_simd_group_size;
+    let num_groups = cap / HashSet_simd_group_size;
+
+    for_(($r(0, num_groups))(group_offset) {
+        let group_idx = (start_group + group_offset) % num_groups;
+        let group_start = group_idx * HashSet_simd_group_size;
+        let group = HashSet__metadataAt(self, group_start);
+        /* SIMD: Check all 16 control bytes for fingerprint match */
+        var_(match_mask, u32) = HashSet__simd_match_fingerprint(group, fingerprint);
+        /* Iterate over matching positions */
+        while (match_mask != 0) {
+            let bit_pos = HashSet__ctz(match_mask);
+            let idx = group_start + bit_pos;
+            /* Verify with full equality check */
+            if (ctx->eqlFn(key, u_load(u_deref(HashSet__keyAt(self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
+                return_some(idx);
+            }
+            /* Clear this bit and continue */
+            match_mask &= match_mask - 1;
+        }
+        /* Check if this group has any free slots that would terminate the probe */
+        var_(free_mask, u32) = HashSet__simd_match_free(group);
+        /* For the first group in probe order, only consider free slots at positions
+         * >= start_offset_in_group (positions in the actual probe sequence).
+         * Free slots before start_offset_in_group are not yet part of the probe. */
+        if (group_offset == 0 && start_offset_in_group > 0) {
+            free_mask &= (~0u << start_offset_in_group);
+        }
+        if (free_mask != 0) {
+            return_none();
+        }
+    });
+
+    return_none();
+} $unscoped_(fn);
+
+$attr($inline_always)
+$static fn_((HashSet__ctz(u32 x))(u32)) {
+#if defined(__clang__) || defined(__GNUC__)
+    return x ? as$(u32)(__builtin_ctz(x)) : 32;
+#elif defined(_MSC_VER)
+    unsigned long idx;
+    return _BitScanForward(&idx, x) ? as$(u32)(idx) : 32;
+#else
+    /* Fallback */
+    if (x == 0) return 32;
+    var_(n, u32) = 0;
+    if ((x & 0x0000FFFF) == 0) {
+        n += 16;
+        x >>= 16;
+    }
+    if ((x & 0x000000FF) == 0) {
+        n += 8;
+        x >>= 8;
+    }
+    if ((x & 0x0000000F) == 0) {
+        n += 4;
+        x >>= 4;
+    }
+    if ((x & 0x00000003) == 0) {
+        n += 2;
+        x >>= 2;
+    }
+    if ((x & 0x00000001) == 0) { n += 1; }
+    return n;
+#endif
+};
+#if HashSet_simd_sse2
+/* --- SSE2 Implementation --- */
+$attr($inline_always)
+$static fn_((HashSet__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
+    /* Create a vector with the fingerprint in all 16 lanes */
+    let needle = _mm_set1_epi8(as$(i8)(fingerprint | 0x80)); /* Set used bit */
+    /* Load 16 control bytes */
+    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    /* Compare for equality - returns 0xFF for matches, 0x00 for non-matches */
+    let cmp = _mm_cmpeq_epi8(needle, haystack);
+    /* Extract comparison results to bitmask (1 bit per byte) */
+    return as$(u32)(_mm_movemask_epi8(cmp));
+};
+$attr($inline_always)
+$static fn_((HashSet__simd_match_free(const HashMap_Ctrl* group))(u32)) {
+    /* Free slots are exactly 0x00 */
+    let zero = _mm_setzero_si128();
+    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    let cmp = _mm_cmpeq_epi8(zero, haystack);
+    return as$(u32)(_mm_movemask_epi8(cmp));
+};
+#endif /* HashSet_simd_sse2 */
+#if HashSet_simd_neon
+/* --- NEON Implementation --- */
+$attr($inline_always)
+$static fn_((HashSet__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
+    /* Create vector with fingerprint (with used bit set) in all lanes */
+    let needle = vdupq_n_u8(fingerprint | 0x80);
+
+    /* Load 16 control bytes */
+    let haystack = vld1q_u8(as$(const u8*)(group));
+
+    /* Compare for equality */
+    let cmp = vceqq_u8(needle, haystack);
+
+    /* Convert to bitmask - NEON doesn't have movemask, need to reduce */
+    /* Use vshrn to narrow and combine results */
+    let narrowed = vshrn_n_u16(vreinterpretq_u16_u8(cmp), 4);
+    return vget_lane_u64(vreinterpret_u64_u8(narrowed), 0) & 0xFFFF;
+};
+$attr($inline_always)
+$static fn_((HashSet__simd_match_free(const HashMap_Ctrl* group))(u32)) {
+    let zero = vdupq_n_u8(0);
+    let haystack = vld1q_u8(as$(const u8*)(group));
+    let cmp = vceqq_u8(zero, haystack);
+    let narrowed = vshrn_n_u16(vreinterpretq_u16_u8(cmp), 4);
+    return vget_lane_u64(vreinterpret_u64_u8(narrowed), 0) & 0xFFFF;
+};
+#endif /* HashSet_simd_neon */
+#endif /* HashSet_use_simd */
 
 $static fn_((HashSet__grow(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_capacity))(mem_Err$void) $scope) {
     let new_cap = prim_max(new_capacity, HashSet_default_min_cap);

@@ -306,34 +306,36 @@ $static fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
     let cap = HashMap_cap(self);
     let fingerprint = HashMap_Ctrl_takeFingerprint(hash);
 
-    /* Align starting position to group boundary for better performance */
-    let start_group = (hash & (cap - 1)) / HashMap_simd_group_size;
+    let start_idx = hash & (cap - 1);
+    let start_group = start_idx / HashMap_simd_group_size;
+    let start_offset_in_group = start_idx % HashMap_simd_group_size;
     let num_groups = cap / HashMap_simd_group_size;
 
     for_(($r(0, num_groups))(group_offset) {
         let group_idx = (start_group + group_offset) % num_groups;
         let group_start = group_idx * HashMap_simd_group_size;
         let group = HashMap__metadataAt(self, group_start);
-
         /* SIMD: Check all 16 control bytes for fingerprint match */
         var_(match_mask, u32) = HashMap__simd_match_fingerprint(group, fingerprint);
-
         /* Iterate over matching positions */
         while (match_mask != 0) {
             let bit_pos = HashMap__ctz(match_mask);
             let idx = group_start + bit_pos;
-
             /* Verify with full equality check */
             if (ctx->eqlFn(key, u_load(u_deref(HashMap__keyAt(self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
                 return_some(idx);
             }
-
             /* Clear this bit and continue */
             match_mask &= match_mask - 1;
         }
-
-        /* Check if this group has any free slots - if so, key doesn't exist */
-        let free_mask = HashMap__simd_match_free(group);
+        /* Check if this group has any free slots that would terminate the probe */
+        var_(free_mask, u32) = HashMap__simd_match_free(group);
+        /* For the first group in probe order, only consider free slots at positions
+         * >= start_offset_in_group (positions in the actual probe sequence).
+         * Free slots before start_offset_in_group are not yet part of the probe. */
+        if (group_offset == 0 && start_offset_in_group > 0) {
+            free_mask &= (~0u << start_offset_in_group);
+        }
         if (free_mask != 0) {
             return_none();
         }
