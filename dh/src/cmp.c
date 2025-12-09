@@ -79,7 +79,7 @@ $static fn_((cmp_OrdCtxFn_defaultAsc$isize(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx
 $static fn_((cmp_OrdCtxFn_defaultAsc$f32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) { return $ignore_void ctx, prim_ord(u_castV$((f32)(lhs)), u_castV$((f32)(rhs))); };
 $static fn_((cmp_OrdCtxFn_defaultAsc$f64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) { return $ignore_void ctx, prim_ord(u_castV$((f64)(lhs)), u_castV$((f64)(rhs))); };
 
-fn_((cmp_OrdCtxFn_default(cmp_MathType type))(cmp_OrdCtxFn)) {
+fn_((cmp_OrdCtxFn_defaultAsc(cmp_MathType type))(cmp_OrdCtxFn)) {
     switch (type) { /* clang-format off */
         case cmp_MathType_u8: return cmp_OrdCtxFn_defaultAsc$u8;
         case cmp_MathType_u16: return cmp_OrdCtxFn_defaultAsc$u16;

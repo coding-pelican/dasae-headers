@@ -5,7 +5,7 @@
  * @file    ArrPQue.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-12-03 (date of last update)
+ * @updated 2025-12-09 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrPQue
@@ -25,9 +25,22 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "prl.h"
+#include "cmp.h"
 #include "mem/Allocator.h"
 
 /*========== Macros and Declarations ========================================*/
+
+typedef cmp_OrdCtxFn ArrPQue_OrdFn;
+$extern fn_((ArrPQue_OrdFn_defaultAsc(cmp_MathType type))(ArrPQue_OrdFn));
+$extern fn_((ArrPQue_OrdFn_defaultDesc(cmp_MathType type))(ArrPQue_OrdFn));
+
+typedef struct ArrPQue_Ctx {
+    var_(inner, u_P_const$raw);
+    var_(ordFn, ArrPQue_OrdFn);
+} ArrPQue_Ctx;
+T_use_P$(ArrPQue_Ctx);
+$extern fn_((ArrPQue_Ctx_defaultAsc(cmp_MathType type))(ArrPQue_Ctx));
+$extern fn_((ArrPQue_Ctx_defaultDesc(cmp_MathType type))(ArrPQue_Ctx));
 
 /* ArrPQue Anonymous */
 #define ArrPQue$$(_T...) __comp_anon__ArrPQue$$(_T)
@@ -42,54 +55,62 @@ extern "C" {
 typedef struct ArrPQue {
     var_(items, S$raw);
     var_(cap, usize);
-    var_(ordFn, u_OrdCtxFn);
-    var_(ctx, u_P_const$raw);
+    var_(ctx, P_const$ArrPQue_Ctx);
     debug_only(var_(type, TypeInfo);)
 } ArrPQue;
 T_use$((ArrPQue)(O, E));
 T_use_E$($set(mem_Err)(ArrPQue));
 
-/*========== Function Prototypes ============================================*/
+/* --- Function Prototypes --- */
 
-extern fn_((ArrPQue_empty(TypeInfo type, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue));
-extern fn_((ArrPQue_fixed(u_S$raw buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue));
-extern fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, u_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$ArrPQue)) $must_check;
-extern fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void));
+$extern fn_((ArrPQue_empty(TypeInfo type, P_const$ArrPQue_Ctx ctx))(ArrPQue));
+$extern fn_((ArrPQue_fixed(u_S$raw buf, P_const$ArrPQue_Ctx ctx))(ArrPQue));
+$attr($must_check)
+$extern fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, P_const$ArrPQue_Ctx ctx))(mem_Err$ArrPQue));
+$extern fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
-extern fn_((ArrPQue_len(ArrPQue self))(usize));
-extern fn_((ArrPQue_cap(ArrPQue self))(usize));
-extern fn_((ArrPQue_isEmpty(ArrPQue self))(bool));
-extern fn_((ArrPQue_isFull(ArrPQue self))(bool));
-extern fn_((ArrPQue_peek(ArrPQue self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrPQue_peekMut(ArrPQue self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrPQue_at(ArrPQue self, TypeInfo type, usize idx))(u_P_const$raw));
-extern fn_((ArrPQue_atMut(ArrPQue self, TypeInfo type, usize idx))(u_P$raw));
-extern fn_((ArrPQue_items(ArrPQue self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrPQue_itemsMut(ArrPQue self, TypeInfo type))(u_S$raw));
-extern fn_((ArrPQue_itemsCapped(ArrPQue self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrPQue_itemsCappedMut(ArrPQue self, TypeInfo type))(u_S$raw));
-extern fn_((ArrPQue_itemsUnused(ArrPQue self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrPQue_itemsUnusedMut(ArrPQue self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrPQue_len(ArrPQue self))(usize));
+$extern fn_((ArrPQue_cap(ArrPQue self))(usize));
+$extern fn_((ArrPQue_isEmpty(ArrPQue self))(bool));
+$extern fn_((ArrPQue_isFull(ArrPQue self))(bool));
+$extern fn_((ArrPQue_peek(ArrPQue self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrPQue_peekMut(ArrPQue self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrPQue_at(ArrPQue self, TypeInfo type, usize idx))(u_P_const$raw));
+$extern fn_((ArrPQue_atMut(ArrPQue self, TypeInfo type, usize idx))(u_P$raw));
+$extern fn_((ArrPQue_items(ArrPQue self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrPQue_itemsMut(ArrPQue self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrPQue_itemsCapped(ArrPQue self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrPQue_itemsCappedMut(ArrPQue self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrPQue_itemsUnused(ArrPQue self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrPQue_itemsUnusedMut(ArrPQue self, TypeInfo type))(u_S$raw));
 
-extern fn_((ArrPQue_ensureCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_ensureCapPrecise(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_ensureUnusedCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_shrinkRetainingCap(ArrPQue* self, usize new_len))(void));
-extern fn_((ArrPQue_shrinkAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void));
-extern fn_((ArrPQue_clearRetainingCap(ArrPQue* self))(void));
-extern fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void));
+$attr($must_check)
+$extern fn_((ArrPQue_ensureCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrPQue_ensureCapPrecise(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrPQue_ensureUnusedCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void));
+$extern fn_((ArrPQue_shrinkRetainingCap(ArrPQue* self, usize new_len))(void));
+$extern fn_((ArrPQue_shrinkAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void));
+$extern fn_((ArrPQue_clearRetainingCap(ArrPQue* self))(void));
+$extern fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
-extern fn_((ArrPQue_enque(ArrPQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_enqueFixed(ArrPQue* self, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_enqueWithin(ArrPQue* self, u_V$raw item))(void));
-extern fn_((ArrPQue_enqueS(ArrPQue* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_enqueSFixed(ArrPQue* self, u_S_const$raw items))(mem_Err$void)) $must_check;
-extern fn_((ArrPQue_enqueSWithin(ArrPQue* self, u_S_const$raw items))(void));
+$attr($must_check)
+$extern fn_((ArrPQue_enque(ArrPQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrPQue_enqueFixed(ArrPQue* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrPQue_enqueWithin(ArrPQue* self, u_V$raw item))(void));
+$attr($must_check)
+$extern fn_((ArrPQue_enqueS(ArrPQue* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrPQue_enqueSFixed(ArrPQue* self, u_S_const$raw items))(mem_Err$void));
+$extern fn_((ArrPQue_enqueSWithin(ArrPQue* self, u_S_const$raw items))(void));
 
-extern fn_((ArrPQue_deque(ArrPQue* self, u_V$raw ret_mem))(O$u_V$raw));
-extern fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((ArrPQue_deque(ArrPQue* self, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw));
 
-extern fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$void)) $must_check;
+$attr($must_check)
+$extern fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$void));
 
 /* ArrPQue_Iter Anonymous */
 #define ArrPQue_Iter$$(_T...) __comp_anon__ArrPQue_Iter$$(_T)
@@ -106,9 +127,9 @@ typedef struct ArrPQue_Iter {
     var_(idx, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrPQue_Iter;
-extern fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter));
-extern fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter));
+$extern fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -117,8 +138,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
         struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
-            var_(ordFn, u_OrdCtxFn); \
-            var_(ctx, u_P_const$raw); \
+            var_(ctx, P_const$ArrPQue_Ctx); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw, ArrPQue) $like_ref; \
@@ -134,8 +154,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
         struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
-            var_(ordFn, u_OrdCtxFn); \
-            var_(ctx, u_P_const$raw); \
+            var_(ctx, P_const$ArrPQue_Ctx); \
             debug_only(var_(type, TypeInfo);) \
         }; \
         var_(as_raw, ArrPQue) $like_ref; \
@@ -150,18 +169,18 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
 /* clang-format off */
 #define T_use_ArrPQue_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPQue_empty, _T)(u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue$(_T))) { \
-        return type$((ArrPQue$(_T))(ArrPQue_empty(typeInfo$(_T), ordFn, ctx))); \
+    $static fn_((tpl_id(ArrPQue_empty, _T)(P_const$ArrPQue_Ctx ctx))(ArrPQue$(_T))) { \
+        return type$((ArrPQue$(_T))(ArrPQue_empty(typeInfo$(_T), ctx))); \
     }
 #define T_use_ArrPQue_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPQue_fixed, _T)(S$(_T) buf, u_OrdCtxFn ordFn, u_P_const$raw ctx))(ArrPQue$(_T))) { \
-        return type$((ArrPQue$(_T))(ArrPQue_fixed(u_anyS(buf), ordFn, ctx))); \
+    $static fn_((tpl_id(ArrPQue_fixed, _T)(S$(_T) buf, P_const$ArrPQue_Ctx ctx))(ArrPQue$(_T))) { \
+        return type$((ArrPQue$(_T))(ArrPQue_fixed(u_anyS(buf), ctx))); \
     }
 #define T_use_ArrPQue_init$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPQue_init, _T)(mem_Allocator gpa, usize cap, u_OrdCtxFn ordFn, u_P_const$raw ctx))(E$($set(mem_Err)(ArrPQue$(_T)))) $scope) { \
-        return_(typeE$((ReturnType)(ArrPQue_init(typeInfo$(_T), gpa, cap, ordFn, ctx)))); \
+    $static fn_((tpl_id(ArrPQue_init, _T)(mem_Allocator gpa, usize cap, P_const$ArrPQue_Ctx ctx))(E$($set(mem_Err)(ArrPQue$(_T)))) $scope) { \
+        return_(typeE$((ReturnType)(ArrPQue_init(typeInfo$(_T), gpa, cap, ctx)))); \
     } $unscoped_(fn)
 #define T_use_ArrPQue_fini$(_T...) \
     $attr($inline_always) \
@@ -283,17 +302,17 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
     }
 #define T_use_ArrPQue_enqueS$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPQue_enqueS, _T)(P$$(ArrPQue$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPQue_enqueS, _T)(P$$(ArrPQue$(_T)) self, mem_Allocator gpa, S_const$(_T) items))(mem_Err$void)) { \
         return ArrPQue_enqueS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrPQue_enqueSFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPQue_enqueSFixed, _T)(P$$(ArrPQue$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPQue_enqueSFixed, _T)(P$$(ArrPQue$(_T)) self, S_const$(_T) items))(mem_Err$void)) { \
         return ArrPQue_enqueSFixed(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrPQue_enqueSWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPQue_enqueSWithin, _T)(P$$(ArrPQue$(_T)) self, S$(const _T) items))(void)) { \
+    $static fn_((tpl_id(ArrPQue_enqueSWithin, _T)(P$$(ArrPQue$(_T)) self, S_const$(_T) items))(void)) { \
         return ArrPQue_enqueSWithin(self->as_raw, u_anyS(items)); \
     }
 
@@ -313,6 +332,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
     $static fn_((tpl_id(ArrPQue_update, _T)(P$$(ArrPQue$(_T)) self, _T old_item, _T new_item))(mem_Err$void)) { \
         return ArrPQue_update(self->as_raw, u_anyV(old_item), u_anyV(new_item)); \
     }
+/* clang-format on */
 
 #define __comp_anon__ArrPQue_Iter$$(_T...) \
     union { \
@@ -339,6 +359,7 @@ extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw))
     T_decl_ArrPQue_Iter$(_T); \
     T_impl_ArrPQue_Iter$(_T)
 
+/* clang-format off */
 #define T_use_ArrPQue_iter$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrPQue_iter, _T)(P_const$$(ArrPQue$(_T)) self))(ArrPQue_Iter$(_T))) { \
