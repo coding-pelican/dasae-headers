@@ -29,18 +29,6 @@
 
 /*========== Definitions ====================================================*/
 
-fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64)) {
-    return HashMap_HashFn_default(val, ctx);
-};
-
-fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
-    return HashMap_EqlFn_default(lhs, rhs, ctx);
-};
-
-fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx)) {
-    return HashMap_Ctx_default();
-};
-
 fn_((HashSet_Sgl_init(u_V$raw key, V$HashSet_Sgl$raw ret_mem))(V$HashSet_Sgl$raw)) {
     debug_only({
         ret_mem->key_ty = key.type;
@@ -97,7 +85,17 @@ fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$
     }) $unscoped_(expr);
 };
 
-/* --- Internal helper functions --- */
+fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64)) {
+    return HashMap_HashFn_default(val, ctx);
+};
+
+fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
+    return HashMap_EqlFn_default(lhs, rhs, ctx);
+};
+
+fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx)) {
+    return HashMap_Ctx_default();
+};
 
 $static fn_((HashSet__header(HashSet self))(HashSet_Header*)) {
     let metadata_ptr = unwrap_(self.metadata);
