@@ -22,6 +22,7 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/prl.h"
 
+#include "dh/cmp.h"
 #include "dh/math.h"
 
 #include "dh/posix.h"
@@ -51,6 +52,7 @@ extern "C" {
 #include "dh/ArrPDeq.h"
 #include "dh/ArrPQue.h"
 
+// #include "dh/Hash.h"
 #include "dh/HashMap.h"
 #include "dh/HashSet.h"
 // #include "dh/HashMapSeq.h"
