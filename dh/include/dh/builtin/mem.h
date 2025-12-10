@@ -18,6 +18,13 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define bits_per_bit __comp_int__bits_per_bit
+#define bits_per_octet __comp_int__bits_per_octet
+#define bits_per_hextet __comp_int__bits_per_hextet
+#define bits_per_quadlet __comp_int__bits_per_quadlet
+#define bits_per_octlet __comp_int__bits_per_octlet
+#define bits_per_hexlet __comp_int__bits_per_hexlet
+
 #define popcount(_Expr...) \
     /* \
     This function counts the number of set bits (1s) in an unsigned integer. \
@@ -52,6 +59,13 @@ extern "C" {
 #define alloca(_len_bytes...) __op__alloca(_len_bytes)
 
 /*========== Macros and Definitions =========================================*/
+
+#define __comp_int__bits_per_bit 1
+#define __comp_int__bits_per_octet 8
+#define __comp_int__bits_per_hextet 16
+#define __comp_int__bits_per_quadlet 32
+#define __comp_int__bits_per_octlet 64
+#define __comp_int__bits_per_hexlet 128
 
 #define __op__popcount(_Expr...) __builtin_popcount(_Expr)
 #define __op__countLeadingZero(_Expr...) __builtin_clz(_Expr)

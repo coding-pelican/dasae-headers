@@ -66,7 +66,7 @@ extern "C" {
 #define pp_or(_Lhs, _Rhs...) pp_join3(_, __pp_or, _Lhs, _Rhs)
 #define __pp_or_0_0 0
 #define __pp_or_0_1 1
-#define __pp_or_1_0 0
+#define __pp_or_1_0 1
 #define __pp_or_1_1 1
 
 #define pp_xor(_Lhs, _Rhs...) pp_join3(_, __pp_xor, _Lhs, _Rhs)

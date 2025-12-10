@@ -40,6 +40,15 @@ extern "C" {
 #define arch_type_wasm64 __comp_enum__arch_type_wasm64
 #define arch_type_wasm32 __comp_enum__arch_type_wasm32
 
+#define arch_is_x86_64 __comp_bool__arch_is_x86_64
+#define arch_is_x86 __comp_bool__arch_is_x86
+#define arch_is_aarch64 __comp_bool__arch_is_aarch64
+#define arch_is_arm __comp_bool__arch_is_arm
+#define arch_is_riscv64 __comp_bool__arch_is_riscv64
+#define arch_is_riscv32 __comp_bool__arch_is_riscv32
+#define arch_is_wasm64 __comp_bool__arch_is_wasm64
+#define arch_is_wasm32 __comp_bool__arch_is_wasm32
+
 /* --- Architecture Name --- */
 
 #define arch_name __comp_str__arch_name
@@ -62,6 +71,11 @@ extern "C" {
 #define arch_family_type_riscv __comp_enum__arch_family_type_riscv
 #define arch_family_type_wasm __comp_enum__arch_family_type_wasm
 
+#define arch_is_x86_family __comp_bool__arch_is_x86_family
+#define arch_is_arm_family __comp_bool__arch_is_arm_family
+#define arch_is_riscv_family __comp_bool__arch_is_riscv_family
+#define arch_is_wasm_family __comp_bool__arch_is_wasm_family
+
 /* --- Architecture Family name */
 
 #define arch_family_name __comp_str__arch_family_name
@@ -77,6 +91,11 @@ extern "C" {
 #define arch_bits_unit_unknown __comp_enum__arch_bits_unit_unknown
 #define arch_bits_unit_64bit __comp_enum__arch_bits_unit_64bit
 #define arch_bits_unit_32bit __comp_enum__arch_bits_unit_32bit
+
+#define arch_bits_per_crumb __comp_int__arch_bits_per_crumb
+#define arch_bits_per_nibble __comp_int__arch_bits_per_nibble
+#define arch_bits_per_byte __comp_int__arch_bits_per_byte
+#define arch_bits_per_word __comp_int__arch_bits_per_word
 
 #define arch_bits_wide __comp_int__arch_bits_wide
 #define arch_bits_wide_unknown __comp_int__arch_bits_wide_unknown
@@ -96,7 +115,49 @@ extern "C" {
 
 /* --- Cache Line --- */
 
-#define arch_cache_line __comp_int__arch_cache_line
+#define arch_cache_line_bytes __comp_int__arch_cache_line_bytes
+
+/* --- SIMD Feature --- */
+/* SIMD Intrinsic Headers
+ * This is for reference on what headers correspond to what SIMD features:
+ *
+ * x86/x86_64:
+ *   - SSE/SSE2:      <emmintrin.h> or <xmmintrin.h>
+ *   - SSE3:          <pmmintrin.h>
+ *   - SSSE3:         <tmmintrin.h>
+ *   - SSE4.1/4.2:    <smmintrin.h> / <nmmintrin.h>
+ *   - AVX/AVX2/AVX512/FMA: <immintrin.h> (unified header)
+ *
+ * ARM:
+ *   - NEON:          <arm_neon.h>
+ *   - SVE:           <arm_sve.h>
+ *
+ * RISC-V:
+ *   - RVV:           <riscv_vector.h>
+ */
+
+/* --- x86/x86_64 SIMD Features --- */
+#define arch_has_sse __comp_bool__arch_has_sse
+#define arch_has_sse2 __comp_bool__arch_has_sse2
+#define arch_has_sse3 __comp_bool__arch_has_sse3
+#define arch_has_ssse3 __comp_bool__arch_has_ssse3
+#define arch_has_sse4_1 __comp_bool__arch_has_sse4_1
+#define arch_has_sse4_2 __comp_bool__arch_has_sse4_2
+#define arch_has_avx __comp_bool__arch_has_avx
+#define arch_has_avx2 __comp_bool__arch_has_avx2
+#define arch_has_avx512f __comp_bool__arch_has_avx512f
+#define arch_has_fma __comp_bool__arch_has_fma
+/* --- ARM SIMD Features --- */
+#define arch_has_neon __comp_bool__arch_has_neon
+#define arch_has_sve __comp_bool__arch_has_sve
+/* --- RISC-V Vector Extension --- */
+#define arch_has_rvv __comp_bool__arch_has_rvv
+
+/* --- SIMD Availability Summary --- */
+
+#define arch_simd_use __comp_bool__arch_simd_use
+#define arch_simd_width_bits __comp_int__arch_simd_width_bits
+#define arch_simd_align_bytes __comp_int__arch_simd_align_bytes
 
 /*========== Macros and Definitions =========================================*/
 
@@ -114,37 +175,34 @@ extern "C" {
 #define __comp_enum__arch_type_wasm64 7
 #define __comp_enum__arch_type_wasm32 8
 
+#define __comp_bool__arch_is_x86_64 pp_Tok_eq(arch_type, arch_type_x86_64)
+#define __comp_bool__arch_is_x86 pp_Tok_eq(arch_type, arch_type_x86)
+#define __comp_bool__arch_is_aarch64 pp_Tok_eq(arch_type, arch_type_aarch64)
+#define __comp_bool__arch_is_arm pp_Tok_eq(arch_type, arch_type_arm)
+#define __comp_bool__arch_is_riscv64 pp_Tok_eq(arch_type, arch_type_riscv64)
+#define __comp_bool__arch_is_riscv32 pp_Tok_eq(arch_type, arch_type_riscv32)
+#define __comp_bool__arch_is_wasm64 pp_Tok_eq(arch_type, arch_type_wasm64)
+#define __comp_bool__arch_is_wasm32 pp_Tok_eq(arch_type, arch_type_wasm32)
+
 /* Detect x86_64 */
 #if defined(__x86_64__) || defined(_M_X64)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_x86_64
-#if defined(__SSE2__)
-#include <immintrin.h>
-#endif /* defined(__SSE2__) */
 
 /* Detect x86 (32-bit) */
 #elif defined(__i386__) || defined(_M_IX86)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_x86
-#if defined(__SSE2__)
-#include <emmintrin.h>
-#endif /* defined(__SSE2__) */
 
 /* Detect ARM64 (aarch64) */
 #elif defined(__aarch64__) || defined(_M_ARM64)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_aarch64
-#if defined(__ARM_NEON)
-#include <arm_neon.h>
-#endif /* defined(__ARM_NEON) */
 
 /* Detect ARM (32-bit) */
 #elif defined(__arm__) || defined(_M_ARM)
 #undef __comp_enum__arch_type
 #define __comp_enum__arch_type arch_type_arm
-#if defined(__ARM_NEON)
-#include <arm_neon.h>
-#endif /* defined(__ARM_NEON) */
 
 /* Detect RISC-V */
 #elif defined(__riscv)
@@ -218,6 +276,11 @@ extern "C" {
 #define __comp_enum__arch_family_type_riscv 3
 #define __comp_enum__arch_family_type_wasm 4
 
+#define __comp_bool__arch_is_x86_family pp_Tok_eq(arch_family_type, arch_family_type_x86)
+#define __comp_bool__arch_is_arm_family pp_Tok_eq(arch_family_type, arch_family_type_arm)
+#define __comp_bool__arch_is_riscv_family pp_Tok_eq(arch_family_type, arch_family_type_riscv)
+#define __comp_bool__arch_is_wasm_family pp_Tok_eq(arch_family_type, arch_family_type_wasm)
+
 /* Derive family name from type */
 #define __comp_str__arch_family_name pp_expand( \
     pp_switch_ pp_begin(arch_family_type)( \
@@ -253,6 +316,12 @@ extern "C" {
 #define __comp_enum__arch_bits_unit_unknown 0
 #define __comp_enum__arch_bits_unit_64bit 1
 #define __comp_enum__arch_bits_unit_32bit 2
+
+/* Derive bits per byte from family */
+#define __comp_int__arch_bits_per_crumb 2
+#define __comp_int__arch_bits_per_nibble 4
+#define __comp_int__arch_bits_per_byte 8
+#define __comp_int__arch_bits_per_word arch_bits_wide
 
 /* Derive bit width from unit */
 #define __comp_int__arch_bits_wide pp_expand( \
@@ -296,7 +365,149 @@ extern "C" {
 /* --- Cache Line --- */
 
 /* Derive cache line from family */
-#define __comp_int__arch_cache_line 64
+#define __comp_int__arch_cache_line_bytes 64
+
+/* --- SIMD Feature --- */
+
+/* Default: no SIMD features */
+#define __comp_bool__arch_has_sse 0
+#define __comp_bool__arch_has_sse2 0
+#define __comp_bool__arch_has_sse3 0
+#define __comp_bool__arch_has_ssse3 0
+#define __comp_bool__arch_has_sse4_1 0
+#define __comp_bool__arch_has_sse4_2 0
+#define __comp_bool__arch_has_avx 0
+#define __comp_bool__arch_has_avx2 0
+#define __comp_bool__arch_has_avx512f 0
+#define __comp_bool__arch_has_fma 0
+#define __comp_bool__arch_has_neon 0
+#define __comp_bool__arch_has_sve 0
+#define __comp_bool__arch_has_rvv 0
+
+/* --- x86/x86_64 SIMD Detection --- */
+
+#if arch_is_x86_family
+
+/* SSE (Streaming SIMD Extensions) */
+#if defined(__SSE__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)
+#undef __comp_bool__arch_has_sse
+#define __comp_bool__arch_has_sse 1
+#endif /* defined(__SSE__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) */
+
+/* SSE2 */
+#if defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+#undef __comp_bool__arch_has_sse2
+#define __comp_bool__arch_has_sse2 1
+#endif /* defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) */
+
+/* SSE3 */
+#if defined(__SSE3__)
+#undef __comp_bool__arch_has_sse3
+#define __comp_bool__arch_has_sse3 1
+#endif /* defined(__SSE3__) */
+
+/* SSSE3 (Supplemental SSE3) */
+#if defined(__SSSE3__)
+#undef __comp_bool__arch_has_ssse3
+#define __comp_bool__arch_has_ssse3 1
+#endif /* defined(__SSSE3__) */
+
+/* SSE4.1 */
+#if defined(__SSE4_1__)
+#undef __comp_bool__arch_has_sse4_1
+#define __comp_bool__arch_has_sse4_1 1
+#endif /* defined(__SSE4_1__) */
+
+/* SSE4.2 */
+#if defined(__SSE4_2__)
+#undef __comp_bool__arch_has_sse4_2
+#define __comp_bool__arch_has_sse4_2 1
+#endif /* defined(__SSE4_2__) */
+
+/* AVX (Advanced Vector Extensions) */
+#if defined(__AVX__)
+#undef __comp_bool__arch_has_avx
+#define __comp_bool__arch_has_avx 1
+#endif /* defined(__AVX__) */
+
+/* AVX2 */
+#if defined(__AVX2__)
+#undef __comp_bool__arch_has_avx2
+#define __comp_bool__arch_has_avx2 1
+#endif /* defined(__AVX2__) */
+
+/* AVX-512 Foundation */
+#if defined(__AVX512F__)
+#undef __comp_bool__arch_has_avx512f
+#define __comp_bool__arch_has_avx512f 1
+#endif /* defined(__AVX512F__) */
+
+/* FMA (Fused Multiply-Add) */
+#if defined(__FMA__)
+#undef __comp_bool__arch_has_fma
+#define __comp_bool__arch_has_fma 1
+#endif /* defined(__FMA__) */
+
+#endif /* arch_is_x86_family */
+
+/* --- ARM SIMD Detection --- */
+
+#if arch_is_arm_family
+
+/* NEON (Advanced SIMD) */
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#undef __comp_bool__arch_has_neon
+#define __comp_bool__arch_has_neon 1
+#endif /* defined(__ARM_NEON) || defined(__ARM_NEON__) */
+
+/* SVE (Scalable Vector Extension) */
+#if defined(__ARM_FEATURE_SVE)
+#undef __comp_bool__arch_has_sve
+#define __comp_bool__arch_has_sve 1
+#endif /* defined(__ARM_FEATURE_SVE) */
+
+#endif /* arch_is_arm_family */
+
+/* --- RISC-V Vector Extension Detection --- */
+
+#if arch_is_riscv_family
+
+#if defined(__riscv_v) || defined(__riscv_vector)
+#undef __comp_bool__arch_has_rvv
+#define __comp_bool__arch_has_rvv 1
+#endif /* defined(__riscv_v) || defined(__riscv_vector) */
+
+#endif /* arch_is_riscv_family */
+
+/* --- SIMD Availability Summary --- */
+
+/* Determine if any SIMD is available */
+#define __comp_bool__arch_simd_use pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv))
+/* Determine maximum SIMD width */
+#define __comp_int__arch_simd_width_bits pp_if_(arch_has_avx512f)( \
+    pp_then_(512), \
+    pp_else_(pp_if_(pp_or(arch_has_avx, arch_has_avx2))( \
+        pp_then_(256), \
+        pp_else_(pp_if_(pp_or(arch_has_sse, pp_or(arch_has_sse2, arch_has_neon)))( \
+            pp_then_(128), \
+            pp_else_(pp_if_(arch_has_rvv)( \
+                pp_then_(128), /* RVV width is implementation-defined, assume minimum 128 */ \
+                pp_else_(0) \
+            )) \
+        )) \
+    )) \
+)
+/* Determine SIMD alignment requirement */
+#define __comp_int__arch_simd_align_bytes pp_if_(arch_has_avx512f)( \
+    pp_then_(64), \
+    pp_else_(pp_if_(pp_or(arch_has_avx, arch_has_avx2))( \
+        pp_then_(32), \
+        pp_else_(pp_if_(pp_or(arch_has_sse, pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv))))( \
+            pp_then_(16), \
+            pp_else_(1) \
+        )) \
+    )) \
+)
 
 #if defined(__cplusplus)
 } /* extern "C" */

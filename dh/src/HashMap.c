@@ -3,29 +3,17 @@
 
 /*========== SIMD Configuration =============================================*/
 
-#ifndef HashMap_use_simd
-#if defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#define HashMap_use_simd 1
-#define HashMap_simd_sse2 1
-#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
-#define HashMap_use_simd 1
-#define HashMap_simd_neon 1
-#else
-#define HashMap_use_simd 0
-#endif
-#endif /* !HashMap_use_simd */
-
+#define HashMap_use_simd arch_simd_use
+#define HashMap_simd_sse2 (arch_is_x86_family && arch_has_sse2)
+#define HashMap_simd_neon (arch_is_arm_family && arch_has_neon)
 #if HashMap_use_simd
 #if HashMap_simd_sse2
-#include <emmintrin.h> /* SSE2 */
+#include <emmintrin.h>
 #elif HashMap_simd_neon
-#include <arm_neon.h> /* NEON */
+#include <arm_neon.h>
 #endif
+#define HashMap_simd_group_size (arch_simd_width_bits / arch_bits_per_byte)
 #endif /* HashMap_use_simd */
-
-#if HashMap_use_simd
-#define HashMap_simd_group_size 16 /* 128-bit SIMD = 16 bytes */
-#endif                             /* HashMap_use_simd */
 
 /*========== Definitions ====================================================*/
 
@@ -288,10 +276,7 @@ $static fn_((HashMap__idx(HashMap self, u_V$raw key))(O$usize) $scope) {
 } $unscoped_(fn);
 
 #if HashMap_use_simd
-/// Count trailing zeros (find first set bit position)
-$attr($inline_always)
-$static fn_((HashMap__ctz(u32 x))(u32));
-/// Load 16 control bytes and find matches for fingerprint
+/// Load control bytes and find matches for fingerprint
 $attr($inline_always)
 $static fn_((HashMap__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32));
 /// Find free (not tombstone) slots in a group
@@ -315,11 +300,11 @@ $static fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
         let group_idx = (start_group + group_offset) % num_groups;
         let group_start = group_idx * HashMap_simd_group_size;
         let group = HashMap__metadataAt(self, group_start);
-        /* SIMD: Check all 16 control bytes for fingerprint match */
+        /* SIMD: Check all control bytes for fingerprint match */
         var_(match_mask, u32) = HashMap__simd_match_fingerprint(group, fingerprint);
         /* Iterate over matching positions */
         while (match_mask != 0) {
-            let bit_pos = HashMap__ctz(match_mask);
+            let bit_pos = mem_trailingZeros32(match_mask);
             let idx = group_start + bit_pos;
             /* Verify with full equality check */
             if (ctx->eqlFn(key, u_load(u_deref(HashMap__keyAt(self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
@@ -344,37 +329,6 @@ $static fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
     return_none();
 } $unscoped_(fn);
 
-$attr($inline_always)
-$static fn_((HashMap__ctz(u32 x))(u32)) {
-#if defined(__clang__) || defined(__GNUC__)
-    return x ? as$(u32)(__builtin_ctz(x)) : 32;
-#elif defined(_MSC_VER)
-    unsigned long idx;
-    return _BitScanForward(&idx, x) ? as$(u32)(idx) : 32;
-#else
-    /* Fallback */
-    if (x == 0) return 32;
-    var_(n, u32) = 0;
-    if ((x & 0x0000FFFF) == 0) {
-        n += 16;
-        x >>= 16;
-    }
-    if ((x & 0x000000FF) == 0) {
-        n += 8;
-        x >>= 8;
-    }
-    if ((x & 0x0000000F) == 0) {
-        n += 4;
-        x >>= 4;
-    }
-    if ((x & 0x00000003) == 0) {
-        n += 2;
-        x >>= 2;
-    }
-    if ((x & 0x00000001) == 0) { n += 1; }
-    return n;
-#endif
-};
 #if HashMap_simd_sse2
 /* --- SSE2 Implementation --- */
 $attr($inline_always)

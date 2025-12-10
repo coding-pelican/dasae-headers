@@ -1,12 +1,12 @@
 /**
- * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-16 (date of creation)
- * @updated 2024-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2025-12-10 (date of last update)
+ * @version v0.1
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *
@@ -38,15 +38,16 @@ typedef struct time_SysTime time_SysTime;
 T_decl_O$(time_SysTime);
 
 /* --- Constants --- */
-#define time_nanos_per_sec __comp_const__time_nanos_per_sec
-#define time_nanos_per_milli __comp_const__time_nanos_per_milli
+#define time_nanos_per_nano __comp_const__time_nanos_per_nano
 #define time_nanos_per_micro __comp_const__time_nanos_per_micro
-#define time_millis_per_sec __comp_const__time_millis_per_sec
+#define time_nanos_per_milli __comp_const__time_nanos_per_milli
+#define time_nanos_per_sec __comp_const__time_nanos_per_sec
 #define time_micros_per_sec __comp_const__time_micros_per_sec
+#define time_millis_per_sec __comp_const__time_millis_per_sec
 
+#define time_secs_per_sec __comp_const__time_secs_per_sec
 #define time_secs_per_min __comp_const__time_secs_per_min
 #define time_mins_per_hour __comp_const__time_mins_per_hour
-
 #define time_hours_per_day __comp_const__time_hours_per_day
 #define time_days_per_week __comp_const__time_days_per_week
 
@@ -59,11 +60,14 @@ $extern fn_((time_sleepNanos(u32 nanos))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_const__time_nanos_per_sec (lit_n$(u32)(1, 000, 000, 000u))
-#define __comp_const__time_nanos_per_milli (lit_n$(u32)(1, 000, 000))
+#define __comp_const__time_nanos_per_nano (lit_n$(u32)(1u))
 #define __comp_const__time_nanos_per_micro (lit_n$(u32)(1, 000u))
-#define __comp_const__time_millis_per_sec (lit_n$(u32)(1, 000u))
+#define __comp_const__time_nanos_per_milli (lit_n$(u32)(1, 000, 000))
+#define __comp_const__time_nanos_per_sec (lit_n$(u32)(1, 000, 000, 000u))
 #define __comp_const__time_micros_per_sec (lit_n$(u32)(1, 000, 000u))
+#define __comp_const__time_millis_per_sec (lit_n$(u32)(1, 000u))
+
+#define __comp_const__time_secs_per_sec (lit_n$(u64)(1ull))
 #define __comp_const__time_secs_per_min (lit_n$(u64)(60ull))
 #define __comp_const__time_mins_per_hour (lit_n$(u64)(60ull))
 #define __comp_const__time_hours_per_day (lit_n$(u64)(24ull))

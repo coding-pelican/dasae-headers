@@ -25,7 +25,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define atom_cache_line __comp_int__atom_cache_line
+#define atom_cache_line_bytes __comp_int__atom_cache_line_bytes
 
 #define atom_V$(_T...) pp_join($, atom_V, _T)
 #define atom_V$$(_T...) \
@@ -68,7 +68,7 @@ $static fn_((atom_spinLoopHint(void))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_int__atom_cache_line arch_cache_line
+#define __comp_int__atom_cache_line_bytes arch_cache_line_bytes
 
 #define __op__atom_V_init(_val...) { .raw = _val }
 #define __op__atom_V_init$(_VT, _val...) lit$((_VT)atom_V_init(_val))
