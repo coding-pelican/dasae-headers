@@ -1,5 +1,69 @@
 #include "dh/cmp.h"
 
+$static fn_((cmp_EqlFn_default$u8(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u8)(lhs)), u_castV$((u8)(rhs))); };
+$static fn_((cmp_EqlFn_default$u16(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u16)(lhs)), u_castV$((u16)(rhs))); };
+$static fn_((cmp_EqlFn_default$u32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u32)(lhs)), u_castV$((u32)(rhs))); };
+$static fn_((cmp_EqlFn_default$u64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u64)(lhs)), u_castV$((u64)(rhs))); };
+$static fn_((cmp_EqlFn_default$usize(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((usize)(lhs)), u_castV$((usize)(rhs))); };
+
+$static fn_((cmp_EqlFn_default$i8(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i8)(lhs)), u_castV$((i8)(rhs))); };
+$static fn_((cmp_EqlFn_default$i16(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i16)(lhs)), u_castV$((i16)(rhs))); };
+$static fn_((cmp_EqlFn_default$i32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i32)(lhs)), u_castV$((i32)(rhs))); };
+$static fn_((cmp_EqlFn_default$i64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i64)(lhs)), u_castV$((i64)(rhs))); };
+$static fn_((cmp_EqlFn_default$isize(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((isize)(lhs)), u_castV$((isize)(rhs))); };
+
+$static fn_((cmp_EqlFn_default$f32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((f32)(lhs)), u_castV$((f32)(rhs))); };
+$static fn_((cmp_EqlFn_default$f64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((f64)(lhs)), u_castV$((f64)(rhs))); };
+
+fn_((cmp_EqlFn_default(cmp_MathType type))(cmp_EqlFn)) {
+    switch (type) { /* clang-format off */
+        case cmp_MathType_u8: return cmp_EqlFn_default$u8;
+        case cmp_MathType_u16: return cmp_EqlFn_default$u16;
+        case cmp_MathType_u32: return cmp_EqlFn_default$u32;
+        case cmp_MathType_u64: return cmp_EqlFn_default$u64;
+        case cmp_MathType_usize: return cmp_EqlFn_default$usize;
+        case cmp_MathType_i8: return cmp_EqlFn_default$i8;
+        case cmp_MathType_i16: return cmp_EqlFn_default$i16;
+        case cmp_MathType_i32: return cmp_EqlFn_default$i32;
+        case cmp_MathType_i64: return cmp_EqlFn_default$i64;
+        case cmp_MathType_isize: return cmp_EqlFn_default$isize;
+        case cmp_MathType_f32: return cmp_EqlFn_default$f32;
+        case cmp_MathType_f64: return cmp_EqlFn_default$f64;
+    } /* clang-format on */
+};
+
+$static fn_((cmp_EqlCtxFn_default$u8(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u8)(lhs)), u_castV$((u8)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$u16(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u16)(lhs)), u_castV$((u16)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$u32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u32)(lhs)), u_castV$((u32)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$u64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u64)(lhs)), u_castV$((u64)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$usize(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((usize)(lhs)), u_castV$((usize)(rhs))); };
+
+$static fn_((cmp_EqlCtxFn_default$i8(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i8)(lhs)), u_castV$((i8)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$i16(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i16)(lhs)), u_castV$((i16)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$i32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i32)(lhs)), u_castV$((i32)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$i64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i64)(lhs)), u_castV$((i64)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$isize(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((isize)(lhs)), u_castV$((isize)(rhs))); };
+
+$static fn_((cmp_EqlCtxFn_default$f32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((f32)(lhs)), u_castV$((f32)(rhs))); };
+$static fn_((cmp_EqlCtxFn_default$f64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((f64)(lhs)), u_castV$((f64)(rhs))); };
+
+fn_((cmp_EqlCtxFn_default(cmp_MathType type))(cmp_EqlCtxFn)) {
+    switch (type) { /* clang-format off */
+        case cmp_MathType_u8: return cmp_EqlCtxFn_default$u8;
+        case cmp_MathType_u16: return cmp_EqlCtxFn_default$u16;
+        case cmp_MathType_u32: return cmp_EqlCtxFn_default$u32;
+        case cmp_MathType_u64: return cmp_EqlCtxFn_default$u64;
+        case cmp_MathType_usize: return cmp_EqlCtxFn_default$usize;
+        case cmp_MathType_i8: return cmp_EqlCtxFn_default$i8;
+        case cmp_MathType_i16: return cmp_EqlCtxFn_default$i16;
+        case cmp_MathType_i32: return cmp_EqlCtxFn_default$i32;
+        case cmp_MathType_i64: return cmp_EqlCtxFn_default$i64;
+        case cmp_MathType_isize: return cmp_EqlCtxFn_default$isize;
+        case cmp_MathType_f32: return cmp_EqlCtxFn_default$f32;
+        case cmp_MathType_f64: return cmp_EqlCtxFn_default$f64;
+    } /* clang-format on */
+};
+
 $static fn_((cmp_OrdFn_defaultAsc$u8(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) { return prim_ord(u_castV$((u8)(lhs)), u_castV$((u8)(rhs))); };
 $static fn_((cmp_OrdFn_defaultAsc$u16(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) { return prim_ord(u_castV$((u16)(lhs)), u_castV$((u16)(rhs))); };
 $static fn_((cmp_OrdFn_defaultAsc$u32(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) { return prim_ord(u_castV$((u32)(lhs)), u_castV$((u32)(rhs))); };
@@ -125,69 +189,5 @@ fn_((cmp_OrdCtxFn_defaultDesc(cmp_MathType type))(cmp_OrdCtxFn)) {
         case cmp_MathType_isize: return cmp_OrdCtxFn_defaultDesc$isize;
         case cmp_MathType_f32: return cmp_OrdCtxFn_defaultDesc$f32;
         case cmp_MathType_f64: return cmp_OrdCtxFn_defaultDesc$f64;
-    } /* clang-format on */
-};
-
-$static fn_((cmp_EqlFn_default$u8(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u8)(lhs)), u_castV$((u8)(rhs))); };
-$static fn_((cmp_EqlFn_default$u16(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u16)(lhs)), u_castV$((u16)(rhs))); };
-$static fn_((cmp_EqlFn_default$u32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u32)(lhs)), u_castV$((u32)(rhs))); };
-$static fn_((cmp_EqlFn_default$u64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((u64)(lhs)), u_castV$((u64)(rhs))); };
-$static fn_((cmp_EqlFn_default$usize(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((usize)(lhs)), u_castV$((usize)(rhs))); };
-
-$static fn_((cmp_EqlFn_default$i8(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i8)(lhs)), u_castV$((i8)(rhs))); };
-$static fn_((cmp_EqlFn_default$i16(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i16)(lhs)), u_castV$((i16)(rhs))); };
-$static fn_((cmp_EqlFn_default$i32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i32)(lhs)), u_castV$((i32)(rhs))); };
-$static fn_((cmp_EqlFn_default$i64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((i64)(lhs)), u_castV$((i64)(rhs))); };
-$static fn_((cmp_EqlFn_default$isize(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((isize)(lhs)), u_castV$((isize)(rhs))); };
-
-$static fn_((cmp_EqlFn_default$f32(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((f32)(lhs)), u_castV$((f32)(rhs))); };
-$static fn_((cmp_EqlFn_default$f64(u_V$raw lhs, u_V$raw rhs))(bool)) { return prim_eql(u_castV$((f64)(lhs)), u_castV$((f64)(rhs))); };
-
-fn_((cmp_EqlFn_default(cmp_MathType type))(cmp_EqlFn)) {
-    switch (type) { /* clang-format off */
-        case cmp_MathType_u8: return cmp_EqlFn_default$u8;
-        case cmp_MathType_u16: return cmp_EqlFn_default$u16;
-        case cmp_MathType_u32: return cmp_EqlFn_default$u32;
-        case cmp_MathType_u64: return cmp_EqlFn_default$u64;
-        case cmp_MathType_usize: return cmp_EqlFn_default$usize;
-        case cmp_MathType_i8: return cmp_EqlFn_default$i8;
-        case cmp_MathType_i16: return cmp_EqlFn_default$i16;
-        case cmp_MathType_i32: return cmp_EqlFn_default$i32;
-        case cmp_MathType_i64: return cmp_EqlFn_default$i64;
-        case cmp_MathType_isize: return cmp_EqlFn_default$isize;
-        case cmp_MathType_f32: return cmp_EqlFn_default$f32;
-        case cmp_MathType_f64: return cmp_EqlFn_default$f64;
-    } /* clang-format on */
-};
-
-$static fn_((cmp_EqlCtxFn_default$u8(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u8)(lhs)), u_castV$((u8)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$u16(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u16)(lhs)), u_castV$((u16)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$u32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u32)(lhs)), u_castV$((u32)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$u64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((u64)(lhs)), u_castV$((u64)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$usize(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((usize)(lhs)), u_castV$((usize)(rhs))); };
-
-$static fn_((cmp_EqlCtxFn_default$i8(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i8)(lhs)), u_castV$((i8)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$i16(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i16)(lhs)), u_castV$((i16)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$i32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i32)(lhs)), u_castV$((i32)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$i64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((i64)(lhs)), u_castV$((i64)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$isize(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((isize)(lhs)), u_castV$((isize)(rhs))); };
-
-$static fn_((cmp_EqlCtxFn_default$f32(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((f32)(lhs)), u_castV$((f32)(rhs))); };
-$static fn_((cmp_EqlCtxFn_default$f64(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) { return $ignore_void ctx, prim_eql(u_castV$((f64)(lhs)), u_castV$((f64)(rhs))); };
-
-fn_((cmp_EqlCtxFn_default(cmp_MathType type))(cmp_EqlCtxFn)) {
-    switch (type) { /* clang-format off */
-        case cmp_MathType_u8: return cmp_EqlCtxFn_default$u8;
-        case cmp_MathType_u16: return cmp_EqlCtxFn_default$u16;
-        case cmp_MathType_u32: return cmp_EqlCtxFn_default$u32;
-        case cmp_MathType_u64: return cmp_EqlCtxFn_default$u64;
-        case cmp_MathType_usize: return cmp_EqlCtxFn_default$usize;
-        case cmp_MathType_i8: return cmp_EqlCtxFn_default$i8;
-        case cmp_MathType_i16: return cmp_EqlCtxFn_default$i16;
-        case cmp_MathType_i32: return cmp_EqlCtxFn_default$i32;
-        case cmp_MathType_i64: return cmp_EqlCtxFn_default$i64;
-        case cmp_MathType_isize: return cmp_EqlCtxFn_default$isize;
-        case cmp_MathType_f32: return cmp_EqlCtxFn_default$f32;
-        case cmp_MathType_f64: return cmp_EqlCtxFn_default$f64;
     } /* clang-format on */
 };

@@ -16,11 +16,15 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "prl.h"
 #include "mem/Allocator.h"
 
+/*========== Macros and Declarations ========================================*/
+
 /// The C0 control codes of the ASCII encoding.
-enum ascii_CtrlCode {
+enum_(ascii_CtrlCode $bits(8)) {
     /// Null.
     ascii_CtrlCode_nul = 0x00,
     /// Start of Heading.
@@ -96,104 +100,107 @@ enum ascii_CtrlCode {
 };
 
 /// Returns whether the character is a 7-bit ASCII character.
-static $inline
-fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; }
+$attr($inline)
+$static fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; };
 /// Returns whether the character is an uppercase letter: A-Z.
-static $inline
-fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; }
+$attr($inline)
+$static fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; };
 /// Returns whether the character is a lowercase letter: a-z.
-static $inline
-fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; }
+$attr($inline)
+$static fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; };
 /// Returns whether the character is alphabetic: A-Z || a-z.
-static $inline
-fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); }
+$attr($inline)
+$static fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); };
 /// Returns whether the character is a digit: 0-9.
-static $inline
-fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; }
+$attr($inline)
+$static fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; };
 /// Returns whether the character is alphanumeric: A-Z, a-z, || 0-9.
-static $inline
-fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); }
+$attr($inline)
+$static fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); };
 /// Returns whether the character is a hexadecimal digit: A-F, a-f, || 0-9.
-static $inline
-fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); }
+$attr($inline)
+$static fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); };
 /// Returns whether the character is a control character.
-static $inline
-fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; }
+$attr($inline)
+$static fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; };
 /// Returns whether the character is a glyph.
-static $inline
-fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; }
+$attr($inline)
+$static fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
 /// Returns whether the character is a whitespace character.
-static $inline
-fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); }
+$attr($inline)
+$static fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
 /// Whitespace for general use.
 /// This may be used with e.g. `mem_trim` to trim whitespace.
-static let ascii_whitespaces = init$A$$((6, u8){ ' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff });
+$static let ascii_whitespaces = A_from$((u8){ ' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff });
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
-static $inline
-fn_((ascii_toUpper(u8 c))(u8)) {
+$attr($inline)
+$static fn_((ascii_toUpper(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isLower(c)) << 5;
     return c ^ mask;
-}
+};
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
-static $inline
-fn_((ascii_toLower(u8 c))(u8)) {
+$attr($inline)
+$static fn_((ascii_toLower(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isUpper(c)) << 5;
     return c | mask;
-}
+};
 /// Toggles the case of the character && returns it as-is if not a letter.
-static $inline
-fn_((ascii_toggleCase(u8 c))(u8)) {
+$attr($inline)
+$static fn_((ascii_toggleCase(u8 c))(u8)) {
     let mask = as$(u8)(ascii_isAlpha(c)) << 5;
     return c ^ mask;
-}
+};
 
 /// Converts the string to uppercase.
-extern fn_((ascii_toUppers(S$u8 ascii_str))(S$u8));
+$extern fn_((ascii_toUppers(S$u8 ascii_str))(S$u8));
 /// Converts the string to lowercase.
-extern fn_((ascii_toLowers(S$u8 ascii_str))(S$u8));
+$extern fn_((ascii_toLowers(S$u8 ascii_str))(S$u8));
 /// Converts the string to toggle case.
-extern fn_((ascii_toggleCases(S$u8 ascii_str))(S$u8));
-
-/// Writes an upper case copy of `ascii_str` to `buf`.
-extern fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
-/// Writes a lower case copy of `ascii_str` to `buf`.
-extern fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
-/// Writes a toggled case copy of `ascii_str` to `buf`.
-extern fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+$extern fn_((ascii_toggleCases(S$u8 ascii_str))(S$u8));
 
 /// Allocates an upper case copy of `ascii_str`.
-extern fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+$attr($must_check)
+$extern fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
 /// Allocates a lower case copy of `ascii_str`.
-extern fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+$attr($must_check)
+$extern fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
 /// Allocates a toggled case copy of `ascii_str`.
-extern fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8)) $must_check;
+$attr($must_check)
+$extern fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
+
+/// Writes an upper case copy of `ascii_str` to `buf`.
+$extern fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+/// Writes a lower case copy of `ascii_str` to `buf`.
+$extern fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+/// Writes a toggled case copy of `ascii_str` to `buf`.
+$extern fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8));
 
 /// Returns the index of the first occurrence of `ascii_substr` in `ascii_str`, ignoring case.
-extern fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize));
+$extern fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize));
 /// Returns the index of the first occurrence of `ascii_substr` starting from `start_front`, ignoring case.
-extern fn_((ascii_idxFirstOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_front))(O$usize));
+$extern fn_((ascii_idxFirstOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_front))(O$usize));
 /// Returns the index of the last occurrence of `ascii_substr` starting from `start_back`, ignoring case.
-extern fn_((ascii_idxLastOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_back))(O$usize));
+$extern fn_((ascii_idxLastOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_back))(O$usize));
 
 /// Returns whether `ascii_str` starts with `ascii_prefix`, ignoring case.
-extern fn_((ascii_startsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_prefix))(bool));
+$extern fn_((ascii_startsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_prefix))(bool));
 /// Returns whether `ascii_str` ends with `ascii_suffix`, ignoring case.
-extern fn_((ascii_endsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_suffix))(bool));
-
-/// Compares lexicographical order of two ASCII strings.
-extern fn_((ascii_cmp(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(cmp_Ord));
-/// Compares lexicographical order of two ASCII strings, respecting case.
-extern fn_((ascii_cmpSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
-/// Compares lexicographical order of two ASCII strings, ignoring case.
-extern fn_((ascii_cmpIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
+$extern fn_((ascii_endsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_suffix))(bool));
 
 /// Equality comparison.
-extern fn_((ascii_eql(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(bool));
+$extern fn_((ascii_eql(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(bool));
 /// Equality comparison, respecting case.
-extern fn_((ascii_eqlSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool));
+$extern fn_((ascii_eqlSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool));
 /// Equality comparison, ignoring case.
-extern fn_((ascii_eqlIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool));
+$extern fn_((ascii_eqlIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool));
+
+/// Compares lexicographical order of two ASCII strings.
+$extern fn_((ascii_ord(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(cmp_Ord));
+/// Compares lexicographical order of two ASCII strings, respecting case.
+$extern fn_((ascii_ordSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
+/// Compares lexicographical order of two ASCII strings, ignoring case.
+$extern fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
 
 #if defined(__cplusplus)
 } /* extern "C" */

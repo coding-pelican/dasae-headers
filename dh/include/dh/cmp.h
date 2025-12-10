@@ -38,19 +38,17 @@ typedef enum_(cmp_MathType $bits(8)) {
     cmp_MathType_f64,
 } cmp_MathType;
 
+typedef u_EqlFn cmp_EqlFn;
+$extern fn_((cmp_EqlFn_default(cmp_MathType type))(cmp_EqlFn));
+typedef u_EqlCtxFn cmp_EqlCtxFn;
+$extern fn_((cmp_EqlCtxFn_default(cmp_MathType type))(cmp_EqlCtxFn));
+
 typedef u_OrdFn cmp_OrdFn;
 $extern fn_((cmp_OrdFn_defaultAsc(cmp_MathType type))(cmp_OrdFn));
 $extern fn_((cmp_OrdFn_defaultDesc(cmp_MathType type))(cmp_OrdFn));
-
 typedef u_OrdCtxFn cmp_OrdCtxFn;
 $extern fn_((cmp_OrdCtxFn_defaultAsc(cmp_MathType type))(cmp_OrdCtxFn));
 $extern fn_((cmp_OrdCtxFn_defaultDesc(cmp_MathType type))(cmp_OrdCtxFn));
-
-typedef u_EqlFn cmp_EqlFn;
-$extern fn_((cmp_EqlFn_default(cmp_MathType type))(cmp_EqlFn));
-
-typedef u_EqlCtxFn cmp_EqlCtxFn;
-$extern fn_((cmp_EqlCtxFn_default(cmp_MathType type))(cmp_EqlCtxFn));
 
 #if defined(__cplusplus)
 } /* extern "C" */
