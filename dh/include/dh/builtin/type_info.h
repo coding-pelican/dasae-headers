@@ -22,8 +22,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /* Type Size and Alignment */
-#define alignAs$(_align /*: u32*/...) ___alignAs$(_align)
-#define alignOf$(_T... /*(u32)*/) ___alignOf$(_T)
+#define alignAs$(_align /*: mem_Log2Align*/...) ___alignAs$(_align)
+#define alignOf$(_T... /*(mem_Log2Align)*/) ___alignOf$(_T)
 #define sizeOf$(_T... /*(usize)*/) ___sizeOf$(_T)
 #define countOf$(_T... /*(usize)*/) ___countOf$(_T)
 
@@ -143,7 +143,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #define ___alignAs$(_align...) _Alignas(1ull << (_align))
-#define ___alignOf$(_T...) (as$(u32)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
+#define ___alignOf$(_T...) (as$(u8)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
 #define ___sizeOf$(_T...) (as$(usize)(sizeof(_T)))
 #define ___countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(0))[0])))
 

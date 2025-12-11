@@ -63,7 +63,7 @@ extern "C" {
 ///   - ARM64:      'isb' or 'yield' (sometimes 'wfe')
 ///   - ARMv6K:     'yield'
 ///   - RISC-V:     'pause' if Zihintpause is available
-$inline_always
+$attr($inline_always)
 $static fn_((atom_spinLoopHint(void))(void));
 
 /*========== Macros and Definitions =========================================*/
@@ -83,7 +83,7 @@ $static fn_((atom_spinLoopHint(void))(void));
 #define __op__atom_V_fetchOr(_p_self, _val, _ord...) atom_fetchOr(&(_p_self)->raw, _val, _ord)
 #define __op__atom_V_fetchXor(_p_self, _val, _ord...) atom_fetchXor(&(_p_self)->raw, _val, _ord)
 
-$inline_always
+$attr($inline_always)
 $static fn_((atom_spinLoopHint(void))(void)) {
     /* NOLINTBEGIN */
 #if arch_family_type == arch_family_type_x86

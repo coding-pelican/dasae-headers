@@ -5,7 +5,7 @@
  * @file    dh.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-11-02 (date of creation)
- * @updated 2025-11-02 (date of last update)
+ * @updated 2025-12-11 (date of last update)
  * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
@@ -21,29 +21,23 @@ extern "C" {
 #include "dh/builtin.h"
 #include "dh/core.h"
 #include "dh/prl.h"
+#include "dh/atom.h"
+// #include "dh/Vec.h"
 
 #include "dh/cmp.h"
 #include "dh/math.h"
-
-#include "dh/posix.h"
 #include "dh/mem.h"
-#include "dh/heap.h"
+#include "dh/meta.h"
+
 #include "dh/sort.h"
+// #include "dh/search.h"
 #include "dh/ascii.h"
 #include "dh/utf.h"
-#include "dh/fmt.h"
-
-#include "dh/atom.h"
-#include "dh/Thrd.h"
-#include "dh/async.h"
-#include "dh/mp.h"
-
-#include "dh/fs.h"
-#include "dh/io.h"
-#include "dh/log.h"
 
 #include "dh/ListSgl.h"
 #include "dh/ListDbl.h"
+// #include "dh/BTree.h"
+// #include "dh/SegTree.h"
 
 #include "dh/ArrList.h"
 #include "dh/ArrStk.h"
@@ -60,8 +54,22 @@ extern "C" {
 // #include "dh/BTreeMap.h"
 // #include "dh/BTreeSet.h"
 
+// #include "dh/os.h"
+#include "dh/posix.h"
+#include "dh/Thrd.h"
+#include "dh/async.h"
+#include "dh/mp.h"
+#include "dh/heap.h"
 #include "dh/time.h"
 #include "dh/Rand.h"
+
+#include "dh/fs.h"
+#include "dh/io.h"
+#include "dh/fmt.h"
+#include "dh/log.h"
+// #include "dh/proc.h"
+// #include "dh/net.h"
+// #include "dh/http.h"
 
 #include "dh/TEST.h"
 #include "dh/main.h"

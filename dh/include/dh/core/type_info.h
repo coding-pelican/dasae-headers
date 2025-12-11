@@ -35,8 +35,8 @@ extern "C" {
 typedef u64 TypeInfoPacked;
 typedef union TypeInfo {
     struct {
-        TypeInfoPacked size  : 58;
-        TypeInfoPacked align : 6;
+        u64 size : 58;
+        u8 align : 6; /* same as `mem_Log2Align`,  */
     };
     TypeInfoPacked packed;
 } TypeInfo;
@@ -45,20 +45,20 @@ typedef union TypeInfo {
 #define typeInfo$(_T... /*(TypeInfo)*/) \
     ____typeInfo$(_T)
 /// Convert TypeInfo struct to packed u64
-#define TypeInfo_pack(_type_info...) \
+#define TypeInfo_pack(_type_info /*: TypeInfo*/... /*(TypeInfoPacked)*/) \
     ____TypeInfo_pack(_type_info)
 /// Convert packed u64 to TypeInfo struct
-#define TypeInfo_unpack(_packed...) \
+#define TypeInfo_unpack(_packed /*: TypeInfoPacked*/... /*(TypeInfo)*/) \
     ____TypeInfo_unpack(_packed)
 
 /// Get packed type information for meta
 #define packTypeInfo$(_T...) \
     ____packTypeInfo$(_T)
 /// Extract size from packed TypeInfo (u64)
-#define TypeInfoPacked_size(_packed...) \
+#define TypeInfoPacked_size(_packed /*: TypeInfoPacked*/... /*(u64)*/) \
     ____TypeInfoPacked_size(_packed)
 /// Extract align (log2) from packed TypeInfo (u64)
-#define TypeInfoPacked_align(_packed...) \
+#define TypeInfoPacked_align(_packed /*: TypeInfoPacked*/... /*(mem_Log2Align)*/) \
     ____TypeInfoPacked_align(_packed)
 
 /// Compare equality of type information
