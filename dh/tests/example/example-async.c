@@ -138,10 +138,10 @@ T_use$((Task)(
     ArrPQue,
     ArrPQue_init,
     ArrPQue_fini,
-    ArrPQue_enqueFixed,
+    ArrPQue_enqueWithin,
     ArrPQue_deque,
 ));
-static ArrPQue$Task timer_queue = { 0 };
+$static ArrPQue$Task timer_queue = { 0 };
 
 // Suspend for time in milliseconds
 T_use_P$(Co_Ctx);
@@ -155,17 +155,16 @@ async_fn_scope(waitForTime, {}) {
         intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
     );
     suspend_({
-        static let addDur = time_Instant_addDuration;
-        static let now = time_Instant_now;
-        static let fromMs = time_Duration_fromMillis;
-
-        catch_((ArrPQue_enqueFixed$Task(
+        let addDur = time_Instant_addDuration;
+        let now = time_Instant_now;
+        let fromMs = time_Duration_fromMillis;
+        ArrPQue_enqueWithin$Task(
             &timer_queue,
             lit$((Task){
                 .frame = orelse_((args->caller)(ctx->anyraw)),
                 .expires = addDur(now(), fromMs(args->ms)),
             })
-        ))($ignore, claim_unreachable));
+        );
         io_stream_println(
             u8_l("debug: [waitForTime({:xz})] suspending -> [{:s}({:xz})]"),
             intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
@@ -201,9 +200,9 @@ async_fn_scope(waitUntilAndPrint, {
         args->name, intFromPtr(ctx->base), args->time1
     );
     {
-        static let asSecs = time_Duration_asSecs$f64;
-        static let durSince = time_Instant_durationSince;
-        static let now = time_Instant_now;
+        let asSecs = time_Duration_asSecs$f64;
+        let durSince = time_Instant_durationSince;
+        let now = time_Instant_now;
         io_stream_println(
             u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
             args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
@@ -221,9 +220,9 @@ async_fn_scope(waitUntilAndPrint, {
         args->name, intFromPtr(ctx->base), args->time2
     );
     {
-        static let asSecs = time_Duration_asSecs$f64;
-        static let durSince = time_Instant_durationSince;
-        static let now = time_Instant_now;
+        let asSecs = time_Duration_asSecs$f64;
+        let durSince = time_Instant_durationSince;
+        let now = time_Instant_now;
         io_stream_println(
             u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
             args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
@@ -319,12 +318,14 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     });
     io_stream_print(u8_l("\n"));
 
-    timer_queue = try_(ArrPQue_init$Task(
-        heap_Page_allocator(&(heap_Page){}), 32,
-        Task_u_ordCtx,
-        u_anyP(&(const Void){})
-    ));
-    defer_(ArrPQue_fini$Task(&timer_queue, heap_Page_allocator(&(heap_Page){})));
+    var page = lit0$((heap_Page));
+    let gpa = heap_Page_allocator(&page);
+    let ctx = lit$((ArrPQue_Ctx){
+        .inner = u_anyP(&lit0$((const Void))),
+        .ordFn = Task_u_ordCtx,
+    });
+    timer_queue = try_(ArrPQue_init$Task(gpa, 32, &ctx));
+    defer_(ArrPQue_fini$Task(&timer_queue, gpa));
 
     var main_task = async_((asyncMain)());
     {

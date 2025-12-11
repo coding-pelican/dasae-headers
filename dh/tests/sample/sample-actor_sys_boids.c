@@ -9,7 +9,7 @@ use_Co_Ctx$(Void);
 #include "dh/heap/Arena.h"
 
 // 메시지 타입
-typedef enum MessageType : u8 {
+typedef enum_(MessageType $bits(8)) {
     MessageType_none = 0,
     MessageType_increment = 1,
     MessageType_get_value = 2,
