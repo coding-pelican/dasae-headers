@@ -25,75 +25,53 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "prl.h"
+#include "cmp.h"
 #include "mem/Allocator.h"
 
 /*========== Macros and Definitions =========================================*/
 
-#define sort_stableSort_threshold_merge_to_insertion (32)
+#define sort_stable_sort_threshold_merge_to_insert (32)
 
 /// Callable types for sorting functions
-use_Callable(sort_CmpFn, (P_const$raw lhs, P_const$raw rhs), cmp_Ord);
+use_Callable(sort_OrdFn, (u_V$raw lhs, u_V$raw rhs), cmp_Ord);
 /// Callable types for sorting functions that take an argument
-use_Callable(sort_CmpWithArgFn, (P_const$raw lhs, P_const$raw rhs, P_const$raw arg), cmp_Ord);
+use_Callable(sort_OrdCtxFn, (u_V$raw lhs, u_V$raw rhs, u_V$raw ctx), cmp_Ord);
 
 /*========== Function Prototypes ============================================*/
 
+typedef E$$($set(mem_Err)(S$u8)) sort_mem_Err$S$u8;
+
 /// Insertion sort for small arrays
-$extern fn_((sort_insertionSort(
-    u_S$raw base_sli,
-    sort_CmpFn cmpFn
-))(void));
+$extern fn_((sort_insert(u_S$raw base, sort_OrdFn ordFn))(void));
 /// Insertion sort with arg
-$extern fn_((sort_insertionSortWithArg(
-    u_S$raw base_sli,
-    sort_CmpWithArgFn cmpFn,
-    P_const$raw arg
-))(void));
+$extern fn_((sort_insertCtx(u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void));
 /// Modernized merge sort using temporary buffer instead of allocating new memory
 $attr($must_check)
-$extern fn_((sort_mergeSortUsingTempRecur(
-    S$u8 temp_buf,
-    u_S$raw base_sli,
-    sort_CmpFn cmpFn
-))(mem_Err$void));
+$extern fn_((sort_mergeTempRecur(
+    S$u8 temp,
+    u_S$raw base,
+    sort_OrdFn ordFn
+))(sort_mem_Err$S$u8));
 /// Modernized merge sort using temporary buffer with arg
 $attr($must_check)
-$extern fn_((sort_mergeSortWithArgUsingTempRecur(
-    S$u8 temp_buf,
-    u_S$raw base_sli,
-    sort_CmpWithArgFn cmpFn,
-    P_const$raw arg
-))(mem_Err$void));
+$extern fn_((sort_mergeTempCtxRecur(
+    S$u8 temp,
+    u_S$raw base,
+    sort_OrdCtxFn ordFn,
+    u_P_const$raw ctx
+))(sort_mem_Err$S$u8));
 /// Modernized stable sort (using merge sort with insertion sort)
 $attr($must_check)
-$extern fn_((sort_stableSort(
-    mem_Allocator allocator,
-    u_S$raw base_sli,
-    sort_CmpFn cmpFn
-))(mem_Err$void));
+$extern fn_((sort_stable(mem_Allocator gpa, u_S$raw base, sort_OrdFn ordFn))(mem_Err$void));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
 $attr($must_check)
-$extern fn_((sort_stableSortWithArg(
-    mem_Allocator allocator,
-    u_S$raw base_sli,
-    sort_CmpWithArgFn cmpFn,
-    P_const$raw arg
-))(mem_Err$void));
+$extern fn_((sort_stableCtx(mem_Allocator gpa, u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$void));
 /// Modernized stable sort (using merge sort with insertion sort)
 $attr($must_check)
-$extern fn_((sort_stableSortUsingTemp(
-    S$u8 temp_buf,
-    u_S$raw base_sli,
-    sort_CmpFn cmpFn
-))(mem_Err$void));
+$extern fn_((sort_stableTemp(S$u8 temp, u_S$raw base, sort_OrdFn ordFn))(sort_mem_Err$S$u8));
 /// Modernized stable sort with arg (using merge sort with insertion sort)
 $attr($must_check)
-$extern fn_((sort_stableSortWithArgUsingTemp(
-    S$u8 temp_buf,
-    u_S$raw base_sli,
-    sort_CmpWithArgFn cmpFn,
-    P_const$raw arg
-))(mem_Err$void));
+$extern fn_((sort_stableTempCtx(S$u8 temp, u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8));
 
 #if defined(__cplusplus)
 } /* $extern "C" */

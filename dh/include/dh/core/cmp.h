@@ -633,8 +633,9 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ord_default$(_T, _lhs, _rhs...) \
     cmp_fn_(ord)((_T)(_lhs, _rhs)) { \
         return cmp_lt$(_T)(_lhs, _rhs) ? cmp_Ord_lt \
-             : cmp_lt$(_T)(_rhs, _lhs) ? cmp_Ord_gt \
-                                       : cmp_Ord_eq; \
+             : (prim_swap(&_lhs, &_rhs), cmp_lt$(_T)(_lhs, _rhs)) \
+                 ? cmp_Ord_gt \
+                 : cmp_Ord_eq; \
     }
 #define __step__cmp_fn_eq_default$(...) __cmp_fn_eq_default$(__VA_ARGS__)
 #define __step__cmp_fn_eq_default$__parse(_T...) _T, __step__cmp_fn_eq_default$__parseNext
@@ -685,8 +686,9 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ordCtx_default$(_T, _lhs, _rhs, _ctx...) \
     cmp_fn_(ordCtx)((_T)(_lhs, _rhs, _ctx)) { \
         return cmp_ltCtx$(_T)(_lhs, _rhs, _ctx) ? cmp_Ord_lt \
-             : cmp_ltCtx$(_T)(_rhs, _lhs, _ctx) ? cmp_Ord_gt \
-                                                : cmp_Ord_eq; \
+             : (prim_swap(&_lhs, &_rhs), cmp_ltCtx$(_T)(_lhs, _rhs, _ctx)) \
+                 ? cmp_Ord_gt \
+                 : cmp_Ord_eq; \
     }
 #define __step__cmp_fn_eqCtx_default$(...) __cmp_fn_eqCtx_default$(__VA_ARGS__)
 #define __step__cmp_fn_eqCtx_default$__parse(_T...) _T, __step__cmp_fn_eqCtx_default$__parseNext
@@ -737,8 +739,9 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ordApx_default$(_T, _lhs, _rhs, _threshold...) \
     cmp_fn_(ordApx)((_T)(_lhs, _rhs, _threshold)) { \
         return cmp_ltApx$(_T)(_lhs, _rhs, _threshold) ? cmp_Ord_lt \
-             : cmp_ltApx$(_T)(_rhs, _lhs, _threshold) ? cmp_Ord_gt \
-                                                      : cmp_Ord_eq; \
+             : (prim_swap(&_lhs, &_rhs), cmp_ltApx$(_T)(_lhs, _rhs, _threshold)) \
+                 ? cmp_Ord_gt \
+                 : cmp_Ord_eq; \
     }
 #define __step__cmp_fn_eqApx_default$(...) __cmp_fn_eqApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_eqApx_default$__parse(_T...) _T, __step__cmp_fn_eqApx_default$__parseNext

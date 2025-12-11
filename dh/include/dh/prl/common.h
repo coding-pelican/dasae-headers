@@ -28,9 +28,9 @@ extern "C" {
 
 #define T_use_prl$(_T...) \
     T_use$((_T)(P, S, O, E)); \
-    T_use$((P$(const _T))(P, S, O, E)); \
+    T_use$((P_const$(_T))(P, S, O, E)); \
     T_use$((P$(_T))(P, S, O, E)); \
-    T_use$((S$(const _T))(P, S, O, E)); \
+    T_use$((S_const$(_T))(P, S, O, E)); \
     T_use$((S$(_T))(P, S, O, E)); \
     T_use$((O$(_T))(P, S, O, E)); \
     T_use$((E$(_T))(P, S, O, E))
