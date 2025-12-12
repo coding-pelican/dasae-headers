@@ -36,10 +36,10 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
     /* Used only when `debug_comp_enabled`. */ \
     __comp_syn__debug_only(_inner)
 #define debug_break() \
-    /* Breakpoint. */ \
+    /* Breakpoint. trigger debug break if debugger is attached. */ \
     __comp_inline__debug_break()
 #define $debug_point \
-    /* breakpoint attribute */ \
+    /* breakpoint attribute. trigger debug break if debugger is attached. */ \
     __comp_attr__$debug_point
 
 /*========== Macros and Definitions =========================================*/
@@ -49,24 +49,33 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 #define __comp_inline__debug_break() $unused(0)
 #else /* debug_comp_enabled */
 
-/* Only trigger debug break if a debugger is attached */
-#if defined(__GNUC__) || defined(__clang__)
-/* GCC or Clang */
-#define __comp_inline__debug_break() blk({ \
-    if (debug_isDebuggerPresent()) { __builtin_debugtrap(); } \
+#define __comp_inline__debug_break() ({ \
+    if (debug_isDebuggerPresent()) { ____debug_break__impl(); } \
 })
-#elif defined(_MSC_VER)
-/* Microsoft Visual Studio */
-#define __comp_inline__debug_break() blk({ \
-    if (debug_isDebuggerPresent()) { __debugbreak(); } \
-})
+
+#if comp_type == comp_type_clang
+#define ____debug_break__impl() __builtin_debugtrap()
+#elif comp_type == comp_type_msvc
+#define ____debug_break__impl() __debugbreak()
 #else /* others */
-/* Fallback using signal */
+
+#if arch_family_type == arch_family_type_x86
+#define ____debug_break__impl() __asm__ volatile("int $0x03")
+#elif arch_type == arch_type_aarch64
+#define ____debug_break__impl() __asm__ volatile("brk \#0")
+#elif arch_type == arch_type_arm
+#define ____debug_break__impl() __asm__ volatile("bkpt \#0")
+#elif arch_family_type == arch_family_type_riscv
+#define ____debug_break__impl() __asm__ volatile("ebreak")
+#elif arch_family_type == arch_family_type_wasm
+#include <emscripten.h>
+#define ____debug_break__impl() emscripten_debugger()
+#else
 #include <signal.h>
-#define __comp_inline__debug_break() blk({ \
-    if (debug_isDebuggerPresent()) { raise(SIGTRAP); } \
-})
-#endif /* others */
+#define ____debug_break__impl() raise(SIGTRAP)
+#endif
+
+#endif
 
 #endif /* debug_comp_enabled */
 

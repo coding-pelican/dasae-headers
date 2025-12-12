@@ -160,30 +160,36 @@
             }
 
             .code {
-                color: #e6edf3;
+                color: #abb2bf;
                 font-size: 15px;
                 line-height: 1.5;
                 font-weight: 400;
             }
 
             .keyword {
-                color: #ff7b72;
+                color: #cc89ed;
                 font-weight: 500;
             }
             .string {
-                color: #a5d6ff;
+                color: #a5d66f;
             }
             .comment {
-                color: #8b949e;
+                color: #7c8594;
                 font-style: italic;
             }
             .function {
-                color: #d2a8ff;
+                color: #6fc3ff;
                 font-weight: 500;
             }
             .type {
                 color: #60d1c3;
                 font-weight: 500;
+            }
+            .mutable {
+                color: #f07178;
+            }
+            .constant {
+                color: #f0c674;
             }
 
             .background-pattern {
@@ -248,28 +254,29 @@
                     <span class="comment">// Modern C with safety features</span><br />
                     <span class="keyword">#include</span> <span class="string">"dh/main.h"</span><br />
                     <span class="keyword">#include</span> <span class="string">"dh/io/common.h"</span><br />
-                    <span class="keyword">#include</span> <span class="string">"dh/fs/common.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/fs/File.h"</span><br />
+                    <span class="keyword">#include</span> <span class="string">"dh/io/Writer.h"</span><br />
                     <br />
-                    <span class="function">fn_</span>(<span class="function">dh_main</span>(<span class="type"
-                        >Sli$Sli_const$u8</span
+                    <span class="keyword">fn_</span>((<span class="function">main</span>(<span class="type"
+                        >S$S_const$u8</span
                     >
-                    args), <span class="type">Err$void</span>, <span class="keyword">$scope</span>) {<br />
-                    &nbsp;&nbsp;<span class="keyword">$ignore</span> = args;<br />
-                    <br />
-                    &nbsp;&nbsp;<span class="keyword">let</span> out = <span class="function">fs_writer</span>(<span
-                        class="function"
-                        >io_getStdOut</span
-                    >());<br />
-                    &nbsp;&nbsp;<span class="keyword">let</span> msg = <span class="function">some$</span>(<span
-                        class="type"
-                        >Opt$Sli_const$u8</span
-                    >, <span class="function">u8_l</span>(<span class="string">"world"</span>));<br />
-                    &nbsp;&nbsp;<span class="function">try_</span>(<span class="function">io_Writer_print</span>(out,
-                    <span class="function">u8_l</span>(<span class="string">"Hello, {:s}!\n"</span>),
-                    <span class="function">unwrap</span>(msg)));<br />
-                    <br />
-                    &nbsp;&nbsp;<span class="keyword">return_ok</span>({});<br />
-                    } <span class="keyword">$unscoped</span>;
+                    <span class="mutable">args</span>))(<span class="type">E$void</span>)
+                    <span class="keyword">$scope</span>) {<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_ignore</span> =
+                    <span class="mutable">args</span>;<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let</span> <span class="constant">out</span> =
+                    <span class="function">fs_File_writer</span>(<span class="function">io_getStdOut</span>());<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_</span>(<span class="constant">msg</span>,
+                    <span class="type">O$S_const$u8</span>) = <span class="keyword">some</span>(<span class="function"
+                        >u8_l</span
+                    >(<span class="string">"world"</span>));<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">try_</span>(<span class="function"
+                        >io_Writer_print</span
+                    >(<span class="constant">out</span>, <span class="function">u8_l</span>(<span class="string"
+                        >"Hello, {:?s}!\n"</span
+                    >), <span class="constant">msg</span>));<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return_ok</span>({});<br />
+                    } <span class="keyword">$unscoped_</span>(<span class="keyword">fn</span>);
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
-    // if you want to ignore variable, you can use $ignore
+    // if you want to ignore variable, you can use let_ignore
     let_ignore = args;
     // Get the standard output file writer
     let out = fs_File_writer(io_getStdOut());

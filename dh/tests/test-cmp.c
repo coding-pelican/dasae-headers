@@ -26,7 +26,6 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
         case_((cmp_Ord_lt)) io_stream_println(u8_l("lhs < rhs")) $end(case) break;
         case_((cmp_Ord_eq)) io_stream_println(u8_l("lhs == rhs")) $end(case) break;
         case_((cmp_Ord_gt)) io_stream_println(u8_l("lhs > rhs")) $end(case) break;
-        default_() claim_unreachable $end(default);
     }
 
     return_ok({});

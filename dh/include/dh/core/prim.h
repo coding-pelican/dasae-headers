@@ -197,6 +197,13 @@ typedef struct Void {
 #define flt_infNgtv$(_T...) __op__flt_infNgtv$(_T)
 #define flt_infPstv$(_T...) __op__flt_infPstv$(_T)
 
+#define intToBool(_val /*: IntType */... /*(bool)*/) __step__intToBool(_val)
+#define boolToInt(_val /*: bool*/... /*(u8)*/) ____boolToInt(_val)
+#define intCast$(/*(_T: IntType)(_val: IntType)*/... /*(_T)*/) __step__intCast$(__VA_ARGS__)
+#define intToFlt$(/*(_T: FltType)(_val: IntType)*/... /*(_T)*/) __step__intToFlt$(__VA_ARGS__)
+#define fltCast$(/*(_T: FltType)(_val: FltType)*/... /*(_T)*/) __step__fltCast$(__VA_ARGS__)
+#define fltToInt$(/*(_T: IntType)(_val: FltType)*/... /*(_T)*/) __step__fltToInt$(__VA_ARGS__)
+
 /*========== Integer Arithmetic Operations ==================================*/
 
 #define int_add(_lhs, _rhs...) __op__int_add__step(_lhs, _rhs)
@@ -855,6 +862,116 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__flt_inf$(_T...) _Generic(_T, f32: f32_inf, f64: f64_inf)
 #define __op__flt_infNgtv$(_T...) _Generic(_T, f32: f32_inf_ngtv, f64: f64_inf_ngtv)
 #define __op__flt_infPstv$(_T...) _Generic(_T, f32: f32_inf_pstv, f64: f64_inf_pstv)
+
+#define __step__intToBool(_val...) ____intToBool(pp_uniqTok(val), _val)
+#define ____intToBool(__val, _val...) ({ \
+    typedef TypeOf(_val) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__val, IntType) = _val; \
+    claim_assert(__val == 0 || __val == 1); \
+    as$(bool)(__val); \
+})
+#define ____boolToInt(_val...) T_switch$((TypeOf(_val))( \
+    T_case$((bool)(as$(u8)(_val))) \
+))
+#define __step__intCast$(...) __step__intCast$__emit(__step__intCast$__parse __VA_ARGS__)
+#define __step__intCast$__parse(_T...) \
+    _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
+        pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
+#define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
+#if UNUSED_CODE
+#define ____intCast$(_T, __val, __min, __max, _val...) ({ \
+    typedef TypeOf(_T) DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isInt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__max, DstType) = int_limitMax$(DstType); \
+    if (isIInt$(SrcType)) { \
+        /* Min Check: Dest is unsigned then 0 or more, Signed then Min or more */ \
+        /* Dest is signed then Min variable is needed, so use lazy or ternary operator */ \
+        if (isIInt$(DstType)) { \
+            let_(__min, DstType) = int_limitMin$(DstType); \
+            claim_assert(__val >= __min); \
+        } else /* isUInt$(DstType) */ { \
+            claim_assert(__val >= 0); \
+        } \
+        /* Max Check: only check when positive (negative is handled above) */ \
+        if (__val >= 0) { claim_assert(as$(u64)(__val) <= as$(u64)(__max)); } \
+    } else /* isUInt$(SrcType) */ { \
+        /* Min Check: unnecessary (Unsigned is always 0 or more) */ \
+        /* Max Check: simply compare with u64 */ \
+        claim_assert(as$(u64)(__val) <= as$(u64)(__max)); \
+    } \
+    as$(_T)(__val); \
+})
+#endif /* UNUSED_CODE */
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) ({ \
+    typedef TypeOf(_T) DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isInt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__min, DstType) = int_limitMin$(DstType); \
+    let_(__max, DstType) = int_limitMax$(DstType); \
+    let_(__dst_is_signed, bool) = isIInt$(DstType); \
+    let_(__src_is_signed, bool) = isIInt$(SrcType); \
+    /* Lower bound check: ensure value >= target minimum */ \
+    claim_assert( \
+        __dst_is_signed \
+            ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
+            : (!__src_is_signed ? true : __val >= 0) \
+    ); \
+    /* Upper bound check: ensure value <= target maximum */ \
+    claim_assert( \
+        (__src_is_signed && __val < 0) \
+            ? true \
+            : as$(u64)(__val) <= as$(u64)(__max) \
+    ); \
+    as$(_T)(__val); \
+})
+#define __step__intToFlt$(...) __step__intToFlt$__emit(__step__intToFlt$__parse __VA_ARGS__)
+#define __step__intToFlt$__parse(_T...) _T, pp_uniqTok(val),
+#define __step__intToFlt$__emit(...) ____intToFlt$(__VA_ARGS__)
+#define ____intToFlt$(_T, __val, _val...) ({ \
+    typedef TypeOf(_val) IntType; \
+    claim_assert_static(isInt$(IntType)); \
+    let_(__val, IntType) = _val; \
+    as$(_T)(__val); \
+})
+#define __step__fltCast$(...) __step__fltCast$__emit(__step__fltCast$__parse __VA_ARGS__)
+#define __step__fltCast$__parse(_T...) _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max),
+#define __step__fltCast$__emit(...) ____fltCast$(__VA_ARGS__)
+#define ____fltCast$(_T, __val, __min, __max, _val...) ({ \
+    typedef TypeOf(_val) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__val, FltType) = _val; \
+    let_(__min, _T) = flt_limitMin$(_T); \
+    let_(__max, _T) = flt_limitMax$(_T); \
+    claim_assert(__min <= __max); \
+    claim_assert(__min <= __val); \
+    claim_assert(__val <= __max); \
+    as$(_T)(__val); \
+})
+/* FIXME: needs more strict checks */
+#define __step__fltToInt$(...) __step__fltToInt$__emit(__step__fltToInt$__parse __VA_ARGS__)
+#define __step__fltToInt$__parse(_T...) \
+    _T, pp_uniqTok(val), pp_uniqTok(trunc_val), pp_uniqTok(min), pp_uniqTok(max), pp_uniqTok(result),
+#define __step__fltToInt$__emit(...) ____fltToInt$(__VA_ARGS__)
+#define ____fltToInt$(_T, __val, __trunc_val, __min, __max, __result, _val...) ({ \
+    typedef TypeOf(_val) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__val, FltType) = _val; \
+    claim_assert(flt_isFinite(__val)); \
+    let_(__trunc_val, FltType) = flt_trunc(__val); \
+    let_(__min, FltType) = as$(FltType)(int_limitMin$(_T)); \
+    let_(__max, FltType) = as$(FltType)(int_limitMax$(_T)); \
+    claim_assert(__min <= __max); \
+    claim_assert(__trunc_val >= __min); \
+    claim_assert(__trunc_val <= __max); \
+    /* Round-trip check: catch precision edge cases at boundaries */ \
+    let_(__result, _T) = as$(_T)(__trunc_val); \
+    claim_assert(as$(FltType)(__result) == __trunc_val); \
+    __result; \
+})
 
 /*========== Integer Arithmetic Implementation ==============================*/
 
