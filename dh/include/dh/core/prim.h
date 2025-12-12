@@ -170,6 +170,9 @@ typedef struct Void {
 
 /*========== Type Limits ====================================================*/
 
+#define int_bits$(_T...) __op__int_bits$(_T)
+#define int_bytes$(_T...) __op__int_bytes$(_T)
+
 #define uint_limit$(_T...) __op__uint_limit$(_T)
 #define int_limitMin$(_T...) __op__int_limitMin$(_T)
 #define int_limitMax$(_T...) __op__int_limitMax$(_T)
@@ -177,9 +180,11 @@ typedef struct Void {
 #define iint_limitMinNgtv$(_T...) __op__iint_limitMinNgtv$(_T)
 #define iint_limitMinPstv$(_T...) __op__iint_limitMinPstv$(_T)
 #define iint_limitMaxPstv$(_T...) __op__iint_limitMaxPstv$(_T)
+#define int_limitFltMinBoundExcl$(_T...) __op__int_limitFltMinBoundExcl$(_T)
+#define int_limitFltMaxBoundExcl$(_T...) __op__int_limitFltMaxBoundExcl$(_T)
 
-#define int_bits$(_T...) __op__int_bits$(_T)
-#define int_bytes$(_T...) __op__int_bytes$(_T)
+#define flt_bits$(_T...) __op__flt_bits$(_T)
+#define flt_bytes$(_T...) __op__flt_bytes$(_T)
 
 #define flt_limitMin$(_T...) __op__flt_limitMin$(_T)
 #define flt_limitMax$(_T...) __op__flt_limitMax$(_T)
@@ -187,9 +192,6 @@ typedef struct Void {
 #define flt_limitMinNgtv$(_T...) __op__flt_limitMinNgtv$(_T)
 #define flt_limitMinPstv$(_T...) __op__flt_limitMinPstv$(_T)
 #define flt_limitMaxPstv$(_T...) __op__flt_limitMaxPstv$(_T)
-
-#define flt_bits$(_T...) __op__flt_bits$(_T)
-#define flt_bytes$(_T...) __op__flt_bytes$(_T)
 
 #define flt_eps$(_T...) __op__flt_eps$(_T)
 #define flt_nan$(_T...) __op__flt_nan$(_T)
@@ -774,6 +776,29 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__isInt$(_T...) (isUInt$(_T) || isIInt$(_T))
 #define __op__isFlt$(_T...) _Generic(_T, f32: true, f64: true, default: false)
 
+#define __op__int_bits$(_T...) _Generic( \
+    _T, \
+    u8: u8_bits, \
+    u16: u16_bits, \
+    u32: u32_bits, \
+    u64: u64_bits, \
+    i8: i8_bits, \
+    i16: i16_bits, \
+    i32: i32_bits, \
+    i64: i64_bits \
+)
+#define __op__int_bytes$(_T...) _Generic( \
+    _T, \
+    u8: u8_bytes, \
+    u16: u16_bytes, \
+    u32: u32_bytes, \
+    u64: u64_bytes, \
+    i8: i8_bytes, \
+    i16: i16_bytes, \
+    i32: i32_bytes, \
+    i64: i64_bytes \
+)
+
 #define __op__uint_limit$(_T...) _Generic( \
     _T, \
     u8: u8_limit, \
@@ -831,21 +856,31 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     i32: i32_limit_max_pstv, \
     i64: i64_limit_max_pstv \
 )
+#define __op__int_limitFltMinBoundExcl$(_T...) _Generic( \
+    _T, \
+    u8: u8_limit_flt_min_bound_excl, \
+    u16: u16_limit_flt_min_bound_excl, \
+    u32: u32_limit_flt_min_bound_excl, \
+    u64: u64_limit_flt_min_bound_excl, \
+    i8: i8_limit_flt_min_bound_excl, \
+    i16: i16_limit_flt_min_bound_excl, \
+    i32: i32_limit_flt_min_bound_excl, \
+    i64: i64_limit_flt_min_bound_excl \
+)
+#define __op__int_limitFltMaxBoundExcl$(_T...) _Generic( \
+    _T, \
+    u8: u8_limit_flt_max_bound_excl, \
+    u16: u16_limit_flt_max_bound_excl, \
+    u32: u32_limit_flt_max_bound_excl, \
+    u64: u64_limit_flt_max_bound_excl, \
+    i8: i8_limit_flt_max_bound_excl, \
+    i16: i16_limit_flt_max_bound_excl, \
+    i32: i32_limit_flt_max_bound_excl, \
+    i64: i64_limit_flt_max_bound_excl \
+)
 
-#define __op__int_bits$(_T...) _Generic( \
-    _T, \
-    u8: u8_bits, \
-    u16: u16_bits, \
-    u32: u32_bits, \
-    u64: u64_bits \
-)
-#define __op__int_bytes$(_T...) _Generic( \
-    _T, \
-    u8: u8_bytes, \
-    u16: u16_bytes, \
-    u32: u32_bytes, \
-    u64: u64_bytes \
-)
+#define __op__flt_bits$(_T...) _Generic(_T, f32: f32_bits, f64: f64_bits)
+#define __op__flt_bytes$(_T...) _Generic(_T, f32: f32_bytes, f64: f64_bytes)
 
 #define __op__flt_limitMin$(_T...) _Generic(_T, f32: f32_limit_min, f64: f64_limit_min)
 #define __op__flt_limitMax$(_T...) _Generic(_T, f32: f32_limit_max, f64: f64_limit_max)
@@ -853,9 +888,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__flt_limitMinNgtv$(_T...) _Generic(_T, f32: f32_limit_min_ngtv, f64: f64_limit_min_ngtv)
 #define __op__flt_limitMinPstv$(_T...) _Generic(_T, f32: f32_limit_min_pstv, f64: f64_limit_min_pstv)
 #define __op__flt_limitMaxPstv$(_T...) _Generic(_T, f32: f32_limit_max_pstv, f64: f64_limit_max_pstv)
-
-#define __op__flt_bits$(_T...) _Generic(_T, f32: f32_bits, f64: f64_bits)
-#define __op__flt_bytes$(_T...) _Generic(_T, f32: f32_bytes, f64: f64_bytes)
 
 #define __op__flt_eps$(_T...) _Generic(_T, f32: f32_eps, f64: f64_eps)
 #define __op__flt_nan$(_T...) _Generic(_T, f32: f32_nan, f64: f64_nan)
@@ -879,6 +911,29 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) ({ \
+    typedef TypeOf(_T) DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isInt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__min, DstType) = int_limitMin$(DstType); \
+    let_(__max, DstType) = int_limitMax$(DstType); \
+    let_(__dst_is_signed, bool) = isIInt$(DstType); \
+    let_(__src_is_signed, bool) = isIInt$(SrcType); \
+    /* Lower bound check: ensure value >= target minimum */ \
+    claim_assert( \
+        __dst_is_signed \
+            ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
+            : (!__src_is_signed ? true : __val >= 0) \
+    ); \
+    /* Upper bound check: ensure value <= target maximum */ \
+    claim_assert( \
+        (__src_is_signed && __val < 0) \
+            ? true \
+            : as$(u64)(__val) <= as$(u64)(__max) \
+    ); \
+    as$(_T)(__val); \
+})
 #if UNUSED_CODE
 #define ____intCast$(_T, __val, __min, __max, _val...) ({ \
     typedef TypeOf(_T) DstType; \
@@ -905,29 +960,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     as$(_T)(__val); \
 })
 #endif /* UNUSED_CODE */
-#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) ({ \
-    typedef TypeOf(_T) DstType; \
-    typedef TypeOf(_val) SrcType; \
-    claim_assert_static(isInt$(SrcType)); \
-    let_(__val, SrcType) = _val; \
-    let_(__min, DstType) = int_limitMin$(DstType); \
-    let_(__max, DstType) = int_limitMax$(DstType); \
-    let_(__dst_is_signed, bool) = isIInt$(DstType); \
-    let_(__src_is_signed, bool) = isIInt$(SrcType); \
-    /* Lower bound check: ensure value >= target minimum */ \
-    claim_assert( \
-        __dst_is_signed \
-            ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
-            : (!__src_is_signed ? true : __val >= 0) \
-    ); \
-    /* Upper bound check: ensure value <= target maximum */ \
-    claim_assert( \
-        (__src_is_signed && __val < 0) \
-            ? true \
-            : as$(u64)(__val) <= as$(u64)(__max) \
-    ); \
-    as$(_T)(__val); \
-})
 #define __step__intToFlt$(...) __step__intToFlt$__emit(__step__intToFlt$__parse __VA_ARGS__)
 #define __step__intToFlt$__parse(_T...) _T, pp_uniqTok(val),
 #define __step__intToFlt$__emit(...) ____intToFlt$(__VA_ARGS__)
@@ -951,26 +983,19 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert(__val <= __max); \
     as$(_T)(__val); \
 })
-/* FIXME: needs more strict checks */
+/* Check: (min - 1) < x < max, where max = 2^(N-1) for signed, 2^N for unsigned */
+/* This correctly handles cases like -2147483648.9 → trunc → -2147483648 (valid i32) */
 #define __step__fltToInt$(...) __step__fltToInt$__emit(__step__fltToInt$__parse __VA_ARGS__)
-#define __step__fltToInt$__parse(_T...) \
-    _T, pp_uniqTok(val), pp_uniqTok(trunc_val), pp_uniqTok(min), pp_uniqTok(max), pp_uniqTok(result),
+#define __step__fltToInt$__parse(_T...) _T, pp_uniqTok(val),
 #define __step__fltToInt$__emit(...) ____fltToInt$(__VA_ARGS__)
-#define ____fltToInt$(_T, __val, __trunc_val, __min, __max, __result, _val...) ({ \
+#define ____fltToInt$(_T, __val, _val...) ({ \
     typedef TypeOf(_val) FltType; \
     claim_assert_static(isFlt$(FltType)); \
     let_(__val, FltType) = _val; \
     claim_assert(flt_isFinite(__val)); \
-    let_(__trunc_val, FltType) = flt_trunc(__val); \
-    let_(__min, FltType) = as$(FltType)(int_limitMin$(_T)); \
-    let_(__max, FltType) = as$(FltType)(int_limitMax$(_T)); \
-    claim_assert(__min <= __max); \
-    claim_assert(__trunc_val >= __min); \
-    claim_assert(__trunc_val <= __max); \
-    /* Round-trip check: catch precision edge cases at boundaries */ \
-    let_(__result, _T) = as$(_T)(__trunc_val); \
-    claim_assert(as$(FltType)(__result) == __trunc_val); \
-    __result; \
+    claim_assert(as$(FltType)(int_limitFltMinBoundExcl$(_T) < __val)); \
+    claim_assert(__val < as$(FltType)(int_limitFltMaxBoundExcl$(_T))); \
+    as$(_T)(__val); \
 })
 
 /*========== Integer Arithmetic Implementation ==============================*/
