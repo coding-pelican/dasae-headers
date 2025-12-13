@@ -12,9 +12,8 @@
  *
  * @brief   Sorting utilities
  * @details Provides sorting functions for arrays and slices.
- *          Includes insertion sort, merge sort, and stable sort
- * implementations. Supports custom comparison functions and optional memory
- * allocation.
+ *          Includes insertion sort, merge sort, and stable sort.
+ *          Supports custom comparison functions and optional memory allocation.
  */
 #ifndef sort__included
 #define sort__included 1
@@ -28,50 +27,61 @@ extern "C" {
 #include "cmp.h"
 #include "mem/Allocator.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 #define sort_stable_sort_threshold_merge_to_insert (32)
+typedef E$$($set(mem_Err)(S$u8)) sort_mem_Err$S$u8;
 
 /// Callable types for sorting functions
 use_Callable(sort_OrdFn, (u_V$raw lhs, u_V$raw rhs), cmp_Ord);
 /// Callable types for sorting functions that take an argument
 use_Callable(sort_OrdCtxFn, (u_V$raw lhs, u_V$raw rhs, u_V$raw ctx), cmp_Ord);
 
-/*========== Function Prototypes ============================================*/
-
-typedef E$$($set(mem_Err)(S$u8)) sort_mem_Err$S$u8;
+/// Checks if the sequence is ordered in ascending order according to `ordFn`.
+/// - Returns `true` if ordered, `false` otherwise.
+/// - Time Complexity: `O(n)`
+$attr($must_check)
+$extern fn_((sort_inOrd(u_S_const$raw seq, sort_OrdFn ordFn))(bool));
+$attr($must_check)
+$extern fn_((sort_inOrdCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(bool));
 
 /// Insertion sort for small arrays
-$extern fn_((sort_insert(u_S$raw base, sort_OrdFn ordFn))(void));
-/// Insertion sort with arg
-$extern fn_((sort_insertCtx(u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void));
-/// Modernized merge sort using temporary buffer instead of allocating new memory
+/// - Time Complexity: `O(n^2)`
+/// - Space Complexity: `O(1)`
+$extern fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void));
+$extern fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void));
+
+/// Merge sort using temporary buffer instead of allocating new memory
+/// - Time Complexity: `O(n log n)`
+/// - Space Complexity: `O(n)`
 $attr($must_check)
-$extern fn_((sort_mergeTempRecur(
-    S$u8 temp,
-    u_S$raw base,
+$extern fn_((sort_mergeTmpRecur(
+    S$u8 tmp,
+    u_S$raw seq,
     sort_OrdFn ordFn
 ))(sort_mem_Err$S$u8));
-/// Modernized merge sort using temporary buffer with arg
 $attr($must_check)
-$extern fn_((sort_mergeTempCtxRecur(
-    S$u8 temp,
-    u_S$raw base,
+$extern fn_((sort_mergeTmpCtxRecur(
+    S$u8 tmp,
+    u_S$raw seq,
     sort_OrdCtxFn ordFn,
     u_P_const$raw ctx
 ))(sort_mem_Err$S$u8));
-/// Modernized stable sort (using merge sort with insertion sort)
+
+/// Stable sort (based merge sort with insertion sort)
+/// - Time Complexity: `O(n log n)`
+/// - Space Complexity: `O(n)`
 $attr($must_check)
-$extern fn_((sort_stable(mem_Allocator gpa, u_S$raw base, sort_OrdFn ordFn))(mem_Err$void));
-/// Modernized stable sort with arg (using merge sort with insertion sort)
+$extern fn_((sort_stable(mem_Allocator gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_Err$void));
 $attr($must_check)
-$extern fn_((sort_stableCtx(mem_Allocator gpa, u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$void));
-/// Modernized stable sort (using merge sort with insertion sort)
+$extern fn_((sort_stableCtx(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$void));
+/// Stable sort using temporary buffer (based merge sort with insertion sort)
+/// - Time Complexity: `O(n log n)`
+/// - Space Complexity: `O(n)`
 $attr($must_check)
-$extern fn_((sort_stableTemp(S$u8 temp, u_S$raw base, sort_OrdFn ordFn))(sort_mem_Err$S$u8));
-/// Modernized stable sort with arg (using merge sort with insertion sort)
+$extern fn_((sort_stableTmp(S$u8 tmp, u_S$raw seq, sort_OrdFn ordFn))(sort_mem_Err$S$u8));
 $attr($must_check)
-$extern fn_((sort_stableTempCtx(S$u8 temp, u_S$raw base, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8));
+$extern fn_((sort_stableTmpCtx(S$u8 tmp, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8));
 
 #if defined(__cplusplus)
 } /* $extern "C" */

@@ -245,17 +245,17 @@ $extern fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
         return mem_ge(u_anyS(lhs), u_anyS(rhs)); \
     }
 
-$extern fn_((mem_swapBytesTemp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8));
-$extern fn_((mem_swapTemp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw));
-#define T_use_mem_swapTemp$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_swapTemp, _T)(S$(_T) lhs, S$(_T) rhs))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_swapTemp(u_anyS(lhs), u_anyS(rhs), u_anyS(tmp)))); \
-    }
 $extern fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void));
 $extern fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void));
 #define T_use_mem_swap$(_T...) \
     $inline_always $static fn_((tpl_id(mem_swap, _T)(S$(_T) lhs, S$(_T) rhs))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_swap(u_anyS(lhs), u_anyS(rhs)))); \
+    }
+$extern fn_((mem_swapBytesTmp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8));
+$extern fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw));
+#define T_use_mem_swapTmp$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_swapTmp, _T)(S$(_T) lhs, S$(_T) rhs))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_swapTmp(u_anyS(lhs), u_anyS(rhs), u_anyS(tmp)))); \
     }
 
 $extern fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
