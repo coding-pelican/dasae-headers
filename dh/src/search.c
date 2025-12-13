@@ -43,7 +43,7 @@ $static fn_((search__pred(search_PredFn predFn, u_P_const$raw lhs, u_P_const$raw
 };
 
 typedef struct search_PredFn_BoundCtx {
-    u_V$raw inner;
+    u_P_const$raw inner;
     search_OrdFn ordFn;
 } search_PredFn_BoundCtx;
 
@@ -54,13 +54,13 @@ $static fn_((search_lowerBound__pred(u_V$raw val, u_V$raw ctx))(bool)) {
     return cmp_Ord_isLt(search__ord(
         bound_ctx.ordFn,
         val.ref.as_const,
-        inner_ctx.ref.as_const
+        inner_ctx
     ));
 };
 
 fn_((search_lowerBound(u_S_const$raw seq, u_V$raw ctx, search_OrdFn ordFn))(usize)) {
     let_(bound_ctx, search_PredFn_BoundCtx) = {
-        .inner = ctx,
+        .inner = ctx.ref.as_const,
         .ordFn = ordFn,
     };
     return search_partPoint(seq, u_anyV(bound_ctx), (search_PredFn)wrapFn(search_lowerBound__pred));
@@ -73,13 +73,13 @@ $static fn_((search_upperBound__pred(u_V$raw val, u_V$raw ctx))(bool)) {
     return !cmp_Ord_isGt(search__ord(
         bound_ctx.ordFn,
         val.ref.as_const,
-        inner_ctx.ref.as_const
+        inner_ctx
     ));
 };
 
 fn_((search_upperBound(u_S_const$raw seq, u_V$raw ctx, search_OrdFn ordFn))(usize)) {
     let_(bound_ctx, search_PredFn_BoundCtx) = {
-        .inner = ctx,
+        .inner = ctx.ref.as_const,
         .ordFn = ordFn,
     };
     return search_partPoint(seq, u_anyV(bound_ctx), (search_PredFn)wrapFn(search_upperBound__pred));
