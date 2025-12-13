@@ -169,7 +169,7 @@ dh-c test
 
 // 확장 범위와 오류 처리를 갖는 메인 함수 정의
 // 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     // u8_l로 문자열 리터럴 생성
     let message = u8_l("Hello");

@@ -52,7 +52,7 @@ $extern fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void)
 /// Skip n bytes
 $extern fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void)) $must_check;
 /// Get io_Reader interface
-$extern fn_((io_Buf_Reader_reader(io_Buf_Reader* self))(io_Reader));
+$extern fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader));
 
 /* BufWriter ========================*/
 
@@ -66,7 +66,7 @@ $extern fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer));
 /// Flush buffered data to inner writer
 $extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void)) $must_check;
 /// Get io_Writer interface
-$extern fn_((io_Buf_Writer_writer(io_Buf_Writer* self))(io_Writer));
+$extern fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer));
 
 #if defined(__cplusplus)
 } /* extern "C" */

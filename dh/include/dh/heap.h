@@ -30,10 +30,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "heap/cfg.h"
-#include "heap/Classic.h"
+// #include "heap/Classic.h"
 #include "heap/Page.h"
 #include "heap/Fixed.h"
 #include "heap/Arena.h"
+// #include "heap/Pool.h"
+#include "heap/ThrdSafe.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

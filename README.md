@@ -192,7 +192,7 @@ See the [Quick Start Guide](./dh/docs/en/quick-start.md) for more details.
 
 // Define the main function with scope and error handling
 // Takes command line arguments and returns an error result with void payload
-fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     // Create a string literal using u8_l
     let message = u8_l("Hello");

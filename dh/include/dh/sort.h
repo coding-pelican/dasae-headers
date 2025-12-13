@@ -51,6 +51,7 @@ $extern fn_((sort_inOrdCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw
 $extern fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void));
 
+/* TODO: Improve better interface for sorting functions */
 /// Merge sort using temporary buffer instead of allocating new memory
 /// - Time Complexity: `O(n log n)`
 /// - Space Complexity: `O(n)`

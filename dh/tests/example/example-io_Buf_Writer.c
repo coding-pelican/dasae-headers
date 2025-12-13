@@ -12,7 +12,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var buffered = io_Buf_Writer_init(unbuffered, A_ref$((S$u8)(buf)));
     defer_(catch_((io_Buf_Writer_flush(&buffered))($ignore, claim_unreachable)));
 
-    let writer = io_Buf_Writer_writer(&buffered);
+    let writer = io_Buf_writer(&buffered);
     for_(($r(0, 1000))(i) {
         try_(io_Writer_print(writer, u8_l("Line {:uz}\n"), i));
     });
