@@ -12,7 +12,7 @@ $static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
 
 $attr($inline_always)
 $static fn_((calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(prim_max(1, arch_cache_line / type.size));
+    return as$(usize)(prim_max(1, arch_cache_line_bytes / type.size));
 };
 
 $static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
