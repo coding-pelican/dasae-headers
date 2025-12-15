@@ -30,9 +30,9 @@ extern "C" {
 
 /*========== Architecture-Specific Intrinsics ===============================*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 #include <immintrin.h>
-#elif arch_is_arm64 || arch_is_arm32
+#elif arch_is_arm || arch_is_aarch64
 #include <arm_neon.h>
 #endif
 
@@ -320,7 +320,7 @@ extern "C" {
 
 #define __op__Vec_neg(_a) (-(_a))
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 #define __op__Vec_abs(_a) ({ \
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
@@ -493,7 +493,7 @@ extern "C" {
 
 /*---------- Mathematical Functions -----------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 #define __op__Vec_sqrt(_a) ({ \
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
@@ -545,7 +545,7 @@ extern "C" {
 })
 #endif
 
-#if arch_is_x86_64 && arch_has_sse41
+#if arch_is_x86_64 && arch_has_sse4_1
 #define __op__Vec_floor(_a) ({ \
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
@@ -647,7 +647,7 @@ extern "C" {
 
 /*---------- Horizontal Operations ------------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 #if arch_has_ssse3
 #define __op__Vec_hAdd(_a, _b) ({ \
     typedef TypeOfUnqual(_a) VecType; \
@@ -760,10 +760,10 @@ extern "C" {
 /*========== Convenience Type Definitions ===================================*/
 
 /* Common vector types */
-T_use_Vec$(1, f32);  /* Vec$1$f32  - 1x float32  */
-T_use_Vec$(2, f32);  /* Vec$2$f32  - 2x float32  */
-T_use_Vec$(4, f32);  /* Vec$4$f32  - 4x float32  */
-T_use_Vec$(8, f32);  /* Vec$8$f32  - 8x float32  */
+T_use_Vec$(1, f32); /* Vec$1$f32  - 1x float32  */
+T_use_Vec$(2, f32); /* Vec$2$f32  - 2x float32  */
+T_use_Vec$(4, f32); /* Vec$4$f32  - 4x float32  */
+T_use_Vec$(8, f32); /* Vec$8$f32  - 8x float32  */
 T_use_Vec$(16, f32); /* Vec$16$f32 - 16x float32 */
 
 T_use_Vec$(1, f64); /* Vec$1$f64  - 1x float64  */
@@ -771,10 +771,10 @@ T_use_Vec$(2, f64); /* Vec$2$f64  - 2x float64  */
 T_use_Vec$(4, f64); /* Vec$4$f64  - 4x float64  */
 T_use_Vec$(8, f64); /* Vec$8$f64  - 8x float64  */
 
-T_use_Vec$(1, i32);  /* Vec$1$i32  - 1x int32    */
-T_use_Vec$(2, i32);  /* Vec$2$i32  - 2x int32    */
-T_use_Vec$(4, i32);  /* Vec$4$i32  - 4x int32    */
-T_use_Vec$(8, i32);  /* Vec$8$i32  - 8x int32    */
+T_use_Vec$(1, i32); /* Vec$1$i32  - 1x int32    */
+T_use_Vec$(2, i32); /* Vec$2$i32  - 2x int32    */
+T_use_Vec$(4, i32); /* Vec$4$i32  - 4x int32    */
+T_use_Vec$(8, i32); /* Vec$8$i32  - 8x int32    */
 T_use_Vec$(16, i32); /* Vec$16$i32 - 16x int32   */
 
 T_use_Vec$(1, i64); /* Vec$1$i64  - 1x int64    */
@@ -782,10 +782,10 @@ T_use_Vec$(2, i64); /* Vec$2$i64  - 2x int64    */
 T_use_Vec$(4, i64); /* Vec$4$i64  - 4x int64    */
 T_use_Vec$(8, i64); /* Vec$8$i64  - 8x int64    */
 
-T_use_Vec$(1, u32);  /* Vec$1$u32  - 1x uint32   */
-T_use_Vec$(2, u32);  /* Vec$2$u32  - 2x uint32   */
-T_use_Vec$(4, u32);  /* Vec$4$u32  - 4x uint32   */
-T_use_Vec$(8, u32);  /* Vec$8$u32  - 8x uint32   */
+T_use_Vec$(1, u32); /* Vec$1$u32  - 1x uint32   */
+T_use_Vec$(2, u32); /* Vec$2$u32  - 2x uint32   */
+T_use_Vec$(4, u32); /* Vec$4$u32  - 4x uint32   */
+T_use_Vec$(8, u32); /* Vec$8$u32  - 8x uint32   */
 T_use_Vec$(16, u32); /* Vec$16$u32 - 16x uint32  */
 
 T_use_Vec$(1, u64); /* Vec$1$u64  - 1x uint64   */
@@ -869,7 +869,7 @@ extern "C" {
 #define Vec_dot(_a, _b) Vec_dot$(TypeOfUnqual(_a), _a, _b)
 
 /// Cross product (3D vectors)
-#define Vec_cross3(_a, _b) __op__Vec_cross3(_a, _b)
+#define Vec_cross(_a, _b) __op__Vec_cross(_a, _b)
 
 /// Matrix-vector multiply (4x4 matrix * 4D vector)
 #define Vec_matMul4x4(_mat, _vec) __op__Vec_matMul4x4(_mat, _vec)
@@ -878,7 +878,7 @@ extern "C" {
 
 /*---------- Load/Store -----------------------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 
 #define __op__Vec_loadAligned(_p_arr) ({ \
     typedef TypeOfUnqual(*(_p_arr)) ScalarType; \
@@ -964,7 +964,7 @@ extern "C" {
     } \
 })
 
-#elif arch_is_arm64 || arch_is_arm32
+#elif arch_is_arm || arch_is_aarch64
 
 #define __op__Vec_loadAligned(_p_arr) \
     Vec_fromArray$(TypeOfUnqual(*(_p_arr)), _p_arr)
@@ -1002,7 +1002,7 @@ extern "C" {
 
 /*---------- Reciprocal and RSQRT -------------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 
 #define __op__Vec_rcp(_a) ({ \
     typedef TypeOfUnqual(_a) VecType; \
@@ -1032,7 +1032,7 @@ extern "C" {
     result; \
 })
 
-#elif arch_is_arm64
+#elif arch_is_aarch64
 
 #define __op__Vec_rcp(_a) ({ \
     typedef TypeOfUnqual(_a) VecType; \
@@ -1070,7 +1070,7 @@ extern "C" {
 
 /*---------- Move Mask ------------------------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 
 #define __op__Vec_moveMask(_vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
@@ -1103,7 +1103,7 @@ extern "C" {
 
 /*---------- Dot Product ----------------------------------------------------*/
 
-#if arch_is_x86_64 && arch_has_sse41
+#if arch_is_x86_64 && arch_has_sse4_1
 
 #define __op__Vec_dot$(_VT, _a, _b) ({ \
     typedef _VT VecType; \
@@ -1130,8 +1130,9 @@ extern "C" {
 
 /*---------- Cross Product --------------------------------------------------*/
 
-#define __op__Vec_cross3(_a, _b) ({ \
-    typedef TypeOfUnqual(_a) VecType; \
+#define __op__Vec_cross(_a, _b) ({ \
+    typedef TypeOf(_a) VecType; \
+    claim_assert_static(Vec_innerN$(VecType) == 4); \
     /* cross = (a.yzx * b.zxy) - (a.zxy * b.yzx) */ \
     let a_yzx = Vec_shuffle(_a, _a, 1, 2, 0, 3); \
     let a_zxy = Vec_shuffle(_a, _a, 2, 0, 1, 3); \
@@ -1142,7 +1143,7 @@ extern "C" {
 
 /*---------- Matrix-Vector Multiply -----------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 
 #define __op__Vec_matMul4x4(_mat, _vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
@@ -1185,11 +1186,11 @@ extern "C" {
 /*========== High-Performance Patterns ======================================*/
 
 /// Alignment attribute for SIMD vectors
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 #define Vec_aligned16 __attribute__((aligned(16)))
 #define Vec_aligned32 __attribute__((aligned(32)))
 #define Vec_aligned64 __attribute__((aligned(64)))
-#elif arch_is_arm64 || arch_is_arm32
+#elif arch_is_arm || arch_is_aarch64
 #define Vec_aligned16 __attribute__((aligned(16)))
 #define Vec_aligned32 __attribute__((aligned(32)))
 #define Vec_aligned64 __attribute__((aligned(64)))
@@ -1202,8 +1203,8 @@ extern "C" {
 /// Prefetch localities
 typedef enum Vec_PrefetchLocality {
     Vec_PrefetchLocality_none = 0, ///< No temporal locality (stream)
-    Vec_PrefetchLocality_low = 1,  ///< Low temporal locality (L3 cache)
-    Vec_PrefetchLocality_mid = 2,  ///< Medium temporal locality (L2 cache)
+    Vec_PrefetchLocality_low = 1, ///< Low temporal locality (L3 cache)
+    Vec_PrefetchLocality_mid = 2, ///< Medium temporal locality (L2 cache)
     Vec_PrefetchLocality_high = 3, ///< High temporal locality (L1 cache)
 } Vec_PrefetchLocality;
 
@@ -1563,7 +1564,7 @@ extern "C" {
 
 /*---------- Advanced Arithmetic --------------------------------------------*/
 
-#if arch_is_x86 || arch_is_x64
+#if arch_is_x86 || arch_is_x86_64
 
 #define __op__Vec_addSat(_a, _b) ({ \
     typedef TypeOfUnqual(_a) VecType; \

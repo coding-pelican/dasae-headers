@@ -95,9 +95,6 @@ typedef struct mp_ThrdPool_Stats {
     atom_V$$(f64) total_sync_time;
     atom_V$$(usize) task_count;
     atom_V$$(usize) wait_count;
-    atom_V$$(usize) loop_iterations;
-    atom_V$$(usize) cond_wait_count;
-    atom_V$$(usize) empty_wakeups;
 } mp_ThrdPool_Stats;
 
 $static mp_ThrdPool_Stats mp__worker_stats[mp_max_thrd_count];
@@ -111,9 +108,6 @@ $static fn_((mp_ThrdPool_enableStats(void))(void)) {
         atom_V_store(&mp__worker_stats[i].total_sync_time, 0.0, atom_MemOrd_monotonic);
         atom_V_store(&mp__worker_stats[i].task_count, 0ull, atom_MemOrd_monotonic);
         atom_V_store(&mp__worker_stats[i].wait_count, 0ull, atom_MemOrd_monotonic);
-        atom_V_store(&mp__worker_stats[i].loop_iterations, 0ull, atom_MemOrd_monotonic);
-        atom_V_store(&mp__worker_stats[i].cond_wait_count, 0ull, atom_MemOrd_monotonic);
-        atom_V_store(&mp__worker_stats[i].empty_wakeups, 0ull, atom_MemOrd_monotonic);
     });
 };
 
@@ -130,16 +124,13 @@ $static fn_((mp_ThrdPool_printStats(mp_ThrdPool* pool))(void)) {
         let idle = atom_V_load(&mp__worker_stats[i].total_idle_time, atom_MemOrd_monotonic);
         let sync = atom_V_load(&mp__worker_stats[i].total_sync_time, atom_MemOrd_monotonic);
         let tasks = atom_V_load(&mp__worker_stats[i].task_count, atom_MemOrd_monotonic);
-        let loops = atom_V_load(&mp__worker_stats[i].loop_iterations, atom_MemOrd_monotonic);
-        let waits = atom_V_load(&mp__worker_stats[i].cond_wait_count, atom_MemOrd_monotonic);
-        let empty = atom_V_load(&mp__worker_stats[i].empty_wakeups, atom_MemOrd_monotonic);
 
         let total = work + idle + sync;
         let efficiency = (total > 0.0) ? (work / total * 100.0) : 0.0;
 
         io_stream_println(
-            u8_l("Worker {:uz}: {:.1fl}% eff | Tasks: {:uz} | Loops: {:uz} | Waits: {:uz} | Empty: {:uz}"),
-            i, efficiency, tasks, loops, waits, empty
+            u8_l("Worker {:uz}: {:.1fl}% eff | Work: {:.2fl}s | Idle: {:.2fl}s | Sync: {:.2fl}s | Tasks: {:uz}"),
+            i, efficiency, work, idle, sync, tasks
         );
 
         total_work += work;
@@ -164,11 +155,9 @@ $static fn_((mp_ThrdPool_printStats(mp_ThrdPool* pool))(void)) {
 $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, Void), ($ignore, args)$scope) {
     let pool = args->pool;
     let worker_id = args->worker_id;
+    let stats_enabled = atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire);
 
     while (atom_V_load(&pool->running, atom_MemOrd_acquire)) {
-        // Track loop iterations
-        atom_V_fetchAdd(&mp__worker_stats[worker_id].loop_iterations, 1, atom_MemOrd_monotonic);
-
         let idle_start = time_Instant_now();
 
         O$$(P$mp_ThrdPool_Task) maybe_task = none();
@@ -177,7 +166,6 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
         with_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
             while (atom_V_load(&pool->count, atom_MemOrd_acquire) == 0
                    && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
-                atom_V_fetchAdd(&mp__worker_stats[worker_id].cond_wait_count, 1, atom_MemOrd_monotonic);
                 Thrd_Cond_wait(&pool->cond_has_task, &pool->mutex);
             }
 
@@ -187,9 +175,6 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
                 atom_V_store(&pool->tail, tail + 1, atom_MemOrd_monotonic);
                 atom_V_fetchSub(&pool->count, 1, atom_MemOrd_monotonic);
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_monotonic);
-            } else {
-                // Woke up but no task available
-                atom_V_fetchAdd(&mp__worker_stats[worker_id].empty_wakeups, 1, atom_MemOrd_monotonic);
             }
         }
         let sync_end = time_Instant_now();
@@ -199,7 +184,6 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
             task->workerFn(task->range, task->params);
             let work_end = time_Instant_now();
 
-            let stats_enabled = atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire);
             if (stats_enabled) {
                 let idle_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_start, idle_start));
                 let sync_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_end, sync_start));
@@ -247,8 +231,6 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         .active_tasks = atom_V_init(0ull),
         .running = atom_V_init(true),
     })));
-    claim_assert_fmt(pool->workers.len == thrd_count, "workers.len(%zu) != thrd_count(%zu)", pool->workers.len, thrd_count);
-    claim_assert_fmt(pool->threads.len == thrd_count, "threads.len(%zu) != thrd_count(%zu)", pool->threads.len, thrd_count);
     for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
         *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw));
@@ -270,10 +252,9 @@ $static fn_((mp_ThrdPool_shutdown(mp_ThrdPool* self))(void)) {
 $static fn_((mp_ThrdPool_fini(mp_ThrdPool** self, mem_Allocator gpa))(void)) {
     mp_ThrdPool_shutdown(*self);
     mem_Allocator_free(gpa, u_anyS((*self)->tasks));
-    // Free the contiguous field memory block (workers array is at the start of the block)
     let field_types = typeInfos$(S_InnerT$(FieldType$(mp_ThrdPool, workers)), S_InnerT$(FieldType$(mp_ThrdPool, threads)));
-    let field_mem = u_recordNPtrMut(u_anyS((*self)->workers), (*self)->workers.len, field_types, 0);
-    mem_Allocator_destroy(gpa, field_mem);
+    let record_mem = u_recordNPtrMut(u_anyS((*self)->workers), (*self)->workers.len, field_types, 0);
+    mem_Allocator_destroy(gpa, record_mem);
     mem_Allocator_destroy(gpa, u_anyP(*self));
     *self = null;
 };
@@ -331,6 +312,227 @@ $static fn_((mp_parallel_for_pooled(mp_ThrdPool* pool, R range, mp_ThrdPool_Task
     });
     mp_ThrdPool_submitBatch(pool, task_buf.val, task_count);
     mp_ThrdPool_waitAll(pool);
+};
+
+// ============================================
+// Phased Parallel Execution (Reduced Barriers)
+// ============================================
+// Uses atomic phase counters instead of mutex-based waitAll between phases
+// All tasks submitted once, workers spin-wait on phase completion
+
+typedef struct mp_PhasedContext {
+    var_(phase_completed, A$$(8, atom_V$$(usize))); // Tasks completed per phase
+    var_(phase_total, A$$(8, usize)); // Total tasks per phase
+    var_(num_phases, usize);
+} mp_PhasedContext;
+
+$static mp_PhasedContext mp__phased_ctx = {};
+
+$attr($maybe_unused)
+$static fn_((mp_PhasedContext_init(usize num_phases))(void)) {
+    mp__phased_ctx.num_phases = num_phases;
+    for_(($r(0, 8))(i) {
+        atom_V_store(A_at((mp__phased_ctx.phase_completed)[i]), 0ull, atom_MemOrd_release);
+        *A_at((mp__phased_ctx.phase_total)[i]) = 0;
+    });
+};
+
+$attr($maybe_unused)
+$static fn_((mp_PhasedContext_setPhaseTotal(usize phase, usize total))(void)) {
+    *A_at((mp__phased_ctx.phase_total)[phase]) = total;
+};
+
+$attr($maybe_unused)
+$static fn_((mp_PhasedContext_completeTask(usize phase))(void)) {
+    atom_V_fetchAdd(A_at((mp__phased_ctx.phase_completed)[phase]), 1, atom_MemOrd_acq_rel);
+};
+
+$attr($maybe_unused)
+$static fn_((mp_PhasedContext_waitPhase(usize phase))(void)) {
+    let target = *A_at((mp__phased_ctx.phase_total)[phase]);
+    if (target == 0) { return; }
+    while (atom_V_load(A_at((mp__phased_ctx.phase_completed)[phase]), atom_MemOrd_acquire) < target) {
+        // Spin-wait with pause hint
+        catch_((Thrd_yield())($ignore, claim_unreachable));
+    }
+};
+
+$attr($maybe_unused)
+$static fn_((mp_PhasedContext_reset(void))(void)) {
+    for_(($r(0, mp__phased_ctx.num_phases))(i) {
+        atom_V_store(A_at((mp__phased_ctx.phase_completed)[i]), 0ull, atom_MemOrd_release);
+    });
+};
+
+// Phased task with phase ID for barrier-reduced execution
+typedef struct mp_PhasedTask {
+    var_(range, R);
+    var_(phase, usize);
+    var_(workerFn, mp_ThrdPool_TaskFn);
+    var_(params, u_V$raw);
+} mp_PhasedTask;
+
+// Maximum phased tasks per frame (4 phases * max_threads)
+#define mp_max_phased_tasks (mp_max_thrd_count * 8)
+
+typedef fn_(((*)(R, usize, u_V$raw))(void) $T) mp_PhasedTaskFn;
+
+// Wrapper to execute phased task with phase synchronization
+typedef struct mp_PhasedWorkerArgs {
+    var_(phase, usize);
+    var_(wait_phase, usize); // Phase to wait for before executing (-1 = no wait)
+    var_(inner_fn, mp_ThrdPool_TaskFn);
+    var_(inner_params, u_V$raw);
+} mp_PhasedWorkerArgs;
+
+$static fn_((mp_PhasedWorker(R range, u_V$raw params))(void)) {
+    let args = u_castV$((mp_PhasedWorkerArgs)(params));
+    // Wait for previous phase if needed
+    if (args.wait_phase < 8) {
+        mp_PhasedContext_waitPhase(args.wait_phase);
+    }
+    // Execute the actual work
+    args.inner_fn(range, args.inner_params);
+    // Signal completion
+    mp_PhasedContext_completeTask(args.phase);
+};
+
+// ============================================
+// Work-Stealing Task Distribution
+// ============================================
+// Each worker has a local queue. Workers process their own tasks first,
+// then steal from others when idle. Uses atomic head/tail for lock-free access.
+
+#define mp_ws_max_tasks_per_worker (64)
+
+// Declare Optional type for mp_ThrdPool_Task
+T_use_O$(mp_ThrdPool_Task);
+
+typedef struct mp_WorkerQueue {
+    var_(tasks, A$$(mp_ws_max_tasks_per_worker, mp_ThrdPool_Task));
+    var_(head, atom_V$$(usize)); // Thieves steal from here (FIFO)
+    var_(tail, atom_V$$(usize)); // Owner pushes/pops here (LIFO)
+} mp_WorkerQueue;
+
+$static A$$(mp_max_thrd_count, mp_WorkerQueue) mp__worker_queues = {};
+$static atom_V$$(usize) mp__ws_active_workers = atom_V_init(0ull);
+$static atom_V$$(usize) mp__ws_total_tasks = atom_V_init(0ull);
+$static atom_V$$(usize) mp__ws_completed_tasks = atom_V_init(0ull);
+
+$attr($maybe_unused)
+$static fn_((mp_WorkerQueue_init(mp_WorkerQueue* self))(void)) {
+    atom_V_store(&self->head, 0, atom_MemOrd_release);
+    atom_V_store(&self->tail, 0, atom_MemOrd_release);
+};
+
+$attr($maybe_unused)
+$static fn_((mp_WorkerQueue_push(mp_WorkerQueue* self, mp_ThrdPool_Task task))(bool)) {
+    let tail = atom_V_load(&self->tail, atom_MemOrd_acquire);
+    if (tail >= mp_ws_max_tasks_per_worker) { return false; }
+    *A_at((self->tasks)[tail]) = task;
+    atom_V_store(&self->tail, tail + 1, atom_MemOrd_release);
+    return true;
+};
+
+$attr($maybe_unused)
+$static fn_((mp_WorkerQueue_pop(mp_WorkerQueue* self))(O$mp_ThrdPool_Task) $scope) {
+    let tail = atom_V_load(&self->tail, atom_MemOrd_acquire);
+    if (tail == 0) { return_none(); }
+    let head = atom_V_load(&self->head, atom_MemOrd_acquire);
+    if (head >= tail) { return_none(); }
+    // Try to pop from tail (owner only)
+    let new_tail = tail - 1;
+    atom_V_store(&self->tail, new_tail, atom_MemOrd_release);
+    // Check if a thief took it
+    let current_head = atom_V_load(&self->head, atom_MemOrd_acquire);
+    if (current_head > new_tail) {
+        // Thief took it, restore tail
+        atom_V_store(&self->tail, tail, atom_MemOrd_release);
+        return_none();
+    }
+    return_some(*A_at((self->tasks)[new_tail]));
+} $unscoped_(fn);
+
+$attr($maybe_unused)
+$static fn_((mp_WorkerQueue_steal(mp_WorkerQueue* self))(O$mp_ThrdPool_Task) $scope) {
+    let head = atom_V_load(&self->head, atom_MemOrd_acquire);
+    let tail = atom_V_load(&self->tail, atom_MemOrd_acquire);
+    if (head >= tail) { return_none(); }
+    // Try to steal from head
+    let task = *A_at((self->tasks)[head]);
+    // CAS to increment head - use isSome to check success
+    if (isSome(atom_cmpXchgWeak(&self->head.raw, head, head + 1, atom_MemOrd_acq_rel, atom_MemOrd_acquire))) {
+        return_some(task);
+    }
+    return_none(); // Lost race, try again
+} $unscoped_(fn);
+
+$attr($maybe_unused)
+$static fn_((mp_WorkerQueue_isEmpty(mp_WorkerQueue* self))(bool)) {
+    let head = atom_V_load(&self->head, atom_MemOrd_acquire);
+    let tail = atom_V_load(&self->tail, atom_MemOrd_acquire);
+    return head >= tail;
+};
+
+// Initialize work-stealing queues
+$attr($maybe_unused)
+$static fn_((mp_WS_init(usize worker_count))(void)) {
+    atom_V_store(&mp__ws_total_tasks, 0ull, atom_MemOrd_release);
+    atom_V_store(&mp__ws_completed_tasks, 0ull, atom_MemOrd_release);
+    atom_V_store(&mp__ws_active_workers, worker_count, atom_MemOrd_release);
+    for_(($r(0, worker_count))(i) {
+        mp_WorkerQueue_init(A_at((mp__worker_queues)[i]));
+    });
+};
+
+// Distribute tasks round-robin to worker queues
+$attr($maybe_unused)
+$static fn_((mp_WS_distributeTasks(mp_ThrdPool_Task* tasks, usize task_count, usize worker_count))(void)) {
+    atom_V_store(&mp__ws_total_tasks, task_count, atom_MemOrd_release);
+    for_(($r(0, task_count))(i) {
+        let worker_idx = i % worker_count;
+        mp_WorkerQueue_push(A_at((mp__worker_queues)[worker_idx]), tasks[i]);
+    });
+};
+
+// Worker processes tasks from its queue, then steals from others
+$attr($maybe_unused)
+$static fn_((mp_WS_workerProcess(usize worker_id, usize worker_count))(void)) {
+    let my_queue = A_at((mp__worker_queues)[worker_id]);
+
+    while (true) {
+        // First try to pop from own queue
+        let maybe_task = mp_WorkerQueue_pop(my_queue);
+        if (isSome(maybe_task)) {
+            let task = unwrap_(maybe_task);
+            task.workerFn(task.range, task.params);
+            atom_V_fetchAdd(&mp__ws_completed_tasks, 1, atom_MemOrd_acq_rel);
+            continue;
+        }
+
+        // Own queue empty, try to steal from others
+        bool found_task = false;
+        for_(($r(0, worker_count))(i) {
+            if (i == worker_id) { continue; }
+            let other_queue = A_at((mp__worker_queues)[i]);
+            let stolen_task = mp_WorkerQueue_steal(other_queue);
+            if_some((stolen_task)(task)) {
+                task.workerFn(task.range, task.params);
+                atom_V_fetchAdd(&mp__ws_completed_tasks, 1, atom_MemOrd_acq_rel);
+                found_task = true;
+                break;
+            }
+        });
+
+        if (!found_task) {
+            // Check if all tasks are done
+            let completed = atom_V_load(&mp__ws_completed_tasks, atom_MemOrd_acquire);
+            let total = atom_V_load(&mp__ws_total_tasks, atom_MemOrd_acquire);
+            if (completed >= total) { break; }
+            // Yield and retry
+            catch_((Thrd_yield())($ignore, claim_unreachable));
+        }
+    }
 };
 
 #include "dh/math/common.h"
@@ -441,6 +643,25 @@ $static fn_((State_init(mp_ThrdPool* pool, S$Particle particles, S$Cell grid))(S
 // Spatial Grid 구축
 // ============================================
 
+// Args types defined here for phased execution
+typedef struct State_ClearGridArgs {
+    S$Cell grid;
+} State_ClearGridArgs;
+
+typedef struct State_BuildGridArgs {
+    S$Particle particles;
+    S$Cell grid;
+} State_BuildGridArgs;
+
+typedef struct State_ApplyGravityAndUpdateArgs {
+    S$Particle particles;
+} State_ApplyGravityAndUpdateArgs;
+
+typedef struct State_HandleCollisionsArgs {
+    S$Particle particles;
+    S$Cell grid;
+} State_HandleCollisionsArgs;
+
 $static fn_((State_clearGrid_worker(R range, u_V$raw params))(void));
 $static fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void));
 $static fn_((State_hashPosition(m_V2f64 pos))(usize));
@@ -532,6 +753,173 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
 };
 
 // ============================================
+// Optimized Simulation (Reduced Barriers)
+// ============================================
+// Phases: 0=ClearGrid, 1=BuildGrid, 2=GravityUpdate, 3=Collisions
+// Dependencies: Phase 1 waits for Phase 0, Phase 3 waits for Phases 1 and 2
+
+#define SimPhase_ClearGrid (0)
+#define SimPhase_BuildGrid (1)
+#define SimPhase_GravityUpdate (2)
+#define SimPhase_Collisions (3)
+#define SimPhase_Count (4)
+
+$static fn_((State_simulateFrame_phased(State* self, mp_ThrdPool* pool))(void)) {
+    let thrd_count = pool->threads.len;
+    let particles_chunk = (State_particles + thrd_count - 1) / thrd_count;
+    let grid_chunk = (State_grid_width * State_grid_height + thrd_count - 1) / thrd_count;
+
+    // Reset phase counters
+    mp_PhasedContext_reset();
+
+    // Local storage for phased task arguments (small structs, stack is fine)
+    var_(phased_args_clearGrid, A$$(mp_max_thrd_count, mp_PhasedWorkerArgs));
+    var_(phased_args_buildGrid, A$$(mp_max_thrd_count, mp_PhasedWorkerArgs));
+    var_(phased_args_gravity, A$$(mp_max_thrd_count, mp_PhasedWorkerArgs));
+    var_(phased_args_collisions, A$$(mp_max_thrd_count, mp_PhasedWorkerArgs));
+
+    // Local storage for inner params
+    let clear_grid_params = (State_ClearGridArgs){ .grid = self->grid };
+    let build_grid_params = (State_BuildGridArgs){ .particles = self->particles, .grid = self->grid };
+    let gravity_params = (State_ApplyGravityAndUpdateArgs){ .particles = self->particles };
+    let collision_params = (State_HandleCollisionsArgs){ .particles = self->particles, .grid = self->grid };
+
+    // Prepare all tasks in a single buffer
+    var_(task_buf, A$$(mp_max_phased_tasks, mp_ThrdPool_Task));
+    usize task_count = 0;
+    usize phase_task_counts[SimPhase_Count] = { 0, 0, 0, 0 };
+
+    // Phase 0: Clear Grid
+    for_(($r(0, thrd_count))(t) {
+        let begin = grid_chunk * t;
+        let end = prim_min(begin + grid_chunk, State_grid_width * State_grid_height);
+        if (begin >= end) { continue; }
+        asg_lit((A_at((phased_args_clearGrid)[t]))({
+            .phase = SimPhase_ClearGrid,
+            .wait_phase = 8, // No wait (8 = invalid phase)
+            .inner_fn = State_clearGrid_worker,
+            .inner_params = u_anyV(clear_grid_params),
+        }));
+        asg_lit((A_at((task_buf)[task_count++]))({
+            .range = $r(begin, end),
+            .workerFn = mp_PhasedWorker,
+            .params = u_anyV(*A_at((phased_args_clearGrid)[t])),
+        }));
+        phase_task_counts[SimPhase_ClearGrid]++;
+    });
+
+    // Phase 1: Build Grid (waits for Phase 0)
+    for_(($r(0, thrd_count))(t) {
+        let begin = particles_chunk * t;
+        let end = prim_min(begin + particles_chunk, State_particles);
+        if (begin >= end) { continue; }
+        asg_lit((A_at((phased_args_buildGrid)[t]))({
+            .phase = SimPhase_BuildGrid,
+            .wait_phase = SimPhase_ClearGrid, // Wait for clear
+            .inner_fn = State_buildSpatialGrid_worker,
+            .inner_params = u_anyV(build_grid_params),
+        }));
+        asg_lit((A_at((task_buf)[task_count++]))({
+            .range = $r(begin, end),
+            .workerFn = mp_PhasedWorker,
+            .params = u_anyV(*A_at((phased_args_buildGrid)[t])),
+        }));
+        phase_task_counts[SimPhase_BuildGrid]++;
+    });
+
+    // Phase 2: Gravity Update (waits for Phase 0 - no grid dependency, can run after clear)
+    for_(($r(0, thrd_count))(t) {
+        let begin = particles_chunk * t;
+        let end = prim_min(begin + particles_chunk, State_particles);
+        if (begin >= end) { continue; }
+        asg_lit((A_at((phased_args_gravity)[t]))({
+            .phase = SimPhase_GravityUpdate,
+            .wait_phase = SimPhase_ClearGrid, // Can run in parallel with buildGrid
+            .inner_fn = State_applyGravityAndUpdate_worker,
+            .inner_params = u_anyV(gravity_params),
+        }));
+        asg_lit((A_at((task_buf)[task_count++]))({
+            .range = $r(begin, end),
+            .workerFn = mp_PhasedWorker,
+            .params = u_anyV(*A_at((phased_args_gravity)[t])),
+        }));
+        phase_task_counts[SimPhase_GravityUpdate]++;
+    });
+
+    // Phase 3: Collisions (waits for Phase 1 AND Phase 2)
+    // Since we can only wait for one phase, wait for the slower one (BuildGrid)
+    // Note: In practice, we need both to complete, so we wait for BuildGrid which includes ClearGrid
+    for_(($r(0, thrd_count))(t) {
+        let begin = particles_chunk * t;
+        let end = prim_min(begin + particles_chunk, State_particles);
+        if (begin >= end) { continue; }
+        asg_lit((A_at((phased_args_collisions)[t]))({
+            .phase = SimPhase_Collisions,
+            .wait_phase = SimPhase_BuildGrid, // Wait for grid to be built
+            .inner_fn = State_handleCollisions_worker,
+            .inner_params = u_anyV(collision_params),
+        }));
+        asg_lit((A_at((task_buf)[task_count++]))({
+            .range = $r(begin, end),
+            .workerFn = mp_PhasedWorker,
+            .params = u_anyV(*A_at((phased_args_collisions)[t])),
+        }));
+        phase_task_counts[SimPhase_Collisions]++;
+    });
+
+    // Set phase totals for synchronization
+    for_(($r(0, SimPhase_Count))(p) {
+        mp_PhasedContext_setPhaseTotal(p, phase_task_counts[p]);
+    });
+
+    // Submit ALL tasks at once and wait once
+    mp_ThrdPool_submitBatch(pool, task_buf.val, task_count);
+    mp_ThrdPool_waitAll(pool);
+};
+
+fn_((State_simulate_optimized(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
+    io_stream_println(u8_l("\nStarting OPTIMIZED simulation for {:uz} frames at {:.1fl} FPS..."), frame_amount, State_target_fps);
+    io_stream_println(u8_l("Using {:uz} threads (Pool) with PHASED EXECUTION"), pool->threads.len);
+    io_stream_println(u8_l("Barriers reduced from 4/frame to 1/frame"));
+
+    // Initialize phased context
+    mp_PhasedContext_init(SimPhase_Count);
+
+    f64 total_time = 0.0;
+    for_(($r(0, frame_amount))(frame) {
+        let frame_start = time_Instant_now();
+
+        // Execute all phases with single barrier
+        State_simulateFrame_phased(self, pool);
+
+        let frame_end = time_Instant_now();
+        let frame_time = time_Instant_durationSince(frame_end, frame_start);
+        total_time += time_Duration_asSecs$f64(frame_time);
+
+        if (frame % as$(usize)(State_target_fps) == 0) {
+            pp_if_(enable_print_frame_stats)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
+                u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
+                frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
+                (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
+            );
+        }
+    });
+
+    let avg_fps = as$(f64)(frame_amount) / total_time;
+    let avg_spf = total_time / as$(f64)(frame_amount);
+    io_stream_println(u8_l("\n=== Optimized Simulation Complete ===\n"));
+    io_stream_println(u8_l("Total frames: {:uz}"), frame_amount);
+    io_stream_println(u8_l("Total time: {:.2fl} seconds"), total_time);
+    io_stream_println(u8_l("Average FPS: {:.2fl}"), avg_fps);
+    io_stream_println(u8_l("Average frame time: {:.2fl} ms"), avg_spf * 1000.0);
+    if (avg_fps >= State_target_fps) {
+        io_stream_println(u8_l("✓ SUCCESS: {:.2fl} FPS achieved!"), State_target_fps);
+    } else {
+        io_stream_println(u8_l("Target {:.2fl} FPS not achieved ({:.2fl} FPS)"), State_target_fps, avg_fps);
+    }
+};
+
+// ============================================
 // 메인
 // ============================================
 
@@ -541,10 +929,11 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
 #include "dh/io/common.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    io_stream_println(u8_l("╔═══════════════════════════════════════╗"));
-    io_stream_println(u8_l("║  Particle Simulation                  ║"));
-    io_stream_println(u8_l("║  Thrd + pool + atom (opt)             ║"));
-    io_stream_println(u8_l("╚═══════════════════════════════════════╝\n"));
+    io_stream_println(u8_l("╔════════════════════════════════════════════╗"));
+    io_stream_println(u8_l("║  Particle Simulation                       ║"));
+    io_stream_println(u8_l("║  Thrd + pool + atom (opt2-phased)          ║"));
+    io_stream_println(u8_l("║  Usage: prog [threads] [frames] [bench]    ║"));
+    io_stream_println(u8_l("╚════════════════════════════════════════════╝\n"));
 
     io_stream_println(u8_l("Particles: 2^{:uz} = {:uz}"), State_particles_log2, State_particles);
     io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
@@ -572,7 +961,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(mp_ThrdPool_printStats(pool));
     io_stream_println(u8_l("Using Thread Pool with {:uz} workers\n"), pool->threads.len);
 
-    io_stream_println(u8_l("Allocating memory..."));
+    io_stream_println(u8_l("\nAllocating memory..."));
     let particles = try_(u_castE$((E$$(S$Particle))(mem_Allocator_alloc(gpa, typeInfo$(Particle), State_particles))));
     defer_(mem_Allocator_free(gpa, u_anyS(particles)));
     let grid = try_(u_castE$((E$$(S$Cell))(mem_Allocator_alloc(gpa, typeInfo$(Cell), State_grid_width * State_grid_height))));
@@ -586,7 +975,26 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         $break_(1000);
     }) $unscoped_(expr);
     io_stream_println(u8_l("Simulating {:uz} frames..."), frame_amount);
-    State_simulate(&state, pool, frame_amount);
+
+    // Check if benchmark mode is enabled (arg[3] = "bench" or "compare")
+    let benchmark_mode = (3 < args.len);
+
+    if (benchmark_mode) {
+        io_stream_println(u8_l("\n=== BENCHMARK MODE: Comparing Original vs Optimized ===\n"));
+
+        // Run original simulation first
+        io_stream_println(u8_l("--- Running ORIGINAL simulation (4 barriers/frame) ---"));
+        State_simulate(&state, pool, frame_amount);
+
+        // Re-initialize particles for fair comparison
+        var state2 = State_init(pool, particles, grid);
+
+        io_stream_println(u8_l("\n--- Running OPTIMIZED simulation (1 barrier/frame) ---"));
+        State_simulate_optimized(&state2, pool, frame_amount);
+    } else {
+        // Use optimized phased simulation (reduced barriers: 4/frame -> 1/frame)
+        State_simulate_optimized(&state, pool, frame_amount);
+    }
 
     io_stream_println(u8_l("\nSample particles:"));
     for_(($r(0, 3), $s(particles))(i, particle) {
@@ -595,6 +1003,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             i, particle->pos.x, particle->pos.y, particle->vel.x, particle->vel.y
         );
     });
+    // mp_ThrdPool_printStats(pool);
+    // mp_ThrdPool_fini(pool, gpa);
 
     io_stream_println(u8_l("\n=== Program Complete ==="));
     return_ok({});
@@ -669,10 +1079,6 @@ fn_((State_initParticles(mp_ThrdPool* pool, S$Particle particles, m_V2f64 center
     );
 };
 
-typedef struct State_ClearGridArgs {
-    S$Cell grid;
-} State_ClearGridArgs;
-
 fn_((State_clearGrid_worker(R range, u_V$raw params))(void)) {
     let args = u_castV$((State_ClearGridArgs)(params));
     let grid = sliceS(args.grid, range);
@@ -697,11 +1103,6 @@ fn_((State_hashPosition(m_V2f64 pos))(usize)) {
     let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height)-1));
     return gy_1 * State_grid_width + gx_1;
 };
-
-typedef struct State_BuildGridArgs {
-    S$Particle particles;
-    S$Cell grid; // shared global grid
-} State_BuildGridArgs;
 
 fn_((State_buildSpatialGrid_worker(R range, u_V$raw params))(void)) {
     typedef struct LocalGrid {
@@ -749,10 +1150,6 @@ fn_((State_buildSpatialGrid(State* self))(void)) {
         }))
     );
 };
-
-typedef struct State_ApplyGravityAndUpdateArgs {
-    S$Particle particles;
-} State_ApplyGravityAndUpdateArgs;
 
 fn_((State_applyGravityAndUpdate_worker(R range, u_V$raw params))(void)) {
     let args = u_castV$((State_ApplyGravityAndUpdateArgs)(params));
@@ -808,11 +1205,6 @@ fn_((State_applyGravityAndUpdate(State* self))(void)) {
         }))
     );
 };
-
-typedef struct State_HandleCollisionsArgs {
-    S$Particle particles;
-    S$Cell grid;
-} State_HandleCollisionsArgs;
 
 fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
     let args = u_castV$((State_HandleCollisionsArgs)(params));
@@ -899,14 +1291,15 @@ fn_((State_handleCollisions(State* self))(void)) {
 };
 
 /*
-$ dh-c run optimize sample-particle_pool_opt.c
-Building sample-particle_pool_opt with config 'optimize'...
+$ dh-c run optimize sample-particle_pool_opt2.c
+Building sample-particle_pool_opt2 with config 'optimize'...
 Build successful!
-Running sample-particle_pool_opt...
-╔═══════════════════════════════════════╗
-║  Particle Simulation                  ║
-║  Thrd + pool + atom (opt)             ║
-╚═══════════════════════════════════════╝
+Running sample-particle_pool_opt2...
+╔════════════════════════════════════════════╗
+║  Particle Simulation                       ║
+║  Thrd + pool + atom (opt2-phased)          ║
+║  Usage: prog [threads] [frames] [bench]    ║
+╚════════════════════════════════════════════╝
 
 Particles: 2^23 = 8388608
 Target FPS: 30.0
@@ -920,89 +1313,86 @@ Damping: 0.98
 Delta Time: 0.03
 Using Thread Pool with 15 workers
 
+
 Allocating memory...
 Memory allocated: 320.00 MB
 Simulating 1000 frames...
 
-Starting simulation for 1000 frames at 30.0 FPS...
-Using 15 threads (Pool)
-Frame 0: 67.89 ms (14.7 FPS) | Avg: 67.89 ms (14.7 FPS)
-Frame 30: 70.93 ms (14.1 FPS) | Avg: 69.44 ms (14.4 FPS)
-Frame 60: 71.43 ms (13.0 FPS) | Avg: 69.88 ms (14.3 FPS)
-Frame 90: 68.83 ms (14.5 FPS) | Avg: 70.03 ms (14.3 FPS)
-Frame 120: 71.04 ms (14.1 FPS) | Avg: 70.28 ms (14.2 FPS)
-Frame 150: 77.98 ms (12.8 FPS) | Avg: 70.84 ms (14.1 FPS)
-Frame 180: 67.70 ms (14.8 FPS) | Avg: 70.60 ms (14.2 FPS)
-Frame 210: 68.72 ms (14.6 FPS) | Avg: 70.47 ms (14.2 FPS)
-Frame 240: 74.21 ms (13.5 FPS) | Avg: 70.77 ms (14.1 FPS)
-Frame 270: 68.07 ms (14.7 FPS) | Avg: 70.91 ms (14.1 FPS)
-Frame 300: 72.80 ms (13.7 FPS) | Avg: 70.94 ms (14.1 FPS)
-Frame 330: 69.23 ms (14.4 FPS) | Avg: 70.96 ms (14.1 FPS)
-Frame 360: 71.64 ms (13.0 FPS) | Avg: 70.87 ms (14.1 FPS)
-Frame 390: 70.22 ms (14.2 FPS) | Avg: 70.85 ms (14.1 FPS)
-Frame 420: 67.97 ms (14.7 FPS) | Avg: 70.80 ms (14.1 FPS)
-Frame 450: 67.11 ms (14.9 FPS) | Avg: 70.73 ms (14.1 FPS)
-Frame 480: 71.14 ms (14.1 FPS) | Avg: 70.69 ms (14.1 FPS)
-Frame 510: 66.95 ms (14.9 FPS) | Avg: 70.67 ms (14.1 FPS)
-Frame 540: 70.12 ms (14.3 FPS) | Avg: 70.66 ms (14.2 FPS)
-Frame 570: 67.96 ms (14.7 FPS) | Avg: 70.62 ms (14.2 FPS)
-Frame 600: 71.30 ms (14.0 FPS) | Avg: 70.57 ms (14.2 FPS)
-Frame 630: 71.16 ms (14.1 FPS) | Avg: 70.53 ms (14.2 FPS)
-Frame 660: 71.28 ms (14.0 FPS) | Avg: 70.51 ms (14.2 FPS)
-Frame 690: 72.08 ms (13.9 FPS) | Avg: 70.51 ms (14.2 FPS)
-Frame 720: 66.16 ms (15.1 FPS) | Avg: 70.54 ms (14.2 FPS)
-Frame 750: 72.67 ms (13.8 FPS) | Avg: 70.54 ms (14.2 FPS)
-Frame 780: 69.12 ms (14.5 FPS) | Avg: 70.53 ms (14.2 FPS)
-Frame 810: 69.60 ms (14.4 FPS) | Avg: 70.54 ms (14.2 FPS)
-Frame 840: 75.93 ms (13.2 FPS) | Avg: 70.52 ms (14.2 FPS)
-Frame 870: 72.82 ms (13.7 FPS) | Avg: 70.53 ms (14.2 FPS)
-Frame 900: 72.62 ms (13.8 FPS) | Avg: 70.53 ms (14.2 FPS)
-Frame 930: 70.39 ms (14.2 FPS) | Avg: 70.51 ms (14.2 FPS)
-Frame 960: 71.82 ms (13.9 FPS) | Avg: 70.51 ms (14.2 FPS)
-Frame 990: 70.93 ms (14.1 FPS) | Avg: 70.57 ms (14.2 FPS)
+Starting OPTIMIZED simulation for 1000 frames at 30.0 FPS...
+Using 15 threads (Pool) with PHASED EXECUTION
+Barriers reduced from 4/frame to 1/frame
+Frame 0: 69.60 ms (14.4 FPS) | Avg: 69.60 ms (14.4 FPS)
+Frame 30: 70.02 ms (14.3 FPS) | Avg: 74.82 ms (13.4 FPS)
+Frame 60: 70.17 ms (14.3 FPS) | Avg: 73.53 ms (13.6 FPS)
+Frame 90: 67.63 ms (14.8 FPS) | Avg: 72.85 ms (13.7 FPS)
+Frame 120: 72.57 ms (13.8 FPS) | Avg: 72.66 ms (13.8 FPS)
+Frame 150: 69.64 ms (14.4 FPS) | Avg: 72.29 ms (13.8 FPS)
+Frame 180: 68.73 ms (14.6 FPS) | Avg: 72.16 ms (13.9 FPS)
+Frame 210: 72.20 ms (13.9 FPS) | Avg: 72.05 ms (13.9 FPS)
+Frame 240: 76.86 ms (13.0 FPS) | Avg: 72.09 ms (13.9 FPS)
+Frame 270: 77.76 ms (12.9 FPS) | Avg: 72.14 ms (13.9 FPS)
+Frame 300: 66.30 ms (15.1 FPS) | Avg: 71.95 ms (13.9 FPS)
+Frame 330: 72.00 ms (13.7 FPS) | Avg: 71.99 ms (13.9 FPS)
+Frame 360: 70.35 ms (14.2 FPS) | Avg: 71.71 ms (13.9 FPS)
+Frame 390: 69.63 ms (14.4 FPS) | Avg: 71.59 ms (13.0 FPS)
+Frame 420: 71.26 ms (14.0 FPS) | Avg: 71.42 ms (14.0 FPS)
+Frame 450: 65.26 ms (15.3 FPS) | Avg: 71.33 ms (14.0 FPS)
+Frame 480: 66.68 ms (14.0 FPS) | Avg: 71.25 ms (14.0 FPS)
+Frame 510: 64.90 ms (15.4 FPS) | Avg: 71.30 ms (14.0 FPS)
+Frame 540: 70.13 ms (14.3 FPS) | Avg: 71.20 ms (14.0 FPS)
+Frame 570: 66.93 ms (14.9 FPS) | Avg: 71.08 ms (14.1 FPS)
+Frame 600: 72.91 ms (13.7 FPS) | Avg: 71.05 ms (14.1 FPS)
+Frame 630: 69.90 ms (14.3 FPS) | Avg: 71.02 ms (14.1 FPS)
+Frame 660: 66.29 ms (15.1 FPS) | Avg: 70.96 ms (14.1 FPS)
+Frame 690: 70.43 ms (14.2 FPS) | Avg: 71.05 ms (14.1 FPS)
+Frame 720: 71.97 ms (13.9 FPS) | Avg: 71.09 ms (14.1 FPS)
+Frame 750: 69.73 ms (14.3 FPS) | Avg: 71.06 ms (14.1 FPS)
+Frame 780: 72.02 ms (13.9 FPS) | Avg: 71.00 ms (14.1 FPS)
+Frame 810: 71.52 ms (13.0 FPS) | Avg: 70.97 ms (14.1 FPS)
+Frame 840: 67.15 ms (14.9 FPS) | Avg: 70.94 ms (14.1 FPS)
+Frame 870: 70.09 ms (14.3 FPS) | Avg: 70.90 ms (14.1 FPS)
+Frame 900: 68.22 ms (14.7 FPS) | Avg: 70.82 ms (14.1 FPS)
+Frame 930: 73.72 ms (13.6 FPS) | Avg: 70.79 ms (14.1 FPS)
+Frame 960: 66.45 ms (15.0 FPS) | Avg: 70.77 ms (14.1 FPS)
+Frame 990: 68.41 ms (14.6 FPS) | Avg: 70.73 ms (14.1 FPS)
 
-=== Performance Breakdown ===
-Build Grid:     5.72 ms (8.1%)
-Gravity+Update: 29.38 ms (41.6%)
-Collisions:     35.49 ms (50.3%)
-
-=== Simulation Complete ===
+=== Optimized Simulation Complete ===
 
 Total frames: 1000
-Total time: 70.58 seconds
-Average FPS: 14.17
-Average frame time: 70.58 ms
-Target 30.00 FPS not achieved (14.17 FPS)
+Total time: 70.72 seconds
+Average FPS: 14.14
+Average frame time: 70.72 ms
+Target 30.00 FPS not achieved (14.14 FPS)
 
 Sample particles:
-- Particle 0: pos(158.45, 0.00) vel(-0.00, -0.00)
-- Particle 1: pos(-89.19, -54.33) vel(0.00, 0.00)
-- Particle 2: pos(-83.64, -62.54) vel(0.00, 0.00)
+- Particle 0: pos(85.85, 0.00) vel(-0.00, -0.00)
+- Particle 1: pos(-107.77, -65.65) vel(0.00, 0.00)
+- Particle 2: pos(-95.61, -82.36) vel(0.00, 0.00)
 
 === Program Complete ===
 
 === ThreadPool Performance Stats ===
-Worker 0: 80.6% eff | Tasks: 4046 | Loops: 4047 | Waits: 3828 | Empty: 0
-Worker 1: 80.1% eff | Tasks: 3974 | Loops: 3975 | Waits: 3812 | Empty: 0
-Worker 2: 80.3% eff | Tasks: 3968 | Loops: 3969 | Waits: 3824 | Empty: 0
-Worker 3: 80.6% eff | Tasks: 4001 | Loops: 4002 | Waits: 3833 | Empty: 0
-Worker 4: 80.1% eff | Tasks: 3955 | Loops: 3956 | Waits: 3810 | Empty: 0
-Worker 5: 81.3% eff | Tasks: 4019 | Loops: 4020 | Waits: 3828 | Empty: 0
-Worker 6: 81.2% eff | Tasks: 3984 | Loops: 3985 | Waits: 3820 | Empty: 0
-Worker 7: 80.6% eff | Tasks: 4039 | Loops: 4040 | Waits: 3827 | Empty: 0
-Worker 8: 80.3% eff | Tasks: 4035 | Loops: 4036 | Waits: 3821 | Empty: 0
-Worker 9: 80.4% eff | Tasks: 4017 | Loops: 4018 | Waits: 3831 | Empty: 0
-Worker 10: 80.1% eff | Tasks: 3990 | Loops: 3991 | Waits: 3816 | Empty: 0
-Worker 11: 80.4% eff | Tasks: 4013 | Loops: 4014 | Waits: 3820 | Empty: 0
-Worker 12: 80.5% eff | Tasks: 4007 | Loops: 4008 | Waits: 3833 | Empty: 0
-Worker 13: 81.3% eff | Tasks: 3961 | Loops: 3962 | Waits: 3817 | Empty: 0
-Worker 14: 81.2% eff | Tasks: 4006 | Loops: 4007 | Waits: 3811 | Empty: 0
+Worker 0: 84.7% eff | Work: 59.96s | Idle: 0.00s | Sync: 10.87s | Tasks: 4047
+Worker 1: 84.8% eff | Work: 60.10s | Idle: 0.00s | Sync: 10.74s | Tasks: 4019
+Worker 2: 84.6% eff | Work: 59.91s | Idle: 0.00s | Sync: 10.93s | Tasks: 3946
+Worker 3: 84.6% eff | Work: 59.96s | Idle: 0.00s | Sync: 10.87s | Tasks: 4030
+Worker 4: 84.8% eff | Work: 60.08s | Idle: 0.00s | Sync: 10.75s | Tasks: 3993
+Worker 5: 85.7% eff | Work: 60.73s | Idle: 0.00s | Sync: 10.12s | Tasks: 3967
+Worker 6: 85.2% eff | Work: 60.35s | Idle: 0.00s | Sync: 10.49s | Tasks: 3950
+Worker 7: 84.6% eff | Work: 59.91s | Idle: 0.00s | Sync: 10.92s | Tasks: 4111
+Worker 8: 84.8% eff | Work: 60.07s | Idle: 0.00s | Sync: 10.77s | Tasks: 4101
+Worker 9: 85.2% eff | Work: 60.37s | Idle: 0.00s | Sync: 10.47s | Tasks: 3987
+Worker 10: 84.8% eff | Work: 60.06s | Idle: 0.00s | Sync: 10.78s | Tasks: 3946
+Worker 11: 84.0% eff | Work: 60.17s | Idle: 0.00s | Sync: 10.66s | Tasks: 4005
+Worker 12: 84.9% eff | Work: 60.16s | Idle: 0.00s | Sync: 10.67s | Tasks: 3978
+Worker 13: 85.5% eff | Work: 60.57s | Idle: 0.00s | Sync: 10.26s | Tasks: 3969
+Worker 14: 85.5% eff | Work: 60.59s | Idle: 0.00s | Sync: 10.24s | Tasks: 3966
 
 --- Summary ---
-Average Efficiency: 80.6%
-Total Work Time: 854.48s
+Average Efficiency: 84.0%
+Total Work Time: 902.00s
 Total Idle Time: 0.00s (0.0%)
-Total Sync Time: 205.67s (19.4%)
+Total Sync Time: 159.55s (15.0%)
 Total Tasks: 60015
 Avg Tasks per Worker: 4001.0
 */

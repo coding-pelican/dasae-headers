@@ -11,6 +11,7 @@
 #define using_m_V2$(T) \
     typedef union pp_join($, m_V2, T) pp_join($, m_V2, T); \
     union pp_join($, m_V2, T) { \
+        var_(a, A$$(2, T)); \
         T s[2]; \
         struct { \
             T x, y; \
@@ -20,6 +21,7 @@
 #define using_m_V3$(T) \
     typedef union pp_join($, m_V3, T) pp_join($, m_V3, T); \
     union pp_join($, m_V3, T) { \
+        var_(a, A$$(3, T)); \
         T s[3]; \
         struct { \
             T x, y, z; \
@@ -29,6 +31,7 @@
 #define using_m_V4$(T) \
     typedef union pp_join($, m_V4, T) pp_join($, m_V4, T); \
     union pp_join($, m_V4, T) { \
+        var_(a, A$$(4, T)); \
         T s[4]; \
         struct { \
             T x, y, z, w; \

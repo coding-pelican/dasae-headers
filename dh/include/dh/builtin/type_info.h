@@ -145,7 +145,7 @@ extern "C" {
 #define ___alignAs$(_align...) _Alignas(1ull << (_align))
 #define ___alignOf$(_T...) (as$(u8)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
 #define ___sizeOf$(_T...) (as$(usize)(sizeof(_T)))
-#define ___countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(0))[0])))
+#define ___countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
 
 #define ____TypeOf(_Expr...) __typeof__(_Expr)
 /* clang >= 16.0, gcc >= 13.1 */
